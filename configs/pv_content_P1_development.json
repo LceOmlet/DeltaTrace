@@ -13,7 +13,7 @@
   "forward_replacement_allowed": false,
   "shadow_backward_allowed": false,
   "small_latency_increase_may_be_accepted": true,
-  "next": "Use bounded phase profiling to assess remaining FA costs before more kernel changes; inspect remote Qwen3.5-9B weights and real model/FLA compatibility. Shift to other measured major costs when FA remaining gain is evidenced limited. Keep current SharedMeanReuse backend and preserve official evaluation/real batching.",
+  "next": "Keep bounded FA cost diagnosis; prepare original-cache-text retokenization and a small actual Qwen3.5/FLA GPU preflight before full attribution/quality. No implicit Torch fallback or wholesale kernel replacement.",
   "public_capture_evidence": "6a5f7f2ae66d48acd9609c100f31faae19f62ac11bf028dfb7451302e111a29c",
   "public_capture_validated_cases": [
     "NI0",
@@ -128,7 +128,7 @@
     "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
     "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
     "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-    "next_change": "Use bounded phase profiling to assess remaining FA costs before more kernel changes; inspect remote Qwen3.5-9B weights and real model/FLA compatibility. Shift to other measured major costs when FA remaining gain is evidenced limited. Keep current SharedMeanReuse backend and preserve official evaluation/real batching.",
+    "next_change": "Keep bounded FA cost diagnosis; prepare original-cache-text retokenization and a small actual Qwen3.5/FLA GPU preflight before full attribution/quality. No implicit Torch fallback or wholesale kernel replacement.",
     "initial_optimization_screen": {
       "cases": [
         [
@@ -277,14 +277,15 @@
       "FA_priority": "Continue bounded FA diagnosis; switch to measured larger costs if evidence establishes limited remaining FA gain. One failed candidate is insufficient.",
       "Qwen3_5_9B": {
         "required": true,
-        "weight_location": "remote shared path; discovery pending",
-        "model_support_status": "not_implemented_or_validated"
+        "weight_location": "${PRIVATE_MOUNT_PATH}",
+        "model_support_status": "real_import_only_GPU_and_attribution_pending",
+        "weight_identity": "four_full_shards_match_official_LFS"
       },
       "FLA": {
         "required": true,
         "actual_dispatch_verification_required": true,
         "shadow_implementation_forbidden": true,
-        "support_status": "not_implemented_or_validated"
+        "support_status": "two_line_device_mapping_import_verified_GPU_pending"
       },
       "real_minibatch_required": true,
       "official_benchmark_scope_retained": true,
@@ -292,6 +293,63 @@
       "original_quality_sign_cost_completion_requirements_retained": true,
       "app_goal_objective_edit_available": false,
       "app_goal_remains_active": true
+    },
+    "qwen35_support": {
+      "status": "weights_verified_real_FLA_import_passed_GPU_model_pending",
+      "checkpoint": "${PRIVATE_MOUNT_PATH}",
+      "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "weight_bytes": 19306310880,
+      "weight_hash_seconds": 98.31285817734897,
+      "tensor_count": 775,
+      "layers": {
+        "full_attention": 8,
+        "linear_attention": 24
+      },
+      "head_dim": 256,
+      "dtype": "bfloat16",
+      "eos_token_id": 248044,
+      "tokenizer_official_identity_complete": false,
+      "raw_sha256": {
+        "inventory": "fb9ea65597931d843a149fe8e69106fc268f5f105b911b644ba926f93129e601",
+        "weight_identity": "ec91a51a5f2e22a449ac603ca5c671fe9e53e2217a552bd07d62396fd4475de6",
+        "isolated_import": "ae1ff62d6e44fc039370dc49f49748d9b37c0642f1220c06ae08806291f66c69",
+        "maca_mapping": "fb9e742fbc473f961916d281811b55924549a5d85ce9880b68315bbb23f678ae"
+      },
+      "isolated_environment": "${LOCAL_PATH}",
+      "FLA_version": "0.4.1",
+      "transformers_version": "5.13.0",
+      "device_mapping": {
+        "kind": "explicit_device_name_mapping_only",
+        "upstream_version": "fla-core0.4.1",
+        "before_sha256": "03e3e41a62741d45913a2d2d35de630aaba13dcbb0fb1e8c1f7904446a688cf1",
+        "after_sha256": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+        "replacements": [
+          [
+            "return {'cuda': 'cuda', 'hip': 'cuda', 'xpu': 'xpu'}.get(backend, backend)",
+            "return {'cuda': 'cuda', 'hip': 'cuda', 'xpu': 'xpu', 'maca': 'cuda'}.get(backend, backend)"
+          ],
+          [
+            "device = get_available_device() if get_available_device() != 'hip' else 'cuda'",
+            "device = map_triton_backend_to_torch_device()"
+          ]
+        ],
+        "kernel_changes": 0,
+        "model_changes": 0,
+        "runtime_verified": false,
+        "real_backend_identity": "maca"
+      },
+      "source_files_compared": 2853,
+      "inherited_unrelated_package_conflicts_reported": true,
+      "model_loads": 0,
+      "model_forwards": 0,
+      "attributions": 0,
+      "quality_queries": 0,
+      "GPU_dispatch_verified": false,
+      "whole_model_supported": false,
+      "finite_FLA_attribution_supported": false,
+      "real_batch_verified": false,
+      "status_limit": "Imports may initialize a device runtime; no GPU profiler was run. No claim of zero low-level GPU activity.",
+      "next": "Keep bounded FA cost diagnosis; prepare original-cache-text retokenization and a small actual Qwen3.5/FLA GPU preflight before full attribution/quality. No implicit Torch fallback or wholesale kernel replacement."
     }
   },
   "native_MLP_SAC_reuse": {
@@ -375,14 +433,15 @@
     "FA_priority": "Continue bounded FA diagnosis; switch to measured larger costs if evidence establishes limited remaining FA gain. One failed candidate is insufficient.",
     "Qwen3_5_9B": {
       "required": true,
-      "weight_location": "remote shared path; discovery pending",
-      "model_support_status": "not_implemented_or_validated"
+      "weight_location": "${PRIVATE_MOUNT_PATH}",
+      "model_support_status": "real_import_only_GPU_and_attribution_pending",
+      "weight_identity": "four_full_shards_match_official_LFS"
     },
     "FLA": {
       "required": true,
       "actual_dispatch_verification_required": true,
       "shadow_implementation_forbidden": true,
-      "support_status": "not_implemented_or_validated"
+      "support_status": "two_line_device_mapping_import_verified_GPU_pending"
     },
     "real_minibatch_required": true,
     "official_benchmark_scope_retained": true,
