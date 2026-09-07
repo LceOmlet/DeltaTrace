@@ -1,0 +1,20 @@
+{
+  "purpose": "Compile genuine vendor FA framework finite-P1 extension. FP16 operands and output, FP32 MMA/softmax/row reductions. No quadrature, no FlexAttention, no dense global NxN buffers, no native model/package/backward replacement. No runtime or quality claim from compilation.",
+  "study_sha256": "a662001b39993e1322c52ebac42b5784462f690d65cec9fe208892931f655c7d",
+  "extension_sha256": "15d9d71fb454cbbf3a885a269caa3c8f025cb7c47171c89547e3dea882ac3832",
+  "vendor_source_parent": "${ARTIFACT_ROOT}/codex_vendor_fa_source_gpu_language_20260907_v1",
+  "vendor_parent_sha256": "43000d77cd7fac6539e86fbc8dfbb638b0c4bce7d6cfc4ad4f4ba4f00db16906",
+  "vendor_git_commit": "aef88de756194e077460a1c8b8b341baa429259a",
+  "vendor_source_version": "FA2.5.3",
+  "installed_model_FA_version": "2.6.3+metax3.5.3.9torch2.8",
+  "same_version_source_claim": false,
+  "max_compile_seconds": 600,
+  "budget": {
+    "native_model_forwards": 0,
+    "native_model_backwards": 0,
+    "attribution_calls": 0,
+    "GPU_kernel_launches": 0
+  },
+  "precision_scope": "Ordinary FA-style FP16 matrix operands / FP32 accumulation and nonlinear operations / FP16 emitted multipliers. Real arithmetic finite rule unchanged; native LSE vs explicit re-normalization and half rounding require actual numerical/quality checks.",
+  "next_if_compiled": "Validate full original NI0 actual attention tensors and multipliers before any whole-model use; compare current dense P1, FP64 rule and true kernel counts/time/allocated shapes. Compilation alone cannot promote the extension."
+}
