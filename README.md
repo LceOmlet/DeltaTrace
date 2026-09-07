@@ -10,9 +10,12 @@
 |整网有限传播、三种 PV 分配|原16条开发样本、176条原曲线已独立核验；P1进入下一步开发|[完整结果](docs/history/PV交互分配_三规则完整16条结果_20260907.md)|
 |已有编译器融合|已在原样本核验|`core/compiled_*.py`|
 |历史独立分块原型|仅局部数值/成本试验；较省显存但较慢，未整网接入|`research/prototypes/`|
-|基于官方／厂商生产 FA 框架的有限传播扩展|待完成；不以小幅变慢为理由改用影子实现|[设计与来源要求](docs/fa_two_endpoint_extension.md)|
+|FA 双端点有限传播加速|待解决；默认 FA、稳定契约和完整效率优先|[设计与来源要求](docs/fa_two_endpoint_extension.md)|
+|原评估器的批量删除曲线|已实现；B4在三个原样本提速1.19—1.52x，数值差在冻结容差内|[批量结果与后端契约](docs/history/默认FA兼容边界与原评估批处理_20260907.md)|
 
 当前研究配置为 [`content_P1`](configs/pv_content_P1_development.json)。NI 恢复率77.52%（对称77.90%，最佳 FT59.33%）；NI RISE0.05742（最佳 FT0.06193），MH RISE0.05848（最佳 FT0.11013），均为越低越好。NI/MH MAS也均改善。用户明确接受约0.38个百分点的恢复下降，原冻结“对称无退步”附加筛选仍如实记为未通过；对 FT 原联合质量门槛通过。完整耗时/FT逐样本比值中位数1.057，最慢1.463；16条显存均低于普通原生 FA 反向参照。仅开发结果，未完成独立或长输入确认。
+
+后续效率优先，并把双端点算法固定在稳定的公开接口/张量契约层，避免随 FA 私有版本反复移植。真实模型默认 FA 不替换。当前私有捕获接口仍待解耦；多样本归因也未完成，不能把已完成的评估批处理称为批量归因。
 
 ## 运行核心代码
 
@@ -35,6 +38,18 @@ signed_scores = result["signed_full_sequence"]
 `pv_rule` 只能为 `symmetric`、`content_P1`、`content_P0`，默认对称。后两者分别为 ΔP·V0 + P1·ΔV、ΔP·V1 + P0·ΔV。混合乘积只是归因恒等式，不是额外模型反事实前向。其他有限规则保持不变。
 
 复现环境记录：MetaX C550，PyTorch `2.8.0+metax3.5.3.9`、Transformers `4.57.3`、FlashAttention `2.6.3+metax3.5.3.9torch2.8`、Triton `3.0.0`。不假定不同设备/上游版本有相同 ABI 或表现，不自动覆盖安装的模型、FA 或 autograd。
+
+原曲线批调度可以直接接受原评估器及真实删除状态，按精确长度分桶：
+
+```python
+from research.runtime.original_ft_batched_evaluation import evaluate_requests
+
+# evaluator 是 FlashTrace 原 LLMAttributionEvaluator。
+# requests: 唯一标识 -> (prompt_ids[1,N], fixed_response_ids[1,M])。
+scores, cost = evaluate_requests(evaluator, requests, batch_size=4)
+```
+
+`cost` 同时返回物理前向次数和评估轨迹数。该函数不生成新删除顺序、不生成答案，也不改变评分器；原基准使用的实际后端应保持一致。当前 B4 数值/性能核验限于报告中的三个原样本。
 
 ## 证据与维护
 

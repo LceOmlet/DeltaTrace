@@ -15,6 +15,6 @@ MetaX 官方2.5.3源码与编译诊断保留为来源证据，不作为默认运
 
 所有批量报告同时统计物理调用数和样本/端点轨迹数；批量调用不是一个样本的成本。失败、OOM 和重试也计入，不自动降低批量后隐藏失败。
 
-批量调度代码已保存于 [`original_ft_batched_evaluation.py`](../research/runtime/original_ft_batched_evaluation.py)。首个冻结检验使用 NI0、NI2、MH0 上的 P1 与最佳 RISE FT 的六条原曲线；每个 B=1/2/4 一次预热、两次实测，实际预算453次根前向、777条评估轨迹、0次归因/反向。尚未将批量计时或等价性宣告通过，结果须单独核验。
+批量调度代码已保存于 [`original_ft_batched_evaluation.py`](../research/runtime/original_ft_batched_evaluation.py)。首个冻结检验使用 NI0、NI2、MH0 上的 P1 与最佳 RISE FT 的六条原曲线；每个 B=1/2/4 一次预热、两次实测，实际预算453次根前向、777条评估轨迹、0次归因/反向。现已独立核验：B4提速1.19—1.52x，最大RISE/MAS差约0.000287/0.000456，三例均在冻结容差内；限实际长度与样本范围。[完整结果](history/默认FA兼容边界与原评估批处理_20260907.md)。
 
 接口依据：[FA v2.6.3 公开 Python API](https://github.com/Dao-AILab/flash-attention/blob/v2.6.3/flash_attn/flash_attn_interface.py)。目前验证范围仅为记录的实际安装版本，不宣称已经验证未来所有版本。
