@@ -1,5 +1,5 @@
 {
-  "status": "native_batch_differences_characterized_finite_attribution_pending",
+  "status": "local_native_FLA_backward_verified_finite_extension_pending",
   "checkpoint": "${PRIVATE_MOUNT_PATH}",
   "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
   "weight_bytes": 19306310880,
@@ -52,8 +52,8 @@
   "whole_model_supported": false,
   "finite_FLA_attribution_supported": false,
   "real_batch_verified": false,
-  "status_limit": "Actual default-model batch behavior is characterized on NI0; old1% screen remains failed. No finite FLA attribution, remapped gold, quality, backward execution or whole-model attribution cost yet.",
-  "next": "Native batch diagnostic budget is closed; retain the failed historical1% screen and default BF16 FA/FLA. Implement finite FLA using official endpoint1 chunk adjoints and endpoint0 state reconstruction, with mixed local coefficients and correct WY variable mapping. Verify actual backward on a bounded native-input operator before whole-model integration; complete official gold/token remapping without generating new trajectories. No quality sweeps.",
+  "status_limit": "Native forward and bounded batch behavior characterized; local native backward works after two-line upstream WY backport. Complete mixed finite coefficients, gold remapping, whole-model attribution, batch backward, quality and full costs remain unverified.",
+  "next": "Close the two-attempt native backward family. Keep default BF16 and the verified two-line upstream WY backport; do not reapply it. Obtain actual EOS/input endpoints and implement mixed finite FLA coefficients using native state adjoints and endpoint0 reconstruction. Remap official cached target token spans and needle character spans; preserve attr_mask_indices as sentence indices. No precision scan, additional ordinary-backward sweep, local generation or quality sweep by default.",
   "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here.",
   "tokenizer": {
     "tokenizer_EOS_id": 248046,
@@ -242,5 +242,155 @@
       "num_stages": 1
     },
     "all_three_target_vectors_equal_previous_native_preflight": true
-  }
+  },
+  "native_FLA_backward_verified_on_saved_NI0_prefix": true,
+  "whole_model_backward_verified": false,
+  "native_backward_evidence_file": "evidence/qwen35_fla_backward_summary_20260908.json",
+  "native_backward": {
+    "raw_sha256": [
+      "df0fb18437ac8fce269a997f186f0a5052486edf5f28f6d66b41e59851da8d0e",
+      "b1118dd0d8ceee28fc7fff304c3d41800d718cfc6d71852e7cb65338c604515a"
+    ],
+    "budget": {
+      "model_loads": 0,
+      "model_forwards": 0,
+      "native_FLA_forward_attempts": 2,
+      "native_FLA_forwards_completed": 2,
+      "native_FLA_backward_attempts": 2,
+      "native_FLA_backwards_completed": 1,
+      "official_CPU_forwards": 1,
+      "official_CPU_backwards": 1,
+      "attributions": 0,
+      "quality_queries": 0,
+      "generation_calls": 0
+    },
+    "output_vs_reference": {
+      "shape": [
+        1,
+        129,
+        32,
+        128
+      ],
+      "relative_L2": 0.003509750036243158,
+      "max_abs": 0.015625,
+      "mean_abs": 1.0894468234263795e-05,
+      "max_abs_over_reference_RMS": 0.23052280468516992,
+      "changed_elements": 286463,
+      "elements": 528384
+    },
+    "gradient_vs_official_CPU": {
+      "q": {
+        "shape": [
+          1,
+          129,
+          32,
+          128
+        ],
+        "relative_L2": 0.00658617699506538,
+        "max_abs": 0.046875,
+        "mean_abs": 0.0004468480075671236,
+        "max_abs_over_reference_RMS": 0.2593659311132745,
+        "changed_elements": 380231,
+        "elements": 528384,
+        "cosine": 0.999978340511539
+      },
+      "k": {
+        "shape": [
+          1,
+          129,
+          32,
+          128
+        ],
+        "relative_L2": 0.007383656421881041,
+        "max_abs": 0.75,
+        "mean_abs": 0.002356030784372121,
+        "max_abs_over_reference_RMS": 0.6308478772889892,
+        "changed_elements": 420883,
+        "elements": 528384,
+        "cosine": 0.9999728475930495
+      },
+      "v": {
+        "shape": [
+          1,
+          129,
+          32,
+          128
+        ],
+        "relative_L2": 0.007935803554073965,
+        "max_abs": 0.0048828125,
+        "mean_abs": 2.731428862802376e-06,
+        "max_abs_over_reference_RMS": 0.6670717674020844,
+        "changed_elements": 359459,
+        "elements": 528384,
+        "cosine": 0.9999685152559811
+      },
+      "g": {
+        "shape": [
+          1,
+          129,
+          32
+        ],
+        "relative_L2": 0.0017773975886948977,
+        "max_abs": 0.34061431884765625,
+        "mean_abs": 0.017995678551046917,
+        "max_abs_over_reference_RMS": 0.016072022800204613,
+        "changed_elements": 4121,
+        "elements": 4128,
+        "cosine": 0.9999985496754625
+      },
+      "beta": {
+        "shape": [
+          1,
+          129,
+          32
+        ],
+        "relative_L2": 0.007517487070858493,
+        "max_abs": 0.125,
+        "mean_abs": 0.004343691463418509,
+        "max_abs_over_reference_RMS": 0.09046763773959544,
+        "changed_elements": 3164,
+        "elements": 4128,
+        "cosine": 0.9999717439217094
+      }
+    },
+    "value_WY_contraction_vs_native_gradient": {
+      "shape": [
+        1,
+        129,
+        32,
+        128
+      ],
+      "relative_L2": 0.0016687280083249835,
+      "max_abs": 0.0014562608521373477,
+      "mean_abs": 5.731195488694065e-07,
+      "max_abs_over_reference_RMS": 0.19893246494348304,
+      "changed_elements": 528190,
+      "elements": 528384
+    },
+    "value_linearity_identity": {
+      "native": {
+        "J": 2430.0087985991136,
+        "v_dot_gradient": 2429.1073583870293,
+        "relative_residual": 0.00037096170705387097
+      },
+      "official_CPU": {
+        "J": 2428.746915525738,
+        "v_dot_gradient": 2428.905044510747,
+        "relative_residual": 6.510723039847345e-05
+      }
+    },
+    "backport": {
+      "kind": "two_upstream_backward_expression_backport",
+      "upstream_commit": "9d981ffef3b361ba931102b633ae2a9fd91ca6c3",
+      "upstream_source_sha256": "e11df00e9f3a996abc6d1d2ef4e03d3fb0d5a33b236e2da783ba24fe55e6fbc9",
+      "before_sha256": "cc6c2bfdbf3b1a2c90bc0ef0c7325c53755a2a4fa440264cb39f4627d4c8de29",
+      "after_sha256": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+      "changed_lines": 2,
+      "forward_and_decorators_unchanged": true,
+      "runtime_verified": false,
+      "identity": "Transpose commutes with row-wise scalar multiplication; same single multiply per element and same casts/dot operands.",
+      "source_url": "https://github.com/fla-org/flash-linear-attention/blob/9d981ffef3b361ba931102b633ae2a9fd91ca6c3/fla/ops/gated_delta_rule/wy_fast.py"
+    }
+  },
+  "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6"
 }

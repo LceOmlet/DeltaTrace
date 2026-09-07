@@ -1,0 +1,504 @@
+{
+  "status": "native_backward_with_upstream_layout_backport_verified_on_saved_prefix",
+  "raw_sha256": [
+    "df0fb18437ac8fce269a997f186f0a5052486edf5f28f6d66b41e59851da8d0e",
+    "b1118dd0d8ceee28fc7fff304c3d41800d718cfc6d71852e7cb65338c604515a"
+  ],
+  "study_sha256": [
+    "183c1a42908a2ce3aa2b47019ddfde0fdc8fd845a2a715e855589906cf9936af",
+    "555ea67cbfcdb72d87e9b06e6afb0e550e2aeba5d34186fca7f35c7594d8effc"
+  ],
+  "protocol_sha256": [
+    "f438c0bb86b681ebab066cb992b76b9c9eb714c47a2bd437df2b75a306a7ef76",
+    "c02e19c7e9731d092c4373a8c5085a829f876b55e639b0b9ef2d0a98ec5b65c1"
+  ],
+  "budget": {
+    "model_loads": 0,
+    "model_forwards": 0,
+    "native_FLA_forward_attempts": 2,
+    "native_FLA_forwards_completed": 2,
+    "native_FLA_backward_attempts": 2,
+    "native_FLA_backwards_completed": 1,
+    "official_CPU_forwards": 1,
+    "official_CPU_backwards": 1,
+    "attributions": 0,
+    "quality_queries": 0,
+    "generation_calls": 0
+  },
+  "failure": {
+    "stage": "prepare_wy_repr_bwd_kernel",
+    "error": "arith.mulf encoding mismatch during Triton lowering",
+    "CPU_reference_skipped": true,
+    "passive_backward_stage_hook_missed_worker_thread": true,
+    "partial_stage_arrays_not_saved": true
+  },
+  "backport": {
+    "kind": "two_upstream_backward_expression_backport",
+    "upstream_commit": "9d981ffef3b361ba931102b633ae2a9fd91ca6c3",
+    "upstream_source_sha256": "e11df00e9f3a996abc6d1d2ef4e03d3fb0d5a33b236e2da783ba24fe55e6fbc9",
+    "before_sha256": "cc6c2bfdbf3b1a2c90bc0ef0c7325c53755a2a4fa440264cb39f4627d4c8de29",
+    "after_sha256": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+    "changed_lines": 2,
+    "forward_and_decorators_unchanged": true,
+    "runtime_verified": false,
+    "identity": "Transpose commutes with row-wise scalar multiplication; same single multiply per element and same casts/dot operands.",
+    "source_url": "https://github.com/fla-org/flash-linear-attention/blob/9d981ffef3b361ba931102b633ae2a9fd91ca6c3/fla/ops/gated_delta_rule/wy_fast.py"
+  },
+  "sources_after": {
+    "files_compared": 2853,
+    "explicit_changes": [
+      "fla/utils.py",
+      "fla/ops/common/chunk_delta_h.py",
+      "fla/ops/gated_delta_rule/wy_fast.py"
+    ],
+    "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6"
+  },
+  "native_stage_counts": {
+    "forward": 1,
+    "state_forward": 2,
+    "backward": 1,
+    "state_backward": 1,
+    "wy_backward": 1
+  },
+  "profiles": [
+    {
+      "raw_profile_sha256": "dbb875b44a337fc37e9e4a40d37e154654f2993486518f59b5333308db39eb37",
+      "scope": "Full profile hash and kernel counts recomputed locally.",
+      "selected_kernel_counts": {
+        "chunk_gated_delta_rule_fwd_kernel_h": 1500,
+        "chunk_gated_delta_rule_bwd_kernel_dhu": 1074,
+        "chunk_bwd_kernel_dv": 5654,
+        "chunk_bwd_kernel_dqkwg": 4180,
+        "prepare_wy_repr_bwd_kernel": 0,
+        "l2norm_bwd": 0
+      },
+      "all_kernel_counts": {
+        "void at::native::elementwise_kernel_transpose_copy<c10::BFloat16, c10::BFloat16, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, c10::BFloat16>(char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 4,
+        "l2norm_fwd_kernel": 14635,
+        "void at::native::vectorized_elementwise_kernel_nullary_opt<1024, 4, int, at::native::FillFunctor<int>, at::detail::Array<char*, 1>, 0, 0>(int, at::native::FillFunctor<int>, char*)": 47460,
+        "chunk_local_cumsum_scalar_kernel": 2686,
+        "chunk_scaled_dot_kkt_fwd_kernel": 17078,
+        "void at::native::vectorized_elementwise_kernel_nullary_opt<1024, 8, c10::BFloat16, at::native::FillFunctor<c10::BFloat16>, at::detail::Array<char*, 1>, 0, 0>(int, at::native::FillFunctor<c10::BFloat16>, char*)": 1,
+        "merge_16x16_to_64x64_inverse_kernel": 6394,
+        "recompute_w_u_fwd_kernel": 4735,
+        "chunk_gated_delta_rule_fwd_kernel_h_blockdim64": 1500,
+        "chunk_fwd_kernel_o": 1338,
+        "void at::native::unrolled_elementwise_kernel_copy_cast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, unsigned long, float, c10::BFloat16, 4>(at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, char*, char*)": 1,
+        "chunk_bwd_kernel_dv_local": 5654,
+        "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64": 1074,
+        "chunk_bwd_kernel_dqkwg": 4180,
+        "std::enable_if<(!std::is_same<float, thrust::pair<float, long> >::value)||std::is_same<float, thrust::pair<long, long> >::value, void>::type at::native::InputPerOutputImcontinuousReduceKernel<float, float, float, 1, 4, false, true, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}> >(float const*, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, float, int, int, bool, bool, at::native::reduce::OffsetCalculator<1, unsigned int, false>, at::native::reduce::OffsetCalculator<2, unsigned int, false>, int, bool, void*, int*, char const*, char const*, void*, long, bool, bool)": 1
+      }
+    },
+    {
+      "raw_profile_sha256": "c237db78bb2b5d2bf95b1d8ab01572e00777940cf5c324b9bab47ca556de6883",
+      "scope": "Full profile hash verified and counts extracted remotely; compact counts read locally. Full trace retained in remote bundle.",
+      "selected_kernel_counts": {
+        "chunk_gated_delta_rule_fwd_kernel_h": 1494,
+        "chunk_gated_delta_rule_bwd_kernel_dhu": 1019,
+        "chunk_bwd_kernel_dv": 4824,
+        "chunk_bwd_kernel_dqkwg": 3478,
+        "prepare_wy_repr_bwd_kernel": 2156,
+        "l2norm_bwd": 14047
+      },
+      "all_kernel_counts": {
+        "void at::native::elementwise_kernel_transpose_copy<c10::BFloat16, c10::BFloat16, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, c10::BFloat16>(char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 4,
+        "l2norm_fwd_kernel": 15610,
+        "void at::native::vectorized_elementwise_kernel_nullary_opt<1024, 4, int, at::native::FillFunctor<int>, at::detail::Array<char*, 1>, 0, 0>(int, at::native::FillFunctor<int>, char*)": 61798,
+        "chunk_local_cumsum_scalar_kernel": 5093,
+        "chunk_scaled_dot_kkt_fwd_kernel": 16850,
+        "void at::native::vectorized_elementwise_kernel_nullary_opt<1024, 8, c10::BFloat16, at::native::FillFunctor<c10::BFloat16>, at::detail::Array<char*, 1>, 0, 0>(int, at::native::FillFunctor<c10::BFloat16>, char*)": 1,
+        "merge_16x16_to_64x64_inverse_kernel": 6365,
+        "recompute_w_u_fwd_kernel": 4772,
+        "chunk_gated_delta_rule_fwd_kernel_h_blockdim64": 1494,
+        "chunk_fwd_kernel_o": 1467,
+        "void at::native::unrolled_elementwise_kernel_copy_cast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, unsigned long, float, c10::BFloat16, 4>(at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, char*, char*)": 1,
+        "chunk_bwd_kernel_dv_local": 4824,
+        "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64": 1019,
+        "chunk_bwd_kernel_dqkwg": 3478,
+        "std::enable_if<(!std::is_same<float, thrust::pair<float, long> >::value)||std::is_same<float, thrust::pair<long, long> >::value, void>::type at::native::InputPerOutputImcontinuousReduceKernel<float, float, float, 1, 4, false, true, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}> >(float const*, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, float, int, int, bool, bool, at::native::reduce::OffsetCalculator<1, unsigned int, false>, at::native::reduce::OffsetCalculator<2, unsigned int, false>, int, bool, void*, int*, char const*, char const*, void*, long, bool, bool)": 1,
+        "prepare_wy_repr_bwd_kernel": 2156,
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3> >(int, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3>)": 1,
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, at::detail::Array<char*, 3> >(int, at::native::CUDAFunctor_add<float>, at::detail::Array<char*, 3>)": 1,
+        "l2norm_bwd_kernel": 14047
+      }
+    }
+  ],
+  "output_vs_reference": {
+    "shape": [
+      1,
+      129,
+      32,
+      128
+    ],
+    "relative_L2": 0.003509750036243158,
+    "max_abs": 0.015625,
+    "mean_abs": 1.0894468234263795e-05,
+    "max_abs_over_reference_RMS": 0.23052280468516992,
+    "changed_elements": 286463,
+    "elements": 528384
+  },
+  "output_vs_actual_parent_prefix": {
+    "shape": [
+      1,
+      129,
+      32,
+      128
+    ],
+    "relative_L2": 1.0170499502884656e-05,
+    "max_abs": 0.00048828125,
+    "mean_abs": 3.511105397811034e-09,
+    "max_abs_over_reference_RMS": 0.007200140295002661,
+    "changed_elements": 489,
+    "elements": 528384
+  },
+  "output_before_after_backport": {
+    "shape": [
+      1,
+      129,
+      32,
+      128
+    ],
+    "relative_L2": 2.4697301013214855e-06,
+    "max_abs": 3.0517578125e-05,
+    "mean_abs": 2.8230389464504893e-09,
+    "max_abs_over_reference_RMS": 0.0004500087580885428,
+    "changed_elements": 487,
+    "elements": 528384
+  },
+  "output_equal_before_after_backport": false,
+  "gradient_vs_official_CPU": {
+    "q": {
+      "shape": [
+        1,
+        129,
+        32,
+        128
+      ],
+      "relative_L2": 0.00658617699506538,
+      "max_abs": 0.046875,
+      "mean_abs": 0.0004468480075671236,
+      "max_abs_over_reference_RMS": 0.2593659311132745,
+      "changed_elements": 380231,
+      "elements": 528384,
+      "cosine": 0.999978340511539
+    },
+    "k": {
+      "shape": [
+        1,
+        129,
+        32,
+        128
+      ],
+      "relative_L2": 0.007383656421881041,
+      "max_abs": 0.75,
+      "mean_abs": 0.002356030784372121,
+      "max_abs_over_reference_RMS": 0.6308478772889892,
+      "changed_elements": 420883,
+      "elements": 528384,
+      "cosine": 0.9999728475930495
+    },
+    "v": {
+      "shape": [
+        1,
+        129,
+        32,
+        128
+      ],
+      "relative_L2": 0.007935803554073965,
+      "max_abs": 0.0048828125,
+      "mean_abs": 2.731428862802376e-06,
+      "max_abs_over_reference_RMS": 0.6670717674020844,
+      "changed_elements": 359459,
+      "elements": 528384,
+      "cosine": 0.9999685152559811
+    },
+    "g": {
+      "shape": [
+        1,
+        129,
+        32
+      ],
+      "relative_L2": 0.0017773975886948977,
+      "max_abs": 0.34061431884765625,
+      "mean_abs": 0.017995678551046917,
+      "max_abs_over_reference_RMS": 0.016072022800204613,
+      "changed_elements": 4121,
+      "elements": 4128,
+      "cosine": 0.9999985496754625
+    },
+    "beta": {
+      "shape": [
+        1,
+        129,
+        32
+      ],
+      "relative_L2": 0.007517487070858493,
+      "max_abs": 0.125,
+      "mean_abs": 0.004343691463418509,
+      "max_abs_over_reference_RMS": 0.09046763773959544,
+      "changed_elements": 3164,
+      "elements": 4128,
+      "cosine": 0.9999717439217094
+    }
+  },
+  "value_WY_contraction_vs_native_gradient": {
+    "shape": [
+      1,
+      129,
+      32,
+      128
+    ],
+    "relative_L2": 0.0016687280083249835,
+    "max_abs": 0.0014562608521373477,
+    "mean_abs": 5.731195488694065e-07,
+    "max_abs_over_reference_RMS": 0.19893246494348304,
+    "changed_elements": 528190,
+    "elements": 528384
+  },
+  "native_WY_value_is_native_autograd_value": true,
+  "value_linearity_identity": {
+    "native": {
+      "J": 2430.0087985991136,
+      "v_dot_gradient": 2429.1073583870293,
+      "relative_residual": 0.00037096170705387097
+    },
+    "official_CPU": {
+      "J": 2428.746915525738,
+      "v_dot_gradient": 2428.905044510747,
+      "relative_residual": 6.510723039847345e-05
+    }
+  },
+  "retained_native_stage_storage_bytes": 29053440,
+  "native_stage_references_after_release": 0,
+  "diagnostic_cost_not_steady_performance": [
+    {
+      "job_seconds": 57.76706671714783,
+      "operator_seconds": 44.20222024060786,
+      "peak_allocated_bytes": 287104000
+    },
+    {
+      "job_seconds": 98.17020630836487,
+      "operator_seconds": 66.0682210996747,
+      "peak_allocated_bytes": 291307520
+    }
+  ],
+  "CPU_reference_seconds": 1.5480079967528582,
+  "artifacts_by_attempt": [
+    [
+      {
+        "file": "native_output.npz",
+        "sha256": "89db82d9dcd8064c0b6322adff764bf995472a496979ab2f5ee6cf96da3bdb78",
+        "dtypes": {
+          "output": "torch.bfloat16"
+        }
+      }
+    ],
+    [
+      {
+        "file": "native_output.npz",
+        "sha256": "7f490df458a315417b272e00361550347b3ca8278095452ae9205bf47a1a96ed",
+        "dtypes": {
+          "output": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "native_gradients.npz",
+        "sha256": "195fe90175d7160c23fbbc09bbc4a37f6a572910949d1a2d168b374c36b77361",
+        "dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "g": "torch.float32",
+          "beta": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "native_stage_forward.npz",
+        "sha256": "1379793608f6ded96cc0869fbc10e2bc3000e35895270e97966d5cabaab9c65a",
+        "dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "g": "torch.float32",
+          "beta": "torch.bfloat16",
+          "A": "torch.bfloat16",
+          "w": "torch.bfloat16",
+          "u": "torch.bfloat16",
+          "h": "torch.bfloat16",
+          "v_new": "torch.bfloat16",
+          "o": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "native_stage_state_backward.npz",
+        "sha256": "ff7609b1f29d90942d8cac07316f1227de03d4973d4f0b8c274b1e8ddcdfda4f",
+        "dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "w": "torch.bfloat16",
+          "g": "torch.float32",
+          "do": "torch.bfloat16",
+          "dv": "torch.bfloat16",
+          "dh": "torch.bfloat16",
+          "dU_WY": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "native_stage_wy_backward.npz",
+        "sha256": "8d90a14789c1e59d1480e6198546605eb0d694495c1adf83a04e35fcecc610d7",
+        "dtypes": {
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "beta": "torch.bfloat16",
+          "g": "torch.float32",
+          "A": "torch.bfloat16",
+          "dw": "torch.bfloat16",
+          "du": "torch.bfloat16",
+          "dk": "torch.bfloat16",
+          "dV": "torch.bfloat16",
+          "db": "torch.bfloat16",
+          "dg": "torch.float32"
+        }
+      },
+      {
+        "file": "completed_stage_0_state_forward.npz",
+        "sha256": "0e3cba809f6fdbc825036054f6387e233c65aa2c1011989a12ac16b205815404",
+        "dtypes": {
+          "k": "torch.bfloat16",
+          "w": "torch.bfloat16",
+          "u": "torch.bfloat16",
+          "g": "torch.float32",
+          "h": "torch.bfloat16",
+          "v_new": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "completed_stage_1_forward.npz",
+        "sha256": "1379793608f6ded96cc0869fbc10e2bc3000e35895270e97966d5cabaab9c65a",
+        "dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "g": "torch.float32",
+          "beta": "torch.bfloat16",
+          "A": "torch.bfloat16",
+          "w": "torch.bfloat16",
+          "u": "torch.bfloat16",
+          "h": "torch.bfloat16",
+          "v_new": "torch.bfloat16",
+          "o": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "completed_stage_2_state_forward.npz",
+        "sha256": "0e3cba809f6fdbc825036054f6387e233c65aa2c1011989a12ac16b205815404",
+        "dtypes": {
+          "k": "torch.bfloat16",
+          "w": "torch.bfloat16",
+          "u": "torch.bfloat16",
+          "g": "torch.float32",
+          "h": "torch.bfloat16",
+          "v_new": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "completed_stage_3_state_backward.npz",
+        "sha256": "ff7609b1f29d90942d8cac07316f1227de03d4973d4f0b8c274b1e8ddcdfda4f",
+        "dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "w": "torch.bfloat16",
+          "g": "torch.float32",
+          "do": "torch.bfloat16",
+          "dv": "torch.bfloat16",
+          "dh": "torch.bfloat16",
+          "dU_WY": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "completed_stage_4_wy_backward.npz",
+        "sha256": "8d90a14789c1e59d1480e6198546605eb0d694495c1adf83a04e35fcecc610d7",
+        "dtypes": {
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "beta": "torch.bfloat16",
+          "g": "torch.float32",
+          "A": "torch.bfloat16",
+          "dw": "torch.bfloat16",
+          "du": "torch.bfloat16",
+          "dk": "torch.bfloat16",
+          "dV": "torch.bfloat16",
+          "db": "torch.bfloat16",
+          "dg": "torch.float32"
+        }
+      },
+      {
+        "file": "completed_stage_5_backward.npz",
+        "sha256": "6ade54c36f35e13ec47b5243d25d044e1e0f35431141581f4143c6a85417b1e2",
+        "dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "g": "torch.float32",
+          "beta": "torch.bfloat16",
+          "A": "torch.bfloat16",
+          "w": "torch.bfloat16",
+          "u": "torch.bfloat16",
+          "h": "torch.bfloat16",
+          "v_new": "torch.bfloat16",
+          "do": "torch.bfloat16",
+          "dh": "torch.bfloat16",
+          "dq": "torch.bfloat16",
+          "dk": "torch.bfloat16",
+          "dv": "torch.bfloat16",
+          "db": "torch.bfloat16",
+          "dg": "torch.float32"
+        }
+      },
+      {
+        "file": "official_CPU_output.npz",
+        "sha256": "3b1be7c0db520ac39b100818dfd5cc6175dc4725b0cc6cb319e28285c58524ec",
+        "dtypes": {
+          "output": "torch.bfloat16"
+        }
+      },
+      {
+        "file": "official_CPU_gradients.npz",
+        "sha256": "c0fd53bf16e40094b5417953435bb24a1e6e921c8e4bf462b9870d8a88a9093b",
+        "dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "g": "torch.float32",
+          "beta": "torch.bfloat16"
+        }
+      }
+    ]
+  ],
+  "limits": [
+    "Only actual NI0 layer0 prefix129, one fixed output cotangent, zero initial state; no complete model backward or batch backward.",
+    "Native ordinary gradients are not all finite coefficients; mixed q/k/g/beta and endpoint0 states remain unimplemented.",
+    "Public autograd engine multithreading was disabled only to observe backward stages; this is diagnostic timing.",
+    "CPU reference and NumPy tile checks are explicitly validation only, never used as model or production backward replacements."
+  ],
+  "local_compact_archive_scope": "The seven named output/gradient/native-stage arrays are local and hash-verified; duplicate completed-stage snapshots and the full419MB v2 trace remain in the remote full bundle.",
+  "capture_release_limit": "Executed driver cleared capture.records but retained loop-variable aliases to stage dictionaries. Zero list length is not proof of complete GPU release. Current helper invalidates those borrowed dictionaries; container lifetime checked locally without another GPU run.",
+  "decision": "Close the two-attempt native backward family. Keep default BF16 and the verified two-line upstream WY backport; do not reapply it. Obtain actual EOS/input endpoints and implement mixed finite FLA coefficients using native state adjoints and endpoint0 reconstruction. Remap official cached target token spans and needle character spans; preserve attr_mask_indices as sentence indices. No precision scan, additional ordinary-backward sweep, local generation or quality sweep by default.",
+  "capture_lifecycle_revision": {
+    "executed_capture_sha256": "5721be3553d95a66dfdabda8c355068dc18e30279ff42452c69d2fa29a1a78f7",
+    "current_capture_sha256": "78c89fdf42c6a07c10ac42b4326c2a5d4d800325cbc325fc422fd33946f45b4a",
+    "changed_methods_after_GPU_execution": [
+      "__enter__",
+      "clear"
+    ],
+    "native_capture_and_math_methods_identical": true,
+    "local_weak_reference_lifetime_check": "passed; borrowed stage dictionaries emptied and object weakref expired",
+    "additional_GPU_calls": 0,
+    "GPU_memory_after_lifetime_fix_measured": false
+  },
+  "GPU_kernel_events_including_native_autotuning": [
+    106741,
+    138982
+  ]
+}

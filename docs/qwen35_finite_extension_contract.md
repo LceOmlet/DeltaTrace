@@ -150,6 +150,14 @@ The next implementation should preserve native endpoint1 state-adjoint work,
 reconstruct endpoint0 states within chunks, and extend local contractions. It
 must not store a K-by-V state for every sequence token or use a second full
 ordinary backward merely to obtain one reusable branch without accounting for
-its cost. Actual backward execution on this device and complete finite
-coefficients are still unverified; the successful forward scheduling change
-does not prove backward compatibility or a speed advantage.
+its cost. Actual local backward execution is now verified after the two-line
+upstream WY layout backport; see the [backward report](history/Qwen35原生FLA反向与上游两行修复_20260908.md).
+This covers one saved real prefix and one output cotangent. Complete finite
+coefficients, whole-model backward and a speed advantage remain unverified.
+
+The observed WY value output equals the native autograd V gradient. Independently
+contracting its saved A, dU and beta in CPU64 differs by 0.1669% in relative L2;
+the native value-linearity Euler residual is 0.0371%. These are local numerical
+checks of the reuse relation, not original benchmark or deletion-sign evidence.
+The passive stage interface preserves native calls; its retained storage and
+threading controls are diagnostic costs, not a default production design.
