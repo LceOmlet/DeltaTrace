@@ -3,9 +3,12 @@
 This contract now has a locally evaluated CPU reference and an official-compiler
 GPU implementation of mixed FLA coefficients on actual EOS/input endpoints.
 The complete GDN boundary pullback is implemented in
-[qwen35_gdn_finite.py](../research/runtime/qwen35_gdn_finite.py); its layer-level
-validation and exact loaded-parameter identity audit are still being closed.
-It is not a complete FLA attribution method. The existing Qwen3-8B quality/cost results do not
+[qwen35_gdn_finite.py](../research/runtime/qwen35_gdn_finite.py); its first-layer
+finite propagation, native gradient limit and loaded-parameter identity are
+recorded in the [GDN report](history/Qwen35完整GDN有限传播与加载一致性纠错_20260908.md).
+Earlier derivation sections retain historical implementation caveats; consult
+[current_goal.md](current_goal.md) for current execution status.
+It is not complete model attribution support. The existing Qwen3-8B quality/cost results do not
 transfer to this model. Native execution and fixed-text mappings are recorded in
 the dated evidence below; remaining finite pullbacks and whole-model checks are
 still required.
