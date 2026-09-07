@@ -13,7 +13,7 @@
   "forward_replacement_allowed": false,
   "shadow_backward_allowed": false,
   "small_latency_increase_may_be_accepted": true,
-  "next": "FA first: use the genuine FA stride-aware tensor layouts to remove remaining Q/K/V contiguous copies, then output casts/GQA reduction and redundant passes/public LSE work. Keep midpoint shared-buffer reuse as the tested candidate; compiled outer preparation and extra-shared-tile versions are retained negative controls. MLP/head work stays paused. No default full sweep.",
+  "next": "FA first: native input strides are validated but not promoted because B4 measured slower and full peak did not fall. Keep SharedMeanReuse as the current preferred path. Review repeated finite passes and the extra public LSE invocation for supported reuse before another GPU screen; output casts can only extend existing public compiler boundaries. No shadow attention/model/backward, MLP/head work, broad parameter or quality sweep.",
   "public_capture_evidence": "6a5f7f2ae66d48acd9609c100f31faae19f62ac11bf028dfb7451302e111a29c",
   "public_capture_validated_cases": [
     "NI0",
@@ -128,7 +128,7 @@
     "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
     "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
     "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-    "next_change": "FA first: use the genuine FA stride-aware tensor layouts to remove remaining Q/K/V contiguous copies, then output casts/GQA reduction and redundant passes/public LSE work. Keep midpoint shared-buffer reuse as the tested candidate; compiled outer preparation and extra-shared-tile versions are retained negative controls. MLP/head work stays paused. No default full sweep.",
+    "next_change": "FA first: native input strides are validated but not promoted because B4 measured slower and full peak did not fall. Keep SharedMeanReuse as the current preferred path. Review repeated finite passes and the extra public LSE invocation for supported reuse before another GPU screen; output casts can only extend existing public compiler boundaries. No shadow attention/model/backward, MLP/head work, broad parameter or quality sweep.",
     "initial_optimization_screen": {
       "cases": [
         [
@@ -220,6 +220,24 @@
     "not_promoted_FA_attempts": {
       "compiled_input_preparation": "Full vectors exact,NIflat/B4~1.2percent slower; do not replace current path or scan compiler options.",
       "extra_shared_mean_tile": "Full local outputs exact,~30percent slower in same-job three-way test; prefer existing-shared-storage reuse."
+    },
+    "FA_native_stride_candidate": {
+      "status": "FA_native_strides_B1_and_real_B4_verified",
+      "preferred": false,
+      "runtime": "VendorFAFiniteP1NativeStrides",
+      "current_preferred_runtime": "VendorFAFiniteP1SharedMeanReuse",
+      "raw_sha256": "335ac0b3d6283a26036c4ac870cdaefbf24d4dfa459ac56b29fa80628178f83d",
+      "library_sha256": "ecc238c8877f46cab56ba7719e6cd85e67030945d83360e8b83d3931de813ce8",
+      "QKV_storage_reused_in_finite_wrapper": true,
+      "remaining_preparation_kernels_per_layer": 1,
+      "whole_model_peak_reduced": false,
+      "B4_measured_time_ratio": 1.015143164072238,
+      "NI_timing_caveat": "Shared-mean baseline first measured1.745s versus second0.951s is anomalous; no28.6percent speedup claim. All timings preserved. Similar first-measured NI baseline spikes occurred in previous jobs; the cause is unresolved, so this is not treated as evidence for speed.",
+      "promotion_decision": "Retain as a verified address/layout candidate, not the preferred performance path. Both measured B4 pairs were slower and full peak was unchanged;2 measured pairs are too few for a broad regression claim. Current preferred FA path remains shared-mean reuse.",
+      "tested_scope": "Original NI2 B1 and original distinct NI0/3/6,MH1 B4; no new long-input or quality validation.",
+      "new_quality_queries": 0,
+      "finite_passes": 3,
+      "native_default_FA_unchanged": true
     }
   },
   "native_MLP_SAC_reuse": {
@@ -252,5 +270,23 @@
     "whole_model_peak_reduced": false,
     "new_quality_queries": 0,
     "not_complete": "No independent quality/sign confirmation, updated FT comparison or new long-input validation."
+  },
+  "native_strides_FA_candidate": {
+    "status": "FA_native_strides_B1_and_real_B4_verified",
+    "preferred": false,
+    "runtime": "VendorFAFiniteP1NativeStrides",
+    "current_preferred_runtime": "VendorFAFiniteP1SharedMeanReuse",
+    "raw_sha256": "335ac0b3d6283a26036c4ac870cdaefbf24d4dfa459ac56b29fa80628178f83d",
+    "library_sha256": "ecc238c8877f46cab56ba7719e6cd85e67030945d83360e8b83d3931de813ce8",
+    "QKV_storage_reused_in_finite_wrapper": true,
+    "remaining_preparation_kernels_per_layer": 1,
+    "whole_model_peak_reduced": false,
+    "B4_measured_time_ratio": 1.015143164072238,
+    "NI_timing_caveat": "Shared-mean baseline first measured1.745s versus second0.951s is anomalous; no28.6percent speedup claim. All timings preserved. Similar first-measured NI baseline spikes occurred in previous jobs; the cause is unresolved, so this is not treated as evidence for speed.",
+    "promotion_decision": "Retain as a verified address/layout candidate, not the preferred performance path. Both measured B4 pairs were slower and full peak was unchanged;2 measured pairs are too few for a broad regression claim. Current preferred FA path remains shared-mean reuse.",
+    "tested_scope": "Original NI2 B1 and original distinct NI0/3/6,MH1 B4; no new long-input or quality validation.",
+    "new_quality_queries": 0,
+    "finite_passes": 3,
+    "native_default_FA_unchanged": true
   }
 }

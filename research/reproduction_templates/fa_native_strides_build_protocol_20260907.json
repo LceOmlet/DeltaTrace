@@ -1,0 +1,195 @@
+{
+  "purpose": "Compile address-only finite FA change using the pinned original FA stride framework. No arithmetic, precision, pass/GEMM count, shared-memory, model or installed FA changes. Zero GPU/model runs in this build.",
+  "study_sha256": "1bac408a2b93fc770b1c2d88a09eb6dc8c73daa2eb2aff585b0540b8f4c7e304",
+  "extension_sha256": "d727c1a1cdaba01e7855357e29676231051f3917ebb2bf4bfd8a134aa2f3958f",
+  "vendor_source_parent": "${ARTIFACT_ROOT}/codex_vendor_fa_source_gpu_language_20260907_v1",
+  "vendor_parent_sha256": "43000d77cd7fac6539e86fbc8dfbb638b0c4bce7d6cfc4ad4f4ba4f00db16906",
+  "vendor_git_commit": "aef88de756194e077460a1c8b8b341baa429259a",
+  "vendor_source_version": "FA2.5.3",
+  "installed_model_FA_version": "2.6.3+metax3.5.3.9torch2.8",
+  "same_version_source_claim": false,
+  "max_compile_seconds": 600,
+  "budget": {
+    "extension_compiles": 1,
+    "native_model_forwards": 0,
+    "attributions": 0,
+    "quality_queries": 0,
+    "local_finite_operator_calls": 0
+  },
+  "precision_scope": "Ordinary FA-style FP16 matrix operands / FP32 accumulation and nonlinear operations / FP16 emitted multipliers. Real arithmetic finite rule unchanged; native LSE vs explicit re-normalization and half rounding require actual numerical/quality checks.",
+  "next_if_compiled": "Bounded captured-real-tensor layout validation, then original B1/B4 whole-vector checks. No quality/FT sweep.",
+  "capture_results": "${ARTIFACT_ROOT}/codex_vendor_fa_finite_actual_20260907_v1/results.json",
+  "capture_results_sha256": "69e7e15fa9658c8070cd2570f63cde25d2317a1e171a1b6992e7d1bfeb6a0309",
+  "actual_operands": {
+    "layer": 35,
+    "scale": 0.08838834764831845,
+    "groups": 4,
+    "operands": {
+      "q0": {
+        "file": "layer35_q0.npy",
+        "sha256": "3cef97c27c6f8708783b69c1d1fb21255e8c29ed226ab0bff02a2e1a69a4cc89",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "k0": {
+        "file": "layer35_k0.npy",
+        "sha256": "715f3940683bfc5c224ff6ac019a0b4414af38e9274ad67cc109435400a04c7b",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "v0": {
+        "file": "layer35_v0.npy",
+        "sha256": "b32fbd5410437b61d2930779d15a7c4c7339e770e61f88c69949ed117f0d789e",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "q1": {
+        "file": "layer35_q1.npy",
+        "sha256": "ee5510c864765e9ee36cac9472cbfbed7797c945430f215a485d5b350559de16",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "k1": {
+        "file": "layer35_k1.npy",
+        "sha256": "f827b0c0a098aee91d37a0e13b90bfcec9c3d558bb5348226a6bb8e717eb9431",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "v1": {
+        "file": "layer35_v1.npy",
+        "sha256": "75f5f0e6879e6adfdf3e89df2cf2f3db79d4a64ce42b97e48fdcf18dbff27d31",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "u": {
+        "file": "layer35_u.npy",
+        "sha256": "4010c100ed18e570fed4b1b049cf38b8fd9ca3195f6837629f422d4d748d7c28",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float32"
+      },
+      "lse0": {
+        "file": "layer35_lse0.npy",
+        "sha256": "dd6732a9d289269d2fe733c2a499f43348901f48f0b17e9e7516b96b4b4e460f",
+        "shape": [
+          1,
+          32,
+          601
+        ],
+        "dtype": "torch.float32"
+      },
+      "lse1": {
+        "file": "layer35_lse1.npy",
+        "sha256": "91b93aba6ff16ee633d106d8cabfa1742129dcb912349a916ee96e1355c45e03",
+        "shape": [
+          1,
+          32,
+          601
+        ],
+        "dtype": "torch.float32"
+      },
+      "out0": {
+        "file": "layer35_out0.npy",
+        "sha256": "24b85de6b7006a4b68a4fe5a025b8089b1f801793ee9664f6e84bf0c6565e46b",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "out1": {
+        "file": "layer35_out1.npy",
+        "sha256": "40a9da58992d17f5ed0b5ce38497ac5454c06997227b8ca6255eeb3ae6e0060d",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float16"
+      },
+      "expected_dq": {
+        "file": "layer35_expected_dq.npy",
+        "sha256": "094e340d230575e949e2937535c169461aa13de255638d8c2b6949cabe018b3c",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float32"
+      },
+      "expected_dk": {
+        "file": "layer35_expected_dk.npy",
+        "sha256": "63a0a079cb76c9fc694d346b3dfa6ec168f7718a5c1cbd007039ded2e118146d",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float32"
+      },
+      "expected_dv": {
+        "file": "layer35_expected_dv.npy",
+        "sha256": "06ad35b94d696db9ad9985f0110986b23d2e15ddf441df66392fc063d233a596",
+        "shape": [
+          1,
+          32,
+          601,
+          128
+        ],
+        "dtype": "torch.float32"
+      }
+    },
+    "source": "Actual unchanged P1 pullback on original NI0, immediately before original finite attention layout; no fabricated inputs."
+  },
+  "old_library": "${ARTIFACT_ROOT}/codex_fa_compact_gqa_operator_20260907_v1/libdeltatrace_fa_finite_gqa.so",
+  "old_library_sha256": "bc7f214076d5c96b2efa6bdaca906421d2c11316e4e5c49464b897f1da1157c0",
+  "sources": {},
+  "math_change": false,
+  "pass_count": 3,
+  "shared_memory_bytes": {
+    "phase0": 16384,
+    "phase1": 16384,
+    "phase2": 16384
+  },
+  "extra_tile_library": "${ARTIFACT_ROOT}/codex_fa_shared_mean_operator_20260907_v1/libdeltatrace_fa_finite_shared_mean.so",
+  "extra_tile_library_sha256": "7d2d3f3ff1b85a588ac5846d3d209d907913fcb3b100f83753144d471fd31869"
+}

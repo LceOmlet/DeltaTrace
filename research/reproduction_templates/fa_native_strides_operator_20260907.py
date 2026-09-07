@@ -1,0 +1,82 @@
+"""Bounded FA GQA integration probe on previously captured real operands."""
+import gc,hashlib,json,os,runpy,time,traceback,zipfile
+from pathlib import Path
+A=Path(__file__).resolve().parent
+sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
+p=json.loads((A/'protocol.json').read_text())
+assert sha(A/'study.py')==p['study_sha256']
+for name,digest in p['sources'].items(): assert sha(A/name)==digest
+b=json.loads(Path(p['build_result']).read_text())
+assert sha(Path(p['build_result']))==p['build_result_sha256']
+assert b['status']=='finite_extension_compiled_not_executed'
+os.environ['MACA_PATH']='/opt/maca'
+import numpy as np, torch
+from vendor_fa_finite_native_strides_runtime import VendorFAFiniteP1NativeStrides
+from vendor_fa_finite_shared_mean_reuse_runtime import VendorFAFiniteP1SharedMeanReuse
+source=Path(p['capture_results'])
+assert sha(source)==p['capture_results_sha256']
+captured=json.loads(source.read_text())
+record=captured['captured_layers'][0]
+assert record==p['actual_operands']
+ops={}
+for name in ['q0','k0','q1','k1','v0','u','lse0','lse1']:
+    item=record['operands'][name]; f=source.parent/item['file']
+    assert sha(f)==item['sha256']
+    ops[name]=torch.from_numpy(np.load(f,allow_pickle=False)).cuda()
+compact=dict(ops)
+for name in ['k0','k1','v0']:
+    compact[name]=ops[name][:,::record['groups']].contiguous()
+    assert torch.equal(compact[name].repeat_interleave(record['groups'],dim=1),ops[name])
+old=VendorFAFiniteP1SharedMeanReuse(p['old_library'],p['old_library_sha256'])
+# Recorded default FA layout is [B,N,H,D], exposed to attribution as [B,H,N,D].
+# Repack these same captured real values before timing; both methods get identical
+# noncontiguous views with an endpoint-like nonzero storage offset. No new samples.
+for name in ['q0','k0','q1','k1','v0','u']:
+    value=compact[name];batch,heads,length,dim=value.shape
+    backing=torch.empty((batch*2,length,heads,dim),device=value.device,dtype=value.dtype)
+    view=backing[batch:].transpose(1,2);view.copy_(value)
+    assert torch.equal(view,value) and view.storage_offset()>0 and not view.is_contiguous()
+    compact[name]=view
+new=VendorFAFiniteP1NativeStrides(p['library'],b['library']['sha256'])
+r={'status':'running','protocol':p,'build_library':b['library'],
+   'attributions':0,'native_model_forwards':0,'VJPs':0,'quality_queries':0,
+   'calls':[],'comparisons':[],'tested_input_layouts':{k:{'shape':list(v.shape),'strides':list(v.stride()),'storage_offset':v.storage_offset()} for k,v in compact.items()},
+   'scope':'One previously captured original NI0 layer35, B1,Hq32,Hkv8,N601. Operator integration only; no new benchmark or whole-model speed/quality claim. Historical capture exact-vector gate failure is not changed.'}
+def save():
+    t=A/'results.partial';t.write_text(json.dumps(r,indent=2));t.replace(A/'results.json')
+save()
+try:
+    for repeat in range(3):
+        outputs={}
+        for name in (['old','native_strides'] if repeat!=1 else ['native_strides','old']):
+            assert len(r['calls'])<6
+            gc.collect();torch.cuda.empty_cache();torch.cuda.synchronize()
+            base=torch.cuda.memory_allocated();torch.cuda.reset_peak_memory_stats()
+            activity={};tick=time.perf_counter()
+            outputs[name]=(old if name=='old' else new)(compact,record['scale'],activity)
+            torch.cuda.synchronize()
+            elapsed=time.perf_counter()-tick
+            r['calls'].append({'name':name,'repeat':repeat,'warm':repeat==0,'seconds':elapsed,
+                'incremental_peak_bytes':torch.cuda.max_memory_allocated()-base,
+                'activity':activity,
+                'outputs':{k:{'sha256':hashlib.sha256(v.cpu().numpy().tobytes()).hexdigest(),
+                              'shape':list(v.shape),'dtype':str(v.dtype)} for k,v in outputs[name].items()}})
+            save()
+        checks={}
+        for key in outputs['old']:
+            a,c=outputs['old'][key],outputs['native_strides'][key]
+            assert torch.isfinite(a).all() and torch.isfinite(c).all()
+            checks[key]={'exact':bool(torch.equal(a,c)),
+                         'max_abs_difference':float((a.float()-c.float()).abs().max())}
+        r['comparisons'].append(checks);save()
+        assert all(x['exact'] for x in checks.values()),'Address-only FA input strides must preserve every finite output.'
+        del outputs
+    r['status']='native_strides_operator_exact_no_end_to_end_claim'
+except Exception:
+    r['status']='failed';r['error']=traceback.format_exc();raise
+finally:
+    save()
+    with zipfile.ZipFile(A/'review_bundle.zip','w',zipfile.ZIP_DEFLATED) as z:
+        for name in ['study.py','protocol.json','results.json']+list(p['sources']):
+            z.write(A/name,name)
+    print(json.dumps({'status':r['status'],'operator_calls':len(r['calls']),'attributions':0}),flush=True)
