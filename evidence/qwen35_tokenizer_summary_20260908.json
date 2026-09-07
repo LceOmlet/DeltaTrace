@@ -1,0 +1,140 @@
+{
+  "status": "tokenizer_bytes_and_raw_text_verified_input_contract_pending",
+  "raw_sha256": {
+    "1": "9ac5f673be8cdcb88e93bc8c8892d9c54ac843ba3edcdcd1d61117d234281e86",
+    "2": "52f95ed3a7d39b82c185b96a0d6f34b9f781bb174cc2e87d077694cadca013b4",
+    "3": "d50bda3fa942b35717a50c74fde0531a01da1b1fe6d76f1e88fb068751a45919"
+  },
+  "official_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "official_files": {
+    "tokenizer.json": {
+      "bytes": 12807982,
+      "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+      "git_blob_sha1": "3db80ca5ce55ecec79ba2de55e6bce256d32bc78"
+    },
+    "tokenizer_config.json": {
+      "bytes": 16710,
+      "sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
+      "git_blob_sha1": "eda48d3e75a8e59a8479ee4ec8b37f76e711d9c1"
+    },
+    "chat_template.jinja": {
+      "bytes": 7756,
+      "sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+      "git_blob_sha1": "a585dec894e63da457d9440ec6aa7caa16d20860"
+    },
+    "merges.txt": {
+      "bytes": 3353259,
+      "sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+      "git_blob_sha1": "a494e019ca1502219fd0128658b979e5f05ae8e8"
+    },
+    "vocab.json": {
+      "bytes": 6722759,
+      "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+      "git_blob_sha1": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176"
+    },
+    "config.json": {
+      "bytes": 3126,
+      "sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05",
+      "git_blob_sha1": "273ce437e01baf96a07cd9eb3d5f48bac8d7c657"
+    }
+  },
+  "token_roles": {
+    "tokenizer_EOS_id": 248046,
+    "tokenizer_PAD_id": 248044,
+    "model_config_EOS_id": 248044,
+    "model_config_EOS_token": "<|endoftext|>",
+    "embedding_capacity": 248320,
+    "tokenizer_length": 248077,
+    "max_tokenizer_id": 248076,
+    "policy": "Preserve both official files. Do not equate model config EOS with tokenizer EOS, or shrink model logits to tokenizer length. Original EOS replacement must follow the actual author call site."
+  },
+  "author_baseline_source": {
+    "exp/exp2/run_exp.py": {
+      "normalized_sha256": "3c9d3f241fd180c453ea247eafa3deb395d4a16aad72fbe511c902e0ed8d44e5",
+      "first_line": 816,
+      "lines": [
+        "        device_map=\"auto\" if device == \"auto\" else {\"\": int(device.split(\":\")[1])} if device.startswith(\"cuda:\") else None,",
+        "        torch_dtype=torch.float16,",
+        "        attn_implementation=\"eager\",",
+        "    )",
+        "    tokenizer = AutoTokenizer.from_pretrained(model_name)",
+        "    tokenizer.pad_token = tokenizer.eos_token",
+        "    model.eval()",
+        "    return model, tokenizer",
+        ""
+      ]
+    },
+    "llm_attr_eval.py": {
+      "normalized_sha256": "df117c5d02b8960f72a00a74e07c071812ff7cd41c2fbcf9b1e78f485e7e8fda",
+      "first_line": 86,
+      "lines": [
+        "    def _ensure_pad_token_id(self) -> int:",
+        "        if self.tokenizer.pad_token_id is None:",
+        "            if self.tokenizer.eos_token_id is None:",
+        "                raise RuntimeError(\"tokenizer has neither pad_token_id nor eos_token_id; cannot define baseline token.\")",
+        "            self.tokenizer.pad_token = self.tokenizer.eos_token",
+        "        return int(self.tokenizer.pad_token_id)"
+      ]
+    }
+  },
+  "official_experiment_replacement_token_id_for_new_model": 248046,
+  "records": [
+    {
+      "dataset": "niah_mq_q2",
+      "index": 0,
+      "fields": {
+        "prompt": {
+          "text_sha256": "c33c40234d0d71cec312674bbbdee1a8bc06ad9e7a9a0a4e35e2e451a990cc3a",
+          "text_characters": 1525,
+          "new_token_count": 340,
+          "ids_json_sha256": "2308e875df3264f238cb5099b6443b375271ec1d6b6169faec8f34e7a6b528ad",
+          "exact_text_roundtrip": true
+        },
+        "target": {
+          "text_sha256": "00ea569fd1e48c038faa211ed22f57f1cff150e8e7460670e72634624a00b611",
+          "text_characters": 873,
+          "new_token_count": 247,
+          "ids_json_sha256": "714e1ae208a59bc37441282780ea789191387e825959b9d0e8e25d3fe2fb8c2d",
+          "exact_text_roundtrip": true
+        }
+      },
+      "scope": "Raw official prompt and target tokenized separately only. No chat-input assembly, target boundary/gold remapping or model execution claimed; old cached token indices are not reused."
+    },
+    {
+      "dataset": "morehopqa",
+      "index": 1,
+      "fields": {
+        "prompt": {
+          "text_sha256": "aa9fbf90703a3a2709c922bc3066425451fdd68eaceb56ce30dfecbc8b748f32",
+          "text_characters": 918,
+          "new_token_count": 210,
+          "ids_json_sha256": "bccea1fcf295e2e4123fa68ea1f56219c740450e70806c3e4ead709516b74006",
+          "exact_text_roundtrip": true
+        },
+        "target": {
+          "text_sha256": "12c0af9e25ed975e4f95bd08c71950909d2005d480007972cafd6f1c37d3a335",
+          "text_characters": 546,
+          "new_token_count": 140,
+          "ids_json_sha256": "6b160ae794c0460676f51bc74f1717ec223fa4495339d040b1c6007e6fb4b29d",
+          "exact_text_roundtrip": true
+        }
+      },
+      "scope": "Raw official prompt and target tokenized separately only. No chat-input assembly, target boundary/gold remapping or model execution claimed; old cached token indices are not reused."
+    }
+  ],
+  "model_calls": 0,
+  "quality_queries": 0,
+  "generation_calls": 0,
+  "model_input_contract_complete": false,
+  "GPU_FLA_verified": false,
+  "attempt_seconds": [
+    3.589467089623213,
+    5.333752330392599,
+    5.587187059223652
+  ],
+  "failures": [
+    "Missing per-process MACA_PATH during AutoTokenizer dependency import.",
+    "Overstrict EOS equality assertion; different official field roles corrected."
+  ],
+  "next": "Prepare official fixed-text model input, target/gold boundary mapping and actual native FLA GPU preflight. Do not generate substitute trajectories or reuse Qwen3-8B token IDs."
+}
