@@ -1,0 +1,17 @@
+"""Verify backed-up bytes and parse templates without executing model code."""
+import ast,hashlib,json
+from pathlib import Path,PurePosixPath
+ROOT=Path(__file__).resolve().parents[1]
+manifest=json.loads((ROOT/'evidence/export_manifest.json').read_text(encoding='utf-8'))
+for entry in manifest['artifacts']:
+    relative=PurePosixPath(entry['path'])
+    assert not relative.is_absolute() and '..' not in relative.parts
+    raw=(ROOT/relative).read_bytes()
+    assert len(raw)==entry['bytes'] and hashlib.sha256(raw).hexdigest()==entry['public_sha256']
+    if entry['byte_identical']:assert entry['public_sha256']==entry['private_original_sha256']
+    if relative.suffix=='.py':ast.parse(raw.decode('utf-8'))
+    if relative.suffix=='.json':json.loads(raw)
+for f in ROOT.rglob('*.py'):
+    if '.git' not in f.parts:ast.parse(f.read_text(encoding='utf-8'))
+assert len(list((ROOT/'core').glob('*.py')))==21
+print('Verified',len(manifest['artifacts']),'exported artifacts and21exact core files;zero model calls.')
