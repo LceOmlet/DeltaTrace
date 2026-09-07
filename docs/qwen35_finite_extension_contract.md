@@ -291,6 +291,18 @@ Native model/FA/FLA implementations are unchanged by this extension. See the
 One bounded next optimization can use the exact inner-product identities
 `Z·(Q1 H0)=Q1·(Z H0ᵀ)`, `W·(K1 H0)=K1·(W H0ᵀ)`,
 `U0·(K0 D)=K0·(U0 Dᵀ)` to reuse three contractions already needed by q/k.
-That reuse has not been implemented or measured; floating-point effects and
-temporary lifetimes must be checked. Whole-model nonlinear/full-attention
+That reuse was subsequently implemented and measured; it remains optional
+after mixed timing results. See the [closed reuse screen](history/Qwen35有限FLA三次收缩复用与阶段收口_20260908.md). Whole-model nonlinear/full-attention
 pullbacks, real variable-length masking, quality and full costs remain open.
+
+## BF16/D256 finite FA core
+
+The separately named vendor-FA extension now supports actual Qwen3.5 compact
+GQA and right-padded605/368-token pairs in BF16. The content_P1 rule and three
+tile sweeps are unchanged. Native model FA stays untouched; LSE is obtained
+by an explicitly counted public auxiliary call. See the [core evidence](history/Qwen35_BF16_D256有限FA与异长批处理_20260908.md).
+
+The standard-attention gate, Q/K RMSNorm, partial RoPE and projection pullbacks,
+decoder/MLP and final objective remain pending. Core correctness is not full
+model support or a speed claim; the single8.33ms warm core measurement leaves
+substantial efficiency concerns to assess in the completed attribution path.

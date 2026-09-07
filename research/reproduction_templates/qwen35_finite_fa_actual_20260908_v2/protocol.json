@@ -1,0 +1,78 @@
+{
+  "checkpoint": "${PRIVATE_MOUNT_PATH}",
+  "verified_shard_sizes": {
+    "model.safetensors-00001-of-00004.safetensors": 5276436216,
+    "model.safetensors-00002-of-00004.safetensors": 5335161512,
+    "model.safetensors-00003-of-00004.safetensors": 5368717440,
+    "model.safetensors-00004-of-00004.safetensors": 3325995712
+  },
+  "weight_identity_receipt_sha256": "ec91a51a5f2e22a449ac603ca5c671fe9e53e2217a552bd07d62396fd4475de6",
+  "checkpoint_config_tokenizer_sha256": {
+    "tokenizer.json": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_config.json": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
+    "chat_template.jinja": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+    "merges.txt": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+    "vocab.json": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+    "config.json": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05"
+  },
+  "native_model_sha256": "cf085792cb59e5bdf9b88a3d20bd353892289d054662a9c2b662221b97caefba",
+  "isolated_site": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages",
+  "fla_mapped_utils_sha256": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+  "fla_scheduled_chunk_sha256": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba",
+  "wy_backported_sha256": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+  "compiler_cache": "${ARTIFACT_ROOT}/codex_qwen35_native_gpu_preflight_20260908_v2/triton_cache",
+  "wheels": {
+    "${PRIVATE_MOUNT_PATH}": "8adbc1d20bd5463cd6876b2eb7cb31971e1065788e7dc6bc12bab597a7c504b7",
+    "${PRIVATE_MOUNT_PATH}": "d18bdfe9d1f4b424676444eac9d50fb8433b70e5d4e0e0878b20bcbcdbea57ce",
+    "${PRIVATE_MOUNT_PATH}": "93c6afe4c80fc7bc705fa8aeea6a46d2cf2d77383f9619a41863c7114c801bab"
+  },
+  "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6",
+  "parent_directory": "${ARTIFACT_ROOT}/codex_qwen35_gdn_integration_20260908_v2",
+  "parent_sha256": "55378a7d777fa500631614afcf019fcfb42e4363172e65e92c370305b49229fe",
+  "root_checkpoints_sha256": "e2bbb9b25f92cfa4323da6ba2dbee79bbac7c1dca657d4823e72ed1519aae630",
+  "build_directory": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2",
+  "build_sha256": "922a65bec93bdc2bfcd49468632e479f85f2727f4b4dd86aec4da0b2bff4aa5c",
+  "library_sha256": "9fd20eb642c225084614cf54e6a88ea9b38ed780a8a6d7c252e58569c537722f",
+  "purpose": "Preserve current content_P1 strength while extending the same traceable finite FA framework to the real Qwen3.5 BF16/D256/GQA4 and605/368-token right-padded workload.",
+  "source_boundaries": "Original model class/default FA forward untouched. Public FA varlen auxiliary output/LSE and native autograd backward only. No probability-buffer decoding, private FA binding, vendor header edit or shadow model.",
+  "budget": {
+    "full_model_loads": 0,
+    "full_model_forwards": 0,
+    "meta_model_constructions": 1,
+    "decoder3_weight_loads": 1,
+    "decoder3_forward_attempts": 1,
+    "auxiliary_public_FA_forward_attempts": 1,
+    "public_FA_backward_attempts": 1,
+    "finite_calls": 3,
+    "finite_kernel_launches": 9,
+    "generation_calls": 0,
+    "quality_queries": 0
+  },
+  "finite_calls": [
+    "actual cold",
+    "actual warm",
+    "equal-endpoint limit"
+  ],
+  "finite_rule": "content_P1 PV, symmetric Q/K interaction, unchanged logarithmic-mean softmax rule. BF16 matrix inputs/weights/emitted multipliers; FP32 accumulations/nonlinear reductions. No global N*N buffers.",
+  "capture": "Passive original decoder3 attention capture from saved real root input. Official meta-init/materialization policy and original mask/rotary helpers. Compare decoder output to saved root decoder4 input.",
+  "local_upstream": "Actual input-endpoint native attention output, padding zero. Not an answer-logprob target or a quality attribution.",
+  "validation": "Retain all coefficients; compare actual effects by head and sample, equal-endpoint limit to actual public FA native backward, padded outputs and public auxiliary output to unchanged default model FA.",
+  "cost_scope": "One cold/one warm finite-only call; auxiliary LSE and genuine native backward separately reported. This is not whole-model attribution cost or a matched comparison to FT.",
+  "stop": "One corrected replay after the preserved observer failure; retain numerical disagreements, no precision/tile sweep or automatic rerun.",
+  "files_sha256": {
+    "study.py": "a997f901d0e565211ead2e0d7223b5da2c038c85f7d46c9d0be963c8d4dc3bd9",
+    "vendor_fa_finite_bf16_d256.py": "645736f68bf2f8169feff7218d30de20d3ed2a0b75e321603e6503a514763fc2",
+    "native_attention_capture.py": "bafec436a46fbf2ba9d649af0a7f918d216d6e83275b93eb31fabbb8b9fd1b4a",
+    "vendor_fa_finite_p1_bf16_d256.cu": "8116d27efdd9f41c5eab84d2a062fe9e5c8ebed58fd21c87ef3d52d26749b19a"
+  },
+  "prior_aborted_result_sha256": "1ac7276ed96e8be01e5bc7cf9302e80204c67c601eeee247ac0535aa71a2c3c9",
+  "prior_aborted_log_sha256": "518d34eeaf857f36e093d4bcac11b12950df58c30e72f9e0c6538e394b081c75",
+  "prior_aborted_process": {
+    "pid": 235649,
+    "observed_terminal": "ps handle missing and final uncaught TypeError in driver.log",
+    "last_saved_status": "running",
+    "actual_state": "aborted during report serialization after original decoder replay"
+  },
+  "correction": "Convert scalar tensor FA metadata to Python scalars. Save passive endpoint capture before report serialization.",
+  "family_budget": "Two standalone decoder loads/replays including the aborted observer job, zero full-model load/forward; one auxiliary public FA forward and one backward; three finite calls total. No quality calls."
+}

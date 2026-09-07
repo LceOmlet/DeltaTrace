@@ -1,0 +1,31 @@
+{
+  "vendor_source_parent": "${ARTIFACT_ROOT}/codex_vendor_fa_source_gpu_language_20260907_v1",
+  "vendor_parent_sha256": "43000d77cd7fac6539e86fbc8dfbb638b0c4bce7d6cfc4ad4f4ba4f00db16906",
+  "vendor_git_commit": "aef88de756194e077460a1c8b8b341baa429259a",
+  "vendor_source_version": "FA2.5.3",
+  "installed_model_FA_version": "2.6.3+metax3.5.3.9torch2.8",
+  "same_version_source_claim": false,
+  "max_compile_seconds": 600,
+  "study_sha256": "4c120ac8713e43ae9c71d34e74c19d99629ec0a2497e4ad5744b6c1ca8a4bf63",
+  "extension_sha256": "8116d27efdd9f41c5eab84d2a062fe9e5c8ebed58fd21c87ef3d52d26749b19a",
+  "derived_from_sha256": "dd001a80f5e46ae0acfde7b242fe2812d972158d6410646f7cfbcdd5e43eb457",
+  "purpose": "BF16/D256 and true right-padding support; preserved finite content_P1 math, symmetric Q/K interaction and three native-framework tile sweeps.",
+  "budget": {
+    "compiles": 1,
+    "tile_candidates": 1,
+    "model_calls": 0,
+    "GPU_kernel_launches": 0,
+    "quality_queries": 0
+  },
+  "traits": {
+    "head_dim": 256,
+    "tile_m": 32,
+    "tile_n": 32,
+    "warps": 2,
+    "shared_bytes_per_phase": 32768
+  },
+  "stop": "One corrected compile after the preserved host-pass pointer-type failure. No tile search or numerical rule change.",
+  "prior_failed_build_sha256": "8eff7b4349ebf86e3269b2f17b5845acdcfc0eb505aefaf30e2d7ae67e36d405",
+  "pointer_correction": "Use opaque pointers in the finite parameter struct and vendor Traits::Element casts inside the kernel, as native FA does. No vendor-source edits or BF16-to-FP16 device substitution.",
+  "combined_build_attempts": 2
+}
