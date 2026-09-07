@@ -13,7 +13,7 @@
   "forward_replacement_allowed": false,
   "shadow_backward_allowed": false,
   "small_latency_increase_may_be_accepted": true,
-  "next": "FA first. Retain SharedMeanReuse as current preferred whole-model backend. Two-sweep finite FA now pairs the native backward accumulation layout and32x32 conversion correctly, but is30.5percent slower in the fixed local screen; do not run model/quality sweeps or promote it. Before another kernel candidate, review the complete native backward tile/scheduling/register/workspace choices together. Current public LSE request is discarded by the HF adapter; no private-slot or shadow-model workaround. MLP/head remains paused.",
+  "next": "Use bounded phase profiling to assess remaining FA costs before more kernel changes; inspect remote Qwen3.5-9B weights and real model/FLA compatibility. Shift to other measured major costs when FA remaining gain is evidenced limited. Keep current SharedMeanReuse backend and preserve official evaluation/real batching.",
   "public_capture_evidence": "6a5f7f2ae66d48acd9609c100f31faae19f62ac11bf028dfb7451302e111a29c",
   "public_capture_validated_cases": [
     "NI0",
@@ -128,7 +128,7 @@
     "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
     "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
     "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-    "next_change": "FA first. Retain SharedMeanReuse as current preferred whole-model backend. Two-sweep finite FA now pairs the native backward accumulation layout and32x32 conversion correctly, but is30.5percent slower in the fixed local screen; do not run model/quality sweeps or promote it. Before another kernel candidate, review the complete native backward tile/scheduling/register/workspace choices together. Current public LSE request is discarded by the HF adapter; no private-slot or shadow-model workaround. MLP/head remains paused.",
+    "next_change": "Use bounded phase profiling to assess remaining FA costs before more kernel changes; inspect remote Qwen3.5-9B weights and real model/FLA compatibility. Shift to other measured major costs when FA remaining gain is evidenced limited. Keep current SharedMeanReuse backend and preserve official evaluation/real batching.",
     "initial_optimization_screen": {
       "cases": [
         [
@@ -270,6 +270,28 @@
       "requested_flag_discarded_by_current_adapter": true,
       "auxiliary_call_removed": false,
       "scope": "Current installed HF parameter processing only; no claim about all versions."
+    },
+    "goal_additions_20260908": {
+      "user_authorized_date": "2026-09-08",
+      "document": "目标追加_FA收益转向与Qwen35_FLA_20260908.md",
+      "FA_priority": "Continue bounded FA diagnosis; switch to measured larger costs if evidence establishes limited remaining FA gain. One failed candidate is insufficient.",
+      "Qwen3_5_9B": {
+        "required": true,
+        "weight_location": "remote shared path; discovery pending",
+        "model_support_status": "not_implemented_or_validated"
+      },
+      "FLA": {
+        "required": true,
+        "actual_dispatch_verification_required": true,
+        "shadow_implementation_forbidden": true,
+        "support_status": "not_implemented_or_validated"
+      },
+      "real_minibatch_required": true,
+      "official_benchmark_scope_retained": true,
+      "repository_commit_push_and_bundle_required": true,
+      "original_quality_sign_cost_completion_requirements_retained": true,
+      "app_goal_objective_edit_available": false,
+      "app_goal_remains_active": true
     }
   },
   "native_MLP_SAC_reuse": {
@@ -346,5 +368,27 @@
     ],
     "new_quality_queries": 0,
     "extra_whole_model_attributions": 0
+  },
+  "goal_additions_20260908": {
+    "user_authorized_date": "2026-09-08",
+    "document": "目标追加_FA收益转向与Qwen35_FLA_20260908.md",
+    "FA_priority": "Continue bounded FA diagnosis; switch to measured larger costs if evidence establishes limited remaining FA gain. One failed candidate is insufficient.",
+    "Qwen3_5_9B": {
+      "required": true,
+      "weight_location": "remote shared path; discovery pending",
+      "model_support_status": "not_implemented_or_validated"
+    },
+    "FLA": {
+      "required": true,
+      "actual_dispatch_verification_required": true,
+      "shadow_implementation_forbidden": true,
+      "support_status": "not_implemented_or_validated"
+    },
+    "real_minibatch_required": true,
+    "official_benchmark_scope_retained": true,
+    "repository_commit_push_and_bundle_required": true,
+    "original_quality_sign_cost_completion_requirements_retained": true,
+    "app_goal_objective_edit_available": false,
+    "app_goal_remains_active": true
   }
 }
