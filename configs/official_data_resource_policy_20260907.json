@@ -7,7 +7,7 @@
   "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
   "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
   "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-  "next_change": "Use native logits_to_keep to avoid unused target-head positions, then existing compiler fusion and combined validation to reduce launches/synchronization. Keep same-endpoint SAC MLP reuse optional; no new GPU job or exhaustive sweep is automatically scheduled.",
+  "next_change": "FA first: compact GQA inputs are now verified in B1 and true B4. Next address endpoint-average/layout/cast and GQA output-reduction work around the traceable FA kernel; prove any reduction of three-pass tile rereads or extra public LSE calls. MLP caching and target-head work remain paused. Preserve default model FA and FA-relative memory tradeoffs; no exhaustive sweep.",
   "initial_optimization_screen": {
     "cases": [
       [
@@ -52,5 +52,30 @@
     "NI2_candidate_to_old_time_ratio": 0.9227067589115754,
     "MH5_candidate_to_old_time_ratio_single_pair": 0.9756783552112016,
     "current_running_experiment": null
+  },
+  "optimization_priority": [
+    "FA finite extension integration and avoidable FA-side work",
+    "bounded real whole-network/batch checks for each FA change",
+    "non-attention MLP/head optimizations after FA work"
+  ],
+  "FA_compact_GQA": {
+    "status": "compact_GQA_B1_and_real_B4_verified",
+    "protocol": "fa_compact_gqa_operator_protocol_20260907.json",
+    "maximum_local_operator_calls": 6,
+    "model_attributions": 8,
+    "quality_queries": 0,
+    "old_FA_path_retained": true,
+    "whole_network_new_path_verified": true,
+    "new_B4_path_verified": true,
+    "operator_summary": "fa_compact_gqa_operator_summary_20260907.json",
+    "integration_summary": "fa_compact_gqa_integration_summary_20260907.json",
+    "raw_sha256": "cd4dbb1a616d1e11aa97fd422622ff5b922baba3c95752e10974734c7aebd478",
+    "exact_scope": "NI2 B1 N1241; real original NI0/3/6,MH1 B4 paddedN607. One measured pair per shape; no new quality/FT claim.",
+    "remaining_FA_work": [
+      "endpoint averages and input/output layouts",
+      "GQA output reduction",
+      "three-pass dependency and redundant tile reads",
+      "public LSE metadata invocation"
+    ]
   }
 }

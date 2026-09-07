@@ -1,0 +1,78 @@
+{
+  "status": "compact_GQA_B1_and_real_B4_verified",
+  "raw_sha256": "cd4dbb1a616d1e11aa97fd422622ff5b922baba3c95752e10974734c7aebd478",
+  "protocol_sha256": "e041745ca9098936a3b5c73ec41593f718c86b1601caf1a2e993af9f03cc9816",
+  "attributions": 8,
+  "quality_queries": 0,
+  "VJPs": 0,
+  "native_root_forwards": 8,
+  "native_endpoint_trajectories": 40,
+  "decoder_replays": 288,
+  "auxiliary_public_FA_calls": 288,
+  "finite_attention_calls": 288,
+  "groups": [
+    {
+      "selection": [
+        [
+          "niah_mq_q2",
+          2
+        ]
+      ],
+      "example_batch_size": 1,
+      "all_same_job_full_vectors_exact": true,
+      "endpoints_exact": true,
+      "sign_flips": 0,
+      "old_measured_seconds": 1.8418808225542307,
+      "compact_measured_seconds": 0.9536215104162693,
+      "compact_to_old_ratio": 0.5177433299369681,
+      "old_peak_bytes": 18759975936,
+      "compact_peak_bytes": 18759975936,
+      "timing_scope": "One measured pair after warmup; no stable performance or FT superiority claim. NI2 old-path1.84s is unusually high against prior same-shape~0.99s and is not attributed causally to GQA savings."
+    },
+    {
+      "selection": [
+        [
+          "niah_mq_q2",
+          0
+        ],
+        [
+          "niah_mq_q2",
+          3
+        ],
+        [
+          "niah_mq_q2",
+          6
+        ],
+        [
+          "morehopqa",
+          1
+        ]
+      ],
+      "example_batch_size": 4,
+      "all_same_job_full_vectors_exact": true,
+      "endpoints_exact": true,
+      "sign_flips": 0,
+      "old_measured_seconds": 1.5072076078504324,
+      "compact_measured_seconds": 1.4863910116255283,
+      "compact_to_old_ratio": 0.9861886337910724,
+      "old_peak_bytes": 21699025920,
+      "compact_peak_bytes": 21699025920,
+      "timing_scope": "One measured pair after warmup; no stable performance or FT superiority claim. NI2 old-path1.84s is unusually high against prior same-shape~0.99s and is not attributed causally to GQA savings."
+    }
+  ],
+  "job_seconds": 90.41112232208252,
+  "goal_complete": false,
+  "actual_B4_profile": {
+    "sha256": "38e24f8a1df8bb65242f5f38cf016fc42d56a1a2b9082808d1398579fe42465a",
+    "finite_kernels": {
+      "void deltatrace_fa_finite_p1_kernel<0, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36,
+      "void deltatrace_fa_finite_p1_kernel<1, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36,
+      "void deltatrace_fa_finite_p1_kernel<2, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36
+    },
+    "native_FA_kernels": {
+      "void flash_fwd_kernel<Flash_fwd_kernel_traits<128, 128, 64, 4, true, true, mctlass::half_t, 128, Flash_kernel_traits<128, 128, 64, 4, mctlass::half_t> >, false, true, false, false, false, false, true, false, false, 1, false, (Arch)1000>(mcFlashAttn::Flash_fwd_params, int, int)": 108
+    },
+    "no_new_dense_attention_source_path": true
+  },
+  "conclusion": "Compact GQA input integration passes actual B1 and B4 with unchanged full signed vectors and native endpoints. Default FA plus finite FA remains actual dispatched. Input copies removed; endpoint-average/layout, grouped output reduction and three passes remain. No new curves or full FT speed comparison."
+}
