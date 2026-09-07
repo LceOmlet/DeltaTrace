@@ -88,7 +88,7 @@ def _dot(x, y):
     return (x*y).sum(-1)
 
 
-def mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products=False):
+def mixed_coefficients(endpoints, adjoints, scale):
     """All samples/heads/chunks batched; inputs already on the same GPU.
 
     Interleaved EOS/input endpoints, fixed prefix length per row. Right-padding
@@ -135,22 +135,15 @@ def mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products=False):
     UZ=_mm(u0,_T(Z)); UW=_mm(u0,_T(W))
     K0Q=_mm(k0,_T(q1)); K0K1=_mm(k0,_T(k1))
     K0H=_mm(k0,H0)
-    ZHt=_mm(Z,_T(H0)); WHt=_mm(W,_T(H0)); UDt=_mm(u0,_T(D))
-    dq=scale*(eg0[...,None]*ZHt+_mm(_T(UZ)*E0,k0))
-    dk=(eend[...,None]*UDt + scale*_mm(UZ*E1,q1) - _mm(UW*E1,k1)
+    dq=scale*(eg0[...,None]*_mm(Z,_T(H0))+_mm(_T(UZ)*E0,k0))
+    dk=(eend[...,None]*_mm(u0,_T(D)) + scale*_mm(UZ*E1,q1) - _mm(UW*E1,k1)
         + beta1[...,None]*k1.float()*_dot(u0.float(),L)[...,None]
-        - eg0[...,None]*WHt - _mm(_T(UW)*(E0*lower),k0))
+        - eg0[...,None]*_mm(W,_T(H0)) - _mm(_T(UW)*(E0*lower),k0))
     r0=eg0[...,None]*K0H+_mm(_mm(k0,_T(k0))*(E0*lower),u0)
     dbeta=_dot(v0.float()-r0,L)
     S=(H0.float()*D.float()).sum((-1,-2))
-    if reuse_scalar_products:
-        # Inner-product duality removes three GEMMs. W is rounded to BF16 in
-        # WHt, so this is not a promise of bitwise equality to the direct b term.
-        b=scale*_dot(q1.float(),ZHt)-_dot(k1.float(),WHt)
-        d=_dot(k0.float(),UDt)
-    else:
-        b=scale*_dot(Z.float(),_mm(q1,H0))-_dot(W,_mm(k1,H0))
-        d=_dot(u0.float(),_mm(k0,D))
+    b=scale*_dot(Z.float(),_mm(q1,H0))-_dot(W,_mm(k1,H0))
+    d=_dot(u0.float(),_mm(k0,D))
     M=scale*K0Q*UZ-K0K1*UW
     dalpha=torch.empty_like(g0)
     _finite_decay_scan[(count,)](M,g0,G0,G1,b,d,S,dalpha,C=C,num_warps=4,num_stages=1)
@@ -170,17 +163,14 @@ def finite_fla_pullback(endpoints, do, scale):
     return mixed_coefficients(endpoints,native_input_adjoints(endpoints,do,scale),scale)
 
 
-def make_compiled_finite_pullback(reuse_scalar_products=False):
+def make_compiled_finite_pullback():
     """Use the official compiler to fuse layout/scalar work; keep native FLA calls.
 
     Compile time and steady cost must be recorded separately. CUDA graphs and
-    max_autotune are disabled; default compiler kernel tuning can still run and
-    must be counted. This wrapper does not cache model endpoints or computed
-    coefficients. Source identity must be verified by its caller.
+    autotune searches are disabled; this wrapper does not cache model endpoints
+    or computed coefficients. Source identity must be verified by its caller.
     """
-    def mixed(endpoints, adjoints, scale):
-        return mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products)
-    compiled = torch.compile(mixed, fullgraph=True, dynamic=False,
+    compiled = torch.compile(mixed_coefficients, fullgraph=True, dynamic=False,
         options={'triton.cudagraphs':False, 'max_autotune':False})
     def pullback(endpoints, do, scale):
         return compiled(endpoints, native_input_adjoints(endpoints,do,scale), scale)

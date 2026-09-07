@@ -1,5 +1,5 @@
 {
-  "status": "local_GPU_finite_FLA_and_official_compiler_fusion_verified_whole_model_pending",
+  "status": "local_finite_FLA_reuse_screen_closed_whole_model_integration_pending",
   "checkpoint": "${PRIVATE_MOUNT_PATH}",
   "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
   "weight_bytes": 19306310880,
@@ -53,7 +53,7 @@
   "finite_FLA_attribution_supported": false,
   "real_batch_verified": false,
   "status_limit": "GPU finite local pullback and official compiler fusion verified on saved real B2/T129 normalized operands. Still slower than matched local native backward; full model nonlinear/full attention, variable-length integration, quality and complete costs unverified.",
-  "next": "Continue with the verified official-compiler GPU finite FLA path. One bounded inner-product reuse candidate can remove three redundant scalar-contraction GEMMs; verify complete coefficients and same-job costs, then integrate finite L2, convolution, gates and Qwen3.5 D256/BF16 full attention with the fixed model target. Capture raw Q/K from actual native replay, not guessed normalized values. Account for shape recompilation and all endpoint costs. No ordinary-gradient parameter sweep, model generation or full quality sweep by default.",
+  "next": "The one contraction-reuse screen is closed. Keep reuse_scalar_products=False by default and the measured candidate explicitly optional; do not repeat local timings or precision scans. Continue actual Qwen3.5 finite L2, gated normalization, convolution, gates and D256/BF16 full-attention integration. Capture raw Q/K from native replay and inspect the actually imported FusedRMSNormGated source. Count endpoint and replay costs; use real variable-length batches and official fixed trajectories for bounded full-model verification. No model generation or full quality sweep by default. Continue committing, pushing and verifying recovery bundles.",
   "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here.",
   "tokenizer": {
     "tokenizer_EOS_id": 248046,
@@ -518,5 +518,117 @@
       "executable_AST_unchanged": true,
       "additional_GPU_calls": 0
     }
+  },
+  "GPU_reuse_evidence_file": "evidence/qwen35_finite_reuse_summary_20260908.json",
+  "GPU_reuse": {
+    "raw_sha256": "14fd088f6715f727697e1c904f028b63a899268f37f0332b2de32d70b9abe8ae",
+    "decision": {
+      "status": "optional_only_local_screen_closed",
+      "default_reuse_scalar_products": false,
+      "reason": "Three fewer GEMMs and lower measured peak, small full-coefficient change, but first formal call and diagnostic wall time regress. No stable whole-model speed claim.",
+      "no_additional_GPU_runs_for_analysis": true,
+      "next": "The one contraction-reuse screen is closed. Keep reuse_scalar_products=False by default and the measured candidate explicitly optional; do not repeat local timings or precision scans. Continue actual Qwen3.5 finite L2, gated normalization, convolution, gates and D256/BF16 full-attention integration. Capture raw Q/K from native replay and inspect the actually imported FusedRMSNormGated source. Count endpoint and replay costs; use real variable-length batches and official fixed trajectories for bounded full-model verification. No model generation or full quality sweep by default. Continue committing, pushing and verifying recovery bundles."
+    },
+    "same_job_timing_medians": {
+      "compiled_reuse_candidate": {
+        "wall_ms": 1.3582538813352585,
+        "event_ms": 1.273087978363037,
+        "before_bytes": 117851648.0,
+        "peak_bytes": 201690112.0,
+        "after_bytes": 130632704.0
+      },
+      "archived_compiled_baseline": {
+        "wall_ms": 1.4746785163879395,
+        "event_ms": 1.3478399515151978,
+        "before_bytes": 117851648.0,
+        "peak_bytes": 221628928.0,
+        "after_bytes": 130632704.0
+      },
+      "native_normalized_backward": {
+        "wall_ms": 1.0764561593532562,
+        "event_ms": 0.9804800152778625,
+        "before_bytes": 117851648.0,
+        "peak_bytes": 157880320.0,
+        "after_bytes": 124242432.0
+      }
+    },
+    "paired_ratios": [
+      {
+        "phase": "formal_0",
+        "wall_ms": {
+          "compiled_reuse_candidate": 2.103276550769806,
+          "archived_compiled_baseline": 1.5431568026542664,
+          "native_normalized_backward": 1.1110641062259674
+        },
+        "candidate_over_baseline": 1.3629700800023175,
+        "candidate_over_native": 1.8930289791415897
+      },
+      {
+        "phase": "formal_1",
+        "wall_ms": {
+          "native_normalized_backward": 1.0402388870716095,
+          "archived_compiled_baseline": 1.4746785163879395,
+          "compiled_reuse_candidate": 1.353112980723381
+        },
+        "candidate_over_baseline": 0.9175647205044258,
+        "candidate_over_native": 1.3007713877458933
+      },
+      {
+        "phase": "formal_2",
+        "wall_ms": {
+          "archived_compiled_baseline": 1.4602411538362503,
+          "compiled_reuse_candidate": 1.3582538813352585,
+          "native_normalized_backward": 1.0764561593532562
+        },
+        "candidate_over_baseline": 0.9301572399647432,
+        "candidate_over_native": 1.2617828134787288
+      }
+    ],
+    "candidate_vs_baseline": {
+      "q": {
+        "relative_L2": 0.0,
+        "max_abs": 0.0,
+        "reference_norm": 122.08476159805973
+      },
+      "k": {
+        "relative_L2": 0.0,
+        "max_abs": 0.0,
+        "reference_norm": 985.9638953583179
+      },
+      "v": {
+        "relative_L2": 0.0,
+        "max_abs": 0.0,
+        "reference_norm": 7.327665783142334
+      },
+      "beta": {
+        "relative_L2": 0.0,
+        "max_abs": 0.0,
+        "reference_norm": 74.66344011009879
+      },
+      "alpha": {
+        "relative_L2": 0.00013245333438520048,
+        "max_abs": 0.024318695068359375,
+        "reference_norm": 970.1844666107668
+      },
+      "g": {
+        "relative_L2": 0.00013282200841810323,
+        "max_abs": 0.024094581604003906,
+        "reference_norm": 962.5783631669589
+      }
+    },
+    "per_head_finite_residual_L2": [
+      0.004033577647954215,
+      0.0036578857811474254
+    ],
+    "kernel_counts": {
+      "compiled_reuse_candidate": 42,
+      "archived_compiled_baseline": 45
+    },
+    "cold_call_seconds": {
+      "compiled_reuse_candidate": 24.926337141543627,
+      "archived_compiled_baseline": 13.786649323999882,
+      "native_normalized_backward": 4.342995814979076
+    },
+    "compiler_benchmark_routine_calls": 97
   }
 }

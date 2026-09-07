@@ -1,0 +1,640 @@
+{
+  "status": "three_GEMM_reuse_screen_complete",
+  "protocol": {
+    "isolated_site": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages",
+    "wheels": {
+      "${PRIVATE_MOUNT_PATH}": "8adbc1d20bd5463cd6876b2eb7cb31971e1065788e7dc6bc12bab597a7c504b7",
+      "${PRIVATE_MOUNT_PATH}": "d18bdfe9d1f4b424676444eac9d50fb8433b70e5d4e0e0878b20bcbcdbea57ce",
+      "${PRIVATE_MOUNT_PATH}": "93c6afe4c80fc7bc705fa8aeea6a46d2cf2d77383f9619a41863c7114c801bab"
+    },
+    "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6",
+    "native_stage_source_sha256": {
+      "chunk": "fe10b455f8c71f4f845415f60a4385ff4f630336e5e46c592611765dfd8cce97",
+      "wy": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+      "state": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba"
+    },
+    "compiler_cache": "${ARTIFACT_ROOT}/codex_qwen35_native_gpu_preflight_20260908_v2/triton_cache",
+    "parent_directory": "${ARTIFACT_ROOT}/codex_qwen35_paired_fla_capture_20260908_v1",
+    "parent_sha256": "56da16af3a6f1a5b65d9a81e436b6a1b29e4a629d134e5026a5e437dcde809ae",
+    "input_npz_sha256": {
+      "real_paired_FLA_prefix.npz": "68864feeb56b2a56c4d962c6537102cc038400a17fdb0c8226619ff4405ec2c7",
+      "native_input_adjoints.npz": "3c788c9a650718b15b9c18ccefbfbe24c91bc9b216c9003b500a9ef4f9e9b272"
+    },
+    "explicit_native_changes": {
+      "fla/utils.py": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+      "fla/ops/common/chunk_delta_h.py": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba",
+      "fla/ops/gated_delta_rule/wy_fast.py": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be"
+    },
+    "maximum_model_loads": 0,
+    "maximum_model_forwards": 0,
+    "maximum_quality_queries": 0,
+    "purpose": "Exactly one inner-product reuse candidate removes three GEMMs in scalar decay factors. Compare against the byte-preserved prior compiled source, same process/input/cotangent.",
+    "timing": "One cold per route; three rotated candidate/baseline/native triples; one separate candidate/baseline profile. All packing and native adjoints included; no profiler in formal calls.",
+    "cost_limit": "Local pullback from already captured native intermediates. Endpoint forward/capture costs and whole-model performance are not measured here; native backward only needs endpoint1, finite needs both endpoints.",
+    "precision": "Same BF16 bmm/FP32 result. Inner-product reassociation changes W rounding; compare full coefficients and per-head finite residuals. No new numerical pass threshold.",
+    "stop": "One candidate only; no further local contraction variants or precision scan. Retain if actual cost and numeric evidence support it; continue nonlinear/model integration regardless.",
+    "files_sha256": {
+      "study.py": "0d5252d5e6c2b54faec7452db5b77b03887575462e3b4991d502485cdef6ccb2",
+      "finite_fla_gpu.py": "8ba72f5c56212fb5e173384e9ce8d79b488b22b5f83ddefa0dc33e8b343980d9",
+      "finite_fla_gpu_baseline.py": "47d403a0d1ab32fe56396940db484d9ed20939aca41f468533db842c564a412b"
+    },
+    "prior_GPU_directory": "${ARTIFACT_ROOT}/codex_qwen35_finite_gpu_compiled_20260908_v1",
+    "prior_GPU_sha256": "2af2afc3f2eb0e167fc85d5e15624966e9491802ea109420dfdd4d02675fb260",
+    "maximum_compiled_finite_calls": 5,
+    "maximum_native_backward_helper_calls": 4,
+    "maximum_native_dv_and_state_adjoint_calls": 28,
+    "maximum_mixed_coefficient_calls": 10,
+    "compiler": "fullgraph=True, dynamic=False, default backend, max_autotune=False, triton.cudagraphs=False. Generated sources and compiler counters retained.",
+    "route_labels": {
+      "compiled": "compiled_reuse_candidate",
+      "finite": "archived_compiled_baseline",
+      "native": "native_normalized_backward"
+    },
+    "maximum_archived_compiled_baseline_calls": 5
+  },
+  "model_loads": 0,
+  "model_forwards": 0,
+  "generation_calls": 0,
+  "quality_queries": 0,
+  "whole_model_attributions": 0,
+  "cached_adjoint_mixed_attempts": 0,
+  "finite_pullback_attempts": 5,
+  "native_backward_attempts": 4,
+  "compiled_pullback_attempts": 5,
+  "calls": [
+    {
+      "kind": "compiled",
+      "phase": "cold",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 50742784,
+      "wall_ms": 24926.337141543627,
+      "event_ms": 24926.162109375,
+      "peak_bytes": 325748736,
+      "after_bytes": 130632704,
+      "native_dispatch": {
+        "native_dv_local": 1,
+        "native_state_adjoint": 1
+      }
+    },
+    {
+      "kind": "finite",
+      "phase": "cold",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 13786.649323999882,
+      "event_ms": 13786.44140625,
+      "peak_bytes": 233163264,
+      "after_bytes": 130632704,
+      "native_dispatch": {
+        "native_dv_local": 1,
+        "native_state_adjoint": 1
+      }
+    },
+    {
+      "kind": "native",
+      "phase": "cold",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 4342.995814979076,
+      "event_ms": 4342.7646484375,
+      "peak_bytes": 413880320,
+      "after_bytes": 124242432,
+      "native_dispatch": {
+        "native_dv_local": 1,
+        "native_state_adjoint": 1,
+        "native_backward": 1,
+        "native_state_reconstruction": 1,
+        "native_WY_backward": 1
+      }
+    },
+    {
+      "kind": "compiled",
+      "phase": "formal_0",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 2.103276550769806,
+      "event_ms": 1.9041279554367065,
+      "peak_bytes": 201690112,
+      "after_bytes": 130632704,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "finite",
+      "phase": "formal_0",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.5431568026542664,
+      "event_ms": 1.4592000246047974,
+      "peak_bytes": 221628928,
+      "after_bytes": 130632704,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "native",
+      "phase": "formal_0",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.1110641062259674,
+      "event_ms": 1.0547200441360474,
+      "peak_bytes": 157880320,
+      "after_bytes": 124242432,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "native",
+      "phase": "formal_1",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.0402388870716095,
+      "event_ms": 0.9804800152778625,
+      "peak_bytes": 157880320,
+      "after_bytes": 124242432,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "finite",
+      "phase": "formal_1",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.4746785163879395,
+      "event_ms": 1.3478399515151978,
+      "peak_bytes": 221628928,
+      "after_bytes": 130632704,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "compiled",
+      "phase": "formal_1",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.353112980723381,
+      "event_ms": 1.273087978363037,
+      "peak_bytes": 201690112,
+      "after_bytes": 130632704,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "finite",
+      "phase": "formal_2",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.4602411538362503,
+      "event_ms": 1.3396480083465576,
+      "peak_bytes": 221628928,
+      "after_bytes": 130632704,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "compiled",
+      "phase": "formal_2",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.3582538813352585,
+      "event_ms": 1.2380160093307495,
+      "peak_bytes": 201690112,
+      "after_bytes": 130632704,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "native",
+      "phase": "formal_2",
+      "profiled": false,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 1.0764561593532562,
+      "event_ms": 0.9699839949607849,
+      "peak_bytes": 157880320,
+      "after_bytes": 124242432,
+      "native_dispatch": {}
+    },
+    {
+      "kind": "compiled",
+      "phase": "diagnostic",
+      "profiled": true,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 3.353431820869446,
+      "event_ms": 2.10150408744812,
+      "peak_bytes": 201690112,
+      "after_bytes": 130632704,
+      "native_dispatch": {
+        "native_dv_local": 1,
+        "native_state_adjoint": 1
+      },
+      "profile": {
+        "file": "compiled_profile.json",
+        "sha256": "c50876d8fd54dbde30a09411ed910c8be8c8fedb2f27de6a8914c76ff0b23aae",
+        "kernel_counts": {
+          "void at::native::elementwise_kernel_3_1<128, 4, c10::BFloat16, c10::BFloat16, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 3,
+          "void at::native::elementwise_kernel_2_1_dim0_contiguous<64, 4, float, float, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1})": 1,
+          "void at::native::elementwise_kernel_transpose_copy<c10::BFloat16, c10::BFloat16, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, c10::BFloat16>(char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 1,
+          "chunk_bwd_kernel_dv_local": 1,
+          "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64": 1,
+          "triton_poi_fused_constant_pad_nd_0": 2,
+          "triton_red_fused__to_copy_clone_mul_sum_1": 1,
+          "triton_poi_fused_constant_pad_nd_2": 2,
+          "mcblas__Mck_bf16gemm_tn_128x128x128_4m1n8k_256t_bf16_fp32_fp32_sb_0_0": 3,
+          "triton_red_fused__to_copy_constant_pad_nd_mul_sum_3": 1,
+          "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 5,
+          "triton_poi_fused_constant_pad_nd_4": 1,
+          "triton_poi_fused_constant_pad_nd_5": 1,
+          "mcblas__Mck_bf16gemm_nt_256x128x64_4m8n1k_256t_bf16_fp32_fp32_sb_0_0": 1,
+          "triton_poi_fused__to_copy_mul_6": 1,
+          "triton_poi_fused__to_copy_clamp_max_exp_mul_sub_7": 1,
+          "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 6,
+          "triton_poi_fused__to_copy_clamp_max_exp_ge_gt_mul_sub_8": 1,
+          "triton_red_fused__to_copy_add_mul_sub_sum_9": 1,
+          "triton_per_fused__to_copy_mul_sum_10": 1,
+          "triton_poi_fused_11": 1,
+          "_finite_decay_scan": 1,
+          "triton_poi_fused_clone_12": 1,
+          "triton_poi_fused_clone_13": 1,
+          "triton_poi_fused_clone_14": 1,
+          "triton_poi_fused_clone_15": 1,
+          "triton_poi_fused_clone_16": 1
+        },
+        "kernel_total_us": {
+          "void at::native::elementwise_kernel_3_1<128, 4, c10::BFloat16, c10::BFloat16, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 93.44,
+          "void at::native::elementwise_kernel_2_1_dim0_contiguous<64, 4, float, float, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1})": 2.048,
+          "void at::native::elementwise_kernel_transpose_copy<c10::BFloat16, c10::BFloat16, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, c10::BFloat16>(char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 8.704,
+          "chunk_bwd_kernel_dv_local": 22.016,
+          "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64": 289.28,
+          "triton_poi_fused_constant_pad_nd_0": 14.336,
+          "triton_red_fused__to_copy_clone_mul_sum_1": 22.016,
+          "triton_poi_fused_constant_pad_nd_2": 18.944,
+          "mcblas__Mck_bf16gemm_tn_128x128x128_4m1n8k_256t_bf16_fp32_fp32_sb_0_0": 43.007999999999996,
+          "triton_red_fused__to_copy_constant_pad_nd_mul_sum_3": 16.896,
+          "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 165.12,
+          "triton_poi_fused_constant_pad_nd_4": 6.656,
+          "triton_poi_fused_constant_pad_nd_5": 4.608,
+          "mcblas__Mck_bf16gemm_nt_256x128x64_4m8n1k_256t_bf16_fp32_fp32_sb_0_0": 12.544,
+          "triton_poi_fused__to_copy_mul_6": 9.216,
+          "triton_poi_fused__to_copy_clamp_max_exp_mul_sub_7": 20.992,
+          "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 170.24,
+          "triton_poi_fused__to_copy_clamp_max_exp_ge_gt_mul_sub_8": 16.128,
+          "triton_red_fused__to_copy_add_mul_sub_sum_9": 70.912,
+          "triton_per_fused__to_copy_mul_sum_10": 2.048,
+          "triton_poi_fused_11": 2.048,
+          "_finite_decay_scan": 13.568,
+          "triton_poi_fused_clone_12": 20.48,
+          "triton_poi_fused_clone_13": 8.704,
+          "triton_poi_fused_clone_14": 10.496,
+          "triton_poi_fused_clone_15": 2.816,
+          "triton_poi_fused_clone_16": 3.072
+        }
+      }
+    },
+    {
+      "kind": "finite",
+      "phase": "diagnostic",
+      "profiled": true,
+      "status": "complete",
+      "before_bytes": 117851648,
+      "wall_ms": 2.6959404349327087,
+      "event_ms": 2.0341761112213135,
+      "peak_bytes": 221628928,
+      "after_bytes": 130632704,
+      "native_dispatch": {
+        "native_dv_local": 1,
+        "native_state_adjoint": 1
+      },
+      "profile": {
+        "file": "finite_profile.json",
+        "sha256": "48dcd290f0c2cec98f0bdda19cd1df8e534a8b38c7ad2ab44aafb4ab06a8c94d",
+        "kernel_counts": {
+          "void at::native::elementwise_kernel_3_1<128, 4, c10::BFloat16, c10::BFloat16, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 3,
+          "void at::native::elementwise_kernel_2_1_dim0_contiguous<64, 4, float, float, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1})": 1,
+          "void at::native::elementwise_kernel_transpose_copy<c10::BFloat16, c10::BFloat16, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, c10::BFloat16>(char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 1,
+          "chunk_bwd_kernel_dv_local": 1,
+          "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64": 1,
+          "triton_poi_fused_0": 1,
+          "triton_poi_fused_constant_pad_nd_1": 1,
+          "triton_poi_fused_constant_pad_nd_2": 2,
+          "triton_poi_fused_constant_pad_nd_3": 2,
+          "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 5,
+          "triton_poi_fused_constant_pad_nd_4": 1,
+          "mcblas__Mck_bf16gemm_nt_256x128x64_4m8n1k_256t_bf16_fp32_fp32_sb_0_0": 1,
+          "triton_poi_fused_clone_5": 1,
+          "triton_poi_fused__to_copy_mul_6": 1,
+          "triton_red_fused__to_copy_clone_mul_sum_7": 1,
+          "triton_per_fused__to_copy_mul_sum_8": 1,
+          "mcblas__Mck_bf16gemm_tn_128x128x128_4m1n8k_256t_bf16_fp32_fp32_sb_0_0": 3,
+          "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 9,
+          "triton_per_fused__to_copy_constant_pad_nd_mul_sum_9": 1,
+          "triton_poi_fused__to_copy_clamp_max_exp_ge_gt_mul_sub_10": 1,
+          "triton_poi_fused_clone_11": 1,
+          "triton_poi_fused__to_copy_clamp_max_exp_mul_sub_12": 1,
+          "triton_red_fused__to_copy_add_mul_sub_sum_13": 1,
+          "_finite_decay_scan": 1,
+          "triton_poi_fused_clone_14": 1,
+          "triton_poi_fused_clone_15": 1,
+          "triton_poi_fused_clone_16": 1
+        },
+        "kernel_total_us": {
+          "void at::native::elementwise_kernel_3_1<128, 4, c10::BFloat16, c10::BFloat16, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 92.928,
+          "void at::native::elementwise_kernel_2_1_dim0_contiguous<64, 4, float, float, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1})": 2.048,
+          "void at::native::elementwise_kernel_transpose_copy<c10::BFloat16, c10::BFloat16, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, c10::BFloat16>(char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})": 8.96,
+          "chunk_bwd_kernel_dv_local": 22.528,
+          "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64": 295.424,
+          "triton_poi_fused_0": 2.304,
+          "triton_poi_fused_constant_pad_nd_1": 5.12,
+          "triton_poi_fused_constant_pad_nd_2": 14.08,
+          "triton_poi_fused_constant_pad_nd_3": 15.104,
+          "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 164.608,
+          "triton_poi_fused_constant_pad_nd_4": 6.656,
+          "mcblas__Mck_bf16gemm_nt_256x128x64_4m8n1k_256t_bf16_fp32_fp32_sb_0_0": 13.312,
+          "triton_poi_fused_clone_5": 9.728,
+          "triton_poi_fused__to_copy_mul_6": 9.984,
+          "triton_red_fused__to_copy_clone_mul_sum_7": 22.272,
+          "triton_per_fused__to_copy_mul_sum_8": 2.304,
+          "mcblas__Mck_bf16gemm_tn_128x128x128_4m1n8k_256t_bf16_fp32_fp32_sb_0_0": 41.984,
+          "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0": 273.408,
+          "triton_per_fused__to_copy_constant_pad_nd_mul_sum_9": 9.728,
+          "triton_poi_fused__to_copy_clamp_max_exp_ge_gt_mul_sub_10": 16.64,
+          "triton_poi_fused_clone_11": 11.776,
+          "triton_poi_fused__to_copy_clamp_max_exp_mul_sub_12": 20.736,
+          "triton_red_fused__to_copy_add_mul_sub_sum_13": 76.8,
+          "_finite_decay_scan": 13.056,
+          "triton_poi_fused_clone_14": 6.144,
+          "triton_poi_fused_clone_15": 2.56,
+          "triton_poi_fused_clone_16": 3.584
+        }
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "compiled_coefficients.npz",
+      "sha256": "7b8ffef0203364d17355ef2e9594d5ac74f54ad32da0c06b595d1232c226005c",
+      "dtypes": {
+        "q": "torch.float32",
+        "k": "torch.float32",
+        "v": "torch.float32",
+        "beta": "torch.float32",
+        "alpha": "torch.float32",
+        "g": "torch.float32"
+      }
+    },
+    {
+      "file": "finite_coefficients.npz",
+      "sha256": "d7d093007534dc6efa41201a717f169f592caf8293ad07077369c71cf8bbbbd8",
+      "dtypes": {
+        "q": "torch.float32",
+        "k": "torch.float32",
+        "v": "torch.float32",
+        "beta": "torch.float32",
+        "alpha": "torch.float32",
+        "g": "torch.float32"
+      }
+    },
+    {
+      "file": "native_coefficients.npz",
+      "sha256": "1faffbf2ebfbcf5c89a6ec1a4262ce2c99a2602b225b5a8ae3a639f68ecad41f",
+      "dtypes": {
+        "q": "torch.bfloat16",
+        "k": "torch.bfloat16",
+        "v": "torch.bfloat16",
+        "beta": "torch.bfloat16",
+        "g": "torch.float32"
+      }
+    }
+  ],
+  "sources_before": {
+    "count": 2853,
+    "changes": [
+      "fla/utils.py",
+      "fla/ops/common/chunk_delta_h.py",
+      "fla/ops/gated_delta_rule/wy_fast.py"
+    ],
+    "sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6"
+  },
+  "versions": {
+    "torch": "2.8.0+metax3.5.3.9",
+    "triton": "3.0.0",
+    "backend": "maca",
+    "device": "MetaX C550"
+  },
+  "resident_input_bytes": 50742528,
+  "sources_after": {
+    "count": 2853,
+    "changes": [
+      "fla/utils.py",
+      "fla/ops/common/chunk_delta_h.py",
+      "fla/ops/gated_delta_rule/wy_fast.py"
+    ],
+    "sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6"
+  },
+  "compiler_counters": {
+    "inline_call": {},
+    "stats": {
+      "calls_captured": 524,
+      "unique_graphs": 2
+    },
+    "inductor": {
+      "pattern_matcher_count": 46,
+      "pattern_matcher_nodes": 46,
+      "fxgraph_cache_miss": 2,
+      "async_compile_cache_miss": 70,
+      "extern_calls": 35,
+      "async_compile_cache_hit": 34,
+      "triton_bundler_save_kernel": 545,
+      "benchmarking.InductorBenchmarker.benchmark_gpu": 97
+    },
+    "aot_autograd": {
+      "total": 2,
+      "autograd_cache_miss": 2,
+      "autograd_cache_saved": 2,
+      "ok": 2
+    },
+    "graph_break": {},
+    "aten_mm_info": {
+      "aten.bmm_192_64_64_128": 10,
+      "aten.bmm_192_64_128_64": 12,
+      "aten.bmm_192_64_128_128": 11
+    }
+  },
+  "compiler_generated_sources": [
+    {
+      "file": "inductor_cache/o5/co5ntnmtbgn2uous2wpp5ftdylj564d4n4pssu6ocuc3uwl7m6up.py",
+      "sha256": "4c48fe1701604c97bafa481f12b5fa7921168ce947e3b59d5c9ff299334b0279",
+      "bytes": 2864
+    },
+    {
+      "file": "inductor_cache/lp/clpn73zajubpeclyhbz6ihvcrqajj7c4shy53euezwzzpgcgzyy7.py",
+      "sha256": "a642a8389e4e1eb238c0f2bfcfa067cdad36a319738bb8bfd6cd1b80a03af12e",
+      "bytes": 3641
+    },
+    {
+      "file": "inductor_cache/y7/cy7bmnmzi77yqzax42wp3zgd4ucy6au2k26i7tp6ft7dt4lueyl6.py",
+      "sha256": "4b376ffd8662f35df8924a11663ae4cfedcf9c53903e5e90a5492a6e780ad8a9",
+      "bytes": 3082
+    },
+    {
+      "file": "inductor_cache/cc/cccdm77dcl667mmmyxl6rwngynt5e7ipit2vweduxphaab6tjlqw.py",
+      "sha256": "b3458d810fffc99bef015b11b251a06432cfd6f35cba8c25ae8f6ca48c5b02b6",
+      "bytes": 2403
+    },
+    {
+      "file": "inductor_cache/6b/c6bzeji6n6vdkny6ht23crbxg7my2maeyw7kt5635ffjk2x5s6ti.py",
+      "sha256": "d1c763218baf349b57c9866baa9a2ae95b2dd850399fd78f1299c599f22eb4af",
+      "bytes": 4017
+    },
+    {
+      "file": "inductor_cache/ed/cedp76ruqxzb5vhkhnkjfelpqwvnnjmkkycl2iwm2yblazli2p7s.py",
+      "sha256": "f6b05b729c5b1adcf2f11b7baee94bb24d453b824e3073cadd4c190670f7eb45",
+      "bytes": 2901
+    },
+    {
+      "file": "inductor_cache/fs/cfsm5rvzi2o66bdyet56tcqasycwd2hxqoxfmrcd6266f5zjrfi2.py",
+      "sha256": "081be7672cf59873f40ddbf0be467cb3a6f6c43c3188c0c3a57929b7c8190315",
+      "bytes": 2441
+    },
+    {
+      "file": "inductor_cache/gk/cgkamyu2etowsnv7oelkujkbhmilbflsh63puh2z53aery4656sl.py",
+      "sha256": "25edf225210a9f89b7a894116d0ba686c834231ccc9707dbbb998708a943acd7",
+      "bytes": 2446
+    },
+    {
+      "file": "inductor_cache/pz/cpztwunqn5wxgiioscicrlbktw6kaovu6v3a6ean7uxk4n6rh6by.py",
+      "sha256": "6c17a1e53e6e1f318683712c543003e69f6b859cbf26b52f28cae31ac8dcf37c",
+      "bytes": 98558
+    },
+    {
+      "file": "inductor_cache/mv/cmvg236ll6vfnhemr3u2aqihvr76i6bi4muntl4qqduhhdlt3zm6.py",
+      "sha256": "3567cabb3a2c932015e6587d35ac16c8aa4dc3ee24ee4a24fc053d31cb177600",
+      "bytes": 2437
+    },
+    {
+      "file": "inductor_cache/hh/chh4yuohwadqcwsobbw744xnfsoydqf2lcysu3dgwmdlfxtzixvu.py",
+      "sha256": "54482dbe04f898c4457f59eb5117eabaa6ead200ec47da467b6ed187ba19c4ca",
+      "bytes": 2441
+    },
+    {
+      "file": "inductor_cache/i3/ci3a6e7hlmurovbze32u3mvq4wmh2uhoomiq4o3iulyttqnabkwn.py",
+      "sha256": "90c5a6ce9c2d9ee69af153fc48e69f107407fec101c03f32f6b772d6692a91d8",
+      "bytes": 2903
+    },
+    {
+      "file": "inductor_cache/r7/cr7ydmqupofa4n2fvv4yyi4cve4web5lljxalflsotujpsfb432x.py",
+      "sha256": "0168d7043dce88fe09f12fe0300d9f08b02293b4051cf514b551e527a4dd9688",
+      "bytes": 3300
+    },
+    {
+      "file": "inductor_cache/zc/czceqoawimoy6rxsvcrwed3tqgzms7uqmyjs64i5o3llaew4bx6j.py",
+      "sha256": "b121fc970be6690f4fabe8ed7ef0bc614ee788be5ceddfce8c6c87913c3605d2",
+      "bytes": 2446
+    },
+    {
+      "file": "inductor_cache/ne/cnehtmqcxu3y2h65lld6zrsuhmplsru2tqkiuio42mlfoptauaq2.py",
+      "sha256": "8a471fc8f33b8295be929405a5104518f55526a805d4d8d24e79ee3ae58fa8df",
+      "bytes": 11056
+    },
+    {
+      "file": "inductor_cache/ke/cke3urri5oiknqxdqw4rscmwzoniqnvhsucyrzxo4s5zqji3guho.py",
+      "sha256": "a31924105961165e045e759a0ffc0cb0d8be55827ab676b0e5a2f627da0cc164",
+      "bytes": 4430
+    },
+    {
+      "file": "inductor_cache/3m/c3mb5hjkjfjwo5nn57qri3rhraub6kpylpgzzbahckeu5zynorzx.py",
+      "sha256": "60a90f3cfec246d7cdfc3251fd4f9888fa5dc87d4dba73a3c84d8858e8a48c0b",
+      "bytes": 2051
+    },
+    {
+      "file": "inductor_cache/if/cifswi5x4kzzixywjxe7f7giffc4vhhxaapn5lowu2wv7iryukbm.py",
+      "sha256": "8d42d2cd29a8cba1be9d63218bf1e32bd4c448ffea76d5ab6e650569c4b34a03",
+      "bytes": 3133
+    },
+    {
+      "file": "inductor_cache/kq/ckqdwz4zggab55od37ozccpmvfrh7yukt7hp676x73xn2k3vuodd.py",
+      "sha256": "145dd57bdd7f3dd41ee7754192e23ac284be7d9fc5895a2f2bfedf0f52c1f4a4",
+      "bytes": 2437
+    },
+    {
+      "file": "inductor_cache/wf/cwfsjwfusomkah6rbzy23uk3eudrt7hwi47biwa6srvy6zulg636.py",
+      "sha256": "3f6701a8380578ef3140b544a7a4e9cc93e43961afd58cb533e53e01708a1645",
+      "bytes": 2370
+    },
+    {
+      "file": "inductor_cache/5k/c5knsp7rsmuqtvhhrlod3xj3zf5fy4bhuxezvk6refcabdjivib4.py",
+      "sha256": "e9b519b8def6272e688d44e1e6136b5fc226280c4f0c5489d40664e968a2bfec",
+      "bytes": 3641
+    },
+    {
+      "file": "inductor_cache/hz/chz6qm76juh5veejf6ffrqhnwmjeljvpemsihpak6lbaeaox4eem.py",
+      "sha256": "47eb25a0b96be4d8c7109962bce882d07f0ca0194eb231c6f9e1e90967c84711",
+      "bytes": 2401
+    },
+    {
+      "file": "inductor_cache/en/cenvvldn4mn2n3f7vrf5adup5w7lzu5v7hjvuxhmjtp7ubcar2dn.py",
+      "sha256": "52111876e603d7997f0d646962091bbdbd4e919cdc7c323c1a44ef1367ddc7ef",
+      "bytes": 99396
+    },
+    {
+      "file": "inductor_cache/7q/c7qogctgautghjmqlxfc7brb64i7igs74tti4lgio4wuwic65x6i.py",
+      "sha256": "4165c58a9d1033e7b6d6b6f375ce97298d7e753a546259d52acd59a7c9e25e46",
+      "bytes": 10943
+    },
+    {
+      "file": "inductor_cache/52/c52zd3sttlutebbdb33fyitiwwhhswdfdw5nuiessjhwsbldvgyb.py",
+      "sha256": "32aa09b4fb443a4270418f48c4f4a64f3787b6b95293000560762d2b077039e1",
+      "bytes": 2037
+    },
+    {
+      "file": "inductor_cache/kk/ckk2gpd4nyxosgsuaijxvc6k5pi4ppusal3tav5xyalyt6t2runp.py",
+      "sha256": "97001787e9d8546565b32b46dff7a4b20320d1b3c798fac0e3c341e2606640d0",
+      "bytes": 2049
+    },
+    {
+      "file": "inductor_cache/k3/ck37juyay67sveriy76dsyld6j3i2y2ddtvfdi4yf2lmen5ug4im.py",
+      "sha256": "ea484d41bee80b305cfcec1b5b77e90489a9cc3ead6b8d72f9171fb1631acbcb",
+      "bytes": 4019
+    },
+    {
+      "file": "inductor_cache/43/c43gwu47faye3axej4dp4kktav32su57wr3udaiieexs6sbsuowd.py",
+      "sha256": "7af13aef158e8a28c055a225642e6b1bbdf2fe847db30267a94d51af6b4bca0a",
+      "bytes": 4432
+    },
+    {
+      "file": "inductor_cache/sh/cshjzmthzzp7ruwsa47gs6abodrkldjoptnds23pcxlbpqnh3smb.py",
+      "sha256": "23dd47a6b8266ae93e824941c0b159a38b4143386f18811e9d3575dcba0abf21",
+      "bytes": 2237
+    },
+    {
+      "file": "inductor_cache/uq/cuqtachtc7b2o3h7kay4c62qpujugag6zc5n6i6u3sziunp5gzh6.py",
+      "sha256": "4c76730ac846733fdc68a7a677af7d3a23ae1528e25903e69d31f81e82ea83cb",
+      "bytes": 3200
+    },
+    {
+      "file": "inductor_cache/le/clexx56qlzjaq4zvnujtlxswxaudtebkwnfmbllrs56rlisoboqd.py",
+      "sha256": "646d91175df42ef8577b8e5e9bec756b49979cfc4b52dbc392757588979fedd0",
+      "bytes": 2037
+    },
+    {
+      "file": "inductor_cache/7b/c7bapju3fc4dwcgb3ruwnd3nhvgcbynxyg55ldhuzixso4damg5g.py",
+      "sha256": "dc2872968673ba1b03dde85a0cf97e310a5bef5bd0ebe54232a40d709f822c3f",
+      "bytes": 3300
+    },
+    {
+      "file": "inductor_cache/ix/cix7h5oxhnib3jh34dna3d6ial62h3f5kkcu6ialaqkqsjdhd57z.py",
+      "sha256": "ac1dd8b6c54bcbc8881dca34bb12276f44f0a801b0ce70d4d5d1f34fe5336538",
+      "bytes": 2156
+    },
+    {
+      "file": "inductor_cache/w4/cw4kxmkxktdc7wrngv63c6o3lmr5esfaibd3z6d54jktv2cgqpjp.py",
+      "sha256": "2afbf930ce660a2d88b455ba140750b7ced516c6e51285c2a56775688f3e8f27",
+      "bytes": 2156
+    }
+  ],
+  "job_seconds": 54.62925023958087
+}
