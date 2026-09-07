@@ -1,0 +1,63 @@
+{
+  "checkpoint": "${CHECKPOINT}",
+  "checkpoint_receipt": "${ARTIFACT_ROOT}/codex_checkpoint_receipt_20260906_v1/checkpoint_receipt.json",
+  "checkpoint_receipt_sha256": "1cf91196e3f463d3e2e89221e6b198d990d6b40dc6cefe54fc7523deaa76eba5",
+  "native_model_source_sha256": "d96eeea4c000abaa70a7c0277437d0843b5b2d005ab233e0ffcaf860a357f1aa",
+  "official_normalized_sources": {
+    "llm_attr.py": "a141e5c346681dc4c29cd62ee07561e93882d4f56b7fd95788743ee8ef403979",
+    "llm_attr_eval.py": "df117c5d02b8960f72a00a74e07c071812ff7cd41c2fbcf9b1e78f485e7e8fda",
+    "ifr_core.py": "35a57668a007f7a57635f15b75c33a9c8f4540971091a7db6b931bf3f7bc9958",
+    "ft_ifr_improve.py": "583f4b7d0426407eb9a517f173365762860a1f4382f472dffb5c07de7d3e94a1",
+    "exp/exp2/run_exp.py": "3c9d3f241fd180c453ea247eafa3deb395d4a16aad72fbe511c902e0ed8d44e5",
+    "exp/exp2/dataset_utils.py": "26bc50217725d18ea5efd5a94d8440c5d56c79d7e091e23f68eaf91670dd9e00"
+  },
+  "official_evaluation_backend": "eager",
+  "maximum_queue_seconds": 7200,
+  "purpose": "Original FT batch evaluation equivalence and actual throughput on frozen P1 and strongest-RISE FT curves. Same untouched original evaluator, model, inputs/masks, precision and eager backend. No attribution change or new benchmark.",
+  "study_sha256": "5cdf12a5c83c43e6379c7197a402d7fd4cba763f84a11d6c7f477c4ed6773b93",
+  "sources": {
+    "original_ft_batched_evaluation.py": "8b8e8a2fa79ad3aaaffad5a5f5dda092e51224546e2591e90d6a537abaec952c"
+  },
+  "required_parent": "${ARTIFACT_ROOT}/codex_pv_interaction_development16_20260907_v1/results.json",
+  "required_parent_sha256": "679842f0ccfc32769a416868f6c08f70ddffff84298b80b02f02ca9da1457476",
+  "selection": [
+    [
+      "niah_mq_q2",
+      0
+    ],
+    [
+      "niah_mq_q2",
+      2
+    ],
+    [
+      "morehopqa",
+      0
+    ]
+  ],
+  "batch_sizes": [
+    1,
+    2,
+    4
+  ],
+  "measured_repeats": 2,
+  "FT_curve_control": {
+    "niah_mq_q2": "flashtrace_legacy_hop0",
+    "morehopqa": "flashtrace_both_hop2"
+  },
+  "wait_for_pid": 106350,
+  "wait_for_script": "codex_vendor_fa_source_gpu_language_20260907_v1",
+  "budget": {
+    "physical_evaluation_forwards": 453,
+    "evaluation_trajectories": 777,
+    "native_decoder_layer_calls": 16308,
+    "native_decoder_layer_trajectories": 27972,
+    "model_backwards": 0,
+    "attribution_calls": 0
+  },
+  "diagnostic_tolerances": {
+    "max_raw_curve_error_absolute_or_relative": "max(0.5, 0.001*abs(single_case_curve_value))",
+    "max_RISE_absolute_difference": 0.002,
+    "max_MAS_absolute_difference": 0.002
+  },
+  "acceptance_scope": "Diagnose original-curve numerical equivalence before using batch execution in new comparisons; failure remains failure, no relaxed thresholds. Repeats, warmups, failed/OOM calls all charged. Select batch only after complete evidence, not estimated physical-call reduction."
+}

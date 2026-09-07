@@ -50,6 +50,14 @@ assert isinstance(metric_function.body[-1],ast.Assert) and isinstance(metric_fun
 metric_function.body=metric_function.body[:-2]
 ns={'np':np,'math':math,'out':out};exec(compile(ast.Module(body=functions,type_ignores=[]),'independent_original_metrics','exec'),ns)
 unique_parent_curves=set()
+ancestor_cache={}
+def load_verified_ancestor(file,digest):
+    key=(str(file),digest)
+    if key not in ancestor_cache:
+        raw=file.read_bytes()
+        assert hashlib.sha256(raw).hexdigest()==digest
+        ancestor_cache[key]=json.loads(raw)
+    return ancestor_cache[key]
 def check_run(r,eligible,ref,branch,diagnostics):
     c = r['end_to_end_cost']
     assert c['native_forwards'] == 1 and c['native_forward_trajectories'] == 2 and (c['vjps'] == 0)
@@ -104,6 +112,14 @@ def check_profile(row,method,profile):
     annotations = [e for e in trace['traceEvents'] if e.get('name') == 'ATTR_NATIVE_HALF_LINEAR' and e.get('ph') == 'X' and (e.get('cat') == 'user_annotation')]
     assert len(annotations) == 253
     cpu = {e.get('args', {}).get('External id'): e for e in trace['traceEvents'] if e.get('cat') == 'cpu_op' and e.get('args', {}).get('External id') is not None}
+    runtime_by_correlation = {}
+    for event in trace['traceEvents']:
+        if event.get('cat') == 'cuda_runtime' and 'LaunchKernel' in event.get('name', ''):
+            correlation = event.get('args', {}).get('correlation')
+            if correlation is not None:
+                assert correlation not in runtime_by_correlation
+                runtime_by_correlation[correlation] = event
+    correlation_link_repairs = []
     projection_kernels = []
     unlinked = []
     coverage = set()
@@ -112,8 +128,21 @@ def check_profile(row,method,profile):
             continue
         host = cpu.get(e.get('args', {}).get('External id'))
         if host is None:
-            unlinked.append(e['name'])
-            continue
+            launch = runtime_by_correlation.get(e.get('args', {}).get('correlation'))
+            if launch is not None:
+                hosts = [h for h in cpu.values() if h['name'] == 'aten::mm'
+                         and h.get('pid') == launch.get('pid') and h.get('tid') == launch.get('tid')
+                         and h['ts'] <= launch['ts']
+                         and launch['ts'] + launch.get('dur', 0) <= h['ts'] + h.get('dur', 0) + 0.001]
+                assert len(hosts) <= 1, 'Ambiguous runtime-to-aten::mm evidence'
+                if hosts:
+                    host = hosts[0]
+                    assert e['ts'] >= launch['ts']
+                    correlation_link_repairs.append({'correlation': e['args']['correlation'],
+                        'kernel': e['name'], 'launch': launch, 'cpu_aten_mm': host})
+            if host is None:
+                unlinked.append(e['name'])
+                continue
         for index, scope in enumerate(annotations):
             if scope['ts'] <= host['ts'] and host['ts'] + host.get('dur', 0) <= scope['ts'] + scope['dur'] + 0.001:
                 projection_kernels.append(e['name'])
@@ -122,6 +151,7 @@ def check_profile(row,method,profile):
     assert len(coverage) == 253, 'Every attribution projection must have actual native GEMM evidence'
     assert all(('__half' in n or 'fp16' in n.lower() for n in projection_kernels))
     profile_dispatch = {'dataset': row['dataset'], 'idx': row['idx'], 'method': method, 'pv_rule': p['pv_rules'][method]}
+    profile_dispatch['runtime_correlation_links_for_missing_external_id'] = correlation_link_repairs
     profile_dispatch['native_half_projection_dispatch'] = {'annotated_calls': len(annotations), 'covered_calls': len(coverage), 'actual_GEMM_kernel_calls': len(projection_kernels), 'actual_kernel_names': sorted(set(projection_kernels)), 'unlinked_GEMM_events_outside_claim': unlinked}
     generated = list((folder / 'inductor_cache').rglob('*.py'))
     finite_files = [f for f in generated if any((marker in f.read_text() for marker in ['def triton_red_fused__log_softmax', 'def triton_red_fused_add_div_mean_mul_pow_reciprocal_sqrt_sum', 'def triton_red_fused_all_gt', 'def triton_per_fused_all_bitwise_and_gt']))]

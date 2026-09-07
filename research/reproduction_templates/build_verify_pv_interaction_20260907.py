@@ -15,6 +15,40 @@ assert [(a['layer'],a['endpoint']) for a in r['native_fa_operand_audits']]==[(i,
 '''
 profile=prior[prior.index("        f = folder / row['profile']['trace']"):prior.index("    fields = ['rise', 'mas', 'recovery']")]
 profile=textwrap.dedent(profile).replace("row['profile']","profile")
+# Two MACA traces omit External id on one real GEMM launch each. Require
+# the unique runtime correlation chain inside the same aten::mm and scope;
+# never infer execution from a scope name or from a nearby GPU timestamp.
+profile=profile.replace("projection_kernels = []", """runtime_by_correlation = {}
+for event in trace['traceEvents']:
+    if event.get('cat') == 'cuda_runtime' and 'LaunchKernel' in event.get('name', ''):
+        correlation = event.get('args', {}).get('correlation')
+        if correlation is not None:
+            assert correlation not in runtime_by_correlation
+            runtime_by_correlation[correlation] = event
+correlation_link_repairs = []
+projection_kernels = []""")
+old_missing="""    if host is None:
+        unlinked.append(e['name'])
+        continue"""
+new_missing="""    if host is None:
+        launch = runtime_by_correlation.get(e.get('args', {}).get('correlation'))
+        if launch is not None:
+            hosts = [h for h in cpu.values() if h['name'] == 'aten::mm'
+                     and h.get('pid') == launch.get('pid') and h.get('tid') == launch.get('tid')
+                     and h['ts'] <= launch['ts']
+                     and launch['ts'] + launch.get('dur', 0) <= h['ts'] + h.get('dur', 0) + 0.001]
+            assert len(hosts) <= 1, 'Ambiguous runtime-to-aten::mm evidence'
+            if hosts:
+                host = hosts[0]
+                assert e['ts'] >= launch['ts']
+                correlation_link_repairs.append({'correlation': e['args']['correlation'],
+                    'kernel': e['name'], 'launch': launch, 'cpu_aten_mm': host})
+        if host is None:
+            unlinked.append(e['name'])
+            continue"""
+assert profile.count(old_missing)==1
+profile=profile.replace(old_missing,new_missing)
+profile=profile.replace("profile_dispatch['native_half_projection_dispatch'] =", "profile_dispatch['runtime_correlation_links_for_missing_external_id'] = correlation_link_repairs\nprofile_dispatch['native_half_projection_dispatch'] =")
 profile=profile.replace("{'dataset': row['dataset'], 'idx': row['idx']}","{'dataset': row['dataset'], 'idx': row['idx'], 'method': method, 'pv_rule': p['pv_rules'][method]}")
 profile=profile.replace("('ATTR_COMPILED_MIDPOINT', 144)","('ATTR_COMPILED_MIDPOINT', 144 if p['pv_rules'][method]=='symmetric' else 72)")
 profile=profile.replace("out['profiles'].append(profile_dispatch)","profile_dispatch['all_actual_GEMM_kernel_calls']=sum('gemm' in n.lower() for n in names)\nout['profiles'].append(profile_dispatch)")
@@ -22,6 +56,9 @@ curves=prior[prior.index("    for method in row['scores']:"):prior.index("    if
 curves=curves.replace("p['parent_method_map'].get(method, method)","parent_map.get(method, method)")
 curves=curves.replace("p['required_pilot'] and provenance['source_sha256'] == p['required_pilot_sha256']","parent_source and provenance['source_sha256'] == parent_digest")
 curves=curves.replace("row['scores'][method] != old['scores'][parent_method]","(parent_method not in old['scores'] or row['scores'][method] != old['scores'][parent_method])")
+# Recheck each unique immutable ancestor hash on first load, then reuse the
+# parsed document. This removes redundant disk I/O only, no evidence checks.
+curves=curves.replace("assert sha(file) == link['source_sha256']\n            ancestor = json.loads(file.read_text())", "ancestor = load_verified_ancestor(file, link['source_sha256'])")
 header='''"""Independent PV-rule16 source, native runtime, original metric and full-cost review."""
 import ast,hashlib,json,math,statistics,re,os,subprocess,sys
 from pathlib import Path
@@ -74,6 +111,14 @@ assert isinstance(metric_function.body[-1],ast.Assert) and isinstance(metric_fun
 metric_function.body=metric_function.body[:-2]
 ns={'np':np,'math':math,'out':out};exec(compile(ast.Module(body=functions,type_ignores=[]),'independent_original_metrics','exec'),ns)
 unique_parent_curves=set()
+ancestor_cache={}
+def load_verified_ancestor(file,digest):
+    key=(str(file),digest)
+    if key not in ancestor_cache:
+        raw=file.read_bytes()
+        assert hashlib.sha256(raw).hexdigest()==digest
+        ancestor_cache[key]=json.loads(raw)
+    return ancestor_cache[key]
 def check_run(r,eligible,ref,branch,diagnostics):
 '''
 loop='''

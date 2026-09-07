@@ -27,6 +27,8 @@ for row in d['records']:
         if len(gold):
             chosen=set(row['recovery_topk_local'][method]);refchosen=set(row['recovery_topk_local'][sym]);goldset=set(gold)
             details['methods'][method].update(
+                eligible_tokens=len(keep),original_topk_budget=len(chosen),
+                original_recovery_combinatorial_ceiling=min(1.,len(chosen)/len(gold)),
                 gold_tokens=len(gold),recovered_gold_tokens=len(chosen&goldset),
                 newly_recovered_gold_local_indices=sorted((chosen-refchosen)&goldset),
                 lost_recovered_gold_local_indices=sorted((refchosen-chosen)&goldset),
