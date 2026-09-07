@@ -34,6 +34,10 @@ run=fn('strong_run').replace("pv_rule='symmetric'","pv_rule='content_P1',capture
 run=run.replace('    torch.cuda.empty_cache();preprop_peak=0;finished=False',"    propagate_paired_secant=public_capture if capture_mode=='public' else private_capture\n    torch.cuda.empty_cache();preprop_peak=0;finished=False")
 run=run.replace("result['extra_native_fa_attention_calls']==0","result['extra_native_fa_attention_calls']==(36 if capture_mode=='public' else 0)")
 run=run.replace("report['manual_passes']+=1","report['manual_passes']+=1\n    report['extra_native_fa_attention_calls']+=result['extra_native_fa_attention_calls']\n    result['capture_mode']=capture_mode")
+run=run.replace("report['extra_native_fa_attention_calls']+=result['extra_native_fa_attention_calls']", "assert result['extra_native_fa_attention_calls']==activity['auxiliary_completed']")
+run=run.replace("    torch.cuda.empty_cache();preprop_peak=0;finished=False", "    activity={'auxiliary_attempts':0,'auxiliary_completed':0,'metadata':[]}\n    torch.cuda.empty_cache();preprop_peak=0;finished=False")
+run=run.replace('result=propagate_paired_secant(model,reference,clean,pv_rule=pv_rule)', "result=propagate_paired_secant(model,reference,clean,pv_rule=pv_rule,**({'activity':activity} if capture_mode=='public' else {}))")
+run=run.replace("        full['peak_allocated_bytes']=max(preprop_peak,full['peak_allocated_bytes'])", "        full['public_FA_activity']=activity\n        report['extra_native_fa_attention_calls']+=activity['auxiliary_completed']\n        full['peak_allocated_bytes']=max(preprop_peak,full['peak_allocated_bytes'])",1)
 run=run.replace("{'pv_rule':pv_rule,'completed':finished", "{'pv_rule':pv_rule,'capture_mode':capture_mode,'completed':finished")
 driver+=run+'\n'
 driver+='''
@@ -90,7 +94,7 @@ p.update(purpose='Three original NI0/NI2/MH0 cases, frozen P1 rule. Replace priv
  required_parent='${ARTIFACT_ROOT}/codex_pv_interaction_development16_20260907_v1/results.json',
  required_parent_sha256='679842f0ccfc32769a416868f6c08f70ddffff84298b80b02f02ca9da1457476',
  selection=[['niah_mq_q2',0],['niah_mq_q2',2],['morehopqa',0]],
- wait_for_pid=106507,wait_for_script='codex_original_ft_batch_probe_20260907_v1',
+ wait_for_pid=106651,wait_for_script='codex_public_fa_capture_probe_20260907_v1',
  repeats='Each case/mode1warm+3measured, rotated; NI0 one extra profile per mode. Profile calls charged but excluded from latency medians.',
  budget={'native_root_forwards':26,'native_vjps':0,'evaluation_forwards':0,'ft_attribution_forwards':0,'ordinary_reference_forwards':0,
   'native_attribution_forwards':26,'manual_passes':26,'extra_layer_replay_calls':936,'extra_native_fa_attention_calls':468,
@@ -100,9 +104,13 @@ p.update(purpose='Three original NI0/NI2/MH0 cases, frozen P1 rule. Replace priv
   'max_per_case_peak_extra_bytes_to_same_job_private':76021760,
   'threshold_scope':'Researcher-chosen conservative implementation adoption guard, not a user-mandated threshold or new scientific quality gate. Failed cost guard means retain as explicit unsupported default candidate; do not hide extra calls.'},
  attribution_batch_scope='Physical B2 is one example at two actual endpoints; not two-example batching.',
- metadata_scope='Documented public LSE only; testing S_dmask must be empty and is never decoded. Auxiliary output never used by model. Python public-call observer is an explicit capability requirement, not all-future-version compatibility.')
+ metadata_scope='Documented public LSE only; testing S_dmask must be None or empty Tensor and is never decoded. Actual descriptor retained. Auxiliary output never used by model. Python public-call observer is an explicit capability requirement, not all-future-version compatibility.',
+ previous_attempt={'directory':'${ARTIFACT_ROOT}/codex_public_fa_capture_probe_20260907_v1','status':'failed_return_type_guard','raw_sha256':sha(A/'snapshot${ARTIFACT_ROOT}/codex_public_fa_capture_probe_20260907_v1/results.json'),
+  'change':'Accept no testing matrix represented by None as well as empty Tensor; retain actual descriptor. Fix exception-path auxiliary-call accounting. No arithmetic, cost or numerical adoption threshold changes.',
+  'actual_budget_reconstructed_from_calls_and_failure_site':{'root_forwards':2,'root_endpoint_trajectories':4,'extra_layer_replays':37,'extra_endpoint_layer_replays':74,'auxiliary_FA_calls':1,'completed_manual_passes':1,'failed_manual_attempts':1,'evaluation_forwards':0,'backwards':0},
+  'raw_counter_caveat':'v1 extra_native_fa_attention_calls incorrectly remained0 because updated only on full-attribution success. One completed auxiliary call is proven by the subsequent failed return guard. Raw preserved; use explicit corrected historical budget, not overwritten raw.'})
 protocol=A/'public_fa_capture_probe_protocol_20260907.json';protocol.write_text(json.dumps(p,indent=2),encoding='utf-8')
-subprocess.run([sys.executable,str(A/'prepare_remote_experiment.py'),'${ARTIFACT_ROOT}/codex_public_fa_capture_probe_20260907_v1',
+subprocess.run([sys.executable,str(A/'prepare_remote_experiment.py'),'${ARTIFACT_ROOT}/codex_public_fa_capture_probe_20260907_v2',
  f'study.py={study}',f'protocol.json={protocol}',*[f'{name}={A/name}' for name in sources],
  '--request',str(A/'public_fa_capture_probe_launch_20260907.json')],check=True)
 print('Frozen public capture probe:26root/0backward,936layer replays,468extra public FA calls.')

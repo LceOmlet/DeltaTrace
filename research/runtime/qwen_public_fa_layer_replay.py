@@ -5,7 +5,8 @@ No private FA return slots, model/attention forward replacement or custom kernel
 Unsupported public wrappers/metadata allocations fail explicitly.
 """
 class NativeLayerReplay:
-    def __init__(self,model,checkpoint,reference=None):
+    def __init__(self,model,checkpoint,reference=None,activity=None):
+        self.activity=activity if activity is not None else {'auxiliary_attempts':0,'auxiliary_completed':0,'metadata':[]}
         self.model=model;self.checkpoint=checkpoint;self.reference=reference
         self.auxiliary_attention_calls=0;self.public_capture_checks=[]
         self.calls=0;self.checks=[];self.boundary_checks=[];self.last_index=None;self.last_values=None
@@ -74,17 +75,24 @@ class NativeLayerReplay:
         actual_arguments['return_attn_probs']=True
         with torch.no_grad():
             self.auxiliary_attention_calls+=1
+            self.activity['auxiliary_attempts']+=1
             auxiliary=flash_attn_func(**actual_arguments)
+            self.activity['auxiliary_completed']+=1
         assert isinstance(auxiliary,tuple) and len(auxiliary)==3
         auxiliary_out,lse,testing_matrix=auxiliary
-        assert isinstance(testing_matrix,torch.Tensor) and testing_matrix.numel()==0, 'Public FA unexpectedly allocated the testing matrix'
+        descriptor={'type':type(testing_matrix).__name__,
+            'shape':list(testing_matrix.shape) if isinstance(testing_matrix,torch.Tensor) else None,
+            'numel':testing_matrix.numel() if isinstance(testing_matrix,torch.Tensor) else None}
+        self.activity['metadata'].append({'layer':index,'testing_return':descriptor})
+        assert testing_matrix is None or (isinstance(testing_matrix,torch.Tensor) and testing_matrix.numel()==0), descriptor
+        testing_numel=0 if testing_matrix is None else testing_matrix.numel()
         assert lse.shape==(values['fa_q'].shape[0],values['fa_q'].shape[2],values['fa_q'].shape[1])
         assert lse.dtype==torch.float32 and torch.isfinite(lse).all()
         output_exact=bool(torch.equal(auxiliary_out,values['fa_out']))
         assert output_exact, 'Public metadata invocation changed endpoint attention output'
         values['fa_lse']=lse.detach()
         self.public_capture_checks.append({'layer':index,'public_output_exact_to_actual_model_FA':output_exact,
-            'testing_matrix_numel':testing_matrix.numel(),'auxiliary_batch_size':values['fa_q'].shape[0],
+            'testing_matrix_numel':testing_numel,'testing_return':descriptor,'auxiliary_batch_size':values['fa_q'].shape[0],
             'lse_shape':list(lse.shape),'lse_dtype':str(lse.dtype),
             'public_function_module':flash_attn_func.__module__,'private_FA_slots_read':False,
             'model_output_replaced':False,'auxiliary_public_FA_calls':1})

@@ -29,7 +29,7 @@
   "official_evaluation_backend": "eager",
   "maximum_queue_seconds": 7200,
   "purpose": "Three original NI0/NI2/MH0 cases, frozen P1 rule. Replace private LSE-slot capture with passive public-call observation plus one unmodified public FA metadata call per layer. No native model/FA implementation changes. Explicit finite arithmetic remains dense; no multi-example attribution or finite FA-kernel completion claim.",
-  "study_sha256": "ae425be518c8c7835a0222a36d9e94c29b2df200b8ca7ce982fb0803ca7e8f00",
+  "study_sha256": "d47be07c65fe74dccd7b0e9970fe63fd61c911999c57027ee88508d0c6be594c",
   "sources": {
     "qwen_signed_secant_native_paired.py": "713590027cf5814879c58bf4d597a6e099ed785e2f75709d7a30f9fa836e11df",
     "qwen_signed_secant_checkpointed_compiled_difference.py": "5ecd7b1b4a40c0fdb1365435ed125b9a3b58543bb563122bc03b94bcd0f6312c",
@@ -52,8 +52,8 @@
     "qwen_signed_secant_native_paired_boundaries.py": "0a779be67cb57d33793a2310222dff68d4f66b126ac6cf55ed78e46ca77b408d",
     "qwen_signed_secant_pv_rules.py": "dcbd445dfc2bd0332864b6552b580a428005067ace24c94bd61b9f0ce1495989",
     "qwen_signed_secant_native_paired_pv_rules.py": "9b4a62e37982b2890743df1881d89a8c9dcfb415522e78d6c11365aeadf4f01b",
-    "qwen_public_fa_layer_replay.py": "5ccbd4ca2b3bed5e06da5bb648a26b2478c27068da3da2fa8dc452bc671b6521",
-    "qwen_signed_secant_paired_public_fa.py": "185e2d5061faba91d5254eed6c4aeadc360b668bd5d2ffdb2b8a872f7709f109"
+    "qwen_public_fa_layer_replay.py": "f75fa78b49c4e16887f87d44ff9260659945c2c31ffc247f9910ef410499f4c8",
+    "qwen_signed_secant_paired_public_fa.py": "ce2ab36d445154d632864ecc240a12421f05b38d0596641283cbc79d523fcf1c"
   },
   "required_parent": "${ARTIFACT_ROOT}/codex_pv_interaction_development16_20260907_v1/results.json",
   "required_parent_sha256": "679842f0ccfc32769a416868f6c08f70ddffff84298b80b02f02ca9da1457476",
@@ -71,8 +71,8 @@
       0
     ]
   ],
-  "wait_for_pid": 106507,
-  "wait_for_script": "codex_original_ft_batch_probe_20260907_v1",
+  "wait_for_pid": 106651,
+  "wait_for_script": "codex_public_fa_capture_probe_20260907_v1",
   "repeats": "Each case/mode1warm+3measured, rotated; NI0 one extra profile per mode. Profile calls charged but excluded from latency medians.",
   "budget": {
     "native_root_forwards": 26,
@@ -94,5 +94,23 @@
     "threshold_scope": "Researcher-chosen conservative implementation adoption guard, not a user-mandated threshold or new scientific quality gate. Failed cost guard means retain as explicit unsupported default candidate; do not hide extra calls."
   },
   "attribution_batch_scope": "Physical B2 is one example at two actual endpoints; not two-example batching.",
-  "metadata_scope": "Documented public LSE only; testing S_dmask must be empty and is never decoded. Auxiliary output never used by model. Python public-call observer is an explicit capability requirement, not all-future-version compatibility."
+  "metadata_scope": "Documented public LSE only; testing S_dmask must be None or empty Tensor and is never decoded. Actual descriptor retained. Auxiliary output never used by model. Python public-call observer is an explicit capability requirement, not all-future-version compatibility.",
+  "previous_attempt": {
+    "directory": "${ARTIFACT_ROOT}/codex_public_fa_capture_probe_20260907_v1",
+    "status": "failed_return_type_guard",
+    "raw_sha256": "2e2eaaf52b1ed0328a8975583a25fc984d0765429fb90efbd5f41042f70bf264",
+    "change": "Accept no testing matrix represented by None as well as empty Tensor; retain actual descriptor. Fix exception-path auxiliary-call accounting. No arithmetic, cost or numerical adoption threshold changes.",
+    "actual_budget_reconstructed_from_calls_and_failure_site": {
+      "root_forwards": 2,
+      "root_endpoint_trajectories": 4,
+      "extra_layer_replays": 37,
+      "extra_endpoint_layer_replays": 74,
+      "auxiliary_FA_calls": 1,
+      "completed_manual_passes": 1,
+      "failed_manual_attempts": 1,
+      "evaluation_forwards": 0,
+      "backwards": 0
+    },
+    "raw_counter_caveat": "v1 extra_native_fa_attention_calls incorrectly remained0 because updated only on full-attribution success. One completed auxiliary call is proven by the subsequent failed return guard. Raw preserved; use explicit corrected historical budget, not overwritten raw."
+  }
 }

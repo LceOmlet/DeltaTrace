@@ -163,6 +163,7 @@ def strong_run(ex,expected,pv_rule='content_P1',capture_mode='private'):
     explicitly production paths without per-operator diagnostic ledgers.
     """
     propagate_paired_secant=public_capture if capture_mode=='public' else private_capture
+    activity={'auxiliary_attempts':0,'auxiliary_completed':0,'metadata':[]}
     torch.cuda.empty_cache();preprop_peak=0;finished=False
     report['manual_attempts']=report.get('manual_attempts',0)+1;save()
     try:
@@ -178,12 +179,14 @@ def strong_run(ex,expected,pv_rule='content_P1',capture_mode='private'):
             # Pullback resets its own peak counter. Preserve the earlier actual
             # preparation/capture peak rather than silently losing it.
             preprop_peak=torch.cuda.max_memory_allocated()
-            result=propagate_paired_secant(model,reference,clean,pv_rule=pv_rule)
+            result=propagate_paired_secant(model,reference,clean,pv_rule=pv_rule,**({'activity':activity} if capture_mode=='public' else {}))
             result['endpoint_scores32']={'before':reference['score32_sum64'],'after':clean['score32_sum64']}
             identity={'input_ids':ids[0].tolist(),'prompt_len':plen,'user_positions':positions,'keep_local_indices':keep,'eligible_positions':eligible}
             del reference,clean,baseline,ids,mask,engine
         finished=True
     finally:
+        full['public_FA_activity']=activity
+        report['extra_native_fa_attention_calls']+=activity['auxiliary_completed']
         full['peak_allocated_bytes']=max(preprop_peak,full['peak_allocated_bytes'])
         report['native_root_forwards']+=full['native_forwards'];report['native_attribution_forwards']+=full['native_forwards']
         report['native_attribution_endpoint_trajectories']+=full['native_forward_trajectories']
@@ -198,7 +201,7 @@ def strong_run(ex,expected,pv_rule='content_P1',capture_mode='private'):
     for key,value in identity.items():assert value==expected[key],key
     full['peak_allocated_bytes']=max(preprop_peak,full['peak_allocated_bytes'])
     report['manual_passes']+=1
-    report['extra_native_fa_attention_calls']+=result['extra_native_fa_attention_calls']
+    assert result['extra_native_fa_attention_calls']==activity['auxiliary_completed']
     result['capture_mode']=capture_mode
     result.update(propagation_internal_seconds=result['seconds'],end_to_end_cost=full,seconds=full['seconds'],
         peak_allocated_bytes=full['peak_allocated_bytes'],preparation_host_seconds_this_call=prep_host_seconds,

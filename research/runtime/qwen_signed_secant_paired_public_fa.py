@@ -105,8 +105,8 @@ def capture_checkpoint_pair(model,before_ids,after_ids,mask,prompt_len):
 
 
 class PairedReplayViews:
-    def __init__(self,model,master):
-        self.native=NativeLayerReplay(model,master)
+    def __init__(self,model,master,activity=None):
+        self.native=NativeLayerReplay(model,master,activity=activity)
         self.index=None;self.values=None;self.layout_records=[]
     def get(self,index,endpoint):
         if index!=self.index:
@@ -133,10 +133,10 @@ class EndpointReplay:
     def __getitem__(self,index):return self.paired.get(index,self.endpoint)
 
 
-def propagate_paired_secant(model,before,after,progress=None,pv_rule='symmetric'):
+def propagate_paired_secant(model,before,after,progress=None,pv_rule='symmetric',activity=None):
     assert before['paired_checkpoint'] is after['paired_checkpoint']
     assert before['endpoint_index']==0 and after['endpoint_index']==1
-    master=before['paired_checkpoint'];paired=PairedReplayViews(model,master)
+    master=before['paired_checkpoint'];paired=PairedReplayViews(model,master,activity=activity)
     left=dict(before);right=dict(after)
     left['layers']=EndpointReplay(paired,0);right['layers']=EndpointReplay(paired,1)
     try:

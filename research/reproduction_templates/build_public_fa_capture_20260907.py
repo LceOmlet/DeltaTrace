@@ -5,6 +5,8 @@ A=Path(__file__).resolve().parent
 old=(A/'qwen_signed_secant_checkpointed_compiled_difference.py').read_text()
 tree=ast.parse(old);node=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=='NativeLayerReplay')
 s=ast.get_source_segment(old,node)
+s=s.replace('reference=None):','reference=None,activity=None):',1)
+s=s.replace('self.model=model;',"self.activity=activity if activity is not None else {'auxiliary_attempts':0,'auxiliary_completed':0,'metadata':[]}\n        self.model=model;",1)
 s=s.replace('self.calls=0;self.checks=[];', 'self.auxiliary_attention_calls=0;self.public_capture_checks=[]\n        self.calls=0;self.checks=[];',1)
 start=s.index('        import sys\n');end=s.index('        expected_output=',start)
 s=s[:start]+'''        import inspect,sys
@@ -49,17 +51,24 @@ s=s[:start]+'''        import inspect,sys
         actual_arguments['return_attn_probs']=True
         with torch.no_grad():
             self.auxiliary_attention_calls+=1
+            self.activity['auxiliary_attempts']+=1
             auxiliary=flash_attn_func(**actual_arguments)
+            self.activity['auxiliary_completed']+=1
         assert isinstance(auxiliary,tuple) and len(auxiliary)==3
         auxiliary_out,lse,testing_matrix=auxiliary
-        assert isinstance(testing_matrix,torch.Tensor) and testing_matrix.numel()==0, 'Public FA unexpectedly allocated the testing matrix'
+        descriptor={'type':type(testing_matrix).__name__,
+            'shape':list(testing_matrix.shape) if isinstance(testing_matrix,torch.Tensor) else None,
+            'numel':testing_matrix.numel() if isinstance(testing_matrix,torch.Tensor) else None}
+        self.activity['metadata'].append({'layer':index,'testing_return':descriptor})
+        assert testing_matrix is None or (isinstance(testing_matrix,torch.Tensor) and testing_matrix.numel()==0), descriptor
+        testing_numel=0 if testing_matrix is None else testing_matrix.numel()
         assert lse.shape==(values['fa_q'].shape[0],values['fa_q'].shape[2],values['fa_q'].shape[1])
         assert lse.dtype==torch.float32 and torch.isfinite(lse).all()
         output_exact=bool(torch.equal(auxiliary_out,values['fa_out']))
         assert output_exact, 'Public metadata invocation changed endpoint attention output'
         values['fa_lse']=lse.detach()
         self.public_capture_checks.append({'layer':index,'public_output_exact_to_actual_model_FA':output_exact,
-            'testing_matrix_numel':testing_matrix.numel(),'auxiliary_batch_size':values['fa_q'].shape[0],
+            'testing_matrix_numel':testing_numel,'testing_return':descriptor,'auxiliary_batch_size':values['fa_q'].shape[0],
             'lse_shape':list(lse.shape),'lse_dtype':str(lse.dtype),
             'public_function_module':flash_attn_func.__module__,'private_FA_slots_read':False,
             'model_output_replaced':False,'auxiliary_public_FA_calls':1})
@@ -70,6 +79,10 @@ ast.parse(doc+s)
 (A/'qwen_public_fa_layer_replay.py').write_text(doc+s+'\n',encoding='utf-8')
 paired=(A/'qwen_signed_secant_native_paired_pv_rules.py').read_text()
 paired=paired.replace('from qwen_signed_secant_checkpointed_compiled_difference import NativeLayerReplay','from qwen_public_fa_layer_replay import NativeLayerReplay')
+paired=paired.replace('def __init__(self,model,master):','def __init__(self,model,master,activity=None):')
+paired=paired.replace('NativeLayerReplay(model,master)','NativeLayerReplay(model,master,activity=activity)')
+paired=paired.replace("progress=None,pv_rule='symmetric'):","progress=None,pv_rule='symmetric',activity=None):")
+paired=paired.replace('PairedReplayViews(model,master)','PairedReplayViews(model,master,activity=activity)')
 needle="        result['native_layer_replay_calls']=paired.native.calls"
 paired=paired.replace(needle,"""        assert paired.native.auxiliary_attention_calls==paired.native.calls
         result['extra_native_fa_attention_calls']=paired.native.auxiliary_attention_calls
