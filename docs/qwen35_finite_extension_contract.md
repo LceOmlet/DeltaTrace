@@ -1,8 +1,8 @@
 # Qwen3.5 native execution and finite-propagation contract
 
-This contract now has a locally evaluated CPU reference for mixed FLA coefficients
-on actual EOS/input endpoints. It is not a complete FLA attribution method or a
-production GPU implementation. The existing Qwen3-8B quality/cost results do not
+This contract now has a locally evaluated CPU reference and an official-compiler
+GPU implementation of mixed FLA coefficients on actual EOS/input endpoints.
+It is not a complete FLA attribution method. The existing Qwen3-8B quality/cost results do not
 transfer to this model. Native execution and fixed-text mappings are recorded in
 the dated evidence below; remaining finite pullbacks and whole-model checks are
 still required.
@@ -259,3 +259,32 @@ it is diagnostic only. Production coefficients must use the chunk formula and
 native state helpers, not that oracle. GPU fusion, normalization/gate/convolution
 pullbacks, padded finite propagation, whole-model quality and cost remain open.
 See [mapping and paired finite evidence](history/Qwen35官方映射与真实双端点有限系数_20260908.md).
+
+## GPU implementation and official compiler fusion
+
+The [GPU mixed pullback](../research/runtime/finite_fla_gpu.py) now executes the
+native input-adjoint stages, BF16/FP32 existing `torch.bmm` calls, and one new
+affine-scan contraction. The scan is finite attribution algebra, not an attention
+forward or a replacement native backward. All sample/head/chunk dimensions are
+batched; only64×64 interaction tiles are materialized. The last incomplete tile
+is extended by identity transitions, not by fabricating extra model outputs.
+
+Official `torch.compile` fusion reduced145 to45 kernel launches on the saved
+real B2,T129,H32,K128 operands. In one matched job, local wall-time medians were
+2.7656ms eager finite,1.4870ms compiled finite,1.0756ms native normalized backward;
+the median paired compiled/native ratio was1.3853. Complete coefficient differences
+between eager/compiled have relative L2 at most1.211e-7; per-head finite-effect
+residuals remain about0.4032%/0.3663%. These are local engineering results.
+
+First compiled-call preparation took25.746s. `max_autotune=False` still allowed
+default compiler tuning:51 benchmark_gpu calls were recorded, with internal
+repetition counts unmeasured. Static graph compilation is currently shape-specific.
+Native model/FA/FLA implementations are unchanged by this extension. See the
+[GPU implementation and cost report](history/Qwen35有限FLA_GPU实现与官方编译融合_20260908.md).
+
+One bounded next optimization can use the exact inner-product identities
+`Z·(Q1 H0)=Q1·(Z H0ᵀ)`, `W·(K1 H0)=K1·(W H0ᵀ)`,
+`U0·(K0 D)=K0·(U0 Dᵀ)` to reuse three contractions already needed by q/k.
+That reuse has not been implemented or measured; floating-point effects and
+temporary lifetimes must be checked. Whole-model nonlinear/full-attention
+pullbacks, real variable-length masking, quality and full costs remain open.

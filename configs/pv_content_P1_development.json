@@ -13,7 +13,7 @@
   "forward_replacement_allowed": false,
   "shadow_backward_allowed": false,
   "small_latency_increase_may_be_accepted": true,
-  "next": "Implement GPU mixed finite FLA contractions using the verified native two-stage adjoint and 64-token tiles; check against the saved real EOS/input endpoints and CPU mixed coefficients, including per-head residuals and actual costs. Then integrate finite normalization, convolution and gates plus whole-model target propagation. Retain default model FA/FLA and precision; no new model-generation, ordinary-backward or quality sweep by default.",
+  "next": "Continue with the verified official-compiler GPU finite FLA path. One bounded inner-product reuse candidate can remove three redundant scalar-contraction GEMMs; verify complete coefficients and same-job costs, then integrate finite L2, convolution, gates and Qwen3.5 D256/BF16 full attention with the fixed model target. Capture raw Q/K from actual native replay, not guessed normalized values. Account for shape recompilation and all endpoint costs. No ordinary-gradient parameter sweep, model generation or full quality sweep by default.",
   "public_capture_evidence": "6a5f7f2ae66d48acd9609c100f31faae19f62ac11bf028dfb7451302e111a29c",
   "public_capture_validated_cases": [
     "NI0",
@@ -128,7 +128,7 @@
     "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
     "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
     "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-    "next_change": "Implement GPU mixed finite FLA contractions using the verified native two-stage adjoint and 64-token tiles; check against the saved real EOS/input endpoints and CPU mixed coefficients, including per-head residuals and actual costs. Then integrate finite normalization, convolution and gates plus whole-model target propagation. Retain default model FA/FLA and precision; no new model-generation, ordinary-backward or quality sweep by default.",
+    "next_change": "Continue with the verified official-compiler GPU finite FLA path. One bounded inner-product reuse candidate can remove three redundant scalar-contraction GEMMs; verify complete coefficients and same-job costs, then integrate finite L2, convolution, gates and Qwen3.5 D256/BF16 full attention with the fixed model target. Capture raw Q/K from actual native replay, not guessed normalized values. Account for shape recompilation and all endpoint costs. No ordinary-gradient parameter sweep, model generation or full quality sweep by default.",
     "initial_optimization_screen": {
       "cases": [
         [
@@ -286,7 +286,7 @@
         "required": true,
         "actual_dispatch_verification_required": true,
         "shadow_implementation_forbidden": true,
-        "support_status": "real_paired_endpoints_and_CPU_mixed_coefficients_verified_GPU_whole_model_pending"
+        "support_status": "local_GPU_finite_and_compiler_fusion_verified_whole_model_pending"
       },
       "real_minibatch_required": true,
       "official_benchmark_scope_retained": true,
@@ -301,7 +301,7 @@
       "full_attribution_support_required": true
     },
     "qwen35_support": {
-      "status": "real_paired_endpoints_CPU_mixed_finite_coefficients_evaluated_GPU_integration_pending",
+      "status": "local_GPU_finite_FLA_and_official_compiler_fusion_verified_whole_model_pending",
       "checkpoint": "${PRIVATE_MOUNT_PATH}",
       "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
       "weight_bytes": 19306310880,
@@ -354,8 +354,8 @@
       "whole_model_supported": false,
       "finite_FLA_attribution_supported": false,
       "real_batch_verified": false,
-      "status_limit": "Two official target/gold mappings, one true B4 EOS/input forward and two native adjoint stages complete. CPU finite mixed coefficients evaluated on real layer0 prefixes; GPU mixed kernels, nonlinear pullbacks, whole-model attribution and quality/cost remain pending.",
-      "next": "Implement GPU mixed finite FLA contractions using the verified native two-stage adjoint and 64-token tiles; check against the saved real EOS/input endpoints and CPU mixed coefficients, including per-head residuals and actual costs. Then integrate finite normalization, convolution and gates plus whole-model target propagation. Retain default model FA/FLA and precision; no new model-generation, ordinary-backward or quality sweep by default.",
+      "status_limit": "GPU finite local pullback and official compiler fusion verified on saved real B2/T129 normalized operands. Still slower than matched local native backward; full model nonlinear/full attention, variable-length integration, quality and complete costs unverified.",
+      "next": "Continue with the verified official-compiler GPU finite FLA path. One bounded inner-product reuse candidate can remove three redundant scalar-contraction GEMMs; verify complete coefficients and same-job costs, then integrate finite L2, convolution, gates and Qwen3.5 D256/BF16 full attention with the fixed model target. Capture raw Q/K from actual native replay, not guessed normalized values. Account for shape recompilation and all endpoint costs. No ordinary-gradient parameter sweep, model generation or full quality sweep by default.",
       "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here.",
       "tokenizer": {
         "tokenizer_EOS_id": 248046,
@@ -708,7 +708,7 @@
       "real_EOS_input_endpoint_batch_executed": true,
       "native_two_stage_adjoint_batch_executed": true,
       "CPU_mixed_FLA_coefficients_evaluated": true,
-      "GPU_mixed_FLA_coefficients_implemented": false,
+      "GPU_mixed_FLA_coefficients_implemented": true,
       "paired_finite_evidence_file": "evidence/qwen35_paired_finite_summary_20260908.json",
       "paired_finite": {
         "budget": {
@@ -739,6 +739,87 @@
             "per_head_relative_L2": 0.0036770199501356114
           }
         ]
+      },
+      "GPU_finite_evidence_file": "evidence/qwen35_finite_gpu_compiled_summary_20260908.json",
+      "GPU_finite": {
+        "raw_sha256": [
+          "fa60ef097166c831440249c2553da92186c566d1d99dd7895d9e5aff930ba315",
+          "2af2afc3f2eb0e167fc85d5e15624966e9491802ea109420dfdd4d02675fb260"
+        ],
+        "same_job_timing_medians": {
+          "compiled": {
+            "wall_ms": 1.486966386437416,
+            "event_ms": 1.3519359827041626,
+            "before_bytes": 117851648.0,
+            "peak_bytes": 222644736.0,
+            "after_bytes": 130632704.0
+          },
+          "finite": {
+            "wall_ms": 2.765558660030365,
+            "event_ms": 2.53439998626709,
+            "before_bytes": 117851648.0,
+            "peak_bytes": 257468416.0,
+            "after_bytes": 130632704.0
+          },
+          "native": {
+            "wall_ms": 1.0755788534879684,
+            "event_ms": 0.9981439709663391,
+            "before_bytes": 117851648.0,
+            "peak_bytes": 158912512.0,
+            "after_bytes": 124242432.0
+          }
+        },
+        "median_compiled_over_eager": 0.5583041118078275,
+        "median_compiled_over_native": 1.3852965521549683,
+        "kernel_counts": {
+          "compiled": 45,
+          "finite": 145
+        },
+        "compiled_vs_eager": {
+          "q": {
+            "relative_L2": 4.2339947371181465e-08,
+            "max_abs": 4.76837158203125e-07,
+            "reference_norm": 122.08476160047798
+          },
+          "k": {
+            "relative_L2": 4.0935284169243403e-08,
+            "max_abs": 7.62939453125e-06,
+            "reference_norm": 985.9638946124958
+          },
+          "v": {
+            "relative_L2": 0.0,
+            "max_abs": 0.0,
+            "reference_norm": 7.327665783267519
+          },
+          "beta": {
+            "relative_L2": 1.210896980595629e-07,
+            "max_abs": 5.0514936447143555e-06,
+            "reference_norm": 74.66343941992574
+          },
+          "alpha": {
+            "relative_L2": 6.817045117863638e-08,
+            "max_abs": 1.52587890625e-05,
+            "reference_norm": 970.1844625930308
+          },
+          "g": {
+            "relative_L2": 6.836549937125654e-08,
+            "max_abs": 1.52587890625e-05,
+            "reference_norm": 962.5783591753783
+          }
+        },
+        "per_head_finite_residual_L2": [
+          0.004032342945524705,
+          0.0036630631736028433
+        ],
+        "compile_cold_call_seconds": 25.745906503871083,
+        "compiler_internal_benchmark_calls": 51,
+        "runtime_revision": {
+          "executed_sha256": "47d403a0d1ab32fe56396940db484d9ed20939aca41f468533db842c564a412b",
+          "current_sha256": "36f94177ec628c9a98a25a87cb543674e232e56eb6b3700a43d5fe24827c9770",
+          "change": "Docstring correction: max_autotune=False does not disable default compiler kernel tuning.",
+          "executable_AST_unchanged": true,
+          "additional_GPU_calls": 0
+        }
       }
     },
     "latest_cost_screen": {
@@ -897,7 +978,7 @@
       "required": true,
       "actual_dispatch_verification_required": true,
       "shadow_implementation_forbidden": true,
-      "support_status": "real_paired_endpoints_and_CPU_mixed_coefficients_verified_GPU_whole_model_pending"
+      "support_status": "local_GPU_finite_and_compiler_fusion_verified_whole_model_pending"
     },
     "real_minibatch_required": true,
     "official_benchmark_scope_retained": true,

@@ -1,0 +1,46 @@
+{
+  "isolated_site": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages",
+  "wheels": {
+    "${PRIVATE_MOUNT_PATH}": "8adbc1d20bd5463cd6876b2eb7cb31971e1065788e7dc6bc12bab597a7c504b7",
+    "${PRIVATE_MOUNT_PATH}": "d18bdfe9d1f4b424676444eac9d50fb8433b70e5d4e0e0878b20bcbcdbea57ce",
+    "${PRIVATE_MOUNT_PATH}": "93c6afe4c80fc7bc705fa8aeea6a46d2cf2d77383f9619a41863c7114c801bab"
+  },
+  "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6",
+  "native_stage_source_sha256": {
+    "chunk": "fe10b455f8c71f4f845415f60a4385ff4f630336e5e46c592611765dfd8cce97",
+    "wy": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+    "state": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba"
+  },
+  "compiler_cache": "${ARTIFACT_ROOT}/codex_qwen35_native_gpu_preflight_20260908_v2/triton_cache",
+  "parent_directory": "${ARTIFACT_ROOT}/codex_qwen35_paired_fla_capture_20260908_v1",
+  "parent_sha256": "56da16af3a6f1a5b65d9a81e436b6a1b29e4a629d134e5026a5e437dcde809ae",
+  "input_npz_sha256": {
+    "real_paired_FLA_prefix.npz": "68864feeb56b2a56c4d962c6537102cc038400a17fdb0c8226619ff4405ec2c7",
+    "native_input_adjoints.npz": "3c788c9a650718b15b9c18ccefbfbe24c91bc9b216c9003b500a9ef4f9e9b272"
+  },
+  "explicit_native_changes": {
+    "fla/utils.py": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+    "fla/ops/common/chunk_delta_h.py": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba",
+    "fla/ops/gated_delta_rule/wy_fast.py": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be"
+  },
+  "maximum_model_loads": 0,
+  "maximum_model_forwards": 0,
+  "maximum_quality_queries": 0,
+  "purpose": "Fuse measured layout/conversion/elementwise overhead with installed torch.compile/Inductor. Same finite algebra and native FLA functions, no custom backend/meta patch or substitute model.",
+  "timing": "One cold per route (compiled first), three rotated matched compiled/eager/native triples, one separately profiled compiled/eager pair. No profiler in formal timings. All native stages and packing included.",
+  "cost_limit": "Local pullback from already captured native intermediates. Endpoint forward/capture costs and whole-model performance are not measured here; native backward only needs endpoint1, finite needs both endpoints.",
+  "precision": "Existing BF16 bmm with FP32 output plus FP32 elementwise/scan; preserve actual model FA/FLA. No new precision gate or bitwise requirement.",
+  "stop": "One compiled variant only. Preserve any compile failure without fallback/retry; do not upgrade or patch vendor runtime. No model or quality runs.",
+  "files_sha256": {
+    "study.py": "0bf37fbe4666635678f92680ba2fd53629938748f411ab02aa9af715a859ed50",
+    "finite_fla_gpu.py": "47d403a0d1ab32fe56396940db484d9ed20939aca41f468533db842c564a412b"
+  },
+  "prior_GPU_directory": "${ARTIFACT_ROOT}/codex_qwen35_finite_gpu_20260908_v1",
+  "prior_GPU_sha256": "fa60ef097166c831440249c2553da92186c566d1d99dd7895d9e5aff930ba315",
+  "maximum_compiled_finite_calls": 5,
+  "maximum_eager_finite_calls": 5,
+  "maximum_native_backward_helper_calls": 4,
+  "maximum_native_dv_and_state_adjoint_calls": 28,
+  "maximum_mixed_coefficient_calls": 10,
+  "compiler": "fullgraph=True, dynamic=False, default backend, max_autotune=False, triton.cudagraphs=False. Generated sources and compiler counters retained."
+}
