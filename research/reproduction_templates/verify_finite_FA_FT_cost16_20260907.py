@@ -119,6 +119,7 @@ for ds in ['niah_mq_q2','morehopqa']:
 out['finite_to_both1_paired_median_ratio']=statistics.median(r['finite_to_both1_median_ratio'] for r in out['cases'])
 out['finite_slower_than_both1_cases']=[[r['dataset'],r['idx']] for r in out['cases'] if not r['finite_not_slower_than_both1']]
 out['sum_all_measured_scope_timer_seconds']=sum(c['seconds'] for c in allcost)
+out['warmup_seconds_by_method']={m:{'first_case':out['cases'][0]['methods'][m]['warmup_seconds'],'sum':sum(r['methods'][m]['warmup_seconds'] for r in out['cases']),'maximum':max(r['methods'][m]['warmup_seconds'] for r in out['cases'])} for m in p['methods']}
 out['limits']='Original16 development B1 latency comparison only; candidate root B2 holds two endpoints for one example. FT is unchanged author eager implementation; candidate uses nativeFA plus declared finite propagation. Historical quality links require exact current repeat1 projected score equality, not new curves or independence. Budget oracle chooses different FT variants per case/metric after scoring and is a diagnostic upper envelope, not an implementable method. Cold warmups/profile/I-O/checkpoint costs are separate; all calls counted. No sign repair or new sign claim.'
 (A/'finite_FA_FT_cost16_summary_20260907.json').write_text(json.dumps(out,indent=2))
 (A/'finite_FA_FT_cost16_numeric_20260907.json').write_text(json.dumps({'raw_sha256':out['raw_sha256'],'records':numeric},separators=(',',':')))
