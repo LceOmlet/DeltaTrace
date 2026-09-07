@@ -6,7 +6,7 @@
 
 |内容|状态|入口|
 |---|---|---|
-|原生双端点捕获与层重算|已有，实际端点检查保留|`core/qwen_signed_secant_native_paired_pv_rules.py`|
+|原生双端点捕获与层重算|公开FA入口已核验，旧私有路径保留为对照|[公开捕获结果](docs/history/公开FA捕获_P1数值与成本_20260907.md)|
 |整网有限传播、三种 PV 分配|原16条开发样本、176条原曲线已独立核验；P1进入下一步开发|[完整结果](docs/history/PV交互分配_三规则完整16条结果_20260907.md)|
 |已有编译器融合|已在原样本核验|`core/compiled_*.py`|
 |历史独立分块原型|仅局部数值/成本试验；较省显存但较慢，未整网接入|`research/prototypes/`|
@@ -15,14 +15,16 @@
 
 当前研究配置为 [`content_P1`](configs/pv_content_P1_development.json)。NI 恢复率77.52%（对称77.90%，最佳 FT59.33%）；NI RISE0.05742（最佳 FT0.06193），MH RISE0.05848（最佳 FT0.11013），均为越低越好。NI/MH MAS也均改善。用户明确接受约0.38个百分点的恢复下降，原冻结“对称无退步”附加筛选仍如实记为未通过；对 FT 原联合质量门槛通过。完整耗时/FT逐样本比值中位数1.057，最慢1.463；16条显存均低于普通原生 FA 反向参照。仅开发结果，未完成独立或长输入确认。
 
-后续效率优先，并把双端点算法固定在稳定的公开接口/张量契约层，避免随 FA 私有版本反复移植。真实模型默认 FA 不替换。当前私有捕获接口仍待解耦；多样本归因也未完成，不能把已完成的评估批处理称为批量归因。
+后续效率优先，并把双端点算法固定在稳定的公开接口/张量契约层，避免随 FA 私有版本反复移植。真实模型默认 FA 不替换。公开捕获已在三个原样本通过：P1完整向量相同，额外耗时1.05%—1.50%、峰值最多增加0.38MB；每层新增一次原FA调用，完整计费。多样本归因尚未完成，不能把评估批处理称为批量归因。
+
+当前主瓶颈是有限传播中显式 N×N 矩阵随 rollout 长度增长的平方级存储；公开捕获与评估批处理均未解决它。优先[保持 P1 并消除这些中间矩阵](docs/history/finite_attention_storage_priority_20260907.md)，批处理服从显存和效率预算。`research/prototypes` 中新增的异长批量源码尚未运行，不能当作已完成批量归因。
 
 ## 运行核心代码
 
-将 `core` 加入 `PYTHONPATH`，使用实际配置好的 Qwen3-8B 模型和完整目标 token 轨迹：
+将 `core` 和 `research/runtime` 加入 `PYTHONPATH`，使用实际配置好的 Qwen3-8B 模型和完整目标 token 轨迹：
 
 ```python
-from qwen_signed_secant_native_paired_pv_rules import (
+from qwen_signed_secant_paired_public_fa import (
     capture_checkpoint_pair, propagate_paired_secant,
 )
 

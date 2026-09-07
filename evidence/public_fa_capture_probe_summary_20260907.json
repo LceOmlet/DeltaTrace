@@ -1,0 +1,134 @@
+{
+  "status": "verified_complete",
+  "raw_sha256": "6a5f7f2ae66d48acd9609c100f31faae19f62ac11bf028dfb7451302e111a29c",
+  "protocol_sha256": "0c5ee0d0de7ad9f8f123bffb342f7346694bf4f604b8fd12c9fc5408af9ca26f",
+  "budget": {
+    "native_root_forwards": 26,
+    "native_vjps": 0,
+    "evaluation_forwards": 0,
+    "ft_attribution_forwards": 0,
+    "ordinary_reference_forwards": 0,
+    "native_attribution_forwards": 26,
+    "manual_passes": 26,
+    "extra_layer_replay_calls": 936,
+    "extra_native_fa_attention_calls": 468,
+    "native_attribution_endpoint_trajectories": 52,
+    "extra_layer_replay_endpoint_trajectories": 1872
+  },
+  "cases": [
+    {
+      "dataset": "niah_mq_q2",
+      "idx": 0,
+      "N": 601,
+      "modes": {
+        "private": {
+          "median_seconds": 0.5990637857466936,
+          "max_peak_bytes": 17891975680,
+          "all_vectors_exact_to_same_job_private": true,
+          "all_vectors_exact_to_frozen_parent": true,
+          "max_absolute_vector_change": 0.0,
+          "max_relative_unassigned": 0.00013269831256026158
+        },
+        "public": {
+          "median_seconds": 0.608046306297183,
+          "max_peak_bytes": 17892354560,
+          "all_vectors_exact_to_same_job_private": true,
+          "all_vectors_exact_to_frozen_parent": true,
+          "max_absolute_vector_change": 0.0,
+          "max_relative_unassigned": 0.00013269831256026158
+        }
+      },
+      "profile_counts": {
+        "private": 72,
+        "public": 108
+      },
+      "public_to_private_latency_ratio": 1.0149942639902583,
+      "public_peak_extra_bytes": 378880,
+      "exact_quality_reuse_guard_pass": true,
+      "cost_guard_pass": true
+    },
+    {
+      "dataset": "niah_mq_q2",
+      "idx": 2,
+      "N": 1241,
+      "modes": {
+        "private": {
+          "median_seconds": 1.204960685223341,
+          "max_peak_bytes": 19901871616,
+          "all_vectors_exact_to_same_job_private": true,
+          "all_vectors_exact_to_frozen_parent": true,
+          "max_absolute_vector_change": 0.0,
+          "max_relative_unassigned": 0.0011343079847245354
+        },
+        "public": {
+          "median_seconds": 1.217629935592413,
+          "max_peak_bytes": 19901871616,
+          "all_vectors_exact_to_same_job_private": true,
+          "all_vectors_exact_to_frozen_parent": true,
+          "max_absolute_vector_change": 0.0,
+          "max_relative_unassigned": 0.0011343079847245354
+        }
+      },
+      "public_to_private_latency_ratio": 1.0105142437628358,
+      "public_peak_extra_bytes": 0,
+      "exact_quality_reuse_guard_pass": true,
+      "cost_guard_pass": true
+    },
+    {
+      "dataset": "morehopqa",
+      "idx": 0,
+      "N": 861,
+      "modes": {
+        "private": {
+          "median_seconds": 0.8467531315982342,
+          "max_peak_bytes": 18737165824,
+          "all_vectors_exact_to_same_job_private": true,
+          "all_vectors_exact_to_frozen_parent": true,
+          "max_absolute_vector_change": 0.0,
+          "max_relative_unassigned": 0.0012380648424700354
+        },
+        "public": {
+          "median_seconds": 0.85660738684237,
+          "max_peak_bytes": 18737496064,
+          "all_vectors_exact_to_same_job_private": true,
+          "all_vectors_exact_to_frozen_parent": true,
+          "max_absolute_vector_change": 0.0,
+          "max_relative_unassigned": 0.0012380648424700354
+        }
+      },
+      "public_to_private_latency_ratio": 1.011637695659343,
+      "public_peak_extra_bytes": 330240,
+      "exact_quality_reuse_guard_pass": true,
+      "cost_guard_pass": true
+    }
+  ],
+  "scope": "Three original NI0/NI2/MH0 cases, frozen P1 rule. Replace private LSE-slot capture with passive public-call observation plus one unmodified public FA metadata call per layer. No native model/FA implementation changes. Explicit finite arithmetic remains dense; no multi-example attribution or finite FA-kernel completion claim.",
+  "decision_guard": {
+    "exact_frozen_P1_vectors_required_for_reusing_quality": true,
+    "max_per_case_median_latency_ratio_to_same_job_private": 1.15,
+    "max_per_case_peak_extra_bytes_to_same_job_private": 76021760,
+    "threshold_scope": "Researcher-chosen conservative implementation adoption guard, not a user-mandated threshold or new scientific quality gate. Failed cost guard means retain as explicit unsupported default candidate; do not hide extra calls."
+  },
+  "prior_failed_attempt": {
+    "directory": "${ARTIFACT_ROOT}/codex_public_fa_capture_probe_20260907_v1",
+    "status": "failed_return_type_guard",
+    "raw_sha256": "2e2eaaf52b1ed0328a8975583a25fc984d0765429fb90efbd5f41042f70bf264",
+    "change": "Accept no testing matrix represented by None as well as empty Tensor; retain actual descriptor. Fix exception-path auxiliary-call accounting. No arithmetic, cost or numerical adoption threshold changes.",
+    "actual_budget_reconstructed_from_calls_and_failure_site": {
+      "root_forwards": 2,
+      "root_endpoint_trajectories": 4,
+      "extra_layer_replays": 37,
+      "extra_endpoint_layer_replays": 74,
+      "auxiliary_FA_calls": 1,
+      "completed_manual_passes": 1,
+      "failed_manual_attempts": 1,
+      "evaluation_forwards": 0,
+      "backwards": 0
+    },
+    "raw_counter_caveat": "v1 extra_native_fa_attention_calls incorrectly remained0 because updated only on full-attribution success. One completed auxiliary call is proven by the subsequent failed return guard. Raw preserved; use explicit corrected historical budget, not overwritten raw."
+  },
+  "source_math_unchanged": true,
+  "all_exact_quality_reuse_guards_pass": true,
+  "all_cost_guards_pass": true,
+  "actual_native_FA_calls_in_successful_job": 2340
+}
