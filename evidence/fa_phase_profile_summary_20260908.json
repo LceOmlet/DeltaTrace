@@ -1,0 +1,106 @@
+{
+  "status": "phase_profiles_recomputed",
+  "raw_sha256": "78234922fb48c114a3448cebc250be51cad0266cc95679771dd826dd68894ad1",
+  "operator_calls": 4,
+  "whole_attributions": 0,
+  "quality_queries": 0,
+  "phases": {
+    "two_sweeps": {
+      "phase_0_us": 324.864,
+      "phase_2_us": 1594.624,
+      "linear_conversion_us": 13.568,
+      "preparation_us": 79.3599999999999,
+      "total_kernel_us": 2012.416,
+      "kernel_count": 7,
+      "raw_profile_sha256": "cf3603b8820b7d02f57830a67dfe231a1e451f68d93cb18155e799891c40805e"
+    },
+    "shared_mean": {
+      "phase_0_us": 298.24,
+      "phase_1_us": 465.92,
+      "phase_2_us": 545.536,
+      "preparation_us": 83.20000000000005,
+      "total_kernel_us": 1392.896,
+      "kernel_count": 7,
+      "raw_profile_sha256": "f12f2850bfc822a533d9443de95ab1ebe3a6f2518b11db687881723c48bd27b1"
+    }
+  },
+  "numerics": {
+    "dq": {
+      "exact": false,
+      "relative_L2": 1.2132738145138227e-06,
+      "max_abs_over_old_RMS": 0.001275379910931906,
+      "sign_flips": 0
+    },
+    "dk": {
+      "exact": true,
+      "relative_L2": 0.0,
+      "max_abs_over_old_RMS": 0.0,
+      "sign_flips": 0
+    },
+    "dv": {
+      "exact": true,
+      "relative_L2": 0.0,
+      "max_abs_over_old_RMS": 0.0,
+      "sign_flips": 0
+    },
+    "tau": {
+      "exact": true,
+      "relative_L2": 0.0,
+      "max_abs_over_old_RMS": 0.0,
+      "sign_flips": 0
+    },
+    "center": {
+      "exact": true,
+      "relative_L2": 0.0,
+      "max_abs_over_old_RMS": 0.0,
+      "sign_flips": 0
+    }
+  },
+  "legacy_protocol_metadata_correction": "Parent pass_count/shared_memory_bytes are stale inherited fields. Execution/source hashes are retained; those fields are not used to describe the final two-sweep kernel.",
+  "combined_propagation_ratio": 1.5765628954695015,
+  "conversion_fraction_of_new_kernels": 0.006742144765297036,
+  "causal_limit": "One profiled call per unchanged operator after warm-up. Locates regression inside merged propagation; does not separate atomics, register spills or transpose costs, and is not a new ordinary latency estimate.",
+  "existing_real_B4_warm_profile": {
+    "raw_profile_sha256": "510897a4f641ac6f20f5421f18e11df6641794e04c0a2950a69cfef95999042a",
+    "raw_result_sha256": "6c95d49f85e0eb74e3133d2476a09fce426cdcfe4a4262f8254d2ce3d81a2534",
+    "selection": [
+      [
+        "niah_mq_q2",
+        0
+      ],
+      [
+        "niah_mq_q2",
+        3
+      ],
+      [
+        "niah_mq_q2",
+        6
+      ],
+      [
+        "morehopqa",
+        1
+      ]
+    ],
+    "GPU_kernel_count": 10470,
+    "kernel_durations_us": {
+      "other": 458715.13599999796,
+      "named_mcblas_GEMM": 664485.3759999992,
+      "native_FA": 28058.88000000002,
+      "finite_FA": 142051.32799999995
+    },
+    "kernel_counts": {
+      "other": 9495,
+      "named_mcblas_GEMM": 759,
+      "native_FA": 108,
+      "finite_FA": 108
+    },
+    "duration_fractions": {
+      "other": 0.35468285301153224,
+      "named_mcblas_GEMM": 0.5137863358930487,
+      "native_FA": 0.02169538964310145,
+      "finite_FA": 0.10983542145231755
+    },
+    "scope": "Existing same-backend B4 warm attribution. May contain compiler warm kernels. Sum of GPU kernel durations is not steady end-to-end latency or a proven wall-time upper bound.",
+    "decision": "Repeated GEMMs are a larger measured component than finite FA here. Test the already justified last32-layer public-SAC MLP reuse on current FA and original B4; no claim that all FA optimization is exhausted."
+  }
+}

@@ -13,7 +13,7 @@
   "forward_replacement_allowed": false,
   "shadow_backward_allowed": false,
   "small_latency_increase_may_be_accepted": true,
-  "next": "Keep bounded FA cost diagnosis; prepare original-cache-text retokenization and a small actual Qwen3.5/FLA GPU preflight before full attribution/quality. No implicit Torch fallback or wholesale kernel replacement.",
+  "next": "Keep SharedMeanReuse default; no cache-layer search. Prepare actual Qwen3.5 tokenizer/input contract and FLA GPU preflight; later target measured non-FA costs without long-lived activation caches.",
   "public_capture_evidence": "6a5f7f2ae66d48acd9609c100f31faae19f62ac11bf028dfb7451302e111a29c",
   "public_capture_validated_cases": [
     "NI0",
@@ -128,7 +128,7 @@
     "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
     "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
     "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-    "next_change": "Keep bounded FA cost diagnosis; prepare original-cache-text retokenization and a small actual Qwen3.5/FLA GPU preflight before full attribution/quality. No implicit Torch fallback or wholesale kernel replacement.",
+    "next_change": "Keep SharedMeanReuse default; no cache-layer search. Prepare actual Qwen3.5 tokenizer/input contract and FLA GPU preflight; later target measured non-FA costs without long-lived activation caches.",
     "initial_optimization_screen": {
       "cases": [
         [
@@ -315,7 +315,7 @@
         "isolated_import": "ae1ff62d6e44fc039370dc49f49748d9b37c0642f1220c06ae08806291f66c69",
         "maca_mapping": "fb9e742fbc473f961916d281811b55924549a5d85ce9880b68315bbb23f678ae"
       },
-      "isolated_environment": "${LOCAL_PATH}",
+      "isolated_environment": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env",
       "FLA_version": "0.4.1",
       "transformers_version": "5.13.0",
       "device_mapping": {
@@ -349,7 +349,73 @@
       "finite_FLA_attribution_supported": false,
       "real_batch_verified": false,
       "status_limit": "Imports may initialize a device runtime; no GPU profiler was run. No claim of zero low-level GPU activity.",
-      "next": "Keep bounded FA cost diagnosis; prepare original-cache-text retokenization and a small actual Qwen3.5/FLA GPU preflight before full attribution/quality. No implicit Torch fallback or wholesale kernel replacement."
+      "next": "Keep bounded FA cost diagnosis; prepare original-cache-text retokenization and a small actual Qwen3.5/FLA GPU preflight before full attribution/quality. No implicit Torch fallback or wholesale kernel replacement.",
+      "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here."
+    },
+    "latest_cost_screen": {
+      "status": "shared_FA_MLP_B4_three_calls_verified",
+      "raw_sha256": "1b2228f77345c3556f2bf026dd3f66f4c8195f83b64d642d40f9f8b123f298b8",
+      "protocol_sha256": "80a0fd776f8be7021f3c20cbbfda50abe52bf25ee19f5e287d455f8f77b13b39",
+      "failed_parent_sha256": "3ed932867ddee42135a118e0b80e34e2d767bf0deade8b4cfd02f548516e8600",
+      "second_failed_parent_sha256": "1e62fc2935fb05acca0f4aab1be61b580f912b4e9a689105658e686cfdaebb58",
+      "selection": [
+        [
+          "niah_mq_q2",
+          0
+        ],
+        [
+          "niah_mq_q2",
+          3
+        ],
+        [
+          "niah_mq_q2",
+          6
+        ],
+        [
+          "morehopqa",
+          1
+        ]
+      ],
+      "API_attempts_including_failed_attempts": 6,
+      "root_calls_including_failed_attempts": 5,
+      "completed_attributions": 4,
+      "decoder_replays_including_failed_attempts": 145,
+      "auxiliary_FA_calls_including_failed_attempts": 145,
+      "finite_operator_calls": 144,
+      "quality_queries": 0,
+      "FT_calls": 0,
+      "measured_all_in_seconds": {
+        "baseline_once": [
+          1.5069338139146566
+        ],
+        "candidate_once": 1.3521195016801357
+      },
+      "candidate_to_baseline_ratio": 0.8972653537899252,
+      "measured_peak_bytes": {
+        "baseline_once": [
+          21699025920
+        ],
+        "candidate_once": 31366412288
+      },
+      "full_signed_vectors_and_endpoints_equal": true,
+      "sign_flips": 0,
+      "saved_and_reused_native_mm_outputs_per_candidate_call": 96,
+      "maximum_retained_cache_bytes": 10183770112,
+      "warm_profile": {
+        "sha256": "f4b03b3250d4fc56db30236cf23a40e10ba9c1d4891db4d06b15d4aaef6e0cfb",
+        "mcblas_gemm_count": 663,
+        "finite_FA_kernels": 108,
+        "native_FA_kernels": 108
+      },
+      "job_seconds": {
+        "failed_binding": 40.827011585235596,
+        "failed_hook_lifecycle": 51.468461990356445,
+        "corrected": 72.7143485546112
+      },
+      "automatic_expansion": false,
+      "stable_speedup_proven": false,
+      "timing_limit": "Only one measured baseline/candidate pair. All-in includes context construction/cleanup. Warm profiler excluded. No FT, quality or broader-length claim.",
+      "next": "Keep as a scoped candidate if faster; assess memory/throughput and obtain a bounded repeated comparison before default promotion. If no gain, stop expanding this cache setting."
     }
   },
   "native_MLP_SAC_reuse": {
