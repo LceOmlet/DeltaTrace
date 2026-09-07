@@ -111,3 +111,45 @@ Source identities: Transformers `modeling_qwen3_5.py`
 `cf085792cb59e5bdf9b88a3d20bd353892289d054662a9c2b662221b97caefba`;
 FLA0.4.1 original `chunk_delta_h.py`
 `be25cba5e99073465c0653f50cd7c1c96466335e541a76cdfe449992d4146e01`.
+
+## Concrete native kernel reuse boundary, 2026-09-08
+
+The bounded native diagnostic now has actual BF16 FA/FLA execution and a first
+layer official CPU reference. Its old batch screen remains failed; see the
+[diagnostic report](history/Qwen35批处理差异定位与有限传播推进_20260908.md).
+That default-model discrepancy must not be charged to an attribution extension
+which has not yet run, or silently treated as permission to skip finite checks.
+
+Inspecting the pinned FLA `gated_delta_rule/chunk.py`, `wy_fast.py`, and
+`common/chunk_delta_h.py` identifies the following implementation boundaries:
+
+| Native stage | Reusable work | Constraint |
+| --- | --- | --- |
+| Q/K normalization, cumulative g, triangular solve and WY preparation | Use official primitives for each actual endpoint. | Native helpers consume chunk-cumulative g, not raw log decay. Keep normalization, scale and endpoint identities explicit. |
+| `chunk_gated_delta_rule_fwd_h` | Reconstruct endpoint0 chunk-boundary states and its transformed updates within the official chunk framework. | These are attribution reconstruction costs; they cannot be advertised as free cached model execution. |
+| `chunk_bwd_dv_local` followed by `chunk_gated_delta_rule_bwd_dhu` | Endpoint1 reverse state propagation, driven by the finite output cotangent. | q1/k1/w1/cumulative-g1 determine this transition; the helper does not consume v values. Returned `dh` is a chunk-boundary adjoint, not every-token Λ. |
+| `prepare_wy_repr_bwd` | Its endpoint1 value-gradient branch gives the finite content-v coefficient. | Its other ordinary gradients are not automatically finite coefficients; copying all its outputs would be wrong. |
+| Mixed local q/k/beta/decay coefficients | Use endpoint0 state/update factors with endpoint1 adjoints, following the equations above. | This part still needs a traceable extension and numerical validation. No unchanged all-endpoint1 backward implements it. |
+
+There is one further exact reuse result. With endpoint1 routing and decay held
+fixed, the recurrence is linear in v. Thus the finite content coefficient
+`tilde_v = beta1 * lambda_u` is exactly the ordinary native endpoint1 value
+cotangent for the same output cotangent. This does **not** make the complete
+method an ordinary gradient: q/k/g/beta still require mixed finite factors, and
+the surrounding nonlinear gates/normalizations require finite pullbacks.
+
+The native WY representation changes variables within each 64-token chunk.
+Writing `U = A * (beta * V)`, its backward returns an adjoint `dU`; the source
+computes `dV = beta * (A^T * dU)`. Consequently the `dv2` returned by
+`chunk_gated_delta_rule_bwd_dhu` cannot be directly substituted for the
+single-token `lambda_u` in the recurrence above. The triangular transform must
+be accounted for. Dividing the native dV by beta is also unsuitable at zero or
+tiny beta; reuse the underlying contraction instead.
+
+The next implementation should preserve native endpoint1 state-adjoint work,
+reconstruct endpoint0 states within chunks, and extend local contractions. It
+must not store a K-by-V state for every sequence token or use a second full
+ordinary backward merely to obtain one reusable branch without accounting for
+its cost. Actual backward execution on this device and complete finite
+coefficients are still unverified; the successful forward scheduling change
+does not prove backward compatibility or a speed advantage.

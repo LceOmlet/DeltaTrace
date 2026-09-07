@@ -1,5 +1,5 @@
 {
-  "status": "native_FA_FLA_forwards_executed_batch_numeric_review_pending",
+  "status": "native_batch_differences_characterized_finite_attribution_pending",
   "checkpoint": "${PRIVATE_MOUNT_PATH}",
   "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
   "weight_bytes": 19306310880,
@@ -52,8 +52,8 @@
   "whole_model_supported": false,
   "finite_FLA_attribution_supported": false,
   "real_batch_verified": false,
-  "status_limit": "Actual full default-model execution through scheduled native FLA and vendor FA is verified. Attribution, gold mapping, batch numerical assessment and quality are incomplete.",
-  "next": "Keep the four-call budget closed. Persist layer/prefix evidence before diagnostic gates in the next separately frozen run; use native per-layer comparisons and the official CPU reference to locate BF16/GEMM versus FA/FLA/mask effects. Continue finite-recurrence derivation and gold remapping; no quality sweeps.",
+  "status_limit": "Actual default-model batch behavior is characterized on NI0; old1% screen remains failed. No finite FLA attribution, remapped gold, quality, backward execution or whole-model attribution cost yet.",
+  "next": "Native batch diagnostic budget is closed; retain the failed historical1% screen and default BF16 FA/FLA. Implement finite FLA using official endpoint1 chunk adjoints and endpoint0 state reconstruction, with mixed local coefficients and correct WY variable mapping. Verify actual backward on a bounded native-input operator before whole-model integration; complete official gold/token remapping without generating new trajectories. No quality sweeps.",
   "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here.",
   "tokenizer": {
     "tokenizer_EOS_id": 248046,
@@ -175,5 +175,72 @@
       "causal_explanation_proven": false
     }
   },
-  "native_preflight_evidence_file": "evidence/qwen35_native_preflight_summary_20260908.json"
+  "native_preflight_evidence_file": "evidence/qwen35_native_preflight_summary_20260908.json",
+  "native_batch_diagnostics_complete_for_NI0_B1_B2": true,
+  "batch_diagnostic_evidence_file": "evidence/qwen35_batch_diagnostic_summary_20260908.json",
+  "batch_diagnostic": {
+    "raw_sha256": "52f1e00eac1702d9c23a526868e96bdfe5b0fd7f49181d6ba66c57a93f4098ef",
+    "budget": {
+      "model_loads": 1,
+      "native_forwards": 2,
+      "auxiliary_FA": 1,
+      "official_CPU_reference": 1,
+      "attributions": 0,
+      "quality_queries": 0,
+      "generation_calls": 0
+    },
+    "target_B1_B2": {
+      "shape": [
+        248
+      ],
+      "relative_L2": 0.024488886186763346,
+      "max_abs": 0.23360824584960938,
+      "mean_abs": 0.0101711714528942,
+      "max_abs_over_reference_RMS": 0.17288532575828364,
+      "changed_elements": 240,
+      "elements": 248
+    },
+    "original_screen": {
+      "relative_limit": 0.01,
+      "absolute_limit": 0.25,
+      "relative_passed": false,
+      "absolute_passed": true
+    },
+    "FLA_vs_official_CPU_reference": {
+      "shape": [
+        1,
+        129,
+        32,
+        128
+      ],
+      "relative_L2": 0.0035079628013462874,
+      "max_abs": 0.015625,
+      "mean_abs": 1.089562914145846e-05,
+      "max_abs_over_reference_RMS": 0.23040448944008515,
+      "changed_elements": 286467,
+      "elements": 528384
+    },
+    "same_QKV_FA_dense_varlen": {
+      "shape": [
+        1,
+        605,
+        16,
+        256
+      ],
+      "relative_L2": 0.0008587098666214981,
+      "max_abs": 0.015625,
+      "mean_abs": 5.3286388890025466e-05,
+      "max_abs_over_reference_RMS": 0.04335777167683446,
+      "changed_elements": 248396,
+      "elements": 2478080
+    },
+    "selected_state_schedule": {
+      "kwargs": {
+        "BV": 32
+      },
+      "num_warps": 4,
+      "num_stages": 1
+    },
+    "all_three_target_vectors_equal_previous_native_preflight": true
+  }
 }
