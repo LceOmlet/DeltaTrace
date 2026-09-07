@@ -7,7 +7,7 @@
   "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
   "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
   "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-  "next_change": "Close the two-attempt native backward family. Keep default BF16 and the verified two-line upstream WY backport; do not reapply it. Obtain actual EOS/input endpoints and implement mixed finite FLA coefficients using native state adjoints and endpoint0 reconstruction. Remap official cached target token spans and needle character spans; preserve attr_mask_indices as sentence indices. No precision scan, additional ordinary-backward sweep, local generation or quality sweep by default.",
+  "next_change": "Implement GPU mixed finite FLA contractions using the verified native two-stage adjoint and 64-token tiles; check against the saved real EOS/input endpoints and CPU mixed coefficients, including per-head residuals and actual costs. Then integrate finite normalization, convolution and gates plus whole-model target propagation. Retain default model FA/FLA and precision; no new model-generation, ordinary-backward or quality sweep by default.",
   "initial_optimization_screen": {
     "cases": [
       [
@@ -165,7 +165,7 @@
       "required": true,
       "actual_dispatch_verification_required": true,
       "shadow_implementation_forbidden": true,
-      "support_status": "local_native_backward_with_explicit_upstream_backport_verified_finite_coefficients_pending"
+      "support_status": "real_paired_endpoints_and_CPU_mixed_coefficients_verified_GPU_whole_model_pending"
     },
     "real_minibatch_required": true,
     "official_benchmark_scope_retained": true,
@@ -180,7 +180,7 @@
     "full_attribution_support_required": true
   },
   "qwen35_support": {
-    "status": "local_native_FLA_backward_verified_finite_extension_pending",
+    "status": "real_paired_endpoints_CPU_mixed_finite_coefficients_evaluated_GPU_integration_pending",
     "checkpoint": "${PRIVATE_MOUNT_PATH}",
     "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "weight_bytes": 19306310880,
@@ -233,8 +233,8 @@
     "whole_model_supported": false,
     "finite_FLA_attribution_supported": false,
     "real_batch_verified": false,
-    "status_limit": "Native forward and bounded batch behavior characterized; local native backward works after two-line upstream WY backport. Complete mixed finite coefficients, gold remapping, whole-model attribution, batch backward, quality and full costs remain unverified.",
-    "next": "Close the two-attempt native backward family. Keep default BF16 and the verified two-line upstream WY backport; do not reapply it. Obtain actual EOS/input endpoints and implement mixed finite FLA coefficients using native state adjoints and endpoint0 reconstruction. Remap official cached target token spans and needle character spans; preserve attr_mask_indices as sentence indices. No precision scan, additional ordinary-backward sweep, local generation or quality sweep by default.",
+    "status_limit": "Two official target/gold mappings, one true B4 EOS/input forward and two native adjoint stages complete. CPU finite mixed coefficients evaluated on real layer0 prefixes; GPU mixed kernels, nonlinear pullbacks, whole-model attribution and quality/cost remain pending.",
+    "next": "Implement GPU mixed finite FLA contractions using the verified native two-stage adjoint and 64-token tiles; check against the saved real EOS/input endpoints and CPU mixed coefficients, including per-head residuals and actual costs. Then integrate finite normalization, convolution and gates plus whole-model target propagation. Retain default model FA/FLA and precision; no new model-generation, ordinary-backward or quality sweep by default.",
     "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here.",
     "tokenizer": {
       "tokenizer_EOS_id": 248046,
@@ -573,7 +573,52 @@
         "source_url": "https://github.com/fla-org/flash-linear-attention/blob/9d981ffef3b361ba931102b633ae2a9fd91ca6c3/fla/ops/gated_delta_rule/wy_fast.py"
       }
     },
-    "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6"
+    "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6",
+    "official_gold_and_target_mapping_examples": [
+      {
+        "dataset": "niah_mq_q2",
+        "index": 0
+      },
+      {
+        "dataset": "morehopqa",
+        "index": 1
+      }
+    ],
+    "real_EOS_input_endpoint_batch_executed": true,
+    "native_two_stage_adjoint_batch_executed": true,
+    "CPU_mixed_FLA_coefficients_evaluated": true,
+    "GPU_mixed_FLA_coefficients_implemented": false,
+    "paired_finite_evidence_file": "evidence/qwen35_paired_finite_summary_20260908.json",
+    "paired_finite": {
+      "budget": {
+        "CPU_text_only_records": 2,
+        "model_loads": 1,
+        "model_forwards": 1,
+        "physical_endpoint_batch": 4,
+        "native_adjoint_stage_calls": 2,
+        "complete_backward_calls": 0,
+        "generation_calls": 0,
+        "quality_queries": 0,
+        "whole_model_attributions": 0
+      },
+      "raw_sha256": {
+        "spans": "37a0d8c4ef4d174ebabd346087be303e895a0eaa78ca9231f2a6ba3195890b6a",
+        "paired_capture": "56da16af3a6f1a5b65d9a81e436b6a1b29e4a629d134e5026a5e437dcde809ae"
+      },
+      "coefficient_reference_sha256": "0f2f0b0bcf7dd127a6679b04386a9a16f15d7a8375b8242c3b17dc04d74d04cb",
+      "local_residuals": [
+        {
+          "dataset": "niah_mq_q2",
+          "total_relative_residual": 6.350162941267446e-05,
+          "per_head_relative_L2": 0.003996570429406342
+        },
+        {
+          "dataset": "morehopqa",
+          "total_relative_residual": 0.0001586306951775807,
+          "per_head_relative_L2": 0.0036770199501356114
+        }
+      ]
+    }
   },
   "latest_cost_screen": {
     "status": "shared_FA_MLP_B4_three_calls_verified",

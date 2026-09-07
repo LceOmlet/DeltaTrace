@@ -1,9 +1,11 @@
 # Qwen3.5 native execution and finite-propagation contract
 
-This is a derivation and implementation contract, not an implemented or validated
-FLA attribution method. The existing Qwen3-8B results do not transfer to this model.
-The immediate runtime prerequisite is successful default FA/FLA execution on the
-actual checkpoint and author-fixed text, with real batch and padding checks.
+This contract now has a locally evaluated CPU reference for mixed FLA coefficients
+on actual EOS/input endpoints. It is not a complete FLA attribution method or a
+production GPU implementation. The existing Qwen3-8B quality/cost results do not
+transfer to this model. Native execution and fixed-text mappings are recorded in
+the dated evidence below; remaining finite pullbacks and whole-model checks are
+still required.
 
 ## Native boundaries that differ from Qwen3
 
@@ -161,3 +163,99 @@ the native value-linearity Euler residual is 0.0371%. These are local numerical
 checks of the reuse relation, not original benchmark or deletion-sign evidence.
 The passive stage interface preserves native calls; its retained storage and
 threading controls are diagnostic costs, not a default production design.
+
+## Mixed coefficients using only chunk boundaries and 64-token tiles
+
+The [CPU algebra reference](../research/runtime/finite_fla_chunk_reference.py)
+now evaluates the stated recurrence's allocation using actual native FLA
+intermediates. It does not replace model forward or ordinary backward. Simply
+applying a generic product allocation to FLA's rewritten chunk graph can assign
+interactions differently; the formulas below preserve the recurrence above.
+
+All matrices in this section are for a single chunk of C≤64 tokens and one head.
+Q includes the fixed query scale; the implementation applies that scale to the
+returned normalized-Q coefficient too. Let H be the native endpoint0 state at
+the chunk start, D the native endpoint1 adjoint at the chunk end, U the native
+endpoint0 `v_new` (the actual writes, not WY's `u` before subtracting `w*H`), and
+Z the output cotangent. Obtain L = A1ᵀ dU_WY and W = diag(beta1)L from native
+endpoint1 reverse stages. This uses two native stages, without a second full
+ordinary backward or an extra local forward.
+
+Let G0/G1 be within-chunk cumulative log decay, and define
+
+\[
+ E_0[t,j]=1_{j\le t}\exp(G_0[t]-G_0[j]),\qquad
+ E_1[t,i]=1_{i\ge t}\exp(G_1[i]-G_1[t]),\qquad
+ e[t]=\exp(G_1[C-1]-G_1[t]).
+\]
+
+Let E0⁻ omit the diagonal, R = -W, and let `rowdot` contract feature dimensions.
+For unscaled q coordinates the first expression also receives the query scale:
+
+\[
+\begin{aligned}
+\tilde Q &= \operatorname{diag}(e^{G_0})ZH^T
+              + ((ZU^T)\odot E_0)K_0,\\
+\tilde K &= \operatorname{diag}(e)UD^T
+              +((UZ^T)\odot E_1)Q_1
+              -((UW^T)\odot E_1)K_1\\
+ &\quad+\operatorname{diag}(\beta_1\,\operatorname{rowdot}(U,L))K_1
+              +\operatorname{diag}(e^{G_0})RH^T
+              +((RU^T)\odot E_0^-)K_0,\\
+ r_0 &= \operatorname{diag}(e^{G_0})K_0H
+              +((K_0K_0^T)\odot E_0^-)U,\\
+ \tilde V &= W,\qquad
+ \tilde\beta=\operatorname{rowdot}(V_0-r_0,L).
+\end{aligned}
+\]
+
+These follow by expanding H0,t as its decayed chunk-start state plus earlier
+writes, and Λt as its decayed chunk-end adjoint plus later output terms and
+write corrections. The positive diagonal term in the K expression removes the
+current write correction, which is in λC,t but not Λt. Omitting it is incorrect.
+
+For the decay coefficient define Gprev[t]=G0[t-1], with Gprev[0]=0, and
+Eprev[t,j]=1(j<t)exp(Gprev[t]-G0[j]). Also define
+
+\[
+\begin{aligned}
+ S&=\langle H,D\rangle,\\
+ b_i&=Z_i\cdot(Q_{1,i}H)-W_i\cdot(K_{1,i}H),\\
+ d_j&=U_j\cdot(K_{0,j}D),\\
+ M_{ji}&=(K_{0,j}\cdot Q_{1,i})(U_j\cdot Z_i)
+          -(K_{0,j}\cdot K_{1,i})(U_j\cdot W_i).
+\end{aligned}
+\]
+
+Then the exact mixed decay contraction is
+
+\[
+\tilde\alpha_t=e_t\left(e^{Gprev_t}S+\sum_j Eprev_{tj}d_j\right)
+  +e^{Gprev_t}\sum_i E1_{ti}b_i
+  +\sum_{j<t,i\ge t}Eprev_{tj}E1_{ti}M_{ji}.
+\]
+
+The last term needs no per-token K×V state. For each column i, accumulate
+P[j,i]=M[j,i]+alpha0[j]P[j-1,i], with zero initial P. At cut t use P[t-1,i],
+then multiply by E1[t,i] and reduce i. This affine prefix operation admits an
+associative scan; the current CPU reference uses a bounded serial scan. All
+valid decay exponents are nonpositive. Do not form inverse cumulative decays
+or evaluate unmasked positive exponentials to implement this contraction.
+
+Finally tilde_g = tilde_alpha * exp_secant(g0,g1), with a stable `expm1`
+divided difference and its equal-endpoint limit. Native cumulative sums,
+BF16 states, WY tensors and output rounding introduce residuals; the real
+arithmetic identity is not a claim of bitwise numerical conservation.
+
+On actual NI0/MH1 layer0 prefixes of129 tokens, the tile expressions differ from
+direct local contractions by at most2.51e-7 in relative L2. Their complete local
+finite-effect residuals are0.00635% and0.01586%, respectively. These results use
+normalized q/k and a fixed local output cotangent, not the model answer target.
+Separate per-head effect vectors have relative L2 residuals0.3997% and0.3677%:
+the smaller total residuals include numerical-error cancellation and must not
+be used alone as evidence of high accuracy. All32 head effects are retained.
+The direct CPU oracle temporarily retains states for one head and one chunk;
+it is diagnostic only. Production coefficients must use the chunk formula and
+native state helpers, not that oracle. GPU fusion, normalization/gate/convolution
+pullbacks, padded finite propagation, whole-model quality and cost remain open.
+See [mapping and paired finite evidence](history/Qwen35官方映射与真实双端点有限系数_20260908.md).
