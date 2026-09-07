@@ -1,5 +1,7 @@
 # DeltaTrace
 
+**当前执行目标已统一：**[当前执行目标](docs/current_goal.md)。先量化剩余 FA 收益，有依据地转向其他主要耗时；完成 Qwen3.5-9B/真实 FLA 的归因与批处理支持，沿用官方评测并持续提交推送。旧版“MLP/输出头一律后移”和固定显存容差不再作为当前约束；历史已执行协议和失败结果不改判。
+
 Qwen3.5 原生前向：[Qwen35真实FA_FLA前向与批处理差异_20260908.md](docs/history/Qwen35真实FA_FLA前向与批处理差异_20260908.md)。单处FLA流水线调度修改解决C550共享内存不足，两个B1和一个B2真实执行FA/FLA。B1/B2目标log-prob相对差约2.45%，未通过预设1%筛查；已发现默认FA的split-KV/varlen路径不同，原因仍需定位。CPU参考被提前断言跳过，未执行；归因和质量未完成。
 
 Qwen3.5 分词核验：[Qwen35分词器与官方替换基线_20260908.md](docs/history/Qwen35分词器与官方替换基线_20260908.md)。六个文件匹配固定官方版本，两条原缓存文本往返一致；tokenizer EOS248046 与 config EOS/PAD248044 不同，作者入口将PAD设为tokenizer EOS，因此删除基线应为248046。尚未完成模型输入/gold重映射或GPU FLA。
