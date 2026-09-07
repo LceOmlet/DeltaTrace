@@ -7,7 +7,7 @@
   "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
   "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
   "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-  "next_change": "FA first: native input strides are validated but not promoted because B4 measured slower and full peak did not fall. Keep SharedMeanReuse as the current preferred path. Review repeated finite passes and the extra public LSE invocation for supported reuse before another GPU screen; output casts can only extend existing public compiler boundaries. No shadow attention/model/backward, MLP/head work, broad parameter or quality sweep.",
+  "next_change": "FA first. Retain SharedMeanReuse as current preferred whole-model backend. Two-sweep finite FA now pairs the native backward accumulation layout and32x32 conversion correctly, but is30.5percent slower in the fixed local screen; do not run model/quality sweeps or promote it. Before another kernel candidate, review the complete native backward tile/scheduling/register/workspace choices together. Current public LSE request is discarded by the HF adapter; no private-slot or shadow-model workaround. MLP/head remains paused.",
   "initial_optimization_screen": {
     "cases": [
       [
@@ -117,5 +117,37 @@
     "new_quality_queries": 0,
     "finite_passes": 3,
     "native_default_FA_unchanged": true
+  },
+  "FA_two_sweep_candidate": {
+    "runtime": "VendorFAFiniteP1TwoSweeps",
+    "status": "local_numerics_verified_not_promoted_due_cost",
+    "whole_model_validated": false,
+    "preferred": false,
+    "current_preferred_runtime": "VendorFAFiniteP1SharedMeanReuse",
+    "raw_sha256": "4228274f95920e0a9d3f4ea31bb745215cc4fa1a6bc3f3e10a7cf289e34d0849",
+    "library_sha256": "bcd9d5103df38957fa6112e6fe626b81e9b045a54c296509300c9b24108b3f03",
+    "matrix_multiply_work_reduction_fraction": 0.25,
+    "quadratic_sweeps": 2,
+    "kernel_launches_per_call": 3,
+    "local_time_ratio": 1.3048682361182455,
+    "local_dq_relative_L2_max": 1.213606172776327e-06,
+    "local_dq_sign_flips_max": 0,
+    "other_local_outputs_exact": true,
+    "added_workspace": "FP32 B*ceil32(N)*H*128; encoded native FA accumulation layout",
+    "no_new_global_N_by_N_buffers": true,
+    "native_backward_conversion_unmodified": true,
+    "prior_failures_retained": [
+      "ATen header dependency",
+      "wrong generic conversion",
+      "unpaired accumulation layout"
+    ],
+    "new_quality_queries": 0,
+    "extra_whole_model_attributions": 0
+  },
+  "FA_public_LSE_remaining": {
+    "source_sha256": "293fe81c6bd38aac8a3bc6ae086ff21b9695b349e97c9650b1fe61e42a36d710",
+    "requested_flag_discarded_by_current_adapter": true,
+    "auxiliary_call_removed": false,
+    "scope": "Current installed HF parameter processing only; no claim about all versions."
   }
 }

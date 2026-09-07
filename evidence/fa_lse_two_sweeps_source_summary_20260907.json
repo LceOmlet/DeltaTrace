@@ -1,0 +1,330 @@
+{
+  "status": "source_and_saved_numeric_review_complete",
+  "GPU_calls": 0,
+  "model_calls": 0,
+  "LSE_request": {
+    "source_sha256": "293fe81c6bd38aac8a3bc6ae086ff21b9695b349e97c9650b1fe61e42a36d710",
+    "function_line": 453,
+    "default_kwargs": {
+      "causal": true,
+      "softmax_scale": 0.08838834764831845,
+      "dropout_p": 0.0,
+      "deterministic": false
+    },
+    "requested_kwargs": {
+      "causal": true,
+      "softmax_scale": 0.08838834764831845,
+      "dropout_p": 0.0,
+      "deterministic": false
+    },
+    "request_discarded": true,
+    "decision": "Do not remove auxiliary public FA call through an unsupported model kwarg. No private slot or shadow model replacement introduced."
+  },
+  "first_operator_failure": {
+    "raw_sha256": "09b33df2d85695abad486bf02725800649198d338b9839df6c5cbb5bd3dd5820",
+    "operator_calls": 2,
+    "dq_relative_L2": 1.3930808403408141,
+    "other_outputs_exact": true,
+    "same_large_values_different_coordinates": true,
+    "old_top_coordinates": [
+      [
+        0,
+        8,
+        356,
+        51
+      ],
+      [
+        0,
+        8,
+        356,
+        52
+      ],
+      [
+        0,
+        8,
+        356,
+        53
+      ],
+      [
+        0,
+        8,
+        356,
+        58
+      ],
+      [
+        0,
+        8,
+        356,
+        61
+      ],
+      [
+        0,
+        8,
+        356,
+        63
+      ],
+      [
+        0,
+        8,
+        356,
+        103
+      ],
+      [
+        0,
+        8,
+        356,
+        105
+      ],
+      [
+        0,
+        8,
+        356,
+        107
+      ],
+      [
+        0,
+        8,
+        356,
+        110
+      ],
+      [
+        0,
+        8,
+        356,
+        114
+      ],
+      [
+        0,
+        8,
+        356,
+        115
+      ],
+      [
+        0,
+        8,
+        356,
+        116
+      ],
+      [
+        0,
+        8,
+        356,
+        119
+      ],
+      [
+        0,
+        8,
+        356,
+        120
+      ],
+      [
+        0,
+        8,
+        358,
+        58
+      ],
+      [
+        0,
+        8,
+        358,
+        114
+      ],
+      [
+        0,
+        8,
+        358,
+        119
+      ],
+      [
+        0,
+        12,
+        356,
+        58
+      ],
+      [
+        0,
+        12,
+        356,
+        114
+      ],
+      [
+        0,
+        15,
+        356,
+        48
+      ],
+      [
+        0,
+        15,
+        356,
+        58
+      ],
+      [
+        0,
+        15,
+        356,
+        114
+      ]
+    ],
+    "new_top_coordinates": [
+      [
+        0,
+        8,
+        354,
+        116
+      ],
+      [
+        0,
+        8,
+        355,
+        52
+      ],
+      [
+        0,
+        8,
+        355,
+        116
+      ],
+      [
+        0,
+        8,
+        356,
+        52
+      ],
+      [
+        0,
+        8,
+        356,
+        116
+      ],
+      [
+        0,
+        8,
+        357,
+        52
+      ],
+      [
+        0,
+        8,
+        359,
+        112
+      ],
+      [
+        0,
+        8,
+        359,
+        116
+      ],
+      [
+        0,
+        8,
+        360,
+        116
+      ],
+      [
+        0,
+        8,
+        361,
+        112
+      ],
+      [
+        0,
+        8,
+        362,
+        52
+      ],
+      [
+        0,
+        8,
+        363,
+        112
+      ],
+      [
+        0,
+        8,
+        365,
+        52
+      ],
+      [
+        0,
+        8,
+        366,
+        112
+      ],
+      [
+        0,
+        8,
+        367,
+        52
+      ],
+      [
+        0,
+        8,
+        370,
+        116
+      ],
+      [
+        0,
+        8,
+        375,
+        116
+      ],
+      [
+        0,
+        8,
+        378,
+        52
+      ],
+      [
+        0,
+        12,
+        354,
+        116
+      ],
+      [
+        0,
+        12,
+        362,
+        52
+      ],
+      [
+        0,
+        15,
+        352,
+        52
+      ],
+      [
+        0,
+        15,
+        354,
+        116
+      ],
+      [
+        0,
+        15,
+        362,
+        52
+      ]
+    ],
+    "diagnosis": "Generic conversion was called despite native launcher selecting the32x32 specialization. Coordinate error, not ordinary FA precision. Correct dispatch and matching upstream traits must be tested; no output-permutation workaround."
+  },
+  "native_dispatch_source_sha256": "636f9c4c2f1277822ba37fb1ec83e977db9c76ca56f5cf07e7b58c4cb9d3569b",
+  "native_specialization_source_sha256": "9b3ce05295d8e236a29f7e06cb3442a0c732505db1fa8eb668f09794720769ee",
+  "arithmetic_work": {
+    "old_products_per_causal_tile_group": 12,
+    "new_products_per_causal_tile_group": 9,
+    "basis": "Old row-center3 + query3score/1output + key3score/2output; new row-center3 + key3score/3output. All products have32*32*128 multiplications per full tile. Two quadratic sweeps plus one linear native conversion remain.",
+    "matrix_multiply_work_reduction_fraction": 0.25,
+    "wall_clock_speedup_claim": false,
+    "additional_cost": "FP32 atomic dQ accumulation,2KiB shared coefficient tile,linear FP32 workspace and native conversion."
+  },
+  "subsequent_verified_result": {
+    "summary_sha256": "39e6e773acdc4eecdec2c3925d7b795705f72520209d4ce7d00816791b487676",
+    "native_accumulation_and_conversion_must_be_paired": true,
+    "status": "two_sweeps_operator_numerical_screen_passed",
+    "numerical_gate_passed": true,
+    "relative_L2_max": 1.213606172776327e-06,
+    "new_to_old_median_ratio": 1.3048682361182455,
+    "whole_model_screen_allowed": false
+  }
+}

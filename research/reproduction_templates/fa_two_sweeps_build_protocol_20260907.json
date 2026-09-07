@@ -1,0 +1,24 @@
+{
+  "vendor_source_parent": "${ARTIFACT_ROOT}/codex_vendor_fa_source_gpu_language_20260907_v1",
+  "vendor_parent_sha256": "43000d77cd7fac6539e86fbc8dfbb638b0c4bce7d6cfc4ad4f4ba4f00db16906",
+  "vendor_git_commit": "aef88de756194e077460a1c8b8b341baa429259a",
+  "vendor_source_version": "FA2.5.3",
+  "installed_model_FA_version": "2.6.3+metax3.5.3.9torch2.8",
+  "same_version_source_claim": false,
+  "max_compile_seconds": 600,
+  "purpose": "Compile two-sweep finite P1 candidate. Reuse native FA backward transpose layouts, FP32 atomic accumulation pattern and unmodified convert_dQ. Keep actual model/default FA and finite centered coefficient unchanged; summation order explicitly changes. No model or GPU execution in build.",
+  "study_sha256": "6e0b5b919b59307a64965afbb11f8e7f9a98487a6856bb19cc6399c5d4668b79",
+  "extension_sha256": "4b2d8f10d2bbcc0c4c848159dde14be6f6bb05ff2d2fa3b394cc3be951b97674",
+  "budget": {
+    "extension_compiles": 1,
+    "local_operator_calls": 0,
+    "whole_model_attributions": 0,
+    "quality_queries": 0
+  },
+  "local_review_if_compiled": {
+    "scope": "Old captured real NI0 layer35, not a new benchmark. Six operator calls,1warm+2alternating measured.",
+    "unchanged_outputs": "tau,center,dk,dv should remain exact.",
+    "dq_gate": "Finite DQ must have relativeL2 error<=0.001 and max_abs_error<=0.01*old_RMS. This is an engineering screen, not a bound on attribution/sign/quality. Retain all per-output errors and sign flips; do not relax gate after results.",
+    "performance": "All preparation, FP32 accumulation workspace and native conversion included. No automatic full sweep."
+  }
+}
