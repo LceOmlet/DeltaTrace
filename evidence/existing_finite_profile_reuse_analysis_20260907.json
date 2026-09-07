@@ -1,0 +1,44 @@
+{
+  "status": "analyzed_existing_trace",
+  "root_forwards": 0,
+  "VJPs": 0,
+  "profile_sha256": "2d92c0d6cf715c7beafaaea19f75d7e9ea3294b92c14af04ad174353c803c4c9",
+  "parent_raw_sha256": "f0bf315cbe7422bc5827182eb12905b545f2b34356cddcf0e33af39ac69ec679",
+  "scope": "One already recorded original NI0 finite-P1 profile, not representative timing or wall-time decomposition. Summed GPU kernel durations cannot be directly subtracted from latency.",
+  "partition": {
+    "other_kernels": {
+      "calls": 9794,
+      "kernel_seconds": 0.15103641599999967,
+      "fraction_of_summed_kernel_duration": 0.3554777101149058
+    },
+    "actual_root_model_GEMM_including_head": {
+      "calls": 254,
+      "kernel_seconds": 0.08692300800000004,
+      "fraction_of_summed_kernel_duration": 0.20458107162804842
+    },
+    "native_FA_forward_including_auxiliary": {
+      "calls": 108,
+      "kernel_seconds": 0.008206848,
+      "fraction_of_summed_kernel_duration": 0.019315550590799906
+    },
+    "finite_propagation_native_half_GEMM": {
+      "calls": 253,
+      "kernel_seconds": 0.046477824,
+      "fraction_of_summed_kernel_duration": 0.10938971464102834
+    },
+    "actual_decoder_replay_GEMM": {
+      "calls": 252,
+      "kernel_seconds": 0.08085350400000005,
+      "fraction_of_summed_kernel_duration": 0.1902959512538119
+    },
+    "finite_FA_extension": {
+      "calls": 108,
+      "kernel_seconds": 0.05138534400000001,
+      "fraction_of_summed_kernel_duration": 0.12094000177140564
+    }
+  },
+  "total_summed_kernel_seconds": 0.42488294399999976,
+  "unassigned_gemm_names": [],
+  "next_candidate": "Use unmodified torch.utils.checkpoint.create_selective_checkpoint_contexts per native MLP region, saving only actual native mm outputs. Reuse those exact same-endpoint activations during existing replay, validate MLP inputs/weights/boundaries, free each consumed region. Keep model/FA and finite-P1 math unchanged. Fixed per-layer regions prevent reverse-layer FIFO mixups.",
+  "not_a_claim": "Cache speed/memory and numerical equivalence are not established until the two-example bounded screen. No new counterfactual or backward is represented by a cached result."
+}
