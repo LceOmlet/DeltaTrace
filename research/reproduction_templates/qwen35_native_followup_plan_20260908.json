@@ -1,0 +1,39 @@
+{
+  "status": "prepared_not_launched",
+  "purpose": "Diagnose native batch precision without changing default model arithmetic or relaxing the failed1% screen post hoc.",
+  "required_parent_raw_sha256": "f745bdc61ddd9fb305c487512737028d256b8c3630ac2a86d409072944d6e3ae",
+  "maximum_native_model_forwards": 2,
+  "selection_per_call": [
+    [
+      [
+        "niah_mq_q2",
+        0
+      ]
+    ],
+    [
+      [
+        "niah_mq_q2",
+        0
+      ],
+      [
+        "morehopqa",
+        1
+      ]
+    ]
+  ],
+  "auxiliary_native_FA_varlen_calls": 1,
+  "official_CPU_recurrent_reference_calls": 1,
+  "CPU_reference_actual_prefix_tokens": 129,
+  "quality_queries": 0,
+  "attributions": 0,
+  "generation_calls": 0,
+  "model_dtype": "bfloat16",
+  "required_changes_before_launch": [
+    "Persist actual first FLA input/output prefix and first full-attention Q/K/V/output before numerical gates.",
+    "Compute and save all paired comparisons before asserting the combined gate.",
+    "Record selected native kernel schedules and actual sources; do not reapply the already installed scheduling patch.",
+    "Capture native per-layer endpoint differences; source/modelforward remains unchanged."
+  ],
+  "reuse": "Reuse standard source-keyed compiler cache; no cross-invocation activation/result cache.",
+  "stop": "One bounded diagnostic only, preserve every failure; no new threshold chosen from these data. No GPU job launched by preparing this file."
+}

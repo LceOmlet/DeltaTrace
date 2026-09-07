@@ -1,5 +1,7 @@
 # DeltaTrace
 
+Qwen3.5 原生前向：[Qwen35真实FA_FLA前向与批处理差异_20260908.md](docs/history/Qwen35真实FA_FLA前向与批处理差异_20260908.md)。单处FLA流水线调度修改解决C550共享内存不足，两个B1和一个B2真实执行FA/FLA。B1/B2目标log-prob相对差约2.45%，未通过预设1%筛查；已发现默认FA的split-KV/varlen路径不同，原因仍需定位。CPU参考被提前断言跳过，未执行；归因和质量未完成。
+
 Qwen3.5 分词核验：[Qwen35分词器与官方替换基线_20260908.md](docs/history/Qwen35分词器与官方替换基线_20260908.md)。六个文件匹配固定官方版本，两条原缓存文本往返一致；tokenizer EOS248046 与 config EOS/PAD248044 不同，作者入口将PAD设为tokenizer EOS，因此删除基线应为248046。尚未完成模型输入/gold重映射或GPU FLA。
 
 最新成本进展：[FA阶段剖析与B4原生MLP复用_20260908.md](docs/history/FA阶段剖析与B4原生MLP复用_20260908.md)。FA 两次扫描退化集中在合并传播；已有 B4 trace 支持开始处理重复 GEMM。公开 SAC 的唯一 B4 配对 1.507→1.352s，峰值21.70→31.37GB，完整向量和端点相同；保留为可选小试，不升级默认。两次接线失败计入六次总尝试，全部已结束，无新FT/质量调用。

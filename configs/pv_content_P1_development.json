@@ -13,7 +13,7 @@
   "forward_replacement_allowed": false,
   "shadow_backward_allowed": false,
   "small_latency_increase_may_be_accepted": true,
-  "next": "Prepare official fixed-text model input, target/gold boundary mapping and actual native FLA GPU preflight. Do not generate substitute trajectories or reuse Qwen3-8B token IDs.",
+  "next": "Keep the four-call budget closed. Persist layer/prefix evidence before diagnostic gates in the next separately frozen run; use native per-layer comparisons and the official CPU reference to locate BF16/GEMM versus FA/FLA/mask effects. Continue finite-recurrence derivation and gold remapping; no quality sweeps.",
   "public_capture_evidence": "6a5f7f2ae66d48acd9609c100f31faae19f62ac11bf028dfb7451302e111a29c",
   "public_capture_validated_cases": [
     "NI0",
@@ -128,7 +128,7 @@
     "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
     "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
     "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-    "next_change": "Prepare official fixed-text model input, target/gold boundary mapping and actual native FLA GPU preflight. Do not generate substitute trajectories or reuse Qwen3-8B token IDs.",
+    "next_change": "Keep the four-call budget closed. Persist layer/prefix evidence before diagnostic gates in the next separately frozen run; use native per-layer comparisons and the official CPU reference to locate BF16/GEMM versus FA/FLA/mask effects. Continue finite-recurrence derivation and gold remapping; no quality sweeps.",
     "initial_optimization_screen": {
       "cases": [
         [
@@ -295,7 +295,7 @@
       "app_goal_remains_active": true
     },
     "qwen35_support": {
-      "status": "weights_verified_real_FLA_import_passed_GPU_model_pending",
+      "status": "native_FA_FLA_forwards_executed_batch_numeric_review_pending",
       "checkpoint": "${PRIVATE_MOUNT_PATH}",
       "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
       "weight_bytes": 19306310880,
@@ -344,12 +344,12 @@
       "model_forwards": 0,
       "attributions": 0,
       "quality_queries": 0,
-      "GPU_dispatch_verified": false,
+      "GPU_dispatch_verified": true,
       "whole_model_supported": false,
       "finite_FLA_attribution_supported": false,
       "real_batch_verified": false,
-      "status_limit": "Imports may initialize a device runtime; no GPU profiler was run. No claim of zero low-level GPU activity.",
-      "next": "Prepare official fixed-text model input, target/gold boundary mapping and actual native FLA GPU preflight. Do not generate substitute trajectories or reuse Qwen3-8B token IDs.",
+      "status_limit": "Actual full default-model execution through scheduled native FLA and vendor FA is verified. Attribution, gold mapping, batch numerical assessment and quality are incomplete.",
+      "next": "Keep the four-call budget closed. Persist layer/prefix evidence before diagnostic gates in the next separately frozen run; use native per-layer comparisons and the official CPU reference to locate BF16/GEMM versus FA/FLA/mask effects. Continue finite-recurrence derivation and gold remapping; no quality sweeps.",
       "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here.",
       "tokenizer": {
         "tokenizer_EOS_id": 248046,
@@ -363,7 +363,115 @@
       },
       "tokenizer_preflight_raw_sha256": "d50bda3fa942b35717a50c74fde0531a01da1b1fe6d76f1e88fb068751a45919",
       "official_experiment_replacement_token_id": 248046,
-      "eos_token_id_role": "Legacy eos_token_id field248044 is model text config EOS, not tokenizer EOS or the author experiment replacement token."
+      "eos_token_id_role": "Legacy eos_token_id field248044 is model text config EOS, not tokenizer EOS or the author experiment replacement token.",
+      "native_forward_examples": [
+        [
+          "niah_mq_q2",
+          0
+        ],
+        [
+          "morehopqa",
+          1
+        ]
+      ],
+      "native_batch_executed": true,
+      "batch_numerical_validation_complete": false,
+      "native_preflight": {
+        "status": "actual_native_FA_FLA_execution_verified_batch_numerical_screen_failed",
+        "raw_sha256": {
+          "1": "3ab0cef3a1a277fb0c908931e4fd0689ecfdfad00770787e0b4928c99d3ec609",
+          "2": "921ab98a0bb7b9c9f47a3026aedd11239c6f2284e6d5e1bb76d0fba92944ff84",
+          "3": "f745bdc61ddd9fb305c487512737028d256b8c3630ac2a86d409072944d6e3ae"
+        },
+        "actual_model_loads": 3,
+        "actual_forward_attempts_including_failure": 4,
+        "completed_model_forwards": 3,
+        "FLA_chunk_API_calls_including_failure": 73,
+        "native_FA_API_calls": 24,
+        "CPU_reference_calls": 0,
+        "CPU_reference_skipped": "An early batch assertion stopped before the planned diagnostic; prefix arrays were not persisted. Not a passing reference check.",
+        "quality_queries": 0,
+        "generation_calls": 0,
+        "attributions": 0,
+        "batch_comparisons": [
+          {
+            "case": [
+              "niah_mq_q2",
+              0
+            ],
+            "tokens": 248,
+            "relative_L2": 0.024488886186763346,
+            "max_abs_logprob_difference": 0.23360824584960938,
+            "mean_abs_logprob_difference": 0.0101711714528942,
+            "absolute_difference_quantiles_50_90_99": [
+              1.2262011296115816e-05,
+              0.025836591422557845,
+              0.16071202039718635
+            ],
+            "B1_logprob_sum": -109.28823903520208,
+            "B2_logprob_sum": -108.61431005571433,
+            "original_relative_gate_passed": false,
+            "original_max_absolute_gate_passed": true
+          },
+          {
+            "case": [
+              "morehopqa",
+              1
+            ],
+            "tokens": 141,
+            "relative_L2": 0.02478113824090415,
+            "max_abs_logprob_difference": 0.22014284133911133,
+            "mean_abs_logprob_difference": 0.00930023500946613,
+            "absolute_difference_quantiles_50_90_99": [
+              0.0001070098951458931,
+              0.022902309894561768,
+              0.1674505472183222
+            ],
+            "B1_logprob_sum": -62.218509511287266,
+            "B2_logprob_sum": -62.78742480040819,
+            "original_relative_gate_passed": false,
+            "original_max_absolute_gate_passed": true
+          }
+        ],
+        "warm_or_shape_initialization_seconds": [
+          26.43004678748548,
+          10.464190727099776,
+          13.247103495523334
+        ],
+        "forward_peak_allocated_bytes": [
+          19679964672,
+          19350607872,
+          19981389312
+        ],
+        "job_seconds_including_failures": [
+          21.12509274482727,
+          88.59802913665771,
+          74.779052734375
+        ],
+        "whole_attribution_supported": false,
+        "independent_quality_advantage": false,
+        "batch_numerical_validation_complete": false,
+        "interpretation": "Default model actually executed through FA/FLA after a scheduling-only adaptation. A1% relative target-logprob screen failed at about2.45%; this is not itself proof of incorrect kernels or severe practical degradation. No post-hoc threshold relaxation.",
+        "next": "Keep the four-call budget closed. Persist layer/prefix evidence before diagnostic gates in the next separately frozen run; use native per-layer comparisons and the official CPU reference to locate BF16/GEMM versus FA/FLA/mask effects. Continue finite-recurrence derivation and gold remapping; no quality sweeps.",
+        "postflight_raw_sha256": "9b252a1a5a3003b4e3e503c730fa0ccb083044a3c1da77a04bde72436bbfb541",
+        "state_kernel_compiled_shared_memory_bytes": {
+          "old_range": [
+            76288,
+            91136
+          ],
+          "stage1_range": [
+            16384,
+            25600
+          ],
+          "chosen_configuration_identified": false
+        },
+        "FA_path_difference_observed": {
+          "B1_NI": "splitkv8_plus_combine8",
+          "B2": "ordinary_varlen8",
+          "causal_explanation_proven": false
+        }
+      },
+      "native_preflight_evidence_file": "evidence/qwen35_native_preflight_summary_20260908.json"
     },
     "latest_cost_screen": {
       "status": "shared_FA_MLP_B4_three_calls_verified",
