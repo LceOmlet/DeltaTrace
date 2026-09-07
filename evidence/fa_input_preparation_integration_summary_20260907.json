@@ -1,0 +1,125 @@
+{
+  "status": "FA_input_preparation_B1_and_real_B4_verified",
+  "raw_sha256": "ab9974bd69160bbaff409d5939805534f4995da1c0dbf622e306b7e12bdc80aa",
+  "protocol_sha256": "21f5b9f82988d24024e46afc78fdd0ab68d3ef328457e6e1a365a9fc8c9dac13",
+  "attributions": 12,
+  "quality_queries": 0,
+  "VJPs": 0,
+  "native_root_forwards": 12,
+  "native_endpoint_trajectories": 60,
+  "decoder_replays": 432,
+  "auxiliary_public_FA_calls": 432,
+  "finite_attention_calls": 432,
+  "groups": [
+    {
+      "selection": [
+        [
+          "niah_mq_q2",
+          2
+        ]
+      ],
+      "example_batch_size": 1,
+      "all_same_job_full_vectors_exact": true,
+      "endpoints_exact": true,
+      "sign_flips": 0,
+      "measured_seconds": {
+        "old": [
+          1.0013005398213863,
+          1.0030802451074123
+        ],
+        "fused_prepare": [
+          0.991071218624711,
+          1.0108685493469238
+        ]
+      },
+      "peak_bytes": {
+        "old": [
+          18759975936,
+          18759975936
+        ],
+        "fused_prepare": [
+          18759975936,
+          18759975936
+        ]
+      },
+      "fused_to_old_median_ratio": 0.9987821590710118,
+      "timing_scope": "Two measured pairs per shape, same-job current compact-GQA baseline; no FT comparison."
+    },
+    {
+      "selection": [
+        [
+          "niah_mq_q2",
+          0
+        ],
+        [
+          "niah_mq_q2",
+          3
+        ],
+        [
+          "niah_mq_q2",
+          6
+        ],
+        [
+          "morehopqa",
+          1
+        ]
+      ],
+      "example_batch_size": 4,
+      "all_same_job_full_vectors_exact": true,
+      "endpoints_exact": true,
+      "sign_flips": 0,
+      "measured_seconds": {
+        "old": [
+          1.5047735832631588,
+          1.5083968620747328
+        ],
+        "fused_prepare": [
+          1.5310124717652798,
+          1.5185363832861185
+        ]
+      },
+      "peak_bytes": {
+        "old": [
+          21699025920,
+          21699025920
+        ],
+        "fused_prepare": [
+          21699025920,
+          21699025920
+        ]
+      },
+      "fused_to_old_median_ratio": 1.0120731337219218,
+      "timing_scope": "Two measured pairs per shape, same-job current compact-GQA baseline; no FT comparison."
+    }
+  ],
+  "job_seconds": 102.89388537406921,
+  "goal_complete": false,
+  "actual_B4_profile": {
+    "sha256": "25d8bb940c1e6290a529195ac59567b896c4b43462b031a25125df5219b58d82",
+    "finite_kernels": {
+      "void deltatrace_fa_finite_p1_kernel<0, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36,
+      "void deltatrace_fa_finite_p1_kernel<1, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36,
+      "void deltatrace_fa_finite_p1_kernel<2, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36
+    },
+    "native_FA_kernels": {
+      "void flash_fwd_kernel<Flash_fwd_kernel_traits<128, 128, 64, 4, true, true, mctlass::half_t, 128, Flash_kernel_traits<128, 128, 64, 4, mctlass::half_t> >, false, true, false, false, false, false, true, false, false, 1, false, (Arch)1000>(mcFlashAttn::Flash_fwd_params, int, int)": 108
+    },
+    "no_new_dense_attention_source_path": true
+  },
+  "FA_wrapper_profile": {
+    "GPU_kernel_count": 6840,
+    "GPU_seconds": 0.376177408,
+    "kernel_names": {
+      "triton_poi_fused_clone_0": 354,
+      "triton_poi_fused_clone_1": 390,
+      "triton_poi_fused_clone_2": 354,
+      "triton_poi_fused_clone_3": 354,
+      "triton_poi_fused__to_copy_clone_4": 354,
+      "triton_poi_fused__to_copy_add_clone_mul_5": 354,
+      "triton_poi_fused__to_copy_add_clone_mul_6": 354,
+      "void at::native::vectorized_elementwise_kernel_nullary_opt<1024, 4, int, at::native::FillFunctor<int>, at::detail::Array<char*, 1>, 0, 0>(int, at::native::FillFunctor<int>, char*)": 4326
+    },
+    "scope": "Existing-budget profiled B4 warm; compiler warm work may be included. Kernel time is not end-to-end latency."
+  },
+  "conclusion": "Full signed vectors and endpoints remain exact; actual native FA and finite kernels unchanged. Report all measured latency; fewer wrapper kernels do not establish useful end-to-end speed. No new curves/FT comparison."
+}

@@ -1,0 +1,121 @@
+{
+  "status": "FA_shared_mean_B1_and_real_B4_verified",
+  "raw_sha256": "6c95d49f85e0eb74e3133d2476a09fce426cdcfe4a4262f8254d2ce3d81a2534",
+  "protocol_sha256": "34d19b9bdefacd89a77e5a076596f588689d5effdc22cfee611a9fa02572d360",
+  "attributions": 12,
+  "quality_queries": 0,
+  "VJPs": 0,
+  "native_root_forwards": 12,
+  "native_endpoint_trajectories": 60,
+  "decoder_replays": 432,
+  "auxiliary_public_FA_calls": 432,
+  "finite_attention_calls": 432,
+  "groups": [
+    {
+      "selection": [
+        [
+          "niah_mq_q2",
+          2
+        ]
+      ],
+      "example_batch_size": 1,
+      "all_same_job_full_vectors_exact": true,
+      "endpoints_exact": true,
+      "sign_flips": 0,
+      "measured_seconds": {
+        "old": [
+          1.7951857633888721,
+          1.0018685571849346
+        ],
+        "shared_mean": [
+          0.9579668063670397,
+          0.9952084310352802
+        ]
+      },
+      "peak_bytes": {
+        "old": [
+          18759975936,
+          18759975936
+        ],
+        "shared_mean": [
+          18759975936,
+          18759975936
+        ]
+      },
+      "fused_to_old_median_ratio": 0.6982972132631419,
+      "timing_scope": "Two measured pairs per shape, same-job current compact-GQA baseline; no FT comparison.",
+      "timing_caveat": "Original NI2 first measured1.795s is anomalously high against second1.002s; the median ratio is retained but not a causal30% speedup claim. Preparation~0.014s, propagation1.555/0.757s locates the fluctuation inside propagation; cause not established."
+    },
+    {
+      "selection": [
+        [
+          "niah_mq_q2",
+          0
+        ],
+        [
+          "niah_mq_q2",
+          3
+        ],
+        [
+          "niah_mq_q2",
+          6
+        ],
+        [
+          "morehopqa",
+          1
+        ]
+      ],
+      "example_batch_size": 4,
+      "all_same_job_full_vectors_exact": true,
+      "endpoints_exact": true,
+      "sign_flips": 0,
+      "measured_seconds": {
+        "old": [
+          1.5058222766965628,
+          1.5466111097484827
+        ],
+        "shared_mean": [
+          1.4906688705086708,
+          1.4900265503674746
+        ]
+      },
+      "peak_bytes": {
+        "old": [
+          21699025920,
+          21699025920
+        ],
+        "shared_mean": [
+          21699025920,
+          21699025920
+        ]
+      },
+      "fused_to_old_median_ratio": 0.9764981061052905,
+      "timing_scope": "Two measured pairs per shape, same-job current compact-GQA baseline; no FT comparison."
+    }
+  ],
+  "job_seconds": 96.43783855438232,
+  "goal_complete": false,
+  "actual_B4_profile": {
+    "sha256": "510897a4f641ac6f20f5421f18e11df6641794e04c0a2950a69cfef95999042a",
+    "finite_kernels": {
+      "void deltatrace_fa_finite_p1_kernel<0, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36,
+      "void deltatrace_fa_finite_p1_kernel<1, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36,
+      "void deltatrace_fa_finite_p1_kernel<2, Flash_fwd_kernel_traits<128, 32, 32, 2, false, false, mctlass::half_t, Flash_kernel_traits<128, 32, 32, 2, mctlass::half_t> > >(FiniteParams)": 36
+    },
+    "native_FA_kernels": {
+      "void flash_fwd_kernel<Flash_fwd_kernel_traits<128, 128, 64, 4, true, true, mctlass::half_t, 128, Flash_kernel_traits<128, 128, 64, 4, mctlass::half_t> >, false, true, false, false, false, false, true, false, false, 1, false, (Arch)1000>(mcFlashAttn::Flash_fwd_params, int, int)": 108
+    },
+    "no_new_dense_attention_source_path": true
+  },
+  "FA_wrapper_profile": {
+    "GPU_kernel_count": 252,
+    "GPU_seconds": 0.006431232,
+    "kernel_names": {
+      "void at::native::elementwise_kernel_4_1_transpose12_copy_64<512, c10::Half, c10::Half, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1}, 2>(char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1})": 216,
+      "void at::native::unrolled_elementwise_kernel_copy_cast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1}, unsigned long, c10::Half, float, 4>(at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#10}::operator()() const::{lambda(c10::Half)#1}, char*, char*)": 36
+    },
+    "scope": "Existing-budget profiled B4 warm; compiler warm work may be included. Kernel time is not end-to-end latency."
+  },
+  "preferred_scope": "Shared-mean reuse is a verified FA engineering candidate for the tested B1/B4 scopes; stable broad performance, long input, independent quality and FT superiority remain unproved.",
+  "conclusion": "Shared-storage endpoint means are integrated into genuine FA-framework finite kernels and verified on original B1/B4. Same-job whole vectors and endpoints exact,0 global mean buffers,original shared-memory size,7 remaining preparation kernels/layer. Report paired whole-model cost; no FT/quality or arbitrary long-input claim."
+}
