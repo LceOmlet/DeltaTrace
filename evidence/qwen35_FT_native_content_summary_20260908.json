@@ -1,0 +1,581 @@
+{
+  "status": "two_native_FT_content_boundaries_executed_and_CPU_audited_whole_FT_pending",
+  "raw_sha256": "69e6e98109c3ebfb8fff722a357058b912d1a124957a4b193a5de8f8f04eb291",
+  "protocol_sha256": "24d0273cbd58db4c0da55510081ffd2cf8da2f3bcc40eb47b5acfbe81f2d6df3",
+  "source_sha256": {
+    "study.py": "e4bf4f8cda6890f3ad50ac9bc494d47aa0ec0550460f7e79a4e3c4c1973d1a49",
+    "qwen35_ft_native_content.py": "c7a457e44d50fe0d2f5257d3c481f229683eefdf54944b83875d6e88f7ff4444",
+    "finite_fla_gpu.py": "8ba72f5c56212fb5e173384e9ce8d79b488b22b5f83ddefa0dc33e8b343980d9",
+    "official_ft_core.py": "02929a4cb02e410a7241c681409aea1303f9c1a471f95a29c3e526dc591a5c58"
+  },
+  "previous_failed_start": {
+    "raw_sha256": "cc8fc36cad2bdb497064135462f6a11936a995665b765d08f4808728f008cd71",
+    "error": "Traceback (most recent call last):\n  File \"${ARTIFACT_ROOT}/codex_qwen35_FT_native_content_20260908_v1/study.py\", line 33, in <module>\n    r['sources_before']=sources();assert r['sources_before']['sha256']==p['source_tree_sha256']\n                        ^^^^^^^^^\n  File \"<native-source-guard>\", line 20, in sources\nKeyError: 'fla_mapped_utils_sha256'\n",
+    "GPU_calls": 0,
+    "parameter_loads": 0,
+    "job_seconds_before_bundle": 0.006842700764536858
+  },
+  "target_positions": {
+    "scope": "Original FT sink representations; positions are prompt+generation_offset, not predictor positions.",
+    "prompt_lengths": [
+      357,
+      227
+    ],
+    "sink_closed": [
+      [
+        209,
+        246
+      ],
+      [
+        119,
+        139
+      ]
+    ],
+    "absolute_closed": [
+      [
+        566,
+        603
+      ],
+      [
+        346,
+        366
+      ]
+    ],
+    "counts": [
+      38,
+      21
+    ]
+  },
+  "baseline": {
+    "upstream_commit": "e81b3be50a48dcfc652fbf1b530069b552736e66",
+    "identity": "Corrected native-content FT prototype, not unchanged author implementation.",
+    "unchanged": "Pinned author proximity and normalization with native BF16 source/head numerators; no new relevance formula or quality score tuning.",
+    "corrections": "Consume actual value projection, include full-attention sigmoid gate and GDN frozen RMS/SiLU output gain, assign GDN value convolution to original preconv positions.",
+    "rounding": "Gains and components in FP32, native gradients BF16, projected operands BF16/native output rounding. GDN linear-conv frozen sigmoid decomposition differs from fused-SiLU rounding; measure it."
+  },
+  "layers": {
+    "3": {
+      "native_value_gradient_vs_CPU": {
+        "relative_L2": 0.001919462363099032,
+        "max_abs": 0.0023662915853186473,
+        "cosine": 0.999998158119126
+      },
+      "value_gradient_per_sample": [
+        {
+          "relative_L2": 0.0019251496262288504,
+          "max_abs": 0.0023662915853186473,
+          "cosine": 0.9999981469006081
+        },
+        {
+          "relative_L2": 0.0019063999969571297,
+          "max_abs": 0.001538475196034006,
+          "cosine": 0.9999981863815167
+        }
+      ],
+      "head_content_reconstruction": {
+        "relative_L2": 0.0006040642942547857,
+        "max_abs": 0.012628223965293728,
+        "cosine": 0.9999998235945258
+      },
+      "head_content_per_sample": [
+        {
+          "relative_L2": 0.0005676421306773373,
+          "max_abs": 0.012628223965293728,
+          "cosine": 0.9999998496807155
+        },
+        {
+          "relative_L2": 0.0007248880053218014,
+          "max_abs": 0.012604348361492157,
+          "cosine": 0.9999997376957686
+        }
+      ],
+      "individual_head_relative_L2": [
+        [
+          0.0008754937457488771,
+          0.0005410282447862631,
+          0.0005214653552744873,
+          0.0006734777675060553,
+          0.00024014409505937348,
+          0.0004933059537048023,
+          0.00040464362455230684,
+          0.00037769117639712573,
+          0.0006489480183616738,
+          0.0005143593726929152,
+          0.0007729069140499133,
+          0.00044128294088696375,
+          0.0005855801819213297,
+          0.0007838703984644278,
+          0.00046986135716923616,
+          0.0008074691590416902
+        ],
+        [
+          0.0008692925762062219,
+          0.000857777820565332,
+          0.0008185776215518875,
+          0.0013967620668640407,
+          0.0003138234000744246,
+          0.000585374428136863,
+          0.0005290762636554673,
+          0.0005998869931387623,
+          0.0006178098987045023,
+          0.000732209043500663,
+          0.0009065459290526993,
+          0.000676380823130649,
+          0.0006094127799666948,
+          0.0011930777473604874,
+          0.0004827174880753358,
+          0.0008751972366124093
+        ]
+      ],
+      "projected_reconstruction": {
+        "relative_L2": 0.0003121552808830394,
+        "max_abs": 0.027785874903202057,
+        "cosine": 0.9999999607771348
+      },
+      "padding_components_nonzero": 0,
+      "normalization_sum": [
+        1.0000000054117777,
+        1.0000000000045475
+      ],
+      "native_node_events": [
+        {
+          "node": "FlashAttnVarlenFuncBackward",
+          "input_gradients_present": [
+            true,
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      ],
+      "auxiliary_core_vs_saved_native": {
+        "relative_L2": 0.0,
+        "max_abs": 0.0,
+        "cosine": 1.0
+      },
+      "ungated_core_vs_native_gated_output": {
+        "relative_L2": 9.67788904175604,
+        "max_abs": 8.50537109375,
+        "cosine": 0.5164623894793251
+      },
+      "frozen_output_gain_vs_native_gated_output": {
+        "relative_L2": 0.0017286474795785826,
+        "max_abs": 0.00457763671875,
+        "cosine": 0.9999985076003305
+      },
+      "official_raw_weight_RMS_vs_native": {
+        "relative_L2": 0.8128625985212744,
+        "max_abs": 62.32315921783447,
+        "cosine": 0.9626006219896767
+      },
+      "local_token_proximity_summary": {
+        "score_sums": [
+          0.6484197974205017,
+          0.6238864660263062
+        ],
+        "residual_scores": [
+          0.3515802323818207,
+          0.37611353397369385
+        ],
+        "positive_tokens": [
+          604,
+          367
+        ],
+        "scope": "Single-layer corrected FT content proximity, not full FT or quality."
+      },
+      "fixed_projection_vs_FP64_unrounded_components": {
+        "relative_L2": 0.002186968695971093,
+        "max_abs": 7.730941388217616e-05,
+        "cosine": 0.9999976612697266
+      },
+      "fixed_projection_vs_FP64_native_BF16_operands": {
+        "relative_L2": 0.0015852914768507143,
+        "max_abs": 5.9264537412673235e-05,
+        "cosine": 0.9999987440169191
+      }
+    },
+    "0": {
+      "native_value_gradient_vs_CPU": {
+        "relative_L2": 0.004217901101454625,
+        "max_abs": 0.19393313937196544,
+        "cosine": 0.9999911209997406
+      },
+      "value_gradient_per_sample": [
+        {
+          "relative_L2": 0.0044309783606608765,
+          "max_abs": 0.19393313937196544,
+          "cosine": 0.999990210192921
+        },
+        {
+          "relative_L2": 0.0035271819833521045,
+          "max_abs": 0.04426187969160189,
+          "cosine": 0.9999937799748457
+        }
+      ],
+      "head_content_reconstruction": {
+        "relative_L2": 0.001774933129741868,
+        "max_abs": 0.2205653339624405,
+        "cosine": 0.9999987244558949
+      },
+      "head_content_per_sample": [
+        {
+          "relative_L2": 0.001702538999065508,
+          "max_abs": 0.2205653339624405,
+          "cosine": 0.999998942534184
+        },
+        {
+          "relative_L2": 0.002002516743738612,
+          "max_abs": 0.10891712456941605,
+          "cosine": 0.9999980729130328
+        }
+      ],
+      "individual_head_relative_L2": [
+        [
+          0.001766355284995412,
+          0.004520501741777413,
+          0.0028870814920185037,
+          0.0001776072365787537,
+          0.0027304610437848694,
+          0.0016710304716536315,
+          0.004645325351156198,
+          0.0035872351804433476,
+          0.0027830767039988377,
+          0.0024616984423110346,
+          0.005476746884732314,
+          0.003930900063224702,
+          0.003057406886337866,
+          0.002433127974508508,
+          0.0048984645144391735,
+          0.004379819379970467,
+          0.00242470420401703,
+          0.002910667516622961,
+          0.003080123590041713,
+          0.0028381834473439785,
+          0.0022703905076587655,
+          0.004318155744648348,
+          0.0007563476464184853,
+          0.002244895616078556,
+          0.0055287300619372,
+          0.005576106451274719,
+          0.0011017441350621672,
+          0.0012365332426097389,
+          0.0017190030087676656,
+          0.002210683286024836,
+          0.002525116063337066,
+          0.004099417544652108
+        ],
+        [
+          0.0016610985945077,
+          0.0028409654874501987,
+          0.003158736521479895,
+          0.003202927236060514,
+          0.003266625300367776,
+          0.0019482506990479347,
+          0.0036918312502668134,
+          0.005934168800894614,
+          0.005254025205262917,
+          0.002944781583638749,
+          0.005030768650807119,
+          0.0033949145052572763,
+          0.003794523544393097,
+          0.0035641891527703846,
+          0.004470283778881225,
+          0.0028158101987325094,
+          0.0027629767641646308,
+          0.002685162431331294,
+          0.0024871743561942264,
+          0.0023593913172120823,
+          0.003383645352092595,
+          0.004638049661677839,
+          0.0010050440517775426,
+          0.002578358561026278,
+          0.0064024495256299165,
+          0.005317708338581771,
+          0.002594542248395166,
+          0.0004218644502894833,
+          0.0023224802359448236,
+          0.0009475646685010874,
+          0.004993894939447197,
+          0.006443321681543541
+        ]
+      ],
+      "projected_reconstruction": {
+        "relative_L2": 0.0007735303653187719,
+        "max_abs": 0.16705023932431118,
+        "cosine": 0.9999999850998299
+      },
+      "padding_components_nonzero": 0,
+      "normalization_sum": [
+        0.9999999994506652,
+        0.9999999953170118
+      ],
+      "native_node_events": [
+        {
+          "node": "ChunkGatedDeltaRuleFunctionBackward",
+          "input_gradients_present": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "node": "CausalConv1dFnBackward",
+          "input_gradients_present": [
+            true,
+            true
+          ]
+        }
+      ],
+      "native_conv_source_gradient_vs_CPU": {
+        "relative_L2": 0.001647944621894148,
+        "max_abs": 0.0004011094570159912,
+        "cosine": 0.9999986428466627
+      },
+      "auxiliary_core_vs_saved_native": {
+        "relative_L2": 0.00020950485281238173,
+        "max_abs": 0.0078125,
+        "cosine": 0.9999999780586674
+      },
+      "ungated_core_vs_native_gated_output": {
+        "relative_L2": 1.8703406859264624,
+        "max_abs": 8.1982421875,
+        "cosine": -0.30552606922622666
+      },
+      "frozen_output_gain_vs_native_gated_output": {
+        "relative_L2": 0.0020054775936987268,
+        "max_abs": 0.01781463623046875,
+        "cosine": 0.9999979917773058
+      },
+      "frozen_SiLU_vs_native_fused_value": {
+        "relative_L2": 0.0004726478310396311,
+        "max_abs": 0.062496185302734375,
+        "cosine": 0.9999998883032369
+      },
+      "conv_content_sum_vs_postconv": {
+        "relative_L2": 0.0003569358453309816,
+        "max_abs": 0.03916670382022858,
+        "cosine": 0.9999999423606056
+      },
+      "local_token_proximity_summary": {
+        "score_sums": [
+          1.0,
+          0.9804672598838806
+        ],
+        "residual_scores": [
+          0.0,
+          0.0195327065885067
+        ],
+        "positive_tokens": [
+          604,
+          367
+        ],
+        "scope": "Single-layer corrected FT content proximity, not full FT or quality."
+      },
+      "fixed_projection_vs_FP64_unrounded_components": {
+        "relative_L2": 0.0029490489458786824,
+        "max_abs": 1.0953140417768736e-05,
+        "cosine": 0.9999965496109409
+      },
+      "fixed_projection_vs_FP64_native_BF16_operands": {
+        "relative_L2": 0.0016396038018007915,
+        "max_abs": 1.3921212485001888e-06,
+        "cosine": 0.9999986564156019
+      }
+    }
+  },
+  "budget": {
+    "meta_model_constructions": 1,
+    "parameter_loads": 5,
+    "full_model_loads": 0,
+    "root_forwards": 0,
+    "decoder_replays": 0,
+    "saved_decoder_reuses": 2,
+    "public_FA_auxiliary_forwards": 1,
+    "public_FA_value_backwards": 1,
+    "public_FLA_auxiliary_forwards": 1,
+    "public_FLA_value_backwards": 1,
+    "public_linear_conv_forwards": 1,
+    "public_linear_conv_backwards": 1,
+    "FT_projection_and_proximity_calls": 2,
+    "extra_fixed_CPU_review_projections": 2,
+    "whole_FT_attributions": 0,
+    "generation_calls": 0,
+    "quality_queries": 0
+  },
+  "calls": [
+    {
+      "kind": "load_parameter_3.self_attn.o_proj.weight",
+      "seconds": 0.05789085850119591,
+      "before_bytes": 0,
+      "peak_bytes": 33554432
+    },
+    {
+      "kind": "load_parameter_3.input_layernorm.weight",
+      "seconds": 0.003310408443212509,
+      "before_bytes": 33554432,
+      "peak_bytes": 33562624
+    },
+    {
+      "kind": "load_parameter_0.linear_attn.out_proj.weight",
+      "seconds": 0.05796401388943195,
+      "before_bytes": 33562624,
+      "peak_bytes": 67117056
+    },
+    {
+      "kind": "load_parameter_0.linear_attn.norm.weight",
+      "seconds": 0.0033102836459875107,
+      "before_bytes": 67117056,
+      "peak_bytes": 67117568
+    },
+    {
+      "kind": "load_parameter_0.linear_attn.conv1d.weight",
+      "seconds": 0.002976367250084877,
+      "before_bytes": 67117568,
+      "peak_bytes": 67183104
+    },
+    {
+      "kind": "layer3_public_FA_expanded_heads_forward",
+      "seconds": 0.0010341834276914597,
+      "before_bytes": 234839552,
+      "peak_bytes": 242872832
+    },
+    {
+      "kind": "layer3_public_FA_value_backward",
+      "seconds": 0.0825527124106884,
+      "before_bytes": 242872832,
+      "peak_bytes": 312583680
+    },
+    {
+      "kind": "layer3_FT_projection_and_author_proximity_with_diagnostics",
+      "seconds": 0.5352401435375214,
+      "before_bytes": 240795136,
+      "peak_bytes": 367750144
+    },
+    {
+      "kind": "layer3_extra_fixed_CPU_review_projection",
+      "seconds": 0.0016853772103786469,
+      "before_bytes": 309191680,
+      "peak_bytes": 312718336
+    },
+    {
+      "kind": "layer0_public_FLA_normalized_forward",
+      "seconds": 8.295647859573364,
+      "before_bytes": 332852224,
+      "peak_bytes": 654584320
+    },
+    {
+      "kind": "layer0_public_FLA_value_backward",
+      "seconds": 4.592624582350254,
+      "before_bytes": 347875840,
+      "peak_bytes": 745330176
+    },
+    {
+      "kind": "layer0_public_linear_conv_forward",
+      "seconds": 0.0008485820144414902,
+      "before_bytes": 352676864,
+      "peak_bytes": 372501504
+    },
+    {
+      "kind": "layer0_public_linear_conv_backward",
+      "seconds": 0.005147576332092285,
+      "before_bytes": 431975424,
+      "peak_bytes": 451996672
+    },
+    {
+      "kind": "layer0_FT_projection_and_author_proximity_with_diagnostics",
+      "seconds": 0.012805521488189697,
+      "before_bytes": 462040064,
+      "peak_bytes": 581663232
+    },
+    {
+      "kind": "layer0_extra_fixed_CPU_review_projection",
+      "seconds": 0.001084187999367714,
+      "before_bytes": 464310784,
+      "peak_bytes": 471175680
+    }
+  ],
+  "job_seconds_before_bundle": 55.83871987834573,
+  "timed_call_seconds": 13.654122658073902,
+  "unsegmented_job_seconds": 42.184597220271826,
+  "peak_stage_bytes": 745330176,
+  "source_tree": {
+    "count": 2853,
+    "changes": [
+      "fla/utils.py",
+      "fla/ops/common/chunk_delta_h.py",
+      "fla/ops/gated_delta_rule/wy_fast.py"
+    ],
+    "sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6"
+  },
+  "loaded_parameters": {
+    "model.language_model.layers.3.self_attn.o_proj.weight": {
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "5e3c4fe6849325365b4e7dd196232fa2e7160753feab98dde4f9bb36ebfb0da3"
+    },
+    "model.language_model.layers.3.input_layernorm.weight": {
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "cb3b4bb250f4f143304bbafcc9f67bda1c53f6245b72be70e3a04e711284dafe"
+    },
+    "model.language_model.layers.0.linear_attn.out_proj.weight": {
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "f12def1d48a30bffa6cf8cfe6cb588288d3b1e0a16e3cb6022f1c99bb6d1b668"
+    },
+    "model.language_model.layers.0.linear_attn.norm.weight": {
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "a931483facfe4127bf0e15fb7665280d0175876377efb97057f7482ec270afa8"
+    },
+    "model.language_model.layers.0.linear_attn.conv1d.weight": {
+      "shape": [
+        8192,
+        1,
+        4
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "e583e13fb2416bcc36dfb6d41b99a579f3273ae38ec9ddf2e56e5cf60d4fe76c"
+    }
+  },
+  "versions": {
+    "torch": "2.8.0+metax3.5.3.9",
+    "device": "MetaX C550"
+  },
+  "artifacts": [
+    {
+      "file": "layer3_content_review.npz",
+      "bytes": 36331341,
+      "sha256": "c3328b8d0284bcb117db8295b68da0e77bfc17a55f47fd64b08977295d3f2218",
+      "download": true
+    },
+    {
+      "file": "layer0_content_review.npz",
+      "bytes": 51366422,
+      "sha256": "60d4dc3bdcabeea71c4f093c082f5dee4febf579ad7343137683da9aec9754cd",
+      "download": true
+    }
+  ],
+  "CPU_audit_seconds": 18.925425000023097,
+  "limits": [
+    "Boundary screen only: no complete32-layer FT, no0-3-hop aggregate or original quality metrics.",
+    "Corrected native-content FT is explicitly different from unchanged e81b3be; retain both identities.",
+    "CPU reference is arithmetic validation only; runtime uses actual public FA/FLA/causal-conv kernels and their native backward.",
+    "FA CPU reference uses original public GQA LSE whereas auxiliary expands KV; numerical layout differences are reported.",
+    "A faithful content decomposition is not proof of attribution usefulness, DeltaTrace victory or conditional deletion signs.",
+    "Engineering cold calls include default native compilation and discarded gradients, not matched warm whole-method performance; ZIP/SFTP and prior root costs are separate."
+  ]
+}
