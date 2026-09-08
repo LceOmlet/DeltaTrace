@@ -1,0 +1,43 @@
+{
+  "scope": "CPU64 local x-to-decay block secant scout using actual GDN1 native inputs and original Wa/Alog/bias tensors; no model forward or production precision claim.",
+  "source": {
+    "result": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+    "result_sha256": "dc7414591c5c0cb11e5b2604c773829f09bb13330224f41f5f077663b62e478f",
+    "private": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/MH2_two_decoder_internal_private.pt",
+    "private_sha256": "598445e3869ccf14a5e18ae0d32aa4d0ea539d7d26c475e8d7ee4669bd8d1c7d"
+  },
+  "checkpoint": "${PRIVATE_MOUNT_PATH}",
+  "expected_weight_stats": {
+    "model.safetensors-00002-of-00004.safetensors": [
+      5335161512,
+      1783611309735549000
+    ],
+    "model.safetensors-00003-of-00004.safetensors": [
+      5368717440,
+      1783612290227907000
+    ],
+    "model.safetensors-00001-of-00004.safetensors": [
+      5276436216,
+      1783610574441221000
+    ],
+    "model.safetensors-00004-of-00004.safetensors": [
+      3325995712,
+      1783612764949541000
+    ]
+  },
+  "budget": {
+    "wall_time_seconds": 120,
+    "model": 0,
+    "GPU": 0,
+    "DT": 0,
+    "FA": 0,
+    "FLA": 0,
+    "scorer": 0,
+    "FT": 0,
+    "generation": 0
+  },
+  "interpretation": "One candidate M=J1+(dy-J1dx)dxT/(dxTdx), grouping original input projection and scalar decay. Min Frobenius change to original-input analytic Jacobian under endpoint constraint; projection transfer retained. Real scalar secants cannot change their slope while preserving their fixed endpoint identity. This CPU64 scout is mathematical local evidence only; alpha is analytic exp of actual native rawg, not a captured native chunk output. No method/default/kernel/FA/FLA changed and no benchmark improvement claimed.",
+  "files_sha256": {
+    "study.py": "94e24f12668429e8850d8abdf1d2bdbe04170c7d5a22c31fc29d00595883e7b4"
+  }
+}

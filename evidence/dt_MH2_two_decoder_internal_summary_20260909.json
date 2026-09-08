@@ -1,0 +1,1374 @@
+{
+  "status": "MH2_two_decoder_internal_independent_CPU_audit_passed",
+  "analyzer_sha256": "265d43b8fb41c278339550266758260baf39a5e53e6e589a63582d098cd20cf4",
+  "results_sha256": "dc7414591c5c0cb11e5b2604c773829f09bb13330224f41f5f077663b62e478f",
+  "protocol_sha256": "148a2212a58ac852b09cc54b3ed8d9405e7fcf620e0cea00985614319a542882",
+  "vectors_sha256": "69192e52a36b3355d6a3c674ab8ab09e5ebbd6caa54f2947af3024db9fabac59",
+  "source_boundary": {
+    "results_path": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/results.json",
+    "results_sha256": "7d7e9a45d2556d6d37fe33d288b8073a36f2f11eb4ba12f0b8e0e7de9a7d25e3",
+    "protocol_path": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/protocol.json",
+    "protocol_sha256": "b4e342eca0aa85145f6ebb047149517e314bfdec617b16eb557cf1d171e52728",
+    "vectors_path": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/vectors.npz",
+    "vectors_sha256": "722c543eeb07f892cc42d4358b0bf3180346803f91232850444b8d7fa1623250",
+    "private_path": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/MH2_actual_boundary_private.pt",
+    "private_sha256": "3bf0471df88faac2f068ecda771c9ee4f97904c85ef5f9cba4321c847e4fd413",
+    "private_bytes": 1582103439,
+    "scope": "Existing same-run m1/m2/m19/m20 and actual B2 plus B1 clean/step3/step10/allEOS hidden boundaries; source current-control deletion masks remain fixed. No reattribution or rescoring to obtain them."
+  },
+  "private_artifact": {
+    "file": "MH2_two_decoder_internal_private.pt",
+    "sha256": "598445e3869ccf14a5e18ae0d32aa4d0ea539d7d26c475e8d7ee4669bd8d1c7d",
+    "bytes": 2626255118,
+    "save_seconds": 4.582554671913385
+  },
+  "actual_budget": {
+    "model_loads": 1,
+    "whole_original_B2_forward_for_kwargs": 1,
+    "native_head_rows_per_endpoint_in_kwargs_forward": 1,
+    "native_FA_calls_in_kwargs_forward": 8,
+    "native_GDN_FLA_calls_in_kwargs_forward": 24,
+    "native_GDN_conv_calls_in_kwargs_forward": 24,
+    "selected_native_decoder_replays": 10,
+    "selected_native_FA_calls_in_replays": 5,
+    "selected_native_GDN_FLA_and_conv_calls_in_replays": 5,
+    "selected_finite_decoder": 2,
+    "public_FA_LSE_auxiliary_calls": 1,
+    "finite_FA_calls": 1,
+    "finite_FA_native_kernel_launches": 3,
+    "finite_FLA_calls": 1,
+    "finite_FLA_adjoint_stages": 2,
+    "extra_finite_GDN_public_conv_preactivation_and_autograd_each": 1,
+    "complete_DT_calls": 0,
+    "original_scorer_calls": 0,
+    "FT_calls": 0,
+    "generation_calls": 0,
+    "new_candidates": 0,
+    "wall_time_seconds": 600,
+    "job_seconds": 60.07312366180122
+  },
+  "layers": {
+    "19": {
+      "kind": "full_attention",
+      "root_capture_input_drift": {
+        "equal": true,
+        "max_absolute": 0.0,
+        "relative_L2": 0.0
+      },
+      "root_capture_output_drift": {
+        "equal": true,
+        "max_absolute": 0.0,
+        "relative_L2": 0.0
+      },
+      "saved_input_coeff_drift": {
+        "equal": true,
+        "max_absolute": 0.0,
+        "relative_L2": 0.0
+      },
+      "native_output_replay_drift": {
+        "B2": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "0": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "3": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "10": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "20": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        }
+      },
+      "points": {
+        "3": {
+          "saved_boundary_error": 10.11584078496638,
+          "transfers": {
+            "saved_minus_replayed_coeff": 0.0,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": 0.0,
+          "terms": {
+            "decoder_output_residual_rounding": -0.020868037617931334,
+            "MLP_combined": 1.3916609291742654,
+            "post_RMSNorm": -0.03917756100499038,
+            "mixer_residual_rounding": -0.022806618932074828,
+            "attention_output_projection_and_sigmoid_gate": 0.14440045997312,
+            "finite_FA_core_including_seed_cast": 11.596630783969605,
+            "attention_input_QKnorm_RoPE_GQA_projections": 0.0010261969611404242,
+            "mixer_input_alias": 0.0,
+            "input_RMSNorm": -2.935025367556754
+          },
+          "positive_terms_ranked": [
+            [
+              "finite_FA_core_including_seed_cast",
+              11.596630783969605
+            ],
+            [
+              "MLP_combined",
+              1.3916609291742654
+            ],
+            [
+              "attention_output_projection_and_sigmoid_gate",
+              0.14440045997312
+            ],
+            [
+              "attention_input_QKnorm_RoPE_GQA_projections",
+              0.0010261969611404242
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "input_RMSNorm",
+              -2.935025367556754
+            ],
+            [
+              "post_RMSNorm",
+              -0.03917756100499038
+            ],
+            [
+              "mixer_residual_rounding",
+              -0.022806618932074828
+            ],
+            [
+              "decoder_output_residual_rounding",
+              -0.020868037617931334
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "count": 66,
+              "terms": {
+                "decoder_output_residual_rounding": 0.0025183980439482598,
+                "MLP_combined": 0.6730389745610014,
+                "post_RMSNorm": -0.44921477735961524,
+                "mixer_residual_rounding": -0.000524429086310221,
+                "attention_output_projection_and_sigmoid_gate": 1.7921609146642066,
+                "finite_FA_core_including_seed_cast": 35.70789466123021,
+                "attention_input_QKnorm_RoPE_GQA_projections": 0.06946428105338286,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -2.2176024872245668
+              },
+              "prediction_minus_actual": 35.57773553588227
+            },
+            "response": {
+              "count": 230,
+              "terms": {
+                "decoder_output_residual_rounding": -0.021341553411192763,
+                "MLP_combined": 0.7891528461453526,
+                "post_RMSNorm": 0.5245377421857997,
+                "mixer_residual_rounding": -0.023641874533568738,
+                "attention_output_projection_and_sigmoid_gate": -1.7419952520172377,
+                "finite_FA_core_including_seed_cast": -28.405062198366963,
+                "attention_input_QKnorm_RoPE_GQA_projections": 0.14747860094491608,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -0.3096575367946926
+              },
+              "prediction_minus_actual": -29.040529225847585
+            },
+            "other_prompt": {
+              "count": 414,
+              "terms": {
+                "decoder_output_residual_rounding": -0.002044882250686832,
+                "MLP_combined": -0.07053089153208862,
+                "post_RMSNorm": -0.11450052583117501,
+                "mixer_residual_rounding": 0.0013596846878041352,
+                "attention_output_projection_and_sigmoid_gate": 0.09423479732615136,
+                "finite_FA_core_including_seed_cast": 4.293798321106363,
+                "attention_input_QKnorm_RoPE_GQA_projections": -0.21591668503715847,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -0.4077653435374944
+              },
+              "prediction_minus_actual": 3.578634474931715
+            }
+          }
+        },
+        "10": {
+          "saved_boundary_error": 11.764230388417156,
+          "transfers": {
+            "saved_minus_replayed_coeff": 0.0,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": 0.0,
+          "terms": {
+            "decoder_output_residual_rounding": -0.008875093772091995,
+            "MLP_combined": 0.4353806797430564,
+            "post_RMSNorm": -0.03415755087545251,
+            "mixer_residual_rounding": -0.012387471621488844,
+            "attention_output_projection_and_sigmoid_gate": 0.1004387890444709,
+            "finite_FA_core_including_seed_cast": 14.365729453140197,
+            "attention_input_QKnorm_RoPE_GQA_projections": -0.04209539784296282,
+            "mixer_input_alias": 0.0,
+            "input_RMSNorm": -3.0398030193985743
+          },
+          "positive_terms_ranked": [
+            [
+              "finite_FA_core_including_seed_cast",
+              14.365729453140197
+            ],
+            [
+              "MLP_combined",
+              0.4353806797430564
+            ],
+            [
+              "attention_output_projection_and_sigmoid_gate",
+              0.1004387890444709
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "input_RMSNorm",
+              -3.0398030193985743
+            ],
+            [
+              "attention_input_QKnorm_RoPE_GQA_projections",
+              -0.04209539784296282
+            ],
+            [
+              "post_RMSNorm",
+              -0.03415755087545251
+            ],
+            [
+              "mixer_residual_rounding",
+              -0.012387471621488844
+            ],
+            [
+              "decoder_output_residual_rounding",
+              -0.008875093772091995
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "count": 220,
+              "terms": {
+                "decoder_output_residual_rounding": 0.00985832967619666,
+                "MLP_combined": 0.2806499537434716,
+                "post_RMSNorm": -0.2825955351362706,
+                "mixer_residual_rounding": 0.0026340145671331257,
+                "attention_output_projection_and_sigmoid_gate": 2.3486820760145672,
+                "finite_FA_core_including_seed_cast": 40.16290358158658,
+                "attention_input_QKnorm_RoPE_GQA_projections": 0.034498066874844156,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -2.558420791553429
+              },
+              "prediction_minus_actual": 39.998209695773085
+            },
+            "response": {
+              "count": 230,
+              "terms": {
+                "decoder_output_residual_rounding": -0.017396459643405728,
+                "MLP_combined": 0.13744759522758038,
+                "post_RMSNorm": 0.30607556102778827,
+                "mixer_residual_rounding": -0.015550901278867088,
+                "attention_output_projection_and_sigmoid_gate": -2.2207834771697,
+                "finite_FA_core_including_seed_cast": -29.703618949697667,
+                "attention_input_QKnorm_RoPE_GQA_projections": 0.10056095628331868,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -0.2259892354421641
+              },
+              "prediction_minus_actual": -31.639254910693126
+            },
+            "other_prompt": {
+              "count": 260,
+              "terms": {
+                "decoder_output_residual_rounding": -0.0013369638048829336,
+                "MLP_combined": 0.01728313077200469,
+                "post_RMSNorm": -0.05763757676697018,
+                "mixer_residual_rounding": 0.0005294150902451207,
+                "attention_output_projection_and_sigmoid_gate": -0.02745980980039598,
+                "finite_FA_core_including_seed_cast": 3.906444821251292,
+                "attention_input_QKnorm_RoPE_GQA_projections": -0.17715442100112566,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -0.25539299240298113
+              },
+              "prediction_minus_actual": 3.405275603337185
+            }
+          }
+        },
+        "20": {
+          "saved_boundary_error": -0.06414743010733348,
+          "transfers": {
+            "saved_minus_replayed_coeff": 0.0,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": 0.0,
+          "terms": {
+            "decoder_output_residual_rounding": 0.004973673430922391,
+            "MLP_combined": -0.05073589583207849,
+            "post_RMSNorm": -0.00668054013422316,
+            "mixer_residual_rounding": -0.03400687318467588,
+            "attention_output_projection_and_sigmoid_gate": -0.0559889633057825,
+            "finite_FA_core_including_seed_cast": 0.07142714382477933,
+            "attention_input_QKnorm_RoPE_GQA_projections": 0.005618689752802491,
+            "mixer_input_alias": 0.0,
+            "input_RMSNorm": 0.0012453353409239143
+          },
+          "positive_terms_ranked": [
+            [
+              "finite_FA_core_including_seed_cast",
+              0.07142714382477933
+            ],
+            [
+              "attention_input_QKnorm_RoPE_GQA_projections",
+              0.005618689752802491
+            ],
+            [
+              "decoder_output_residual_rounding",
+              0.004973673430922391
+            ],
+            [
+              "input_RMSNorm",
+              0.0012453353409239143
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "attention_output_projection_and_sigmoid_gate",
+              -0.0559889633057825
+            ],
+            [
+              "MLP_combined",
+              -0.05073589583207849
+            ],
+            [
+              "mixer_residual_rounding",
+              -0.03400687318467588
+            ],
+            [
+              "post_RMSNorm",
+              -0.00668054013422316
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "count": 437,
+              "terms": {
+                "decoder_output_residual_rounding": 0.01350474392439305,
+                "MLP_combined": -0.012813706484108829,
+                "post_RMSNorm": 0.0014846194412554375,
+                "mixer_residual_rounding": 0.002892476762601276,
+                "attention_output_projection_and_sigmoid_gate": 0.006604426812501197,
+                "finite_FA_core_including_seed_cast": 43.47106751729626,
+                "attention_input_QKnorm_RoPE_GQA_projections": 0.005455199411943493,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": 0.0017235815163892717
+              },
+              "prediction_minus_actual": 43.48991885868125
+            },
+            "response": {
+              "count": 230,
+              "terms": {
+                "decoder_output_residual_rounding": -0.007061765641591694,
+                "MLP_combined": -0.03903868581702852,
+                "post_RMSNorm": -0.007131487888966729,
+                "mixer_residual_rounding": -0.036442221621980735,
+                "attention_output_projection_and_sigmoid_gate": -0.06438257537693873,
+                "finite_FA_core_including_seed_cast": -45.87203540123855,
+                "attention_input_QKnorm_RoPE_GQA_projections": 0.005006879614108383,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -0.002564726545003091
+              },
+              "prediction_minus_actual": -46.023649984515956
+            },
+            "other_prompt": {
+              "count": 43,
+              "terms": {
+                "decoder_output_residual_rounding": -0.001469304851878966,
+                "MLP_combined": 0.001116496469058852,
+                "post_RMSNorm": -0.001033671686511868,
+                "mixer_residual_rounding": -0.0004571283252964159,
+                "attention_output_projection_and_sigmoid_gate": 0.0017891852586550071,
+                "finite_FA_core_including_seed_cast": 2.4723950277670723,
+                "attention_input_QKnorm_RoPE_GQA_projections": -0.0048433892732493876,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": 0.002086480369537732
+              },
+              "prediction_minus_actual": 2.469583695727388
+            }
+          }
+        },
+        "B2": {
+          "saved_boundary_error": -0.006040777788261176,
+          "transfers": {
+            "saved_minus_replayed_coeff": 0.0,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": 0.0,
+          "terms": {
+            "decoder_output_residual_rounding": 0.01724175196053756,
+            "MLP_combined": -0.00011915135663537364,
+            "post_RMSNorm": 0.0023153425097432317,
+            "mixer_residual_rounding": -0.009771741663275716,
+            "attention_output_projection_and_sigmoid_gate": -0.007716406039852107,
+            "finite_FA_core_including_seed_cast": -0.002922962381295635,
+            "attention_input_QKnorm_RoPE_GQA_projections": -0.0018372935064094275,
+            "mixer_input_alias": 0.0,
+            "input_RMSNorm": -0.0032303173110723353
+          },
+          "positive_terms_ranked": [
+            [
+              "decoder_output_residual_rounding",
+              0.01724175196053756
+            ],
+            [
+              "post_RMSNorm",
+              0.0023153425097432317
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "mixer_residual_rounding",
+              -0.009771741663275716
+            ],
+            [
+              "attention_output_projection_and_sigmoid_gate",
+              -0.007716406039852107
+            ],
+            [
+              "input_RMSNorm",
+              -0.0032303173110723353
+            ],
+            [
+              "finite_FA_core_including_seed_cast",
+              -0.002922962381295635
+            ],
+            [
+              "attention_input_QKnorm_RoPE_GQA_projections",
+              -0.0018372935064094275
+            ],
+            [
+              "MLP_combined",
+              -0.00011915135663537364
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "count": 437,
+              "terms": {
+                "decoder_output_residual_rounding": 0.006751438059498727,
+                "MLP_combined": 0.0006912843440488245,
+                "post_RMSNorm": -0.0007690888062541451,
+                "mixer_residual_rounding": 0.005435093425458622,
+                "attention_output_projection_and_sigmoid_gate": -0.0003719523713391045,
+                "finite_FA_core_including_seed_cast": 43.492819530259844,
+                "attention_input_QKnorm_RoPE_GQA_projections": -0.0010008547389989677,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -0.0003318668384580585
+              },
+              "prediction_minus_actual": 43.50322358333379
+            },
+            "response": {
+              "count": 230,
+              "terms": {
+                "decoder_output_residual_rounding": 0.013101011754636965,
+                "MLP_combined": -0.0019086144298482762,
+                "post_RMSNorm": 0.0029564210095342387,
+                "mixer_residual_rounding": -0.01422579492449407,
+                "attention_output_projection_and_sigmoid_gate": -0.007093811160772559,
+                "finite_FA_core_including_seed_cast": -45.962910110515956,
+                "attention_input_QKnorm_RoPE_GQA_projections": -0.00044193326150643785,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -0.0028660737422320816
+              },
+              "prediction_minus_actual": -45.973388905270646
+            },
+            "other_prompt": {
+              "count": 43,
+              "terms": {
+                "decoder_output_residual_rounding": -0.0026106978535981335,
+                "MLP_combined": 0.0010981787291640783,
+                "post_RMSNorm": 0.00012801030646313809,
+                "mixer_residual_rounding": -0.0009810401642402662,
+                "attention_output_projection_and_sigmoid_gate": -0.00025064250774044683,
+                "finite_FA_core_including_seed_cast": 2.4671676178748205,
+                "attention_input_QKnorm_RoPE_GQA_projections": -0.00039450550590402166,
+                "mixer_input_alias": 0.0,
+                "input_RMSNorm": -3.237673038219459e-05
+              },
+              "prediction_minus_actual": 2.464124544148582
+            }
+          }
+        }
+      }
+    },
+    "1": {
+      "kind": "linear_attention",
+      "root_capture_input_drift": {
+        "equal": true,
+        "max_absolute": 0.0,
+        "relative_L2": 0.0
+      },
+      "root_capture_output_drift": {
+        "equal": true,
+        "max_absolute": 0.0,
+        "relative_L2": 0.0
+      },
+      "saved_input_coeff_drift": {
+        "equal": false,
+        "max_absolute": 4.789233207702637e-05,
+        "relative_L2": 1.1387743018653438e-05
+      },
+      "native_output_replay_drift": {
+        "B2": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "0": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "3": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "10": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        },
+        "20": {
+          "equal": true,
+          "max_absolute": 0.0,
+          "relative_L2": 0.0
+        }
+      },
+      "points": {
+        "3": {
+          "saved_boundary_error": 1.4174063771891692,
+          "transfers": {
+            "saved_minus_replayed_coeff": 4.017996138000468e-06,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": 4.017996138000468e-06,
+          "terms": {
+            "decoder_output_residual_rounding": 0.024012232959385926,
+            "MLP_combined": -1.7131677750803078,
+            "post_RMSNorm": -1.2028021625422411,
+            "mixer_residual_rounding": -0.0016972450509129544,
+            "GDN_output_projection": 0.009475582503277735,
+            "GDN_fused_norm_gate": 3.1377574306843723,
+            "GDN_mo_BF16_cast": 0.002272131945598943,
+            "GDN_FLA_including_raw_g_exp": 0.31696863277548815,
+            "GDN_QK_L2_and_head_fold": 1.9320913365002248,
+            "GDN_beta_sigmoid": 0.06086525011765298,
+            "GDN_raw_g_parameter_map": -1.0764918014096896,
+            "GDN_conv_output_split": -3.552713678800501e-15,
+            "GDN_conv_linear_and_SiLU": 0.13079975976130953,
+            "GDN_input_projections": 0.003835195112987577,
+            "mixer_input_alias": -0.0,
+            "input_RMSNorm": -0.20651620908412127
+          },
+          "positive_terms_ranked": [
+            [
+              "GDN_fused_norm_gate",
+              3.1377574306843723
+            ],
+            [
+              "GDN_QK_L2_and_head_fold",
+              1.9320913365002248
+            ],
+            [
+              "GDN_FLA_including_raw_g_exp",
+              0.31696863277548815
+            ],
+            [
+              "GDN_conv_linear_and_SiLU",
+              0.13079975976130953
+            ],
+            [
+              "GDN_beta_sigmoid",
+              0.06086525011765298
+            ],
+            [
+              "decoder_output_residual_rounding",
+              0.024012232959385926
+            ],
+            [
+              "GDN_output_projection",
+              0.009475582503277735
+            ],
+            [
+              "GDN_input_projections",
+              0.003835195112987577
+            ],
+            [
+              "GDN_mo_BF16_cast",
+              0.002272131945598943
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "MLP_combined",
+              -1.7131677750803078
+            ],
+            [
+              "post_RMSNorm",
+              -1.2028021625422411
+            ],
+            [
+              "GDN_raw_g_parameter_map",
+              -1.0764918014096896
+            ],
+            [
+              "input_RMSNorm",
+              -0.20651620908412127
+            ],
+            [
+              "mixer_residual_rounding",
+              -0.0016972450509129544
+            ],
+            [
+              "GDN_conv_output_split",
+              -3.552713678800501e-15
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 122.87811447177113,
+              "input_contraction": 137.87626606946654,
+              "prediction_minus_actual": 14.998151597695411,
+              "actual_minus_predicted": -14.998151597695411,
+              "terms": {
+                "decoder_output_residual_rounding": 0.02350552227206748,
+                "MLP_combined": -0.4765169075781799,
+                "post_RMSNorm": -1.3571108994792525,
+                "mixer_residual_rounding": 0.00041725388661895124,
+                "GDN_output_projection": 0.007318672061897402,
+                "GDN_fused_norm_gate": 1.9133888393438205,
+                "GDN_mo_BF16_cast": -0.0008196746846786951,
+                "GDN_FLA_including_raw_g_exp": 5.224996136322421,
+                "GDN_QK_L2_and_head_fold": 0.31371562802477193,
+                "GDN_beta_sigmoid": 0.0033259130467402365,
+                "GDN_raw_g_parameter_map": 1.4486930412917065,
+                "GDN_conv_output_split": 3.552713678800501e-15,
+                "GDN_conv_linear_and_SiLU": 8.015285136407396,
+                "GDN_input_projections": -0.010125859941823023,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": -0.10792120327811716
+              },
+              "telescoping_error": -1.9539925233402755e-14,
+              "FLA_branch_contractions": {
+                "q": -1.9474261110533153,
+                "k": 6.538157562397259,
+                "v": 8.08985613059016,
+                "beta": 1.2526688795535534,
+                "raw_g": -7.837211548228025
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 0.8718684516218909,
+                "gate": 6.680990389032038
+              }
+            },
+            "response": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 10.28948630288172,
+              "input_contraction": 3.2035498625677215,
+              "prediction_minus_actual": -7.085936440313999,
+              "actual_minus_predicted": 7.085936440313999,
+              "terms": {
+                "decoder_output_residual_rounding": 0.0029456202366981987,
+                "MLP_combined": -0.3242923525188106,
+                "post_RMSNorm": 0.043643705693345636,
+                "mixer_residual_rounding": -0.003530863291305586,
+                "GDN_output_projection": 0.002828071252505282,
+                "GDN_fused_norm_gate": 0.6820383623946242,
+                "GDN_mo_BF16_cast": 0.0011652784522055981,
+                "GDN_FLA_including_raw_g_exp": -6.61544652958577,
+                "GDN_QK_L2_and_head_fold": -0.00916531643752938,
+                "GDN_beta_sigmoid": 0.027767223225118404,
+                "GDN_raw_g_parameter_map": 0.006125932940104287,
+                "GDN_conv_output_split": -4.440892098500626e-16,
+                "GDN_conv_linear_and_SiLU": -0.906130589831776,
+                "GDN_input_projections": 0.004634622833659563,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": 0.0014803943229328986
+              },
+              "telescoping_error": 8.881784197001252e-16,
+              "FLA_branch_contractions": {
+                "q": -0.11852113357849384,
+                "k": -0.6499816872276846,
+                "v": 2.6015892056447627,
+                "beta": -0.2473813594248413,
+                "raw_g": 0.02603758400086479
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 8.226023860548173,
+                "gate": -0.9578159847397536
+              }
+            },
+            "other_prompt": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 7.361269456941637,
+              "input_contraction": 0.8664566587532618,
+              "prediction_minus_actual": -6.4948127981883745,
+              "actual_minus_predicted": 6.4948127981883745,
+              "terms": {
+                "decoder_output_residual_rounding": -0.002438909549394408,
+                "MLP_combined": -0.9123585149833163,
+                "post_RMSNorm": 0.11066503124366384,
+                "mixer_residual_rounding": 0.0014163643537887793,
+                "GDN_output_projection": -0.000671160811124949,
+                "GDN_fused_norm_gate": 0.5423302289459296,
+                "GDN_mo_BF16_cast": 0.0019265281780684873,
+                "GDN_FLA_including_raw_g_exp": 1.7074190260388413,
+                "GDN_QK_L2_and_head_fold": 1.62754102491298,
+                "GDN_beta_sigmoid": 0.029772113845794257,
+                "GDN_raw_g_parameter_map": -2.531310775641501,
+                "GDN_conv_output_split": -0.0,
+                "GDN_conv_linear_and_SiLU": -6.978354786814311,
+                "GDN_input_projections": 0.009326432221147929,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": -0.100075400128942
+              },
+              "telescoping_error": -8.881784197001252e-16,
+              "FLA_branch_contractions": {
+                "q": -0.06292210311626499,
+                "k": 5.5639494527398,
+                "v": 0.9637816893697534,
+                "beta": 0.5699098137990555,
+                "raw_g": -0.20825379901588142
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 5.117119499559553,
+                "gate": 0.6691065005752429
+              }
+            }
+          }
+        },
+        "10": {
+          "saved_boundary_error": 9.803316065730854,
+          "transfers": {
+            "saved_minus_replayed_coeff": -4.3074858356431656e-05,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": -4.3074858356431656e-05,
+          "terms": {
+            "decoder_output_residual_rounding": 0.02142400739261774,
+            "MLP_combined": -2.7691255328978386,
+            "post_RMSNorm": -0.4107375197752816,
+            "mixer_residual_rounding": -0.006953700850399258,
+            "GDN_output_projection": -0.0065738373629020685,
+            "GDN_fused_norm_gate": 1.9080625498473154,
+            "GDN_mo_BF16_cast": -0.0035388106529001817,
+            "GDN_FLA_including_raw_g_exp": 0.9502688768018004,
+            "GDN_QK_L2_and_head_fold": 4.11148898401872,
+            "GDN_beta_sigmoid": 0.0945165011210869,
+            "GDN_raw_g_parameter_map": 6.102642608762615,
+            "GDN_conv_output_split": -1.4210854715202004e-14,
+            "GDN_conv_linear_and_SiLU": 0.21191222597613546,
+            "GDN_input_projections": -0.0027177284182151595,
+            "mixer_input_alias": -0.0,
+            "input_RMSNorm": -0.3973094833735402
+          },
+          "positive_terms_ranked": [
+            [
+              "GDN_raw_g_parameter_map",
+              6.102642608762615
+            ],
+            [
+              "GDN_QK_L2_and_head_fold",
+              4.11148898401872
+            ],
+            [
+              "GDN_fused_norm_gate",
+              1.9080625498473154
+            ],
+            [
+              "GDN_FLA_including_raw_g_exp",
+              0.9502688768018004
+            ],
+            [
+              "GDN_conv_linear_and_SiLU",
+              0.21191222597613546
+            ],
+            [
+              "GDN_beta_sigmoid",
+              0.0945165011210869
+            ],
+            [
+              "decoder_output_residual_rounding",
+              0.02142400739261774
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "MLP_combined",
+              -2.7691255328978386
+            ],
+            [
+              "post_RMSNorm",
+              -0.4107375197752816
+            ],
+            [
+              "input_RMSNorm",
+              -0.3973094833735402
+            ],
+            [
+              "mixer_residual_rounding",
+              -0.006953700850399258
+            ],
+            [
+              "GDN_output_projection",
+              -0.0065738373629020685
+            ],
+            [
+              "GDN_mo_BF16_cast",
+              -0.0035388106529001817
+            ],
+            [
+              "GDN_input_projections",
+              -0.0027177284182151595
+            ],
+            [
+              "GDN_conv_output_split",
+              -1.4210854715202004e-14
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 148.2815822220167,
+              "input_contraction": 163.63029614162747,
+              "prediction_minus_actual": 15.34871391961076,
+              "actual_minus_predicted": -15.34871391961076,
+              "terms": {
+                "decoder_output_residual_rounding": 0.015530536061397981,
+                "MLP_combined": -1.509660567906245,
+                "post_RMSNorm": -0.3960207828300213,
+                "mixer_residual_rounding": 0.008820656842248198,
+                "GDN_output_projection": 0.006997041196187936,
+                "GDN_fused_norm_gate": 1.3601330765105608,
+                "GDN_mo_BF16_cast": -0.0018495716850313038,
+                "GDN_FLA_including_raw_g_exp": -7.708199514110344,
+                "GDN_QK_L2_and_head_fold": 1.459270021408308,
+                "GDN_beta_sigmoid": 0.02960429008456056,
+                "GDN_raw_g_parameter_map": 10.064597429867117,
+                "GDN_conv_output_split": -0.0,
+                "GDN_conv_linear_and_SiLU": 12.13080079933615,
+                "GDN_input_projections": -0.006408230232310075,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": -0.10490126493187546
+              },
+              "telescoping_error": -5.5067062021407764e-14,
+              "FLA_branch_contractions": {
+                "q": -1.6048423509172178,
+                "k": 20.920517731802413,
+                "v": 7.891537589824173,
+                "beta": 1.8416962683518006,
+                "raw_g": -34.31969893372039
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 2.439259391136153,
+                "gate": 8.201284939383962
+              }
+            },
+            "response": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 9.267462152364601,
+              "input_contraction": 4.7270004089292605,
+              "prediction_minus_actual": -4.5404617434353405,
+              "actual_minus_predicted": 4.5404617434353405,
+              "terms": {
+                "decoder_output_residual_rounding": 0.009950041371667107,
+                "MLP_combined": -0.1406686065921814,
+                "post_RMSNorm": 0.029793601220411414,
+                "mixer_residual_rounding": -0.020585139243062045,
+                "GDN_output_projection": -0.014926250892137283,
+                "GDN_fused_norm_gate": 0.2282963396440405,
+                "GDN_mo_BF16_cast": 7.73113810286219e-05,
+                "GDN_FLA_including_raw_g_exp": -4.034982830834697,
+                "GDN_QK_L2_and_head_fold": 0.009318689179620254,
+                "GDN_beta_sigmoid": 0.02405629663459613,
+                "GDN_raw_g_parameter_map": 0.0013988259751734136,
+                "GDN_conv_output_split": -0.0,
+                "GDN_conv_linear_and_SiLU": -0.6182059918476044,
+                "GDN_input_projections": -0.0019758353910447057,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": -0.012008194041151665
+              },
+              "telescoping_error": -8.881784197001252e-16,
+              "FLA_branch_contractions": {
+                "q": -0.21575607948746153,
+                "k": -0.5009938229826071,
+                "v": 2.4179870406189017,
+                "beta": -0.22012948406734356,
+                "raw_g": 0.004240617879285875
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 5.520253791414444,
+                "gate": -0.6911158611005799
+              }
+            },
+            "other_prompt": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 3.9399015543872857,
+              "input_contraction": 2.935008518801091,
+              "prediction_minus_actual": -1.004893035586195,
+              "actual_minus_predicted": 1.004893035586195,
+              "terms": {
+                "decoder_output_residual_rounding": -0.004056570040434138,
+                "MLP_combined": -1.118796358399421,
+                "post_RMSNorm": -0.044510338165667296,
+                "mixer_residual_rounding": 0.004810781550374621,
+                "GDN_output_projection": 0.001355372333043281,
+                "GDN_fused_norm_gate": 0.3196331336927165,
+                "GDN_mo_BF16_cast": -0.0017665503488976109,
+                "GDN_FLA_including_raw_g_exp": 12.693451221746848,
+                "GDN_QK_L2_and_head_fold": 2.6429002734307883,
+                "GDN_beta_sigmoid": 0.040855914401929816,
+                "GDN_raw_g_parameter_map": -3.963353647079694,
+                "GDN_conv_output_split": 3.552713678800501e-15,
+                "GDN_conv_linear_and_SiLU": -11.30068258151243,
+                "GDN_input_projections": 0.005666337205160854,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": -0.28040002440051537
+              },
+              "telescoping_error": 1.1102230246251565e-15,
+              "FLA_branch_contractions": {
+                "q": 0.5546735826794582,
+                "k": 12.53206639271169,
+                "v": 0.04500331406708055,
+                "beta": 0.5791422638949081,
+                "raw_g": -0.21583600240128958
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 0.8033648795538969,
+                "gate": 0.8442704672757576
+              }
+            }
+          }
+        },
+        "20": {
+          "saved_boundary_error": -0.009369024872755816,
+          "transfers": {
+            "saved_minus_replayed_coeff": -4.778789450376325e-05,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": -4.778789450376325e-05,
+          "terms": {
+            "decoder_output_residual_rounding": 0.025689261563819343,
+            "MLP_combined": 0.011427231987262587,
+            "post_RMSNorm": -0.005890866566318209,
+            "mixer_residual_rounding": -0.012232966865573403,
+            "GDN_output_projection": 0.003118219580962034,
+            "GDN_fused_norm_gate": -0.005418306634647152,
+            "GDN_mo_BF16_cast": -0.005755875060086346,
+            "GDN_FLA_including_raw_g_exp": -0.03017357473095217,
+            "GDN_QK_L2_and_head_fold": -0.008071517413263507,
+            "GDN_beta_sigmoid": -0.00020317699363370245,
+            "GDN_raw_g_parameter_map": 4.799279693656899e-07,
+            "GDN_conv_output_split": -0.0,
+            "GDN_conv_linear_and_SiLU": 0.00900155448121609,
+            "GDN_input_projections": 0.004980871474566939,
+            "mixer_input_alias": -0.0,
+            "input_RMSNorm": 0.0042074282704760435
+          },
+          "positive_terms_ranked": [
+            [
+              "decoder_output_residual_rounding",
+              0.025689261563819343
+            ],
+            [
+              "MLP_combined",
+              0.011427231987262587
+            ],
+            [
+              "GDN_conv_linear_and_SiLU",
+              0.00900155448121609
+            ],
+            [
+              "GDN_input_projections",
+              0.004980871474566939
+            ],
+            [
+              "input_RMSNorm",
+              0.0042074282704760435
+            ],
+            [
+              "GDN_output_projection",
+              0.003118219580962034
+            ],
+            [
+              "GDN_raw_g_parameter_map",
+              4.799279693656899e-07
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "GDN_FLA_including_raw_g_exp",
+              -0.03017357473095217
+            ],
+            [
+              "mixer_residual_rounding",
+              -0.012232966865573403
+            ],
+            [
+              "GDN_QK_L2_and_head_fold",
+              -0.008071517413263507
+            ],
+            [
+              "post_RMSNorm",
+              -0.005890866566318209
+            ],
+            [
+              "GDN_mo_BF16_cast",
+              -0.005755875060086346
+            ],
+            [
+              "GDN_fused_norm_gate",
+              -0.005418306634647152
+            ],
+            [
+              "GDN_beta_sigmoid",
+              -0.00020317699363370245
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 147.69802154619592,
+              "input_contraction": 154.31370192566666,
+              "prediction_minus_actual": 6.615680379470746,
+              "actual_minus_predicted": -6.615680379470746,
+              "terms": {
+                "decoder_output_residual_rounding": 0.005021336111880714,
+                "MLP_combined": 0.024167216413864878,
+                "post_RMSNorm": -0.002854791564580239,
+                "mixer_residual_rounding": 0.005837468813037816,
+                "GDN_output_projection": 0.0076198743598148155,
+                "GDN_fused_norm_gate": -0.004774293320682688,
+                "GDN_mo_BF16_cast": -0.002839122804976446,
+                "GDN_FLA_including_raw_g_exp": 5.298995355844006,
+                "GDN_QK_L2_and_head_fold": -0.005482716201591131,
+                "GDN_beta_sigmoid": 2.7590735207638772e-06,
+                "GDN_raw_g_parameter_map": 4.6262436370625437e-07,
+                "GDN_conv_output_split": -0.0,
+                "GDN_conv_linear_and_SiLU": 1.3039486742187165,
+                "GDN_input_projections": -0.018867544867443797,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": 0.004905700770802213
+              },
+              "telescoping_error": -1.2434497875801753e-14,
+              "FLA_branch_contractions": {
+                "q": -1.4288900193648595,
+                "k": 46.11570521229552,
+                "v": 0.7442559928843837,
+                "beta": 2.5498767898227968,
+                "raw_g": -42.46781358845873
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 0.21697815414007948,
+                "gate": 9.646966209743372
+              }
+            },
+            "response": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 8.99685631438807,
+              "input_contraction": 3.717118679079383,
+              "prediction_minus_actual": -5.279737635308687,
+              "actual_minus_predicted": 5.279737635308687,
+              "terms": {
+                "decoder_output_residual_rounding": 0.020440383715269128,
+                "MLP_combined": -0.013154980109737258,
+                "post_RMSNorm": -0.0013011126681616858,
+                "mixer_residual_rounding": -0.01977837539103433,
+                "GDN_output_projection": -0.003163158033819613,
+                "GDN_fused_norm_gate": -0.002629619925330763,
+                "GDN_mo_BF16_cast": -0.0011293954275810592,
+                "GDN_FLA_including_raw_g_exp": -4.590158510363596,
+                "GDN_QK_L2_and_head_fold": -0.002294774529437049,
+                "GDN_beta_sigmoid": -0.00020593181427414065,
+                "GDN_raw_g_parameter_map": 1.5355706192710095e-08,
+                "GDN_conv_output_split": -4.440892098500626e-16,
+                "GDN_conv_linear_and_SiLU": -0.6729097484716424,
+                "GDN_input_projections": 0.012931593852159307,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": -0.006384021497208625
+              },
+              "telescoping_error": -8.881784197001252e-16,
+              "FLA_branch_contractions": {
+                "q": -0.33870262369713944,
+                "k": -0.28907478191207603,
+                "v": 1.9274581122521544,
+                "beta": -0.24530412703208415,
+                "raw_g": -0.1024048149374535
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 5.543259670464577,
+                "gate": -0.0466299380777823
+              }
+            },
+            "other_prompt": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": -0.08205127146539759,
+              "input_contraction": -1.4273152526057158,
+              "prediction_minus_actual": -1.3452639811403182,
+              "actual_minus_predicted": 1.3452639811403182,
+              "terms": {
+                "decoder_output_residual_rounding": 0.00022754173665406885,
+                "MLP_combined": 0.0004149956831244195,
+                "post_RMSNorm": -0.0017349623335738418,
+                "mixer_residual_rounding": 0.001707939712382811,
+                "GDN_output_projection": -0.001338496745029838,
+                "GDN_fused_norm_gate": 0.0019856066113622672,
+                "GDN_mo_BF16_cast": -0.0017873568275268426,
+                "GDN_FLA_including_raw_g_exp": -0.7390104202113752,
+                "GDN_QK_L2_and_head_fold": -0.00029402668223721395,
+                "GDN_beta_sigmoid": -4.252880936306269e-09,
+                "GDN_raw_g_parameter_map": 1.9479070578753976e-09,
+                "GDN_conv_output_split": -4.440892098500626e-16,
+                "GDN_conv_linear_and_SiLU": -0.6220373712658573,
+                "GDN_input_projections": 0.010916822489853484,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": 0.005685748996879347
+              },
+              "telescoping_error": 0.0,
+              "FLA_branch_contractions": {
+                "q": 1.0836570142207245,
+                "k": -0.8650781181896354,
+                "v": -1.219192901135248,
+                "beta": -0.474738105897746,
+                "raw_g": -0.4606348551037871
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": -1.19518918906679,
+                "gate": 0.485665377031846
+              }
+            }
+          }
+        },
+        "B2": {
+          "saved_boundary_error": -0.03293016939179205,
+          "transfers": {
+            "saved_minus_replayed_coeff": -4.7786152355559774e-05,
+            "input_replay_transfer": 0.0,
+            "output_replay_transfer": 0.0
+          },
+          "transfer_net": -4.7786152355559774e-05,
+          "terms": {
+            "decoder_output_residual_rounding": 0.02459950903823227,
+            "MLP_combined": -0.0017456745013149089,
+            "post_RMSNorm": -0.0034137657061208415,
+            "mixer_residual_rounding": -0.022974359453433735,
+            "GDN_output_projection": 0.0027650094272360093,
+            "GDN_fused_norm_gate": -0.0042050873278594025,
+            "GDN_mo_BF16_cast": -0.0057516950408391665,
+            "GDN_FLA_including_raw_g_exp": -0.032528599113959444,
+            "GDN_QK_L2_and_head_fold": -0.007703560209378679,
+            "GDN_beta_sigmoid": 6.86296555141297e-08,
+            "GDN_raw_g_parameter_map": 1.8842421667386589e-07,
+            "GDN_conv_output_split": -0.0,
+            "GDN_conv_linear_and_SiLU": 0.009162093599464072,
+            "GDN_input_projections": 0.004884452442610154,
+            "mixer_input_alias": -0.0,
+            "input_RMSNorm": 0.004029036552067211
+          },
+          "positive_terms_ranked": [
+            [
+              "decoder_output_residual_rounding",
+              0.02459950903823227
+            ],
+            [
+              "GDN_conv_linear_and_SiLU",
+              0.009162093599464072
+            ],
+            [
+              "GDN_input_projections",
+              0.004884452442610154
+            ],
+            [
+              "input_RMSNorm",
+              0.004029036552067211
+            ],
+            [
+              "GDN_output_projection",
+              0.0027650094272360093
+            ],
+            [
+              "GDN_raw_g_parameter_map",
+              1.8842421667386589e-07
+            ],
+            [
+              "GDN_beta_sigmoid",
+              6.86296555141297e-08
+            ]
+          ],
+          "negative_terms_ranked": [
+            [
+              "GDN_FLA_including_raw_g_exp",
+              -0.032528599113959444
+            ],
+            [
+              "mixer_residual_rounding",
+              -0.022974359453433735
+            ],
+            [
+              "GDN_QK_L2_and_head_fold",
+              -0.007703560209378679
+            ],
+            [
+              "GDN_mo_BF16_cast",
+              -0.0057516950408391665
+            ],
+            [
+              "GDN_fused_norm_gate",
+              -0.0042050873278594025
+            ],
+            [
+              "post_RMSNorm",
+              -0.0034137657061208415
+            ],
+            [
+              "MLP_combined",
+              -0.0017456745013149089
+            ]
+          ],
+          "groups": {
+            "deleted": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 147.7153085007372,
+              "input_contraction": 154.313407875554,
+              "prediction_minus_actual": 6.5980993748167975,
+              "actual_minus_predicted": -6.5980993748167975,
+              "terms": {
+                "decoder_output_residual_rounding": 0.002858666598427817,
+                "MLP_combined": 0.012164915034318824,
+                "post_RMSNorm": -3.091969375645931e-05,
+                "mixer_residual_rounding": 1.8529384288257233e-05,
+                "GDN_output_projection": 0.008040417456157911,
+                "GDN_fused_norm_gate": -0.004537867725268541,
+                "GDN_mo_BF16_cast": -0.002836973960142486,
+                "GDN_FLA_including_raw_g_exp": 5.297694011849302,
+                "GDN_QK_L2_and_head_fold": -0.005515515383002878,
+                "GDN_beta_sigmoid": 3.554735839017553e-08,
+                "GDN_raw_g_parameter_map": 1.7960031328811965e-07,
+                "GDN_conv_output_split": -0.0,
+                "GDN_conv_linear_and_SiLU": 1.3041806985268494,
+                "GDN_input_projections": -0.01880206718735522,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": 0.0048652647692506434
+              },
+              "telescoping_error": -5.684341886080802e-14,
+              "FLA_branch_contractions": {
+                "q": -1.4289287618358366,
+                "k": 46.115798442613105,
+                "v": 0.7438687355499067,
+                "beta": 2.5498804450085615,
+                "raw_g": -42.46780964893208
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 0.21795217451450044,
+                "gate": 9.646982860074797
+              }
+            },
+            "response": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": 8.99487664417854,
+              "input_contraction": 3.7172805702986293,
+              "prediction_minus_actual": -5.27759607387991,
+              "actual_minus_predicted": 5.27759607387991,
+              "terms": {
+                "decoder_output_residual_rounding": 0.02440054339175779,
+                "MLP_combined": -0.01229251711750301,
+                "post_RMSNorm": -0.001416683550763187,
+                "mixer_residual_rounding": -0.022718549165710478,
+                "GDN_output_projection": -0.003685129143916832,
+                "GDN_fused_norm_gate": -0.0008477969233987442,
+                "GDN_mo_BF16_cast": -0.0011284661176276245,
+                "GDN_FLA_including_raw_g_exp": -4.591261610195084,
+                "GDN_QK_L2_and_head_fold": -0.001897539077514998,
+                "GDN_beta_sigmoid": 1.926655529560506e-08,
+                "GDN_raw_g_parameter_map": 6.875997493605013e-09,
+                "GDN_conv_output_split": -4.440892098500626e-16,
+                "GDN_conv_linear_and_SiLU": -0.6729815436500679,
+                "GDN_input_projections": 0.012738381998512294,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": -0.006505190471146338
+              },
+              "telescoping_error": -8.881784197001252e-16,
+              "FLA_branch_contractions": {
+                "q": -0.33881586981592615,
+                "k": -0.28936518876765244,
+                "v": 1.9274790629232186,
+                "beta": -0.2453011114393806,
+                "raw_g": -0.10238453999162928
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": 5.544002429221342,
+                "gate": -0.04624395385317924
+              }
+            },
+            "other_prompt": {
+              "sign_convention": "prediction_minus_actual",
+              "output_contraction": -0.0739377410388995,
+              "input_contraction": -1.4273234252152294,
+              "prediction_minus_actual": -1.3533856841763299,
+              "actual_minus_predicted": 1.3533856841763299,
+              "terms": {
+                "decoder_output_residual_rounding": -0.002659700951966215,
+                "MLP_combined": -0.0016180724181255046,
+                "post_RMSNorm": -0.0019661624616068574,
+                "mixer_residual_rounding": -0.00027433967206447196,
+                "GDN_output_projection": -0.001590278885006291,
+                "GDN_fused_norm_gate": 0.0011805773208085069,
+                "GDN_mo_BF16_cast": -0.0017862549630669466,
+                "GDN_FLA_including_raw_g_exp": -0.7389610007681822,
+                "GDN_QK_L2_and_head_fold": -0.00029050574885525204,
+                "GDN_beta_sigmoid": 1.3815741439771045e-08,
+                "GDN_raw_g_parameter_map": 1.9479070578753976e-09,
+                "GDN_conv_output_split": -6.661338147750939e-16,
+                "GDN_conv_linear_and_SiLU": -0.6220370612773156,
+                "GDN_input_projections": 0.010948137631440424,
+                "mixer_input_alias": -0.0,
+                "input_RMSNorm": 0.005668962253962739
+              },
+              "telescoping_error": 0.0,
+              "FLA_branch_contractions": {
+                "q": 1.0836502661788645,
+                "k": -0.8650961883383461,
+                "v": -1.2191957900650983,
+                "beta": -0.474738105897746,
+                "raw_g": -0.4606348551037871
+              },
+              "norm_gate_branch_contractions": {
+                "normalized_memory_before_cast": -1.1952674174948639,
+                "gate": 0.48568035511238566
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "next": "Root review actual largest internal terms before selecting any new propagation rule; no automatic dispatch.",
+  "limits": [
+    "No candidate, metric improvement or production timing measured. Signed compensations retained.",
+    "Scalar and grouped internal ledgers are checked algebraically against public per-token boundary/transfer vectors; private activation/coefficient dot products remain remote and are not independently recomputed by this NumPy audit.",
+    "Group locations are contraction coordinates, not independent source-token effects. Source root/replay drift and transfer remain explicit; no bitwise requirement.",
+    "Budget includes actual one whole B2 kwargs forward,10selected replays,2finite decoders,1public FA LSE; whole-graph FA/FLA counts inferred from verified native graph and all32 observed entries."
+  ],
+  "CPU_audit_seconds": 0.06794540002010763
+}
