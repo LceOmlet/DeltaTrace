@@ -31,12 +31,14 @@ def _effect(m,x):return float((m.double()*(x[1::2].double()-x[0::2].double())).s
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
         It replaces that layer's rule in the existing pass, without extra work
         from replaying a second candidate or changing the native forward.
+        Optional finite_fla_by_layer explicitly replaces selected GDN callbacks;
+        the empty default uses the original finite_fla at every GDN layer.
         """
         rules={} if norm_gate_rules is None else norm_gate_rules
         if not isinstance(rules,Mapping):
@@ -50,6 +52,15 @@ class Qwen35DenseFiniteRunner:
                 raise ValueError(f'norm_gate_rules requires an existing GDN layer: {index}')
             if not isinstance(rule,str) or rule not in ('content1','symmetric'):
                 raise ValueError(f'Unsupported norm_gate_rule at layer {index}: {rule!r}')
+        fla_rules={} if finite_fla_by_layer is None else finite_fla_by_layer
+        if not isinstance(fla_rules,Mapping):
+            raise TypeError('finite_fla_by_layer must map integer GDN layer indices to callable backends.')
+        self.finite_fla_by_layer=dict(fla_rules)
+        for index,backend in self.finite_fla_by_layer.items():
+            layers=model.model.language_model.layers
+            if isinstance(index,bool) or not isinstance(index,int) or not 0<=index<len(layers) or layers[index].block_type!='linear_attention':
+                raise ValueError(f'finite_fla_by_layer requires an existing GDN layer: {index!r}')
+            if not callable(backend):raise TypeError('A finite FLA backend must be callable.')
         self.model=model;self.finite_fa=finite_fa;self.finite_fla=finite_fla
         self.boundaries=FiniteBoundaryOps(True);self.answer=FiniteAnswerOps(True)
 
@@ -138,10 +149,11 @@ class Qwen35DenseFiniteRunner:
             def mixer(upstream):
                 if is_fa:
                     cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused)
+                finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
                 if i in self.norm_gate_rules:
-                    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,self.finite_fla,focused,
+                    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
                         norm_gate_rule=self.norm_gate_rules[i])
-                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,self.finite_fla,focused)
+                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused)
             with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))
             if not bool(torch.isfinite(new).all()):raise ValueError('Nonfinite DT coefficients.')
             if focused:observer.decoder(i,d,c,e,m,new,terms)
@@ -152,6 +164,7 @@ class Qwen35DenseFiniteRunner:
         torch.cuda.synchronize();seconds=time.perf_counter()-started
         info={'select_output_rows':select_output_rows,'complete_attribution_seconds_with_diagnostics':seconds,
               'norm_gate_rules':{str(i):rule for i,rule in sorted(self.norm_gate_rules.items())},
+              'finite_fla_by_layer':sorted(self.finite_fla_by_layer),
               'peak_allocated':torch.cuda.max_memory_allocated(),'peak_reserved':torch.cuda.max_memory_reserved(),
               'root_peak_allocated':root_peak,'actual_head_input_shapes':head_shapes,'actual_output_bytes':output_bytes,
               'selected_predictor_rows':selector.rows.detach().cpu().tolist() if selector is not None else None,

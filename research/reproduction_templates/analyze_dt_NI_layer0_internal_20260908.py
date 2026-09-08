@@ -50,7 +50,10 @@ keep = set(r['input']['keep'])
 out = dict(status='independent_NI_current_layer0_internal_audit_passed',
     analyzer_sha256=sha(Path(__file__)), protocol_sha256=sha(D/'protocol.json'),
     results_sha256=sha(D/'results.json'), vectors_sha256=sha(D/'vectors.npz'),
-    seconds=r['seconds'], counts=p['budget'], m0_replay_drift=r['m0_replay_drift_report_only'],
+    seconds=r['seconds'], counts={k:r[k] for k in ['model_loads','layer_replays_entered',
+        'layer_replays_returned','finite_layer_entered','finite_layer_returned','finite_FLA_counts',
+        'whole_model_forwards','DT_calls','scorer_calls','FA_calls','FT_calls','generation_calls']},
+    frozen_budget=p['budget'], m0_replay_drift=r['m0_replay_drift_report_only'],
     native_output_replay_drift={k:v['output_replay_drift'] for k,v in r['points'].items()}, points={},
     private_artifact=r['private_artifact'],
     proof_scope='Public signed contractions, source/weight receipts, frozen masks, and per-token closure audited. The multi-GB private actual tensors were not locally rehashed or independently recomputed. This is a replay diagnostic, not a new production method or metric evaluation.')
