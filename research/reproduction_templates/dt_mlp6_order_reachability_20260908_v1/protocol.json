@@ -1,0 +1,54 @@
+{
+  "scope": "CPU-only analytical reachability of the largest observed MH1 layer6 MLP error. No method change or candidate attribution.",
+  "layer_index": 6,
+  "fixed_steps": [
+    "1",
+    "10",
+    "20"
+  ],
+  "B2_control": true,
+  "inputs": {
+    "actual_results": {
+      "path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/results.json",
+      "sha256": "d06fcfdc4281aa0d8b7eb19ab81ae678d2e76f62b0700df434e6ba584d0c59e9"
+    },
+    "actual_private": {
+      "path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/MH1_decoder19_6_actual_private.pt",
+      "sha256": "0b33ce76ca28fd00375e931a4769fbf4868cf2ff0cddd7040785bc42a6a2672a"
+    },
+    "mechanism_results": {
+      "path": "${ARTIFACT_ROOT}/codex_dt_mlp6_mechanism_20260908_v1/results.json",
+      "sha256": "2cb2ea7e9a79ffcd0629a4dff16d659f3b5f587f1b7e04c65839af82e349ac65"
+    },
+    "recomputed_coefficients": {
+      "path": "${ARTIFACT_ROOT}/codex_dt_mlp6_mechanism_20260908_v1/MLP6_diagnostic_recomputed_coefficients.pt",
+      "sha256": "fca4e174346b6a000b52a7319843684def5e5519ba15f292bc31b621998a707b"
+    }
+  },
+  "budget": {
+    "GPU_calls": 0,
+    "GEMM_calls": 0,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "FT_calls": 0,
+    "scorer_calls": 0,
+    "weight_reads": 0,
+    "conditional_points": 3,
+    "B2_controls": 1,
+    "predefined_orders": 2,
+    "lambda_searches": 0,
+    "wall_time_seconds": 120
+  },
+  "formulas": {
+    "determinant": "<rho, (s1-s0)*delta_u-(u1-u0)*sigma*delta_g>",
+    "content1": "mu=rho*s1; mg=rho*u0*sigma; theoretical shift=determinant/2",
+    "reverse": "mu=rho*s0; mg=rho*u1*sigma; theoretical shift=-determinant/2",
+    "actual_coefficient_transfer": "Compare both ideal coefficient pairs directly to actual saved symmetric mu/mg, including SiLU branch factor change and original rounding."
+  },
+  "acceptance": "Frozen source/results/privateartifact hashes before/after; original recomputed mnorm equals actual saved; CPU64 coefficient/determinant identity residuals<1e-7. Report signs/groups and B2/allEOS controls. No retuned admission guard.",
+  "limitations": "Actual candidate BF16 casts/input GEMMs and earlier layers are not run. Shift+oldMLPerror explicitly assumes unchanged input-transfer; favorable local result is not evidence of RISE/MAS or fullinput attribution improvement. Historical all-layer content1 failure remains evidence; no automatic extension.",
+  "stop": "First hash/shape/nonfinite/algebra failure or120seconds; no retry, candidate scan, new sample, GPU or model call.",
+  "files_sha256": {
+    "study.py": "4dd4724ac4bf7d67c7e9af392233c72b4e8794a547c3318792fbed663a77d421"
+  }
+}

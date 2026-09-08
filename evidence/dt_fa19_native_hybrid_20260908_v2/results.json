@@ -1,0 +1,3277 @@
+{
+  "status": "eleven_native_FA_hybrid_contrasts_complete",
+  "protocol": {
+    "scope": "Fixed MH1 decoder19 native FA hybrid operator contrasts. No model, DT, scorer, FT, backward or explicit probability matrix.",
+    "version": 2,
+    "v1_failure_provenance": {
+      "files": [
+        {
+          "remote_path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v1/results.json",
+          "sha256": "0d53374b0cc13ca917b19398f4281fcfaa739d8050382ddaa0b4577b8747a865"
+        },
+        {
+          "remote_path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v1/protocol.json",
+          "sha256": "10190379a9aa66e66ec77c33de55cc9accb52672f027a011e86207459382815a"
+        },
+        {
+          "remote_path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v1/study.py",
+          "sha256": "03b414754a5507256df485c30988514373dc0d0312d457164fdbc327fca0772d"
+        },
+        {
+          "remote_path": "${ARTIFACT_ROOT}/codex_dt_fa19_h2d_metadata_20260908.json",
+          "sha256": "c34a5d03238a2857add3d3fc731a952ed25825225a587ed8bf373519ed51151c"
+        }
+      ],
+      "status": "failed",
+      "native_FA_calls_entered": 0,
+      "native_FA_calls_returned": 0,
+      "job_seconds": 8.639578120782971,
+      "cause": "Recorded MACA H2D copy preserved BF16 and CUDA device but produced noncontiguous query/key/value strides after CPU contiguous.",
+      "actual_H2D_metadata": {
+        "query": {
+          "dtype": "torch.bfloat16",
+          "BF16": true,
+          "device": "cuda:0",
+          "is_cuda": true,
+          "contiguous": false,
+          "stride": [
+            1437696,
+            1,
+            89856,
+            351
+          ],
+          "shape": [
+            1,
+            351,
+            16,
+            256
+          ]
+        },
+        "key": {
+          "dtype": "torch.bfloat16",
+          "BF16": true,
+          "device": "cuda:0",
+          "is_cuda": true,
+          "contiguous": false,
+          "stride": [
+            359424,
+            1,
+            89856,
+            351
+          ],
+          "shape": [
+            1,
+            351,
+            4,
+            256
+          ]
+        },
+        "value": {
+          "dtype": "torch.bfloat16",
+          "BF16": true,
+          "device": "cuda:0",
+          "is_cuda": true,
+          "contiguous": false,
+          "stride": [
+            359424,
+            1,
+            89856,
+            351
+          ],
+          "shape": [
+            1,
+            351,
+            4,
+            256
+          ]
+        }
+      },
+      "only_compute_change": "Replace CPU transpose.contiguous().to(cuda) with transpose.to(cuda).contiguous() for four actual Q/K/V sets and paired EOS V0, using standard torch layout materialization. Preserve original dtype/device/layout guards, native FA backend, precision, coefficients, formulas and 11-call budget."
+    },
+    "source_results_path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/results.json",
+    "source_results_sha256": "d06fcfdc4281aa0d8b7eb19ab81ae678d2e76f62b0700df434e6ba584d0c59e9",
+    "source_protocol_path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/protocol.json",
+    "source_protocol_sha256": "92fc29848baff37d1938f226eefd58bb36e048b3cd83792e189d81ca9deeaf40",
+    "private_artifact_path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/MH1_decoder19_6_actual_private.pt",
+    "private_artifact_sha256": "0b33ce76ca28fd00375e931a4769fbf4868cf2ff0cddd7040785bc42a6a2672a",
+    "private_artifact_bytes": 1378988743,
+    "input_sha256": "a325fe372d40643cbeb9c5f9158ff0683288fca9980017ee998ac7a149114e01",
+    "case": "morehopqa_1",
+    "decoder_index": 19,
+    "fixed_steps": [
+      "1",
+      "10",
+      "20"
+    ],
+    "frozen_input_receipts": {
+      "0": {
+        "input_sha256": "a325fe372d40643cbeb9c5f9158ff0683288fca9980017ee998ac7a149114e01",
+        "deleted_positions": []
+      },
+      "1": {
+        "input_sha256": "62de748d5387dbaa40852dbd4e471ecab6e9b65a33f8fb9f8d602651a569a1ee",
+        "deleted_positions": [
+          0,
+          86,
+          175,
+          178,
+          179,
+          182,
+          183,
+          189,
+          202,
+          205
+        ]
+      },
+      "10": {
+        "input_sha256": "5cc8152903d22a1e082636773fa18e73fe5fbe5b932b06f0596a86ff09cd0bba",
+        "deleted_positions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          9,
+          11,
+          12,
+          13,
+          14,
+          16,
+          18,
+          20,
+          21,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          33,
+          35,
+          37,
+          46,
+          49,
+          50,
+          51,
+          54,
+          55,
+          60,
+          62,
+          65,
+          66,
+          69,
+          70,
+          73,
+          74,
+          76,
+          78,
+          79,
+          80,
+          81,
+          84,
+          86,
+          87,
+          89,
+          90,
+          91,
+          94,
+          97,
+          99,
+          103,
+          105,
+          132,
+          135,
+          138,
+          140,
+          145,
+          149,
+          150,
+          152,
+          159,
+          163,
+          167,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193,
+          195,
+          196,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209
+        ]
+      },
+      "20": {
+        "input_sha256": "bca9629db0103e251d94a78217302d1940db312a768ae3a52bdcbbc66510044f",
+        "deleted_positions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          43,
+          44,
+          45,
+          46,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          73,
+          74,
+          75,
+          76,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          145,
+          146,
+          147,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          159,
+          160,
+          161,
+          163,
+          164,
+          165,
+          167,
+          168,
+          169,
+          170,
+          171,
+          172,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193,
+          194,
+          195,
+          196,
+          197,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209
+        ]
+      }
+    },
+    "original_core_errors_including_seed_cast": {
+      "1": 2.8026112801400256,
+      "10": 4.990192639994594,
+      "20": 0.03550125903340451
+    },
+    "installed_FA_interface_sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+    "native_model_sha256": "cf085792cb59e5bdf9b88a3d20bd353892289d054662a9c2b662221b97caefba",
+    "checkpoint_config_path": "${PRIVATE_MOUNT_PATH}",
+    "checkpoint_config_sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05",
+    "scaling_verification": "Read pinned native Attention __init__ AST self.scaling=self.head_dim**-0.5 and original config head_dim=256. No model construction; capture did not retain scalar call arguments separately.",
+    "native_FA_kwargs": {
+      "dropout_p": 0.0,
+      "softmax_scale": 0.0625,
+      "causal": true,
+      "window_size": [
+        -1,
+        -1
+      ],
+      "softcap": 0.0,
+      "alibi_slopes": null,
+      "return_attn_probs": false
+    },
+    "native_call_schedule": [
+      "replay_0",
+      "replay_1",
+      "replay_10",
+      "replay_20",
+      "X_C0",
+      "X_A0_1",
+      "X_CA_1",
+      "X_A0_10",
+      "X_CA_10",
+      "X_A0_20",
+      "X_CA_20"
+    ],
+    "budget": {
+      "native_FA_calls": 11,
+      "actual_output_replays": 4,
+      "hybrid_operator_calls": 7,
+      "model_calls": 0,
+      "DT_calls": 0,
+      "scorer_calls": 0,
+      "FT_calls": 0,
+      "backward_calls": 0,
+      "generation_calls": 0,
+      "new_samples": 0,
+      "extra_warmup_calls": 0,
+      "wall_time_seconds": 180
+    },
+    "contrasts": {
+      "X_C0": "FA(q_clean,k_clean,V0), computed once",
+      "X_A0": "FA(q_A,k_A,V0)",
+      "X_CA": "FA(q_clean,k_clean,V_A)",
+      "R0": "<m,X_C0-X_A0>",
+      "VCVA": "<m,O_clean-X_CA>",
+      "RA": "<m,X_CA-O_A>",
+      "exact_three_term_ledger": "(dq*delta_q+dk*delta_k-R0)+(dv*delta_v-VCVA)+(R0-RA)",
+      "interaction_ideal": "m(P_clean-P_A)(V0-V_A), a reference-value routing interaction, including native rounding in this experiment"
+    },
+    "precision_contract": "Main ledger uses actual stored FP32 mcontent and captured native BF16 O_clean/O_A. Four replays report drift only, never replace endpoints. Also report E_stored=E_BF16+<m_BF16-m_stored,O_clean-O_A>; no double counting.",
+    "causal_scope": "Hybrid attention-operator inputs only, not independently executed model counterfactuals or an EOS independent causal contribution. Q/K mismatch may include off-pair/B1-B2 transfer and quantization; no component alone proves a kernel bug.",
+    "group_contract": "Signed statistics of token-net sums. Contrast output-query locations and finite-coefficient operand locations are explicitly different roles; grouping does not create original source-token causal effects.",
+    "acceptance": "All source/config/artifact hashes and actual tensor layouts hold. CPU recomputed original ledger matches saved core. Three-term/seed/group closures <1e-7; exactly11 entered/returned native FA calls. Report every replay drift; no tuned numerical or bitwise admission threshold.",
+    "stop": "First source/layout/nonfinite/algebra failure or180seconds; preserve partial results and entered/returned calls. No alternate kernel, higher precision, retry, extra model or extra warmup.",
+    "artifact_contract": "Actual private1.379GB capture remains in its source directory and is never copied into the launch payload or public review archive. Only signed scalar/token contrasts and source metadata are exported.",
+    "files_sha256": {
+      "study.py": "cfdcd053fc7dd6029f6f43af6df088ed536999fbb9dcc5aeee429b184e8eba11",
+      "decoder19_conditional_decomposition_20260908.py": "32608e57d958c7b2bc3aa657ac240902d49505c3c3d93080ba11de67091ef982"
+    }
+  },
+  "native_FA_calls_entered": 11,
+  "native_FA_calls_returned": 11,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "scorer_calls": 0,
+  "FT_calls": 0,
+  "backward_calls": 0,
+  "generation_calls": 0,
+  "calls": [
+    {
+      "label": "replay_0",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.0011296309530735016,
+      "output_CPU_copy_seconds": 0.0003028344362974167,
+      "call_and_copy_seconds": 0.0028650760650634766
+    },
+    {
+      "label": "replay_1",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.0002675596624612808,
+      "output_CPU_copy_seconds": 0.00022027641534805298,
+      "call_and_copy_seconds": 0.0017634015530347824
+    },
+    {
+      "label": "replay_10",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.0002453979104757309,
+      "output_CPU_copy_seconds": 0.00022160448133945465,
+      "call_and_copy_seconds": 0.0017635654658079147
+    },
+    {
+      "label": "replay_20",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.00023290328681468964,
+      "output_CPU_copy_seconds": 0.00023406557738780975,
+      "call_and_copy_seconds": 0.0017949491739273071
+    },
+    {
+      "label": "X_C0",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.00023839063942432404,
+      "output_CPU_copy_seconds": 0.00022091157734394073,
+      "call_and_copy_seconds": 0.0017516594380140305
+    },
+    {
+      "label": "X_A0_1",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.00020200200378894806,
+      "output_CPU_copy_seconds": 0.00030443258583545685,
+      "call_and_copy_seconds": 0.0017809774726629257
+    },
+    {
+      "label": "X_CA_1",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.00016325898468494415,
+      "output_CPU_copy_seconds": 0.00018185563385486603,
+      "call_and_copy_seconds": 0.001647884026169777
+    },
+    {
+      "label": "X_A0_10",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.00032999739050865173,
+      "output_CPU_copy_seconds": 0.00034396350383758545,
+      "call_and_copy_seconds": 0.0030901506543159485
+    },
+    {
+      "label": "X_CA_10",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.00021691620349884033,
+      "output_CPU_copy_seconds": 0.00028680823743343353,
+      "call_and_copy_seconds": 0.0018122121691703796
+    },
+    {
+      "label": "X_A0_20",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.0002658553421497345,
+      "output_CPU_copy_seconds": 0.00020880065858364105,
+      "call_and_copy_seconds": 0.0017383527010679245
+    },
+    {
+      "label": "X_CA_20",
+      "status": "returned",
+      "q_shape": [
+        1,
+        351,
+        16,
+        256
+      ],
+      "k_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "v_shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "kwargs": {
+        "dropout_p": 0.0,
+        "softmax_scale": 0.0625,
+        "causal": true,
+        "window_size": [
+          -1,
+          -1
+        ],
+        "softcap": 0.0,
+        "alibi_slopes": null,
+        "return_attn_probs": false
+      },
+      "native_synchronized_seconds": 0.00018394365906715393,
+      "output_CPU_copy_seconds": 0.00012213177978992462,
+      "call_and_copy_seconds": 0.0015501733869314194
+    }
+  ],
+  "replays": {
+    "0": {
+      "bitwise_equal": true,
+      "relative_L2": 0.0,
+      "max_absolute_difference": 0.0,
+      "stored_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      },
+      "BF16_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      }
+    },
+    "1": {
+      "bitwise_equal": true,
+      "relative_L2": 0.0,
+      "max_absolute_difference": 0.0,
+      "stored_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      },
+      "BF16_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      }
+    },
+    "10": {
+      "bitwise_equal": true,
+      "relative_L2": 0.0,
+      "max_absolute_difference": 0.0,
+      "stored_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      },
+      "BF16_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      }
+    },
+    "20": {
+      "bitwise_equal": true,
+      "relative_L2": 0.0,
+      "max_absolute_difference": 0.0,
+      "stored_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      },
+      "BF16_seed_projected_drift": {
+        "net": 0.0,
+        "positive_sum": 0.0,
+        "negative_sum": 0.0,
+        "absolute_sum": 0.0,
+        "positive_token_count": 0,
+        "negative_token_count": 0
+      }
+    }
+  },
+  "points": {
+    "1": {
+      "input_receipt": {
+        "input_sha256": "62de748d5387dbaa40852dbd4e471ecab6e9b65a33f8fb9f8d602651a569a1ee",
+        "deleted_positions": [
+          0,
+          86,
+          175,
+          178,
+          179,
+          182,
+          183,
+          189,
+          202,
+          205
+        ]
+      },
+      "original_FA_core_error": 2.8026112801400256,
+      "CPU_recomputed_original_FA_core_error": 2.8026112801400256,
+      "fields": {
+        "qk_prediction": {
+          "net": 2.3042757915968184,
+          "positive_sum": 4.520885690700511,
+          "negative_sum": -2.216609899103693,
+          "absolute_sum": 6.737495589804204,
+          "positive_token_count": 206,
+          "negative_token_count": 144
+        },
+        "v_prediction": {
+          "net": 13.086589514849173,
+          "positive_sum": 14.721978097538464,
+          "negative_sum": -1.6353885826892902,
+          "absolute_sum": 16.357366680227756,
+          "positive_token_count": 203,
+          "negative_token_count": 147
+        },
+        "captured_actual_effect": {
+          "net": 12.588254026305966,
+          "positive_sum": 14.776237750246775,
+          "negative_sum": -2.1879837239408086,
+          "absolute_sum": 16.964221474187582,
+          "positive_token_count": 206,
+          "negative_token_count": 144
+        },
+        "R0": {
+          "net": 1.3742540674172528,
+          "positive_sum": 3.2166081833858033,
+          "negative_sum": -1.8423541159685506,
+          "absolute_sum": 5.058962299354354,
+          "positive_token_count": 191,
+          "negative_token_count": 158
+        },
+        "VCVA": {
+          "net": 13.075332917692688,
+          "positive_sum": 14.485063330773627,
+          "negative_sum": -1.4097304130809407,
+          "absolute_sum": 15.894793743854567,
+          "positive_token_count": 198,
+          "negative_token_count": 152
+        },
+        "RA": {
+          "net": -0.4870788913867202,
+          "positive_sum": 4.706668702011855,
+          "negative_sum": -5.193747593398576,
+          "absolute_sum": 9.90041629541043,
+          "positive_token_count": 163,
+          "negative_token_count": 186
+        },
+        "core_error_at_stored_seed": {
+          "net": 2.8026112801400256,
+          "positive_sum": 16.61684611323035,
+          "negative_sum": -13.814234833090321,
+          "absolute_sum": 30.43108094632067,
+          "positive_token_count": 187,
+          "negative_token_count": 163
+        },
+        "core_error_at_BF16_seed": {
+          "net": 2.7990346419958616,
+          "positive_sum": 16.615499007305914,
+          "negative_sum": -13.816464365310054,
+          "absolute_sum": 30.431963372615968,
+          "positive_token_count": 187,
+          "negative_token_count": 163
+        },
+        "BF16_minus_stored_seed_actual_effect": {
+          "net": 0.0035766381441639516,
+          "positive_sum": 0.00880341502713924,
+          "negative_sum": -0.005226776882975289,
+          "absolute_sum": 0.014030191910114528,
+          "positive_token_count": 180,
+          "negative_token_count": 170
+        },
+        "routing_at_baseline_values_prediction_error": {
+          "net": 0.9300217241795654,
+          "positive_sum": 4.439445839627103,
+          "negative_sum": -3.5094241154475365,
+          "absolute_sum": 7.948869955074639,
+          "positive_token_count": 184,
+          "negative_token_count": 166
+        },
+        "content_at_clean_routing_prediction_error": {
+          "net": 0.011256597156487302,
+          "positive_sum": 14.494091026047585,
+          "negative_sum": -14.482834428891099,
+          "absolute_sum": 28.976925454938684,
+          "positive_token_count": 179,
+          "negative_token_count": 171
+        },
+        "routing_content_interaction_contrast": {
+          "net": 1.861332958803973,
+          "positive_sum": 6.014401439419261,
+          "negative_sum": -4.153068480615288,
+          "absolute_sum": 10.167469920034549,
+          "positive_token_count": 192,
+          "negative_token_count": 157
+        }
+      },
+      "groups": {
+        "deleted": {
+          "count": 10,
+          "fields": {
+            "qk_prediction": {
+              "net": 0.40524692187040756,
+              "positive_sum": 0.5374318500645572,
+              "negative_sum": -0.13218492819414962,
+              "absolute_sum": 0.6696167782587068,
+              "positive_token_count": 8,
+              "negative_token_count": 2
+            },
+            "v_prediction": {
+              "net": 6.485629315056059,
+              "positive_sum": 6.485629315056059,
+              "negative_sum": 0.0,
+              "absolute_sum": 6.485629315056059,
+              "positive_token_count": 10,
+              "negative_token_count": 0
+            },
+            "captured_actual_effect": {
+              "net": 0.5378986109759761,
+              "positive_sum": 0.543150412677193,
+              "negative_sum": -0.005251801701216827,
+              "absolute_sum": 0.5484022143784099,
+              "positive_token_count": 9,
+              "negative_token_count": 1
+            },
+            "R0": {
+              "net": 0.03147194426899955,
+              "positive_sum": 0.09779072602051254,
+              "negative_sum": -0.06631878175151301,
+              "absolute_sum": 0.16410950777202554,
+              "positive_token_count": 3,
+              "negative_token_count": 6
+            },
+            "VCVA": {
+              "net": 0.14923523544181796,
+              "positive_sum": 0.19743469545148995,
+              "negative_sum": -0.048199460009671964,
+              "absolute_sum": 0.2456341554611619,
+              "positive_token_count": 6,
+              "negative_token_count": 4
+            },
+            "RA": {
+              "net": 0.38866337553415814,
+              "positive_sum": 0.4014793829523889,
+              "negative_sum": -0.01281600741823069,
+              "absolute_sum": 0.4142953903706195,
+              "positive_token_count": 8,
+              "negative_token_count": 1
+            },
+            "core_error_at_stored_seed": {
+              "net": 6.352977625950491,
+              "positive_sum": 6.417520616060946,
+              "negative_sum": -0.06454299011045604,
+              "absolute_sum": 6.482063606171403,
+              "positive_token_count": 9,
+              "negative_token_count": 1
+            },
+            "core_error_at_BF16_seed": {
+              "net": 6.352658664041449,
+              "positive_sum": 6.41726936481998,
+              "negative_sum": -0.06461070077853037,
+              "absolute_sum": 6.48188006559851,
+              "positive_token_count": 9,
+              "negative_token_count": 1
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 0.0003189619090409751,
+              "positive_sum": 0.00037410961373532154,
+              "negative_sum": -5.514770469434646e-05,
+              "absolute_sum": 0.000429257318429668,
+              "positive_token_count": 6,
+              "negative_token_count": 4
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 0.37377497760140804,
+              "positive_sum": 0.5107551192199791,
+              "negative_sum": -0.13698014161857103,
+              "absolute_sum": 0.64773526083855,
+              "positive_token_count": 8,
+              "negative_token_count": 2
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 6.336394079614241,
+              "positive_sum": 6.336394079614241,
+              "negative_sum": 0.0,
+              "absolute_sum": 6.336394079614241,
+              "positive_token_count": 10,
+              "negative_token_count": 0
+            },
+            "routing_content_interaction_contrast": {
+              "net": -0.3571914312651586,
+              "positive_sum": 0.004501764790279139,
+              "negative_sum": -0.36169319605543776,
+              "absolute_sum": 0.3661949608457169,
+              "positive_token_count": 1,
+              "negative_token_count": 8
+            }
+          }
+        },
+        "kept": {
+          "count": 184,
+          "fields": {
+            "qk_prediction": {
+              "net": 0.6373320133889155,
+              "positive_sum": 0.6903509302428992,
+              "negative_sum": -0.053018916853983716,
+              "absolute_sum": 0.7433698470968829,
+              "positive_token_count": 114,
+              "negative_token_count": 70
+            },
+            "v_prediction": {
+              "net": 4.838803019404086,
+              "positive_sum": 5.794050535666653,
+              "negative_sum": -0.9552475162625669,
+              "absolute_sum": 6.74929805192922,
+              "positive_token_count": 108,
+              "negative_token_count": 76
+            },
+            "captured_actual_effect": {
+              "net": 0.01403447320557899,
+              "positive_sum": 0.353730032494596,
+              "negative_sum": -0.339695559289017,
+              "absolute_sum": 0.6934255917836131,
+              "positive_token_count": 94,
+              "negative_token_count": 90
+            },
+            "R0": {
+              "net": 0.15546456886897203,
+              "positive_sum": 0.24361468890658763,
+              "negative_sum": -0.08815012003761562,
+              "absolute_sum": 0.33176480894420324,
+              "positive_token_count": 102,
+              "negative_token_count": 82
+            },
+            "VCVA": {
+              "net": 0.12761974993955316,
+              "positive_sum": 0.3708925657395153,
+              "negative_sum": -0.24327281579996213,
+              "absolute_sum": 0.6141653815394774,
+              "positive_token_count": 87,
+              "negative_token_count": 97
+            },
+            "RA": {
+              "net": -0.11358527673397417,
+              "positive_sum": 0.19888294903244785,
+              "negative_sum": -0.31246822576642197,
+              "absolute_sum": 0.5113511747988698,
+              "positive_token_count": 82,
+              "negative_token_count": 102
+            },
+            "core_error_at_stored_seed": {
+              "net": 5.462100559587423,
+              "positive_sum": 6.358131342326816,
+              "negative_sum": -0.8960307827393943,
+              "absolute_sum": 7.254162125066211,
+              "positive_token_count": 114,
+              "negative_token_count": 70
+            },
+            "core_error_at_BF16_seed": {
+              "net": 5.462036073549448,
+              "positive_sum": 6.35840414837548,
+              "negative_sum": -0.8963680748260306,
+              "absolute_sum": 7.254772223201511,
+              "positive_token_count": 114,
+              "negative_token_count": 70
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 6.448603797439421e-05,
+              "positive_sum": 0.0006366034775346257,
+              "negative_sum": -0.0005721174395602316,
+              "absolute_sum": 0.0012087209170948572,
+              "positive_token_count": 93,
+              "negative_token_count": 91
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 0.4818674445199435,
+              "positive_sum": 0.7067477007249672,
+              "negative_sum": -0.2248802562050237,
+              "absolute_sum": 0.9316279569299909,
+              "positive_token_count": 100,
+              "negative_token_count": 84
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 4.711183269464533,
+              "positive_sum": 5.852108367648881,
+              "negative_sum": -1.140925098184349,
+              "absolute_sum": 6.993033465833231,
+              "positive_token_count": 112,
+              "negative_token_count": 72
+            },
+            "routing_content_interaction_contrast": {
+              "net": 0.2690498456029462,
+              "positive_sum": 0.45611637363265506,
+              "negative_sum": -0.18706652802970886,
+              "absolute_sum": 0.643182901662364,
+              "positive_token_count": 108,
+              "negative_token_count": 76
+            }
+          }
+        },
+        "other_prompt": {
+          "count": 16,
+          "fields": {
+            "qk_prediction": {
+              "net": 0.0008434011428224419,
+              "positive_sum": 0.022379702420012082,
+              "negative_sum": -0.02153630127718964,
+              "absolute_sum": 0.04391600369720172,
+              "positive_token_count": 11,
+              "negative_token_count": 5
+            },
+            "v_prediction": {
+              "net": 0.04014162409376176,
+              "positive_sum": 0.09522950608658043,
+              "negative_sum": -0.055087881992818666,
+              "absolute_sum": 0.1503173880793991,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "captured_actual_effect": {
+              "net": 0.03340046194530226,
+              "positive_sum": 0.07244008929839416,
+              "negative_sum": -0.0390396273530919,
+              "absolute_sum": 0.11147971665148607,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "R0": {
+              "net": 0.030148640738069353,
+              "positive_sum": 0.033683816951335786,
+              "negative_sum": -0.003535176213266432,
+              "absolute_sum": 0.03721899316460222,
+              "positive_token_count": 11,
+              "negative_token_count": 5
+            },
+            "VCVA": {
+              "net": 0.01454069278538376,
+              "positive_sum": 0.03893619191591279,
+              "negative_sum": -0.024395499130529033,
+              "absolute_sum": 0.06333169104644182,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "RA": {
+              "net": 0.018859769159918494,
+              "positive_sum": 0.04546641605728386,
+              "negative_sum": -0.026606646897365367,
+              "absolute_sum": 0.07207306295464921,
+              "positive_token_count": 7,
+              "negative_token_count": 9
+            },
+            "core_error_at_stored_seed": {
+              "net": 0.0075845632912819394,
+              "positive_sum": 0.09752757042196378,
+              "negative_sum": -0.08994300713068185,
+              "absolute_sum": 0.18747057755264562,
+              "positive_token_count": 9,
+              "negative_token_count": 7
+            },
+            "core_error_at_BF16_seed": {
+              "net": 0.007507253614623011,
+              "positive_sum": 0.0974467344819907,
+              "negative_sum": -0.0899394808673677,
+              "absolute_sum": 0.1873862153493584,
+              "positive_token_count": 9,
+              "negative_token_count": 7
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 7.73096766589397e-05,
+              "positive_sum": 0.0001387894626145296,
+              "negative_sum": -6.147978595558992e-05,
+              "absolute_sum": 0.00020026924857011953,
+              "positive_token_count": 7,
+              "negative_token_count": 9
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": -0.02930523959524691,
+              "positive_sum": 0.01618969304597284,
+              "negative_sum": -0.04549493264121976,
+              "absolute_sum": 0.0616846256871926,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 0.025600931308378,
+              "positive_sum": 0.09491058778008027,
+              "negative_sum": -0.06930965647170226,
+              "absolute_sum": 0.16422024425178253,
+              "positive_token_count": 7,
+              "negative_token_count": 9
+            },
+            "routing_content_interaction_contrast": {
+              "net": 0.011288871578150856,
+              "positive_sum": 0.050544032884504465,
+              "negative_sum": -0.039255161306353606,
+              "absolute_sum": 0.08979919419085806,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            }
+          }
+        },
+        "response": {
+          "count": 141,
+          "fields": {
+            "qk_prediction": {
+              "net": 1.2608534551946726,
+              "positive_sum": 3.2707232079730426,
+              "negative_sum": -2.0098697527783695,
+              "absolute_sum": 5.280592960751412,
+              "positive_token_count": 73,
+              "negative_token_count": 67
+            },
+            "v_prediction": {
+              "net": 1.7220155562952675,
+              "positive_sum": 2.3470687407291724,
+              "negative_sum": -0.6250531844339047,
+              "absolute_sum": 2.972121925163077,
+              "positive_token_count": 77,
+              "negative_token_count": 63
+            },
+            "captured_actual_effect": {
+              "net": 12.00292048017911,
+              "positive_sum": 13.806917215776595,
+              "negative_sum": -1.803996735597483,
+              "absolute_sum": 15.610913951374075,
+              "positive_token_count": 95,
+              "negative_token_count": 45
+            },
+            "R0": {
+              "net": 1.1571689135412118,
+              "positive_sum": 2.841518951507367,
+              "negative_sum": -1.6843500379661558,
+              "absolute_sum": 4.525868989473523,
+              "positive_token_count": 75,
+              "negative_token_count": 65
+            },
+            "VCVA": {
+              "net": 12.783937239525933,
+              "positive_sum": 13.87779987766671,
+              "negative_sum": -1.0938626381407777,
+              "absolute_sum": 14.971662515807488,
+              "positive_token_count": 97,
+              "negative_token_count": 43
+            },
+            "RA": {
+              "net": -0.7810167593468227,
+              "positive_sum": 4.060839953969735,
+              "negative_sum": -4.841856713316558,
+              "absolute_sum": 8.902696667286293,
+              "positive_token_count": 66,
+              "negative_token_count": 74
+            },
+            "core_error_at_stored_seed": {
+              "net": -9.020051468689168,
+              "positive_sum": 3.7436665844206214,
+              "negative_sum": -12.763718053109793,
+              "absolute_sum": 16.50738463753041,
+              "positive_token_count": 55,
+              "negative_token_count": 85
+            },
+            "core_error_at_BF16_seed": {
+              "net": -9.023167349209658,
+              "positive_sum": 3.7423787596284663,
+              "negative_sum": -12.765546108838125,
+              "absolute_sum": 16.507924868466592,
+              "positive_token_count": 55,
+              "negative_token_count": 85
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 0.0031158805204896424,
+              "positive_sum": 0.007653912473254764,
+              "negative_sum": -0.004538031952765122,
+              "absolute_sum": 0.012191944426019886,
+              "positive_token_count": 74,
+              "negative_token_count": 66
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 0.10368454165346092,
+              "positive_sum": 3.2057533266361835,
+              "negative_sum": -3.1020687849827224,
+              "absolute_sum": 6.307822111618906,
+              "positive_token_count": 68,
+              "negative_token_count": 72
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": -11.061921683230665,
+              "positive_sum": 2.2106779910043826,
+              "negative_sum": -13.272599674235048,
+              "absolute_sum": 15.483277665239429,
+              "positive_token_count": 50,
+              "negative_token_count": 90
+            },
+            "routing_content_interaction_contrast": {
+              "net": 1.938185672888035,
+              "positive_sum": 5.503239268111823,
+              "negative_sum": -3.5650535952237874,
+              "absolute_sum": 9.06829286333561,
+              "positive_token_count": 75,
+              "negative_token_count": 65
+            }
+          }
+        }
+      },
+      "checks": {
+        "max_token_three_term_closure": 2.220446049250313e-16,
+        "total_three_term_closure": -1.4177298657963577e-16,
+        "total_RA_plus_VCVA_minus_captured_effect": -1.374632829440059e-16,
+        "core_minus_original_ledger": 0.0
+      },
+      "BF16_seed_contrast_differences": {
+        "R0": {
+          "net": -0.0007437258082531222,
+          "positive_sum": 0.003302224282798987,
+          "negative_sum": -0.00404595009105211,
+          "absolute_sum": 0.007348174373851095,
+          "positive_token_count": 167,
+          "negative_token_count": 182
+        },
+        "VCVA": {
+          "net": 0.0033136600332847183,
+          "positive_sum": 0.007413662215143634,
+          "negative_sum": -0.004100002181858917,
+          "absolute_sum": 0.01151366439700255,
+          "positive_token_count": 192,
+          "negative_token_count": 158
+        },
+        "RA": {
+          "net": 0.00026297811087923285,
+          "positive_sum": 0.00669155197365761,
+          "negative_sum": -0.0064285738627783764,
+          "absolute_sum": 0.013120125836435985,
+          "positive_token_count": 175,
+          "negative_token_count": 174
+        }
+      }
+    },
+    "10": {
+      "input_receipt": {
+        "input_sha256": "5cc8152903d22a1e082636773fa18e73fe5fbe5b932b06f0596a86ff09cd0bba",
+        "deleted_positions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          9,
+          11,
+          12,
+          13,
+          14,
+          16,
+          18,
+          20,
+          21,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          33,
+          35,
+          37,
+          46,
+          49,
+          50,
+          51,
+          54,
+          55,
+          60,
+          62,
+          65,
+          66,
+          69,
+          70,
+          73,
+          74,
+          76,
+          78,
+          79,
+          80,
+          81,
+          84,
+          86,
+          87,
+          89,
+          90,
+          91,
+          94,
+          97,
+          99,
+          103,
+          105,
+          132,
+          135,
+          138,
+          140,
+          145,
+          149,
+          150,
+          152,
+          159,
+          163,
+          167,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193,
+          195,
+          196,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209
+        ]
+      },
+      "original_FA_core_error": 4.990192639994594,
+      "CPU_recomputed_original_FA_core_error": 4.990192639994594,
+      "fields": {
+        "qk_prediction": {
+          "net": 8.254397403481757,
+          "positive_sum": 11.221706560209416,
+          "negative_sum": -2.9673091567276595,
+          "absolute_sum": 14.189015716937076,
+          "positive_token_count": 243,
+          "negative_token_count": 107
+        },
+        "v_prediction": {
+          "net": 25.56332430469751,
+          "positive_sum": 27.891834243349347,
+          "negative_sum": -2.3285099386518375,
+          "absolute_sum": 30.220344182001185,
+          "positive_token_count": 231,
+          "negative_token_count": 119
+        },
+        "captured_actual_effect": {
+          "net": 28.827529068184674,
+          "positive_sum": 30.997565146289062,
+          "negative_sum": -2.1700360781043853,
+          "absolute_sum": 33.16760122439345,
+          "positive_token_count": 204,
+          "negative_token_count": 146
+        },
+        "R0": {
+          "net": 3.713208361102645,
+          "positive_sum": 6.727780384798366,
+          "negative_sum": -3.0145720236957216,
+          "absolute_sum": 9.742352408494089,
+          "positive_token_count": 187,
+          "negative_token_count": 162
+        },
+        "VCVA": {
+          "net": 25.50561351044526,
+          "positive_sum": 29.109807301888978,
+          "negative_sum": -3.6041937914437128,
+          "absolute_sum": 32.71400109333268,
+          "positive_token_count": 211,
+          "negative_token_count": 139
+        },
+        "RA": {
+          "net": 3.3219155577394135,
+          "positive_sum": 9.155227571110672,
+          "negative_sum": -5.833312013371258,
+          "absolute_sum": 14.98853958448193,
+          "positive_token_count": 186,
+          "negative_token_count": 163
+        },
+        "core_error_at_stored_seed": {
+          "net": 4.990192639994594,
+          "positive_sum": 30.9353662912582,
+          "negative_sum": -25.94517365126361,
+          "absolute_sum": 56.88053994252181,
+          "positive_token_count": 207,
+          "negative_token_count": 143
+        },
+        "core_error_at_BF16_seed": {
+          "net": 4.989166541897568,
+          "positive_sum": 30.935020326148813,
+          "negative_sum": -25.94585378425125,
+          "absolute_sum": 56.88087411040006,
+          "positive_token_count": 207,
+          "negative_token_count": 143
+        },
+        "BF16_minus_stored_seed_actual_effect": {
+          "net": 0.0010260980970253786,
+          "positive_sum": 0.01277899058698933,
+          "negative_sum": -0.011752892489963952,
+          "absolute_sum": 0.02453188307695328,
+          "positive_token_count": 167,
+          "negative_token_count": 183
+        },
+        "routing_at_baseline_values_prediction_error": {
+          "net": 4.541189042379113,
+          "positive_sum": 10.027857192180768,
+          "negative_sum": -5.486668149801655,
+          "absolute_sum": 15.514525341982424,
+          "positive_token_count": 232,
+          "negative_token_count": 118
+        },
+        "content_at_clean_routing_prediction_error": {
+          "net": 0.05771079425224768,
+          "positive_sum": 27.547228485942437,
+          "negative_sum": -27.48951769169019,
+          "absolute_sum": 55.03674617763263,
+          "positive_token_count": 193,
+          "negative_token_count": 157
+        },
+        "routing_content_interaction_contrast": {
+          "net": 0.3912928033632319,
+          "positive_sum": 5.60301769671236,
+          "negative_sum": -5.211724893349127,
+          "absolute_sum": 10.814742590061488,
+          "positive_token_count": 179,
+          "negative_token_count": 170
+        }
+      },
+      "groups": {
+        "deleted": {
+          "count": 100,
+          "fields": {
+            "qk_prediction": {
+              "net": 5.1394634756239705,
+              "positive_sum": 5.565517861062852,
+              "negative_sum": -0.4260543854388812,
+              "absolute_sum": 5.991572246501733,
+              "positive_token_count": 86,
+              "negative_token_count": 14
+            },
+            "v_prediction": {
+              "net": 21.85849924504086,
+              "positive_sum": 22.364618575832367,
+              "negative_sum": -0.5061193307915053,
+              "absolute_sum": 22.870737906623873,
+              "positive_token_count": 81,
+              "negative_token_count": 19
+            },
+            "captured_actual_effect": {
+              "net": 2.57368358172671,
+              "positive_sum": 2.9426363211129374,
+              "negative_sum": -0.36895273938622797,
+              "absolute_sum": 3.3115890604991653,
+              "positive_token_count": 69,
+              "negative_token_count": 31
+            },
+            "R0": {
+              "net": 0.7378699198438317,
+              "positive_sum": 0.884055817148794,
+              "negative_sum": -0.14618589730496234,
+              "absolute_sum": 1.0302417144537563,
+              "positive_token_count": 58,
+              "negative_token_count": 41
+            },
+            "VCVA": {
+              "net": 1.7699301230535016,
+              "positive_sum": 2.1631354291204925,
+              "negative_sum": -0.39320530606699083,
+              "absolute_sum": 2.5563407351874834,
+              "positive_token_count": 64,
+              "negative_token_count": 36
+            },
+            "RA": {
+              "net": 0.8037534586732078,
+              "positive_sum": 0.9310814775363823,
+              "negative_sum": -0.12732801886317435,
+              "absolute_sum": 1.0584094963995567,
+              "positive_token_count": 68,
+              "negative_token_count": 31
+            },
+            "core_error_at_stored_seed": {
+              "net": 24.42427913893812,
+              "positive_sum": 24.801099156681385,
+              "negative_sum": -0.37682001774326046,
+              "absolute_sum": 25.177919174424645,
+              "positive_token_count": 85,
+              "negative_token_count": 15
+            },
+            "core_error_at_BF16_seed": {
+              "net": 24.42315033492266,
+              "positive_sum": 24.800640258244634,
+              "negative_sum": -0.3774899233219735,
+              "absolute_sum": 25.17813018156661,
+              "positive_token_count": 85,
+              "negative_token_count": 15
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 0.0011288040154638604,
+              "positive_sum": 0.002257921763125075,
+              "negative_sum": -0.0011291177476612144,
+              "absolute_sum": 0.003387039510786289,
+              "positive_token_count": 43,
+              "negative_token_count": 57
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 4.401593555780139,
+              "positive_sum": 4.986909244195777,
+              "negative_sum": -0.5853156884156385,
+              "absolute_sum": 5.572224932611416,
+              "positive_token_count": 82,
+              "negative_token_count": 18
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 20.088569121987362,
+              "positive_sum": 20.9405037097125,
+              "negative_sum": -0.8519345877251419,
+              "absolute_sum": 21.792438297437645,
+              "positive_token_count": 79,
+              "negative_token_count": 21
+            },
+            "routing_content_interaction_contrast": {
+              "net": -0.06588353882937636,
+              "positive_sum": 0.3694240892040954,
+              "negative_sum": -0.4353076280334718,
+              "absolute_sum": 0.8047317172375672,
+              "positive_token_count": 45,
+              "negative_token_count": 54
+            }
+          }
+        },
+        "kept": {
+          "count": 94,
+          "fields": {
+            "qk_prediction": {
+              "net": 0.35730874698524717,
+              "positive_sum": 0.46266329213621693,
+              "negative_sum": -0.10535454515096973,
+              "absolute_sum": 0.5680178372871867,
+              "positive_token_count": 71,
+              "negative_token_count": 23
+            },
+            "v_prediction": {
+              "net": 0.3208715787506109,
+              "positive_sum": 1.4266896741254196,
+              "negative_sum": -1.1058180953748087,
+              "absolute_sum": 2.5325077695002283,
+              "positive_token_count": 48,
+              "negative_token_count": 46
+            },
+            "captured_actual_effect": {
+              "net": 0.16073819586271548,
+              "positive_sum": 0.34022728779345,
+              "negative_sum": -0.1794890919307346,
+              "absolute_sum": 0.5197163797241846,
+              "positive_token_count": 37,
+              "negative_token_count": 57
+            },
+            "R0": {
+              "net": 0.02443062221702534,
+              "positive_sum": 0.06695115816234078,
+              "negative_sum": -0.04252053594531543,
+              "absolute_sum": 0.1094716941076562,
+              "positive_token_count": 51,
+              "negative_token_count": 43
+            },
+            "VCVA": {
+              "net": 0.1491468440830279,
+              "positive_sum": 0.39231691036518723,
+              "negative_sum": -0.24317006628215926,
+              "absolute_sum": 0.6354869766473464,
+              "positive_token_count": 45,
+              "negative_token_count": 49
+            },
+            "RA": {
+              "net": 0.011591351779687599,
+              "positive_sum": 0.2067875285022272,
+              "negative_sum": -0.19519617672253964,
+              "absolute_sum": 0.4019837052247669,
+              "positive_token_count": 42,
+              "negative_token_count": 52
+            },
+            "core_error_at_stored_seed": {
+              "net": 0.5174421298731423,
+              "positive_sum": 1.3554618619907506,
+              "negative_sum": -0.8380197321176079,
+              "absolute_sum": 2.1934815941083583,
+              "positive_token_count": 62,
+              "negative_token_count": 32
+            },
+            "core_error_at_BF16_seed": {
+              "net": 0.5174599650341022,
+              "positive_sum": 1.355515617029376,
+              "negative_sum": -0.8380556519952737,
+              "absolute_sum": 2.1935712690246496,
+              "positive_token_count": 62,
+              "negative_token_count": 32
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": -1.7835160959739103e-05,
+              "positive_sum": 0.0002493119722368916,
+              "negative_sum": -0.0002671471331966307,
+              "absolute_sum": 0.0005164591054335223,
+              "positive_token_count": 52,
+              "negative_token_count": 42
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 0.3328781247682218,
+              "positive_sum": 0.4592104431064293,
+              "negative_sum": -0.1263323183382074,
+              "absolute_sum": 0.5855427614446367,
+              "positive_token_count": 70,
+              "negative_token_count": 24
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 0.1717247346675831,
+              "positive_sum": 1.3753753922182992,
+              "negative_sum": -1.203650657550716,
+              "absolute_sum": 2.5790260497690154,
+              "positive_token_count": 50,
+              "negative_token_count": 44
+            },
+            "routing_content_interaction_contrast": {
+              "net": 0.012839270437337763,
+              "positive_sum": 0.19138020221646862,
+              "negative_sum": -0.17854093177913088,
+              "absolute_sum": 0.36992113399559945,
+              "positive_token_count": 47,
+              "negative_token_count": 47
+            }
+          }
+        },
+        "other_prompt": {
+          "count": 16,
+          "fields": {
+            "qk_prediction": {
+              "net": -0.053236799564891024,
+              "positive_sum": 0.11362996993415009,
+              "negative_sum": -0.1668667694990411,
+              "absolute_sum": 0.2804967394331912,
+              "positive_token_count": 9,
+              "negative_token_count": 7
+            },
+            "v_prediction": {
+              "net": 0.3311212119901139,
+              "positive_sum": 0.36991429456443115,
+              "negative_sum": -0.03879308257431724,
+              "absolute_sum": 0.4087073771387484,
+              "positive_token_count": 10,
+              "negative_token_count": 6
+            },
+            "captured_actual_effect": {
+              "net": -0.04074599304140568,
+              "positive_sum": 0.06390902326972474,
+              "negative_sum": -0.10465501631113042,
+              "absolute_sum": 0.16856403958085514,
+              "positive_token_count": 3,
+              "negative_token_count": 13
+            },
+            "R0": {
+              "net": -0.02741709439365332,
+              "positive_sum": 0.009924697423502375,
+              "negative_sum": -0.0373417918171557,
+              "absolute_sum": 0.04726648924065807,
+              "positive_token_count": 6,
+              "negative_token_count": 10
+            },
+            "VCVA": {
+              "net": -0.08061864291857532,
+              "positive_sum": 0.09993970277939483,
+              "negative_sum": -0.18055834569797014,
+              "absolute_sum": 0.280498048477365,
+              "positive_token_count": 3,
+              "negative_token_count": 13
+            },
+            "RA": {
+              "net": 0.03987264987716964,
+              "positive_sum": 0.08656076713481084,
+              "negative_sum": -0.04668811725764121,
+              "absolute_sum": 0.13324888439245205,
+              "positive_token_count": 11,
+              "negative_token_count": 5
+            },
+            "core_error_at_stored_seed": {
+              "net": 0.3186304054666285,
+              "positive_sum": 0.4250592847698047,
+              "negative_sum": -0.10642887930317621,
+              "absolute_sum": 0.5314881640729809,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "core_error_at_BF16_seed": {
+              "net": 0.3185398612680883,
+              "positive_sum": 0.42505040035882646,
+              "negative_sum": -0.10651053909073815,
+              "absolute_sum": 0.5315609394495646,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 9.05441985402427e-05,
+              "positive_sum": 0.0001348580226580289,
+              "negative_sum": -4.43138241177862e-05,
+              "absolute_sum": 0.0001791718467758151,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": -0.025819705171237696,
+              "positive_sum": 0.11590477849870937,
+              "negative_sum": -0.14172448366994705,
+              "absolute_sum": 0.2576292621686564,
+              "positive_token_count": 10,
+              "negative_token_count": 6
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 0.41173985490868925,
+              "positive_sum": 0.4734902931258778,
+              "negative_sum": -0.061750438217188584,
+              "absolute_sum": 0.5352407313430664,
+              "positive_token_count": 12,
+              "negative_token_count": 4
+            },
+            "routing_content_interaction_contrast": {
+              "net": -0.06728974427082296,
+              "positive_sum": 0.02520608816491655,
+              "negative_sum": -0.09249583243573951,
+              "absolute_sum": 0.11770192060065605,
+              "positive_token_count": 4,
+              "negative_token_count": 12
+            }
+          }
+        },
+        "response": {
+          "count": 141,
+          "fields": {
+            "qk_prediction": {
+              "net": 2.810861980437431,
+              "positive_sum": 5.079895437076198,
+              "negative_sum": -2.269033456638768,
+              "absolute_sum": 7.348928893714966,
+              "positive_token_count": 77,
+              "negative_token_count": 63
+            },
+            "v_prediction": {
+              "net": 3.0528322689159233,
+              "positive_sum": 3.730611698827129,
+              "negative_sum": -0.6777794299112062,
+              "absolute_sum": 4.4083911287383355,
+              "positive_token_count": 92,
+              "negative_token_count": 48
+            },
+            "captured_actual_effect": {
+              "net": 26.133853283636654,
+              "positive_sum": 27.650792514112947,
+              "negative_sum": -1.516939230476292,
+              "absolute_sum": 29.167731744589243,
+              "positive_token_count": 95,
+              "negative_token_count": 45
+            },
+            "R0": {
+              "net": 2.978324913435441,
+              "positive_sum": 5.766848712063728,
+              "negative_sum": -2.788523798628288,
+              "absolute_sum": 8.555372510692017,
+              "positive_token_count": 72,
+              "negative_token_count": 68
+            },
+            "VCVA": {
+              "net": 23.66715518622731,
+              "positive_sum": 26.4544152596239,
+              "negative_sum": -2.7872600733965927,
+              "absolute_sum": 29.241675333020495,
+              "positive_token_count": 99,
+              "negative_token_count": 41
+            },
+            "RA": {
+              "net": 2.4666980974093486,
+              "positive_sum": 7.9307977979372515,
+              "negative_sum": -5.464099700527903,
+              "absolute_sum": 13.394897498465154,
+              "positive_token_count": 65,
+              "negative_token_count": 75
+            },
+            "core_error_at_stored_seed": {
+              "net": -20.2701590342833,
+              "positive_sum": 4.3537459878162625,
+              "negative_sum": -24.623905022099564,
+              "absolute_sum": 28.977651009915828,
+              "positive_token_count": 52,
+              "negative_token_count": 88
+            },
+            "core_error_at_BF16_seed": {
+              "net": -20.269983619327284,
+              "positive_sum": 4.353814050515979,
+              "negative_sum": -24.623797669843263,
+              "absolute_sum": 28.977611720359242,
+              "positive_token_count": 52,
+              "negative_token_count": 88
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": -0.00017541495601898515,
+              "positive_sum": 0.010136898828969334,
+              "negative_sum": -0.010312313784988321,
+              "absolute_sum": 0.020449212613957657,
+              "positive_token_count": 64,
+              "negative_token_count": 76
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": -0.1674629329980104,
+              "positive_sum": 4.465832726379852,
+              "negative_sum": -4.633295659377863,
+              "absolute_sum": 9.099128385757714,
+              "positive_token_count": 70,
+              "negative_token_count": 70
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": -20.614322917311384,
+              "positive_sum": 4.757859090885758,
+              "negative_sum": -25.372182008197143,
+              "absolute_sum": 30.1300410990829,
+              "positive_token_count": 52,
+              "negative_token_count": 88
+            },
+            "routing_content_interaction_contrast": {
+              "net": 0.5116268160260933,
+              "positive_sum": 5.017007317126879,
+              "negative_sum": -4.505380501100785,
+              "absolute_sum": 9.522387818227664,
+              "positive_token_count": 83,
+              "negative_token_count": 57
+            }
+          }
+        }
+      },
+      "checks": {
+        "max_token_three_term_closure": 4.440892098500626e-16,
+        "total_three_term_closure": -4.330574527450226e-16,
+        "total_RA_plus_VCVA_minus_captured_effect": 7.977017484062099e-16,
+        "core_minus_original_ledger": 0.0
+      },
+      "BF16_seed_contrast_differences": {
+        "R0": {
+          "net": -0.0011195256161435061,
+          "positive_sum": 0.006988101606308517,
+          "negative_sum": -0.008107627222452023,
+          "absolute_sum": 0.015095728828760544,
+          "positive_token_count": 164,
+          "negative_token_count": 185
+        },
+        "VCVA": {
+          "net": 0.0022624502482456723,
+          "positive_sum": 0.013705796075794226,
+          "negative_sum": -0.011443345827548553,
+          "absolute_sum": 0.02514914190334278,
+          "positive_token_count": 176,
+          "negative_token_count": 174
+        },
+        "RA": {
+          "net": -0.0012363521512202937,
+          "positive_sum": 0.009138411892641333,
+          "negative_sum": -0.010374764043861624,
+          "absolute_sum": 0.01951317593650296,
+          "positive_token_count": 166,
+          "negative_token_count": 183
+        }
+      }
+    },
+    "20": {
+      "input_receipt": {
+        "input_sha256": "bca9629db0103e251d94a78217302d1940db312a768ae3a52bdcbbc66510044f",
+        "deleted_positions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          43,
+          44,
+          45,
+          46,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          73,
+          74,
+          75,
+          76,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          145,
+          146,
+          147,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          159,
+          160,
+          161,
+          163,
+          164,
+          165,
+          167,
+          168,
+          169,
+          170,
+          171,
+          172,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193,
+          194,
+          195,
+          196,
+          197,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209
+        ]
+      },
+      "original_FA_core_error": 0.03550125903340451,
+      "CPU_recomputed_original_FA_core_error": 0.03550125903340451,
+      "fields": {
+        "qk_prediction": {
+          "net": 9.031789972526354,
+          "positive_sum": 12.120154086074068,
+          "negative_sum": -3.0883641135477147,
+          "absolute_sum": 15.208518199621784,
+          "positive_token_count": 251,
+          "negative_token_count": 99
+        },
+        "v_prediction": {
+          "net": 24.643885263723966,
+          "positive_sum": 27.099153025262233,
+          "negative_sum": -2.4552677615382676,
+          "absolute_sum": 29.554420786800502,
+          "positive_token_count": 243,
+          "negative_token_count": 107
+        },
+        "captured_actual_effect": {
+          "net": 33.64017397721692,
+          "positive_sum": 36.830650206360865,
+          "negative_sum": -3.1904762291439472,
+          "absolute_sum": 40.02112643550481,
+          "positive_token_count": 222,
+          "negative_token_count": 128
+        },
+        "R0": {
+          "net": 9.057346276618883,
+          "positive_sum": 13.867931717699973,
+          "negative_sum": -4.8105854410810895,
+          "absolute_sum": 18.678517158781062,
+          "positive_token_count": 193,
+          "negative_token_count": 156
+        },
+        "VCVA": {
+          "net": 24.58704721038346,
+          "positive_sum": 29.274616186053688,
+          "negative_sum": -4.687568975670226,
+          "absolute_sum": 33.962185161723916,
+          "positive_token_count": 221,
+          "negative_token_count": 129
+        },
+        "RA": {
+          "net": 9.053126766833458,
+          "positive_sum": 13.875434111244463,
+          "negative_sum": -4.822307344411007,
+          "absolute_sum": 18.69774145565547,
+          "positive_token_count": 193,
+          "negative_token_count": 156
+        },
+        "core_error_at_stored_seed": {
+          "net": 0.03550125903340451,
+          "positive_sum": 32.05492512539312,
+          "negative_sum": -32.019423866359716,
+          "absolute_sum": 64.07434899175283,
+          "positive_token_count": 223,
+          "negative_token_count": 127
+        },
+        "core_error_at_BF16_seed": {
+          "net": 0.03830544487362708,
+          "positive_sum": 32.05572487229524,
+          "negative_sum": -32.0174194274216,
+          "absolute_sum": 64.07314429971684,
+          "positive_token_count": 223,
+          "negative_token_count": 127
+        },
+        "BF16_minus_stored_seed_actual_effect": {
+          "net": -0.0028041858402223633,
+          "positive_sum": 0.010407040260464323,
+          "negative_sum": -0.013211226100686688,
+          "absolute_sum": 0.02361826636115101,
+          "positive_token_count": 161,
+          "negative_token_count": 189
+        },
+        "routing_at_baseline_values_prediction_error": {
+          "net": -0.02555630409252929,
+          "positive_sum": 12.491408289938429,
+          "negative_sum": -12.51696459403096,
+          "absolute_sum": 25.008372883969386,
+          "positive_token_count": 234,
+          "negative_token_count": 116
+        },
+        "content_at_clean_routing_prediction_error": {
+          "net": 0.056838053340507066,
+          "positive_sum": 27.331025324266058,
+          "negative_sum": -27.27418727092555,
+          "absolute_sum": 54.60521259519162,
+          "positive_token_count": 198,
+          "negative_token_count": 152
+        },
+        "routing_content_interaction_contrast": {
+          "net": 0.004219509785425762,
+          "positive_sum": 0.1097151306356477,
+          "negative_sum": -0.1054956208502219,
+          "absolute_sum": 0.21521075148586963,
+          "positive_token_count": 174,
+          "negative_token_count": 175
+        }
+      },
+      "groups": {
+        "deleted": {
+          "count": 194,
+          "fields": {
+            "qk_prediction": {
+              "net": 6.94444548121081,
+              "positive_sum": 7.641845920597719,
+              "negative_sum": -0.6974004393869091,
+              "absolute_sum": 8.339246359984626,
+              "positive_token_count": 162,
+              "negative_token_count": 32
+            },
+            "v_prediction": {
+              "net": 22.41109562337781,
+              "positive_sum": 23.491684840420106,
+              "negative_sum": -1.0805892170422953,
+              "absolute_sum": 24.5722740574624,
+              "positive_token_count": 135,
+              "negative_token_count": 59
+            },
+            "captured_actual_effect": {
+              "net": 3.5592017743362923,
+              "positive_sum": 4.275991222823034,
+              "negative_sum": -0.7167894484867412,
+              "absolute_sum": 4.992780671309775,
+              "positive_token_count": 120,
+              "negative_token_count": 74
+            },
+            "R0": {
+              "net": 0.8339637579931464,
+              "positive_sum": 1.0413734665405832,
+              "negative_sum": -0.20740970854743673,
+              "absolute_sum": 1.2487831750880198,
+              "positive_token_count": 115,
+              "negative_token_count": 78
+            },
+            "VCVA": {
+              "net": 2.7284274139190035,
+              "positive_sum": 3.435631516976301,
+              "negative_sum": -0.707204103057298,
+              "absolute_sum": 4.142835620033599,
+              "positive_token_count": 119,
+              "negative_token_count": 75
+            },
+            "RA": {
+              "net": 0.8307743604172885,
+              "positive_sum": 1.0377171661322329,
+              "negative_sum": -0.20694280571494428,
+              "absolute_sum": 1.2446599718471771,
+              "positive_token_count": 116,
+              "negative_token_count": 77
+            },
+            "core_error_at_stored_seed": {
+              "net": 25.796339330252327,
+              "positive_sum": 27.104039324114233,
+              "negative_sum": -1.3076999938619054,
+              "absolute_sum": 28.41173931797614,
+              "positive_token_count": 156,
+              "negative_token_count": 38
+            },
+            "core_error_at_BF16_seed": {
+              "net": 25.79617687040001,
+              "positive_sum": 27.104026802090974,
+              "negative_sum": -1.3078499316909649,
+              "absolute_sum": 28.411876733781938,
+              "positive_token_count": 156,
+              "negative_token_count": 38
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 0.00016245985231948034,
+              "positive_sum": 0.0020425610894593865,
+              "negative_sum": -0.0018801012371399061,
+              "absolute_sum": 0.003922662326599292,
+              "positive_token_count": 97,
+              "negative_token_count": 97
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 6.110481723217663,
+              "positive_sum": 6.995083910806077,
+              "negative_sum": -0.8846021875884131,
+              "absolute_sum": 7.879686098394489,
+              "positive_token_count": 155,
+              "negative_token_count": 39
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 19.682668209458807,
+              "positive_sum": 21.67477085573765,
+              "negative_sum": -1.992102646278838,
+              "absolute_sum": 23.666873502016482,
+              "positive_token_count": 133,
+              "negative_token_count": 61
+            },
+            "routing_content_interaction_contrast": {
+              "net": 0.0031893975758577895,
+              "positive_sum": 0.01311285698517375,
+              "negative_sum": -0.00992345940931596,
+              "absolute_sum": 0.023036316394489713,
+              "positive_token_count": 93,
+              "negative_token_count": 100
+            }
+          }
+        },
+        "kept": {
+          "count": 0,
+          "fields": {
+            "qk_prediction": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "v_prediction": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "captured_actual_effect": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "R0": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "VCVA": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "RA": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "core_error_at_stored_seed": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "core_error_at_BF16_seed": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            },
+            "routing_content_interaction_contrast": {
+              "net": 0.0,
+              "positive_sum": 0.0,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.0,
+              "positive_token_count": 0,
+              "negative_token_count": 0
+            }
+          }
+        },
+        "other_prompt": {
+          "count": 16,
+          "fields": {
+            "qk_prediction": {
+              "net": 0.037415183412218056,
+              "positive_sum": 0.18819862151757416,
+              "negative_sum": -0.1507834381053561,
+              "absolute_sum": 0.33898205962293027,
+              "positive_token_count": 8,
+              "negative_token_count": 8
+            },
+            "v_prediction": {
+              "net": 0.512513505585444,
+              "positive_sum": 0.5245422820192953,
+              "negative_sum": -0.012028776433851363,
+              "absolute_sum": 0.5365710584531467,
+              "positive_token_count": 14,
+              "negative_token_count": 2
+            },
+            "captured_actual_effect": {
+              "net": -0.24501641895353565,
+              "positive_sum": 0.03567416037929025,
+              "negative_sum": -0.28069057933282593,
+              "absolute_sum": 0.31636473971211615,
+              "positive_token_count": 3,
+              "negative_token_count": 13
+            },
+            "R0": {
+              "net": -0.043048238212369826,
+              "positive_sum": 0.01720035251047173,
+              "negative_sum": -0.060248590722841555,
+              "absolute_sum": 0.07744894323331328,
+              "positive_token_count": 6,
+              "negative_token_count": 10
+            },
+            "VCVA": {
+              "net": -0.20102194978361648,
+              "positive_sum": 0.03018243256771817,
+              "negative_sum": -0.23120438235133461,
+              "absolute_sum": 0.2613868149190528,
+              "positive_token_count": 3,
+              "negative_token_count": 13
+            },
+            "RA": {
+              "net": -0.04399446916991925,
+              "positive_sum": 0.01687737794752492,
+              "negative_sum": -0.06087184711744416,
+              "absolute_sum": 0.07774922506496909,
+              "positive_token_count": 6,
+              "negative_token_count": 10
+            },
+            "core_error_at_stored_seed": {
+              "net": 0.7949451079511978,
+              "positive_sum": 0.8052702457781791,
+              "negative_sum": -0.01032513782698144,
+              "absolute_sum": 0.8155953836051606,
+              "positive_token_count": 15,
+              "negative_token_count": 1
+            },
+            "core_error_at_BF16_seed": {
+              "net": 0.7949580135731142,
+              "positive_sum": 0.8052764991946784,
+              "negative_sum": -0.010318485621564122,
+              "absolute_sum": 0.8155949848162425,
+              "positive_token_count": 15,
+              "negative_token_count": 1
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": -1.2905621916534235e-05,
+              "positive_sum": 0.0001129313714143894,
+              "negative_sum": -0.00012583699333092364,
+              "absolute_sum": 0.00023876836474531304,
+              "positive_token_count": 4,
+              "negative_token_count": 12
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": 0.08046342162458789,
+              "positive_sum": 0.18462417211010407,
+              "negative_sum": -0.10416075048551618,
+              "absolute_sum": 0.2887849225956202,
+              "positive_token_count": 7,
+              "negative_token_count": 9
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": 0.7135354553690604,
+              "positive_sum": 0.7135354553690604,
+              "negative_sum": 0.0,
+              "absolute_sum": 0.7135354553690604,
+              "positive_token_count": 16,
+              "negative_token_count": 0
+            },
+            "routing_content_interaction_contrast": {
+              "net": 0.0009462309575494221,
+              "positive_sum": 0.0011287185097215596,
+              "negative_sum": -0.0001824875521721375,
+              "absolute_sum": 0.001311206061893697,
+              "positive_token_count": 11,
+              "negative_token_count": 5
+            }
+          }
+        },
+        "response": {
+          "count": 141,
+          "fields": {
+            "qk_prediction": {
+              "net": 2.0499293079033265,
+              "positive_sum": 4.290109543958776,
+              "negative_sum": -2.2401802360554495,
+              "absolute_sum": 6.530289780014225,
+              "positive_token_count": 81,
+              "negative_token_count": 59
+            },
+            "v_prediction": {
+              "net": 1.7202761347607123,
+              "positive_sum": 3.0829259028228333,
+              "negative_sum": -1.362649768062121,
+              "absolute_sum": 4.4455756708849545,
+              "positive_token_count": 94,
+              "negative_token_count": 46
+            },
+            "captured_actual_effect": {
+              "net": 30.325988621834163,
+              "positive_sum": 32.51898482315854,
+              "negative_sum": -2.1929962013243807,
+              "absolute_sum": 34.711981024482924,
+              "positive_token_count": 99,
+              "negative_token_count": 41
+            },
+            "R0": {
+              "net": 8.266430756838107,
+              "positive_sum": 12.809357898648917,
+              "negative_sum": -4.542927141810812,
+              "absolute_sum": 17.352285040459726,
+              "positive_token_count": 72,
+              "negative_token_count": 68
+            },
+            "VCVA": {
+              "net": 22.059641746248072,
+              "positive_sum": 25.80880223650967,
+              "negative_sum": -3.749160490261594,
+              "absolute_sum": 29.557962726771258,
+              "positive_token_count": 99,
+              "negative_token_count": 41
+            },
+            "RA": {
+              "net": 8.26634687558609,
+              "positive_sum": 12.820839567164708,
+              "negative_sum": -4.554492691578619,
+              "absolute_sum": 17.375332258743327,
+              "positive_token_count": 71,
+              "negative_token_count": 69
+            },
+            "core_error_at_stored_seed": {
+              "net": -26.555783179170124,
+              "positive_sum": 4.145615555500708,
+              "negative_sum": -30.701398734670832,
+              "absolute_sum": 34.847014290171536,
+              "positive_token_count": 52,
+              "negative_token_count": 88
+            },
+            "core_error_at_BF16_seed": {
+              "net": -26.552829439099497,
+              "positive_sum": 4.146421571009583,
+              "negative_sum": -30.699251010109077,
+              "absolute_sum": 34.84567258111866,
+              "positive_token_count": 52,
+              "negative_token_count": 88
+            },
+            "BF16_minus_stored_seed_actual_effect": {
+              "net": -0.0029537400706253097,
+              "positive_sum": 0.008251547799590548,
+              "negative_sum": -0.011205287870215857,
+              "absolute_sum": 0.019456835669806407,
+              "positive_token_count": 60,
+              "negative_token_count": 80
+            },
+            "routing_at_baseline_values_prediction_error": {
+              "net": -6.216501448934782,
+              "positive_sum": 5.311700207022248,
+              "negative_sum": -11.52820165595703,
+              "absolute_sum": 16.839901862979275,
+              "positive_token_count": 72,
+              "negative_token_count": 68
+            },
+            "content_at_clean_routing_prediction_error": {
+              "net": -20.33936561148736,
+              "positive_sum": 4.942719013159353,
+              "negative_sum": -25.282084624646714,
+              "absolute_sum": 30.22480363780607,
+              "positive_token_count": 49,
+              "negative_token_count": 91
+            },
+            "routing_content_interaction_contrast": {
+              "net": 8.388125201855105e-05,
+              "positive_sum": 0.09547355514075238,
+              "negative_sum": -0.09538967388873382,
+              "absolute_sum": 0.19086322902948621,
+              "positive_token_count": 70,
+              "negative_token_count": 70
+            }
+          }
+        }
+      },
+      "checks": {
+        "max_token_three_term_closure": 4.440892098500626e-16,
+        "total_three_term_closure": 1.9103642279194588e-16,
+        "total_RA_plus_VCVA_minus_captured_effect": -1.6550346162991225e-16,
+        "core_minus_original_ledger": 0.0
+      },
+      "BF16_seed_contrast_differences": {
+        "R0": {
+          "net": -0.0009242164157432127,
+          "positive_sum": 0.01078394766215591,
+          "negative_sum": -0.011708164077899123,
+          "absolute_sum": 0.022492111740055037,
+          "positive_token_count": 175,
+          "negative_token_count": 174
+        },
+        "VCVA": {
+          "net": -0.0017664367629754037,
+          "positive_sum": 0.012412637714189708,
+          "negative_sum": -0.014179074477165111,
+          "absolute_sum": 0.02659171219135482,
+          "positive_token_count": 168,
+          "negative_token_count": 182
+        },
+        "RA": {
+          "net": -0.0010377490772469598,
+          "positive_sum": 0.010755674705025458,
+          "negative_sum": -0.011793423782272416,
+          "absolute_sum": 0.022549098487297876,
+          "positive_token_count": 175,
+          "negative_token_count": 174
+        }
+      }
+    }
+  },
+  "private_artifact_sha256_before": "0b33ce76ca28fd00375e931a4769fbf4868cf2ff0cddd7040785bc42a6a2672a",
+  "FA_interface_path": "/opt/conda/lib/python3.12/site-packages/flash_attn/flash_attn_interface.py",
+  "FA_interface_sha256_before": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+  "scaling_source": {
+    "model_source_path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+    "model_sha256": "cf085792cb59e5bdf9b88a3d20bd353892289d054662a9c2b662221b97caefba",
+    "verified_expression": "self.head_dim ** -0.5",
+    "config_head_dim": 256,
+    "native_scale": 0.0625,
+    "scope": "Pinned native source and original config verified; previous capture did not retain the scalar call argument separately."
+  },
+  "CPU_load_seconds": 0.6064635552465916,
+  "private_tensor_CPU_bytes_loaded": 1378883584,
+  "saved_B1_vs_B2_endpoint_drift": {
+    "clean_vs_input": {
+      "query": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.013953942899405419,
+        "max_absolute_difference": 0.671875
+      },
+      "key": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.010430297516002615,
+        "max_absolute_difference": 0.25
+      },
+      "value": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.012390056735943207,
+        "max_absolute_difference": 0.29296875
+      },
+      "attention_output": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.016971190387647633,
+        "max_absolute_difference": 5.5
+      }
+    },
+    "allEOS_vs_baseline": {
+      "query": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.015826053228007658,
+        "max_absolute_difference": 0.3446044921875
+      },
+      "key": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.015261168087334753,
+        "max_absolute_difference": 0.28125
+      },
+      "value": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.016452708374260983,
+        "max_absolute_difference": 0.25
+      },
+      "attention_output": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.012620198478310937,
+        "max_absolute_difference": 1.25
+      }
+    }
+  },
+  "FA_layout": {
+    "query_heads": 16,
+    "kv_heads": 4,
+    "groups": 4,
+    "padded_length": 351,
+    "valid_lengths": [
+      351
+    ],
+    "mapping": "query_head // groups = compact_kv_head"
+  },
+  "selected_CPU_tensor_bytes": 46725120,
+  "prepared_GPU_operand_layouts": {
+    "0": {
+      "query": {
+        "shape": [
+          1,
+          351,
+          16,
+          256
+        ],
+        "stride": [
+          1437696,
+          4096,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "key": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "value": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      }
+    },
+    "1": {
+      "query": {
+        "shape": [
+          1,
+          351,
+          16,
+          256
+        ],
+        "stride": [
+          1437696,
+          4096,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "key": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "value": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      }
+    },
+    "10": {
+      "query": {
+        "shape": [
+          1,
+          351,
+          16,
+          256
+        ],
+        "stride": [
+          1437696,
+          4096,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "key": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "value": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      }
+    },
+    "20": {
+      "query": {
+        "shape": [
+          1,
+          351,
+          16,
+          256
+        ],
+        "stride": [
+          1437696,
+          4096,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "key": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      },
+      "value": {
+        "shape": [
+          1,
+          351,
+          4,
+          256
+        ],
+        "stride": [
+          359424,
+          1024,
+          256,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "is_cuda": true,
+        "contiguous": true
+      }
+    },
+    "paired_EOS_value": {
+      "shape": [
+        1,
+        351,
+        4,
+        256
+      ],
+      "stride": [
+        359424,
+        1024,
+        256,
+        1
+      ],
+      "dtype": "torch.bfloat16",
+      "device": "cuda:0",
+      "is_cuda": true,
+      "contiguous": true
+    }
+  },
+  "signed_token_contrasts": {
+    "file": "signed_token_contrasts.npz",
+    "sha256": "d3bb9b56f30281915952b86ad028664f92ca9a2557a2f5692e7436154993fd24"
+  },
+  "private_artifact_sha256_after": "0b33ce76ca28fd00375e931a4769fbf4868cf2ff0cddd7040785bc42a6a2672a",
+  "FA_interface_sha256_after": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+  "job_seconds": 9.975561587139964,
+  "peak_allocated_bytes": 32415744,
+  "peak_reserved_bytes": 44040192,
+  "scope": "Native FA hybrid operator contrasts on frozen saved decoder19 coordinates, not full-model counterfactuals, new attribution or new RISE/MAS.",
+  "term_interpretation": {
+    "routing_at_baseline_values_prediction_error": "Frozen q/k allocation minus native routing contrast at reference V0. Includes off-pair/B1-B2 transfer and quantization, not a pure kernel-error claim.",
+    "content_at_clean_routing_prediction_error": "Frozen v allocation minus actual clean-route content contrast; an observed difference does not establish a kernel bug.",
+    "routing_content_interaction_contrast": "Reference-value routing interaction, including native rounding; ideal expression m(P_C-P_A)(V0-V_A). Not an independent EOS causal contribution.",
+    "seed_identity": "E_stored = E_BF16 + <m_BF16-m_stored, O_C-O_A>; the seed term is not added a second time."
+  },
+  "precision_contract": "Captured OC/OA remain actual endpoints. Native BF16 replay differences and the finite vendor BF16 seed conversion are reported. The three terms include default native finite-precision effects; algebraic closure is not a claim of exact real-arithmetic attention.",
+  "group_contract": "Contrast terms group output-query locations; q/k/v predictions group their operand locations. Same token indices can label different roles. Positive/negative statistics are token-net sums, not independent source effects or headwise sign statistics."
+}
