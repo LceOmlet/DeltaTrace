@@ -1,0 +1,144 @@
+{
+  "purpose": "One saved FA19 MH1 operator. Split frozen route error into replay, QK allocation plus multiplier rounding, weight cast, and finite softmax conditional response. No model/candidate/metric run.",
+  "fixed_steps": [
+    "1",
+    "10",
+    "20"
+  ],
+  "case": "morehopqa_1",
+  "layer": 19,
+  "source_results_path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/results.json",
+  "hybrid_results_path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v2/results.json",
+  "hybrid_vectors_path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v2/signed_token_contrasts.npz",
+  "private_artifact_path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/MH1_decoder19_6_actual_private.pt",
+  "private_artifact_sha256": "0b33ce76ca28fd00375e931a4769fbf4868cf2ff0cddd7040785bc42a6a2672a",
+  "private_artifact_bytes": 1378988743,
+  "input_sha256": "a325fe372d40643cbeb9c5f9158ff0683288fca9980017ee998ac7a149114e01",
+  "original_route_error": {
+    "1": 0.9300217241795654,
+    "10": 4.541189042379113,
+    "20": -0.02555630409252929
+  },
+  "protected_sources": [
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/results.json",
+      "sha256": "d06fcfdc4281aa0d8b7eb19ab81ae678d2e76f62b0700df434e6ba584d0c59e9"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_decoder19_6_conditional_20260908_v1/protocol.json",
+      "sha256": "92fc29848baff37d1938f226eefd58bb36e048b3cd83792e189d81ca9deeaf40"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v2/results.json",
+      "sha256": "093909a2befa52f5377366716b505c0d7d0af987aa4cdbe5f1f17c633f034773"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v2/protocol.json",
+      "sha256": "0d6f8245ccbd1b9312124893a9ac40e798aa8d31db1ca0088266e63df5732186"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_fa19_native_hybrid_20260908_v2/signed_token_contrasts.npz",
+      "sha256": "d3bb9b56f30281915952b86ad028664f92ca9a2557a2f5692e7436154993fd24"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2/study.py",
+      "sha256": "4c120ac8713e43ae9c71d34e74c19d99629ec0a2497e4ad5744b6c1ca8a4bf63"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2/protocol.json",
+      "sha256": "ec2715acf729a117648196c1ea0fd229f963b3050ba09c54b77189f5cdaa33d4"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2/vendor_fa_finite_p1_bf16_d256.cu",
+      "sha256": "8116d27efdd9f41c5eab84d2a062fe9e5c8ebed58fd21c87ef3d52d26749b19a"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2/libdeltatrace_fa_finite_bf16_d256.so",
+      "sha256": "9fd20eb642c225084614cf54e6a88ea9b38ed780a8a6d7c252e58569c537722f"
+    }
+  ],
+  "vendor_source_parent": "${ARTIFACT_ROOT}/codex_vendor_fa_source_gpu_language_20260907_v1",
+  "vendor_parent_sha256": "43000d77cd7fac6539e86fbc8dfbb638b0c4bce7d6cfc4ad4f4ba4f00db16906",
+  "vendor_git_commit": "aef88de756194e077460a1c8b8b341baa429259a",
+  "vendor_source_version": "FA2.5.3",
+  "installed_model_FA_version": "2.6.3+metax3.5.3.9torch2.8",
+  "same_version_source_claim": false,
+  "production_extension_path": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2/vendor_fa_finite_p1_bf16_d256.cu",
+  "production_extension_sha256": "8116d27efdd9f41c5eab84d2a062fe9e5c8ebed58fd21c87ef3d52d26749b19a",
+  "production_library_path": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2/libdeltatrace_fa_finite_bf16_d256.so",
+  "production_library_sha256": "9fd20eb642c225084614cf54e6a88ea9b38ed780a8a6d7c252e58569c537722f",
+  "build_script_derived_from_path": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2/study.py",
+  "build_script_derived_from_sha256": "4c120ac8713e43ae9c71d34e74c19d99629ec0a2497e4ad5744b6c1ca8a4bf63",
+  "diagnostic_extension_name": "vendor_fa_finite_p1_bf16_d256_conditional_diag_20260908.cu",
+  "diagnostic_library_name": "libdeltatrace_fa19_conditional_diag_20260908.so",
+  "diagnostic_ABI": "20 pointers (original14,actual_qc/kc/qa/ka,FP32_row/BF16_row),4 int(B,H,Hkv,T),float scale,stream pointer. Separate conditional_diag C symbol; no production library overwrite.",
+  "traits": {
+    "head_dim": 256,
+    "tile_m": 32,
+    "tile_n": 32,
+    "warps": 2,
+    "shared_bytes": 32768
+  },
+  "extension_change": "Keep original three phases and dq/dk/dv arithmetic. Phase1 only: reuse original pair with endpoint=-1 to preserve frozen midpoint, flash::gemm for C/A scores, exact original CONVERT_TENSOR_TYPE for W_BF16, original row reductions for two O(BHT) outputs. No alternative attention/softmax implementation, T-by-T output, tile search or production change.",
+  "installed_FA_interface_sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+  "native_FA_kwargs": {
+    "dropout_p": 0.0,
+    "softmax_scale": 0.0625,
+    "causal": true,
+    "window_size": [
+      -1,
+      -1
+    ],
+    "softcap": 0.0,
+    "alibi_slopes": null,
+    "return_attn_probs": true
+  },
+  "native_scaling_provenance": "Read pinned native Attention __init__ AST self.scaling=self.head_dim**-0.5 and original config head_dim=256. No model construction; capture did not retain scalar call arguments separately.",
+  "build_budget": {
+    "compiler_attempts": 1,
+    "compiler_seconds": 150,
+    "wall_seconds": 180,
+    "tile_candidates": 1,
+    "GPU_kernel_calls": 0,
+    "model_calls": 0
+  },
+  "run_budget": {
+    "wall_seconds": 180,
+    "native_FA_calls": 1,
+    "batch_size_for_native_LSE": 2,
+    "diagnostic_finite_calls": 3,
+    "diagnostic_phase_launches_on_success": 9,
+    "extra_score_MMA_tiles_per_Phase1_tile": 2,
+    "extra_warmup": 0,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "scorer_calls": 0,
+    "FT_calls": 0,
+    "backward_calls": 0,
+    "new_samples": 0
+  },
+  "native_LSE_contract": "Exact same public default FA route as current runner: return_attn_probs=True with dropout=0. Installed source uses return_softmax=flag and dropout>0. Require unused is None or numel()==0; no probability matrix or private buffer reads.",
+  "ledger": [
+    "D_saved-D_replay",
+    "D_replay-T_BF16",
+    "T_BF16-T_FP32",
+    "T_FP32-R0"
+  ],
+  "identity": "Sum four terms=D_saved-R0. D is dq*actual_deltaQ+dk*actual_deltaK with actual contiguous GQA fold; T is row sum W*(scale*(Q_CK_C^T-Q_AK_A^T)) under pinned original extension MMA. R0 is frozen native hybrid contrast at V0.",
+  "precision_and_identifiability": "T_FP32 uses current extension score MMA and finite weight, not a newly observed native internal matrix. D_replay-T_BF16 includes frozen QK endpoint interaction plus midpoint/MMA/output rounding. T_FP32-R0 includes finite softmax conditional transfer, BF16 upstream seed, B1/B2 endpoint drift and native output precision. Explicit replay/cast terms must be assessed before structural ranking.",
+  "allEOS_guard": "Use original B1 step20 deleting all eligible positions, preserve B1/B2 drift, do not require zero. Saved/actual qk prediction and original route residual must match frozen hybrid evidence within1e-7.",
+  "acceptance": "All hashes and actual shapes/dtypes/masks hold; coefficients are finite and independent of which actual A is used (same frozen coefficient input). Record all dq/dk/dv and B2 output replay drift. Four-term and coordinate-group algebra closes within1e-7. Closure alone does not prove the diagnostic tile formula.",
+  "stop": "One compile attempt; first compilation/runtime/nonfinite/source/layout/invariant/closure failure ends that stage, preserve failure evidence. No automatic retry/backend/precision change, full-model run, additional point, warmup or candidate sweep.",
+  "next_action_if_QK_dominates": "Only then one fixed QK endpoint-alignment candidate deltaQ*K1^T+Q0*deltaK^T (instead of midpoint), same3 phases and GEMM count. Endpoint identity holds on the full EOS/input chord. This diagnostic does not prove its sign or MAS improvement; retain early risk and require one paired official-metric test, no endpoint/weight sweep.",
+  "next_action_if_softmax_dominates": "Only then one original-input-Jacobian plus minimum-norm conserving correction candidate. Per valid row s=z1-z0,sc=s-mean(s),g=u*V0^T,m1=J(p1)g,a=(g*deltaP-m1*s)/||sc||^2,m=m1+a*sc. Real-arithmetic secant/zero-row-sum and minimal change to m1 are provable; arbitrary-direction/MAS advantage is not. Same tile operands/GEMMs, different scalar reductions; numerical degenerate rows need explicit stable treatment before implementation.",
+  "next_action_if_numerics_or_opposite_signed_terms_dominate": "Do not assign a structural winner or automatically expand the study. Report numerical/cancellation limitation and stop for root decision.",
+  "group_contract": "T/R0 group output-query coordinates, Q/K predictions group operand coordinates; equal token indices are different roles. No group is an independent original-input causal effect.",
+  "artifact_contract": "Source private1.379GB capture stays in source directory. New dq/dk/dv/tau/center/LSE/row outputs stay in diagnostic_coefficients_private.pt, excluded from review zip. Public review contains source, receipts and signed coordinate ledgers only.",
+  "files_sha256": {
+    "study.py": "b84b4194b2656400aaba288830eab2ffe9363bdafd8112aad118c62baa557319",
+    "build.py": "3efb7c49ae47a48b824efd9859c665e7d5c63565fe9a9ff0a26982085e5d78fe",
+    "vendor_fa_finite_p1_bf16_d256_conditional_diag_20260908.cu": "098ebee8cbf4158fe9cb8dda029407382bb284343d0905ca620cb3f2f8f7c0ee",
+    "vendor_fa_conditional_diag_20260908.py": "475eb9ff52f7213ffbf82495cbb6a617cdf00e1a2e6cf57a479000309cfd3f1f",
+    "vendor_fa_finite_bf16_d256.py": "645736f68bf2f8169feff7218d30de20d3ed2a0b75e321603e6503a514763fc2"
+  }
+}
