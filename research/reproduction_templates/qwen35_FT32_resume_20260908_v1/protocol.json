@@ -1,0 +1,111 @@
+{
+  "checkpoint": "${PRIVATE_MOUNT_PATH}",
+  "verified_shard_sizes": {
+    "model.safetensors-00001-of-00004.safetensors": 5276436216,
+    "model.safetensors-00002-of-00004.safetensors": 5335161512,
+    "model.safetensors-00003-of-00004.safetensors": 5368717440,
+    "model.safetensors-00004-of-00004.safetensors": 3325995712
+  },
+  "checkpoint_config_tokenizer_sha256": {
+    "tokenizer.json": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_config.json": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
+    "chat_template.jinja": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+    "merges.txt": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+    "vocab.json": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+    "config.json": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05"
+  },
+  "native_model_sha256": "cf085792cb59e5bdf9b88a3d20bd353892289d054662a9c2b662221b97caefba",
+  "isolated_site": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages",
+  "compiler_cache": "${ARTIFACT_ROOT}/codex_qwen35_native_gpu_preflight_20260908_v2/triton_cache",
+  "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6",
+  "parent_directory": "${ARTIFACT_ROOT}/codex_qwen35_gdn_integration_20260908_v2",
+  "parent_sha256": "55378a7d777fa500631614afcf019fcfb42e4363172e65e92c370305b49229fe",
+  "fla_mapped_utils_sha256": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+  "fla_scheduled_chunk_sha256": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba",
+  "wy_backported_sha256": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+  "wheels": {
+    "${PRIVATE_MOUNT_PATH}": "8adbc1d20bd5463cd6876b2eb7cb31971e1065788e7dc6bc12bab597a7c504b7",
+    "${PRIVATE_MOUNT_PATH}": "d18bdfe9d1f4b424676444eac9d50fb8433b70e5d4e0e0878b20bcbcdbea57ce",
+    "${PRIVATE_MOUNT_PATH}": "93c6afe4c80fc7bc705fa8aeea6a46d2cf2d77383f9619a41863c7114c801bab"
+  },
+  "native_stage_source_sha256": {
+    "chunk": "fe10b455f8c71f4f845415f60a4385ff4f630336e5e46c592611765dfd8cce97",
+    "wy": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+    "state": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba"
+  },
+  "installed_FA_interface_sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+  "decoder_parent_directory": "${ARTIFACT_ROOT}/codex_qwen35_decoder_integration_20260908_v1",
+  "saved_decoders": {
+    "0": {
+      "file": "layer0_native_capture.pt",
+      "sha256": "8a76737d68e4068f3276110017eb2b02772ba1f81970736d586f80b4ed51f135",
+      "bytes": 727647032,
+      "download": false
+    },
+    "3": {
+      "file": "layer3_native_capture.pt",
+      "sha256": "7c0db209c332e4cd38442d48061648c6ef2f93d6e90384409c48bd6194513c52",
+      "bytes": 668866894,
+      "download": false
+    }
+  },
+  "spans_directory": "${ARTIFACT_ROOT}/codex_qwen35_official_spans_20260908_v1",
+  "spans_sha256": "37a0d8c4ef4d174ebabd346087be303e895a0eaa78ca9231f2a6ba3195890b6a",
+  "baseline": {
+    "upstream_commit": "e81b3be50a48dcfc652fbf1b530069b552736e66",
+    "identity": "Corrected native-content FT prototype, not unchanged author implementation.",
+    "unchanged": "Pinned author proximity and normalization with native BF16 source/head numerators; no new relevance formula or quality score tuning.",
+    "corrections": "Consume actual value projection, include full-attention sigmoid gate and GDN frozen RMS/SiLU output gain, assign GDN value convolution to original preconv positions.",
+    "rounding": "Gains and components in FP32, native gradients BF16, projected operands BF16/native output rounding. GDN linear-conv frozen sigmoid decomposition differs from fused-SiLU rounding; measure it."
+  },
+  "root_checkpoints_sha256": "e2bbb9b25f92cfa4323da6ba2dbee79bbac7c1dca657d4823e72ed1519aae630",
+  "finite32_directory": "${ARTIFACT_ROOT}/codex_qwen35_whole_finite_20260908_v1",
+  "finite32_sha256": "9ee732b66cabcf59eb1d312fb222ab21407cd381c0ebb52904d4bc3710dbc79b",
+  "purpose": "Resume from32 saved actual native layer inputs. Enforce original author j<sink_end+1 before proximity normalization. Recompute only FT0 layer31 with observed forbidden source score, reuse31 unchanged FT0 layers, then FT1-3. No model replay or checkpoint parameter reread.",
+  "previous_boundary": "Prior local value-gradient boundary remains validated. FT32 first pass found zero-content future/padding relevance from rounded proximity without author source range. Original failure preserved; not a new precision rule or score correction.",
+  "budget": {
+    "meta_model_constructions": 1,
+    "full_model_loads": 0,
+    "root_forwards": 0,
+    "decoder_replays": 0,
+    "checkpoint_tensor_loads": 0,
+    "actual_layer_cache_loads": 32,
+    "cached_parameter_loads": 97,
+    "FT0_layer31_recomputations": 1,
+    "FT0_saved_layer_score_reuses": 31,
+    "public_FA_auxiliary_forwards": 25,
+    "public_FA_value_backwards": 25,
+    "public_FLA_auxiliary_forwards": 72,
+    "public_FLA_value_backwards": 72,
+    "public_linear_conv_forwards": 72,
+    "public_linear_conv_backwards": 72,
+    "content_calls": 97,
+    "aggregate_calls": 97,
+    "extra_unmasked_aggregation_diagnostics": 2,
+    "completed_hop_outputs": 4,
+    "CPU_author_hop_controller_replays": 2,
+    "generation_calls": 0,
+    "quality_queries": 0
+  },
+  "target": "Author sink representations: NI0 absolute[566,603],MH1[346,366]. Thinking[357,565]/[227,345]. Official default observation mask and cumulative SUM, four fixed hops0-3, renorm_threshold0.",
+  "same_model": "Same original Qwen3.5-9B checkpoint/BF16/default FA and actual FLA as saved DeltaTrace32. Reuse same root layer inputs and paired B4 original replays; only original rows enter true B2 FT attribution.",
+  "hop_rules": "Match pinned e81b3be compute_multi_hop_ifr: native BF16 thinking weights and their normalization, full true-length token total denominator, multiplicative thinking ratios and observation SUM. Final eligible projection separate. CPU reference executes the unmodified author controller over saved aggregates, not a replacement model or attention.",
+  "cache": "Hash-check32 previously saved native minimal input/parameter PT files; parameters checked against original checkpoint load receipts. CPU cache reused for all hops, each GPU transfer timed. No globalT-square matrices.",
+  "implementation": "Unchanged validated native-content helper and author proximity; same BF16 vendor GEMM with32-token streaming. New code only orchestrates32 layers and author hop recurrence. Passive native observers, no model/operator/backward replacement.",
+  "audit": "Source tree, parameter bytes versus previous32-layer load, actual original forward and native backward node counts. Each layer/hop finite/padding and weighted reconstruction ledger. Persist all per-layer token scores, hop weights/ratios/totals and accumulated observations. Original controller reference verifies normalization/ratio semantics without recomputing attributions.",
+  "cost_scope": "Count both failed89.12-second job and current resume, original30 decoder replay costs, all auxiliary/backward/discarded gradients, IO, cache transfers, initial tuning and diagnostics; no full-method speed claim.",
+  "stop": "One selective resume. Save corrected FT0 and each completed later hop. Stop on source/nonfinite/forbidden contribution or score error and preserve evidence. No automatic full replay, precision sweep or quality evaluation.",
+  "next": "If complete, inspect immutable FT0-3 versus existing DeltaTrace scores on the same eligible original tokens, freeze one small original-metric evaluation budget. Same-model quality remains unproven until original needle/RISE/MAS measured; keep corrected and unchanged FT identities separate.",
+  "files_sha256": {
+    "study.py": "e9b8eff79c84f8a50d2d1fa7ec258a52f2e2e351624d95c61aab0727c7e0fd68",
+    "official_ft_core.py": "02929a4cb02e410a7241c681409aea1303f9c1a471f95a29c3e526dc591a5c58",
+    "qwen35_ft_hops.py": "2599d58f94ae3772591c42d79699d6cb2bd372b8fd9921cb64bcfdb5ed3ae30f",
+    "qwen35_ft_native_content.py": "415578491edc935fd93f74035f8a2fec0196f44f81904d08ba3c6da04569c834",
+    "finite_fla_gpu.py": "8ba72f5c56212fb5e173384e9ce8d79b488b22b5f83ddefa0dc33e8b343980d9"
+  },
+  "resume_parent": "${ARTIFACT_ROOT}/codex_qwen35_FT32_20260908_v1",
+  "resume_parent_sha256": "ca099f58044d6449fc111601fabf15835a965a782cc9d233b86a7d8973e5d51e",
+  "correction": "Require explicit per-example source_limits:604/367 for answer,566/346 for thinking. Mask outside before head/token sums and denominator, as original FT only iterates J_max=sink_end+1. No change to allowed-source proximity formula. Native value helpers unchanged.",
+  "selective_recovery": "Immutable FT0 scores show exactly one forbidden entry, layer31 NI position604,1.991398448808468e-06; remaining31 layer scores have zero forbidden mass and are reused byte-identically. Regenerate actual layer31 contribution and normalization; never rescale stored scores to force a result. Recompute downstream hop weights from corrected full FT0.",
+  "additional_paid_work": "Original failed pass had34 content calls. This resume adds97;131 total versus intended128, with FT0 layer31 and FT1 layer0/failed1 repeated and explicitly charged. Zero decoder/root replay repeated. Two unmasked/bounded source-range observations share native components and GEMM outputs."
+}

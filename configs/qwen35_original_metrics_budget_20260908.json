@@ -1,0 +1,66 @@
+{
+  "status": "frozen_scope_runtime_pending_not_executed",
+  "datasets": [
+    {
+      "name": "niah_mq_q2",
+      "index": 0
+    },
+    {
+      "name": "morehopqa",
+      "index": 1
+    }
+  ],
+  "methods": [
+    "DeltaTrace_content_P1",
+    "FT_corrected_native_hop0",
+    "FT_corrected_native_hop1",
+    "FT_corrected_native_hop2",
+    "FT_corrected_native_hop3"
+  ],
+  "checkpoint_identity": "same previously verified Qwen3.5-9B",
+  "score_inputs": {
+    "DeltaTrace_content_P1": {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_whole_finite_20260908_v1/whole_input_review.npz",
+      "sha256": "ecda24a143bef5f5b85eea1f6662a9ab697549e5dd43c13633efcc128f412849",
+      "field": "signed"
+    },
+    "FT_corrected_native_hop0": {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_FT32_resume_20260908_v1/hop0_FT_scores.npz",
+      "sha256": "c09a4735138ea8cc26d7203eead3611385fa78fa9caa4be5a08270540b91a4b5",
+      "field": "observation_sum"
+    },
+    "FT_corrected_native_hop1": {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_FT32_resume_20260908_v1/hop1_FT_scores.npz",
+      "sha256": "e846f1a7a03780ea11fee0ac0d5c585505111b1c8fb2d795697431ff6bd88e02",
+      "field": "observation_sum"
+    },
+    "FT_corrected_native_hop2": {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_FT32_resume_20260908_v1/hop2_FT_scores.npz",
+      "sha256": "dca4a3edfb9a569ef60d8cffb17f65f4552a57dc075e42a5d69975fc93366d55",
+      "field": "observation_sum"
+    },
+    "FT_corrected_native_hop3": {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_FT32_resume_20260908_v1/hop3_FT_scores.npz",
+      "sha256": "f65a0ef1842b61bf3d3ef3e60610dd925e33e662b99866a06f9ca1a608553bfd",
+      "field": "observation_sum"
+    }
+  },
+  "metric": "Unchanged author faithfulness_test_skip_tokens k=20. Same eligible user positions, tokenizer EOS248046, full author fixed response including EOS, original RISE/MAS/density and normalization. Retain all curves and undefined/saturated cases.",
+  "evaluation_scores": "Same established positive projection of signed DeltaTrace: clamp_min0 on user scores, preserve signed vectors separately. No absolute-value/rank-power/target-scope tuning. FT0-3 are separate fixed methods.",
+  "native_model": "Original Qwen3_5ForConditionalGeneration BF16/default FA and verified native FLA, true right-padded NI/MH B2. Original helper log_softmax uses model-logit dtype; do not silently replace it by FP32 or crop vocabulary. Original sum over full response, unlike attribution answer seed.",
+  "batching": "Batch the two actual example requests at each author deletion step; all two-example step counts are20. Auxiliary scheduler may batch genuine model requests but must not return fabricated/model-surrogate logprobs. Preserve author source and source/query correspondence.",
+  "budget": {
+    "new_samples": 0,
+    "full_model_loads": 1,
+    "maximum_native_B2_forwards": 97,
+    "maximum_unique_sequences": 194,
+    "logical_author_sequence_requests": 210,
+    "original_metric_calls": 10,
+    "generation_calls": 0,
+    "attribution_reruns": 0,
+    "precision_sweeps": 0
+  },
+  "deduplication": "Only identical actual input IDs/masks on same actual checkpoint/backend/dtype/batch layout may share logprobs. Shared originals/final baselines give16 sequence cache hits; disclose all. No old root FP32-logprob cache reuse as BF16 author metric.",
+  "stop": "One small frozen metric screen; no automatic expansion or method retuning. Tiny rounding differences are reported when relevant, not a new blocker. Stop on execution/nonfinite errors preserving completed requests; no blind full rerun.",
+  "limits": "One historical NI and MH example, model-extension development only. Not paper-table reproduction or independent confirmation. Full quality/cost/sign goal remains active."
+}

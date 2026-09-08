@@ -118,7 +118,7 @@ def project_components(components,out_weight):
     return _mm(a,weight).to(out_weight.dtype).reshape(h,b,j,c).permute(1,2,0,3)
 
 
-def aggregate_native_content_ft(components,out_weight,decoder_capture,sink_weights,proximity,chunk_tokens=32,*,source_limits,range_diagnostics=False):
+def aggregate_native_content_ft(components,out_weight,decoder_capture,sink_weights,proximity,chunk_tokens=32):
     """FT proximity/normalization with corrected native-structure contributions.
 
     This initially uses the actual author's proximity function and existing
@@ -127,31 +127,19 @@ def aggregate_native_content_ft(components,out_weight,decoder_capture,sink_weigh
     """
     b,t,h,d=components.shape;native_dtype=out_weight.dtype;c=decoder_capture
     assert sink_weights.shape==(b,t) and chunk_tokens>0
-    assert len(source_limits)==b and all(isinstance(n,int) and 0<n<=t for n in source_limits)
-    limits=torch.tensor(source_limits,device=components.device)
     mid=(c['post_norm_input'].float()*sink_weights[:,:,None]).sum(1)
     residual=(c['input_norm_input'].float()*sink_weights[:,:,None]).sum(1)
     residual_proximity=proximity(residual,mid)
-    numer=torch.zeros((b,t),dtype=native_dtype,device=components.device)
-    unmasked=torch.zeros_like(numer) if range_diagnostics else None
+    numer=torch.empty((b,t),dtype=native_dtype,device=components.device)
     head_numer=torch.zeros((b,h),dtype=native_dtype,device=components.device)
     reconstructed=torch.zeros((b,h,out_weight.shape[0]),dtype=torch.float64,device=components.device)
-    maximum=t if range_diagnostics else max(source_limits)
-    for start in range(0,maximum,chunk_tokens):
-        end=min(maximum,start+chunk_tokens);contribution=project_components(components[:,start:end],out_weight)
+    for start in range(0,t,chunk_tokens):
+        end=min(t,start+chunk_tokens);contribution=project_components(components[:,start:end],out_weight)
         prox=proximity(contribution.float(),mid[:,None,None,:])
-        if range_diagnostics:unmasked[:,start:end]=prox.sum(2).to(native_dtype)
-        # Author FT only visits j < sink_end+1. Enforce that per sample before
-        # reduction/normalization: two separately rounded L1 reductions can
-        # otherwise give a tiny positive proximity even for zero contribution.
-        allowed=torch.arange(start,end,device=components.device)[None,:]<limits[:,None]
-        prox=torch.where(allowed[:,:,None],prox,0.0)
         numer[:,start:end]=prox.sum(2).to(native_dtype)
         head_numer+=prox.sum(1).to(native_dtype)
         reconstructed+=contribution.double().sum(1)
     denominator=numer.float().sum(1)+residual_proximity+1e-12
-    result={'token_scores':numer.float()/denominator[:,None],'head_scores':head_numer.float()/denominator[:,None],
+    return {'token_scores':numer.float()/denominator[:,None],'head_scores':head_numer.float()/denominator[:,None],
         'residual_score':residual_proximity/denominator,'numerator':numer,'head_numerator':head_numer,
         'residual_proximity':residual_proximity,'mid_sum':mid,'projected_head_sums':reconstructed}
-    if range_diagnostics:result['unmasked_token_scores']=unmasked.float()/(unmasked.float().sum(1)+residual_proximity+1e-12)[:,None]
-    return result
