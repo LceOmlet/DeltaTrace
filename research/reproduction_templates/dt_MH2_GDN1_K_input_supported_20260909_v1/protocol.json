@@ -1,0 +1,36 @@
+{
+  "source": {
+    "result": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+    "result_sha256": "dc7414591c5c0cb11e5b2604c773829f09bb13330224f41f5f077663b62e478f",
+    "private": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/MH2_two_decoder_internal_private.pt",
+    "private_sha256": "598445e3869ccf14a5e18ae0d32aa4d0ea539d7d26c475e8d7ee4669bd8d1c7d"
+  },
+  "geometry_result": "${ARTIFACT_ROOT}/codex_dt_MH2_GDN1_QK_norm_geometry_20260909_v1/results.json",
+  "geometry_result_sha256": "b4e676e7f00f5ff2b3078d620e658cc8ef4cf432deee32a6a59685be3019422f",
+  "steps": [
+    "3",
+    "10",
+    "20",
+    "B2"
+  ],
+  "budget": {
+    "wall_time_seconds": 120,
+    "model": 0,
+    "GPU": 0,
+    "DT": 0,
+    "FA": 0,
+    "FLA": 0,
+    "scorer": 0,
+    "FT": 0,
+    "generation": 0
+  },
+  "scope": "One CPU-only input-supported finite L2 candidate at actual saved GDN1 K; no model, FA/FLA or real native backward is executed.",
+  "formula": "J=J1+(delta_n-J1 delta_x) delta_x^T/||delta_x||^2; zero endpoint delta uses J1. Real normalization formula defines J1, native captured normalized outputs remain actual references.",
+  "rationale": "Actual partial raw K has large off-chord displacement (error-weighted .407/.519 of input radius); exact fixed-path average worsened both partial errors. Preserve the same endpoint chord and use original-input tangent response off that chord, where endpoint conservation does not determine a response. Mean relative radius distance to input .182/.196 versus EOS .280/.278; not all rows closer input (weighted fraction .510/.474), so this is a testable local hypothesis, not a proven superiority.",
+  "prior_failures": "The same supported principle failed earlier FA softmax and composite decay scouts. Those failures are retained; operator-specific K geometry does not establish success for this distinct local application or whole method.",
+  "decision": "One discrete, parameter-free operator. Inspect both fixed actual early/mid signed and coordinate-consistent absolute errors before any complete propagation. No full metric call unless evidence justifies it, no continuous weights or score calibration.",
+  "files_sha256": {
+    "study.py": "1bf6e7d3c9ba5bcbb188513f36345c8b2af5919bcb5fea6042dd5df48c3f424c",
+    "input_supported_l2_20260909.py": "fc955936e162f1b047c7d478b64d8d567ba765f18dfa569c12c8ff72f208fd97"
+  }
+}
