@@ -1,0 +1,1161 @@
+{
+  "status": "MH2_FA19_qk_softmax_independent_CPU_and_query_row_audit_passed",
+  "next": "No new GPU or automatic candidate from this audit. Root must account for actual native VJP and symmetric-PV failures, and measured route/PV sources, before proposing another rule.",
+  "analyzer_sha256": "17d22b07ae97010f95bb79cfab0c02e8a981342bd76146cfd44adc0cecad2317",
+  "protocol_sha256": "42e2274857bddb7038a3f4d61efbfa6f9cfe3bb7d4fcfbf1488002eb8c39b4ae",
+  "results_sha256": "7debd51a4bb0e193bc3013ab63e51deded7808dc16e6b5c9eadbbe39c262d33d",
+  "conditional_signed_rows_sha256": "912026a19abecf0182b956050433eecb81b9d1e25a9947eb4922e162e27d718a",
+  "build_results_sha256": "d9e2f56f722cf7fb98baec6da39701a8bbe82ceee079619a5f1117dcf98c243a",
+  "diagnostic_library_sha256": "e7a320beaec2ea0642b994f0d1d0ce15211d8f50e26ee523fc0e77bdbd10d99e",
+  "actual_budget": {
+    "compiler_attempts": 0,
+    "native_public_B2_FA": 1,
+    "diagnostic_finite_entered": 3,
+    "diagnostic_finite_returned": 3,
+    "diagnostic_phases_from_returns": 9,
+    "model": 0,
+    "DT": 0,
+    "scorer": 0,
+    "FT": 0,
+    "backward": 0,
+    "generation": 0,
+    "job_seconds": 10.372836705297232,
+    "CPU_audit_model_calls": 0,
+    "failed_entered_minus_returned": 0,
+    "historical_compile_seconds_not_new_cost": 47.076083183288574,
+    "scope": "This existing-library diagnostic only. Old build time is provenance and is not charged as a new compilation."
+  },
+  "public_B2_replay_drift": {
+    "bitwise_equal": true,
+    "relative_L2": 0.0,
+    "max_absolute_difference": 0.0
+  },
+  "saved_B1_vs_B2_endpoint_drift": {
+    "clean_vs_input": {
+      "query": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.019232851243513864,
+        "max_absolute_difference": 1.09375
+      },
+      "key": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.013560009998929142,
+        "max_absolute_difference": 0.60205078125
+      },
+      "value": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.020516628874853626,
+        "max_absolute_difference": 7.0
+      },
+      "attention_output": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.019196774506145046,
+        "max_absolute_difference": 4.375
+      }
+    },
+    "allEOS_vs_baseline": {
+      "query": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.020800566059106906,
+        "max_absolute_difference": 1.19921875
+      },
+      "key": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.021386278573786305,
+        "max_absolute_difference": 1.359375
+      },
+      "value": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.022059885358787418,
+        "max_absolute_difference": 1.0709228515625
+      },
+      "attention_output": {
+        "bitwise_equal_values": false,
+        "relative_L2": 0.01266755331462741,
+        "max_absolute_difference": 3.0
+      }
+    }
+  },
+  "input": {
+    "input_sha256": "c378ebde9024118211213c6bdbf9e2c2fc18a65f2bb7a91d3e1d0707bc430a76",
+    "prompt_length": 480,
+    "target_length": 230,
+    "total_length": 710
+  },
+  "points": {
+    "3": {
+      "original_route_error": 3.9821336410830668,
+      "four_terms": {
+        "coefficient_replay_difference": {
+          "net": 0.0,
+          "positive_sum": 0.0,
+          "negative_sum": 0.0,
+          "absolute_sum": 0.0,
+          "max_absolute": 0.0
+        },
+        "QK_interaction_and_multiplier_rounding": {
+          "net": -0.3602095855500007,
+          "positive_sum": 14.607748392890754,
+          "negative_sum": -14.967957978440756,
+          "absolute_sum": 29.57570637133151,
+          "max_absolute": 0.614271534161162
+        },
+        "tile_weight_BF16_cast": {
+          "net": -0.0011269906110129568,
+          "positive_sum": 0.011586070358561074,
+          "negative_sum": -0.01271306096957403,
+          "absolute_sum": 0.024299131328135104,
+          "max_absolute": 0.0008558137342333794
+        },
+        "finite_softmax_condition_and_native_precision": {
+          "net": 4.343470217244081,
+          "positive_sum": 7.540823453799253,
+          "negative_sum": -3.1973532365551716,
+          "absolute_sum": 10.738176690354424,
+          "max_absolute": 0.5770452803586978
+        }
+      },
+      "actual_contractions": {
+        "saved_qk_prediction": {
+          "net": 8.602342342950012,
+          "positive_sum": 14.397568343952017,
+          "negative_sum": -5.795226001002006,
+          "absolute_sum": 20.192794344954024,
+          "max_absolute": 0.6579240783665887
+        },
+        "T_BF16": {
+          "net": 8.962551928500012,
+          "positive_sum": 14.272197018112216,
+          "negative_sum": -5.309645089612204,
+          "absolute_sum": 19.58184210772442,
+          "max_absolute": 0.7948027912061661
+        },
+        "T_FP32": {
+          "net": 8.963678919111025,
+          "positive_sum": 14.272821801345508,
+          "negative_sum": -5.309142882234482,
+          "absolute_sum": 19.58196468357999,
+          "max_absolute": 0.7951157791540027
+        },
+        "R0": {
+          "net": 4.620208701866943,
+          "positive_sum": 10.462132435578795,
+          "negative_sum": -5.841923733711852,
+          "absolute_sum": 16.304056169290646,
+          "max_absolute": 0.6470049582054042
+        }
+      },
+      "coefficient_replay_drift": {
+        "dq": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        },
+        "dk": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        },
+        "dv": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        }
+      },
+      "max_token_algebra_closure": 5.551115123125783e-17,
+      "BF16_minus_FP32_seed_R0_effect_from_hybrid": {
+        "net": -0.004295939931793846,
+        "positive_sum": 0.009855133279197285,
+        "negative_sum": -0.014151073210991131,
+        "absolute_sum": 0.02400620649018842,
+        "positive_token_count": 322,
+        "negative_token_count": 386
+      },
+      "softmax_term_if_R0_uses_BF16_seed": 4.347766157175875,
+      "larger_PV_reference_interaction": {
+        "net": 7.598458315324861,
+        "positive_sum": 11.040642067366678,
+        "negative_sum": -3.442183752041816,
+        "absolute_sum": 14.482825819408493,
+        "positive_token_count": 348,
+        "negative_token_count": 360
+      },
+      "query_error_groups": {
+        "deleted": {
+          "count": 66,
+          "net": -0.39080490952627,
+          "positive_sum": 0.061829588067957034,
+          "negative_sum": -0.452634497594227,
+          "absolute_sum": 0.514464085662184,
+          "max_absolute": 0.2140726470020734
+        },
+        "kept": {
+          "count": 371,
+          "net": -0.025058429841567365,
+          "positive_sum": 0.10519819250639603,
+          "negative_sum": -0.13025662234796337,
+          "absolute_sum": 0.23545481485435943,
+          "max_absolute": 0.013193223286807828
+        },
+        "other_prompt": {
+          "count": 43,
+          "net": 0.025067441146060382,
+          "positive_sum": 0.04490297673961651,
+          "negative_sum": -0.01983553559355613,
+          "absolute_sum": 0.06473851233317263,
+          "max_absolute": 0.01721314862253804
+        },
+        "response": {
+          "count": 230,
+          "net": 4.734266115465859,
+          "positive_sum": 7.3288926964852825,
+          "negative_sum": -2.5946265810194253,
+          "absolute_sum": 9.92351927750471,
+          "max_absolute": 0.5770452803586978
+        }
+      },
+      "query_absolute_fraction_in_fixed_response": 0.9241344749354441,
+      "query_top_by_absolute_error": [
+        {
+          "query_input_position_zero_based": 513,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 33,
+          "input_token_id": 11745,
+          "T_FP32_fixed_pair_response": 0.7951157791540027,
+          "R0_native_routing_response": 0.21807049879530488,
+          "softmax_condition_native_residual": 0.5770452803586978
+        },
+        {
+          "query_input_position_zero_based": 508,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 28,
+          "input_token_id": 314,
+          "T_FP32_fixed_pair_response": 0.574795913300477,
+          "R0_native_routing_response": 0.1299125530662198,
+          "softmax_condition_native_residual": 0.4448833602342572
+        },
+        {
+          "query_input_position_zero_based": 511,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 31,
+          "input_token_id": 421,
+          "T_FP32_fixed_pair_response": 0.6335809687152505,
+          "R0_native_routing_response": 0.19805580827554062,
+          "softmax_condition_native_residual": 0.4355251604397099
+        },
+        {
+          "query_input_position_zero_based": 510,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 30,
+          "input_token_id": 3542,
+          "T_FP32_fixed_pair_response": 0.5504008566495031,
+          "R0_native_routing_response": 0.12370919322587018,
+          "softmax_condition_native_residual": 0.42669166342363296
+        },
+        {
+          "query_input_position_zero_based": 594,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 114,
+          "input_token_id": 852,
+          "T_FP32_fixed_pair_response": 0.5186943095177412,
+          "R0_native_routing_response": 0.16403637389192763,
+          "softmax_condition_native_residual": 0.3546579356258136
+        },
+        {
+          "query_input_position_zero_based": 528,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 48,
+          "input_token_id": 1,
+          "T_FP32_fixed_pair_response": -0.24264527298510075,
+          "R0_native_routing_response": -0.5613317906379396,
+          "softmax_condition_native_residual": 0.31868651765283884
+        },
+        {
+          "query_input_position_zero_based": 521,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 41,
+          "input_token_id": 303,
+          "T_FP32_fixed_pair_response": 0.32968649407848716,
+          "R0_native_routing_response": 0.07230091673995932,
+          "softmax_condition_native_residual": 0.25738557733852785
+        },
+        {
+          "query_input_position_zero_based": 693,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 213,
+          "input_token_id": 279,
+          "T_FP32_fixed_pair_response": 0.30902142776176333,
+          "R0_native_routing_response": 0.5270421784012272,
+          "softmax_condition_native_residual": -0.2180207506394639
+        },
+        {
+          "query_input_position_zero_based": 479,
+          "role": "prompt",
+          "response_input_offset_zero_based": null,
+          "input_token_id": 42418,
+          "T_FP32_fixed_pair_response": 0.43293231120333076,
+          "R0_native_routing_response": 0.6470049582054042,
+          "softmax_condition_native_residual": -0.2140726470020734
+        },
+        {
+          "query_input_position_zero_based": 584,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 104,
+          "input_token_id": 551,
+          "T_FP32_fixed_pair_response": 0.166773475240916,
+          "R0_native_routing_response": -0.028421210427560725,
+          "softmax_condition_native_residual": 0.19519468566847675
+        },
+        {
+          "query_input_position_zero_based": 497,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 17,
+          "input_token_id": 318,
+          "T_FP32_fixed_pair_response": -0.12100502767134458,
+          "R0_native_routing_response": 0.0672955852993075,
+          "softmax_condition_native_residual": -0.1883006129706521
+        },
+        {
+          "query_input_position_zero_based": 493,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 13,
+          "input_token_id": 364,
+          "T_FP32_fixed_pair_response": 0.20920263600419275,
+          "R0_native_routing_response": 0.026418087928587984,
+          "softmax_condition_native_residual": 0.18278454807560476
+        },
+        {
+          "query_input_position_zero_based": 591,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 111,
+          "input_token_id": 4588,
+          "T_FP32_fixed_pair_response": 0.28402106603607535,
+          "R0_native_routing_response": 0.10381730345899497,
+          "softmax_condition_native_residual": 0.18020376257708037
+        },
+        {
+          "query_input_position_zero_based": 489,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 9,
+          "input_token_id": 561,
+          "T_FP32_fixed_pair_response": 0.07706092274747789,
+          "R0_native_routing_response": 0.2533337999739772,
+          "softmax_condition_native_residual": -0.1762728772264993
+        },
+        {
+          "query_input_position_zero_based": 691,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 211,
+          "input_token_id": 803,
+          "T_FP32_fixed_pair_response": -0.47126463637687266,
+          "R0_native_routing_response": -0.6437735262534132,
+          "softmax_condition_native_residual": 0.17250888987654056
+        },
+        {
+          "query_input_position_zero_based": 516,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 36,
+          "input_token_id": 49956,
+          "T_FP32_fixed_pair_response": 0.15359283820725977,
+          "R0_native_routing_response": -0.0022800378443537106,
+          "softmax_condition_native_residual": 0.15587287605161348
+        },
+        {
+          "query_input_position_zero_based": 692,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 212,
+          "input_token_id": 314,
+          "T_FP32_fixed_pair_response": 0.2866540487157181,
+          "R0_native_routing_response": 0.4174589991818627,
+          "softmax_condition_native_residual": -0.1308049504661446
+        },
+        {
+          "query_input_position_zero_based": 530,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 50,
+          "input_token_id": 303,
+          "T_FP32_fixed_pair_response": -0.07272165291942656,
+          "R0_native_routing_response": 0.05726055791701401,
+          "softmax_condition_native_residual": -0.12998221083644057
+        },
+        {
+          "query_input_position_zero_based": 514,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 34,
+          "input_token_id": 852,
+          "T_FP32_fixed_pair_response": 0.19375977636082098,
+          "R0_native_routing_response": 0.07083524182239886,
+          "softmax_condition_native_residual": 0.12292453453842211
+        },
+        {
+          "query_input_position_zero_based": 590,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 110,
+          "input_token_id": 264,
+          "T_FP32_fixed_pair_response": 0.1341254988219589,
+          "R0_native_routing_response": 0.011273000986687827,
+          "softmax_condition_native_residual": 0.12285249783527108
+        }
+      ],
+      "query_concentration": {
+        "1": {
+          "absolute_fraction": 0.05373773378836551,
+          "signed_sum": 0.5770452803586978,
+          "positive_fraction": 0.07652284712592869
+        },
+        "5": {
+          "absolute_fraction": 0.20849008771601968,
+          "signed_sum": 2.2388034000821118,
+          "positive_fraction": 0.29689110397540835
+        },
+        "10": {
+          "absolute_fraction": 0.3205538219049254,
+          "signed_sum": 2.577976783100418,
+          "positive_fraction": 0.39916995792089627
+        },
+        "20": {
+          "absolute_fraction": 0.46606341869315776,
+          "signed_sum": 2.8897632405552134,
+          "positive_fraction": 0.5234464530140647
+        },
+        "40": {
+          "absolute_fraction": 0.6493626737027572,
+          "signed_sum": 3.9918041791635246,
+          "positive_fraction": 0.7270277160500537
+        },
+        "100": {
+          "absolute_fraction": 0.8744894744826509,
+          "signed_sum": 4.387149606069509,
+          "positive_fraction": 0.9135323337916047
+        }
+      },
+      "coordinates": "Residual T_FP32-R0 is at output-query positions after summing heads; Q/K predicted contractions use operand positions. These are not original source-token attribution errors."
+    },
+    "10": {
+      "original_route_error": 5.751321314827097,
+      "four_terms": {
+        "coefficient_replay_difference": {
+          "net": 0.0,
+          "positive_sum": 0.0,
+          "negative_sum": 0.0,
+          "absolute_sum": 0.0,
+          "max_absolute": 0.0
+        },
+        "QK_interaction_and_multiplier_rounding": {
+          "net": -0.24570477542629598,
+          "positive_sum": 15.940461539784001,
+          "negative_sum": -16.186166315210297,
+          "absolute_sum": 32.126627854994304,
+          "max_absolute": 0.6995971662422562
+        },
+        "tile_weight_BF16_cast": {
+          "net": -0.0022014804836771873,
+          "positive_sum": 0.01170867976674117,
+          "negative_sum": -0.013910160250418357,
+          "absolute_sum": 0.025618840017159528,
+          "max_absolute": 0.0009303605183959007
+        },
+        "finite_softmax_condition_and_native_precision": {
+          "net": 5.999227570737069,
+          "positive_sum": 8.39714533676064,
+          "negative_sum": -2.397917766023572,
+          "absolute_sum": 10.795063102784212,
+          "max_absolute": 0.6309786000348803
+        }
+      },
+      "actual_contractions": {
+        "saved_qk_prediction": {
+          "net": 11.285476978959547,
+          "positive_sum": 16.476968601063763,
+          "negative_sum": -5.191491622104216,
+          "absolute_sum": 21.668460223167983,
+          "max_absolute": 0.7006715398974599
+        },
+        "T_BF16": {
+          "net": 11.531181754385841,
+          "positive_sum": 16.637225041770023,
+          "negative_sum": -5.106043287384182,
+          "absolute_sum": 21.743268329154205,
+          "max_absolute": 0.8955805359873921
+        },
+        "T_FP32": {
+          "net": 11.533383234869518,
+          "positive_sum": 16.638304583223146,
+          "negative_sum": -5.104921348353628,
+          "absolute_sum": 21.743225931576774,
+          "max_absolute": 0.8960167969344184
+        },
+        "R0": {
+          "net": 5.53415566413245,
+          "positive_sum": 11.13580024092432,
+          "negative_sum": -5.60164457679187,
+          "absolute_sum": 16.737444817716188,
+          "max_absolute": 0.7252988096129457
+        }
+      },
+      "coefficient_replay_drift": {
+        "dq": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        },
+        "dk": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        },
+        "dv": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        }
+      },
+      "max_token_algebra_closure": 1.3877787807814457e-17,
+      "BF16_minus_FP32_seed_R0_effect_from_hybrid": {
+        "net": -0.002806988272395795,
+        "positive_sum": 0.011749461636937814,
+        "negative_sum": -0.014556449909333611,
+        "absolute_sum": 0.026305911546271425,
+        "positive_token_count": 329,
+        "negative_token_count": 379
+      },
+      "softmax_term_if_R0_uses_BF16_seed": 6.002034559009465,
+      "larger_PV_reference_interaction": {
+        "net": 8.598676238680508,
+        "positive_sum": 12.111179955102937,
+        "negative_sum": -3.5125037164224278,
+        "absolute_sum": 15.623683671525363,
+        "positive_token_count": 373,
+        "negative_token_count": 335
+      },
+      "query_error_groups": {
+        "deleted": {
+          "count": 220,
+          "net": -0.3115806277821095,
+          "positive_sum": 0.09612928591976498,
+          "negative_sum": -0.4077099137018745,
+          "absolute_sum": 0.5038391996216395,
+          "max_absolute": 0.1289676486317376
+        },
+        "kept": {
+          "count": 217,
+          "net": -0.040925669042244664,
+          "positive_sum": 0.05322918556755011,
+          "negative_sum": -0.09415485460979478,
+          "absolute_sum": 0.14738404017734485,
+          "max_absolute": 0.013387890000831192
+        },
+        "other_prompt": {
+          "count": 43,
+          "net": -0.022140845867621627,
+          "positive_sum": 0.023293384306292297,
+          "negative_sum": -0.045434230173913924,
+          "absolute_sum": 0.06872761448020623,
+          "max_absolute": 0.016256980043551486
+        },
+        "response": {
+          "count": 230,
+          "net": 6.373874713429044,
+          "positive_sum": 8.224493480967034,
+          "negative_sum": -1.8506187675379888,
+          "absolute_sum": 10.075112248505022,
+          "max_absolute": 0.6309786000348803
+        }
+      },
+      "query_absolute_fraction_in_fixed_response": 0.9333073973329991,
+      "query_top_by_absolute_error": [
+        {
+          "query_input_position_zero_based": 513,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 33,
+          "input_token_id": 11745,
+          "T_FP32_fixed_pair_response": 0.8960167969344184,
+          "R0_native_routing_response": 0.2650381968995381,
+          "softmax_condition_native_residual": 0.6309786000348803
+        },
+        {
+          "query_input_position_zero_based": 511,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 31,
+          "input_token_id": 421,
+          "T_FP32_fixed_pair_response": 0.7229972025379539,
+          "R0_native_routing_response": 0.17751205811024406,
+          "softmax_condition_native_residual": 0.5454851444277098
+        },
+        {
+          "query_input_position_zero_based": 510,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 30,
+          "input_token_id": 3542,
+          "T_FP32_fixed_pair_response": 0.6806851179280784,
+          "R0_native_routing_response": 0.18495463800762502,
+          "softmax_condition_native_residual": 0.4957304799204534
+        },
+        {
+          "query_input_position_zero_based": 508,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 28,
+          "input_token_id": 314,
+          "T_FP32_fixed_pair_response": 0.7080275802873075,
+          "R0_native_routing_response": 0.25607139069998414,
+          "softmax_condition_native_residual": 0.45195618958732336
+        },
+        {
+          "query_input_position_zero_based": 594,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 114,
+          "input_token_id": 852,
+          "T_FP32_fixed_pair_response": 0.6049910262227058,
+          "R0_native_routing_response": 0.21845494346880517,
+          "softmax_condition_native_residual": 0.38653608275390067
+        },
+        {
+          "query_input_position_zero_based": 521,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 41,
+          "input_token_id": 303,
+          "T_FP32_fixed_pair_response": 0.47847423458006233,
+          "R0_native_routing_response": 0.11884595537130055,
+          "softmax_condition_native_residual": 0.3596282792087618
+        },
+        {
+          "query_input_position_zero_based": 531,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 51,
+          "input_token_id": 279,
+          "T_FP32_fixed_pair_response": 0.32153074897360057,
+          "R0_native_routing_response": 0.036027576469531766,
+          "softmax_condition_native_residual": 0.2855031725040688
+        },
+        {
+          "query_input_position_zero_based": 591,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 111,
+          "input_token_id": 4588,
+          "T_FP32_fixed_pair_response": 0.27496383618563414,
+          "R0_native_routing_response": 0.04545238907902745,
+          "softmax_condition_native_residual": 0.2295114471066067
+        },
+        {
+          "query_input_position_zero_based": 592,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 112,
+          "input_token_id": 492,
+          "T_FP32_fixed_pair_response": 0.2542264824733138,
+          "R0_native_routing_response": 0.0441311226204526,
+          "softmax_condition_native_residual": 0.2100953598528612
+        },
+        {
+          "query_input_position_zero_based": 585,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 105,
+          "input_token_id": 6141,
+          "T_FP32_fixed_pair_response": 0.11356676463037729,
+          "R0_native_routing_response": -0.08411760490418474,
+          "softmax_condition_native_residual": 0.19768436953456203
+        },
+        {
+          "query_input_position_zero_based": 584,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 104,
+          "input_token_id": 551,
+          "T_FP32_fixed_pair_response": 0.09623110829852521,
+          "R0_native_routing_response": -0.09804110231196768,
+          "softmax_condition_native_residual": 0.19427221061049288
+        },
+        {
+          "query_input_position_zero_based": 512,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 32,
+          "input_token_id": 279,
+          "T_FP32_fixed_pair_response": 0.29568451968953013,
+          "R0_native_routing_response": 0.10383492422467397,
+          "softmax_condition_native_residual": 0.19184959546485617
+        },
+        {
+          "query_input_position_zero_based": 495,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 15,
+          "input_token_id": 10539,
+          "T_FP32_fixed_pair_response": 0.21288115065544844,
+          "R0_native_routing_response": 0.02429771339509955,
+          "softmax_condition_native_residual": 0.18858343726034887
+        },
+        {
+          "query_input_position_zero_based": 516,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 36,
+          "input_token_id": 49956,
+          "T_FP32_fixed_pair_response": 0.21084316121414304,
+          "R0_native_routing_response": 0.04377790373670015,
+          "softmax_condition_native_residual": 0.16706525747744289
+        },
+        {
+          "query_input_position_zero_based": 514,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 34,
+          "input_token_id": 852,
+          "T_FP32_fixed_pair_response": 0.20452480687526986,
+          "R0_native_routing_response": 0.03907950641396422,
+          "softmax_condition_native_residual": 0.16544530046130565
+        },
+        {
+          "query_input_position_zero_based": 593,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 113,
+          "input_token_id": 17352,
+          "T_FP32_fixed_pair_response": 0.3078903944697231,
+          "R0_native_routing_response": 0.1438569592461216,
+          "softmax_condition_native_residual": 0.1640334352236015
+        },
+        {
+          "query_input_position_zero_based": 533,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 53,
+          "input_token_id": 328,
+          "T_FP32_fixed_pair_response": 0.31212656293064356,
+          "R0_native_routing_response": 0.14870578958633718,
+          "softmax_condition_native_residual": 0.16342077334430638
+        },
+        {
+          "query_input_position_zero_based": 489,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 9,
+          "input_token_id": 561,
+          "T_FP32_fixed_pair_response": 0.17690817918628454,
+          "R0_native_routing_response": 0.32896097489822906,
+          "softmax_condition_native_residual": -0.15205279571194452
+        },
+        {
+          "query_input_position_zero_based": 497,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 17,
+          "input_token_id": 318,
+          "T_FP32_fixed_pair_response": -0.08463528333231807,
+          "R0_native_routing_response": 0.06706712260990616,
+          "softmax_condition_native_residual": -0.15170240594222423
+        },
+        {
+          "query_input_position_zero_based": 566,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 86,
+          "input_token_id": 11,
+          "T_FP32_fixed_pair_response": 0.46057248930446804,
+          "R0_native_routing_response": 0.3133861064443603,
+          "softmax_condition_native_residual": 0.1471863828601077
+        }
+      ],
+      "query_concentration": {
+        "1": {
+          "absolute_fraction": 0.05845066342151731,
+          "signed_sum": 0.6309786000348803,
+          "positive_fraction": 0.07514203633854125
+        },
+        "5": {
+          "absolute_fraction": 0.23257728767483746,
+          "signed_sum": 2.5106864967242672,
+          "positive_fraction": 0.2989928596011192
+        },
+        "10": {
+          "absolute_fraction": 0.3513744281821592,
+          "signed_sum": 3.793109124931128,
+          "positive_fraction": 0.4517141210270385
+        },
+        "20": {
+          "absolute_fraction": 0.5075209535250157,
+          "signed_sum": 4.871210315979421,
+          "positive_fraction": 0.6162767595528996
+        },
+        "40": {
+          "absolute_fraction": 0.7042486911496747,
+          "signed_sum": 5.6976191924690776,
+          "positive_fraction": 0.7919374811377117
+        },
+        "100": {
+          "absolute_fraction": 0.8894591523976934,
+          "signed_sum": 6.168761231197349,
+          "positive_fraction": 0.9390410833810335
+        }
+      },
+      "coordinates": "Residual T_FP32-R0 is at output-query positions after summing heads; Q/K predicted contractions use operand positions. These are not original source-token attribution errors."
+    },
+    "20": {
+      "original_route_error": 0.0564562439190599,
+      "four_terms": {
+        "coefficient_replay_difference": {
+          "net": 0.0,
+          "positive_sum": 0.0,
+          "negative_sum": 0.0,
+          "absolute_sum": 0.0,
+          "max_absolute": 0.0
+        },
+        "QK_interaction_and_multiplier_rounding": {
+          "net": 0.02227671069861259,
+          "positive_sum": 18.920054614134905,
+          "negative_sum": -18.89777790343629,
+          "absolute_sum": 37.8178325175712,
+          "max_absolute": 0.9604939958771865
+        },
+        "tile_weight_BF16_cast": {
+          "net": -0.004142475314466765,
+          "positive_sum": 0.012463302888875205,
+          "negative_sum": -0.01660577820334197,
+          "absolute_sum": 0.029069081092217175,
+          "max_absolute": 0.001698346808552742
+        },
+        "finite_softmax_condition_and_native_precision": {
+          "net": 0.03832200853491276,
+          "positive_sum": 0.18162061332429796,
+          "negative_sum": -0.14329860478938522,
+          "absolute_sum": 0.3249192181136832,
+          "max_absolute": 0.016432560050103184
+        }
+      },
+      "actual_contractions": {
+        "saved_qk_prediction": {
+          "net": 16.23872082612798,
+          "positive_sum": 22.142584467564348,
+          "negative_sum": -5.903863641436364,
+          "absolute_sum": 28.046448109000707,
+          "max_absolute": 0.792713996435296
+        },
+        "T_BF16": {
+          "net": 16.21644411542937,
+          "positive_sum": 22.097143461101524,
+          "negative_sum": -5.880699345672156,
+          "absolute_sum": 27.97784280677368,
+          "max_absolute": 1.196131516713649
+        },
+        "T_FP32": {
+          "net": 16.220586590743835,
+          "positive_sum": 22.100799149356305,
+          "negative_sum": -5.88021255861247,
+          "absolute_sum": 27.981011707968776,
+          "max_absolute": 1.1964281601831317
+        },
+        "R0": {
+          "net": 16.182264582208923,
+          "positive_sum": 22.051346284905595,
+          "negative_sum": -5.869081702696672,
+          "absolute_sum": 27.92042798760227,
+          "max_absolute": 1.1799956001330285
+        }
+      },
+      "coefficient_replay_drift": {
+        "dq": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        },
+        "dk": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        },
+        "dv": {
+          "bitwise_equal": true,
+          "relative_L2": 0.0,
+          "max_absolute_difference": 0.0
+        }
+      },
+      "max_token_algebra_closure": 0.0,
+      "BF16_minus_FP32_seed_R0_effect_from_hybrid": {
+        "net": -0.002792029328081567,
+        "positive_sum": 0.016973577121884565,
+        "negative_sum": -0.01976560644996613,
+        "absolute_sum": 0.03673918357185069,
+        "positive_token_count": 357,
+        "negative_token_count": 351
+      },
+      "softmax_term_if_R0_uses_BF16_seed": 0.04111403786299432,
+      "larger_PV_reference_interaction": {
+        "net": 0.020283988143088395,
+        "positive_sum": 0.1521974317832006,
+        "negative_sum": -0.13191344364011223,
+        "absolute_sum": 0.2841108754233129,
+        "positive_token_count": 354,
+        "negative_token_count": 354
+      },
+      "query_error_groups": {
+        "deleted": {
+          "count": 437,
+          "net": 0.004426755598820224,
+          "positive_sum": 0.01048288322893237,
+          "negative_sum": -0.006056127630112145,
+          "absolute_sum": 0.016539010859044516,
+          "max_absolute": 0.0028133889536510193
+        },
+        "kept": {
+          "count": 0,
+          "net": 0.0,
+          "positive_sum": 0.0,
+          "negative_sum": 0.0,
+          "absolute_sum": 0.0,
+          "max_absolute": 0.0
+        },
+        "other_prompt": {
+          "count": 43,
+          "net": 0.000295587060730732,
+          "positive_sum": 0.0009253036589673656,
+          "negative_sum": -0.0006297165982366336,
+          "absolute_sum": 0.0015550202572039993,
+          "max_absolute": 0.00022485404191565847
+        },
+        "response": {
+          "count": 230,
+          "net": 0.0335996658753618,
+          "positive_sum": 0.17021242643639825,
+          "negative_sum": -0.13661276056103644,
+          "absolute_sum": 0.3068251869974347,
+          "max_absolute": 0.016432560050103184
+        }
+      },
+      "query_absolute_fraction_in_fixed_response": 0.9443122163678306,
+      "query_top_by_absolute_error": [
+        {
+          "query_input_position_zero_based": 513,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 33,
+          "input_token_id": 11745,
+          "T_FP32_fixed_pair_response": 1.1964281601831317,
+          "R0_native_routing_response": 1.1799956001330285,
+          "softmax_condition_native_residual": 0.016432560050103184
+        },
+        {
+          "query_input_position_zero_based": 508,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 28,
+          "input_token_id": 314,
+          "T_FP32_fixed_pair_response": 0.7946997126564384,
+          "R0_native_routing_response": 0.8044578233169297,
+          "softmax_condition_native_residual": -0.00975811066049137
+        },
+        {
+          "query_input_position_zero_based": 528,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 48,
+          "input_token_id": 1,
+          "T_FP32_fixed_pair_response": 0.5087391007691622,
+          "R0_native_routing_response": 0.4995721857430778,
+          "softmax_condition_native_residual": 0.009166915026084355
+        },
+        {
+          "query_input_position_zero_based": 593,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 113,
+          "input_token_id": 17352,
+          "T_FP32_fixed_pair_response": 0.3601150669855997,
+          "R0_native_routing_response": 0.36823900325654574,
+          "softmax_condition_native_residual": -0.008123936270946042
+        },
+        {
+          "query_input_position_zero_based": 511,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 31,
+          "input_token_id": 421,
+          "T_FP32_fixed_pair_response": 0.847696203738451,
+          "R0_native_routing_response": 0.8400919298503277,
+          "softmax_condition_native_residual": 0.007604273888123347
+        },
+        {
+          "query_input_position_zero_based": 690,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 210,
+          "input_token_id": 1483,
+          "T_FP32_fixed_pair_response": 0.028117510140873492,
+          "R0_native_routing_response": 0.021388564430149887,
+          "softmax_condition_native_residual": 0.006728945710723605
+        },
+        {
+          "query_input_position_zero_based": 515,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 35,
+          "input_token_id": 6141,
+          "T_FP32_fixed_pair_response": 0.1415621368214488,
+          "R0_native_routing_response": 0.14810072263074125,
+          "softmax_condition_native_residual": -0.006538585809292452
+        },
+        {
+          "query_input_position_zero_based": 554,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 74,
+          "input_token_id": 72179,
+          "T_FP32_fixed_pair_response": 0.01517735468223691,
+          "R0_native_routing_response": 0.008669138603065792,
+          "softmax_condition_native_residual": 0.006508216079171118
+        },
+        {
+          "query_input_position_zero_based": 590,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 110,
+          "input_token_id": 264,
+          "T_FP32_fixed_pair_response": 0.15891316812485456,
+          "R0_native_routing_response": 0.15245088974126086,
+          "softmax_condition_native_residual": 0.0064622783835937
+        },
+        {
+          "query_input_position_zero_based": 581,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 101,
+          "input_token_id": 279,
+          "T_FP32_fixed_pair_response": 0.6528108771890402,
+          "R0_native_routing_response": 0.6592589232494577,
+          "softmax_condition_native_residual": -0.006448046060417489
+        },
+        {
+          "query_input_position_zero_based": 516,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 36,
+          "input_token_id": 49956,
+          "T_FP32_fixed_pair_response": 0.2994894729927182,
+          "R0_native_routing_response": 0.2931640871617033,
+          "softmax_condition_native_residual": 0.00632538583101494
+        },
+        {
+          "query_input_position_zero_based": 489,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 9,
+          "input_token_id": 561,
+          "T_FP32_fixed_pair_response": 0.17741615558043122,
+          "R0_native_routing_response": 0.1834622282320427,
+          "softmax_condition_native_residual": -0.006046072651611473
+        },
+        {
+          "query_input_position_zero_based": 495,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 15,
+          "input_token_id": 10539,
+          "T_FP32_fixed_pair_response": 0.29611931229010224,
+          "R0_native_routing_response": 0.2902822779971522,
+          "softmax_condition_native_residual": 0.005837034292950016
+        },
+        {
+          "query_input_position_zero_based": 591,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 111,
+          "input_token_id": 4588,
+          "T_FP32_fixed_pair_response": 0.3245859225280583,
+          "R0_native_routing_response": 0.33038960943833484,
+          "softmax_condition_native_residual": -0.005803686910276551
+        },
+        {
+          "query_input_position_zero_based": 560,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 80,
+          "input_token_id": 557,
+          "T_FP32_fixed_pair_response": -0.02455307077616453,
+          "R0_native_routing_response": -0.019092733568920828,
+          "softmax_condition_native_residual": -0.005460337207243704
+        },
+        {
+          "query_input_position_zero_based": 599,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 119,
+          "input_token_id": 13,
+          "T_FP32_fixed_pair_response": 0.046934429672546685,
+          "R0_native_routing_response": 0.04166501241640638,
+          "softmax_condition_native_residual": 0.005269417256140302
+        },
+        {
+          "query_input_position_zero_based": 510,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 30,
+          "input_token_id": 3542,
+          "T_FP32_fixed_pair_response": 0.9137245216406882,
+          "R0_native_routing_response": 0.908532834302025,
+          "softmax_condition_native_residual": 0.0051916873386631535
+        },
+        {
+          "query_input_position_zero_based": 595,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 115,
+          "input_token_id": 27902,
+          "T_FP32_fixed_pair_response": 0.35877181426621974,
+          "R0_native_routing_response": 0.35390460589895634,
+          "softmax_condition_native_residual": 0.004867208367263398
+        },
+        {
+          "query_input_position_zero_based": 589,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 109,
+          "input_token_id": 11,
+          "T_FP32_fixed_pair_response": 0.18678227625787258,
+          "R0_native_routing_response": 0.18192660416224818,
+          "softmax_condition_native_residual": 0.004855672095624403
+        },
+        {
+          "query_input_position_zero_based": 583,
+          "role": "fixed_response",
+          "response_input_offset_zero_based": 103,
+          "input_token_id": 11,
+          "T_FP32_fixed_pair_response": 0.01882332086097449,
+          "R0_native_routing_response": 0.014028016735855603,
+          "softmax_condition_native_residual": 0.004795304125118888
+        }
+      ],
+      "query_concentration": {
+        "1": {
+          "absolute_fraction": 0.05057429395990279,
+          "signed_sum": 0.016432560050103184,
+          "positive_fraction": 0.09047739543066925
+        },
+        "5": {
+          "absolute_fraction": 0.15722614437005794,
+          "signed_sum": 0.015321702032873474,
+          "positive_fraction": 0.1828192756128566
+        },
+        "10": {
+          "absolute_fraction": 0.25782367822157093,
+          "signed_sum": 0.022034510336651957,
+          "positive_fraction": 0.2912840572966048
+        },
+        "20": {
+          "absolute_fraction": 0.425409351953111,
+          "signed_sum": 0.04186612287429533,
+          "positive_fraction": 0.4957856754056442
+        },
+        "40": {
+          "absolute_fraction": 0.6327884652296341,
+          "signed_sum": 0.027254513283634083,
+          "positive_fraction": 0.6410606218513729
+        },
+        "100": {
+          "absolute_fraction": 0.8643284022689977,
+          "signed_sum": 0.03883032374780182,
+          "positive_fraction": 0.8800411653596348
+        }
+      },
+      "coordinates": "Residual T_FP32-R0 is at output-query positions after summing heads; Q/K predicted contractions use operand positions. These are not original source-token attribution errors."
+    }
+  },
+  "proof_scope": "Local NPZ verifies every saved token-row identity/group and its current native-hybrid reference. Existing library identity follows matched build/execution SHA receipts; unavailable local binaries and private tensor operands are not claimed to be locally rehashed.",
+  "protected_binaries_verified_by_remote_receipts_only": [
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_fa19_qk_softmax_diagnostic_20260908_v1/libdeltatrace_fa19_conditional_diag_20260908.so",
+      "sha256": "e7a320beaec2ea0642b994f0d1d0ce15211d8f50e26ee523fc0e77bdbd10d99e"
+    }
+  ],
+  "early_mid_query_pattern": {
+    "cosine": 0.9122619429822856,
+    "top10_absolute_query_overlap": [
+      508,
+      510,
+      511,
+      513,
+      521,
+      594
+    ],
+    "scope": "Two fixed deletion conditions of the same example; no independent generalization claim."
+  },
+  "logmean_directional_interpretation": {
+    "source_extension_sha256": "098ebee8cbf4158fe9cb8dda029407382bb284343d0905ca620cb3f2f8f7c0ee",
+    "fixed_weight_formula": "For each valid causal row, l_j=L(p0_j,p1_j), c=sum(l_j*g_j)/sum(l_j), W_j=l_j*(g_j-c), where g_j is the retained BF16 upstream/value0 score contraction. T_FP32=sum_j W_j*(s_Cj-s_Aj) using the pinned diagnostic score MMA; R0 is the unchanged public native FA routing contrast at retained V0.",
+    "exact_arithmetic_limit": "With exactly normalized positive endpoint probabilities, W is zero-row-sum and conserves the original EOS/clean score chord. It is a logmean weighted secant rule, not demonstrated to be the Jacobian integral along the actual partial-deletion chord. Endpoint conservation does not force T=R0 on other logit directions.",
+    "observed_conclusion": "The frozen EOS/clean weights produce a substantially different scalar response to the observed C-minus-A score direction than the native routing contrast. This is a measured conditional directional mismatch. The largest positive rows include both excessive positive predicted response and missing negative native response; a single global amplification factor is not established.",
+    "unresolved": "No per-key score or probability rows are exported, so these data do not determine chord angles, which key probabilities drive the discrepancy, or whether any individual logmean weight is excessive. The diagnostic uses FP32 MMA/reductions with BF16 operands and native LSE; native output and B1/B2 transfer remain in the named residual.",
+    "head_identifiability": "Public T and native hybrid R0 are head-summed. Per-head R0 was not retained. Existing per-head T alone cannot identify head-specific residuals; no head root-cause claim and no extra FA/export requested."
+  },
+  "precision_limits": "Zero measured coefficient/B2 replay drift establishes equality of those saved tensors in these executions. Small total BF16 tile/seed terms do not imply every token, head, score, probability or reduction is numerically exact. Signed cancellation and per-row absolute cast magnitudes are retained; no precision repair follows.",
+  "interpretation": "Use the actual term and query concentration values below; no MH0 row/window/generalization claim is transferred. PV-reference and routing errors remain separate. No candidate or metric result is produced by this diagnostic.",
+  "CPU_audit_seconds": 0.15201260009780526
+}

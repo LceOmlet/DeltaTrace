@@ -1,0 +1,97 @@
+{
+  "scope": "Actual native input-endpoint FA VJP scout at FA19. Keep fixed stored finite upstream and all actual Q/K/V/O; diagnose changing only this attention core. No whole model/DT/scorer/FT/new generation or new attention implementation.",
+  "source": {
+    "results": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+    "private": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/MH2_two_decoder_internal_private.pt",
+    "private_sha256": "598445e3869ccf14a5e18ae0d32aa4d0ea539d7d26c475e8d7ee4669bd8d1c7d"
+  },
+  "boundary_results": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/results.json",
+  "FA_interface_sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+  "native_FA_kwargs": {
+    "dropout_p": 0.0,
+    "softmax_scale": 0.0625,
+    "causal": true,
+    "window_size": [
+      -1,
+      -1
+    ],
+    "softcap": 0.0,
+    "alibi_slopes": null,
+    "return_attn_probs": false
+  },
+  "argument_provenance": {
+    "sources": [
+      {
+        "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/integrations/flash_attention.py",
+        "sha256": "fd18db15bb84c6ac75b145be9462a1822315fbfbdabf69d964702c6aef7139b9"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py",
+        "sha256": "3460f1d82895fda7dd5ef13894941327e34ca546bc13b9b99de9e517e516928b"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/study.py",
+        "sha256": "04c12c859e1391d89915720970772b064f29536f59ff1ab0f11c35aa12c9e008"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/native_dense_attention_capture.py",
+        "sha256": "8d248e42d436093b34b4139f0062434cd0c811918d5fc34f1ce1f9c98235583a"
+      }
+    ],
+    "scope": "Read-only pinned official source/config plus successful executed observer assertions and saved actual native decoder kwargs. No claim of directly persisted dense_arguments; no invented position/mask/rotary or native forward replacement."
+  },
+  "protected_sources": [
+    {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/integrations/flash_attention.py",
+      "sha256": "fd18db15bb84c6ac75b145be9462a1822315fbfbdabf69d964702c6aef7139b9"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py",
+      "sha256": "3460f1d82895fda7dd5ef13894941327e34ca546bc13b9b99de9e517e516928b"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/study.py",
+      "sha256": "04c12c859e1391d89915720970772b064f29536f59ff1ab0f11c35aa12c9e008"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/native_dense_attention_capture.py",
+      "sha256": "8d248e42d436093b34b4139f0062434cd0c811918d5fc34f1ce1f9c98235583a"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+      "sha256": "dc7414591c5c0cb11e5b2604c773829f09bb13330224f41f5f077663b62e478f"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/protocol.json",
+      "sha256": "148a2212a58ac852b09cc54b3ed8d9405e7fcf620e0cea00985614319a542882"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_MH2_FA19_native_hybrid_20260909_v1/results.json",
+      "sha256": "bd1a210c145eba8020b8ca88b0138518bf40a1bf91868e97e0b8c5322a8d7c38"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_MH2_FA19_native_hybrid_20260909_v1/protocol.json",
+      "sha256": "c40a15bc34ea386e9b5f140d9046e53f03cf6e578708e6c3cb1135f66852c2c8"
+    },
+    {
+      "path": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/results.json",
+      "sha256": "7d7e9a45d2556d6d37fe33d288b8073a36f2f11eb4ba12f0b8e0e7de9a7d25e3"
+    }
+  ],
+  "budget": {
+    "wall_seconds": 120,
+    "public_FA_forward": 1,
+    "public_native_autograd_backward": 1,
+    "whole_model": 0,
+    "DT": 0,
+    "scorer": 0,
+    "FT": 0,
+    "generation": 0,
+    "new_candidates": 1
+  },
+  "hypothesis": "Actual input VJP uses original V1 and local softmax Jacobian, removing EOS V0 route-reference and fixed two-endpoint softmax mismatch together. It may underestimate finite/saturated changes; signed endpoint residual must be reported, not forced to zero. Only an actual local scout; a positive result requires full propagation and original quality plus cost.",
+  "precision": "Public original BF16 FA with native BF16 upstream cast; compact native GQA K/V gradients retained, no headwise shadow expansion. CPU64 contractions only for diagnostics. No altered native backward or private FA buffer/API call.",
+  "files_sha256": {
+    "study.py": "7bf7f520949927b8268576528392c9d712ec2798e22ce94437cd442e436de026"
+  }
+}

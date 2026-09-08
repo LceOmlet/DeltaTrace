@@ -1,0 +1,1436 @@
+{
+  "status": "MH2_FA19_one_public_FA_one_native_VJP_scout_complete",
+  "protocol": {
+    "scope": "Actual native input-endpoint FA VJP scout at FA19. Keep fixed stored finite upstream and all actual Q/K/V/O; diagnose changing only this attention core. No whole model/DT/scorer/FT/new generation or new attention implementation.",
+    "source": {
+      "results": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+      "private": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/MH2_two_decoder_internal_private.pt",
+      "private_sha256": "598445e3869ccf14a5e18ae0d32aa4d0ea539d7d26c475e8d7ee4669bd8d1c7d"
+    },
+    "boundary_results": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/results.json",
+    "FA_interface_sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+    "native_FA_kwargs": {
+      "dropout_p": 0.0,
+      "softmax_scale": 0.0625,
+      "causal": true,
+      "window_size": [
+        -1,
+        -1
+      ],
+      "softcap": 0.0,
+      "alibi_slopes": null,
+      "return_attn_probs": false
+    },
+    "argument_provenance": {
+      "sources": [
+        {
+          "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/integrations/flash_attention.py",
+          "sha256": "fd18db15bb84c6ac75b145be9462a1822315fbfbdabf69d964702c6aef7139b9"
+        },
+        {
+          "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py",
+          "sha256": "3460f1d82895fda7dd5ef13894941327e34ca546bc13b9b99de9e517e516928b"
+        },
+        {
+          "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/study.py",
+          "sha256": "04c12c859e1391d89915720970772b064f29536f59ff1ab0f11c35aa12c9e008"
+        },
+        {
+          "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/native_dense_attention_capture.py",
+          "sha256": "8d248e42d436093b34b4139f0062434cd0c811918d5fc34f1ce1f9c98235583a"
+        }
+      ],
+      "scope": "Read-only pinned official source/config plus successful executed observer assertions and saved actual native decoder kwargs. No claim of directly persisted dense_arguments; no invented position/mask/rotary or native forward replacement."
+    },
+    "protected_sources": [
+      {
+        "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/integrations/flash_attention.py",
+        "sha256": "fd18db15bb84c6ac75b145be9462a1822315fbfbdabf69d964702c6aef7139b9"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py",
+        "sha256": "3460f1d82895fda7dd5ef13894941327e34ca546bc13b9b99de9e517e516928b"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/study.py",
+        "sha256": "04c12c859e1391d89915720970772b064f29536f59ff1ab0f11c35aa12c9e008"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/native_dense_attention_capture.py",
+        "sha256": "8d248e42d436093b34b4139f0062434cd0c811918d5fc34f1ce1f9c98235583a"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+        "sha256": "dc7414591c5c0cb11e5b2604c773829f09bb13330224f41f5f077663b62e478f"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/protocol.json",
+        "sha256": "148a2212a58ac852b09cc54b3ed8d9405e7fcf620e0cea00985614319a542882"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_FA19_native_hybrid_20260909_v1/results.json",
+        "sha256": "bd1a210c145eba8020b8ca88b0138518bf40a1bf91868e97e0b8c5322a8d7c38"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_FA19_native_hybrid_20260909_v1/protocol.json",
+        "sha256": "c40a15bc34ea386e9b5f140d9046e53f03cf6e578708e6c3cb1135f66852c2c8"
+      },
+      {
+        "path": "${ARTIFACT_ROOT}/codex_dt_MH2_current_conditional_boundaries_20260909_v1/results.json",
+        "sha256": "7d7e9a45d2556d6d37fe33d288b8073a36f2f11eb4ba12f0b8e0e7de9a7d25e3"
+      }
+    ],
+    "budget": {
+      "wall_seconds": 120,
+      "public_FA_forward": 1,
+      "public_native_autograd_backward": 1,
+      "whole_model": 0,
+      "DT": 0,
+      "scorer": 0,
+      "FT": 0,
+      "generation": 0,
+      "new_candidates": 1
+    },
+    "hypothesis": "Actual input VJP uses original V1 and local softmax Jacobian, removing EOS V0 route-reference and fixed two-endpoint softmax mismatch together. It may underestimate finite/saturated changes; signed endpoint residual must be reported, not forced to zero. Only an actual local scout; a positive result requires full propagation and original quality plus cost.",
+    "precision": "Public original BF16 FA with native BF16 upstream cast; compact native GQA K/V gradients retained, no headwise shadow expansion. CPU64 contractions only for diagnostics. No altered native backward or private FA buffer/API call.",
+    "files_sha256": {
+      "study.py": "7bf7f520949927b8268576528392c9d712ec2798e22ce94437cd442e436de026"
+    }
+  },
+  "native_FA_entered": 1,
+  "native_FA_returned": 1,
+  "native_autograd_entered": 1,
+  "native_autograd_returned": 1,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "scorer_calls": 0,
+  "FT_calls": 0,
+  "generation_calls": 0,
+  "points": {
+    "3": {
+      "fields": {
+        "actual_effect": {
+          "net": 34.19117579041279,
+          "positive": 40.9553052263504,
+          "negative": -6.764129435937603,
+          "absolute": 47.719434662287995
+        },
+        "seed_cast_effect": {
+          "net": 0.0025920708871945055,
+          "positive": 0.016797616747885123,
+          "negative": -0.014205545860690616,
+          "absolute": 0.03100316260857574
+        },
+        "current_qk": {
+          "net": 8.602342342950012,
+          "positive": 14.397568343952017,
+          "negative": -5.795226001002005,
+          "absolute": 20.192794344954024
+        },
+        "current_value": {
+          "net": 37.18546423143239,
+          "positive": 40.20206850884459,
+          "negative": -3.0166042774122017,
+          "absolute": 43.21867278625679
+        },
+        "current_prediction": {
+          "net": 45.787806574382394,
+          "positive": 51.91259614624263,
+          "negative": -6.124789571860228,
+          "absolute": 58.03738571810286
+        },
+        "current_error": {
+          "net": 11.596630783969605,
+          "positive": 48.59165861374037,
+          "negative": -36.99502782977076,
+          "absolute": 85.58668644351113
+        },
+        "native_vjp_qk": {
+          "net": 57.72720344396842,
+          "positive": 80.2147586936145,
+          "negative": -22.48755524964607,
+          "absolute": 102.70231394326058
+        },
+        "native_vjp_value": {
+          "net": 37.18503054427637,
+          "positive": 40.20258382125678,
+          "negative": -3.0175532769804096,
+          "absolute": 43.22013709823719
+        },
+        "native_vjp_prediction": {
+          "net": 94.9122339882448,
+          "positive": 114.7149943414275,
+          "negative": -19.8027603531827,
+          "absolute": 134.5177546946102
+        },
+        "native_vjp_error": {
+          "net": 60.72105819783201,
+          "positive": 105.32031747830989,
+          "negative": -44.599259280477895,
+          "absolute": 149.9195767587878
+        }
+      },
+      "groups": {
+        "deleted": {
+          "count": 66,
+          "fields": {
+            "actual_effect": {
+              "net": 2.5710346441639946,
+              "positive": 3.0067933315623017,
+              "negative": -0.43575868739830687,
+              "absolute": 3.4425520189606087
+            },
+            "seed_cast_effect": {
+              "net": 0.00037424587424935807,
+              "positive": 0.001971870817672032,
+              "negative": -0.001597624943422674,
+              "absolute": 0.0035694957610947057
+            },
+            "current_qk": {
+              "net": 7.048333236921025,
+              "positive": 7.573821631781722,
+              "negative": -0.5254883948606965,
+              "absolute": 8.099310026642417
+            },
+            "current_value": {
+              "net": 31.230596068473183,
+              "positive": 31.324593985170402,
+              "negative": -0.09399791669721935,
+              "absolute": 31.41859190186762
+            },
+            "current_prediction": {
+              "net": 38.27892930539421,
+              "positive": 38.53558229695861,
+              "negative": -0.2566529915644061,
+              "absolute": 38.79223528852302
+            },
+            "current_error": {
+              "net": 35.70789466123021,
+              "positive": 35.876808384009635,
+              "negative": -0.16891372277942593,
+              "absolute": 36.045722106789064
+            },
+            "native_vjp_qk": {
+              "net": 55.77874661575636,
+              "positive": 62.33394287947368,
+              "negative": -6.555196263717315,
+              "absolute": 68.88913914319099
+            },
+            "native_vjp_value": {
+              "net": 31.230906102705504,
+              "positive": 31.324883087235904,
+              "negative": -0.09397698453039993,
+              "absolute": 31.418860071766304
+            },
+            "native_vjp_prediction": {
+              "net": 87.00965271846187,
+              "positive": 91.18041444194223,
+              "negative": -4.170761723480371,
+              "absolute": 95.3511761654226
+            },
+            "native_vjp_error": {
+              "net": 84.43861807429786,
+              "positive": 88.6055600278936,
+              "negative": -4.166941953595744,
+              "absolute": 92.77250198148934
+            }
+          }
+        },
+        "kept": {
+          "count": 371,
+          "fields": {
+            "actual_effect": {
+              "net": 0.34203753069341997,
+              "positive": 0.6231889527520962,
+              "negative": -0.28115142205867627,
+              "absolute": 0.9043403748107726
+            },
+            "seed_cast_effect": {
+              "net": 0.0002987668133463894,
+              "positive": 0.0007382778592814508,
+              "negative": -0.00043951104593506143,
+              "absolute": 0.0011777889052165121
+            },
+            "current_qk": {
+              "net": 0.6109676951079719,
+              "positive": 0.7317170484563933,
+              "negative": -0.12074935334842142,
+              "absolute": 0.8524664018048147
+            },
+            "current_value": {
+              "net": 2.408125839335846,
+              "positive": 2.8600624585992014,
+              "negative": -0.4519366192633551,
+              "absolute": 3.311999077862556
+            },
+            "current_prediction": {
+              "net": 3.019093534443818,
+              "positive": 3.4018677851949533,
+              "negative": -0.3827742507511359,
+              "absolute": 3.7846420359460895
+            },
+            "current_error": {
+              "net": 2.6770560037503977,
+              "positive": 3.2568030598917312,
+              "negative": -0.5797470561413338,
+              "absolute": 3.8365501160330653
+            },
+            "native_vjp_qk": {
+              "net": -1.6590207149271046,
+              "positive": 3.1881899537861353,
+              "negative": -4.84721066871324,
+              "absolute": 8.035400622499376
+            },
+            "native_vjp_value": {
+              "net": 2.407608538788285,
+              "positive": 2.859921361199426,
+              "negative": -0.452312822411141,
+              "absolute": 3.312234183610567
+            },
+            "native_vjp_prediction": {
+              "net": 0.7485878238611803,
+              "positive": 5.248678481305131,
+              "negative": -4.500090657443951,
+              "absolute": 9.748769138749083
+            },
+            "native_vjp_error": {
+              "net": 0.4065502931677605,
+              "positive": 5.131414838298207,
+              "negative": -4.724864545130446,
+              "absolute": 9.856279383428651
+            }
+          }
+        },
+        "other_prompt": {
+          "count": 43,
+          "fields": {
+            "actual_effect": {
+              "net": -0.04299498267898559,
+              "positive": 0.10394744816133522,
+              "negative": -0.14694243084032083,
+              "absolute": 0.25088987900165605
+            },
+            "seed_cast_effect": {
+              "net": 4.82183497872797e-05,
+              "positive": 0.0002227867365624806,
+              "negative": -0.0001745683867752009,
+              "absolute": 0.0003973551233376815
+            },
+            "current_qk": {
+              "net": 0.3852273880136328,
+              "positive": 0.4462243616301594,
+              "negative": -0.06099697361652656,
+              "absolute": 0.5072213352466859
+            },
+            "current_value": {
+              "net": 1.188519946663347,
+              "positive": 1.4125355683447838,
+              "negative": -0.22401562168143693,
+              "absolute": 1.6365511900262206
+            },
+            "current_prediction": {
+              "net": 1.5737473346769797,
+              "positive": 1.778633353639065,
+              "negative": -0.20488601896208544,
+              "absolute": 1.9835193726011506
+            },
+            "current_error": {
+              "net": 1.616742317355965,
+              "positive": 1.82612054419297,
+              "negative": -0.20937822683700472,
+              "absolute": 2.0354987710299746
+            },
+            "native_vjp_qk": {
+              "net": -0.3141995188560443,
+              "positive": 1.4181113399215461,
+              "negative": -1.7323108587775906,
+              "absolute": 3.150422198699137
+            },
+            "native_vjp_value": {
+              "net": 1.1884124112803818,
+              "positive": 1.4122889166298762,
+              "negative": -0.22387650534949444,
+              "absolute": 1.6361654219793706
+            },
+            "native_vjp_prediction": {
+              "net": 0.8742128924243375,
+              "positive": 2.467959788638391,
+              "negative": -1.5937468962140535,
+              "absolute": 4.061706684852444
+            },
+            "native_vjp_error": {
+              "net": 0.917207875103323,
+              "positive": 2.5430098129681395,
+              "negative": -1.6258019378648165,
+              "absolute": 4.1688117508329565
+            }
+          }
+        },
+        "response": {
+          "count": 230,
+          "fields": {
+            "actual_effect": {
+              "net": 31.321098598234364,
+              "positive": 37.22137549387467,
+              "negative": -5.9002768956403,
+              "absolute": 43.12165238951496
+            },
+            "seed_cast_effect": {
+              "net": 0.0018708398498114781,
+              "positive": 0.013864681334369158,
+              "negative": -0.01199384148455768,
+              "absolute": 0.025858522818926838
+            },
+            "current_qk": {
+              "net": 0.5578140229073821,
+              "positive": 5.645805302083743,
+              "negative": -5.087991279176361,
+              "absolute": 10.733796581260105
+            },
+            "current_value": {
+              "net": 2.3582223769600126,
+              "positive": 4.604876496730204,
+              "negative": -2.2466541197701906,
+              "absolute": 6.851530616500394
+            },
+            "current_prediction": {
+              "net": 2.9160363998673953,
+              "positive": 8.196512710449994,
+              "negative": -5.280476310582601,
+              "absolute": 13.476989021032594
+            },
+            "current_error": {
+              "net": -28.405062198366963,
+              "positive": 7.631926625646026,
+              "negative": -36.036988824012994,
+              "absolute": 43.66891544965902
+            },
+            "native_vjp_qk": {
+              "net": 3.9216770619952164,
+              "positive": 13.274514520433144,
+              "negative": -9.352837458437927,
+              "absolute": 22.62735197887107
+            },
+            "native_vjp_value": {
+              "net": 2.3581034915022006,
+              "positive": 4.605490456191575,
+              "negative": -2.2473869646893743,
+              "absolute": 6.852877420880949
+            },
+            "native_vjp_prediction": {
+              "net": 6.279780553497417,
+              "positive": 15.81794162954174,
+              "negative": -9.538161076044323,
+              "absolute": 25.35610270558606
+            },
+            "native_vjp_error": {
+              "net": -25.041318044736947,
+              "positive": 9.040332799149942,
+              "negative": -34.08165084388689,
+              "absolute": 43.12198364303683
+            }
+          }
+        }
+      }
+    },
+    "10": {
+      "fields": {
+        "actual_effect": {
+          "net": 36.77494196396011,
+          "positive": 43.11755846591658,
+          "negative": -6.342616501956472,
+          "absolute": 49.46017496787305
+        },
+        "seed_cast_effect": {
+          "net": 0.0026066633819662737,
+          "positive": 0.017328642964572205,
+          "negative": -0.014721979582605934,
+          "absolute": 0.03205062254717814
+        },
+        "current_qk": {
+          "net": 11.285476978959545,
+          "positive": 16.47696860106376,
+          "negative": -5.191491622104216,
+          "absolute": 21.66846022316798
+        },
+        "current_value": {
+          "net": 39.855194438140764,
+          "positive": 42.973030411160096,
+          "negative": -3.1178359730193304,
+          "absolute": 46.09086638417942
+        },
+        "current_prediction": {
+          "net": 51.140671417100314,
+          "positive": 56.43936392028772,
+          "negative": -5.2986925031874,
+          "absolute": 61.73805642347511
+        },
+        "current_error": {
+          "net": 14.365729453140197,
+          "positive": 51.82853221249456,
+          "negative": -37.46280275935436,
+          "absolute": 89.29133497184891
+        },
+        "native_vjp_qk": {
+          "net": 52.65507949136263,
+          "positive": 85.56835036653018,
+          "negative": -32.91327087516755,
+          "absolute": 118.48162124169774
+        },
+        "native_vjp_value": {
+          "net": 39.852984507105845,
+          "positive": 42.97169153601044,
+          "negative": -3.1187070289046037,
+          "absolute": 46.09039856491505
+        },
+        "native_vjp_prediction": {
+          "net": 92.50806399846847,
+          "positive": 121.97467816398947,
+          "negative": -29.46661416552101,
+          "absolute": 151.4412923295105
+        },
+        "native_vjp_error": {
+          "net": 55.73312203450835,
+          "positive": 111.20340123777444,
+          "negative": -55.47027920326608,
+          "absolute": 166.67368044104052
+        }
+      },
+      "groups": {
+        "deleted": {
+          "count": 220,
+          "fields": {
+            "actual_effect": {
+              "net": 2.8132272718111127,
+              "positive": 3.4428699164728207,
+              "negative": -0.629642644661708,
+              "absolute": 4.07251256113453
+            },
+            "seed_cast_effect": {
+              "net": 0.0002810226055506977,
+              "positive": 0.0024320556237150126,
+              "negative": -0.0021510330181643148,
+              "absolute": 0.004583088641879327
+            },
+            "current_qk": {
+              "net": 8.9374582674849,
+              "positive": 9.49486161576506,
+              "negative": -0.5574033482801611,
+              "absolute": 10.052264964045223
+            },
+            "current_value": {
+              "net": 34.03867258591279,
+              "positive": 34.53332212936372,
+              "negative": -0.4946495434509234,
+              "absolute": 35.02797167281464
+            },
+            "current_prediction": {
+              "net": 42.97613085339769,
+              "positive": 43.4953657097139,
+              "negative": -0.5192348563162097,
+              "absolute": 44.01460056603011
+            },
+            "current_error": {
+              "net": 40.16290358158658,
+              "positive": 40.65789701026059,
+              "negative": -0.49499342867400964,
+              "absolute": 41.1528904389346
+            },
+            "native_vjp_qk": {
+              "net": 53.00722624323887,
+              "positive": 68.93038799626721,
+              "negative": -15.923161753028342,
+              "absolute": 84.85354974929555
+            },
+            "native_vjp_value": {
+              "net": 34.03802601474787,
+              "positive": 34.53315379517423,
+              "negative": -0.4951277804263583,
+              "absolute": 35.02828157560059
+            },
+            "native_vjp_prediction": {
+              "net": 87.04525225798676,
+              "positive": 100.20973150098334,
+              "negative": -13.164479242996592,
+              "absolute": 113.37421074397994
+            },
+            "native_vjp_error": {
+              "net": 84.23202498617562,
+              "positive": 97.5979416904705,
+              "negative": -13.365916704294884,
+              "absolute": 110.96385839476538
+            }
+          }
+        },
+        "kept": {
+          "count": 217,
+          "fields": {
+            "actual_effect": {
+              "net": 0.220615478731392,
+              "positive": 0.497304858395755,
+              "negative": -0.27668937966436297,
+              "absolute": 0.7739942380601179
+            },
+            "seed_cast_effect": {
+              "net": 0.0002462510133974282,
+              "positive": 0.000576353068352485,
+              "negative": -0.0003301020549550568,
+              "absolute": 0.0009064551233075417
+            },
+            "current_qk": {
+              "net": 0.5277582087078374,
+              "positive": 0.6002876379852317,
+              "negative": -0.07252942927739427,
+              "absolute": 0.6728170672626259
+            },
+            "current_value": {
+              "net": 1.8774156659576868,
+              "positive": 2.123812048042704,
+              "negative": -0.24639638208501768,
+              "absolute": 2.370208430127722
+            },
+            "current_prediction": {
+              "net": 2.405173874665524,
+              "positive": 2.6331788980354642,
+              "negative": -0.22800502336994027,
+              "absolute": 2.861183921405405
+            },
+            "current_error": {
+              "net": 2.1845583959341317,
+              "positive": 2.451351505667611,
+              "negative": -0.26679310973347936,
+              "absolute": 2.7181446154010906
+            },
+            "native_vjp_qk": {
+              "net": -4.106393077683437,
+              "positive": 1.673529804849359,
+              "negative": -5.779922882532796,
+              "absolute": 7.453452687382155
+            },
+            "native_vjp_value": {
+              "net": 1.876916786950929,
+              "positive": 2.1233534994261483,
+              "negative": -0.24643671247521937,
+              "absolute": 2.3697902119013676
+            },
+            "native_vjp_prediction": {
+              "net": -2.2294762907325083,
+              "positive": 2.9850365261854397,
+              "negative": -5.214512816917948,
+              "absolute": 8.199549343103387
+            },
+            "native_vjp_error": {
+              "net": -2.450091769463901,
+              "positive": 2.850250702869288,
+              "negative": -5.300342472333189,
+              "absolute": 8.150593175202477
+            }
+          }
+        },
+        "other_prompt": {
+          "count": 43,
+          "fields": {
+            "actual_effect": {
+              "net": -0.10018012436557097,
+              "positive": 0.15081056048716693,
+              "negative": -0.2509906848527379,
+              "absolute": 0.4018012453399048
+            },
+            "seed_cast_effect": {
+              "net": -0.0001604235779570335,
+              "positive": 0.00011863201769218845,
+              "negative": -0.00027905559564922195,
+              "absolute": 0.0003976876133414104
+            },
+            "current_qk": {
+              "net": 0.3673157524137839,
+              "positive": 0.4546591454059683,
+              "negative": -0.08734339299218438,
+              "absolute": 0.5420025383981527
+            },
+            "current_value": {
+              "net": 1.2543905485378044,
+              "positive": 1.5162580395468996,
+              "negative": -0.26186749100909523,
+              "absolute": 1.7781255305559949
+            },
+            "current_prediction": {
+              "net": 1.6217063009515882,
+              "positive": 1.8780235481074563,
+              "negative": -0.256317247155868,
+              "absolute": 2.1343407952633244
+            },
+            "current_error": {
+              "net": 1.721886425317159,
+              "positive": 2.0086338587024746,
+              "negative": -0.28674743338531516,
+              "absolute": 2.2953812920877894
+            },
+            "native_vjp_qk": {
+              "net": -0.4357313336032863,
+              "positive": 1.7772657946531956,
+              "negative": -2.212997128256482,
+              "absolute": 3.9902629229096775
+            },
+            "native_vjp_value": {
+              "net": 1.2535839278956473,
+              "positive": 1.5152942742081734,
+              "negative": -0.2617103463125261,
+              "absolute": 1.7770046205206995
+            },
+            "native_vjp_prediction": {
+              "net": 0.817852594292361,
+              "positive": 2.928424783989624,
+              "negative": -2.110572189697263,
+              "absolute": 5.038996973686887
+            },
+            "native_vjp_error": {
+              "net": 0.9180327186579318,
+              "positive": 3.0661948254198608,
+              "negative": -2.148162106761929,
+              "absolute": 5.214356932181789
+            }
+          }
+        },
+        "response": {
+          "count": 230,
+          "fields": {
+            "actual_effect": {
+              "net": 33.84127933778318,
+              "positive": 39.026573130560834,
+              "negative": -5.185293792777663,
+              "absolute": 44.211866923338505
+            },
+            "seed_cast_effect": {
+              "net": 0.0022398133409751815,
+              "positive": 0.01420160225481252,
+              "negative": -0.01196178891383734,
+              "absolute": 0.026163391168649863
+            },
+            "current_qk": {
+              "net": 1.4529447503530237,
+              "positive": 5.927160201907501,
+              "negative": -4.4742154515544765,
+              "absolute": 10.401375653461978
+            },
+            "current_value": {
+              "net": 2.684715637732481,
+              "positive": 4.799638194206775,
+              "negative": -2.1149225564742937,
+              "absolute": 6.914560750681068
+            },
+            "current_prediction": {
+              "net": 4.1376603880855045,
+              "positive": 8.432795764430887,
+              "negative": -4.2951353763453834,
+              "absolute": 12.727931140776272
+            },
+            "current_error": {
+              "net": -29.703618949697667,
+              "positive": 6.7106498378638815,
+              "negative": -36.414268787561554,
+              "absolute": 43.12491862542543
+            },
+            "native_vjp_qk": {
+              "net": 4.1899776594104825,
+              "positive": 13.187166770760404,
+              "negative": -8.997189111349922,
+              "absolute": 22.184355882110328
+            },
+            "native_vjp_value": {
+              "net": 2.6844577775113923,
+              "positive": 4.799889967201892,
+              "negative": -2.1154321896905,
+              "absolute": 6.915322156892392
+            },
+            "native_vjp_prediction": {
+              "net": 6.874435436921875,
+              "positive": 15.851485352831086,
+              "negative": -8.977049915909209,
+              "absolute": 24.828535268740293
+            },
+            "native_vjp_error": {
+              "net": -26.9668439008613,
+              "positive": 7.68901401901478,
+              "negative": -34.655857919876084,
+              "absolute": 42.34487193889086
+            }
+          }
+        }
+      }
+    },
+    "20": {
+      "fields": {
+        "actual_effect": {
+          "net": 56.27394274050857,
+          "positive": 62.94881438932262,
+          "negative": -6.674871648814039,
+          "absolute": 69.62368603813667
+        },
+        "seed_cast_effect": {
+          "net": 0.0011260894411756696,
+          "positive": 0.02202946005095609,
+          "negative": -0.02090337060978042,
+          "absolute": 0.04293283066073651
+        },
+        "current_qk": {
+          "net": 16.23872082612798,
+          "positive": 22.142584467564348,
+          "negative": -5.903863641436365,
+          "absolute": 28.04644810900071
+        },
+        "current_value": {
+          "net": 40.10664905820538,
+          "positive": 43.44393267377822,
+          "negative": -3.337283615572845,
+          "absolute": 46.78121628935106
+        },
+        "current_prediction": {
+          "net": 56.34536988433335,
+          "positive": 62.188138374456756,
+          "negative": -5.8427684901234045,
+          "absolute": 68.03090686458017
+        },
+        "current_error": {
+          "net": 0.07142714382477933,
+          "positive": 54.01180824019029,
+          "negative": -53.94038109636551,
+          "absolute": 107.95218933655579
+        },
+        "native_vjp_qk": {
+          "net": 53.713732592950336,
+          "positive": 113.58337337152041,
+          "negative": -59.86964077857007,
+          "absolute": 173.4530141500905
+        },
+        "native_vjp_value": {
+          "net": 40.106793518980105,
+          "positive": 43.44390690187262,
+          "negative": -3.3371133828925164,
+          "absolute": 46.78102028476514
+        },
+        "native_vjp_prediction": {
+          "net": 93.82052611193043,
+          "positive": 150.32240881259236,
+          "negative": -56.50188270066192,
+          "absolute": 206.82429151325425
+        },
+        "native_vjp_error": {
+          "net": 37.54658337142187,
+          "positive": 130.80283721429504,
+          "negative": -93.25625384287316,
+          "absolute": 224.0590910571682
+        }
+      },
+      "groups": {
+        "deleted": {
+          "count": 437,
+          "fields": {
+            "actual_effect": {
+              "net": 4.432821033933667,
+              "positive": 5.4751115499522065,
+              "negative": -1.0422905160185385,
+              "absolute": 6.517402065970744
+            },
+            "seed_cast_effect": {
+              "net": 0.000513722796291167,
+              "positive": 0.0033324992268414042,
+              "negative": -0.0028187764305502372,
+              "absolute": 0.006151275657391641
+            },
+            "current_qk": {
+              "net": 12.892958908649614,
+              "positive": 13.634115773218536,
+              "negative": -0.7411568645689217,
+              "absolute": 14.375272637787457
+            },
+            "current_value": {
+              "net": 35.01092964258031,
+              "positive": 35.890371345676925,
+              "negative": -0.8794417030966162,
+              "absolute": 36.76981304877354
+            },
+            "current_prediction": {
+              "net": 47.903888551229926,
+              "positive": 48.53648907807079,
+              "negative": -0.6326005268408577,
+              "absolute": 49.16908960491164
+            },
+            "current_error": {
+              "net": 43.47106751729626,
+              "positive": 44.345538656748964,
+              "negative": -0.8744711394527008,
+              "absolute": 45.22000979620166
+            },
+            "native_vjp_qk": {
+              "net": 44.82097181032486,
+              "positive": 89.26619531950654,
+              "negative": -44.44522350918167,
+              "absolute": 133.7114188286882
+            },
+            "native_vjp_value": {
+              "net": 35.011162874336605,
+              "positive": 35.89045421373892,
+              "negative": -0.8792913394023145,
+              "absolute": 36.769745553141234
+            },
+            "native_vjp_prediction": {
+              "net": 79.83213468466147,
+              "positive": 120.96701755312894,
+              "negative": -41.13488286846748,
+              "absolute": 162.1019004215964
+            },
+            "native_vjp_error": {
+              "net": 75.3993136507278,
+              "positive": 116.96976935929209,
+              "negative": -41.570455708564296,
+              "absolute": 158.5402250678564
+            }
+          }
+        },
+        "kept": {
+          "count": 0,
+          "fields": {
+            "actual_effect": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "seed_cast_effect": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_qk": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_value": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_prediction": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_error": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_qk": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_value": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_prediction": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_error": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            }
+          }
+        },
+        "other_prompt": {
+          "count": 43,
+          "fields": {
+            "actual_effect": {
+              "net": -0.16126304753343165,
+              "positive": 0.19635647083181865,
+              "negative": -0.3576195183652503,
+              "absolute": 0.5539759891970688
+            },
+            "seed_cast_effect": {
+              "net": -0.0001715425465308785,
+              "positive": 0.00013691898644979466,
+              "negative": -0.00030846153298067316,
+              "absolute": 0.0004453805194304678
+            },
+            "current_qk": {
+              "net": 0.7097107769934511,
+              "positive": 0.7621920672636441,
+              "negative": -0.05248129027019299,
+              "absolute": 0.8146733575338371
+            },
+            "current_value": {
+              "net": 1.6014212032401898,
+              "positive": 1.846055562322153,
+              "negative": -0.2446343590819633,
+              "absolute": 2.0906899214041164
+            },
+            "current_prediction": {
+              "net": 2.311131980233641,
+              "positive": 2.4277853544638655,
+              "negative": -0.11665337423022426,
+              "absolute": 2.5444387286940895
+            },
+            "current_error": {
+              "net": 2.4723950277670723,
+              "positive": 2.6417477347059797,
+              "negative": -0.16935270693890728,
+              "absolute": 2.8111004416448866
+            },
+            "native_vjp_qk": {
+              "net": -2.067770888913119,
+              "positive": 2.3073256978641936,
+              "negative": -4.375096586777312,
+              "absolute": 6.682422284641506
+            },
+            "native_vjp_value": {
+              "net": 1.6005394490361198,
+              "positive": 1.8451519138873493,
+              "negative": -0.24461246485122956,
+              "absolute": 2.089764378738579
+            },
+            "native_vjp_prediction": {
+              "net": -0.4672314398769991,
+              "positive": 3.722577724400698,
+              "negative": -4.189809164277698,
+              "absolute": 7.912386888678395
+            },
+            "native_vjp_error": {
+              "net": -0.3059683923435672,
+              "positive": 3.877515048191398,
+              "negative": -4.183483440534965,
+              "absolute": 8.060998488726362
+            }
+          }
+        },
+        "response": {
+          "count": 230,
+          "fields": {
+            "actual_effect": {
+              "net": 52.002384754108334,
+              "positive": 57.27734636853859,
+              "negative": -5.274961614430251,
+              "absolute": 62.55230798296884
+            },
+            "seed_cast_effect": {
+              "net": 0.0007839091914153807,
+              "positive": 0.018560041837664895,
+              "negative": -0.017776132646249512,
+              "absolute": 0.03633617448391441
+            },
+            "current_qk": {
+              "net": 2.6360511404849154,
+              "positive": 7.746276627082165,
+              "negative": -5.11022548659725,
+              "absolute": 12.856502113679415
+            },
+            "current_value": {
+              "net": 3.494298212384872,
+              "positive": 5.707505765779137,
+              "negative": -2.2132075533942652,
+              "absolute": 7.9207133191734025
+            },
+            "current_prediction": {
+              "net": 6.1303493528697866,
+              "positive": 11.223863941922108,
+              "negative": -5.093514589052322,
+              "absolute": 16.317378530974434
+            },
+            "current_error": {
+              "net": -45.87203540123855,
+              "positive": 7.024521848735347,
+              "negative": -52.896557249973895,
+              "absolute": 59.92107909870924
+            },
+            "native_vjp_qk": {
+              "net": 10.960531671538597,
+              "positive": 22.00985235414969,
+              "negative": -11.049320682611093,
+              "absolute": 33.05917303676078
+            },
+            "native_vjp_value": {
+              "net": 3.4950911956073814,
+              "positive": 5.708300774246354,
+              "negative": -2.2132095786389723,
+              "absolute": 7.921510352885326
+            },
+            "native_vjp_prediction": {
+              "net": 14.455622867145976,
+              "positive": 25.632813535062724,
+              "negative": -11.177190667916744,
+              "absolute": 36.810004202979464
+            },
+            "native_vjp_error": {
+              "net": -37.546761886962365,
+              "positive": 9.955552806811541,
+              "negative": -47.50231469377391,
+              "absolute": 57.45786750058545
+            }
+          }
+        }
+      }
+    },
+    "B2": {
+      "fields": {
+        "actual_effect": {
+          "net": 56.345268856730954,
+          "positive": 63.03436290043232,
+          "negative": -6.689094043701379,
+          "absolute": 69.7234569441337
+        },
+        "seed_cast_effect": {
+          "net": 0.001240224811503087,
+          "positive": 0.022066848184023012,
+          "negative": -0.020826623372519927,
+          "absolute": 0.04289347155654294
+        },
+        "current_qk": {
+          "net": 16.2207080399484,
+          "positive": 22.14154813187431,
+          "negative": -5.920840091925915,
+          "absolute": 28.062388223800227
+        },
+        "current_value": {
+          "net": 40.12163785440126,
+          "positive": 43.45273362751468,
+          "negative": -3.3310957731134274,
+          "absolute": 46.78382940062811
+        },
+        "current_prediction": {
+          "net": 56.34234589434965,
+          "positive": 62.196045993431795,
+          "negative": -5.853700099082134,
+          "absolute": 68.04974609251391
+        },
+        "current_error": {
+          "net": -0.002922962381295635,
+          "positive": 53.98767750740718,
+          "negative": -53.99060046978847,
+          "absolute": 107.97827797719565
+        },
+        "native_vjp_qk": {
+          "net": 53.53475833264646,
+          "positive": 113.49166693376291,
+          "negative": -59.95690860111645,
+          "absolute": 173.44857553487935
+        },
+        "native_vjp_value": {
+          "net": 40.12162594494784,
+          "positive": 43.45256158553974,
+          "negative": -3.3309356405919064,
+          "absolute": 46.78349722613165
+        },
+        "native_vjp_prediction": {
+          "net": 93.6563842775943,
+          "positive": 150.16275482037577,
+          "negative": -56.5063705427815,
+          "absolute": 206.66912536315726
+        },
+        "native_vjp_error": {
+          "net": 37.31111542086335,
+          "positive": 130.6854189725087,
+          "negative": -93.37430355164535,
+          "absolute": 224.05972252415407
+        }
+      },
+      "groups": {
+        "deleted": {
+          "count": 437,
+          "fields": {
+            "actual_effect": {
+              "net": 4.451882430128621,
+              "positive": 5.492525844129074,
+              "negative": -1.0406434140004528,
+              "absolute": 6.5331692581295275
+            },
+            "seed_cast_effect": {
+              "net": 0.000503565166901381,
+              "positive": 0.0033194925822779397,
+              "negative": -0.002815927415376559,
+              "absolute": 0.0061354199976544985
+            },
+            "current_qk": {
+              "net": 12.911758104883884,
+              "positive": 13.634696699213386,
+              "negative": -0.7229385943295029,
+              "absolute": 14.357635293542888
+            },
+            "current_value": {
+              "net": 35.032943855504584,
+              "positive": 35.91711068582675,
+              "negative": -0.8841668303221673,
+              "absolute": 36.801277516148915
+            },
+            "current_prediction": {
+              "net": 47.94470196038847,
+              "positive": 48.56098437791103,
+              "negative": -0.6162824175225726,
+              "absolute": 49.17726679543361
+            },
+            "current_error": {
+              "net": 43.492819530259844,
+              "positive": 44.35241848583456,
+              "negative": -0.8595989555747201,
+              "absolute": 45.212017441409294
+            },
+            "native_vjp_qk": {
+              "net": 44.83069161777637,
+              "positive": 89.25442000881543,
+              "negative": -44.42372839103905,
+              "absolute": 133.67814839985448
+            },
+            "native_vjp_value": {
+              "net": 35.033071843283224,
+              "positive": 35.91708937447747,
+              "negative": -0.8840175311942509,
+              "absolute": 36.80110690567173
+            },
+            "native_vjp_prediction": {
+              "net": 79.86376346105959,
+              "positive": 120.99356577509724,
+              "negative": -41.12980231403765,
+              "absolute": 162.12336808913489
+            },
+            "native_vjp_error": {
+              "net": 75.41188103093097,
+              "positive": 116.98284516414267,
+              "negative": -41.5709641332117,
+              "absolute": 158.55380929735438
+            }
+          }
+        },
+        "kept": {
+          "count": 0,
+          "fields": {
+            "actual_effect": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "seed_cast_effect": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_qk": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_value": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_prediction": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "current_error": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_qk": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_value": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_prediction": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "native_vjp_error": {
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            }
+          }
+        },
+        "other_prompt": {
+          "count": 43,
+          "fields": {
+            "actual_effect": {
+              "net": -0.15743518229176728,
+              "positive": 0.19881803882346902,
+              "negative": -0.3562532211152363,
+              "absolute": 0.5550712599387053
+            },
+            "seed_cast_effect": {
+              "net": -0.0001717399525537585,
+              "positive": 0.00013768139692644002,
+              "negative": -0.0003094213494801985,
+              "absolute": 0.00044710274640663854
+            },
+            "current_qk": {
+              "net": 0.7089113065773429,
+              "positive": 0.760418165389003,
+              "negative": -0.05150685881166006,
+              "absolute": 0.811925024200663
+            },
+            "current_value": {
+              "net": 1.60082112900571,
+              "positive": 1.846878126140628,
+              "negative": -0.24605699713491802,
+              "absolute": 2.092935123275546
+            },
+            "current_prediction": {
+              "net": 2.3097324355830526,
+              "positive": 2.429407886917474,
+              "negative": -0.11967545133442115,
+              "absolute": 2.5490833382518954
+            },
+            "current_error": {
+              "net": 2.4671676178748205,
+              "positive": 2.638497332441363,
+              "negative": -0.17132971456654267,
+              "absolute": 2.8098270470079054
+            },
+            "native_vjp_qk": {
+              "net": -2.0695504888500595,
+              "positive": 2.312460535473794,
+              "negative": -4.3820110243238535,
+              "absolute": 6.6944715597976465
+            },
+            "native_vjp_value": {
+              "net": 1.5999263728154887,
+              "positive": 1.8459717043703137,
+              "negative": -0.246045331554825,
+              "absolute": 2.0920170359251387
+            },
+            "native_vjp_prediction": {
+              "net": -0.4696241160345711,
+              "positive": 3.7242438165476353,
+              "negative": -4.193867932582206,
+              "absolute": 7.9181117491298405
+            },
+            "native_vjp_error": {
+              "net": -0.312188933742804,
+              "positive": 3.8773120010129873,
+              "negative": -4.189500934755792,
+              "absolute": 8.066812935768779
+            }
+          }
+        },
+        "response": {
+          "count": 230,
+          "fields": {
+            "actual_effect": {
+              "net": 52.05082160889409,
+              "positive": 57.34301901747978,
+              "negative": -5.2921974085856895,
+              "absolute": 62.63521642606547
+            },
+            "seed_cast_effect": {
+              "net": 0.0009083995971554649,
+              "positive": 0.018609674204818634,
+              "negative": -0.01770127460766317,
+              "absolute": 0.0363109488124818
+            },
+            "current_qk": {
+              "net": 2.6000386284871695,
+              "positive": 7.746433267271922,
+              "negative": -5.146394638784752,
+              "absolute": 12.892827906056674
+            },
+            "current_value": {
+              "net": 3.487872869890967,
+              "positive": 5.6887448155473095,
+              "negative": -2.200871945656342,
+              "absolute": 7.8896167612036505
+            },
+            "current_prediction": {
+              "net": 6.087911498378137,
+              "positive": 11.205653728603277,
+              "negative": -5.117742230225141,
+              "absolute": 16.32339595882842
+            },
+            "current_error": {
+              "net": -45.962910110515956,
+              "positive": 6.996761689131247,
+              "negative": -52.959671799647204,
+              "absolute": 59.95643348877846
+            },
+            "native_vjp_qk": {
+              "net": 10.77361720372015,
+              "positive": 21.924786389473706,
+              "negative": -11.151169185753556,
+              "absolute": 33.07595557522726
+            },
+            "native_vjp_value": {
+              "net": 3.488627728849126,
+              "positive": 5.689500506691957,
+              "negative": -2.2008727778428305,
+              "absolute": 7.890373284534787
+            },
+            "native_vjp_prediction": {
+              "net": 14.262244932569278,
+              "positive": 25.44494522873092,
+              "negative": -11.182700296161645,
+              "absolute": 36.627645524892564
+            },
+            "native_vjp_error": {
+              "net": -37.78857667632482,
+              "positive": 9.825261807353053,
+              "negative": -47.61383848367787,
+              "absolute": 57.439100291030925
+            }
+          }
+        }
+      }
+    }
+  },
+  "native_FA_seconds": 0.0012991353869438171,
+  "native_output_drift": {
+    "equal": true,
+    "max_absolute": 0.0,
+    "relative_L2": 0.0
+  },
+  "upstream_precision": "Stored current finite mcontent converted to native BF16, matching original finite-FA seed conversion.",
+  "native_autograd_seconds": 0.298063300549984,
+  "artifacts": {
+    "vectors.npz": {
+      "sha256": "8e7dfc815d1c5c2759c278a527468e8fc1e344959366a68e686cb8a850d995ab",
+      "bytes": 212418
+    },
+    "native_vjp_coefficients_private.pt": {
+      "sha256": "c027bba1c90d6f3b0f7d426be870aa58c79802cbfbf9f9bf7421d3d8f5fef52a",
+      "bytes": 8727097
+    }
+  },
+  "seconds": 10.937010815367103,
+  "peak_allocated_bytes": 59208192,
+  "peak_reserved_bytes": 77594624
+}
