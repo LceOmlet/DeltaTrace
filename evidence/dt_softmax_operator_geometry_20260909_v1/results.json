@@ -1,0 +1,1990 @@
+{
+  "status": "actual_saved_rows_CPU_geometry_and_conditional_diagnostic_complete",
+  "protocol": {
+    "private_artifact_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_internal_20260909_v1/MH0_current_FA19_internal_private.pt",
+    "private_artifact_sha256": "1637779cd62c6ffd05641600fc83eda87d9488ff99db1f78f4baaae0d7a93e0d",
+    "source_results_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_internal_20260909_v1/results.json",
+    "source_results_sha256": "285c8d6cbbae9f07fb6b82b5afb88ca2360ebe8cb9769475a44521faa6bcbfc7",
+    "scale": 0.0625,
+    "queries": [
+      443,
+      547
+    ],
+    "heads": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "steps": [
+      "3",
+      "10"
+    ],
+    "selection": "Two previously documented large conditional-error query coordinates; all16heads included, no outcome-dependent row filtering. Development diagnostic, not a benchmark.",
+    "budget": {
+      "CPU_saved_state_loads": 1,
+      "CPU_rows": 32,
+      "GPU_model_DT_FA_FLA_scorer_FT_generation_calls": 0,
+      "wall_time_seconds": 120
+    },
+    "geometry": "For normalized endpoints d=p1-p0,s=z1-z0,D=d.s,J=diag(p1)-p1p1^T. Supported pullback M=J+d(d-Js)^T/D need not be symmetric or PSD. Candidate H=J-(Js)(Js)^T/(s.Js)+dd^T/D is symmetric PSD and Hs=d when denominators positive; follows weighted Cauchy-Schwarz. No effectiveness claim follows from these invariants.",
+    "evaluation": "CPU FP64 algebra on actual saved native BF16 Q/K/V and BF16-rounded saved seed. Per-row softmax is a mathematical diagnostic only, not a reproduced native FA forward. Conditional effects use actual saved clean/deleted operands but ideal FP64 softmax. Numerical boundary and whole-input propagation remain untested. No global sequence-square matrices; only vectors and2x2blocks.",
+    "prior_counterexample": {
+      "z0": [
+        0,
+        40,
+        40
+      ],
+      "z1": [
+        0,
+        0,
+        -12
+      ],
+      "min_eigenvalue_symmetric_part": -0.05389602386543723,
+      "scope": "A deterministic three-category algebraic counterexample to universal PSD, not a benchmark or evidence this caused the observed real quality regression."
+    },
+    "decision": "Use actual rows to test whether the structural flaw occurs and whether symmetric correction helps both conditional directions without hiding head cancellation. Do not promote a method, implement a new GPU kernel or expand model tests from a toy counterexample alone.",
+    "files_sha256": {
+      "study.py": "beb3e89d434364ba19a7a721882500046ccbb6c59cb11b662e8b9027e275e2fd"
+    }
+  },
+  "GPU_calls": 0,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "scorer_calls": 0,
+  "FT_calls": 0,
+  "rows": [
+    {
+      "query": 443,
+      "head": 0,
+      "valid_keys": 444,
+      "D": 11.889029702636662,
+      "endpoint_variance": 6.033556576232322,
+      "supported_congruence_min_eigenvalue": 0.8740661238263527,
+      "witness_quadratic": {
+        "native": 1.0000000000000002,
+        "supported": 0.874066123826353,
+        "symmetric": 0.13395967781710327
+      },
+      "actual_g_quadratic": {
+        "native": 0.010423640899944195,
+        "logmean": 0.07614050178671714,
+        "supported": 0.02208207345349177,
+        "symmetric": 0.023052633708965986
+      },
+      "secant_residual": {
+        "logmean": -2.7755575615628914e-16,
+        "supported": 5.551115123125783e-17,
+        "symmetric": -5.551115123125783e-17
+      },
+      "zero_sum": {
+        "logmean": -1.3877787807814457e-17,
+        "supported": 6.938893903907228e-18,
+        "symmetric": 1.0408340855860843e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.0023468682039923822,
+          "predictions": {
+            "logmean": 0.19711841632754123,
+            "supported": 0.23435847843250956,
+            "symmetric": 0.23547927364370627
+          },
+          "errors": {
+            "logmean": 0.19477154812354885,
+            "supported": 0.23201161022851718,
+            "symmetric": 0.2331324054397139
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.03390628953713966,
+          "predictions": {
+            "logmean": 0.3025664037914437,
+            "supported": 0.281848293045085,
+            "symmetric": 0.2762754365220852
+          },
+          "errors": {
+            "logmean": 0.2686601142543041,
+            "supported": 0.24794200350794537,
+            "symmetric": 0.24236914698494555
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 1,
+      "valid_keys": 444,
+      "D": 12.210096369704857,
+      "endpoint_variance": 22.920657837400274,
+      "supported_congruence_min_eigenvalue": 0.530746360050626,
+      "witness_quadratic": {
+        "native": 1.0000000000000002,
+        "supported": 0.5307463600506258,
+        "symmetric": 0.47067898942459774
+      },
+      "actual_g_quadratic": {
+        "native": 0.003745793286746465,
+        "logmean": 0.00779922101151803,
+        "supported": 0.00358068644030972,
+        "symmetric": 0.0034492714142332487
+      },
+      "secant_residual": {
+        "logmean": 4.85722573273506e-17,
+        "supported": 3.469446951953614e-17,
+        "symmetric": 4.163336342344337e-17
+      },
+      "zero_sum": {
+        "logmean": 6.938893903907228e-18,
+        "supported": 1.0408340855860843e-17,
+        "symmetric": 3.469446951953614e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.02017316334075285,
+          "predictions": {
+            "logmean": 0.021455800273904514,
+            "supported": -0.007517942919721819,
+            "symmetric": -0.012067346954817225
+          },
+          "errors": {
+            "logmean": 0.0012826369331516638,
+            "supported": -0.02769110626047467,
+            "symmetric": -0.032240510295570075
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.008938293909875982,
+          "predictions": {
+            "logmean": -0.018095724949441505,
+            "supported": -0.025154495848523556,
+            "symmetric": -0.020646895926761555
+          },
+          "errors": {
+            "logmean": -0.027034018859317485,
+            "supported": -0.034092789758399536,
+            "symmetric": -0.029585189836637535
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 2,
+      "valid_keys": 444,
+      "D": 14.223795172768998,
+      "endpoint_variance": 10.816166841010082,
+      "supported_congruence_min_eigenvalue": 0.8110314660874276,
+      "witness_quadratic": {
+        "native": 0.9999999999999998,
+        "supported": 0.8110314660874275,
+        "symmetric": 0.19633663743198376
+      },
+      "actual_g_quadratic": {
+        "native": 0.00928392878833419,
+        "logmean": 0.017650085847999993,
+        "supported": 0.011684310493758787,
+        "symmetric": 0.01242536121359413
+      },
+      "secant_residual": {
+        "logmean": 5.551115123125783e-17,
+        "supported": -5.551115123125783e-17,
+        "symmetric": -5.551115123125783e-17
+      },
+      "zero_sum": {
+        "logmean": -3.642919299551295e-17,
+        "supported": 9.540979117872439e-18,
+        "symmetric": 2.42861286636753e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.05277592174799111,
+          "predictions": {
+            "logmean": 0.1503510017759639,
+            "supported": 0.12158733568536391,
+            "symmetric": 0.10013014147631946
+          },
+          "errors": {
+            "logmean": 0.203126923523955,
+            "supported": 0.174363257433355,
+            "symmetric": 0.15290606322431058
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.02146491382173292,
+          "predictions": {
+            "logmean": 0.2548781594228744,
+            "supported": 0.2273174180852727,
+            "symmetric": 0.19465605647444156
+          },
+          "errors": {
+            "logmean": 0.23341324560114146,
+            "supported": 0.2058525042635398,
+            "symmetric": 0.17319114265270863
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 3,
+      "valid_keys": 444,
+      "D": 12.590810409570071,
+      "endpoint_variance": 14.925828047237442,
+      "supported_congruence_min_eigenvalue": 0.7037483682029118,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.7037483682029115,
+        "symmetric": 0.2969546568005922
+      },
+      "actual_g_quadratic": {
+        "native": 0.009381906414811875,
+        "logmean": 0.020898719467278302,
+        "supported": 0.011892962222344875,
+        "symmetric": 0.014024919426572696
+      },
+      "secant_residual": {
+        "logmean": -5.551115123125783e-17,
+        "supported": 0.0,
+        "symmetric": 0.0
+      },
+      "zero_sum": {
+        "logmean": -6.938893903907228e-18,
+        "supported": -1.0408340855860843e-17,
+        "symmetric": -2.2551405187698492e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.029296301148522604,
+          "predictions": {
+            "logmean": 0.06533000377191875,
+            "supported": 0.07457702977392552,
+            "symmetric": 0.04365516486544333
+          },
+          "errors": {
+            "logmean": 0.09462630492044136,
+            "supported": 0.10387333092244813,
+            "symmetric": 0.07295146601396593
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.06961987781168269,
+          "predictions": {
+            "logmean": 0.23708306198452495,
+            "supported": 0.20848116325957192,
+            "symmetric": 0.1994451427201802
+          },
+          "errors": {
+            "logmean": 0.16746318417284226,
+            "supported": 0.13886128544788923,
+            "symmetric": 0.12982526490849752
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 4,
+      "valid_keys": 444,
+      "D": 12.034672542637466,
+      "endpoint_variance": 7.048051617767594,
+      "supported_congruence_min_eigenvalue": 0.895868877046508,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.8958688770465081,
+        "symmetric": 0.41087662295433625
+      },
+      "actual_g_quadratic": {
+        "native": 0.02249071379537381,
+        "logmean": 0.1364536656150039,
+        "supported": 0.04646910851896494,
+        "symmetric": 0.05064551112935731
+      },
+      "secant_residual": {
+        "logmean": -1.1102230246251565e-16,
+        "supported": 0.0,
+        "symmetric": 0.0
+      },
+      "zero_sum": {
+        "logmean": -4.163336342344337e-17,
+        "supported": 0.0,
+        "symmetric": 2.0816681711721685e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.014644459434636853,
+          "predictions": {
+            "logmean": 0.3030766289980143,
+            "supported": 0.39260385715027546,
+            "symmetric": 0.3668358444541215
+          },
+          "errors": {
+            "logmean": 0.28843216956337747,
+            "supported": 0.3779593977156386,
+            "symmetric": 0.35219138501948466
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.2133084719167947,
+          "predictions": {
+            "logmean": 0.47972270874887335,
+            "supported": 0.5111623398678518,
+            "symmetric": 0.4947272338610507
+          },
+          "errors": {
+            "logmean": 0.26641423683207865,
+            "supported": 0.29785386795105706,
+            "symmetric": 0.281418761944256
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 5,
+      "valid_keys": 444,
+      "D": 15.061151065696162,
+      "endpoint_variance": 18.286976203868452,
+      "supported_congruence_min_eigenvalue": 0.7108074423791723,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.7108074423791721,
+        "symmetric": 0.3769513534151772
+      },
+      "actual_g_quadratic": {
+        "native": 0.0011594248474861087,
+        "logmean": 0.0020090417503257647,
+        "supported": 0.0013626803345085712,
+        "symmetric": 0.001334699218597756
+      },
+      "secant_residual": {
+        "logmean": 0.0,
+        "supported": 1.3877787807814457e-17,
+        "symmetric": 2.0816681711721685e-17
+      },
+      "zero_sum": {
+        "logmean": 6.938893903907228e-18,
+        "supported": -6.505213034913027e-19,
+        "symmetric": -3.2526065174565133e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.025708651594146925,
+          "predictions": {
+            "logmean": 0.04321668105212394,
+            "supported": 0.045720100943869815,
+            "symmetric": 0.046611204273813205
+          },
+          "errors": {
+            "logmean": 0.017508029457977012,
+            "supported": 0.02001144934972289,
+            "symmetric": 0.02090255267966628
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.05276701374668609,
+          "predictions": {
+            "logmean": 0.053980129370356386,
+            "supported": 0.050038204635547,
+            "symmetric": 0.04977646481440523
+          },
+          "errors": {
+            "logmean": 0.0012131156236702967,
+            "supported": -0.0027288091111390897,
+            "symmetric": -0.0029905489322808593
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 6,
+      "valid_keys": 444,
+      "D": 8.355007187563162,
+      "endpoint_variance": 33.19717032937394,
+      "supported_congruence_min_eigenvalue": 0.16512625519830437,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.1651262551983042,
+        "symmetric": 0.49177320767364463
+      },
+      "actual_g_quadratic": {
+        "native": 0.004356041616147319,
+        "logmean": 0.0035879688386020996,
+        "supported": 0.002741331823009124,
+        "symmetric": 0.0033197548291992486
+      },
+      "secant_residual": {
+        "logmean": 0.0,
+        "supported": 0.0,
+        "symmetric": 2.7755575615628914e-17
+      },
+      "zero_sum": {
+        "logmean": 5.204170427930421e-18,
+        "supported": -3.469446951953614e-18,
+        "symmetric": -1.3877787807814457e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.048256349123198705,
+          "predictions": {
+            "logmean": 0.057516829394771415,
+            "supported": 0.05530161612784819,
+            "symmetric": 0.024138235657085054
+          },
+          "errors": {
+            "logmean": 0.00926048027157271,
+            "supported": 0.007045267004649483,
+            "symmetric": -0.02411811346611365
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.06283443058688912,
+          "predictions": {
+            "logmean": 0.0825795920575138,
+            "supported": 0.08108559172783658,
+            "symmetric": 0.05750571803488723
+          },
+          "errors": {
+            "logmean": 0.01974516147062469,
+            "supported": 0.018251161140947464,
+            "symmetric": -0.005328712552001888
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 7,
+      "valid_keys": 444,
+      "D": 12.70598633828648,
+      "endpoint_variance": 17.551477456850762,
+      "supported_congruence_min_eigenvalue": 0.6752015818906194,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.6752015818906192,
+        "symmetric": 0.4668746723527394
+      },
+      "actual_g_quadratic": {
+        "native": 0.005757877067014874,
+        "logmean": 0.00824175238413847,
+        "supported": 0.006172560690662762,
+        "symmetric": 0.005397991290317367
+      },
+      "secant_residual": {
+        "logmean": 2.0816681711721685e-17,
+        "supported": 9.71445146547012e-17,
+        "symmetric": 6.938893903907228e-17
+      },
+      "zero_sum": {
+        "logmean": -3.469446951953614e-18,
+        "supported": 3.642919299551295e-17,
+        "symmetric": 1.214306433183765e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.01079430529822012,
+          "predictions": {
+            "logmean": 0.024755245239620718,
+            "supported": 0.013161776510732595,
+            "symmetric": 0.020462665006779276
+          },
+          "errors": {
+            "logmean": 0.03554955053784084,
+            "supported": 0.023956081808952714,
+            "symmetric": 0.031256970304999396
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.04021958482006695,
+          "predictions": {
+            "logmean": 0.052871721541361,
+            "supported": -0.009578967901198832,
+            "symmetric": -0.0019415236012032266
+          },
+          "errors": {
+            "logmean": 0.012652136721294054,
+            "supported": -0.04979855272126578,
+            "symmetric": -0.042161108421270174
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 8,
+      "valid_keys": 444,
+      "D": 8.262958587830795,
+      "endpoint_variance": 15.078082380568937,
+      "supported_congruence_min_eigenvalue": 0.544240140775933,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.544240140775933,
+        "symmetric": 0.46576119066139415
+      },
+      "actual_g_quadratic": {
+        "native": 0.08600406860439533,
+        "logmean": 0.1154552511149298,
+        "supported": 0.08831289357998018,
+        "symmetric": 0.09239122733408675
+      },
+      "secant_residual": {
+        "logmean": 1.1102230246251565e-16,
+        "supported": 0.0,
+        "symmetric": 0.0
+      },
+      "zero_sum": {
+        "logmean": 2.2551405187698492e-17,
+        "supported": 2.688821387764051e-17,
+        "symmetric": 4.163336342344337e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.04008516713791625,
+          "predictions": {
+            "logmean": -0.07935733946476257,
+            "supported": -0.08263410794383581,
+            "symmetric": -0.07423635078988776
+          },
+          "errors": {
+            "logmean": -0.11944250660267883,
+            "supported": -0.12271927508175207,
+            "symmetric": -0.11432151792780401
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.05522185044975397,
+          "predictions": {
+            "logmean": -0.1901438721260642,
+            "supported": -0.16781648693110424,
+            "symmetric": -0.13941840190831728
+          },
+          "errors": {
+            "logmean": -0.13492202167631023,
+            "supported": -0.11259463648135026,
+            "symmetric": -0.0841965514585633
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 9,
+      "valid_keys": 444,
+      "D": 9.407796661672176,
+      "endpoint_variance": 14.52933955373165,
+      "supported_congruence_min_eigenvalue": 0.6192063968207014,
+      "witness_quadratic": {
+        "native": 0.9999999999999999,
+        "supported": 0.6192063968207009,
+        "symmetric": 0.4295912416355341
+      },
+      "actual_g_quadratic": {
+        "native": 0.001011766777053207,
+        "logmean": 0.0018216355159498556,
+        "supported": 0.0010329381501062247,
+        "symmetric": 0.0011260419110391841
+      },
+      "secant_residual": {
+        "logmean": -6.938893903907228e-18,
+        "supported": 0.0,
+        "symmetric": 6.938893903907228e-18
+      },
+      "zero_sum": {
+        "logmean": 1.734723475976807e-18,
+        "supported": 8.673617379884035e-19,
+        "symmetric": 0.0
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.00402857274081378,
+          "predictions": {
+            "logmean": -0.007528507479518895,
+            "supported": -0.0076738572506823595,
+            "symmetric": -0.00556792007081224
+          },
+          "errors": {
+            "logmean": -0.011557080220332677,
+            "supported": -0.011702429991496139,
+            "symmetric": -0.009596492811626021
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.03362308589267775,
+          "predictions": {
+            "logmean": -0.04288405014646208,
+            "supported": -0.04704743080489718,
+            "symmetric": -0.0426389789298781
+          },
+          "errors": {
+            "logmean": -0.00926096425378433,
+            "supported": -0.01342434491221943,
+            "symmetric": -0.009015893037200351
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 10,
+      "valid_keys": 444,
+      "D": 15.85387649614119,
+      "endpoint_variance": 7.241047304531266,
+      "supported_congruence_min_eigenvalue": 0.8862498185788237,
+      "witness_quadratic": {
+        "native": 1.0000000000000002,
+        "supported": 0.886249818578824,
+        "symmetric": 0.11780594918145931
+      },
+      "actual_g_quadratic": {
+        "native": 0.0074294665523071115,
+        "logmean": 0.04257091073129445,
+        "supported": 0.007376656247349828,
+        "symmetric": 0.0070272746441308355
+      },
+      "secant_residual": {
+        "logmean": -1.3183898417423734e-16,
+        "supported": 2.0816681711721685e-17,
+        "symmetric": 0.0
+      },
+      "zero_sum": {
+        "logmean": -2.7755575615628914e-17,
+        "supported": -3.2959746043559335e-17,
+        "symmetric": -6.852157730108388e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.03170639917829335,
+          "predictions": {
+            "logmean": 0.03608060949384316,
+            "supported": 0.04159655815664403,
+            "symmetric": 0.03594448263620163
+          },
+          "errors": {
+            "logmean": 0.06778700867213651,
+            "supported": 0.07330295733493739,
+            "symmetric": 0.06765088181449498
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.017364246646268684,
+          "predictions": {
+            "logmean": 0.04871152601438268,
+            "supported": 0.03473105468121107,
+            "symmetric": 0.022842544215540418
+          },
+          "errors": {
+            "logmean": 0.031347279368113996,
+            "supported": 0.017366808034942387,
+            "symmetric": 0.005478297569271734
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 11,
+      "valid_keys": 444,
+      "D": 13.427710813431798,
+      "endpoint_variance": 11.115609304887801,
+      "supported_congruence_min_eigenvalue": 0.7957600627594287,
+      "witness_quadratic": {
+        "native": 1.0000000000000002,
+        "supported": 0.7957600627594288,
+        "symmetric": 0.22108075460219867
+      },
+      "actual_g_quadratic": {
+        "native": 0.0019067749722270003,
+        "logmean": 0.0038150213598097107,
+        "supported": 0.0023032904300878754,
+        "symmetric": 0.0021230580053555417
+      },
+      "secant_residual": {
+        "logmean": 1.3877787807814457e-17,
+        "supported": -1.3877787807814457e-17,
+        "symmetric": -4.163336342344337e-17
+      },
+      "zero_sum": {
+        "logmean": 6.938893903907228e-18,
+        "supported": -3.686287386450715e-18,
+        "symmetric": -4.336808689942018e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.06881054045275661,
+          "predictions": {
+            "logmean": 0.010213878732373718,
+            "supported": -0.013975743607686796,
+            "symmetric": -0.014216962491901743
+          },
+          "errors": {
+            "logmean": 0.07902441918513033,
+            "supported": 0.05483479684506982,
+            "symmetric": 0.05459357796085487
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.008741696158629464,
+          "predictions": {
+            "logmean": 0.04155942373627765,
+            "supported": 0.014022733147881872,
+            "symmetric": 0.017237258148710112
+          },
+          "errors": {
+            "logmean": 0.05030111989490711,
+            "supported": 0.022764429306511336,
+            "symmetric": 0.025978954307339576
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 12,
+      "valid_keys": 444,
+      "D": 18.167825474676647,
+      "endpoint_variance": 11.410812366197451,
+      "supported_congruence_min_eigenvalue": 0.8451706047581937,
+      "witness_quadratic": {
+        "native": 1.0000000000000002,
+        "supported": 0.845170604758194,
+        "symmetric": 0.17072728967992692
+      },
+      "actual_g_quadratic": {
+        "native": 0.0014428670008846656,
+        "logmean": 0.007163878684921144,
+        "supported": 0.0016498922604724106,
+        "symmetric": 0.0016556424616917316
+      },
+      "secant_residual": {
+        "logmean": 5.551115123125783e-17,
+        "supported": 6.938893903907228e-18,
+        "symmetric": 6.938893903907228e-18
+      },
+      "zero_sum": {
+        "logmean": 8.673617379884035e-18,
+        "supported": -4.662069341687669e-18,
+        "symmetric": -3.7947076036992655e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.018274621576616287,
+          "predictions": {
+            "logmean": 0.05233343285424122,
+            "supported": 0.04294727427844748,
+            "symmetric": 0.04286694228915877
+          },
+          "errors": {
+            "logmean": 0.03405881127762493,
+            "supported": 0.024672652701831194,
+            "symmetric": 0.024592320712542484
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.06820063714041844,
+          "predictions": {
+            "logmean": 0.06532961235569539,
+            "supported": 0.05991909783436812,
+            "symmetric": 0.059818434989288495
+          },
+          "errors": {
+            "logmean": -0.0028710247847230502,
+            "supported": -0.008281539306050315,
+            "symmetric": -0.00838220215112994
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 13,
+      "valid_keys": 444,
+      "D": 10.447308141111932,
+      "endpoint_variance": 18.096903788570355,
+      "supported_congruence_min_eigenvalue": 0.5672599703082346,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.5672599703082344,
+        "symmetric": 0.43748811123935816
+      },
+      "actual_g_quadratic": {
+        "native": 0.000344920377543908,
+        "logmean": 0.0006505840009032125,
+        "supported": 0.0004290896702953568,
+        "symmetric": 0.00028840239798936905
+      },
+      "secant_residual": {
+        "logmean": 6.938893903907228e-18,
+        "supported": -3.469446951953614e-18,
+        "symmetric": -3.469446951953614e-18
+      },
+      "zero_sum": {
+        "logmean": 0.0,
+        "supported": 7.806255641895632e-18,
+        "symmetric": 1.5178830414797062e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.0015154589795196224,
+          "predictions": {
+            "logmean": 0.011337037960689824,
+            "supported": 0.009205835130955537,
+            "symmetric": 0.007961665981629156
+          },
+          "errors": {
+            "logmean": 0.012852496940209446,
+            "supported": 0.01072129411047516,
+            "symmetric": 0.009477124961148779
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.01714549055322028,
+          "predictions": {
+            "logmean": 0.015859438821652923,
+            "supported": 0.015175193633891384,
+            "symmetric": 0.017493759452540978
+          },
+          "errors": {
+            "logmean": -0.0012860517315673586,
+            "supported": -0.0019702969193288976,
+            "symmetric": 0.0003482688993206966
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 14,
+      "valid_keys": 444,
+      "D": 14.61985684157538,
+      "endpoint_variance": 24.129685711512746,
+      "supported_congruence_min_eigenvalue": 0.5902104342474704,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.5902104342474707,
+        "symmetric": 0.44302321664804084
+      },
+      "actual_g_quadratic": {
+        "native": 0.00387572658574333,
+        "logmean": 0.004497443485593477,
+        "supported": 0.003217009723001726,
+        "symmetric": 0.004010948169454673
+      },
+      "secant_residual": {
+        "logmean": -2.7755575615628914e-17,
+        "supported": 2.7755575615628914e-17,
+        "symmetric": 5.551115123125783e-17
+      },
+      "zero_sum": {
+        "logmean": -8.673617379884035e-19,
+        "supported": -1.8444989459409644e-17,
+        "symmetric": -6.938893903907228e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.058497700570010636,
+          "predictions": {
+            "logmean": 0.09819640900892308,
+            "supported": 0.149527432295477,
+            "symmetric": 0.11683138788529132
+          },
+          "errors": {
+            "logmean": 0.03969870843891245,
+            "supported": 0.09102973172546636,
+            "symmetric": 0.058333687315280686
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.15498523721034058,
+          "predictions": {
+            "logmean": 0.14342201395413462,
+            "supported": 0.15575862099624627,
+            "symmetric": 0.1371761254883466
+          },
+          "errors": {
+            "logmean": -0.011563223256205957,
+            "supported": 0.0007733837859056902,
+            "symmetric": -0.01780911172199398
+          }
+        }
+      }
+    },
+    {
+      "query": 443,
+      "head": 15,
+      "valid_keys": 444,
+      "D": 10.4249153791554,
+      "endpoint_variance": 6.26603716308567,
+      "supported_congruence_min_eigenvalue": 0.8504602165463664,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.8504602165463662,
+        "symmetric": 0.15498994365992563
+      },
+      "actual_g_quadratic": {
+        "native": 0.0025005253867115647,
+        "logmean": 0.014424828066851216,
+        "supported": 0.0027827232860431093,
+        "symmetric": 0.0028448905698860633
+      },
+      "secant_residual": {
+        "logmean": 4.163336342344337e-17,
+        "supported": 1.3877787807814457e-17,
+        "symmetric": 1.3877787807814457e-17
+      },
+      "zero_sum": {
+        "logmean": 2.0816681711721685e-17,
+        "supported": -2.6020852139652106e-18,
+        "symmetric": -1.734723475976807e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.009621153831496233,
+          "predictions": {
+            "logmean": 0.03055349545536741,
+            "supported": 0.027933601379219672,
+            "symmetric": 0.029020641265434244
+          },
+          "errors": {
+            "logmean": 0.040174649286863644,
+            "supported": 0.037554755210715905,
+            "symmetric": 0.03864179509693048
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.006686532526068531,
+          "predictions": {
+            "logmean": 0.05744989477414977,
+            "supported": 0.05767464500648321,
+            "symmetric": 0.05530462623736451
+          },
+          "errors": {
+            "logmean": 0.05076336224808124,
+            "supported": 0.05098811248041468,
+            "symmetric": 0.04861809371129598
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 0,
+      "valid_keys": 548,
+      "D": 18.374627322836254,
+      "endpoint_variance": 23.078696511367937,
+      "supported_congruence_min_eigenvalue": 0.6862034639826056,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.6862034639826057,
+        "symmetric": 0.31514526765166473
+      },
+      "actual_g_quadratic": {
+        "native": 0.0036429648002179772,
+        "logmean": 0.0034437643240439776,
+        "supported": 0.0035383451599098866,
+        "symmetric": 0.0036171810331173788
+      },
+      "secant_residual": {
+        "logmean": 0.0,
+        "supported": 5.551115123125783e-17,
+        "symmetric": 4.163336342344337e-17
+      },
+      "zero_sum": {
+        "logmean": 8.239936510889834e-18,
+        "supported": 4.336808689942018e-18,
+        "symmetric": -4.336808689942018e-19
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.012171275311977325,
+          "predictions": {
+            "logmean": 0.01430886524119938,
+            "supported": -0.033674141036377274,
+            "symmetric": -0.007002714063709104
+          },
+          "errors": {
+            "logmean": 0.026480140553176705,
+            "supported": -0.02150286572439995,
+            "symmetric": 0.0051685612482682206
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.020215727069619292,
+          "predictions": {
+            "logmean": 0.036042359899530654,
+            "supported": -0.01136738156636653,
+            "symmetric": 0.01843529273203355
+          },
+          "errors": {
+            "logmean": 0.015826632829911362,
+            "supported": -0.03158310863598582,
+            "symmetric": -0.0017804343375857415
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 1,
+      "valid_keys": 548,
+      "D": 14.892466903912727,
+      "endpoint_variance": 45.290743988125314,
+      "supported_congruence_min_eigenvalue": 0.23978649640032834,
+      "witness_quadratic": {
+        "native": 0.9999999999999999,
+        "supported": 0.23978649640032865,
+        "symmetric": 0.7598392829409026
+      },
+      "actual_g_quadratic": {
+        "native": 0.008460249279340205,
+        "logmean": 0.0034898179875866965,
+        "supported": 0.0060903715327512865,
+        "symmetric": 0.006199121463458404
+      },
+      "secant_residual": {
+        "logmean": -2.7755575615628914e-17,
+        "supported": -2.7755575615628914e-17,
+        "symmetric": 8.326672684688674e-17
+      },
+      "zero_sum": {
+        "logmean": -6.938893903907228e-18,
+        "supported": 2.168404344971009e-18,
+        "symmetric": 2.1846673775582914e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.06416258153418289,
+          "predictions": {
+            "logmean": -0.049575696520309236,
+            "supported": 0.0013902482488585416,
+            "symmetric": -0.060189843798704123
+          },
+          "errors": {
+            "logmean": 0.014586885013873653,
+            "supported": 0.06555282978304143,
+            "symmetric": 0.003972737735478765
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.12389971945875113,
+          "predictions": {
+            "logmean": -0.08144423821717006,
+            "supported": -0.03362570502416776,
+            "symmetric": -0.09074352930920108
+          },
+          "errors": {
+            "logmean": 0.042455481241581064,
+            "supported": 0.09027401443458337,
+            "symmetric": 0.03315619014955004
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 2,
+      "valid_keys": 548,
+      "D": 23.55797836970592,
+      "endpoint_variance": 19.60321601954211,
+      "supported_congruence_min_eigenvalue": 0.7920134768046201,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.7920134768046205,
+        "symmetric": 0.2082674325744807
+      },
+      "actual_g_quadratic": {
+        "native": 0.0023372660894587054,
+        "logmean": 0.0018632833123383165,
+        "supported": 0.0023855454754041433,
+        "symmetric": 0.002397180054350522
+      },
+      "secant_residual": {
+        "logmean": 6.938893903907228e-18,
+        "supported": 1.3877787807814457e-16,
+        "symmetric": 0.0
+      },
+      "zero_sum": {
+        "logmean": -2.032879073410321e-18,
+        "supported": -3.2526065174565133e-18,
+        "symmetric": -8.890457814381136e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.01861234500986937,
+          "predictions": {
+            "logmean": 0.02186852531533262,
+            "supported": -0.030321653267680545,
+            "symmetric": -0.029981210372409098
+          },
+          "errors": {
+            "logmean": 0.04048087032520199,
+            "supported": -0.011709308257811173,
+            "symmetric": -0.011368865362539726
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.02808044197216238,
+          "predictions": {
+            "logmean": 0.03186906184950145,
+            "supported": 0.017707108162210092,
+            "symmetric": 0.01767314655141619
+          },
+          "errors": {
+            "logmean": 0.003788619877339073,
+            "supported": -0.010373333809952288,
+            "symmetric": -0.010407295420746188
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 3,
+      "valid_keys": 548,
+      "D": 15.11329220186963,
+      "endpoint_variance": 41.654882240803275,
+      "supported_congruence_min_eigenvalue": 0.31172756333393636,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.31172756333393625,
+        "symmetric": 0.6837812228750585
+      },
+      "actual_g_quadratic": {
+        "native": 0.008372167346382938,
+        "logmean": 0.005100769627052628,
+        "supported": 0.007944385976956502,
+        "symmetric": 0.00806157012682806
+      },
+      "secant_residual": {
+        "logmean": 0.0,
+        "supported": 2.7755575615628914e-17,
+        "symmetric": -5.551115123125783e-17
+      },
+      "zero_sum": {
+        "logmean": -4.7704895589362195e-18,
+        "supported": -6.505213034913027e-19,
+        "symmetric": 6.071532165918825e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.016634120617832333,
+          "predictions": {
+            "logmean": 0.028645912276087624,
+            "supported": -0.08489524804539214,
+            "symmetric": -0.09677348666220491
+          },
+          "errors": {
+            "logmean": 0.04528003289391996,
+            "supported": -0.06826112742755981,
+            "symmetric": -0.08013936604437258
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.047098071521010046,
+          "predictions": {
+            "logmean": 0.03944792629000643,
+            "supported": -0.05387924256756847,
+            "symmetric": -0.04311148848639314
+          },
+          "errors": {
+            "logmean": -0.007650145231003616,
+            "supported": -0.10097731408857852,
+            "symmetric": -0.09020956000740318
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 4,
+      "valid_keys": 548,
+      "D": 19.710978044552302,
+      "endpoint_variance": 8.973089448439246,
+      "supported_congruence_min_eigenvalue": 0.8914641096854036,
+      "witness_quadratic": {
+        "native": 0.9999999999999998,
+        "supported": 0.8914641096854033,
+        "symmetric": 0.15768952351882523
+      },
+      "actual_g_quadratic": {
+        "native": 0.13514054958941546,
+        "logmean": 0.06598176873435227,
+        "supported": 0.15417189116013064,
+        "symmetric": 0.09374647263836029
+      },
+      "secant_residual": {
+        "logmean": 0.0,
+        "supported": -1.4988010832439613e-15,
+        "symmetric": -8.326672684688674e-16
+      },
+      "zero_sum": {
+        "logmean": 6.938893903907228e-18,
+        "supported": 5.551115123125783e-17,
+        "symmetric": -3.469446951953614e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.39262753921620425,
+          "predictions": {
+            "logmean": 0.049819643749667915,
+            "supported": -0.6580654849634002,
+            "symmetric": -0.39753327416801787
+          },
+          "errors": {
+            "logmean": 0.44244718296587215,
+            "supported": -0.265437945747196,
+            "symmetric": -0.004905734951813623
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.19731467281320003,
+          "predictions": {
+            "logmean": 0.18468565379476642,
+            "supported": -0.045545921450455884,
+            "symmetric": -0.02139967928244557
+          },
+          "errors": {
+            "logmean": 0.38200032660796646,
+            "supported": 0.15176875136274415,
+            "symmetric": 0.17591499353075446
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 5,
+      "valid_keys": 548,
+      "D": 10.870347288288887,
+      "endpoint_variance": 34.079819995189574,
+      "supported_congruence_min_eigenvalue": 0.24027520077791342,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.24027520077791303,
+        "symmetric": 0.6646680536049248
+      },
+      "actual_g_quadratic": {
+        "native": 0.049454195691466626,
+        "logmean": 0.0400188351167635,
+        "supported": 0.0440056852410807,
+        "symmetric": 0.03434183489478009
+      },
+      "secant_residual": {
+        "logmean": -9.71445146547012e-17,
+        "supported": 1.6653345369377348e-16,
+        "symmetric": 8.049116928532385e-16
+      },
+      "zero_sum": {
+        "logmean": -6.938893903907228e-18,
+        "supported": 7.112366251504909e-17,
+        "symmetric": 9.71445146547012e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.040077960049778524,
+          "predictions": {
+            "logmean": 0.0010013666948847089,
+            "supported": 0.02643587856102797,
+            "symmetric": -0.029761212844138858
+          },
+          "errors": {
+            "logmean": 0.04107932674466323,
+            "supported": 0.0665138386108065,
+            "symmetric": 0.010316747205639666
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.08505787546728737,
+          "predictions": {
+            "logmean": -0.008583594521144905,
+            "supported": -0.03386252538472992,
+            "symmetric": -0.059149847431942196
+          },
+          "errors": {
+            "logmean": 0.07647428094614246,
+            "supported": 0.05119535008255745,
+            "symmetric": 0.02590802803534517
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 6,
+      "valid_keys": 548,
+      "D": 11.232101141387016,
+      "endpoint_variance": 53.30189675642183,
+      "supported_congruence_min_eigenvalue": 0.031086476904959248,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.03108647690495922,
+        "symmetric": 0.5948491056772683
+      },
+      "actual_g_quadratic": {
+        "native": 0.033826180841202015,
+        "logmean": 0.036854862710342676,
+        "supported": 0.034566696276336045,
+        "symmetric": 0.033954469768256376
+      },
+      "secant_residual": {
+        "logmean": 0.0,
+        "supported": -5.551115123125783e-17,
+        "symmetric": -1.3877787807814457e-17
+      },
+      "zero_sum": {
+        "logmean": 1.1709383462843448e-17,
+        "supported": 8.673617379884035e-19,
+        "symmetric": -4.336808689942018e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.0593791752451039,
+          "predictions": {
+            "logmean": 0.05981148932218831,
+            "supported": 0.06590694913182706,
+            "symmetric": 0.06229143257466331
+          },
+          "errors": {
+            "logmean": 0.0004323140770844114,
+            "supported": 0.006527773886723154,
+            "symmetric": 0.002912257329559409
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.04185211823317156,
+          "predictions": {
+            "logmean": 0.042134211794771115,
+            "supported": 0.06901521803582242,
+            "symmetric": 0.0668850570735624
+          },
+          "errors": {
+            "logmean": 0.0002820935615995557,
+            "supported": 0.02716309980265086,
+            "symmetric": 0.025032938840390845
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 7,
+      "valid_keys": 548,
+      "D": 23.287618772556797,
+      "endpoint_variance": 3.3159477079483963,
+      "supported_congruence_min_eigenvalue": 0.9656851690472977,
+      "witness_quadratic": {
+        "native": 0.9999999999999999,
+        "supported": 0.9656851690472976,
+        "symmetric": 0.07053703187997419
+      },
+      "actual_g_quadratic": {
+        "native": 0.0015145343989595651,
+        "logmean": 0.01452624215414924,
+        "supported": 0.00867432404789805,
+        "symmetric": 0.008943118280779446
+      },
+      "secant_residual": {
+        "logmean": 2.7755575615628914e-16,
+        "supported": -5.551115123125783e-17,
+        "symmetric": -2.7755575615628914e-16
+      },
+      "zero_sum": {
+        "logmean": 2.0816681711721685e-17,
+        "supported": 1.5612511283791264e-17,
+        "symmetric": 2.706168622523819e-16
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.06683267522709913,
+          "predictions": {
+            "logmean": -0.10541297380934495,
+            "supported": -0.10054952702902287,
+            "symmetric": -0.09189898408990813
+          },
+          "errors": {
+            "logmean": -0.03858029858224582,
+            "supported": -0.03371685180192374,
+            "symmetric": -0.025066308862809
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.23344500140746513,
+          "predictions": {
+            "logmean": -0.21025130134913791,
+            "supported": -0.1882729650569482,
+            "symmetric": -0.17330974154215517
+          },
+          "errors": {
+            "logmean": 0.023193700058327216,
+            "supported": 0.04517203635051692,
+            "symmetric": 0.06013525986530996
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 8,
+      "valid_keys": 548,
+      "D": 11.835047172047187,
+      "endpoint_variance": 27.024002223543796,
+      "supported_congruence_min_eigenvalue": 0.43088214640606126,
+      "witness_quadratic": {
+        "native": 0.9999999999999998,
+        "supported": 0.4308821464060614,
+        "symmetric": 0.5444346504048092
+      },
+      "actual_g_quadratic": {
+        "native": 0.12598483393773413,
+        "logmean": 0.13374976744106803,
+        "supported": 0.0952073150811509,
+        "symmetric": 0.10794057829842273
+      },
+      "secant_residual": {
+        "logmean": -2.220446049250313e-16,
+        "supported": -1.1102230246251565e-16,
+        "symmetric": -2.220446049250313e-16
+      },
+      "zero_sum": {
+        "logmean": 8.673617379884035e-19,
+        "supported": -6.722053469410127e-17,
+        "symmetric": -2.0556473190325164e-16
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.012698404516266396,
+          "predictions": {
+            "logmean": -0.09589036476881466,
+            "supported": -0.05138082407896298,
+            "symmetric": -0.133368981071705
+          },
+          "errors": {
+            "logmean": -0.10858876928508106,
+            "supported": -0.06407922859522938,
+            "symmetric": -0.1460673855879714
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.18867653468912998,
+          "predictions": {
+            "logmean": -0.2436930805776797,
+            "supported": -0.19729873613625953,
+            "symmetric": -0.2990838142059885
+          },
+          "errors": {
+            "logmean": -0.055016545888549706,
+            "supported": -0.008622201447129552,
+            "symmetric": -0.11040727951685853
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 9,
+      "valid_keys": 548,
+      "D": 15.043118870835562,
+      "endpoint_variance": 34.30375122184286,
+      "supported_congruence_min_eigenvalue": 0.43004344574329856,
+      "witness_quadratic": {
+        "native": 1.0000000000000002,
+        "supported": 0.4300434457432984,
+        "symmetric": 0.5680148956403919
+      },
+      "actual_g_quadratic": {
+        "native": 0.004483681999737914,
+        "logmean": 0.006973690136067276,
+        "supported": 0.004336784453713742,
+        "symmetric": 0.004184542597648921
+      },
+      "secant_residual": {
+        "logmean": -1.3877787807814457e-17,
+        "supported": 3.469446951953614e-18,
+        "symmetric": 4.5102810375396984e-17
+      },
+      "zero_sum": {
+        "logmean": -5.204170427930421e-18,
+        "supported": 2.5587171270657905e-17,
+        "symmetric": 2.3418766925686896e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.009102094287010459,
+          "predictions": {
+            "logmean": -0.024286129973868406,
+            "supported": -0.006168943553898031,
+            "symmetric": 0.00021217212710486662
+          },
+          "errors": {
+            "logmean": -0.015184035686857947,
+            "supported": 0.0029331507331124274,
+            "symmetric": 0.009314266414115325
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.004488091663662104,
+          "predictions": {
+            "logmean": -1.974132353627263e-05,
+            "supported": -0.00955247264634649,
+            "symmetric": 0.0006252650648528348
+          },
+          "errors": {
+            "logmean": -0.004507832987198377,
+            "supported": -0.014040564310008594,
+            "symmetric": -0.0038628265988092693
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 10,
+      "valid_keys": 548,
+      "D": 18.97981261055819,
+      "endpoint_variance": 23.845341480993604,
+      "supported_congruence_min_eigenvalue": 0.686187574854692,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.6861875748546924,
+        "symmetric": 0.315620689051208
+      },
+      "actual_g_quadratic": {
+        "native": 0.06226094631052077,
+        "logmean": 0.055094674766755294,
+        "supported": 0.05953027549652361,
+        "symmetric": 0.06072232258264406
+      },
+      "secant_residual": {
+        "logmean": -1.1102230246251565e-16,
+        "supported": 0.0,
+        "symmetric": 3.3306690738754696e-16
+      },
+      "zero_sum": {
+        "logmean": -4.163336342344337e-17,
+        "supported": -8.673617379884035e-19,
+        "symmetric": -1.0625181290357943e-16
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.050504651812096034,
+          "predictions": {
+            "logmean": 0.16651768886959506,
+            "supported": 0.2868184229758781,
+            "symmetric": 0.34859280440520335
+          },
+          "errors": {
+            "logmean": 0.2170223406816911,
+            "supported": 0.33732307478797413,
+            "symmetric": 0.39909745621729936
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.06401219083649054,
+          "predictions": {
+            "logmean": 0.2955362424206172,
+            "supported": 0.3914574099716285,
+            "symmetric": 0.4671414148639295
+          },
+          "errors": {
+            "logmean": 0.23152405158412667,
+            "supported": 0.3274452191351379,
+            "symmetric": 0.403129224027439
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 11,
+      "valid_keys": 548,
+      "D": 20.386100921099143,
+      "endpoint_variance": 11.701382562807265,
+      "supported_congruence_min_eigenvalue": 0.8565195991249006,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.8565195991249003,
+        "symmetric": 0.1436099383413435
+      },
+      "actual_g_quadratic": {
+        "native": 0.003918835699635288,
+        "logmean": 0.004543781935411624,
+        "supported": 0.003921301509773044,
+        "symmetric": 0.003913486678287445
+      },
+      "secant_residual": {
+        "logmean": 6.071532165918825e-18,
+        "supported": 1.5265566588595902e-16,
+        "symmetric": 2.914335439641036e-16
+      },
+      "zero_sum": {
+        "logmean": -2.168404344971009e-19,
+        "supported": 5.7462715141731735e-18,
+        "symmetric": 6.396792817664476e-18
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.04242877638690429,
+          "predictions": {
+            "logmean": -0.004372761281262576,
+            "supported": -0.06155712997217598,
+            "symmetric": -0.06195803015983421
+          },
+          "errors": {
+            "logmean": 0.03805601510564171,
+            "supported": -0.019128353585271693,
+            "symmetric": -0.019529253772929925
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.018652272749487338,
+          "predictions": {
+            "logmean": -0.0008908752961373674,
+            "supported": -0.023671424482963083,
+            "symmetric": -0.024399193925614363
+          },
+          "errors": {
+            "logmean": 0.01776139745334997,
+            "supported": -0.005019151733475745,
+            "symmetric": -0.005746921176127025
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 12,
+      "valid_keys": 548,
+      "D": 26.987677180562248,
+      "endpoint_variance": 4.677479485160018,
+      "supported_congruence_min_eigenvalue": 0.9569946474497795,
+      "witness_quadratic": {
+        "native": 1.0000000000000004,
+        "supported": 0.9569946474497799,
+        "symmetric": 0.0505531915481538
+      },
+      "actual_g_quadratic": {
+        "native": 0.0029992635827060083,
+        "logmean": 0.08713072588966445,
+        "supported": 0.0029743347871158954,
+        "symmetric": 0.002424741437154104
+      },
+      "secant_residual": {
+        "logmean": -6.245004513516506e-17,
+        "supported": 2.7755575615628914e-17,
+        "symmetric": 5.551115123125783e-17
+      },
+      "zero_sum": {
+        "logmean": -1.0408340855860843e-17,
+        "supported": -1.0614339268633088e-16,
+        "symmetric": -2.0025214125807267e-16
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": 0.008215420123019818,
+          "predictions": {
+            "logmean": -0.06463748061686166,
+            "supported": -0.0016755840438626313,
+            "symmetric": -0.002280038816525543
+          },
+          "errors": {
+            "logmean": -0.07285290073988147,
+            "supported": -0.009891004166882449,
+            "symmetric": -0.01049545893954536
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.2417319691973332,
+          "predictions": {
+            "logmean": -0.016367408279169066,
+            "supported": 0.0022992237921804354,
+            "symmetric": 0.008297852307594722
+          },
+          "errors": {
+            "logmean": -0.25809937747650225,
+            "supported": -0.23943274540515275,
+            "symmetric": -0.23343411688973847
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 13,
+      "valid_keys": 548,
+      "D": 4.50675422549925,
+      "endpoint_variance": 30.473367349982695,
+      "supported_congruence_min_eigenvalue": -0.10770440161289346,
+      "witness_quadratic": {
+        "native": 0.9999999999999993,
+        "supported": -0.10770440161289299,
+        "symmetric": 0.5178611383646006
+      },
+      "actual_g_quadratic": {
+        "native": 0.0042892085708968915,
+        "logmean": 0.004723077440791501,
+        "supported": 0.004157248393617503,
+        "symmetric": 0.003947517127680681
+      },
+      "secant_residual": {
+        "logmean": 1.0408340855860843e-17,
+        "supported": 2.5153490401663703e-17,
+        "symmetric": 2.5153490401663703e-17
+      },
+      "zero_sum": {
+        "logmean": 0.0,
+        "supported": 1.734723475976807e-18,
+        "symmetric": 1.1275702593849246e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.005040442821867772,
+          "predictions": {
+            "logmean": -0.003520724798841402,
+            "supported": -0.015694456230278944,
+            "symmetric": -0.0008696643130908874
+          },
+          "errors": {
+            "logmean": 0.0015197180230263696,
+            "supported": -0.010654013408411173,
+            "symmetric": 0.004170778508776884
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.0019149163547465364,
+          "predictions": {
+            "logmean": -0.00054352575180815,
+            "supported": -0.011090460260635262,
+            "symmetric": 0.0019170933636703334
+          },
+          "errors": {
+            "logmean": -0.0024584421065546864,
+            "supported": -0.013005376615381798,
+            "symmetric": 2.1770089237969394e-06
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 14,
+      "valid_keys": 548,
+      "D": 14.277852806386765,
+      "endpoint_variance": 22.622809861182155,
+      "supported_congruence_min_eigenvalue": 0.6091231095458198,
+      "witness_quadratic": {
+        "native": 1.0,
+        "supported": 0.6091231095458196,
+        "symmetric": 0.443118351034516
+      },
+      "actual_g_quadratic": {
+        "native": 0.008772731220030439,
+        "logmean": 0.012447877526256292,
+        "supported": 0.008846743744789698,
+        "symmetric": 0.01021826499426918
+      },
+      "secant_residual": {
+        "logmean": 0.0,
+        "supported": -5.551115123125783e-17,
+        "symmetric": 1.1102230246251565e-16
+      },
+      "zero_sum": {
+        "logmean": -1.0408340855860843e-17,
+        "supported": -1.8214596497756474e-17,
+        "symmetric": -3.9898639947466563e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.014288125462866608,
+          "predictions": {
+            "logmean": -0.017095004694069438,
+            "supported": -0.020033490489752843,
+            "symmetric": -0.012952126846559166
+          },
+          "errors": {
+            "logmean": -0.0028068792312028294,
+            "supported": -0.005745365026886235,
+            "symmetric": 0.0013359986163074423
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": -0.11708781113389792,
+          "predictions": {
+            "logmean": -0.1379373654322355,
+            "supported": -0.17701548660030744,
+            "symmetric": -0.13225909896058913
+          },
+          "errors": {
+            "logmean": -0.020849554298337583,
+            "supported": -0.05992767546640952,
+            "symmetric": -0.015171287826691207
+          }
+        }
+      }
+    },
+    {
+      "query": 547,
+      "head": 15,
+      "valid_keys": 548,
+      "D": 19.26701499118608,
+      "endpoint_variance": 11.242959693164838,
+      "supported_congruence_min_eigenvalue": 0.8564970059437547,
+      "witness_quadratic": {
+        "native": 0.9999999999999996,
+        "supported": 0.8564970059437542,
+        "symmetric": 0.16171894990632402
+      },
+      "actual_g_quadratic": {
+        "native": 0.018121467335282505,
+        "logmean": 0.012676022930003441,
+        "supported": 0.019320800748609895,
+        "symmetric": 0.01892736387567069
+      },
+      "secant_residual": {
+        "logmean": -1.942890293094024e-16,
+        "supported": 2.7755575615628914e-16,
+        "symmetric": 3.0531133177191805e-16
+      },
+      "zero_sum": {
+        "logmean": -2.7755575615628914e-17,
+        "supported": 1.5829351718288365e-17,
+        "symmetric": -3.480288973678469e-17
+      },
+      "conditions": {
+        "3": {
+          "ideal_softmax_effect_at_saved_V0": -0.007173123748662857,
+          "predictions": {
+            "logmean": -0.016314852900322634,
+            "supported": -0.05998837068995941,
+            "symmetric": -0.06351389034575505
+          },
+          "errors": {
+            "logmean": -0.009141729151659776,
+            "supported": -0.05281524694129655,
+            "symmetric": -0.056340766597092196
+          }
+        },
+        "10": {
+          "ideal_softmax_effect_at_saved_V0": 0.026379975271384137,
+          "predictions": {
+            "logmean": 0.030780199461509797,
+            "supported": -0.05502231703171138,
+            "symmetric": -0.05639077602787786
+          },
+          "errors": {
+            "logmean": 0.0044002241901256595,
+            "supported": -0.08140229230309551,
+            "symmetric": -0.08277075129926201
+          }
+        }
+      }
+    }
+  ],
+  "query_summaries": {
+    "443": {
+      "non_PSD_supported_rows": 0,
+      "negative_actual_g_quadratic": 0,
+      "conditions": {
+        "3": {
+          "logmean": {
+            "net": 0.9871541503097307,
+            "positive": 1.1181537371327421,
+            "negative": -0.1309995868230115,
+            "absolute": 1.2491533239557537
+          },
+          "supported": {
+            "net": 1.069223771058057,
+            "positive": 1.23133658239178,
+            "negative": -0.16211281133372288,
+            "absolute": 1.3934493937255026
+          },
+          "symmetric": {
+            "net": 0.9363535960422793,
+            "positive": 1.116630230543393,
+            "negative": -0.18027663450111378,
+            "absolute": 1.2969068650445066
+          }
+        },
+        "10": {
+          "logmean": {
+            "net": 0.9150356516251494,
+            "positive": 1.1019729561870577,
+            "negative": -0.18693730456190844,
+            "absolute": 1.2889102607489662
+          },
+          "supported": {
+            "net": 0.7777625867093998,
+            "positive": 1.0006535559191532,
+            "negative": -0.2228909692097533,
+            "absolute": 1.2235445251289063
+          },
+          "symmetric": {
+            "net": 0.7077586128665576,
+            "positive": 0.9072279309776358,
+            "negative": -0.19946931811107804,
+            "absolute": 1.1066972490887137
+          }
+        }
+      }
+    },
+    "547": {
+      "non_PSD_supported_rows": 1,
+      "negative_actual_g_quadratic": 0,
+      "conditions": {
+        "3": {
+          "logmean": {
+            "net": 0.6202302137072224,
+            "positive": 0.8673848263841514,
+            "negative": -0.2471546126769289,
+            "absolute": 1.11453943906108
+          },
+          "supported": {
+            "net": -0.08409064288121049,
+            "positive": 0.47885066780165764,
+            "negative": -0.5629413106828682,
+            "absolute": 1.0417919784845258
+          },
+          "symmetric": {
+            "net": 0.08237566315637126,
+            "positive": 0.43628880327544506,
+            "negative": -0.35391314011907377,
+            "absolute": 0.7902019433945189
+          }
+        },
+        "10": {
+          "logmean": {
+            "net": 0.44912491036232327,
+            "positive": 0.7977068083504695,
+            "negative": -0.3485818979881462,
+            "absolute": 1.1462887063386158
+          },
+          "supported": {
+            "net": 0.12863470735302052,
+            "positive": 0.6930184711681906,
+            "negative": -0.5643837638151701,
+            "absolute": 1.2574022349833607
+          },
+          "symmetric": {
+            "net": 0.16948833838449162,
+            "positive": 0.7232788114577133,
+            "negative": -0.5537904730732216,
+            "absolute": 1.2770692845309348
+          }
+        }
+      }
+    }
+  },
+  "vectors_sha256": "0a0d0b52d60ba7c04032df20698f87569a877492f1f455cb846d4fc57b2a6c70",
+  "seconds": 2.7666800376027822
+}
