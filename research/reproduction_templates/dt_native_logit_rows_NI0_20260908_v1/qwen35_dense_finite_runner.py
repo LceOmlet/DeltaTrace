@@ -1,6 +1,5 @@
 """Current DT finite propagation through the real Qwen3.5 dense FA/FLA model.
 
-Native target rows are the default; full output rows remain an explicit option.
 Shared controller for full versus native-selected output rows. All finite
 mathematics is imported unchanged. This path currently requires unpadded equal
 length endpoints; it does not claim variable-length multi-example acceptance.
@@ -34,7 +33,7 @@ class Qwen35DenseFiniteRunner:
         self.model=model;self.finite_fa=finite_fa;self.finite_fla=finite_fla
         self.boundaries=FiniteBoundaryOps(True);self.answer=FiniteAnswerOps(True)
 
-    def attribute(self,paired_ids,mask,selection,select_output_rows=True):
+    def attribute(self,paired_ids,mask,selection,select_output_rows=False):
         if paired_ids.shape!=mask.shape or paired_ids.shape!=(2*selection.batch,selection.length):
             raise ValueError('Endpoint input/mask/target dimensions disagree.')
         if not bool(mask.eq(1).all()):raise ValueError('This validated dense runner requires unpadded equal lengths.')
