@@ -2,8 +2,12 @@
   "schema_version": 1,
   "profile": "qwen35_layer0_symmetric_normgate_and_fla_endpoint_average",
   "entrypoint": "research/runtime/qwen35_mas_runner.py:make_qwen35_mas_runner",
-  "norm_gate_rules": {"0": "symmetric"},
-  "fla_endpoint_average_layers": [0],
+  "norm_gate_rules": {
+    "0": "symmetric"
+  },
+  "fla_endpoint_average_layers": [
+    0
+  ],
   "finite_FLA_calls_per_32_layer_attribution": 25,
   "native_FLA_adjoint_stages_per_attribution": 50,
   "model_FA_FLA_precision": "unchanged native BF16 execution and existing finite backends",
@@ -11,13 +15,53 @@
   "historical_runner_constructor_defaults_changed": false,
   "quality_evidence": [
     "evidence/dt_layer0_fla_endpoint_average_whole_pilot_20260908_v1/results.json",
-    "evidence/dt_layer0_fla_endpoint_average_stability_cost_20260909_v1/results.json"
+    "evidence/dt_layer0_fla_endpoint_average_stability_cost_20260909_v1/results.json",
+    "evidence/dt_fixed_eight_case_regression_summary_20260909.json",
+    "evidence/dt_true_minibatch_NI1_46_summary_20260909.json",
+    "evidence/dt_true_minibatch_original_metrics_summary_20260909.json"
   ],
-  "validation_scope": "Four original-author cached development cases; original RISE/MAS and needle; no independent held-out or full-paper-table claim.",
+  "validation_scope": "Original-author cached development records with unchanged original RISE/MAS and needle. The fixed eight-case regression improves MAS versus previous DT on7/8cases; NI3 regresses, and MoreHopQA mean MAS still loses to original FT3. These are used development cases, not independent held-out or full-paper-table reproduction.",
+  "root_cause_evidence": [
+    "evidence/dt_MH0_current_conditional_boundaries_summary_20260909.json",
+    "evidence/dt_MH0_FA19_internal_summary_20260909.json",
+    "evidence/dt_MH0_FA19_native_hybrid_summary_20260909.json",
+    "evidence/dt_MH0_FA19_qk_softmax_diagnostic_summary_20260909.json",
+    "evidence/dt_PV_two_mask_cross_summary_20260909.json"
+  ],
+  "root_cause_scope": "Current MH0 layer19 core overprediction is split by actual native FA operator contrasts into EOS-reference PV interaction +8.22132/+10.17948, routing at that reference +6.70262/+7.86333, and small value residual. The routing residual is predominantly conditional softmax response, not QK midpoint or seed rounding. These are finite-attribution mismatches, not native FA implementation errors. Both observed mask families on eight used cases show reduced average conditional error after the optional PV19 reversal, but its changed ordering regresses several original quality measures.",
+  "true_batch_validation": {
+    "example_batch_size": 2,
+    "physical_endpoint_batch_size": 4,
+    "endpoint_order": [
+      "NI1_eligible_EOS_baseline",
+      "NI1_input",
+      "NI46_eligible_EOS_baseline",
+      "NI46_input"
+    ],
+    "original_records": [
+      "niah_mq_q2_1",
+      "niah_mq_q2_46"
+    ],
+    "total_length": 1201,
+    "prompt_length": 937,
+    "target_length": 264,
+    "mask_contract": "Equal full lengths, all-one masks, distinct samples; no duplicated sample, truncation or unmasked EOS padding. Unequal-length attribution is not validated.",
+    "quality": "Four newly executed original B1 curves on exact saved singleton/batch vectors: NI1 batch RISE and MAS slightly regress(+0.00129032/+0.00123451); NI46 improves(-0.00555556/-0.01127028); both needle37/38. No blanket quality-equivalence claim or clipping of signed scores.",
+    "cost": "Warm-excluded S/B/B/S, two observations per mode. S sums two singleton calls, B is one genuine two-example call. Median total2.67108228s versus2.28879912s, throughput+16.70%, allocated peak+1605436928bytes; no general length/batch speed or memory extrapolation."
+  },
   "limitations": [
     "Conditional prediction errors remain; no guarantee for arbitrary deletion sets.",
-    "NI1 RISE slightly regressed; all four measured MAS values improved.",
-    "Only two warm timing observations per method on NI1; no speedup or universal memory bound claimed.",
-    "The new profile was tested with one sample and two endpoints; multi-sample execution is not newly validated."
-  ]
+    "The initial four-case pilot improved all four MAS values while NI1 RISE slightly regressed; the later fixed eight-case regression contains an NI3 MAS regression and a remaining MoreHopQA mean MAS deficit against original FT3.",
+    "The true two-example T1201 check has two warm timing observations per mode; NI1 batch RISE/MAS slightly regress despite unchanged needle. Default native BF16 differences and signed/rank drift remain reported, not precision-repaired.",
+    "The equal-length attribution interface is exercised by two genuine samples/four interleaved endpoints. Unequal lengths, larger batches and batched original scoring are not validated by this evidence."
+  ],
+  "optional_PV19_candidate": {
+    "promoted_to_profile": false,
+    "rule": "Only full-attention decoder19 uses content0; other seven retain content1.",
+    "backend_scope": "Pure PV reversal requires the current endpoint-symmetric logmean and midpoint-QK backend.",
+    "quality_evidence": "evidence/dt_PV_layer19_eight_case_summary_20260909.json",
+    "cost_evidence": "evidence/dt_PV_layer19_cost_true_batch_summary_20260909.json",
+    "observations": "MAS improves6/8, RISE improves2/8, needle105 to103/154. MoreHopQA mean MAS .303649 still exceeds historical original FT3 .282997. No overall-win claim.",
+    "cost_scope": "T1201 same-shape C/P comparisons after warmup, two measurements each: singleton +1.28% latency; true NI1+46 batch about equal; identical allocated peaks. No new PV19 batch RISE/MAS curves."
+  }
 }

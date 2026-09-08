@@ -1,0 +1,4994 @@
+{
+  "status": "MH0_current_conditional_boundaries_independent_CPU_audit_passed",
+  "next": {
+    "status": "internal_operator_measurement_needed_after_root_review",
+    "predeclared_selection": "Largest negative mid-step decoder jump on the fixed standalone mask; early and allEOS retained as controls.",
+    "mid_layer": 19,
+    "early_layer": 19,
+    "kind": "full_attention",
+    "reusable_remote_private_path": "${ARTIFACT_ROOT}/codex_dt_MH0_current_conditional_boundaries_20260909_v1/MH0_actual_boundary_private.pt",
+    "minimum_missing_measurement": "Use saved current-run upstream/input coefficients and actual native boundary inputs for the selected decoder. Capture that decoder native internal features for saved B2 and B1 clean/step3/step10/allEOS, then one finite decoder pullback with fixed current rule and retained upstream; partition MLP, residual/RMSNorm, mixer and native-rounding terms. Check replay/native-transfer drift explicitly. No complete attribution or scorer repeat.",
+    "candidate_not_authorized": true,
+    "no_new_model_call_from_this_analyzer": true,
+    "budget_to_freeze_if_authorized": {
+      "complete_DT": 0,
+      "whole_model_forward": 0,
+      "original_scorer": 0,
+      "FT": 0,
+      "generation": 0,
+      "selected_native_decoder_replays": 5,
+      "selected_finite_decoder": 1,
+      "boundary_kwargs_note": "Selected-layer native rotary/cache/mask arguments must be sourced/verified against the original saved input. Current private file saves boundaries but no internal features or replay kwargs; do not silently invent a different layer forward."
+    }
+  },
+  "analyzer_sha256": "e1404e9946983d2e55784ede869136b101b67c648404b51d07b3fe353e6fcc89",
+  "protocol_sha256": "b12fe8409accdba58488a61b86421c0abd6680444d5d59bcfb0b9bce27f574c9",
+  "results_sha256": "7c2c3f3b5209289ee2078e827b71a909d6a93a57ae9e295123d720545fd0c600",
+  "vectors_sha256": "840268c42d3cd1a37fb07b94d1f2dee74de68cb6af3b66eb1bd8215fbca5f167",
+  "source_standalone": {
+    "results_path": "${ARTIFACT_ROOT}/codex_dt_MH0_pristine_FT0_comparison_20260909_v1/results.json",
+    "results_sha256": "086e0b826cbb7879f0999da5b3edc13082fd2ba780f0b0ace93880f3521207f7",
+    "vectors_path": "${ARTIFACT_ROOT}/codex_dt_MH0_pristine_FT0_comparison_20260909_v1/vectors.npz",
+    "vectors_sha256": "2009e1eec1a1dfe97cc7641488dea7c2c084470c4410297303c47d5e6a0ae914",
+    "protocol_path": "${ARTIFACT_ROOT}/codex_dt_MH0_pristine_FT0_comparison_20260909_v1/protocol.json",
+    "protocol_sha256": "53085e2e7c0e34b1f2f14bff8be99338b1f8930f0debefbc3920da00e5ea0bd0",
+    "study_sha256": "125883207d6ed88ee29e4b7365151feae82167571b2c5d137d30654032f3e3d8",
+    "vector_key": "morehopqa_0_DT",
+    "scope": "Use this successful standalone current-DT own original deletion masks, not stability-control masks or newer multi-sample-run sorting. New diagnostic scores and vector are measured and any drift is reported; no bitwise equivalence requirement or silent substitution."
+  },
+  "input": {
+    "input_sha256": "6e1df21d426c5eb28217976f63b7c7932e502bde4fb064f77867df8205ebd618",
+    "prompt_length": 404,
+    "target_length": 449,
+    "total_length": 853
+  },
+  "sign_convention": "actual minus predicted; negative decoder jump means excess DT predicted drop",
+  "actual_budget": {
+    "complete_DT_entered": 1,
+    "complete_DT_returned": 1,
+    "native_B1_scorer_entered": 4,
+    "native_B1_scorer_returned": 4,
+    "model_loads": 1,
+    "native_eager_NI0_initialization": 1,
+    "native_DT_B2_roots": 1,
+    "native_decoder_replays": 32,
+    "finite_decoder_calls": 32,
+    "finite_FA_calls": 8,
+    "auxiliary_FA_calls": 8,
+    "finite_FLA_backend_calls": 25,
+    "native_FLA_adjoint_stages": 50,
+    "FT_calls": 0,
+    "generation_calls": 0,
+    "CPU_audit_model_calls": 0,
+    "job_seconds": 55.09123898856342,
+    "DT_with_observer_seconds": 8.498046627268195,
+    "four_scorer_with_observer_seconds": 5.030198493972421,
+    "private_save_seconds": 1.671205848455429,
+    "failed_entered_minus_returned": {
+      "DT": 0,
+      "scorer": 0
+    },
+    "scope": "This diagnostic job only; all observer copying/contraction overhead included, not production latency."
+  },
+  "current_source_full_vector_drift": {
+    "relative_L2": 0.022619661072757886,
+    "max_absolute": 0.2337137425596963,
+    "bitwise_equal": false
+  },
+  "current_source_evaluated_vector_drift": {
+    "relative_L2": 0.02261966196489759,
+    "max_absolute": 0.23371374607086182,
+    "bitwise_equal": false
+  },
+  "current_source_B2_root_effect_difference": 0.8581065747598586,
+  "actual_source_mask_native_scores": {
+    "0": {
+      "status": "complete",
+      "input_receipt": {
+        "input_sha256": "6e1df21d426c5eb28217976f63b7c7932e502bde4fb064f77867df8205ebd618",
+        "deleted_positions": []
+      },
+      "source_original_native_score": -206.0,
+      "original_native_score": -206.0,
+      "current_minus_source_native_score": 0.0,
+      "FP32_same_native_logits_diagnostic": -205.96447288844183,
+      "boundary_capture_counts": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+        "11": 1,
+        "12": 1,
+        "13": 1,
+        "14": 1,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 1,
+        "19": 1,
+        "20": 1,
+        "21": 1,
+        "22": 1,
+        "23": 1,
+        "24": 1,
+        "25": 1,
+        "26": 1,
+        "27": 1,
+        "28": 1,
+        "29": 1,
+        "30": 1,
+        "31": 1,
+        "32": 1,
+        "norm": 1
+      }
+    },
+    "3": {
+      "status": "complete",
+      "input_receipt": {
+        "input_sha256": "23b71220eaafbe7482ff9e2425bab02eff5a5a643d088020e1c8725bfd74cdd2",
+        "deleted_positions": [
+          3,
+          4,
+          92,
+          93,
+          94,
+          95,
+          183,
+          213,
+          214,
+          217,
+          230,
+          231,
+          232,
+          233,
+          234,
+          236,
+          253,
+          254,
+          255,
+          262,
+          263,
+          264,
+          267,
+          268,
+          270,
+          274,
+          279,
+          288,
+          289,
+          290,
+          296,
+          304,
+          373,
+          374,
+          375,
+          376,
+          378,
+          379,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387,
+          388,
+          389,
+          390,
+          393,
+          395,
+          396,
+          397,
+          399,
+          400,
+          401,
+          402,
+          403
+        ]
+      },
+      "source_original_native_score": -300.0,
+      "original_native_score": -300.0,
+      "current_minus_source_native_score": 0.0,
+      "FP32_same_native_logits_diagnostic": -300.73133790981535,
+      "boundary_capture_counts": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+        "11": 1,
+        "12": 1,
+        "13": 1,
+        "14": 1,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 1,
+        "19": 1,
+        "20": 1,
+        "21": 1,
+        "22": 1,
+        "23": 1,
+        "24": 1,
+        "25": 1,
+        "26": 1,
+        "27": 1,
+        "28": 1,
+        "29": 1,
+        "30": 1,
+        "31": 1,
+        "32": 1,
+        "norm": 1
+      }
+    },
+    "10": {
+      "status": "complete",
+      "input_receipt": {
+        "input_sha256": "df9e6861f7216fac81580f96cc87d945d2258eba74dd7ff65b77d76f1bfc139d",
+        "deleted_positions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          15,
+          16,
+          17,
+          18,
+          21,
+          22,
+          23,
+          24,
+          25,
+          27,
+          33,
+          40,
+          44,
+          45,
+          49,
+          52,
+          53,
+          56,
+          60,
+          61,
+          62,
+          64,
+          65,
+          66,
+          68,
+          70,
+          71,
+          72,
+          75,
+          77,
+          83,
+          89,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          102,
+          104,
+          115,
+          117,
+          118,
+          120,
+          122,
+          124,
+          126,
+          128,
+          130,
+          131,
+          132,
+          135,
+          138,
+          140,
+          147,
+          150,
+          152,
+          157,
+          158,
+          166,
+          168,
+          171,
+          172,
+          173,
+          178,
+          180,
+          181,
+          182,
+          183,
+          186,
+          187,
+          190,
+          198,
+          212,
+          213,
+          214,
+          215,
+          217,
+          218,
+          219,
+          220,
+          222,
+          223,
+          224,
+          226,
+          227,
+          228,
+          229,
+          230,
+          231,
+          232,
+          233,
+          234,
+          235,
+          236,
+          238,
+          239,
+          243,
+          246,
+          247,
+          251,
+          253,
+          254,
+          255,
+          256,
+          258,
+          259,
+          260,
+          262,
+          263,
+          264,
+          267,
+          268,
+          269,
+          270,
+          272,
+          273,
+          274,
+          275,
+          276,
+          277,
+          278,
+          279,
+          282,
+          283,
+          288,
+          289,
+          290,
+          293,
+          294,
+          296,
+          297,
+          298,
+          299,
+          302,
+          304,
+          305,
+          307,
+          309,
+          311,
+          312,
+          315,
+          320,
+          322,
+          325,
+          335,
+          336,
+          340,
+          342,
+          346,
+          348,
+          350,
+          353,
+          354,
+          361,
+          373,
+          374,
+          375,
+          376,
+          377,
+          378,
+          379,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387,
+          388,
+          389,
+          390,
+          392,
+          393,
+          394,
+          395,
+          396,
+          397,
+          398,
+          399,
+          400,
+          401,
+          402,
+          403
+        ]
+      },
+      "source_original_native_score": -320.0,
+      "original_native_score": -320.0,
+      "current_minus_source_native_score": 0.0,
+      "FP32_same_native_logits_diagnostic": -318.98997744295923,
+      "boundary_capture_counts": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+        "11": 1,
+        "12": 1,
+        "13": 1,
+        "14": 1,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 1,
+        "19": 1,
+        "20": 1,
+        "21": 1,
+        "22": 1,
+        "23": 1,
+        "24": 1,
+        "25": 1,
+        "26": 1,
+        "27": 1,
+        "28": 1,
+        "29": 1,
+        "30": 1,
+        "31": 1,
+        "32": 1,
+        "norm": 1
+      }
+    },
+    "20": {
+      "status": "complete",
+      "input_receipt": {
+        "input_sha256": "7e1f61774f243cd689b0ff2c2d6342419730956c534b201a8dca62f7491109cc",
+        "deleted_positions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          38,
+          39,
+          40,
+          41,
+          42,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          128,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          158,
+          159,
+          160,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166,
+          167,
+          168,
+          169,
+          170,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          186,
+          187,
+          190,
+          191,
+          192,
+          193,
+          194,
+          195,
+          196,
+          197,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209,
+          210,
+          211,
+          212,
+          213,
+          214,
+          215,
+          216,
+          217,
+          218,
+          219,
+          220,
+          221,
+          222,
+          223,
+          224,
+          225,
+          226,
+          227,
+          228,
+          229,
+          230,
+          231,
+          232,
+          233,
+          234,
+          235,
+          236,
+          237,
+          238,
+          239,
+          241,
+          242,
+          243,
+          244,
+          245,
+          246,
+          247,
+          248,
+          249,
+          250,
+          251,
+          252,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          260,
+          261,
+          262,
+          263,
+          264,
+          266,
+          267,
+          268,
+          269,
+          270,
+          272,
+          273,
+          274,
+          275,
+          276,
+          277,
+          278,
+          279,
+          280,
+          281,
+          282,
+          283,
+          284,
+          286,
+          287,
+          288,
+          289,
+          290,
+          291,
+          292,
+          293,
+          294,
+          296,
+          297,
+          298,
+          299,
+          300,
+          301,
+          302,
+          304,
+          305,
+          306,
+          307,
+          308,
+          309,
+          310,
+          311,
+          312,
+          313,
+          315,
+          316,
+          317,
+          318,
+          320,
+          321,
+          322,
+          323,
+          325,
+          326,
+          327,
+          329,
+          330,
+          332,
+          333,
+          335,
+          336,
+          337,
+          338,
+          340,
+          341,
+          342,
+          343,
+          345,
+          346,
+          347,
+          348,
+          349,
+          350,
+          351,
+          352,
+          353,
+          354,
+          355,
+          356,
+          357,
+          358,
+          359,
+          361,
+          362,
+          363,
+          364,
+          365,
+          366,
+          367,
+          368,
+          369,
+          370,
+          373,
+          374,
+          375,
+          376,
+          377,
+          378,
+          379,
+          380,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387,
+          388,
+          389,
+          390,
+          392,
+          393,
+          394,
+          395,
+          396,
+          397,
+          398,
+          399,
+          400,
+          401,
+          402,
+          403
+        ]
+      },
+      "source_original_native_score": -324.0,
+      "original_native_score": -324.0,
+      "current_minus_source_native_score": 0.0,
+      "FP32_same_native_logits_diagnostic": -323.0144547829259,
+      "boundary_capture_counts": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+        "11": 1,
+        "12": 1,
+        "13": 1,
+        "14": 1,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 1,
+        "19": 1,
+        "20": 1,
+        "21": 1,
+        "22": 1,
+        "23": 1,
+        "24": 1,
+        "25": 1,
+        "26": 1,
+        "27": 1,
+        "28": 1,
+        "29": 1,
+        "30": 1,
+        "31": 1,
+        "32": 1,
+        "norm": 1
+      }
+    }
+  },
+  "B1_allEOS_minus_B2_boundary_effect": {
+    "norm": -0.28084360869399916,
+    "32": -0.1328771193245757,
+    "31": -0.3525968749897004,
+    "30": -0.24360440157958863,
+    "29": -0.24146684035353871,
+    "28": -0.18003326998149305,
+    "27": -0.19419190383848672,
+    "26": -0.16194018822021405,
+    "25": -0.14847525241189885,
+    "24": -0.17919340831970487,
+    "23": -0.28135577672800594,
+    "22": -0.2883032532718346,
+    "21": -0.2364465951731205,
+    "20": -0.4889386894816852,
+    "19": -0.4649545470303309,
+    "18": -0.4417573506910202,
+    "17": -0.48679271482754416,
+    "16": -0.6712520976294201,
+    "15": -0.451247044697368,
+    "14": -0.4475959401563898,
+    "13": -0.18921237622640774,
+    "12": 0.017841870564922147,
+    "11": 0.18082583587819556,
+    "10": 0.016145856152320448,
+    "9": -0.04356761381134788,
+    "8": -0.1124849162144983,
+    "7": -0.1775469164992387,
+    "6": -0.10514952896252794,
+    "5": -0.10521331761754027,
+    "4": -0.08763083656948822,
+    "3": -0.026886961385017116,
+    "2": 0.018195023841443003,
+    "1": 0.01563793862470675,
+    "0": 1.4210854715202004e-14
+  },
+  "private_artifact": {
+    "file": "MH0_actual_boundary_private.pt",
+    "sha256": "69f7a134e9fbb3be164efe8e8a41005690fcfe4bf1dfa02247c7f0c3fcd177e2",
+    "bytes": 1900739471,
+    "tensor_CPU_bytes": 1900675072,
+    "scope": "Actual tensors only; no weights. Private .pt is excluded from review ZIP."
+  },
+  "steps": {
+    "3": {
+      "actual_logprob_drop": 94.0,
+      "predicted_drop": 124.12119913101196,
+      "actual_minus_predicted": -30.121199131011963,
+      "source_actual_minus_predicted": -30.316383481025696,
+      "error_drift_from_score": 0.0,
+      "error_drift_from_vector": 0.1951843500137329,
+      "terms": {
+        "native_BF16_score_minus_same_logits_FP32": -0.7668650213735191,
+        "head_and_logprob_seed": 16.977827948477483,
+        "final_norm": 1.4503916382097088,
+        "decoders": -47.782553896406654,
+        "input_map": 2.0008103263080557e-07
+      },
+      "decoder_layer_signed_mass": {
+        "net": -47.782553896406654,
+        "positive": 14.708891262121458,
+        "negative": -62.491445158528116,
+        "absolute": 77.20033642064956
+      },
+      "all_decoder_token_signed_mass": {
+        "net": -47.78255389640665,
+        "positive": 568.5844609030553,
+        "negative": -616.3670147994619,
+        "absolute": 1184.9514757025172
+      },
+      "largest_overprediction_layer": 19,
+      "largest_compensating_layer": 20,
+      "decoder_ranking_absolute": [
+        {
+          "layer": 19,
+          "kind": "full_attention",
+          "jump": -10.59970669243237,
+          "token_signed_mass": {
+            "net": -10.59970669243237,
+            "positive": 43.894381078532305,
+            "negative": -54.49408777096467,
+            "absolute": 98.38846884949697
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -33.18796358861712,
+              "positive": 0.21688241674625142,
+              "negative": -33.40484600536337,
+              "absolute": 33.621728422109626
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -2.1237153284290775,
+              "positive": 2.2107278770095107,
+              "negative": -4.334443205438588,
+              "absolute": 6.545171082448099
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.8528387825055794,
+              "positive": 0.27444983833748815,
+              "negative": -1.1272886208430675,
+              "absolute": 1.4017384591805557
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 25.56481100711941,
+              "positive": 41.192320946439054,
+              "negative": -15.62750993931964,
+              "absolute": 56.81983088575869
+            }
+          }
+        },
+        {
+          "layer": 7,
+          "kind": "full_attention",
+          "jump": -6.6589999843751295,
+          "token_signed_mass": {
+            "net": -6.6589999843751295,
+            "positive": 18.115313327184033,
+            "negative": -24.774313311559165,
+            "absolute": 42.889626638743195
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -6.2966432254352895,
+              "positive": 2.766116067415867,
+              "negative": -9.062759292851156,
+              "absolute": 11.828875360267023
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -1.7185176361022265,
+              "positive": 1.959883569888859,
+              "negative": -3.6784012059910856,
+              "absolute": 5.638284775879945
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.9848283040327404,
+              "positive": 0.6113381778006679,
+              "negative": -1.5961664818334083,
+              "absolute": 2.207504659634076
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 2.340989181195127,
+              "positive": 12.77797551207864,
+              "negative": -10.436986330883514,
+              "absolute": 23.214961842962154
+            }
+          }
+        },
+        {
+          "layer": 9,
+          "kind": "linear_attention",
+          "jump": -6.424784871922385,
+          "token_signed_mass": {
+            "net": -6.424784871922385,
+            "positive": 15.116169224223281,
+            "negative": -21.54095409614566,
+            "absolute": 36.65712332036894
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -2.4544714538591936,
+              "positive": 1.8300283918640265,
+              "negative": -4.28449984572322,
+              "absolute": 6.114528237587246
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.10371597380932064,
+              "positive": 2.4951972202738752,
+              "negative": -2.5989131940831953,
+              "absolute": 5.09411041435707
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.5919932948196278,
+              "positive": 0.6483992530540168,
+              "negative": -2.2403925478736446,
+              "absolute": 2.8887918009276614
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -2.274604149434243,
+              "positive": 10.142544359031362,
+              "negative": -12.417148508465601,
+              "absolute": 22.559692867496963
+            }
+          }
+        },
+        {
+          "layer": 15,
+          "kind": "full_attention",
+          "jump": -5.571777485988477,
+          "token_signed_mass": {
+            "net": -5.571777485988477,
+            "positive": 26.89146258570721,
+            "negative": -32.46324007169569,
+            "absolute": 59.354702657402896
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -12.945385336143804,
+              "positive": 0.5678892917923959,
+              "negative": -13.513274627936202,
+              "absolute": 14.081163919728596
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -1.9700135511081913,
+              "positive": 2.1730711259384163,
+              "negative": -4.143084677046607,
+              "absolute": 6.316155802985024
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.8785271376957542,
+              "positive": 1.3386573197642924,
+              "negative": -0.4601301820685382,
+              "absolute": 1.7987875018328303
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 8.465094263567767,
+              "positive": 22.811844848212107,
+              "negative": -14.34675058464434,
+              "absolute": 37.158595432856444
+            }
+          }
+        },
+        {
+          "layer": 6,
+          "kind": "linear_attention",
+          "jump": -5.180525007139201,
+          "token_signed_mass": {
+            "net": -5.180525007139201,
+            "positive": 19.829601845534068,
+            "negative": -25.010126852673267,
+            "absolute": 44.83972869820734
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -7.813130207299814,
+              "positive": 3.8383644911417454,
+              "negative": -11.651494698441562,
+              "absolute": 15.489859189583306
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 1.227306575480231,
+              "positive": 5.157578484209652,
+              "negative": -3.9302719087294204,
+              "absolute": 9.087850392939073
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.18079411905931342,
+              "positive": 0.7097688258079493,
+              "negative": -0.8905629448672627,
+              "absolute": 1.600331770675212
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.5860927437396974,
+              "positive": 10.123890044374722,
+              "negative": -8.537797300635024,
+              "absolute": 18.661687345009742
+            }
+          }
+        },
+        {
+          "layer": 23,
+          "kind": "full_attention",
+          "jump": -5.069941947426696,
+          "token_signed_mass": {
+            "net": -5.069941947426696,
+            "positive": 14.09936118060546,
+            "negative": -19.16930312803216,
+            "absolute": 33.26866430863762
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -9.339265738195905,
+              "positive": 0.5243173813601013,
+              "negative": -9.863583119556008,
+              "absolute": 10.387900500916109
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.3557800519558102,
+              "positive": 0.9319668528417906,
+              "negative": -1.2877469047976007,
+              "absolute": 2.2197137576393917
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.14684728680506187,
+              "positive": 0.34788074635033533,
+              "negative": -0.2010334595452735,
+              "absolute": 0.5489142058956089
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 4.478256555919956,
+              "positive": 12.295196200053232,
+              "negative": -7.816939644133275,
+              "absolute": 20.11213584418651
+            }
+          }
+        },
+        {
+          "layer": 27,
+          "kind": "full_attention",
+          "jump": -4.184887501755519,
+          "token_signed_mass": {
+            "net": -4.184887501755519,
+            "positive": 30.233707349460065,
+            "negative": -34.41859485121557,
+            "absolute": 64.65230220067563
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -21.886821598291636,
+              "positive": 0.8052945562543323,
+              "negative": -22.69211615454597,
+              "absolute": 23.4974107108003
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -1.8092043449967272,
+              "positive": 0.9983325178814502,
+              "negative": -2.8075368628781776,
+              "absolute": 3.8058693807596278
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.27052186982480353,
+              "positive": 0.30999869259564355,
+              "negative": -0.5805205624204471,
+              "absolute": 0.8905192550160907
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 19.78166031135766,
+              "positive": 28.12008158272863,
+              "negative": -8.338421271370981,
+              "absolute": 36.45850285409962
+            }
+          }
+        },
+        {
+          "layer": 31,
+          "kind": "full_attention",
+          "jump": -3.5025102298460786,
+          "token_signed_mass": {
+            "net": -3.5025102298460786,
+            "positive": 18.376102447742355,
+            "negative": -21.878612677588436,
+            "absolute": 40.25471512533079
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -1.6130819140302197,
+              "positive": 2.7303590977373267,
+              "negative": -4.3434410117675455,
+              "absolute": 7.073800109504873
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.17765553738834783,
+              "positive": 0.47226856290720487,
+              "negative": -0.6499241002955527,
+              "absolute": 1.1221926632027575
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.7611058587271617,
+              "positive": 0.7769807677961161,
+              "negative": -0.01587490906895437,
+              "absolute": 0.7928556768650705
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -2.472878637154672,
+              "positive": 14.39649401930171,
+              "negative": -16.869372656456385,
+              "absolute": 31.26586667575809
+            }
+          }
+        },
+        {
+          "layer": 20,
+          "kind": "linear_attention",
+          "jump": 3.099552300250635,
+          "token_signed_mass": {
+            "net": 3.099552300250635,
+            "positive": 12.255051099574175,
+            "negative": -9.155498799323539,
+            "absolute": 21.410549898897713
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.385688074340811,
+              "positive": 1.5955209706369518,
+              "negative": -1.2098328962961407,
+              "absolute": 2.805353866933092
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.04195387541334926,
+              "positive": 0.6104551783673681,
+              "negative": -0.6524090537807173,
+              "absolute": 1.2628642321480854
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.27886871913892086,
+              "positive": 0.3539178370760188,
+              "negative": -0.07504911793709795,
+              "absolute": 0.42896695501311677
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 2.4769493821842525,
+              "positive": 9.695157113493837,
+              "negative": -7.218207731309583,
+              "absolute": 16.913364844803418
+            }
+          }
+        },
+        {
+          "layer": 18,
+          "kind": "linear_attention",
+          "jump": 2.7444613810473166,
+          "token_signed_mass": {
+            "net": 2.7444613810473166,
+            "positive": 23.712406587195566,
+            "negative": -20.96794520614825,
+            "absolute": 44.68035179334382
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -0.5721127146841303,
+              "positive": 2.999650875676118,
+              "negative": -3.5717635903602485,
+              "absolute": 6.571414466036366
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.5515129533155531,
+              "positive": 2.005170394904468,
+              "negative": -1.4536574415889145,
+              "absolute": 3.458827836493383
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.35333623450790635,
+              "positive": 0.2700305862249358,
+              "negative": -0.6233668207328422,
+              "absolute": 0.8933974069577779
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 3.1183973769238,
+              "positive": 18.437554730390044,
+              "negative": -15.319157353466245,
+              "absolute": 33.75671208385629
+            }
+          }
+        },
+        {
+          "layer": 1,
+          "kind": "linear_attention",
+          "jump": -2.7078400808937557,
+          "token_signed_mass": {
+            "net": -2.7078400808937557,
+            "positive": 20.718912656375252,
+            "negative": -23.426752737269013,
+            "absolute": 44.145665393644265
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -4.328997983167564,
+              "positive": 4.186827999305271,
+              "negative": -8.515825982472833,
+              "absolute": 12.702653981778106
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.34957079372249966,
+              "positive": 3.72267187279557,
+              "negative": -3.37310107907307,
+              "absolute": 7.095772951868639
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.7113431637679115,
+              "positive": 1.112435876480148,
+              "negative": -1.8237790402480596,
+              "absolute": 2.9362149167282077
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.9829302723192201,
+              "positive": 11.696976907794268,
+              "negative": -9.714046635475048,
+              "absolute": 21.411023543269316
+            }
+          }
+        },
+        {
+          "layer": 30,
+          "kind": "linear_attention",
+          "jump": -2.0359109218906557,
+          "token_signed_mass": {
+            "net": -2.0359109218906557,
+            "positive": 17.434741747995396,
+            "negative": -19.47065266988605,
+            "absolute": 36.90539441788145
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -1.221701004347561,
+              "positive": 0.8493535269499268,
+              "negative": -2.071054531297488,
+              "absolute": 2.920408058247415
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.045953797296038906,
+              "positive": 0.5068758883926698,
+              "negative": -0.4609220910966309,
+              "absolute": 0.9677979794893007
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.3839279330216765,
+              "positive": 0.32705505739765284,
+              "negative": -0.7109829904193293,
+              "absolute": 1.0380380478169822
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.4762357818174568,
+              "positive": 15.751457275255145,
+              "negative": -16.227693057072603,
+              "absolute": 31.979150332327748
+            }
+          }
+        },
+        {
+          "layer": 8,
+          "kind": "linear_attention",
+          "jump": 1.9648900411947783,
+          "token_signed_mass": {
+            "net": 1.9648900411947783,
+            "positive": 16.858368854707418,
+            "negative": -14.893478813512637,
+            "absolute": 31.75184766822005
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.2814197578356581,
+              "positive": 3.0242575968148224,
+              "negative": -2.742837838979164,
+              "absolute": 5.767095435793987
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.11820049757082327,
+              "positive": 1.9654252784987323,
+              "negative": -2.083625776069555,
+              "absolute": 4.049051054568287
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.8613208818945479,
+              "positive": 1.436609947338982,
+              "negative": -0.575289065444434,
+              "absolute": 2.0118990127834158
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.9403498990353951,
+              "positive": 10.43207603205488,
+              "negative": -9.491726133019483,
+              "absolute": 19.923802165074363
+            }
+          }
+        },
+        {
+          "layer": 4,
+          "kind": "linear_attention",
+          "jump": -1.951225293310892,
+          "token_signed_mass": {
+            "net": -1.951225293310892,
+            "positive": 19.842860029940418,
+            "negative": -21.794085323251313,
+            "absolute": 41.63694535319173
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -0.7784462068624733,
+              "positive": 3.321032234692504,
+              "negative": -4.099478441554977,
+              "absolute": 7.420510676247481
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.1270961321153244,
+              "positive": 3.260504810623833,
+              "negative": -3.1334086785085082,
+              "absolute": 6.393913489132342
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 2.7287128851760225,
+              "positive": 4.2633044222590835,
+              "negative": -1.534591537083061,
+              "absolute": 5.797895959342144
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -4.028588103739764,
+              "positive": 8.998018562365,
+              "negative": -13.026606666104765,
+              "absolute": 22.024625228469763
+            }
+          }
+        },
+        {
+          "layer": 3,
+          "kind": "full_attention",
+          "jump": 1.8259172291705408,
+          "token_signed_mass": {
+            "net": 1.8259172291705408,
+            "positive": 23.12591935720159,
+            "negative": -21.300002128031046,
+            "absolute": 44.425921485232635
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -1.763479178809068,
+              "positive": 4.742602095845726,
+              "negative": -6.506081274654793,
+              "absolute": 11.248683370500519
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.17000373016196801,
+              "positive": 3.194482673434689,
+              "negative": -3.0244789432727215,
+              "absolute": 6.218961616707409
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.3022978981126305,
+              "positive": 0.926417179014107,
+              "negative": -2.2287150771267377,
+              "absolute": 3.1551322561408446
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 4.721690575930272,
+              "positive": 14.26241740890707,
+              "negative": -9.540726832976798,
+              "absolute": 23.80314424188387
+            }
+          }
+        },
+        {
+          "layer": 17,
+          "kind": "linear_attention",
+          "jump": -1.663788394944632,
+          "token_signed_mass": {
+            "net": -1.663788394944632,
+            "positive": 20.50566517212978,
+            "negative": -22.169453567074413,
+            "absolute": 42.675118739204194
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -1.1617932991362454,
+              "positive": 2.619524781132707,
+              "negative": -3.7813180802689526,
+              "absolute": 6.400842861401659
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.0432405940507591,
+              "positive": 1.519079107810114,
+              "negative": -1.562319701860873,
+              "absolute": 3.081398809670987
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.2854866938790057,
+              "positive": 0.34294262614101234,
+              "negative": -0.6284293200200182,
+              "absolute": 0.9713719461610304
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.1732678078786217,
+              "positive": 16.024118657045946,
+              "negative": -16.19738646492457,
+              "absolute": 32.221505121970516
+            }
+          }
+        },
+        {
+          "layer": 12,
+          "kind": "linear_attention",
+          "jump": 1.5193482821459932,
+          "token_signed_mass": {
+            "net": 1.5193482821459932,
+            "positive": 19.615848308455206,
+            "negative": -18.096500026309208,
+            "absolute": 37.712348334764414
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.05772160176708607,
+              "positive": 3.100665528539597,
+              "negative": -3.0429439267725114,
+              "absolute": 6.143609455312109
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.16205633951572618,
+              "positive": 2.153353369109985,
+              "negative": -1.991297029594259,
+              "absolute": 4.144650398704243
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.5537639802913903,
+              "positive": 0.5343368403750735,
+              "negative": -1.0881008206664637,
+              "absolute": 1.6224376610415372
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.8533343211545708,
+              "positive": 13.827492570430548,
+              "negative": -11.974158249275977,
+              "absolute": 25.801650819706524
+            }
+          }
+        },
+        {
+          "layer": 13,
+          "kind": "linear_attention",
+          "jump": -1.3817061763033953,
+          "token_signed_mass": {
+            "net": -1.3817061763033953,
+            "positive": 15.207193315343705,
+            "negative": -16.588899491647098,
+            "absolute": 31.796092806990803
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -0.9364921565905462,
+              "positive": 1.8108881329766442,
+              "negative": -2.7473802895671904,
+              "absolute": 4.558268422543835
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -1.202536830656668,
+              "positive": 1.1801842229605062,
+              "negative": -2.382721053617174,
+              "absolute": 3.56290527657768
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.40975804814508593,
+              "positive": 0.41150634978001194,
+              "negative": -0.8212643979250979,
+              "absolute": 1.2327707477051097
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.1670808590889044,
+              "positive": 11.804614609626542,
+              "negative": -10.637533750537639,
+              "absolute": 22.44214836016418
+            }
+          }
+        },
+        {
+          "layer": 25,
+          "kind": "linear_attention",
+          "jump": -1.3781008854796064,
+          "token_signed_mass": {
+            "net": -1.3781008854796064,
+            "positive": 4.900210946488567,
+            "negative": -6.278311831968174,
+            "absolute": 11.178522778456742
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -0.891707922809453,
+              "positive": 0.4162469909074351,
+              "negative": -1.307954913716888,
+              "absolute": 1.7242019046243233
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.028430444193926672,
+              "positive": 0.2935030908577737,
+              "negative": -0.3219335350517004,
+              "absolute": 0.6154366259094741
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.11791833821091462,
+              "positive": 0.043814769059269634,
+              "negative": -0.16173310727018425,
+              "absolute": 0.20554787632945387
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.3400441802653123,
+              "positive": 4.146646095664089,
+              "negative": -4.486690275929401,
+              "absolute": 8.63333637159349
+            }
+          }
+        },
+        {
+          "layer": 21,
+          "kind": "linear_attention",
+          "jump": 1.2719473344414796,
+          "token_signed_mass": {
+            "net": 1.2719473344414796,
+            "positive": 13.106804570002534,
+            "negative": -11.834857235561056,
+            "absolute": 24.941661805563594
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 1.7859831251203122,
+              "positive": 2.6877296055256075,
+              "negative": -0.9017464804052948,
+              "absolute": 3.589476085930902
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.09978318254793078,
+              "positive": 0.656932654985834,
+              "negative": -0.5571494724379031,
+              "absolute": 1.214082127423737
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.02405607094695686,
+              "positive": 0.35604942557006314,
+              "negative": -0.38010549651701997,
+              "absolute": 0.7361549220870831
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.5897629022798068,
+              "positive": 9.406092883921032,
+              "negative": -9.995855786200838,
+              "absolute": 19.401948670121868
+            }
+          }
+        },
+        {
+          "layer": 16,
+          "kind": "linear_attention",
+          "jump": -1.1788009864474025,
+          "token_signed_mass": {
+            "net": -1.1788009864474025,
+            "positive": 19.048261679173585,
+            "negative": -20.227062665620988,
+            "absolute": 39.27532434479457
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.6443445859748161,
+              "positive": 2.3966859438987935,
+              "negative": -1.7523413579239773,
+              "absolute": 4.149027301822771
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.9925790434564925,
+              "positive": 1.1113250810674562,
+              "negative": -2.1039041245239485,
+              "absolute": 3.2152292055914047
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.3357967527390237,
+              "positive": 0.6156030617905386,
+              "negative": -0.27980630905151493,
+              "absolute": 0.8954093708420536
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -1.1663632817047505,
+              "positive": 14.924647592416797,
+              "negative": -16.091010874121544,
+              "absolute": 31.01565846653834
+            }
+          }
+        },
+        {
+          "layer": 11,
+          "kind": "full_attention",
+          "jump": -0.8995929413311279,
+          "token_signed_mass": {
+            "net": -0.8995929413311279,
+            "positive": 19.990255543257966,
+            "negative": -20.889848484589095,
+            "absolute": 40.88010402784707
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -3.0464409300036848,
+              "positive": 3.4531486116893064,
+              "negative": -6.499589541692991,
+              "absolute": 9.952738153382297
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.3293406005854078,
+              "positive": 2.5014753424808363,
+              "negative": -2.1721347418954284,
+              "absolute": 4.673610084376264
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.2681842850916243,
+              "positive": 0.9414687000025153,
+              "negative": -0.673284414910891,
+              "absolute": 1.6147531149134062
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.5493231029955241,
+              "positive": 13.09416288908531,
+              "negative": -11.544839786089785,
+              "absolute": 24.6390026751751
+            }
+          }
+        },
+        {
+          "layer": 22,
+          "kind": "linear_attention",
+          "jump": 0.8709943478083892,
+          "token_signed_mass": {
+            "net": 0.8709943478083892,
+            "positive": 11.124193067755195,
+            "negative": -10.253198719946806,
+            "absolute": 21.377391787702003
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.516594993262008,
+              "positive": 1.5082223951640352,
+              "negative": -0.9916274019020274,
+              "absolute": 2.4998497970660627
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.5438623543320779,
+              "positive": 1.0298529052342829,
+              "negative": -0.485990550902205,
+              "absolute": 1.515843456136488
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.07340939270497723,
+              "positive": 0.15462897845498177,
+              "negative": -0.228038371159959,
+              "absolute": 0.38266734961494075
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.1160536070807194,
+              "positive": 8.431488788901895,
+              "negative": -8.547542395982616,
+              "absolute": 16.979031184884512
+            }
+          }
+        },
+        {
+          "layer": 26,
+          "kind": "linear_attention",
+          "jump": -0.5657521668049768,
+          "token_signed_mass": {
+            "net": -0.5657521668049768,
+            "positive": 4.871465862221912,
+            "negative": -5.437218029026889,
+            "absolute": 10.308683891248801
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -1.0865439978273077,
+              "positive": 0.36087457375303444,
+              "negative": -1.4474185715803425,
+              "absolute": 1.8082931453333768
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.2625852482513923,
+              "positive": 0.52435815773797,
+              "negative": -0.2617729094865778,
+              "absolute": 0.7861310672245478
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.19302910003689794,
+              "positive": 0.25095753558234873,
+              "negative": -0.057928435545450796,
+              "absolute": 0.30888597112779953
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.06517748273404081,
+              "positive": 3.735275595148559,
+              "negative": -3.670098112414518,
+              "absolute": 7.4053737075630774
+            }
+          }
+        },
+        {
+          "layer": 2,
+          "kind": "linear_attention",
+          "jump": 0.559360170935783,
+          "token_signed_mass": {
+            "net": 0.559360170935783,
+            "positive": 16.67474369244969,
+            "negative": -16.115383521513913,
+            "absolute": 32.7901272139636
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.09020283211617774,
+              "positive": 4.520788131190117,
+              "negative": -4.43058529907394,
+              "absolute": 8.951373430264056
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.75470404514079,
+              "positive": 3.55946088140713,
+              "negative": -2.80475683626634,
+              "absolute": 6.364217717673469
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.8629505401801193,
+              "positive": 1.8386909154924682,
+              "negative": -0.975740375312349,
+              "absolute": 2.8144312908048175
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -1.1484972465013037,
+              "positive": 6.755803764359978,
+              "negative": -7.904301010861283,
+              "absolute": 14.66010477522126
+            }
+          }
+        },
+        {
+          "layer": 14,
+          "kind": "linear_attention",
+          "jump": -0.5445773289966866,
+          "token_signed_mass": {
+            "net": -0.5445773289966866,
+            "positive": 19.80578247230789,
+            "negative": -20.350359801304577,
+            "absolute": 40.156142273612474
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -2.8555920149635283,
+              "positive": 2.4964331720539867,
+              "negative": -5.3520251870175155,
+              "absolute": 7.848458359071502
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 1.4594570258756,
+              "positive": 3.20486214114844,
+              "negative": -1.7454051152728398,
+              "absolute": 4.95026725642128
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.10373250905369391,
+              "positive": 0.5200779610220363,
+              "negative": -0.6238104700757301,
+              "absolute": 1.1438884310977664
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.9552901691449354,
+              "positive": 13.584409198083428,
+              "negative": -12.629119028938492,
+              "absolute": 26.213528227021918
+            }
+          }
+        },
+        {
+          "layer": 24,
+          "kind": "linear_attention",
+          "jump": -0.5409040991086804,
+          "token_signed_mass": {
+            "net": -0.5409040991086804,
+            "positive": 9.676673000626472,
+            "negative": -10.217577099735152,
+            "absolute": 19.894250100361624
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.4242796015696579,
+              "positive": 1.1170123544195134,
+              "negative": -0.6927327528498556,
+              "absolute": 1.8097451072693689
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.02863820072593805,
+              "positive": 0.5865876185215011,
+              "negative": -0.5579494177955631,
+              "absolute": 1.144537036317064
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.10293472638732963,
+              "positive": 0.40415430498272403,
+              "negative": -0.3012195785953944,
+              "absolute": 0.7053738835781185
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -1.0967566277916059,
+              "positive": 7.568918722702733,
+              "negative": -8.66567535049434,
+              "absolute": 16.23459407319707
+            }
+          }
+        },
+        {
+          "layer": 29,
+          "kind": "linear_attention",
+          "jump": 0.5304033969823528,
+          "token_signed_mass": {
+            "net": 0.5304033969823528,
+            "positive": 7.0829483453257245,
+            "negative": -6.552544948343372,
+            "absolute": 13.635493293669096
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.028980283817470462,
+              "positive": 0.6838884775073749,
+              "negative": -0.6549081936899044,
+              "absolute": 1.3387966711972794
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.15814312311060402,
+              "positive": 0.41096011130592064,
+              "negative": -0.25281698819531656,
+              "absolute": 0.6637770995012372
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.05608693533577552,
+              "positive": 0.20685535444978986,
+              "negative": -0.15076841911401434,
+              "absolute": 0.3576237735638042
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.28719305471850276,
+              "positive": 5.781244402062638,
+              "negative": -5.494051347344136,
+              "absolute": 11.275295749406775
+            }
+          }
+        },
+        {
+          "layer": 10,
+          "kind": "linear_attention",
+          "jump": 0.2729884646395693,
+          "token_signed_mass": {
+            "net": 0.2729884646395693,
+            "positive": 22.621763232137837,
+            "negative": -22.34877476749827,
+            "absolute": 44.97053799963611
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -3.415357772136878,
+              "positive": 3.186929848163894,
+              "negative": -6.602287620300773,
+              "absolute": 9.789217468464667
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 1.557296836675112,
+              "positive": 3.7248602873333123,
+              "negative": -2.1675634506582,
+              "absolute": 5.892423737991512
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.4960840835021013,
+              "positive": 1.203081873892295,
+              "negative": -0.7069977903901938,
+              "absolute": 1.910079664282489
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.6349653165992337,
+              "positive": 14.506891222748333,
+              "negative": -12.8719259061491,
+              "absolute": 27.37881712889743
+            }
+          }
+        },
+        {
+          "layer": 0,
+          "kind": "linear_attention",
+          "jump": -0.23896315989243266,
+          "token_signed_mass": {
+            "net": -0.23896315989243266,
+            "positive": 13.55128896876084,
+            "negative": -13.790252128653272,
+            "absolute": 27.34154109741411
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -2.899574614946573,
+              "positive": 3.0020032816924416,
+              "negative": -5.901577896639015,
+              "absolute": 8.903581178331455
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 2.359560497367294,
+              "positive": 3.8406797836995152,
+              "negative": -1.4811192863322207,
+              "absolute": 5.3217990700317355
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.4157785731745831,
+              "positive": 0.9816975010811062,
+              "negative": -1.3974760742556893,
+              "absolute": 2.3791735753367957
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.7168295308614296,
+              "positive": 5.726908402287776,
+              "negative": -5.010078871426347,
+              "absolute": 10.736987273714123
+            }
+          }
+        },
+        {
+          "layer": 5,
+          "kind": "linear_attention",
+          "jump": -0.21114900223801536,
+          "token_signed_mass": {
+            "net": -0.21114900223801536,
+            "positive": 18.686900419641653,
+            "negative": -18.898049421879666,
+            "absolute": 37.58494984152132
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": -2.418060272447172,
+              "positive": 2.9380424704434596,
+              "negative": -5.356102742890632,
+              "absolute": 8.29414521333409
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": 0.50612273269287,
+              "positive": 4.001379303771796,
+              "negative": -3.495256571078926,
+              "absolute": 7.496635874850722
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.6334687639888371,
+              "positive": 1.067065816943212,
+              "negative": -0.4335970529543748,
+              "absolute": 1.5006628698975866
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.06731977352745,
+              "positive": 10.680412828483183,
+              "negative": -9.613093054955735,
+              "absolute": 20.293505883438918
+            }
+          }
+        },
+        {
+          "layer": 28,
+          "kind": "linear_attention",
+          "jump": 0.049028313504620696,
+          "token_signed_mass": {
+            "net": 0.049028313504620696,
+            "positive": 11.610102934998098,
+            "negative": -11.561074621493477,
+            "absolute": 23.17117755649157
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 57,
+              "net": 0.254445623802775,
+              "positive": 0.9903126135338698,
+              "negative": -0.7358669897310949,
+              "absolute": 1.7261796032649648
+            },
+            "kept_eligible_prompt": {
+              "count": 320,
+              "net": -0.007450459780638553,
+              "positive": 0.2805416888443127,
+              "negative": -0.28799214862495126,
+              "absolute": 0.5685338374692639
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.011867249359619247,
+              "positive": 0.10935652254036707,
+              "negative": -0.09748927318074782,
+              "absolute": 0.2068457957211149
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.209834099877135,
+              "positive": 10.229892110079547,
+              "negative": -10.439726209956683,
+              "absolute": 20.669618320036232
+            }
+          }
+        }
+      ],
+      "FA_decoder_sum": -34.661499553984854,
+      "GDN_decoder_sum": -13.121054342421798,
+      "per_token_closure_max_absolute": 0,
+      "scalar_closure_absolute": 1.4210854715202004e-14
+    },
+    "10": {
+      "actual_logprob_drop": 114.0,
+      "predicted_drop": 153.277775734663,
+      "actual_minus_predicted": -39.27777573466301,
+      "source_actual_minus_predicted": -39.34622885659337,
+      "error_drift_from_score": 0.0,
+      "error_drift_from_vector": 0.0684531219303608,
+      "terms": {
+        "native_BF16_score_minus_same_logits_FP32": 0.9744954454826029,
+        "head_and_logprob_seed": 5.669227510721001,
+        "final_norm": 1.9971281059378754,
+        "decoders": -47.918626995256986,
+        "input_map": 1.984524544695887e-07
+      },
+      "decoder_layer_signed_mass": {
+        "net": -47.91862699525698,
+        "positive": 23.91039288359306,
+        "negative": -71.82901987885005,
+        "absolute": 95.73941276244311
+      },
+      "all_decoder_token_signed_mass": {
+        "net": -47.918626995256986,
+        "positive": 676.399570589635,
+        "negative": -724.318197584892,
+        "absolute": 1400.717768174527
+      },
+      "largest_overprediction_layer": 19,
+      "largest_compensating_layer": 12,
+      "decoder_ranking_absolute": [
+        {
+          "layer": 19,
+          "kind": "full_attention",
+          "jump": -11.904297490164662,
+          "token_signed_mass": {
+            "net": -11.904297490164662,
+            "positive": 50.46224739537884,
+            "negative": -62.3665448855435,
+            "absolute": 112.82879228092234
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -42.67786423260941,
+              "positive": 0.6980855002699662,
+              "negative": -43.37594973287938,
+              "absolute": 44.07403523314935
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -2.791452560407883,
+              "positive": 0.9722463571043928,
+              "negative": -3.7636989175122757,
+              "absolute": 4.735945274616667
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.3293566523134381,
+              "positive": 0.30352827851611225,
+              "negative": -1.6328849308295506,
+              "absolute": 1.9364132093456625
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 34.89437595516607,
+              "positive": 48.48838725948836,
+              "negative": -13.5940113043223,
+              "absolute": 62.08239856381068
+            }
+          }
+        },
+        {
+          "layer": 1,
+          "kind": "linear_attention",
+          "jump": -8.70216240827023,
+          "token_signed_mass": {
+            "net": -8.70216240827023,
+            "positive": 25.68652584856835,
+            "negative": -34.388688256838584,
+            "absolute": 60.075214105406936
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -5.354139610329286,
+              "positive": 9.93081173066695,
+              "negative": -15.284951340996237,
+              "absolute": 25.21576307166319
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -2.2011929569554396,
+              "positive": 2.8248559511802793,
+              "negative": -5.026048908135719,
+              "absolute": 7.850904859315998
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.6566231300685902,
+              "positive": 1.8809918787677153,
+              "negative": -2.5376150088363056,
+              "absolute": 4.418606887604021
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.4902067109169127,
+              "positive": 11.049866287953408,
+              "negative": -11.540072998870322,
+              "absolute": 22.589939286823732
+            }
+          }
+        },
+        {
+          "layer": 31,
+          "kind": "full_attention",
+          "jump": -6.270098342984714,
+          "token_signed_mass": {
+            "net": -6.270098342984714,
+            "positive": 15.61907274311479,
+            "negative": -21.889171086099505,
+            "absolute": 37.508243829214294
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -1.761058679313136,
+              "positive": 3.6907151727748757,
+              "negative": -5.451773852088012,
+              "absolute": 9.142489024862886
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -0.6337854920483134,
+              "positive": 0.1957141895600427,
+              "negative": -0.8294996816083562,
+              "absolute": 1.025213871168399
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.8219905391449768,
+              "positive": 0.8487257341564607,
+              "negative": -0.026735195011483928,
+              "absolute": 0.8754609291679446
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -4.697244710768242,
+              "positive": 10.883917646623413,
+              "negative": -15.581162357391651,
+              "absolute": 26.465080004015064
+            }
+          }
+        },
+        {
+          "layer": 0,
+          "kind": "linear_attention",
+          "jump": -5.95718660287706,
+          "token_signed_mass": {
+            "net": -5.95718660287706,
+            "positive": 20.172096061999962,
+            "negative": -26.12928266487702,
+            "absolute": 46.30137872687698
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -6.9223106778154815,
+              "positive": 8.485452043316325,
+              "negative": -15.407762721131805,
+              "absolute": 23.89321476444813
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.9497981646639873,
+              "positive": 3.801632845564641,
+              "negative": -2.851834680900654,
+              "absolute": 6.653467526465295
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.2839878896125334,
+              "positive": 1.0659764041347044,
+              "negative": -2.349964293747238,
+              "absolute": 3.415940697881942
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.299313799886967,
+              "positive": 6.81903476898429,
+              "negative": -5.519720969097324,
+              "absolute": 12.338755738081613
+            }
+          }
+        },
+        {
+          "layer": 10,
+          "kind": "linear_attention",
+          "jump": -5.894560642738922,
+          "token_signed_mass": {
+            "net": -5.894560642738922,
+            "positive": 25.12726515419167,
+            "negative": -31.021825796930592,
+            "absolute": 56.149090951122254
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -1.2734869117140222,
+              "positive": 6.938664805119491,
+              "negative": -8.212151716833514,
+              "absolute": 15.150816521953004
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.6407756703622582,
+              "positive": 2.8810564256368645,
+              "negative": -2.2402807552746062,
+              "absolute": 5.121337180911469
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.11827950530100195,
+              "positive": 1.2678326446893897,
+              "negative": -1.3861121499903915,
+              "absolute": 2.653944794679781
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -5.143569896086156,
+              "positive": 14.039711278745923,
+              "negative": -19.183281174832075,
+              "absolute": 33.222992453578
+            }
+          }
+        },
+        {
+          "layer": 27,
+          "kind": "full_attention",
+          "jump": -5.499057922557718,
+          "token_signed_mass": {
+            "net": -5.499057922557718,
+            "positive": 34.95258111810317,
+            "negative": -40.45163904066089,
+            "absolute": 75.40422015876406
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -21.96118279383708,
+              "positive": 3.307861689941912,
+              "negative": -25.26904448377899,
+              "absolute": 28.576906173720907
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -3.357748002306251,
+              "positive": 0.3309812942919595,
+              "negative": -3.688729296598211,
+              "absolute": 4.0197105908901705
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.15003471188329126,
+              "positive": 0.6634706923459878,
+              "negative": -0.8135054042292791,
+              "absolute": 1.4769760965752667
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 19.969907585468903,
+              "positive": 30.65026744152331,
+              "negative": -10.680359856054407,
+              "absolute": 41.33062729757772
+            }
+          }
+        },
+        {
+          "layer": 7,
+          "kind": "full_attention",
+          "jump": -5.088814581187643,
+          "token_signed_mass": {
+            "net": -5.088814581187643,
+            "positive": 23.196801145325296,
+            "negative": -28.285615726512944,
+            "absolute": 51.48241687183823
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -6.886748991074118,
+              "positive": 5.682972077786485,
+              "negative": -12.569721068860602,
+              "absolute": 18.252693146647083
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -0.8827637244300276,
+              "positive": 2.214226439246856,
+              "negative": -3.0969901636768835,
+              "absolute": 5.311216602923739
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.2549759884840634,
+              "positive": 0.8330756464154127,
+              "negative": -2.088051634899476,
+              "absolute": 2.9211272813148885
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 3.935674122800565,
+              "positive": 14.466526981876541,
+              "negative": -10.530852859075976,
+              "absolute": 24.99737984095252
+            }
+          }
+        },
+        {
+          "layer": 9,
+          "kind": "linear_attention",
+          "jump": -4.873104149643993,
+          "token_signed_mass": {
+            "net": -4.873104149643993,
+            "positive": 19.37487998319441,
+            "negative": -24.2479841328384,
+            "absolute": 43.622864116032815
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -4.632013997365397,
+              "positive": 3.607844632530376,
+              "negative": -8.239858629895773,
+              "absolute": 11.84770326242615
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.9260997525309382,
+              "positive": 2.9570844362072277,
+              "negative": -2.0309846836762895,
+              "absolute": 4.988069119883518
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.21530361009293825,
+              "positive": 1.182299668623616,
+              "negative": -1.3976032787165542,
+              "absolute": 2.5799029473401704
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.9518862947165967,
+              "positive": 11.627651245833189,
+              "negative": -12.579537540549785,
+              "absolute": 24.207188786382975
+            }
+          }
+        },
+        {
+          "layer": 12,
+          "kind": "linear_attention",
+          "jump": 4.650336178034533,
+          "token_signed_mass": {
+            "net": 4.650336178034533,
+            "positive": 23.67252948453354,
+            "negative": -19.022193306499013,
+            "absolute": 42.69472279103255
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.20324234596927956,
+              "positive": 5.166590024822133,
+              "negative": -5.369832370791412,
+              "absolute": 10.536422395613545
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.7469187384294684,
+              "positive": 2.407540218578008,
+              "negative": -1.6606214801485395,
+              "absolute": 4.068161698726548
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.045812882243493,
+              "positive": 1.2381518994662695,
+              "negative": -1.1923390172227764,
+              "absolute": 2.430490916689046
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 4.060846903330852,
+              "positive": 14.860247341667133,
+              "negative": -10.799400438336283,
+              "absolute": 25.65964778000342
+            }
+          }
+        },
+        {
+          "layer": 15,
+          "kind": "full_attention",
+          "jump": -4.58934915941521,
+          "token_signed_mass": {
+            "net": -4.58934915941521,
+            "positive": 33.786297973519126,
+            "negative": -38.37564713293433,
+            "absolute": 72.16194510645346
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -19.74075282025634,
+              "positive": 0.866297999131006,
+              "negative": -20.607050819387347,
+              "absolute": 21.473348818518353
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -2.881890754426796,
+              "positive": 0.7756530050203115,
+              "negative": -3.6575437594471074,
+              "absolute": 4.433196764467419
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.073980344549006,
+              "positive": 0.5041816818213032,
+              "negative": -1.5781620263703091,
+              "absolute": 2.0823437081916123
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 19.107274759816928,
+              "positive": 31.640165287546505,
+              "negative": -12.532890527729576,
+              "absolute": 44.17305581527608
+            }
+          }
+        },
+        {
+          "layer": 20,
+          "kind": "linear_attention",
+          "jump": 3.897915699789058,
+          "token_signed_mass": {
+            "net": 3.897915699789058,
+            "positive": 13.553019085783394,
+            "negative": -9.655103385994336,
+            "absolute": 23.208122471777727
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": 0.6335821724317847,
+              "positive": 2.312549238280201,
+              "negative": -1.6789670658484162,
+              "absolute": 3.9915163041286177
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.07110846188872144,
+              "positive": 0.6534443387709397,
+              "negative": -0.5823358768822182,
+              "absolute": 1.2357802156531577
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.4249599952321521,
+              "positive": 0.5669596606118446,
+              "negative": -0.14199966537969244,
+              "absolute": 0.708959325991537
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 2.7682650702364002,
+              "positive": 10.020065848120407,
+              "negative": -7.251800777884007,
+              "absolute": 17.271866626004417
+            }
+          }
+        },
+        {
+          "layer": 6,
+          "kind": "linear_attention",
+          "jump": -3.6848614912486877,
+          "token_signed_mass": {
+            "net": -3.6848614912486877,
+            "positive": 25.156286911587433,
+            "negative": -28.84114840283612,
+            "absolute": 53.997435314423555
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -4.8968589043463995,
+              "positive": 8.926602537060852,
+              "negative": -13.823461441407252,
+              "absolute": 22.750063978468102
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -0.009872435211520536,
+              "positive": 4.216457046386395,
+              "negative": -4.226329481597915,
+              "absolute": 8.442786527984309
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.6100709102387558,
+              "positive": 1.4554506937095444,
+              "negative": -0.8453797834707886,
+              "absolute": 2.300830477180333
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.6117989380704759,
+              "positive": 10.55777663443064,
+              "negative": -9.945977696360163,
+              "absolute": 20.503754330790805
+            }
+          }
+        },
+        {
+          "layer": 5,
+          "kind": "linear_attention",
+          "jump": 3.176223056177376,
+          "token_signed_mass": {
+            "net": 3.176223056177376,
+            "positive": 24.4519129459999,
+            "negative": -21.275689889822523,
+            "absolute": 45.727602835822424
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.7147165115487326,
+              "positive": 6.824728105837827,
+              "negative": -7.539444617386559,
+              "absolute": 14.364172723224387
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 2.0845345689083157,
+              "positive": 4.476563600625954,
+              "negative": -2.3920290317176383,
+              "absolute": 6.868592632343592
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.8285557698573789,
+              "positive": 2.232731598322279,
+              "negative": -0.4041758284649002,
+              "absolute": 2.6369074267871793
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.022150771039585737,
+              "positive": 10.917889641213838,
+              "negative": -10.940040412253422,
+              "absolute": 21.857930053467257
+            }
+          }
+        },
+        {
+          "layer": 23,
+          "kind": "full_attention",
+          "jump": -2.254932608972023,
+          "token_signed_mass": {
+            "net": -2.254932608972023,
+            "positive": 18.90041873970646,
+            "negative": -21.155351348678483,
+            "absolute": 40.055770088384946
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -12.222808594842258,
+              "positive": 0.7877954341994865,
+              "negative": -13.01060402904174,
+              "absolute": 13.798399463241228
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -1.5548814066220165,
+              "positive": 0.33618878755457005,
+              "negative": -1.8910701941765868,
+              "absolute": 2.2272589817311568
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.10200662518794139,
+              "positive": 0.2056623260008188,
+              "negative": -0.3076689511887602,
+              "absolute": 0.513331277189579
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 11.624764017680192,
+              "positive": 17.570772191951583,
+              "negative": -5.946008174271392,
+              "absolute": 23.516780366222978
+            }
+          }
+        },
+        {
+          "layer": 3,
+          "kind": "full_attention",
+          "jump": 2.193708404372421,
+          "token_signed_mass": {
+            "net": 2.193708404372421,
+            "positive": 27.783052815704412,
+            "negative": -25.589344411331993,
+            "absolute": 53.3723972270364
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -4.9403012984282295,
+              "positive": 7.276456192656502,
+              "negative": -12.216757491084735,
+              "absolute": 19.493213683741235
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 3.0307628889207825,
+              "positive": 4.739505405821952,
+              "negative": -1.70874251690117,
+              "absolute": 6.448247922723122
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -2.1856582676751324,
+              "positive": 0.7406962644966271,
+              "negative": -2.9263545321717594,
+              "absolute": 3.6670507966683865
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 6.288905081555001,
+              "positive": 15.02639495272933,
+              "negative": -8.73748987117433,
+              "absolute": 23.76388482390366
+            }
+          }
+        },
+        {
+          "layer": 18,
+          "kind": "linear_attention",
+          "jump": 2.1121640691351318,
+          "token_signed_mass": {
+            "net": 2.1121640691351318,
+            "positive": 27.082348397668262,
+            "negative": -24.97018432853313,
+            "absolute": 52.05253272620139
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.6297255502670195,
+              "positive": 4.483351781859268,
+              "negative": -5.113077332126288,
+              "absolute": 9.596429113985556
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.8231029687915794,
+              "positive": 1.7265439257191866,
+              "negative": -0.9034409569276072,
+              "absolute": 2.6299848826467933
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.39999983548697093,
+              "positive": 0.5242064563833003,
+              "negative": -0.9242062918702714,
+              "absolute": 1.4484127482535718
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 2.3187864860975425,
+              "positive": 20.348246233706504,
+              "negative": -18.02945974760896,
+              "absolute": 38.37770598131547
+            }
+          }
+        },
+        {
+          "layer": 4,
+          "kind": "linear_attention",
+          "jump": -1.9111958754175007,
+          "token_signed_mass": {
+            "net": -1.9111958754175007,
+            "positive": 24.9064306982379,
+            "negative": -26.817626573655403,
+            "absolute": 51.72405727189331
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -1.9402765749540376,
+              "positive": 7.146829731786738,
+              "negative": -9.087106306740775,
+              "absolute": 16.233936038527514
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.21514573836244916,
+              "positive": 3.1489496702498516,
+              "negative": -2.933803931887402,
+              "absolute": 6.082753602137254
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 2.686778802201086,
+              "positive": 4.0477247997339365,
+              "negative": -1.3609459975328506,
+              "absolute": 5.408670797266787
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -2.8728438410269987,
+              "positive": 10.562926496467377,
+              "negative": -13.435770337494375,
+              "absolute": 23.998696833961752
+            }
+          }
+        },
+        {
+          "layer": 8,
+          "kind": "linear_attention",
+          "jump": -1.6569545287568073,
+          "token_signed_mass": {
+            "net": -1.6569545287568073,
+            "positive": 18.16658680585877,
+            "negative": -19.823541334615577,
+            "absolute": 37.99012814047435
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -1.741014769958957,
+              "positive": 4.579534093811439,
+              "negative": -6.320548863770396,
+              "absolute": 10.900082957581834
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.14716322459914466,
+              "positive": 2.347820745064522,
+              "negative": -2.200657520465377,
+              "absolute": 4.5484782655299
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 2.0031834412738525,
+              "positive": 2.38447657279377,
+              "negative": -0.3812931315199173,
+              "absolute": 2.765769704313687
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -2.0662864246708468,
+              "positive": 8.85475539418904,
+              "negative": -10.921041818859885,
+              "absolute": 19.77579721304893
+            }
+          }
+        },
+        {
+          "layer": 11,
+          "kind": "full_attention",
+          "jump": 1.6341822048936656,
+          "token_signed_mass": {
+            "net": 1.6341822048936656,
+            "positive": 27.58211144478681,
+            "negative": -25.947929239893146,
+            "absolute": 53.53004068467996
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -3.3630581694582475,
+              "positive": 6.487810118611851,
+              "negative": -9.850868288070096,
+              "absolute": 16.33867840668195
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.06194548398168523,
+              "positive": 1.7364366487278724,
+              "negative": -1.674491164746187,
+              "absolute": 3.4109278134740597
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.1157410461063617,
+              "positive": 0.6105464190461092,
+              "negative": -1.726287465152471,
+              "absolute": 2.3368338841985805
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 6.051035936476589,
+              "positive": 18.74731825840098,
+              "negative": -12.696282321924391,
+              "absolute": 31.44360058032537
+            }
+          }
+        },
+        {
+          "layer": 16,
+          "kind": "linear_attention",
+          "jump": 1.607211240431838,
+          "token_signed_mass": {
+            "net": 1.607211240431838,
+            "positive": 22.53505497926476,
+            "negative": -20.927843738832923,
+            "absolute": 43.46289871809769
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": 0.8364868979478515,
+              "positive": 3.8343940603504327,
+              "negative": -2.9979071624025817,
+              "absolute": 6.832301222753015
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -0.15756341271281638,
+              "positive": 1.1078984469367625,
+              "negative": -1.2654618596495788,
+              "absolute": 2.373360306586341
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.3762912079455769,
+              "positive": 0.78448540341824,
+              "negative": -0.40819419547266306,
+              "absolute": 1.1926795988909031
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.5519965472512254,
+              "positive": 16.808277068559327,
+              "negative": -16.2562805213081,
+              "absolute": 33.06455758986742
+            }
+          }
+        },
+        {
+          "layer": 14,
+          "kind": "linear_attention",
+          "jump": -1.5662048997870768,
+          "token_signed_mass": {
+            "net": -1.5662048997870768,
+            "positive": 22.547436638137086,
+            "negative": -24.113641537924167,
+            "absolute": 46.66107817606126
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -2.9546554297809458,
+              "positive": 4.1342008575644975,
+              "negative": -7.088856287345443,
+              "absolute": 11.22305714490994
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.6631877777317674,
+              "positive": 2.37602358069255,
+              "negative": -1.7128358029607829,
+              "absolute": 4.0888593836533325
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.5072753210751371,
+              "positive": 1.4236420532034801,
+              "negative": -0.9163667321283431,
+              "absolute": 2.340008785331823
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.2179874311869644,
+              "positive": 14.613570146676562,
+              "negative": -14.395582715489597,
+              "absolute": 29.00915286216616
+            }
+          }
+        },
+        {
+          "layer": 22,
+          "kind": "linear_attention",
+          "jump": 1.2358148809414466,
+          "token_signed_mass": {
+            "net": 1.2358148809414466,
+            "positive": 12.337594787575448,
+            "negative": -11.101779906634,
+            "absolute": 23.439374694209445
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.003431050591602147,
+              "positive": 1.8491262077658686,
+              "negative": -1.8525572583574708,
+              "absolute": 3.7016834661233395
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.7881321619098001,
+              "positive": 1.1615099729177958,
+              "negative": -0.3733778110079958,
+              "absolute": 1.5348877839257917
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.15450898823762527,
+              "positive": 0.28870659725112446,
+              "negative": -0.13419760901349917,
+              "absolute": 0.4229042062646236
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.29660478138562385,
+              "positive": 9.038252009640658,
+              "negative": -8.741647228255033,
+              "absolute": 17.77989923789569
+            }
+          }
+        },
+        {
+          "layer": 24,
+          "kind": "linear_attention",
+          "jump": 1.2194851735252739,
+          "token_signed_mass": {
+            "net": 1.2194851735252739,
+            "positive": 11.63776405965578,
+            "negative": -10.418278886130505,
+            "absolute": 22.05604294578628
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.2501743558263234,
+              "positive": 1.6390733978728305,
+              "negative": -1.8892477536991539,
+              "absolute": 3.5283211515719843
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.6251189235698993,
+              "positive": 0.9003190863381962,
+              "negative": -0.275200162768297,
+              "absolute": 1.1755192491064932
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.09253347772892402,
+              "positive": 0.5054573816931369,
+              "negative": -0.597990859422061,
+              "absolute": 1.103448241115198
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.9370740835106222,
+              "positive": 8.592914193751614,
+              "negative": -7.655840110240991,
+              "absolute": 16.24875430399261
+            }
+          }
+        },
+        {
+          "layer": 30,
+          "kind": "linear_attention",
+          "jump": -0.9528702791788276,
+          "token_signed_mass": {
+            "net": -0.9528702791788276,
+            "positive": 19.021102708776496,
+            "negative": -19.97397298795532,
+            "absolute": 38.99507569673182
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.9339301679999528,
+              "positive": 1.0870630116972797,
+              "negative": -2.020993179697233,
+              "absolute": 3.108056191394512
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.22685003424077935,
+              "positive": 0.6478516299655338,
+              "negative": -0.4210015957247546,
+              "absolute": 1.0688532256902885
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.35303055698782965,
+              "positive": 0.382598645897064,
+              "negative": -0.7356292028848936,
+              "absolute": 1.1182278487819575
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.10724041156817604,
+              "positive": 16.903589421216616,
+              "negative": -16.79634900964844,
+              "absolute": 33.69993843086506
+            }
+          }
+        },
+        {
+          "layer": 13,
+          "kind": "linear_attention",
+          "jump": 0.8886123887690913,
+          "token_signed_mass": {
+            "net": 0.8886123887690913,
+            "positive": 17.45317637411246,
+            "negative": -16.564563985343366,
+            "absolute": 34.01774035945583
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.8464514450050876,
+              "positive": 2.8286999711968757,
+              "negative": -3.675151416201963,
+              "absolute": 6.503851387398839
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.21771817345483474,
+              "positive": 1.5041026544678653,
+              "negative": -1.2863844810130307,
+              "absolute": 2.7904871354808964
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.5727267936209384,
+              "positive": 0.4620141464178963,
+              "negative": -1.0347409400388345,
+              "absolute": 1.496755086456731
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 2.0900724539402833,
+              "positive": 12.658359602029822,
+              "negative": -10.568287148089539,
+              "absolute": 23.226646750119365
+            }
+          }
+        },
+        {
+          "layer": 28,
+          "kind": "linear_attention",
+          "jump": -0.5907333693765964,
+          "token_signed_mass": {
+            "net": -0.5907333693765964,
+            "positive": 12.831317708692598,
+            "negative": -13.422051078069194,
+            "absolute": 26.25336878676179
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.22969270984535473,
+              "positive": 0.9126479976420787,
+              "negative": -1.1423407074874334,
+              "absolute": 2.054988705129512
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": -0.042456600421122384,
+              "positive": 0.3062254318932297,
+              "negative": -0.3486820323143521,
+              "absolute": 0.6549074642075818
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.013785624776347621,
+              "positive": 0.13122873166685473,
+              "negative": -0.1174431068905071,
+              "absolute": 0.24867183855736183
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.33236968388646704,
+              "positive": 11.481215547490436,
+              "negative": -11.813585231376901,
+              "absolute": 23.29480077886734
+            }
+          }
+        },
+        {
+          "layer": 2,
+          "kind": "linear_attention",
+          "jump": 0.5559094949383458,
+          "token_signed_mass": {
+            "net": 0.5559094949383458,
+            "positive": 22.95823490245488,
+            "negative": -22.40232540751654,
+            "absolute": 45.360560309971426
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": 0.12678023926186022,
+              "positive": 9.099638325819786,
+              "negative": -8.972858086557924,
+              "absolute": 18.07249641237771
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.7370386826571234,
+              "positive": 4.027849363374161,
+              "negative": -3.2908106807170374,
+              "absolute": 7.318660044091198
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.4876532126734618,
+              "positive": 2.5842411683476154,
+              "negative": -1.0965879556741536,
+              "absolute": 3.680829124021769
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -1.7955626396540996,
+              "positive": 7.246506044913321,
+              "negative": -9.04206868456742,
+              "absolute": 16.28857472948074
+            }
+          }
+        },
+        {
+          "layer": 21,
+          "kind": "linear_attention",
+          "jump": 0.49436463744421255,
+          "token_signed_mass": {
+            "net": 0.49436463744421255,
+            "positive": 13.565928359318407,
+            "negative": -13.071563721874192,
+            "absolute": 26.637492081192597
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": 1.3915884759246817,
+              "positive": 2.9111434198644313,
+              "negative": -1.5195549439397495,
+              "absolute": 4.430698363804181
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.05798988319928755,
+              "positive": 0.5843486973597042,
+              "negative": -0.5263588141604166,
+              "absolute": 1.110707511520121
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.08477917058131368,
+              "positive": 0.40198846179136893,
+              "negative": -0.4867676323726826,
+              "absolute": 0.8887560941640515
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.8704345510984426,
+              "positive": 9.668447780302902,
+              "negative": -10.538882331401345,
+              "absolute": 20.20733011170425
+            }
+          }
+        },
+        {
+          "layer": 29,
+          "kind": "linear_attention",
+          "jump": -0.25388190306853975,
+          "token_signed_mass": {
+            "net": -0.25388190306853975,
+            "positive": 6.967949848250377,
+            "negative": -7.221831751318916,
+            "absolute": 14.189781599569292
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.3729525115398373,
+              "positive": 0.8156894192073322,
+              "negative": -1.1886419307471696,
+              "absolute": 2.0043313499545015
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.3263407620179901,
+              "positive": 0.6360185361621389,
+              "negative": -0.30967777414414865,
+              "absolute": 0.9456963103062874
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.04956175046967165,
+              "positive": 0.19611914233940178,
+              "negative": -0.24568089280907343,
+              "absolute": 0.4418000351484752
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.15770840307702083,
+              "positive": 5.320122750541504,
+              "negative": -5.477831153618524,
+              "absolute": 10.797953904160028
+            }
+          }
+        },
+        {
+          "layer": 17,
+          "kind": "linear_attention",
+          "jump": 0.24446545514066775,
+          "token_signed_mass": {
+            "net": 0.24446545514066775,
+            "positive": 24.427097020086993,
+            "negative": -24.182631564946327,
+            "absolute": 48.60972858503332
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -2.2528264827463134,
+              "positive": 3.2603230472382183,
+              "negative": -5.513149529984531,
+              "absolute": 8.77347257722275
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.8141118301809696,
+              "positive": 1.6813916746880104,
+              "negative": -0.8672798445070409,
+              "absolute": 2.5486715191950515
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0047424024644937,
+              "positive": 0.719785030687863,
+              "negative": -0.7150426282233693,
+              "absolute": 1.4348276589112323
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.6784377052415178,
+              "positive": 18.765597267472902,
+              "negative": -17.087159562231385,
+              "absolute": 35.85275682970428
+            }
+          }
+        },
+        {
+          "layer": 25,
+          "kind": "linear_attention",
+          "jump": -0.1709555229579527,
+          "token_signed_mass": {
+            "net": -0.1709555229579527,
+            "positive": 5.430757338509402,
+            "negative": -5.601712861467354,
+            "absolute": 11.032470199976755
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.3509996442028995,
+              "positive": 0.6792022147964598,
+              "negative": -1.0302018589993591,
+              "absolute": 1.7094040737958194
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.16368814046102817,
+              "positive": 0.4826351943755859,
+              "negative": -0.31894705391455774,
+              "absolute": 0.8015822482901436
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.058212619634050264,
+              "positive": 0.09752850358050706,
+              "negative": -0.15574112321455733,
+              "absolute": 0.2532696267950644
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.07456860041796896,
+              "positive": 4.171391425756849,
+              "negative": -4.096822825338879,
+              "absolute": 8.26821425109573
+            }
+          }
+        },
+        {
+          "layer": 26,
+          "kind": "linear_attention",
+          "jump": -0.007798100245880429,
+          "token_signed_mass": {
+            "net": -0.007798100245880429,
+            "positive": 5.053691111537859,
+            "negative": -5.06148921178374,
+            "absolute": 10.1151803233216
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 190,
+              "net": -0.9575738221585297,
+              "positive": 0.6472242777107681,
+              "negative": -1.604798099869298,
+              "absolute": 2.2520223775800656
+            },
+            "kept_eligible_prompt": {
+              "count": 187,
+              "net": 0.19607531467937672,
+              "positive": 0.4575753540744618,
+              "negative": -0.2615000393950851,
+              "absolute": 0.7190753934695469
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.13118287841965925,
+              "positive": 0.2721057148075032,
+              "negative": -0.14092283638784392,
+              "absolute": 0.4130285511953471
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.6225175288136132,
+              "positive": 3.676785764945126,
+              "negative": -3.0542682361315125,
+              "absolute": 6.731054001076638
+            }
+          }
+        }
+      ],
+      "FA_decoder_sum": -31.778659496015884,
+      "GDN_decoder_sum": -16.1399674992411,
+      "per_token_closure_max_absolute": 0,
+      "scalar_closure_absolute": 4.263256414560601e-14
+    },
+    "20": {
+      "actual_logprob_drop": 118.0,
+      "predicted_drop": 117.28255718870787,
+      "actual_minus_predicted": 0.7174428112921305,
+      "source_actual_minus_predicted": 0.6805187069694512,
+      "error_drift_from_score": 0.0,
+      "error_drift_from_vector": 0.03692410432267934,
+      "terms": {
+        "native_BF16_score_minus_same_logits_FP32": 0.9500181055159373,
+        "head_and_logprob_seed": -0.38238886745990897,
+        "final_norm": -0.09298520712818004,
+        "decoders": 0.2427989487477149,
+        "input_map": -1.683834511823079e-07
+      },
+      "decoder_layer_signed_mass": {
+        "net": 0.2427989487477149,
+        "positive": 1.497332827099284,
+        "negative": -1.2545338783515692,
+        "absolute": 2.7518667054508534
+      },
+      "all_decoder_token_signed_mass": {
+        "net": 0.242798948747729,
+        "positive": 729.2590219570359,
+        "negative": -729.0162230082882,
+        "absolute": 1458.275244965324
+      },
+      "largest_overprediction_layer": 13,
+      "largest_compensating_layer": 20,
+      "decoder_ranking_absolute": [
+        {
+          "layer": 13,
+          "kind": "linear_attention",
+          "jump": -0.22877337720363283,
+          "token_signed_mass": {
+            "net": -0.22877337720363283,
+            "positive": 16.26086145704721,
+            "negative": -16.489634834250843,
+            "absolute": 32.75049629129805
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.16539850105887804,
+              "positive": 4.021816701399096,
+              "negative": -4.187215202457974,
+              "absolute": 8.209031903857069
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.10477974671476126,
+              "positive": 0.5555609594150117,
+              "negative": -0.660340706129773,
+              "absolute": 1.2159016655447847
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.04140487057000636,
+              "positive": 11.683483796233102,
+              "negative": -11.642078925663094,
+              "absolute": 23.325562721896198
+            }
+          }
+        },
+        {
+          "layer": 20,
+          "kind": "linear_attention",
+          "jump": 0.19891227030264358,
+          "token_signed_mass": {
+            "net": 0.19891227030264358,
+            "positive": 12.155013256753417,
+            "negative": -11.956100986450773,
+            "absolute": 24.11111424320419
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.9208629523230182,
+              "positive": 2.407933360721399,
+              "negative": -3.3287963130444167,
+              "absolute": 5.736729673765815
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.06446523943607474,
+              "positive": 0.2970112601590207,
+              "negative": -0.23254602072294595,
+              "absolute": 0.5295572808819666
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.055309983189587,
+              "positive": 9.450068635872999,
+              "negative": -8.39475865268341,
+              "absolute": 17.844827288556406
+            }
+          }
+        },
+        {
+          "layer": 16,
+          "kind": "linear_attention",
+          "jump": 0.18021000428260425,
+          "token_signed_mass": {
+            "net": 0.18021000428260425,
+            "positive": 22.643738232486076,
+            "negative": -22.463528228203465,
+            "absolute": 45.107266460689544
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -1.1150654266660753,
+              "positive": 3.2280051160411385,
+              "negative": -4.343070542707213,
+              "absolute": 7.571075658748352
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.753760279628104,
+              "positive": 1.1137588255079642,
+              "negative": -0.35999854587986013,
+              "absolute": 1.4737573713878243
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.5415151513205754,
+              "positive": 18.301974290936972,
+              "negative": -17.760459139616394,
+              "absolute": 36.06243343055336
+            }
+          }
+        },
+        {
+          "layer": 12,
+          "kind": "linear_attention",
+          "jump": -0.17103614656209554,
+          "token_signed_mass": {
+            "net": -0.17103614656209554,
+            "positive": 20.19008036293929,
+            "negative": -20.361116509501386,
+            "absolute": 40.55119687244067
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": 0.7526041897975878,
+              "positive": 7.4221216172650575,
+              "negative": -6.66951742746747,
+              "absolute": 14.091639044732528
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.6718880409198038,
+              "positive": 0.8521115142340769,
+              "negative": -1.5239995551538807,
+              "absolute": 2.3761110693879575
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.25175229543987987,
+              "positive": 11.915847231440154,
+              "negative": -12.167599526880034,
+              "absolute": 24.083446758320193
+            }
+          }
+        },
+        {
+          "layer": 0,
+          "kind": "linear_attention",
+          "jump": 0.1691389435372057,
+          "token_signed_mass": {
+            "net": 0.1691389435372057,
+            "positive": 35.18678544949367,
+            "negative": -35.01764650595646,
+            "absolute": 70.20443195545013
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": 5.501031362481318,
+              "positive": 25.23186642274929,
+              "negative": -19.73083506026797,
+              "absolute": 44.962701483017256
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -7.757493088542164,
+              "positive": 0.9758851855601476,
+              "negative": -8.73337827410231,
+              "absolute": 9.70926345966246
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 2.425600669598051,
+              "positive": 8.979033841184233,
+              "negative": -6.553433171586181,
+              "absolute": 15.53246701277041
+            }
+          }
+        },
+        {
+          "layer": 1,
+          "kind": "linear_attention",
+          "jump": 0.14035542323180783,
+          "token_signed_mass": {
+            "net": 0.14035542323180783,
+            "positive": 36.0451615339245,
+            "negative": -35.9048061106927,
+            "absolute": 71.9499676446172
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": 0.827259287708666,
+              "positive": 20.604969750085772,
+              "negative": -19.777710462377108,
+              "absolute": 40.38268021246288
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.870584072428156,
+              "positive": 4.749932762430181,
+              "negative": -2.8793486900020246,
+              "absolute": 7.629281452432206
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -2.5574879369050145,
+              "positive": 10.690259021408549,
+              "negative": -13.247746958313565,
+              "absolute": 23.938005979722114
+            }
+          }
+        },
+        {
+          "layer": 15,
+          "kind": "full_attention",
+          "jump": -0.13731510660596058,
+          "token_signed_mass": {
+            "net": -0.13731510660596058,
+            "positive": 37.781256352091035,
+            "negative": -37.918571458697,
+            "absolute": 75.69982781078804
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -22.06797740731284,
+              "positive": 1.5682939068551434,
+              "negative": -23.63627131416798,
+              "absolute": 25.204565221023124
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -3.543965491772144,
+              "positive": 0.2635619750866263,
+              "negative": -3.8075274668587706,
+              "absolute": 4.071089441945397
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 25.47462779247902,
+              "positive": 35.94940047014927,
+              "negative": -10.474772677670247,
+              "absolute": 46.424173147819516
+            }
+          }
+        },
+        {
+          "layer": 31,
+          "kind": "full_attention",
+          "jump": 0.13055691071451303,
+          "token_signed_mass": {
+            "net": 0.13055691071451303,
+            "positive": 17.40887355526581,
+            "negative": -17.2783166445513,
+            "absolute": 34.68719019981711
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.534389765089772,
+              "positive": 4.858002514033854,
+              "negative": -5.392392279123626,
+              "absolute": 10.25039479315748
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.427819305617273,
+              "positive": 1.469802535273795,
+              "negative": -0.041983229656521834,
+              "absolute": 1.5117857649303168
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.7628726298129869,
+              "positive": 11.081068505958164,
+              "negative": -11.843941135771152,
+              "absolute": 22.925009641729318
+            }
+          }
+        },
+        {
+          "layer": 4,
+          "kind": "linear_attention",
+          "jump": -0.1178740333059185,
+          "token_signed_mass": {
+            "net": -0.1178740333059185,
+            "positive": 30.428531868815313,
+            "negative": -30.54640590212123,
+            "absolute": 60.974937770936535
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.3675480642409159,
+              "positive": 11.832416339748477,
+              "negative": -12.19996440398939,
+              "absolute": 24.032380743737868
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 5.445061057752688,
+              "positive": 7.062690165147627,
+              "negative": -1.6176291073949391,
+              "absolute": 8.680319272542567
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -5.19538702681769,
+              "positive": 11.53342536391921,
+              "negative": -16.7288123907369,
+              "absolute": 28.262237754656113
+            }
+          }
+        },
+        {
+          "layer": 11,
+          "kind": "full_attention",
+          "jump": -0.11668997707958617,
+          "token_signed_mass": {
+            "net": -0.11668997707958617,
+            "positive": 28.04704615393575,
+            "negative": -28.163736131015334,
+            "absolute": 56.21078228495108
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -2.860374604038778,
+              "positive": 9.658120210259886,
+              "negative": -12.518494814298663,
+              "absolute": 22.176615024558547
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -2.987624327613828,
+              "positive": 0.30456357130072353,
+              "negative": -3.2921878989145514,
+              "absolute": 3.596751470215275
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 5.73130895457302,
+              "positive": 18.08436237237514,
+              "negative": -12.35305341780212,
+              "absolute": 30.437415790177262
+            }
+          }
+        },
+        {
+          "layer": 8,
+          "kind": "linear_attention",
+          "jump": 0.11376167895044159,
+          "token_signed_mass": {
+            "net": 0.11376167895044159,
+            "positive": 17.868328206637813,
+            "negative": -17.754566527687373,
+            "absolute": 35.622894734325186
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -1.8102452752335032,
+              "positive": 6.086063128322605,
+              "negative": -7.896308403556109,
+              "absolute": 13.982371531878716
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 3.01024735023476,
+              "positive": 3.3661515316007122,
+              "negative": -0.3559041813659527,
+              "absolute": 3.722055712966665
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -1.0862403960508151,
+              "positive": 8.416113546714497,
+              "negative": -9.50235394276531,
+              "absolute": 17.91846748947981
+            }
+          }
+        },
+        {
+          "layer": 10,
+          "kind": "linear_attention",
+          "jump": 0.10057983336859522,
+          "token_signed_mass": {
+            "net": 0.10057983336859522,
+            "positive": 27.378341481174207,
+            "negative": -27.27776164780561,
+            "absolute": 54.656103128979815
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.2913977500979237,
+              "positive": 10.869142910635397,
+              "negative": -11.16054066073332,
+              "absolute": 22.029683571368718
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.6422754641016273,
+              "positive": 1.7292623486661618,
+              "negative": -1.0869868845645345,
+              "absolute": 2.816249233230696
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.2502978806351075,
+              "positive": 14.779936221872646,
+              "negative": -15.030234102507755,
+              "absolute": 29.8101703243804
+            }
+          }
+        },
+        {
+          "layer": 6,
+          "kind": "linear_attention",
+          "jump": -0.09196349256047531,
+          "token_signed_mass": {
+            "net": -0.09196349256047531,
+            "positive": 27.581021104490652,
+            "negative": -27.672984597051126,
+            "absolute": 55.254005701541786
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": 0.7501238452733893,
+              "positive": 16.66286314839852,
+              "negative": -15.912739303125134,
+              "absolute": 32.57560245152365
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.4152555865645393,
+              "positive": 1.1128200012040494,
+              "negative": -0.69756441463951,
+              "absolute": 1.8103844158435594
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -1.257342924398403,
+              "positive": 9.805337954888085,
+              "negative": -11.062680879286486,
+              "absolute": 20.868018834174567
+            }
+          }
+        },
+        {
+          "layer": 17,
+          "kind": "linear_attention",
+          "jump": 0.09039803638061938,
+          "token_signed_mass": {
+            "net": 0.09039803638061938,
+            "positive": 23.931224638277353,
+            "negative": -23.840826601896737,
+            "absolute": 47.77205124017409
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -2.167840789610055,
+              "positive": 4.191015906026085,
+              "negative": -6.35885669563614,
+              "absolute": 10.549872601662226
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.3558227063441922,
+              "positive": 0.8562999964144338,
+              "negative": -0.5004772900702417,
+              "absolute": 1.3567772864846754
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.9024161196464822,
+              "positive": 18.883908735836837,
+              "negative": -16.98149261619035,
+              "absolute": 35.86540135202719
+            }
+          }
+        },
+        {
+          "layer": 30,
+          "kind": "linear_attention",
+          "jump": -0.08409696984862094,
+          "token_signed_mass": {
+            "net": -0.08409696984862094,
+            "positive": 18.897792434350603,
+            "negative": -18.981889404199222,
+            "absolute": 37.87968183854983
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": 0.42194988805076644,
+              "positive": 1.854626410930246,
+              "negative": -1.4326765228794796,
+              "absolute": 3.2873029338097255
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.6639782626963532,
+              "positive": 0.3080610015010976,
+              "negative": -0.9720392641974508,
+              "absolute": 1.2801002656985483
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.1579314047969657,
+              "positive": 16.735105021919257,
+              "negative": -16.577173617122295,
+              "absolute": 33.31227863904155
+            }
+          }
+        },
+        {
+          "layer": 7,
+          "kind": "full_attention",
+          "jump": 0.08321000263119815,
+          "token_signed_mass": {
+            "net": 0.08321000263119815,
+            "positive": 26.296760999637456,
+            "negative": -26.21355099700626,
+            "absolute": 52.51031199664372
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -5.914387456696555,
+              "positive": 9.041196295145898,
+              "negative": -14.955583751842452,
+              "absolute": 23.99678004698835
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.0229821035967133,
+              "positive": 0.8138985647554404,
+              "negative": -1.8368806683521537,
+              "absolute": 2.650779233107594
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 7.020579562924466,
+              "positive": 16.441666139736117,
+              "negative": -9.421086576811653,
+              "absolute": 25.862752716547774
+            }
+          }
+        },
+        {
+          "layer": 23,
+          "kind": "full_attention",
+          "jump": 0.07260332352832499,
+          "token_signed_mass": {
+            "net": 0.07260332352832499,
+            "positive": 20.496483670901796,
+            "negative": -20.423880347373473,
+            "absolute": 40.92036401827527
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -11.779970287080815,
+              "positive": 2.3138501796455913,
+              "negative": -14.093820466726406,
+              "absolute": 16.407670646371997
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.2826769284429833,
+              "positive": 0.4537144735112915,
+              "negative": -0.1710375450683082,
+              "absolute": 0.6247520185795998
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 11.569896682166155,
+              "positive": 17.728919017744914,
+              "negative": -6.159022335578758,
+              "absolute": 23.887941353323672
+            }
+          }
+        },
+        {
+          "layer": 18,
+          "kind": "linear_attention",
+          "jump": -0.06995743701858259,
+          "token_signed_mass": {
+            "net": -0.06995743701858259,
+            "positive": 26.200972966051253,
+            "negative": -26.270930403069837,
+            "absolute": 52.4719033691211
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.4731507096745288,
+              "positive": 5.503473384156115,
+              "negative": -5.976624093830644,
+              "absolute": 11.480097477986757
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.2956900715978416,
+              "positive": 0.472307534051393,
+              "negative": -0.7679976056492346,
+              "absolute": 1.2403051397006275
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.6988833442537876,
+              "positive": 20.22519204784375,
+              "negative": -19.526308703589958,
+              "absolute": 39.75150075143371
+            }
+          }
+        },
+        {
+          "layer": 19,
+          "kind": "full_attention",
+          "jump": -0.05075639393000131,
+          "token_signed_mass": {
+            "net": -0.05075639393000131,
+            "positive": 60.50921781169798,
+            "negative": -60.559974205627974,
+            "absolute": 121.06919201732596
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -41.79735506814094,
+              "positive": 3.5165840649004556,
+              "negative": -45.31393913304139,
+              "absolute": 48.830523197941844
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -1.723914817244272,
+              "positive": 0.1316623796208189,
+              "negative": -1.855577196865091,
+              "absolute": 1.9872395764859099
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 43.47051349145521,
+              "positive": 56.8609713671767,
+              "negative": -13.390457875721495,
+              "absolute": 70.2514292428982
+            }
+          }
+        },
+        {
+          "layer": 3,
+          "kind": "full_attention",
+          "jump": 0.04740055197209436,
+          "token_signed_mass": {
+            "net": 0.04740055197209436,
+            "positive": 27.987192034344176,
+            "negative": -27.939791482372087,
+            "absolute": 55.926983516716255
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -3.8566359186500563,
+              "positive": 11.971439536301826,
+              "negative": -15.828075454951879,
+              "absolute": 27.799514991253705
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.8279030171815979,
+              "positive": 0.94879758823553,
+              "negative": -1.776700605417128,
+              "absolute": 2.7254981936526574
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 4.731939487803746,
+              "positive": 15.06695490980682,
+              "negative": -10.335015422003071,
+              "absolute": 25.40197033180989
+            }
+          }
+        },
+        {
+          "layer": 26,
+          "kind": "linear_attention",
+          "jump": 0.04591945205845919,
+          "token_signed_mass": {
+            "net": 0.04591945205845919,
+            "positive": 4.328912872015245,
+            "negative": -4.282993419956785,
+            "absolute": 8.61190629197203
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.40535509937559916,
+              "positive": 1.1364539116777426,
+              "negative": -1.5418090110533418,
+              "absolute": 2.6782629227310846
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.10250516100689087,
+              "positive": 0.2037046461021848,
+              "negative": -0.10119948509529397,
+              "absolute": 0.3049041311974788
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.34876939042716754,
+              "positive": 2.9887543142353175,
+              "negative": -2.639984923808149,
+              "absolute": 5.628739238043467
+            }
+          }
+        },
+        {
+          "layer": 28,
+          "kind": "linear_attention",
+          "jump": -0.044270532953267494,
+          "token_signed_mass": {
+            "net": -0.044270532953267494,
+            "positive": 13.484167988084302,
+            "negative": -13.528438521037572,
+            "absolute": 27.012606509121873
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.1552617644556837,
+              "positive": 1.0863852869543789,
+              "negative": -1.2416470514100626,
+              "absolute": 2.3280323383644417
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.04373171686989537,
+              "positive": 0.20580637806351618,
+              "negative": -0.24953809493341156,
+              "absolute": 0.4553444729969277
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.15472294837231143,
+              "positive": 12.19197632306641,
+              "negative": -12.037253374694096,
+              "absolute": 24.229229697760506
+            }
+          }
+        },
+        {
+          "layer": 22,
+          "kind": "linear_attention",
+          "jump": 0.04033313927230875,
+          "token_signed_mass": {
+            "net": 0.04033313927230875,
+            "positive": 10.857555029011092,
+            "negative": -10.817221889738782,
+            "absolute": 21.674776918749874
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.4145661170724706,
+              "positive": 1.5927459603091814,
+              "negative": -2.007312077381652,
+              "absolute": 3.6000580376908333
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.04859805709462648,
+              "positive": 0.1613957163279377,
+              "negative": -0.11279765923331123,
+              "absolute": 0.2741933755612489
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.40630119925015296,
+              "positive": 9.103413352373972,
+              "negative": -8.69711215312382,
+              "absolute": 17.80052550549779
+            }
+          }
+        },
+        {
+          "layer": 14,
+          "kind": "linear_attention",
+          "jump": -0.038011769982786436,
+          "token_signed_mass": {
+            "net": -0.038011769982786436,
+            "positive": 23.993892554020395,
+            "negative": -24.031904324003182,
+            "absolute": 48.02579687802357
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -2.195163024370833,
+              "positive": 6.860011021445491,
+              "negative": -9.055174045816322,
+              "absolute": 15.915185067261815
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.41414082075047987,
+              "positive": 1.6877749259007024,
+              "negative": -1.2736341051502227,
+              "absolute": 2.961409031050925
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 1.7430104336375662,
+              "positive": 15.4461066066742,
+              "negative": -13.703096173036634,
+              "absolute": 29.149202779710834
+            }
+          }
+        },
+        {
+          "layer": 5,
+          "kind": "linear_attention",
+          "jump": -0.03565148432443621,
+          "token_signed_mass": {
+            "net": -0.03565148432443621,
+            "positive": 23.419423392715274,
+            "negative": -23.455074877039706,
+            "absolute": 46.87449826975497
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": 0.5944975547006601,
+              "positive": 11.101229927196798,
+              "negative": -10.506732372496135,
+              "absolute": 21.607962299692932
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.5392335265000852,
+              "positive": 2.530011653439102,
+              "negative": -0.9907781269390168,
+              "absolute": 3.5207897803781187
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -2.169382565525181,
+              "positive": 9.788181812079374,
+              "negative": -11.957564377604553,
+              "absolute": 21.745746189683928
+            }
+          }
+        },
+        {
+          "layer": 21,
+          "kind": "linear_attention",
+          "jump": -0.033509139428954504,
+          "token_signed_mass": {
+            "net": -0.033509139428954504,
+            "positive": 12.488570897063626,
+            "negative": -12.522080036492582,
+            "absolute": 25.010650933556207
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.1811027240145843,
+              "positive": 2.2090748636222672,
+              "negative": -2.3901775876368516,
+              "absolute": 4.599252451259119
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.5697073314081771,
+              "positive": 0.22303875832098832,
+              "negative": -0.7927460897291654,
+              "absolute": 1.0157848480501537
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.7173009159938066,
+              "positive": 10.056457275120371,
+              "negative": -9.339156359126564,
+              "absolute": 19.395613634246935
+            }
+          }
+        },
+        {
+          "layer": 27,
+          "kind": "full_attention",
+          "jump": -0.03098768528590412,
+          "token_signed_mass": {
+            "net": -0.03098768528590412,
+            "positive": 39.01467909547915,
+            "negative": -39.04566678076506,
+            "absolute": 78.06034587624421
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -18.67931491490036,
+              "positive": 8.065308723849158,
+              "negative": -26.744623638749523,
+              "absolute": 34.80993236259869
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.00967003874378275,
+              "positive": 1.072981169903076,
+              "negative": -1.0633111311592933,
+              "absolute": 2.13629230106237
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 18.638657190870674,
+              "positive": 29.876389201726916,
+              "negative": -11.237732010856245,
+              "absolute": 41.114121212583164
+            }
+          }
+        },
+        {
+          "layer": 2,
+          "kind": "linear_attention",
+          "jump": 0.024815710185847828,
+          "token_signed_mass": {
+            "net": 0.024815710185847828,
+            "positive": 24.669127857078788,
+            "negative": -24.644312146892943,
+            "absolute": 49.313440003971735
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": 0.9440885608368921,
+              "positive": 13.618810568272908,
+              "negative": -12.674722007436017,
+              "absolute": 26.293532575708923
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 2.9448934561475624,
+              "positive": 4.272044865286194,
+              "negative": -1.3271514091386323,
+              "absolute": 5.599196274424827
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -3.864166306798606,
+              "positive": 6.778272423519688,
+              "negative": -10.642438730318295,
+              "absolute": 17.420711153837985
+            }
+          }
+        },
+        {
+          "layer": 24,
+          "kind": "linear_attention",
+          "jump": 0.024640780045899535,
+          "token_signed_mass": {
+            "net": 0.024640780045899535,
+            "positive": 11.966686795837294,
+            "negative": -11.942046015791394,
+            "absolute": 23.908732811628692
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.42666797704807713,
+              "positive": 2.37296902176885,
+              "negative": -2.7996369988169274,
+              "absolute": 5.172606020585778
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.004661754643023805,
+              "positive": 0.5437340740557748,
+              "negative": -0.5483958286987987,
+              "absolute": 1.0921299027545734
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.4559705117370002,
+              "positive": 9.049983700012671,
+              "negative": -8.594013188275671,
+              "absolute": 17.64399688828834
+            }
+          }
+        },
+        {
+          "layer": 29,
+          "kind": "linear_attention",
+          "jump": 0.019616474368974735,
+          "token_signed_mass": {
+            "net": 0.019616474368974735,
+            "positive": 7.14690815550567,
+            "negative": -7.127291681136695,
+            "absolute": 14.274199836642364
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.4984908475803057,
+              "positive": 1.050040427004142,
+              "negative": -1.5485312745844477,
+              "absolute": 2.5985717015885896
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.08810351734850541,
+              "positive": 0.2233575732749634,
+              "negative": -0.135254055926458,
+              "absolute": 0.3586116292014214
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.4300038046007749,
+              "positive": 5.8735101552265645,
+              "negative": -5.443506350625789,
+              "absolute": 11.317016505852354
+            }
+          }
+        },
+        {
+          "layer": 9,
+          "kind": "linear_attention",
+          "jump": 0.014880292267745954,
+          "token_signed_mass": {
+            "net": 0.014880292267745954,
+            "positive": 18.98875841885763,
+            "negative": -18.97387812658988,
+            "absolute": 37.96263654544751
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.09539591888411725,
+              "positive": 7.675134690551843,
+              "negative": -7.77053060943596,
+              "absolute": 15.445665299987805
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.7486605290235268,
+              "positive": 1.5589911409432922,
+              "negative": -0.8103306119197653,
+              "absolute": 2.3693217528630575
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": -0.638384317871663,
+              "positive": 9.75463258736249,
+              "negative": -10.393016905234154,
+              "absolute": 20.147649492596646
+            }
+          }
+        },
+        {
+          "layer": 25,
+          "kind": "linear_attention",
+          "jump": -0.003640332261346635,
+          "token_signed_mass": {
+            "net": -0.003640332261346635,
+            "positive": 5.605655331052008,
+            "negative": -5.609295663313354,
+            "absolute": 11.214950994365362
+          },
+          "groups": {
+            "deleted_prompt": {
+              "count": 377,
+              "net": -0.09210490562046016,
+              "positive": 0.944267024091997,
+              "negative": -1.0363719297124574,
+              "absolute": 1.9806389538044544
+            },
+            "kept_eligible_prompt": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0,
+              "absolute": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.05454667363471755,
+              "positive": 0.1286379140777102,
+              "negative": -0.07409124044299265,
+              "absolute": 0.2027291545207029
+            },
+            "fixed_response": {
+              "count": 449,
+              "net": 0.03391789972439595,
+              "positive": 4.5327503928823,
+              "negative": -4.498832493157905,
+              "absolute": 9.031582886040205
+            }
+          }
+        }
+      ],
+      "FA_decoder_sum": -0.001978374055321641,
+      "GDN_decoder_sum": 0.24477732280303655,
+      "per_token_closure_max_absolute": 0,
+      "scalar_closure_absolute": 1.84297022087776e-14
+    }
+  },
+  "proof_scope": "Local NumPy verifies the saved per-token contractions, every decoder difference and scalar telescoping, receipts and source/weight identities. Large private actual coefficient/activation tensors remain remote and were not rehashed or dot-product recomputed locally. No new model forward, metric curve or candidate claim.",
+  "limits": [
+    "Conditional boundary jumps localize disagreement for fixed coefficients and observed deletion inputs; a large jump is not proof that one internal operator is the causal root or that a repair will improve MAS.",
+    "AllEOS closure and compensation cannot establish faithfulness for arbitrary partial deletions. Source/current drift is separately measured, not automatically classified as error or waived.",
+    "No new original MAS, RISE, FT comparison, whole-benchmark conclusion or production speed claim is produced."
+  ],
+  "CPU_audit_seconds": 0.1911961999721825
+}

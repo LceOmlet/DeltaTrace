@@ -1,0 +1,2317 @@
+{
+  "status": "MH0_FA19_internal_independent_CPU_audit_passed",
+  "next": {
+    "status": "native_FA_hybrid_quantification_preparation_authorized_by_root",
+    "observed_basis": "FA core is largest absolute mid-step nine-term contribution; retain early,mid and allEOS compensation. This does not identify routing versus value reference or precision by itself.",
+    "reuse": "Existing successful dt_fa19_native_hybrid_20260908_v2.py eleven-public-FA-call schedule, adapting only current stored schema and early3 replacing early1.",
+    "budget": {
+      "native_FA_calls": 11,
+      "model": 0,
+      "DT": 0,
+      "scorer": 0,
+      "FT": 0,
+      "generation": 0,
+      "backward": 0
+    },
+    "quantification": "Four native output replays; one shared clean-routing-at-B2-V0 hybrid plus two hybrids each for early3/mid10/allEOS20. Decompose qk prediction minus R0, value prediction minus VCVA, and R0 minus RA; retain actual captured outputs, native replay drift, BF16 seed-cast boundary and exact GQA folding.",
+    "limit": "No candidate replay or new kernel. If routing dominates, only then consider the existing compiled QK/softmax diagnostic library under a separate bound."
+  },
+  "analyzer_sha256": "dc3588fd72c2da84e5b265f1802cccbb0f782a6fadf6084ccd7b1d8f0d30b611",
+  "protocol_sha256": "fd081e99b5125442d7abd0312844c8ad7fa9f05a20ae11378dafc0f0ab5edb8f",
+  "results_sha256": "285c8d6cbbae9f07fb6b82b5afb88ca2360ebe8cb9769475a44521faa6bcbfc7",
+  "vectors_sha256": "310ffe10b1c2f8a306e59c9878b33f7745a6f3faa71f52c2b0be0b6adef78d05",
+  "source_boundary": {
+    "results_path": "${ARTIFACT_ROOT}/codex_dt_MH0_current_conditional_boundaries_20260909_v1/results.json",
+    "results_sha256": "7c2c3f3b5209289ee2078e827b71a909d6a93a57ae9e295123d720545fd0c600",
+    "protocol_path": "${ARTIFACT_ROOT}/codex_dt_MH0_current_conditional_boundaries_20260909_v1/protocol.json",
+    "protocol_sha256": "b12fe8409accdba58488a61b86421c0abd6680444d5d59bcfb0b9bce27f574c9",
+    "vectors_path": "${ARTIFACT_ROOT}/codex_dt_MH0_current_conditional_boundaries_20260909_v1/vectors.npz",
+    "vectors_sha256": "840268c42d3cd1a37fb07b94d1f2dee74de68cb6af3b66eb1bd8215fbca5f167",
+    "private_path": "${ARTIFACT_ROOT}/codex_dt_MH0_current_conditional_boundaries_20260909_v1/MH0_actual_boundary_private.pt",
+    "private_sha256": "69f7a134e9fbb3be164efe8e8a41005690fcfe4bf1dfa02247c7f0c3fcd177e2",
+    "private_bytes": 1900739471,
+    "scope": "Existing same-run m19/m20 and actual B2 plus B1 clean/step3/step10/allEOS hidden boundaries; source standalone deletion masks remain fixed. No reattribution or rescoring to obtain them."
+  },
+  "input": {
+    "input_sha256": "6e1df21d426c5eb28217976f63b7c7932e502bde4fb064f77867df8205ebd618",
+    "prompt_length": 404,
+    "target_length": 449,
+    "total_length": 853
+  },
+  "actual_budget": {
+    "model_loads": 1,
+    "native_B2_kwargs_whole_forwards": 1,
+    "selected_native_decoder_replays": 5,
+    "selected_finite_decoder_calls": 1,
+    "native_FA_in_whole_forward": 8,
+    "native_GDN_FLA_and_conv_each_in_whole_forward": 24,
+    "native_FA_in_single_layer_replays": 5,
+    "public_FA_LSE_auxiliary": 1,
+    "finite_FA": 1,
+    "finite_FLA": 0,
+    "DT": 0,
+    "scorer": 0,
+    "FT": 0,
+    "generation": 0,
+    "audit_model_calls": 0,
+    "job_seconds": 44.566415356472135,
+    "GPU_peak_allocated_full_job": 19536675328,
+    "GPU_peak_reserved_full_job": 19568525312,
+    "failed_entered_minus_returned": 0,
+    "scope": "Actual diagnostic job, including copies, CPU contractions and private save, not production timing."
+  },
+  "m19_replay_drift": {
+    "bitwise_equal": true,
+    "max_absolute": 0.0,
+    "relative_L2": 0.0
+  },
+  "native_output_replay_drift": {
+    "B2": {
+      "bitwise_equal": true,
+      "max_absolute": 0.0,
+      "relative_L2": 0.0
+    },
+    "0": {
+      "bitwise_equal": true,
+      "max_absolute": 0.0,
+      "relative_L2": 0.0
+    },
+    "3": {
+      "bitwise_equal": true,
+      "max_absolute": 0.0,
+      "relative_L2": 0.0
+    },
+    "10": {
+      "bitwise_equal": true,
+      "max_absolute": 0.0,
+      "relative_L2": 0.0
+    },
+    "20": {
+      "bitwise_equal": true,
+      "max_absolute": 0.0,
+      "relative_L2": 0.0
+    }
+  },
+  "kwargs_capture": {
+    "whole_native_forward_input_sha256": "db3a68dd625e5afb5842319cb0142f30415c56e73122f21ec92f257dd69516a4",
+    "actual_keys": [
+      "position_embeddings",
+      "attention_mask",
+      "position_ids",
+      "past_key_values",
+      "use_cache"
+    ],
+    "position_ids_shape": [
+      2,
+      853
+    ],
+    "cos_sin_shape": [
+      2,
+      853,
+      64
+    ],
+    "actual_FA_mask": null,
+    "paired_position_rows_equal": true,
+    "B1_mapping": "Take actual clean row of identical native B2 positions/cos/sin, preserving None FA mask. Fresh original DynamicCache per B1 replay; no continued state, position arange, rotary or mask implementation.",
+    "native_cache_class": "transformers.cache_utils.DynamicCache",
+    "captured_native_B2_layer19_input_drift": {
+      "bitwise_equal": false,
+      "max_absolute": 1.375,
+      "relative_L2": 0.016534854624930283
+    },
+    "captured_native_B2_layer19_output_drift": {
+      "bitwise_equal": false,
+      "max_absolute": 3.0,
+      "relative_L2": 0.019642084529743652
+    }
+  },
+  "B2_FA_auxiliary_drift": {
+    "bitwise_equal": true,
+    "max_absolute": 0.0,
+    "relative_L2": 0.0
+  },
+  "native_dense_arguments": {
+    "dropout_p": 0.0,
+    "softmax_scale": 0.0625,
+    "causal": true,
+    "return_attn_probs": false
+  },
+  "private_artifact": {
+    "file": "MH0_current_FA19_internal_private.pt",
+    "sha256": "1637779cd62c6ffd05641600fc83eda87d9488ff99db1f78f4baaae0d7a93e0d",
+    "bytes": 1272488075,
+    "tensor_CPU_bytes": 1272450808,
+    "save_and_hash_seconds": 2.1727062333375216
+  },
+  "points": {
+    "3": {
+      "saved_boundary_error": {
+        "net": 10.59970669243237,
+        "positive": 54.49408777096467,
+        "negative": -43.894381078532305
+      },
+      "replayed_9term_ledger": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 87.79472749401107,
+        "input_contraction": 98.39443418644343,
+        "prediction_minus_actual": 10.599706692432363,
+        "actual_minus_predicted": -10.599706692432363,
+        "terms": {
+          "decoder_output_residual_rounding": 0.0021920336934011346,
+          "MLP_combined": -0.1862132870736244,
+          "post_RMSNorm": -0.15565393022890528,
+          "mixer_residual_rounding": 0.015404053800778503,
+          "attention_output_projection_and_sigmoid_gate": -0.032156307040377974,
+          "finite_FA_core_including_seed_cast": 15.00302057626069,
+          "attention_input_QKnorm_RoPE_GQA_projections": -0.9276305946058916,
+          "mixer_input_alias": 0.0,
+          "input_RMSNorm": -3.119255852373695
+        },
+        "telescoping_error": 1.2434497875801753e-14,
+        "max_token_telescoping_error": 4.440892098500626e-16,
+        "branch_contractions": {
+          "q": 0.8203427432793491,
+          "k": 7.876789825304407,
+          "v": 34.12981145718838,
+          "attention_output": 27.82392344951145,
+          "sigmoid_gate": -1.410472390344256,
+          "mixer_output": 26.44560736620757
+        },
+        "GQA_contract": {
+          "query_heads": 16,
+          "kv_heads": 4,
+          "groups": 4,
+          "padded_length": 853,
+          "valid_lengths": [
+            853
+          ],
+          "mapping": "query_head // groups = compact_kv_head",
+          "audit_fold_dtype": "float64",
+          "production_fold_dtype": "float32"
+        },
+        "scope": "Whole FA decoder conditional ledger. Core term includes the existing mcontent-to-BF16 seed boundary. Output projection+gate and attention input remain combined; no unobserved coefficient was reconstructed.",
+        "group_contract": "Update/contraction positions, not independent source-token causal effects."
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m19": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        }
+      },
+      "transfer_total": 0.0,
+      "token_closure_max_absolute": 4.440892098500626e-16,
+      "positive_terms_ranked": [
+        [
+          "finite_FA_core_including_seed_cast",
+          15.00302057626069
+        ],
+        [
+          "mixer_residual_rounding",
+          0.015404053800778503
+        ],
+        [
+          "decoder_output_residual_rounding",
+          0.0021920336934011346
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "input_RMSNorm",
+          -3.119255852373695
+        ],
+        [
+          "attention_input_QKnorm_RoPE_GQA_projections",
+          -0.9276305946058916
+        ],
+        [
+          "MLP_combined",
+          -0.1862132870736244
+        ],
+        [
+          "post_RMSNorm",
+          -0.15565393022890528
+        ],
+        [
+          "attention_output_projection_and_sigmoid_gate",
+          -0.032156307040377974
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": 0.0021920336934011346,
+            "positive": 0.14167659301314567,
+            "negative": -0.13948455931974454
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": -0.0013422302431374718,
+              "positive": 0.00880142133828575,
+              "negative": -0.010143651581423222
+            },
+            "kept": {
+              "count": 320,
+              "net": -6.730055218812005e-05,
+              "positive": 0.005922875016036357,
+              "negative": -0.005990175568224477
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0010341865007020704,
+              "positive": 0.0006433115164317695,
+              "negative": -0.0016774980171338398
+            },
+            "response": {
+              "count": 449,
+              "net": 0.004635750989428795,
+              "positive": 0.1263089851423918,
+              "negative": -0.121673234152963
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": -0.1862132870736244,
+            "positive": 4.3225994509104435,
+            "negative": -4.5088127379840675
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 0.6212848845733383,
+              "positive": 0.9278692800277034,
+              "negative": -0.3065843954543652
+            },
+            "kept": {
+              "count": 320,
+              "net": 0.08273468418382175,
+              "positive": 0.3747429430557972,
+              "negative": -0.29200825887197535
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0075914096961833405,
+              "positive": 0.10823190551496996,
+              "negative": -0.1006404958187866
+            },
+            "response": {
+              "count": 449,
+              "net": -0.8978242655269679,
+              "positive": 2.9117553223119734,
+              "negative": -3.8095795878389405
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": -0.15565393022890528,
+            "positive": 1.0938723149209542,
+            "negative": -1.2495262451498594
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": -0.42504779481210586,
+              "positive": 0.018715224381513892,
+              "negative": -0.4437630191936197
+            },
+            "kept": {
+              "count": 320,
+              "net": 0.044849329922456924,
+              "positive": 0.09595766996962576,
+              "negative": -0.051108340047168827
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.005530964361004525,
+              "positive": 0.016358795914246112,
+              "negative": -0.010827831553241588
+            },
+            "response": {
+              "count": 449,
+              "net": 0.2190135702997391,
+              "positive": 0.9628406246555681,
+              "negative": -0.743827054355829
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.015404053800778503,
+            "positive": 0.16261723463704225,
+            "negative": -0.14721318083626375
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 0.00040244916982219714,
+              "positive": 0.005851157478067484,
+              "negative": -0.005448708308245287
+            },
+            "kept": {
+              "count": 320,
+              "net": -0.0011888069401304864,
+              "positive": 0.005490055868790188,
+              "negative": -0.006678862808920674
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0004971933453994447,
+              "positive": 0.0010263396238734436,
+              "negative": -0.0015235329692728883
+            },
+            "response": {
+              "count": 449,
+              "net": 0.01668760491648624,
+              "positive": 0.15024968166631114,
+              "negative": -0.1335620767498249
+            }
+          }
+        },
+        "attention_output_projection_and_sigmoid_gate": {
+          "total": {
+            "net": -0.032156307040377974,
+            "positive": 5.068786341833595,
+            "negative": -5.100942648873973
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 1.715182096345921,
+              "positive": 1.7730241669722884,
+              "negative": -0.05784207062636726
+            },
+            "kept": {
+              "count": 320,
+              "net": 0.05440692751253631,
+              "positive": 0.2648088790724311,
+              "negative": -0.21040195155989477
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.022218993812774424,
+              "positive": 0.08635737505798705,
+              "negative": -0.06413838124521264
+            },
+            "response": {
+              "count": 449,
+              "net": -1.8239643247116097,
+              "positive": 2.944595920730889,
+              "negative": -4.768560245442497
+            }
+          }
+        },
+        "finite_FA_core_including_seed_cast": {
+          "total": {
+            "net": 15.00302057626069,
+            "positive": 54.93021204771934,
+            "negative": -39.927191471458656
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 33.851231441671956,
+              "positive": 34.045008583565185,
+              "negative": -0.1937771418932282
+            },
+            "kept": {
+              "count": 320,
+              "net": 3.2480161308576037,
+              "positive": 4.462192643566915,
+              "negative": -1.214176512709312
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.1135379313210798,
+              "positive": 1.2664029056639985,
+              "negative": -0.15286497434291854
+            },
+            "response": {
+              "count": 449,
+              "net": -23.20976492758995,
+              "positive": 15.156607914923242,
+              "negative": -38.36637284251319
+            }
+          }
+        },
+        "attention_input_QKnorm_RoPE_GQA_projections": {
+          "total": {
+            "net": -0.9276305946058916,
+            "positive": 2.6960380862442723,
+            "negative": -3.623668680850164
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": -0.38907320490016734,
+              "positive": 0.05719755815347291,
+              "negative": -0.4462707630536402
+            },
+            "kept": {
+              "count": 320,
+              "net": -0.803471773667098,
+              "positive": 0.032634551414102125,
+              "negative": -0.8361063250812
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.17712029181979827,
+              "positive": 0.0288931878576257,
+              "negative": -0.206013479677424
+            },
+            "response": {
+              "count": 449,
+              "net": 0.442034675781172,
+              "positive": 2.5773127888190714,
+              "negative": -2.1352781130378995
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 320,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": -3.119255852373695,
+            "positive": 0.996036740177635,
+            "negative": -4.11529259255133
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": -2.184674053188499,
+              "positive": 0.05448327736707944,
+              "negative": -2.2391573305555785
+            },
+            "kept": {
+              "count": 320,
+              "net": -0.5015638628879243,
+              "positive": 0.3364617829867914,
+              "negative": -0.8380256458747157
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.11738884501956318,
+              "positive": 0.028737375258848598,
+              "negative": -0.14612622027841177
+            },
+            "response": {
+              "count": 449,
+              "net": -0.31562909127770855,
+              "positive": 0.5763543045649154,
+              "negative": -0.8919833958426241
+            }
+          }
+        },
+        "saved_minus_replayed_m19": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 320,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 320,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 320,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": 10.599706692432374,
+            "positive": 54.494087770964676,
+            "negative": -43.8943810785323
+          },
+          "groups": {
+            "deleted": {
+              "count": 57,
+              "net": 33.18796358861712,
+              "positive": 33.40484600536338,
+              "negative": -0.21688241674625142
+            },
+            "kept": {
+              "count": 320,
+              "net": 2.123715328429077,
+              "positive": 4.334443205438588,
+              "negative": -2.2107278770095107
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.8528387825055794,
+              "positive": 1.1272886208430677,
+              "negative": -0.27444983833748815
+            },
+            "response": {
+              "count": 449,
+              "net": -25.56481100711941,
+              "positive": 15.62750993931964,
+              "negative": -41.19232094643905
+            }
+          }
+        }
+      }
+    },
+    "10": {
+      "saved_boundary_error": {
+        "net": 11.904297490164662,
+        "positive": 62.3665448855435,
+        "negative": -50.46224739537884
+      },
+      "replayed_9term_ledger": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 114.51189659550076,
+        "input_contraction": 126.41619408566542,
+        "prediction_minus_actual": 11.904297490164666,
+        "actual_minus_predicted": -11.904297490164666,
+        "terms": {
+          "decoder_output_residual_rounding": 0.034055852828044894,
+          "MLP_combined": -0.23335549915908027,
+          "post_RMSNorm": -0.022668124651847588,
+          "mixer_residual_rounding": 0.009318638647871243,
+          "attention_output_projection_and_sigmoid_gate": -3.158972119005412,
+          "finite_FA_core_including_seed_cast": 18.07260812976598,
+          "attention_input_QKnorm_RoPE_GQA_projections": -0.662268056032622,
+          "mixer_input_alias": 0.0,
+          "input_RMSNorm": -2.134421332228272
+        },
+        "telescoping_error": -1.7763568394002505e-15,
+        "max_token_telescoping_error": 4.440892098500626e-16,
+        "branch_contractions": {
+          "q": 2.3533458630200466,
+          "k": 9.787860703382417,
+          "v": 43.67960257938087,
+          "attention_output": 37.74820101601736,
+          "sigmoid_gate": -5.015550088413213,
+          "mixer_output": 35.89162304660955
+        },
+        "GQA_contract": {
+          "query_heads": 16,
+          "kv_heads": 4,
+          "groups": 4,
+          "padded_length": 853,
+          "valid_lengths": [
+            853
+          ],
+          "mapping": "query_head // groups = compact_kv_head",
+          "audit_fold_dtype": "float64",
+          "production_fold_dtype": "float32"
+        },
+        "scope": "Whole FA decoder conditional ledger. Core term includes the existing mcontent-to-BF16 seed boundary. Output projection+gate and attention input remain combined; no unobserved coefficient was reconstructed.",
+        "group_contract": "Update/contraction positions, not independent source-token causal effects."
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m19": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        }
+      },
+      "transfer_total": 0.0,
+      "token_closure_max_absolute": 4.440892098500626e-16,
+      "positive_terms_ranked": [
+        [
+          "finite_FA_core_including_seed_cast",
+          18.07260812976598
+        ],
+        [
+          "decoder_output_residual_rounding",
+          0.034055852828044894
+        ],
+        [
+          "mixer_residual_rounding",
+          0.009318638647871243
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "attention_output_projection_and_sigmoid_gate",
+          -3.158972119005412
+        ],
+        [
+          "input_RMSNorm",
+          -2.134421332228272
+        ],
+        [
+          "attention_input_QKnorm_RoPE_GQA_projections",
+          -0.662268056032622
+        ],
+        [
+          "MLP_combined",
+          -0.23335549915908027
+        ],
+        [
+          "post_RMSNorm",
+          -0.022668124651847588
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": 0.034055852828044894,
+            "positive": 0.15539410679481921,
+            "negative": -0.1213382539667743
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 0.004533978415082144,
+              "positive": 0.014805735413871273,
+              "negative": -0.010271756998789126
+            },
+            "kept": {
+              "count": 187,
+              "net": -0.0021642832902988105,
+              "positive": 0.0028308508455721863,
+              "negative": -0.004995134135870997
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.000745509285493124,
+              "positive": 0.0010314253498700365,
+              "negative": -0.0017769346353631605
+            },
+            "response": {
+              "count": 449,
+              "net": 0.03243166698875468,
+              "positive": 0.1367260951855057,
+              "negative": -0.10429442819675104
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": -0.23335549915908027,
+            "positive": 3.323740207200781,
+            "negative": -3.5570957063598616
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 0.8885685773530317,
+              "positive": 1.2249357949737947,
+              "negative": -0.33636721762076277
+            },
+            "kept": {
+              "count": 187,
+              "net": -0.41752894611153785,
+              "positive": 0.18631543323776031,
+              "negative": -0.6038443793492981
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.013078266339950982,
+              "positive": 0.15783078244749205,
+              "negative": -0.17090904878744304
+            },
+            "response": {
+              "count": 449,
+              "net": -0.6913168640606232,
+              "positive": 1.754658196541734,
+              "negative": -2.4459750606023576
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": -0.022668124651847588,
+            "positive": 0.9221172944682042,
+            "negative": -0.9447854191200519
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": -0.2445784517681318,
+              "positive": 0.0626559258311129,
+              "negative": -0.30723437759924477
+            },
+            "kept": {
+              "count": 187,
+              "net": 0.05894260603081071,
+              "positive": 0.10337013613287113,
+              "negative": -0.04442753010206043
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.022958878295053473,
+              "positive": 0.03679716443485555,
+              "negative": -0.013838286139802078
+            },
+            "response": {
+              "count": 449,
+              "net": 0.14000884279042,
+              "positive": 0.7192940680693647,
+              "negative": -0.5792852252789445
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.009318638647871243,
+            "positive": 0.16416378720619063,
+            "negative": -0.1548451485583194
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": -0.0012539151918025532,
+              "positive": 0.011015932154604374,
+              "negative": -0.012269847346406924
+            },
+            "kept": {
+              "count": 187,
+              "net": -0.002530406876623675,
+              "positive": 0.002403311287387821,
+              "negative": -0.004933718164011496
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0018073727458799097,
+              "positive": 0.0007792432189573702,
+              "negative": -0.00258661596483728
+            },
+            "response": {
+              "count": 449,
+              "net": 0.014910333462177388,
+              "positive": 0.14996530054524107,
+              "negative": -0.1350549670830637
+            }
+          }
+        },
+        "attention_output_projection_and_sigmoid_gate": {
+          "total": {
+            "net": -3.158972119005412,
+            "positive": 4.100894810330718,
+            "negative": -7.25986692933613
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 1.6776399415551522,
+              "positive": 2.1829112886194877,
+              "negative": -0.5052713470643355
+            },
+            "kept": {
+              "count": 187,
+              "net": 0.09575912477010584,
+              "positive": 0.2441888894634916,
+              "negative": -0.14842976469338576
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0039371516522086186,
+              "positive": 0.07124332482112025,
+              "negative": -0.07518047647332886
+            },
+            "response": {
+              "count": 449,
+              "net": -4.928434033678462,
+              "positive": 1.6025513074266187,
+              "negative": -6.53098534110508
+            }
+          }
+        },
+        "finite_FA_core_including_seed_cast": {
+          "total": {
+            "net": 18.07260812976598,
+            "positive": 64.13714906882771,
+            "negative": -46.06454093906172
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 42.937907348169176,
+              "positive": 43.55976868611849,
+              "negative": -0.6218613379493173
+            },
+            "kept": {
+              "count": 187,
+              "net": 3.327266633007346,
+              "positive": 3.7674750900756706,
+              "negative": -0.4402084570683244
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.646686737767615,
+              "positive": 1.8477127669037672,
+              "negative": -0.20102602913615195
+            },
+            "response": {
+              "count": 449,
+              "net": -29.83925258917815,
+              "positive": 14.962192525729783,
+              "negative": -44.801445114907935
+            }
+          }
+        },
+        "attention_input_QKnorm_RoPE_GQA_projections": {
+          "total": {
+            "net": -0.662268056032622,
+            "positive": 1.554885729629134,
+            "negative": -2.217153785661756
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": -0.4105562765597326,
+              "positive": 0.10515620225564398,
+              "negative": -0.5157124788153765
+            },
+            "kept": {
+              "count": 187,
+              "net": -0.43151366627345095,
+              "positive": 0.03251115363877235,
+              "negative": -0.46402481991222333
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.2262286659008157,
+              "positive": 0.013737702606703886,
+              "negative": -0.23996636850751957
+            },
+            "response": {
+              "count": 449,
+              "net": 0.40603055270137733,
+              "positive": 1.4034806711280137,
+              "negative": -0.9974501184266364
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 187,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": -2.134421332228272,
+            "positive": 1.22032272279695,
+            "negative": -3.3547440550252223
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": -2.1743969693633627,
+              "positive": 0.12498452896721382,
+              "negative": -2.2993814983305767
+            },
+            "kept": {
+              "count": 187,
+              "net": 0.1632214991515315,
+              "positive": 0.5398914651653615,
+              "negative": -0.3766699660138299
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.09449199782488214,
+              "positive": 0.04178623080506939,
+              "negative": -0.13627822862995154
+            },
+            "response": {
+              "count": 449,
+              "net": -0.028753864191558308,
+              "positive": 0.5136604978593053,
+              "negative": -0.5424143620508637
+            }
+          }
+        },
+        "saved_minus_replayed_m19": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 187,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 187,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 187,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": 11.90429749016466,
+            "positive": 62.3665448855435,
+            "negative": -50.46224739537884
+          },
+          "groups": {
+            "deleted": {
+              "count": 190,
+              "net": 42.67786423260941,
+              "positive": 43.37594973287938,
+              "negative": -0.6980855002699662
+            },
+            "kept": {
+              "count": 187,
+              "net": 2.7914525604078833,
+              "positive": 3.7636989175122757,
+              "negative": -0.9722463571043928
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.3293566523134381,
+              "positive": 1.6328849308295503,
+              "negative": -0.30352827851611225
+            },
+            "response": {
+              "count": 449,
+              "net": -34.89437595516607,
+              "positive": 13.5940113043223,
+              "negative": -48.48838725948836
+            }
+          }
+        }
+      }
+    },
+    "20": {
+      "saved_boundary_error": {
+        "net": 0.05075639393000131,
+        "positive": 60.559974205627974,
+        "negative": -60.50921781169798
+      },
+      "replayed_9term_ledger": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 117.18927827855912,
+        "input_contraction": 117.24003467248912,
+        "prediction_minus_actual": 0.05075639393000131,
+        "actual_minus_predicted": -0.05075639393000131,
+        "terms": {
+          "decoder_output_residual_rounding": 0.022924385775442906,
+          "MLP_combined": -0.06208722983048625,
+          "post_RMSNorm": -0.002520254735323194,
+          "mixer_residual_rounding": 0.049659629996206565,
+          "attention_output_projection_and_sigmoid_gate": -0.03891434354231943,
+          "finite_FA_core_including_seed_cast": 0.07349087727305648,
+          "attention_input_QKnorm_RoPE_GQA_projections": 0.022347101160870988,
+          "mixer_input_alias": 0.0,
+          "input_RMSNorm": -0.014143772167449997
+        },
+        "telescoping_error": -3.2404634531246757e-15,
+        "max_token_telescoping_error": 4.440892098500626e-16,
+        "branch_contractions": {
+          "q": 3.682968945004701,
+          "k": 12.21141377817069,
+          "v": 36.08660335176933,
+          "attention_output": 51.907495197671665,
+          "sigmoid_gate": -10.966322376809725,
+          "mixer_output": 40.98008716440425
+        },
+        "GQA_contract": {
+          "query_heads": 16,
+          "kv_heads": 4,
+          "groups": 4,
+          "padded_length": 853,
+          "valid_lengths": [
+            853
+          ],
+          "mapping": "query_head // groups = compact_kv_head",
+          "audit_fold_dtype": "float64",
+          "production_fold_dtype": "float32"
+        },
+        "scope": "Whole FA decoder conditional ledger. Core term includes the existing mcontent-to-BF16 seed boundary. Output projection+gate and attention input remain combined; no unobserved coefficient was reconstructed.",
+        "group_contract": "Update/contraction positions, not independent source-token causal effects."
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m19": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        }
+      },
+      "transfer_total": 0.0,
+      "token_closure_max_absolute": 4.440892098500626e-16,
+      "positive_terms_ranked": [
+        [
+          "finite_FA_core_including_seed_cast",
+          0.07349087727305648
+        ],
+        [
+          "mixer_residual_rounding",
+          0.049659629996206565
+        ],
+        [
+          "decoder_output_residual_rounding",
+          0.022924385775442906
+        ],
+        [
+          "attention_input_QKnorm_RoPE_GQA_projections",
+          0.022347101160870988
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "MLP_combined",
+          -0.06208722983048625
+        ],
+        [
+          "attention_output_projection_and_sigmoid_gate",
+          -0.03891434354231943
+        ],
+        [
+          "input_RMSNorm",
+          -0.014143772167449997
+        ],
+        [
+          "post_RMSNorm",
+          -0.002520254735323194
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": 0.022924385775442906,
+            "positive": 0.1471383151376797,
+            "negative": -0.12421392936223678
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.006347535089990322,
+              "positive": 0.014000731577342168,
+              "negative": -0.02034826666733249
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0020415463318584036,
+              "positive": 0.0014018265744344671,
+              "negative": -0.0034433729062928707
+            },
+            "response": {
+              "count": 449,
+              "net": 0.03131346719729163,
+              "positive": 0.13173575698590304,
+              "negative": -0.10042228978861141
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": -0.06208722983048625,
+            "positive": 0.19948344642556048,
+            "negative": -0.26157067625604674
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.008617263389985528,
+              "positive": 0.031192023196423186,
+              "negative": -0.03980928658640871
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0018457052602292587,
+              "positive": 0.0024350969053956078,
+              "negative": -0.0042808021656248665
+            },
+            "response": {
+              "count": 449,
+              "net": -0.051624261180271455,
+              "positive": 0.1658563263237417,
+              "negative": -0.21748058750401317
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": -0.002520254735323194,
+            "positive": 0.06058357079280662,
+            "negative": -0.06310382552812982
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.0046206252668889395,
+              "positive": 0.006578663950675771,
+              "negative": -0.01119928921756471
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0007239616411481038,
+              "positive": 0.00035813052453923834,
+              "negative": -0.001082092165687342
+            },
+            "response": {
+              "count": 449,
+              "net": 0.002824332172713848,
+              "positive": 0.05364677631759161,
+              "negative": -0.05082244414487777
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.049659629996206565,
+            "positive": 0.17905116830675452,
+            "negative": -0.12939153831054795
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0011315417769615678,
+              "positive": 0.015310041332261307,
+              "negative": -0.01417849955529974
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0001567891447552018,
+              "positive": 0.0014476679862424867,
+              "negative": -0.0012908788414872849
+            },
+            "response": {
+              "count": 449,
+              "net": 0.048371299074489796,
+              "positive": 0.1622934589882507,
+              "negative": -0.11392215991376092
+            }
+          }
+        },
+        "attention_output_projection_and_sigmoid_gate": {
+          "total": {
+            "net": -0.03891434354231943,
+            "positive": 0.22582605413225204,
+            "negative": -0.2647403976745715
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.002554985893776133,
+              "positive": 0.02063037418284248,
+              "negative": -0.023185360076618613
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0021912568094604626,
+              "positive": 0.0015234332552581014,
+              "negative": -0.003714690064718564
+            },
+            "response": {
+              "count": 449,
+              "net": -0.034168100839082866,
+              "positive": 0.20367224669415146,
+              "negative": -0.23784034753323433
+            }
+          }
+        },
+        "finite_FA_core_including_seed_cast": {
+          "total": {
+            "net": 0.07349087727305648,
+            "positive": 60.6500951634623,
+            "negative": -60.57660428618923
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 41.820142627357214,
+              "positive": 45.350205437641335,
+              "negative": -3.5300628102841225
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.7319149738856643,
+              "positive": 1.863357645971202,
+              "negative": -0.13144267208553764
+            },
+            "response": {
+              "count": 449,
+              "net": -43.47856672396981,
+              "positive": 13.436532079849751,
+              "negative": -56.91509880381957
+            }
+          }
+        },
+        "attention_input_QKnorm_RoPE_GQA_projections": {
+          "total": {
+            "net": 0.022347101160870988,
+            "positive": 0.18860962583424934,
+            "negative": -0.16626252467337838
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.015783001652420112,
+              "positive": 0.04725912408304313,
+              "negative": -0.03147612243062301
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0010716861347528858,
+              "positive": 0.0013015280015194232,
+              "negative": -0.0023732141362723088
+            },
+            "response": {
+              "count": 449,
+              "net": 0.007635785643203764,
+              "positive": 0.14004897374968678,
+              "negative": -0.132413188106483
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": -0.014143772167449997,
+            "positive": 0.1158986406729185,
+            "negative": -0.1300424128403685
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.01756169300501516,
+              "positive": 0.03781907222278415,
+              "negative": -0.055380765227799306
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.00028278960869841836,
+              "positive": 0.0013974517668206392,
+              "negative": -0.0016802413755190575
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0037007104462635793,
+              "positive": 0.0766821166833137,
+              "negative": -0.07298140623705013
+            }
+          }
+        },
+        "saved_minus_replayed_m19": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": 0.05075639392999931,
+            "positive": 60.55997420562798,
+            "negative": -60.509217811697965
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 41.79735506814093,
+              "positive": 45.313939133041394,
+              "negative": -3.5165840649004556
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.723914817244272,
+              "positive": 1.8555771968650911,
+              "negative": -0.1316623796208189
+            },
+            "response": {
+              "count": 449,
+              "net": -43.47051349145521,
+              "positive": 13.390457875721495,
+              "negative": -56.8609713671767
+            }
+          }
+        }
+      }
+    },
+    "B2": {
+      "saved_boundary_error": {
+        "net": 0.02677225147862572,
+        "positive": 60.59181598466661,
+        "negative": -60.56504373318799
+      },
+      "replayed_9term_ledger": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 117.6782169680408,
+        "input_contraction": 117.70498921951943,
+        "prediction_minus_actual": 0.026772251478632825,
+        "actual_minus_predicted": -0.026772251478632825,
+        "terms": {
+          "decoder_output_residual_rounding": -0.01616579427212421,
+          "MLP_combined": 0.04110765015704232,
+          "post_RMSNorm": -0.011441893493862269,
+          "mixer_residual_rounding": 0.01873881822544334,
+          "attention_output_projection_and_sigmoid_gate": -0.007526917620716584,
+          "finite_FA_core_including_seed_cast": 0.024412408178928535,
+          "attention_input_QKnorm_RoPE_GQA_projections": -0.015793259233016527,
+          "mixer_input_alias": 0.0,
+          "input_RMSNorm": -0.0065587604630687
+        },
+        "telescoping_error": -6.92154666914746e-15,
+        "max_token_telescoping_error": 4.440892098500626e-16,
+        "branch_contractions": {
+          "q": 3.6902643130814092,
+          "k": 12.269295024365162,
+          "v": 36.17890671093518,
+          "attention_output": 52.114053640202826,
+          "sigmoid_gate": -10.971170841252786,
+          "mixer_output": 41.150409716570756
+        },
+        "GQA_contract": {
+          "query_heads": 16,
+          "kv_heads": 4,
+          "groups": 4,
+          "padded_length": 853,
+          "valid_lengths": [
+            853
+          ],
+          "mapping": "query_head // groups = compact_kv_head",
+          "audit_fold_dtype": "float64",
+          "production_fold_dtype": "float32"
+        },
+        "scope": "Whole FA decoder conditional ledger. Core term includes the existing mcontent-to-BF16 seed boundary. Output projection+gate and attention input remain combined; no unobserved coefficient was reconstructed.",
+        "group_contract": "Update/contraction positions, not independent source-token causal effects."
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m19": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        }
+      },
+      "transfer_total": 0.0,
+      "token_closure_max_absolute": 4.440892098500626e-16,
+      "positive_terms_ranked": [
+        [
+          "MLP_combined",
+          0.04110765015704232
+        ],
+        [
+          "finite_FA_core_including_seed_cast",
+          0.024412408178928535
+        ],
+        [
+          "mixer_residual_rounding",
+          0.01873881822544334
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "decoder_output_residual_rounding",
+          -0.01616579427212421
+        ],
+        [
+          "attention_input_QKnorm_RoPE_GQA_projections",
+          -0.015793259233016527
+        ],
+        [
+          "post_RMSNorm",
+          -0.011441893493862269
+        ],
+        [
+          "attention_output_projection_and_sigmoid_gate",
+          -0.007526917620716584
+        ],
+        [
+          "input_RMSNorm",
+          -0.0065587604630687
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": -0.01616579427212421,
+            "positive": 0.12711786621724766,
+            "negative": -0.14328366048937186
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.006930817179721098,
+              "positive": 0.018964330473302256,
+              "negative": -0.012033513293581159
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0003444512064344138,
+              "positive": 0.0020581019047524254,
+              "negative": -0.0017136506983180116
+            },
+            "response": {
+              "count": 449,
+              "net": -0.023441062658279724,
+              "positive": 0.10609543383919298,
+              "negative": -0.1295364964974727
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": 0.04110765015704232,
+            "positive": 0.1385829005531908,
+            "negative": -0.09747525039614847
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.004701674824548715,
+              "positive": 0.014195182005726538,
+              "negative": -0.009493507181177823
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0007759723693598897,
+              "positive": 0.0015315645733107756,
+              "negative": -0.0007555922039508859
+            },
+            "response": {
+              "count": 449,
+              "net": 0.03563000296313372,
+              "positive": 0.12285615397415346,
+              "negative": -0.08722615101101976
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": -0.011441893493862269,
+            "positive": 0.04071716230984766,
+            "negative": -0.05215905580370993
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.0011006506247137455,
+              "positive": 0.004438135065374115,
+              "negative": -0.00553878569008786
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0004206080891839747,
+              "positive": 0.0006630801027550067,
+              "negative": -0.00024247201357103197
+            },
+            "response": {
+              "count": 449,
+              "net": -0.010761850958332497,
+              "positive": 0.03561594714171855,
+              "negative": -0.046377798100051035
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.01873881822544334,
+            "positive": 0.1650453322256378,
+            "negative": -0.14630651400019448
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.009021783469688568,
+              "positive": 0.012810295090334784,
+              "negative": -0.02183207856002335
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0027905680003460515,
+              "positive": 0.0003898454369395954,
+              "negative": -0.003180413437285647
+            },
+            "response": {
+              "count": 449,
+              "net": 0.030551169695477953,
+              "positive": 0.15184519169836344,
+              "negative": -0.12129402200288548
+            }
+          }
+        },
+        "attention_output_projection_and_sigmoid_gate": {
+          "total": {
+            "net": -0.007526917620716584,
+            "positive": 0.0851677628766343,
+            "negative": -0.0926946804973509
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.005842682414614724,
+              "positive": 0.006907119839108293,
+              "negative": -0.012749802253723016
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.00035618920290233537,
+              "positive": 0.0009243575286984086,
+              "negative": -0.0005681683257960733
+            },
+            "response": {
+              "count": 449,
+              "net": -0.0020404244090041976,
+              "positive": 0.07733628550882761,
+              "negative": -0.0793767099178318
+            }
+          }
+        },
+        "finite_FA_core_including_seed_cast": {
+          "total": {
+            "net": 0.024412408178928535,
+            "positive": 60.61115629448736,
+            "negative": -60.58674388630843
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 41.840702778306564,
+              "positive": 45.35634184850116,
+              "negative": -3.5156390701945948
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.7347077419315977,
+              "positive": 1.865062978891797,
+              "negative": -0.13035523696019907
+            },
+            "response": {
+              "count": 449,
+              "net": -43.55099811205923,
+              "positive": 13.389751467094406,
+              "negative": -56.94074957915363
+            }
+          }
+        },
+        "attention_input_QKnorm_RoPE_GQA_projections": {
+          "total": {
+            "net": -0.015793259233016527,
+            "positive": 0.12942784556604447,
+            "negative": -0.14522110479906103
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.004908212892743144,
+              "positive": 0.026261498461076557,
+              "negative": -0.021353285568333418
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0005116812870098364,
+              "positive": 0.001290389571549572,
+              "negative": -0.0007787082845397357
+            },
+            "response": {
+              "count": 449,
+              "net": -0.021213153412769505,
+              "positive": 0.10187595753341834,
+              "negative": -0.12308911094618785
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": -0.0065587604630687,
+            "positive": 0.06915735778948465,
+            "negative": -0.07571611825255334
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": -0.008182422336758888,
+              "positive": 0.00975966855276639,
+              "negative": -0.01794209088952528
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": -0.0006109761717293122,
+              "positive": 0.0006567500444667213,
+              "negative": -0.0012677262161960336
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0022346380454195004,
+              "positive": 0.058740939192251526,
+              "negative": -0.05650630114683203
+            }
+          }
+        },
+        "saved_minus_replayed_m19": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 449,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": 0.026772251478624165,
+            "positive": 60.5918159846666,
+            "negative": -60.56504373318799
+          },
+          "groups": {
+            "deleted": {
+              "count": 377,
+              "net": 41.8330959443578,
+              "positive": 45.344326874018314,
+              "negative": -3.5112309296605138
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 27,
+              "net": 1.7337150999144126,
+              "positive": 1.8634678518036647,
+              "negative": -0.12975275188925195
+            },
+            "response": {
+              "count": 449,
+              "net": -43.540038792793595,
+              "positive": 13.384021258844626,
+              "negative": -56.924060051638214
+            }
+          }
+        }
+      }
+    }
+  },
+  "proof_scope": "Independent NumPy audit of all saved signed token contractions and identities; remote private coefficient/activation tensors are not locally rehashed or independently dot-product recomputed. Existing helper/source identities and actual-call receipts are verified.",
+  "observed_primary_terms": {
+    "3": {
+      "finite_FA_core_including_seed_cast": 15.00302057626069,
+      "attention_output_projection_and_sigmoid_gate": -0.032156307040377974,
+      "MLP_combined": -0.1862132870736244,
+      "input_RMSNorm": -3.119255852373695
+    },
+    "10": {
+      "finite_FA_core_including_seed_cast": 18.07260812976598,
+      "attention_output_projection_and_sigmoid_gate": -3.158972119005412,
+      "MLP_combined": -0.23335549915908027,
+      "input_RMSNorm": -2.134421332228272
+    },
+    "20": {
+      "finite_FA_core_including_seed_cast": 0.07349087727305648,
+      "attention_output_projection_and_sigmoid_gate": -0.03891434354231943,
+      "MLP_combined": -0.06208722983048625,
+      "input_RMSNorm": -0.014143772167449997
+    },
+    "B2": {
+      "finite_FA_core_including_seed_cast": 0.024412408178928535,
+      "attention_output_projection_and_sigmoid_gate": -0.007526917620716584,
+      "MLP_combined": 0.04110765015704232,
+      "input_RMSNorm": -0.0065587604630687
+    }
+  },
+  "interpretation": "Nine terms and three transfer terms localize current saved-boundary disagreement. Negative output-gate, MLP or norm terms may compensate a positive core term and are not automatically faults. A large core does not establish an implementation bug, identify softmax versus PV, or predict full-propagation MAS benefit.",
+  "CPU_audit_seconds": 0.20768260001204908
+}
