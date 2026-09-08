@@ -1,0 +1,376 @@
+{
+  "status": "existing_evidence_priority_review_no_new_model_compute",
+  "sign_convention": "prediction_minus_actual",
+  "executed_model_calls": 0,
+  "executed_GPU_calls": 0,
+  "historical_coarse_source": {
+    "path": "${LOCAL_PATH}",
+    "sha256": "9e6a767a6693ed02d270418e813e33d77a93e5dff8ae703bb98958e9d008c9c5"
+  },
+  "formulas": {
+    "actual_conditional_effect": "D_A = G_B1(clean) - G_B1(A), on the frozen original target and deleted set",
+    "boundary_contraction": "a_l(A) = <actual frozen m_l, h_l_B1(clean)-h_l_B1(A)>",
+    "decoder_error": "e_l = a_l-a_(l+1); stored coarse decoder_errors use its negative",
+    "pure_decoder_range": "R_[a,b] = sum_(l=a..b) e_l = a_a-a_(b+1)",
+    "outside_layer0_all": "E_total-e_0 = a_1-D_A + (sum_A scores_FP32-a_0); includes head/seed, final norm, scoring precision and input-score mapping, not just decoder1..31"
+  },
+  "cases": {
+    "niah_mq_q2_1": {
+      "latest_results": {
+        "path": "${LOCAL_PATH}",
+        "sha256": "378712fc2b341d5d8ea27c5b55eb1adc922617c5251f08ffdfb5f47a87932acc"
+      },
+      "latest_same_pass_mnorm_check": {
+        "bitwise_equal": true,
+        "difference_L2": 0.0,
+        "reference_L2": 143.71463520485426,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "relative_L2_limit": 1e-06,
+        "passed": true
+      },
+      "latest_same_pass_fixed_coefficient_reuse": {
+        "m_mixer_output_same_object": true,
+        "m_mlp_norm_output_same_object": true,
+        "residual_source": "Original terms['m_mixer_output'] reused directly"
+      },
+      "history_comparison": {
+        "reported_current_vector_relative_L2": 0.019688116593483452,
+        "same_input_hash": true,
+        "original_target_logp0_arrays_equal": false,
+        "original_target_logp1_arrays_equal": false,
+        "B2_root_effect_current": 155.0186517437296,
+        "B2_root_effect_historical": 155.7688228434663,
+        "B2_seed_effect_current": 154.65992367044015,
+        "B2_seed_effect_historical": 155.4855607243507,
+        "scope": "Latest current/candidate is a same-pass pair. Old per-layer coefficients are historical evidence, even when whole vector or layer1 scalar contractions closely agree; no new upper-layer captures were made."
+      },
+      "steps": {
+        "1": {
+          "same_deleted_input_receipt_and_B1_native_score_as_coarse": true,
+          "actual_B1_effect": 113.0,
+          "historical_actual_B1_effect": 113.0,
+          "latest_boundary1_contraction": 118.16781806533996,
+          "historical_boundary1_contraction": 118.43608485146251,
+          "historical_pure_decoder1_to31": 6.854006907887239,
+          "historical_outside_layer0_all": 5.436085146466496,
+          "historical_non_decoder_terms_plus_mapping": -1.417921761420743,
+          "historical_upper_positive_sum": 29.07835545180764,
+          "historical_upper_negative_sum": -22.2243485439204,
+          "latest_same_pass": {
+            "current": {
+              "total_input_error": 10.262243628501892,
+              "layer0_decoder_error": 5.094426155305669,
+              "outside_layer0_all_including_head_and_final_norm": 5.167817473196223,
+              "layer0_FLA_error": -7.029389411079113
+            },
+            "candidate": {
+              "total_input_error": 6.148304879665375,
+              "layer0_decoder_error": 0.9804868041586587,
+              "outside_layer0_all_including_head_and_final_norm": 5.167818075506716,
+              "layer0_FLA_error": -1.4357300755509363
+            }
+          }
+        },
+        "10": {
+          "same_deleted_input_receipt_and_B1_native_score_as_coarse": true,
+          "actual_B1_effect": 161.0,
+          "historical_actual_B1_effect": 161.0,
+          "latest_boundary1_contraction": 165.11236852158325,
+          "historical_boundary1_contraction": 165.23697996579622,
+          "historical_pure_decoder1_to31": 15.8775434531332,
+          "historical_outside_layer0_all": 4.236980303169673,
+          "historical_non_decoder_terms_plus_mapping": -11.640563149963526,
+          "historical_upper_positive_sum": 29.948721098089692,
+          "historical_upper_negative_sum": -14.071177644956492,
+          "latest_same_pass": {
+            "current": {
+              "total_input_error": 47.954846708948025,
+              "layer0_decoder_error": 43.84247878274738,
+              "outside_layer0_all_including_head_and_final_norm": 4.112367926200648,
+              "layer0_FLA_error": 36.162546365192554
+            },
+            "candidate": {
+              "total_input_error": 9.265924891438772,
+              "layer0_decoder_error": 5.15355628438482,
+              "outside_layer0_all_including_head_and_final_norm": 4.112368607053952,
+              "layer0_FLA_error": 6.127726393324457
+            }
+          }
+        },
+        "20": {
+          "same_deleted_input_receipt_and_B1_native_score_as_coarse": true,
+          "actual_B1_effect": 155.0,
+          "historical_actual_B1_effect": 155.0,
+          "latest_boundary1_contraction": 155.13088126586115,
+          "historical_boundary1_contraction": 155.581688507843,
+          "historical_pure_decoder1_to31": 0.8774146920895589,
+          "historical_outside_layer0_all": 0.5816887379257594,
+          "historical_non_decoder_terms_plus_mapping": -0.29572595416379954,
+          "historical_upper_positive_sum": 1.3359671216105653,
+          "historical_upper_negative_sum": -0.4585524295210064,
+          "latest_same_pass": {
+            "current": {
+              "total_input_error": 0.06300560107047204,
+              "layer0_decoder_error": -0.06787498023152239,
+              "outside_layer0_all_including_head_and_final_norm": 0.13088058130199443,
+              "layer0_FLA_error": -0.20520294560184826
+            },
+            "candidate": {
+              "total_input_error": -0.014306189132184954,
+              "layer0_decoder_error": -0.14518753390359507,
+              "outside_layer0_all_including_head_and_final_norm": 0.1308813447714101,
+              "layer0_FLA_error": -0.21777007103199608
+            }
+          }
+        }
+      },
+      "historical_selected_layer_clues": {
+        "19": {
+          "block_type": "full_attention",
+          "whole_decoder_errors": {
+            "1": 7.622831947463425,
+            "10": 4.008638564200226,
+            "20": 0.23112014732174657
+          },
+          "boundary": "a_19-a_20",
+          "scope": "historical whole decoder only; not evidence that the attention core or any gate is the source"
+        },
+        "6": {
+          "block_type": "linear_attention",
+          "whole_decoder_errors": {
+            "1": 2.333748549835022,
+            "10": 3.8598924880869276,
+            "20": -0.016107687540284132
+          },
+          "boundary": "a_6-a_7",
+          "scope": "historical whole decoder only; not evidence that the attention core or any gate is the source"
+        },
+        "23": {
+          "block_type": "full_attention",
+          "whole_decoder_errors": {
+            "1": -0.23796245808962624,
+            "10": -0.9741151435699749,
+            "20": -0.023664560938357226
+          },
+          "boundary": "a_23-a_24",
+          "scope": "historical whole decoder only; not evidence that the attention core or any gate is the source"
+        }
+      }
+    },
+    "morehopqa_1": {
+      "latest_results": {
+        "path": "${LOCAL_PATH}",
+        "sha256": "6e695ac48ffb067fde27ec560d0d738852d70bf1c19f65f1b1ffd50ed0fa94d6"
+      },
+      "latest_same_pass_mnorm_check": {
+        "bitwise_equal": true,
+        "difference_L2": 0.0,
+        "reference_L2": 104.12161917218812,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "relative_L2_limit": 1e-06,
+        "passed": true
+      },
+      "latest_same_pass_fixed_coefficient_reuse": {
+        "m_mixer_output_same_object": true,
+        "m_mlp_norm_output_same_object": true,
+        "residual_source": "Original terms['m_mixer_output'] reused directly"
+      },
+      "history_comparison": {
+        "reported_current_vector_relative_L2": 3.661098366883025e-08,
+        "same_input_hash": true,
+        "original_target_logp0_arrays_equal": true,
+        "original_target_logp1_arrays_equal": true,
+        "B2_root_effect_current": 84.5986453982623,
+        "B2_root_effect_historical": 84.5986453982623,
+        "B2_seed_effect_current": 84.31229607384036,
+        "B2_seed_effect_historical": 84.31229607384036,
+        "scope": "Latest current/candidate is a same-pass pair. Old per-layer coefficients are historical evidence, even when whole vector or layer1 scalar contractions closely agree; no new upper-layer captures were made."
+      },
+      "steps": {
+        "1": {
+          "same_deleted_input_receipt_and_B1_native_score_as_coarse": true,
+          "actual_B1_effect": 45.0,
+          "historical_actual_B1_effect": 45.0,
+          "latest_boundary1_contraction": 44.89139724709351,
+          "historical_boundary1_contraction": 44.89139724709351,
+          "historical_pure_decoder1_to31": 12.18750887300952,
+          "historical_outside_layer0_all": -0.10860248215978174,
+          "historical_non_decoder_terms_plus_mapping": -12.296111355169302,
+          "historical_upper_positive_sum": 27.174057298383076,
+          "historical_upper_negative_sum": -14.986548425373556,
+          "latest_same_pass": {
+            "current": {
+              "total_input_error": -1.2920465469360352,
+              "layer0_decoder_error": -1.1834439134621562,
+              "outside_layer0_all_including_head_and_final_norm": -0.108602633473879,
+              "layer0_FLA_error": -4.528017253011319
+            },
+            "candidate": {
+              "total_input_error": -1.6669230461120605,
+              "layer0_decoder_error": -1.5583200976066607,
+              "outside_layer0_all_including_head_and_final_norm": -0.10860294850539987,
+              "layer0_FLA_error": -1.386664879410292
+            }
+          }
+        },
+        "10": {
+          "same_deleted_input_receipt_and_B1_native_score_as_coarse": true,
+          "actual_B1_effect": 72.0,
+          "historical_actual_B1_effect": 72.0,
+          "latest_boundary1_contraction": 85.62887413639808,
+          "historical_boundary1_contraction": 85.62887413639808,
+          "historical_pure_decoder1_to31": 13.603140513648512,
+          "historical_outside_layer0_all": 13.628874217104581,
+          "historical_non_decoder_terms_plus_mapping": 0.02573370345606918,
+          "historical_upper_positive_sum": 22.57861088713419,
+          "historical_upper_negative_sum": -8.975470373485678,
+          "latest_same_pass": {
+            "current": {
+              "total_input_error": 25.471637096256018,
+              "layer0_decoder_error": 11.842763030465534,
+              "outside_layer0_all_including_head_and_final_norm": 13.628874065790484,
+              "layer0_FLA_error": 7.18946307690665
+            },
+            "candidate": {
+              "total_input_error": 16.6767041417188,
+              "layer0_decoder_error": 3.0478302823060375,
+              "outside_layer0_all_including_head_and_final_norm": 13.628873859412764,
+              "layer0_FLA_error": 0.6130132427130057
+            }
+          }
+        },
+        "20": {
+          "same_deleted_input_receipt_and_B1_native_score_as_coarse": true,
+          "actual_B1_effect": 85.0,
+          "historical_actual_B1_effect": 85.0,
+          "latest_boundary1_contraction": 84.43673899308766,
+          "historical_boundary1_contraction": 84.43673899308766,
+          "historical_pure_decoder1_to31": -0.05541375475254995,
+          "historical_outside_layer0_all": -0.5632609678200708,
+          "historical_non_decoder_terms_plus_mapping": -0.5078472130675209,
+          "historical_upper_positive_sum": 0.5760503165902833,
+          "historical_upper_negative_sum": -0.6314640713428332,
+          "latest_same_pass": {
+            "current": {
+              "total_input_error": -0.6949769866769202,
+              "layer0_decoder_error": -0.1317158675427521,
+              "outside_layer0_all_including_head_and_final_norm": -0.5632611191341681,
+              "layer0_FLA_error": -0.05997688601939011
+            },
+            "candidate": {
+              "total_input_error": -0.6764323572206195,
+              "layer0_decoder_error": -0.11317109655227853,
+              "outside_layer0_all_including_head_and_final_norm": -0.5632612606683409,
+              "layer0_FLA_error": -0.06928351581553116
+            }
+          }
+        }
+      },
+      "historical_selected_layer_clues": {
+        "19": {
+          "block_type": "full_attention",
+          "whole_decoder_errors": {
+            "1": 2.168813335896324,
+            "10": 4.854690053738722,
+            "20": -0.008470984451662389
+          },
+          "boundary": "a_19-a_20",
+          "scope": "historical whole decoder only; not evidence that the attention core or any gate is the source"
+        },
+        "6": {
+          "block_type": "linear_attention",
+          "whole_decoder_errors": {
+            "1": 3.155117250910571,
+            "10": 4.339668728213837,
+            "20": -0.024706646500348484
+          },
+          "boundary": "a_6-a_7",
+          "scope": "historical whole decoder only; not evidence that the attention core or any gate is the source"
+        },
+        "23": {
+          "block_type": "full_attention",
+          "whole_decoder_errors": {
+            "1": 1.1690543239480036,
+            "10": 4.039634870862685,
+            "20": -0.0008341657676140812
+          },
+          "boundary": "a_23-a_24",
+          "scope": "historical whole decoder only; not evidence that the attention core or any gate is the source"
+        }
+      }
+    }
+  },
+  "historical_MH_mid_ranges": {
+    "narrowest_selected_range": {
+      "decoder_indices": [
+        19
+      ],
+      "error": 4.854690053738722,
+      "boundary": "19 to 20"
+    },
+    "comparison_GDN_single_layer": {
+      "decoder_indices": [
+        6
+      ],
+      "error": 4.339668728213837
+    },
+    "second_FA_single_layer": {
+      "decoder_indices": [
+        23
+      ],
+      "error": 4.039634870862685
+    },
+    "two_noncontiguous_FA_layers_19_23": {
+      "error": 8.894324924601406,
+      "share_of_net_pure_decoder1_to31": 0.6538434941311836,
+      "not_a_contiguous_interval": true
+    },
+    "contiguous_decoders18_to19": 6.8012072503909025,
+    "contiguous_decoders18_to23": 9.99358286993342,
+    "scope": "All values from the original coarse pass only, with signed compensation retained."
+  },
+  "priority": {
+    "first": "MH1 decoder19 whole-block split",
+    "same_pass_control": "GDN decoder6; historical positive mismatch in both early and middle points, unlike choosing another FA block only",
+    "defer": "decoder23 until layer19 split gives a mechanism; NI layer0 FLA is still +6.1277 but beta local mismatch is not its dominant positive source",
+    "reason": "MH candidate leaves +13.6289 outside layer0 versus +3.0478 inside layer0. Historical narrowest largest upper single-layer clue is FA decoder19 (+4.8547), with GDN6 (+4.3397) as a family control. Existing historical compensation prevents treating their magnitudes as guaranteed improvement budgets.",
+    "split_targets_for_decoder19": [
+      "MLP and post-attention RMSNorm/residual",
+      "output projection plus sigmoid attention gate as one boundary using existing actual mcontent/mgate",
+      "finite FA core using actual mcontent and dq/dk/dv with B1 native attention-output and Q/K/V changes",
+      "remaining Q/K norms, rotary/GQA and input projection/norm as their actual combined boundary until more coefficients are already available"
+    ],
+    "not_claimed": [
+      "FA kernel failure",
+      "gate rule is the source",
+      "GDN6 norm-gate change is already justified",
+      "per-layer historical numbers are newly measured after repair"
+    ],
+    "proposed_future_capture_ceiling_not_executed": {
+      "original_cases": 1,
+      "case": "morehopqa_1",
+      "target_layers": [
+        19,
+        6
+      ],
+      "complete_DT_attributions": 1,
+      "original_B1_scoring_forwards": 4,
+      "fixed_steps": [
+        0,
+        1,
+        10,
+        20
+      ],
+      "extra_native_attention_or_FLA_calls_for_diagnostic": 0,
+      "candidate_propagations": 0,
+      "FT_calls": 0,
+      "generation_calls": 0,
+      "new_samples": 0,
+      "comment": "Prefer passive capture on the next already-authorized matched pass; no execution is started by this review. Standard DT replay/auxiliary work remains fully counted; compilation/capture and initial model setup are not free."
+    }
+  },
+  "scope_correction": "Latest +13.6289 is outside-layer0 ALL, including head/final norm/precision/mapping. Historical pure decoder1..31 is +13.6031405; its signed positive and negative parts are +22.5786109 and -8.9754704.",
+  "cancellation_warning": "MH historical early upper decoders +12.1875 are offset by top/precision terms while whole error is negative; a local upper improvement may worsen early total error. Retain early and allEOS controls rather than selecting only the middle point."
+}
