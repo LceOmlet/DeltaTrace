@@ -1,0 +1,762 @@
+{
+  "status": "both_original_decoder_families_checked_final_target_and_whole_model_pending",
+  "raw_sha256": "58a04a4e5f2d7f2ec16ad3d09727078d10a0135890c7a28a542098ef8cf79405",
+  "protocol_sha256": "2bdfa25f4b0a21a5900f712e9300b8545eae5d71c621edfd620e32644eeea477",
+  "source_sha256": {
+    "study.py": "3478db2224b6f596b7c1997f7597e6ccb1ffe0d7e3b7dd808110d264951a3b97",
+    "qwen35_decoder_finite.py": "d73cb84ff38c6cb28a2ba1bcaa3b0f5fd29e8f998ff55ca42b3fb63539acd292",
+    "native_attention_capture.py": "bafec436a46fbf2ba9d649af0a7f918d216d6e83275b93eb31fabbb8b9fd1b4a",
+    "qwen35_gdn_finite.py": "256b44ab6c7fa6ad390113c67837680191776c2bfca58f6fa940fad871006259",
+    "finite_fla_gpu.py": "8ba72f5c56212fb5e173384e9ce8d79b488b22b5f83ddefa0dc33e8b343980d9",
+    "vendor_fa_finite_bf16_d256.py": "645736f68bf2f8169feff7218d30de20d3ed2a0b75e321603e6503a514763fc2",
+    "signed_secant_rules.py": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d",
+    "compiled_swiglu_secant.py": "4953cd39dec44cf1f6a127186a7c94b5fc41aedaeae07e926f2bc8a7eb4347e0"
+  },
+  "layers": {
+    "3": {
+      "block_type": "full_attention",
+      "native_replay_vs_root": {
+        "relative_L2": 0.0,
+        "max_abs": 0.0,
+        "cosine": 1.0,
+        "reference_norm": 983.3709335762835
+      },
+      "equal_endpoint_vs_native": {
+        "relative_L2": 0.005768220372890844,
+        "max_abs": 0.3795318603515625,
+        "cosine": 0.9999833644650766,
+        "reference_norm": 4022.0014048453713
+      },
+      "equal_endpoint_per_sample": [
+        {
+          "relative_L2": 0.005723968215218291,
+          "max_abs": 0.3795318603515625,
+          "cosine": 0.9999836180647944,
+          "reference_norm": 3283.37573393309
+        },
+        {
+          "relative_L2": 0.005855630408833858,
+          "max_abs": 0.3447418212890625,
+          "cosine": 0.9999828665803614,
+          "reference_norm": 2322.916074764106
+        }
+      ],
+      "finite_effect": {
+        "direct": [
+          18714.767613421387,
+          11982.405476699903
+        ],
+        "allocated": [
+          18703.82866976518,
+          11973.646105205871
+        ],
+        "residual": [
+          -10.938943656208721,
+          -8.759371494032166
+        ],
+        "relative_residual_per_sample": [
+          -0.0005845086555263345,
+          -0.0007310194527355121
+        ],
+        "relative_L2": 0.0006306259911436414,
+        "max_abs": 10.938943656208721,
+        "cosine": 0.9999999977839851,
+        "reference_norm": 22222.073886845348
+      },
+      "local_input_position_contributions": {
+        "positive_mass": [
+          19315.84993659672,
+          12431.082400790485
+        ],
+        "negative_mass": [
+          -612.0212668315444,
+          -457.43629558461447
+        ],
+        "limit": "Hidden-state allocations for a local output cotangent, not final input-token attribution."
+      },
+      "padding_max_abs": 0,
+      "cold_warm_max_abs": 0,
+      "endpoint_boundaries": {
+        "mixer_input": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0,
+          "reference_norm": 3874.295868997338
+        },
+        "mixer_residual": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0,
+          "reference_norm": 914.9391488032562
+        },
+        "MLP_product": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0,
+          "reference_norm": 463.1283073447768
+        },
+        "MLP_residual": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0,
+          "reference_norm": 983.3709335762835
+        },
+        "attention_gate_product": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0,
+          "reference_norm": 101.23845688590536
+        }
+      },
+      "native_capture_calls": {
+        "decoder": {
+          "input_norm": 1,
+          "post_norm": 1,
+          "gate": 1,
+          "silu": 1,
+          "up": 1,
+          "down": 1,
+          "mlp": 1,
+          "decoder": 1
+        },
+        "mixer": {
+          "module": 1,
+          "interface": 1,
+          "native_varlen": 1
+        }
+      },
+      "native_backward_node_events": [
+        {
+          "node": "FlashAttnVarlenFuncBackward",
+          "input_gradients_present": [
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+            false
+          ]
+        }
+      ],
+      "reported_boundary_effects": {
+        "decoder": {
+          "direct": [
+            18714.767613421387,
+            11982.405476699905
+          ],
+          "allocated": [
+            18703.82866976518,
+            11973.646105205871
+          ],
+          "residual": [
+            -10.938943656208721,
+            -8.759371494033985
+          ],
+          "relative_L2": 0.0006306259911436926,
+          "max_abs": 10.938943656208721,
+          "cosine": 0.9999999977839851,
+          "reference_norm": 22222.073886845348
+        },
+        "mixer": {
+          "direct": [
+            7415.1082896796015,
+            4169.935164340206
+          ],
+          "allocated": [
+            7411.077440757941,
+            4166.782219085867
+          ],
+          "residual": [
+            -4.030848921660436,
+            -3.1529452543391017
+          ],
+          "relative_L2": 0.0006015503695606469,
+          "max_abs": 4.030848921660436,
+          "cosine": 0.999999995873204,
+          "reference_norm": 8507.184623744575
+        },
+        "MLP": {
+          "direct": [
+            619.6333105042524,
+            856.059848277589
+          ],
+          "allocated": [
+            619.3579187571759,
+            856.2585795706611
+          ],
+          "residual": [
+            -0.27539174707658276,
+            0.19873129307211457
+          ],
+          "relative_L2": 0.0003213627239329823,
+          "max_abs": 0.27539174707658276,
+          "cosine": 0.999999948363063,
+          "reference_norm": 1056.7799692081167
+        }
+      }
+    },
+    "0": {
+      "block_type": "linear_attention",
+      "native_replay_vs_root": {
+        "relative_L2": 0.0002466010901340381,
+        "max_abs": 0.0625,
+        "cosine": 0.9999999695939935,
+        "reference_norm": 693.2895297684025
+      },
+      "equal_endpoint_vs_native": {
+        "relative_L2": 0.004984049213617769,
+        "max_abs": 22.569580078125,
+        "cosine": 0.9999934889772071,
+        "reference_norm": 49462.56193859333
+      },
+      "equal_endpoint_per_sample": [
+        {
+          "relative_L2": 0.005136706173645974,
+          "max_abs": 22.569580078125,
+          "cosine": 0.9999932622015465,
+          "reference_norm": 35152.43575606581
+        },
+        {
+          "relative_L2": 0.004823281530710233,
+          "max_abs": 19.844970703125,
+          "cosine": 0.9999937450887897,
+          "reference_norm": 34797.28860047647
+        }
+      ],
+      "finite_effect": {
+        "direct": [
+          1360.3103177941477,
+          975.3354811425922
+        ],
+        "allocated": [
+          1339.6744774120914,
+          956.7442414530369
+        ],
+        "residual": [
+          -20.635840382056358,
+          -18.591239689555323
+        ],
+        "relative_residual_per_sample": [
+          -0.015169950644437534,
+          -0.019061379442257078
+        ],
+        "relative_L2": 0.016593862199600556,
+        "max_abs": 20.635840382056358,
+        "cosine": 0.9999982446486648,
+        "reference_norm": 1673.834956461618
+      },
+      "local_input_position_contributions": {
+        "positive_mass": [
+          3078.928766304535,
+          1959.0932488156982
+        ],
+        "negative_mass": [
+          -1739.2542888924443,
+          -1002.3490073626608
+        ],
+        "limit": "Hidden-state allocations for a local output cotangent, not final input-token attribution."
+      },
+      "padding_max_abs": 0,
+      "cold_warm_max_abs": 0,
+      "endpoint_boundaries": {
+        "mixer_input": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0,
+          "reference_norm": 3356.6756222845606
+        },
+        "mixer_residual": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0000000000000002,
+          "reference_norm": 275.534814779262
+        },
+        "MLP_product": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0000000000000002,
+          "reference_norm": 702.4596633405151
+        },
+        "MLP_residual": {
+          "relative_L2": 0.0,
+          "max_abs": 0.0,
+          "cosine": 1.0,
+          "reference_norm": 693.2897037133916
+        }
+      },
+      "native_capture_calls": {
+        "decoder": {
+          "input_norm": 1,
+          "post_norm": 1,
+          "gate": 1,
+          "silu": 1,
+          "up": 1,
+          "down": 1,
+          "mlp": 1,
+          "decoder": 1
+        },
+        "mixer": {
+          "module": 1,
+          "conv": 1,
+          "FLA": 1,
+          "stage": 1
+        }
+      },
+      "native_backward_node_events": [
+        {
+          "node": "ChunkGatedDeltaRuleFunctionBackward",
+          "input_gradients_present": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "node": "CausalConv1dFnBackward",
+          "input_gradients_present": [
+            true,
+            true
+          ]
+        }
+      ],
+      "reported_boundary_effects": {
+        "decoder": {
+          "direct": [
+            1360.310317794148,
+            975.3354811425922
+          ],
+          "allocated": [
+            1339.6744774120912,
+            956.7442414530371
+          ],
+          "residual": [
+            -20.635840382056813,
+            -18.591239689555096
+          ],
+          "relative_L2": 0.01659386219960066,
+          "max_abs": 20.635840382056813,
+          "cosine": 0.9999982446486647,
+          "reference_norm": 1673.8349564616185
+        },
+        "mixer": {
+          "direct": [
+            722.9440939057184,
+            681.0823691068645
+          ],
+          "allocated": [
+            715.039019503241,
+            672.0406621981779
+          ],
+          "residual": [
+            -7.905074402477453,
+            -9.041706908686592
+          ],
+          "relative_L2": 0.012091874286334564,
+          "max_abs": 9.041706908686592,
+          "cosine": 0.9999993007017522,
+          "reference_norm": 993.237814635236
+        },
+        "MLP": {
+          "direct": [
+            -214.8480373539095,
+            -203.6006971746961
+          ],
+          "allocated": [
+            -214.91509379841244,
+            -203.41812015390587
+          ],
+          "residual": [
+            -0.06705644450295267,
+            0.18257702079023375
+          ],
+          "relative_L2": 0.0006571120845292601,
+          "max_abs": 0.18257702079023375,
+          "cosine": 0.9999998177671703,
+          "reference_norm": 295.99480239499
+        }
+      }
+    }
+  },
+  "calls": [
+    {
+      "kind": "layer3_original_forward_with_capture",
+      "seconds": 0.7672256007790565,
+      "before_bytes": 943844864,
+      "peak_bytes": 1451737600
+    },
+    {
+      "kind": "layer3_original_backward",
+      "seconds": 0.022565603256225586,
+      "before_bytes": 1392263680,
+      "peak_bytes": 1637794304
+    },
+    {
+      "kind": "layer3_public_FA_auxiliary_LSE",
+      "seconds": 0.00046739354729652405,
+      "before_bytes": 1701551616,
+      "peak_bytes": 1717618176
+    },
+    {
+      "kind": "layer3_finite_actual_cold",
+      "seconds": 14.01585734821856,
+      "before_bytes": 1701722624,
+      "peak_bytes": 1878776320
+    },
+    {
+      "kind": "layer3_finite_actual_warm",
+      "seconds": 0.011958431452512741,
+      "before_bytes": 1701722624,
+      "peak_bytes": 1873062400
+    },
+    {
+      "kind": "layer3_finite_equal_endpoint_limit",
+      "seconds": 0.012085773050785065,
+      "before_bytes": 2347237888,
+      "peak_bytes": 2518381056
+    },
+    {
+      "kind": "layer0_original_forward_with_capture",
+      "seconds": 16.30725081078708,
+      "before_bytes": 1010967552,
+      "peak_bytes": 1678297088
+    },
+    {
+      "kind": "layer0_original_backward",
+      "seconds": 9.080237409099936,
+      "before_bytes": 1479192576,
+      "peak_bytes": 1799496192
+    },
+    {
+      "kind": "layer0_finite_actual_cold",
+      "seconds": 23.193672448396683,
+      "before_bytes": 1758182400,
+      "peak_bytes": 2534623232
+    },
+    {
+      "kind": "layer0_finite_actual_warm",
+      "seconds": 0.013938859105110168,
+      "before_bytes": 1758182400,
+      "peak_bytes": 2534623232
+    },
+    {
+      "kind": "layer0_finite_equal_endpoint_limit",
+      "seconds": 0.012766547501087189,
+      "before_bytes": 2486949376,
+      "peak_bytes": 3264930304
+    }
+  ],
+  "budget": {
+    "full_model_loads": 0,
+    "full_model_forwards": 0,
+    "meta_model_constructions": 1,
+    "original_decoder_loads": 2,
+    "original_decoder_forward_attempts": 2,
+    "original_decoder_backward_attempts": 2,
+    "public_FA_auxiliary_forward_attempts": 1,
+    "complete_finite_decoder_calls": 6,
+    "FA_finite_calls": 3,
+    "FA_finite_kernel_launches": 9,
+    "FLA_finite_calls": 3,
+    "native_auxiliary_linear_conv_forwards": 3,
+    "native_auxiliary_linear_conv_backwards": 3,
+    "generation_calls": 0,
+    "quality_queries": 0
+  },
+  "job_seconds": 128.7195295020938,
+  "source_tree": {
+    "count": 2853,
+    "changes": [
+      "fla/utils.py",
+      "fla/ops/common/chunk_delta_h.py",
+      "fla/ops/gated_delta_rule/wy_fast.py"
+    ],
+    "sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6"
+  },
+  "versions": {
+    "torch": "2.8.0+metax3.5.3.9",
+    "transformers": "5.13.0",
+    "flash_attn": "2.6.3",
+    "device": "MetaX C550"
+  },
+  "compiler_counters": {
+    "inline_call": {},
+    "stats": {
+      "calls_captured": 502,
+      "unique_graphs": 5
+    },
+    "inductor": {
+      "pattern_matcher_count": 49,
+      "pattern_matcher_nodes": 53,
+      "fxgraph_cache_miss": 5,
+      "async_compile_cache_miss": 61,
+      "extern_calls": 26,
+      "async_compile_cache_hit": 30,
+      "triton_bundler_save_kernel": 490,
+      "benchmarking.InductorBenchmarker.benchmark_gpu": 94
+    },
+    "aot_autograd": {
+      "total": 5,
+      "autograd_cache_miss": 5,
+      "autograd_cache_saved": 5,
+      "ok": 5
+    },
+    "graph_break": {},
+    "aten_mm_info": {
+      "aten.bmm_1_1210_12288_4096": 1,
+      "aten.bmm_1_1210_4096_12288": 2,
+      "aten.bmm_1_1210_4096_4096": 1,
+      "aten.bmm_1_1210_4096_8192": 1,
+      "aten.bmm_1_1210_4096_1024": 2,
+      "aten.bmm_640_64_64_128": 5,
+      "aten.bmm_640_64_128_64": 6,
+      "aten.bmm_640_64_128_128": 7
+    }
+  },
+  "compiler_benchmark_observations": {
+    "inductor_benchmark_gpu": 94
+  },
+  "benchmark_observation_limit": "Main-thread call observations, not exact total tuning repetitions or worker-process GPU calls; all cold wall time is retained.",
+  "compiler_generated_sources": [
+    {
+      "file": "inductor_cache/j2/cj2jrh3kds3d53bvpjircc7rbgytoby6ys67a347ns5h3ckmxu7o.py",
+      "sha256": "373d24882c793974fba9502ac6af90b0b9a953c430608ec49bca57d275b772ee",
+      "bytes": 2656
+    },
+    {
+      "file": "inductor_cache/zw/czwj6i7umy62vecbqyhgiepe762k2dimem2u5fzbwevwvzpweqzl.py",
+      "sha256": "7df0e1b9bf63142cd71912019f6e1e2b35057a7d38d669036f9306f11b44be8b",
+      "bytes": 2159
+    },
+    {
+      "file": "inductor_cache/e6/ce6u667pxkjncwrvcizimlazo2dbf5otz4ouqkhmvuwdlvcpq5zg.py",
+      "sha256": "fe2476f5d16b83c0e1e8dd84a7cb9bb4abd6f61fb2b0ba511663e660782b1b5a",
+      "bytes": 94878
+    },
+    {
+      "file": "inductor_cache/to/ctoy542paefaqso4cej6s5ygs2gbbk7mgyx2wxbightpj33qee4u.py",
+      "sha256": "2dd508b5ff7b2abf38457a51121903e2b0ccc29de5dce25a95512d7a7dc98d43",
+      "bytes": 2908
+    },
+    {
+      "file": "inductor_cache/4d/c4dkefmk76rh3w4gby6deka3mwkwaqiztohyqrxulcje77hnsorr.py",
+      "sha256": "e8f12b362ea6c3c32d8861c71f8526d417910b53ff430963d9b0e4c0e3bf43ef",
+      "bytes": 2373
+    },
+    {
+      "file": "inductor_cache/dp/cdpiavgui5cqay7ffsriuz6l75uljalgdxfpjppcaswufaxdafuc.py",
+      "sha256": "f75f6c12e5b3899f73cba2c9853b86687d9aba409376d73090d411d0e3711f0b",
+      "bytes": 2169
+    },
+    {
+      "file": "inductor_cache/nv/cnvsh5bjoxpqv6x2r5fxnvq6dfzllkc2q25s3fuuc7vjx3aidk5c.py",
+      "sha256": "cad6bfd20f6c304fb6d4042794817f62783acf1ed314125d73984f8ef66517b5",
+      "bytes": 3860
+    },
+    {
+      "file": "inductor_cache/fm/cfmyqsrirywrajg5qiuintvhksvafau2cikeqc3zet7gftspzmsx.py",
+      "sha256": "aed7306781aacffe09438bb749fd6a7a14f7cc8a92fd200cc984a5b018c1a3e4",
+      "bytes": 15602
+    },
+    {
+      "file": "inductor_cache/mr/cmrkcerpc5ud5cllqxuf2ic67pphwzlpkg26o3blf2e7yslnjjpg.py",
+      "sha256": "536d3ca5aaa16023c3c1a53f086200f612c933fc24d79a556f9e7717e7335375",
+      "bytes": 2242
+    },
+    {
+      "file": "inductor_cache/mr/cmrofxoct2y24nvzhdoxy73iynbamiblalrms2fb4xdchqnogbmq.py",
+      "sha256": "f5c983bb15c94467048e7b92867a799aa221665863a5babd17f01439ebe54c6e",
+      "bytes": 1973
+    },
+    {
+      "file": "inductor_cache/2m/c2m4r6rcmsybbf2jid25hnmjfssagmliuotjducb3vnbwqne533j.py",
+      "sha256": "b707c5f6989f12d1d5cf97c9e3089ad86efe22d0f9359516d7d5ac69d3ae5e8e",
+      "bytes": 2039
+    },
+    {
+      "file": "inductor_cache/fb/cfbly3wa4f32kdr5zmxa75scwtjdqic35bkztajhw4v4x4bj7vp2.py",
+      "sha256": "188ec8e903547411f7edcf307257bd179cd185479c7b4e712ea0cc05c7121bdd",
+      "bytes": 3651
+    },
+    {
+      "file": "inductor_cache/5v/c5vl7azv5sbbkdidepxwcptp6jdaq6lfox77ze46li6m6p7zcxao.py",
+      "sha256": "871bec6fb37f841433f475b19d96c9fa3a81c26a72c006acfb6fc3a4d7d1fbaf",
+      "bytes": 3260
+    },
+    {
+      "file": "inductor_cache/kc/ckcucvdevsanwtvbhad2nmrvv7m6gn4ds2gzlmyjemrgrqhustqy.py",
+      "sha256": "a540d5e494bc2a11cef5689e2867e6e67fb950704497acc304f2fb043702461b",
+      "bytes": 6127
+    },
+    {
+      "file": "inductor_cache/qz/cqzgu4l5ow2wwc723wo6quawb5q2j2w4i5yvxcl723qn45pnliae.py",
+      "sha256": "93e3d3f0fce88c879e8d6445aaf920dde1d99d8d29f3b328309928c4b332c06a",
+      "bytes": 2052
+    },
+    {
+      "file": "inductor_cache/qf/cqf72nt7gjqnmjhcopjj7ir2gebluel2i3slw2nc6zkt77szf57c.py",
+      "sha256": "4cdf32aed4618884492e5bf5d72d75a2f3fa05578cf61e9eb3c4e57c6da04ee5",
+      "bytes": 2159
+    },
+    {
+      "file": "inductor_cache/6n/c6n4ltpcpcokhkt75befzokj6jvyobi3dnrgx6tzqiyr5muh7w7c.py",
+      "sha256": "df44e84dfc620333c9cda5614d534b6fc28d675e02f3b74d39f35733b05d0764",
+      "bytes": 2490
+    },
+    {
+      "file": "inductor_cache/nk/cnkorodutz2m26mot5g42ff6k23m5zmq6tyx2tfkv34tdtzdo6jt.py",
+      "sha256": "977971e5538f0ecc8dadb7ceacaa8dab4836b6ead932ad2c5854c11f3a587017",
+      "bytes": 4166
+    },
+    {
+      "file": "inductor_cache/ko/ckomvhuus7q5a5ifpc3hkbnkvat2yilvesmjlf4zulykzfwknv4k.py",
+      "sha256": "5cde0b730f877dc765bc6b2ba98965b4512dd962743dc09d752564b28b2f9281",
+      "bytes": 54635
+    },
+    {
+      "file": "inductor_cache/l6/cl6uhrsvcdhm2lznrj4uon7lrgow5ijfdo7kpxgjsnyruxvqiqed.py",
+      "sha256": "02d8e44b5bc3449aba0f0bcfeddbb07568dcb2931a704aaf6744896fbd4f860b",
+      "bytes": 4032
+    },
+    {
+      "file": "inductor_cache/qn/cqn2vjopowncrodnrvql33rb75ddcpn3y7ya4uj2ktxz7dmdesqd.py",
+      "sha256": "ff9411891e9cef3098727a7b6777a561459a26d10c14b1b3b15f724af92fddd9",
+      "bytes": 11096
+    },
+    {
+      "file": "inductor_cache/zf/czf7b3toqkfmpyozpjmsi4q644zpufyex35eaunit4i6ef64zloz.py",
+      "sha256": "8fbaf2cc73224c3c6521309b8dd8e53e2ca32890e1f7f9a91d499e4912ca38f8",
+      "bytes": 4237
+    },
+    {
+      "file": "inductor_cache/if/cifswi5x4kzzixywjxe7f7giffc4vhhxaapn5lowu2wv7iryukbm.py",
+      "sha256": "8d42d2cd29a8cba1be9d63218bf1e32bd4c448ffea76d5ab6e650569c4b34a03",
+      "bytes": 3133
+    },
+    {
+      "file": "inductor_cache/ks/cksh5w6mgnvj3i3cf5vuv6c5erg572zykmufyw3kjfj2c4vahzcs.py",
+      "sha256": "a0dd0f740e27b83a0713e107aa6337c3b0a2744de0b778ccf2aa4db5dc1d3241",
+      "bytes": 2166
+    },
+    {
+      "file": "inductor_cache/f3/cf32a64prmbh22aylnovf7n4suf6lrakca7srsvdvvt7octemst3.py",
+      "sha256": "133b4c2509479b334588ce6b0cee31ea342949b69464e41cda3dc3ee7d1c769f",
+      "bytes": 3206
+    },
+    {
+      "file": "inductor_cache/gb/cgbqmfbv4qrtpe436pwc3hxuo3dolwfvz3ytynxfm2kws7fz2qxp.py",
+      "sha256": "3edf24c0b28a60bdfd501f8e525257e210862ea85b3ae22408dd08bc06e0a221",
+      "bytes": 2069
+    },
+    {
+      "file": "inductor_cache/52/c5246hf4el3ddyni3f3huqikn6al5aovl2ekrxpyjvze6bpakk3p.py",
+      "sha256": "9e3c5093a1cf0e04e4f4f129066fcfa6c4a59bfe6abbfbff97ced004cc15d7fe",
+      "bytes": 20046
+    },
+    {
+      "file": "inductor_cache/c2/cc2qmuth6os24toypqcugyjwm76shm5uuvvvvw4to5wb4xlkperc.py",
+      "sha256": "53a70d8fa5becc1ea4fdd27eabef7000ed4f784e895bba23c0cd64ec70aa8842",
+      "bytes": 6032
+    },
+    {
+      "file": "inductor_cache/v6/cv6okgmut3kt76q2e6ellay5erqc5hkke3au7rvh7am2rd544lco.py",
+      "sha256": "266536704aa7243040a4f1567f5d2640f802ea7e99ce7ce3f971e399adb54aa8",
+      "bytes": 4441
+    },
+    {
+      "file": "inductor_cache/ib/cibry6sjdakocnn6s5lzjerwzstrxytttlru7xfkyhcrobty4hbx.py",
+      "sha256": "a02bb6c98b8971941dbfbd1a4d850d2557254f3fd4c78eb23f13c4a83c9c725e",
+      "bytes": 4326
+    },
+    {
+      "file": "inductor_cache/7a/c7awenfafvbiiygcsz4tv4gkyhvybisame3t7yrrd4tiumprjuve.py",
+      "sha256": "6c11f9828cf186b9b4d5292c0afec9e20b239f87133b83e0b3837bef97b2d849",
+      "bytes": 1924
+    },
+    {
+      "file": "inductor_cache/w4/cw4guwrq54q3sd7it5jvwvmilwjxuoypmlezblidabocv3amcwyp.py",
+      "sha256": "dd5936635542cf9bba6ce67f2a857110e4be09af1eb3386d5b90e275b8dbd998",
+      "bytes": 2867
+    },
+    {
+      "file": "inductor_cache/ok/cokci2pubefe3os4gkz65hytsjtnls4olfjimr3a7gqv7oybx74z.py",
+      "sha256": "0262322de1c0b7889efc6862b90ef7334a794d8bba7d154f5a793c088ce5bf43",
+      "bytes": 14061
+    },
+    {
+      "file": "inductor_cache/bk/cbkrungfp3qghiuu7opfu2ncnytps7jhk4dnpu4rffc3yvo3x6zu.py",
+      "sha256": "b58fbb6e0e701c6b6bad8a81c9fc3fa96dcd5a1ec1466fd51200fb39fd1eeac0",
+      "bytes": 3092
+    },
+    {
+      "file": "inductor_cache/xm/cxm6pzn5cncxpxvrargkwba3opds4lrau6pzkfbpceshybsc4j3g.py",
+      "sha256": "a1fd8112eae0cd4138c4eeb4b0b18ec1f9a91d934e37a7e6b37efcedf7e7efd0",
+      "bytes": 4356
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "layer3_native_capture.pt",
+      "sha256": "7c0db209c332e4cd38442d48061648c6ef2f93d6e90384409c48bd6194513c52",
+      "bytes": 668866894,
+      "download": false
+    },
+    {
+      "file": "layer3_native_gradient.npz",
+      "sha256": "4986cab223ff7363924cceb38250c2b9fe006da0f6834faf99ed12844d236b9b",
+      "bytes": 7443216,
+      "download": true
+    },
+    {
+      "file": "layer3_public_LSE.pt",
+      "sha256": "24a1b92ae2e721105808e96e4ae4a5007dccb6497f50a80d3ad2ed9ce7a18f93",
+      "bytes": 156591,
+      "download": false
+    },
+    {
+      "file": "layer3_actual.npz",
+      "sha256": "27ff3bee762fa5f9c3a8d3a1329cf9b7298e9fc826deec4de03268f0279736e0",
+      "bytes": 52179170,
+      "download": true
+    },
+    {
+      "file": "layer3_equal.npz",
+      "sha256": "cccfa9d64a5b29ed3eee46e6d72d93540c57f182e74984b342d5bf123f28ed37",
+      "bytes": 14788581,
+      "download": true
+    },
+    {
+      "file": "layer0_native_capture.pt",
+      "sha256": "8a76737d68e4068f3276110017eb2b02772ba1f81970736d586f80b4ed51f135",
+      "bytes": 727647032,
+      "download": false
+    },
+    {
+      "file": "layer0_native_gradient.npz",
+      "sha256": "c643dd3a4d11866cf7039eab13ce4d033ff06f8034cbe168000b3050b2d416f7",
+      "bytes": 7467997,
+      "download": true
+    },
+    {
+      "file": "layer0_actual.npz",
+      "sha256": "a90827ad9e25725604ad98734732a3101f5fdcac7f51da4d12463b2976533ffb",
+      "bytes": 49024800,
+      "download": true
+    },
+    {
+      "file": "layer0_equal.npz",
+      "sha256": "fa55acb3f09b9757462d6d98c3520d723758bf05e048ab1438385e04f0711764",
+      "bytes": 14787530,
+      "download": true
+    }
+  ],
+  "limits": [
+    "Only original layers3 and0, official historical NI0/MH1 trajectories, local output cotangent.",
+    "Full-vector equal-endpoint checks and finite effects do not establish whole-model quality or numerical stability.",
+    "Cold original calls and warm finite calls are not a matched speed comparison; no FT or whole-model cost claim.",
+    "Compiler-source hashes are provenance, not independent proof of mathematical correctness.",
+    "Default FA/FLA precision retained; GDN decoder1.66% finite effect residual remains visible."
+  ]
+}

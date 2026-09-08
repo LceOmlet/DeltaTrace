@@ -306,3 +306,7 @@ The standard-attention gate, Q/K RMSNorm, partial RoPE and projection pullbacks,
 decoder/MLP and final objective remain pending. Core correctness is not full
 model support or a speed claim; the single8.33ms warm core measurement leaves
 substantial efficiency concerns to assess in the completed attribution path.
+
+## Complete decoder boundary screen
+
+Both original decoder families now have complete finite input coefficients. See [evidence](history/Qwen35两类完整Decoder有限传播_20260908.md). The earlier boundary-pending statuses describe their historical stages. Final answer objective and the32-layer path remain pending. The new9B objective explicitly uses the author answer sink; prior8B whole-response seeds are a distinct target scope. No quality or whole-model cost claim follows from this local screen.

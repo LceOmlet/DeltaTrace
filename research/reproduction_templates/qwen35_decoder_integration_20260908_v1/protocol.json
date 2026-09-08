@@ -1,0 +1,81 @@
+{
+  "checkpoint": "${PRIVATE_MOUNT_PATH}",
+  "verified_shard_sizes": {
+    "model.safetensors-00001-of-00004.safetensors": 5276436216,
+    "model.safetensors-00002-of-00004.safetensors": 5335161512,
+    "model.safetensors-00003-of-00004.safetensors": 5368717440,
+    "model.safetensors-00004-of-00004.safetensors": 3325995712
+  },
+  "checkpoint_config_tokenizer_sha256": {
+    "tokenizer.json": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_config.json": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
+    "chat_template.jinja": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+    "merges.txt": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+    "vocab.json": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+    "config.json": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05"
+  },
+  "native_model_sha256": "cf085792cb59e5bdf9b88a3d20bd353892289d054662a9c2b662221b97caefba",
+  "isolated_site": "${ARTIFACT_ROOT}/codex_qwen35_isolated_import_20260908_v1/env/lib/python3.12/site-packages",
+  "fla_mapped_utils_sha256": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+  "fla_scheduled_chunk_sha256": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba",
+  "wy_backported_sha256": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+  "compiler_cache": "${ARTIFACT_ROOT}/codex_qwen35_native_gpu_preflight_20260908_v2/triton_cache",
+  "wheels": {
+    "${PRIVATE_MOUNT_PATH}": "8adbc1d20bd5463cd6876b2eb7cb31971e1065788e7dc6bc12bab597a7c504b7",
+    "${PRIVATE_MOUNT_PATH}": "d18bdfe9d1f4b424676444eac9d50fb8433b70e5d4e0e0878b20bcbcdbea57ce",
+    "${PRIVATE_MOUNT_PATH}": "93c6afe4c80fc7bc705fa8aeea6a46d2cf2d77383f9619a41863c7114c801bab"
+  },
+  "source_tree_sha256": "4aa4d44a2c31821298c4b4f563210a6a4ba8d3c41d6d2c9dd7e3565e386702e6",
+  "parent_directory": "${ARTIFACT_ROOT}/codex_qwen35_gdn_integration_20260908_v2",
+  "parent_sha256": "55378a7d777fa500631614afcf019fcfb42e4363172e65e92c370305b49229fe",
+  "root_checkpoints_sha256": "e2bbb9b25f92cfa4323da6ba2dbee79bbac7c1dca657d4823e72ed1519aae630",
+  "build_directory": "${ARTIFACT_ROOT}/codex_qwen35_finite_fa_build_20260908_v2",
+  "library_sha256": "9fd20eb642c225084614cf54e6a88ea9b38ed780a8a6d7c252e58569c537722f",
+  "native_stage_source_sha256": {
+    "chunk": "fe10b455f8c71f4f845415f60a4385ff4f630336e5e46c592611765dfd8cce97",
+    "wy": "369d3c8d88161c1b33d3d76d9cd76cdbd855d18f82ee46337fc3f0624604d1be",
+    "state": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba"
+  },
+  "installed_FA_interface_sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+  "purpose": "Complete standard attention and both decoder families while retaining the strong finite rules and actual model backends. Reuse saved original root layer0/3 inputs; no new full root.",
+  "budget": {
+    "full_model_loads": 0,
+    "full_model_forwards": 0,
+    "meta_model_constructions": 1,
+    "original_decoder_loads": 2,
+    "original_decoder_forward_attempts": 2,
+    "original_decoder_backward_attempts": 2,
+    "public_FA_auxiliary_forward_attempts": 1,
+    "complete_finite_decoder_calls": 6,
+    "FA_finite_calls": 3,
+    "FA_finite_kernel_launches": 9,
+    "FLA_finite_calls": 3,
+    "native_auxiliary_linear_conv_forwards": 3,
+    "native_auxiliary_linear_conv_backwards": 3,
+    "generation_calls": 0,
+    "quality_queries": 0
+  },
+  "layers": [
+    3,
+    0
+  ],
+  "workload": "Original official NI0/MH1 paired EOS/input trajectories, B4 native and B2 finite,605/368 right padding.",
+  "upstream": "Actual input-endpoint decoder output, valid positions only. Local engineering pairing; not the answer objective.",
+  "method": "Unchanged content_P1 FA core and content1 GDN recurrence; output sigmoid gate uses content1. Established symmetric MLP product/RMS finite rules. Native Q/K 1+weight normalization,partial64 RoPE,and head-interleaved Q/gate layout.",
+  "compiler": "Four composite finite-only graphs via official torch.compile/fullgraph/static; native BF16 bmm retained. max_autotune=False,cudagraphs=False; default tuning may still occur and cold costs are reported.",
+  "observations": "Passive module hooks and existing native mixer observers. Record native autograd-node callbacks instead of a main-thread backward-count assertion. Save raw captures before diagnostics.",
+  "validation": "One cold actual/diagnostic, one normal warm actual, one equal-endpoint finite call per decoder. Compare original replay to saved root, captured product/residual boundaries, all finite input coefficients to native gradient at equal endpoints, per-boundary finite effects and padding.",
+  "cost_scope": "Complete single decoder finite-only cost; excludes root/replay and auxiliary-LSE preparation. Compiler/diagnostic cold call and normal warm call separated. No whole-model/FT cost claim.",
+  "stop": "Six complete finite calls total. Stop on compile/runtime or numerical concerns; do not repeat a successful core screen, run precision/tile sweeps, new root, generation or quality jobs. Preserve failures and saved operands for diagnosis.",
+  "next": "After both decoder families are checked, connect final normalization/logprob target seed and reverse all32 original layers. Profile the actual complete path before selecting one justified FA or other major-cost optimization.",
+  "files_sha256": {
+    "study.py": "3478db2224b6f596b7c1997f7597e6ccb1ffe0d7e3b7dd808110d264951a3b97",
+    "qwen35_decoder_finite.py": "d73cb84ff38c6cb28a2ba1bcaa3b0f5fd29e8f998ff55ca42b3fb63539acd292",
+    "native_attention_capture.py": "bafec436a46fbf2ba9d649af0a7f918d216d6e83275b93eb31fabbb8b9fd1b4a",
+    "qwen35_gdn_finite.py": "256b44ab6c7fa6ad390113c67837680191776c2bfca58f6fa940fad871006259",
+    "finite_fla_gpu.py": "8ba72f5c56212fb5e173384e9ce8d79b488b22b5f83ddefa0dc33e8b343980d9",
+    "vendor_fa_finite_bf16_d256.py": "645736f68bf2f8169feff7218d30de20d3ed2a0b75e321603e6503a514763fc2",
+    "signed_secant_rules.py": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d",
+    "compiled_swiglu_secant.py": "4953cd39dec44cf1f6a127186a7c94b5fc41aedaeae07e926f2bc8a7eb4347e0"
+  }
+}

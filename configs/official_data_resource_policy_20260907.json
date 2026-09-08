@@ -7,7 +7,7 @@
   "historical_exposure": "NIq2 all100 and MoreHopQA all95 have prior-use evidence. Reuse is allowed for development/reproduction; never relabel those rows as pristine independent confirmation.",
   "local_generation_branch": "Stopped by explicit user scope; saved44 outputs excluded from all official method comparisons. No attribution or quality score was computed on them.",
   "resource_priority": "Use existing evidence to choose edits; no default exhaustive reruns, parameter grids or dataset expansion to seek significance.",
-  "next_change": "BF16/D256 content_P1 FA core now runs on saved original decoder3 operands, with real right-padding605/368 and GQA4. Close this three-call core screen. Complete sigmoid output gate,1+weight Q/K RMSNorm,partial64-dimensional RoPE and projection pullbacks, then decoder residual/MLP and final answer objective using existing rules/native GEMMs/compiler. Reuse saved native attention operands. One warm finite core8.33ms is still slower than the1.96ms native B4 backward; not a matched full-cost claim. Profile complete attribution before declaring FA payoff exhausted or shifting to other costs. No new full root, precision sweep, generation or quality sweep by default. Commit/push/verify recovery artifacts at each completed stage.",
+  "next_change": "Close both decoder screens. Connect the explicit author-answer sink logprob target, final RMS and32-layer reverse finite propagation on saved original root inputs; original replay per layer, actual FA/FLA, true605/368 batch. Old8B P1 used full-response seeds; record target-scope change, do not merge results. Profile the actual completed path before selecting one justified FA or other major-cost optimization. No new generation, quality sweep or precision sweep by default.",
   "initial_optimization_screen": {
     "cases": [
       [
@@ -165,7 +165,7 @@
       "required": true,
       "actual_dispatch_verification_required": true,
       "shadow_implementation_forbidden": true,
-      "support_status": "local_GDN_and_FA_core_checked_whole_model_pending"
+      "support_status": "both_original_decoder_families_checked_final_target_and_whole_model_pending"
     },
     "real_minibatch_required": true,
     "official_benchmark_scope_retained": true,
@@ -180,7 +180,7 @@
     "full_attribution_support_required": true
   },
   "qwen35_support": {
-    "status": "local_GDN_and_FA_core_checked_whole_model_pending",
+    "status": "both_original_decoder_families_checked_final_target_and_whole_model_pending",
     "checkpoint": "${PRIVATE_MOUNT_PATH}",
     "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "weight_bytes": 19306310880,
@@ -233,8 +233,8 @@
     "whole_model_supported": false,
     "finite_FLA_attribution_supported": false,
     "real_batch_verified": false,
-    "status_limit": "Complete first GDN and BF16/D256 full-attention core checked. Full standard-attention pullback,decoder/final target,quality and complete cost remain pending.",
-    "next": "BF16/D256 content_P1 FA core now runs on saved original decoder3 operands, with real right-padding605/368 and GQA4. Close this three-call core screen. Complete sigmoid output gate,1+weight Q/K RMSNorm,partial64-dimensional RoPE and projection pullbacks, then decoder residual/MLP and final answer objective using existing rules/native GEMMs/compiler. Reuse saved native attention operands. One warm finite core8.33ms is still slower than the1.96ms native B4 backward; not a matched full-cost claim. Profile complete attribution before declaring FA payoff exhausted or shifting to other costs. No new full root, precision sweep, generation or quality sweep by default. Commit/push/verify recovery artifacts at each completed stage.",
+    "status_limit": "Both full decoder families checked only locally; final target,32-layer propagation,quality and complete cost pending.",
+    "next": "Close both decoder screens. Connect the explicit author-answer sink logprob target, final RMS and32-layer reverse finite propagation on saved original root inputs; original replay per layer, actual FA/FLA, true605/368 batch. Old8B P1 used full-response seeds; record target-scope change, do not merge results. Profile the actual completed path before selecting one justified FA or other major-cost optimization. No new generation, quality sweep or precision sweep by default.",
     "environment_path_correction": "Prior summary joined env onto the local receipt path. The actual unchanged remote environment is recorded here.",
     "tokenizer": {
       "tokenizer_EOS_id": 248046,
@@ -922,7 +922,380 @@
       "next": "BF16/D256 content_P1 FA core now runs on saved original decoder3 operands, with real right-padding605/368 and GQA4. Close this three-call core screen. Complete sigmoid output gate,1+weight Q/K RMSNorm,partial64-dimensional RoPE and projection pullbacks, then decoder residual/MLP and final answer objective using existing rules/native GEMMs/compiler. Reuse saved native attention operands. One warm finite core8.33ms is still slower than the1.96ms native B4 backward; not a matched full-cost claim. Profile complete attribution before declaring FA payoff exhausted or shifting to other costs. No new full root, precision sweep, generation or quality sweep by default. Commit/push/verify recovery artifacts at each completed stage."
     },
     "finite_FA_core_supported": true,
-    "complete_standard_attention_supported": false
+    "complete_standard_attention_supported": true,
+    "complete_decoder_supported": true,
+    "decoder_integration": {
+      "summary": "qwen35_decoder_integration_summary_20260908.json",
+      "layers": {
+        "3": {
+          "block_type": "full_attention",
+          "native_replay_vs_root": {
+            "relative_L2": 0.0,
+            "max_abs": 0.0,
+            "cosine": 1.0,
+            "reference_norm": 983.3709335762835
+          },
+          "equal_endpoint_vs_native": {
+            "relative_L2": 0.005768220372890844,
+            "max_abs": 0.3795318603515625,
+            "cosine": 0.9999833644650766,
+            "reference_norm": 4022.0014048453713
+          },
+          "equal_endpoint_per_sample": [
+            {
+              "relative_L2": 0.005723968215218291,
+              "max_abs": 0.3795318603515625,
+              "cosine": 0.9999836180647944,
+              "reference_norm": 3283.37573393309
+            },
+            {
+              "relative_L2": 0.005855630408833858,
+              "max_abs": 0.3447418212890625,
+              "cosine": 0.9999828665803614,
+              "reference_norm": 2322.916074764106
+            }
+          ],
+          "finite_effect": {
+            "direct": [
+              18714.767613421387,
+              11982.405476699903
+            ],
+            "allocated": [
+              18703.82866976518,
+              11973.646105205871
+            ],
+            "residual": [
+              -10.938943656208721,
+              -8.759371494032166
+            ],
+            "relative_residual_per_sample": [
+              -0.0005845086555263345,
+              -0.0007310194527355121
+            ],
+            "relative_L2": 0.0006306259911436414,
+            "max_abs": 10.938943656208721,
+            "cosine": 0.9999999977839851,
+            "reference_norm": 22222.073886845348
+          },
+          "local_input_position_contributions": {
+            "positive_mass": [
+              19315.84993659672,
+              12431.082400790485
+            ],
+            "negative_mass": [
+              -612.0212668315444,
+              -457.43629558461447
+            ],
+            "limit": "Hidden-state allocations for a local output cotangent, not final input-token attribution."
+          },
+          "padding_max_abs": 0,
+          "cold_warm_max_abs": 0,
+          "endpoint_boundaries": {
+            "mixer_input": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0,
+              "reference_norm": 3874.295868997338
+            },
+            "mixer_residual": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0,
+              "reference_norm": 914.9391488032562
+            },
+            "MLP_product": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0,
+              "reference_norm": 463.1283073447768
+            },
+            "MLP_residual": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0,
+              "reference_norm": 983.3709335762835
+            },
+            "attention_gate_product": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0,
+              "reference_norm": 101.23845688590536
+            }
+          },
+          "native_capture_calls": {
+            "decoder": {
+              "input_norm": 1,
+              "post_norm": 1,
+              "gate": 1,
+              "silu": 1,
+              "up": 1,
+              "down": 1,
+              "mlp": 1,
+              "decoder": 1
+            },
+            "mixer": {
+              "module": 1,
+              "interface": 1,
+              "native_varlen": 1
+            }
+          },
+          "native_backward_node_events": [
+            {
+              "node": "FlashAttnVarlenFuncBackward",
+              "input_gradients_present": [
+                true,
+                true,
+                true,
+                false,
+                false,
+                false,
+                false
+              ]
+            }
+          ],
+          "reported_boundary_effects": {
+            "decoder": {
+              "direct": [
+                18714.767613421387,
+                11982.405476699905
+              ],
+              "allocated": [
+                18703.82866976518,
+                11973.646105205871
+              ],
+              "residual": [
+                -10.938943656208721,
+                -8.759371494033985
+              ],
+              "relative_L2": 0.0006306259911436926,
+              "max_abs": 10.938943656208721,
+              "cosine": 0.9999999977839851,
+              "reference_norm": 22222.073886845348
+            },
+            "mixer": {
+              "direct": [
+                7415.1082896796015,
+                4169.935164340206
+              ],
+              "allocated": [
+                7411.077440757941,
+                4166.782219085867
+              ],
+              "residual": [
+                -4.030848921660436,
+                -3.1529452543391017
+              ],
+              "relative_L2": 0.0006015503695606469,
+              "max_abs": 4.030848921660436,
+              "cosine": 0.999999995873204,
+              "reference_norm": 8507.184623744575
+            },
+            "MLP": {
+              "direct": [
+                619.6333105042524,
+                856.059848277589
+              ],
+              "allocated": [
+                619.3579187571759,
+                856.2585795706611
+              ],
+              "residual": [
+                -0.27539174707658276,
+                0.19873129307211457
+              ],
+              "relative_L2": 0.0003213627239329823,
+              "max_abs": 0.27539174707658276,
+              "cosine": 0.999999948363063,
+              "reference_norm": 1056.7799692081167
+            }
+          }
+        },
+        "0": {
+          "block_type": "linear_attention",
+          "native_replay_vs_root": {
+            "relative_L2": 0.0002466010901340381,
+            "max_abs": 0.0625,
+            "cosine": 0.9999999695939935,
+            "reference_norm": 693.2895297684025
+          },
+          "equal_endpoint_vs_native": {
+            "relative_L2": 0.004984049213617769,
+            "max_abs": 22.569580078125,
+            "cosine": 0.9999934889772071,
+            "reference_norm": 49462.56193859333
+          },
+          "equal_endpoint_per_sample": [
+            {
+              "relative_L2": 0.005136706173645974,
+              "max_abs": 22.569580078125,
+              "cosine": 0.9999932622015465,
+              "reference_norm": 35152.43575606581
+            },
+            {
+              "relative_L2": 0.004823281530710233,
+              "max_abs": 19.844970703125,
+              "cosine": 0.9999937450887897,
+              "reference_norm": 34797.28860047647
+            }
+          ],
+          "finite_effect": {
+            "direct": [
+              1360.3103177941477,
+              975.3354811425922
+            ],
+            "allocated": [
+              1339.6744774120914,
+              956.7442414530369
+            ],
+            "residual": [
+              -20.635840382056358,
+              -18.591239689555323
+            ],
+            "relative_residual_per_sample": [
+              -0.015169950644437534,
+              -0.019061379442257078
+            ],
+            "relative_L2": 0.016593862199600556,
+            "max_abs": 20.635840382056358,
+            "cosine": 0.9999982446486648,
+            "reference_norm": 1673.834956461618
+          },
+          "local_input_position_contributions": {
+            "positive_mass": [
+              3078.928766304535,
+              1959.0932488156982
+            ],
+            "negative_mass": [
+              -1739.2542888924443,
+              -1002.3490073626608
+            ],
+            "limit": "Hidden-state allocations for a local output cotangent, not final input-token attribution."
+          },
+          "padding_max_abs": 0,
+          "cold_warm_max_abs": 0,
+          "endpoint_boundaries": {
+            "mixer_input": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0,
+              "reference_norm": 3356.6756222845606
+            },
+            "mixer_residual": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0000000000000002,
+              "reference_norm": 275.534814779262
+            },
+            "MLP_product": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0000000000000002,
+              "reference_norm": 702.4596633405151
+            },
+            "MLP_residual": {
+              "relative_L2": 0.0,
+              "max_abs": 0.0,
+              "cosine": 1.0,
+              "reference_norm": 693.2897037133916
+            }
+          },
+          "native_capture_calls": {
+            "decoder": {
+              "input_norm": 1,
+              "post_norm": 1,
+              "gate": 1,
+              "silu": 1,
+              "up": 1,
+              "down": 1,
+              "mlp": 1,
+              "decoder": 1
+            },
+            "mixer": {
+              "module": 1,
+              "conv": 1,
+              "FLA": 1,
+              "stage": 1
+            }
+          },
+          "native_backward_node_events": [
+            {
+              "node": "ChunkGatedDeltaRuleFunctionBackward",
+              "input_gradients_present": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ]
+            },
+            {
+              "node": "CausalConv1dFnBackward",
+              "input_gradients_present": [
+                true,
+                true
+              ]
+            }
+          ],
+          "reported_boundary_effects": {
+            "decoder": {
+              "direct": [
+                1360.310317794148,
+                975.3354811425922
+              ],
+              "allocated": [
+                1339.6744774120912,
+                956.7442414530371
+              ],
+              "residual": [
+                -20.635840382056813,
+                -18.591239689555096
+              ],
+              "relative_L2": 0.01659386219960066,
+              "max_abs": 20.635840382056813,
+              "cosine": 0.9999982446486647,
+              "reference_norm": 1673.8349564616185
+            },
+            "mixer": {
+              "direct": [
+                722.9440939057184,
+                681.0823691068645
+              ],
+              "allocated": [
+                715.039019503241,
+                672.0406621981779
+              ],
+              "residual": [
+                -7.905074402477453,
+                -9.041706908686592
+              ],
+              "relative_L2": 0.012091874286334564,
+              "max_abs": 9.041706908686592,
+              "cosine": 0.9999993007017522,
+              "reference_norm": 993.237814635236
+            },
+            "MLP": {
+              "direct": [
+                -214.8480373539095,
+                -203.6006971746961
+              ],
+              "allocated": [
+                -214.91509379841244,
+                -203.41812015390587
+              ],
+              "residual": [
+                -0.06705644450295267,
+                0.18257702079023375
+              ],
+              "relative_L2": 0.0006571120845292601,
+              "max_abs": 0.18257702079023375,
+              "cosine": 0.9999998177671703,
+              "reference_norm": 295.99480239499
+            }
+          }
+        }
+      },
+      "single_job_seconds": 128.7195295020938
+    }
   },
   "latest_cost_screen": {
     "status": "shared_FA_MLP_B4_three_calls_verified",
