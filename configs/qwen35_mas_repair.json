@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "profile": "qwen35_layer0_symmetric_normgate_and_fla_endpoint_average",
+  "entrypoint": "research/runtime/qwen35_mas_runner.py:make_qwen35_mas_runner",
+  "norm_gate_rules": {"0": "symmetric"},
+  "fla_endpoint_average_layers": [0],
+  "finite_FLA_calls_per_32_layer_attribution": 25,
+  "native_FLA_adjoint_stages_per_attribution": 50,
+  "model_FA_FLA_precision": "unchanged native BF16 execution and existing finite backends",
+  "production_uses_actual_test_deletion_states": false,
+  "historical_runner_constructor_defaults_changed": false,
+  "quality_evidence": [
+    "evidence/dt_layer0_fla_endpoint_average_whole_pilot_20260908_v1/results.json",
+    "evidence/dt_layer0_fla_endpoint_average_stability_cost_20260909_v1/results.json"
+  ],
+  "validation_scope": "Four original-author cached development cases; original RISE/MAS and needle; no independent held-out or full-paper-table claim.",
+  "limitations": [
+    "Conditional prediction errors remain; no guarantee for arbitrary deletion sets.",
+    "NI1 RISE slightly regressed; all four measured MAS values improved.",
+    "Only two warm timing observations per method on NI1; no speedup or universal memory bound claimed.",
+    "The new profile was tested with one sample and two endpoints; multi-sample execution is not newly validated."
+  ]
+}
