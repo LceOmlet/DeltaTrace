@@ -1,0 +1,3232 @@
+{
+  "status": "independent_NI_current_layer0_internal_audit_passed",
+  "analyzer_sha256": "60ac1d6c5f155d27af46b6ebfd96b8e8003312e297d19fbb3cc2cea6d6621230",
+  "protocol_sha256": "34db2841bab6a555e372f9e4c79a433669b39515e018eed15b92a6cf80a31bf2",
+  "results_sha256": "b4600ed125b917a78a358655e0e8688842234d56a1224f4b51654d206c6bc365",
+  "vectors_sha256": "9b4b7578944f804d2c056cbe51621a6aac497f042560468f27a030d8344b9cc1",
+  "seconds": 62.32873856090009,
+  "counts": {
+    "official_fullmodel_loads": 1,
+    "native_layer0_replays": 5,
+    "native_layer0_B2_replays": 1,
+    "native_layer0_B1_replays": 4,
+    "finite_decoder0_calls": 1,
+    "finite_FLA_calls": 1,
+    "finite_FLA_native_input_adjoints": 2,
+    "finite_public_linear_conv_forward": 1,
+    "finite_public_linear_conv_autograd_backward": 1,
+    "whole_model_forwards": 0,
+    "eager_warmup_forwards": 0,
+    "DT_calls": 0,
+    "scorer_calls": 0,
+    "FA_calls": 0,
+    "FT_calls": 0,
+    "generation_calls": 0,
+    "new_samples": 0,
+    "new_candidate_rules": 0,
+    "wall_time_seconds": 600
+  },
+  "m0_replay_drift": {
+    "bitwise_equal": false,
+    "max_absolute": 0.031155109405517578,
+    "relative_L2": 0.005962155397278243
+  },
+  "native_output_replay_drift": {
+    "B2": {
+      "bitwise_equal": false,
+      "max_absolute": 0.03125,
+      "relative_L2": 0.0006202882602098339
+    },
+    "0": {
+      "bitwise_equal": false,
+      "max_absolute": 0.03125,
+      "relative_L2": 0.00034058709236654366
+    },
+    "1": {
+      "bitwise_equal": false,
+      "max_absolute": 0.03125,
+      "relative_L2": 0.0005191113901067916
+    },
+    "10": {
+      "bitwise_equal": false,
+      "max_absolute": 0.03125,
+      "relative_L2": 0.0005263214240115846
+    },
+    "20": {
+      "bitwise_equal": false,
+      "max_absolute": 0.03125,
+      "relative_L2": 0.0006608263381298822
+    }
+  },
+  "points": {
+    "1": {
+      "saved_boundary_error": {
+        "net": 1.9859988637376602,
+        "positive": 12.975435542341694,
+        "negative": -10.989436678604035,
+        "absolute": 23.96487222094573
+      },
+      "replayed_16terms": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 118.91300169156871,
+        "input_contraction": 120.90100084127727,
+        "prediction_minus_actual": 1.987999149708557,
+        "actual_minus_predicted": -1.987999149708557,
+        "terms": {
+          "decoder_output_residual_rounding": 0.008697757303465892,
+          "MLP_combined": 2.260814440714256,
+          "post_RMSNorm": 0.5457740052452422,
+          "mixer_residual_rounding": 0.04226736209983528,
+          "GDN_output_projection": 0.042997261497170314,
+          "GDN_fused_norm_gate": 0.19744241806631635,
+          "GDN_mo_BF16_cast": -0.0011212023618742961,
+          "GDN_FLA_including_raw_g_exp": -1.2776378366709156,
+          "GDN_QK_L2_and_head_fold": 0.07357814530220708,
+          "GDN_beta_sigmoid": -1.8869960594081192e-09,
+          "GDN_raw_g_parameter_map": -6.2939191636246505e-09,
+          "GDN_conv_output_split": 3.552713678800501e-15,
+          "GDN_conv_linear_and_SiLU": 0.11022954142037555,
+          "GDN_input_projections": -0.016415971257373485,
+          "mixer_input_alias": -0.0,
+          "input_RMSNorm": 0.0013732365307745908
+        },
+        "telescoping_error": 1.1324274851176597e-14,
+        "FLA_branch_contractions": {
+          "q": 0.8724727073368707,
+          "k": -2.8221504954677883,
+          "v": 14.768592259757707,
+          "beta": -0.1811305278944939,
+          "raw_g": -1.9543605829713466
+        },
+        "norm_gate_branch_contractions": {
+          "normalized_memory_before_cast": 11.962182399793738,
+          "gate": 39.263680026084714
+        }
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m0": {
+          "net": -0.010223965949269151,
+          "positive": 0.019850730052300362,
+          "negative": -0.030074696001569513
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.008223679978378237,
+          "positive": 0.04418664204962489,
+          "negative": -0.035962962071246656
+        }
+      },
+      "transfer_net": -0.0020002859708909138,
+      "token_closure_max_absolute": 8.881784197001252e-16,
+      "positive_terms_ranked": [
+        [
+          "MLP_combined",
+          2.260814440714256
+        ],
+        [
+          "post_RMSNorm",
+          0.5457740052452422
+        ],
+        [
+          "GDN_fused_norm_gate",
+          0.19744241806631635
+        ],
+        [
+          "GDN_conv_linear_and_SiLU",
+          0.11022954142037555
+        ],
+        [
+          "GDN_QK_L2_and_head_fold",
+          0.07357814530220708
+        ],
+        [
+          "GDN_output_projection",
+          0.042997261497170314
+        ],
+        [
+          "mixer_residual_rounding",
+          0.04226736209983528
+        ],
+        [
+          "decoder_output_residual_rounding",
+          0.008697757303465892
+        ],
+        [
+          "input_RMSNorm",
+          0.0013732365307745908
+        ],
+        [
+          "GDN_conv_output_split",
+          3.552713678800501e-15
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "GDN_FLA_including_raw_g_exp",
+          -1.2776378366709156
+        ],
+        [
+          "GDN_input_projections",
+          -0.016415971257373485
+        ],
+        [
+          "GDN_mo_BF16_cast",
+          -0.0011212023618742961
+        ],
+        [
+          "GDN_raw_g_parameter_map",
+          -6.2939191636246505e-09
+        ],
+        [
+          "GDN_beta_sigmoid",
+          -1.8869960594081192e-09
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": 0.008697757303455397,
+            "positive": 0.13042698288514415,
+            "negative": -0.12172922558168876
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.012126307060504271,
+              "positive": 0.03761897053443558,
+              "negative": -0.02549266347393131
+            },
+            "kept": {
+              "count": 818,
+              "net": -0.0022154563491459623,
+              "positive": 0.039491430891829465,
+              "negative": -0.04170688724097543
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.004491800275673995,
+              "positive": 0.00724065667473784,
+              "negative": -0.011732456950411835
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0032787068677710804,
+              "positive": 0.04607592478414126,
+              "negative": -0.04279721791637017
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": 2.260814440714257,
+            "positive": 4.65579242844031,
+            "negative": -2.394977987726053
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 2.84164725538224,
+              "positive": 2.865919840387528,
+              "negative": -0.024272585005288283
+            },
+            "kept": {
+              "count": 818,
+              "net": -0.41134938914676306,
+              "positive": 1.3829146859605237,
+              "negative": -1.7942640751072867
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.17668703184069923,
+              "positive": 0.22232130449218435,
+              "negative": -0.3990083363328836
+            },
+            "response": {
+              "count": 264,
+              "net": 0.007203606319479788,
+              "positive": 0.18463659760007414,
+              "negative": -0.17743299128059437
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": 0.5457740052452436,
+            "positive": 0.7709083548320729,
+            "negative": -0.22513434958682932
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.14810718953843743,
+              "positive": 0.22384316750973904,
+              "negative": -0.0757359779713016
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.35771324264772514,
+              "positive": 0.47645880832930687,
+              "negative": -0.11874556568158175
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.03866463097805576,
+              "positive": 0.05128294196255703,
+              "negative": -0.012618310984501275
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0012889420810251594,
+              "positive": 0.019323437030469875,
+              "negative": -0.018034494949444715
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.0422673620998317,
+            "positive": 0.09705875011795102,
+            "negative": -0.05479138801811932
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.03618594709635964,
+              "positive": 0.058682984657278114,
+              "negative": -0.022497037560918476
+            },
+            "kept": {
+              "count": 818,
+              "net": -0.003777504288991787,
+              "positive": 0.014979465432700453,
+              "negative": -0.018756969721692242
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.0007054192768785592,
+              "positive": 0.0021073201411386925,
+              "negative": -0.0028127394180172518
+            },
+            "response": {
+              "count": 264,
+              "net": 0.01056433856934241,
+              "positive": 0.02128897988683377,
+              "negative": -0.010724641317491358
+            }
+          }
+        },
+        "GDN_output_projection": {
+          "total": {
+            "net": 0.04299726149717437,
+            "positive": 0.16588666461050666,
+            "negative": -0.12288940311333227
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.015591657280591698,
+              "positive": 0.04526320293265457,
+              "negative": -0.02967154565206287
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0068064817767183585,
+              "positive": 0.04844020616087852,
+              "negative": -0.041633724384160166
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.002277439179386274,
+              "positive": 0.009009070703484043,
+              "negative": -0.006731631524097769
+            },
+            "response": {
+              "count": 264,
+              "net": 0.018321683260478047,
+              "positive": 0.06317418481348952,
+              "negative": -0.044852501553011466
+            }
+          }
+        },
+        "GDN_fused_norm_gate": {
+          "total": {
+            "net": 0.19744241806630958,
+            "positive": 6.6780247284623,
+            "negative": -6.480582310395991
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.8816893787518205,
+              "positive": 1.8095481276476444,
+              "negative": -0.9278587488958238
+            },
+            "kept": {
+              "count": 818,
+              "net": -0.7568401743398526,
+              "positive": 3.622624305546892,
+              "negative": -4.379464479886744
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.027963576539558374,
+              "positive": 0.6812845319358073,
+              "negative": -0.7092481084753657
+            },
+            "response": {
+              "count": 264,
+              "net": 0.10055679019389975,
+              "positive": 0.5645677633319575,
+              "negative": -0.4640109731380575
+            }
+          }
+        },
+        "GDN_mo_BF16_cast": {
+          "total": {
+            "net": -0.0011212023618742965,
+            "positive": 0.02499307494977255,
+            "negative": -0.026114277311646845
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": -0.004003474547085273,
+              "positive": 0.006355341436639527,
+              "negative": -0.0103588159837248
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.001234822968693238,
+              "positive": 0.011437845717999311,
+              "negative": -0.010203022749306071
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0008066851364041221,
+              "positive": 0.0033151727313511566,
+              "negative": -0.0025084875949470346
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0008407640801136161,
+              "positive": 0.0038847150637825556,
+              "negative": -0.0030439509836689394
+            }
+          }
+        },
+        "GDN_FLA_including_raw_g_exp": {
+          "total": {
+            "net": -1.2776378366709147,
+            "positive": 12.258245340543068,
+            "negative": -13.535883177213984
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": -1.3448129365040555,
+              "positive": 3.340194470755372,
+              "negative": -4.685007407259427
+            },
+            "kept": {
+              "count": 818,
+              "net": 1.3189027258407595,
+              "positive": 6.363649426743155,
+              "negative": -5.044746700902396
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.8795633789469519,
+              "positive": 1.0221147694048853,
+              "negative": -1.9016781483518372
+            },
+            "response": {
+              "count": 264,
+              "net": -0.3721642470606667,
+              "positive": 1.532286673639657,
+              "negative": -1.9044509207003237
+            }
+          }
+        },
+        "GDN_QK_L2_and_head_fold": {
+          "total": {
+            "net": 0.07357814530220763,
+            "positive": 0.2772525477564955,
+            "negative": -0.20367440245428786
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.01572113082907733,
+              "positive": 0.07754532728844443,
+              "negative": -0.061824196459367105
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0850035296825422,
+              "positive": 0.19955970549272511,
+              "negative": -0.1145561758101829
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.027146515209411907,
+              "positive": 0.00014751497532594637,
+              "negative": -0.027294030184737854
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_beta_sigmoid": {
+          "total": {
+            "net": -1.886996087163695e-09,
+            "positive": 2.5117041821398622e-08,
+            "negative": -2.7004037908562317e-08
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": -1.886996087163695e-09,
+              "positive": 2.5117041821398622e-08,
+              "negative": -2.7004037908562317e-08
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_raw_g_parameter_map": {
+          "total": {
+            "net": -6.293919116787117e-09,
+            "positive": 3.736193648733177e-08,
+            "negative": -4.365585560411889e-08
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": -6.293919116787117e-09,
+              "positive": 3.736193648733177e-08,
+              "negative": -4.365585560411889e-08
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_conv_output_split": {
+          "total": {
+            "net": -2.649790109554573e-16,
+            "positive": 5.178149575790769e-16,
+            "negative": -7.827939685345342e-16
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": -1.3227266504323154e-16,
+              "positive": 3.677613769070831e-16,
+              "negative": -5.000340419503146e-16
+            },
+            "kept": {
+              "count": 818,
+              "net": -9.107298248878237e-17,
+              "positive": 1.5005358067199381e-16,
+              "negative": -2.411265631607762e-16
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -4.163336342344337e-17,
+              "positive": 0.0,
+              "negative": -4.163336342344337e-17
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_conv_linear_and_SiLU": {
+          "total": {
+            "net": 0.11022954142037689,
+            "positive": 10.349437719275825,
+            "negative": -10.239208177855446
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 3.770886377481854,
+              "positive": 9.69485244258944,
+              "negative": -5.923966065107587
+            },
+            "kept": {
+              "count": 818,
+              "net": -3.5455091061969015,
+              "positive": 0.48174271016282777,
+              "negative": -4.02725181635973
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.11514772986457479,
+              "positive": 0.17284256652355556,
+              "negative": -0.28799029638813034
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_input_projections": {
+          "total": {
+            "net": -0.01641597125737576,
+            "positive": 0.009701056566200073,
+            "negative": -0.026117027823575834
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": -0.01641597125737576,
+              "positive": 0.009701056566200073,
+              "negative": -0.026117027823575834
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": 0.0013732365307748129,
+            "positive": 0.007153657086048315,
+            "negative": -0.005780420555273502
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.0013732365307748129,
+              "positive": 0.007153657086048315,
+              "negative": -0.005780420555273502
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_minus_replayed_m0": {
+          "total": {
+            "net": -0.010223965949269151,
+            "positive": 0.019850730052300362,
+            "negative": -0.030074696001569513
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": -0.010223965949269151,
+              "positive": 0.019850730052300362,
+              "negative": -0.030074696001569513
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.008223679978378237,
+            "positive": 0.04418664204962489,
+            "negative": -0.035962962071246656
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 0.0023342326727634477,
+              "positive": 0.005946466132399131,
+              "negative": -0.003612233459635683
+            },
+            "kept": {
+              "count": 818,
+              "net": 0.0024270581597941113,
+              "positive": 0.014997276501423656,
+              "negative": -0.012570218341629545
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.00011971760191381575,
+              "positive": 0.0009884585399538848,
+              "negative": -0.0011081761418677005
+            },
+            "response": {
+              "count": 264,
+              "net": 0.003582106747734494,
+              "positive": 0.02225444087584822,
+              "negative": -0.018672334128113727
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": 1.9859988637376604,
+            "positive": 12.975435542341696,
+            "negative": -10.989436678604037
+          },
+          "groups": {
+            "deleted": {
+              "count": 44,
+              "net": 6.350206356185719,
+              "positive": 9.857625799815102,
+              "negative": -3.5074194436293813
+            },
+            "kept": {
+              "count": 818,
+              "net": -2.947603769245423,
+              "positive": 1.5419037982636135,
+              "negative": -4.489507567509035
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.1900764142618165,
+              "positive": 0.37866511678076187,
+              "negative": -1.5687415310425785
+            },
+            "response": {
+              "count": 264,
+              "net": -0.2265273089408223,
+              "positive": 1.1972408274822173,
+              "negative": -1.4237681364230395
+            }
+          }
+        }
+      }
+    },
+    "10": {
+      "saved_boundary_error": {
+        "net": 23.11348085222113,
+        "positive": 43.39260315289393,
+        "negative": -20.279122300672803,
+        "absolute": 63.671725453566744
+      },
+      "replayed_16terms": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 167.5734050784984,
+        "input_contraction": 190.66592145505518,
+        "prediction_minus_actual": 23.092516376556773,
+        "actual_minus_predicted": -23.092516376556773,
+        "terms": {
+          "decoder_output_residual_rounding": 0.022568150629780348,
+          "MLP_combined": 1.7816561815146201,
+          "post_RMSNorm": 0.1424165731206699,
+          "mixer_residual_rounding": 0.06162686368045911,
+          "GDN_output_projection": 0.01519575250232208,
+          "GDN_fused_norm_gate": 1.4528174086170864,
+          "GDN_mo_BF16_cast": -0.003573265822872429,
+          "GDN_FLA_including_raw_g_exp": 21.646252135373835,
+          "GDN_QK_L2_and_head_fold": -0.6950234955047216,
+          "GDN_beta_sigmoid": -1.7066138129906427e-06,
+          "GDN_raw_g_parameter_map": -2.6398456753895516e-09,
+          "GDN_conv_output_split": -7.105427357601002e-15,
+          "GDN_conv_linear_and_SiLU": -1.3059937198137277,
+          "GDN_input_projections": -0.02679961859949742,
+          "mixer_input_alias": -0.0,
+          "input_RMSNorm": 0.0013751201124705403
+        },
+        "telescoping_error": -1.4210854715202004e-14,
+        "FLA_branch_contractions": {
+          "q": 1.34880921989272,
+          "k": 7.783258223309509,
+          "v": 39.10774766423179,
+          "beta": 0.04893691971517722,
+          "raw_g": -8.58146225444151
+        },
+        "norm_gate_branch_contractions": {
+          "normalized_memory_before_cast": 18.06461090315672,
+          "gate": 51.86626391110949
+        }
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m0": {
+          "net": 0.0070217606007523595,
+          "positive": 0.11329920748654615,
+          "negative": -0.1062774468857938
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.013942715063655887,
+          "positive": 0.05014307793585928,
+          "negative": -0.03620036287220339
+        }
+      },
+      "transfer_net": 0.020964475664408247,
+      "token_closure_max_absolute": 8.881784197001252e-16,
+      "positive_terms_ranked": [
+        [
+          "GDN_FLA_including_raw_g_exp",
+          21.646252135373835
+        ],
+        [
+          "MLP_combined",
+          1.7816561815146201
+        ],
+        [
+          "GDN_fused_norm_gate",
+          1.4528174086170864
+        ],
+        [
+          "post_RMSNorm",
+          0.1424165731206699
+        ],
+        [
+          "mixer_residual_rounding",
+          0.06162686368045911
+        ],
+        [
+          "decoder_output_residual_rounding",
+          0.022568150629780348
+        ],
+        [
+          "GDN_output_projection",
+          0.01519575250232208
+        ],
+        [
+          "input_RMSNorm",
+          0.0013751201124705403
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "GDN_conv_linear_and_SiLU",
+          -1.3059937198137277
+        ],
+        [
+          "GDN_QK_L2_and_head_fold",
+          -0.6950234955047216
+        ],
+        [
+          "GDN_input_projections",
+          -0.02679961859949742
+        ],
+        [
+          "GDN_mo_BF16_cast",
+          -0.003573265822872429
+        ],
+        [
+          "GDN_beta_sigmoid",
+          -1.7066138129906427e-06
+        ],
+        [
+          "GDN_raw_g_parameter_map",
+          -2.6398456753895516e-09
+        ],
+        [
+          "GDN_conv_output_split",
+          -7.105427357601002e-15
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": 0.022568150629741626,
+            "positive": 0.1427644406825049,
+            "negative": -0.12019629005276329
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": -0.007062203493304171,
+              "positive": 0.057577611386063016,
+              "negative": -0.06463981487936718
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0024714071729983363,
+              "positive": 0.015511208509101366,
+              "negative": -0.013039801336103031
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0038589376623203164,
+              "positive": 0.010623172260630795,
+              "negative": -0.006764234598310479
+            },
+            "response": {
+              "count": 264,
+              "net": 0.023300009287727137,
+              "positive": 0.059052448526709725,
+              "negative": -0.035752439238982595
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": 1.781656181514637,
+            "positive": 6.074026663793295,
+            "negative": -4.292370482278658
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 2.3040854643552353,
+              "positive": 3.9595580895438625,
+              "negative": -1.6554726251886276
+            },
+            "kept": {
+              "count": 430,
+              "net": -0.9002903357053081,
+              "positive": 1.2752871958054455,
+              "negative": -2.1755775315107533
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.3045920627205002,
+              "positive": 0.6400155322599341,
+              "negative": -0.335423469539434
+            },
+            "response": {
+              "count": 264,
+              "net": 0.07326899014420991,
+              "positive": 0.19916584618405264,
+              "negative": -0.12589685603984274
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": 0.14241657312065728,
+            "positive": 0.6981893269968966,
+            "negative": -0.5557727538762394
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.35535430786300776,
+              "positive": 0.4436657541207404,
+              "negative": -0.08831144625773267
+            },
+            "kept": {
+              "count": 430,
+              "net": -0.275247467237719,
+              "positive": 0.1430627799979382,
+              "negative": -0.4183102472356572
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.057565667568056644,
+              "positive": 0.08873816241826842,
+              "negative": -0.031172494850211764
+            },
+            "response": {
+              "count": 264,
+              "net": 0.004744064927311861,
+              "positive": 0.022722630459949555,
+              "negative": -0.017978565532637693
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.06162686368044852,
+            "positive": 0.12089513437262017,
+            "negative": -0.059268270692171644
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.05949779939683753,
+              "positive": 0.09512455925355094,
+              "negative": -0.03562675985671341
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0010096346853718382,
+              "positive": 0.007963770763782371,
+              "negative": -0.006954136078410533
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0018538611293885251,
+              "positive": 0.004267087728601666,
+              "negative": -0.002413226599213141
+            },
+            "response": {
+              "count": 264,
+              "net": -0.0007344315311493645,
+              "positive": 0.013539716626685194,
+              "negative": -0.014274148157834557
+            }
+          }
+        },
+        "GDN_output_projection": {
+          "total": {
+            "net": 0.01519575250233043,
+            "positive": 0.139465483936452,
+            "negative": -0.12426973143412157
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.0022974106050681715,
+              "positive": 0.06474949199143103,
+              "negative": -0.06245208138636285
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.00027106070825190585,
+              "positive": 0.013621931094526252,
+              "negative": -0.013350870386274347
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.001019949821687554,
+              "positive": 0.008439717443070715,
+              "negative": -0.00741976762138316
+            },
+            "response": {
+              "count": 264,
+              "net": 0.011607331367322801,
+              "positive": 0.05265434340742402,
+              "negative": -0.04104701204010121
+            }
+          }
+        },
+        "GDN_fused_norm_gate": {
+          "total": {
+            "net": 1.4528174086170935,
+            "positive": 7.407363503601575,
+            "negative": -5.954546094984481
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 1.8588115037746011,
+              "positive": 3.8855599969667654,
+              "negative": -2.0267484931921644
+            },
+            "kept": {
+              "count": 430,
+              "net": -0.044302127032507424,
+              "positive": 2.210099078180768,
+              "negative": -2.2544012052132754
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.3685918601464977,
+              "positive": 0.8670508044134126,
+              "negative": -1.2356426645599103
+            },
+            "response": {
+              "count": 264,
+              "net": 0.006899892021497586,
+              "positive": 0.44465362404062897,
+              "negative": -0.4377537320191314
+            }
+          }
+        },
+        "GDN_mo_BF16_cast": {
+          "total": {
+            "net": -0.003573265822873352,
+            "positive": 0.042710363494202076,
+            "negative": -0.04628362931707542
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": -0.005510391146144028,
+              "positive": 0.022952671759478516,
+              "negative": -0.02846306290562254
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.00018178947165743546,
+              "positive": 0.008809378780415855,
+              "negative": -0.00862758930875842
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0005723021168377576,
+              "positive": 0.004798818515865221,
+              "negative": -0.0042265163990274635
+            },
+            "response": {
+              "count": 264,
+              "net": 0.001183033734775483,
+              "positive": 0.006149494438442482,
+              "negative": -0.004966460703667
+            }
+          }
+        },
+        "GDN_FLA_including_raw_g_exp": {
+          "total": {
+            "net": 21.646252135373842,
+            "positive": 44.7360128968882,
+            "negative": -23.089760761514356
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 15.339552676152953,
+              "positive": 27.769252454388315,
+              "negative": -12.429699778235364
+            },
+            "kept": {
+              "count": 430,
+              "net": 8.122318027806976,
+              "positive": 12.072283536299501,
+              "negative": -3.949965508492526
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.6775686330957231,
+              "positive": 2.503827886318087,
+              "negative": -4.181396519413811
+            },
+            "response": {
+              "count": 264,
+              "net": -0.13804993549036382,
+              "positive": 2.390649019882291,
+              "negative": -2.528698955372655
+            }
+          }
+        },
+        "GDN_QK_L2_and_head_fold": {
+          "total": {
+            "net": -0.6950234955047236,
+            "positive": 1.3136455928424655,
+            "negative": -2.0086690883471894
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": -0.549703986938598,
+              "positive": 0.49506984449556224,
+              "negative": -1.0447738314341604
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.08006523713871319,
+              "positive": 0.7558316800952571,
+              "negative": -0.675766442956544
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.2322308198191342,
+              "positive": 0.05420809088196471,
+              "negative": -0.28643891070109895
+            },
+            "response": {
+              "count": 264,
+              "net": 0.006846074114295338,
+              "positive": 0.008535977369681431,
+              "negative": -0.0016899032553860938
+            }
+          }
+        },
+        "GDN_beta_sigmoid": {
+          "total": {
+            "net": -1.7066138130461539e-06,
+            "positive": 8.888884898972105e-08,
+            "negative": -1.795502662035875e-06
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": -1.7066138130461539e-06,
+              "positive": 8.888884898972105e-08,
+              "negative": -1.795502662035875e-06
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_raw_g_parameter_map": {
+          "total": {
+            "net": -2.639845412145264e-09,
+            "positive": 4.2319486652682425e-07,
+            "negative": -4.258347119389695e-07
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": -2.639845412145264e-09,
+              "positive": 4.2319486652682425e-07,
+              "negative": -4.258347119389695e-07
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_conv_output_split": {
+          "total": {
+            "net": 4.0202216555762504e-16,
+            "positive": 4.0674928702966184e-15,
+            "negative": -3.665470704738993e-15
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 2.7755575615628914e-16,
+              "positive": 2.9585708882784445e-15,
+              "negative": -2.6810151321221554e-15
+            },
+            "kept": {
+              "count": 430,
+              "net": 2.8579569266717897e-16,
+              "positive": 9.857566152238206e-16,
+              "negative": -6.999609225566417e-16
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.6132928326584306e-16,
+              "positive": 1.231653667943533e-16,
+              "negative": -2.8449465006019636e-16
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_conv_linear_and_SiLU": {
+          "total": {
+            "net": -1.305993719813734,
+            "positive": 32.37279705679914,
+            "negative": -33.67879077661287
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 9.46571446743051,
+              "positive": 28.484286251415256,
+              "negative": -19.018571783984747
+            },
+            "kept": {
+              "count": 430,
+              "net": -9.301291774219862,
+              "positive": 2.0632492765427837,
+              "negative": -11.364541050762647
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.4800180677466135,
+              "positive": 1.785126737017958,
+              "negative": -3.2651448047645713
+            },
+            "response": {
+              "count": 264,
+              "net": 0.009601654722229333,
+              "positive": 0.040134791823144944,
+              "negative": -0.03053313710091561
+            }
+          }
+        },
+        "GDN_input_projections": {
+          "total": {
+            "net": -0.026799618599513866,
+            "positive": 0.04230688636307957,
+            "negative": -0.06910650496259345
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": -0.026799618599513866,
+              "positive": 0.04230688636307957,
+              "negative": -0.06910650496259343
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": 0.0013751201124764263,
+            "positive": 0.023071857816484832,
+            "negative": -0.021696737704008404
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.0013751201124764263,
+              "positive": 0.023071857816484832,
+              "negative": -0.0216967377040084
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_minus_replayed_m0": {
+          "total": {
+            "net": 0.0070217606007523595,
+            "positive": 0.11329920748654615,
+            "negative": -0.1062774468857938
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.0070217606007523595,
+              "positive": 0.11329920748654615,
+              "negative": -0.1062774468857938
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.013942715063655887,
+            "positive": 0.05014307793585928,
+            "negative": -0.03620036287220339
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 0.007470865066154034,
+              "positive": 0.017165392370575627,
+              "negative": -0.009694527304421593
+            },
+            "kept": {
+              "count": 430,
+              "net": 0.0014671424726292806,
+              "positive": 0.008204646968857317,
+              "negative": -0.006737504496228036
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.0006249460370131299,
+              "positive": 0.0009832443672390112,
+              "negative": -0.001608190404252141
+            },
+            "response": {
+              "count": 264,
+              "net": 0.005629653561885703,
+              "positive": 0.023789794229187325,
+              "negative": -0.018160140667301622
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": 23.11348085222113,
+            "positive": 43.392603152893926,
+            "negative": -20.279122300672807
+          },
+          "groups": {
+            "deleted": {
+              "count": 432,
+              "net": 28.812103465926377,
+              "positive": 37.91901052912068,
+              "negative": -9.106907063194305
+            },
+            "kept": {
+              "count": 430,
+              "net": -2.313347404738798,
+              "positive": 2.05866100797111,
+              "negative": -4.372008412709907
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -3.3895715458261906,
+              "positive": 1.3114725655255026,
+              "negative": -4.701044111351693
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0042963368597420115,
+              "positive": 2.1034590502766437,
+              "negative": -2.0991627134169017
+            }
+          }
+        }
+      }
+    },
+    "20": {
+      "saved_boundary_error": {
+        "net": -0.1451885036344116,
+        "positive": 46.3739431475709,
+        "negative": -46.51913165120531,
+        "absolute": 92.89307479877621
+      },
+      "replayed_16terms": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 155.14677847480124,
+        "input_contraction": 154.9800853669394,
+        "prediction_minus_actual": -0.1666931078618461,
+        "actual_minus_predicted": 0.1666931078618461,
+        "terms": {
+          "decoder_output_residual_rounding": -0.002770241712994448,
+          "MLP_combined": -0.01004007512014482,
+          "post_RMSNorm": 8.149396606427217e-06,
+          "mixer_residual_rounding": 0.0618727496870477,
+          "GDN_output_projection": 0.008214327851014502,
+          "GDN_fused_norm_gate": 0.012103932152356833,
+          "GDN_mo_BF16_cast": -0.0061885383446824704,
+          "GDN_FLA_including_raw_g_exp": -0.21557204944117458,
+          "GDN_QK_L2_and_head_fold": -0.03740771333552395,
+          "GDN_beta_sigmoid": -1.651759319543089e-06,
+          "GDN_raw_g_parameter_map": 1.1264004484701218e-07,
+          "GDN_conv_output_split": -7.105427357601002e-15,
+          "GDN_conv_linear_and_SiLU": 0.04697178782156897,
+          "GDN_input_projections": -0.01837979229208031,
+          "mixer_input_alias": -0.0,
+          "input_RMSNorm": -0.005504105404561699
+        },
+        "telescoping_error": -3.552713678800501e-15,
+        "FLA_branch_contractions": {
+          "q": -0.15212041888644073,
+          "k": -7.100605038705951,
+          "v": 40.02414109226383,
+          "beta": 0.206984204881969,
+          "raw_g": -19.845760284357237
+        },
+        "norm_gate_branch_contractions": {
+          "normalized_memory_before_cast": 13.354400142982032,
+          "gate": 46.716348237861794
+        }
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m0": {
+          "net": 0.0056073952873596025,
+          "positive": 0.2026965078088354,
+          "negative": -0.1970891125214758
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.015897208940062215,
+          "positive": 0.05578082951568605,
+          "negative": -0.03988362057562384
+        }
+      },
+      "transfer_net": 0.021504604227421818,
+      "token_closure_max_absolute": 8.881784197001252e-16,
+      "positive_terms_ranked": [
+        [
+          "mixer_residual_rounding",
+          0.0618727496870477
+        ],
+        [
+          "GDN_conv_linear_and_SiLU",
+          0.04697178782156897
+        ],
+        [
+          "GDN_fused_norm_gate",
+          0.012103932152356833
+        ],
+        [
+          "GDN_output_projection",
+          0.008214327851014502
+        ],
+        [
+          "post_RMSNorm",
+          8.149396606427217e-06
+        ],
+        [
+          "GDN_raw_g_parameter_map",
+          1.1264004484701218e-07
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "GDN_FLA_including_raw_g_exp",
+          -0.21557204944117458
+        ],
+        [
+          "GDN_QK_L2_and_head_fold",
+          -0.03740771333552395
+        ],
+        [
+          "GDN_input_projections",
+          -0.01837979229208031
+        ],
+        [
+          "MLP_combined",
+          -0.01004007512014482
+        ],
+        [
+          "GDN_mo_BF16_cast",
+          -0.0061885383446824704
+        ],
+        [
+          "input_RMSNorm",
+          -0.005504105404561699
+        ],
+        [
+          "decoder_output_residual_rounding",
+          -0.002770241712994448
+        ],
+        [
+          "GDN_beta_sigmoid",
+          -1.651759319543089e-06
+        ],
+        [
+          "GDN_conv_output_split",
+          -7.105427357601002e-15
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": -0.0027702417129822363,
+            "positive": 0.12239039198988588,
+            "negative": -0.12516063370286812
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.009519395825404876,
+              "positive": 0.06518892175446032,
+              "negative": -0.07470831757986521
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0022312754684137657,
+              "positive": 0.01110257952638607,
+              "negative": -0.008871304057972304
+            },
+            "response": {
+              "count": 264,
+              "net": 0.004517878644008877,
+              "positive": 0.0460988907090395,
+              "negative": -0.04158101206503062
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": -0.01004007512014356,
+            "positive": 0.08724674654547425,
+            "negative": -0.09728682166561782
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.005440181566482613,
+              "positive": 0.060457590887357714,
+              "negative": -0.055017409320875094
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.002215122301163816,
+              "positive": 0.00593182161818947,
+              "negative": -0.008146943919353286
+            },
+            "response": {
+              "count": 264,
+              "net": -0.013265134385462358,
+              "positive": 0.02085733403992708,
+              "negative": -0.034122468425389435
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": 8.149396597785692e-06,
+            "positive": 0.023110639748086685,
+            "negative": -0.0231024903514889
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.0008927562636530401,
+              "positive": 0.013081841615911282,
+              "negative": -0.012189085352258242
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0014157111597880353,
+              "positive": 0.002950341667404691,
+              "negative": -0.0015346305076166557
+            },
+            "response": {
+              "count": 264,
+              "net": -0.0023003180268432897,
+              "positive": 0.0070784564647707136,
+              "negative": -0.009378774491614002
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.061872749687066006,
+            "positive": 0.12898881672573703,
+            "negative": -0.06711606703867103
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.05887757495514991,
+              "positive": 0.1082097617511517,
+              "negative": -0.04933218679600179
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0035412650702382822,
+              "positive": 0.006668202844323751,
+              "negative": -0.003126937774085469
+            },
+            "response": {
+              "count": 264,
+              "net": -0.0005460903383221914,
+              "positive": 0.014110852130261572,
+              "negative": -0.014656942468583765
+            }
+          }
+        },
+        "GDN_output_projection": {
+          "total": {
+            "net": 0.00821432785101255,
+            "positive": 0.14726202539864103,
+            "negative": -0.13904769754762847
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.024013524206774498,
+              "positive": 0.10104783156592584,
+              "negative": -0.07703430735915134
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.0028401248131787373,
+              "positive": 0.003997900052222533,
+              "negative": -0.0068380248654012704
+            },
+            "response": {
+              "count": 264,
+              "net": -0.012959071542583208,
+              "positive": 0.04221629378049266,
+              "negative": -0.05517536532307587
+            }
+          }
+        },
+        "GDN_fused_norm_gate": {
+          "total": {
+            "net": 0.012103932152360683,
+            "positive": 0.06010986820582126,
+            "negative": -0.04800593605346059
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.011831828758959485,
+              "positive": 0.04561081856063143,
+              "negative": -0.03377898980167194
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.002883986635005567,
+              "positive": 0.004788788291073463,
+              "negative": -0.0019048016560678956
+            },
+            "response": {
+              "count": 264,
+              "net": -0.0026118832416043725,
+              "positive": 0.009710261354116378,
+              "negative": -0.012322144595720752
+            }
+          }
+        },
+        "GDN_mo_BF16_cast": {
+          "total": {
+            "net": -0.006188538344686965,
+            "positive": 0.04946147071641461,
+            "negative": -0.05565000906110157
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.006968549754423643,
+              "positive": 0.03672693831075077,
+              "negative": -0.04369548806517442
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.0010571181057775787,
+              "positive": 0.004272785950325864,
+              "negative": -0.005329904056103443
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0018371295155142587,
+              "positive": 0.008461746455337971,
+              "negative": -0.006624616939823714
+            }
+          }
+        },
+        "GDN_FLA_including_raw_g_exp": {
+          "total": {
+            "net": -0.21557204944117903,
+            "positive": 41.43870486606676,
+            "negative": -41.654276915507936
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 4.701059212149362,
+              "positive": 36.4951015974285,
+              "negative": -31.794042385279134
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -4.922757632713559,
+              "positive": 2.141068447903991,
+              "negative": -7.06382608061755
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0061263711230176154,
+              "positive": 2.802534820734272,
+              "negative": -2.7964084496112545
+            }
+          }
+        },
+        "GDN_QK_L2_and_head_fold": {
+          "total": {
+            "net": -0.03740771333552459,
+            "positive": 0.029645760885318048,
+            "negative": -0.06705347422084264
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.04700192344003349,
+              "positive": 0.017365346348200243,
+              "negative": -0.06436726978823373
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.00906289623331603,
+              "positive": 0.011582820095584031,
+              "negative": -0.002519923862268
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0005313138711928681,
+              "positive": 0.0006975944415337776,
+              "negative": -0.00016628057034090947
+            }
+          }
+        },
+        "GDN_beta_sigmoid": {
+          "total": {
+            "net": -1.6517593193036972e-06,
+            "positive": 1.9934576083249778e-07,
+            "negative": -1.851105080136195e-06
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -1.6517593193036972e-06,
+              "positive": 1.9934576083249778e-07,
+              "negative": -1.851105080136195e-06
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_raw_g_parameter_map": {
+          "total": {
+            "net": 1.1264004305547651e-07,
+            "positive": 9.275562617881098e-07,
+            "negative": -8.149162187326333e-07
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 1.1264004305547651e-07,
+              "positive": 9.275562617881098e-07,
+              "negative": -8.149162187326333e-07
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_conv_output_split": {
+          "total": {
+            "net": 6.821800069278794e-16,
+            "positive": 6.654832934716026e-15,
+            "negative": -5.972652927788147e-15
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 8.469787371456761e-16,
+              "positive": 6.3200313038525024e-15,
+              "negative": -5.473052566706826e-15
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.1102230246251565e-16,
+              "positive": 3.3306690738754696e-16,
+              "negative": -4.440892098500626e-16
+            },
+            "response": {
+              "count": 264,
+              "net": -5.377642775528102e-17,
+              "positive": 1.734723475976807e-18,
+              "negative": -5.551115123125783e-17
+            }
+          }
+        },
+        "GDN_conv_linear_and_SiLU": {
+          "total": {
+            "net": 0.04697178782156719,
+            "positive": 44.53282879574178,
+            "negative": -44.48585700792021
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -3.8785032256476146,
+              "positive": 37.384670139588664,
+              "negative": -41.263173365236284
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 3.5548321334189703,
+              "positive": 6.737755243465346,
+              "negative": -3.182923110046376
+            },
+            "response": {
+              "count": 264,
+              "net": 0.3706428800502081,
+              "positive": 0.41040341268776825,
+              "negative": -0.03976053263756011
+            }
+          }
+        },
+        "GDN_input_projections": {
+          "total": {
+            "net": -0.018379792292085514,
+            "positive": 0.08216497064230015,
+            "negative": -0.10054476293438566
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.018379792292085514,
+              "positive": 0.08216497064230016,
+              "negative": -0.10054476293438566
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": -0.005504105404556757,
+            "positive": 0.03583207378867884,
+            "negative": -0.041336179193235595
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.005504105404556757,
+              "positive": 0.035832073788678837,
+              "negative": -0.041336179193235595
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_minus_replayed_m0": {
+          "total": {
+            "net": 0.0056073952873596025,
+            "positive": 0.2026965078088354,
+            "negative": -0.1970891125214758
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.005607395287359601,
+              "positive": 0.2026965078088354,
+              "negative": -0.19708911252147582
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.015897208940062215,
+            "positive": 0.05578082951568605,
+            "negative": -0.03988362057562384
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.008505926169463131,
+              "positive": 0.031161365927595445,
+              "negative": -0.022655439758132313
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0014038765675753462,
+              "positive": 0.004391201425276048,
+              "negative": -0.0029873248577007017
+            },
+            "response": {
+              "count": 264,
+              "net": 0.005987406203023737,
+              "positive": 0.020228262162814564,
+              "negative": -0.014240855959790827
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": -0.1451885036344125,
+            "positive": 46.3739431475709,
+            "negative": -46.51913165120531
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.8503498678738125,
+              "positive": 39.63884657354949,
+              "negative": -38.788496705675676
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.3534988533803725,
+              "positive": 3.5780737943709284,
+              "negative": -4.931572647751301
+            },
+            "response": {
+              "count": 264,
+              "net": 0.35796048187215,
+              "positive": 3.157022779650481,
+              "negative": -2.7990622977783306
+            }
+          }
+        }
+      }
+    },
+    "B2": {
+      "saved_boundary_error": {
+        "net": -0.14591571858644858,
+        "positive": 46.37152945264903,
+        "negative": -46.51744517123548,
+        "absolute": 92.88897462388451
+      },
+      "replayed_16terms": {
+        "sign_convention": "prediction_minus_actual",
+        "output_contraction": 155.14240293467637,
+        "input_contraction": 154.9800853669394,
+        "prediction_minus_actual": -0.16231756773697725,
+        "actual_minus_predicted": 0.16231756773697725,
+        "terms": {
+          "decoder_output_residual_rounding": 0.00046622286852482375,
+          "MLP_combined": -0.010213505280802337,
+          "post_RMSNorm": -2.3694841502219788e-05,
+          "mixer_residual_rounding": 0.06183648704629263,
+          "GDN_output_projection": 0.010110462035221701,
+          "GDN_fused_norm_gate": 0.012861867289295503,
+          "GDN_mo_BF16_cast": -0.0061869671048562225,
+          "GDN_FLA_including_raw_g_exp": -0.2168486822996556,
+          "GDN_QK_L2_and_head_fold": -0.03740916221035029,
+          "GDN_beta_sigmoid": 1.9275898210935338e-08,
+          "GDN_raw_g_parameter_map": 1.1264113197739789e-07,
+          "GDN_conv_output_split": -7.105427357601002e-15,
+          "GDN_conv_linear_and_SiLU": 0.046972746736749116,
+          "GDN_input_projections": -0.01837936848836108,
+          "mixer_input_alias": -0.0,
+          "input_RMSNorm": -0.005504105404561699
+        },
+        "telescoping_error": -5.329070518200751e-15,
+        "FLA_branch_contractions": {
+          "q": -0.15211874358846794,
+          "k": -7.100607803233083,
+          "v": 40.024140576608204,
+          "beta": 0.206984204881969,
+          "raw_g": -19.845760284352828
+        },
+        "norm_gate_branch_contractions": {
+          "normalized_memory_before_cast": 13.355673599720307,
+          "gate": 46.716348237861794
+        }
+      },
+      "transfer_terms": {
+        "saved_minus_replayed_m0": {
+          "net": 0.0056073952873596025,
+          "positive": 0.2026965078088354,
+          "negative": -0.1970891125214758
+        },
+        "input_replay_transfer": {
+          "net": 0.0,
+          "positive": 0.0,
+          "negative": 0.0
+        },
+        "output_replay_transfer": {
+          "net": 0.010794453863161515,
+          "positive": 0.06283456376004562,
+          "negative": -0.0520401098968841
+        }
+      },
+      "transfer_net": 0.01640184915052112,
+      "token_closure_max_absolute": 8.881784197001252e-16,
+      "positive_terms_ranked": [
+        [
+          "mixer_residual_rounding",
+          0.06183648704629263
+        ],
+        [
+          "GDN_conv_linear_and_SiLU",
+          0.046972746736749116
+        ],
+        [
+          "GDN_fused_norm_gate",
+          0.012861867289295503
+        ],
+        [
+          "GDN_output_projection",
+          0.010110462035221701
+        ],
+        [
+          "decoder_output_residual_rounding",
+          0.00046622286852482375
+        ],
+        [
+          "GDN_raw_g_parameter_map",
+          1.1264113197739789e-07
+        ],
+        [
+          "GDN_beta_sigmoid",
+          1.9275898210935338e-08
+        ]
+      ],
+      "negative_terms_ranked": [
+        [
+          "GDN_FLA_including_raw_g_exp",
+          -0.2168486822996556
+        ],
+        [
+          "GDN_QK_L2_and_head_fold",
+          -0.03740916221035029
+        ],
+        [
+          "GDN_input_projections",
+          -0.01837936848836108
+        ],
+        [
+          "MLP_combined",
+          -0.010213505280802337
+        ],
+        [
+          "GDN_mo_BF16_cast",
+          -0.0061869671048562225
+        ],
+        [
+          "input_RMSNorm",
+          -0.005504105404561699
+        ],
+        [
+          "post_RMSNorm",
+          -2.3694841502219788e-05
+        ],
+        [
+          "GDN_conv_output_split",
+          -7.105427357601002e-15
+        ]
+      ],
+      "coordinate_groups": {
+        "decoder_output_residual_rounding": {
+          "total": {
+            "net": 0.0004662228685344246,
+            "positive": 0.12183279721736595,
+            "negative": -0.1213665743488315
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.0082094327108429,
+              "positive": 0.06586878434481543,
+              "negative": -0.07407821705565833
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.002955826340660637,
+              "positive": 0.011568618886356876,
+              "negative": -0.00861279254569624
+            },
+            "response": {
+              "count": 264,
+              "net": 0.005719829238716685,
+              "positive": 0.04439539398619363,
+              "negative": -0.03867556474747695
+            }
+          }
+        },
+        "MLP_combined": {
+          "total": {
+            "net": -0.010213505280810563,
+            "positive": 0.08542054427385945,
+            "negative": -0.09563404955467003
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.005804001921086413,
+              "positive": 0.06252160383256163,
+              "negative": -0.05671760191147521
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.0016509956112012517,
+              "positive": 0.006292172019183868,
+              "negative": -0.00794316763038512
+            },
+            "response": {
+              "count": 264,
+              "net": -0.014366511590695723,
+              "positive": 0.016606768422113966,
+              "negative": -0.030973280012809697
+            }
+          }
+        },
+        "post_RMSNorm": {
+          "total": {
+            "net": -2.3694841489268342e-05,
+            "positive": 0.0229989523428038,
+            "negative": -0.023022647184293067
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.00089589179159834,
+              "positive": 0.013012281409244647,
+              "negative": -0.012116389617646307
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.001337566091301482,
+              "positive": 0.0028767977848134993,
+              "negative": -0.0015392316935120172
+            },
+            "response": {
+              "count": 264,
+              "net": -0.0022571527243890905,
+              "positive": 0.00710987314874565,
+              "negative": -0.009367025873134741
+            }
+          }
+        },
+        "mixer_residual_rounding": {
+          "total": {
+            "net": 0.06183648704628587,
+            "positive": 0.1291942064095052,
+            "negative": -0.06735771936321937
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.05969418441295575,
+              "positive": 0.1085628096143574,
+              "negative": -0.04886862520140164
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.003563481867323793,
+              "positive": 0.0066934341913619,
+              "negative": -0.003129952324038107
+            },
+            "response": {
+              "count": 264,
+              "net": -0.0014211792339936724,
+              "positive": 0.01393796260378594,
+              "negative": -0.015359141837779613
+            }
+          }
+        },
+        "GDN_output_projection": {
+          "total": {
+            "net": 0.010110462035218372,
+            "positive": 0.14825922363126864,
+            "negative": -0.13814876159605027
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.02481707296713235,
+              "positive": 0.10163542690750665,
+              "negative": -0.07681835394037431
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.002910519565943461,
+              "positive": 0.004091593625226159,
+              "negative": -0.00700211319116962
+            },
+            "response": {
+              "count": 264,
+              "net": -0.011796091365970525,
+              "positive": 0.04253220309853582,
+              "negative": -0.05432829446450635
+            }
+          }
+        },
+        "GDN_fused_norm_gate": {
+          "total": {
+            "net": 0.012861867289308064,
+            "positive": 0.05919450963013953,
+            "negative": -0.046332642340831474
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.01193618047396755,
+              "positive": 0.04453573190328615,
+              "negative": -0.03259955142931859
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0028086890160034933,
+              "positive": 0.004823139069428193,
+              "negative": -0.0020144500534246997
+            },
+            "response": {
+              "count": 264,
+              "net": -0.0018830022006629818,
+              "positive": 0.009835638657425195,
+              "negative": -0.011718640858088178
+            }
+          }
+        },
+        "GDN_mo_BF16_cast": {
+          "total": {
+            "net": -0.006186967104858536,
+            "positive": 0.04946159209382399,
+            "negative": -0.055648559198682515
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.006967370775101633,
+              "positive": 0.03672715999755573,
+              "negative": -0.043694530772657364
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -0.0010576937311377339,
+              "positive": 0.004272296732166326,
+              "negative": -0.00532999046330406
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0018380974013808317,
+              "positive": 0.008462135364101925,
+              "negative": -0.006624037962721093
+            }
+          }
+        },
+        "GDN_FLA_including_raw_g_exp": {
+          "total": {
+            "net": -0.2168486822996578,
+            "positive": 41.43878319301585,
+            "negative": -41.65563187531551
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 4.700813953661784,
+              "positive": 36.49592973358885,
+              "negative": -31.79511577992706
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -4.922667341138652,
+              "positive": 2.141112512522114,
+              "negative": -7.063779853660766
+            },
+            "response": {
+              "count": 264,
+              "net": 0.005004705177209412,
+              "positive": 2.8017409469048866,
+              "negative": -2.796736241727677
+            }
+          }
+        },
+        "GDN_QK_L2_and_head_fold": {
+          "total": {
+            "net": -0.03740916221035011,
+            "positive": 0.029645297358765074,
+            "negative": -0.06705445956911518
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.04700337231485901,
+              "positive": 0.01736488282164727,
+              "negative": -0.06436825513650626
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.00906289623331603,
+              "positive": 0.011582820095584031,
+              "negative": -0.002519923862268
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0005313138711928681,
+              "positive": 0.0006975944415337776,
+              "negative": -0.00016628057034090947
+            }
+          }
+        },
+        "GDN_beta_sigmoid": {
+          "total": {
+            "net": 1.9275898450327178e-08,
+            "positive": 1.5562198360866142e-07,
+            "negative": -1.3634608515833424e-07
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 1.9275898450327178e-08,
+              "positive": 1.5562198360866142e-07,
+              "negative": -1.3634608515833424e-07
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_raw_g_parameter_map": {
+          "total": {
+            "net": 1.1264112550210884e-07,
+            "positive": 9.275562617881098e-07,
+            "negative": -8.14915136286001e-07
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 1.1264112550210884e-07,
+              "positive": 9.275562617881098e-07,
+              "negative": -8.14915136286001e-07
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "GDN_conv_output_split": {
+          "total": {
+            "net": 6.821800069278794e-16,
+            "positive": 6.654832934716026e-15,
+            "negative": -5.972652927788147e-15
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 8.469787371456761e-16,
+              "positive": 6.3200313038525024e-15,
+              "negative": -5.473052566706826e-15
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.1102230246251565e-16,
+              "positive": 3.3306690738754696e-16,
+              "negative": -4.440892098500626e-16
+            },
+            "response": {
+              "count": 264,
+              "net": -5.377642775528102e-17,
+              "positive": 1.734723475976807e-18,
+              "negative": -5.551115123125783e-17
+            }
+          }
+        },
+        "GDN_conv_linear_and_SiLU": {
+          "total": {
+            "net": 0.046972746736750004,
+            "positive": 44.53283054426136,
+            "negative": -44.48585779752461
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -3.878502468211429,
+              "positive": 37.38467168662925,
+              "negative": -41.26317415484068
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 3.5548323348979673,
+              "positive": 6.737755444944343,
+              "negative": -3.182923110046376
+            },
+            "response": {
+              "count": 264,
+              "net": 0.3706428800502081,
+              "positive": 0.41040341268776825,
+              "negative": -0.03976053263756011
+            }
+          }
+        },
+        "GDN_input_projections": {
+          "total": {
+            "net": -0.018379368488366216,
+            "positive": 0.08216325840267547,
+            "negative": -0.10054262689104168
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.018379368488366216,
+              "positive": 0.08216325840267547,
+              "negative": -0.10054262689104168
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "mixer_input_alias": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_RMSNorm": {
+          "total": {
+            "net": -0.005504105404556757,
+            "positive": 0.03583207378867884,
+            "negative": -0.041336179193235595
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": -0.005504105404556757,
+              "positive": 0.035832073788678837,
+              "negative": -0.041336179193235595
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "saved_minus_replayed_m0": {
+          "total": {
+            "net": 0.0056073952873596025,
+            "positive": 0.2026965078088354,
+            "negative": -0.1970891125214758
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.005607395287359601,
+              "positive": 0.2026965078088354,
+              "negative": -0.19708911252147582
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "input_replay_transfer": {
+          "total": {
+            "net": 0.0,
+            "positive": 0.0,
+            "negative": 0.0
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "response": {
+              "count": 264,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            }
+          }
+        },
+        "output_replay_transfer": {
+          "total": {
+            "net": 0.010794453863161515,
+            "positive": 0.06283456376004562,
+            "negative": -0.0520401098968841
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.008567504680902864,
+              "positive": 0.03463098956495028,
+              "negative": -0.026063484884047416
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": 0.00018198520674944652,
+              "positive": 0.004633902449497684,
+              "negative": -0.004451917242748238
+            },
+            "response": {
+              "count": 264,
+              "net": 0.002044963975509205,
+              "positive": 0.023569671745597653,
+              "negative": -0.02152470777008845
+            }
+          }
+        },
+        "saved_boundary_error": {
+          "total": {
+            "net": -0.14591571858644947,
+            "positive": 46.371529452649035,
+            "negative": -46.517445171235465
+          },
+          "groups": {
+            "deleted": {
+              "count": 862,
+              "net": 0.853570199208661,
+              "positive": 39.63748355490255,
+              "negative": -38.78391335569389
+            },
+            "kept": {
+              "count": 0,
+              "net": 0.0,
+              "positive": 0.0,
+              "negative": 0.0
+            },
+            "other_prompt": {
+              "count": 75,
+              "net": -1.353543770393613,
+              "positive": 3.578044985131845,
+              "negative": -4.931588755525458
+            },
+            "response": {
+              "count": 264,
+              "net": 0.3540578525985052,
+              "positive": 3.156000912614632,
+              "negative": -2.801943060016127
+            }
+          }
+        }
+      }
+    }
+  },
+  "private_artifact": {
+    "file": "NI1_current_layer0_internal_private.pt",
+    "sha256": "609a80669dc60a1da2664d24472ab21b4c9bd4c556bebefa03d0b0dbca77469a",
+    "bytes": 2642274713,
+    "tensor_CPU_bytes": 2642214144
+  },
+  "proof_scope": "Public signed contractions, source/weight receipts, frozen masks, and per-token closure audited. The multi-GB private actual tensors were not locally rehashed or independently recomputed. This is a replay diagnostic, not a new production method or metric evaluation.",
+  "interpretation": "Current midpoint FLA boundary is the largest measured mismatch (+21.6463 of layer0 +23.1135); replay transfer is only +0.02096. This prioritizes a finite-FLA internal diagnosis, not a proven recurrence bug or guaranteed cure. Early FLA -1.2776 compensates MLP +2.2608: candidate validation must retain all signed terms and full-input effects. Current symmetric normgate is secondary at midpoint (+1.4528), MLP +1.7817. Near-zero allEOS/B2 totals contain large opposite token contributions; endpoint conservation does not establish conditional or tokenwise accuracy.",
+  "audit_seconds": 0.2808789999689907
+}
