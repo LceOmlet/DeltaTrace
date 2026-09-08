@@ -112,18 +112,12 @@ class Qwen35DenseFiniteRunner:
                 if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
                 row['FA_auxiliary_relative_L2']=float((aux.float()-c['attention_output'].float()).norm()/aux.float().norm().clamp_min(1e-30));del aux,unused
             del dc,mc
-            focused=(observer is not None and callable(getattr(observer,'wants_decoder',None))
-                     and bool(observer.wants_decoder(i)))
-            if focused and not callable(getattr(observer,'decoder',None)):
-                raise ValueError('A focused decoder observer requires a decoder callback.')
             def mixer(upstream):
                 if is_fa:
-                    cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused)
-                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,self.finite_fla,focused)
-            with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))
+                    cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,False)
+                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,self.finite_fla,False)
+            with torch.no_grad():new,_=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,False))
             if not bool(torch.isfinite(new).all()):raise ValueError('Nonfinite DT coefficients.')
-            if focused:observer.decoder(i,d,c,e,m,new,terms)
-            del terms
             row['input_effect']=_effect(new,d['input_norm_input']);m=new;del new,d,c,e,lse,kw
             if observer is not None:observer.boundary(str(i),m.detach(),root[str(i)])
         x=root['0'].to('cuda');signed=(m.double()*(x[1::2].double()-x[0::2].double())).sum(-1).cpu()
