@@ -1,0 +1,114 @@
+{
+  "status": "official_commit_sources_match_shared_variant",
+  "commit": "e81b3be50a48dcfc652fbf1b530069b552736e66",
+  "receipts": [
+    {
+      "file": "flashtrace/qwen35.py",
+      "url": "https://raw.githubusercontent.com/wbopan/flashtrace/e81b3be50a48dcfc652fbf1b530069b552736e66/flashtrace/qwen35.py",
+      "sha256": "2c298e624e1c72d766a740bb100ee0b429a22ae974d28d37c7fe82440b6b0f2a",
+      "bytes": 7809,
+      "shared_byte_identical": true
+    },
+    {
+      "file": "flashtrace/core.py",
+      "url": "https://raw.githubusercontent.com/wbopan/flashtrace/e81b3be50a48dcfc652fbf1b530069b552736e66/flashtrace/core.py",
+      "sha256": "02929a4cb02e410a7241c681409aea1303f9c1a471f95a29c3e526dc591a5c58",
+      "bytes": 38131,
+      "shared_byte_identical": true
+    },
+    {
+      "file": "flashtrace/attribution.py",
+      "url": "https://raw.githubusercontent.com/wbopan/flashtrace/e81b3be50a48dcfc652fbf1b530069b552736e66/flashtrace/attribution.py",
+      "sha256": "2a41b7f08f1fa8a5b53bbc2f89b0fc5aa047791d116752445b0387c67014f40f",
+      "bytes": 136813,
+      "shared_byte_identical": true
+    },
+    {
+      "file": "tests/test_qwen35_support.py",
+      "url": "https://raw.githubusercontent.com/wbopan/flashtrace/e81b3be50a48dcfc652fbf1b530069b552736e66/tests/test_qwen35_support.py",
+      "sha256": "8eeb7b0836be308e3a5e86328f105a6144677481995410cb9b18345d7dad7bb9",
+      "bytes": 6526,
+      "shared_byte_identical": true
+    },
+    {
+      "file": "evaluations/qwen35_faithfulness_smoke.py",
+      "url": "https://raw.githubusercontent.com/wbopan/flashtrace/e81b3be50a48dcfc652fbf1b530069b552736e66/evaluations/qwen35_faithfulness_smoke.py",
+      "sha256": "2d4539464a742f9a19c460f25a30255821e33c91995e2580e027825996dd6109",
+      "bytes": 11343,
+      "shared_byte_identical": true
+    },
+    {
+      "file": "LICENSE",
+      "url": "https://raw.githubusercontent.com/wbopan/flashtrace/e81b3be50a48dcfc652fbf1b530069b552736e66/LICENSE",
+      "sha256": "9c028b0e77f9317dc23fd93c7009e9e8fbfb93e3976d4f00383b6478aff1c1be",
+      "bytes": 1066,
+      "shared_byte_identical": null
+    }
+  ],
+  "model_identity": "Shared checkpoint is Qwen3.5-9B; inspected model directories also contain Qwen3-8B. No Qwen3.5-8B directory found in bounded search.",
+  "comparison_required": "DeltaTrace versus this official FT hybrid variant on the SAME actual Qwen3.5 checkpoint, dtype, backend, input trajectory, target span and eligible tokens. No cross-model quality or cost victory.",
+  "review_findings": [
+    {
+      "file": "flashtrace/core.py",
+      "lines": [
+        428,
+        446
+      ],
+      "finding": "linearize_norm returns raw weight/rms for Qwen3_5RMSNorm, while the loaded native model uses(1+weight)/rms. Full-attention value path calls this helper.",
+      "status": "Source-level concrete semantic mismatch against the pinned native model; magnitude/quality effect not yet measured."
+    },
+    {
+      "file": "flashtrace/qwen35.py",
+      "lines": [
+        112,
+        162
+      ],
+      "finding": "Full-attention LayerAttnInput has no output sigmoid gate; GDN LayerAttnInput projects pre-output-norm core value mixtures and discards core_ref, with no gated output RMS/SiLU contribution in that triple.",
+      "status": "Layer decomposition boundary omission visible in source. No claim about resulting metric degradation without a matched test."
+    },
+    {
+      "file": "flashtrace/qwen35.py",
+      "lines": [
+        67,
+        78,
+        96,
+        98,
+        101,
+        197
+      ],
+      "finding": "Explicit B1 guard, GDN replay without attention_mask, identity probe expands value dimension to S and materializes per-head S-square mixing; full layers require eager/output_attentions.",
+      "status": "Current interface does not meet this project default-FA/variable-batch/linear-memory requirements."
+    },
+    {
+      "file": "flashtrace/qwen35.py",
+      "lines": [
+        23,
+        44,
+        101
+      ],
+      "finding": "Capture wrapper delegates to the original kernel and the identity probe calls that same kernel. The V-linear recurrence identity is legitimate exact-real algebra conditional on q/k/g/beta; it is an auxiliary probe, not automatically a shadow implementation.",
+      "status": "Do not falsely classify genuine native auxiliary work as shadow work. Charge its cost and verify actual default FLA execution/precision before use."
+    },
+    {
+      "file": "tests/test_qwen35_support.py",
+      "lines": [
+        50,
+        68
+      ],
+      "finding": "Tiny7-token test reconstructs pre-norm recurrence core. It does not check native full mixer/decoder boundaries, default FA/FLA workload, real batched padding or official needle/RISE/MAS.",
+      "status": "Useful narrow core test; insufficient evidence for full-model quality."
+    },
+    {
+      "file": "evaluations/qwen35_faithfulness_smoke.py",
+      "lines": [
+        1,
+        17,
+        65,
+        75
+      ],
+      "finding": "Smoke script uses handcrafted samples and double argsort ranks without tie averaging, then compares across Qwen3.5-9B/Qwen3-8B. This is not the author original benchmark requested here.",
+      "status": "Do not run as replacement quality benchmark or accept the PASS string as evidence."
+    }
+  ],
+  "next": "Keep original FT hybrid source pinned as the reference. Correct/explicitly label native-structure mismatches for a credible same-model baseline; validate actual backend, norm/gate boundaries, target mapping and all paid costs before a small official-metric comparison. Preserve original and corrected variant identities."
+}

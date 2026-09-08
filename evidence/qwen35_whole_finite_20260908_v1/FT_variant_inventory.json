@@ -1,0 +1,430 @@
+{
+  "roots": [
+    "${FLASHTRACE_ROOT}",
+    "/root/flashtrace-table1-owner",
+    "${PRIVATE_MOUNT_PATH}",
+    "${PRIVATE_MOUNT_PATH}",
+    "${PRIVATE_MOUNT_PATH}",
+    "${PRIVATE_MOUNT_PATH}"
+  ],
+  "python_files_scanned": 725,
+  "hits": [
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "2a41b7f08f1fa8a5b53bbc2f89b0fc5aa047791d116752445b0387c67014f40f",
+      "matches": [
+        {
+          "line": 60,
+          "text": "from .qwen35 import build_layer_inputs, is_hybrid_stack"
+        },
+        {
+          "line": 1167,
+          "text": "        # Hybrid stacks (Qwen3.5) have linear-attention layers that expose no"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "aee36bd9293d9ef2ce5166da30e0e68c85bb8cbc2660bb22e9db2a2179ef3964",
+      "matches": [
+        {
+          "line": 27,
+          "text": "    for Gated-DeltaNet style linear-attention layers (e.g. Qwen3.5). The head"
+        },
+        {
+          "line": 45,
+          "text": "    if hasattr(layer, \"linear_attn\") and not hasattr(layer, \"self_attn\"):"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "2c298e624e1c72d766a740bb100ee0b429a22ae974d28d37c7fe82440b6b0f2a",
+      "matches": [
+        {
+          "line": 1,
+          "text": "\"\"\"Qwen3.5 hybrid-architecture support for FlashTrace."
+        },
+        {
+          "line": 3,
+          "text": "Qwen3.5 interleaves Gated-DeltaNet linear-attention layers with full softmax"
+        },
+        {
+          "line": 48,
+          "text": "    linear_attn: nn.Module,"
+        },
+        {
+          "line": 54,
+          "text": "        linear_attn: a ``Qwen3_5GatedDeltaNet`` module."
+        },
+        {
+          "line": 72,
+          "text": "    original = linear_attn.chunk_gated_delta_rule"
+        },
+        {
+          "line": 74,
+          "text": "    linear_attn.chunk_gated_delta_rule = capture"
+        },
+        {
+          "line": 76,
+          "text": "        linear_attn(hidden_states)"
+        },
+        {
+          "line": 78,
+          "text": "        linear_attn.chunk_gated_delta_rule = original"
+        },
+        {
+          "line": 149,
+          "text": "    attn, value, _core_ref = gated_deltanet_effective_attention(layer.linear_attn, hidden)"
+        },
+        {
+          "line": 152,
+          "text": "    o_w = layer.linear_attn.out_proj.weight.detach().to(model_dtype)"
+        },
+        {
+          "line": 168,
+          "text": "    \"\"\"Build precomputed per-layer IFR inputs for a hybrid Qwen3.5 decoder."
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "8eeb7b0836be308e3a5e86328f105a6144677481995410cb9b18345d7dad7bb9",
+      "matches": [
+        {
+          "line": 10,
+          "text": "from flashtrace.qwen35 import gated_deltanet_effective_attention"
+        },
+        {
+          "line": 12,
+          "text": "from tests.helpers import make_tiny_qwen35_model_and_tokenizer"
+        },
+        {
+          "line": 16,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 34,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 51,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 52,
+          "text": "    module = model.model.layers[0].linear_attn  # a linear_attention layer"
+        },
+        {
+          "line": 72,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 73,
+          "text": "    module = model.model.layers[0].linear_attn"
+        },
+        {
+          "line": 86,
+          "text": "def test_ifr_all_positions_runs_on_hybrid_qwen35():"
+        },
+        {
+          "line": 87,
+          "text": "    model, tokenizer = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 101,
+          "text": "def test_flashtrace_method_runs_on_hybrid_qwen35():"
+        },
+        {
+          "line": 102,
+          "text": "    model, tokenizer = make_tiny_qwen35_model_and_tokenizer()"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "56c28cbe5907de1909cd3e9741ba88ade2cfd04e1ea4920d8524d915fc3268ca",
+      "matches": [
+        {
+          "line": 85,
+          "text": "def make_tiny_qwen35_model_and_tokenizer("
+        },
+        {
+          "line": 99,
+          "text": "    \"\"\"Build a tiny Qwen3.5 text-only causal LM with a hybrid layer stack."
+        },
+        {
+          "line": 110,
+          "text": "    from transformers.models.qwen3_5 import Qwen3_5ForCausalLM, Qwen3_5TextConfig"
+        },
+        {
+          "line": 114,
+          "text": "    config = Qwen3_5TextConfig("
+        },
+        {
+          "line": 131,
+          "text": "    model = Qwen3_5ForCausalLM._from_config(config, attn_implementation=\"eager\")"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "2d4539464a742f9a19c460f25a30255821e33c91995e2580e027825996dd6109",
+      "matches": [
+        {
+          "line": 1,
+          "text": "\"\"\"Faithfulness smoke evaluation for FlashTrace on Qwen3.5 (hybrid) models."
+        },
+        {
+          "line": 17,
+          "text": "as a script for the real Qwen3.5-9B vs Qwen3-8B comparison."
+        },
+        {
+          "line": 277,
+          "text": "    parser.add_argument(\"--qwen35\", default=\"Qwen/Qwen3.5-9B\")"
+        },
+        {
+          "line": 281,
+          "text": "    print(f\"== Evaluating Qwen3.5 ({args.qwen35}) ==\")"
+        },
+        {
+          "line": 282,
+          "text": "    q35 = evaluate_model(args.qwen35, DEFAULT_SAMPLES)"
+        },
+        {
+          "line": 283,
+          "text": "    _print_per_sample(\"Qwen3.5-9B\", q35)"
+        },
+        {
+          "line": 290,
+          "text": "    for label, summ in [(\"Qwen3.5-9B\", s35), (\"Qwen3-8B\", s3)]:"
+        },
+        {
+          "line": 301,
+          "text": "    print(f\"\\nFlashTrace(Qwen3.5) beats perturbation baseline: {beats_baseline} \""
+        },
+        {
+          "line": 303,
+          "text": "    print(f\"FlashTrace(Qwen3.5) close to FlashTrace(Qwen3-8B): {close_to_qwen3} \""
+        },
+        {
+          "line": 306,
+          "text": "        raise SystemExit(\"Qwen3.5 faithfulness smoke check FAILED\")"
+        },
+        {
+          "line": 307,
+          "text": "    print(\"\\nQwen3.5 faithfulness smoke check PASSED\")"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "2a41b7f08f1fa8a5b53bbc2f89b0fc5aa047791d116752445b0387c67014f40f",
+      "matches": [
+        {
+          "line": 60,
+          "text": "from .qwen35 import build_layer_inputs, is_hybrid_stack"
+        },
+        {
+          "line": 1167,
+          "text": "        # Hybrid stacks (Qwen3.5) have linear-attention layers that expose no"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "02929a4cb02e410a7241c681409aea1303f9c1a471f95a29c3e526dc591a5c58",
+      "matches": [
+        {
+          "line": 27,
+          "text": "    for Gated-DeltaNet style linear-attention layers (e.g. Qwen3.5). The head"
+        },
+        {
+          "line": 45,
+          "text": "    if hasattr(layer, \"linear_attn\") and not hasattr(layer, \"self_attn\"):"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "2c298e624e1c72d766a740bb100ee0b429a22ae974d28d37c7fe82440b6b0f2a",
+      "matches": [
+        {
+          "line": 1,
+          "text": "\"\"\"Qwen3.5 hybrid-architecture support for FlashTrace."
+        },
+        {
+          "line": 3,
+          "text": "Qwen3.5 interleaves Gated-DeltaNet linear-attention layers with full softmax"
+        },
+        {
+          "line": 48,
+          "text": "    linear_attn: nn.Module,"
+        },
+        {
+          "line": 54,
+          "text": "        linear_attn: a ``Qwen3_5GatedDeltaNet`` module."
+        },
+        {
+          "line": 72,
+          "text": "    original = linear_attn.chunk_gated_delta_rule"
+        },
+        {
+          "line": 74,
+          "text": "    linear_attn.chunk_gated_delta_rule = capture"
+        },
+        {
+          "line": 76,
+          "text": "        linear_attn(hidden_states)"
+        },
+        {
+          "line": 78,
+          "text": "        linear_attn.chunk_gated_delta_rule = original"
+        },
+        {
+          "line": 149,
+          "text": "    attn, value, _core_ref = gated_deltanet_effective_attention(layer.linear_attn, hidden)"
+        },
+        {
+          "line": 152,
+          "text": "    o_w = layer.linear_attn.out_proj.weight.detach().to(model_dtype)"
+        },
+        {
+          "line": 168,
+          "text": "    \"\"\"Build precomputed per-layer IFR inputs for a hybrid Qwen3.5 decoder."
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "8eeb7b0836be308e3a5e86328f105a6144677481995410cb9b18345d7dad7bb9",
+      "matches": [
+        {
+          "line": 10,
+          "text": "from flashtrace.qwen35 import gated_deltanet_effective_attention"
+        },
+        {
+          "line": 12,
+          "text": "from tests.helpers import make_tiny_qwen35_model_and_tokenizer"
+        },
+        {
+          "line": 16,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 34,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 51,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 52,
+          "text": "    module = model.model.layers[0].linear_attn  # a linear_attention layer"
+        },
+        {
+          "line": 72,
+          "text": "    model, _ = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 73,
+          "text": "    module = model.model.layers[0].linear_attn"
+        },
+        {
+          "line": 86,
+          "text": "def test_ifr_all_positions_runs_on_hybrid_qwen35():"
+        },
+        {
+          "line": 87,
+          "text": "    model, tokenizer = make_tiny_qwen35_model_and_tokenizer()"
+        },
+        {
+          "line": 101,
+          "text": "def test_flashtrace_method_runs_on_hybrid_qwen35():"
+        },
+        {
+          "line": 102,
+          "text": "    model, tokenizer = make_tiny_qwen35_model_and_tokenizer()"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "56c28cbe5907de1909cd3e9741ba88ade2cfd04e1ea4920d8524d915fc3268ca",
+      "matches": [
+        {
+          "line": 85,
+          "text": "def make_tiny_qwen35_model_and_tokenizer("
+        },
+        {
+          "line": 99,
+          "text": "    \"\"\"Build a tiny Qwen3.5 text-only causal LM with a hybrid layer stack."
+        },
+        {
+          "line": 110,
+          "text": "    from transformers.models.qwen3_5 import Qwen3_5ForCausalLM, Qwen3_5TextConfig"
+        },
+        {
+          "line": 114,
+          "text": "    config = Qwen3_5TextConfig("
+        },
+        {
+          "line": 131,
+          "text": "    model = Qwen3_5ForCausalLM._from_config(config, attn_implementation=\"eager\")"
+        }
+      ]
+    },
+    {
+      "file": "${PRIVATE_MOUNT_PATH}",
+      "sha256": "2d4539464a742f9a19c460f25a30255821e33c91995e2580e027825996dd6109",
+      "matches": [
+        {
+          "line": 1,
+          "text": "\"\"\"Faithfulness smoke evaluation for FlashTrace on Qwen3.5 (hybrid) models."
+        },
+        {
+          "line": 17,
+          "text": "as a script for the real Qwen3.5-9B vs Qwen3-8B comparison."
+        },
+        {
+          "line": 277,
+          "text": "    parser.add_argument(\"--qwen35\", default=\"Qwen/Qwen3.5-9B\")"
+        },
+        {
+          "line": 281,
+          "text": "    print(f\"== Evaluating Qwen3.5 ({args.qwen35}) ==\")"
+        },
+        {
+          "line": 282,
+          "text": "    q35 = evaluate_model(args.qwen35, DEFAULT_SAMPLES)"
+        },
+        {
+          "line": 283,
+          "text": "    _print_per_sample(\"Qwen3.5-9B\", q35)"
+        },
+        {
+          "line": 290,
+          "text": "    for label, summ in [(\"Qwen3.5-9B\", s35), (\"Qwen3-8B\", s3)]:"
+        },
+        {
+          "line": 301,
+          "text": "    print(f\"\\nFlashTrace(Qwen3.5) beats perturbation baseline: {beats_baseline} \""
+        },
+        {
+          "line": 303,
+          "text": "    print(f\"FlashTrace(Qwen3.5) close to FlashTrace(Qwen3-8B): {close_to_qwen3} \""
+        },
+        {
+          "line": 306,
+          "text": "        raise SystemExit(\"Qwen3.5 faithfulness smoke check FAILED\")"
+        },
+        {
+          "line": 307,
+          "text": "    print(\"\\nQwen3.5 faithfulness smoke check PASSED\")"
+        }
+      ]
+    }
+  ],
+  "scope": "Read-only bounded search, no imports or GPU execution. A missing match is not a universal absence proof."
+}

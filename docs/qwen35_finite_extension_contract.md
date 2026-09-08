@@ -310,3 +310,7 @@ substantial efficiency concerns to assess in the completed attribution path.
 ## Complete decoder boundary screen
 
 Both original decoder families now have complete finite input coefficients. See [evidence](history/Qwen35两类完整Decoder有限传播_20260908.md). The earlier boundary-pending statuses describe their historical stages. Final answer objective and the32-layer path remain pending. The new9B objective explicitly uses the author answer sink; prior8B whole-response seeds are a distinct target scope. No quality or whole-model cost claim follows from this local screen.
+
+## Executed answer-target32-layer pass
+
+One full32-layer finite pass has now executed on the two saved author trajectories with real605/368 padding. Final RMS and explicit answer-sink logprob seed are connected; prior pending statements record earlier stages. Full-chain residuals, native replay discontinuities and all costs are documented in [the integration report](history/Qwen35答案目标与32层有限传播_20260908.md). This is not a quality or production-readiness claim. The primary comparison must be the official FT hybrid variant on the same actual Qwen3.5 checkpoint, with native-structure mismatches audited before accepting a victory.
