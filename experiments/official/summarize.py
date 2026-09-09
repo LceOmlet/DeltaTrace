@@ -63,6 +63,7 @@ def summarize(report, protocol):
             'published_number_comparison': published, 'tasks': tables,
             'metric_direction': {'rise': 'lower', 'mas': 'lower', 'needle': 'higher'},
             'sample_batch': report['sample_batch'],
+            'dt_backend': report.get('dt_backend','clean'),
             'measured_call_seconds_including_cold_calls': sum(row['seconds'] for row in report['costs'])}
 
 
