@@ -24,3 +24,9 @@
 提交差距证据、实际错配检查、机制支持/反证、修复或停止结论，以及两模型质量/效率取舍。持续推送仓库并验证备份。不能以创建Goal、准备脚本或启动测试作为完成；也不以无依据的必胜承诺为验收条件。
 
 原论文实验固定在[qwen3-8b-table1-clean-v1-20260909](https://github.com/LceOmlet/DeltaTrace/tree/qwen3-8b-table1-clean-v1-20260909)；既有成本结果见[正式分组计时](../research/temporary/acceleration_20260909/formal_task_group_cost16/summary.json)。本轮记录见[研究目录](../research/temporary/cause_tolerance_20260909/README.md)。
+
+## 本轮新增证据（2026-09-09）
+
+[完整研究记录](../research/temporary/cause_tolerance_20260909/README.md)已包含原生FLA四例、真实NI8/MH8全部384层GDN诊断，以及两模型各12次完整DT加速筛查。门顺序分配现象确实存在，但相关条件在NI和MH频率接近，尚不能解释NI特有差距，未采纳规则修补。Qwen3原生目标logits使两例向量完全一致并节省148/256MB，未展示稳定提速；Qwen3.5三次GEMM内积复用无整体速度或峰值优势，已停止。
+
+Goal仍进行中。后续质量因果对照必须同次执行，明确记录原生端点的跨运行差异，追到真实删除集合，再决定是否存在简明修法；不能以此次诊断完成替代整个Goal完成。
