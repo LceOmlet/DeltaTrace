@@ -1,32 +1,16 @@
 # Qwen3-8B：FT 原表完整 DT 实验
 
-状态：已完成 12/13 个完整任务，共 1,148/1,243 条；仅剩MoreHopQA继续运行。实验范围固定为作者 Table 1 的完整发布缓存。
+**已完成作者Table 1全部13个任务、1,243条样本。** 全部原发布样本保留，无跳过、重新采样或重新生成；干净方法及评测源码在运行期间保持冻结。
 
-目前完成 `niah_mq_q2` 的全部 100 条：DT/FT 的 RISE 为 0.064538/0.068136，MAS 为 0.092454/0.162782，Recall@10% 为 0.667608/0.483435。它是该任务完整结果，不能替代其余任务或全表均值。
+制表直接使用[完整CSV](table.csv)或[LaTeX表格](table.tex)。[逐例指标](per_case.csv)、[逐例DT/FT配对](paired/paired_cases.csv)、[差值分布](paired/paired_summary.csv)及[来源核验](paired/paired_audit.json)同时保存。原始有符号向量、正值视图、删除曲线及输入映射位于`raw/`；[summary.json](summary.json)和[run.json](run.json)保存版本、哈希及全部完成记录。此前不完整表格可从Git历史恢复，当前目录仅保留完整表格入口。
 
-`niah_mq_q4` 也已完成全部 100 条：DT/FT 的 RISE 为 0.130963/0.113366，MAS 为 0.182525/0.193532，Recall@10% 为 0.478293/0.413260。该任务 DT 的 RISE 落后，MAS 和 needle 领先；原样保留所有结果，不根据任务成绩修改冻结方法。
+| 指标 | DT均值较优的任务数 | DT均值较差的任务 |
+|---|---:|---|
+| RISE↓ | 10/13 | MQ-Q4、MQ-Q8、VT-H10-C1 |
+| MAS↓ | 12/13 | MQ-Q8 |
+| Recall@10%↑ | 6/11 | 全部4项VT及HotpotQA |
 
-`niah_mq_q8` 已完成全部 100 条：DT/FT 的 RISE 为 0.375735/0.351848，MAS 为 0.544922/0.426987，Recall@10% 为 0.132395/0.074983。该任务 DT 的 RISE、MAS 均落后，needle 领先；这些差距同样完整入表，不能根据前两项任务推广为全面领先。
-
-`niah_mv_v2` 已完成全部 100 条：DT/FT 的 RISE 为 0.052110/0.068521，MAS 为 0.081022/0.156965，Recall@10% 为 0.751600/0.555618；三项均领先。
-
-`niah_mv_v4` 已完成全部 100 条：DT/FT 的 RISE 为 0.052526/0.070402，MAS 为 0.083538/0.160448，Recall@10% 为 0.575243/0.515886；三项均领先。
-
-`niah_mv_v8` 已完成全部 100 条：DT/FT 的 RISE 为 0.102224/0.182619，MAS 为 0.144165/0.247614，Recall@10% 为 0.243229/0.203609；三项均领先。
-
-`vt_h2_c3` 已完成全部 100 条：DT/FT 的 RISE 为 0.090010/0.131555，MAS 为 0.115687/0.187183，Recall@10% 为 0.507433/0.697646。该任务RISE、MAS领先，needle落后，不能根据前六个任务概括为needle全面领先。
-
-`vt_h4_c1` 已完成全部 100 条：DT/FT 的 RISE 为 0.109913/0.110247，MAS 为 0.145137/0.165450，Recall@10% 为 0.587099/0.754779。RISE非常接近，DT均值略低；MAS领先，needle落后。
-
-`vt_h6_c1` 已完成全部 100 条：DT/FT 的 RISE 为 0.114469/0.122444，MAS 为 0.148345/0.178680，Recall@10% 为 0.501467/0.658506。RISE、MAS领先，needle落后。
-
-`vt_h10_c1` 已完成全部 100 条：DT/FT 的 RISE 为 0.144849/0.142573，MAS 为 0.185092/0.198151，Recall@10% 为 0.402375/0.514176。RISE、needle落后，MAS领先。10个RULER任务已全部完成：RISE七胜三负、MAS九胜一负、needle六胜四负。needle的六项优势均来自NIAH，四项VT均落后；不能用NIAH的优势代表全部证据恢复任务。胜负只表示均值方向，不表示差距大或具有显著性；MoreHopQA尚未完成。
-
-`hotpotqa_long` 已完成全部48条：DT/FT的RISE为0.028066/0.033045，MAS为0.062677/0.127655，Recall@10%为0.349066/0.383723。RISE、MAS领先，needle落后。
-
-`math` 已完成全部100条：DT/FT的RISE为0.202913/0.348426，MAS为0.288828/0.445574，两项领先。该任务原表没有needle，不增造恢复指标。
-
-已完成任务见 [table_progress.csv](table_progress.csv) 和 [LaTeX](table_progress.tex)；[per_case.csv](per_case.csv) 保存逐例指标，[summary.json](summary.json) 保存输入、源码、权重和原始结果的校验记录。`raw/` 中保留原结果 JSON 的无损 gzip 和原始归因 NPZ。所有任务完成后导出 `table.csv` / `table.tex`；导出器默认拒绝不完整全表。
+这些是各任务完整样本的均值方向，不是显著性声明。6项NIAH的needle均领先，而4项VT及HotpotQA均落后；不概括为全面领先。MATH、MoreHopQA原表没有needle，保持空值。所有逐例退步均保留，没有根据本轮成绩调整方法。
 
 - 方法：冻结的 `clean-v1-20260909` Qwen3 DT，`content_P1`，不采用后续逐层修补。
 - 评测：`clean-v1-eval3-native-batch-20260909` 的正式入口；Qwen3 使用默认 clean 后端，真实样本 batch=1，内部两个端点共用原生 FA batch=2。Qwen3.5 的加速后端没有混入本次实验。
