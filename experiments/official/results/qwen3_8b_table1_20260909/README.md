@@ -33,6 +33,15 @@ python experiments/official/export_qwen3_paper.py \
 
 计算期间加 `--allow-partial` 只导出已经完整完成的任务，输出显式命名为 `table_progress`。CSV 保留完整浮点精度，LaTeX 显示四位小数；RISE/MAS 越低越好，Recall@10% 越高越好。Recall 保存为 [0,1] 比例，百分数展示时乘 100。粗体只表示观测均值较优，不表示显著性。
 
+需要计算期间自动更新导出时，在独立 CPU 进程运行：
+
+```bash
+python experiments/official/watch_qwen3_paper_exports.py \
+  --run /path/qwen3-paper-run --output /path/publication
+```
+
+该进程每 30 秒检查任务状态，只在新任务完成时调用同一个导出器；全表完成后导出正式文件并退出。它不执行模型或指标评分。实际 [依赖与权重记录](environment_receipt.json) 随结果保存。
+
 论文接入时，以这里的固定指标口径为准：**RISE 使用有符号排序，只有 MAS 和 needle 使用正值部分**。截至启动本次实验时，论文草稿 `paper/iclr2027/sections/evaluation.tex` 中“Both metrics use the positive part”仍是旧口径，不能作为本次实验设置。
 
 协议与原表来源见 [protocol.json](../../protocol.json) 和作者 [REPRODUCTION.md](../../reference/REPRODUCTION.md)。
