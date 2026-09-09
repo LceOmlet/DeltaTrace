@@ -2,7 +2,7 @@
 
 2026-09-09，用户明确替换研究主线。旧的以有符号MAS差距驱动传播修补的主线已被撤回；不再根据单层、单例残差叠加候选。最新完整正文见[goal_objective.txt](goal_objective.txt)；应用中的既有Goal仍在执行，工具不支持直接改写其正文。
 
-**当前执行：先提交两模型干净DT和作者原表评测入口，正式实验运行DT并直接复用FT发布的原始CSV；容差加速在独立分支并行。** 当前配置：[clean_dt_baselines.json](../configs/clean_dt_baselines.json)。两模型NI0/MH0入口检查已完成；16例开发回归和完整原表DT实验尚未完成。带修复项C的结果只作历史记录。
+**当前执行：两模型干净DT及作者原表评测已固定，两模型各16例开发回归已完成；正式实验运行DT并直接复用FT发布的原始CSV，容差加速在独立分支推进。** 当前配置：[clean_dt_baselines.json](../configs/clean_dt_baselines.json)。[32条结果及全部逐例退步](../research/temporary/development16_20260909/README.md)已保存；完整原表DT实验尚未执行。带修复项C的结果只作历史记录。
 
 用户最新要求优先固定提交干净代码及正式评测，加速并行推进。干净方法入口移至`deltatrace/clean/`；正式评测位于`experiments/official/`，按作者Table 1发布协议固定输入包装、eager评分、忠实度FT K=1和needle FT K=3。临时诊断及未对齐草稿位于`research/temporary/`。原16例只是开发覆盖；直接比较原论文已有均值须使用同模型、同任务完整发布缓存。不能用披露差异替代对齐。
 

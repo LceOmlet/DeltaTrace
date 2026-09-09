@@ -1,0 +1,114 @@
+\section{DeltaTrace}
+\label{sec:method}
+
+\subsection{Signed contributions to a response}
+% M1: The response target, source set, and reference define the explanation.
+The attribution target is the log-probability of a fixed response $y$ under a context $x$,
+\begin{equation}
+F(x;y)=\sum_{t\in\mathcal T}\log p_\theta(y_t\mid x,y_{<t}),
+\label{eq:target}
+\end{equation}
+where $\mathcal T$ contains the selected response positions. The original input is $x_1$ and its reference is $x_0$. In the evaluation protocol, the reference replaces eligible source tokens with EOS while retaining the response and its positions. Attribution is computed in the input embedding space. A source contribution $A_i$ assigns part of $\D F=F(x_1;y)-F(x_0;y)$ to the embedding change at position $i$. Its sign specifies its direction within this decomposition.
+
+\subsection{Contribution propagation}
+% M2: A local rule and its reverse composition.
+For an operation $v=f(u_1,\ldots,u_k)$, \dt{} constructs linear maps $D_j$ from the two executions such that
+\begin{equation}
+\D v=\sum_{j=1}^k D_j\D u_j.
+\label{eq:local}
+\end{equation}
+An upstream contribution coefficient $m_v$ propagates to input $j$ as $D_j^\top m_v$. Contributions from multiple consumers add at their shared input. Starting with coefficient $1$ at the scalar target, the reverse traversal produces $m_i$ at input position $i$ and returns
+\begin{equation}
+A_i=\ip{m_i}{x_{1,i}-x_{0,i}}.
+\label{eq:attribution}
+\end{equation}
+For a scalar nonlinearity $f$, the local coefficient is the divided difference $(f(u_1)-f(u_0))/(u_1-u_0)$, with its derivative as the coincident-input limit. Linear transformations retain their original weights, and addition sends the coefficient to each summand.
+
+% M3: The main mathematical statement and its intuitive consequence.
+\begin{theorem}[Contribution conservation]
+For an acyclic computation over real-valued operations satisfying Equation~\ref{eq:local}, reverse propagation from a scalar target yields
+\begin{equation}
+\sum_i A_i=F(x_1;y)-F(x_0;y).
+\label{eq:conservation}
+\end{equation}
+\end{theorem}
+The result follows from the equality $\ip{m_v}{\D v}=\sum_j\ip{D_j^\top m_v}{\D u_j}$ at every operation. It places all source contributions on the same response scale and preserves cancellation as contributions meet along the computation graph. Appendix~\ref{app:proofs} gives the complete argument.
+
+\subsection{Content and routing in attention}
+\label{sec:attention}
+% M4: The PV mechanism supplies the central intuition.
+For attention probabilities $P$ and values $V$, the output is $Y=PV$. \dt{} decomposes its change as
+\begin{equation}
+\boxed{\D Y=P_1\D V+\D P\,V_0.}
+\label{eq:pv}
+\end{equation}
+The first term assigns content changes through the attention used by the original input. The second assigns changes in routing their own contribution. The interaction $\D P\D V$ is included in the content term. With an upstream coefficient $U$, the corresponding coefficients are $m_V=P_1^\top U$ and $m_P=UV_0^\top$.
+
+% M5: The finite softmax is explicit and can be computed by row reductions.
+Attention probabilities are normalized scores. For a row $p_b=\sm(z_b)$, $b\in\{0,1\}$, the logarithmic mean and its sum are
+\begin{equation}
+\ell_i=\frac{p_{1,i}-p_{0,i}}{\log p_{1,i}-\log p_{0,i}},\qquad
+\tau=\sum_i\ell_i,
+\label{eq:logmean}
+\end{equation}
+with $\ell_i=p_{0,i}$ at coincident probabilities. All quantities are evaluated on the common unmasked support. The following identity connects routing changes to score changes:
+\begin{proposition}[Finite attention normalization]
+For finite logits on a common support,
+\begin{equation}
+\D p=\left(\diag(\ell)-\frac{\ell\ell^\top}{\tau}\right)\D z.
+\label{eq:softmax}
+\end{equation}
+\end{proposition}
+The transpose action reduces to an elementwise product and a weighted row mean. For an upstream row $u$, its score coefficient is
+\begin{equation}
+m_z=\ell\odot\left(u-\frac{\ell^\top u}{\tau}\mathbf 1\right).
+\label{eq:softmax-vjp}
+\end{equation}
+The same logarithmic mean gives the response seed for log-softmax: $m_z=e_y-\ell/\tau$. Thus attention routing and the response target share an analytic normalization rule.
+
+% M6: Shared rules stay explicit and architecture-independent.
+Query--key scores use the symmetric product identity,
+\begin{equation}
+\D(QK^\top)=\D Q\,\bar K^\top+\bar Q\,\D K^\top,\qquad
+\bar Q=(Q_0+Q_1)/2,
+\label{eq:qk}
+\end{equation}
+with $\bar K$ defined in the same way. The common operator rules appear in Table~\ref{tab:rules}. They depend on the operator and its role, and are shared by the two model families. Normalization, rotary position transformations, and grouped heads follow their respective model definitions.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Fixed propagation rules shared across architectures. Bars denote endpoint averages. Gated-memory operations extend the same content-oriented rule to recurrent states.}
+\label{tab:rules}
+\begin{tabular}{@{}p{0.27\linewidth}p{0.65\linewidth}@{}}
+\toprule
+Operation & Change decomposition \\
+\midrule
+Linear and residual & $\D(Wx+b)=W\D x$; $\D(a+b)=\D a+\D b$ \\
+Attention values & $\D(PV)=P_1\D V+\D P V_0$ \\
+Attention scores & $\D(QK^\top)=\D Q\bar K^\top+\bar Q\D K^\top$ \\
+SwiGLU & $\D(us)=\bar s\odot\D u+\bar u\odot\D s$, $s=\silu(g)$ \\
+Output gating & $\D(ns)=s_1\odot\D n+n_0\odot\D s$ \\
+RMS normalization & Analytic finite rule for $wx/\sqrt{\operatorname{mean}(x^2)+\epsilon}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Evidence in gated memory}
+\label{sec:memory}
+% M7: Memory is introduced as evidence retention, reading, and writing.
+Gated delta memory combines retention with a content-dependent update \citep{yang2024gated}. With column vectors and a key-by-value state $S_t\in\R^{d_k\times d_v}$, its per-token computation is
+\begin{align}
+T_t&=\alpha_t S_{t-1}, & r_t&=T_t^\top k_t, \nonumber\\
+c_t&=v_t-r_t, & u_t&=\beta_t c_t, \label{eq:gdn}\\
+S_t&=T_t+k_tu_t^\top, & o_t&=S_t^\top q_t. \nonumber
+\end{align}
+The query includes the model's fixed attention scale. The state $T_t$ contains retained evidence, $r_t$ reads existing content, and $u_t$ writes the update. \dt{} follows the change of this computation using fixed content-oriented products:
+\begin{align}
+\D T_t&=\alpha_{t,1}\D S_{t-1}+S_{t-1,0}\D\alpha_t, \nonumber\\
+\D r_t&=(\D T_t)^\top k_{t,1}+T_{t,0}^\top\D k_t, \nonumber\\
+\D u_t&=\beta_{t,1}(\D v_t-\D r_t)+c_{t,0}\D\beta_t, \label{eq:gdn-finite}\\
+\D S_t&=\D T_t+k_{t,1}\D u_t^\top+\D k_t\,u_{t,0}^\top, \nonumber\\
+\D o_t&=(\D S_t)^\top q_{t,1}+S_{t,0}^\top\D q_t. \nonumber
+\end{align}
+This recurrence assigns contributions to new values, retrieval keys, queries, and both gates. Reversing it carries the response coefficient through stored evidence to earlier sources. Scalar gate nonlinearities and query/key normalization use the same finite propagation construction as the surrounding network.

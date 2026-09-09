@@ -1,0 +1,23 @@
+# Manuscript evidence map
+
+This working file connects the draft to its source material. It is separate from the manuscript.
+
+| ID | Material | Supports | Scope of support | Manuscript use |
+|---|---|---|---|---|
+| D1 | `deltatrace/clean/qwen3/qwen_signed_secant_vendor_fa.py` and paired runner | P1 attention, symmetric QK/SwiGLU, finite normalization and fixed-response seed | Method definition; empirical comparison comes from result records | Sections 1–3 |
+| D2 | `deltatrace/clean/qwen35/qwen35_clean_runner.py` and decoder/GDN modules | Empty layer overrides; content-oriented output gates and GDN recurrence | Clean source definition; not a benchmark result | Sections 2–3 |
+| D3 | `deltatrace/clean/qwen35/finite_fla_gpu.py` | Native chunk adjoints, mixed contractions, finite decay scan, 64-token chunks | Actual computational structure | Section 3 |
+| D4 | `research/prototypes/vendor_fa_finite_p1.cu` and BF16/D256 extension | Log-mean row reductions and finite attention contractions on the vendor FA framework | Operator design; whole-method timings are separate | Section 3 |
+| D5 | `experiments/official/protocol.json` and README | Author inputs, task selection, eager scoring, K=1 faithfulness and K=3 recovery | Evaluation protocol; results remain in their own records | Section 4 and Appendix B |
+| T1 | Finite local identity and adjoint inner-product substitution | Contribution conservation on an acyclic real-valued graph | Exact arithmetic theorem | Theorem 1 and Appendix A |
+| T2 | Probability normalization and logarithmic-mean identity | Finite softmax, response seed, PSD score operator | Exact arithmetic on common unmasked support | Proposition 1 and Appendix A |
+| T3 | Bilinear expansion and reciprocal-norm identity | Product rules, GDN change recurrence and RMS rule | Local mathematical identities | Section 2 and Appendix A |
+| L1 | Shrikumar et al., PMLR 2017 | Reference activation differences, multiplier composition, summation to delta | Retrieved original paper and supplement | Related Work |
+| L2 | Sundararajan et al., PMLR 2017 | IG and its axiomatic attribution framing | Retrieved PMLR entry | Related Work |
+| L3 | Dao et al., arXiv:2205.14135 | FlashAttention tiling and memory-traffic organization | Retrieved paper abstract and original source | Introduction, computation, related work |
+| L4 | Pan et al., arXiv:2602.01914v4 and authors' `table1-data-v1` release | FlashTrace span aggregation, recursion, original evaluation; release specifies K=1 faithfulness and K=3 recovery | Retrieved full text, tagged author code and data release, and released local protocol | Introduction, evaluation, related work |
+| L5 | Yang et al., arXiv:2412.06464v3 | Gated delta state update and chunkwise computation | Retrieved full text | Gated-memory formulation and related work |
+
+The draft includes mechanism, mathematical properties, implementation structure, and evaluation protocol. Quality and timing comparisons attach to full aligned experiment artifacts. The positive-view patched eight-case results and earlier raw-prompt comparisons are not manuscript result sources.
+
+Supervisor-Skills reference: commit `207bc6f7a1aa107e544099c2c7cc86816fba9628`, `paper-writer` and `intro-drafter`. The workflow uses source-linked claims and an independent citation check. The user's requested focus and affirmative narrative govern the prose; fixed paragraph lengths, reference quotas, and prescribed limitations sections are not applied.

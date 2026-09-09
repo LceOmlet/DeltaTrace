@@ -1,0 +1,27 @@
+\section{Introduction}
+\label{sec:introduction}
+
+% I1: The task and the meaning of a useful explanation.
+Reasoning language models use input evidence across an extended sequence of computations. An explanation connects their answers to the sources that shape those answers. For a given response, a useful attribution identifies both the amount of contribution assigned to a source and its direction. Supporting and opposing evidence can coexist in the same context, and their contributions can cancel in the final prediction. Preserving this structure makes the explanation informative about how the model combines evidence.
+
+% I2: The concrete computational distinction that motivates the method.
+Evidence enters a model's prediction through its content and through the mechanisms that select and combine that content. Attention weights route value vectors, while memory gates determine how much stored information survives and how much new information is written. FlashTrace traces source importance for multi-token targets through span aggregation and recursive attribution \citep{pan2026flashtrace}. \dt{} traces signed prediction contributions through these content and control computations. Its central question is how each source participates in the change of a specified response score.
+
+\begin{figure}[t]
+\centering
+\input{figures/overview}
+\caption{\textbf{Signed evidence tracing.} Input sources contribute through content, attention routing, and memory control. \dt{} propagates their signed contributions back from the response. Positive and negative contributions share a common target and sum to its change. The diagram depicts the method's computation.}
+\label{fig:overview}
+\end{figure}
+
+% I3: The method intuition, before its technical machinery.
+\dt{} explains a response by following the change from a reference input to the original input. Each model operation distributes its output change among the changes of its inputs. A reverse traversal composes these local distributions into a contribution for every input source. The same construction handles a small activation change and a transition across a nonlinear region: propagation uses the change across the two executions. This gives the method a direct connection to the response being explained and a common scale for supporting and opposing contributions.
+
+% I4: The mechanism that carries the contribution.
+The key design concerns interactions. In attention, \dt{} assigns changing content through the routing used by the original input and retains routing changes as a separate contribution. An analytic finite softmax rule propagates the routing contribution to query and key scores. In gated memory, the same content-oriented construction follows decay, retrieval, and writing through the state recurrence. Shared normalization and feed-forward operators use fixed finite propagation rules. Their composition yields contribution conservation across the complete computation.
+
+% I5: How the computational organization makes the method usable.
+The propagation is organized around the model's efficient computational primitives. Attention contributions are accumulated within tiles using the FlashAttention framework \citep{dao2022flashattention}. Memory contributions reuse chunk-state propagation and batched contractions. The implementation retains vectors and chunk states while processing pairwise interactions within bounded tiles. This organization supports a common method across dense-attention and hybrid models, with model execution, attribution, and numerical precision specified separately.
+
+% I6: Contributions stated as actual methodological and mathematical content.
+This work develops three connected contributions. First, \dt{} traces signed response contributions through content and control with fixed rules shared across model architectures (Section~\ref{sec:method}). Second, analytic attention and memory rules connect this propagation to a finite chain rule and contribution conservation (Sections~\ref{sec:attention}--\ref{sec:memory}). Third, a tiled and chunked computation realizes these rules with sequence-linear auxiliary storage at fixed model dimensions (Section~\ref{sec:computation}). The evaluation protocol links source recovery and faithfulness to complete attribution cost (Section~\ref{sec:evaluation}).

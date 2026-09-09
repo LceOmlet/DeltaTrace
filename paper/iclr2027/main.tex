@@ -1,0 +1,48 @@
+\documentclass{article}
+\usepackage{iclr2027_conference,times}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx,booktabs,array}
+\usepackage{xcolor,tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{hyperref}
+\usepackage{url}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black}
+
+\title{DeltaTrace: Efficient Signed Attribution\\for Reasoning Language Models}
+\author{Anonymous authors}
+\newcommand{\dt}{\textsc{DeltaTrace}}
+\newcommand{\D}{\Delta}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ip}[2]{\left\langle #1,#2\right\rangle}
+\newcommand{\sm}{\operatorname{softmax}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\silu}{\operatorname{SiLU}}
+\newcommand{\rms}{\operatorname{RMSNorm}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\definecolor{support}{HTML}{176B87}
+\definecolor{oppose}{HTML}{B25332}
+\definecolor{ink}{HTML}{263442}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Explaining a reasoning model's answer involves tracing how input evidence contributes to its prediction. These contributions carry both magnitude and direction: different sources can support or oppose the same response. We present \dt{}, a method that propagates signed contributions from a response to its input sources. The method decomposes changes in model computations into content and routing contributions, follows them through attention and gated memory, and preserves their sum through a finite chain rule. An analytic treatment of attention normalization connects changes in routing probabilities to changes in attention scores. A corresponding memory recurrence tracks how evidence is retained, read, and updated. The resulting propagation admits tiled attention contractions and chunked memory computation, with sequence-linear auxiliary storage at fixed model dimensions. \dt{} provides a common attribution framework for attention and hybrid reasoning models. Its evaluation protocol combines source recovery and the original FlashTrace faithfulness metrics with complete attribution cost measurements.
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/method}
+\input{sections/computation}
+\input{sections/evaluation}
+\input{sections/related}
+\input{sections/conclusion}
+
+\section*{AI Use Statement}
+AI assistance supported conceptual development, mathematical derivations, research code, experimental design and analysis, literature retrieval, manuscript organization, and language editing. The manuscript uses the released evaluation data and model-generated trajectories specified in the evaluation protocol.
+
+\bibliography{references}
+\bibliographystyle{iclr2027_conference}
+\clearpage
+\appendix
+\input{sections/appendix}
+\end{document}

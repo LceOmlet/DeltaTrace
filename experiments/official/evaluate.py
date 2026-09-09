@@ -47,8 +47,8 @@ def main():
     development_inputs = json.loads((HERE/'development16_inputs.json').read_bytes())
     if args.ft == 'published' and (args.family != 'qwen3' or args.selection != 'paper'):
         raise ValueError('Published FT means require Qwen3 and the complete published task selection.')
-    if args.selection != 'paper' and args.datasets != ['niah_mq_q2', 'morehopqa']:
-        raise ValueError('The development/smoke task set is frozen to NI and MH.')
+    if args.selection != 'paper' and not set(args.datasets).issubset({'niah_mq_q2', 'morehopqa'}):
+        raise ValueError('Development/smoke runs only select the frozen NI and MH tasks.')
     for path, receipt in sources['models'][args.family]['files'].items():
         assert sha((ROOT / path).read_bytes()) == receipt['sha256'], path
     official = Path(env['official_root'])
@@ -108,6 +108,15 @@ def main():
     torch.set_num_threads(4)
     torch.manual_seed(73)
     torch.backends.cuda.matmul.allow_tf32 = False
+    # The frozen method uses static finite graphs. Different original sequence
+    # lengths must not hit Dynamo's default eight-variant cap midway through a
+    # dataset. This only sizes the official compiler cache; fullgraph remains
+    # enabled, with no fallback, method change or model/FT modification.
+    compiler_cache_before = {name: getattr(torch._dynamo.config, name) for name in
+                            ('cache_size_limit', 'accumulated_cache_size_limit')}
+    required_variants = 2 * sum(len(rows) for rows in caches.values()) + 16
+    torch._dynamo.config.cache_size_limit = max(compiler_cache_before['cache_size_limit'], required_variants)
+    torch._dynamo.config.accumulated_cache_size_limit = max(compiler_cache_before['accumulated_cache_size_limit'], 4 * required_variants)
     args.output.mkdir(parents=True, exist_ok=False)
     report = {'status': 'loading', 'family': args.family, 'selection': args.selection,
         'protocol_sha256': sha((HERE / 'protocol.json').read_bytes()),
@@ -116,6 +125,8 @@ def main():
         'weight_identity': weight_identity,
         'published_number_comparison': args.family == 'qwen3' and args.selection == 'paper',
         'generation_calls': 0, 'sample_batch': 1,
+        'compiler_cache_before': compiler_cache_before,
+        'compiler_cache_limits': {name: getattr(torch._dynamo.config, name) for name in compiler_cache_before},
         'selected_counts': {key: len(value) for key, value in caches.items()}}
     vectors = {}
 
