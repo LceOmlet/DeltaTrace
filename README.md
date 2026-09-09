@@ -1,5 +1,7 @@
 # DeltaTrace
 
+**本分支当前Goal：**[Qwen3.5质量根因、简明修复及两模型容差加速](docs/current_goal.md)，状态进行中。新研究位于[独立目录](research/temporary/cause_tolerance_20260909/README.md)；下列论文及成本结果是冻结起点。
+
 **Qwen3-8B原表实验已完成13任务、1243条，固定在独立标签[qwen3-8b-table1-clean-v1-20260909](https://github.com/LceOmlet/DeltaTrace/tree/qwen3-8b-table1-clean-v1-20260909)。** 本分支的[Qwen3.5正式任务内B2成本](research/temporary/acceleration_20260909/README.md)已完成，完整归因吞吐提高28.7%、显存约21.644→23.628GB；没有混入Qwen3论文质量表。
 
 当前入口分为三处：[干净方法](deltatrace/clean/README.md)、[FT原实验对齐评测](experiments/official/README.md)、[临时研究](research/temporary/README.md)。正式评测只导入冻结的干净方法；旧研究材料不作为默认入口。
