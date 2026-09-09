@@ -143,7 +143,7 @@ def main():
 
     def save():
         temp = args.output / 'results.partial'
-        temp.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
+        temp.write_text(json.dumps(report, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')
         temp.replace(args.output / 'results.json')
 
     def timed(name, function):
