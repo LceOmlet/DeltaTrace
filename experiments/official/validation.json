@@ -1,0 +1,27 @@
+{
+  "release": "clean-v1-20260909",
+  "status": "four real smoke cases passed; full paper run not yet executed",
+  "method_source_files": 27,
+  "clean_sources_sha256": "99835009525bed308958a78f9e86f47f0a760104d74e286b36b5f3ccb80264e2",
+  "release_driver_sha256": "9a6f24f467d77c30a8c00b295ce56babadc6a34903685530fd8809cc79a1c6e7",
+  "release_protocol_sha256": "c6065b68465160849d0711ea5c4a0b0ef37f4cb27a03c0c925cda5ea539c0e3d",
+  "executed_driver_sha256": "9458abad41673a030d044af0f16110804e652dfdb46ae920746ac621cae07b57",
+  "post_smoke_changes": [
+    "Default Qwen3 paper runs select all 13 released tasks and reuse published FT CSVs.",
+    "Paper mode verifies checkpoint files against the pinned existing receipt before loading.",
+    "Source checks additionally pin author shared_utils.py.",
+    "The summary entrypoint only aggregates original metric results; incomplete or subset paper comparisons are rejected."
+  ],
+  "post_smoke_validation": "Python AST, exact method/source identity, author shared_utils identity, summary on both real reports and rejection of failed/duplicate/subset cases; no claim of executing the full paper branch.",
+  "temporary_execution_receipt": "../../research/temporary/clean_entrypoint_validation_20260909.json",
+  "formal_quality_results_completed": false,
+  "development16_completed": false,
+  "formal_runner_sample_batch": 1,
+  "no_shadow_checks": [
+    "No changes to FT, model, FA or FLA source in this release.",
+    "Original author input preparation and metric functions are imported and source checked.",
+    "Actual scoring inputs and fixed targets are checked for all 21 deletion calls.",
+    "Native model forward identities are checked after DT and FT.",
+    "DT finite propagation stays an explicitly named extension; it is not labeled native backward."
+  ]
+}

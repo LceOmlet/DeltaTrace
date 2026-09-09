@@ -1,6 +1,8 @@
 # DeltaTrace
 
-**当前执行目标：**[干净基线 → 16例原评测 → 容差加速](docs/current_goal.md)。恢复Qwen3/Qwen3.5干净DT，两模型各完成NI0–7/MH0–7，RISE/MAS统一正值输入，原有符号归因另存；固定原FT，基线后研究默认FA/FLA精度下的加速和真实批处理。应用Goal已同步为该目标。以下为历史进展，旧MAS修补优先级和固定显存容差不再作为当前约束，历史已执行协议和结果不改写。
+当前入口分为三处：[干净方法](deltatrace/clean/README.md)、[FT原实验对齐评测](experiments/official/README.md)、[临时研究](research/temporary/README.md)。正式评测只导入冻结的干净方法；旧研究材料不作为默认入口。
+
+**当前执行目标：**[固定干净代码与FT原表评测，并行加速](docs/current_goal.md)。正式实验按FT原表设置运行DT，直接复用作者发布的FT原始CSV；RISE/MAS统一正值输入，完整有符号归因另存。16例用于开发回归；加速在独立分支推进，保持默认FA/FLA和可追溯有限扩展。以下为历史进展，旧MAS修补优先级和固定显存容差不再作为当前约束。
 
 **最新纠正：原MAS不能直接验证完整有符号贡献；此前据此驱动逐层修补的依据撤回。** [当前goal](docs/current_goal.md)。干净两模型16例验收尚未完成。
 

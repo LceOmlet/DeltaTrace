@@ -2,11 +2,11 @@
   "schema_version": 1,
   "status": "active_research_baselines_pending_fresh_16_case_acceptance",
   "user_requested_20260909": true,
-  "evaluation_score_view": "research/runtime/metric_score_view.py:positive_metric_scores",
+  "evaluation_score_view": "positive part in the official evaluation adapter; author metrics unchanged",
   "signed_output_retained": true,
   "qwen3": {
     "checkpoint": "Qwen3-8B",
-    "entrypoint": "research/prototypes/qwen_signed_secant_paired_vendor_fa.py:propagate_paired_secant",
+    "entrypoint": "deltatrace/clean/qwen3/qwen_signed_secant_paired_vendor_fa.py:propagate_paired_secant",
     "pv_rule": "content_P1",
     "backend": "existing traceable FA finite extension, default model FA",
     "precision": "original FP16 model and native FA",
@@ -14,7 +14,7 @@
   },
   "qwen35": {
     "checkpoint": "Qwen3.5-9B",
-    "entrypoint": "research/runtime/qwen35_clean_runner.py:make_qwen35_clean_runner",
+    "entrypoint": "deltatrace/clean/qwen35/qwen35_clean_runner.py:make_qwen35_clean_runner",
     "norm_gate_rules": {},
     "finite_fla_by_layer": {},
     "attention_pv_rules": {},
@@ -26,16 +26,50 @@
     "new_clean_16_case_acceptance": "not_yet_run"
   },
   "quality_coverage_per_model": {
-    "niah_mq_q2": [0, 1, 2, 3, 4, 5, 6, 7],
-    "morehopqa": [0, 1, 2, 3, 4, 5, 6, 7],
-    "metrics": ["original needle where gold exists", "original RISE", "original MAS"],
+    "niah_mq_q2": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "morehopqa": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "metrics": [
+      "original needle where gold exists",
+      "original RISE",
+      "original MAS"
+    ],
     "inputs": "author processed caches and frozen trajectories; explicit same-model FT comparison",
-    "historical_reuse": "Only when clean source, evaluated vector, input, target, eligible range, precision/backend and metric contract are verified; otherwise recompute. Do not relabel previous patched C results as clean."
+    "historical_reuse": "Requires identical official input/target/mapping and evaluator contract; raw-prompt Qwen3.5 and patched C are not accepted."
   },
   "acceleration": {
-    "priority": "after clean baseline acceptance",
+    "priority": "parallel in separate branch after source/protocol freeze; no GPU timing contention",
     "principle": "Profile real bottlenecks and reuse official FA/FLA/compilers with empirically accepted numerical tolerance; no new attribution formula or bitwise-equality gate.",
-    "report": ["whole attribution latency", "peak memory", "true sample batch throughput", "per-case quality changes"],
-    "avoid": ["shadow model/attention/backward", "global sequence-squared storage", "per-layer MAS patches", "unbounded integration or extra endpoints"]
-  }
+    "report": [
+      "whole attribution latency",
+      "peak memory",
+      "true sample batch throughput",
+      "per-case quality changes"
+    ],
+    "avoid": [
+      "shadow model/attention/backward",
+      "global sequence-squared storage",
+      "per-layer MAS patches",
+      "unbounded integration or extra endpoints"
+    ]
+  },
+  "official_evaluation": "experiments/official/evaluate.py",
+  "author_protocol": "experiments/official/protocol.json"
 }
