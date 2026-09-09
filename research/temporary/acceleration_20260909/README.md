@@ -1,5 +1,13 @@
 # 加速工作：独立于 clean-v1-20260909
 
+## 待补：正式任务内分组的对应计时
+
+Qwen3-8B完整论文实验运行期间，仅在CPU完成了[计时分组准备](prepare_task_group_cost16.py)：直接调用原正式入口的`group_cases`，16条输入、8个批次的实际端点与mask哈希全部匹配既有有符号质量运行。固定[计划](task_group_cost16_plan.json)明确标为`prepared_not_measured`。
+
+正式任务内分组的padding为每端点847个token，旧跨任务长度分组为601个；两个端点总计多492个padding token。因此，旧35.3%吞吐提升不能直接写成新正式分组的实测结果，也不能仅根据padding推算新速度。
+
+[对应计时脚本](benchmark_formal_task_groups.py)让干净B1和加速B2都通过未改动的正式`attribute_batch`，逐形状预热后做两轮交错/逆序测量；包含输入打包、原有诊断和CPU结果返回，加载与预热分开。不重复质量或FT计算，不复制有限算子，不改变27个干净方法文件。当前仅完成CLI/语法及实际输入身份检查，GPU测量尚未执行；须等Qwen3论文全量任务释放GPU。
+
 已完成两例成本测试、固定16例正值视图质量回归、相同16例的预热后交错计时，以及新正式入口的有符号RISE/正值MAS回归。加速方法代码位于[`deltatrace/accelerated`](../../../deltatrace/accelerated/README.md)，干净代码仍逐字节保留。新增内容仅为GPU检查点、默认原生变长FA接线和官方动态编译；有限公式、原FT及模型/FA/FLA代码不改。历史正值RISE不能改名为新口径验收。完整原始记录及向量保存在本目录，下面的早期状态仅作历史记录。
 
 ## 相同16例的预热后完整成本
