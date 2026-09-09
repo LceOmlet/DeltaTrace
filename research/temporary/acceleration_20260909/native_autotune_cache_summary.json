@@ -1,0 +1,131 @@
+{
+  "scope": "Two original author MH inputs; two fresh processes; installed vendor Triton cache only; no DT quality or all-length claim",
+  "raw_sha256": {
+    "write": "45a78e30a9d9146efb04c55544bffb872d756fb1a5720c3de2fb279a1c4b2999",
+    "read": "6ea8fa2e46eb1f4cd4cc6c9d667b0629847c49b8caa91e8f159fe0a5c3d6e61d"
+  },
+  "source_sha256": "0b47e233cb4184dd760f5fc4b8e593a67e6a7f2cfb30c234908be2ffd99312ab",
+  "autotuner_source_sha256": "96df4ab58c3091f859dc48e70f7b0577f3681892e6f564ab3f2855e224ce4e2f",
+  "device": "MetaX C550",
+  "torch_version": "2.8.0+metax3.5.3.9",
+  "controller": {
+    "status": "complete",
+    "pid": 651726,
+    "runs": [
+      {
+        "phase": "write",
+        "pid": 651727,
+        "started": 1788931491.984902,
+        "status": "complete",
+        "exit_code": 0,
+        "ended": 1788931545.618399
+      },
+      {
+        "phase": "read",
+        "pid": 652736,
+        "started": 1788931545.6251307,
+        "status": "complete",
+        "exit_code": 0,
+        "ended": 1788931584.6884046
+      }
+    ],
+    "source_sha256": "0b47e233cb4184dd760f5fc4b8e593a67e6a7f2cfb30c234908be2ffd99312ab"
+  },
+  "cache_files": 8,
+  "cache_configurations_preserved": true,
+  "phases": {
+    "write": [
+      {
+        "name": "load",
+        "seconds": 10.665813768282533,
+        "bench_count": 0,
+        "bench_seconds": 0,
+        "kernel_bench_seconds": {}
+      },
+      {
+        "name": "eager_initialization",
+        "seconds": 15.769554171711206,
+        "bench_count": 93,
+        "bench_seconds": 14.844579987227917,
+        "kernel_bench_seconds": {
+          "l2norm_fwd_kernel": 3.964552130550146,
+          "chunk_local_cumsum_scalar_kernel": 0.5336572378873825,
+          "chunk_scaled_dot_kkt_fwd_kernel": 3.6354293059557676,
+          "merge_16x16_to_64x64_inverse_kernel": 1.6525303646922112,
+          "recompute_w_u_fwd_kernel": 1.2450609877705574,
+          "chunk_gated_delta_rule_fwd_kernel_h_blockdim64": 0.5847190581262112,
+          "chunk_fwd_kernel_o": 0.4270367156714201,
+          "layer_norm_gated_fwd_kernel": 2.8015941865742207
+        }
+      },
+      {
+        "name": "FA_first",
+        "seconds": 0.16400526463985443,
+        "bench_count": 0,
+        "bench_seconds": 0,
+        "kernel_bench_seconds": {}
+      },
+      {
+        "name": "FA_repeat",
+        "seconds": 0.1572185903787613,
+        "bench_count": 0,
+        "bench_seconds": 0,
+        "kernel_bench_seconds": {}
+      }
+    ],
+    "read": [
+      {
+        "name": "load",
+        "seconds": 10.831962745636702,
+        "bench_count": 0,
+        "bench_seconds": 0,
+        "kernel_bench_seconds": {}
+      },
+      {
+        "name": "eager_initialization",
+        "seconds": 1.4860980156809092,
+        "bench_count": 0,
+        "bench_seconds": 0,
+        "kernel_bench_seconds": {}
+      },
+      {
+        "name": "FA_first",
+        "seconds": 0.16218217089772224,
+        "bench_count": 0,
+        "bench_seconds": 0,
+        "kernel_bench_seconds": {}
+      },
+      {
+        "name": "FA_repeat",
+        "seconds": 0.15680190548300743,
+        "bench_count": 0,
+        "bench_seconds": 0,
+        "kernel_bench_seconds": {}
+      }
+    ]
+  },
+  "native_output_comparison": {
+    "eager_initialization": {
+      "shape": [
+        652
+      ],
+      "max_absolute_difference": 0.0,
+      "relative_L2": 0.0
+    },
+    "FA_first": {
+      "shape": [
+        652
+      ],
+      "max_absolute_difference": 0.0,
+      "relative_L2": 0.0
+    },
+    "FA_repeat": {
+      "shape": [
+        652
+      ],
+      "max_absolute_difference": 0.0,
+      "relative_L2": 0.0
+    }
+  },
+  "no_model_attention_or_autotuner_source_changes": true
+}
