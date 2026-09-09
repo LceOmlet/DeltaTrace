@@ -18,6 +18,15 @@ def main():
     source = '\n'.join(re.sub(r'(?<!\\)%.*', '', f.read_text(encoding='utf-8')) for f in files)
     for child in re.findall(r'\\input\{([^}]+)\}', source):
         assert (ROOT / (child + '.tex')).exists(), child
+    graphics = re.findall(r'\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}', source)
+    for graphic in graphics:
+        assert (ROOT / graphic).is_file(), graphic
+    manifest = json.loads((ROOT / 'figures/figure_manifest.json').read_bytes())
+    assert sha(ROOT / 'figures/data/cases.json') == manifest['fixture_sha256']
+    assert sha(ROOT / 'figures/build_figures.py') == manifest['builder_sha256']
+    assert sha(ROOT / 'figures/draw_mechanism.py') == manifest['mechanism_builder_sha256']
+    for name, digest in manifest['generated_files'].items():
+        assert sha(ROOT / 'figures/generated' / name) == digest, name
     labels = re.findall(r'\\label\{([^}]+)\}', source)
     assert len(labels) == len(set(labels)), 'Repeated labels'
     refs = re.findall(r'\\(?:eqref|ref)\{([^}]+)\}', source)
@@ -30,6 +39,9 @@ def main():
     report = dict(official_kit_verified=True, official_style_modified=False,
                   manuscript_tex_files=len(files), unique_labels=len(labels), verified_citation_keys=sorted(citations),
                   reference_closure=True, anonymous_style=True,
+                  figure_files_verified=len(manifest['generated_files']),
+                  included_vector_figures=len(graphics),
+                  figure_manifest_sha256=sha(ROOT / 'figures/figure_manifest.json'),
                   source_files={str(f.relative_to(ROOT)):sha(f) for f in files+[ROOT/'references.bib']})
     destination = ROOT / 'source_verification.json'
     destination.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
