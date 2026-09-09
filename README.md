@@ -1,8 +1,10 @@
 # DeltaTrace
 
+**Qwen3-8B原表实验已完成13任务、1243条，固定在独立标签[qwen3-8b-table1-clean-v1-20260909](https://github.com/LceOmlet/DeltaTrace/tree/qwen3-8b-table1-clean-v1-20260909)。** 本分支的[Qwen3.5正式任务内B2成本](research/temporary/acceleration_20260909/README.md)已完成，完整归因吞吐提高28.7%、显存约21.644→23.628GB；没有混入Qwen3论文质量表。
+
 当前入口分为三处：[干净方法](deltatrace/clean/README.md)、[FT原实验对齐评测](experiments/official/README.md)、[临时研究](research/temporary/README.md)。正式评测只导入冻结的干净方法；旧研究材料不作为默认入口。
 
-**当前执行目标：**[固定干净代码与FT原表评测，并行加速](docs/current_goal.md)。正式实验按FT原表设置运行DT，直接复用作者发布的FT原始CSV；RISE/MAS统一正值输入，完整有符号归因另存。16例用于开发回归；加速在独立分支推进，保持默认FA/FLA和可追溯有限扩展。以下为历史进展，旧MAS修补优先级和固定显存容差不再作为当前约束。
+**当前执行目标：**[固定干净代码与FT原表评测，并行加速](docs/current_goal.md)。正式实验按FT原表设置运行DT，直接复用作者发布的FT原始CSV；RISE使用有符号排序，MAS与needle使用正值视图，完整有符号归因另存。16例用于开发回归；加速在独立分支推进，保持默认FA/FLA和可追溯有限扩展。以下为历史进展，旧MAS修补优先级和固定显存容差不再作为当前约束。
 
 **最新结果：两模型各16例干净回归已完成。** [逐例结果与执行记录](research/temporary/development16_20260909/README.md)。Qwen3两任务均值优于同模型FT；Qwen3.5的MAS、needle及MH RISE均值更好，但NI RISE仍更差。原MAS不能直接验证完整有符号贡献；此前据此驱动逐层修补的依据仍撤回。
 
