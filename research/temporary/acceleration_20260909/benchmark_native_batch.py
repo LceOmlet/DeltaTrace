@@ -15,7 +15,7 @@ def main():
     p.add_argument('--candidate-sha256',required=True)
     p.add_argument('--reference',type=Path,required=True)
     p.add_argument('--reference-sha256',required=True)
-    p.add_argument('--phase',choices=['pilot','regression16'],default='pilot')
+    p.add_argument('--phase',choices=['pilot','regression16','cost16'],default='pilot')
     p.add_argument('--reference-extra',type=Path)
     p.add_argument('--reference-extra-sha256')
     p.add_argument('--environment',type=Path,required=True)
@@ -58,11 +58,14 @@ def main():
     from exp.exp2 import dataset_utils
     from dynamic_finite import configure_dynamic_finite
     torch.set_num_threads(4);torch.manual_seed(73);torch.backends.cuda.matmul.allow_tf32=False
+    torch._dynamo.config.cache_size_limit=max(torch._dynamo.config.cache_size_limit,2*len(reference_cases)+16)
+    torch._dynamo.config.accumulated_cache_size_limit=max(torch._dynamo.config.accumulated_cache_size_limit,4*torch._dynamo.config.cache_size_limit)
     spec=importlib.util.spec_from_file_location('explicit_DT_storage_batch_candidate',args.candidate)
     candidate=importlib.util.module_from_spec(spec);spec.loader.exec_module(candidate)
     args.output.mkdir(parents=True,exist_ok=False)
     report={'status':'loading','candidate_sha256':args.candidate_sha256,'reference_sha256':args.reference_sha256,
             'phase':args.phase,'reference_extra_sha256':args.reference_extra_sha256,
+            'compiler_cache_limits':{k:getattr(torch._dynamo.config,k) for k in ('cache_size_limit','accumulated_cache_size_limit')},
             'calls':[],'actual_root_calls':[],'metrics':{},'vectors':{},'cold_and_diagnostics_included':True}
     vectors={}
     def save():
@@ -115,7 +118,10 @@ def main():
                 offsets.append(list(range(n-row['prompt_length'])))
             return ids,mask,PackedAnswerTargets(cases,offsets,length,'cuda')
         def attribute(name,mode,indices,profile=False):
+            torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats();prep_start=time.perf_counter()
             ids,mask,selection=pack(indices)
+            torch.cuda.synchronize();prep_seconds=time.perf_counter()-prep_start
+            prep_peak=torch.cuda.max_memory_allocated()
             def observe(_model,call_args,kwargs):
                 assert torch.equal(kwargs['input_ids'],ids) and torch.equal(kwargs['attention_mask'],mask)
                 report['actual_root_calls'].append({'name':name,'sample_batch':len(indices),'endpoint_batch':len(ids),
@@ -131,6 +137,9 @@ def main():
             finally:handle.remove()
             identity();assert torch.isfinite(signed).all()
             report['calls'][-1]['detail']=info
+            report['calls'][-1]['input_preparation_seconds']=prep_seconds
+            report['calls'][-1]['complete_API_seconds']=report['calls'][-1]['seconds']+prep_seconds
+            report['calls'][-1]['complete_API_peak_allocated']=max(prep_peak,report['calls'][-1]['peak_allocated'])
             for j,i in enumerate(indices):
                 n=len(rows[i]['input_ids']);assert bool(signed[j,n:].eq(0).all())
                 vector=signed[j,:n].numpy();key=name+'_'+str(i);vectors[key]=vector
@@ -155,7 +164,7 @@ def main():
             attribute('batch2_dynamic_repeat','dynamic',[0,1])
             metric_inputs={i:[('single',f'case{i}_baseline_measured3_{i}'),('batch',f'batch2_cpu_measured3_{i}'),
                                ('dynamic_batch',f'batch2_dynamic_repeat_{i}')] for i in range(2)}
-        else:
+        elif args.phase=='regression16':
             # Pair only by input length, before inspecting attribution results.
             order=sorted(range(len(rows)),key=lambda i:(len(rows[i]['input_ids']),i))
             pairs=[order[j:j+2] for j in range(0,len(order),2)]
@@ -165,6 +174,46 @@ def main():
                 name=f'regression_batch{b}'
                 attribute(name,'dynamic_gpu',indices)
                 for i in indices:metric_inputs[i]=[('accelerated',name+'_'+str(i))]
+        else:
+            order=sorted(range(len(rows)),key=lambda i:(len(rows[i]['input_ids']),i))
+            pairs=[order[j:j+2] for j in range(0,len(order),2)]
+            report['batch_assignment']=pairs;report['quality_not_recomputed']=True;save()
+            # Observe the existing native forward at one first/repeated shape.
+            # The Python observer only reads Triton call entry/return times;
+            # it is removed before DT's own passive capture is entered.
+            from native_target_logit_rows import NativeTargetLogitRows
+            probe_ids,probe_mask,probe_selection=pack(pairs[0]);probe_rows=NativeTargetLogitRows(probe_selection).rows
+            report['native_forward_diagnostics']=[]
+            for label in ('first','repeat'):
+                active={};events=[]
+                def observe_python(frame,event,result):
+                    filename=frame.f_code.co_filename
+                    if 'triton' not in filename or frame.f_code.co_name not in ('run','compile','_init_handles','_bench'):return
+                    if event=='call':active[frame]=time.perf_counter()
+                    elif event=='return' and frame in active:
+                        events.append({'file':filename,'function':frame.f_code.co_name,'seconds':time.perf_counter()-active.pop(frame)})
+                assert sys.getprofile() is None
+                sys.setprofile(observe_python)
+                try:
+                    with torch.no_grad(),torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU]) as prof:
+                        output=timed('native_shape_probe_'+label,lambda:model(input_ids=probe_ids,attention_mask=probe_mask,use_cache=False,logits_to_keep=probe_rows))
+                finally:sys.setprofile(None)
+                del output
+                report['native_forward_diagnostics'].append({'label':label,'python_events':events,
+                    'CPU_profile':[{'key':e.key,'count':e.count,'self_cpu_time_total_us':e.self_cpu_time_total} for e in prof.key_averages()]})
+                save()
+            del probe_ids,probe_mask,probe_selection,probe_rows
+            for i in range(len(rows)):attribute(f'cost_warm_baseline_{i}','baseline',[i])
+            for b,pair in enumerate(pairs):attribute(f'cost_warm_accelerated_{b}','dynamic_gpu',pair)
+            for repeat in range(2):
+                batch_order=list(range(len(pairs))) if repeat==0 else list(reversed(range(len(pairs))))
+                for b in batch_order:
+                    modes=('baseline','accelerated') if repeat==0 else ('accelerated','baseline')
+                    for mode in modes:
+                        if mode=='baseline':
+                            for i in pairs[b]:attribute(f'cost_r{repeat}_baseline_{i}','baseline',[i])
+                        else:attribute(f'cost_r{repeat}_accelerated_{b}','dynamic_gpu',pairs[b])
+            metric_inputs={i:[] for i in range(len(rows))}
         model.set_attn_implementation('eager');evaluator=LLMAttributionEvaluator(model,tokenizer)
         for i,row in enumerate(rows):
             ex=dataset_utils.load_cached(Path(env['official_root'])/'exp/exp2/data'/(row['dataset']+'.jsonl'))[row['index']]
