@@ -1,0 +1,9 @@
+{
+  "status_at_derivation": "candidate_not_measured",
+  "source": "deltatrace/accelerated/qwen35/controller_deferred.py",
+  "source_sha256": "a62b760391ca084b3b6a61a7020f5b3c67664c13db61bd9997ebe1be3c10d18e",
+  "candidate_sha256": "99c9d895b80ba1303280cc29e3564182045302288806e537b1aaf41d4a2ca545",
+  "capture_sha256": "d7036928085ef42081801d8f124141586f4a261ec8ec7f9adc152da032ec56e0",
+  "changes": "Only own DT passive capture imports. Root checkpoints and all finite functions unchanged. Native mutation audit before warm cost screen.",
+  "diff": "--- controller_deferred.py\n+++ qwen35_retained_controller.py\n@@ -13,9 +13,9 @@\n from flash_attn.bert_padding import pad_input\n from transformers.integrations.flash_attention import flash_attention_forward\n from qwen35_answer_finite import FiniteAnswerOps\n-from qwen35_decoder_finite import NativeDecoderCapture,FiniteBoundaryOps,attention_finite_pullback,decoder_finite_pullback\n-from qwen35_gdn_finite import NativeGDNCapture,gdn_finite_pullback\n-from native_dense_attention_capture import NativeDenseAttentionCapture\n+from qwen35_decoder_finite import FiniteBoundaryOps,attention_finite_pullback,decoder_finite_pullback\n+from qwen35_gdn_finite import gdn_finite_pullback\n+from qwen35_retained_capture import NativeDecoderCapture,NativeGDNCapture,NativeDenseAttentionCapture\n from native_target_logit_rows import NativeTargetLogitRows\n from vendor_fa_finite_bf16_d256 import RightPaddedLengths\n \n"
+}

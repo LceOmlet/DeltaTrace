@@ -42,3 +42,6 @@ Evidence: [16-case Qwen3](../../research/temporary/cause_tolerance_20260909/qwen
 An additional, separately pinned Qwen3 option removes replay operand copies:
 [retained_qwen3](RETAINED.md). It builds on this deferred backend and has its
 own same-process cost and vector checks; the results above remain historical.
+
+Qwen3.5 also has a separately validated [retained_qwen35](RETAINED_QWEN35.md)
+option using its existing native B2/endpoint-B4 execution.

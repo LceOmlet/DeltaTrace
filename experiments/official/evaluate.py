@@ -31,14 +31,14 @@ def arguments():
     parser.add_argument('--selection', choices=['paper', 'development16', 'smoke'], required=True)
     parser.add_argument('--datasets', nargs='+', help='Paper: all released tasks by default; development/smoke: NI and MH.')
     parser.add_argument('--ft', choices=['live', 'published'], help='Defaults to published FT for Qwen3 paper runs; otherwise live.')
-    parser.add_argument('--dt-backend', choices=['clean','accelerated_qwen35','deferred_qwen3','deferred_qwen35','retained_qwen3'], default='clean')
+    parser.add_argument('--dt-backend', choices=['clean','accelerated_qwen35','deferred_qwen3','deferred_qwen35','retained_qwen3','retained_qwen35'], default='clean')
     parser.add_argument('--sample-batch', type=int, default=1, help='Real examples per DT call; acceleration only.')
     return parser.parse_args()
 
 
 def main():
     args = arguments()
-    batched_qwen35 = args.dt_backend in ('accelerated_qwen35','deferred_qwen35')
+    batched_qwen35 = args.dt_backend in ('accelerated_qwen35','deferred_qwen35','retained_qwen35')
     if args.sample_batch < 1 or (not batched_qwen35 and args.sample_batch != 1):
         raise ValueError('This backend retains sample batch1; sample batching requires a Qwen3.5 acceleration backend.')
     if batched_qwen35 and args.family != 'qwen35':
@@ -211,7 +211,11 @@ def main():
                 dt_runner = make_qwen35_clean_runner(model, finite_fa, finite_fla)
             else:
                 from batching import make_accelerated_runner, group_cases, attribute_batch
-                if args.dt_backend == 'deferred_qwen35':
+                if args.dt_backend == 'retained_qwen35':
+                    sys.path.insert(0,str(ROOT/'deltatrace/accelerated'))
+                    from retained_qwen35 import make_retained_qwen35
+                    dt_runner, report['acceleration_sources'] = make_retained_qwen35(ROOT, model, finite_fa, finite_fla)
+                elif args.dt_backend == 'deferred_qwen35':
                     sys.path.insert(0,str(ROOT/'deltatrace/accelerated'))
                     from deferred import make_deferred_qwen35
                     dt_runner, report['acceleration_sources'] = make_deferred_qwen35(ROOT, model, finite_fa, finite_fla)
