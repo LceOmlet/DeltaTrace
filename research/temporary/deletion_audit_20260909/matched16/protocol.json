@@ -1,0 +1,98 @@
+{
+  "version": "uniform-output-gate-matched16-v1",
+  "cases": [
+    [
+      "niah_mq_q2",
+      0
+    ],
+    [
+      "niah_mq_q2",
+      1
+    ],
+    [
+      "niah_mq_q2",
+      2
+    ],
+    [
+      "niah_mq_q2",
+      3
+    ],
+    [
+      "niah_mq_q2",
+      4
+    ],
+    [
+      "niah_mq_q2",
+      5
+    ],
+    [
+      "niah_mq_q2",
+      6
+    ],
+    [
+      "niah_mq_q2",
+      7
+    ],
+    [
+      "morehopqa",
+      0
+    ],
+    [
+      "morehopqa",
+      1
+    ],
+    [
+      "morehopqa",
+      2
+    ],
+    [
+      "morehopqa",
+      3
+    ],
+    [
+      "morehopqa",
+      4
+    ],
+    [
+      "morehopqa",
+      5
+    ],
+    [
+      "morehopqa",
+      6
+    ],
+    [
+      "morehopqa",
+      7
+    ]
+  ],
+  "candidates": [
+    "norm_symmetric"
+  ],
+  "study_sources": {
+    "study.py": "637584c0c5a953939d967e6d73d72cd33ad3ec4b15109f0e80a787ffb946ef41",
+    "uniform_gdn.py": "bc010a9f01944e42dd06677eb8adafbc442907aa1d020d69238278da9fcfaf61"
+  },
+  "references": [
+    {
+      "path": "/tmp/codex_clean_development16_20260909_v1/qwen35/results.json",
+      "sha256": "04c59aaee006b49bb1c93d5ded737805b17570c3517aa045370bd38d37226cdb",
+      "vectors_sha256": "9f450bd4e5c07c2ebcf14c8f114f5bd7aed814db3413b66f1562bc6b28943fec"
+    },
+    {
+      "path": "/tmp/codex_clean_development16_20260909_mh_recovery_v1/qwen35/results.json",
+      "sha256": "5999968354f16fe3760a4e2f9bfae9401524d366648cfe7f11fe563339719467",
+      "vectors_sha256": "6396709205613b34aaa7fb05d61304c3b9c968b6df31e13cd10e3341453efed7"
+    }
+  ],
+  "why_this_candidate": "All24 output norm*SiLU gates use the already available symmetric product rule. This is the simplest uniform control, needs no second FLA pullback and showed promising pilot behavior. It is not selected per task or token.",
+  "scope": "All original16 development cases; not independent holdout and not paper table.",
+  "controls": "Fresh clean and candidate in the same process; positive and signed views both call original metrics. Only positive-view MAS is valid. Candidate order alternates by case.",
+  "budget": {
+    "DT_calls": 32,
+    "original_metric_calls": 64,
+    "original_scoring_forwards": 1344,
+    "FT_calls": 0,
+    "generation_calls": 0
+  }
+}
