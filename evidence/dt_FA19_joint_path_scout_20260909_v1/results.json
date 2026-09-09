@@ -1,0 +1,1254 @@
+{
+  "status": "three_FA19_joint_paths_12nativeFA9nativebackward_complete",
+  "protocol": {
+    "scope": "Frozen local full-attention joint-QKV path scout on three real author-cache cases; both methods defined before calls, no masks in coefficients.",
+    "sources": [
+      {
+        "case": "MH0",
+        "private_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_internal_20260909_v1/MH0_current_FA19_internal_private.pt",
+        "private_sha256": "1637779cd62c6ffd05641600fc83eda87d9488ff99db1f78f4baaae0d7a93e0d",
+        "results_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_internal_20260909_v1/results.json",
+        "results_sha256": "285c8d6cbbae9f07fb6b82b5afb88ca2360ebe8cb9769475a44521faa6bcbfc7",
+        "frozen_core_errors": {
+          "3": 15.00302057626069,
+          "10": 18.07260812976598,
+          "20": 0.07349087727305648
+        },
+        "hybrid_results_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_native_hybrid_20260909_v1/results.json",
+        "hybrid_results_sha256": "3fde131fe10487d66c11e21d8fe1616785eb71a662f3f1e0f381ebf3dab21f89"
+      },
+      {
+        "case": "MH2",
+        "private_path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/MH2_two_decoder_internal_private.pt",
+        "private_sha256": "598445e3869ccf14a5e18ae0d32aa4d0ea539d7d26c475e8d7ee4669bd8d1c7d",
+        "results_path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+        "results_sha256": "dc7414591c5c0cb11e5b2604c773829f09bb13330224f41f5f077663b62e478f",
+        "frozen_core_errors": {
+          "3": 11.596630783969605,
+          "10": 14.365729453140197,
+          "20": 0.07142714382477933
+        },
+        "hybrid_results_path": "${ARTIFACT_ROOT}/codex_dt_MH2_FA19_native_hybrid_20260909_v1/results.json",
+        "hybrid_results_sha256": "bd1a210c145eba8020b8ca88b0138518bf40a1bf91868e97e0b8c5322a8d7c38"
+      },
+      {
+        "case": "MH3",
+        "private_path": "${ARTIFACT_ROOT}/codex_dt_MH3_FA19_combined_20260909_v1/MH3_FA19_combined_private.pt",
+        "private_sha256": "480a8ea2f3b559f67e0bac01244888b0b61c48e75083f65523419d75d1c4ea32",
+        "results_path": "${ARTIFACT_ROOT}/codex_dt_MH3_FA19_combined_20260909_v1/results.json",
+        "results_sha256": "4ebb2b3aed32cb36cb2b346325e56f3ea11ceaf44c9f9c1ab704557b59ba8523",
+        "frozen_core_errors": {
+          "3": 11.078681850656023,
+          "10": 10.877082291490954,
+          "20": 0.12912175461945452
+        }
+      }
+    ],
+    "nodes": [
+      0.5,
+      0.21132486540518713,
+      0.7886751345948129
+    ],
+    "methods": {
+      "joint_midpoint": {
+        "nodes": [
+          0
+        ],
+        "weights": [
+          1
+        ]
+      },
+      "joint_gauss2": {
+        "nodes": [
+          1,
+          2
+        ],
+        "weights": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    "FA_interface_sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+    "native_FA_kwargs": {
+      "dropout_p": 0.0,
+      "softmax_scale": 0.0625,
+      "causal": true,
+      "window_size": [
+        -1,
+        -1
+      ],
+      "softcap": 0.0,
+      "alibi_slopes": null,
+      "return_attn_probs": false
+    },
+    "reason": "Native derivative of the complete FA operator at a joint interpolated QKV state retains the correlation between routing and payload within each quadrature node. Current separate endpoint local rules expose large reference-content and routing errors on all three actual cases. This is a distinct approximate operator-path hypothesis, not a guarantee.",
+    "budget": {
+      "cases": 3,
+      "midpoint_native_FA": 3,
+      "gauss2_native_FA": 6,
+      "input_endpoint_replay_FA": 3,
+      "native_FA_total": 12,
+      "native_autograd": 9,
+      "model": 0,
+      "DT": 0,
+      "scorer": 0,
+      "FT": 0,
+      "generation": 0,
+      "compilation": 0,
+      "wall_seconds": 240
+    },
+    "decision": "Report all early/mid/full-endpoint signed errors and native replay drift for both fixed approximations. Whole propagation requires a meaningful cross-case local gain and tolerable endpoint error; do not expand quadrature nodes or compensate final scores merely to make the test pass. Reject or defer if cheap approximations are unreliable. No quality, complexity-speed or memory-acceptance conclusion from local calls.",
+    "files_sha256": {
+      "study.py": "16ee9f9e8ed36bf2fca45e9dadd00b39d95cde42fda1a8bcef8b1b59b105f527"
+    }
+  },
+  "native_FA_entered": 12,
+  "native_FA_returned": 12,
+  "native_autograd_entered": 9,
+  "native_autograd_returned": 9,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "scorer_calls": 0,
+  "FT_calls": 0,
+  "generation_calls": 0,
+  "compiler_calls": 0,
+  "calls": [
+    {
+      "case": "MH0",
+      "node": 0.5,
+      "status": "returned",
+      "forward_seconds": 0.00026058778166770935,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.2698961105197668
+    },
+    {
+      "case": "MH0",
+      "node": 0.21132486540518713,
+      "status": "returned",
+      "forward_seconds": 0.0002540498971939087,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.0006325375288724899
+    },
+    {
+      "case": "MH0",
+      "node": 0.7886751345948129,
+      "status": "returned",
+      "forward_seconds": 0.00020319223403930664,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.0006429608911275864
+    },
+    {
+      "case": "MH2",
+      "node": 0.5,
+      "status": "returned",
+      "forward_seconds": 0.0002405904233455658,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.0007399041205644608
+    },
+    {
+      "case": "MH2",
+      "node": 0.21132486540518713,
+      "status": "returned",
+      "forward_seconds": 0.000201493501663208,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.00048567913472652435
+    },
+    {
+      "case": "MH2",
+      "node": 0.7886751345948129,
+      "status": "returned",
+      "forward_seconds": 0.00019143521785736084,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.0004299711436033249
+    },
+    {
+      "case": "MH3",
+      "node": 0.5,
+      "status": "returned",
+      "forward_seconds": 0.00023107975721359253,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.0007990356534719467
+    },
+    {
+      "case": "MH3",
+      "node": 0.21132486540518713,
+      "status": "returned",
+      "forward_seconds": 0.00021047331392765045,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.0005464889109134674
+    },
+    {
+      "case": "MH3",
+      "node": 0.7886751345948129,
+      "status": "returned",
+      "forward_seconds": 0.00018823519349098206,
+      "autograd_function": "FlashAttnFuncBackward",
+      "backward_seconds": 0.0005161073058843613
+    }
+  ],
+  "cases": {
+    "MH0": {
+      "points": {
+        "3": {
+          "fields": {
+            "actual": {
+              "net": 27.82392344951145,
+              "positive": 41.176229558439935,
+              "negative": -13.352306108928477,
+              "absolute": 54.52853566736841
+            },
+            "current_qk": {
+              "net": 8.697132568583756,
+              "positive": 17.16857878680803,
+              "negative": -8.471446218224274,
+              "absolute": 25.640025005032303
+            },
+            "current_value": {
+              "net": 34.12981145718838,
+              "positive": 39.889767619606715,
+              "negative": -5.759956162418334,
+              "absolute": 45.64972378202505
+            },
+            "current_prediction": {
+              "net": 42.826944025772136,
+              "positive": 53.17530182279376,
+              "negative": -10.348357797021622,
+              "absolute": 63.523659619815376
+            },
+            "current_error": {
+              "net": 15.00302057626069,
+              "positive": 54.93021204771934,
+              "negative": -39.927191471458656,
+              "absolute": 94.85740351917799
+            },
+            "joint_midpoint_qk": {
+              "net": 17.08174074785062,
+              "positive": 28.02754085389958,
+              "negative": -10.94580010604896,
+              "absolute": 38.973340959948544
+            },
+            "joint_midpoint_value": {
+              "net": 1.6937752803586497,
+              "positive": 6.220346456942522,
+              "negative": -4.526571176583872,
+              "absolute": 10.746917633526394
+            },
+            "joint_midpoint_prediction": {
+              "net": 18.775516028209267,
+              "positive": 30.731443686838357,
+              "negative": -11.95592765862909,
+              "absolute": 42.68737134546745
+            },
+            "joint_midpoint_error": {
+              "net": -9.048407421302182,
+              "positive": 27.608906264059417,
+              "negative": -36.6573136853616,
+              "absolute": 64.26621994942101
+            },
+            "joint_gauss2_qk": {
+              "net": 41.761616539701166,
+              "positive": 55.86302398006005,
+              "negative": -14.101407440358889,
+              "absolute": 69.96443142041893
+            },
+            "joint_gauss2_value": {
+              "net": 8.528133997265448,
+              "positive": 13.440996748892335,
+              "negative": -4.912862751626888,
+              "absolute": 18.353859500519224
+            },
+            "joint_gauss2_prediction": {
+              "net": 50.28975053696661,
+              "positive": 65.6003547981507,
+              "negative": -15.310604261184094,
+              "absolute": 80.9109590593348
+            },
+            "joint_gauss2_error": {
+              "net": 22.465827087455157,
+              "positive": 61.453908965420815,
+              "negative": -38.98808187796566,
+              "absolute": 100.44199084338649
+            }
+          }
+        },
+        "10": {
+          "fields": {
+            "actual": {
+              "net": 37.74820101601736,
+              "positive": 50.43626295364386,
+              "negative": -12.688061937626502,
+              "absolute": 63.12432489127036
+            },
+            "current_qk": {
+              "net": 12.141206566402463,
+              "positive": 21.633726312687145,
+              "negative": -9.492519746284678,
+              "absolute": 31.126246058971823
+            },
+            "current_value": {
+              "net": 43.67960257938087,
+              "positive": 48.5490423791899,
+              "negative": -4.869439799809023,
+              "absolute": 53.41848217899893
+            },
+            "current_prediction": {
+              "net": 55.82080914578333,
+              "positive": 66.13631728099668,
+              "negative": -10.315508135213332,
+              "absolute": 76.45182541621
+            },
+            "current_error": {
+              "net": 18.07260812976598,
+              "positive": 64.13714906882771,
+              "negative": -46.06454093906172,
+              "absolute": 110.20169000788944
+            },
+            "joint_midpoint_qk": {
+              "net": 23.27652316980233,
+              "positive": 34.24889118548419,
+              "negative": -10.972368015681857,
+              "absolute": 45.22125920116605
+            },
+            "joint_midpoint_value": {
+              "net": 5.90595400829039,
+              "positive": 9.593728376356294,
+              "negative": -3.687774368065904,
+              "absolute": 13.281502744422198
+            },
+            "joint_midpoint_prediction": {
+              "net": 29.18247717809272,
+              "positive": 40.31376751126316,
+              "negative": -11.131290333170444,
+              "absolute": 51.445057844433606
+            },
+            "joint_midpoint_error": {
+              "net": -8.565723837924635,
+              "positive": 31.147592449017996,
+              "negative": -39.71331628694263,
+              "absolute": 70.86090873596063
+            },
+            "joint_gauss2_qk": {
+              "net": 55.382058047280765,
+              "positive": 73.10578597626551,
+              "negative": -17.723727928984744,
+              "absolute": 90.82951390525025
+            },
+            "joint_gauss2_value": {
+              "net": 14.224518605128583,
+              "positive": 18.222684471419633,
+              "negative": -3.998165866291051,
+              "absolute": 22.220850337710687
+            },
+            "joint_gauss2_prediction": {
+              "net": 69.60657665240936,
+              "positive": 87.25651911410107,
+              "negative": -17.649942461691715,
+              "absolute": 104.90646157579279
+            },
+            "joint_gauss2_error": {
+              "net": 31.858375636391994,
+              "positive": 76.64854066067845,
+              "negative": -44.790165024286466,
+              "absolute": 121.43870568496493
+            }
+          }
+        },
+        "20": {
+          "fields": {
+            "actual": {
+              "net": 51.907495197671665,
+              "positive": 64.01275745905447,
+              "negative": -12.105262261382812,
+              "absolute": 76.11801972043729
+            },
+            "current_qk": {
+              "net": 15.894382723175388,
+              "positive": 28.063294172089005,
+              "negative": -12.168911448913617,
+              "absolute": 40.23220562100262
+            },
+            "current_value": {
+              "net": 36.08660335176933,
+              "positive": 44.77284059503698,
+              "negative": -8.686237243267652,
+              "absolute": 53.45907783830464
+            },
+            "current_prediction": {
+              "net": 51.980986074944724,
+              "positive": 67.12742363333237,
+              "negative": -15.146437558387646,
+              "absolute": 82.27386119172002
+            },
+            "current_error": {
+              "net": 0.07349087727305648,
+              "positive": 60.6500951634623,
+              "negative": -60.57660428618923,
+              "absolute": 121.2266994496515
+            },
+            "joint_midpoint_qk": {
+              "net": 26.79398161785111,
+              "positive": 42.5931378354765,
+              "negative": -15.79915621762539,
+              "absolute": 58.392294053101885
+            },
+            "joint_midpoint_value": {
+              "net": 6.215468176399897,
+              "positive": 10.666574962154032,
+              "negative": -4.451106785754135,
+              "absolute": 15.117681747908167
+            },
+            "joint_midpoint_prediction": {
+              "net": 33.009449794251005,
+              "positive": 49.21299807371653,
+              "negative": -16.203548279465526,
+              "absolute": 65.41654635318206
+            },
+            "joint_midpoint_error": {
+              "net": -18.89804540342066,
+              "positive": 35.25444863411026,
+              "negative": -54.15249403753092,
+              "absolute": 89.40694267164119
+            },
+            "joint_gauss2_qk": {
+              "net": 61.76282390032509,
+              "positive": 88.41189192299613,
+              "negative": -26.64906802267104,
+              "absolute": 115.06095994566715
+            },
+            "joint_gauss2_value": {
+              "net": 12.729851863452268,
+              "positive": 18.14448170892441,
+              "negative": -5.4146298454721435,
+              "absolute": 23.55911155439655
+            },
+            "joint_gauss2_prediction": {
+              "net": 74.49267576377736,
+              "positive": 102.65712902725636,
+              "negative": -28.164453263479004,
+              "absolute": 130.82158229073536
+            },
+            "joint_gauss2_error": {
+              "net": 22.58518056610569,
+              "positive": 86.64789579058309,
+              "negative": -64.0627152244774,
+              "absolute": 150.7106110150605
+            }
+          }
+        },
+        "B2": {
+          "fields": {
+            "actual": {
+              "net": 52.114053640202826,
+              "positive": 64.15720285899955,
+              "negative": -12.043149218796746,
+              "absolute": 76.20035207779631
+            },
+            "current_qk": {
+              "net": 15.959559337446574,
+              "positive": 28.043555329832913,
+              "negative": -12.083995992386336,
+              "absolute": 40.12755132221925
+            },
+            "current_value": {
+              "net": 36.17890671093518,
+              "positive": 44.82434485837008,
+              "negative": -8.645438147434902,
+              "absolute": 53.469783005804985
+            },
+            "current_prediction": {
+              "net": 52.13846604838175,
+              "positive": 67.20853419868291,
+              "negative": -15.070068150301159,
+              "absolute": 82.27860234898408
+            },
+            "current_error": {
+              "net": 0.024412408178928535,
+              "positive": 60.61115629448736,
+              "negative": -60.58674388630843,
+              "absolute": 121.19790018079578
+            },
+            "joint_midpoint_qk": {
+              "net": 26.95169838646755,
+              "positive": 42.63609339409502,
+              "negative": -15.684395007627476,
+              "absolute": 58.3204884017225
+            },
+            "joint_midpoint_value": {
+              "net": 6.258345829240168,
+              "positive": 10.651689663921415,
+              "negative": -4.393343834681247,
+              "absolute": 15.045033498602661
+            },
+            "joint_midpoint_prediction": {
+              "net": 33.21004421570771,
+              "positive": 49.35495278665852,
+              "negative": -16.144908570950804,
+              "absolute": 65.49986135760932
+            },
+            "joint_midpoint_error": {
+              "net": -18.904009424495108,
+              "positive": 35.240454587771815,
+              "negative": -54.14446401226692,
+              "absolute": 89.38491860003873
+            },
+            "joint_gauss2_qk": {
+              "net": 61.89316379810019,
+              "positive": 88.47122577455372,
+              "negative": -26.57806197645353,
+              "absolute": 115.04928775100726
+            },
+            "joint_gauss2_value": {
+              "net": 12.789313974312485,
+              "positive": 18.146781799998383,
+              "negative": -5.3574678256859,
+              "absolute": 23.50424962568428
+            },
+            "joint_gauss2_prediction": {
+              "net": 74.68247777241268,
+              "positive": 102.79729177387598,
+              "negative": -28.114814001463323,
+              "absolute": 130.91210577533934
+            },
+            "joint_gauss2_error": {
+              "net": 22.56842413220985,
+              "positive": 86.58567370457013,
+              "negative": -64.01724957236027,
+              "absolute": 150.6029232769304
+            }
+          }
+        }
+      },
+      "source": {
+        "case": "MH0",
+        "private_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_internal_20260909_v1/MH0_current_FA19_internal_private.pt",
+        "private_sha256": "1637779cd62c6ffd05641600fc83eda87d9488ff99db1f78f4baaae0d7a93e0d",
+        "results_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_internal_20260909_v1/results.json",
+        "results_sha256": "285c8d6cbbae9f07fb6b82b5afb88ca2360ebe8cb9769475a44521faa6bcbfc7",
+        "frozen_core_errors": {
+          "3": 15.00302057626069,
+          "10": 18.07260812976598,
+          "20": 0.07349087727305648
+        },
+        "hybrid_results_path": "${ARTIFACT_ROOT}/codex_dt_MH0_FA19_native_hybrid_20260909_v1/results.json",
+        "hybrid_results_sha256": "3fde131fe10487d66c11e21d8fe1616785eb71a662f3f1e0f381ebf3dab21f89"
+      },
+      "sequence_length": 853,
+      "input_endpoint_replay": {
+        "seconds": 0.009586425498127937,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "projected_drift": 0.0
+      }
+    },
+    "MH2": {
+      "points": {
+        "3": {
+          "fields": {
+            "actual": {
+              "net": 34.19117579041279,
+              "positive": 40.9553052263504,
+              "negative": -6.764129435937603,
+              "absolute": 47.719434662287995
+            },
+            "current_qk": {
+              "net": 8.602342342950012,
+              "positive": 14.397568343952017,
+              "negative": -5.795226001002005,
+              "absolute": 20.192794344954024
+            },
+            "current_value": {
+              "net": 37.18546423143239,
+              "positive": 40.20206850884459,
+              "negative": -3.0166042774122017,
+              "absolute": 43.21867278625679
+            },
+            "current_prediction": {
+              "net": 45.787806574382394,
+              "positive": 51.91259614624263,
+              "negative": -6.124789571860228,
+              "absolute": 58.03738571810286
+            },
+            "current_error": {
+              "net": 11.596630783969605,
+              "positive": 48.59165861374037,
+              "negative": -36.99502782977076,
+              "absolute": 85.58668644351113
+            },
+            "joint_midpoint_qk": {
+              "net": 7.864846218890504,
+              "positive": 20.559297307238413,
+              "negative": -12.694451088347908,
+              "absolute": 33.25374839558632
+            },
+            "joint_midpoint_value": {
+              "net": 7.442745121701972,
+              "positive": 8.993839823105153,
+              "negative": -1.5510947014031808,
+              "absolute": 10.544934524508333
+            },
+            "joint_midpoint_prediction": {
+              "net": 15.307591340592477,
+              "positive": 26.223585093803287,
+              "negative": -10.915993753210813,
+              "absolute": 37.13957884701411
+            },
+            "joint_midpoint_error": {
+              "net": -18.883584449820315,
+              "positive": 19.62276938415743,
+              "negative": -38.506353833977755,
+              "absolute": 58.12912321813518
+            },
+            "joint_gauss2_qk": {
+              "net": 40.2597955125938,
+              "positive": 50.762838848655484,
+              "negative": -10.503043336061678,
+              "absolute": 61.26588218471716
+            },
+            "joint_gauss2_value": {
+              "net": 12.887690131669615,
+              "positive": 14.598062311058744,
+              "negative": -1.7103721793891287,
+              "absolute": 16.308434490447873
+            },
+            "joint_gauss2_prediction": {
+              "net": 53.14748564426341,
+              "positive": 62.6028542163226,
+              "negative": -9.45536857205918,
+              "absolute": 72.05822278838178
+            },
+            "joint_gauss2_error": {
+              "net": 18.95630985385062,
+              "positive": 55.50895153091609,
+              "negative": -36.55264167706547,
+              "absolute": 92.06159320798156
+            }
+          }
+        },
+        "10": {
+          "fields": {
+            "actual": {
+              "net": 36.77494196396011,
+              "positive": 43.11755846591658,
+              "negative": -6.342616501956472,
+              "absolute": 49.46017496787305
+            },
+            "current_qk": {
+              "net": 11.285476978959545,
+              "positive": 16.47696860106376,
+              "negative": -5.191491622104216,
+              "absolute": 21.66846022316798
+            },
+            "current_value": {
+              "net": 39.855194438140764,
+              "positive": 42.973030411160096,
+              "negative": -3.1178359730193304,
+              "absolute": 46.09086638417942
+            },
+            "current_prediction": {
+              "net": 51.140671417100314,
+              "positive": 56.43936392028772,
+              "negative": -5.2986925031874,
+              "absolute": 61.73805642347511
+            },
+            "current_error": {
+              "net": 14.365729453140197,
+              "positive": 51.82853221249456,
+              "negative": -37.46280275935436,
+              "absolute": 89.29133497184891
+            },
+            "joint_midpoint_qk": {
+              "net": 12.845150193652769,
+              "positive": 24.547860981798074,
+              "negative": -11.702710788145303,
+              "absolute": 36.25057176994338
+            },
+            "joint_midpoint_value": {
+              "net": 8.935740292669106,
+              "positive": 10.514102289378068,
+              "negative": -1.5783619967089617,
+              "absolute": 12.092464286087031
+            },
+            "joint_midpoint_prediction": {
+              "net": 21.780890486321876,
+              "positive": 31.83210254580937,
+              "negative": -10.05121205948749,
+              "absolute": 41.88331460529686
+            },
+            "joint_midpoint_error": {
+              "net": -14.994051477638234,
+              "positive": 22.922441682450845,
+              "negative": -37.916493160089075,
+              "absolute": 60.83893484253991
+            },
+            "joint_gauss2_qk": {
+              "net": 45.54615045204267,
+              "positive": 56.35737008663814,
+              "negative": -10.811219634595476,
+              "absolute": 67.16858972123362
+            },
+            "joint_gauss2_value": {
+              "net": 14.935386702565394,
+              "positive": 16.576010957693587,
+              "negative": -1.6406242551281927,
+              "absolute": 18.216635212821778
+            },
+            "joint_gauss2_prediction": {
+              "net": 60.481537154608056,
+              "positive": 70.19007023512707,
+              "negative": -9.708533080519008,
+              "absolute": 79.89860331564607
+            },
+            "joint_gauss2_error": {
+              "net": 23.706595190647946,
+              "positive": 60.80993118709714,
+              "negative": -37.103335996449196,
+              "absolute": 97.91326718354634
+            }
+          }
+        },
+        "20": {
+          "fields": {
+            "actual": {
+              "net": 56.27394274050857,
+              "positive": 62.94881438932262,
+              "negative": -6.674871648814039,
+              "absolute": 69.62368603813667
+            },
+            "current_qk": {
+              "net": 16.23872082612798,
+              "positive": 22.142584467564348,
+              "negative": -5.903863641436365,
+              "absolute": 28.04644810900071
+            },
+            "current_value": {
+              "net": 40.10664905820538,
+              "positive": 43.44393267377822,
+              "negative": -3.337283615572845,
+              "absolute": 46.78121628935106
+            },
+            "current_prediction": {
+              "net": 56.34536988433335,
+              "positive": 62.188138374456756,
+              "negative": -5.8427684901234045,
+              "absolute": 68.03090686458017
+            },
+            "current_error": {
+              "net": 0.07142714382477933,
+              "positive": 54.01180824019029,
+              "negative": -53.94038109636551,
+              "absolute": 107.95218933655579
+            },
+            "joint_midpoint_qk": {
+              "net": 18.143498872409413,
+              "positive": 32.87748430298916,
+              "negative": -14.733985430579743,
+              "absolute": 47.61146973356891
+            },
+            "joint_midpoint_value": {
+              "net": 12.123137058564922,
+              "positive": 13.676054588764472,
+              "negative": -1.5529175301995508,
+              "absolute": 15.228972118964023
+            },
+            "joint_midpoint_prediction": {
+              "net": 30.266635930974335,
+              "positive": 42.88674791198793,
+              "negative": -12.620111981013597,
+              "absolute": 55.50685989300153
+            },
+            "joint_midpoint_error": {
+              "net": -26.007306809534242,
+              "positive": 29.564663685286366,
+              "negative": -55.57197049482062,
+              "absolute": 85.136634180107
+            },
+            "joint_gauss2_qk": {
+              "net": 61.87129024342418,
+              "positive": 74.97768774316735,
+              "negative": -13.106397499743174,
+              "absolute": 88.08408524291052
+            },
+            "joint_gauss2_value": {
+              "net": 18.173559618195235,
+              "positive": 19.71651841945389,
+              "negative": -1.5429588012586564,
+              "absolute": 21.259477220712547
+            },
+            "joint_gauss2_prediction": {
+              "net": 80.04484986161941,
+              "positive": 91.52582659627515,
+              "negative": -11.480976734655723,
+              "absolute": 103.00680333093085
+            },
+            "joint_gauss2_error": {
+              "net": 23.77090712111084,
+              "positive": 76.42242565086819,
+              "negative": -52.65151852975735,
+              "absolute": 129.07394418062555
+            }
+          }
+        },
+        "B2": {
+          "fields": {
+            "actual": {
+              "net": 56.345268856730954,
+              "positive": 63.03436290043232,
+              "negative": -6.689094043701379,
+              "absolute": 69.7234569441337
+            },
+            "current_qk": {
+              "net": 16.2207080399484,
+              "positive": 22.14154813187431,
+              "negative": -5.920840091925915,
+              "absolute": 28.062388223800227
+            },
+            "current_value": {
+              "net": 40.12163785440126,
+              "positive": 43.45273362751468,
+              "negative": -3.3310957731134274,
+              "absolute": 46.78382940062811
+            },
+            "current_prediction": {
+              "net": 56.34234589434965,
+              "positive": 62.196045993431795,
+              "negative": -5.853700099082134,
+              "absolute": 68.04974609251391
+            },
+            "current_error": {
+              "net": -0.002922962381295635,
+              "positive": 53.98767750740718,
+              "negative": -53.99060046978847,
+              "absolute": 107.97827797719565
+            },
+            "joint_midpoint_qk": {
+              "net": 18.194413266138667,
+              "positive": 32.90194046908762,
+              "negative": -14.707527202948958,
+              "absolute": 47.60946767203658
+            },
+            "joint_midpoint_value": {
+              "net": 12.177368479058423,
+              "positive": 13.718493501806764,
+              "negative": -1.541125022748341,
+              "absolute": 15.259618524555105
+            },
+            "joint_midpoint_prediction": {
+              "net": 30.37178174519709,
+              "positive": 43.0290991622623,
+              "negative": -12.65731741706521,
+              "absolute": 55.686416579327506
+            },
+            "joint_midpoint_error": {
+              "net": -25.973487111533863,
+              "positive": 29.64247227578648,
+              "negative": -55.615959387320345,
+              "absolute": 85.25843166310682
+            },
+            "joint_gauss2_qk": {
+              "net": 61.82551715813865,
+              "positive": 74.9456752582903,
+              "negative": -13.120158100151635,
+              "absolute": 88.06583335844192
+            },
+            "joint_gauss2_value": {
+              "net": 18.219463233746854,
+              "positive": 19.75143015831028,
+              "negative": -1.5319669245634273,
+              "absolute": 21.28339708287371
+            },
+            "joint_gauss2_prediction": {
+              "net": 80.0449803918855,
+              "positive": 91.57620850646259,
+              "negative": -11.53122811457709,
+              "absolute": 103.10743662103968
+            },
+            "joint_gauss2_error": {
+              "net": 23.699711535154552,
+              "positive": 76.43929576000629,
+              "negative": -52.739584224851725,
+              "absolute": 129.178879984858
+            }
+          }
+        }
+      },
+      "source": {
+        "case": "MH2",
+        "private_path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/MH2_two_decoder_internal_private.pt",
+        "private_sha256": "598445e3869ccf14a5e18ae0d32aa4d0ea539d7d26c475e8d7ee4669bd8d1c7d",
+        "results_path": "${ARTIFACT_ROOT}/codex_dt_MH2_two_decoder_internal_20260909_v1/results.json",
+        "results_sha256": "dc7414591c5c0cb11e5b2604c773829f09bb13330224f41f5f077663b62e478f",
+        "frozen_core_errors": {
+          "3": 11.596630783969605,
+          "10": 14.365729453140197,
+          "20": 0.07142714382477933
+        },
+        "hybrid_results_path": "${ARTIFACT_ROOT}/codex_dt_MH2_FA19_native_hybrid_20260909_v1/results.json",
+        "hybrid_results_sha256": "bd1a210c145eba8020b8ca88b0138518bf40a1bf91868e97e0b8c5322a8d7c38"
+      },
+      "sequence_length": 710,
+      "input_endpoint_replay": {
+        "seconds": 0.0038522984832525253,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "projected_drift": 0.0
+      }
+    },
+    "MH3": {
+      "points": {
+        "3": {
+          "fields": {
+            "actual": {
+              "net": 38.61799903128018,
+              "positive": 46.019287066482214,
+              "negative": -7.401288035202032,
+              "absolute": 53.42057510168424
+            },
+            "current_qk": {
+              "net": 3.7038532332862677,
+              "positive": 12.309515435466334,
+              "negative": -8.605662202180067,
+              "absolute": 20.9151776376464
+            },
+            "current_value": {
+              "net": 45.992827648649936,
+              "positive": 49.62415565049153,
+              "negative": -3.631328001841596,
+              "absolute": 53.255483652333126
+            },
+            "current_prediction": {
+              "net": 49.6966808819362,
+              "positive": 58.50475878419476,
+              "negative": -8.808077902258567,
+              "absolute": 67.31283668645332
+            },
+            "current_error": {
+              "net": 11.078681850656023,
+              "positive": 55.331436098627655,
+              "negative": -44.25275424797163,
+              "absolute": 99.58419034659929
+            },
+            "joint_midpoint_qk": {
+              "net": 9.898583067329657,
+              "positive": 23.70147362279712,
+              "negative": -13.802890555467462,
+              "absolute": 37.50436417826458
+            },
+            "joint_midpoint_value": {
+              "net": 5.336316023717554,
+              "positive": 8.188132769537216,
+              "negative": -2.8518167458196606,
+              "absolute": 11.039949515356875
+            },
+            "joint_midpoint_prediction": {
+              "net": 15.23489909104721,
+              "positive": 29.58227812003652,
+              "negative": -14.347379028989309,
+              "absolute": 43.92965714902583
+            },
+            "joint_midpoint_error": {
+              "net": -23.383099940232967,
+              "positive": 19.606984516737377,
+              "negative": -42.990084456970344,
+              "absolute": 62.59706897370772
+            },
+            "joint_gauss2_qk": {
+              "net": 44.48152150357328,
+              "positive": 57.74130682414882,
+              "negative": -13.259785320575544,
+              "absolute": 71.00109214472437
+            },
+            "joint_gauss2_value": {
+              "net": 12.792796944230638,
+              "positive": 15.68714313237069,
+              "negative": -2.894346188140053,
+              "absolute": 18.581489320510745
+            },
+            "joint_gauss2_prediction": {
+              "net": 57.27431844780392,
+              "positive": 70.8031951932586,
+              "negative": -13.528876745454681,
+              "absolute": 84.3320719387133
+            },
+            "joint_gauss2_error": {
+              "net": 18.65631941652375,
+              "positive": 61.054087508759785,
+              "negative": -42.397768092236035,
+              "absolute": 103.45185560099583
+            }
+          }
+        },
+        "10": {
+          "fields": {
+            "actual": {
+              "net": 40.85072081299708,
+              "positive": 48.21399893972679,
+              "negative": -7.363278126729716,
+              "absolute": 55.57727706645651
+            },
+            "current_qk": {
+              "net": 4.8139530513099515,
+              "positive": 14.059942488467719,
+              "negative": -9.24598943715777,
+              "absolute": 23.305931925625487
+            },
+            "current_value": {
+              "net": 46.91385005317808,
+              "positive": 50.51830468159631,
+              "negative": -3.6044546284182384,
+              "absolute": 54.12275931001455
+            },
+            "current_prediction": {
+              "net": 51.72780310448803,
+              "positive": 61.02097932911477,
+              "negative": -9.293176224626738,
+              "absolute": 70.3141555537415
+            },
+            "current_error": {
+              "net": 10.877082291490954,
+              "positive": 57.56740645224096,
+              "negative": -46.69032416075001,
+              "absolute": 104.25773061299097
+            },
+            "joint_midpoint_qk": {
+              "net": 8.204917897836498,
+              "positive": 24.663798762912556,
+              "negative": -16.458880865076054,
+              "absolute": 41.12267962798861
+            },
+            "joint_midpoint_value": {
+              "net": 5.831242950807763,
+              "positive": 8.641836734845954,
+              "negative": -2.8105937840381907,
+              "absolute": 11.452430518884144
+            },
+            "joint_midpoint_prediction": {
+              "net": 14.036160848644263,
+              "positive": 30.752543461961437,
+              "negative": -16.716382613317176,
+              "absolute": 47.46892607527862
+            },
+            "joint_midpoint_error": {
+              "net": -26.814559964352817,
+              "positive": 21.452982487285553,
+              "negative": -48.26754245163837,
+              "absolute": 69.72052493892392
+            },
+            "joint_gauss2_qk": {
+              "net": 51.77734825505141,
+              "positive": 67.14366051558393,
+              "negative": -15.366312260532522,
+              "absolute": 82.50997277611646
+            },
+            "joint_gauss2_value": {
+              "net": 13.668374188417257,
+              "positive": 16.50240556360792,
+              "negative": -2.8340313751906594,
+              "absolute": 19.336436938798578
+            },
+            "joint_gauss2_prediction": {
+              "net": 65.44572244346867,
+              "positive": 80.75233952953904,
+              "negative": -15.30661708607038,
+              "absolute": 96.05895661560943
+            },
+            "joint_gauss2_error": {
+              "net": 24.595001630471586,
+              "positive": 71.94422652246777,
+              "negative": -47.34922489199619,
+              "absolute": 119.29345141446396
+            }
+          }
+        },
+        "20": {
+          "fields": {
+            "actual": {
+              "net": 51.11761007428749,
+              "positive": 62.23422681361552,
+              "negative": -11.116616739328032,
+              "absolute": 73.35084355294356
+            },
+            "current_qk": {
+              "net": 4.888764981082676,
+              "positive": 18.38353055143861,
+              "negative": -13.494765570355938,
+              "absolute": 31.87829612179455
+            },
+            "current_value": {
+              "net": 46.35796684782427,
+              "positive": 50.95231703233765,
+              "negative": -4.594350184513382,
+              "absolute": 55.546667216851034
+            },
+            "current_prediction": {
+              "net": 51.246731828906945,
+              "positive": 63.79421129242566,
+              "negative": -12.547479463518714,
+              "absolute": 76.34169075594438
+            },
+            "current_error": {
+              "net": 0.12912175461945452,
+              "positive": 60.81624607281245,
+              "negative": -60.68712431819299,
+              "absolute": 121.50337039100542
+            },
+            "joint_midpoint_qk": {
+              "net": 9.14711082742366,
+              "positive": 32.37452777147059,
+              "negative": -23.227416944046933,
+              "absolute": 55.60194471551753
+            },
+            "joint_midpoint_value": {
+              "net": 8.090350992048025,
+              "positive": 11.66798120358982,
+              "negative": -3.577630211541795,
+              "absolute": 15.245611415131615
+            },
+            "joint_midpoint_prediction": {
+              "net": 17.237461819471687,
+              "positive": 39.69922986698478,
+              "negative": -22.46176804751309,
+              "absolute": 62.16099791449787
+            },
+            "joint_midpoint_error": {
+              "net": -33.88014825481579,
+              "positive": 33.318493418291375,
+              "negative": -67.19864167310718,
+              "absolute": 100.51713509139856
+            },
+            "joint_gauss2_qk": {
+              "net": 61.81282219492106,
+              "positive": 82.24497956606476,
+              "negative": -20.432157371143706,
+              "absolute": 102.67713693720847
+            },
+            "joint_gauss2_value": {
+              "net": 15.767514160249098,
+              "positive": 19.347221754768643,
+              "negative": -3.5797075945195473,
+              "absolute": 22.92692934928819
+            },
+            "joint_gauss2_prediction": {
+              "net": 77.58033635517015,
+              "positive": 97.73246692615848,
+              "negative": -20.15213057098832,
+              "absolute": 117.88459749714681
+            },
+            "joint_gauss2_error": {
+              "net": 26.46272628088267,
+              "positive": 89.47088745777326,
+              "negative": -63.00816117689058,
+              "absolute": 152.47904863466383
+            }
+          }
+        },
+        "B2": {
+          "fields": {
+            "actual": {
+              "net": 51.33107339965599,
+              "positive": 62.32741858998329,
+              "negative": -10.996345190327295,
+              "absolute": 73.32376378031057
+            },
+            "current_qk": {
+              "net": 4.955855338074825,
+              "positive": 18.419857606262713,
+              "negative": -13.464002268187887,
+              "absolute": 31.883859874450604
+            },
+            "current_value": {
+              "net": 46.41043221553875,
+              "positive": 50.948458333324695,
+              "negative": -4.53802611778594,
+              "absolute": 55.48648445111063
+            },
+            "current_prediction": {
+              "net": 51.366287553613574,
+              "positive": 63.81435898729232,
+              "negative": -12.448071433678752,
+              "absolute": 76.26243042097107
+            },
+            "current_error": {
+              "net": 0.03521415395758476,
+              "positive": 60.691995472555284,
+              "negative": -60.65678131859769,
+              "absolute": 121.34877679115297
+            },
+            "joint_midpoint_qk": {
+              "net": 9.334067935734092,
+              "positive": 32.45633261046493,
+              "negative": -23.12226467473084,
+              "absolute": 55.578597285195784
+            },
+            "joint_midpoint_value": {
+              "net": 8.23604213260579,
+              "positive": 11.730812478932355,
+              "negative": -3.4947703463265647,
+              "absolute": 15.22558282525892
+            },
+            "joint_midpoint_prediction": {
+              "net": 17.570110068339883,
+              "positive": 39.9169553960176,
+              "negative": -22.346845327677716,
+              "absolute": 62.263800723695326
+            },
+            "joint_midpoint_error": {
+              "net": -33.760963331316105,
+              "positive": 33.399330423551035,
+              "negative": -67.16029375486714,
+              "absolute": 100.55962417841818
+            },
+            "joint_gauss2_qk": {
+              "net": 61.96730106191016,
+              "positive": 82.32492178254151,
+              "negative": -20.35762072063134,
+              "absolute": 102.68254250317284
+            },
+            "joint_gauss2_value": {
+              "net": 15.897541496856576,
+              "positive": 19.400844391344265,
+              "negative": -3.503302894487689,
+              "absolute": 22.90414728583195
+            },
+            "joint_gauss2_prediction": {
+              "net": 77.86484255876672,
+              "positive": 97.84939125828816,
+              "negative": -19.984548699521433,
+              "absolute": 117.8339399578096
+            },
+            "joint_gauss2_error": {
+              "net": 26.53376915911074,
+              "positive": 89.47537577256382,
+              "negative": -62.941606613453075,
+              "absolute": 152.4169823860169
+            }
+          }
+        }
+      },
+      "source": {
+        "case": "MH3",
+        "private_path": "${ARTIFACT_ROOT}/codex_dt_MH3_FA19_combined_20260909_v1/MH3_FA19_combined_private.pt",
+        "private_sha256": "480a8ea2f3b559f67e0bac01244888b0b61c48e75083f65523419d75d1c4ea32",
+        "results_path": "${ARTIFACT_ROOT}/codex_dt_MH3_FA19_combined_20260909_v1/results.json",
+        "results_sha256": "4ebb2b3aed32cb36cb2b346325e56f3ea11ceaf44c9f9c1ab704557b59ba8523",
+        "frozen_core_errors": {
+          "3": 11.078681850656023,
+          "10": 10.877082291490954,
+          "20": 0.12912175461945452
+        }
+      },
+      "sequence_length": 757,
+      "input_endpoint_replay": {
+        "seconds": 0.005320608615875244,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "projected_drift": 0.0
+      }
+    }
+  },
+  "vectors_sha256": "94c5486505bed5b55a075c95c13fffd62a855cbd6581f5eaca8a2784157254df",
+  "seconds": 14.460637183859944,
+  "peak_allocated_bytes": 93083136,
+  "peak_reserved_bytes": 109051904,
+  "limits": "One/two-node quadrature approximates the coupled real-arithmetic FA operator path; native BF16 forward/backward used without modification. Does not preserve exact finite endpoints, which are explicitly checked. Private input trajectories are actual; intermediate Q/K/V probes are operator inputs, not full-model counterfactuals. Token-net absolute statistics combine different operand/query roles and are not original-source error norms. No whole propagation or original quality/cost claim."
+}

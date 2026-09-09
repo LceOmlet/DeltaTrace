@@ -1,0 +1,158 @@
+{
+  "status": "joint_FA19_paths_independent_CPU_audit_passed_both_rejected",
+  "results_sha256": "4f364ad7739911cd0df92b1131cfc4593a2eac83672fa344b2639fa2f2837d5e",
+  "protocol_sha256": "599f236d844dc556bebe9b103637b3ae14cddb34b725251fe7486471911a8aa3",
+  "vectors_sha256": "94c5486505bed5b55a075c95c13fffd62a855cbd6581f5eaca8a2784157254df",
+  "analyzer_sha256": "95e5d2c46f703bec25dfab2a6c35817d04b11b739b80752f48f34e10c921b483",
+  "seconds": 14.460637183859944,
+  "cases": {
+    "MH0": {
+      "input_endpoint_replay": {
+        "seconds": 0.009586425498127937,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "projected_drift": 0.0
+      },
+      "points": {
+        "3": {
+          "actual": 27.82392344951145,
+          "errors": {
+            "current": 15.003020576260688,
+            "joint_midpoint": -9.048407421302182,
+            "joint_gauss2": 22.465827087455153
+          }
+        },
+        "10": {
+          "actual": 37.74820101601736,
+          "errors": {
+            "current": 18.07260812976598,
+            "joint_midpoint": -8.565723837924642,
+            "joint_gauss2": 31.858375636391994
+          }
+        },
+        "20": {
+          "actual": 51.90749519767166,
+          "errors": {
+            "current": 0.07349087727305204,
+            "joint_midpoint": -18.89804540342066,
+            "joint_gauss2": 22.585180566105706
+          }
+        },
+        "B2": {
+          "actual": 52.114053640202826,
+          "errors": {
+            "current": 0.024412408178925205,
+            "joint_midpoint": -18.904009424495108,
+            "joint_gauss2": 22.56842413220984
+          }
+        }
+      },
+      "endpoint_relative_signed_errors": {
+        "current": 0.00046844193597890674,
+        "joint_midpoint": -0.3627430242715146,
+        "joint_gauss2": 0.43305831260072375
+      }
+    },
+    "MH2": {
+      "input_endpoint_replay": {
+        "seconds": 0.0038522984832525253,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "projected_drift": 0.0
+      },
+      "points": {
+        "3": {
+          "actual": 34.19117579041279,
+          "errors": {
+            "current": 11.596630783969603,
+            "joint_midpoint": -18.883584449820315,
+            "joint_gauss2": 18.956309853850627
+          }
+        },
+        "10": {
+          "actual": 36.77494196396011,
+          "errors": {
+            "current": 14.3657294531402,
+            "joint_midpoint": -14.994051477638234,
+            "joint_gauss2": 23.706595190647946
+          }
+        },
+        "20": {
+          "actual": 56.27394274050857,
+          "errors": {
+            "current": 0.07142714382478133,
+            "joint_midpoint": -26.00730680953425,
+            "joint_gauss2": 23.770907121110838
+          }
+        },
+        "B2": {
+          "actual": 56.345268856730954,
+          "errors": {
+            "current": -0.002922962381290972,
+            "joint_midpoint": -25.97348711153386,
+            "joint_gauss2": 23.69971153515456
+          }
+        }
+      },
+      "endpoint_relative_signed_errors": {
+        "current": -5.187591506082232e-05,
+        "joint_midpoint": -0.4609701513285279,
+        "joint_gauss2": 0.42061582127535474
+      }
+    },
+    "MH3": {
+      "input_endpoint_replay": {
+        "seconds": 0.005320608615875244,
+        "relative_L2": 0.0,
+        "max_absolute": 0.0,
+        "projected_drift": 0.0
+      },
+      "points": {
+        "3": {
+          "actual": 38.617999031280185,
+          "errors": {
+            "current": 11.078681850656023,
+            "joint_midpoint": -23.38309994023297,
+            "joint_gauss2": 18.65631941652375
+          }
+        },
+        "10": {
+          "actual": 40.850720812997075,
+          "errors": {
+            "current": 10.877082291490954,
+            "joint_midpoint": -26.81455996435282,
+            "joint_gauss2": 24.595001630471586
+          }
+        },
+        "20": {
+          "actual": 51.1176100742875,
+          "errors": {
+            "current": 0.12912175461945807,
+            "joint_midpoint": -33.88014825481581,
+            "joint_gauss2": 26.462726280882663
+          }
+        },
+        "B2": {
+          "actual": 51.331073399656,
+          "errors": {
+            "current": 0.035214153957575434,
+            "joint_midpoint": -33.760963331316105,
+            "joint_gauss2": 26.533769159110747
+          }
+        }
+      },
+      "endpoint_relative_signed_errors": {
+        "current": 0.0006860202139823444,
+        "joint_midpoint": -0.6577100593330347,
+        "joint_gauss2": 0.5169143639861731
+      }
+    }
+  },
+  "native_calls": {
+    "FA": 12,
+    "autograd": 9
+  },
+  "decision": "Reject both fixed cheap approximations; Gauss2 worsens every early/mid case and full endpoint errors remain large, midpoint also worsens MH2/MH3. Do not add nodes or calibrate scores. This rejects these approximations, not all native VJP or all possible operator paths.",
+  "limits": "One/two-node quadrature approximates the coupled real-arithmetic FA operator path; native BF16 forward/backward used without modification. Does not preserve exact finite endpoints, which are explicitly checked. Private input trajectories are actual; intermediate Q/K/V probes are operator inputs, not full-model counterfactuals. Token-net absolute statistics combine different operand/query roles and are not original-source error norms. No whole propagation or original quality/cost claim.",
+  "peak_allocated_bytes": 93083136
+}
