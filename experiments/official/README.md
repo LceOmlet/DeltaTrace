@@ -5,7 +5,7 @@
 - 原主表模型是Qwen3-8B，原模型加载器使用FP16；评分使用eager。
 - 直接调用作者`075e7e4`的`_ensure_generation`、原evaluator和原RISE/MAS，不覆盖`format_prompt`。前导空格、Context、chat模板、完整target及EOS保留；每条实际评分输入都核对。
 - 忠实度对照固定为`ifr_multi_hop_both, K=1`；needle对照固定为`K=3, Recall@10%`。不从FT0–3择优，不用FT0/FT3替代论文主表方法。
-- DT只在进入指标时取正值部分，完整有符号向量另存。完整target的logprob为DT有限差目标；FT使用作者原聚合与递归规则。
+- DT的RISE使用有符号排序，MAS与needle使用正值视图，完整有符号向量另存。两种视图都调用作者原函数；仅当正分严格排序相同、且作者响应在删到非正分之前已归零时，复用已返回的相同RISE并保存证明。其余情况额外执行一次原评分，不改指标公式。完整target的logprob为DT有限差目标；FT使用作者原聚合与递归规则。
 - `paper`使用所选任务的完整发布缓存。MoreHopQA为95条，对应`n1_ifr_multi_hop_both_95_examples.csv`；HotpotQA为48条，其余为100条。
 - `development16`仅NI0–7/MH0–7；`smoke`仅NI0/MH0。两者不得拿均值与完整论文CSV均值比较，也不作为正式表格完成声明。
 - 可用`--datasets morehopqa`分任务执行同一固定范围。静态有限图的官方Dynamo缓存上限按所选样本数设置，防止第9种长度触发默认8次重编译上限；原方法、全图编译和原FT不改，不启用失败回退。每次运行记录实际缓存配置与首次编译成本。
