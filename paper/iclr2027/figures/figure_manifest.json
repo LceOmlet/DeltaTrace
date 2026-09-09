@@ -1,63 +1,45 @@
 {
   "fixture_sha256": "8ddbd639e4fd6f554cfc3bc2b401ecfe67ec08b4fd57d87a06079c06b816a37d",
-  "builder_sha256": "10fab4739aa88e17cf306b91f551155dd2b236379e98155497009f1a02800b08",
-  "mechanism_builder_sha256": "3c8fe3b377e8452a8c714d75cdfa58623b4658028474220ad0543384ce3d0ea6",
-  "mechanism": "Paired activation planes and paths are schematic; terminal source-span bars use the Qwen3.5 multi-hop case.",
-  "mechanism_source_bars": {
+  "builder_sha256": "2b4de9f22cea2ce231f7a42ed3c568609e818a85d7c49f2b786a743cd3144ee1",
+  "mechanism_builder_sha256": "d91348bd4328fed359a7eb44c6f9d43e38a9b83d0a9595d2d5506a3b0e56ef25",
+  "mechanism": "Actual Qwen3.5 input-token heatmap, exact response excerpt, one reverse path, and a local attention identity.",
+  "mechanism_case": {
     "model": "qwen35",
     "dataset": "morehopqa",
     "index": 0,
     "input_sha256": "8447e15d0e0c023c558bd33f09775798e9a9c0e4ab2d20400ff82a24c95c4f89",
-    "aggregation": "sum of original token scores overlapping the named source span",
-    "bars": [
-      {
-        "text": "Garth",
-        "char_span": [
-          1030,
-          1035
-        ],
-        "token_local_indices": [
-          291,
-          292
-        ],
-        "signed_sum": -3.1574686192799035
-      },
-      {
-        "text": "Jennings",
-        "char_span": [
-          1036,
-          1044
-        ],
-        "token_local_indices": [
-          293
-        ],
-        "signed_sum": 0.7427310843306038
-      },
-      {
-        "text": "last name",
-        "char_span": [
-          1404,
-          1413
-        ],
-        "token_local_indices": [
-          380,
-          381
-        ],
-        "signed_sum": 7.111107877557256
-      },
-      {
-        "text": "consonants",
-        "char_span": [
-          1376,
-          1386
-        ],
-        "token_local_indices": [
-          374,
-          375
-        ],
-        "signed_sum": 9.980948315435388
-      }
-    ]
+    "text_excerpt_char_spans": [
+      [
+        1,
+        28
+      ],
+      [
+        814,
+        893
+      ],
+      [
+        999,
+        1044
+      ],
+      [
+        1367,
+        1505
+      ]
+    ],
+    "target_excerpt": "Therefore, the number of consonants in the last name \"Jennings\" is 6.",
+    "target_excerpt_exact_match": true,
+    "fixed_target": "entire stored response plus EOS",
+    "vmin": -9.658160190700675,
+    "vmax": 9.658160190700675,
+    "normalization": "linear, centered on zero",
+    "color_map": [
+      "#D5816C",
+      "#FFFFFF",
+      "#4F9C87"
+    ],
+    "shared_scale": "both models in the full multi-hop case",
+    "schematic_elements": "one reverse-traversal arrow, attention product identity, and contribution conservation identity",
+    "perspective": "one sheet displaying input token scores; no intermediate-state scores"
   },
   "cases": {
     "deltatrace-retrieval": {
@@ -65,11 +47,11 @@
       "index": 0,
       "vmin": -9.102320112257608,
       "vmax": 9.102320112257608,
-      "normalization": "SymLogNorm(linthresh=1, linscale=1, base=10)",
+      "normalization": "linear, centered on zero",
       "color_map": [
-        "#D9917E",
+        "#D5816C",
         "#FFFFFF",
-        "#79B9AA"
+        "#4F9C87"
       ],
       "text_excerpt_char_spans": {
         "qwen3": [
@@ -114,11 +96,11 @@
       "index": 0,
       "vmin": -9.658160190700675,
       "vmax": 9.658160190700675,
-      "normalization": "SymLogNorm(linthresh=1, linscale=1, base=10)",
+      "normalization": "linear, centered on zero",
       "color_map": [
-        "#D9917E",
+        "#D5816C",
         "#FFFFFF",
-        "#79B9AA"
+        "#4F9C87"
       ],
       "text_excerpt_char_spans": {
         "qwen3": [
@@ -168,14 +150,14 @@
     }
   },
   "generated_files": {
-    "deltatrace-mechanism.pdf": "5302099c936a18c369221627820da64f3c22355a0769ca909992a2d2850ade81",
-    "deltatrace-mechanism.png": "d591ab95d60e4eb7bffece4abf1ab28c12815ba9fffb3bf3e0cc1b17bc171dc6",
-    "deltatrace-mechanism.svg": "d9130d19b9fc0ee0ad3e099461eeea2d5ad3cdcc65a1cd52ffccd3056e314d5d",
-    "deltatrace-multihop.pdf": "f8b080f7630e311743526e38d1d8c77345699889a0ce069d2186022781e21e66",
-    "deltatrace-multihop.png": "9ecb029345eff8e020f41a740b1c72395f6e60e4b666328da6af6f83212ea48e",
-    "deltatrace-multihop.svg": "4162ed88d99085cb00599ee2c8ad159f645d4e418282d26bff14e8ebc1c84de6",
-    "deltatrace-retrieval.pdf": "58aceb9cb33dfd327ac0e136ce61200f7ca86bb3b319a9e1828343ebdec75fe0",
-    "deltatrace-retrieval.png": "f2e61de00994383c0480054a52390afca3ef52c40fb53434a68e32d8c07c090c",
-    "deltatrace-retrieval.svg": "5473ca6eb8ec1a840a74d3b7741ef48f5a1ae6396bc7c907226400dc373c9037"
+    "deltatrace-mechanism.pdf": "3988aa6cbe88bc9962fea7e75506a1bba3ef0bde6f6a66de80834876c52e08ba",
+    "deltatrace-mechanism.png": "31d5cad205035c94a71cb90ad729dc80a8f99cf89fd7119a281369e0bd748891",
+    "deltatrace-mechanism.svg": "a7440595a2f23eecd468e48c9036f1bdf95f6825e30b3ffd459e05c67b864d2e",
+    "deltatrace-multihop.pdf": "be80611d1388baf27e717c04eff23445fd7a75a51fc278d8ed97003f961ede5c",
+    "deltatrace-multihop.png": "904746743280d05e214331328dbdbd924b5e1152c9340768d11e6480cce1a12f",
+    "deltatrace-multihop.svg": "51cdcd6ebc404bb1bd7b66ccbe7957e0fe3fff5db32d9853066eda683b738eeb",
+    "deltatrace-retrieval.pdf": "4e65a81d6ba4b6fee815c1e7ad424006d4e2b763cdd454f957b8d40ad1afc44a",
+    "deltatrace-retrieval.png": "af978bc38e92d4fc8cd7b2ae9388a91a0ccdcb81dd9026f3a82021a31e407024",
+    "deltatrace-retrieval.svg": "4707b84432b7def98cfc73d18a4d7a89d42fec058cee07645c8575cd9f4c6a9e"
   }
 }

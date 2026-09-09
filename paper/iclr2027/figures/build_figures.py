@@ -12,10 +12,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.colors import LinearSegmentedColormap, SymLogNorm
+from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.patches import Rectangle
 import numpy as np
-from draw_mechanism import draw as mechanism_3d
+from draw_mechanism import draw as mechanism_3d, SIGNED_COLORS
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / 'generated'
@@ -27,7 +27,7 @@ PALE = '#F5F7F9'
 POS = '#238778'
 NEG = '#CA6854'
 VIOLET = '#746B91'
-CMAP = LinearSegmentedColormap.from_list('dt_signed', ['#D9917E', '#FFFFFF', '#79B9AA'])
+CMAP = LinearSegmentedColormap.from_list('dt_signed', SIGNED_COLORS)
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10.2,
                      'text.color': INK, 'axes.labelcolor': INK,
                      'pdf.fonttype': 42, 'ps.fonttype': 42, 'svg.fonttype': 'none',
@@ -82,7 +82,6 @@ def heatmap(ax, case, x, y, width, norm, font=10.15, sections=False):
             if sections and si == len(used_spans)-1:
                 y += .11
                 text(ax,x,y,'QUESTION',9.8,color=MUTED)
-                ax.plot([x+.92,x+width],[y+.085,y+.085],color=LINE,lw=.65)
                 y += .23
             else:
                 text(ax, x, y + .005, '···', 9.4, color=MUTED)
@@ -152,14 +151,13 @@ def case_figure_compact(cases, dataset):
     text(ax,.15,.10,title,13.3,'bold')
     text(ax,8.65,.16,'DT · development example 0',9.5,color=MUTED,ha='right')
     max_score=max(abs(t['score']) for c in rows for t in c['tokens'] if t['eligible'])
-    norm=SymLogNorm(linthresh=1,linscale=1,vmin=-max_score,vmax=max_score,base=10)
+    norm=Normalize(vmin=-max_score,vmax=max_score)
     width=3.10
     bottoms=[]; spans=[]
     for i,case in enumerate(rows):
         x=.16+i*3.39
         text(ax,x,.58,'Qwen3-8B' if i==0 else 'Qwen3.5-9B',12.1,'bold')
         text(ax,x,.94,'CONTEXT',9.8,color=MUTED)
-        ax.plot([x+.80,x+width],[1.025,1.025],color=LINE,lw=.65)
         used,span=heatmap(ax,case,x,1.19,width,norm,font=10.9,sections=True)
         bottoms.append(1.19+used);spans.append(span)
     baseline=max(bottoms)+.20
@@ -176,7 +174,6 @@ def case_figure_compact(cases, dataset):
     # This compact target panel carries no attribution heatmap: y is fixed.
     right=7.00
     text(ax,right,.59,'FIXED RESPONSE',9.8,'bold',MUTED)
-    ax.add_patch(Rectangle((right,.93),.032,.61,facecolor=VIOLET,edgecolor='none'))
     if dataset=='niah_mq_q2':
         text(ax,right+.14,.88,'5443951\n8698256',15.2,'bold',VIOLET)
     else:
@@ -217,11 +214,11 @@ def case_figure_compact(cases, dataset):
     bar.tick_params(axis='x',labelsize=9.3,length=0,pad=1)
     bar.set_yticks([])
     for spine in bar.spines.values():spine.set_visible(False)
-    text(ax,4.42,legend_y+.33,'Signed contribution (nats) · shared symmetric log scale',
+    text(ax,4.42,legend_y+.33,'Signed contribution (nats) · shared linear scale',
          9.6,color=MUTED,ha='center')
     meta={'dataset':dataset,'index':0,'vmin':-max_score,'vmax':max_score,
-          'normalization':'SymLogNorm(linthresh=1, linscale=1, base=10)',
-          'color_map':['#D9917E','#FFFFFF','#79B9AA'],
+          'normalization':'linear, centered on zero',
+          'color_map':SIGNED_COLORS,
           'text_excerpt_char_spans':{c['model']:s for c,s in zip(rows,spans)},
           'model_input_hashes':{c['model']:c['input_sha256'] for c in rows},
           'fixed_target':'entire stored response plus EOS; card summarizes only the answer',
@@ -254,8 +251,8 @@ def main():
         'fixture_sha256': hashlib.sha256(data_path.read_bytes()).hexdigest(),
         'builder_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'mechanism_builder_sha256': hashlib.sha256((HERE/'draw_mechanism.py').read_bytes()).hexdigest(),
-        'mechanism': 'Paired activation planes and paths are schematic; terminal source-span bars use the Qwen3.5 multi-hop case.',
-        'mechanism_source_bars': figs[0][1]._dt_source_bars,
+        'mechanism': 'Actual Qwen3.5 input-token heatmap, exact response excerpt, one reverse path, and a local attention identity.',
+        'mechanism_case': figs[0][1]._dt_case,
         'cases': specs, 'generated_files': {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                                          for p in sorted(OUT.iterdir()) if p.suffix in ('.pdf','.svg','.png')}}
     (HERE / 'figure_manifest.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf8')

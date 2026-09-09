@@ -1,13 +1,14 @@
 # DeltaTrace figures
 
-The method figure uses DeltaTrace's finite-change attribution, attention
-content/selection allocation, gated memory, and signed source contributions.
-Paired perspective planes show reference and original activations at three
-functional stages: input evidence, model computation, and the fixed response.
-The same surname example connects the words supplying content to the question
-that guides their selection. The model planes and internal paths are schematic;
-terminal source-span bars are real Qwen3.5 scores from the multi-hop case.
-Their exact token groups and sums are saved in `figure_manifest.json`.
+The method figure begins with an exact excerpt from the stored response and
+uses the actual Qwen3.5 multi-hop input heatmap as its main visual. One arrow
+connects the fixed-response score change to the signed source contributions.
+The adjacent attention identity explains how carried content and changed
+selection each receive credit, using the surname and the question as examples
+of those roles. A single perspective sheet displays measured input scores.
+The sheet is a layout device; it does not represent an intermediate model
+state. The local identity and reverse arrow describe the method. Exact source
+spans, the target excerpt, and the shared scale are in `figure_manifest.json`.
 
 The two case figures use stored `clean-v1-20260909` DT results for the first
 released example (index 0) of `niah_mq_q2` and `morehopqa`, on both models.
@@ -44,16 +45,17 @@ positions, so the rendered excerpts use the recorded model-input tokenization.
 ## Visual semantics
 
 - Teal and coral represent positive and negative DT contributions in nats.
-- Blue and purple paths in the method diagram distinguish content and
-  selection. Their line widths are visual styling, not measured edge weights.
-- Each task uses one symmetric logarithmic color scale for both models. The
-  linear region is [-1, 1] nat; the scale extends to the largest absolute
-  eligible-token contribution across the two complete inputs. Values are not
+- Blue and purple operator terms distinguish content and selection. They
+  illustrate the local allocation; they are not measured branch scores.
+- Each task uses one linear color scale for both models, centered on zero.
+  It extends to the largest absolute eligible-token contribution across the
+  two complete inputs. The main figure uses the same multi-hop scale. Values are not
   clipped, and scores are not normalized separately per model or excerpt.
 - Text excerpts are chosen for the question's evidence chain and are recorded
   as exact character spans. Ellipses mark omissions. The small strips retain
   every user-input token in original order; underlines locate the excerpts.
-- The response panel is labeled as a summary. Attribution explains the entire
+- The main figure quotes an exact response excerpt; case panels use answer
+  summaries. Attribution explains the entire
   fixed released response plus EOS, using the original eligible-token EOS
   reference, for each model.
 - Curves use the saved original 20-step `normalized_model_response` arrays.
@@ -63,6 +65,6 @@ positions, so the rendered excerpts use the recorded model-input tokenization.
 - These are four development-case illustrations. Formal aggregate comparisons
   use their complete aligned evaluation records.
 
-FlashTrace informed alignment, overview/detail pairing, color legends and
-publication layout. Its recursive-hop mechanism, intermediate targets and
-hop-difference semantics are not used in these DT figures.
+FlashTrace informed the use of a concrete text heatmap as the visual center,
+perspective depth, alignment, color legends, and publication layout. The DT
+figure centers a fixed response, one reverse traversal, and signed input scores.

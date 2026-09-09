@@ -1,213 +1,168 @@
-"""A layered vector view of DT's two executions and backward attribution.
+"""A real signed-token example anchors the explanation of finite propagation.
 
-The planes and internal paths are schematic. Terminal span scores are the
-stored Qwen3.5 multi-hop example, with no measured internal edge weights.
+Only the input heatmap is measured. The single reverse arrow and the local
+attention identity describe the method; neither represents a measured edge.
 """
 import math
+import re
 
 import matplotlib.pyplot as plt
-import matplotlib.patheffects as path_effects
-from matplotlib.patches import Circle, FancyArrowPatch, Polygon, Rectangle
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Polygon
 
-INK = '#263645'
-GRAY = '#8392A0'
-LINE = '#D8E1E8'
-BLUE = '#477FC5'
-PURPLE = '#8065AE'
-POS = '#238778'
-NEG = '#CA6854'
+INK = '#25323B'
+MUTED = '#75818A'
+BLUE = '#507FA6'
+PURPLE = '#8270A5'
+SIGNED_COLORS = ['#D5816C', '#FFFFFF', '#4F9C87']
 
 
 def draw(data):
-    fig = plt.figure(figsize=(8.8, 5.15), facecolor='white')
+    case = next(c for c in data['cases'] if c['model'] == 'qwen35' and c['dataset'] == 'morehopqa')
+    paired = [c for c in data['cases'] if c['dataset'] == 'morehopqa']
+    limit = max(abs(t['score']) for c in paired for t in c['tokens'] if t['eligible'])
+    norm = Normalize(vmin=-limit, vmax=limit)
+    cmap = LinearSegmentedColormap.from_list('dt_signed', SIGNED_COLORS)
+    source = case['user_text']
+    target_excerpt = 'Therefore, the number of consonants in the last name "Jennings" is 6.'
+    assert target_excerpt in case['target']
+
+    fig = plt.figure(figsize=(10, 6.7), facecolor='white')
     ax = fig.add_axes([0, 0, 1, 1])
-    ax.set_xlim(0, 8.8); ax.set_ylim(5.15, 0); ax.axis('off')
+    ax.set_xlim(0, 10); ax.set_ylim(6.7, 0); ax.axis('off')
 
-    def text(x, y, s, size=12, color=INK, weight='normal', **kw):
-        return ax.text(x, y, s, va='top', fontsize=size, color=color,
-                       fontweight=weight, fontfamily='DejaVu Sans', **kw)
+    def text(x, y, value, size=12, color=INK, weight='normal', **kw):
+        family = kw.pop('fontfamily', 'DejaVu Sans')
+        return ax.text(x, y, value, va='top', fontsize=size, color=color,
+                       fontweight=weight, fontfamily=family, **kw)
 
-    def arrow(a, b, color=GRAY, width=1.3, rad=0, **kw):
-        p = FancyArrowPatch(a, b, arrowstyle='-|>', mutation_scale=11,
-                            linewidth=width, color=color,
-                            connectionstyle=f'arc3,rad={rad}', **kw)
-        ax.add_patch(p); return p
+    # Reading order: the response, one reverse traversal, then the actual input.
+    text(.43, .15, 'Which words shaped this response?', 17, weight='bold')
+    ax.add_patch(FancyBboxPatch((.45, .62), 6.25, .94,
+                 boxstyle='round,pad=0.035,rounding_size=0.10',
+                 facecolor='#FCF7EB', edgecolor='#C4A56B', linewidth=.85))
+    text(.66, .75, 'RESPONSE EXCERPT', 9.5, '#9A8054', 'bold')
+    text(.66, .98, 'Therefore, the number of consonants', 13.1)
+    text(.66, 1.23, 'in the last name "Jennings" is 6.', 13.1, weight='bold')
+    text(.51, 1.80, 'DT follows the fixed response\'s score change', 11.4, MUTED)
+    text(.51, 2.02, 'back through the model to the input words.', 11.4, MUTED)
+    ax.add_patch(FancyArrowPatch((5.91, 1.60), (5.91, 2.52),
+                 arrowstyle='-|>', mutation_scale=16, color=PURPLE,
+                 linewidth=2.3, zorder=8))
+    text(6.08, 1.91, r'$\Delta F$', 14, PURPLE)
 
-    def line(points, color=LINE, width=1, **kw):
-        xs, ys = zip(*points); ax.plot(xs, ys, color=color, lw=width, **kw)
+    # A single sheet presents measured token scores, not hidden intermediate views.
+    x0, y0, width, height = 1.01, 2.42, 5.90, 3.15
+    def project(u, v):
+        return (x0 + u - .25*v, y0 + .07*u + v)
+    corners = [project(0, 0), project(width, 0), project(width, height), project(0, height)]
+    ax.add_patch(Polygon([(x+.035,y+.095) for x,y in corners], closed=True,
+                 facecolor='#92ABB5', edgecolor='none', alpha=.16, zorder=1))
+    near = [corners[3], corners[2], (corners[2][0],corners[2][1]+.047),
+            (corners[3][0],corners[3][1]+.047)]
+    ax.add_patch(Polygon(near, closed=True, facecolor='#C8D9DF',
+                 edgecolor='#B5C7CF', linewidth=.55, zorder=2))
+    ax.add_patch(Polygon(corners, closed=True, facecolor='#FEFFFF',
+                 edgecolor='#B6C5CC', linewidth=.85, zorder=3))
+    angle = -math.degrees(math.atan(.07))
 
-    def plane(x, y, w, h, fill='#F6FAFD', edge='#A9BDCE', paired=True, back_label=''):
-        """An oblique plane; objects use the same in-plane coordinates."""
-        def project(u, v): return (x + u - .38*v, y + .085*u + v)
-        points = [project(0, 0), project(w, 0), project(w, h), project(0, h)]
-        # Short extrusion and a restrained shadow preserve the white page.
-        ax.add_patch(Polygon([(a+.025,b+.068) for a,b in points], closed=True,
-                             facecolor='#DDE6EC', edgecolor='none', alpha=.60, zorder=1))
-        if paired:
-            ghost = [(a+.12,b-.19) for a,b in points]
-            ax.add_patch(Polygon(ghost, closed=True, facecolor='#FAFBFC',
-                                 edgecolor='#CDD5DC', linewidth=.8, zorder=2))
-            if back_label:
-                text(x+.26,y-.15,back_label,9.9,'#98A4AF',
-                     rotation=-math.degrees(math.atan(.085)),rotation_mode='anchor',zorder=2.8)
-        ax.add_patch(Polygon(points, closed=True, facecolor=fill, edgecolor=edge,
-                             linewidth=.95, zorder=3))
-        # Front thickness is visible only along the near edge.
-        front = [points[3], points[2], (points[2][0],points[2][1]+.045),
-                 (points[3][0],points[3][1]+.045)]
-        ax.add_patch(Polygon(front, closed=True, facecolor='#D8E6EE',
-                             edgecolor=edge, linewidth=.45, zorder=3))
-        return project
-
-    def ptext(project, u, v, s, size=11.5, **kw):
-        x, y = project(u, v)
-        return text(x, y, s, size=size, rotation=-math.degrees(math.atan(.085)),
+    def ptext(u, v, value, size=12, color=INK, weight='normal', **kw):
+        x,y = project(u,v)
+        return text(x,y,value,size,color,weight,rotation=angle,
                     rotation_mode='anchor', zorder=6, **kw)
 
-    def grid(x, y, rows, cols, color, w=.42, h=.30, highlighted=None, alpha=.20):
-        for r in range(rows):
-            for c in range(cols):
-                a = .70 if highlighted is not None and (r,c) in highlighted else alpha
-                ax.add_patch(Rectangle((x+c*w/cols, y+r*h/rows), w/cols, h/rows,
-                                       facecolor=color, edgecolor='white', linewidth=.55,
-                                       alpha=a, zorder=6))
-        ax.add_patch(Rectangle((x,y), w,h, facecolor='none', edgecolor=color,
-                               linewidth=.55, zorder=6))
+    ptext(.20, .13, 'Signed input contributions', 13.2, weight='bold')
+    ptext(5.65, .17, 'Qwen3.5', 9.5, MUTED, ha='right')
+    owners = [[] for _ in source]
+    for i,t in enumerate(case['tokens']):
+        for j in range(*t['char_span']): owners[j].append(i)
+    font, step, line_height = 12.1, 12.1 / 72 * .602, 12.1 / 72 * 1.30
+    capacity = int(5.49 / step)
+    spans = []
 
-    # Three visual zones, one shared baseline and modest typographic hierarchy.
-    text(.15, .12, 'Local change', 14, weight='bold')
-    text(2.64, .12, 'Following the evidence', 14, weight='bold')
-    text(7.03, .12, 'Signed sources', 14, weight='bold')
-    line([(.15,.43),(2.11,.43)])
-    line([(2.64,.43),(6.59,.43)])
-    line([(7.03,.43),(8.64,.43)])
+    def paragraph(value, v):
+        lo = source.index(value); hi = lo + len(value)
+        spans.append([lo,hi])
+        groups = [list(range(lo+m.start(),lo+m.end())) for m in re.finditer(r'\S+\s*', value)]
+        lines, current = [], []
+        for group in groups:
+            if current and len(current)+len(group)>capacity:
+                lines.append(current); current=[]
+            current.extend(group)
+        if current: lines.append(current)
+        for chars in lines:
+            while chars and source[chars[-1]].isspace(): chars.pop()
+            runs, run, last = [], [], None
+            for j in chars:
+                assert len(owners[j])==1, ('Ambiguous displayed character',j)
+                owner=owners[j][0]
+                if owner!=last and run: runs.append((last,run)); run=[]
+                run.append(j); last=owner
+            if run: runs.append((last,run))
+            col=0
+            for owner, chars in runs:
+                token=case['tokens'][owner]
+                u=.21+col*step; w=len(chars)*step
+                points=[project(u,v),project(u+w,v),project(u+w,v+line_height*.91),project(u,v+line_height*.91)]
+                ax.add_patch(Polygon(points,closed=True,
+                     facecolor=cmap(norm(token['score'])) if token['eligible'] else 'white',
+                     edgecolor='none',zorder=4))
+                ptext(u,v+.012,''.join(source[j] for j in chars),font,fontfamily='DejaVu Sans Mono')
+                col+=len(chars)
+            v+=line_height
+        return v
 
-    # Local attention change: two visibly different routes, one output sum.
-    text(.15, .61, 'Attention', 12.5, weight='bold')
-    text(.15, .88, 'Content carried', 11.5, BLUE, 'bold')
-    grid(.22, 1.16, 3, 3, BLUE, highlighted={(0,0),(1,1),(2,2)})
-    text(.42, 1.52, r'$P_1$', 13, ha='center')
-    text(.78, 1.19, '×', 15, BLUE, ha='center')
-    grid(.98, 1.16, 3, 1, BLUE, w=.20, h=.30, alpha=.55)
-    text(1.08, 1.52, r'$\Delta V$', 13, ha='center')
-    arrow((1.29,1.30),(1.70,1.62),BLUE,1.7,rad=-.15)
-    text(.15, 1.91, 'Selection', 11.5, PURPLE, 'bold')
-    grid(.22, 2.20, 3, 3, PURPLE, highlighted={(0,1),(1,2),(2,0)})
-    text(.42, 2.55, r'$\Delta P$', 13, ha='center')
-    text(.78, 2.22, '×', 15, PURPLE, ha='center')
-    grid(.98, 2.20, 3, 1, '#8D9AA7', w=.20, h=.30, alpha=.45)
-    text(1.08, 2.55, r'$V_0$', 13, ha='center')
-    arrow((1.29,2.34),(1.70,1.86),PURPLE,1.7,rad=.13)
-    ax.add_patch(Circle((1.80,1.74),.135,facecolor='white',edgecolor='#859BAC',lw=1.0,zorder=8))
-    text(1.80,1.635,'+',15,ha='center',zorder=9)
-    text(1.80,1.37,r'$\Delta O$',13,ha='center')
-    # A short relation explicitly ties the decomposition to the large model view.
-    line([(2.03,1.74),(2.36,1.74),(2.36,2.43),(2.83,2.43)], '#B4C2CE', .9,
-         linestyle=(0,(2.5,2.5)))
-    text(.15, 3.07, 'Memory', 12.5, weight='bold')
-    text(.15, 3.34, 'Evidence carried forward.', 10.8, GRAY)
-    # Memory glyph: retained state plus a gated new write.
-    for x,label in [(.30,r'$S_{t-1}$'),(1.70,r'$S_t$')]:
-        ax.add_patch(Polygon([(x-.16,3.91),(x+.13,3.91),(x+.22,3.82),(x-.07,3.82)],
-                             facecolor='#E8F0F6',edgecolor='#9FB3C4',lw=.8))
-        ax.add_patch(Rectangle((x-.16,3.91),.29,.27,facecolor='#F5F8FA',edgecolor='#9FB3C4',lw=.8))
-        ax.add_patch(Polygon([(x+.13,3.91),(x+.22,3.82),(x+.22,4.09),(x+.13,4.18)],
-                             facecolor='#CEDDE7',edgecolor='#9FB3C4',lw=.8))
-        text(x,4.28,label,12,ha='center')
-    arrow((.52,4.04),(1.44,4.04),BLUE,1.8)
-    ax.add_patch(Circle((.88,4.04),.085,facecolor='white',edgecolor=PURPLE,lw=1,zorder=8))
-    text(.88,3.955,'×',11,PURPLE,ha='center',zorder=9)
-    text(.88,3.62,'keep',11,PURPLE,ha='center')
-    line([(.88,3.83),(.88,3.94)],PURPLE,1.0)
-    ax.add_patch(Circle((1.23,4.04),.085,facecolor='white',edgecolor='#91A5B5',lw=1,zorder=8))
-    text(1.23,3.955,'+',11,ha='center',zorder=9)
-    arrow((1.23,4.48),(1.23,4.16),BLUE,1.3)
-    text(1.23,4.60,'new write',11,ha='center')
+    ptext(.21,.49,'CONTEXT',9.1,MUTED,weight='bold')
+    v=paragraph('Townsend Putnam Coleman III',.70)
+    ptext(.21,v+.005,'…',11,MUTED); v+=.18
+    v=paragraph('he also did additional voices in films "Fantasia 2000" (1999) and "Sing" (2016)',v)
+    ptext(.21,v+.005,'…',11,MUTED); v+=.18
+    v=paragraph('It was directed and written by Garth Jennings',v)
+    v+=.20
+    ptext(.21,v,'QUESTION',9.1,MUTED,weight='bold'); v+=.21
+    v=paragraph('How many consonants are there in the last name of the person who directed and wrote the 2016 film featuring the voice of Townsend Coleman?',v)
+    assert v<height-.09,(v,height)
 
-    # Paired reference/original surfaces are activations in two executions.
-    # They do not represent recursive attribution passes or CoT targets.
-    top = plane(2.98,.82,3.43,.66,fill='#F4F8FD',back_label='same fixed response')
-    mid = plane(2.95,2.19,3.43,.84,fill='#F4F9FC',back_label='reference activations')
-    bottom = plane(2.88,3.92,3.54,.67,fill='#F5F9FC')
-    ptext(top,.14,.10,'Fixed response',12,weight='bold')
-    ptext(top,.21,.37,'… Jennings has 6 consonants.',11.5)
-    ptext(mid,.15,.03,'Attention and memory',12,weight='bold')
-    ptext(bottom,.15,.08,'Input',12,weight='bold')
-    ptext(bottom,.19,.30,'… Garth Jennings …',11.5)
-    ptext(bottom,.19,.50,'… consonants … last name …',11.5)
-    # Fine cue highlights follow the same plane geometry.
-    for pr,u,v,w,c in [(bottom,.90,.45,.67,BLUE),(bottom,1.87,.66,.69,PURPLE)]:
-        a=pr(u,v); b=pr(u+w,v); line([a,b],c,2.4,zorder=7)
+    # A compact operator lens explains the mechanism beside the example.
+    # Color here distinguishes operator roles; it is not a measured attribution.
+    text(7.32,.22,'Content and selection',14.1,weight='bold')
+    text(7.32,.50,'both receive credit',14.1,weight='bold')
+    text(7.32,1.05,r'$\Delta(PV) =$',17)
+    text(7.32,1.47,r'$P_1\,\Delta V$',17,BLUE)
+    text(8.58,1.47,r'$+$',17,MUTED)
+    text(8.91,1.47,r'$\Delta P\,V_0$',17,PURPLE)
 
-    # A simple fan-in motif gives attention a visual, rather than verbal, form.
-    p0=mid(.48,.54); p1=mid(.99,.54); p2=mid(1.50,.54)
-    dst=mid(1.14,.36)
-    for j,p in enumerate([p0,p1,p2]):
-        ax.add_patch(Rectangle((p[0]-.075,p[1]-.015),.15,.11,
-                               facecolor=['#D7E5F3','#89B0DD','#D7E5F3'][j],edgecolor=BLUE,lw=.5,zorder=7))
-        arrow((p[0],p[1]-.03),dst,BLUE,.8+(.7 if j==1 else 0),zorder=7)
-    ptext(mid,.28,.72,'carry / select',10.7,color=BLUE)
-    # A compact state block depicts persistence and a later read.
-    q=mid(2.63,.49)
-    ax.add_patch(Polygon([(q[0]-.20,q[1]),(q[0]+.17,q[1]),(q[0]+.28,q[1]-.11),(q[0]-.09,q[1]-.11)],
-                         facecolor='#CDDFED',edgecolor=BLUE,lw=.6,zorder=7))
-    ax.add_patch(Rectangle((q[0]-.20,q[1]),.37,.16,facecolor='#E8F0F7',edgecolor=BLUE,lw=.6,zorder=7))
-    arrow((q[0]-.47,q[1]+.07),(q[0]-.22,q[1]+.07),PURPLE,1.2,zorder=7)
-    arrow((q[0]+.18,q[1]+.07),(q[0]+.46,q[1]+.07),BLUE,1.2,zorder=7)
-    ptext(mid,2.12,.72,'retain / read',10.7,color=BLUE)
+    text(7.32,2.12,'Content carried',12.5,BLUE,'bold')
+    text(7.32,2.47,'"Jennings"',15.0,weight='bold')
+    text(7.32,2.83,'The name supplies information.\nIts change travels with the\nweight that selected it.',10.6,linespacing=1.45)
 
-    # Only a few continuous paths are emphasized across the surfaces.
-    # Width is stylistic and carries no numerical meaning.
-    t=top(3.10,.50); a=mid(1.14,.36); m=mid(2.66,.49)
-    model_edge=mid(3.10,-.02)
-    arrow((t[0],t[1]+.08),model_edge,BLUE,2.15,rad=-.08,zorder=10)
-    text(6.18,1.88,r'$\Delta F$',12.5,BLUE)
-    b_content=bottom(1.36,.38); b_cue=bottom(2.53,.57)
-    arrow(mid(.99,.94),(b_content[0],b_content[1]-.26),BLUE,2.15,rad=.16,zorder=10)
-    arrow(mid(1.48,.96),(b_cue[0]-.13,b_cue[1]-.14),PURPLE,1.65,rad=-.05,zorder=10)
-    memory_path=arrow(mid(2.66,.94),(b_content[0]+.07,b_content[1]-.25),BLUE,1.45,rad=-.10,zorder=10)
-    memory_path.set_path_effects([path_effects.Stroke(linewidth=3.5,foreground='white'),path_effects.Normal()])
-    # Path labels occupy open gaps between planes.
-    text(2.73,3.51,'content',11.2,BLUE,weight='bold')
-    text(5.44,3.61,'selection',11.2,PURPLE,weight='bold')
-    text(5.74,3.43,'memory',10.8,BLUE)
-    # The original/reference legend labels the paired geometry, not a third step.
-    ax.add_patch(Rectangle((2.78,4.94),.14,.08,facecolor='#FAFBFC',edgecolor='#CDD5DC',lw=.7))
-    text(2.99,4.90,'EOS reference',10.8,GRAY)
-    ax.add_patch(Rectangle((4.60,4.94),.14,.08,facecolor='#D8E6EE',edgecolor='#A9BDCE',lw=.7))
-    text(4.81,4.90,'original input',10.8,GRAY)
+    text(7.32,3.68,'Selection changed',12.5,PURPLE,'bold')
+    text(7.32,4.03,'"last name"',15.0,weight='bold')
+    text(7.32,4.39,'The question guides what is used.\nA change in that selection\nalso receives a contribution.',10.6,linespacing=1.45)
 
-    # True terminal contributions from the fixed input, separate from schematic edges.
-    case=next(c for c in data['cases'] if c['model']=='qwen35' and c['dataset']=='morehopqa')
-    text(7.03,.64,'Qwen3.5 example',11.0,GRAY)
-    text(7.03,.95,'Input words',11.8,weight='bold')
-    words=['Garth','Jennings','last name','consonants']
-    values=[]
-    bars=[]
-    zero=7.56
-    scale=.088
-    for i,word in enumerate(words):
-        lo=case['user_text'].index(word); hi=lo+len(word)
-        ts=[t for t in case['tokens'] if t['char_span'][0]<hi and t['char_span'][1]>lo]
-        value=sum(t['score'] for t in ts); values.append(value)
-        bars.append({'text':word,'char_span':[lo,hi],
-                     'token_local_indices':[t['local_index'] for t in ts],
-                     'signed_sum':value})
-        y=1.40+i*.62
-        text(7.03,y-.17,word,11.7)
-        end=zero+value*scale
-        ax.add_patch(Rectangle((min(zero,end),y+.12),abs(end-zero),.145,
-                               facecolor=POS if value>=0 else NEG,edgecolor='none',zorder=5))
-        text(8.62,y-.17,f'{value:+.2f}',10.8,POS if value>=0 else NEG,ha='right')
-        line([(zero,y+.06),(zero,y+.32)],'#AAB7C2',.7,zorder=4)
-    text(zero,3.63,'0',10.5,GRAY,ha='center')
-    text(8.61,3.63,'nats',10.5,GRAY,ha='right')
-    text(7.03,3.98,'+  raises the score',11.3,POS)
-    text(7.03,4.24,'−  lowers the score',11.3,NEG)
-    text(7.82,4.55,r'$\sum_i A_i=\Delta F$',14,ha='center')
-    text(7.82,4.96,'over all sources',10.5,GRAY,ha='center')
-    fig._dt_source_bars = {'model':case['model'],'dataset':case['dataset'],
-                           'index':case['index'],'input_sha256':case['input_sha256'],
-                           'aggregation':'sum of original token scores overlapping the named source span',
-                           'bars':bars}
+    text(7.32,5.38,'Contributions add up',11.7,weight='bold')
+    text(7.32,5.76,r'$\sum_i A_i = \Delta F$',18.0,PURPLE)
+    text(7.32,6.26,'across all input sources',10.2,MUTED)
+
+    # One quantitative legend; no decorative rules or word underlines.
+    cax=fig.add_axes([.191,.024,.358,.014])
+    cax.imshow(np.linspace(-limit,limit,512)[None,:],aspect='auto',cmap=cmap,norm=norm,
+               extent=[-limit,limit,0,1])
+    cax.set_xticks([-limit,0,limit],[f'{-limit:.1f}','0',f'{limit:.1f}'])
+    cax.tick_params(axis='x',labelsize=8.9,length=0,pad=2)
+    cax.set_yticks([])
+    for spine in cax.spines.values(): spine.set_visible(False)
+    text(.34,6.40,'Lowers score',10.4,'#BC6B59')
+    text(6.90,6.40,'Raises score',10.4,'#408C78',ha='right')
+    text(3.70,6.22,'Token contribution · nats',9.5,MUTED,ha='center')
+
+    fig._dt_case = {'model':case['model'],'dataset':case['dataset'],'index':case['index'],
+        'input_sha256':case['input_sha256'],'text_excerpt_char_spans':spans,
+        'target_excerpt':target_excerpt,'target_excerpt_exact_match':True,
+        'fixed_target':'entire stored response plus EOS',
+        'vmin':-limit,'vmax':limit,'normalization':'linear, centered on zero',
+        'color_map':SIGNED_COLORS,'shared_scale':'both models in the full multi-hop case',
+        'schematic_elements':'one reverse-traversal arrow, attention product identity, and contribution conservation identity',
+        'perspective':'one sheet displaying input token scores; no intermediate-state scores'}
     return fig
