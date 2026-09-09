@@ -9,9 +9,9 @@ This working file connects the draft to its source material. It is separate from
 | D3 | `deltatrace/clean/qwen35/finite_fla_gpu.py` | Native chunk adjoints, mixed contractions, finite decay scan, 64-token chunks | Actual computational structure | Section 3 |
 | D4 | `research/prototypes/vendor_fa_finite_p1.cu` and BF16/D256 extension | Log-mean row reductions and finite attention contractions on the vendor FA framework | Operator design; whole-method timings are separate | Section 3 |
 | D5 | `experiments/official/protocol.json` and README | Author inputs, task selection, eager scoring, K=1 faithfulness and K=3 recovery | Evaluation protocol; results remain in their own records | Section 4 and Appendix B |
-| T1 | Finite local identity and adjoint inner-product substitution | Contribution conservation on an acyclic real-valued graph | Exact arithmetic theorem | Theorem 1 and Appendix A |
-| T2 | Probability normalization and logarithmic-mean identity | Finite softmax, response seed, PSD score operator | Exact arithmetic on common unmasked support | Proposition 1 and Appendix A |
-| T3 | Bilinear expansion and reciprocal-norm identity | Product rules, GDN change recurrence and RMS rule | Local mathematical identities | Section 2 and Appendix A |
+| T1 | Finite local identity and adjoint inner-product substitution | Contribution conservation on an acyclic real-valued graph | Exact arithmetic theorem | Section 2 states the accounting consequence; Appendix A.1 gives Theorem 1 and its proof |
+| T2 | Probability normalization and logarithmic-mean identity | Finite softmax, response seed, PSD score operator | Exact arithmetic on common unmasked support | Section 2 explains competition among sources; Appendix A.2 gives Proposition 1 and its derivation |
+| T3 | Bilinear expansion and reciprocal-norm identity | Product rules, GDN change recurrence and RMS rule | Local mathematical identities | Section 2 explains content, routing, retention and writing; Appendix A.3--A.5 gives the full rules |
 | L1 | Shrikumar et al., PMLR 2017 | Reference activation differences, multiplier composition, summation to delta | Retrieved original paper and supplement | Related Work |
 | L2 | Sundararajan et al., PMLR 2017 | IG and its axiomatic attribution framing | Retrieved PMLR entry | Related Work |
 | L3 | Dao et al., arXiv:2205.14135 | FlashAttention tiling and memory-traffic organization | Retrieved paper abstract and original source | Introduction, computation, related work |

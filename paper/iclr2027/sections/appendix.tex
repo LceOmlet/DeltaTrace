@@ -1,14 +1,44 @@
-\section{Proofs and Operator Identities}
+\section{Formal Rules and Derivations}
 \label{app:proofs}
 
-\subsection{Contribution conservation}
+\subsection{Finite propagation and contribution conservation}
+\label{app:conservation}
+For an operation $v=f(u_1,\ldots,u_k)$, \dt{} constructs linear maps $D_j$ from the two executions such that
+\begin{equation}
+\D v=\sum_{j=1}^k D_j\D u_j.
+\label{eq:local}
+\end{equation}
+An upstream coefficient $m_v$ propagates to input $j$ as $D_j^\top m_v$. Coefficients from multiple consumers add at their shared input. Starting with coefficient $1$ at the scalar target, the reverse traversal produces the source coefficients in Equation~\ref{eq:attribution}. For a scalar nonlinearity $f$, the local coefficient is the divided difference $(f(u_1)-f(u_0))/(u_1-u_0)$, with its derivative as the coincident-input limit. Linear transformations retain their weights, and addition sends the coefficient to each summand.
+
+\begin{theorem}[Contribution conservation]
+For an acyclic computation over real-valued operations satisfying Equation~\ref{eq:local}, reverse propagation from a scalar target yields the conservation identity in Equation~\ref{eq:conservation}.
+\end{theorem}
+\begin{proof}
 An acyclic computation can be expanded into elementary operations with explicit branches. At an operation $v=f(u_1,\ldots,u_k)$, Equation~\ref{eq:local} gives
 \begin{equation}
 \ip{m_v}{\D v}=\sum_j\ip{D_j^\top m_v}{\D u_j}.
 \end{equation}
 Replacing a node's contribution by the contributions of its parents therefore preserves the total on a cut through the graph. At shared parents, coefficients from different consumers sum. Repeated substitution reaches the input cut and yields Equation~\ref{eq:conservation}, since the coefficient of the scalar target is $1$. Constant inputs have zero difference and contribute zero to this sum.
 
+\end{proof}
+
 \subsection{Finite attention normalization}
+\label{app:softmax}
+For an attention row $p_b=\sm(z_b)$, $b\in\{0,1\}$, the logarithmic mean and its sum are
+\begin{equation}
+\ell_i=\frac{p_{1,i}-p_{0,i}}{\log p_{1,i}-\log p_{0,i}},\qquad
+\tau=\sum_i\ell_i,
+\label{eq:logmean}
+\end{equation}
+with $\ell_i=p_{0,i}$ at coincident probabilities. All quantities are evaluated on the common unmasked support.
+\begin{proposition}[Finite attention normalization]
+For finite logits on a common support,
+\begin{equation}
+\D p=\left(\diag(\ell)-\frac{\ell\ell^\top}{\tau}\right)\D z.
+\label{eq:softmax}
+\end{equation}
+\end{proposition}
+\begin{proof}
 The common support contains positive probabilities. For endpoint $b$, $\log p_b=z_b-a_b\mathbf 1$, where $a_b=\log\sum_i\exp(z_{b,i})$. The definition of the logarithmic mean gives
 \begin{equation}
 \D p=\ell\odot(\D z-\D a\,\mathbf 1).
@@ -28,7 +58,59 @@ u^\top\left(\diag(\ell)-\frac{\ell\ell^\top}{\tau}\right)u
 \end{equation}
 This is the weighted variance of $u$ multiplied by $\tau$.
 
-\subsection{Product and normalization rules}
+\end{proof}
+The operator is symmetric. Its transpose action gives Equation~\ref{eq:softmax-vjp}, and the response coefficient for a log-softmax target is $m_z=e_y-\ell/\tau$.
+
+\subsection{Shared operator rules}
+\label{app:operators}
+For attention output $Y=PV$, Equation~\ref{eq:pv} gives the coefficients $m_V=P_1^\top U$ and $m_P=UV_0^\top$ for an upstream coefficient $U$.
+
+Query--key scores use the symmetric product identity,
+\begin{equation}
+\D(QK^\top)=\D Q\,\bar K^\top+\bar Q\,\D K^\top,\qquad
+\bar Q=(Q_0+Q_1)/2,
+\label{eq:qk}
+\end{equation}
+with $\bar K$ defined in the same way. The common operator rules appear in Table~\ref{tab:rules}. They depend on the operator and its role, and are shared by the two model families. Normalization, rotary position transformations, and grouped heads follow their respective model definitions.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Fixed propagation rules shared across architectures. Bars denote endpoint averages. Gated-memory operations extend the same content-oriented rule to recurrent states.}
+\label{tab:rules}
+\begin{tabular}{@{}p{0.27\linewidth}p{0.65\linewidth}@{}}
+\toprule
+Operation & Change decomposition \\
+\midrule
+Linear and residual & $\D(Wx+b)=W\D x$; $\D(a+b)=\D a+\D b$ \\
+Attention values & $\D(PV)=P_1\D V+\D P V_0$ \\
+Attention scores & $\D(QK^\top)=\D Q\bar K^\top+\bar Q\D K^\top$ \\
+SwiGLU & $\D(us)=\bar s\odot\D u+\bar u\odot\D s$, $s=\silu(g)$ \\
+Output gating & $\D(ns)=s_1\odot\D n+n_0\odot\D s$ \\
+RMS normalization & Analytic finite rule for $wx/\sqrt{\operatorname{mean}(x^2)+\epsilon}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Gated-memory recurrence}
+\label{app:memory}
+With column vectors and a key-by-value state $S_t\in\R^{d_k\times d_v}$, its per-token computation is
+\begin{align}
+T_t&=\alpha_t S_{t-1}, & r_t&=T_t^\top k_t, \nonumber\\
+c_t&=v_t-r_t, & u_t&=\beta_t c_t, \label{eq:gdn}\\
+S_t&=T_t+k_tu_t^\top, & o_t&=S_t^\top q_t. \nonumber
+\end{align}
+The query includes the model's fixed attention scale. The state $T_t$ contains retained evidence, $r_t$ reads existing content, and $u_t$ writes the update. \dt{} follows the change of this computation using fixed content-oriented products:
+\begin{align}
+\D T_t&=\alpha_{t,1}\D S_{t-1}+S_{t-1,0}\D\alpha_t, \nonumber\\
+\D r_t&=(\D T_t)^\top k_{t,1}+T_{t,0}^\top\D k_t, \nonumber\\
+\D u_t&=\beta_{t,1}(\D v_t-\D r_t)+c_{t,0}\D\beta_t, \label{eq:gdn-finite}\\
+\D S_t&=\D T_t+k_{t,1}\D u_t^\top+\D k_t\,u_{t,0}^\top, \nonumber\\
+\D o_t&=(\D S_t)^\top q_{t,1}+S_{t,0}^\top\D q_t. \nonumber
+\end{align}
+This recurrence assigns contributions to new values, retrieval keys, queries, and both gates. Reversing it carries the response coefficient through stored evidence to earlier sources. Scalar gate nonlinearities and query/key normalization use the same finite propagation construction as the surrounding network.
+
+\subsection{Product and normalization identities}
 For a bilinear map $B$, both
 \begin{align}
 \D B(a,b)&=B(\D a,\bar b)+B(\bar a,\D b),\\
@@ -43,6 +125,22 @@ D_f^\top m=
 -\frac{2\bar x\,\ip{\bar x}{v}}{d\,r_0r_1(r_0+r_1)}.
 \end{equation}
 The identity follows from $\D r=(2\ip{\bar x}{\D x}/d)/(r_0+r_1)$ and $\D(r^{-1})=-\D r/(r_0r_1)$. The same construction covers fixed learned scale parameters and the query/key normalization used in the memory path.
+
+
+\section{Implementation and Storage Accounting}
+\label{app:computation}
+
+\paragraph{Attention.}
+Native endpoint queries, keys, values, and log-normalizers determine the probabilities within each FlashAttention tile. The first sweep accumulates the logarithmic-mean normalizers and weighted centers in Equation~\ref{eq:softmax-vjp}. Subsequent sweeps accumulate query, key, and value coefficients. Endpoint averages reside in linear-size buffers or are computed inside the tiles.
+
+\paragraph{Memory.}
+The implementation processes 64-token chunks using FLA's native chunk-state adjoints and batched contractions with saved endpoint states. An associative affine scan computes the finite decay contribution. Convolution and surrounding projections use the installed model primitives and their linear transpose actions.
+
+\paragraph{Storage.}
+For sequence length $T$, head dimension $d$, and tile or chunk width $C$, attention vectors and row statistics occupy $O(Td)$ storage per head; pairwise products reside in bounded tiles. Dense attention arithmetic is $O(T^2d)$. Chunked memory occupies $O(Td+TC+(T/C)d^2)$ auxiliary storage per head for token coefficients, within-chunk products, and boundary states. Both storage expressions are linear in $T$ at fixed $d$ and $C$. Layer replay supplies intermediate activations, with checkpoint storage accounted for separately.
+
+\paragraph{Execution.}
+Qwen3 uses FP16; Qwen3.5 uses BF16 attention and FLA, with FP32 accumulation where supplied by the underlying operations. Complete attribution cost includes the two endpoint executions, layer replay, contribution propagation, and transfers.
 
 \section{Evaluation Specification}
 The FlashTrace \texttt{table1-data-v1} release fixes the prompt transformation, eligible source positions, response target, gold mapping, and scoring implementation. \dt{}'s scalar target includes the released response and EOS. A source score enters the faithfulness function as $s_i=\max(A_i,0)$; the released function determines deletion order and normalized contribution mass. Raw signed scores remain available for source visualizations. Full task comparisons use all released examples for the chosen task. Each result record identifies its model, method version, sample selection, metric implementation, and measured execution stages.

@@ -1,18 +1,16 @@
 \section{Efficient Computation}
 \label{sec:computation}
 
-% C1: Attention work is stated in terms of data movement and contractions.
-\paragraph{Tiled attention propagation.}
-The attention rule requires three families of contractions: row reductions for the logarithmic mean, query/key coefficients from the score contribution, and value coefficients from the original-input probabilities. The implementation evaluates these contractions within the FlashAttention tiling framework \citep{dao2022flashattention}. Native endpoint queries, keys, values, and log-normalizers determine the tile probabilities. The first sweep accumulates the row normalizers and weighted centers in Equation~\ref{eq:softmax-vjp}; subsequent sweeps accumulate query, key, and value coefficients. Endpoint averages are computed either in linear-size buffers or within the tiles. The persistent attention quantities are endpoint vectors, row statistics, and output coefficients.
+% C1: Explain what a tile produces and why its storage can be reused.
+\paragraph{Accumulating attention contributions in tiles.}
+The attention mechanism produces a contribution for each source vector and routing score. \dt{} accumulates these contributions a tile at a time using the FlashAttention framework \citep{dao2022flashattention}. Within each tile, it reconstructs the attention probabilities, computes the required weighted sums, and adds the result to the source coefficients. The tile can then be reused. The quantities carried across tiles are vectors and row statistics, which grow linearly with the number of tokens.
 
-% C2: Memory uses the installed FLA primitives and its actual chunk layout.
-\paragraph{Chunked memory propagation.}
-Equation~\ref{eq:gdn-finite} induces a reverse state recurrence. \dt{} reuses the FLA implementation's native chunk-state adjoints and combines them with the saved endpoint states through batched matrix products. A finite decay contraction is evaluated by an associative affine scan. The current implementation processes 64-token chunks, accumulating contributions to queries, keys, values, decay, and write gates. Convolution and surrounding projections use the installed model primitives and their linear transpose actions.
+The weighted mean in Equation~\ref{eq:softmax-vjp} supplies the information shared across an attention row. A first sweep accumulates this mean and its normalizer. Subsequent sweeps use those statistics to propagate contributions to queries, keys, and values. This organization puts the content and routing computations into a fixed number of tiled sweeps. For sequence length $T$ and head dimension $d$, auxiliary attention storage is $O(Td)$ and dense attention arithmetic is $O(T^2d)$ per head.
 
-% C3: The storage statement has explicit dimensions and a direct derivation.
-\paragraph{Storage and arithmetic.}
-For sequence length $T$, fixed head dimension $d$, and fixed tile width $C$, attention coefficient vectors and row statistics occupy $O(Td)$ storage. Pairwise products reside in bounded tiles. Dense attention contractions retain $O(T^2d)$ arithmetic per head with a fixed number of sweeps. Chunked memory retains $O(Td+TC+(T/C)d^2)$ auxiliary storage per head: token coefficients, within-chunk products, and chunk-boundary states. Each expression is linear in $T$ at fixed $d$ and $C$. Native layer replay makes the same organization available across network depth, with checkpoint storage accounted for separately.
+% C2: Explain a memory chunk through the state passed to the next chunk.
+\paragraph{Following memory through chunks.}
+Memory passes information between consecutive chunks through a boundary state. \dt{} follows the contribution to that state backward, then distributes it among the reads, writes, and gates inside each chunk. The implementation uses FLA's native chunk-state adjoints and batched matrix products to perform these operations. The retention contribution is accumulated with an associative scan. At fixed state dimensions and chunk size, the stored token contributions and boundary states grow linearly with sequence length. Appendix~\ref{app:computation} gives the tensor accounting and execution details.
 
-% C4: Execution precision is an ordinary implementation specification.
-\paragraph{Native execution.}
-The model runs its standard attention and memory backends. \dt{} consumes the two executions and applies separately defined contribution operators. Qwen3 uses the fixed FP16 implementation; Qwen3.5 uses BF16 attention and FLA with FP32 accumulation where supplied by the underlying operations. The complete cost includes endpoint execution, layer replay, contribution propagation, and transfers. These components provide a common basis for latency, memory, and throughput measurements.
+% C3: Connect the complete algorithm to the measured work.
+\paragraph{Complete attribution.}
+The full procedure consists of the two model executions, layer replay, backward contribution propagation, and transfers. Layer replay supplies the activations needed by the current layer, while the tiled attention and chunked memory computations accumulate its input contributions. Together, these steps apply the same attribution method to attention and hybrid models. The evaluation measures their combined latency, memory use, and throughput.

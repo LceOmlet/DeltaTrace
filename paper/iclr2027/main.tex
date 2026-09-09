@@ -26,8 +26,9 @@
 
 \begin{document}
 \maketitle
+\suppressfloats[t]
 \begin{abstract}
-Explaining a reasoning model's answer involves tracing how input evidence contributes to its prediction. These contributions carry both magnitude and direction: different sources can support or oppose the same response. We present \dt{}, a method that propagates signed contributions from a response to its input sources. The method decomposes changes in model computations into content and routing contributions, follows them through attention and gated memory, and preserves their sum through a finite chain rule. An analytic treatment of attention normalization connects changes in routing probabilities to changes in attention scores. A corresponding memory recurrence tracks how evidence is retained, read, and updated. The resulting propagation admits tiled attention contractions and chunked memory computation, with sequence-linear auxiliary storage at fixed model dimensions. \dt{} provides a common attribution framework for attention and hybrid reasoning models. Its evaluation protocol combines source recovery and the original FlashTrace faithfulness metrics with complete attribution cost measurements.
+Reasoning models combine evidence from many parts of an input. A source can shape a response through the information it supplies and through its role in selecting or retaining other information. We present \dt{}, a method that traces these roles back to the input as signed contributions. For a fixed response, the method follows the score change between an original input and a reference. In attention, it separates changes in the content being carried from changes in the weights that select that content. In gated memory, it follows what is retained, read, and written. The contributions preserve their sign as they pass through the model and sum to the response-score change. The computation accumulates attention contributions in tiles and memory contributions in chunks, giving sequence-linear auxiliary storage at fixed model dimensions. This construction applies to attention and hybrid reasoning models. The evaluation connects source recovery and response faithfulness with complete attribution cost.
 \end{abstract}
 
 \input{sections/introduction}
@@ -40,6 +41,7 @@ Explaining a reasoning model's answer involves tracing how input evidence contri
 \section*{AI Use Statement}
 AI assistance supported conceptual development, mathematical derivations, research code, experimental design and analysis, literature retrieval, manuscript organization, and language editing. The manuscript uses the released evaluation data and model-generated trajectories specified in the evaluation protocol.
 
+\clearpage
 \bibliography{references}
 \bibliographystyle{iclr2027_conference}
 \clearpage

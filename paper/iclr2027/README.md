@@ -2,7 +2,7 @@
 
 [main.tex](main.tex)是英文段落稿，[paragraph_plan_zh.md](paragraph_plan_zh.md)给出中文段落与9页正文的安排。
 
-当前稿件包含摘要、直觉图、Introduction、完整方法主线、贡献守恒及解析算子推导、效率计算、正式评测协议、相关工作和结论。正式实验的数值段落由独立结果文件接入；本轮是模板与段落交付。排版稿保存在`output/pdf/deltatrace-iclr2027-draft.pdf`，共8页（含参考文献与附录）。
+当前稿件从证据内容、选择和记忆的直觉出发，正文保留解释机制所需的公式。定理、证明、完整算子规则和实现细节集中到附录。正式实验的数值段落由独立结果文件接入。排版稿保存在`output/pdf/deltatrace-iclr2027-draft.pdf`，页数与生成记录见`build_receipt.json`。
 
 ## 官方模板
 
@@ -29,6 +29,6 @@ wsl.exe -d Ubuntu-22.04 --cd /mnt/c/Users/Chen/Documents/ChatGPT/credit/DeltaTra
 
 ## 写作参考
 
-使用了[Supervisor-Skills/paper-writer](https://github.com/HKUSTDial/Supervisor-Skills/blob/main/skills/paper-writer/SKILL.md)和[intro-drafter](https://github.com/HKUSTDial/Supervisor-Skills/blob/main/skills/intro-drafter/SKILL.md)中的段落组织、论点对应证据及独立引用核验思路。具体叙述服从本稿方法主线，参考文献采用ICLR官方作者—年份格式。
+使用了[Supervisor-Skills/paper-writer](https://github.com/HKUSTDial/Supervisor-Skills/blob/main/skills/paper-writer/SKILL.md)和[intro-drafter](https://github.com/HKUSTDial/Supervisor-Skills/blob/main/skills/intro-drafter/SKILL.md)中的段落组织、论点对应证据及独立引用核验思路。行文参考[FlashTrace方法节](https://arxiv.org/html/2602.01914v4#S4)从计算对象引出操作和作用的组织方式，以具体证据情境贯穿DeltaTrace的注意力与记忆机制。公式按解释需要出现。参考文献采用ICLR官方作者—年份格式。
 
 强化学习延伸见[独立研究备忘](research_notes/credit_assignment_extension.md)。正文以DeltaTrace的解释能力与效率为中心。

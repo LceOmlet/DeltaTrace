@@ -13,3 +13,5 @@ A fresh independent reviewer checked all five cited works against primary source
 The FlashTrace paper's general experiment description says one recursive hop. The authors' `table1-data-v1` release distinguishes one hop for faithfulness from three hops for recovery. Section 4 and Appendix B now name that release explicitly, and Section 4 links to it in a footnote. The existing protocol is preserved. The prose now refers to the released RISE and MAS scoring functions.
 
 The tagged `exp/exp2/run_exp.py` and `llm_attr_eval.py` support the recorded FP16 loading, eager scoring, EOS handling, and deletion ordering. Statements about DeltaTrace's implementation and mathematical identities are grounded separately in the evidence map and derivations.
+
+The subsequent prose revision retains the five bibliography entries and their supported uses. FlashTrace Section 4 was read as an editorial reference for moving from computation to mechanism and benefit. The date-and-qualifier example illustrates computational roles; it is not an empirical result. Formal statements, operator definitions, and derivations now appear in the appendix.
