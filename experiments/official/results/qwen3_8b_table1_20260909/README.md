@@ -1,8 +1,10 @@
 # Qwen3-8B：FT 原表完整 DT 实验
 
-状态：已完成 1/13 个完整任务，共 100/1,243 条；其余任务继续运行。实验范围固定为作者 Table 1 的完整发布缓存。
+状态：已完成 2/13 个完整任务，共 200/1,243 条；其余任务继续运行。实验范围固定为作者 Table 1 的完整发布缓存。
 
 目前完成 `niah_mq_q2` 的全部 100 条：DT/FT 的 RISE 为 0.064538/0.068136，MAS 为 0.092454/0.162782，Recall@10% 为 0.667608/0.483435。它是该任务完整结果，不能替代其余任务或全表均值。
+
+`niah_mq_q4` 也已完成全部 100 条：DT/FT 的 RISE 为 0.130963/0.113366，MAS 为 0.182525/0.193532，Recall@10% 为 0.478293/0.413260。该任务 DT 的 RISE 落后，MAS 和 needle 领先；原样保留所有结果，不根据任务成绩修改冻结方法。
 
 已完成任务见 [table_progress.csv](table_progress.csv) 和 [LaTeX](table_progress.tex)；[per_case.csv](per_case.csv) 保存逐例指标，[summary.json](summary.json) 保存输入、源码、权重和原始结果的校验记录。`raw/` 中保留原结果 JSON 的无损 gzip 和原始归因 NPZ。所有任务完成后导出 `table.csv` / `table.tex`；导出器默认拒绝不完整全表。
 
@@ -43,5 +45,7 @@ python experiments/official/watch_qwen3_paper_exports.py \
 该进程每 30 秒检查任务状态，只在新任务完成时调用同一个导出器；全表完成后导出正式文件并退出。它不执行模型或指标评分。实际 [依赖与权重记录](environment_receipt.json) 随结果保存。
 
 论文接入时，以这里的固定指标口径为准：**RISE 使用有符号排序，只有 MAS 和 needle 使用正值部分**。截至启动本次实验时，论文草稿 `paper/iclr2027/sections/evaluation.tex` 中“Both metrics use the positive part”仍是旧口径，不能作为本次实验设置。
+
+原始结果中的 `metrics.DT` 是最终入表标量。绘制 RISE 曲线时，有 `metrics.DT_signed` 则使用其曲线；没有时，`signed_RISE_reuse_proof` 证明正值曲线产生相同 RISE。MAS 使用 `metrics.DT_positive`。`scores` 是作者函数返回时保存的真实 21 点响应；有符号视图下附带的 MAS 已明确标为无效，不能填表。
 
 协议与原表来源见 [protocol.json](../../protocol.json) 和作者 [REPRODUCTION.md](../../reference/REPRODUCTION.md)。
