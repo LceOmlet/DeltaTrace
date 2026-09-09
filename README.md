@@ -4,7 +4,7 @@
 
 **当前执行目标：**[固定干净代码与FT原表评测，并行加速](docs/current_goal.md)。正式实验按FT原表设置运行DT，直接复用作者发布的FT原始CSV；RISE/MAS统一正值输入，完整有符号归因另存。16例用于开发回归；加速在独立分支推进，保持默认FA/FLA和可追溯有限扩展。以下为历史进展，旧MAS修补优先级和固定显存容差不再作为当前约束。
 
-**最新纠正：原MAS不能直接验证完整有符号贡献；此前据此驱动逐层修补的依据撤回。** [当前goal](docs/current_goal.md)。干净两模型16例验收尚未完成。
+**最新结果：两模型各16例干净回归已完成。** [逐例结果与执行记录](research/temporary/development16_20260909/README.md)。Qwen3两任务均值优于同模型FT；Qwen3.5的MAS、needle及MH RISE均值更好，但NI RISE仍更差。原MAS不能直接验证完整有符号贡献；此前据此驱动逐层修补的依据仍撤回。
 
 <details>
 <summary>历史阶段记录（原阶段“下一步”已由当前目标取代）</summary>
