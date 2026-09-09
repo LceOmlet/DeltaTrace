@@ -31,7 +31,7 @@ def arguments():
     parser.add_argument('--selection', choices=['paper', 'development16', 'smoke'], required=True)
     parser.add_argument('--datasets', nargs='+', help='Paper: all released tasks by default; development/smoke: NI and MH.')
     parser.add_argument('--ft', choices=['live', 'published'], help='Defaults to published FT for Qwen3 paper runs; otherwise live.')
-    parser.add_argument('--dt-backend', choices=['clean','accelerated_qwen35','deferred_qwen3','deferred_qwen35'], default='clean')
+    parser.add_argument('--dt-backend', choices=['clean','accelerated_qwen35','deferred_qwen3','deferred_qwen35','retained_qwen3'], default='clean')
     parser.add_argument('--sample-batch', type=int, default=1, help='Real examples per DT call; acceleration only.')
     return parser.parse_args()
 
@@ -43,7 +43,7 @@ def main():
         raise ValueError('This backend retains sample batch1; sample batching requires a Qwen3.5 acceleration backend.')
     if batched_qwen35 and args.family != 'qwen35':
         raise ValueError('The selected backend requires Qwen3.5.')
-    if args.dt_backend == 'deferred_qwen3' and args.family != 'qwen3':
+    if args.dt_backend in ('deferred_qwen3','retained_qwen3') and args.family != 'qwen3':
         raise ValueError('The selected backend requires Qwen3.')
     protocol = json.loads((HERE / 'protocol.json').read_bytes())
     if args.datasets is None:
@@ -191,10 +191,14 @@ def main():
             from qwen_signed_secant_paired_vendor_fa import propagate_paired_secant
             from vendor_fa_finite_runtime import VendorFAFiniteP1
             finite_fa = VendorFAFiniteP1(env['finite_library'], env['finite_library_sha256'])
-            if args.dt_backend == 'deferred_qwen3':
+            if args.dt_backend in ('deferred_qwen3','retained_qwen3'):
                 sys.path.insert(0,str(ROOT/'deltatrace/accelerated'))
-                from deferred import make_deferred_qwen3
-                propagate_paired_secant, report['acceleration_sources'] = make_deferred_qwen3(ROOT)
+                if args.dt_backend == 'retained_qwen3':
+                    from retained import make_retained_qwen3
+                    propagate_paired_secant, report['acceleration_sources'] = make_retained_qwen3(ROOT)
+                else:
+                    from deferred import make_deferred_qwen3
+                    propagate_paired_secant, report['acceleration_sources'] = make_deferred_qwen3(ROOT)
         else:
             from qwen35_clean_runner import make_qwen35_clean_runner
             from qwen35_answer_finite import PackedAnswerTargets

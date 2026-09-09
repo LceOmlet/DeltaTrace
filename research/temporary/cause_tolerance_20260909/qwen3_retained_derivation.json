@@ -1,0 +1,20 @@
+{
+  "status": "candidate_not_accepted",
+  "changes": "Retain actual native replay tensors by detach instead of copying. Root checkpoint clones and compact logits copies remain unchanged. No native functions or finite math change.",
+  "files": [
+    {
+      "source": "deltatrace/accelerated/qwen3/qwen3_deferred_replay.py",
+      "source_sha256": "743b837c88acf5236ba91b000d6933130eaa5f231eb848b333c73d4dcb311aeb",
+      "output": "qwen3_retained_replay.py",
+      "output_sha256": "5050b605d7fe1538f35886633ecbb6b06e8c068e8ff730eaae47344703c2a311",
+      "diff": "--- deltatrace/accelerated/qwen3/qwen3_deferred_replay.py\n+++ qwen3_retained_replay.py\n@@ -20,9 +20,9 @@\n         def recorder(in_name=None,out_name=None):\n             def record(_module,args,output):\n                 if in_name is not None:\n-                    values[in_name]=args[0].detach().clone(memory_format=torch.preserve_format)\n+                    values[in_name]=args[0].detach()\n                 if out_name is not None:\n-                    values[out_name]=output.detach().clone(memory_format=torch.preserve_format)\n+                    values[out_name]=output.detach()\n             return record\n         specs=[(layer.input_layernorm,'x','a'),(layer.self_attn.q_norm,'qpre','qnorm'),\n             (layer.self_attn.k_norm,'kpre','knorm'),(layer.self_attn.v_proj,None,'v'),\n@@ -58,8 +58,8 @@\n                 assert actual_arguments.get('softcap',0)==0\n                 assert not actual_arguments['return_attn_probs'] and not actual_arguments.get('return_max_logit',False)\n                 for name in ['q','k','v']:\n-                    values['fa_'+name]=local[name].detach().clone(memory_format=torch.preserve_format)\n-                values['fa_out']=result.detach().clone(memory_format=torch.preserve_format)\n+                    values['fa_'+name]=local[name].detach()\n+                values['fa_out']=result.detach()\n                 observed.append(True)\n         assert sys.getprofile() is None\n         try:\n"
+    },
+    {
+      "source": "deltatrace/accelerated/qwen3/qwen3_deferred_pair.py",
+      "source_sha256": "ef4a172a291a8b7eb7e84da6c4e518db760ee9519359650141d64ea1f6056a5b",
+      "output": "qwen3_retained_pair.py",
+      "output_sha256": "eaa0718234fd7670c8cd29faa0eeb54e3c6b2fd900e13c8fc502da92289613ff",
+      "diff": "--- deltatrace/accelerated/qwen3/qwen3_deferred_pair.py\n+++ qwen3_retained_pair.py\n@@ -1,6 +1,6 @@\n \"\"\"Original public FA paired checkpoint/replay plus separately named finite op.\"\"\"\n from qwen_signed_secant_paired_public_fa import capture_checkpoint_pair,PairedReplayViews as FrozenPairedReplayViews,EndpointReplay\n-from qwen3_deferred_replay import NativeLayerReplay\n+from qwen3_retained_replay import NativeLayerReplay\n from deferred_validation import DeferredValidation\n \n class PairedReplayViews(FrozenPairedReplayViews):\n"
+    }
+  ]
+}

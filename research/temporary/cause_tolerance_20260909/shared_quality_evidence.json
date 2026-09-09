@@ -1,0 +1,111 @@
+{
+  "status": "committed_raw_and_summary_hashes_verified",
+  "companion_commit": "e624b884645aa7bc975fb659e5105b347e1e905b",
+  "source_hashes": {
+    "research/temporary/five_dataset_disagreement_full_20260909/results/summary.json": "2600174a09e2e9a36640ef347128e7d7053296f56c9f7d0021ca73e965032a3a",
+    "research/temporary/target_partition_diagnosis_20260909/results/summary.json": "15d369ecab16ef70f92ea93b52ccc4536ef012c5bbcab8dc816d3b42a7f1ecd8",
+    "research/temporary/five_dataset_disagreement_full_20260909/results/raw_results.json": "2ce5396cbd9eb825c600939e76a72e6099e88bcc4c3e35896dcfc63cd82639ed",
+    "research/temporary/target_partition_diagnosis_20260909/results/raw_results.json": "e99862982388cf52cfeab8162517f506db0b4234f884f6314dd4b777ed4ff627"
+  },
+  "rows": [
+    {
+      "dataset": "hotpotqa_long",
+      "full_count": 48,
+      "full_target_deletion_A_larger": 24,
+      "full_target_insertion_A_larger": 31,
+      "full_target_A_larger_at_both": 15,
+      "partition_indices": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "thinking_DT_A_larger": 1,
+      "thinking_native_balanced_A_larger": 6
+    },
+    {
+      "dataset": "vt_h10_c1",
+      "full_count": 100,
+      "full_target_deletion_A_larger": 95,
+      "full_target_insertion_A_larger": 68,
+      "full_target_A_larger_at_both": 64,
+      "partition_indices": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "thinking_DT_A_larger": 0,
+      "thinking_native_balanced_A_larger": 8
+    },
+    {
+      "dataset": "vt_h2_c3",
+      "full_count": 100,
+      "full_target_deletion_A_larger": 44,
+      "full_target_insertion_A_larger": 59,
+      "full_target_A_larger_at_both": 26,
+      "partition_indices": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "thinking_DT_A_larger": 1,
+      "thinking_native_balanced_A_larger": 4
+    },
+    {
+      "dataset": "vt_h4_c1",
+      "full_count": 100,
+      "full_target_deletion_A_larger": 77,
+      "full_target_insertion_A_larger": 68,
+      "full_target_A_larger_at_both": 51,
+      "partition_indices": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "thinking_DT_A_larger": 0,
+      "thinking_native_balanced_A_larger": 7
+    },
+    {
+      "dataset": "vt_h6_c1",
+      "full_count": 100,
+      "full_target_deletion_A_larger": 90,
+      "full_target_insertion_A_larger": 70,
+      "full_target_A_larger_at_both": 61,
+      "partition_indices": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "thinking_DT_A_larger": 0,
+      "thinking_native_balanced_A_larger": 8
+    }
+  ],
+  "definitions": "A is a fixed matched-size FT K3-only gold group; B is DT-only non-gold. These are selected after rankings, not random treatment groups. Balanced means the average of the two endpoint group effects, not a replacement paper metric.",
+  "sample_scope": "All 448 original Qwen3 examples include the first40 previously viewed pilot; same-objective partition uses indices8..15 of each of five tasks. No Qwen3.5 data added by this audit.",
+  "implication": "Qwen3 has consequential allocation/deletion mismatches without GDN. In the three single-chain VT groups, the thinking-only component still orders the selected groups oppositely to native balanced effects in most of the next-eight cases. Sink+EOS target mismatch alone is insufficient.",
+  "limits": "This imports immutable companion evidence, not an independent rerun or mechanistic causal proof. It neither identifies the cause of Qwen3.5 NI gaps nor establishes a uniform successful repair. Do not modify FT, remove target terms, or attribute the whole discrepancy to GDN on this basis."
+}

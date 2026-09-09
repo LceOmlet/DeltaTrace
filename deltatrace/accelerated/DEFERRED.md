@@ -38,3 +38,7 @@ controls; it is not a general requirement on future tolerance optimizations.
 Evidence: [16-case Qwen3](../../research/temporary/cause_tolerance_20260909/qwen3_deferred16/summary.json),
 [B2 Qwen3.5](../../research/temporary/cause_tolerance_20260909/qwen35_deferred16/summary.json),
 [source manifest](deferred_sources.json).
+
+An additional, separately pinned Qwen3 option removes replay operand copies:
+[retained_qwen3](RETAINED.md). It builds on this deferred backend and has its
+own same-process cost and vector checks; the results above remain historical.

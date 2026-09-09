@@ -1,0 +1,141 @@
+{
+  "status": "verified",
+  "profile": [
+    {
+      "cases": [
+        "vt_h2_c3_1",
+        "vt_h2_c3_0"
+      ],
+      "padding_linear_ratio": 1.01977705861201,
+      "sum_B1": {
+        "matrix_device_ms": {
+          "native_root": 352.2862080000001,
+          "native_replay_or_other": 325.23520000000195,
+          "finite_projection": 180.99430400000182
+        },
+        "GPU_annotation_range_ms": {
+          "DT_ROOT_CHECKPOINT": 547.04,
+          "DT_REPLAY_AND_FINITE": 1702.769408,
+          "ATTR_VENDOR_FA_FINITE_P1": 432.85606399999904,
+          "ATTR_NATIVE_HALF_LINEAR": 202.7993600000007
+        },
+        "clone_calls": 2182,
+        "clone_device_ms": 118.53926399999932
+      },
+      "B2": {
+        "matrix_device_ms": {
+          "native_root": 340.69248,
+          "native_replay_or_other": 313.8173440000006,
+          "finite_projection": 176.8637439999992
+        },
+        "GPU_annotation_range_ms": {
+          "DT_ROOT_CHECKPOINT": 516.670976,
+          "DT_REPLAY_AND_FINITE": 1570.4849920000001,
+          "ATTR_VENDOR_FA_FINITE_P1": 409.8647039999991,
+          "ATTR_NATIVE_HALF_LINEAR": 196.33049599999993
+        },
+        "clone_calls": 1162,
+        "clone_device_ms": 90.94041599999889
+      }
+    },
+    {
+      "cases": [
+        "hotpotqa_long_3",
+        "hotpotqa_long_1"
+      ],
+      "padding_linear_ratio": 1.084942084942085,
+      "sum_B1": {
+        "matrix_device_ms": {
+          "native_root": 312.7772160000001,
+          "native_replay_or_other": 287.8108159999999,
+          "finite_projection": 167.98335999999892
+        },
+        "GPU_annotation_range_ms": {
+          "DT_ROOT_CHECKPOINT": 488.191232,
+          "DT_REPLAY_AND_FINITE": 1555.301376,
+          "ATTR_VENDOR_FA_FINITE_P1": 393.62099200000034,
+          "ATTR_NATIVE_HALF_LINEAR": 186.95936
+        },
+        "clone_calls": 2182,
+        "clone_device_ms": 112.37760000000122
+      },
+      "B2": {
+        "matrix_device_ms": {
+          "native_root": 339.3989120000002,
+          "native_replay_or_other": 313.92819199999985,
+          "finite_projection": 173.494271999999
+        },
+        "GPU_annotation_range_ms": {
+          "DT_ROOT_CHECKPOINT": 502.18188799999996,
+          "DT_REPLAY_AND_FINITE": 1565.75872,
+          "ATTR_VENDOR_FA_FINITE_P1": 424.41779200000025,
+          "ATTR_NATIVE_HALF_LINEAR": 192.36838399999914
+        },
+        "clone_calls": 1162,
+        "clone_device_ms": 89.64812799999683
+      }
+    }
+  ],
+  "native_packing": [
+    {
+      "cases": [
+        "vt_h2_c3_1",
+        "vt_h2_c3_0"
+      ],
+      "modes": {
+        "single": {
+          "native_root_seconds": 0.5119289876893163,
+          "peak_allocated": 17357939200
+        },
+        "dense": {
+          "native_root_seconds": 0.48597538005560637,
+          "peak_allocated": 18266527232
+        },
+        "packed": {
+          "native_root_seconds": 0.4816920142620802,
+          "peak_allocated": 18231023104
+        }
+      },
+      "dense_packed_target_logprobs_exact": true
+    },
+    {
+      "cases": [
+        "hotpotqa_long_3",
+        "hotpotqa_long_1"
+      ],
+      "modes": {
+        "single": {
+          "native_root_seconds": 0.46171125024557114,
+          "peak_allocated": 17349611520
+        },
+        "dense": {
+          "native_root_seconds": 0.48172869719564915,
+          "peak_allocated": 18249575936
+        },
+        "packed": {
+          "native_root_seconds": 0.4558073915541172,
+          "peak_allocated": 18108677632
+        }
+      },
+      "dense_packed_target_logprobs_exact": true
+    }
+  ],
+  "native_packing_LSE": {
+    "shape": [
+      32,
+      5562
+    ],
+    "dtype": "torch.float32",
+    "testing_numel": 0,
+    "output_exact": true
+  },
+  "source_native_FA_adapter_sha256": "293fe81c6bd38aac8a3bc6ae086ff21b9695b349e97c9650b1fe61e42a36d710",
+  "all_profile_vectors_equal_prior_batch_run": true,
+  "packing_cross_sample_isolation_passed": true,
+  "limitations": [
+    "Profile annotations include queue gaps and overlap with child kernels; they are diagnostics, not additive cost fractions.",
+    "Native packing measurements exclude input construction and include no DT finite propagation. They do not prove complete DT speed or quality.",
+    "The frozen finite FA C tensor contract remains dense [B,H,N,128]. Native varlen feasibility does not make that existing finite kernel varlen-compatible."
+  ],
+  "next_efficiency_candidate": "Retain native replay tensors instead of clone; keep original root/checkpoint compact copies. Test exact complete vectors and full warm cost before expansion."
+}
