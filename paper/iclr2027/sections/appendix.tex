@@ -1,0 +1,48 @@
+\section{Proofs and Operator Identities}
+\label{app:proofs}
+
+\subsection{Contribution conservation}
+An acyclic computation can be expanded into elementary operations with explicit branches. At an operation $v=f(u_1,\ldots,u_k)$, Equation~\ref{eq:local} gives
+\begin{equation}
+\ip{m_v}{\D v}=\sum_j\ip{D_j^\top m_v}{\D u_j}.
+\end{equation}
+Replacing a node's contribution by the contributions of its parents therefore preserves the total on a cut through the graph. At shared parents, coefficients from different consumers sum. Repeated substitution reaches the input cut and yields Equation~\ref{eq:conservation}, since the coefficient of the scalar target is $1$. Constant inputs have zero difference and contribute zero to this sum.
+
+\subsection{Finite attention normalization}
+The common support contains positive probabilities. For endpoint $b$, $\log p_b=z_b-a_b\mathbf 1$, where $a_b=\log\sum_i\exp(z_{b,i})$. The definition of the logarithmic mean gives
+\begin{equation}
+\D p=\ell\odot(\D z-\D a\,\mathbf 1).
+\end{equation}
+Probability normalization implies $\mathbf 1^\top\D p=0$, so
+\begin{equation}
+\D a=\frac{\ell^\top\D z}{\tau}.
+\end{equation}
+Substitution proves Equation~\ref{eq:softmax}. For a target coordinate $y$,
+\begin{equation}
+\D\log p_y=\left(e_y-\frac{\ell}{\tau}\right)^\top\D z.
+\end{equation}
+The coincident-probability definition follows from the continuous limit of the logarithmic mean. The score operator is symmetric positive semidefinite: for $w_i=\ell_i/\tau$,
+\begin{equation}
+u^\top\left(\diag(\ell)-\frac{\ell\ell^\top}{\tau}\right)u
+=\tau\left(\sum_iw_i u_i^2-\left(\sum_iw_i u_i\right)^2\right)\geq0.
+\end{equation}
+This is the weighted variance of $u$ multiplied by $\tau$.
+
+\subsection{Product and normalization rules}
+For a bilinear map $B$, both
+\begin{align}
+\D B(a,b)&=B(\D a,\bar b)+B(\bar a,\D b),\\
+\D B(a,b)&=B(\D a,b_1)+B(a_0,\D b)
+\end{align}
+follow by expansion. Equation~\ref{eq:pv}, the shared SwiGLU rule, and every product in Equation~\ref{eq:gdn-finite} are direct instances with the stated argument ordering. Subtraction and state addition are linear, completing the finite memory recurrence.
+
+For RMS normalization $f(x)=w\odot x/r(x)$, $r(x)=\sqrt{\|x\|^2/d+\epsilon}$, the symmetric product rule gives an analytic coefficient. With $\bar x=(x_0+x_1)/2$, $r_b=r(x_b)$, and $v=w\odot m$, its transpose action is
+\begin{equation}
+D_f^\top m=
+\frac{r_0^{-1}+r_1^{-1}}{2}\,v
+-\frac{2\bar x\,\ip{\bar x}{v}}{d\,r_0r_1(r_0+r_1)}.
+\end{equation}
+The identity follows from $\D r=(2\ip{\bar x}{\D x}/d)/(r_0+r_1)$ and $\D(r^{-1})=-\D r/(r_0r_1)$. The same construction covers fixed learned scale parameters and the query/key normalization used in the memory path.
+
+\section{Evaluation Specification}
+The FlashTrace \texttt{table1-data-v1} release fixes the prompt transformation, eligible source positions, response target, gold mapping, and scoring implementation. \dt{}'s scalar target includes the released response and EOS. A source score enters the faithfulness function as $s_i=\max(A_i,0)$; the released function determines deletion order and normalized contribution mass. Raw signed scores remain available for source visualizations. Full task comparisons use all released examples for the chosen task. Each result record identifies its model, method version, sample selection, metric implementation, and measured execution stages.

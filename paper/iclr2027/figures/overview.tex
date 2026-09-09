@@ -1,0 +1,15 @@
+\begin{tikzpicture}[x=1cm,y=1cm,>=Latex,font=\small,
+ box/.style={draw=ink!55,rounded corners=2pt,align=center,inner sep=6pt},
+ path/.style={->,line width=1pt}]
+\node[box,fill=support!8,text=support,minimum width=2.45cm] (pos) at (0,0.75) {Supporting sources\\$A_i>0$};
+\node[box,fill=oppose!8,text=oppose,minimum width=2.45cm] (neg) at (0,-0.75) {Opposing sources\\$A_j<0$};
+\node[box,fill=ink!4,minimum width=3.2cm,minimum height=2.05cm] (comp) at (4.0,0) {Content and routing\\[3pt]Attention $\cdot$ Gated memory\\[3pt]Signed propagation};
+\node[box,fill=ink!4,minimum width=2.4cm,minimum height=1.1cm] (out) at (8.0,0) {Response score\\$\D F$};
+\draw[path,support] (pos.east) -- ([yshift=0.47cm]comp.west);
+\draw[path,oppose] (neg.east) -- ([yshift=-0.47cm]comp.west);
+\draw[path,ink] (comp.east) -- (out.west);
+\draw[path,ink!65] (out.south) -- (8.0,-1.70) -- (-1.65,-1.70) |- (pos.west);
+\draw[path,ink!65] (-1.65,-0.75) -- (neg.west);
+\node[font=\footnotesize,text=ink!80,fill=white,inner sep=2pt] at (5.5,-1.70) {signed attribution to sources};
+\node[font=\small,text=ink] at (3.9,-2.17) {$\displaystyle\sum_i A_i=\D F$};
+\end{tikzpicture}
