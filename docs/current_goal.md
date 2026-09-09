@@ -4,7 +4,7 @@
 
 **当前执行：两模型干净DT及作者原表评测已固定，两模型各16例开发回归已完成；正式实验运行DT并直接复用FT发布的原始CSV，容差加速在独立分支推进。** 当前配置：[clean_dt_baselines.json](../configs/clean_dt_baselines.json)。[32条结果及全部逐例退步](../research/temporary/development16_20260909/README.md)已保存；Qwen3-8B完整原表DT实验现已启动（13任务、1243条），结果完成前不作全表声明。带修复项C的结果只作历史记录。
 
-用户最新要求优先固定提交干净代码及正式评测，加速并行推进。干净方法入口移至`deltatrace/clean/`；正式评测位于`experiments/official/`，按作者Table 1发布协议固定输入包装、eager评分、忠实度FT K=1和needle FT K=3。临时诊断及未对齐草稿位于`research/temporary/`。原16例只是开发覆盖；直接比较原论文已有均值须使用同模型、同任务完整发布缓存。不能用披露差异替代对齐。
+用户最新要求优先固定提交干净代码及正式评测，加速并行推进。干净方法入口移至`deltatrace/clean/`；正式评测位于`experiments/official/`，按作者Table 1发布缓存固定输入包装和eager评分，完整原表直接引用FT发布CSV。作者README把needle说明为K=3，但已发布CSV与配套`n1`逐例轨迹汇总一致；原表数据来源以实际CSV及轨迹身份为准，见正式结果中的来源校正。临时诊断及未对齐草稿位于`research/temporary/`。原16例只是开发覆盖；直接比较原论文已有均值须使用同模型、同任务完整发布缓存。不能用披露差异替代对齐。
 
 ## 1. 干净实现与统一口径
 
