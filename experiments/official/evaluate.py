@@ -16,6 +16,7 @@ from pathlib import Path
 import sys
 import time
 import traceback
+from score_views import signed_rise_equals_positive_curve
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
@@ -121,7 +122,9 @@ def main():
     report = {'status': 'loading', 'family': args.family, 'selection': args.selection,
         'protocol_sha256': sha((HERE / 'protocol.json').read_bytes()),
         'clean_sources_sha256': sha((ROOT / 'deltatrace/clean/sources.json').read_bytes()),
-        'driver_sha256': sha(Path(__file__).read_bytes()), 'cases': [], 'costs': [],
+        'driver_sha256': sha(Path(__file__).read_bytes()),
+        'score_views_sha256': sha((HERE/'score_views.py').read_bytes()),
+        'result_schema': 2, 'cases': [], 'costs': [],
         'weight_identity': weight_identity,
         'published_number_comparison': args.family == 'qwen3' and args.selection == 'paper',
         'generation_calls': 0, 'sample_batch': 1,
@@ -295,7 +298,23 @@ def main():
                         keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1)) if gold else None
                     row['metrics'][method] = curve
 
-                score('DT', dt_score)
+                # RISE uses signed ordering; MAS requires its own positive view.
+                # Keep both curves explicit rather than attaching a signed RISE
+                # scalar to the positive curve's response/density arrays.
+                score('DT_positive', dt_score)
+                signed_prompt=signed[positions].float()
+                identity_proof=signed_rise_equals_positive_curve(signed_prompt,keep,row['metrics']['DT_positive'])
+                if identity_proof is None:
+                    score('DT_signed', signed_prompt)
+                    row['metrics']['DT_signed']['MAS_is_valid_for_this_view']=False
+                    signed_rise=row['metrics']['DT_signed']['rise']
+                else:
+                    signed_rise=row['metrics']['DT_positive']['rise']
+                row['metrics']['DT']={
+                    'rise':signed_rise,'mas':row['metrics']['DT_positive']['mas'],
+                    'needle':row['metrics']['DT_positive']['needle'],
+                    'views':{'rise':'signed','mas':'positive_part','needle':'positive_part'},
+                    'signed_RISE_reuse_proof':identity_proof}
                 if args.ft == 'live':
                     for hops in ([1,3] if gold else [1]):
                         def trace():

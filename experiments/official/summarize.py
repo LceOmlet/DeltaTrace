@@ -37,6 +37,11 @@ def summarize(report, protocol):
             raise ValueError('An unfinished case cannot enter a completed table.')
         table = {'dataset': task, 'count': count,
                  'DT': {field: mean(rows, 'DT', field) for field in ('rise', 'mas', 'needle')}}
+        legacy_views = {field: 'positive_part' for field in ('rise', 'mas', 'needle')}
+        views = rows[0]['metrics']['DT'].get('views', legacy_views)
+        if any(row['metrics']['DT'].get('views', legacy_views) != views for row in rows):
+            raise ValueError('Mixed DT metric views cannot enter one task mean.')
+        table['DT_score_views'] = views
         live = ['FT_K1' in row['metrics'] for row in rows]
         if any(live) and not all(live):
             raise ValueError('Partial live FT comparison.')
