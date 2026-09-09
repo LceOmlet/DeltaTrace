@@ -43,3 +43,20 @@ of NI/MH (12 additional cases); the verified summary joins these with pilot4.
 Each sample's plain/observed DT and two partial forwards are within one process.
 The native FA FP32-logsoftmax/FP64-sum drops are diagnostics at DT's objective;
 they do not replace the author's metric backend or constitute new RISE values.
+
+The matching Qwen3 diagnostic uses the same original case indices and frozen
+10% sets from its own original records, default FP16 FA, the complete cached
+target including EOS, and a real B2 root at every condition. Its pinned own
+finite source receives only two read-only observer callbacks and one retained
+coefficient reference; undoing the declared edits restores every original
+arithmetic statement. The original native model, FA and backward are untouched.
+The existing fused norm-residual expressions retain their original separate
+branch operands. Diagnostic FP64 dots are summed after contraction rather than
+rounding the branch sum to a new FP32 coefficient.
+
+Each Qwen3 case again costs two complete DT calls and two paired partial
+forwards. Every EOS control, plain/observed vector and native module identity
+must agree before interpretation. The pilot4 and remaining12 are disjoint.
+Keep all family contributions, including opposing terms and the MH positive
+control. A family error also present when DT ranks the better deletion set is
+not by itself a sufficient explanation of the NI disadvantage.
