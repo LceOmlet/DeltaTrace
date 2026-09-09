@@ -50,3 +50,10 @@ Qwen3.5沿用同一原作者输入包装、数据和eager评分流程，`--famil
 加速后端的完整批次诊断与守恒总量存于`DT_batches`，逐例只引用对应批次及样本位置，不把批次总量伪装成每例总量。RISE/MAS评分和FT对照仍逐例进行；`sample_batch`描述DT归因吞吐，不描述指标评分的batch。当前实际验收为B2，不把它外推任意batch或长上下文。所有质量退步和运行成本见[记录](../../research/temporary/acceleration_20260909/official_batch_entry_summary.json)。
 
 当前厂商Triton的持久化自动调优开关在原生前向有效，但完整DT的原生伴随会触发过长缓存文件名错误。上述运行明确关闭该开关；不修改框架或另写缓存实现。普通Triton/Inductor编译缓存照常使用。
+
+## Explicit diagnostic scheduling backends
+
+The existing driver also accepts `--dt-backend deferred_qwen3 --sample-batch 1`
+and `--dt-backend deferred_qwen35 --sample-batch 2` with the matching family.
+They preserve the frozen target and metric protocol; clean remains the default.
+See [backend provenance and measured limits](../../deltatrace/accelerated/DEFERRED.md).

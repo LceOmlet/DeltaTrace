@@ -1,0 +1,47 @@
+{
+  "status": "failed",
+  "script_sha256": "fbe73a740f31921559544d2033bb6fa1f97b5db47b52f4fecabfe4bce9e6ad86",
+  "accelerated_sources": {
+    "controller.py": "e3ac00cc1fc3c238f4cbf1f05f5af020641a1e232508235db8bcddc9f8efefba",
+    "dynamic_finite.py": "b3d4947f60e73a99322fb80da224865918615aa109a9098b3e688c3f4a7a7020"
+  },
+  "cases": [],
+  "calls": [
+    {
+      "name": "model_load",
+      "status": "returned",
+      "seconds": 10.435761276632547,
+      "peak_allocated": 18819842048,
+      "peak_reserved": 18836619264
+    },
+    {
+      "name": "native_initialization",
+      "status": "returned",
+      "seconds": 13.359895251691341,
+      "peak_allocated": 19227366912,
+      "peak_reserved": 19765657600
+    }
+  ],
+  "root_calls": [],
+  "comparisons": [],
+  "sample_batch": 1,
+  "endpoint_batch": 2,
+  "metrics_recomputed": false,
+  "generation_calls": 0,
+  "FT_calls": 0,
+  "gate_for_quality_followup": "At least 3% aggregate warmed wall-time reduction in this two-case screen; no acceptance without subsequent quality evaluation.",
+  "promoted_receipt": {
+    "manifest_sha256": "e38ecfe35282b826687a319fabc0d0b26d9f5a59a75011f2888e3b088cf3dda4",
+    "files": {
+      "deltatrace/accelerated/deferred.py": "d4a07927283c71e6bbd86863f27764569693c237340a49fd2ad7ba110bc115c5",
+      "deltatrace/accelerated/qwen3/deferred_validation.py": "75055b7e3552c3b44ed2df17883af7f542d41d16b0566af7ea7e0f3954e5c0c7",
+      "deltatrace/accelerated/qwen3/qwen3_deferred_finite.py": "c48606fa713d8149672d1435ec8ba614a458e62a5c14869cc7895bbcedc268b0",
+      "deltatrace/accelerated/qwen3/qwen3_deferred_pair.py": "ef4a172a291a8b7eb7e84da6c4e518db760ee9519359650141d64ea1f6056a5b",
+      "deltatrace/accelerated/qwen3/qwen3_deferred_replay.py": "743b837c88acf5236ba91b000d6933130eaa5f231eb848b333c73d4dcb311aeb",
+      "deltatrace/accelerated/qwen35/controller_deferred.py": "a62b760391ca084b3b6a61a7020f5b3c67664c13db61bd9997ebe1be3c10d18e",
+      "deltatrace/accelerated/qwen35/dynamic_finite.py": "b3d4947f60e73a99322fb80da224865918615aa109a9098b3e688c3f4a7a7020"
+    },
+    "family": "qwen35"
+  },
+  "error": "Traceback (most recent call last):\n  File \"/tmp/codex_deferred_promoted_api_20260909_v1/research/temporary/cause_tolerance_20260909/verify_promoted_qwen35.py\", line 106, in main\n    report['deferred_controller_sha256']=sha(Path(inspect.getfile(type(deferred_runner))).read_bytes())\n                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/package/package_importer.py\", line 725, in _patched_getfile\n    return _orig_getfile(object)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/inspect.py\", line 924, in getfile\n    raise TypeError('{!r} is a built-in class'.format(object))\nTypeError: <class 'dt_pinned_deferred_controller.Qwen35DenseFiniteRunner'> is a built-in class\n"
+}

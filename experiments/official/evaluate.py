@@ -31,17 +31,20 @@ def arguments():
     parser.add_argument('--selection', choices=['paper', 'development16', 'smoke'], required=True)
     parser.add_argument('--datasets', nargs='+', help='Paper: all released tasks by default; development/smoke: NI and MH.')
     parser.add_argument('--ft', choices=['live', 'published'], help='Defaults to published FT for Qwen3 paper runs; otherwise live.')
-    parser.add_argument('--dt-backend', choices=['clean','accelerated_qwen35'], default='clean')
+    parser.add_argument('--dt-backend', choices=['clean','accelerated_qwen35','deferred_qwen3','deferred_qwen35'], default='clean')
     parser.add_argument('--sample-batch', type=int, default=1, help='Real examples per DT call; acceleration only.')
     return parser.parse_args()
 
 
 def main():
     args = arguments()
-    if args.sample_batch < 1 or (args.dt_backend == 'clean' and args.sample_batch != 1):
-        raise ValueError('Clean DT retains sample batch1; batching requires the explicit acceleration backend.')
-    if args.dt_backend == 'accelerated_qwen35' and args.family != 'qwen35':
-        raise ValueError('The accelerated batch backend has only been implemented for Qwen3.5.')
+    batched_qwen35 = args.dt_backend in ('accelerated_qwen35','deferred_qwen35')
+    if args.sample_batch < 1 or (not batched_qwen35 and args.sample_batch != 1):
+        raise ValueError('This backend retains sample batch1; sample batching requires a Qwen3.5 acceleration backend.')
+    if batched_qwen35 and args.family != 'qwen35':
+        raise ValueError('The selected backend requires Qwen3.5.')
+    if args.dt_backend == 'deferred_qwen3' and args.family != 'qwen3':
+        raise ValueError('The selected backend requires Qwen3.')
     protocol = json.loads((HERE / 'protocol.json').read_bytes())
     if args.datasets is None:
         args.datasets = list(protocol['tasks']) if args.selection == 'paper' else ['niah_mq_q2', 'morehopqa']
@@ -188,6 +191,10 @@ def main():
             from qwen_signed_secant_paired_vendor_fa import propagate_paired_secant
             from vendor_fa_finite_runtime import VendorFAFiniteP1
             finite_fa = VendorFAFiniteP1(env['finite_library'], env['finite_library_sha256'])
+            if args.dt_backend == 'deferred_qwen3':
+                sys.path.insert(0,str(ROOT/'deltatrace/accelerated'))
+                from deferred import make_deferred_qwen3
+                propagate_paired_secant, report['acceleration_sources'] = make_deferred_qwen3(ROOT)
         else:
             from qwen35_clean_runner import make_qwen35_clean_runner
             from qwen35_answer_finite import PackedAnswerTargets
@@ -200,7 +207,12 @@ def main():
                 dt_runner = make_qwen35_clean_runner(model, finite_fa, finite_fla)
             else:
                 from batching import make_accelerated_runner, group_cases, attribute_batch
-                dt_runner, report['acceleration_sources'] = make_accelerated_runner(ROOT, model, finite_fa, finite_fla)
+                if args.dt_backend == 'deferred_qwen35':
+                    sys.path.insert(0,str(ROOT/'deltatrace/accelerated'))
+                    from deferred import make_deferred_qwen35
+                    dt_runner, report['acceleration_sources'] = make_deferred_qwen35(ROOT, model, finite_fa, finite_fla)
+                else:
+                    dt_runner, report['acceleration_sources'] = make_accelerated_runner(ROOT, model, finite_fa, finite_fla)
                 report['batching_sha256'] = sha((HERE/'batching.py').read_bytes())
             for field in ('norm_gate_rules','finite_fla_by_layer','attention_pv_rules','key_norm_by_layer'):
                 assert getattr(dt_runner, field) == {}
@@ -249,13 +261,13 @@ def main():
 
         for dataset, raw_cases in caches.items():
             loaded = data_utils.load_cached(official / 'exp/exp2/data' / (dataset + '.jsonl'))
-            if args.dt_backend == 'clean':
+            if not batched_qwen35:
                 groups = ([prepare_case(dataset,index,raw_case,loaded)] for index,raw_case in enumerate(raw_cases))
             else:
                 prepared = [prepare_case(dataset,index,raw_case,loaded) for index,raw_case in enumerate(raw_cases)]
                 groups = group_cases(prepared,args.sample_batch)
             for group in groups:
-                if args.dt_backend != 'clean':
+                if batched_qwen35:
                     if not report.get('initialized'):
                         with torch.no_grad():
                             initial=timed('original_eager_initialization',lambda:model(input_ids=group[0]['ids'].to(model.device),attention_mask=group[0]['mask'].to(model.device),use_cache=False))
@@ -281,7 +293,7 @@ def main():
                     positions,keep,eligible=state['positions'],state['keep'],state['eligible']
                     formatted,eval_target=state['formatted'],state['eval_target'].to(model.device)
                     gold,row=state['gold'],state['row']
-                    if args.dt_backend == 'clean': report['cases'].append(row)
+                    if not batched_qwen35: report['cases'].append(row)
                     report['status'] = 'attribute_' + key
                     save()
                     if args.family == 'qwen35' and not report.get('initialized'):
@@ -307,7 +319,7 @@ def main():
                         assert bool(torch.isfinite(signed).all())
                         return signed.cpu(), result
 
-                    if args.dt_backend == 'clean':
+                    if not batched_qwen35:
                         signed, detail = timed(key+'_DT', attribute)
                     else:
                         signed, detail = state['signed'], state['DT_details']
