@@ -16,13 +16,18 @@ def main():
     import torch
     from exp.exp2.run_exp import load_model
     import lrp_rules
-    from baseline_adapters import native_attributor,calculate
+    from baseline_adapters import native_attributor
     torch.set_num_threads(4)
     model,tokenizer=load_model(env['checkpoint'],'cuda:0');model.requires_grad_(False)
     item=json.loads((HERE/'inputs.json').read_bytes())['cases'][0]
     tracer=native_attributor('AttnLRP',model,tokenizer)
+    def calculate_native():
+        result=tracer.calculate_attnlrp_span_aggregate(item['prompt'],target=item['target'],sink_start=0,
+            sink_end=item['target_length']-1,sink_weights=torch.tensor(item['target_weights']),
+            normalize_weights=False,score_mode='generated')
+        assert torch.isfinite(result.token_importance_total).all(),'Nonfinite native LRP aggregate'
     with torch.autograd.detect_anomaly():
-        try:calculate('AttnLRP',tracer,item)
+        try:calculate_native()
         except Exception:traceback.print_exc()
     original=lrp_rules.IdentityRuleImplicitFn.forward;counts=dict(calls=0,nonfinite_ratio=0,zero_input=0)
     def observed(ctx,fn,input,epsilon=1e-10):
@@ -33,7 +38,7 @@ def main():
             counts['zero_input']+=int((input==0).sum())
         return result
     lrp_rules.IdentityRuleImplicitFn.forward=staticmethod(observed)
-    try:calculate('AttnLRP',tracer,item)
+    try:calculate_native()
     except Exception:traceback.print_exc()
     finally:lrp_rules.IdentityRuleImplicitFn.forward=staticmethod(original)
     print(json.dumps(counts),flush=True)

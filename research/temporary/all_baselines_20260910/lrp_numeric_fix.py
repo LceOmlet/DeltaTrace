@@ -24,7 +24,9 @@ def zero_ratio_guard():
             ctx.save_for_backward(ratio)
         return output
     lrp_rules.IdentityRuleImplicitFn.forward=staticmethod(guarded)
-    try:yield receipt
+    try:
+        with torch.autograd.graph.save_on_cpu(pin_memory=True):
+            yield receipt
     finally:
         lrp_rules.IdentityRuleImplicitFn.forward=staticmethod(original)
         assert lrp_rules.IdentityRuleImplicitFn.forward is original

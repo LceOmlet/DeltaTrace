@@ -51,16 +51,16 @@ def main():
     inputs=json.loads((HERE/'inputs.json').read_bytes())['cases']
     selected=[r for r in inputs if r['dataset'] in a.datasets and (a.indices is None or r['index'] in a.indices)]
     if a.indices is not None:assert len(selected)==len(a.indices)*len(a.datasets)
-    identity=dict(protocol_sha256=sha(HERE/'protocol.json'),driver_sha256=sha(Path(__file__)),
-        adapter_sha256=sha(HERE/'baseline_adapters.py'),preflight_sha256=sha(a.preflight),inputs_sha256=plan['inputs_sha256'],
-        lrp_numeric_fix_sha256=sha(HERE/'lrp_numeric_fix.py'),numeric_amendment_sha256=sha(HERE/'NUMERIC_FIX.md'))
+    from execution_identity import current_identity,verify_identity
+    identity=current_identity(sha(a.preflight))
     pending=[];resumed=0
     for item in selected:
         for method in a.methods:
             folder=a.output/method/item['dataset']/f'{item["index"]:03d}'
             if (folder/'results.json').exists():
                 done=json.loads((folder/'results.json').read_bytes())
-                assert done['status']=='complete' and done['identity']==identity and done['input_sha256']==item['input_sha256']
+                assert done['status']=='complete' and done['input_sha256']==item['input_sha256']
+                verify_identity(done['identity'],method,sha(a.preflight),sha(folder/'results.json'))
                 assert done['vectors_sha256']==sha(folder/'vectors.npz');resumed+=1
             else:pending.append((item,method,folder))
     print(json.dumps(dict(status='selected',pending=len(pending),resumed=resumed,methods=a.methods,datasets=a.datasets)),flush=True)
