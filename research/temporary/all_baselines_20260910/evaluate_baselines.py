@@ -52,7 +52,8 @@ def main():
     selected=[r for r in inputs if r['dataset'] in a.datasets and (a.indices is None or r['index'] in a.indices)]
     if a.indices is not None:assert len(selected)==len(a.indices)*len(a.datasets)
     identity=dict(protocol_sha256=sha(HERE/'protocol.json'),driver_sha256=sha(Path(__file__)),
-        adapter_sha256=sha(HERE/'baseline_adapters.py'),preflight_sha256=sha(a.preflight),inputs_sha256=plan['inputs_sha256'])
+        adapter_sha256=sha(HERE/'baseline_adapters.py'),preflight_sha256=sha(a.preflight),inputs_sha256=plan['inputs_sha256'],
+        lrp_numeric_fix_sha256=sha(HERE/'lrp_numeric_fix.py'),numeric_amendment_sha256=sha(HERE/'NUMERIC_FIX.md'))
     pending=[];resumed=0
     for item in selected:
         for method in a.methods:

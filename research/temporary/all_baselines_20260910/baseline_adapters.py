@@ -43,12 +43,15 @@ def calculate(method,tracer,item):
     import torch
     prompt,target=item['prompt'],item['target'];weights=item['target_weights']
     if method=='AttnLRP':
-        result=tracer.calculate_attnlrp_span_aggregate(prompt,target=target,sink_start=0,
-            sink_end=item['target_length']-1,sink_weights=torch.tensor(weights),normalize_weights=False,score_mode='generated')
+        from lrp_numeric_fix import zero_ratio_guard
+        with zero_ratio_guard() as receipt:
+            result=tracer.calculate_attnlrp_span_aggregate(prompt,target=target,sink_start=0,
+                sink_end=item['target_length']-1,sink_weights=torch.tensor(weights),normalize_weights=False,score_mode='generated')
         raw=result.token_importance_total.detach().float().cpu().numpy()
         if raw.ndim!=1 or not np.isfinite(raw).all():raise ValueError('Invalid LRP aggregate')
         native=np.maximum(raw,0);native=native/(native.sum(dtype=np.float32)+np.float32(1e-12))
-        return raw,native,dict(raw_aggregate=raw,applied_target_weights=np.asarray(weights,dtype=np.float32))
+        return raw,native,dict(raw_aggregate=raw,applied_target_weights=np.asarray(weights,dtype=np.float32),
+            lrp_guard_calls=np.asarray(receipt['calls']),lrp_repaired_zero_ratios=np.asarray(receipt['repaired_zero_ratios']))
     if method in ('Perturbation','CLP'):
         result=tracer.calculate_feature_ablation_segments(prompt,baseline=tracer.tokenizer.eos_token_id,
             measure='log_loss' if method=='Perturbation' else 'KL',target=target,source_k=20)
