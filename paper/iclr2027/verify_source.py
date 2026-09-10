@@ -14,7 +14,7 @@ def main():
     for name in ('iclr2027_conference.sty','iclr2027_conference.bst','natbib.sty','fancyhdr.sty'):
         assert (ROOT / name).read_bytes() == (ROOT / 'official' / name).read_bytes(), name
     assert sha(ROOT / 'iclr2027-official.zip') == provenance['archive_sha256']
-    files = [ROOT / 'main.tex'] + sorted((ROOT / 'sections').glob('*.tex')) + sorted((ROOT / 'figures').glob('*.tex'))
+    files = [ROOT / 'main.tex'] + sorted((ROOT / 'sections').glob('*.tex')) + sorted((ROOT / 'figures').glob('*.tex')) + sorted((ROOT / 'results').glob('*.tex'))
     source = '\n'.join(re.sub(r'(?<!\\)%.*', '', f.read_text(encoding='utf-8')) for f in files)
     for child in re.findall(r'\\input\{([^}]+)\}', source):
         assert (ROOT / (child + '.tex')).exists(), child
@@ -23,6 +23,8 @@ def main():
         assert (ROOT / graphic).is_file(), graphic
     manifest = json.loads((ROOT / 'figures/figure_manifest.json').read_bytes())
     assert sha(ROOT / 'figures/data/cases.json') == manifest['fixture_sha256']
+    assert sha(ROOT / 'figures/data/overview_role_case.json') == manifest['overview_fixture_sha256']
+    assert sha(ROOT / 'figures/data/overview_case.json') == manifest['lookup_fixture_sha256']
     assert sha(ROOT / 'figures/build_figures.py') == manifest['builder_sha256']
     assert sha(ROOT / 'figures/draw_mechanism.py') == manifest['mechanism_builder_sha256']
     for name, digest in manifest['generated_files'].items():

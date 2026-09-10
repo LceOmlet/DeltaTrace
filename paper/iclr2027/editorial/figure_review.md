@@ -1,46 +1,50 @@
-# Figure review — 2026-09-09
+# Main-figure review — 2026-09-09
 
-The final figure set contains a method diagram and two case visualizations.
-The method figure gives the actual example most of its area. The reading
-order is the exact response excerpt, a single reverse-traversal arrow, and
-the measured signed input heatmap. The adjacent attention identity explains
-the two roles of content and selection, using the surname and question as
-examples. The conservation identity refers to all input sources. Typography,
-whitespace, and one perspective sheet establish the hierarchy; no decorative
-header rules or crossing paths are used.
+The primary overview now uses a four-panel layout. Attention and GDN have
+identical panel areas, two equally sized contribution cards, matched fonts,
+and matched arrows. The GDN panel includes retention, writing and reading;
+its local example expands the same content/control allocation for retention.
+The paired endpoint graph anchors finite reverse propagation.
 
-The heatmap retains original token scores, token boundaries, source positions,
-and sign. Its four text excerpts and exact response excerpt are recorded in
-`figures/figure_manifest.json`. The single perspective sheet is a layout
-device for the input heatmap, not a claim about an intermediate model state.
-The arrow and local identity explain propagation; branch scores are not
-encoded in their color or width.
+The main heatmap is the verified Qwen3.5 MoreHopQA development example 1.
+It contrasts the requested playwright with the composer in the same context.
+The exact bracketed name spans sum to +1.5581979396485757 nats for William
+Shakespeare and -1.1330731580337157 nats for William Walton. Their individual
+tokens retain their original signs and values. No claim about an independent
+single-token deletion direction is made.
 
-The case figures use the first released retrieval and multi-hop development
-example on Qwen3-8B and Qwen3.5-9B. The data preparation verifies the archived
-numeric records, raw reports, released inputs, token IDs, exact decoded text,
-fixed targets, and positive projection. Four complete model inputs and their
-21-point deletion curves are preserved in `figures/data/cases.json`.
+All displayed context/question fragments are exact source spans; omissions
+are marked. The requested role and identified playwright are shown; the full
+stored response plus EOS remains the attribution target. Name-length arithmetic
+is omitted to keep the role contrast clear. Both model blocks in panel (a)
+are labelled Attn. / GDN. The sidebar title is Answer. The main canvas height
+is reduced from 9.5 to 8.85 inches, with a shorter answer card and raised footer
+to restore spacing after removing the arithmetic. The shared color mapping is linear and
+explicitly saturated at +/-2.5 nats. The colorbar uses inequality endpoints;
+no raw scores or printed name totals are clipped. The full-input strip retains
+all unshown tokens. The complete color legend now sits above that strip, in
+the open area to the right of the requested role. Its label and all tick
+labels are checked against every displayed source-text artist. The direct
+retrieval variant uses example 6 and its full
+eligible-score range; it is retained as an alternative overview.
 
-Both model columns share the color scale within each example. The scale is
-centered on zero and linear, and includes the largest absolute eligible-token
-value across both complete inputs. The main figure shares the multi-hop
-scale. Full-input strips in the case figures locate the enlarged excerpts.
-Their response panels use answer summaries, while the main figure quotes an
-exact target excerpt. The measured attribution target is the entire released
-response plus EOS. Deletion curves retain the recorded samples without smoothing.
+The geometry/data check verifies equal operator panel areas, no clipped or
+colliding labels, answer-box fit, all 16 displayed token runs, exact source
+and target fragments, and both name-span sums. The primary PDFs are vector
+artifacts; the main PNG is 8400 x 5310 pixels and the lookup PNG is 8400 x 5700,
+both at 600 dpi.
 
-Visual review covered all three pages of the standalone figure collection at
-125 dpi and every manuscript page at 115 dpi. Checks include text fit,
-legible labels at paper width, one clear arrow direction, perspective text
-alignment, quantitative color legends, excerpt markers, complete captions, and
-page flow. The generated PDF figures are vectors; editable SVGs and their
-Python sources are retained. `build_receipt.json` records the final page
-images and output hashes, while `verify_source.py` checks the included
-figure assets and drawing-source hashes.
+The two index-0 case figures now use a restrained three-subpanel layout.
+Global titles and development identifiers are removed. Model labels and the
+deletion label share the same 9.8-point type, with 10-point token text and
+smaller context, question and legend labels. Answer uses a normal-size
+annotation. The model columns, text starts and full-input strips are aligned;
+the shared colorbar is compact. Task names and provenance are carried by the
+captions and evaluation text. The original fixtures, token values, common
+linear scales and all saved deletion points remain the source of the plot.
+The case geometry/data check is recorded in `figures/case_layout_verification.json`.
 
-FlashTrace informed the use of a concrete example as the visual center,
-perspective treatment, alignment, and compact legends. The method content
-remains DeltaTrace's finite propagation and signed source contributions. The five existing
-bibliographic entries are unchanged; their independent review remains in
-`citation_review.md`.
+Final rendering and manuscript compilation are recorded in build_receipt.json.
+FlashTrace supplied visual references for operator layering, local mechanism
+expansion, concrete text evidence and compact legends; the mechanisms shown
+are DeltaTrace's own fixed finite rules.

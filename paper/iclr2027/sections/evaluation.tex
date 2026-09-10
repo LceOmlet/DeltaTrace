@@ -1,21 +1,29 @@
-\section{Evaluation Protocol}
+\section{Evaluation}
 \label{sec:evaluation}
 
-% E1: This section describes the implemented protocol. Result paragraphs
-% E2/E3/E4 attach to verified final tables using the separate paragraph map.
-\paragraph{Source recovery and faithfulness.}
-The evaluation uses the processed tasks and fixed generated trajectories from the authors' \texttt{table1-data-v1} release accompanying FlashTrace \citep{pan2026flashtrace}.\footnote{\url{https://github.com/wbopan/flashtrace/releases/tag/table1-data-v1}} The source-recovery protocol measures recall of gold evidence within the top 10\% of eligible input tokens. The faithfulness protocol uses the authors' 20-step deletion procedure and the released RISE and MAS scoring functions. Both metrics use the positive part of \dt{}'s source contributions, and the complete signed attribution is retained as a separate output. Recovery and faithfulness are reported alongside the signed evidence visualizations.
+\paragraph{Tasks and fixed responses.}
+We evaluate Qwen3-8B on all 1,243 examples in the authors' \texttt{table1-data-v1} release accompanying FlashTrace \citep{pan2026flashtrace}.\footnote{\url{https://github.com/wbopan/flashtrace/releases/tag/table1-data-v1}} The selection contains ten RULER tasks with 100 examples each, HotpotQA with 48, MATH with 100, and MoreHopQA with 95. Deletion faithfulness scores the complete released response plus EOS, which is also the attribution target for \dt{}. The original input formatting, eligible source positions, gold mapping, and FP16 eager response scoring follow the released code. The frozen \texttt{clean-v1} method uses the shared rules in Section~\ref{sec:method}; the comparison includes published Perturbation, REAGENT, CLP, IFR, AttnLRP, and FlashTrace results, preserving their reported attribution construction and aggregation.
 
-\paragraph{Aligned comparisons.}
-The Qwen3-8B comparison uses the original input formatting, FP16 model loading, response targets, EOS handling, and eager scoring defined by the released experiment code. The authors' \texttt{table1-data-v1} release supplies the reference results for complete released task selections, using one recursive hop for faithfulness and three hops for recovery. The Qwen3.5-9B comparison uses the same data and scoring construction and runs the fixed FlashTrace implementation on the same Qwen3.5 model. Both \dt{} profiles use the shared rules described in Section~\ref{sec:method}, with the complete operator specification in Appendix~\ref{app:operators}.
+\paragraph{Source recovery and deletion faithfulness.}
+Recovery@10\% measures the fraction of gold evidence within the top 10\% of eligible input tokens. Faithfulness uses the authors' 20-step deletion procedure and released RISE and MAS functions. RISE ranks the complete signed contributions; MAS and source recovery use their positive part. Lower RISE and MAS indicate better deletion faithfulness. We report recovery on the six multi-query and multi-value retrieval tasks. Appendix~\ref{app:evaluation} specifies the metric views and reference-result provenance.
 
-\paragraph{Cost measurements.}
-The measurement protocol records complete attribution latency, peak allocated memory, and throughput for real sample batches. Sequence length, model, dtype, and batch composition accompany each measurement. Loading, compilation, warmup, and measured execution are recorded separately. The cost breakdown follows the stages in Section~\ref{sec:computation}, connecting the observed resource use to the propagation algorithm.
+\input{results/full_table}
 
-\paragraph{Mechanism comparisons.}
-The central attention comparison fixes all other operators and evaluates the content-oriented identity in Equation~\ref{eq:pv} alongside symmetric and reverse-order product allocation. The same official examples and metrics connect the choice of interaction assignment to evidence recovery and response faithfulness. Signed source visualizations show how supporting and opposing contributions combine for the response target.
+\paragraph{Complete task results.}
+Across seven methods, \dt{} achieves the lowest RISE on 9 of 13 tasks and the lowest MAS on 11 (Tables~\ref{tab:full} and~\ref{tab:mas}). Against FlashTrace, the corresponding improvements cover 10 and 12 tasks. The largest absolute RISE reduction over FlashTrace occurs on MATH, from 0.3484 to 0.2029; MoreHopQA improves from 0.1280 to 0.0697. Recovery is highest on all six retrieval tasks (Table~\ref{tab:recovery}), with gains over FlashTrace of 3.96--19.60 percentage points. The more demanding MQ-Q8 task illustrates that recovery and deletion capture distinct aspects of attribution: recovery rises from 7.50\% to 13.24\%, while RISE and MAS increase. These comparisons describe observed task means. The DT evaluation retains every released example; baseline means follow the published task results.
+
+\paragraph{Hybrid-model development results.}
+A separate paired development set contains the first eight MQ-Q2 and eight MoreHopQA examples for each model. On Qwen3.5-9B, recovery rises from 63.92\% to 73.35\%; MAS decreases on both tasks. RISE is 0.1115 versus 0.0942 on MQ-Q2 and 0.1688 versus 0.2356 on MoreHopQA. These results exercise the same finite rules through the hybrid model's attention and gated-memory paths. Table~\ref{tab:development} gives the complete development comparison for both models.
+
+\paragraph{Measured attribution cost.}
+Figure~\ref{fig:efficiency} reports complete attribution calls, including input preparation, endpoint capture, layer replay, propagation, and returning scores. Loading and warmup are recorded separately. On the 16-example Qwen3-8B implementation benchmark, the sum of per-example median latencies is 11.40 seconds for \dt{} and 12.16 seconds for one-hop FlashTrace; maximum allocated memory is 18.76 and 21.49 GB, respectively. On Qwen3.5-9B, real batches of two examples with GPU checkpoints reduce the mean time per 16 examples from 16.68 to 12.33 seconds, increasing throughput by 35.3\%. The corresponding allocated-memory peaks are 21.64 and 23.88 GB. Appendix~\ref{app:cost} records the benchmark snapshots, repetition protocol, longer-input tiling measurements, and additional replay-retention results.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{results/figures/deltatrace-efficiency.pdf}
+\caption{\textbf{Measured cost of complete attribution.} (a,b) Qwen3-8B, eight MQ-Q2 and eight MoreHopQA examples: mean of three-run per-example median latencies and maximum allocated memory. FlashTrace uses one recursive hop. (c,d) Qwen3.5-9B, the same 16 development examples: two paired warm rounds comparing serial B1 with CPU checkpoints against real B2 with GPU checkpoints. Stacks show recorded API stages, and each memory maximum includes resident model weights. B denotes real examples per call; each example has two endpoints. GB denotes $10^9$ bytes. The Qwen3 and Qwen3.5 panels are separate implementation benchmarks.}
+\label{fig:efficiency}
+\end{figure}
 
 \paragraph{Signed evidence in concrete responses.}
-Figures~\ref{fig:retrieval} and~\ref{fig:multihop} show the first released example from each of the retrieval and multi-hop development tasks, with the same fixed response evaluated by both models. The retrieval view connects two source keys to their numbers and to the query naming those keys. The multi-hop view follows the context linking a voice actor to a film and its director, whose surname determines the answer. Teal and coral retain the direction of each token's contribution to the complete response score. Aligned context and question excerpts make the evidence readable, while the full-input strips preserve its position in the surrounding context. The deletion curves connect the positive-contribution ranking to the recorded response-score trajectory.
-
-\input{figures/cases}
+Figures~\ref{fig:retrieval} and~\ref{fig:multihop} show the first released example from each development task with the same fixed response evaluated by both models. The retrieval view connects two source keys to their numbers and to the query naming those keys. The multi-hop view follows the context linking a voice actor to a film and its director, whose surname determines the answer. Teal and coral retain the direction of each token's contribution to the complete response score. Aligned context and question excerpts show the evidence, and full-input strips locate it in the surrounding context. The accompanying deletion curves compare each model's positive-ranking DT attribution with its own one-hop FlashTrace baseline, measuring the normalized log-likelihood of the entire fixed response plus EOS.

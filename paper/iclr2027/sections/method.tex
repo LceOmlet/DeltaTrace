@@ -3,7 +3,7 @@
 
 \subsection{What contributes to a response}
 % M1: A familiar evidence-selection example introduces the attribution task.
-Counting the consonants in a director's surname draws on both a name in the context and an instruction about which part of that name to use. ``Jennings'' supplies content; ``last name'' guides its selection. Both roles can shape the answer. \dt{} traces these contributions through the model, connecting the response to the input words that supply evidence and guide its use (Figure~\ref{fig:overview}).
+Identifying a playwright in a passage draws on both a person's name and the role specified by the question. In Figure~\ref{fig:overview}, ``William Shakespeare'' supplies the requested name, while ``author of the play'' specifies which person to use. The nearby composer provides a contrasting role in the same context. \dt{} traces the contributions of these sources through the model, connecting the response to words that supply evidence and guide its use.
 
 % M2: The target and reference give every contribution a common meaning.
 The explanation concerns a fixed response $y$. Its score is the sum of the response tokens' log-probabilities,
@@ -11,7 +11,7 @@ The explanation concerns a fixed response $y$. Its score is the sum of the respo
 F(x;y)=\sum_{t\in\mathcal T}\log p_\theta(y_t\mid x,y_{<t}),
 \label{eq:target}
 \end{equation}
-where $\mathcal T$ selects the response positions. \dt{} compares the original input $x_1$ with a reference $x_0$, keeping the response fixed. This comparison defines the change being explained: $\D F=F(x_1;y)-F(x_0;y)$. In our evaluation, the reference replaces eligible source tokens with EOS. Each source receives a signed share of this change. A positive share contributes toward the increase in the response score; a negative share contributes in the opposite direction.
+where $\mathcal T$ selects the response positions. \dt{} compares the original input $x_1$ with a reference $x_0$, keeping the response fixed. This comparison defines the change being explained: $\D F=F(x_1;y)-F(x_0;y)$. Setting the source embeddings to these two inputs, with model parameters and response held fixed, defines the intervention whose total effect is allocated. In our evaluation, the reference replaces eligible source tokens with EOS. Each source receives a signed share of this joint input effect under the operator rules below. A positive share contributes toward the increase in the response score; a negative share contributes in the opposite direction.
 
 \subsection{Following evidence backward}
 % M3: Describe the reverse traversal as concrete operations.
@@ -33,7 +33,7 @@ This places the source scores on a common scale. Appendix~\ref{app:conservation}
 \subsection{What attention carries and selects}
 \label{sec:attention}
 % M5: Introduce the two roles before expressing their decomposition.
-An attention head combines the content at source positions using weights chosen by queries and keys. A source can therefore affect the output by changing what is carried, how strongly it is selected, or both. In the surname example, the value representation carries information about the name, while the attention weights determine how much of that information reaches a later position. \dt{} follows both routes to the response.
+An attention head combines the content at source positions using weights chosen by queries and keys. A source can therefore affect the output by changing what is carried, how strongly it is selected, or both. In the playwright example, the value representation carries information about the name, while the attention weights determine how much of that information reaches a later position. \dt{} follows both routes to the response.
 
 For attention probabilities $P$ and values $V$, the output is $Y=PV$. Its change separates into
 \begin{equation}
@@ -57,7 +57,7 @@ The positive weight $\ell_i$ is the logarithmic mean of that source's probabilit
 \subsection{What memory keeps and updates}
 \label{sec:memory}
 % M7: Connect persistent evidence to the attention example.
-In a hybrid model, evidence can also reach a response through a memory state. Information written at an earlier position can survive several updates and be read by a later query. For the surname example, the relevant name may be written when the model processes the source sentence and read again at a later position. The explanation therefore follows both the stored content and the gates that determine its survival and use.
+In a hybrid model, evidence can also reach a response through a memory state. Information written at an earlier position can survive several updates and be read by a later query. For the playwright example, the relevant name may be written when the model processes the source sentence and read again at a later position. The explanation therefore follows both the stored content and the gates that determine its survival and use.
 
 Gated delta memory combines retained information with a new write \citep{yang2024gated}:
 \begin{equation}

@@ -1,70 +1,88 @@
-# DeltaTrace figures
+# DeltaTrace main figure
 
-The method figure begins with an exact excerpt from the stored response and
-uses the actual Qwen3.5 multi-hop input heatmap as its main visual. One arrow
-connects the fixed-response score change to the signed source contributions.
-The adjacent attention identity explains how carried content and changed
-selection each receive credit, using the surname and the question as examples
-of those roles. A single perspective sheet displays measured input scores.
-The sheet is a layout device; it does not represent an intermediate model
-state. The local identity and reverse arrow describe the method. Exact source
-spans, the target excerpt, and the shared scale are in `figure_manifest.json`.
+The manuscript overview uses four panels: (a) paired original/EOS-reference
+executions and a finite reverse traversal; (b) Attention; (c) Gated DeltaNet;
+(d) a measured signed context example. Attention and GDN have identical panel
+areas (4.20 x 4.31 drawing units), matching two-branch cards, font sizes, and
+arrow weights. GDN shows its full retain/write/read structure and expands the
+retention rule T = alpha S; S abbreviates the previous state.
 
-The two case figures use stored `clean-v1-20260909` DT results for the first
-released example (index 0) of `niah_mq_q2` and `morehopqa`, on both models.
-Selection is fixed by release order. No inference or new attribution run is
-needed to regenerate the figures.
+The main example is Qwen3.5, MoreHopQA development example 1. The question asks
+about the author of a play. The recorded name spans receive +1.5582 nats for
+William Shakespeare and -1.1331 nats for the nearby composer William Walton.
+Brackets identify the exact names whose token scores are summed. Backgrounds
+retain individual token scores, including the different signs within a name.
+This is an observed role contrast under the fixed EOS reference and finite
+allocation, not a single-token deletion experiment.
+
+All excerpts and the full-input strip share one linear color mapping, centered
+on zero and explicitly saturated at +/-2.5 nats. The colorbar shows <= -2.5 and
+>= +2.5. Saturation makes the smaller negative scores visible; no stored scores
+or printed span sums are altered. Ellipses indicate omitted text. The figure
+shows the requested role and the playwright identified in the stored response;
+the attribution target remains the complete response plus EOS. The original
+name-length arithmetic is omitted from the figure to keep the role contrast
+clear. Panel (a) labels the model blocks as Attn. / GDN. The sidebar uses the
+short title Answer. Its reduced height and the raised footer remove the empty
+space left by the omitted arithmetic. The saturation legend, gradient and
+ticks sit in the open area to the right of the requested role, above the
+full-input strip.
+
+A second complete overview, `generated/deltatrace-lookup-overview.*`, retains a
+simpler positive retrieval example: bright-system -> 9153566 and billowy-method
+-> 9937326 (Qwen3.5, retrieval development example 6). Its color scale spans the
+full eligible-score range of both models. The manuscript includes the signed
+role-contrast version. Both overviews have editable SVGs, vector PDFs, and
+600-dpi PNGs (main: 8400 x 5310; lookup: 8400 x 5700). The main PDF also appears at
+`output/pdf/deltatrace-overview.pdf`.
 
 ## Reproduction
 
-With Python, NumPy and Matplotlib installed:
+Requires Python, NumPy, Matplotlib and pypdf. Run from the paper directory:
 
 ```sh
-python figures/build_figures.py
+python figures/build_figures.py --overview-only
+python figures/check_overview_layout.py
+python verify_source.py
 ```
 
-This reads `data/cases.json` and uses `draw_mechanism.py` for the perspective
-method diagram. It writes three editable SVG files, three vector
-PDF assets, PNG viewing copies, `figure_manifest.json`, and the three-page
-`output/pdf/deltatrace-figures.pdf` collection. The manuscript includes the
-vector PDF assets through `overview.tex` and `cases.tex`.
+The overview-only option preserves the two existing case figure assets and
+reassembles `output/pdf/deltatrace-figures.pdf` from the actual vector PDFs.
+The `--cases-only` option rebuilds the retrieval and multi-hop figures while
+preserving the overview assets. Without either option it rebuilds all figures.
+All three manuscript figures retain their editable sources.
 
-To rebuild the fixture from the archived runs:
+The data preparation checks archived report hashes, the fixed released task
+cache, full actual model-input token IDs, exact decoded prompt and target,
+and the recorded positive-score projection. It only decodes stored IDs:
 
 ```sh
-python figures/prepare_case_data.py --audit-root /path/to/audit
+python figures/prepare_case_data.py --audit-root /path/to/audit --index 1 --datasets morehopqa --output figures/data/overview_role_case.json
+python figures/prepare_case_data.py --audit-root /path/to/audit --index 6 --datasets niah_mq_q2 --output figures/data/overview_case.json
 ```
 
-Preparation verifies the source numeric file, original raw reports, released
-task-cache hashes, full actual model-input token IDs, exact prompt/response text,
-and positive-score projection. Tokenizer JSON files decode recorded IDs only;
-their pinned source URLs and byte hashes are embedded in the fixture. Model
-weights are not loaded. The fixture preserves both original and UTF-8 byte
-positions, so the rendered excerpts use the recorded model-input tokenization.
+`data/cases.json` contains the four original index-0 case fixtures. The case
+figures now use compact paper subpanels: (a) Qwen3-8B, (b) Qwen3.5-9B, and
+(c) deletion. Task descriptions appear in the manuscript captions. Global
+titles and internal development identifiers are omitted from the artwork.
+Answer is a normal-size annotation. Context, question and full-input strips
+align across the two model columns. One quantitative colorbar sits in the right column below the deletion curve and model legend, as requested for both case figures.
+The original shared linear scales are retained. Each deletion plot has four 21-point curves: DT and one-hop FT for each model, with model colors and solid/dashed method lines. The y-axis identifies normalized log-likelihood of the full response, including EOS. Each model/example uses its own identical DT/FT full-input and fully-deleted log-likelihood endpoints; the released clipping and cumulative-minimum normalization are verified directly from the saved scores. Each displayed token run is bound to its original token score.
+The cases export editable SVGs, vector PDFs and 600-dpi PNGs. Standalone PDFs
+also appear at `output/pdf/deltatrace-retrieval.pdf` and
+`output/pdf/deltatrace-multihop.pdf`.
 
-## Visual semantics
+```sh
+python figures/build_figures.py --cases-only
+python figures/check_case_layout.py
+python verify_source.py
+```
 
-- Teal and coral represent positive and negative DT contributions in nats.
-- Blue and purple operator terms distinguish content and selection. They
-  illustrate the local allocation; they are not measured branch scores.
-- Each task uses one linear color scale for both models, centered on zero.
-  It extends to the largest absolute eligible-token contribution across the
-  two complete inputs. The main figure uses the same multi-hop scale. Values are not
-  clipped, and scores are not normalized separately per model or excerpt.
-- Text excerpts are chosen for the question's evidence chain and are recorded
-  as exact character spans. Ellipses mark omissions. The small strips retain
-  every user-input token in original order; underlines locate the excerpts.
-- The main figure quotes an exact response excerpt; case panels use answer
-  summaries. Attribution explains the entire
-  fixed released response plus EOS, using the original eligible-token EOS
-  reference, for each model.
-- Curves use the saved original 20-step `normalized_model_response` arrays.
-  The x axis uses the recorded number of replaced eligible tokens. No curve
-  smoothing is applied. This positive-ranking deletion view is distinct from
-  the raw signed token view.
-- These are four development-case illustrations. Formal aggregate comparisons
-  use their complete aligned evaluation records.
+These are illustrations of the paired development cases described in the
+evaluation. The visual revisions use the archived scores and responses.
 
-FlashTrace informed the use of a concrete text heatmap as the visual center,
-perspective depth, alignment, color legends, and publication layout. The DT
-figure centers a fixed response, one reverse traversal, and signed input scores.
+The [FlashTrace overview](https://arxiv.org/html/2602.01914v4) informed the
+layered operator language, local mechanism expansion, concrete text evidence,
+consistent role colors, and compact legends. Uniform blue/purple matrix cells
+are schematic operators, not measured attention maps. Teal/coral backgrounds
+are measured signed input contributions.

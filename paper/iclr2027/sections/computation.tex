@@ -9,7 +9,7 @@ The weighted mean in Equation~\ref{eq:softmax-vjp} supplies the information shar
 
 % C2: Explain a memory chunk through the state passed to the next chunk.
 \paragraph{Following memory through chunks.}
-Memory passes information between consecutive chunks through a boundary state. \dt{} follows the contribution to that state backward, then distributes it among the reads, writes, and gates inside each chunk. The implementation uses FLA's native chunk-state adjoints and batched matrix products to perform these operations. The retention contribution is accumulated with an associative scan. At fixed state dimensions and chunk size, the stored token contributions and boundary states grow linearly with sequence length. Appendix~\ref{app:computation} gives the tensor accounting and execution details.
+Memory passes information between consecutive chunks through a boundary state. \dt{} follows the contribution to that state backward, then distributes it among the reads, writes, and gates inside each chunk. The implementation supports the accelerated linear-attention path through Flash Linear Attention (FLA) \citep{yang2024fla}: native chunk-state adjoints propagate the boundary coefficients, and batched matrix products distribute finite contributions inside each chunk. An associative scan accumulates the retention contribution. At fixed state dimensions and chunk size, the stored token contributions and boundary states grow linearly with sequence length. Appendix~\ref{app:computation} gives the tensor accounting and execution details.
 
 % C3: Connect the complete algorithm to the measured work.
 \paragraph{Complete attribution.}
