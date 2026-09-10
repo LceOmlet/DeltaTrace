@@ -20,6 +20,9 @@ def table(headers,rows):
 def main():
     analysis=json.loads((HERE/'analysis.json').read_bytes())
     assert analysis['status']=='verified_complete_all_baselines' and analysis['new_method_cases']==2240
+    controller=json.loads((HERE/'audit/all_baselines_logs_v3/controller.json').read_bytes())
+    assert controller['status']=='complete' and all(r['status']=='complete' for r in controller['phases'])
+    controller_hours=(controller['end']-controller['start'])/3600
     primary={r['method']:r for r in analysis['primary']};summary=analysis['summaries'];costs=analysis['costs']
     primary_table=table(['Method',*[LABELS[t] for t in TASKS[:-1]],'VT macro','HotpotQA'],
         [[NAMES[m],*[pct(primary[m][t]) for t in TASKS[:-1]],pct(primary[m]['vt_macro']),pct(primary[m]['hotpotqa_long'])] for m in METHODS])
@@ -188,6 +191,11 @@ control are retained. DT/FT attribution is never rerun in this experiment.
 {cost_table}
 
 Total successful attribution-operation time is {analysis['gpu_operation_seconds']/3600:.3f} hours.
+The accepted controller's elapsed wall time, including its pilot-resume and full
+phases, is {controller_hours:.3f} hours. Its wall interval excludes earlier pilot
+attempts and storage controls, whereas the operation total above includes all
+successful records, including reused pilots. The two totals cover different
+execution intervals and should not be subtracted as an overhead estimate.
 These are the observed execution costs of this implementation, including CPU
 transfers for offloaded AttnLRP and the auxiliary-model work inside REAGENT.
 Peak allocations include models already resident in the shared process. Model
