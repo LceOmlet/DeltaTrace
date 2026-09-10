@@ -32,8 +32,9 @@ def main():
         add(a.base/'all_baselines_preflight.json','inputs_preflight.json')
         if (a.base/'all_baselines_storage_control.json').exists():
             add(a.base/'all_baselines_storage_control.json','storage_control/verification.json')
-        for path in sorted((a.base/'all_baselines_cpu_control').glob('*/*/*/*')):
-            if path.is_file():add(path,'storage_control/'+path.relative_to(a.base/'all_baselines_cpu_control').as_posix())
+        for version in ('all_baselines_cpu_control','all_baselines_cpu_control_v2'):
+            for path in sorted((a.base/version).glob('*/*/*/*')):
+                if path.is_file():add(path,'storage_control/'+version+'/'+path.relative_to(a.base/version).as_posix())
         manifest=dict(created=time.time(),status='completed_case_snapshot',method_cases=method_cases,files=files)
         archive.writestr('manifest.json',json.dumps(manifest,indent=2)+'\n')
     print(json.dumps(dict(archive=str(a.output),bytes=a.output.stat().st_size,method_cases=len(method_cases),

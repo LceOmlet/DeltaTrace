@@ -14,12 +14,12 @@ sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 def main():
     p=argparse.ArgumentParser();p.add_argument('--base',type=Path,required=True);a=p.parse_args();b=a.base
     command=[sys.executable,'-u',str(HERE/'evaluate_baselines.py'),'--environment',str(b/'environment.json'),
-        '--preflight',str(b/'all_baselines_preflight.json'),'--output',str(b/'all_baselines_cpu_control'),
+        '--preflight',str(b/'all_baselines_preflight.json'),'--output',str(b/'all_baselines_cpu_control_v2'),
         '--datasets','vt_h2_c3','--indices','0','--methods','AttnLRP']
-    with (b/'all_baselines_storage_control.log').open('x') as log:
+    with (b/'all_baselines_storage_control_v2.log').open('x') as log:
         result=subprocess.run(command,stdout=log,stderr=subprocess.STDOUT)
     if result.returncode:raise SystemExit(result.returncode)
-    old=b/'all_baselines_v2/AttnLRP/vt_h2_c3/000';new=b/'all_baselines_cpu_control/AttnLRP/vt_h2_c3/000'
+    old=b/'all_baselines_v2/AttnLRP/vt_h2_c3/000';new=b/'all_baselines_cpu_control_v2/AttnLRP/vt_h2_c3/000'
     with np.load(old/'vectors.npz') as left,np.load(new/'vectors.npz') as right:
         assert set(left.files)==set(right.files)
         for name in left.files:assert np.array_equal(left[name],right[name],equal_nan=True),name

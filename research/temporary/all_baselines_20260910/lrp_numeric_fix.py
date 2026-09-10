@@ -2,11 +2,27 @@
 from contextlib import contextmanager
 
 @contextmanager
-def zero_ratio_guard():
+def zero_ratio_guard(model=None):
     import torch
     import lrp_rules
     original=lrp_rules.IdentityRuleImplicitFn.forward
     receipt=dict(calls=0,repaired_zero_ratios=0)
+    parameters={p.untyped_storage().data_ptr() for p in model.parameters()} if model is not None else set()
+    def pack(tensor):
+        if tensor.device.type=='cpu' or tensor.untyped_storage().data_ptr() in parameters:
+            return ('resident',tensor.detach())
+        assert tensor.layout==torch.strided
+        # Copy the entire storage, then reconstruct the SAME strides and offset.
+        # Generic save_on_cpu(pin_memory=True) makes saved views contiguous and
+        # can select a different FP16 GEMM path during backward on this device.
+        flat=tensor.detach().as_strided((tensor.untyped_storage().nbytes()//tensor.element_size(),),(1,),0)
+        cpu=torch.empty(flat.shape,dtype=flat.dtype,device='cpu',pin_memory=True)
+        cpu.copy_(flat,non_blocking=False)
+        return ('offloaded',tensor.device,tensor.shape,tensor.stride(),tensor.storage_offset(),cpu)
+    def unpack(payload):
+        if payload[0]=='resident':return payload[1]
+        _,device,shape,strides,offset,cpu=payload
+        return cpu.to(device,non_blocking=False).as_strided(shape,strides,offset)
     def guarded(ctx,fn,input,epsilon=1e-10):
         output=fn(input)
         if input.requires_grad:
@@ -25,7 +41,7 @@ def zero_ratio_guard():
         return output
     lrp_rules.IdentityRuleImplicitFn.forward=staticmethod(guarded)
     try:
-        with torch.autograd.graph.save_on_cpu(pin_memory=True):
+        with torch.autograd.graph.saved_tensors_hooks(pack,unpack):
             yield receipt
     finally:
         lrp_rules.IdentityRuleImplicitFn.forward=staticmethod(original)

@@ -44,7 +44,7 @@ def calculate(method,tracer,item):
     prompt,target=item['prompt'],item['target'];weights=item['target_weights']
     if method=='AttnLRP':
         from lrp_numeric_fix import zero_ratio_guard
-        with zero_ratio_guard() as receipt:
+        with zero_ratio_guard(tracer.model) as receipt:
             result=tracer.calculate_attnlrp_span_aggregate(prompt,target=target,sink_start=0,
                 sink_end=item['target_length']-1,sink_weights=torch.tensor(weights),normalize_weights=False,score_mode='generated')
         raw=result.token_importance_total.detach().float().cpu().numpy()
