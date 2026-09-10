@@ -62,7 +62,11 @@ The [development table](paper/iclr2027/results/development_table.tex) summarizes
 
 ### Measured efficiency
 
-![Paired attribution latency and allocated memory for Qwen3-8B, and serial versus batched attribution for Qwen3.5-9B.](paper/iclr2027/results/figures/deltatrace-efficiency.png)
+![Attribution time versus rollout length for DT, FT, and seven published baselines.](experiments/efficiency/figures/deltatrace-rollout-scaling.png)
+
+The curve replaces the published FT series with newly measured FT and DT results on one C550; the other seven methods reuse the authors' released logs. The [experiment record](experiments/efficiency/README.md) includes the measurements, original data, and plotting script. Download the [vector curve](output/pdf/deltatrace-rollout-scaling.pdf) or inspect the [plotted data](experiments/efficiency/curve_data.csv).
+
+The earlier [16-example implementation benchmark](paper/iclr2027/results/figures/deltatrace-efficiency.pdf) provides additional latency and memory measurements:
 
 | Recorded comparison | Complete attribution time for 16 examples | Peak allocated memory |
 | --- | ---: | ---: |
@@ -98,6 +102,7 @@ source .venv/bin/activate
 python -m pip install "numpy==1.26.4" "matplotlib==3.10.9" "pypdf==6.8.0"
 
 python paper/iclr2027/results/build_results.py
+python experiments/efficiency/build_curve.py
 python paper/iclr2027/figures/build_figures.py
 python paper/iclr2027/figures/check_case_layout.py
 python paper/iclr2027/verify_source.py
@@ -191,4 +196,4 @@ The [results notes](paper/iclr2027/results/README.md) also document each baselin
 
 ## Acknowledgments
 
-The evaluation builds on [FlashTrace](https://github.com/bwopan/flashtrace/releases/tag/table1-data-v1), its released caches and baseline results, and the RULER, HotpotQA, MATH, and MoreHopQA tasks. Efficient execution builds on FlashAttention and Flash Linear Attention. Third-party source licenses and provenance are retained alongside the corresponding code; the manuscript's [bibliography](paper/iclr2027/references.bib) lists the research references.
+The evaluation builds on [FlashTrace](https://github.com/wbopan/flashtrace/releases/tag/table1-data-v1), its released caches and baseline results, and the RULER, HotpotQA, MATH, and MoreHopQA tasks. Efficient execution builds on FlashAttention and Flash Linear Attention. Third-party source licenses and provenance are retained alongside the corresponding code; the manuscript's [bibliography](paper/iclr2027/references.bib) lists the research references.
