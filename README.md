@@ -30,7 +30,11 @@ The implementation uses FlashAttention-style tiled propagation for dense attenti
 
 ## Results
 
-### HotpotQA mapping fixes and exploratory evaluation
+### HotpotQA v3: preserved context and full body-token costs
+
+The new **48-case run** preserves the original reasoning and answer input, masks only the initial answer target weights, and charges every tokenizer token assigned to retrieved native body sentences. Selection is the longest affordable ranking prefix, with unused budget recorded. Both full-response and answer-conditioned targets, and both signed-sum and positive-mean pooling, remain reported. At 10% full body-token budget, answer-conditioned supporting-fact Recall is **DT 35.59% versus FT K3 51.04%** for signed sums and **48.96% versus 64.76%** for positive means. The two full-response differences have descriptive adjusted intervals crossing zero. See [v3 results, full costs and verification](research/temporary/hotpot_context_v3_20260910/RESULTS.md). These specific repairs do not establish measurement neutrality or independent holdout evidence.
+
+### Prior HotpotQA mapping fixes and exploratory evaluation
 
 The **48-case HotpotQA audit** confirms a title/body gold-position error and a leading-space token assignment error. The added sentence pooling, budget, and target choices have **not established a neutral evaluation protocol**. In particular, the experiment labeled `answer_only` removes the cached reasoning prefix, changing the conditioning context in all 48 cases; its 68.58% versus 66.15% result cannot stand for answer attribution with the original reasoning preserved. Its sentence budget also counts eligible tokens after punctuation/whitespace filtering, rather than all body tokens. See the [methodological review and minimal mapping-fix comparison](research/temporary/hotpot_fairness_20260910/REVIEW.md). The [complete exploratory tables and raw vectors](research/temporary/hotpot_fairness_20260910/RESULTS.md) remain available.
 
