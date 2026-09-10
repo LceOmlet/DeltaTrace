@@ -101,7 +101,19 @@ def main():
             order=rank_cache[rkey];budget=math.ceil(fraction*len(keep));tokens=order[:budget]
             assert prediction['selected_tokens']==tokens
             hit=len(set(tokens)&gold)
-            oracle=dict(recall=hit/len(gold),precision=hit/budget,ceiling=min(1.,budget/len(gold)),gold=len(gold),eligible=len(keep))
+            if view=='raw':
+                cutoff=float(positive[tokens[-1]])
+                tied={i for i in keep if float(positive[i])==cutoff}
+                above={i for i in keep if float(positive[i])>cutoff}
+            else:
+                # The density view is encoded as unique descending token ranks.
+                cutoff=float(len(keep)-budget+1);tied={tokens[-1]};above=set(tokens[:-1])
+            slots=budget-len(above);fixed_hits=len(above&gold);tied_hits=len(tied&gold)
+            low=fixed_hits+max(0,slots-len(tied-gold));high=fixed_hits+min(slots,tied_hits)
+            oracle=dict(recall=hit/len(gold),precision=hit/budget,ceiling=min(1.,budget/len(gold)),gold=len(gold),eligible=len(keep),
+                gold_density=len(gold)/len(keep),random_expected_recall=budget/len(keep),
+                ceiling_adjusted_recall=hit/min(budget,len(gold)),cutoff=cutoff,cutoff_tie_size=len(tied),
+                recall_tie_low=low/len(gold),recall_tie_high=high/len(gold))
         assert budget==int(row['budget'])==prediction['budget']
         for metric,value in oracle.items():close(value,row[metric])
         new_rows+=int(method in BASELINES);budget_checks+=1
