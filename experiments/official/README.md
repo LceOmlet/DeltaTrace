@@ -1,5 +1,7 @@
 # 版本化评测入口
 
+**修正目标后的全量 Recall 表已完成：448/448 例。** 四组 VT 各 100 例，原始 Recall 宏平均 DT **60.20%**、live FT K3 **56.14%**；共同句聚合均为 **63.80%**，达到预算上限。HotpotQA 48 例原始排序为 **40.63% 对 45.35%**，句聚合为 **73.81% 对 72.09%**，后者差值区间跨零。详见 [全量结果与复现入口](../../research/temporary/source_v2_gpu_20260910/full_recall/RESULTS.md)。该表采用冻结的任务目标策略，包含开发及此前验证样本，完整数据区间仅作描述。
+
 **VT 最终答案证据检索已有修正入口。** 原完整生成响应会包含未被问到的其他链；gold 保持不变，新入口先截取生成的最终答案，再为 DT/FT 构造相同输入与目标权重。80 例内部留出验证中，VT 原始 token Recall 平均为 DT 59.79%、FT K3 55.70%，调整后差值区间 [+2.78, +5.56] 点；共同句聚合后均达到预算上限。HotpotQA 句聚合均值领先，但区间仍跨零。复现这项修复请用 [新版 Recall 入口及说明](../../research/temporary/source_v2_gpu_20260910/TARGET_CONSTRUCTION_FIX.md)，旧协议保留为历史基线。
 
 默认协议为 [`source-v2`](source_protocol.json)：只在证据正文内构造 DT reference、做 RISE/MAS 删除和计算 recovery。旧的全 prompt 协议显式使用 `--evaluation-protocol released-v1`；原 [`protocol.json`](protocol.json)、原始结果和冻结方法源码保留。

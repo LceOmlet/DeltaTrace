@@ -30,6 +30,20 @@ The implementation uses FlashAttention-style tiled propagation for dense attenti
 
 ## Results
 
+### Complete Recall evaluation with corrected VT targets
+
+The corrected target protocol now covers **all 448 VT and HotpotQA examples**: 100 for each VT task and 48 for HotpotQA. VT attribution uses the stored generated final answer; HotpotQA uses the full response. DT and live FT K3 receive identical inputs and target weights, rank the same source tokens, and use the same 10% token budget.
+
+| Task | n | DT raw Recall | FT K3 raw Recall | DT sentence mean | FT K3 sentence mean |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| VT H2-C3 | 100 | 85.62% | 72.41% | 100.00% | 100.00% |
+| VT H4-C1 | 100 | 71.33% | 68.32% | 71.37% | 71.37% |
+| VT H6-C1 | 100 | 51.23% | 51.23% | 51.23% | 51.23% |
+| VT H10-C1 | 100 | 32.61% | 32.61% | 32.61% | 32.61% |
+| HotpotQA | 48 | 40.63% | 45.35% | 73.81% | 72.09% |
+
+The equal-task VT raw difference is **+4.05 percentage points**, with a descriptive adjusted interval of **[+3.59, +4.51]**. Shared sentence-mean ranking reaches the per-case budget ceiling for both methods on every VT example. On HotpotQA, DT's raw difference is **−4.71 points** with interval **[−8.60, −1.07]**; the sentence-mean difference is **+1.73 points** with interval **[−6.54, +9.48]**. These full-benchmark intervals include development examples and are descriptive. The [complete table, supplementary budgets, raw artifacts and reproduction commands](research/temporary/source_v2_gpu_20260910/full_recall/RESULTS.md) preserve the separately reported 80-case reserved validation and the earlier full-response baseline below.
+
 ### Complete Qwen3-8B evaluation
 
 The main comparison covers **1,243 examples across all 13 released tasks** from the FlashTrace `table1-data-v1` benchmark: ten RULER tasks with 100 examples each, HotpotQA with 48, MATH with 100, and MoreHopQA with 95. The released inputs and stored responses are retained without resampling or regeneration.
