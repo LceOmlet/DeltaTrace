@@ -97,6 +97,7 @@ def main():
         sys.path.append(env['ft_extension_root'])
     import numpy as np
     import torch
+    from recovery_diagnostics import reported_recovery_diagnostics
     from transformers import AutoTokenizer
     from exp.exp2 import run_exp as author
     from exp.exp2 import dataset_utils as data_utils
@@ -121,7 +122,9 @@ def main():
     report = {'status': 'loading', 'family': args.family, 'selection': args.selection,
         'protocol_sha256': sha((HERE / 'protocol.json').read_bytes()),
         'clean_sources_sha256': sha((ROOT / 'deltatrace/clean/sources.json').read_bytes()),
-        'driver_sha256': sha(Path(__file__).read_bytes()), 'cases': [], 'costs': [],
+        'driver_sha256': sha(Path(__file__).read_bytes()),
+        'recovery_diagnostics_sha256': sha((HERE / 'recovery_diagnostics.py').read_bytes()),
+        'cases': [], 'costs': [],
         'weight_identity': weight_identity,
         'published_number_comparison': args.family == 'qwen3' and args.selection == 'paper',
         'generation_calls': 0, 'sample_batch': 1,
@@ -293,6 +296,9 @@ def main():
                     curve['rise'], curve['mas'], curve['rise_plus_ap'] = map(float, values)
                     curve['needle'] = float(ft.evaluate_attr_recovery_skip_tokens(scores[None],
                         keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1)) if gold else None
+                    if gold:
+                        curve['needle_diagnostics'] = reported_recovery_diagnostics(
+                            scores.detach().cpu().numpy(), keep, gold, curve['needle'])
                     row['metrics'][method] = curve
 
                 score('DT', dt_score)
@@ -321,8 +327,11 @@ def main():
                         assert len(expected_ft_inputs) == 1
                         vectors[key+f'_FT_K{hops}_prompt'] = ft_score.numpy()
                         if hops == 1:score('FT_K1', ft_score)
-                        else:row['FT_K3_needle'] = float(ft.evaluate_attr_recovery_skip_tokens(ft_score[None],
-                            keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1))
+                        else:
+                            row['FT_K3_needle'] = float(ft.evaluate_attr_recovery_skip_tokens(ft_score[None],
+                                keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1))
+                            row['FT_K3_needle_diagnostics'] = reported_recovery_diagnostics(
+                                ft_score.detach().cpu().numpy(), keep, gold, row['FT_K3_needle'])
                 else:
                     row['published_FT_reference'] = protocol['tasks'][dataset]['FT_references']
                 row['status'] = 'complete'

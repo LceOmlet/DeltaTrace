@@ -38,3 +38,11 @@ python experiments/official/summarize.py /path/formal/qwen3-ni-mh/results.json
 Qwen3.5沿用同一原作者输入包装、数据和eager评分流程，`--family qwen35 --ft live`在同一模型上调用固定e81b3be原FT；给原FT传入已包装输入，并检查其真实模型输入与DT相同。`--ft published`明确拒绝Qwen3.5，因为原论文发布的数字来自Qwen3-8B。不得把不同权重的结果直接填入原模型对照。
 
 输出包含逐例输入身份、原始有符号/正值归因、原删除曲线与指标、needle、调用耗时及峰值显存。正式结果保存为独立产物；此目录不接收临时实验结果。入口状态与实际已测范围见[validation.json](validation.json)。
+
+## Needle 预算诊断与可选检索视图
+
+每次原 needle 评分后，入口额外记录 `needle_diagnostics`：过滤后的候选数、gold 数、实际 token 预算、理论上限、随机排序期望、预算归一化恢复率与边界并列区间。原 `needle` 数值和原作者评分函数不改。预算上限是逐例的 `min(1, ceil(0.1*N)/G)`，跨任务比较应同时查看它；归一化诊断列不能替换论文 Recall@10%。
+
+[`retrieval_views.py`](retrieval_views.py) 提供明确来源区间过滤与句内平均归因密度排序，返回 token 排名，不覆盖 signed 归因向量；尚不作为正式评测默认规则。完整 11 任务、1,048 例的离线原因审计、失败候选、配对对照及复现命令见[研究报告](../../research/temporary/needle_gap_20260910/README.md)。
+
+本次使用的发布 FT 数值逐例匹配 `ifr_multi_hop_both_n1_*` trace 及原 CSV；发布说明将 recovery 描述为 K=3，但该记录目录标为 n1。上文 K=3 是原说明及 live 调用配置，不应据此声称复用 CSV 的实际执行已验证为 K=3。
