@@ -1,130 +1,194 @@
 # DeltaTrace
 
-当前入口分为三处：[干净方法](deltatrace/clean/README.md)、[FT原实验对齐评测](experiments/official/README.md)、[临时研究](research/temporary/README.md)。正式评测只导入冻结的干净方法；旧研究材料不作为默认入口。
+**Efficient Signed Attribution for Reasoning Language Models**
 
-**当前执行目标：**[固定干净代码与FT原表评测，并行加速](docs/current_goal.md)。正式实验按FT原表设置运行DT，直接复用作者发布的FT原始CSV；RISE/MAS统一正值输入，完整有符号归因另存。16例用于开发回归；加速在独立分支推进，保持默认FA/FLA和可追溯有限扩展。以下为历史进展，旧MAS修补优先级和固定显存容差不再作为当前约束。
+[Paper](paper/iclr2027/output/pdf/deltatrace-iclr2027-draft.pdf) · [Results](paper/iclr2027/results/all_methods.csv) · [Method code](deltatrace/clean/) · [Reproducibility](#reproducibility)
 
-**最新结果：两模型各16例干净回归已完成。** [逐例结果与执行记录](research/temporary/development16_20260909/README.md)。Qwen3两任务均值优于同模型FT；Qwen3.5的MAS、needle及MH RISE均值更好，但NI RISE仍更差。原MAS不能直接验证完整有符号贡献；此前据此驱动逐层修补的依据仍撤回。
+DeltaTrace explains how an input contributes to a language model's complete reasoning response. It assigns signed credit to input tokens by tracing a finite change from a reference input to the original input through the model. The explanation follows both the evidence being carried and the attention or memory operations that determine how that evidence is used.
 
-<details>
-<summary>历史阶段记录（原阶段“下一步”已由当前目标取代）</summary>
+This repository contains the method implementation for **Qwen3-8B** and **Qwen3.5-9B**, evaluation records, measured efficiency results, and the editable manuscript with its figure and table sources.
 
-同模型FT0—3已完成；首个原NI0结果：DeltaTrace2.5%，FT0为5%，FT1—3为7.5%。[Qwen35同模型FT全跳对照与首个原指标_20260908.md](docs/history/Qwen35同模型FT全跳对照与首个原指标_20260908.md)。工程与微小误差检查收口，下一步原RISE/MAS，无质量优势结论。
+![DeltaTrace overview: finite reverse propagation, attention content and selection, gated delta memory, and a signed evidence example.](paper/iclr2027/figures/generated/deltatrace-mechanism.png)
 
-同模型FT原生内容边界已执行并独立复核：[Qwen35同模型FT原生内容分解核验_20260908.md](docs/history/Qwen35同模型FT原生内容分解核验_20260908.md)。真实FA/FLA/conv原生反向，输出重构差0.031%/0.077%；本地预算关闭，进入32层与原0—3跳整合，尚无新质量或公平速度结论。
+## How it works
 
-32层答案有限传播已执行：[Qwen35答案目标与32层有限传播_20260908.md](docs/history/Qwen35答案目标与32层有限传播_20260908.md)。两条作者轨迹总残差−0.2012%/+1.0235%，没有质量结论；主对照固定为同权重FT–Qwen3.5，并已找到官方变体及结构适配问题。
+DeltaTrace compares two executions of the same model with the same fixed response:
 
-两类完整decoder已接通：[Qwen35两类完整Decoder有限传播_20260908.md](docs/history/Qwen35两类完整Decoder有限传播_20260908.md)。真实异长batch，有限效应残差标准注意力0.0631%、GDN1.6594%。下一步显式答案目标与32层传播；没有新质量结论。
+1. **Define the response contrast.** Replace eligible source tokens with EOS to construct the reference input. Keep the stored reasoning, final answer, and terminal EOS fixed. The attribution target is the change in the log-likelihood of that entire response.
+2. **Propagate the finite change.** Compose local finite propagation rules in one reverse traversal. Attention traces both transported values and changes in their selection. Gated delta memory traces retained content, writes, queries, keys, and gates.
+3. **Read signed source contributions.** Project the propagated coefficients onto each input embedding difference. Contributions can be added across tokens to inspect a name, phrase, or passage.
 
-BF16/D256 有限 FA 核心：[Qwen35_BF16_D256有限FA与异长批处理_20260908.md](docs/history/Qwen35_BF16_D256有限FA与异长批处理_20260908.md)。真实605/368异长batch、GQA4，Q/K/V梯度极限差0.451%/0.214%/0.169%，padding为0。三次有限调用已关闭；单次热调用8.33ms，仍有速度问题。完整注意力边界、decoder和答案目标未完成，没有新质量结果。
+For original input $x_1$, reference input $x_0$, and fixed response $y$, the target is
 
-完整 GDN 局部接入：[Qwen35完整GDN有限传播与加载一致性纠错_20260908.md](docs/history/Qwen35完整GDN有限传播与加载一致性纠错_20260908.md)。真实605/368异长端点，梯度极限相对差0.316%；有限效应总残差0.641%，逐头残差约1.6%–1.9%。两次观测错误和一次不匹配参数恢复已保留，后者排除出目标模型结论。单次热调用12.17ms，整网、质量和完整成本尚未完成。
+$$
+\Delta F = \log p(y\mid x_1)-\log p(y\mid x_0).
+$$
 
-有限 FLA 三次收缩复用已收口：[Qwen35有限FLA三次收缩复用与阶段收口_20260908.md](docs/history/Qwen35有限FLA三次收缩复用与阶段收口_20260908.md)。45→42内核、同任务峰值222→202MB；三轮配对耗时比中位数0.930，但首轮和诊断 wall time 变慢，保留为可选实现，不升级默认。逐头有限差残差约0.403%/0.366%。不追加局部扫描，继续整网接入；无新质量结论。
+The finite chain rule gives $\sum_i A_i=\Delta F$ in exact arithmetic; implementation records also track numerical residuals. A positive score supports this response contrast, and a negative score opposes it. The sign is relative to the specified reference intervention; deleting one token from the original input defines a different intervention.
 
-Qwen3.5 有限 FLA 已在 GPU 实现：[Qwen35有限FLA_GPU实现与官方编译融合_20260908.md](docs/history/Qwen35有限FLA_GPU实现与官方编译融合_20260908.md)。复用原生伴随和厂商BF16 GEMM；官方编译145→45内核，同任务中位2.77→1.49ms，峰值257→223MB。编译前后系数相对差≤1.3e-7，仍比局部原生backward慢约38%；冷调用25.7秒含默认调优。整网与质量未完成。
+The implementation uses FlashAttention-style tiled propagation for dense attention and native Flash Linear Attention operations for gated delta memory. Auxiliary attribution storage grows linearly with sequence length at fixed model dimensions and chunk size. The operator rules and proofs are given in the [manuscript](paper/iclr2027/main.tex).
 
-Qwen3.5 双端点有限系数：[Qwen35官方映射与真实双端点有限系数_20260908.md](docs/history/Qwen35官方映射与真实双端点有限系数_20260908.md)。两条官方答案/gold映射已核验；真实 B4 EOS/输入前向和两个原生伴随算子完成。CPU 分块混合系数与局部公式吻合，逐头有限差残差约0.40%/0.37%，总残差有抵消。尚未实现 GPU 混合系数或整网归因，无新质量结果。
+## Results
 
-Qwen3.5 原生反向：[Qwen35原生FLA反向与上游两行修复_20260908.md](docs/history/Qwen35原生FLA反向与上游两行修复_20260908.md)。首次官方WY内核编译失败；移植固定上游两行表达式后，真实首层129-token backward完成。五类梯度相对官方CPU参考差0.18%–0.79%，内容V复用关系获得局部核验。累计两次局部尝试、零模型/质量调用；继续双端点有限系数与官方映射，整网归因未完成。
+### Complete Qwen3-8B evaluation
 
-Qwen3.5 批处理差异已定位到原生执行：[Qwen35批处理差异定位与有限传播推进_20260908.md](docs/history/Qwen35批处理差异定位与有限传播推进_20260908.md)。差异在首个标准注意力前已经出现；同Q/K/V原生FA路径差0.0859%，首层FLA与官方CPU参考差0.3508%。旧整网1%筛查仍失败，三个目标向量与上一轮相同。两次前向诊断预算关闭，保留默认BF16，推进可追溯FLA有限传播；归因和质量尚未完成。
+The main comparison covers **1,243 examples across all 13 released tasks** from the FlashTrace `table1-data-v1` benchmark: ten RULER tasks with 100 examples each, HotpotQA with 48, MATH with 100, and MoreHopQA with 95. The released inputs and stored responses are retained without resampling or regeneration.
 
-Qwen3.5 原生前向：[Qwen35真实FA_FLA前向与批处理差异_20260908.md](docs/history/Qwen35真实FA_FLA前向与批处理差异_20260908.md)。单处FLA流水线调度修改解决C550共享内存不足，两个B1和一个B2真实执行FA/FLA。B1/B2目标log-prob相对差约2.45%，未通过预设1%筛查；已发现默认FA的split-KV/varlen路径不同，原因仍需定位。CPU参考被提前断言跳过，未执行；归因和质量未完成。
+The tables compare **Perturbation, REAGENT, CLP, IFR, AttnLRP, FlashTrace (FT), and DeltaTrace (DT)**. Baseline numbers come from the published result CSVs; DeltaTrace results come from the frozen full-task run.
 
-Qwen3.5 分词核验：[Qwen35分词器与官方替换基线_20260908.md](docs/history/Qwen35分词器与官方替换基线_20260908.md)。六个文件匹配固定官方版本，两条原缓存文本往返一致；tokenizer EOS248046 与 config EOS/PAD248044 不同，作者入口将PAD设为tokenizer EOS，因此删除基线应为248046。尚未完成模型输入/gold重映射或GPU FLA。
+| Metric | DeltaTrace better than FT | DeltaTrace best among all seven methods |
+| --- | ---: | ---: |
+| RISE ↓ | 10 / 13 tasks | 9 / 13 tasks |
+| MAS ↓ | 12 / 13 tasks | 11 / 13 tasks |
+| Recovery@10% ↑ | 6 / 6 reported retrieval tasks | 6 / 6 reported retrieval tasks |
 
-最新成本进展：[FA阶段剖析与B4原生MLP复用_20260908.md](docs/history/FA阶段剖析与B4原生MLP复用_20260908.md)。FA 两次扫描退化集中在合并传播；已有 B4 trace 支持开始处理重复 GEMM。公开 SAC 的唯一 B4 配对 1.507→1.352s，峰值21.70→31.37GB，完整向量和端点相同；保留为可选小试，不升级默认。两次接线失败计入六次总尝试，全部已结束，无新FT/质量调用。
+These counts compare observed task means. On the six reported retrieval tasks, recovery improves over FT by **3.96–19.60 percentage points**. RISE remains higher on MQ-Q4, MQ-Q8, and VT-H10-C1; MAS remains higher on MQ-Q8.
 
-Qwen3.5 前置进展：[Qwen35权重与FLA真实导入_20260908.md](docs/history/Qwen35权重与FLA真实导入_20260908.md)。四个完整权重分片与固定官方LFS哈希一致；隔离环境中仅对FLA设备名称作两行显式适配，真实导入通过，2853个模型/FLA源码文件其余不变。尚未验证GPU算子、整网归因或批处理；FA剩余成本审查继续。
+**Reporting scope:** RISE and MAS include all 13 tasks. Recovery is reported for the six multi-query and multi-value retrieval tasks. VT and HotpotQA recovery are omitted from the manuscript's selected scope; MATH and MoreHopQA have no released recovery measure. Full experiment records, including results outside that reporting scope, remain available in the [frozen evaluation snapshot](https://github.com/LceOmlet/DeltaTrace/tree/9c6497c08ac3ffa57a40189291644e5a6b99ee36/experiments/official/results/qwen3_8b_table1_20260909).
 
-2026-09-08 用户追加目标：[目标追加_FA收益转向与Qwen35_FLA_20260908.md](docs/history/目标追加_FA收益转向与Qwen35_FLA_20260908.md)。FA 剩余收益经证据确认有限后转向其他主要耗时；支持远端共享权重的 Qwen3.5-9B 和真实 FLA 后端，继续禁止影子实现、支持真实批处理并持续提交推送。当前尚未验证新模型接入，尚未证明 FA 收益耗尽。
+| Artifact | Contents |
+| --- | --- |
+| [Combined results CSV](paper/iclr2027/results/all_methods.csv) | All seven methods, full numeric precision, and explicit empty cells |
+| [Manuscript tables](paper/iclr2027/results/full_table.tex) | Separate RISE, MAS, and recovery tables |
+| [Result summary](paper/iclr2027/results/summary.json) | Task counts, development results, and measured cost summaries |
+| [Source ledger](paper/iclr2027/results/sources.json) | Original records, selected fixtures, and SHA-256 hashes |
+| [Published baseline ledger](paper/iclr2027/results/data/published_baseline_sources.json) | The 95 source CSVs and aggregation rows underlying the added baselines |
 
-最新 FA 结果：[FA融合范围与两次扫描结果_20260907.md](docs/history/FA融合范围与两次扫描结果_20260907.md)。两次扫描已成对复用厂商反向累加布局与转换，局部Q相对误差约1.2e-6、其余输出相同；但1.87ms→2.44ms，约慢30.5%，按事前规则没有扩跑整网。当前仍用共享均值三次扫描版。LSE请求被当前HF适配器丢弃已核实；继续审查FA完整调度，MLP/输出头后移。
+### Hybrid-model development results
 
-最新 FA 检查：[FA原生步长_去布局复制与整网代价_20260907.md](docs/history/FA原生步长_去布局复制与整网代价_20260907.md)。原生步长已在原 NI2 和真实 B4 接通，完整归因向量相同；每层准备内核7→1，但 B4 配对中位数耗时约高1.5%、峰值不变，暂不升级默认实现。当前仍优先共享均值复用版；NI异常计时保留且不作提速依据。继续处理FA重复工作，MLP/输出头后移。
+Qwen3.5-9B is evaluated on a separate development set of eight MQ-Q2 and eight MoreHopQA examples, with FT run on the same model. Retrieval recovery rises from **63.92% to 73.35%**, and MAS is lower on both tasks. Signed RISE improves on MoreHopQA and remains higher on MQ-Q2. These 16 examples demonstrate the hybrid attention and memory implementation; they are separate from the complete Qwen3-8B benchmark.
 
-最新 FA 进展：[FA端点平均融合_原框架共享缓冲复用_20260907.md](docs/history/FA端点平均融合_原框架共享缓冲复用_20260907.md)。端点平均已融入原 FA 框架并复用共享缓冲；原 NI2/B4 全向量相同，B4 两次配对中位数耗时下降约 2.35%，峰值不变；NI 异常计时不作大幅提速主张。编译准备与额外共享 tile 的负结果保留。FA 主线继续，MLP/输出头后移；显存按匹配 FA 的收益和容量判断，不设固定额外字节线。
+The [development table](paper/iclr2027/results/development_table.tex) summarizes the 32 model–example pairs across the two models.
 
-**最新优先级：[FA 主线优先](docs/history/FA主线优先_20260907.md)。先完成 FA 配套开销与集成，暂停 MLP 和输出头优化。已移除 GQA 输入头复制，并通过原 NI2 的 B1 和真实四例 B4 全向量核验；整网峰值未下降，尚无稳定加速结论。继续处理 FA 周边布局、端点平均与传播重复，旧 FA 证据不自动继承。**
+### Measured efficiency
 
-最新实现：[原生 MLP 复用与剩余优化](docs/history/原生MLP复用_两例小预算结果_20260907.md)。公开 PyTorch SAC 复用真实 MLP 输出，两例共 12 次归因；NI2 相对原 P1 耗时下降 7.7%，峰值显存增加 5.12 GB；MH5 单次配对下降 2.4%，尚不稳定。同次完整新旧分数相同，但未继承不同分数的历史质量曲线，未重新比较 FT。**按用户更新取消一次反向加固定 72.5 MB 的硬上限，按匹配 FA 的速度、显存与 batch/长度容量共同判断。**
+![Paired attribution latency and allocated memory for Qwen3-8B, and serial versus batched attribution for Qwen3.5-9B.](paper/iclr2027/results/figures/deltatrace-efficiency.png)
 
-当前执行约束：[官方数据与小预算验证](docs/history/官方数据优先与小预算验证_20260907.md)。使用作者处理后原缓存；本地生成已停止并排除。现有证据足以先改P1重复计算，初筛限两个原开发样本、最多12次归因和0条新删除曲线；有依据再扩大，不默认重跑全量。
+| Recorded comparison | Complete attribution time for 16 examples | Peak allocated memory |
+| --- | ---: | ---: |
+| Qwen3-8B: one-hop FT → tiled DT, sample batch 1 | 12.16 s → 11.40 s | 21.49 GB → 18.76 GB |
+| Qwen3.5-9B: serial batch 1 with CPU checkpoints → real batch 2 with GPU checkpoints | 16.68 s → 12.33 s | 21.64 GB → 23.88 GB |
 
-最新公平性修正：[原FT seq入口](docs/history/原FT_seq入口公平性修正_20260907.md)。用作者原函数省去无关row/rec视图后，16例完整FT分数相同、耗时约降30.4%；P1相对该入口反而慢37.7%（配对中位数，16/16均慢）。此前0.928仅为相对作者总入口，不构成效率胜出。下一步按最新用户要求先完成FA主线；非注意力优化后移。
+The Qwen3.5 configuration increases throughput by **35.3%** on the recorded 16-example workload. Each row is a separate paired implementation benchmark. The Qwen3 measurements predate the full-task quality freeze, and the Qwen3.5 comparison measures a scheduling and checkpointing change.
 
-最新成本核验：[FA有限P1与原FT同次成本](docs/history/FA有限P1_原FT同次完整成本_20260907.md)。16例9方法各自完整重跑；P1/FTboth1配对耗时比中位数0.928，仍慢的样本全部保留。原质量仅在完整分数相同后关联，非独立确认；NIq2-100与MH95均已历史使用，新MH预检通过但缺原API配置。
+Times include input preparation, endpoint capture, layer replay, propagation, and returning scores. Model loading, shape warmup, and deletion scoring are measured separately. Memory is peak allocated device memory, including resident weights, in decimal GB. Real batch size counts examples; each example has two endpoints.
 
-最新符号核验：[P1条件有限效应](docs/history/P1有限分配_条件符号诊断_20260907.md)。384个开发token中201个随干预条件反号；不能把P1负分直接当作原输入删除方向。原质量候选保持，符号与独立确认尚未完成。
+Additional [dense-versus-tiled measurements](paper/iclr2027/results/figures/deltatrace-tiling-cost.pdf) cover three recorded inputs of 1,241, 3,470, and 3,762 tokens. Later [replay-retention measurements](paper/iclr2027/results/retention_table.tex) reduce warm time by 5.80% on Qwen3 and 5.15% on Qwen3.5 against their respective baselines, with identical paired source vectors. The [measurement notes](paper/iclr2027/results/README.md) document the scope of each comparison.
 
-最新资源核验：[原长输入与同批反向参照](docs/history/FA有限传播_原长输入与同批反向参照_20260907.md)。原长输入归因耗时下降43%—44%，真实B4显存低于同批普通FA反向；不等于长输入质量确认。新增原MoreHopQA来源与采样协议已准备，尚未生成新确认缓存。
+## Inspect an explanation
 
-带符号的双端点有限归因研究，以 FlashTrace 原基准检验质量、方向定义和完整成本。
+![A multi-hop example with signed token contributions and each model's own DT and FT deletion curves.](paper/iclr2027/figures/generated/deltatrace-multihop.png)
 
-当前实现采用真实 Qwen3/厂商 FlashAttention 的 EOS 与原输入端点，在捕获的实际张量上执行明确的有限传播规则。**FA 框架有限扩展已完成原16条整网开发核验；四个原样本的真实 B2/B4 归因也已完成。** 不把独立分块原型、显式概率重建或本项目传播规则称为模型的原生梯度。
+Teal and coral mark positive and negative DeltaTrace contributions in nats. Both model panels use the same color scale within an example. The right panel compares each model's DT curve with its own one-hop FT baseline; its vertical axis is the **normalized log-likelihood of the full response**, including EOS. Normalization uses each model's full-input and fully-deleted scores, clipping, and the released cumulative-minimum transform. These illustrative DT curves use positive-score ranking; the main RISE tables use signed ranking.
 
-|内容|状态|入口|
-|---|---|---|
-|原生双端点捕获与层重算|公开FA入口已核验，旧私有路径保留为对照|[公开捕获结果](docs/history/公开FA捕获_P1数值与成本_20260907.md)|
-|整网有限传播、三种 PV 分配|原16条开发样本、176条原曲线已独立核验；P1进入下一步开发|[完整结果](docs/history/PV交互分配_三规则完整16条结果_20260907.md)|
-|已有编译器融合|已在原样本核验|`core/compiled_*.py`|
-|历史独立分块原型|仅局部数值/成本试验；较省显存但较慢，未整网接入|`research/prototypes/`|
-|FA 双端点有限传播加速|原16条配对耗时中位数下降11.2%，原开发门槛通过|[完整核验](docs/history/FA有限传播_完整16条与真实批处理_20260907.md)|
-|真实多样本归因|四例B4吞吐1.430×，完整峰值21.70GB，needle恢复不变|[批处理核验](docs/history/FA有限传播_完整16条与真实批处理_20260907.md)|
-|原评估器的批量删除曲线|已实现；B4在三个原样本提速1.19—1.52x，数值差在冻结容差内|[批量结果与后端契约](docs/history/默认FA兼容边界与原评估批处理_20260907.md)|
+The [figure collection](paper/iclr2027/output/pdf/deltatrace-figures.pdf) includes the mechanism overview, a two-number retrieval example, and this multi-hop example. Exact token scores and the recorded deletion points are stored in the [case fixture](paper/iclr2027/figures/data/cases.json).
 
-当前研究配置为 [`content_P1`](configs/pv_content_P1_development.json)。FA有限版本在原16条开发集的NI恢复率77.52%（最强FT历史对照59.33%），NI/MH RISE为0.05736/0.05839（最强FT分别0.06193/0.11013），MAS也较低。RISE/MAS越低越好。微小浮点变化不算新的算法提升；原对称无退步附加门槛仍记录失败，用户已接受该取舍。仍需独立质量和原长输入确认。
+## Reproducibility
 
-新有限路径已移除全局attention N×N中间矩阵，实际默认模型FA保持不变。可追溯有限扩展在 `research/prototypes/qwen_signed_secant_paired_vendor_fa.py`，多样本入口在 `research/prototypes/qwen_signed_secant_batched_vendor_fa_public.py`；明确使用固定厂商FA框架的独立库，未宣称任意设备/FA版本即插即用。
+### Rebuild tables, figures, and the paper on CPU
 
-原16条采用单样本归因、B1评分。后续四例测试才是真实B2/B4归因和B4原评分，不能混称。评分的原生行间端点差异已直接复现，原曲线保留各自真实值；[完整报告](docs/history/FA有限传播_完整16条与真实批处理_20260907.md)说明数值、内存、吞吐与证据边界。短输入下一轮使用B4需保持全方法相同调度，长输入batch仍需实际资源确认。
+The manuscript's selected data and figure fixtures are included in `main`. Rebuilding them requires no model weights, accelerator, or new evaluation calls.
 
-</details>
+```bash
+git clone --branch main https://github.com/LceOmlet/DeltaTrace.git
+cd DeltaTrace
 
-## 运行核心代码
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install "numpy==1.26.4" "matplotlib==3.10.9" "pypdf==6.8.0"
 
-以下是保留的显式有限传播对照入口。将 `core` 和 `research/runtime` 加入 `PYTHONPATH`，使用实际配置好的 Qwen3-8B 模型和完整目标 token 轨迹：
-
-```python
-from qwen_signed_secant_paired_public_fa import (
-    capture_checkpoint_pair, propagate_paired_secant,
-)
-
-# 模型为 eval、FP16、flash_attention_2；仅 eligible 输入替换为 EOS。
-# baseline_ids 与 input_ids 的固定生成轨迹完全相同。
-before, after = capture_checkpoint_pair(
-    model, baseline_ids, input_ids, attention_mask, prompt_len,
-)
-result = propagate_paired_secant(model, before, after, pv_rule="content_P1")
-signed_scores = result["signed_full_sequence"]
+python paper/iclr2027/results/build_results.py
+python paper/iclr2027/figures/build_figures.py
+python paper/iclr2027/figures/check_case_layout.py
+python paper/iclr2027/verify_source.py
 ```
 
-`pv_rule` 只能为 `symmetric`、`content_P1`、`content_P0`，默认对称。后两者分别为 ΔP·V0 + P1·ΔV、ΔP·V1 + P0·ΔV。混合乘积只是归因恒等式，不是额外模型反事实前向。其他有限规则保持不变。
+Use Python 3.10–3.12 for this pinned artifact environment. On Windows, activate it with `.venv\Scripts\Activate.ps1`. The commands regenerate the tables and PDF/SVG/PNG figures from the included records, and check source hashes, case geometry, citations, and LaTeX input references.
 
-复现环境记录：MetaX C550，PyTorch `2.8.0+metax3.5.3.9`、Transformers `4.57.3`、FlashAttention `2.6.3+metax3.5.3.9torch2.8`、Triton `3.0.0`。不假定不同设备/上游版本有相同 ABI 或表现，不自动覆盖安装的模型、FA 或 autograd。
+With a TeX installation providing `latexmk` and `pdflatex`:
 
-原曲线批调度可以直接接受原评估器及真实删除状态，按精确长度分桶：
-
-```python
-from research.runtime.original_ft_batched_evaluation import evaluate_requests
-
-# evaluator 是 FlashTrace 原 LLMAttributionEvaluator。
-# requests: 唯一标识 -> (prompt_ids[1,N], fixed_response_ids[1,M])。
-scores, cost = evaluate_requests(evaluator, requests, batch_size=4)
+```bash
+cd paper/iclr2027
+latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 ```
 
-`cost` 同时返回物理前向次数和评估轨迹数。该函数不生成新删除顺序、不生成答案，也不改变评分器；原基准使用的实际后端应保持一致。原调度器的三例核验保留；新增四例的归因及完整原曲线批处理见[最新报告](docs/history/FA有限传播_完整16条与真实批处理_20260907.md)。
+The rebuilt manuscript is `build/main.pdf`. The checked-in [reading copy](paper/iclr2027/output/pdf/deltatrace-iclr2027-draft.pdf) is 17 pages, with the main text ending on page 9. The [build receipt](paper/iclr2027/build_receipt.json) records the distributed PDF's hash and page review. Rebuilt files may differ in metadata or layout across library and TeX versions.
 
-## 证据与维护
+### Run model attribution and evaluation
 
-- `evidence/export_manifest.json` 记录原始与公开副本哈希。核心源码按字节保存。
-- `research/reproduction_templates/` 是包含 `${...}` 路径占位符的公开复现模板，**不是原始冻结脚本的相同哈希副本，也不可直接当作原实验重新执行**；原始哈希保留。
-- `evidence/` 包含已核验摘要，以及176条原始数值曲线、评分、删除分组和带符号向量；模型权重、输入文本/token IDs、私有路径和凭据不进公开 Git。
-- `third_party/metax_fa_2_5_3/` 保存 MetaX 官方仓库固定提交的78个原始文件及逐文件哈希。该公开版本是2.5.3，不能冒充当前安装2.6.3二进制的同版源码；构建与后续扩展状态另行记录。
-- `docs/history/` 保留阶段结果，失败结果不删除或改称成功。
-- 新实验先提交公式、源码、协议和调用预算；完成后追加原曲线来源、逐样本结果、完整成本与决定。任何未验证结果必须标明状态。
-- 基准采用 FlashTrace 原作者代码和数据：`075e7e44ae4d5acd2ed76e0d2aced57107d02736`、`table1-data-v1`。开发 NI0—7/MH0—7 不等于独立确认或完整跨任务胜出。
+Model execution uses a source-based research environment with compiled finite-propagation extensions. The complete Qwen3 run was recorded on a **MetaX C550 64 GB**, with Python 3.12, PyTorch `2.8.0+metax3.5.3.9`, Transformers `4.57.3`, vendor FlashAttention `2.6.3+metax3.5.3.9torch2.8`, and vendor Triton `3.0.0+metax3.5.3.9`. See the [environment receipt](paper/iclr2027/results/data/qwen3_environment.json) for the complete package and checkpoint identity.
 
-符号表示指定 EOS 基线和有限规则下的带符号分配；原 RISE/MAS 与 needle 恢复不能单独证明单 token 删除的因果符号。完整成本应计入捕获、重算、传播、输入准备和分数返回，并另列研究作业开销。
+The frozen method sources are in [`deltatrace/clean/`](deltatrace/clean/), version `clean-v1-20260909`:
+
+| Model | Entry point | Configuration |
+| --- | --- | --- |
+| Qwen3-8B | [`propagate_paired_secant`](deltatrace/clean/qwen3/qwen_signed_secant_paired_vendor_fa.py) | FP16, `content_P1`, native model FlashAttention and a separate finite-propagation extension |
+| Qwen3.5-9B | [`make_qwen35_clean_runner`](deltatrace/clean/qwen35/qwen35_clean_runner.py) | BF16, P1/content1 rules, native FA/FLA, and empty per-layer override maps |
+
+The [method manifest](deltatrace/clean/sources.json) records all 27 frozen dependency files. Qwen3 and Qwen3.5 use their respective dependency environments and run in separate processes. Model weights and compiled libraries are supplied by the execution environment; their paths and identities are checked against an [environment manifest](experiments/official/environment.example.json).
+
+For the full benchmark, use the **paper evaluation snapshot** below. It contains the signed-RISE adapter and task controller used for the reported results. The earlier adapter retained on `main` uses the original development positive-score view.
+
+```bash
+# From the repository root, check out the exact full-benchmark snapshot.
+git fetch origin
+git worktree add --detach ../DeltaTrace-table1 9c6497c08ac3ffa57a40189291644e5a6b99ee36
+cd ../DeltaTrace-table1
+```
+
+Before running, prepare the local model checkpoint, compatible compiled finite library, and the original FlashTrace checkout at `075e7e44ae4d5acd2ed76e0d2aced57107d02736`. Place the released `table1-data-v1` caches in that checkout and fill in `experiments/official/environment.example.json` as an external environment file. The [release protocol](experiments/official/reference/REPRODUCTION.md) documents the cache layout; use its prepared responses for benchmark reproduction.
+
+```bash
+# In the configured Qwen3 execution environment: two-example execution check.
+MACA_PATH=/opt/maca TRITON_ENABLE_PERSISTENT_AUTOTUNE_CONFIGS=0 \
+python experiments/official/evaluate.py \
+  --family qwen3 --environment /absolute/path/environment.json \
+  --selection smoke --ft live --output /absolute/path/qwen3-smoke
+
+# All 13 tasks, retaining the released examples and published FT results.
+python experiments/official/run_qwen3_paper.py \
+  --environment /absolute/path/environment.json \
+  --output /absolute/path/qwen3-paper-run
+
+# Validate and export a completed run.
+python experiments/official/export_qwen3_paper.py \
+  --run /absolute/path/qwen3-paper-run \
+  --output /absolute/path/qwen3-paper-export
+```
+
+The task controller verifies completed tasks before reusing them when resuming. Per-example outputs include input identity, signed and positive attribution views, recorded deletion curves, metrics, and execution costs. Qwen3.5 development runs use `--family qwen35 --selection development16 --ft live` with the matching Qwen3.5 environment; published Qwen3 FT results are not used as its control.
+
+### Experiment snapshots
+
+| Record | Frozen source revision | Evidence |
+| --- | --- | --- |
+| Complete Qwen3-8B benchmark | [`9c6497c`](https://github.com/LceOmlet/DeltaTrace/tree/9c6497c08ac3ffa57a40189291644e5a6b99ee36) | [Full results, paired cases, and source audit](https://github.com/LceOmlet/DeltaTrace/tree/9c6497c08ac3ffa57a40189291644e5a6b99ee36/experiments/official/results/qwen3_8b_table1_20260909) |
+| Qwen3.5 batching and GPU checkpoints | [`2b36c4e`](https://github.com/LceOmlet/DeltaTrace/tree/2b36c4ec74ebb0c317d2ec4b8e8da83941fea747) | [Paired warm-cost records](https://github.com/LceOmlet/DeltaTrace/tree/2b36c4ec74ebb0c317d2ec4b8e8da83941fea747/research/temporary/acceleration_20260909) |
+| Replay retention | [`7fa54d2`](https://github.com/LceOmlet/DeltaTrace/tree/7fa54d2b340f47aace09c528361cb62febfc496c) | [Paired implementation measurements](https://github.com/LceOmlet/DeltaTrace/tree/7fa54d2b340f47aace09c528361cb62febfc496c/research/temporary/cause_tolerance_20260909) |
+
+### Metric conventions
+
+- **RISE:** rank the complete signed DeltaTrace contributions. Lower is better.
+- **MAS and recovery:** use the positive part of the contributions. Recovery@10% measures the fraction of gold evidence in the top 10% of eligible input tokens.
+- **Deletion scoring:** preserve the complete stored response plus EOS, use the released eager evaluator, and record 20 deletion steps plus the initial response point.
+- **FT provenance:** full-task comparisons reuse the published CSVs and their matching `n1` traces. The separately executed development control uses one hop for faithfulness and three for recovery. The [source audit](https://github.com/LceOmlet/DeltaTrace/blob/9c6497c08ac3ffa57a40189291644e5a6b99ee36/experiments/official/results/qwen3_8b_table1_20260909/README.md) explains the difference between the published recovery traces and the upstream README's hop description.
+
+The [results notes](paper/iclr2027/results/README.md) also document each baseline's aggregation row and perturbation variant. The experiment snapshots retain the original records, including task-level regressions and numerical differences between execution configurations.
+
+## Repository layout
+
+| Path | Purpose |
+| --- | --- |
+| [`deltatrace/clean/`](deltatrace/clean/) | Frozen method implementations and source manifest |
+| [`experiments/official/`](experiments/official/) | Reference evaluation adapter, environment schema, original protocol, and baseline CSVs |
+| [`paper/iclr2027/`](paper/iclr2027/) | Editable manuscript, official template, figures, and final PDFs |
+| [`paper/iclr2027/results/`](paper/iclr2027/results/) | Selected result fixtures, baseline importer, and table/plot builder |
+| [`evidence/`](evidence/) | Numeric evidence, source receipts, and export hashes |
+| [`core/`](core/) | Earlier finite-rule implementations retained for comparison |
+| [`research/`](research/) | Prototypes, execution utilities, and recorded development experiments |
+| [`docs/history/`](docs/history/) | Historical analyses and implementation decisions |
+| [`third_party/`](third_party/) | Pinned upstream sources and their licenses |
+
+## Acknowledgments
+
+The evaluation builds on [FlashTrace](https://github.com/bwopan/flashtrace/releases/tag/table1-data-v1), its released caches and baseline results, and the RULER, HotpotQA, MATH, and MoreHopQA tasks. Efficient execution builds on FlashAttention and Flash Linear Attention. Third-party source licenses and provenance are retained alongside the corresponding code; the manuscript's [bibliography](paper/iclr2027/references.bib) lists the research references.
