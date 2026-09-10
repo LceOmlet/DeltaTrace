@@ -83,7 +83,8 @@ def main():
     from matplotlib.ticker import PercentFormatter
     plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10,
                          'axes.spines.top': False, 'axes.spines.right': False,
-                         'svg.fonttype': 'none', 'savefig.facecolor': 'white'})
+                         'svg.fonttype': 'none', 'svg.hashsalt': 'needle-gap-audit-20260910',
+                         'savefig.facecolor': 'white'})
     names = list(tasks)
     labels = ['MQ-Q2', 'MQ-Q4', 'MQ-Q8', 'MV-V2', 'MV-V4', 'MV-V8', 'VT-H2-C3', 'VT-H4', 'VT-H6', 'VT-H10', 'HotpotQA']
     fig, (ax, bx) = plt.subplots(1, 2, figsize=(12.5, 7.4), gridspec_kw={'width_ratios': [1, 1]})
@@ -125,7 +126,9 @@ def main():
     fig.text(.10, .90, '1,048 frozen Qwen3-8B examples across all 11 recovery tasks', color='#52616b', fontsize=11)
     fig.text(.10, .025, 'Panel B is retrospective reranking, not a new attribution run. Original benchmark scores remain unchanged.', fontsize=9, color='#52616b')
     fig.savefig(HERE / 'needle_gap.png', dpi=180)
-    fig.savefig(HERE / 'needle_gap.svg')
+    svg = HERE / 'needle_gap.svg'
+    fig.savefig(svg, metadata={'Date': None})
+    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text(encoding='utf-8').splitlines()) + '\n', encoding='utf-8')
     plt.close(fig)
 
 
