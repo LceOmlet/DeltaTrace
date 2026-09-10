@@ -64,17 +64,29 @@ def main():
     for name, group in groups.items():
         c = group['contrasts']['new_DT_minus_live_FT']
         lines.append(f'| {name} | {ci_text(c["recall@10"], 100, 2)} | {ci_text(c["rise"])} | {ci_text(c["mas"])} |')
+    lines += ['', '## 预定的句子/行级次要指标', '',
+        '这里的预算是 10% 的句子/行单元，选中后取回整个单元。各方法单元格为单元 recall / 实际取回 token 占比；不能与 10% token recovery 等同。', '',
+        '| 分组 | 旧 reference DT | 新 reference DT | live FT K3 | 新−旧单元 recall（百分点，95% CI） |',
+        '| --- | ---: | ---: | ---: | ---: |']
+    for name, group in groups.items():
+        cells = [f'{group["method_means"][m]["unit_recall@10"]*100:.2f}% / '
+                 f'{group["method_means"][m]["unit_selected_token_fraction@10"]*100:.2f}%'
+                 for m in ('DT_full_reference', 'DT', 'FT')]
+        lines.append(f'| {name} | ' + ' | '.join(cells) +
+                     f' | {ci_text(group["contrasts"]["reference_change"]["unit_recall@10"], 100, 2)} |')
     lines += ['', '## 执行与解释范围', '',
         '- 本地从保存向量重算所有 token recovery 点，并重建每例两个 reference 和全部实际删除输入的哈希。原输入、target、gold 与原缓存逐项一致。',
         '- 95% 区间使用预定的 10,000 次配对 bootstrap、seed=73；分组在任务内重采样，任务权重固定。次要列区间仅作描述，不能据单个最优列断言成功。',
         '- 新 reference 是否改善排序由上面的配对结果判断。正文范围与预算修正的定义合理性，不能代替归因质量提升的证据。',
         '- 旧冻结运行的向量与本次旧 reference 重跑存在数值差异；主比较使用本次两份新向量，不复用旧向量充当配对对照。逐例最大绝对差另存。',
         f'- 已记录模型操作耗时合计 {analysis["measured_call_seconds"]/3600:.2f} 小时，峰值分配显存 {analysis["peak_allocated_bytes"]/2**30:.2f} GiB。该成本包含补充旧 reference 对照、FT 与评测，不是单次 DT 归因成本。',
+        '- 先导三例另耗时 141.58 秒；调换执行次序前中断的 NI 阶段另记录 550.96 秒已完成模型操作，未完成的调用耗时不在该数内。两项均不进入正式结果，见 [附加运行成本](auxiliary_costs.json)。',
         '- 固定设计见 [PROTOCOL.md](PROTOCOL.md)，逐例数据见 [paired_cases.csv](analysis/paired_cases.csv)，完整统计及输入回执见 [analysis.json](analysis/analysis.json)。', '']
     args.output.mkdir(parents=True, exist_ok=True)
     if args.plots:
         import matplotlib
         matplotlib.use('Agg')
+        matplotlib.rcParams['svg.hashsalt'] = 'source-v2-paired-20260910'
         import matplotlib.pyplot as plt
         labels = [t.replace('niah_', 'NI ').replace('vt_', 'VT ').replace('hotpotqa_long', 'HotpotQA') for t in tasks] + ['All tasks (equal weight)']
         data = [analysis['tasks'][t]['contrasts']['reference_change'] for t in tasks]
@@ -105,7 +117,9 @@ def main():
         fig.text(.02, .015, '1,048 cases | 11 fixed tasks | 95% paired bootstrap intervals | Green: improvement; red: decline; gray: interval crosses zero', fontsize=8, color='#475569')
         fig.tight_layout(rect=(0, .04, 1, .94))
         fig.savefig(args.output / 'paired_reference_effects.png', dpi=200, facecolor='white')
-        fig.savefig(args.output / 'paired_reference_effects.svg', facecolor='white')
+        svg = args.output / 'paired_reference_effects.svg'
+        fig.savefig(svg, facecolor='white', metadata={'Date': None})
+        svg.write_text('\n'.join(line.rstrip() for line in svg.read_text(encoding='utf-8').splitlines()) + '\n', encoding='utf-8')
         plt.close(fig)
         lines[4:4] = ['![Paired reference effects](paired_reference_effects.png)', '']
     (args.output / 'RESULTS.md').write_text('\n'.join(lines), encoding='utf-8')

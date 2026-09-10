@@ -2,7 +2,7 @@
 
 默认协议为 [`source-v2`](source_protocol.json)：只在证据正文内构造 DT reference、做 RISE/MAS 删除和计算 recovery。旧的全 prompt 协议显式使用 `--evaluation-protocol released-v1`；原 [`protocol.json`](protocol.json)、原始结果和冻结方法源码保留。
 
-**效果状态：source-v2 的新 reference 仍是待验证候选，尚未证明改善归因质量。** GPU 配对补跑正在进行，三例执行检查包含提升和退步，不能称为“效果已修好”。设计与当前记录见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
+**效果状态：新 reference 在已完成的 VT H4-C1 全部 100 例上使 Recall@10% 下降 4.55 个百分点，95% 配对区间为 [−5.20, −3.93]。** RISE/MAS 改善，其他任务仍在补跑；这一候选不能称为 needle 修复成功。设计与完整任务的中途结果见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
 
 ## source-v2 的评分规则
 

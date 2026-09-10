@@ -12,13 +12,17 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT / 'experiments/official'))
-from evidence_protocol import SUPPORTED_TASKS, recovery_curve
+from evidence_protocol import (SUPPORTED_TASKS, recovery_curve, sentence_recovery_curve,
+                               source_span, select_source_tokens)
 from summarize import summarize
 
 FRACTIONS = [.05, .1, .2, .3, .5]
 METHODS = ['DT', 'DT_full_reference', 'FT_K1', 'FT_K3']
-FIELDS = [f'{metric}@{int(f * 100):02d}' for f in FRACTIONS
-          for metric in ('recall', 'precision', 'ceiling_adjusted_recall')] + ['rise', 'mas']
+UNIT_METRICS = ('recall', 'precision', 'ceiling_adjusted_recall', 'selected_token_fraction')
+FIELDS = ([f'{metric}@{int(f * 100):02d}' for f in FRACTIONS
+           for metric in ('recall', 'precision', 'ceiling_adjusted_recall')]
+          + [f'unit_{metric}@{int(f * 100):02d}' for f in FRACTIONS for metric in UNIT_METRICS]
+          + ['rise', 'mas'])
 CONTRASTS = {'reference_change': ('DT', 'DT_full_reference'),
              'new_DT_minus_live_FT': ('DT', 'FT'),
              'old_DT_minus_live_FT': ('DT_full_reference', 'FT')}
@@ -50,11 +54,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run', type=Path, required=True)
     parser.add_argument('--publication', type=Path, required=True)
+    parser.add_argument('--data', type=Path, required=True)
+    parser.add_argument('--tokenizer', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--allow-smoke', action='store_true')
     parser.add_argument('--completed-tasks-only', action='store_true',
                         help='Interim report for complete task shards; never include a task prefix or label it the full suite.')
     args = parser.parse_args()
+    from tokenizers import Tokenizer
+    tokenizer = Tokenizer.from_file(str(args.tokenizer))
     suite = json.loads((args.run / 'suite_status.json').read_bytes())
     assert suite['status'] == 'complete' or (args.completed_tasks_only and suite['status'] == 'running')
     smoke = suite['plan']['stage'] == 'smoke'
@@ -72,15 +80,19 @@ def main():
     release = json.loads((ROOT / 'experiments/official/protocol.json').read_bytes())
     fractions = json.loads((ROOT / 'experiments/official/source_protocol.json').read_bytes())['budget_fractions']
     assert fractions == FRACTIONS
-    rng = np.random.default_rng(73)
+    # A task keeps the same resamples in interim and final reports, regardless
+    # of execution priority or which other tasks have already completed.
+    task_rngs = {task: np.random.default_rng(np.random.SeedSequence(73, spawn_key=(index,)))
+                 for index, task in enumerate(SUPPORTED_TASKS)}
     records, task_reports, bootstrap_by_task, means_by_task, receipts = [], {}, {}, {}, []
-    costs = []
+    costs, cache_receipts = [], []
     for task in expected_tasks:
         receipt = receipts_by_task[task]
         folder = args.run / task
         assert digest(folder / 'results.json') == receipt['results_sha256']
         report = json.loads((folder / 'results.json').read_bytes())
         assert report['paired_reference_audit'] and report['evaluation_protocol'] == 'source-v2'
+        assert report['sentence_recovery_enabled']
         assert report['selection'] == ('smoke' if smoke else 'paper')
         assert report['selected_counts'] == {task: 1 if smoke else release['tasks'][task]['count']}
         assert len(report['cases']) == receipt['cases'] == report['selected_counts'][task]
@@ -93,6 +105,10 @@ def main():
         if not smoke:
             assert report['weight_identity'] == old['weight_identity']
         old_cases = {r['index']: r for r in old['cases']}
+        cache_path = args.data / (task + '.jsonl')
+        assert digest(cache_path) == release['tasks'][task]['cache_sha256']
+        caches = [json.loads(line) for line in cache_path.read_text(encoding='utf-8').splitlines()]
+        cache_receipts.append({'dataset': task, 'cache_sha256': digest(cache_path)})
         comparison_rows = []
         absolute_rows, tie_rows = [], []
         fresh_legacy_max_abs = []
@@ -103,8 +119,17 @@ def main():
                 for field in ('input_ids', 'input_sha256', 'prompt_length', 'target_length', 'user_positions', 'gold'):
                     assert row[field] == before[field], (task, row['index'], field)
                 assert row['author_keep'] == before['keep']
+                prompt = caches[row['index']]['prompt']
+                encoding = tokenizer.encode(' ' + prompt, add_special_tokens=False)
+                actual_ids = np.asarray(row['input_ids'])[row['user_positions']]
+                assert len(encoding.ids) == len(actual_ids)
+                assert np.flatnonzero(np.asarray(encoding.ids) != actual_ids).tolist() == row['standalone_token_boundary_differences']
+                span = source_span(task, prompt)
+                assert span == row['source_span']
+                assert select_source_tokens(span, encoding.offsets, row['author_keep'], row['gold']) == row['keep']
                 assert hashlib.sha256(np.asarray(row['input_ids'], dtype=np.int64).tobytes()).hexdigest() == row['input_sha256']
                 eos = row['input_ids'][-1]
+                assert eos == tokenizer.token_to_id('<|im_end|>')
                 for field, keep in [('reference_input_sha256', row['keep']),
                                     ('full_prompt_reference_input_sha256', row['author_keep'])]:
                     altered = np.asarray(row['input_ids'], dtype=np.int64).copy()
@@ -129,6 +154,15 @@ def main():
                     vector_name = key + ('_' + method + '_positive_prompt' if method.startswith('DT') else '_' + method + '_prompt')
                     score = vectors[vector_name]
                     assert np.isfinite(score).all()
+                    if method != 'FT_K3':
+                        positive = np.maximum(score, 0)
+                        steps = min(20, len(row['keep']))
+                        base, remainder = divmod(len(row['keep']), steps)
+                        for step, deleted in enumerate(row['metrics'][method]['deleted_user_indices']):
+                            assert len(deleted) == step * base + min(step, remainder)
+                            remaining_tokens = sorted(set(row['keep']) - set(deleted))
+                            if deleted and remaining_tokens:
+                                assert positive[deleted].min() >= positive[remaining_tokens].max(), (key, method, 'deletion ranking')
                     calculated = recovery_curve(score, row['keep'], row['gold'], FRACTIONS)
                     saved = row['FT_K3_recovery'] if method == 'FT_K3' else row['metrics'][method]['recovery']
                     assert calculated == saved, (key, method, 'recovery recomputation')
@@ -143,6 +177,9 @@ def main():
                         record[method + '_tie10_' + name] = value
                     values = [point[metric] for point in saved['points']
                               for metric in ('recall', 'precision', 'ceiling_adjusted_recall')]
+                    units = row['FT_K3_sentence_recovery'] if method == 'FT_K3' else row['metrics'][method]['sentence_recovery']
+                    assert sentence_recovery_curve(prompt, span, encoding.offsets, score, row['keep'], row['gold'], FRACTIONS) == units
+                    values += [point[metric] for point in units['points'] for metric in UNIT_METRICS]
                     values += [row['metrics'][method][f] for f in ('rise', 'mas')] if method != 'FT_K3' else [np.nan, np.nan]
                     method_values[method] = np.asarray(values, dtype=np.float64)
                     for field, value in zip(FIELDS, values):
@@ -163,7 +200,7 @@ def main():
         data = np.stack(comparison_rows)
         assert np.isfinite(data).all()
         flattened = data.reshape(len(data), -1)
-        boot = paired_bootstrap(flattened, rng).reshape(10000, len(CONTRASTS), len(FIELDS))
+        boot = paired_bootstrap(flattened, task_rngs[task]).reshape(10000, len(CONTRASTS), len(FIELDS))
         bootstrap_by_task[task] = boot
         means_by_task[task] = data.mean(axis=0)
         task_reports[task] = {'count': len(data), 'contrasts': {
@@ -201,8 +238,12 @@ def main():
         'scope': 'smoke_execution_only' if smoke else 'complete_task_interim' if interim else 'full_1048_paired_evaluation',
         'quality_conclusion_allowed': not smoke, 'case_count': len(records), 'task_count': len(expected_tasks),
         'full_suite_complete': not smoke and not interim, 'remaining_tasks': remaining,
+        'deletion_ranking_verified_from_saved_vectors': True,
         'protocol_sha256': digest(HERE / 'PROTOCOL.md'), 'analysis_sha256': digest(Path(__file__)),
-        'bootstrap': {'draws': 10000, 'seed': 73, 'unit': 'paired cases within each fixed task'},
+        'tokenizer_sha256': digest(args.tokenizer), 'data_caches_verified': cache_receipts,
+        'sentence_curves_verified_from_saved_vectors': True,
+        'bootstrap': {'draws': 10000, 'seed': 73, 'unit': 'paired cases within each fixed task',
+                      'streams': 'SeedSequence(73, spawn_key=(fixed SUPPORTED_TASKS index,))'},
         'difference_direction': 'new minus comparator; recovery higher is better; RISE/MAS lower is better',
         'tasks': task_reports, 'groups': group_reports, 'source_receipts': receipts,
         'measured_call_seconds': sum(c['seconds'] for c in costs),

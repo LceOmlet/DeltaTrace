@@ -22,12 +22,13 @@ def main():
         manifest = json.loads((args.source / 'manifest.json').read_bytes())
         for row in manifest['files']:
             relative = Path(row['path'])
-            assert not relative.is_absolute() and '..' not in relative.parts
+            assert not relative.is_absolute() and not relative.drive and '..' not in relative.parts
             compressed = (args.source / (row['path'] + '.gz')).read_bytes()
             assert digest(compressed) == row['compressed_sha256']
             data = gzip.decompress(compressed)
             assert digest(data) == row['sha256'] and len(data) == row['bytes']
             destination = args.output / relative
+            assert destination.resolve().is_relative_to(args.output.resolve())
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(data)
         print(json.dumps({'status': 'restored_and_verified', 'files': len(manifest['files'])}))
