@@ -1,0 +1,86 @@
+{
+  "version": "qwen3-root-batched-checks-pilot-v1",
+  "author_commit": "075e7e44ae4d5acd2ed76e0d2aced57107d02736",
+  "dt_head": "faa09be6d0b0d799aa5f77798115416b3f72a5a0",
+  "exp1_sha256": "e073abadeb20df0fedcfd55acd0061489d0f51813bc8c1486e28ca42c2b28951",
+  "original_normalized_sources": {
+    "llm_attr.py": "a141e5c346681dc4c29cd62ee07561e93882d4f56b7fd95788743ee8ef403979",
+    "llm_attr_eval.py": "df117c5d02b8960f72a00a74e07c071812ff7cd41c2fbcf9b1e78f485e7e8fda",
+    "ifr_core.py": "35a57668a007f7a57635f15b75c33a9c8f4540971091a7db6b931bf3f7bc9958",
+    "ft_ifr_improve.py": "583f4b7d0426407eb9a517f173365762860a1f4382f472dffb5c07de7d3e94a1",
+    "exp/exp2/run_exp.py": "3c9d3f241fd180c453ea247eafa3deb395d4a16aad72fbe511c902e0ed8d44e5",
+    "exp/exp2/dataset_utils.py": "26bc50217725d18ea5efd5a94d8440c5d56c79d7e091e23f68eaf91670dd9e00",
+    "shared_utils.py": "0d3e68a6656728369ad2f99300859b38d584e7c7676352441a92187ead7cba67"
+  },
+  "input_lengths": [
+    128,
+    1024
+  ],
+  "output_lengths": [
+    32
+  ],
+  "sample_batch": 1,
+  "DT_endpoint_batch": 2,
+  "original_repeats": 3,
+  "additional_warm_core_repeats": 3,
+  "additional_audit_calls_per_successful_cell": 1,
+  "methods": [
+    "deltatrace_retained"
+  ],
+  "IG_steps": 20,
+  "IG_internal_batch": "unmodified author compute_batch_size capped at 20 inside IG; not 20 independent samples",
+  "FT_chunks": [
+    128,
+    32
+  ],
+  "IFR_all_positions_sink_chunk": 1,
+  "context_limit_definition": "Target user prompt <=1024; report actual formatted prompt plus fixed 32-token output and EOS separately.",
+  "Qwen35_adapter": "Official e81b3be50a48dcfc652fbf1b530069b552736e66 classes; original exp1 input/target builders and timing helpers; bfloat16 pinned native model. Explicit formatted prompt, use_chat_template=False.",
+  "model_loads_separate": true,
+  "method_process_isolation": true,
+  "timing_GPU_serial": true,
+  "qwen3_model_loading": "unmodified author exp1 load_model_balanced, float16 eager",
+  "DT_backend": "previously retained current backend; no new speed changes",
+  "quality_claims": false,
+  "base_text": "author default RULER file when available, otherwise exact author RULER fallback text. ",
+  "method_timeout_seconds": 7200,
+  "restoration": "Before every Qwen3.5 method, check all previously audited native FLA stage hashes. Restore the already used one-stage schedule and two upstream WY layout expressions; no new native arithmetic change.",
+  "previous_failed_attempts": [
+    "qwen35_ifr_multi_hop_both",
+    "qwen35_ifr_multi_hop"
+  ],
+  "qwen35_native_autotune_environment": {
+    "TRITON_ENABLE_PERSISTENT_AUTOTUNE_CONFIGS": "0"
+  },
+  "unchanged_qwen3_reference": "The completed v1 Qwen3 DT/FT calls remain the reference; no Qwen3 rerun or code/method change.",
+  "candidate_modes": {
+    "qwen3": [
+      "retained",
+      "root_tape",
+      "root_batched"
+    ]
+  },
+  "criterion": "Same complete signed vector and original capture checks; compare three ordinary full measured calls per mode with alternating/reversed ordering, all diagnostics retained.",
+  "candidate_scope": "Retain actual native root tensors instead of decoder replay; optionally compile identical per-layer validation predicates into one group. No native or finite mathematical replacement.",
+  "API": "Existing native module hooks/sys.setprofile; torch.compile on existing exact predicates. No sys.monitoring in this candidate.",
+  "pilot_input_lengths": [
+    128,
+    1024
+  ],
+  "confirmation_input_lengths": [
+    128,
+    256,
+    512,
+    1024
+  ],
+  "parent_benchmark_sha256": "eb5bd45e572971f42e2d64fbc86f6691c444bd3d4df0bdee2e1acc727412ba75",
+  "candidate_files": {
+    "benchmark_batched_checks.py": "9a21f47d23bfaf2d975017c38c31f4c51e30f14fbb1a7b4c4507c55035c36158",
+    "qwen3_root_tape.py": "7ac7d46eccb62ee6d796acc4afb8b82b565d3e1cd81e0c95522fb5384f1437a0",
+    "qwen3_root_tape_batched.py": "b8e0aade391131e745a4d723f253a53403d38e16b3239f086fd70f6715e23bbc",
+    "batched_validation.py": "ee0943f0539fa7262443038ef3f0391728b11534c6d14205cb9dc23d5f1a749a"
+  },
+  "rationale": "Native replay repeats all 36 decoders. Retain native root intermediates within B1<=1k memory budget, then use unchanged finite propagation. No model/kernel replacement or cross-call cache.",
+  "preliminary_gate": "Both input lengths must reduce complete latency >=3% and preserve full vectors for further efficiency work. Final user goal requires all four lengths faster than both frozen FT entries; pilot improvement alone is insufficient.",
+  "mutation_audit": "Separate output audit clones every captured tensor and strictly compares before consumption; clones are not in timing calls."
+}

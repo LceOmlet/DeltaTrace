@@ -1,0 +1,112 @@
+{
+  "version": "qwen3-compiled-safe-casts-pilot-v1",
+  "author_commit": "075e7e44ae4d5acd2ed76e0d2aced57107d02736",
+  "dt_head": "faa09be6d0b0d799aa5f77798115416b3f72a5a0",
+  "exp1_sha256": "e073abadeb20df0fedcfd55acd0061489d0f51813bc8c1486e28ca42c2b28951",
+  "original_normalized_sources": {
+    "llm_attr.py": "a141e5c346681dc4c29cd62ee07561e93882d4f56b7fd95788743ee8ef403979",
+    "llm_attr_eval.py": "df117c5d02b8960f72a00a74e07c071812ff7cd41c2fbcf9b1e78f485e7e8fda",
+    "ifr_core.py": "35a57668a007f7a57635f15b75c33a9c8f4540971091a7db6b931bf3f7bc9958",
+    "ft_ifr_improve.py": "583f4b7d0426407eb9a517f173365762860a1f4382f472dffb5c07de7d3e94a1",
+    "exp/exp2/run_exp.py": "3c9d3f241fd180c453ea247eafa3deb395d4a16aad72fbe511c902e0ed8d44e5",
+    "exp/exp2/dataset_utils.py": "26bc50217725d18ea5efd5a94d8440c5d56c79d7e091e23f68eaf91670dd9e00",
+    "shared_utils.py": "0d3e68a6656728369ad2f99300859b38d584e7c7676352441a92187ead7cba67"
+  },
+  "input_lengths": [
+    128,
+    256
+  ],
+  "output_lengths": [
+    32
+  ],
+  "sample_batch": 1,
+  "DT_endpoint_batch": 2,
+  "original_repeats": 3,
+  "additional_warm_core_repeats": 3,
+  "additional_audit_calls_per_successful_cell": 1,
+  "methods": [
+    "deltatrace_retained"
+  ],
+  "IG_steps": 20,
+  "IG_internal_batch": "unmodified author compute_batch_size capped at 20 inside IG; not 20 independent samples",
+  "FT_chunks": [
+    128,
+    32
+  ],
+  "IFR_all_positions_sink_chunk": 1,
+  "context_limit_definition": "Target user prompt <=1024; report actual formatted prompt plus fixed 32-token output and EOS separately.",
+  "Qwen35_adapter": "Official e81b3be50a48dcfc652fbf1b530069b552736e66 classes; original exp1 input/target builders and timing helpers; bfloat16 pinned native model. Explicit formatted prompt, use_chat_template=False.",
+  "model_loads_separate": true,
+  "method_process_isolation": "Pilot DT modes intentionally alternate within one model process; no FT in pilot.",
+  "timing_GPU_serial": true,
+  "qwen3_model_loading": "unmodified author exp1 load_model_balanced, float16 eager",
+  "DT_backend": "Explicit root retention and grouped checks candidate, with optional compiled finite-FA input preparation.",
+  "quality_claims": false,
+  "base_text": "author default RULER file when available, otherwise exact author RULER fallback text. ",
+  "method_timeout_seconds": 7200,
+  "restoration": "Before every Qwen3.5 method, check all previously audited native FLA stage hashes. Restore the already used one-stage schedule and two upstream WY layout expressions; no new native arithmetic change.",
+  "previous_failed_attempts": [
+    "qwen35_ifr_multi_hop_both",
+    "qwen35_ifr_multi_hop"
+  ],
+  "qwen35_native_autotune_environment": {
+    "TRITON_ENABLE_PERSISTENT_AUTOTUNE_CONFIGS": "0"
+  },
+  "unchanged_qwen3_reference": "retained executes in the same process for full-vector comparison. Fixed FT will be measured again in final isolated processes.",
+  "candidate_modes": {
+    "qwen3": [
+      "retained",
+      "root_rope",
+      "root_safe_cast"
+    ]
+  },
+  "criterion": "Both short bins require >=3% mean improvement vs root_rope and exact complete vectors/math diagnostics; retain all repeats.",
+  "candidate_scope": "Only final RMSNorm, MLP residual-two and attention layout cast fusion; keep original materialized FP32 Q/K norms and attention residual-three uniformly at every layer.",
+  "API": "Existing native capture hooks and CPython monitoring; torch.compile on literal original buffer expressions.",
+  "pilot_input_lengths": [
+    128,
+    256
+  ],
+  "confirmation_input_lengths": [
+    128,
+    256,
+    512,
+    1024
+  ],
+  "parent_benchmark_sha256": "eb5bd45e572971f42e2d64fbc86f6691c444bd3d4df0bdee2e1acc727412ba75",
+  "candidate_files": {
+    "benchmark_local_root.py": "b3f1bf7179a95554b9bacd3a515f09bb3ef2f010865dffbbda1726604d79fed9",
+    "qwen3_root_local.py": "f444d85b97cc31640539d16d5f53497d338eefc24d23e6686a4d43abbd76289c",
+    "native_capture_events.py": "e1c0bcdcb64c5ba2371d6372863f4e5fe177263b839c2a819808912213007a93",
+    "qwen3_root_tape.py": "7ac7d46eccb62ee6d796acc4afb8b82b565d3e1cd81e0c95522fb5384f1437a0",
+    "qwen3_root_tape_batched.py": "b8e0aade391131e745a4d723f253a53403d38e16b3239f086fd70f6715e23bbc",
+    "batched_validation.py": "ee0943f0539fa7262443038ef3f0391728b11534c6d14205cb9dc23d5f1a749a",
+    "compiled_fa_inputs.py": "b813f4e4be56b321539e8e54b52c9531899a9b40e922f4e33e5cb7fe482f5964",
+    "compiled_fa_runtime.py": "4d9fbccabc85c373959e5559265b20596a86913c775462c5b02775af52098345",
+    "batched_validation_fast.py": "c2ed36b3d4720ee290762f4ad18307da80519aae71572642be6c0d52edebe690",
+    "qwen3_root_compiled.py": "07fdb370f050fba3a0b7befea5cc1f63d3f70066295a98e029d7d248236e42ab",
+    "benchmark_fused_inputs.py": "5886e1d2f50578546496a60c2c28b46ff43550e55fd42bb19a4f657f21556300",
+    "batched_validation_rope.py": "b93e8a5072da460a342e661ca38e262708008ccf07134f79a339b484b38b4e60",
+    "qwen3_rope_finite.py": "0159ad2d111248e0df5cfba0918eb78456c9e917257f77b3b435b359edec6b05",
+    "qwen3_root_rope.py": "1e12538d1ae0a0e8c75278c937bf430af158f0113a5d673cdddbac7532992cc9",
+    "benchmark_rope_checks.py": "5ac8f8d6dcd4b2b838ee73a691562a6c2a7e3eb7bcd88db9918b0fe970f41f1c",
+    "qwen3_cast_boundaries.py": "13e8660e88d93d0f93d27f7d752a4d10be807deeb03145cc18a31a7728f252ae",
+    "qwen3_cast_finite.py": "a85acb92decb6b9237dda1f8d980448d24f99d726d3eb8ea33e83ef14ec29964",
+    "qwen3_root_cast.py": "b07a1d94fa5d6f8807a91d519b50abdf2c63df4d1aed5b1c804eb33c130f51b1",
+    "benchmark_cast_boundaries.py": "ec3d1b5d5b93a80cf264f76017cdaf811581805be871974415579aa3f8845c85",
+    "qwen3_safe_cast_finite.py": "b7ef5a48b7a5f3524a6bfa4152f04075cbe5e6fd0a255a3a150b3a092b61b594",
+    "qwen3_root_safe_cast.py": "00335003a11599825599aed6dbdf6b1640dd41ca38796efa30d9a6019fbd0bd1",
+    "benchmark_safe_casts.py": "fb5e716313353e7cc4e54bc19108d0e062b8afca911c336b0a79368fa8ee7cf2"
+  },
+  "rationale": "Actual per-boundary diagnostic found all 108 layout outputs, 36 MLP norm outputs and final norm exact. Q/K and residual-three differed by FP32 roundoff, so their cast/grouping changes are not retained. No per-layer routing.",
+  "preliminary_gate": "Both input lengths must reduce complete latency >=3% and preserve full vectors for further efficiency work. Final user goal requires all four lengths faster than both frozen FT entries; pilot improvement alone is insufficient.",
+  "mutation_audit": "Separate output audit clones every captured tensor and strictly compares before consumption; clones are not in timing calls.",
+  "compiled_input_reference_sha256": "b46e1fe00d716710860b76cec47021354e17fcc0ad0e81d766a2f7c9fe35fbd2",
+  "scheduling": {
+    "warm_calls_per_mode_length": 1,
+    "measured_calls_per_mode_length": 3,
+    "audit_calls_per_mode_length": 1,
+    "profile_calls": 0
+  },
+  "reference_finite_sha256": "0159ad2d111248e0df5cfba0918eb78456c9e917257f77b3b435b359edec6b05"
+}
