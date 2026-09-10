@@ -2,7 +2,7 @@
 
 默认协议为 [`source-v2`](source_protocol.json)：只在证据正文内构造 DT reference、做 RISE/MAS 删除和计算 recovery。旧的全 prompt 协议显式使用 `--evaluation-protocol released-v1`；原 [`protocol.json`](protocol.json)、原始结果和冻结方法源码保留。
 
-**效果状态：正文 reference 使 Recall 变差，不能作为 needle 修复推荐。** VT H4-C1 全部 100 例下降 4.55 点，HotpotQA 全部 48 例下降 8.69 点。当前检验“保留原 reference、正文内使用句聚合排序”的 Recall 修复，DT 与 FT 使用同样 token 预算；16 例开发后固定了方案，80 例留出验证正在运行。见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
+**效果状态：正文 reference 使 Recall 变差，不能作为 needle 修复推荐。** VT H4-C1 全部 100 例下降 4.55 点，HotpotQA 全部 48 例下降 8.69 点。保留原 reference、正文内句聚合的 80 例留出验证也没有建立共同优势，主要失败来自多链 VT。后续开发对照中，只解释生成的最终答案让多链 VT 的两种方法均恢复到 100%，HotpotQA 仍未胜出。更改参照、聚合与逐层对称分配的负向结果均已保留。见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
 
 ## source-v2 的评分规则
 

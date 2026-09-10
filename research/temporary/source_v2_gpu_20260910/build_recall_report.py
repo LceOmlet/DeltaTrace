@@ -95,7 +95,8 @@ def main():
         axes[0].barh(y+.17, f, .32, label='FT K3 + sentence density', color='#bb6841')
         axes[0].set(yticks=y, yticklabels=LABELS, xlabel='Recall at 10% source-token budget (%)', xlim=(0, 100))
         axes[0].invert_yaxis()
-        axes[0].legend(loc='lower right', fontsize=8)
+        handles, labels = axes[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc='lower center', ncol=2, fontsize=9, frameon=False)
         contrasts = [report['paired_contrasts'][choice][t]['0.1'] for t in TASKS]
         x = np.array([c['mean_difference'] for c in contrasts]) * 100
         low = np.array([c['ci95'][0] for c in contrasts]) * 100
@@ -109,7 +110,7 @@ def main():
             ax.grid(axis='x', alpha=.2)
             ax.set_axisbelow(True)
         fig.suptitle('Frozen Recall repair: 80 reserved cases, 16 per task', fontsize=13)
-        fig.tight_layout()
+        fig.tight_layout(rect=[0, .07, 1, 1])
         fig.savefig(a.analysis / 'recall_validation.png', dpi=180)
         plt.close(fig)
         lines.insert(6, '![Reserved-case Recall comparison](recall_validation.png)\n')
