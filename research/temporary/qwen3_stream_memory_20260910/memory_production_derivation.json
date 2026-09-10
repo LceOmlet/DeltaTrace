@@ -1,0 +1,149 @@
+{
+  "runtime": {
+    "deltatrace/accelerated/qwen3/qwen3_native_graph_replay.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/remat_native_replay.py",
+      "source_sha256": "249894a2195505ba88180f0ad2ed8ad584c4ced42d432e6457307f91ca844c83",
+      "sha256": "249894a2195505ba88180f0ad2ed8ad584c4ced42d432e6457307f91ca844c83",
+      "module_renames": [],
+      "explicit_code_changes": [],
+      "metadata_changes": false
+    },
+    "deltatrace/accelerated/qwen3/qwen3_rematerialized_graph.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/remat_qwen3_graph.py",
+      "source_sha256": "cd6fe4883f53ca1071c2eef00ac1d94655cade0b9614ddb0ccb3dfdae95687df",
+      "sha256": "f33b82dba93094c153a416c4b64b15b477632d5393beea34346ff8c116c0be9e",
+      "module_renames": [
+        [
+          "remat_native_replay",
+          "qwen3_native_graph_replay"
+        ]
+      ],
+      "explicit_code_changes": [],
+      "metadata_changes": false
+    },
+    "deltatrace/accelerated/qwen3/qwen3_whole_graph_core.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/whole_exact_target_head_base.py",
+      "source_sha256": "04716dcfa1eabc3ea4d26a9c65b5e026087f4016cad110d7fe282cf30bd6f2bd",
+      "sha256": "08d48cde905003025dde795085b2109771b766735461ed3cb909080e3e2ac319",
+      "module_renames": [
+        [
+          "remat_qwen3_graph",
+          "qwen3_rematerialized_graph"
+        ]
+      ],
+      "explicit_code_changes": [
+        [
+          "        self.parameter_versions=[(p,p._version) for p in model.parameters()]",
+          "        from qwen3_fixed_graph_contract import FixedModelGraphContract\n        self.contract=FixedModelGraphContract(model)"
+        ],
+        [
+          "            for parameter,version in self.parameter_versions:assert parameter._version==version",
+          "            self.contract.validate()"
+        ]
+      ],
+      "metadata_changes": false
+    },
+    "deltatrace/accelerated/qwen3/qwen3_native_projection_reuse.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/native_projection_sac_v4.py",
+      "source_sha256": "acf464a1098d5ce57780b6cc5754758e7e086b5165e8660586d2d3c697e69d6e",
+      "sha256": "7e5a45e9350c9c5794156f5d24d4c80e8f2a4a2e220a20e159ebac85f1cc38a4",
+      "module_renames": [],
+      "explicit_code_changes": [
+        [
+          "index>=len(model.model.layers)-2",
+          "index>=len(model.model.layers)-12"
+        ]
+      ],
+      "metadata_changes": true
+    },
+    "deltatrace/accelerated/qwen3/qwen3_lifetime_finite.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/remat_finite_lifetime_v4.py",
+      "source_sha256": "42921cd9a0035a98c5db9daf4c86e8742d73adb0d965c7fb4606b2a2a3409e2a",
+      "sha256": "065d346cb74811ca37b57d52463d2a4e412295637229cd0e2b860304c67550bf",
+      "module_renames": [
+        [
+          "half_projection_boundaries_v4",
+          "qwen3_projection_cast_boundaries"
+        ],
+        [
+          "qwen3_cast_boundaries",
+          "qwen3_input_cast_boundaries"
+        ]
+      ],
+      "explicit_code_changes": [],
+      "metadata_changes": false
+    },
+    "deltatrace/accelerated/qwen3/qwen3_projection_cast_boundaries.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/half_projection_boundaries_v4.py",
+      "source_sha256": "b2854c7e33eac25a4fd171dcdc4f216eff9322c2d9008e9998361d3a756a4dde",
+      "sha256": "b2854c7e33eac25a4fd171dcdc4f216eff9322c2d9008e9998361d3a756a4dde",
+      "module_renames": [],
+      "explicit_code_changes": [],
+      "metadata_changes": false
+    },
+    "deltatrace/accelerated/qwen3/qwen3_input_cast_boundaries.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/qwen3_cast_boundaries.py",
+      "source_sha256": "13e8660e88d93d0f93d27f7d752a4d10be807deeb03145cc18a31a7728f252ae",
+      "sha256": "13e8660e88d93d0f93d27f7d752a4d10be807deeb03145cc18a31a7728f252ae",
+      "module_renames": [],
+      "explicit_code_changes": [],
+      "metadata_changes": false
+    },
+    "deltatrace/accelerated/qwen3/qwen3_memory_graph_build.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/persistent_graph_build_v2.py",
+      "source_sha256": "b7d1c294370d6b1336c62a61e371bceee449c8ee57f6c8b12609d33599ec96d1",
+      "sha256": "05e0e51c801389f7b4897670197067721b5e009a3454a67cd0b1ab43337f5740",
+      "module_renames": [],
+      "explicit_code_changes": [],
+      "metadata_changes": true
+    },
+    "deltatrace/accelerated/qwen3/qwen3_memory_efficient_graph.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/whole_sac_lifetime_v4.py",
+      "source_sha256": "016c054c4b5f676c41d311817e7935870d77942fab97065b195744f96fd596a3",
+      "sha256": "61b67dddc5b1ce525b113010a290cb5c1d2ef57f27fef33aa066e1229c3d975f",
+      "module_renames": [
+        [
+          "remat_qwen3_graph",
+          "qwen3_rematerialized_graph"
+        ],
+        [
+          "whole_exact_target_head_base",
+          "qwen3_whole_graph_core"
+        ],
+        [
+          "native_projection_sac_v4",
+          "qwen3_native_projection_reuse"
+        ],
+        [
+          "remat_finite_lifetime_v4",
+          "qwen3_lifetime_finite"
+        ],
+        [
+          "persistent_graph_build_v2",
+          "qwen3_memory_graph_build"
+        ]
+      ],
+      "explicit_code_changes": [],
+      "metadata_changes": false
+    },
+    "deltatrace/accelerated/qwen3/qwen3_fixed_graph_contract.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/fixed_model_graph_contract.py",
+      "source_sha256": "5c0328a0f8af867c8a2d72e0a8bcef757a7b2a261181ea009a3b0450598887d5",
+      "sha256": "4786a56184e89f4f22130504c52c7da36f9bf87e946b58b19fe60c784494dee8",
+      "module_renames": [],
+      "explicit_code_changes": [],
+      "metadata_changes": true
+    },
+    "deltatrace/accelerated/qwen3/qwen3_shared_mean_fa.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/vendor_fa_finite_shared_mean_reuse_runtime.py",
+      "source_sha256": "e29916d969f09e12df7d3e66da497faffd2e7cbf6b9356c3bc525380e3ef4972",
+      "sha256": "b88ac47214be635a537d3d6bd6e6fc2c6ac98fb38d785ff3d8c3068940617829",
+      "module_renames": [],
+      "explicit_code_changes": [],
+      "metadata_changes": false
+    }
+  },
+  "factory_sha256": "6fd9555973f924038a1735bbdc7d429ed9225e2a5009e185b1aabb63869fe62c",
+  "manifest_sha256": "35c2c967a2a19f87343eb1de134cca4bd41f491c870c9d498cd595c328a157e3",
+  "additional_policy": "Production leaves12 uncached final-layer q outputs instead of2 in pilotv4, because graph-pool reserved still exceeded FT by23MB afterv4. Saves additional148MB atN905 with ten actual native q GEMMs retained. Full model contract and all its CPU costs added before replay; independent final candidate measurement required."
+}

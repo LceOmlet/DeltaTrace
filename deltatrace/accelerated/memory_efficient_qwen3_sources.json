@@ -1,0 +1,52 @@
+{
+  "version": "qwen3-memory-efficient-whole-graph-v4",
+  "base_chain": [
+    {
+      "path": "deltatrace/accelerated/root_retained_qwen3_sources.json",
+      "sha256": "e0dc1953fded1e42f927e96e92c144c79acac83542fb6be8f4f3f77b608824ed",
+      "parent_field": "base_retained_manifest_sha256"
+    },
+    {
+      "path": "deltatrace/accelerated/graphed_qwen3_sources.json",
+      "sha256": "74922d5bf207e98700585e5b13a6199c3ca08165ac4bc5d8894c04fb79fa5324",
+      "parent_field": "base_root_retained_manifest_sha256"
+    }
+  ],
+  "files": {
+    "deltatrace/accelerated/qwen3/qwen3_native_graph_replay.py": "249894a2195505ba88180f0ad2ed8ad584c4ced42d432e6457307f91ca844c83",
+    "deltatrace/accelerated/qwen3/qwen3_rematerialized_graph.py": "f33b82dba93094c153a416c4b64b15b477632d5393beea34346ff8c116c0be9e",
+    "deltatrace/accelerated/qwen3/qwen3_whole_graph_core.py": "60cf33e637d26327224fbbd6c14acc4c30756ee968f334aaad6ed6338b1d5a8e",
+    "deltatrace/accelerated/qwen3/qwen3_native_projection_reuse.py": "8f8ebf809e249cfb2063184d145a636829f012d277c2bb3bdd6c4aa3dc9bb503",
+    "deltatrace/accelerated/qwen3/qwen3_lifetime_finite.py": "1bc9dd52682f340d5544884338502fdb49ff6d2f5e048ba7c7fe8c79aa6eb613",
+    "deltatrace/accelerated/qwen3/qwen3_projection_cast_boundaries.py": "b2854c7e33eac25a4fd171dcdc4f216eff9322c2d9008e9998361d3a756a4dde",
+    "deltatrace/accelerated/qwen3/qwen3_input_cast_boundaries.py": "13e8660e88d93d0f93d27f7d752a4d10be807deeb03145cc18a31a7728f252ae",
+    "deltatrace/accelerated/qwen3/qwen3_memory_graph_build.py": "05e0e51c801389f7b4897670197067721b5e009a3454a67cd0b1ab43337f5740",
+    "deltatrace/accelerated/qwen3/qwen3_memory_efficient_graph.py": "fdc006df21ec857f8219de0dff507ebb06f5a4afca0b9dd53af1ebc48b5bad69",
+    "deltatrace/accelerated/qwen3/qwen3_fixed_graph_contract.py": "4786a56184e89f4f22130504c52c7da36f9bf87e946b58b19fe60c784494dee8",
+    "deltatrace/accelerated/qwen3/qwen3_shared_mean_fa.py": "828c69f6901c46f7f5080f572be0887818477ba8a9c92f17d8f87954daffbe08",
+    "deltatrace/accelerated/memory_efficient_qwen3.py": "6fd9555973f924038a1735bbdc7d429ed9225e2a5009e185b1aabb63869fe62c",
+    "deltatrace/accelerated/qwen3/qwen3_target_logprobs.py": "0073a27fdf798069f1dbd2981bd4b4f32e69077ed4d3f00f2bb5c1730d1e7848",
+    "deltatrace/accelerated/qwen3/qwen3_output_template.py": "a10c13406cbc869b24681a48a0d29ef86d4740d5b8d4b252c0289ccf429cabbe"
+  },
+  "modules": [
+    "qwen3_native_graph_replay",
+    "qwen3_rematerialized_graph",
+    "qwen3_whole_graph_core",
+    "qwen3_native_projection_reuse",
+    "qwen3_lifetime_finite",
+    "qwen3_projection_cast_boundaries",
+    "qwen3_input_cast_boundaries",
+    "qwen3_memory_graph_build",
+    "qwen3_memory_efficient_graph",
+    "qwen3_fixed_graph_contract",
+    "qwen3_shared_mean_fa",
+    "qwen3_target_logprobs",
+    "qwen3_output_template"
+  ],
+  "finite_library_sha256": "28b99bea512211c33887ac773ced6a5b68b058b3f3b30638bd7128183b4b2a86",
+  "finite_kernel_source": "research/prototypes/vendor_fa_finite_p1_mma_register_reuse.cu",
+  "finite_kernel_source_sha256": "fd6dcd378ae7a346fedf13112d1397b8ccbd741d130c42ab95cdcbed5a68bc37",
+  "derivation": "research/temporary/qwen3_stream_memory_20260910/memory_v4_derivation.json",
+  "scope": "Qwen3-8B FP16 B1/E2 fixed eval FA2 model. Original full native model/head/seed/GEMM and FP32 norm boundary unchanged. Same-root SAC with 16 cached q projections at long geometries; original 829 strict predicates plus 36 SAC predicates. Finite FA phase0 32x32/2 warps and phases1/2 64x32/4 warps. Original vendor flash::gemm with owner operands in native MMA registers, unchanged K and reduction order; dead shared A staging reused for B. Complete current vectors and diagnostics, fresh mutable return metadata. All cold compile, graph, copies, validation and return costs charged.",
+  "previous_release_manifest_sha256": "286fbf43bf5ad86ab79032d5457c1a07925c0c8fdb13e0b96ad1e50af67e0a3c"
+}

@@ -1,5 +1,7 @@
 # 临时研究与诊断
 
+最新：[Qwen3完整热调用与固定几何显存双验收、更新rollout曲线](qwen3_stream_memory_20260910/README.md)。
+
 这里保存独立效率研究、诊断及未完成或被撤回的草稿，研究文件本身不是干净方法入口。
 
 [Qwen3短输入B1效率研究](qwen3_short_efficiency_20260910/README.md)已完成四档、两版固定FT的完整热调用验收。通过核验的显式实现位于[deltatrace/accelerated](../../deltatrace/accelerated/GRAPHED_QWEN3.md)；全部失败候选、重复计时、原始向量和复核脚本在研究目录保留。

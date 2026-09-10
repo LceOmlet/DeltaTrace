@@ -1,0 +1,26 @@
+{
+  "vendor_source_parent": "/tmp/codex_vendor_fa_source_gpu_language_20260907_v1",
+  "vendor_parent_sha256": "43000d77cd7fac6539e86fbc8dfbb638b0c4bce7d6cfc4ad4f4ba4f00db16906",
+  "vendor_git_commit": "aef88de756194e077460a1c8b8b341baa429259a",
+  "vendor_source_version": "FA2.5.3",
+  "installed_model_FA_version": "2.6.3+metax3.5.3.9torch2.8",
+  "same_version_source_claim": false,
+  "max_compile_seconds": 600,
+  "study_sha256": "3fe159e9de13ca348e83810477993d48e138c54ab158c0165afcc84d7ec15dff",
+  "extension_sha256": "fd6dcd378ae7a346fedf13112d1397b8ccbd741d130c42ab95cdcbed5a68bc37",
+  "purpose": "Reuse exact owner operands directly in native MMA fragment layout using unchanged vendor flash::gemm<true,false>, following pinned native FA Is_Q_in_regs/Share_Q_K_smem pattern. After owner preload, shared A staging is dead and reused by RHS. Preserve phase0M32/2warp and owner64/4warp, sameN32 and original K/reduction loops. Remove recurring shared-A write/read and reduce shared-memory reservation without numeric rule changes. Require all5outputs exact and full-program pilot before promotion.",
+  "original_extension_sha256": "fee3ad1666ad1cb851a697cbf46eb29e44ed83ca9a37157649db969a3d6f44bd",
+  "shared_memory_bytes": {
+    "phase0": 8192,
+    "phase1": 16384,
+    "phase2": 16384
+  },
+  "budget": {
+    "native_model_forwards": 0,
+    "native_model_backwards": 0,
+    "attribution_calls": 0,
+    "GPU_kernel_launches": 0
+  },
+  "prior_candidate": "fa_mma_owner",
+  "compile_correction": "Original compilation rejected std::max between different CUTE constant types4096 and8192 in host shared-memory size expression. Add explicit int template argument in both host launch sizes only. All GPU program code unchanged; failed source/log archived; no previous GPU operator call occurred."
+}

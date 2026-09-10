@@ -1,0 +1,13 @@
+{
+  "source_release_manifest_sha256": "35c2c967a2a19f87343eb1de134cca4bd41f491c870c9d498cd595c328a157e3",
+  "repair_modules": {
+    "rounding_repaired_finite.py": "5c73ce1638e68320996840fe98414cf2e041cebb3dbd070ac7a1f604cc5d8c42",
+    "rounding_repaired_core.py": "843803da77984e2e9d6f3bda918d6a582040c9c1cde8b9a95ebfbbe9cc2c05c2",
+    "rounding_repaired_graph.py": "f835c0d13fdd8f2cf0842f0b7e1ae91db6a2985383e6c51bcf413bace4093236"
+  },
+  "changes": [
+    "Original full model LM head, original target slice; no selected-row GEMM shape change.",
+    "Original norm_residual_two compiled callable with explicit originalFP32 input conversions."
+  ],
+  "evidence": "rollout_diagnostic and rollout_boundaries; same-input boundary comparisons identify36 norm_two rounding changes, all other changed boundaries andboth FA kernels exact atoutput100; full/native root exact there. Atoutput10 selected native head logits differ up to0.0078125 despite identical target scores."
+}

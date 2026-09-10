@@ -1,6 +1,6 @@
 # DeltaTrace
 
-**本分支最新验收：Qwen3短输入B1的DT完整热调用已在四档快于两版固定FT。** 目标输入128/256/512/1024对应实际完整长度158/265/478/905；新图入口均值151.166/207.285/298.979/531.674毫秒，相对FT Both降低23.08%/14.16%/11.44%/4.89%。两轮及预先冻结的95% bootstrap门槛全部通过，11条原始短样本完整向量/数值诊断一致。显存峰值增至20.879–40.019GB，空编译缓存首次调用31.794秒。见[完整结果与适用范围](research/temporary/qwen3_short_efficiency_20260910/README.md)、[显式入口使用说明](deltatrace/accelerated/GRAPHED_QWEN3.md)和[当前目标记录](docs/current_goal.md)。
+**最新验收：Qwen3短输入B1的DT完整热调用和固定几何GPU容量均优于两版固定FT。** 四档实际总长158/265/478/905 token，DT完整热调用均值135.339/208.298/293.098/509.689毫秒；对两版固定FT降低3.05%–37.89%。两轮轮均值和预先冻结95% bootstrap门槛全部通过；模型加载、初始化及全部冷／热调用的allocated与reserved容量峰值也均低于两版FT。全部11条原作者短样本完整向量与数学诊断精确一致，结束身份核验211项通过。 该结论限于固定输出32的四档协议；冷启动、主机内存及长rollout容量另列。见[完整结果](research/temporary/qwen3_stream_memory_20260910/README.md)、[显式入口](deltatrace/accelerated/MEMORY_EFFICIENT_QWEN3.md)和[唯一更新rollout图](experiments/efficiency/qwen3_rollout_20260911/README.md)。
 
 **Qwen3-8B原表实验已完成13任务、1243条，固定在独立标签[qwen3-8b-table1-clean-v1-20260909](https://github.com/LceOmlet/DeltaTrace/tree/qwen3-8b-table1-clean-v1-20260909)。** 本分支的[Qwen3.5正式任务内B2成本](research/temporary/acceleration_20260909/README.md)已完成，完整归因吞吐提高28.7%、显存约21.644→23.628GB；没有混入Qwen3论文质量表。
 

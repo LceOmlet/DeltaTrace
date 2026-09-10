@@ -1,0 +1,16 @@
+{
+  "whole_base_change": {
+    "source": "whole_remat_sac_base.py",
+    "sha256": "f443833b4fe08fd7d1088ef230e49871ab02358b62833f39386f274290413240",
+    "change": "Native model adds logits_to_keep=ids.shape[1]-prompt_len+1; read result.logits[:,:-1] and assert row count. All other root staging unchanged."
+  },
+  "finite_change": "Only replace expanded K/V repeat_interleave inputs with their original compact native views; outputs and FP32 query-head reduction unchanged. Prior loop-local release retained.",
+  "files": {
+    "whole_selected_head_base.py": "00b03d281ae5f498fdb00c9803a40d49c208d799bde37999a0ce824b252e7fae",
+    "remat_finite_compact_fa.py": "57996da8584a809044d3e8b18441ca6b9cec1ddd6c37c9d331f99ac426fe7ac1",
+    "vendor_fa_finite_shared_mean_reuse_runtime.py": "e29916d969f09e12df7d3e66da497faffd2e7cbf6b9356c3bc525380e3ef4972",
+    "whole_sac_fa_head.py": "05c9167b8631e1d4586256d173886a06ffbb963977f7270ae8536bde20a1bcf2",
+    "benchmark_sac_fa_head.py": "35c665ead959614322aa754a30d752c16e57b1fd9f51c6b4460f1f5f26f259fe",
+    "sac_fa_head_protocol.json": "5edec997b906176a585126ecacad5055f9e5aa5dcfaddc93dbf0861548e8ad5b"
+  }
+}

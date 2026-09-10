@@ -1,0 +1,67 @@
+{
+  "finite_source": "remat_finite_compact_fa.py",
+  "finite_source_sha256": "57996da8584a809044d3e8b18441ca6b9cec1ddd6c37c9d331f99ac426fe7ac1",
+  "finite_exact_replacements": [
+    [
+      "from compiled_secant_boundaries import attention_layout, norm_residual_two, norm_residual_three",
+      "from compiled_secant_boundaries import norm_residual_three\nfrom qwen3_cast_boundaries import attention_layout,norm_residual_two,norm as cast_final_norm"
+    ],
+    [
+      "m_final = torch.zeros_like(f(before['norm_out']))",
+      "m_final = torch.zeros_like(before['norm_out'],device=device,dtype=torch.float32)"
+    ],
+    [
+      "m = norm_back(model.model.norm, f(before['last']), f(after['last']), m_final)",
+      "m = cast_final_norm(before['last'],after['last'],model.model.norm.weight,m_final,model.model.norm.variance_epsilon)"
+    ],
+    [
+      "a = {k: f(raw0[k]) for k in ['kpre', 'mid', 'qpre', 'x']}",
+      "a = {'mid':raw0['mid']}"
+    ],
+    [
+      "b = {k: f(raw1[k]) for k in ['kpre', 'mid', 'qpre', 'x']}",
+      "b = {'mid':raw1['mid']}"
+    ],
+    [
+      "norm_residual_two(a['mid'], b['mid'], f(layer.post_attention_layernorm.weight)",
+      "norm_residual_two(a['mid'], b['mid'], layer.post_attention_layernorm.weight"
+    ],
+    [
+      "            m_x_residual = m_mid",
+      "            del mu,m_product,m_x_gate,m_x_up,silu0,silu1,raw,silu,product\n            a.clear();b.clear()\n            if progress is not None:progress(li,variant,'after_mlp')\n            m_x_residual = m_mid"
+    ],
+    [
+      "q_product=outputs['dq'].float();k_product=outputs['dk'].float();mvr=outputs['dv'].float()",
+      "q_product=outputs['dq'];k_product=outputs['dk'];mvr=outputs['dv']"
+    ],
+    [
+      "norm_back(layer.self_attn.q_norm, a['qpre'], b['qpre'], mqn)",
+      "norm_back(layer.self_attn.q_norm, f(raw0['qpre']), f(raw1['qpre']), mqn)"
+    ],
+    [
+      "norm_back(layer.self_attn.k_norm, a['kpre'], b['kpre'], mkn)",
+      "norm_back(layer.self_attn.k_norm, f(raw0['kpre']), f(raw1['kpre']), mkn)"
+    ],
+    [
+      "norm_residual_three(a['x'], b['x'],",
+      "norm_residual_three(f(raw0['x']), f(raw1['x']),"
+    ],
+    [
+      "del raw0,raw1,raw,silu,product",
+      "del raw0,raw1"
+    ],
+    [
+      "del mu, m_product, m_x_gate, m_x_up, m_mid, m_concat, mout, mqn, mkn, mqp, mkp, mqa, mka, mva, m_x_residual, silu0, silu1",
+      "del m_mid, m_concat, mout, mqn, mkn, mqp, mkp, mqa, mka, mva, m_x_residual"
+    ]
+  ],
+  "cast_helpers_original_sha256": "13e8660e88d93d0f93d27f7d752a4d10be807deeb03145cc18a31a7728f252ae",
+  "files": {
+    "qwen3_cast_boundaries.py": "13e8660e88d93d0f93d27f7d752a4d10be807deeb03145cc18a31a7728f252ae",
+    "remat_finite_lifetime.py": "5bf5ce5eea856728b70ebb0aa5a6030dcf5e02a65ad89d1646d3598c296a54b4",
+    "whole_sac_lifetime.py": "641cff4af299edd2d7d53746f2fea4498619daa831cacf84986297df954cccb8",
+    "persistent_graph_build.py": "ea7af660c6ab8c31c2a8829c8a35a3eaf32b450605c89eedfe2e0c4e96ac0d2c",
+    "benchmark_sac_lifetime.py": "969aa774cf7bbe57af0d71b60a1b27e3b73adc5e0cf7f71b0426b2a3cda07842",
+    "sac_lifetime_protocol.json": "d04ada0a9f505c961dfd923c70a9c889f4788c6bf7a2870a30a25749ca7110d1"
+  }
+}

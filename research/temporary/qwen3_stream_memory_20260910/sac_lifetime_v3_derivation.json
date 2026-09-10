@@ -1,0 +1,38 @@
+{
+  "finite_source": "remat_finite_lifetime_v2.py",
+  "finite_source_sha256": "5f856b8cf17e760b43bd3190ed4452ed033a62c8eacb04603453a94926378154",
+  "finite_exact_replacements": [
+    [
+      "from compiled_swiglu_secant import swiglu_secant_multipliers",
+      "from half_projection_boundaries import swiglu_half as swiglu_secant_multipliers,seed_half as compiled_seed,native_precast_half_linear"
+    ],
+    [
+      "from compiled_logprob_seed import compiled_seed",
+      ""
+    ],
+    [
+      "m_final[0, start:-1] = native_half_linear(seed, model.lm_head.weight)",
+      "m_final[0, start:-1] = native_precast_half_linear(seed, model.lm_head.weight)"
+    ],
+    [
+      "        del m_final",
+      "        del m_final\n        if progress is not None:progress(None,variant,'seed_done')"
+    ],
+    [
+      "m_x_up = linear_back(layer.mlp.up_proj, mu)",
+      "m_x_up = native_precast_half_linear(mu,layer.mlp.up_proj.weight)"
+    ],
+    [
+      "m_x_gate = linear_back(layer.mlp.gate_proj, m_gate)",
+      "m_x_gate = native_precast_half_linear(m_gate,layer.mlp.gate_proj.weight)"
+    ]
+  ],
+  "root_checkpoint_deletion": "Delete head fields after seed/final norm. Delete last only after layer35 boundary checks resolve. Delete checkpoint x[li+1] only after layer li boundary checks resolve; layer0 views retain x until final embedding allocation.",
+  "files": {
+    "half_projection_boundaries.py": "f6e4656e0282893b8d8d56de3e85b540a33858a87bd03717a6d3ac4ec36066fc",
+    "remat_finite_lifetime_v3.py": "6d023a583fcc96536bfe504549dd018b96ba796623d752236766192b6a4b7872",
+    "whole_sac_lifetime_v3.py": "735176dd5316a84463dc21ecffcd5417c257c93dd0cbd839d77446740adf6551",
+    "benchmark_sac_lifetime_v3.py": "24efa5a68d6ef062329967a99027eea684ecf4005e16c8c9b31d0632d64741c4",
+    "sac_lifetime_v3_protocol.json": "3276d13609dedf387828fb7b7af3b7a37cad32dfc9500a91ddbc9ac21b61bc38"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "previous_manifest_sha256": "35c2c967a2a19f87343eb1de134cca4bd41f491c870c9d498cd595c328a157e3",
+  "previous_exact_sources_archive": {
+    "archive": "raw/evidence_optimization_v1.zip",
+    "sha256": "34898188d6ae40f2ef112469fde6d74806dd0594333ce70e60c65d43f389b514",
+    "bytes": 5046563,
+    "files_verified": 187,
+    "all_archive_member_bytes_verified": true,
+    "all_matching_local_candidate_sources_identical": true
+  },
+  "runtime_changes": {
+    "deltatrace/accelerated/qwen3/qwen3_whole_graph_core.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/exact_target_core.py",
+      "source_sha256": "521bde02814faae42a3b904e0d88fa91de9dc2c652330d4a2b6da940177a0007",
+      "sha256": "60cf33e637d26327224fbbd6c14acc4c30756ee968f334aaad6ed6338b1d5a8e",
+      "module_renames": [
+        [
+          "bounded_target_ops",
+          "qwen3_target_logprobs"
+        ]
+      ],
+      "explicit_code_changes": []
+    },
+    "deltatrace/accelerated/qwen3/qwen3_lifetime_finite.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/exact_target_finite.py",
+      "source_sha256": "1bc9dd52682f340d5544884338502fdb49ff6d2f5e048ba7c7fe8c79aa6eb613",
+      "sha256": "1bc9dd52682f340d5544884338502fdb49ff6d2f5e048ba7c7fe8c79aa6eb613",
+      "module_renames": [],
+      "explicit_code_changes": []
+    },
+    "deltatrace/accelerated/qwen3/qwen3_memory_efficient_graph.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/headroom_graph.py",
+      "source_sha256": "f5a80ec2568563ec754fcbfde70188b67b2ee4c52e6e43b73c3cdcca27316f80",
+      "sha256": "61efd7c3833a29c5a86f5bbb6d521795bc99568973c7a73759dd7d9cc1e1f300",
+      "module_renames": [
+        [
+          "exact_target_core",
+          "qwen3_whole_graph_core"
+        ],
+        [
+          "exact_target_finite",
+          "qwen3_lifetime_finite"
+        ],
+        [
+          "headroom_reuse",
+          "qwen3_native_projection_reuse"
+        ]
+      ],
+      "explicit_code_changes": []
+    },
+    "deltatrace/accelerated/qwen3/qwen3_native_projection_reuse.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/headroom_reuse.py",
+      "source_sha256": "8f8ebf809e249cfb2063184d145a636829f012d277c2bb3bdd6c4aa3dc9bb503",
+      "sha256": "8f8ebf809e249cfb2063184d145a636829f012d277c2bb3bdd6c4aa3dc9bb503",
+      "module_renames": [],
+      "explicit_code_changes": []
+    },
+    "deltatrace/accelerated/qwen3/qwen3_target_logprobs.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/bounded_target_ops.py",
+      "source_sha256": "0a8e23acfdac417e1268facfd11b0e27e0d1e386966ac16f916cc3c3cf30fe91",
+      "sha256": "0073a27fdf798069f1dbd2981bd4b4f32e69077ed4d3f00f2bb5c1730d1e7848",
+      "module_renames": [],
+      "explicit_code_changes": [
+        "Remove unused rejected chunked-seed function and its import; retain only the tested native target_logprobs function."
+      ]
+    }
+  },
+  "manifest_sha256": "cd155448e5229217cce40d02816ed84aa9d84eeab61676913b281ed1f911b6da",
+  "pilot_results_sha256": "d3156429a15883a9f77326bab9e48ac3b1020801283d0c9c875ea65346f24edc",
+  "headroom_results_sha256": "720f533dfd41421abfdbbba41ec80e955a4bdd8c782dd8caf85e479649e65a0c",
+  "actual_production_confirmation_required": true,
+  "scope": "Pilot passes four fixed-output32 short-input capacity bins; rollout500 remains above FT in memory. Runtime promotion is not final acceptance; fresh source-pinned production two-round FT confirmation and original-case checks follow."
+}

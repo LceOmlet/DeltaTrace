@@ -1,0 +1,189 @@
+{
+  "previous_manifest_sha256": "cd155448e5229217cce40d02816ed84aa9d84eeab61676913b281ed1f911b6da",
+  "previous_exact_sources_archive": {
+    "archive": "raw/evidence_memory_v2_confirmation.zip",
+    "sha256": "e582dcb02a7f80bce1ee0212908241f8a1b69aa594dc2e9c48b3ef3bb400f7fd",
+    "bytes": 1124785,
+    "files_verified": 211,
+    "all_archive_member_bytes_verified": true,
+    "all_matching_local_candidate_sources_identical": true
+  },
+  "runtime_changes": {
+    "deltatrace/accelerated/qwen3/qwen3_output_template.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/result_template_v1.py",
+      "source_sha256": "a10c13406cbc869b24681a48a0d29ef86d4740d5b8d4b252c0289ccf429cabbe",
+      "sha256": "a10c13406cbc869b24681a48a0d29ef86d4740d5b8d4b252c0289ccf429cabbe",
+      "module_renames": []
+    },
+    "deltatrace/accelerated/qwen3/qwen3_memory_efficient_graph.py": {
+      "source": "research/temporary/qwen3_stream_memory_20260910/result_template_graph.py",
+      "source_sha256": "41bfe91cb63da33fe7e941709f80f84a2960e5161b01cb2cbc653d7df17e5c37",
+      "sha256": "fdc006df21ec857f8219de0dff507ebb06f5a4afca0b9dd53af1ebc48b5bad69",
+      "module_renames": [
+        [
+          "result_template_v1",
+          "qwen3_output_template"
+        ]
+      ]
+    },
+    "deltatrace/accelerated/qwen3/qwen3_shared_mean_fa.py": {
+      "source_archive": "raw/evidence_memory_v2_confirmation.zip",
+      "source_member": "memory_production_v2_release/deltatrace/accelerated/qwen3/qwen3_shared_mean_fa.py",
+      "source_sha256": "b88ac47214be635a537d3d6bd6e6fc2c6ac98fb38d785ff3d8c3068940617829",
+      "sha256": "4e2d63cfb919c6ba362c79086887c6e55c3b913dfb9f2f9b5c0f3202059f1b65",
+      "insert_after": "            activity['extra_shared_tile']=False",
+      "insert_text": "\n            activity['owner_kernel_geometry']={'phase0':[32,32,2],'phase1':[64,32,4],'phase2':[64,32,4]}\n            activity['shared_memory_bytes']={'phase0':16384,'phase1':24576,'phase2':24576}\n            activity['phase1_owner_input_tiles_loaded_once']=True",
+      "numeric_code_changed": false
+    }
+  },
+  "manifest_sha256": "286fbf43bf5ad86ab79032d5457c1a07925c0c8fdb13e0b96ad1e50af67e0a3c",
+  "kernel_source": "research/prototypes/vendor_fa_finite_p1_owner_register_reuse.cu",
+  "kernel_source_sha256": "fcdf2fac37bbf32d869f40185421b9010dd99b0fd41e0124b4f65e83cc30d4dc",
+  "kernel_derivation_source": "research/temporary/qwen3_stream_memory_20260910/fa_owner_cached/vendor_fa_finite_p1_shared_mean_reuse.cu",
+  "kernel_operator_archive": {
+    "archive": "raw/evidence_fa_owner_cached.zip",
+    "sha256": "b7c5949c5cd111d31ccb4e3683cf53d687a0f6be3021798ba57dbedb78469916",
+    "bytes": 87692,
+    "files_verified": 16,
+    "all_archive_member_bytes_verified": true,
+    "all_matching_local_candidate_sources_identical": true
+  },
+  "pilot_verification": {
+    "status": "verified",
+    "archive_sha256": "a67af44ba523da07e158d4568741c8f99799d1b4e047f097906dd74892c9dfdb",
+    "all_runtime_numerical_pilot_cells": 7,
+    "cells": [
+      {
+        "folder": "fa_cached_followup/short_128",
+        "length": 128,
+        "full_vector_and_math_exact": true,
+        "mean_seconds": 0.13517562548319498,
+        "all_call_peak_allocated_gb": 16.725858304,
+        "all_call_peak_reserved_gb": 16.888365056,
+        "full_API_calls": 8
+      },
+      {
+        "folder": "fa_cached_followup/short_256",
+        "length": 256,
+        "full_vector_and_math_exact": true,
+        "mean_seconds": 0.21054490407307944,
+        "all_call_peak_allocated_gb": 16.856508416,
+        "all_call_peak_reserved_gb": 17.093885952,
+        "full_API_calls": 8
+      },
+      {
+        "folder": "fa_cached_followup/short_512",
+        "length": 512,
+        "full_vector_and_math_exact": true,
+        "mean_seconds": 0.2996254762013753,
+        "all_call_peak_allocated_gb": 17.401209856,
+        "all_call_peak_reserved_gb": 17.634951168,
+        "full_API_calls": 8
+      },
+      {
+        "folder": "fa_cached_followup/rollout_10",
+        "length": 10,
+        "full_vector_and_math_exact": true,
+        "mean_seconds": 0.0762011210123698,
+        "all_call_peak_allocated_gb": 16.523169792,
+        "all_call_peak_reserved_gb": 16.657678336,
+        "full_API_calls": 7
+      },
+      {
+        "folder": "fa_cached_followup/rollout_100",
+        "length": 100,
+        "full_vector_and_math_exact": true,
+        "mean_seconds": 0.12060435612996419,
+        "all_call_peak_allocated_gb": 16.762793984,
+        "all_call_peak_reserved_gb": 16.989028352,
+        "full_API_calls": 7
+      },
+      {
+        "folder": "fa_cached_followup/rollout_500",
+        "length": 500,
+        "full_vector_and_math_exact": true,
+        "mean_seconds": 0.33679596583048504,
+        "all_call_peak_allocated_gb": 18.156675072,
+        "all_call_peak_reserved_gb": 18.64368128,
+        "full_API_calls": 7
+      }
+    ],
+    "long_pilot": {
+      "folder": "fa_cached_template",
+      "length": 1024,
+      "full_vector_and_math_exact": true,
+      "mean_seconds": 0.5280288060506185,
+      "all_call_peak_allocated_gb": 19.215611392,
+      "all_call_peak_reserved_gb": 19.516096512,
+      "archive_sha256": "a23b8775cbe3bf69c111195931f0c4fcbd532fc18052ef2f6aad5a42776366ec",
+      "finite_library_sha256": "e27360c8f86bea74fa9270b430114fcd846d702975183d8d370dbb4963f0f07e",
+      "metadata_mutation_control": {
+        "seconds": 0.5171612836420536,
+        "vector_exact": true,
+        "math_exact": true,
+        "fresh_nested_metadata": true
+      },
+      "full_API_calls": 8
+    },
+    "selected_candidate_full_API_calls": 53,
+    "strict_live_graph_cases": {
+      "seconds": 6.176460260525346,
+      "strict_graph_cases": [
+        {
+          "case": "valid",
+          "passed": true,
+          "rejected_before_return": false
+        },
+        {
+          "case": "equal",
+          "passed": true,
+          "rejected_before_return": true
+        },
+        {
+          "case": "finite",
+          "passed": true,
+          "rejected_before_return": true
+        },
+        {
+          "case": "positive",
+          "passed": true,
+          "rejected_before_return": true
+        },
+        {
+          "case": "seed",
+          "passed": true,
+          "rejected_before_return": true
+        },
+        {
+          "case": "rope_q",
+          "passed": true,
+          "rejected_before_return": true
+        },
+        {
+          "case": "rope_k",
+          "passed": true,
+          "rejected_before_return": true
+        },
+        {
+          "case": "signed",
+          "passed": true,
+          "rejected_before_return": true
+        }
+      ],
+      "strict_graph_warm_programs": 1,
+      "strict_graph_recordings": 1,
+      "strict_graph_replays": 8,
+      "storage_views_exact": true,
+      "changed_storage_topology_rejected": true,
+      "model_calls": 0,
+      "FA_calls": 0,
+      "attribution_calls": 0
+    },
+    "all_original_vectors_and_math_exact": true,
+    "all_template_mutation_controls_passed": true,
+    "public_production_confirmation_required": true,
+    "memory_scope": "Fixed short-output32 geometry capacity is the final gate; longer-rollout memory is measured separately and not inferred lower thanFT."
+  },
+  "actual_production_confirmation_required": true,
+  "source_promotion_is_final_acceptance": false
+}

@@ -1,0 +1,31 @@
+{
+  "finite_source": "remat_finite_lifetime_v3.py",
+  "finite_source_sha256": "6d023a583fcc96536bfe504549dd018b96ba796623d752236766192b6a4b7872",
+  "finite_exact_replacements": [
+    [
+      "norm_back(layer.self_attn.q_norm, f(raw0['qpre']), f(raw1['qpre']), mqn)",
+      "qk_norm_half(f(raw0['qpre']),f(raw1['qpre']),f(layer.self_attn.q_norm.weight),mqn,layer.self_attn.q_norm.variance_epsilon)"
+    ],
+    [
+      "norm_back(layer.self_attn.k_norm, f(raw0['kpre']), f(raw1['kpre']), mkn)",
+      "qk_norm_half(f(raw0['kpre']),f(raw1['kpre']),f(layer.self_attn.k_norm.weight),mkn,layer.self_attn.k_norm.variance_epsilon)"
+    ],
+    [
+      "mqa = linear_back(layer.self_attn.q_proj, mqp.reshape(1, n, -1))",
+      "mqa = native_precast_half_linear(mqp.reshape(1,n,-1),layer.self_attn.q_proj.weight)"
+    ],
+    [
+      "mka = linear_back(layer.self_attn.k_proj, mkp.reshape(1, n, -1))",
+      "mka = native_precast_half_linear(mkp.reshape(1,n,-1),layer.self_attn.k_proj.weight)"
+    ]
+  ],
+  "files": {
+    "half_projection_boundaries_v4.py": "b2854c7e33eac25a4fd171dcdc4f216eff9322c2d9008e9998361d3a756a4dde",
+    "remat_finite_lifetime_v4.py": "42921cd9a0035a98c5db9daf4c86e8742d73adb0d965c7fb4606b2a2a3409e2a",
+    "native_projection_sac_v4.py": "acf464a1098d5ce57780b6cc5754758e7e086b5165e8660586d2d3c697e69d6e",
+    "whole_exact_target_head_base.py": "04716dcfa1eabc3ea4d26a9c65b5e026087f4016cad110d7fe282cf30bd6f2bd",
+    "whole_sac_lifetime_v4.py": "016c054c4b5f676c41d311817e7935870d77942fab97065b195744f96fd596a3",
+    "benchmark_sac_lifetime_v4.py": "fc0762be24d841e12f5f58431a81e162c668da77f4efe893a344db385d6b4f52",
+    "sac_lifetime_v4_protocol.json": "5b22895766df4364ffa1a7873d4d46f947269d6e3a3c42e292c24fc221191bbb"
+  }
+}
