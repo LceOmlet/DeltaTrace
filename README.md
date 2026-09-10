@@ -64,7 +64,7 @@ The [development table](paper/iclr2027/results/development_table.tex) summarizes
 
 ![Attribution time versus rollout length for DT, FT, and seven published baselines.](experiments/efficiency/figures/deltatrace-rollout-scaling.png)
 
-The curve measures complete FT and DT evaluation wrappers on one C550; the other seven methods reuse the authors' released logs. The [experiment record](experiments/efficiency/README.md) includes the measurements, original data, and plotting script. Download the [vector curve](output/pdf/deltatrace-rollout-scaling.pdf) or inspect the [plotted data](experiments/efficiency/curve_data.csv).
+The updated curve measures complete warm calls to the current DeltaTrace runtime and the unchanged original FlashTrace exp1 entry points on one C550. The other seven methods retain the authors' released six/eight-device results, marked as references. The [experiment record](experiments/efficiency/README.md) includes all new raw measurements, cold and memory costs, the fixed source commit, and the plotting script. Download the [vector curve](output/pdf/deltatrace-rollout-scaling.pdf) or inspect the [plotted data](experiments/efficiency/curve_data.csv).
 
 The earlier [16-example implementation benchmark](paper/iclr2027/results/figures/deltatrace-efficiency.pdf) provides additional latency and memory measurements:
 
