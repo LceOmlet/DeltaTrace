@@ -1,5 +1,7 @@
 # 版本化评测入口
 
+**VT 最终答案证据检索已有修正入口。** 原完整生成响应会包含未被问到的其他链；gold 保持不变，新入口先截取生成的最终答案，再为 DT/FT 构造相同输入与目标权重。80 例内部留出验证中，VT 原始 token Recall 平均为 DT 59.79%、FT K3 55.70%，调整后差值区间 [+2.78, +5.56] 点；共同句聚合后均达到预算上限。HotpotQA 句聚合均值领先，但区间仍跨零。复现这项修复请用 [新版 Recall 入口及说明](../../research/temporary/source_v2_gpu_20260910/TARGET_CONSTRUCTION_FIX.md)，旧协议保留为历史基线。
+
 默认协议为 [`source-v2`](source_protocol.json)：只在证据正文内构造 DT reference、做 RISE/MAS 删除和计算 recovery。旧的全 prompt 协议显式使用 `--evaluation-protocol released-v1`；原 [`protocol.json`](protocol.json)、原始结果和冻结方法源码保留。
 
 **效果状态：正文 reference 使 Recall 变差，不能作为 needle 修复推荐。** VT H4-C1 全部 100 例下降 4.55 点，HotpotQA 全部 48 例下降 8.69 点。保留原 reference、正文内句聚合的 80 例留出验证也没有建立共同优势，主要失败来自多链 VT。后续开发对照中，只解释生成的最终答案让多链 VT 的两种方法均恢复到 100%，HotpotQA 仍未胜出。更改参照、聚合与逐层对称分配的负向结果均已保留。见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
