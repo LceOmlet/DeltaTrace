@@ -1,0 +1,92 @@
+{
+  "version": "rollout-scaling-v1-20260910",
+  "model": "Qwen3-8B",
+  "method_version": "clean-v1-20260909",
+  "upstream_commit": "075e7e44ae4d5acd2ed76e0d2aced57107d02736",
+  "upstream_script": "exp/exp1/run_time_curve.py",
+  "upstream_script_sha256": "e073abadeb20df0fedcfd55acd0061489d0f51813bc8c1486e28ca42c2b28951",
+  "upstream_url": "https://github.com/wbopan/flashtrace/blob/075e7e44ae4d5acd2ed76e0d2aced57107d02736/exp/exp1/run_time_curve.py",
+  "prompt_tokens": 10,
+  "output_tokens": [
+    10,
+    100,
+    500,
+    1000,
+    2000,
+    5000,
+    10000
+  ],
+  "target_text": " The answer is 42.",
+  "input_construction": "Pinned upstream exp1 token-length construction; original RULER file when present, otherwise the author's exact fallback 'RULER fallback text. '; base and actual input hashes saved. Synthetic repeated output is a cost probe, not a task-quality evaluation.",
+  "measured_methods": ["DT", "FT"],
+  "reused_methods": ["IG", "IG_Attention", "AttnLRP", "IFR", "Perturbation", "CLP", "REAGENT", "FT"],
+  "published_selection": "Successful rollout cells in out-0 (10/100 tokens, 8 devices) and out-2 through out-5 (500/1000/2000/5000 tokens, 6 devices); nominal input=10. Exclude the out-1 input-length sweep. Mean of available successful author repeats, count and range saved. Missing and failed cells are not interpolated.",
+  "target_scope": "DT scores the complete supplied target plus EOS. FT retains the original exp1 default sink selection (the generated span excluding EOS), without changes to its implementation.",
+  "methods": {
+    "DT": {
+      "label": "DeltaTrace",
+      "backend": "flash_attention_2",
+      "rule": "content_P1"
+    },
+    "FT": {
+      "label": "FlashTrace",
+      "upstream": "ifr_multi_hop_both",
+      "backend": "eager",
+      "n_hops": 1
+    },
+    "IG": {
+      "label": "IG",
+      "upstream": "IG",
+      "backend": "eager",
+      "integration_steps": 20
+    },
+    "IG_Attention": {
+      "label": "IG × Attention",
+      "upstream": "attention_I_G",
+      "backend": "eager",
+      "integration_steps": 20
+    },
+    "AttnLRP": {
+      "label": "AttnLRP",
+      "upstream": "attnlrp",
+      "backend": "eager"
+    },
+    "IFR": {
+      "label": "IFR",
+      "upstream": "ifr_all_positions",
+      "backend": "eager",
+      "sink_chunk_tokens": 1
+    },
+    "Perturbation": {
+      "label": "Perturbation",
+      "upstream": "perturbation_all",
+      "backend": "eager"
+    },
+    "CLP": {
+      "label": "CLP",
+      "upstream": "perturbation_CLP",
+      "backend": "eager"
+    },
+    "REAGENT": {
+      "label": "REAGENT",
+      "upstream": "perturbation_REAGENT",
+      "backend": "eager"
+    }
+  },
+  "seed": 42,
+  "dtype": "float16",
+  "sample_batch": 1,
+  "dt_endpoint_batch": 2,
+  "chunk_tokens": 128,
+  "sink_chunk_tokens": 32,
+  "warmups": 1,
+  "repeats": 3,
+  "call_timeout_seconds": 600,
+  "setup_timeout_seconds": 600,
+  "summary": "Median of three completed warm calls, with min/max interval; only cells completing all repetitions are primary curve points.",
+  "timing": "Synchronized wall time of an attribution entrypoint call; native model loading and method construction excluded, cold warmup reported separately; DT includes per-call tokenization/mapping, EOS reference creation, endpoint capture, replay, finite propagation, and returned source scores.",
+  "memory": "Peak device-allocated bytes during each call, including resident model; reserved bytes recorded separately.",
+  "isolation": "One fresh process per method/length cell; a crash or OOM cannot contaminate later methods.",
+  "device_policy": "One explicitly selected GPU for every method. Confirm no competing GPU work before timing. No cross-device or published/current runtime pooling.",
+  "failure_policy": "OOM, per-call timeout, dependency failure, and runtime error remain separate statuses; missing values are never interpolated or inferred from another method."
+}

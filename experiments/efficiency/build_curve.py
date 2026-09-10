@@ -53,6 +53,16 @@ def collect():
             formatted_prompt_tokens=rows[0]['actual_formatted_prompt_tokens'],
             generation_tokens=rows[0]['actual_generation_tokens'], sources=[r['source'] for r in rows]))
     local = []
+    environment = json.loads((HERE/'results/environment_receipt.json').read_bytes())
+    assert environment['status'] == 'verified'
+    assert environment['timing_scope'] == 'full-evaluation-wrapper'
+    assert sha((HERE/'results/native_library_build.json').read_bytes()) == environment['native_library_rebuild_sha256']
+    build = json.loads((HERE/'results/native_library_build.json').read_bytes())
+    assert build['library']['sha256'] == environment['finite_library_sha256']
+    host = json.loads((HERE/'results/host.json').read_bytes())
+    assert host['hostname'] == environment['hostname']
+    assert host['gpu_state_before'] == environment['gpu_state_before']
+    identities = set()
     paths = sorted((HERE / 'results').glob('*_*/result.json'))
     if not paths:
         raise ValueError('No measured local cells; a DT curve cannot be inferred from published baselines.')
@@ -60,6 +70,11 @@ def collect():
         row = json.loads(path.read_bytes())
         assert row['driver_sha256'] == sha((HERE/'benchmark.py').read_bytes()), path
         assert row['protocol_sha256'] == sha((HERE/'protocol.json').read_bytes()), path
+        assert row['timing_scope'] == protocol['timing_scope'] == 'full-evaluation-wrapper', path
+        for name in ['native_model_sha256', 'finite_library_sha256']:
+            assert row['environment'][name] == environment[name], path
+        identities.add(tuple(row['environment'][name] for name in
+            ['torch', 'transformers', 'device', 'total_memory_bytes', 'source_manifest_sha256']))
         item = dict(method='DeltaTrace' if row['method']=='DT' else 'FlashTrace',
             output_tokens=row['output_tokens'], status=row['status'], source=str(path.relative_to(HERE)),
             sha256=sha(path.read_bytes()), devices=1,
@@ -67,6 +82,13 @@ def collect():
         if row['status'] == 'ok':
             assert len(row['calls']) == 4 and len([c for c in row['calls'] if not c['warmup']]) == 3
             assert len({c['input_ids_sha256'] for c in row['calls']}) == 1
+            assert len({c['scores_sha256'] for c in row['calls']}) == 1
+            warm = [c for c in row['calls'] if not c['warmup']]
+            assert row['median_seconds'] == statistics.median(c['seconds'] for c in warm)
+            assert row['min_seconds'] == min(c['seconds'] for c in warm)
+            assert row['max_seconds'] == max(c['seconds'] for c in warm)
+            assert row['peak_allocated_bytes'] == max(c['peak_allocated'] for c in warm)
+            assert all(c['native_model_calls'] == 1 for c in row['calls'])
             item.update(seconds=row['median_seconds'], min_seconds=row['min_seconds'],
                 max_seconds=row['max_seconds'], repeats=3, devices=1,
                 peak_allocated_bytes=row['peak_allocated_bytes'], cold_seconds=row['calls'][0]['seconds'],
@@ -77,6 +99,7 @@ def collect():
     local.sort(key=lambda row:(row['method'],row['output_tokens']))
     published.sort(key=lambda row:(row['method'],row['output_tokens']))
     assert len({(r['method'],r['output_tokens']) for r in local}) == len(local)
+    assert len(identities) == 1, 'Measured runtime environments differ'
     expected = {(method,length) for method in ['DeltaTrace','FlashTrace'] for length in protocol['output_tokens']}
     assert {(r['method'],r['output_tokens']) for r in local} == expected, 'Incomplete length grid'
     assert all(r['status'] in ['ok','oom','timeout','error'] for r in local)
@@ -86,6 +109,7 @@ def collect():
             assert pair[0]['input_ids_sha256']==pair[1]['input_ids_sha256']
     plotted = [r for r in published if r['method']!='FlashTrace'] + local
     output = dict(published=published, measured=local, plotted=plotted,
+        measured_timing_scope=protocol['timing_scope'],
         failures=[dict(directory=k[0],status=k[1],count=v) for k,v in failure_counts.items()],
         source_commit=source['commit'], distinct_hardware_sources=True)
     (HERE/'curve_data.json').write_text(json.dumps(output, indent=2), encoding='utf-8')
@@ -137,7 +161,8 @@ def plot(data):
         highlighted=method in ['DeltaTrace','FlashTrace']
         ax.plot(x,y,marker='o',markersize=4.2 if highlighted else 3.5,
             linewidth=2.3 if highlighted else 1.2,color=palette[method],
-            alpha=1 if highlighted else .85,label=method,zorder=5 if highlighted else 2)
+            alpha=1 if highlighted else .85,
+            label='FlashTrace (full)' if method=='FlashTrace' else method,zorder=5 if highlighted else 2)
         if highlighted:
             ax.fill_between(x,[r['min_seconds'] for r in rows],[r['max_seconds'] for r in rows],
                 alpha=.12,color=palette[method],linewidth=0)
@@ -152,7 +177,7 @@ def plot(data):
     if failures:
         failed_lengths=' / '.join(f'{r["output_tokens"]//1000}k' for r in sorted(failures,key=lambda r:r['output_tokens']))
         ax.annotate('FT\nOOM at '+failed_lengths,(ft_last['output_tokens'],ft_last['seconds']),
-            xytext=(9,-6),textcoords='offset points',ha='left',va='top',fontsize=7.5,
+            xytext=(9,20),textcoords='offset points',ha='left',va='bottom',fontsize=7.5,
             color=palette['FlashTrace'],linespacing=1.35)
     FIGURES.mkdir(parents=True,exist_ok=True)
     DELIVERY.mkdir(parents=True,exist_ok=True)
@@ -167,6 +192,8 @@ def plot(data):
     plt.close(fig)
     (DELIVERY/'deltatrace-rollout-scaling.pdf').write_bytes((FIGURES/'deltatrace-rollout-scaling.pdf').read_bytes())
     verification=dict(complete_length_grid=True,source_hashes_verified=True,paired_inputs_verified=True,
+        same_measured_runtime_environment=True,
+        measured_timing_scope='full-evaluation-wrapper',
         published_FT_replaced_by_measured_FT=True,plotted_methods=order,
         mixed_hardware_overlay=True,provenance='DT/FT: one C550; remaining baselines: released 8/6-device logs.',
         protocol_sha256=sha((HERE/'protocol.json').read_bytes()),builder_sha256=sha(Path(__file__).read_bytes()),
