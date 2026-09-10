@@ -30,9 +30,9 @@ The implementation uses FlashAttention-style tiled propagation for dense attenti
 
 ## Results
 
-### HotpotQA evidence evaluation with corrected labels and sentence boundaries
+### HotpotQA mapping fixes and exploratory evaluation
 
-The complete **48-case HotpotQA correction** restores a title/body gold-position error, fixes leading-space token assignment, and uses the original supporting-fact sentence units for both methods. Whole sentences are retrieved under the same 10% eligible body-token budget, with equal-fact Recall and explicit costs. For final-answer attribution, DT reaches **68.58%** and live FT K3 **66.15%**; a documented two-label sensitivity correction gives **68.58% versus 67.19%**. The paired adjusted intervals cross zero. Full-response attribution and all negative results are also reported. See the [corrections, complete tables, raw vectors and explicit evaluation entry point](research/temporary/hotpot_fairness_20260910/RESULTS.md).
+The **48-case HotpotQA audit** confirms a title/body gold-position error and a leading-space token assignment error. The added sentence pooling, budget, and target choices have **not established a neutral evaluation protocol**. In particular, the experiment labeled `answer_only` removes the cached reasoning prefix, changing the conditioning context in all 48 cases; its 68.58% versus 66.15% result cannot stand for answer attribution with the original reasoning preserved. Its sentence budget also counts eligible tokens after punctuation/whitespace filtering, rather than all body tokens. See the [methodological review and minimal mapping-fix comparison](research/temporary/hotpot_fairness_20260910/REVIEW.md). The [complete exploratory tables and raw vectors](research/temporary/hotpot_fairness_20260910/RESULTS.md) remain available.
 
 ### Complete Recall evaluation with corrected VT targets and historical HotpotQA scoring
 
