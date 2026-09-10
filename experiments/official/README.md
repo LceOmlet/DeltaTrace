@@ -2,6 +2,8 @@
 
 默认协议为 [`source-v2`](source_protocol.json)：只在证据正文内构造 DT reference、做 RISE/MAS 删除和计算 recovery。旧的全 prompt 协议显式使用 `--evaluation-protocol released-v1`；原 [`protocol.json`](protocol.json)、原始结果和冻结方法源码保留。
 
+**效果状态：source-v2 的新 reference 仍是待验证候选，尚未证明改善归因质量。** GPU 配对补跑正在进行，三例执行检查包含提升和退步，不能称为“效果已修好”。设计与当前记录见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
+
 ## source-v2 的评分规则
 
 - NI 使用指令与问题之间的正文；VT 使用当前题正文，排除已解示例；HotpotQA 使用文档区。区间仅从固定 prompt 模板解析，不读取 gold、答案或归因值。未知模板报错。
@@ -32,6 +34,8 @@ python experiments/official/summarize.py /path/formal/source-v2-qwen3/results.js
 ```
 
 可用 `--datasets` 分任务执行，每个 `paper` 任务必须完整。Qwen3.5 使用 `--family qwen35` 和对应环境，同样 live 运行 FT。汇总拒绝混合协议、缺失 FT、错误预算、丢失 gold、部分 paper 任务及 reference/删除终点不一致的结果。每次运行保存协议及代码哈希。
+
+`--paired-reference-audit` 会另行重新计算全 prompt reference 的 DT，再用同一正文范围、预算及删除规则评分，输出 `DT_full_reference` 对照。它用于隔离 reference 改变的作用；需要两次 DT 归因及额外一组删除曲线。
 
 ## 重放旧协议
 

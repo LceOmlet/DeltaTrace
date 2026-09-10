@@ -48,7 +48,8 @@ def summarize(report, protocol):
                     or (set(row['gold']) & set(row.get('author_keep', []))) - set(row['keep'])
                     or row.get('source_eligible_positions') != [row['user_positions'][j] for j in row['keep']]):
                 raise ValueError('Missing or inconsistent source token mapping.')
-            for method in ('DT', 'FT_K1'):
+            methods = ['DT', 'FT_K1'] + (['DT_full_reference'] if report.get('paired_reference_audit') else [])
+            for method in methods:
                 metric = row['metrics'][method]
                 if (not metric.get('reference_matches_final_deletion')
                         or len(metric['actual_input_hashes']) != min(20, len(row['keep'])) + 1
@@ -117,8 +118,14 @@ def summarize(report, protocol):
                 'FT_K1': mean_curve([r['metrics']['FT_K1']['recovery'] for r in rows]),
                 'FT_K3': mean_curve([r['FT_K3_recovery'] for r in rows]),
             }
+            if report.get('paired_reference_audit'):
+                table['DT_full_reference'] = {field: mean(rows, 'DT_full_reference', field) for field in ('rise', 'mas', 'needle')}
+                table['recovery']['DT_full_reference'] = mean_curve([r['metrics']['DT_full_reference']['recovery'] for r in rows])
             for r in rows:
-                for metric in [r['metrics']['DT'], r['metrics']['FT_K1'], {'needle': r['FT_K3_needle'], 'recovery': r['FT_K3_recovery']}]:
+                metrics = [r['metrics']['DT'], r['metrics']['FT_K1'], {'needle': r['FT_K3_needle'], 'recovery': r['FT_K3_recovery']}]
+                if report.get('paired_reference_audit'):
+                    metrics.append(r['metrics']['DT_full_reference'])
+                for metric in metrics:
                     at10 = next(p for p in metric['recovery']['points'] if p['fraction'] == .1)
                     if (at10['recall'] != metric['needle'] or any(
                             point['eligible'] != len(r['keep']) or point['gold'] != r['source_gold_count']
@@ -130,6 +137,9 @@ def summarize(report, protocol):
                     'FT_K1': mean_curve([r['metrics']['FT_K1']['sentence_recovery'] for r in rows], sentence=True),
                     'FT_K3': mean_curve([r['FT_K3_sentence_recovery'] for r in rows], sentence=True),
                 }
+                if report.get('paired_reference_audit'):
+                    table['sentence_recovery']['DT_full_reference'] = mean_curve(
+                        [r['metrics']['DT_full_reference']['sentence_recovery'] for r in rows], sentence=True)
         if published:
             reference = protocol['tasks'][task]
             if count != reference['count']:

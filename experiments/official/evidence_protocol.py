@@ -32,6 +32,8 @@ def configure_run(args, release):
         raise ValueError('development16 is the historical NI/MH fixture; use released-v1, or source-v2 smoke/paper.')
     if args.sentence_recovery and not source:
         raise ValueError('Sentence recovery is a separate source-v2 evaluation; released-v1 stays unchanged.')
+    if getattr(args, 'paired_reference_audit', False) and not source:
+        raise ValueError('Paired reference audit requires source-v2 and its matched evaluation scope.')
     if args.datasets is None:
         args.datasets = list(SUPPORTED_TASKS) if source else (
             list(release['tasks']) if args.selection == 'paper' else ['niah_mq_q2', 'morehopqa'])

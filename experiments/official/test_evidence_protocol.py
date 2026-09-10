@@ -57,6 +57,10 @@ class SourceProtocolTest(unittest.TestCase):
         self.assertEqual(args.datasets, ['niah_mq_q2', 'morehopqa'])
         self.assertEqual(args.ft, 'live')
 
+    def test_paired_reference_audit_is_only_available_with_matched_source_scope(self):
+        with self.assertRaisesRegex(ValueError, 'Paired reference'):
+            configure_run(self.args(evaluation_protocol='released-v1', paired_reference_audit=True), self.release)
+
     def test_niah_excludes_instruction_query_and_prefix(self):
         prompt = niah_prompt()
         span = source_span('niah_mq_q8', prompt)
@@ -179,6 +183,15 @@ class SummaryProtocolTest(unittest.TestCase):
         r['weight_identity'] = {'verified': True}
         with self.assertRaisesRegex(ValueError, 'full released cache'):
             summarize(r, protocol)
+
+    def test_paired_reference_summary_requires_matching_deletion_endpoint(self):
+        r = self.report()
+        r['paired_reference_audit'] = True
+        r['cases'][0]['metrics']['DT_full_reference'] = copy.deepcopy(r['cases'][0]['metrics']['DT'])
+        self.assertIn('DT_full_reference', summarize(r, {})['tasks'][0]['recovery'])
+        r['cases'][0]['metrics']['DT_full_reference']['actual_input_hashes'][-1] = 'full_prompt_endpoint'
+        with self.assertRaises(ValueError):
+            summarize(r, {})
 
     def test_optional_sentence_summary_keeps_its_own_budget_and_token_cost(self):
         r = self.report()

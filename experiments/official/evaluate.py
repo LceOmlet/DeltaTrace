@@ -34,6 +34,8 @@ def arguments(argv=None):
                         help='Default: evidence-body reference, deletion and retrieval; released-v1 preserves the old protocol.')
     parser.add_argument('--sentence-recovery', action='store_true',
                         help='Additionally report whole sentence/line-unit retrieval with a separately labelled unit budget.')
+    parser.add_argument('--paired-reference-audit', action='store_true',
+                        help='source-v2 only: freshly rerun full-prompt-reference DT and score it on the same source scope.')
     return parser.parse_args(argv)
 
 
@@ -129,6 +131,7 @@ def main():
         'evaluation_settings': evaluation_settings,
         'evidence_protocol_sha256': sha((HERE / 'evidence_protocol.py').read_bytes()),
         'sentence_recovery_enabled': args.sentence_recovery,
+        'paired_reference_audit': args.paired_reference_audit,
         'ft_source': args.ft,
         'cases': [], 'costs': [],
         'weight_identity': weight_identity,
@@ -267,8 +270,10 @@ def main():
                     report['initialized'] = True
                 model.set_attn_implementation('flash_attention_2')
 
-                def attribute():
-                    if source_mode:
+                def attribute(reference_override=None):
+                    if reference_override is not None:
+                        base = ids.new_tensor([reference_override])
+                    elif source_mode:
                         base = ids.new_tensor([reference_ids])
                         assert sha(base.cpu().numpy().tobytes()) == row['reference_input_sha256']
                     else:
@@ -292,6 +297,17 @@ def main():
                 dt_score = signed[positions].float().clamp_min(0)
                 vectors[key+'_DT_signed_full'] = signed.numpy()
                 vectors[key+'_DT_positive_prompt'] = dt_score.numpy()
+                legacy_score = None
+                if args.paired_reference_audit:
+                    legacy_reference_ids = reference_token_ids(row['input_ids'],
+                        [positions[j] for j in author_keep], tokenizer.eos_token_id)
+                    row['full_prompt_reference_input_sha256'] = sha(np.asarray(legacy_reference_ids, dtype=np.int64).tobytes())
+                    legacy_signed, legacy_detail = timed(key+'_DT_full_reference', lambda: attribute(legacy_reference_ids))
+                    row['DT_full_reference_details'] = legacy_detail
+                    legacy_score = legacy_signed[positions].float().clamp_min(0)
+                    vectors[key+'_DT_full_reference_signed_full'] = legacy_signed.numpy()
+                    vectors[key+'_DT_full_reference_positive_prompt'] = legacy_score.numpy()
+                    del legacy_signed, legacy_detail
                 method_identity()
                 model.set_attn_implementation('eager')
 
@@ -346,6 +362,8 @@ def main():
                     row['metrics'][method] = curve
 
                 score('DT', dt_score)
+                if args.paired_reference_audit:
+                    score('DT_full_reference', legacy_score)
                 if args.ft == 'live':
                     for hops in ([1,3] if gold else [1]):
                         def trace():
