@@ -55,7 +55,8 @@ def token_groups(text, offsets, keep, units, *, coordinate_shift=1):
 
 Native unit coordinates refer to the original prompt; offsets commonly refer
 to ' '+prompt. Pure whitespace tokens use their start and remain charged.
-Reject tokens that cross a unit boundary with non-whitespace on both sides.
+An indivisible token crossing a native boundary belongs wholly to its first
+content character's unit. It is charged once, including all crossing content.
 """
     starts = [u['start'] + coordinate_shift for u in units]
     ends = [u['end'] + coordinate_shift for u in units]
@@ -72,8 +73,6 @@ Reject tokens that cross a unit boundary with non-whitespace on both sides.
         group = bisect.bisect_right(starts, anchor) - 1
         if group < 0 or anchor >= ends[group]:
             raise ValueError('Eligible token outside unit coverage')
-        if end > ends[group] and text[ends[group]:end].strip():
-            raise ValueError('One token has content in multiple native units')
         groups[group].append(token)
     assert sorted(t for g in groups for t in g) == sorted(set(map(int, keep)))
     return groups

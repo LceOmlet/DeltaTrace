@@ -30,9 +30,15 @@ The implementation uses FlashAttention-style tiled propagation for dense attenti
 
 ## Results
 
-### Complete Recall evaluation with corrected VT targets
+### HotpotQA evidence evaluation with corrected labels and sentence boundaries
+
+The complete **48-case HotpotQA correction** restores a title/body gold-position error, fixes leading-space token assignment, and uses the original supporting-fact sentence units for both methods. Whole sentences are retrieved under the same 10% eligible body-token budget, with equal-fact Recall and explicit costs. For final-answer attribution, DT reaches **68.58%** and live FT K3 **66.15%**; a documented two-label sensitivity correction gives **68.58% versus 67.19%**. The paired adjusted intervals cross zero. Full-response attribution and all negative results are also reported. See the [corrections, complete tables, raw vectors and explicit evaluation entry point](research/temporary/hotpot_fairness_20260910/RESULTS.md).
+
+### Complete Recall evaluation with corrected VT targets and historical HotpotQA scoring
 
 The corrected target protocol now covers **all 448 VT and HotpotQA examples**: 100 for each VT task and 48 for HotpotQA. VT attribution uses the stored generated final answer; HotpotQA uses the full response. DT and live FT K3 receive identical inputs and target weights, rank the same source tokens, and use the same 10% token budget.
+
+The following frozen table retains the earlier HotpotQA cached gold and regex sentence grouping for reproducibility. Use the correction report above for native HotpotQA supporting-fact evaluation; the metric and budget candidate set differ, so their absolute scores should not be directly compared.
 
 | Task | n | DT raw Recall | FT K3 raw Recall | DT sentence mean | FT K3 sentence mean |
 | --- | ---: | ---: | ---: | ---: | ---: |
