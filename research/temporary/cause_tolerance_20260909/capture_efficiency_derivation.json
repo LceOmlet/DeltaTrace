@@ -1,0 +1,59 @@
+{
+  "parent_benchmark_sha256": "eb5bd45e572971f42e2d64fbc86f6691c444bd3d4df0bdee2e1acc727412ba75",
+  "replay_parent_sha256": "5050b605d7fe1538f35886633ecbb6b06e8c068e8ff730eaae47344703c2a311",
+  "replay_edits": [
+    [
+      "class NativeLayerReplay:",
+      "from local_capture_events import LocalCaptureEvents\n\nclass NativeLayerReplay:"
+    ],
+    [
+      "        assert sys.getprofile() is None\n        try:",
+      "        assert sys.getprofile() is None\n        local_events=LocalCaptureEvents([public_code],observer,returns_only=True)\n        try:"
+    ],
+    [
+      "                sys.setprofile(observer)",
+      "                local_events.__enter__()"
+    ],
+    [
+      "            sys.setprofile(None)",
+      "            local_events.__exit__(None,None,None)"
+    ]
+  ],
+  "harness_edits": [
+    {
+      "before": "    protocol=json.loads(protocol_path.read_bytes())",
+      "after": "    protocol=json.loads(protocol_path.read_bytes())\n    for name,digest in protocol['candidate_files'].items():assert sha((Path(__file__).resolve().parent/name).read_bytes())==digest,name"
+    },
+    {
+      "before": "'sample_batch':1,'generation_calls':0,'cases':[],'rows':[],'initialization':[],",
+      "after": "'sample_batch':1,'generation_calls':0,'cases':[],'rows':[],'initialization':[],\n      'purpose':'Measured short B1 passive-capture optimization; retained calculations and all diagnostics',"
+    },
+    {
+      "before": "        vectors={}",
+      "after": "        from capture_efficiency_candidates import CaptureEfficiency\n        from local_capture_events import check_runtime\n        report['monitoring_runtime_check']=check_runtime()\n        vectors={}"
+    },
+    {
+      "before": "                return call\n            n_runs=6 if args.method in ['deltatrace_retained','ifr_multi_hop','ifr_multi_hop_both'] else 3",
+      "after": "                def run_mode():\n                    with CaptureEfficiency(args.family,mode):return call()\n                return run_mode\n            modes=['retained','filtered','local'] if args.family=='qwen35' else ['retained','local']\n            measured=modes+list(reversed(modes))+modes\n            schedule=[('warm',m) for m in modes]+[('measured',m) for m in measured]\n            n_runs=len(schedule)"
+    },
+    {
+      "before": "                phase='original3' if rep<3 else 'warm3'",
+      "after": "                phase,mode=schedule[rep]"
+    },
+    {
+      "before": "report['status']=f'{input_len}_{phase}_{rep}'",
+      "after": "report['status']=f'{input_len}_{mode}_{phase}_{rep}'"
+    },
+    {
+      "before": "row={'family':args.family,'attr_func':args.method,'phase':phase,'repeat':rep,",
+      "after": "row={'family':args.family,'attr_func':args.method,'phase':phase,'repeat':rep,'candidate_mode':mode,"
+    }
+  ],
+  "harness_audit_change": "Repeat the exact existing audit for every candidate mode and assert complete-vector equality.",
+  "candidate_files": {
+    "benchmark_capture_efficiency.py": "23353c938bec07611410352894f7cd840f67b3fba5ce72f17cdea4fdbed6c912",
+    "local_capture_events.py": "a53c4fc2e5523db1e73e979c9489b888b69e532339a6c3879ebdd8212996edd4",
+    "capture_efficiency_candidates.py": "588da6dc7526f922bb0d019ae811a1affcf2207cd6d7348dc24a91f6a004e530",
+    "qwen3_code_local_replay.py": "cfc420ccbbf9d1037693099839d223dc4100f77b14d4ec31f2095413979f2bbb"
+  }
+}

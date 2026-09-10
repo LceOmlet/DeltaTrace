@@ -1,0 +1,51 @@
+{
+  "status": "restored_and_imported_no_model_calls",
+  "model_loads": 0,
+  "steps": [
+    {
+      "name": "venv",
+      "exit": 0,
+      "seconds": 2.0673463828861713
+    },
+    {
+      "name": "pinned_install",
+      "exit": 0,
+      "seconds": 8.679361453279853
+    },
+    {
+      "name": "auxiliary_install",
+      "exit": 0,
+      "seconds": 152.89497596025467
+    },
+    {
+      "name": "qwen35_import",
+      "exit": 0,
+      "seconds": 33.04905915632844
+    },
+    {
+      "name": "qwen3_import",
+      "exit": 0,
+      "seconds": 17.994624918326735
+    }
+  ],
+  "mapping": {
+    "kind": "explicit_device_name_mapping_only",
+    "upstream_version": "fla-core0.4.1",
+    "before_sha256": "03e3e41a62741d45913a2d2d35de630aaba13dcbb0fb1e8c1f7904446a688cf1",
+    "after_sha256": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+    "replacements": [
+      [
+        "return {'cuda': 'cuda', 'hip': 'cuda', 'xpu': 'xpu'}.get(backend, backend)",
+        "return {'cuda': 'cuda', 'hip': 'cuda', 'xpu': 'xpu', 'maca': 'cuda'}.get(backend, backend)"
+      ],
+      [
+        "device = get_available_device() if get_available_device() != 'hip' else 'cuda'",
+        "device = map_triton_backend_to_torch_device()"
+      ]
+    ],
+    "kernel_changes": 0,
+    "model_changes": 0,
+    "runtime_verified": false,
+    "real_backend_identity": "maca"
+  }
+}
