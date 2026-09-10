@@ -43,6 +43,10 @@ def main():
     assert analysis['cases']==448 and analysis['new_method_cases']==2240
     for name,digest in analysis['code_sha256'].items():assert sha(ROOT/name)==digest
     plan=data('protocol.json');assert sha(HERE/'protocol.json')==analysis['protocol_sha256']
+    assert sha(HERE/'mlm_verification.json')==analysis['mlm_verification_sha256']
+    mlm=data('mlm_verification.json');assert mlm['status']=='all_five_uploaded_assets_verified'
+    assert mlm['verifier_sha256']==sha(HERE/'verify_mlm.py')
+    assert [{k:r[k] for k in ('name','bytes','sha256')} for r in mlm['files']]==[{k:r[k] for k in ('name','bytes','sha256')} for r in plan['mlm']['files']]
     for name in ('inputs','candidates','labels'):assert sha(HERE/(name+'.json'))==plan[name+'_sha256']
     inputs={(r['dataset'],r['index']):r for r in data('inputs.json')['cases']}
     candidates={(r['dataset'],r['index']):r for r in data('candidates.json')['cases']}
@@ -190,7 +194,7 @@ def finish(analysis,plan,actual,rows,budget_checks,nested):
             if target=='verification.json':continue  # Written at the end of this verification.
             assert (HERE/target.split('#')[0]).exists(),target;report_links+=1
     outputs=['analysis.json','per_case.csv','summary.csv','primary_recall10.csv','selections.json','RESULTS.md','README.md',
-        'execution_compatibility.json','inputs_preflight.json','storage_control/verification.json']
+        'execution_compatibility.json','inputs_preflight.json','mlm_verification.json','storage_control/verification.json']
     result=dict(status='passed',case_count=448,new_method_cases=2240,score_rows=budget_checks,independent_new_score_rows=2240*12,
         nested_hotpot_transitions=nested,over_budget_selections=0,paired_family_comparisons=12,
         exact_initial_controls=3,bitwise_storage_controls=1,frozen_method_files=method_files,

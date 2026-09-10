@@ -147,7 +147,8 @@ approximation**, with generation-sentence sink groups. This is not exhaustive
 single-token perturbation. Native causal-prefix and source-intervention calls
 are retained and checked against the same frozen tokenized response. REAGENT
 uses the unchanged Longformer replacement and 4,096-token auxiliary input limit;
-the [auxiliary model ledger](mlm_identity.json) records revision and full hashes.
+the [expected auxiliary model ledger](mlm_identity.json) records revision and full hashes,
+and the [uploaded-asset receipt](mlm_verification.json) confirms all five actual files.
 The uploaded 597,257,159-byte weight file matched SHA-256
 `06c56757f0510de87c231acd03650ca204c5ed65c281cd1081b98288183f2468`.
 

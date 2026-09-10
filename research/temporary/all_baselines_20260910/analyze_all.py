@@ -149,6 +149,10 @@ def main():
     if a.reuse_only:
         print(json.dumps(dict(status='reused_DT_FT_exactly_reproduced',score_rows=reused)));return
     preflight_hash=sha(HERE/'inputs_preflight.json')
+    mlm=json.loads((HERE/'mlm_verification.json').read_bytes())
+    assert mlm['status']=='all_five_uploaded_assets_verified' and mlm['protocol_sha256']==sha(HERE/'protocol.json')
+    assert mlm['revision']==plan['mlm']['revision'] and len(mlm['files'])==5
+    assert [{k:r[k] for k in ('name','bytes','sha256')} for r in mlm['files']]==[{k:r[k] for k in ('name','bytes','sha256')} for r in plan['mlm']['files']]
     for key,item in inputs.items():
         for method in BASELINES:
             folder=a.run/method/item['dataset']/f'{item["index"]:03d}'
@@ -171,6 +175,7 @@ def main():
     summaries,primary,comparisons=statistics(rows,plan)
     out=dict(status='verified_complete_all_baselines',cases=448,new_method_cases=2240,reused_score_rows=reused,
         protocol_sha256=sha(HERE/'protocol.json'),preflight_sha256=preflight_hash,numeric_amendment_sha256=sha(HERE/'NUMERIC_FIX.md'),
+        mlm_verification_sha256=sha(HERE/'mlm_verification.json'),
         retrospective_scope_choice=True,new_holdout=False,methods=list(METHODS),supplementary=['FT_K1'],
         coverage=dict(coverage),origins=origins,new_receipts=new_receipts,
         gpu_operation_seconds=sum(r['seconds'] for r in costs),costs=costs,

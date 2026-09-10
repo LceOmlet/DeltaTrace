@@ -30,6 +30,7 @@ def main():
             for path in sorted((a.base/folder).glob('*')):
                 if path.is_file():add(path,'audit/'+folder+'/'+path.name)
         add(a.base/'all_baselines_preflight.json','inputs_preflight.json')
+        add(a.base/'all_baselines_mlm_verified.json','mlm_verification.json')
         if (a.base/'all_baselines_storage_control.json').exists():
             add(a.base/'all_baselines_storage_control.json','storage_control/verification.json')
         for version in ('all_baselines_cpu_control','all_baselines_cpu_control_v2'):
