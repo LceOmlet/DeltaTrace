@@ -116,6 +116,8 @@ The rebuilt manuscript is `build/main.pdf`. The checked-in [reading copy](paper/
 
 ### Run model attribution and evaluation
 
+The current evaluation entry point defaults to **source-v2**: DT reference, deletion, and retrieval share an evidence-body candidate set, and token budgets are recomputed after filtering. It requires live FT and reports multiple budgets. See the [versioned evaluation instructions](experiments/official/README.md) and [CPU validation record](research/temporary/source_protocol_v2_20260910/README.md). The new protocol has not yet produced GPU quality results. Use `--evaluation-protocol released-v1` for this checkout's historical adapter; the exact published benchmark uses the frozen snapshot below.
+
 Model execution uses a source-based research environment with compiled finite-propagation extensions. The complete Qwen3 run was recorded on a **MetaX C550 64 GB**, with Python 3.12, PyTorch `2.8.0+metax3.5.3.9`, Transformers `4.57.3`, vendor FlashAttention `2.6.3+metax3.5.3.9torch2.8`, and vendor Triton `3.0.0+metax3.5.3.9`. See the [environment receipt](paper/iclr2027/results/data/qwen3_environment.json) for the complete package and checkpoint identity.
 
 The frozen method sources are in [`deltatrace/clean/`](deltatrace/clean/), version `clean-v1-20260909`:
@@ -156,7 +158,7 @@ python experiments/official/export_qwen3_paper.py \
   --output /absolute/path/qwen3-paper-export
 ```
 
-The task controller verifies completed tasks before reusing them when resuming. Per-example outputs include input identity, signed and positive attribution views, recorded deletion curves, metrics, and execution costs. Qwen3.5 development runs use `--family qwen35 --selection development16 --ft live` with the matching Qwen3.5 environment; published Qwen3 FT results are not used as its control.
+The task controller in the frozen snapshot verifies completed tasks before reusing them when resuming. Per-example outputs include input identity, signed and positive attribution views, recorded deletion curves, metrics, and execution costs. In the current checkout, historical Qwen3.5 development runs use `--evaluation-protocol released-v1 --family qwen35 --selection development16 --ft live` with the matching Qwen3.5 environment; published Qwen3 FT results are not used as its control.
 
 ### Experiment snapshots
 
@@ -167,6 +169,8 @@ The task controller verifies completed tasks before reusing them when resuming. 
 | Replay retention | [`7fa54d2`](https://github.com/LceOmlet/DeltaTrace/tree/7fa54d2b340f47aace09c528361cb62febfc496c) | [Paired implementation measurements](https://github.com/LceOmlet/DeltaTrace/tree/7fa54d2b340f47aace09c528361cb62febfc496c/research/temporary/cause_tolerance_20260909) |
 
 ### Metric conventions
+
+These conventions describe the published benchmark snapshot. The current source-v2 protocol is specified separately in the [evaluation instructions](experiments/official/README.md).
 
 - **RISE:** rank the complete signed DeltaTrace contributions. Lower is better.
 - **MAS and recovery:** use the positive part of the contributions. Recovery@10% measures the fraction of gold evidence in the top 10% of eligible input tokens.

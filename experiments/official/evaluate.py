@@ -1,7 +1,7 @@
-"""Evaluate frozen DT with the author's experiment inputs, targets and metrics.
+"""Evaluate frozen DT under source-v2 or the explicit legacy released-v1 protocol.
 
-The default paper mode uses whole released task caches. Development16 is a
-separate selection and never compares its mean against full-paper CSV means.
+Source-v2 uses the 11 complete evidence task caches with live, matched FT.
+Released-v1 retains the historical full-prompt masks and published comparison.
 No model, attention, FT method, or evaluator function is replaced here.
 """
 import argparse
@@ -22,33 +22,33 @@ HERE = Path(__file__).resolve().parent
 sha = lambda data: hashlib.sha256(data).hexdigest()
 
 
-def arguments():
+def arguments(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--family', choices=['qwen3', 'qwen35'], required=True)
     parser.add_argument('--environment', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--selection', choices=['paper', 'development16', 'smoke'], required=True)
-    parser.add_argument('--datasets', nargs='+', help='Paper: all released tasks by default; development/smoke: NI and MH.')
-    parser.add_argument('--ft', choices=['live', 'published'], help='Defaults to published FT for Qwen3 paper runs; otherwise live.')
-    return parser.parse_args()
+    parser.add_argument('--datasets', nargs='+', help='source-v2: 11 evidence tasks; released-v1: 13 paper tasks or NI/MH development/smoke.')
+    parser.add_argument('--ft', choices=['live', 'published'], help='source-v2 requires live; released-v1 Qwen3 paper defaults to published.')
+    parser.add_argument('--evaluation-protocol', choices=['source-v2', 'released-v1'], default='source-v2',
+                        help='Default: evidence-body reference, deletion and retrieval; released-v1 preserves the old protocol.')
+    parser.add_argument('--sentence-recovery', action='store_true',
+                        help='Additionally report whole sentence/line-unit retrieval with a separately labelled unit budget.')
+    return parser.parse_args(argv)
 
 
 def main():
     args = arguments()
     protocol = json.loads((HERE / 'protocol.json').read_bytes())
-    if args.datasets is None:
-        args.datasets = list(protocol['tasks']) if args.selection == 'paper' else ['niah_mq_q2', 'morehopqa']
-    if args.ft is None:
-        args.ft = 'published' if args.family == 'qwen3' and args.selection == 'paper' else 'live'
-    if len(set(args.datasets)) != len(args.datasets) or any(name not in protocol['tasks'] for name in args.datasets):
-        raise ValueError('Datasets must be unique tasks from the original released table.')
+    from evidence_protocol import (configure_run, source_span, select_source_tokens,
+        recovery_curve, sentence_recovery_curve, reference_token_ids, SOURCE_PROTOCOL)
+    configure_run(args, protocol)
+    source_mode = args.evaluation_protocol == SOURCE_PROTOCOL
+    evaluation_path = HERE / ('source_protocol.json' if source_mode else 'protocol.json')
+    evaluation_settings = json.loads(evaluation_path.read_bytes())
     sources = json.loads((ROOT / 'deltatrace/clean/sources.json').read_bytes())
     env = json.loads(args.environment.read_bytes())[args.family]
     development_inputs = json.loads((HERE/'development16_inputs.json').read_bytes())
-    if args.ft == 'published' and (args.family != 'qwen3' or args.selection != 'paper'):
-        raise ValueError('Published FT means require Qwen3 and the complete published task selection.')
-    if args.selection != 'paper' and not set(args.datasets).issubset({'niah_mq_q2', 'morehopqa'}):
-        raise ValueError('Development/smoke runs only select the frozen NI and MH tasks.')
     for path, receipt in sources['models'][args.family]['files'].items():
         assert sha((ROOT / path).read_bytes()) == receipt['sha256'], path
     official = Path(env['official_root'])
@@ -124,9 +124,15 @@ def main():
         'clean_sources_sha256': sha((ROOT / 'deltatrace/clean/sources.json').read_bytes()),
         'driver_sha256': sha(Path(__file__).read_bytes()),
         'recovery_diagnostics_sha256': sha((HERE / 'recovery_diagnostics.py').read_bytes()),
+        'evaluation_protocol': args.evaluation_protocol,
+        'evaluation_protocol_sha256': sha(evaluation_path.read_bytes()),
+        'evaluation_settings': evaluation_settings,
+        'evidence_protocol_sha256': sha((HERE / 'evidence_protocol.py').read_bytes()),
+        'sentence_recovery_enabled': args.sentence_recovery,
+        'ft_source': args.ft,
         'cases': [], 'costs': [],
         'weight_identity': weight_identity,
-        'published_number_comparison': args.family == 'qwen3' and args.selection == 'paper',
+        'published_number_comparison': not source_mode and args.family == 'qwen3' and args.selection == 'paper',
         'generation_calls': 0, 'sample_batch': 1,
         'compiler_cache_before': compiler_cache_before,
         'compiler_cache_limits': {name: getattr(torch._dynamo.config, name) for name in compiler_cache_before},
@@ -169,6 +175,8 @@ def main():
         original_forwards = {name: type(module).forward for name, module in model.named_modules()}
         original_bound_forwards = {name: module.forward for name, module in model.named_modules()}
         evaluator = LLMAttributionEvaluator(model, tokenizer)
+        if source_mode:
+            assert evaluator._ensure_pad_token_id() == tokenizer.eos_token_id
 
         def method_identity():
             for name, module in model.named_modules():
@@ -207,7 +215,6 @@ def main():
                 ids, mask, prompt_len, gen_len = engine._ensure_generation(ex.prompt, ex.target)
                 positions = list(engine.user_prompt_indices)
                 keep = ft.keep_token_indices(engine.user_prompt_tokens)
-                eligible = [positions[j] for j in keep]
                 formatted = evaluator.format_prompt(' ' + ex.prompt)
                 assert engine.prompt == formatted
                 eval_prompt = tokenizer(formatted, add_special_tokens=False, return_tensors='pt').input_ids.to(model.device)
@@ -218,7 +225,7 @@ def main():
                 standalone_ids = engine.user_prompt_ids[0].tolist()
                 actual_user_ids = ids[0, positions].tolist()
                 boundary_differences = [j for j,(a,b) in enumerate(zip(actual_user_ids,standalone_ids)) if a != b]
-                if args.family == 'qwen3' and args.selection != 'paper':
+                if not source_mode and args.family == 'qwen3' and args.selection != 'paper':
                     reference = development_inputs[key]
                     # The historical fixture hashes JSON token lists, whereas
                     # actual-call receipts below hash tensor bytes.
@@ -226,11 +233,30 @@ def main():
                     assert prompt_len == reference['prompt_len'] and positions == reference['user_positions']
                     assert keep == reference['keep_local_indices']
                 gold = data_utils.ruler_gold_prompt_token_indices(ex, tokenizer)
+                author_keep = list(keep)
+                source = offsets = None
+                if source_mode:
+                    source = source_span(dataset, ex.prompt)
+                    encoded = tokenizer(' ' + ex.prompt, add_special_tokens=False, return_offsets_mapping=True)
+                    assert list(encoded['input_ids']) == standalone_ids
+                    offsets = encoded['offset_mapping']
+                    keep = select_source_tokens(source, offsets, author_keep, gold)
+                    assert not set(boundary_differences) & set(keep), 'Source token mapping differs from the actual model input'
+                eligible = [positions[j] for j in keep]
                 row = {'dataset': dataset, 'index': index, 'input_ids': ids[0].cpu().tolist(),
                     'input_sha256': sha(ids.cpu().numpy().tobytes()), 'prompt_length': prompt_len,
                     'target_length': gen_len, 'user_positions': positions, 'keep': keep, 'gold': gold,
                     'input_matches_unmodified_author_evaluator': True, 'metrics': {}, 'status': 'entered'}
                 row['standalone_token_boundary_differences'] = boundary_differences
+                row['evaluation_protocol'] = args.evaluation_protocol
+                if source_mode:
+                    row['author_keep'] = author_keep
+                    row['source_span'] = source
+                    row['source_eligible_positions'] = eligible
+                    row['source_eligible_count'] = len(keep)
+                    row['source_gold_count'] = len(set(gold) & set(keep))
+                    reference_ids = reference_token_ids(row['input_ids'], eligible, tokenizer.eos_token_id)
+                    row['reference_input_sha256'] = sha(np.asarray(reference_ids, dtype=np.int64).tobytes())
                 report['cases'].append(row)
                 report['status'] = 'attribute_' + key
                 save()
@@ -242,8 +268,12 @@ def main():
                 model.set_attn_implementation('flash_attention_2')
 
                 def attribute():
-                    base = ids.clone()
-                    base[0, eligible] = tokenizer.eos_token_id
+                    if source_mode:
+                        base = ids.new_tensor([reference_ids])
+                        assert sha(base.cpu().numpy().tobytes()) == row['reference_input_sha256']
+                    else:
+                        base = ids.clone()
+                        base[0, eligible] = tokenizer.eos_token_id
                     if args.family == 'qwen3':
                         before, after = capture_checkpoint_pair(model, base, ids, mask, prompt_len)
                         result = propagate_paired_secant(model, before, after, pv_rule='content_P1', finite_attention=finite_fa)
@@ -266,6 +296,8 @@ def main():
                 model.set_attn_implementation('eager')
 
                 def score(method, scores):
+                    if source_mode:
+                        scores = scores.clamp_min(0)
                     curve = {'actual_input_hashes': [], 'deleted_user_indices': [], 'raw_response': []}
                     def before_score(_module, call_args, kwargs):
                         actual = kwargs['input_ids'].detach().cpu()
@@ -291,12 +323,24 @@ def main():
                     finally:
                         sys.setprofile(None)
                         handle.remove()
-                    assert len(curve['actual_input_hashes']) == 21
+                    assert len(curve['actual_input_hashes']) == min(20, len(keep)) + 1
                     assert curve['actual_input_hashes'][0] == row['input_sha256']
+                    if source_mode:
+                        assert curve['actual_input_hashes'][-1] == row['reference_input_sha256']
+                        curve['reference_matches_final_deletion'] = True
                     curve['rise'], curve['mas'], curve['rise_plus_ap'] = map(float, values)
-                    curve['needle'] = float(ft.evaluate_attr_recovery_skip_tokens(scores[None],
-                        keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1)) if gold else None
-                    if gold:
+                    if source_mode:
+                        curve['recovery'] = recovery_curve(scores.detach().cpu().numpy(), keep, gold,
+                                                           evaluation_settings['budget_fractions'])
+                        at10 = next(p for p in curve['recovery']['points'] if p['fraction'] == .1)
+                        curve['needle'] = at10['recall']
+                        if args.sentence_recovery:
+                            curve['sentence_recovery'] = sentence_recovery_curve(ex.prompt, source, offsets,
+                                scores.detach().cpu().numpy(), keep, gold, evaluation_settings['budget_fractions'])
+                    else:
+                        curve['needle'] = float(ft.evaluate_attr_recovery_skip_tokens(scores[None],
+                            keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1)) if gold else None
+                    if gold and not source_mode:
                         curve['needle_diagnostics'] = reported_recovery_diagnostics(
                             scores.detach().cpu().numpy(), keep, gold, curve['needle'])
                     row['metrics'][method] = curve
@@ -328,10 +372,18 @@ def main():
                         vectors[key+f'_FT_K{hops}_prompt'] = ft_score.numpy()
                         if hops == 1:score('FT_K1', ft_score)
                         else:
-                            row['FT_K3_needle'] = float(ft.evaluate_attr_recovery_skip_tokens(ft_score[None],
-                                keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1))
-                            row['FT_K3_needle_diagnostics'] = reported_recovery_diagnostics(
-                                ft_score.detach().cpu().numpy(), keep, gold, row['FT_K3_needle'])
+                            if source_mode:
+                                row['FT_K3_recovery'] = recovery_curve(ft_score.numpy(), keep, gold,
+                                                                       evaluation_settings['budget_fractions'])
+                                row['FT_K3_needle'] = next(p['recall'] for p in row['FT_K3_recovery']['points'] if p['fraction'] == .1)
+                                if args.sentence_recovery:
+                                    row['FT_K3_sentence_recovery'] = sentence_recovery_curve(ex.prompt, source, offsets,
+                                        ft_score.numpy(), keep, gold, evaluation_settings['budget_fractions'])
+                            else:
+                                row['FT_K3_needle'] = float(ft.evaluate_attr_recovery_skip_tokens(ft_score[None],
+                                    keep_prompt_token_indices=keep, gold_prompt_token_indices=gold, top_fraction=.1))
+                                row['FT_K3_needle_diagnostics'] = reported_recovery_diagnostics(
+                                    ft_score.detach().cpu().numpy(), keep, gold, row['FT_K3_needle'])
                 else:
                     row['published_FT_reference'] = protocol['tasks'][dataset]['FT_references']
                 row['status'] = 'complete'
