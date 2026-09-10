@@ -30,6 +30,8 @@ def main():
             for path in sorted((a.base/folder).glob('*')):
                 if path.is_file():add(path,'audit/'+folder+'/'+path.name)
         add(a.base/'all_baselines_preflight.json','inputs_preflight.json')
+        if (a.base/'all_baselines_storage_control.json').exists():
+            add(a.base/'all_baselines_storage_control.json','storage_control/verification.json')
         for path in sorted((a.base/'all_baselines_cpu_control').glob('*/*/*/*')):
             if path.is_file():add(path,'storage_control/'+path.relative_to(a.base/'all_baselines_cpu_control').as_posix())
         manifest=dict(created=time.time(),status='completed_case_snapshot',method_cases=method_cases,files=files)
