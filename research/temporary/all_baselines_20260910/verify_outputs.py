@@ -41,6 +41,10 @@ def raw_values(item,method,aggregation,old):
 def main():
     analysis=data('analysis.json');assert analysis['status']=='verified_complete_all_baselines'
     assert analysis['cases']==448 and analysis['new_method_cases']==2240
+    precision_control=data('scoring_precision_control/verification.json')
+    assert precision_control['status']=='original_hotpot_precision_restored_metrics_and_selections_unchanged'
+    assert precision_control['scorer_sha256']==sha(HERE/'score_cases.py') and precision_control['control_sha256']==sha(HERE/'scoring_precision_control.py')
+    for name,digest in precision_control['output_sha256'].items():assert sha(HERE/name)==digest
     for name,digest in analysis['code_sha256'].items():assert sha(ROOT/name)==digest
     plan=data('protocol.json');assert sha(HERE/'protocol.json')==analysis['protocol_sha256']
     assert sha(HERE/'mlm_verification.json')==analysis['mlm_verification_sha256']
@@ -125,9 +129,9 @@ def main():
             second=(task,index,method,aggregation,view,'all_body_tokens',hi)
             assert set(selected[first]['selected_units'])<=set(selected[second]['selected_units']);nested+=1
     assert new_rows==2240*2*6 and nested==48*13*2
-    finish(analysis,plan,actual,rows,budget_checks,nested)
+    finish(analysis,plan,actual,rows,budget_checks,nested,precision_control)
 
-def finish(analysis,plan,actual,rows,budget_checks,nested):
+def finish(analysis,plan,actual,rows,budget_checks,nested,precision_control,*,dry_run=False):
     summary_groups=defaultdict(list)
     for row in rows:
         identity=tuple(row[k] for k in ('dataset','method','aggregation','view','budget_unit','fraction'))
@@ -206,12 +210,16 @@ def finish(analysis,plan,actual,rows,budget_checks,nested):
             if target=='verification.json':continue  # Written at the end of this verification.
             assert (HERE/target.split('#')[0]).exists(),target;report_links+=1
     outputs=['analysis.json','per_case.csv','summary.csv','primary_recall10.csv','selections.json','RESULTS.md','README.md',
-        'execution_compatibility.json','inputs_preflight.json','mlm_verification.json','storage_control/verification.json']
+        'execution_compatibility.json','inputs_preflight.json','mlm_verification.json','storage_control/verification.json',
+        'scoring_precision_control/verification.json','SCORING_PRECISION_FIX.md']
     result=dict(status='passed',case_count=448,new_method_cases=2240,score_rows=budget_checks,independent_new_score_rows=2240*12,
         nested_hotpot_transitions=nested,over_budget_selections=0,paired_family_comparisons=12,
         exact_initial_controls=3,bitwise_storage_controls=1,frozen_method_files=method_files,
+        unchanged_metric_rows_after_precision_correction=precision_control['unchanged_score_rows'],
+        exact_reused_hotpot_ranking_score_rows=precision_control['prior_hotpot_rankings_and_scores_bitwise_equal_rows'],
         unchanged_hotpot_artifacts=unchanged,report_local_links=report_links,
         output_sha256={name:sha(HERE/name) for name in outputs},verifier_sha256=sha(Path(__file__)))
+    if dry_run:return result
     (HERE/'verification.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(result,indent=2))
 

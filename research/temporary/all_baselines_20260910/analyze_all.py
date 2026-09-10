@@ -89,6 +89,7 @@ def verify_reuse(rows,selections):
                 prior={'spent_tokens':'spent_all_tokens','unused_tokens':'unused_all_tokens'}.get(metric,metric)
                 assert_close(row[metric],old[prior])
             assert selected['selected_units']==old_select[key]['selected_units'] and selected['selected_tokens']==old_select[key]['selected_tokens']
+            assert selected['ranked_units']==old_select[key]['ranked_units'] and selected['ranked_scores']==old_select[key]['ranked_scores']
         else:
             old=vt[row['dataset'],row['index'],method,row['view'],row['fraction']]
             for metric in ('recall','budget','gold','ceiling'):assert_close(row[metric],old[metric])

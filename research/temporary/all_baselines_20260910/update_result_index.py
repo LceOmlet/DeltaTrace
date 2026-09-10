@@ -33,15 +33,17 @@ establish measurement neutrality or independent holdout evidence. See the
 and [independent verification](research/temporary/all_baselines_20260910/verification.json).
 {end}
 '''
-    path=ROOT/'README.md';text=path.read_text(encoding='utf-8')
+    path=ROOT/'README.md';text=path.read_bytes().decode('utf-8')
     if start in text:
         assert text.count(start)==text.count(end)==1
         lo=text.index(start);hi=text.index(end)+len(end);text=text[:lo]+section.rstrip()+text[hi:]
     else:
         anchor='## Results\n';assert text.count(anchor)==1
         text=text.replace(anchor,anchor+'\n'+section,1)
-    path.write_text(text,encoding='utf-8')
-    (HERE/'RUN_STATUS.md').write_text('# Complete and independently verified\n\nAll 2,240 new method-case results on the 448 frozen inputs are complete. DT/FT vectors were reused.\n\nSee [results](RESULTS.md), [verification](verification.json), and [raw records](raw).\n',encoding='utf-8')
+    text=text.replace('The new protocol has not yet produced GPU quality results.',
+        'For the completed frozen VT/HotpotQA baseline comparison, use the [dedicated protocol and runner](research/temporary/all_baselines_20260910/RESULTS.md).')
+    path.write_bytes(text.encode('utf-8'))
+    (HERE/'RUN_STATUS.md').write_text('# Complete and independently verified\n\nAll 2,240 new method-case results on the 448 frozen inputs are complete. DT/FT vectors were reused.\n\nSee [results](RESULTS.md), [verification](verification.json), and [raw records](raw).\n',encoding='utf-8',newline='\n')
     receipt=dict(status='verified_results_indexed',verification_sha256=sha(HERE/'verification.json'),readme_sha256=sha(path),
         builder_sha256=sha(HERE/'update_result_index.py'),run_status_sha256=sha(HERE/'RUN_STATUS.md'))
     (HERE/'index_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')

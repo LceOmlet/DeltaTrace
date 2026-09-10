@@ -30,6 +30,36 @@ The implementation uses FlashAttention-style tiled propagation for dense attenti
 
 ## Results
 
+<!-- frozen-all-baselines:start -->
+### Frozen VT and HotpotQA comparison across all seven algorithms
+
+All five remaining baselines have been remeasured on the same **448 inputs**,
+yielding **2,240 new method-case records**. DT and FT reuse their verified vectors.
+The fixed VT policy reconstructs the stored generated answer and ranks positive
+eligible body-token scores. The HotpotQA policy retains the entire response,
+sums signed scores over native body sentences, and charges every body token in
+the longest affordable ranking prefix.
+
+| Method | VT macro Recall@10% | HotpotQA Recall@10% |
+| --- | ---: | ---: |
+| DeltaTrace | 60.20% | 72.05% |
+| FlashTrace K3 | 56.14% | 66.67% |
+| Perturbation | 18.12% | 37.50% |
+| REAGENT | 17.84% | 34.72% |
+| CLP | 19.95% | 42.88% |
+| IFR | 58.77% | 75.87% |
+| AttnLRP † | 59.44% | 74.83% |
+
+VT macro equally weights four 100-case tasks; HotpotQA uses official
+supporting-fact Recall over 48 cases. Their metric denominators differ.
+Perturbation/REAGENT/CLP use the author's 20-segment approximation. † AttnLRP
+includes a documented FP16 zero-ratio repair and lossless saved-tensor offload.
+This reporting scope was chosen retrospectively after DT/FT results; it does not
+establish measurement neutrality or independent holdout evidence. See the
+[complete results, adjusted paired intervals, technical history and raw data](research/temporary/all_baselines_20260910/RESULTS.md)
+and [independent verification](research/temporary/all_baselines_20260910/verification.json).
+<!-- frozen-all-baselines:end -->
+
 ### HotpotQA v3: preserved context and full body-token costs
 
 The new **48-case run** preserves the original reasoning and answer input, masks only the initial answer target weights, and charges every tokenizer token assigned to retrieved native body sentences. Selection is the longest affordable ranking prefix, with unused budget recorded. Both full-response and answer-conditioned targets, and both signed-sum and positive-mean pooling, remain reported. At 10% full body-token budget, answer-conditioned supporting-fact Recall is **DT 35.59% versus FT K3 51.04%** for signed sums and **48.96% versus 64.76%** for positive means. The two full-response differences have descriptive adjusted intervals crossing zero. See [v3 results, full costs and verification](research/temporary/hotpot_context_v3_20260910/RESULTS.md). These specific repairs do not establish measurement neutrality or independent holdout evidence.
@@ -140,7 +170,7 @@ The rebuilt manuscript is `build/main.pdf`. The checked-in [reading copy](paper/
 
 ### Run model attribution and evaluation
 
-The current evaluation entry point defaults to **source-v2**: DT reference, deletion, and retrieval share an evidence-body candidate set, and token budgets are recomputed after filtering. It requires live FT and reports multiple budgets. See the [versioned evaluation instructions](experiments/official/README.md) and [CPU validation record](research/temporary/source_protocol_v2_20260910/README.md). The new protocol has not yet produced GPU quality results. Use `--evaluation-protocol released-v1` for this checkout's historical adapter; the exact published benchmark uses the frozen snapshot below.
+The current evaluation entry point defaults to **source-v2**: DT reference, deletion, and retrieval share an evidence-body candidate set, and token budgets are recomputed after filtering. It requires live FT and reports multiple budgets. See the [versioned evaluation instructions](experiments/official/README.md) and [CPU validation record](research/temporary/source_protocol_v2_20260910/README.md). For the completed frozen VT/HotpotQA baseline comparison, use the [dedicated protocol and runner](research/temporary/all_baselines_20260910/RESULTS.md). Use `--evaluation-protocol released-v1` for this checkout's historical adapter; the exact published benchmark uses the frozen snapshot below.
 
 Model execution uses a source-based research environment with compiled finite-propagation extensions. The complete Qwen3 run was recorded on a **MetaX C550 64 GB**, with Python 3.12, PyTorch `2.8.0+metax3.5.3.9`, Transformers `4.57.3`, vendor FlashAttention `2.6.3+metax3.5.3.9torch2.8`, and vendor Triton `3.0.0+metax3.5.3.9`. See the [environment receipt](paper/iclr2027/results/data/qwen3_environment.json) for the complete package and checkpoint identity.
 

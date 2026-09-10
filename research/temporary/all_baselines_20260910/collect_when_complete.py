@@ -56,8 +56,9 @@ def main():
         assert target.stat().st_size==transfer['bytes'] and hashlib.sha256(target.read_bytes()).hexdigest()==transfer['sha256']
     finally:client.close()
     env=dict(os.environ,PYTHONPATH=str(HERE.parent/'needle_gap_20260910/.deps'))
-    commands=[['import_results.py','--archive',str(target)],['analyze_all.py','--run',str(HERE/'raw')],
-        ['build_report.py'],['verify_outputs.py']]
+    commands=[['import_results.py','--archive',str(target)],['analyze_all.py','--run',str(HERE/'raw')]]
+    if (HERE/'scoring_precision_control/before.json').exists():commands.append(['scoring_precision_control.py'])
+    commands += [['build_report.py'],['verify_outputs.py']]
     for args in commands:
         print(json.dumps(dict(stage=args[0])),flush=True)
         subprocess.run([sys.executable,'-u',str(HERE/args[0]),*args[1:]],cwd=ROOT,env=env,check=True)

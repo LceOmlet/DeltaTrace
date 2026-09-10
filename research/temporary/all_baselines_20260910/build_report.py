@@ -203,6 +203,19 @@ startup, failed attempts, controls, orchestration, transfer and CPU evaluation
 are additional. This table is not a separately standardized efficiency benchmark;
 the pre-offload VT pilots and subsequent offloaded cases use different storage.
 
+## CPU scoring precision audit
+
+The final independent verifier detected an unintended float32 cast of the reused
+HotpotQA DT vector in the first combined CPU scoring draft. The scorer now
+preserves native v3 precision before float64 sentence sums; VT retains its fixed
+float32 token view. The initial draft and its hashes are preserved. This correction
+changes 288 DT sentence-score arrays, while all 34,944 per-case metric rows,
+390 summary rows and the primary CSV remain byte-identical. Every ranking order
+and selected set is unchanged, and all 864 reused HotpotQA ranking-score records
+now match v3 exactly. No attribution is rerun or changed. See the
+[correction record](SCORING_PRECISION_FIX.md) and
+[precision control](scoring_precision_control/verification.json).
+
 ## Artifacts and reproduction
 
 - [Protocol JSON](protocol.json), [input audit](input_audit.json), [all-input CPU preflight](inputs_preflight.json).

@@ -10,7 +10,9 @@ HP_METRICS=('precision','recall','f1','exact_match','complete_support','token_re
     'spent_tokens','unused_tokens','selected_sentences','empty_selection')
 
 def score_case(item,candidate,label,method,values,*,aggregation='signed_sum'):
-    scores=np.asarray(values,dtype=np.float32)
+    # Native HotpotQA v3 retains the stored signed vector's precision before
+    # float64 sentence sums; only the frozen VT token view converts to float32.
+    scores=np.asarray(values,dtype=np.float64 if item['dataset']=='hotpotqa_long' else np.float32)
     assert scores.shape==(len(item['user_positions']),) and np.isfinite(scores).all()
     base=dict(dataset=item['dataset'],index=item['index'],method=method,target_mode=item['target_mode'],aggregation=aggregation)
     rows=[];selections=[]
