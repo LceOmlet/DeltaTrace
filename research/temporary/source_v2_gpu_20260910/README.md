@@ -1,8 +1,10 @@
-# 新 reference 候选的 GPU 配对验证
+# VT 与 HotpotQA 的 Recall 修复验证
+
+当前聚焦 Recall。按用户要求停止 NI 和持续全量队列，改为 **16 例开发 + 80 例留出验证**。开发选择了“保留原 reference、正文内用句内正分数均值排序”；DT 与 live FT K3 使用相同聚合方式和同一个 10% token 预算。开发集 HotpotQA 为 86.17% 对 80.16%；VT 为 70.84% 对 70.84%，逐例都已到预算上限。80 例验证正在运行，尚不把开发收益当成成立的优势。见 [全部开发候选](recall_development/RESULTS.md)、[固定计划](RECALL_PILOT.md) 和 [验证前固定方案](recall_development/choice.json)。
 
 **新 reference 在 VT H4-C1 全部 100 例上使 needle 变差。** 共同正文范围、10% 预算下，旧 reference DT 为 71.24%，新 reference DT 为 66.69%，live FT K3 为 71.33%；新−旧为 −4.55 个百分点，95% 配对区间 [−5.20, −3.93]。100 例中 84 例下降、1 例提高、15 例持平。RISE/MAS 虽然改善，不能代替 needle 改善证据。见 [第一个完整任务的中途报告](interim_1/RESULTS.md)。
 
-预定的 1,048 例对照仍在执行，HotpotQA 已接续启动。结论覆盖范围目前限于 VT H4-C1，不把这一任务外推为全部任务结果。
+HotpotQA 全部 48 例也已完成：共同正文范围与 10% 预算下，原 reference DT 为 40.56%，新 reference 为 31.87%，live FT K3 为 45.35%。更改 reference 使 Recall 下降 8.69 点。见 [两个完整任务的配对报告](interim_focus_2/RESULTS.md)。
 
 固定设计见 [PROTOCOL.md](PROTOCOL.md)：每例重新执行新、旧 reference 的 DT，并在相同正文候选集、相同预算和相同删除规则下评分；FT K1/K3 同例 live 运行。主比较是 Recall@10% 配对差，次要指标包括多预算 recovery、precision、RISE、MAS。全部任务和失败结果都保留。
 
@@ -10,7 +12,8 @@
 
 - 三例 GPU 执行检查通过；本地从向量重算 recovery，并重建两个 reference 及所有实际删除输入哈希。模型操作耗时合计 141.58 秒，包含三次模型加载。
 - 原 `full_v1` 队列完成 40 个 NI MQ-Q2 样本后，按用户要求调整优先级。已完成和未完成数据均保留，该前缀不标作完整任务结果。
-- `full_v2` 已完成 VT H4-C1 全部 100 例并通过独立复核，正在运行 HotpotQA，之后运行其余 VT 与全部 NI。顺序变更见 [PRIORITY.md](PRIORITY.md)，正式对照参数未变。
+- 完成 VT H4-C1 全部 100 例、HotpotQA 全部 48 例并通过独立复核。后续 VT H2-C3 前缀在用户要求改为 Recall 小样本研究时停止；已有完整任务与前缀均保留。
+- `recall_dev_v1` 的 16 例、64 次 DT 和 32 次 live FT 归因已完成。原方向对照与此前运行逐位一致；全部正负候选都保留。选定方案已固定后启动 `recall_validation_v1` 的 80 例留出验证。
 - 新增执行开关和汇总校验通过 28 项测试；13 个旧任务、1,243 例的汇总保持兼容，27 项冻结方法依赖哈希一致，见 [实现回执](implementation_validation.json)。
 
 ## 三例执行检查
@@ -44,7 +47,7 @@ python research/temporary/source_v2_gpu_20260910/analyze.py \
   --output research/temporary/source_v2_gpu_20260910/analysis
 ```
 
-完整结果尚未产生。任何“修复有效”的结论必须由共同评测规则下的配对收益支持。
+最初的 1,048 例队列按用户收窄任务的要求停止，不再把它列为待完成目标。当前待验证的是预先固定的 80 例 Recall 修复实验。
 
 原始文件以确定性 gzip 保存在 `raw/`，清单同时记录压缩前后的 SHA-256。恢复到一个新目录后即可用上面的分析入口复核，例如：
 

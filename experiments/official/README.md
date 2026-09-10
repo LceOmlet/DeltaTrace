@@ -2,7 +2,7 @@
 
 默认协议为 [`source-v2`](source_protocol.json)：只在证据正文内构造 DT reference、做 RISE/MAS 删除和计算 recovery。旧的全 prompt 协议显式使用 `--evaluation-protocol released-v1`；原 [`protocol.json`](protocol.json)、原始结果和冻结方法源码保留。
 
-**效果状态：新 reference 在已完成的 VT H4-C1 全部 100 例上使 Recall@10% 下降 4.55 个百分点，95% 配对区间为 [−5.20, −3.93]。** RISE/MAS 改善，其他任务仍在补跑；这一候选不能称为 needle 修复成功。设计与完整任务的中途结果见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
+**效果状态：正文 reference 使 Recall 变差，不能作为 needle 修复推荐。** VT H4-C1 全部 100 例下降 4.55 点，HotpotQA 全部 48 例下降 8.69 点。当前检验“保留原 reference、正文内使用句聚合排序”的 Recall 修复，DT 与 FT 使用同样 token 预算；16 例开发后固定了方案，80 例留出验证正在运行。见 [GPU 补跑](../../research/temporary/source_v2_gpu_20260910/README.md)。
 
 ## source-v2 的评分规则
 
@@ -57,6 +57,6 @@ python experiments/official/evaluate.py --family qwen3 --environment /path/envir
 
 ## 已验证范围
 
-新协议实现与 CPU 全量检查见 [source-v2 验证记录](../../research/temporary/source_protocol_v2_20260910/README.md)。1,048 例真实输入的正文映射、gold 保留、预算和 reference 已检查；**尚未运行新 reference 的 GPU 归因与完整删除评测，因此没有新的 DT/FT 质量结论**。
+新协议实现与 CPU 全量检查见 [source-v2 验证记录](../../research/temporary/source_protocol_v2_20260910/README.md)。1,048 例真实输入的正文映射、gold 保留、预算和 reference 已检查。后续已完成 VT H4-C1 100 例、HotpotQA 48 例的新旧 reference GPU 归因、live FT 和完整删除评测；独立复核与负向 Recall 结果见 [GPU 记录](../../research/temporary/source_v2_gpu_20260910/interim_focus_2/RESULTS.md)。
 
 历史入口执行范围见 [`validation.json`](validation.json)，该文件是旧版本的执行记录。旧向量离线原因审计见 [needle 报告](../../research/temporary/needle_gap_20260910/README.md)。[`retrieval_views.py`](retrieval_views.py) 是该审计的辅助视图，不是 source-v2 的生产实现。

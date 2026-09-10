@@ -19,7 +19,8 @@ def main():
     parser.add_argument('--plots', action='store_true')
     args = parser.parse_args()
     analysis = json.loads((args.analysis / 'analysis.json').read_bytes())
-    assert analysis['quality_conclusion_allowed'] and analysis['case_count'] == 1048
+    assert analysis['quality_conclusion_allowed'] and analysis['full_suite_complete']
+    assert analysis['case_count'] == analysis['expected_case_count']
     with (args.analysis / 'paired_cases.csv').open(encoding='utf-8', newline='') as stream:
         rows = list(csv.DictReader(stream))
     tasks = list(analysis['tasks'])
@@ -30,7 +31,7 @@ def main():
     means = {task: {method: statistics.mean(float(r[method + '_recall@10']) for r in rows if r['dataset'] == task)
                     for method in ('DT_full_reference', 'DT', 'FT_K3')} for task in tasks}
     lines = ['# source-v2 GPU 配对补跑结果', '',
-        f'完整运行覆盖 11 个任务、1,048 例。相同正文范围与预算下，新 reference 相对旧 reference 的 DT Recall@10% 按任务等权平均差为 **{ci_text(primary, 100, 2)} 个百分点**（方括号为 95% 配对 bootstrap 区间），主比较{description}。', '',
+        f'当前范围的完整运行覆盖 {analysis["task_count"]} 个任务、{analysis["case_count"]:,} 例。相同正文范围与预算下，新 reference 相对旧 reference 的 DT Recall@10% 按任务等权平均差为 **{ci_text(primary, 100, 2)} 个百分点**（方括号为 95% 配对 bootstrap 区间），主比较{description}。', '',
         '两种 reference 的 DT 均为本次重新归因，使用相同模型、输入、固定完整响应和方法实现；FT K1/K3 也在同例 live 运行。指标范围和预算完全相同，差值隔离 reference 的影响。', '',
         '## 各任务 Recall@10%', '',
         '数值为百分比。FT 是本次 K3，旧 DT 是本次全 prompt reference 归因后放到相同正文范围评分，不能把这一列当作旧论文原始指标。', '',
@@ -49,7 +50,7 @@ def main():
         c = group['contrasts']['reference_change']
         lines.append(f'| {name} | {ci_text(c["recall@10"], 100, 2)} | {ci_text(c["rise"])} | {ci_text(c["mas"])} |')
     lines += ['', '## 多预算结果', '',
-        '同一正文候选集上重新计算每个预算。下表是全部 11 个任务等权的新−旧 reference 差值；不从次要预算中选择最好的数字作为主结论。', '',
+        f'同一正文候选集上重新计算每个预算。下表是当前全部 {analysis["task_count"]} 个任务等权的新−旧 reference 差值；不从次要预算中选择最好的数字作为主结论。', '',
         '| token 预算 | Recall 差值（百分点） | Precision 差值（百分点） | 上限归一化 recovery 差值（百分点） |',
         '| --- | ---: | ---: | ---: |']
     for percent in (5, 10, 20, 30, 50):
@@ -81,7 +82,7 @@ def main():
         '- 旧冻结运行的向量与本次旧 reference 重跑存在数值差异；主比较使用本次两份新向量，不复用旧向量充当配对对照。逐例最大绝对差另存。',
         f'- 已记录模型操作耗时合计 {analysis["measured_call_seconds"]/3600:.2f} 小时，峰值分配显存 {analysis["peak_allocated_bytes"]/2**30:.2f} GiB。该成本包含补充旧 reference 对照、FT 与评测，不是单次 DT 归因成本。',
         '- 先导三例另耗时 141.58 秒；调换执行次序前中断的 NI 阶段另记录 550.96 秒已完成模型操作，未完成的调用耗时不在该数内。两项均不进入正式结果，见 [附加运行成本](auxiliary_costs.json)。',
-        '- 固定设计见 [PROTOCOL.md](PROTOCOL.md)，逐例数据见 [paired_cases.csv](analysis/paired_cases.csv)，完整统计及输入回执见 [analysis.json](analysis/analysis.json)。', '']
+        '- 原始设计见 [PROTOCOL.md](PROTOCOL.md)，用户指定的 VT/HotpotQA 范围及 FT K3 删除补充见 [FOCUS.md](FOCUS.md)。逐例数据见 [paired_cases.csv](analysis/paired_cases.csv)，完整统计及输入回执见 [analysis.json](analysis/analysis.json)。', '']
     args.output.mkdir(parents=True, exist_ok=True)
     if args.plots:
         import matplotlib
@@ -114,7 +115,7 @@ def main():
         axes[0].set_yticks(range(len(labels)), labels)
         axes[0].invert_yaxis()
         fig.suptitle('Paired reference comparison on identical evidence-body budgets', fontsize=13, x=.02, ha='left')
-        fig.text(.02, .015, '1,048 cases | 11 fixed tasks | 95% paired bootstrap intervals | Green: improvement; red: decline; gray: interval crosses zero', fontsize=8, color='#475569')
+        fig.text(.02, .015, f'{analysis["case_count"]:,} cases | {analysis["task_count"]} fixed tasks | 95% paired bootstrap intervals | Green: improvement; red: decline; gray: interval crosses zero', fontsize=8, color='#475569')
         fig.tight_layout(rect=(0, .04, 1, .94))
         fig.savefig(args.output / 'paired_reference_effects.png', dpi=200, facecolor='white')
         svg = args.output / 'paired_reference_effects.svg'

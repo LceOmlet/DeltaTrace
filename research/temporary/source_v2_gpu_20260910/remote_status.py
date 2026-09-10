@@ -7,7 +7,7 @@ import zipfile
 
 BASE = Path('/tmp/codex_source_v2_gpu_20260910_v1')
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('stage', choices=['smoke_v1', 'full_v1', 'full_v2'])
+parser.add_argument('stage', choices=['smoke_v1', 'full_v1', 'full_v2', 'focus_v1'])
 parser.add_argument('--export', action='store_true')
 parser.add_argument('--export-completed', action='store_true')
 args = parser.parse_args()

@@ -68,7 +68,11 @@ def main():
     smoke = suite['plan']['stage'] == 'smoke'
     assert not smoke or args.allow_smoke, 'Smoke results are execution checks, not quality conclusions'
     assert suite['plan']['protocol'] == digest(HERE / 'PROTOCOL.md')
+    focus = suite['plan'].get('scope') == 'vt_hotpot'
     expected_tasks = ['niah_mq_q2', 'vt_h4_c1', 'hotpotqa_long'] if smoke else list(SUPPORTED_TASKS)
+    if focus:
+        assert not smoke and suite['plan']['focus_addendum_sha256'] == digest(HERE / 'FOCUS.md')
+        expected_tasks = [t for t in SUPPORTED_TASKS if t.startswith('vt_') or t == 'hotpotqa_long']
     assert len(suite['plan']['tasks']) == len(expected_tasks) and set(suite['plan']['tasks']) == set(expected_tasks)
     receipts_by_task = {r['dataset']: r for r in suite['completed_tasks']}
     assert len(receipts_by_task) == len(suite['completed_tasks']) and set(receipts_by_task) <= set(expected_tasks)
@@ -78,6 +82,7 @@ def main():
     expected_tasks = [t for t in expected_tasks if t in receipts_by_task]
     assert expected_tasks, 'No complete task is available for an interim report'
     release = json.loads((ROOT / 'experiments/official/protocol.json').read_bytes())
+    expected_cases = 3 if smoke else sum(release['tasks'][t]['count'] for t in (expected_tasks + remaining))
     fractions = json.loads((ROOT / 'experiments/official/source_protocol.json').read_bytes())['budget_fractions']
     assert fractions == FRACTIONS
     # A task keeps the same resamples in interim and final reports, regardless
@@ -235,7 +240,9 @@ def main():
             task_reports[t]['method_means'][method][field] for t in tasks])) for field in FIELDS}
             for method in ('DT', 'DT_full_reference', 'FT')}
     output = {'status': 'verified_complete_tasks_partial_suite' if interim else 'verified_complete',
-        'scope': 'smoke_execution_only' if smoke else 'complete_task_interim' if interim else 'full_1048_paired_evaluation',
+        'scope': 'smoke_execution_only' if smoke else 'complete_task_interim' if interim else f'full_{expected_cases}_paired_evaluation',
+        'task_scope': 'vt_hotpot' if focus else 'all', 'expected_case_count': expected_cases,
+        'focus_addendum_sha256': digest(HERE / 'FOCUS.md') if focus else None,
         'quality_conclusion_allowed': not smoke, 'case_count': len(records), 'task_count': len(expected_tasks),
         'full_suite_complete': not smoke and not interim, 'remaining_tasks': remaining,
         'deletion_ranking_verified_from_saved_vectors': True,

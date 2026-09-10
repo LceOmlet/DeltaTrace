@@ -24,20 +24,25 @@ def main():
     parser.add_argument('--environment', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--stage', choices=['smoke', 'full'], required=True)
+    parser.add_argument('--scope', choices=['all', 'vt_hotpot'], default='all')
     parser.add_argument('--task-order', nargs='+', choices=SUPPORTED_TASKS,
                         help='Change execution priority while retaining every predeclared full task.')
     args = parser.parse_args()
     tasks = ['niah_mq_q2', 'vt_h4_c1', 'hotpotqa_long'] if args.stage == 'smoke' else list(SUPPORTED_TASKS)
+    if args.scope == 'vt_hotpot':
+        assert args.stage == 'full'
+        tasks = [t for t in SUPPORTED_TASKS if t.startswith('vt_') or t == 'hotpotqa_long']
     if args.task_order:
-        assert args.stage == 'full' and len(args.task_order) == len(SUPPORTED_TASKS)
-        assert set(args.task_order) == set(SUPPORTED_TASKS)
+        assert args.stage == 'full' and len(args.task_order) == len(tasks)
+        assert set(args.task_order) == set(tasks)
         tasks = args.task_order
     selection = 'smoke' if args.stage == 'smoke' else 'paper'
     args.output.mkdir(parents=True, exist_ok=True)
     fingerprint = {'protocol': digest(HERE / 'PROTOCOL.md'), 'environment': digest(args.environment),
         'code': {name: digest(OFFICIAL / name) for name in ['evaluate.py', 'evidence_protocol.py',
             'source_protocol.json', 'summarize.py', 'recovery_diagnostics.py']},
-        'controller_sha256': digest(Path(__file__)), 'stage': args.stage, 'tasks': tasks}
+        'controller_sha256': digest(Path(__file__)), 'stage': args.stage, 'tasks': tasks,
+        'scope': args.scope, 'focus_addendum_sha256': digest(HERE / 'FOCUS.md') if args.scope == 'vt_hotpot' else None}
     identity_path = args.output / 'plan_identity.json'
     if identity_path.exists():
         assert json.loads(identity_path.read_bytes()) == fingerprint, 'Refuse to mix code or experiment plans'

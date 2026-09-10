@@ -15,7 +15,7 @@ def main():
     assert analysis['status'] == 'verified_complete_tasks_partial_suite'
     assert analysis['scope'] == 'complete_task_interim' and not analysis['full_suite_complete']
     lines = ['# GPU 配对补跑：完整任务的中途结果', '',
-        f'已完成并独立复核 {analysis["task_count"]} 个完整任务，共 {analysis["case_count"]} 例；预定的 1,048 例全集尚未完成。以下不包含任何任务的样本前缀。', '',
+        f'已完成并独立复核 {analysis["task_count"]} 个完整任务，共 {analysis["case_count"]} 例；当前范围的 {analysis.get("expected_case_count", 1048):,} 例全集尚未完成。以下不包含任何任务的样本前缀。', '',
         '两种 DT 都在本次实际重新归因，使用相同正文范围、相同预算和相同删除规则。Recovery 越高越好，RISE/MAS 越低越好。区间为 10,000 次配对 bootstrap 的 95% 区间。', '',
         '| 任务 | 例数 | 旧 reference DT | 新 reference DT | live FT K3 | 新−旧 Recall@10%（百分点，95% CI） |',
         '| --- | ---: | ---: | ---: | ---: | ---: |']
