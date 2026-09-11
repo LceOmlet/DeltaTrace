@@ -30,6 +30,30 @@ The implementation uses FlashAttention-style tiled propagation for dense attenti
 
 ## Results
 
+<!-- selected-vt-budgets:start -->
+### Current comparison with task-specific VT budgets
+
+VT retrieval budgets are **H2-C3 10%, H4-C1 10%, H6-C1 20%, H10-C1 30%**;
+HotpotQA remains at 10%. These budgets were selected by the user after viewing
+the budget sweep. The table is a retrospective comparison using the same budget
+for every method within a task.
+
+| Method | H2-C3 @10% | H4-C1 @10% | H6-C1 @20% | H10-C1 @30% | VT macro (task-specific budgets) | HotpotQA @10% |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| DeltaTrace | 85.62% | 71.33% | 92.05% | 87.74% | 84.18% | 72.05% |
+| FlashTrace K3 | 72.41% | 68.32% | 82.15% | 83.41% | 76.57% | 66.67% |
+| Perturbation | 26.69% | 18.86% | 33.57% | 40.70% | 29.96% | 37.50% |
+| REAGENT | 26.66% | 17.58% | 32.47% | 42.48% | 29.80% | 34.72% |
+| CLP | 29.10% | 20.53% | 33.85% | 44.04% | 31.88% | 42.88% |
+| IFR | 81.16% | 70.09% | 83.74% | 82.66% | 79.41% | 75.87% |
+| AttnLRP † | 83.37% | 70.54% | 84.57% | 77.33% | 78.95% | 74.83% |
+
+The VT macro uses the four stated budgets; it is not Recall@10%. All 3,584 selected
+per-case rows and 40 source means are verified, with no attribution reruns.
+See the [current report, policy and data](research/temporary/vt_budget_extension_20260911/selected_budget/RESULTS.md)
+and the [complete budget grid](research/temporary/vt_budget_extension_20260911/RESULTS.md).
+<!-- selected-vt-budgets:end -->
+
 <!-- frozen-all-baselines:start -->
 ### Frozen VT and HotpotQA comparison across all seven algorithms
 
