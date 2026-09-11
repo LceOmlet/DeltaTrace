@@ -11,14 +11,14 @@ For an operation $v=f(u_1,\ldots,u_k)$, \dt{} constructs linear maps $D_j$ from 
 An upstream coefficient $m_v$ propagates to input $j$ as $D_j^\top m_v$. Coefficients from multiple consumers add at their shared input. Starting with coefficient $1$ at the scalar target, the reverse traversal produces the source coefficients in Equation~\ref{eq:attribution}. For a scalar nonlinearity $f$, the local coefficient is the divided difference $(f(u_1)-f(u_0))/(u_1-u_0)$, with its derivative as the coincident-input limit. Linear transformations retain their weights, and addition sends the coefficient to each summand.
 
 \begin{theorem}[Contribution conservation]
-For an acyclic computation over real-valued operations satisfying Equation~\ref{eq:local}, reverse propagation from a scalar target yields the conservation identity in Equation~\ref{eq:conservation}.
+For an acyclic computation over real-valued operations satisfying Equation~\ref{eq:local}, reverse propagation from a scalar target yields the conservation identity in Equation~\ref{eq:attribution}.
 \end{theorem}
 \begin{proof}
 An acyclic computation can be expanded into elementary operations with explicit branches. At an operation $v=f(u_1,\ldots,u_k)$, Equation~\ref{eq:local} gives
 \begin{equation}
 \ip{m_v}{\D v}=\sum_j\ip{D_j^\top m_v}{\D u_j}.
 \end{equation}
-Replacing a node's contribution by the contributions of its parents therefore preserves the total on a cut through the graph. At shared parents, coefficients from different consumers sum. Repeated substitution reaches the input cut and yields Equation~\ref{eq:conservation}, since the coefficient of the scalar target is $1$. Constant inputs have zero difference and contribute zero to this sum.
+Replacing a node's contribution by the contributions of its parents therefore preserves the total on a cut through the graph. At shared parents, coefficients from different consumers sum. Repeated substitution reaches the input cut and yields Equation~\ref{eq:attribution}, since the coefficient of the scalar target is $1$. Constant inputs have zero difference and contribute zero to this sum.
 
 \end{proof}
 
@@ -59,7 +59,13 @@ u^\top\left(\diag(\ell)-\frac{\ell\ell^\top}{\tau}\right)u
 This is the weighted variance of $u$ multiplied by $\tau$.
 
 \end{proof}
-The operator is symmetric. Its transpose action gives Equation~\ref{eq:softmax-vjp}, and the response coefficient for a log-softmax target is $m_z=e_y-\ell/\tau$.
+The operator is symmetric. For an incoming coefficient $u_i$ at probability $p_i$, the coefficient at its query--key score $z_i$ is
+\begin{equation}
+m_{z,i}=\ell_i(u_i-\bar u_\ell),\qquad
+\bar u_\ell=\frac{\sum_j\ell_j u_j}{\sum_j\ell_j}.
+\label{eq:softmax-vjp}
+\end{equation}
+The response coefficient for a log-softmax target is $m_z=e_y-\ell/\tau$, where $e_y$ is the one-hot vector selecting the target vocabulary coordinate.
 
 \subsection{Shared operator rules}
 \label{app:operators}
@@ -139,33 +145,30 @@ The implementation processes 64-token chunks using FLA's native chunk-state adjo
 \paragraph{Storage.}
 For sequence length $T$, head dimension $d$, and tile or chunk width $C$, attention vectors and row statistics occupy $O(Td)$ storage per head; pairwise products reside in bounded tiles. Dense attention arithmetic is $O(T^2d)$. Chunked memory occupies $O(Td+TC+(T/C)d^2)$ auxiliary storage per head for token coefficients, within-chunk products, and boundary states. Both storage expressions are linear in $T$ at fixed $d$ and $C$. Layer replay supplies intermediate activations, with checkpoint storage accounted for separately.
 
-\paragraph{Execution.}
-Qwen3 uses FP16; Qwen3.5 uses BF16 attention and FLA, with FP32 accumulation where supplied by the underlying operations. Complete attribution cost includes the two endpoint executions, layer replay, contribution propagation, and transfers.
-
 \section{Evaluation Specification}
 \label{app:evaluation}
-The FlashTrace \texttt{table1-data-v1} release fixes prompt transformation, eligible source positions, complete response targets, gold mapping, and scoring. Qwen3-8B uses the frozen \texttt{clean-v1-20260909} method and the \texttt{clean-v1-eval3-native-batch-20260909} evaluation entry point. All 13 tasks are complete. Attribution uses native FlashAttention with one real example and its two endpoints per call; response scoring uses the original eager implementation. The runtime record identifies a MetaX C550 64GB device, PyTorch 2.8.0, and Transformers 4.57.3.
+The FlashTrace release fixes the prompts, stored responses, eligible source positions, and evidence annotations used in the quality comparison. An eligible position is an input position included in the task's attribution and deletion domain. For NIAH, this domain follows the released token selection; VT and HotpotQA recovery select from the passage body.
 
-\paragraph{Metric views.}
-For a signed source vector $A$, RISE uses descending signed scores $A_i$, while MAS and released NIAH recovery use $\max(A_i,0)$. The original evaluator produces 21 response values across 20 deletions. Saved signed deletion curves supply RISE; when the positive and signed views have an identical ranked prefix until the monotone normalized response reaches zero, the recorded prefix proof permits reuse of that RISE value. MAS always comes from the positive view. The illustrative curves in Figures~\ref{fig:retrieval} and~\ref{fig:multihop} retain positive-ranking DT deletion and add the matching one-hop FT curve for each model. The score sums token log-probabilities over the entire fixed response plus EOS. Within each model and example, DT and FT share identical full-input and fully-deleted scores. The released evaluator normalizes by these endpoints, clips to $[0,1]$, and takes the cumulative minimum.
+\paragraph{Deletion scores.}
+For a signed source vector $A$, DT ranks tokens by $A_i$ for RISE and by $\max(A_i,0)$ for MAS. The evaluator records 21 response scores across 20 deletion steps. Each score sums log-probabilities over the complete fixed response plus EOS. Full-input and fully-deleted scores define the normalization endpoints. The normalized values are clipped to $[0,1]$ and made nonincreasing by a cumulative minimum. The case-study curves use the positive ranking and share these endpoints between DT and FT for each model and example.
 
-\paragraph{Published reference results.}
-For RISE, MAS, and NIAH recovery, the published baselines reproduce the authors' released task CSVs and original Tables 1 and 2. Each value is matched back to its CSV and aggregation row at full precision: these use the row-attribution mean, with the published IFR MQ-Q8 faithfulness pair using the recursive-attribution mean. The original fast perturbation variants are retained outside MQ-Q2 and MoreHopQA. All 95 additional source CSVs are verified against the released archive, and all 160 added metric values agree with the printed tables to their reporting precision. Baseline target aggregation follows the publication; deletion faithfulness evaluates the complete stored response. Their accompanying per-example \texttt{n1} trace records reproduce the CSV means; input text, target, eligible positions, and gold mappings were checked against each paired \dt{} example. The separately executed development comparison uses one recursive hop for faithfulness and three for recovery, as stated in Table~\ref{tab:development}. Qwen3.5 uses the same fixed inputs and responses with both methods evaluated on the same model.
+\paragraph{Baseline comparisons.}
+RISE/MAS and NIAH baseline values use the published task aggregates accompanying FlashTrace. VT and HotpotQA recovery compare all seven methods on the same 448 inputs. The paired development comparison uses the same inputs and stored responses for DT and FT on each model, with one FT recursive step for faithfulness and three for recovery.
 
-\paragraph{VT and HotpotQA recovery.}
-We re-evaluate five baselines on the same 448 inputs and reuse verified \dt{}/FT K3 vectors. VT reconstructs the cached answer without its reasoning prefix and ranks positive eligible body-token scores. HotpotQA retains the full response, sums signed scores over native body sentences, and retrieves the longest ranking prefix within the all-body-token budget, including punctuation and whitespace. Scopes and task budgets were selected retrospectively; the full budget sweep is retained in the experimental records. Perturbation, REAGENT, and CLP use 20 source segments.
+\paragraph{Recovery targets and budgets.}
+NIAH selects the highest positive-scoring eligible tokens up to a 10\% budget. VT scores the cached answer tokens and ranks positive body-token scores. Its H2/H4/H6/H10 budgets are 10\%/10\%/20\%/30\%. HotpotQA scores the full response, sums signed token scores within each body sentence, and selects the longest ranked sentence prefix within a 10\% body-token budget. Recall compares these selections with the annotated evidence tokens for NIAH/VT and supporting sentences for HotpotQA.
 
 \input{results/development_table}
 
 \section{Implementation Cost Measurements}
 \label{app:cost}
-The cost records retain each benchmark's implementation snapshot and source hashes. The Qwen3 pairwise and tiling benchmarks use the native finite-P1 implementation recorded on 7 September, preceding the frozen full-task evaluation. The Qwen3.5 batching and replay-retention benchmarks use their recorded 9 September snapshots. Each experiment compares its alternatives on the same inputs within one benchmark run. Input and response tokens are both included in sequence length. Complete attribution includes input preparation, capture, replay, propagation, projection, diagnostics, and returning source scores; model loading, warmup, and deletion scoring have separate records.
+Each timing comparison uses the same inputs and responses for its alternatives. Complete attribution time covers the two forward executions, the reverse pass, and returning the source scores. Peak allocated device memory includes model weights. Sequence length counts both input and response tokens.
 
 \paragraph{Paired Qwen3 cost.}
-Every method has one warm call followed by three measured calls in rotated order on each of 16 development examples. Per-example medians are aggregated by task. FlashTrace uses the authors' eager implementation, while \dt{} uses native FlashAttention and finite propagation. The maximum allocated memory includes model weights. Three-hop FlashTrace takes 18.27 seconds for the same 16 examples; this is a separate recursion setting from the one-hop faithfulness comparison.
+Every method has one warm call followed by three measured calls in rotated order on each of 16 development examples. Per-example medians are aggregated by task. The maximum allocated memory includes model weights. Three-hop FlashTrace takes 18.27 seconds for the same 16 examples.
 
 \paragraph{Tiling on longer released examples.}
-Figure~\ref{fig:tiling-cost} compares dense and tiled finite propagation on the 1,241-token retrieval control, the longest released HotpotQA context (3,470 total tokens), and the longest MATH rollout (3,762 total tokens). These are actual released examples selected by input or rollout length. At 3,470 tokens, tiling reduces complete attribution time from 5.32 to 3.02 seconds and peak allocation from 32.66 to 22.54 GB. At 3,762 tokens, the corresponding values are 6.12 to 3.40 seconds and 37.18 to 30.06 GB. Full source-vector relative $L_2$ differences between the dense and tiled implementations range from $4.46\times10^{-4}$ to $2.31\times10^{-3}$ on these examples.
+Figure~\ref{fig:tiling-cost} compares dense and tiled finite propagation on the 1,241-token retrieval control, the longest released HotpotQA context (3,470 total tokens), and the longest MATH rollout (3,762 total tokens). At 3,470 tokens, tiling reduces complete attribution time from 5.32 to 3.02 seconds and peak allocation from 32.66 to 22.54 GB. At 3,762 tokens, the corresponding values are 6.12 to 3.40 seconds and 37.18 to 30.06 GB.
 
 \begin{figure}[htbp]
 \centering
@@ -174,8 +177,8 @@ Figure~\ref{fig:tiling-cost} compares dense and tiled finite propagation on the 
 \label{fig:tiling-cost}
 \end{figure}
 
-\paragraph{Real batching and replay retention.}
-For Qwen3.5, 16 examples are sorted by total length and paired before attribution, then evaluated in two interleaved warm rounds. Serial B1 and actual B2 use the same complete examples; internal endpoint batches are two and four, respectively. Shape warmup takes 69.74 and 46.53 seconds in the recorded process, separately from the 16.68 and 12.33 second warm passes. GPU checkpoints and batching change floating-point execution; the recorded B1/B2 source-vector relative $L_2$ differences are approximately 0.013--0.026. Quality remains attached to the corresponding execution record. Subsequent replay-retention measurements fix the batching plan, preserve every paired complete vector, and reduce warm time by 5.80\% on Qwen3 and 5.15\% on Qwen3.5 (Table~\ref{tab:retention}). These comparisons measure each change against its own recorded baseline.
+\paragraph{Batching and replay retention.}
+The Qwen3.5 comparison processes the same 16 examples serially and in batches of two. With GPU checkpoints and batching, time decreases from 16.68 to 12.33 seconds. Retaining activations for reuse during the reverse pass further reduces time by 5.80\% on Qwen3 and 5.15\% on Qwen3.5 (Table~\ref{tab:retention}).
 
 \input{results/retention_table}
 

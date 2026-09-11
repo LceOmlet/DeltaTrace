@@ -30,7 +30,7 @@ supporting-fact Recall. These task scopes are retained in the manifest.
 The timing panel reads `../../../experiments/efficiency/curve_data.json`.
 It preserves all 52 successful points, local min/max error bars, missing-point
 gaps and four OOM crosses. DT, FT and FT-mh are local MetaX C550 measurements;
-the other curves are historical six/eight-GPU references. The inset labels this
+the other curves are historical measurements. The inset labels this
 mixed hardware scope, and Section 4 explains it. No timings are rescaled and no
 cross-hardware speedup is claimed. The original full-size rollout assets remain
 unchanged. Both panels share method colors and marker styles.
@@ -49,8 +49,9 @@ The manuscript overview uses four panels: (a) paired original/EOS-reference
 executions and a finite reverse traversal; (b) Attention; (c) Gated DeltaNet;
 (d) a measured signed context example. Panel (a) occupies the wider left column;
 Attention is above GDN in the right column. Both operator panels have identical
-areas (7.35 x 2.10 drawing units), with matching two-branch allocation cards to
-the right of the forward operator, font sizes, and arrow weights. GDN shows its
+areas (7.35 x 3.00 drawing units), with matching change identities and reverse
+coefficient rules to the right of the forward operator. Content is blue, control
+is gold, and reverse coefficients are purple. GDN shows its
 full retain/write/read structure and expands the
 retention rule T = alpha S; S abbreviates the previous state.
 
@@ -62,7 +63,13 @@ coefficient 1 at the scalar score produces input coefficients m_i; taking their
 inner products with embedding differences Delta e_i gives A_i. Thus Delta F is
 the effect being allocated, while the reverse computation composes its finite
 coefficients. Appendix `app:conservation` specifies this finite chain rule.
-The caption and the opening of "Following evidence backward" use this order.
+Panel (a), the caption, and Section 2.2 follow four steps: two forward runs,
+local rules from paired activations, reverse coefficient propagation, and input
+token scores. Panels (b,c) pair each change identity with the reverse updates it
+defines. Delta Y and Delta T label the identities; the arrows below connect each
+identity to its coefficient rules. The backward outputs are M_V/M_P and
+M_S/m_alpha. The figure defines endpoint subscripts 0 and 1 as reference and
+original, and labels the propagated quantity as coefficients m.
 Labels are at least 20.4 pt on the 14-inch canvas, or 8.0 pt at the manuscript's
 5.5-inch insertion width (excluding mathematical subscripts and superscripts).
 
@@ -92,7 +99,7 @@ simpler positive retrieval example: bright-system -> 9153566 and billowy-method
 -> 9937326 (Qwen3.5, retrieval development example 6). Its color scale spans the
 full eligible-score range of both models. The manuscript includes the signed
 role-contrast version. Both overviews have editable SVGs, vector PDFs, and
-600-dpi PNGs (main: 8400 x 5310; lookup: 8400 x 5700). The main PDF also appears at
+600-dpi PNGs (main: 8400 x 6390; lookup: 8400 x 6780). The main PDF also appears at
 `output/pdf/deltatrace-overview.pdf`.
 
 ## Reproduction
@@ -142,6 +149,6 @@ evaluation. The visual revisions use the archived scores and responses.
 
 The [FlashTrace overview](https://arxiv.org/html/2602.01914v4) informed the
 layered operator language, local mechanism expansion, concrete text evidence,
-consistent role colors, and compact legends. Uniform blue/purple matrix cells
+consistent role colors, and compact legends. Uniform blue/gold matrix cells
 are schematic operators, not measured attention maps. Teal/coral backgrounds
 are measured signed input contributions.

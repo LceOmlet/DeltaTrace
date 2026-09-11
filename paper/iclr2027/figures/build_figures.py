@@ -303,7 +303,7 @@ def main():
         'lookup_fixture_sha256': hashlib.sha256(lookup_path.read_bytes()).hexdigest(),
         'builder_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'mechanism_builder_sha256': hashlib.sha256((HERE/'draw_mechanism.py').read_bytes()).hexdigest(),
-        'mechanism': 'Wider paired forward/reverse trace on the left; equally sized Attention and GDN panels stacked on the right, with each content/control allocation to the right of its operator; actual signed playwright/composer contrast. A direct lookup overview is also supplied.',
+        'mechanism': 'Four-step paired-forward and reverse-coefficient trace; stacked Attention and GDN panels pair each change identity with its reverse rules, to the right of its operator; unchanged signed playwright/composer evidence. A direct lookup overview is also supplied.',
         'mechanism_case': mechanism_meta,
         'cases': specs, 'generated_files': {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                                          for p in sorted(OUT.iterdir()) if p.suffix in ('.pdf','.svg','.png')}}

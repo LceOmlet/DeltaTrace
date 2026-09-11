@@ -28,7 +28,7 @@
 \maketitle
 \suppressfloats[t]
 \begin{abstract}
-Explaining a reasoning response requires tracing input evidence and the controls governing its use. We introduce \dt{}, which assigns signed input-token credit to a finite intervention between reference and original inputs. Analytic operator rules compose in one reverse traversal, allocating the change in the same complete response's log-probability. Supporting and opposing source contributions sum to this change. The rules follow content and control together: attention propagates transported values and selection changes; gated delta memory propagates stored content with the keys, queries, and gates governing retention, writing, and reading. Analytic normalization preserves competition among attention sources. FlashAttention-style tiling and Flash Linear Attention chunked computation give sequence-linear auxiliary storage at fixed model dimensions and chunk size. On Qwen3-8B retrieval and reasoning benchmarks, \dt{} achieves the lowest RISE and MAS on most tasks and the highest NIAH recovery, exceeding FlashTrace by 3.96--19.60 percentage points. Separate Qwen3.5-9B development measurements demonstrate the hybrid-model implementation and a 35.3\% throughput increase from real batching and GPU checkpoints. The counterfactual formulation also motivates finite credit propagation for policy learning, where exactly averaged action-level return contrasts recover the advantage signal.
+We introduce \dt{}, which assigns signed scores to input words to explain a complete reasoning response. It compares the response's log-probability under the original prompt and a reference that replaces source words with end-of-sequence tokens. Analytic rules convert the observed activation changes into coefficients for one reverse pass, analogous to gradient backpropagation. The token scores sum to the response-score difference. The rules follow content and control together: attention traces values and their selection; gated delta memory traces stored content and the keys, queries, and gates controlling retention, writing, and reading. Analytic normalization accounts for competition among attention sources. FlashAttention-style tiling and Flash Linear Attention chunks give sequence-linear auxiliary storage at fixed model dimensions and chunk size. On Qwen3-8B retrieval and reasoning tasks, \dt{} achieves the lowest deletion-faithfulness scores (RISE and MAS) on most tasks and the highest needle-in-a-haystack Recall, exceeding FlashTrace by 3.96--19.60 percentage points. Qwen3.5-9B development measurements evaluate the hybrid-model implementation; batching with GPU checkpoints increases throughput by 35.3\%. The same reference-based formulation motivates policy learning, where exactly averaged action-level return differences recover the advantage signal.
 \end{abstract}
 
 \input{sections/introduction}
@@ -39,7 +39,7 @@ Explaining a reasoning response requires tracing input evidence and the controls
 \input{sections/conclusion}
 
 \section*{AI Use Statement}
-AI assistance supported conceptual development, mathematical derivations, research code, experimental design and analysis, literature retrieval, figure design, manuscript organization, and language editing. The manuscript uses the released evaluation data and model-generated trajectories specified in the evaluation protocol.
+AI tools assisted with method development, derivations, coding, experiments, literature review, and manuscript preparation.
 
 \begingroup
 \raggedright

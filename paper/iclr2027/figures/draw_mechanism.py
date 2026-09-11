@@ -9,16 +9,20 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Polygon, Rectangle, Circle
 from matplotlib.path import Path
+from matplotlib.transforms import Affine2D
 
 INK='#233547'
 MUTED='#748293'
 BLUE='#477BAE'
 PURPLE='#8971B1'
+CONTROL='#9A8054'
 SIGNED_COLORS=['#D5816C','#FFFFFF','#4F9C87']
 LINE='#D4DFE7'
 PALE_BLUE='#ECF4FB'
 PALE_PURPLE='#F3EFF9'
+PALE_CONTROL='#FCF8ED'
 W,H=14.0,9.5
+FLOW_SPACE=1.80
 
 
 def draw(data):
@@ -38,8 +42,9 @@ def draw(data):
     assert all(s in source for s in verified_source)
     assert all(s in case['target'] for s in verified_target)
 
-    height=8.85 if roles else H
-    footer_shift=H-height
+    base_height=8.85 if roles else H
+    height=base_height+FLOW_SPACE
+    footer_shift=H-base_height
     fig=plt.figure(figsize=(W,height),facecolor='white')
     ax=fig.add_axes([0,0,1,1])
     ax.set_xlim(0,W);ax.set_ylim(height,0);ax.axis('off')
@@ -88,28 +93,25 @@ def draw(data):
                                       fc=color,ec='white',lw=.5))
 
     def allocation_cards(x,y,left_label,right_label,left_formula,right_formula,out,formula_size=24):
-        # Place the finite allocation to the right of each forward operator.
-        for xx,label,formula,fc,color in [
-                (x,left_label,left_formula,PALE_BLUE,BLUE),
-                (x+1.98,right_label,right_formula,PALE_PURPLE,PURPLE)]:
-            box(xx,y+.36,1.73,.66,fc,color,.08,.9)
-            text(xx+.865,y,label,20.4,color,weight='bold',ha='center')
-            text(xx+.865,y+.69,formula,formula_size,color,ha='center',va='center')
-        center=x+1.855
-        path_arrow([(x+.865,y+1.04),(x+.865,y+1.18),(center-.18,y+1.43)],BLUE,2,12)
-        path_arrow([(x+2.845,y+1.04),(x+2.845,y+1.18),(center+.18,y+1.43)],PURPLE,2,12)
-        ax.add_patch(Circle((center,y+1.50),.15,fc='white',ec='#9CADBC',lw=1.1))
-        text(center,y+1.50,'+',21,ha='center',va='center')
-        arrow((center+.17,y+1.50),(center+.53,y+1.50),INK,1.7,12)
-        text(center+.66,y+1.50,out,25,va='center')
+        # This is an identity defining local maps, not an extra output to compute.
+        text(x-.04,y+.69,out[:-1]+'=$',22,ha='left',va='center')
+        for xx,w,label,formula,fc,color in [
+                (x+.96,1.20,left_label,left_formula,PALE_BLUE,BLUE),
+                (x+2.41,1.30,right_label,right_formula,PALE_CONTROL,CONTROL)]:
+            box(xx,y+.36,w,.66,fc,color,.08,.9)
+            text(xx+w/2,y,label,20.4,color,weight='bold',ha='center')
+            text(xx+w/2,y+.69,formula,formula_size,color,ha='center',va='center')
+        text(x+2.285,y+.69,'+',21,ha='center',va='center')
+        text(x+1.855,y+1.36,'Change identity',20.4,MUTED,ha='center')
+        arrow((x+1.855,y+1.76),(x+1.855,y+2.02),PURPLE,1.6,12)
 
     # (a) The paired endpoint graph and the finite reverse coefficient.
-    heading(.22,.14,'a','Finite reverse trace')
-    text(.23,.56,r'Same model and fixed response $y$',20.4,MUTED)
+    heading(.22,.14,'a','From input change to credit')
+    text(.23,.56,r'1  Two forward runs; fixed response $y$',20.4,MUTED)
     left,right,reverse=1.47,4.67,3.07
     text(left,1.00,r'$F(x_0;y)$',23,ha='center')
     text(right,1.00,r'$F(x_1;y)$',23,ha='center')
-    text(reverse,.94,r'$\Delta F$',25,PURPLE,ha='center')
+    text(reverse,.94,r'$\Delta F$',25,INK,ha='center')
     text(2.34,1.21,'−',20.4,MUTED,ha='center')
     text(3.79,1.21,'+',20.4,MUTED,ha='center')
     arrow((2.15,1.14),(2.66,1.14),MUTED,1.2,10)
@@ -125,8 +127,9 @@ def draw(data):
     for yy in [1.86,2.57]:
         ax.plot([2.40,3.74],[yy,yy],color='#C2B3DA',lw=1.1,ls=(0,(2.4,2)))
         ax.add_patch(Circle((reverse,yy),.047,fc=PURPLE,ec='white',lw=.8,zorder=6))
-    arrow((reverse,1.40),(reverse,3.20),PURPLE,3.2,18,zorder=5)
-    text(reverse+.30,2.32,'Reverse',20.4,PURPLE,ha='center',va='center',rotation=270,
+    text(reverse,1.46,r'$m_F=1$',22,PURPLE,ha='center')
+    arrow((reverse,1.90),(reverse,3.20),PURPLE,3.2,18,zorder=5)
+    text(reverse+.30,2.48,'Reverse',20.4,PURPLE,ha='center',va='center',rotation=270,
          bbox=dict(facecolor='white',edgecolor='none',pad=1.0))
     text(reverse,3.30,r'$m_i$',23,PURPLE,ha='center')
     box(left-.93,3.08,1.86,.44,'#F5F7F9','#BCC9D4',.06)
@@ -135,48 +138,61 @@ def draw(data):
     text(right,3.30,'source words' if roles else '9153566',20.4,BLUE,ha='center',va='center')
     text(left,3.64,r'Reference $x_0$',20.4,MUTED,ha='center')
     text(right,3.64,r'Original $x_1$',20.4,BLUE,ha='center')
-    text(reverse,4.06,r'$A_i=\langle m_i,\,\Delta e_i\rangle$',25,PURPLE,ha='center')
-    ax.plot([6.19,6.19],[.19,4.45],color=LINE,lw=.8)
+    text(.27,4.18,'2  Local rules',21.2,BLUE,weight='bold')
+    text(.27,4.55,'from both runs',20.4,MUTED)
+    text(4.30,4.43,r'$\Delta h=D_f\,\Delta a$',24,BLUE,ha='center',va='center')
+    text(.27,4.97,'3  Reverse',21.2,PURPLE,weight='bold')
+    text(.27,5.45,r'propagate coefficients $m$',20.4,MUTED)
+    text(4.30,5.22,r'$m_a=D_f^{\top}m_h$',24,PURPLE,ha='center',va='center')
+    text(.27,5.89,'4  Token score',21.2,INK,weight='bold')
+    text(4.30,6.05,r'$A_i=\langle m_i,\,\Delta e_i\rangle$',24,PURPLE,ha='center',va='center')
+    ax.plot([6.19,6.19],[.19,6.30],color=LINE,lw=.8)
 
     # (b) Attention: selection weights multiply the carried values.
     heading(6.45,.14,'b','Attention')
     text(6.48,.55,'Select and carry',20.4,MUTED)
-    matrix(6.58,1.00,4,4,.17,.17,'#BDAFD6')
+    matrix(6.58,1.00,4,4,.17,.17,'#C5B18E')
     matrix(7.95,1.00,4,2,.17,.17,'#8FAED0')
     matrix(9.00,1.00,4,2,.17,.17,'#B2BFCA')
     text(7.58,1.18,'×',23,MUTED,ha='center')
     text(8.63,1.18,'=',23,MUTED,ha='center')
-    text(6.91,1.77,r'$P$',23,PURPLE,ha='center')
+    text(6.91,1.77,r'$P$',23,CONTROL,ha='center')
     text(8.11,1.77,r'$V$',23,BLUE,ha='center')
     text(9.16,1.77,r'$Y$',23,ha='center')
     allocation_cards(10.08,.55,'Content','Selection',r'$P_1\,\Delta V$',r'$\Delta P\,V_0$',r'$\Delta Y$')
-    ax.plot([6.45,13.80],[2.36,2.36],color=LINE,lw=.8)
+    text(6.48,2.16,'0: reference; 1: original',20.4,MUTED)
+    text(6.48,2.66,'Reverse',20.4,PURPLE,weight='bold')
+    text(13.77,2.82,r'$M_V=P_1^{\top}M_Y\quad M_P=M_YV_0^{\top}$',23,PURPLE,ha='right',va='center')
+    ax.plot([6.45,13.80],[3.22,3.22],color=LINE,lw=.8)
 
     # (c) GDN: same panel size, same two-channel allocation diagram.
-    heading(6.45,2.54,'c','Gated DeltaNet',21.2)
-    text(6.48,2.95,'Retain, write, and read',20.4,MUTED)
-    text(6.77,3.95,r'$S_{t-1}$',20.4,BLUE,ha='center',va='center')
-    arrow((7.10,3.95),(7.29,3.95),BLUE,1.5,10)
-    box(7.32,3.72,.38,.45,PALE_PURPLE,'#BAABD0',.06)
-    text(7.51,3.95,r'$\alpha$',20.4,PURPLE,ha='center',va='center')
-    arrow((7.73,3.95),(7.91,3.95),BLUE,1.5,10)
-    ax.add_patch(Circle((8.04,3.95),.12,fc='white',ec='#9CADBC',lw=1.1))
-    text(8.04,3.95,'+',20.4,ha='center',va='center')
-    text(8.04,3.35,r'$k u^{\top}$',21,BLUE,ha='center')
-    arrow((8.04,3.73),(8.04,3.81),BLUE,1.5,8)
-    arrow((8.19,3.95),(8.37,3.95),BLUE,1.5,10)
-    box(8.40,3.71,.45,.47,PALE_BLUE,'#A5C0D9',.06)
-    text(8.625,3.95,r'$S_t$',20.4,BLUE,ha='center',va='center')
-    arrow((8.88,3.95),(9.06,3.95),BLUE,1.5,10)
-    box(9.09,3.72,.35,.45,PALE_PURPLE,'#BAABD0',.06)
-    text(9.265,3.95,r'$q$',20.4,PURPLE,ha='center',va='center')
-    arrow((9.47,3.95),(9.65,3.95),INK,1.5,10)
-    text(9.82,3.95,r'$o_t$',20.4,ha='center',va='center')
-    text(8.04,4.28,r'Retention: $T=\alpha S$',20.4,MUTED,ha='center')
-    allocation_cards(10.08,2.95,'Content','Gate',
+    heading(6.45,3.40,'c','Gated DeltaNet',21.2)
+    text(6.48,3.81,'Retain, write, and read',20.4,MUTED)
+    text(6.77,4.81,r'$S_{t-1}$',20.4,BLUE,ha='center',va='center')
+    arrow((7.10,4.81),(7.29,4.81),BLUE,1.5,10)
+    box(7.32,4.58,.38,.45,PALE_CONTROL,CONTROL,.06)
+    text(7.51,4.81,r'$\alpha$',20.4,CONTROL,ha='center',va='center')
+    arrow((7.73,4.81),(7.91,4.81),BLUE,1.5,10)
+    ax.add_patch(Circle((8.04,4.81),.12,fc='white',ec='#9CADBC',lw=1.1))
+    text(8.04,4.81,'+',20.4,ha='center',va='center')
+    text(8.04,4.21,r'$k u^{\top}$',21,BLUE,ha='center')
+    arrow((8.04,4.59),(8.04,4.67),BLUE,1.5,8)
+    arrow((8.19,4.81),(8.37,4.81),BLUE,1.5,10)
+    box(8.40,4.57,.45,.47,PALE_BLUE,'#A5C0D9',.06)
+    text(8.625,4.81,r'$S_t$',20.4,BLUE,ha='center',va='center')
+    arrow((8.88,4.81),(9.06,4.81),BLUE,1.5,10)
+    box(9.09,4.58,.35,.45,PALE_CONTROL,CONTROL,.06)
+    text(9.265,4.81,r'$q$',20.4,CONTROL,ha='center',va='center')
+    arrow((9.47,4.81),(9.65,4.81),INK,1.5,10)
+    text(9.82,4.81,r'$o_t$',20.4,ha='center',va='center')
+    text(8.04,5.14,r'Retention: $T=\alpha S$',20.4,MUTED,ha='center')
+    allocation_cards(10.08,3.81,'Content','Gate',
                      r'$\alpha_1\,\Delta S$',r'$S_0\,\Delta\alpha$',r'$\Delta T$',23)
+    text(6.48,5.92,'Reverse',20.4,PURPLE,weight='bold')
+    text(13.77,6.08,r'$M_S=\alpha_1 M_T\quad m_{\alpha}=\langle M_T,S_0\rangle$',23,PURPLE,ha='right',va='center')
 
     # (d) A direct lookup makes source and answer visually match.
+    upper_artists=set(ax.get_children())
     ax.plot([.22,13.80],[4.70,4.70],color=LINE,lw=.85)
     heading(.22,4.90,'d','Choose the playwright, not the composer.' if roles else 'Find the names. Recover the numbers.',21.2)
     text(13.77,5.00,'Qwen3.5 · MoreHopQA example 1' if roles else 'Qwen3.5 · retrieval example 6',17,MUTED,ha='right')
@@ -284,6 +300,14 @@ def draw(data):
         legend_artists.append(text(xx,tick_y,ss,17,MUTED,ha='center'))
     legend_artists.append(text(bx+bw/2,by-.40,'nats · color saturated' if roles else 'Contribution (nats)',17,MUTED,ha='center'))
 
+    # Translate the unchanged evidence panel as one unit to make room for the flow.
+    evidence_transform=Affine2D().translate(0,FLOW_SPACE)+ax.transData
+    for artist in ax.get_children():
+        if artist not in upper_artists:
+            artist.set_transform(evidence_transform)
+    for run in displayed:
+        run['bbox'][1]+=FLOW_SPACE
+
     fig._dt_case={'model':case['model'],'dataset':case['dataset'],'index':case['index'],
         'input_sha256':case['input_sha256'],'text_excerpt_char_spans':spans,
         'answer_summary':'Playwright identified within the stored response: William Shakespeare' if roles else facts,
@@ -293,20 +317,22 @@ def draw(data):
         'vmin':-limit,'vmax':limit,'normalization':'linear, zero-centered; explicitly saturated at endpoints' if roles else 'linear, centered on zero',
         'full_input_absolute_max':full_limit,
         'color_map':SIGNED_COLORS,'shared_scale':'one shared scale for all excerpts and full-input strip',
-        'color_legend':{'bar_bounds':[bx,by,bw,bh],'tick_y':tick_y,'label_y':by-.40,
+        'color_legend':{'bar_bounds':[bx,by+FLOW_SPACE,bw,bh],'tick_y':tick_y+FLOW_SPACE,'label_y':by-.40+FLOW_SPACE,
                         'placement':'above full-input strip, right of requested role' if roles else 'below full-input strip'},
         'selection_reason':'same-context playwright/composer role contrast with observed positive and negative name-span totals' if roles else 'direct name-to-number lookup; short exact evidence spans and answers',
-        'mechanism_panel_areas':{'attention':[6.45,.14,7.35,2.10],'gdn':[6.45,2.54,7.35,2.10]},
-        'trace_panel_area':[.22,.14,5.97,4.31],
-        'mechanism_layout':'attention above GDN; each finite allocation is right of its operator',
+        'mechanism_panel_areas':{'attention':[6.45,.14,7.35,3.00],'gdn':[6.45,3.40,7.35,3.00]},
+        'trace_panel_area':[.22,.14,5.97,6.20],
+        'mechanism_layout':'attention above GDN; finite change allocation right of each operator; reverse coefficients below each allocation',
         'trace_directions':{'gray_upward':'two forward executions with the same fixed response',
                             'purple_downward':'one reverse traversal of finite coefficients, seeded with 1 at the scalar score'},
         'minimum_label_pt_at_manuscript_width':20.4*5.5/W,
+        'reading_order':['two forward executions','local rules from paired activations','reverse coefficients seeded by one','input coefficient dot embedding difference'],
+        'phase_notation':{'activation_differences':'Delta, from the two forward executions','reverse_coefficients':'m or M, propagated backward','token_score':'A_i = <m_i, Delta e_i>'},
         'schematic_elements':'paired finite trace; PV product; GDN retain/write/read; two equally sized local content/control allocations',
         'gdn_retention_notation':'S abbreviates S_(t-1); T=alpha*S; endpoint subscripts 0 and 1 are reference and original',
         'heatmap_semantics':'unchanged raw token scores; uniformly colored matrix cells are schematic, not measured attention',
         'displayed_runs':displayed}
     fig._dt_text_artists=artists
     fig._dt_legend_artists=legend_artists
-    fig._dt_box_checks=[(t,(10.26,5.40,3.53,answer_height)) for t in answer_texts]
+    fig._dt_box_checks=[(t,(10.26,5.40+FLOW_SPACE,3.53,answer_height)) for t in answer_texts]
     return fig

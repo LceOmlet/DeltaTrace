@@ -68,6 +68,8 @@ def main():
         'attention_and_gdn_equal_area':True,
         'mechanism_layout':meta['mechanism_layout'],
         'trace_directions':meta['trace_directions'],
+        'reading_order':meta['reading_order'],
+        'phase_notation':meta['phase_notation'],
         'minimum_label_pt_at_manuscript_width':meta['minimum_label_pt_at_manuscript_width'],
         'shared_linear_scale':[meta['vmin'],meta['vmax']],
         'raw_scores_modified':False,

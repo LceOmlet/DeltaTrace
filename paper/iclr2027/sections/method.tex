@@ -1,76 +1,87 @@
 \section{DeltaTrace}
 \label{sec:method}
 
-\subsection{What contributes to a response}
-% M1: A familiar evidence-selection example introduces the attribution task.
-Identifying a playwright in a passage draws on both a person's name and the role specified by the question. In Figure~\ref{fig:overview}, ``William Shakespeare'' supplies the requested name, while ``author of the play'' specifies which person to use. The nearby composer provides a contrasting role in the same context. \dt{} traces the contributions of these sources through the model, connecting the response to words that supply evidence and guide its use.
-
-% M2: The target and reference give every contribution a common meaning.
-The explanation concerns a fixed response $y$. Its score is the sum of the response tokens' log-probabilities,
+\subsection{The input, response, and attribution target}
+An attribution assigns a number to each input token to explain its contribution to a chosen response. Our inputs are a trained language model with fixed parameters $\theta$, a prompt $x$ containing the context and question, and a response $y=(y_1,\ldots,y_L)$ of $L$ tokens. For full-response attribution, $y$ contains the stored model-generated reasoning and answer, followed by an end-of-sequence (EOS) token. Both executions score these same tokens using their fixed preceding response tokens. The scalar response score is
 \begin{equation}
-F(x;y)=\sum_{t\in\mathcal T}\log p_\theta(y_t\mid x,y_{<t}),
+F(x;y)=\sum_{t=1}^{L}\log p_\theta(y_t\mid x,y_{<t}),
 \label{eq:target}
 \end{equation}
-where $\mathcal T$ selects the response positions. \dt{} compares the original input $x_1$ with a reference $x_0$, keeping the response fixed. This comparison defines the change being explained: $\D F=F(x_1;y)-F(x_0;y)$. Setting the source embeddings to these two inputs, with model parameters and response held fixed, defines the intervention whose total effect is allocated. In our evaluation, the reference replaces eligible source tokens with EOS. Each source receives a signed share of this joint input effect under the operator rules below. A positive share contributes toward the increase in the response score; a negative share contributes in the opposite direction.
+where $p_\theta$ is the model's next-token probability and $y_{<t}$ is the response prefix before position $t$. A higher score means the model assigns greater probability to this complete response. The response tokens stay fixed, while their hidden representations can change as they read the different prompts.
 
-\subsection{Following evidence backward}
-% M3: Describe the reverse traversal as concrete operations.
-\dt{} first runs the model on the original and reference inputs, recording how its internal representations change. The two forward scores define $\D F$; a single reverse traversal then explains this difference. Like backpropagation, this traversal composes local coefficients backward from the scalar score, starting with coefficient $1$. Here the coefficients account for the finite changes between the two executions, as specified in Appendix~\ref{app:conservation}. At each operation, it distributes the contribution arriving at the output among the inputs that produced that output. Attention sends contributions to the positions it reads; memory carries them through earlier writes; residual connections divide them among branches. Contributions that reach the same input are added together.
+We choose the prompt positions to explain, which can include context words and question words; these are the source positions. The reference specifies their input change. Let $x_1$ be the original prompt and $x_0$ its reference. We construct $x_0$ by replacing the source tokens selected for attribution with EOS at the same positions; the remaining prompt tokens stay fixed. The two forward executions give $\D F=F(x_1;y)-F(x_0;y)$. This is a finite intervention: it compares two actual inputs. Our output is one signed contribution $A_i$ for each source token $i$, with the contributions adding to $\D F$. Positive and negative values describe support for and opposition to the score change under this reference. The signs in Figure~\ref{fig:overview} follow this reference comparison.
 
-% M4: Explain finite propagation through the actual activation change.
-Each local rule accounts for the change across the two executions. For a nonlinear activation, this means relating its observed output change to its input change across that interval. For a weighted sum, the rule follows the weights and the changes in the vectors being combined. Composing these rules gives the coefficient $m_i$ of each source's embedding change $\D e_i$, yielding
+We use paired subscripts $0$ and $1$ for reference and original activations, and write $\D U=U_1-U_0$ for their difference. For source token $i$, $e_{i,0}$ and $e_{i,1}$ are its input embedding vectors, so $\D e_i=e_{i,1}-e_{i,0}$. Tokens held fixed have zero embedding difference. The reverse computation below converts these vector differences into the scalar scores $A_i$.
+
+\subsection{Two forward runs and one reverse pass}
+\label{sec:reverse}
+Figure~\ref{fig:overview}(a) separates four steps: collect paired activations in two forward executions, obtain local rules from those activations, propagate coefficients backward, and form token scores at the input. The forward executions supply the actual changes; the reverse pass computes the multipliers that turn those changes into contributions to $\D F$.
+
+For an operation $h=f(a)$, $a$ collects its input activations and $h$ is its output. Let $J_f$ be the matrix of local derivatives at one execution. A Jacobian--vector product (JVP) maps an infinitesimal input change $da$ to an output change $dh$. A vector--Jacobian product (VJP) maps an incoming gradient $g_h$ back to the input gradient $g_a$.\footnote{PyTorch documentation: \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.jvp.html}{\texttt{torch.func.jvp}} and \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.vjp.html}{\texttt{torch.func.vjp}}.} Table~\ref{tab:reverse-comparison} shows the corresponding finite relations.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{\textbf{From gradients to finite reverse propagation.} Paired activations define the finite map $D_f$ that replaces $J_f$. Changes appear in the left column; coefficients propagate backward in the right column.}
+\label{tab:reverse-comparison}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Method & \shortstack{Change relation\\(JVP form)} & \shortstack{Backward coefficients\\(VJP form)} \\
+\midrule
+Gradient backpropagation & $dh=J_f\,da$ & $g_a=J_f^\top g_h$ \\
+\dt{} & $\D h=D_f\,\D a$ & $m_a=D_f^\top m_h$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+An analytic rule constructs $D_f$ from the two executions so that $\D h=D_f\D a$. This identity specifies how the input changes account for the output change. For a scalar nonlinearity, $D_f=\D h/\D a$ is the secant slope joining the observed points, replacing the tangent slope $f'(a_1)$; at coincident inputs it becomes the derivative. For operations with multiple inputs, the rules below specify their joint allocation. The algorithm obtains its activation differences from the two forward executions and evaluates the transpose products during the reverse pass.
+
+The backward vector $m_h$ supplies a multiplier for each component of $\D h$: their dot product $\langle m_h,\D h\rangle$ is the contribution assigned at that output. Substituting the local change relation gives $\langle m_h,D_f\D a\rangle=\langle D_f^\top m_h,\D a\rangle$. Reading off the input multipliers yields the reverse rule $m_a=D_f^\top m_h$.
+
+Starting with $\D F=1\cdot\D F$, the reverse pass repeatedly rewrites weighted output changes as weighted input changes. At a residual addition, the coefficient passes to each summand; coefficients returning from multiple consumers add. This reaches the input embeddings and gives
 \begin{equation}
-A_i=\ip{m_i}{\D e_i}.
+A_i=m_i^\top\D e_i,
+\qquad \sum_i A_i=\D F.
 \label{eq:attribution}
 \end{equation}
-Thus a source receives credit through every computational path connecting it to the response. The sign is carried through those paths, so supporting and opposing contributions can meet and cancel. The local accounting preserves the total response change:
-\begin{equation}
-\sum_i A_i=F(x_1;y)-F(x_0;y).
-\label{eq:conservation}
-\end{equation}
-This places the source scores on a common scale. Appendix~\ref{app:conservation} gives the finite chain rule and conservation theorem.
+Each component of $m_i$ multiplies the corresponding embedding change, and summing those products gives the token score $A_i$. A fixed token has $\D e_i=0$ and contributes zero. The scores use natural-log units (nats) and add into name, sentence, or passage scores. Appendix~\ref{app:conservation} derives the conservation identity.
 
 \subsection{What attention carries and selects}
 \label{sec:attention}
-% M5: Introduce the two roles before expressing their decomposition.
-An attention head combines the content at source positions using weights chosen by queries and keys. A source can therefore affect the output by changing what is carried, how strongly it is selected, or both. In the playwright example, the value representation carries information about the name, while the attention weights determine how much of that information reaches a later position. \dt{} follows both routes to the response.
+An attention head lets each position read its own representation and those of earlier positions. Its query describes what to retrieve, each source key describes how to match that source, and each value carries the source's content. Query--key similarity scores are normalized by softmax into attention weights. Let $P_{ij}$ be the weight with which position $i$ reads source $j$, and let the rows of $V$ contain the source value vectors. The output $Y=PV$ is their weighted sum.
 
-For attention probabilities $P$ and values $V$, the output is $Y=PV$. Its change separates into
+Changing a source can change both its value and the weight assigned to it. The following identity specifies the two local maps used in reverse:
 \begin{equation}
 \D Y=
 \underbrace{P_1\D V}_{\text{content change}}
-+\underbrace{\D P\,V_0}_{\text{routing change}}.
++\underbrace{\D P\,V_0}_{\text{selection change}}.
 \label{eq:pv}
 \end{equation}
-The content term uses the attention chosen for the original input. A change in a source's value therefore travels with the weight that the model assigns to it in that execution. The routing term measures the effect of redistributing attention over the reference values. When content and selection change together, their interaction is assigned to the content term. These two terms give a complete account of the attention output change while retaining the contribution of selection itself.
+The first term carries changed values using the original input's attention weights. The second changes the selection while holding the reference values fixed. These two terms add exactly to the observed output difference; their interaction is included in the content term through $P_1$. In the running example, the name supplies content, while the requested role can change which person's information is selected.
 
-% M6: Explain softmax as competition among sources, then give its action.
-Attention also couples the sources within each row: increasing the share assigned to one source redistributes weight among the others. \dt{} carries this competition backward through normalization. If $u_i$ is the coefficient arriving at an attention probability, its score coefficient is
+The two forward executions provide $P_1$ and $V_0$. Given an incoming coefficient matrix $M_Y$, Equation~\ref{eq:pv} rewrites $\langle M_Y,\D Y\rangle$ as $\langle P_1^\top M_Y,\D V\rangle+\langle M_YV_0^\top,\D P\rangle$. The coefficients of the two input changes are therefore
 \begin{equation}
-m_{z,i}=\ell_i(u_i-\bar u_\ell),
-\qquad
-\bar u_\ell=\frac{\sum_j\ell_j u_j}{\sum_j\ell_j}.
-\label{eq:softmax-vjp}
+M_V=P_1^\top M_Y,\qquad M_P=M_YV_0^\top.
+\label{eq:pv-reverse}
 \end{equation}
-The positive weight $\ell_i$ is the logarithmic mean of that source's probabilities in the two executions. Subtracting the weighted mean expresses each source's contribution relative to the alternatives in the same row. Query and key coefficients then carry this routing contribution to the representations that selected the sources. The same normalization construction connects the response's log-probability to its output logits. Appendix~\ref{app:softmax} specifies the logarithmic mean and derives the finite identity.
+These updates use $P_1$, $V_0$, and the incoming $M_Y$ directly. The identity for $\D Y$ explains their allocation; the quantities returned backward are $M_V$ and $M_P$. Both coefficient paths continue to the input representations that produced $V$ and $P$.
+
+Selection is relative: the attention weights in a row sum to one, so increasing one source's share reduces the total share of the others. The finite softmax rule carries this competition backward by subtracting a weighted row average from the incoming coefficients. Its weights depend on the probabilities in both executions. A source therefore receives selection credit relative to the alternatives that the same query could read. The coefficients then pass through the query--key scores to their input representations. The same construction handles the vocabulary normalization used to score each response token. Appendix~\ref{app:softmax} gives the rule and its derivation.
 
 \subsection{What memory keeps and updates}
 \label{sec:memory}
-% M7: Connect persistent evidence to the attention example.
-In a hybrid model, evidence can also reach a response through a memory state. Information written at an earlier position can survive several updates and be read by a later query. For the playwright example, the relevant name may be written when the model processes the source sentence and read again at a later position. The explanation therefore follows both the stored content and the gates that determine its survival and use.
+Qwen3.5 interleaves attention with Gated DeltaNet memory \citep{yang2024gated}. A memory layer carries a state matrix $S_{t-1}$ from one token position to the next. This matrix stores associations between keys and values. At position $t$, the model supplies a key $k_t$, a value $v_t$, a read query $q_t$, a retention gate $\alpha_t$, and a write gate $\beta_t$. The two gates are scalars controlling how much information is kept and written.
 
-Gated delta memory combines retained information with a new write \citep{yang2024gated}:
+The update first retains $T_t=\alpha_tS_{t-1}$. Reading this retained state at key $k_t$ gives $T_t^\top k_t$, the value already stored for that key. The correction $u_t=\beta_t(v_t-T_t^\top k_t)$ writes the difference between the incoming and stored values. The new state and the output read by the query are
 \begin{equation}
-S_t=
-\underbrace{\alpha_t S_{t-1}}_{\text{retained evidence}}
-+\underbrace{k_tu_t^\top}_{\text{new write}}.
+S_t=\underbrace{T_t}_{\text{retained content}}+
+\underbrace{k_tu_t^\top}_{\text{write correction}},
+\qquad o_t=S_t^\top q_t.
 \label{eq:memory-overview}
 \end{equation}
-The retention gate $\alpha_t$ controls how much of the previous state remains. The write vector $u_t$ updates the content associated with key $k_t$: it is the difference between the incoming value and the value read from retained memory, scaled by a write gate. A query reads the resulting state to produce the token's memory output.
+Here $o_t$ is the layer's output vector at position $t$. This sequence lets information written at an early position survive later updates and reach the response through a later query.
 
-% M8: Explain what reverse propagation follows through that state update.
-\dt{} reverses this sequence of reading, writing, and retention. At a read, contributions pass to the stored content and to the query that retrieves it. At a write, they pass to the incoming value, the retrieval key, and the write gate. Along the retained state, they continue to earlier memory contents and to the retention gate. Each step uses the same content-and-control allocation as attention: changing content is weighted by the original execution's control, and control changes receive their own contribution. This lets an earlier source receive a signed contribution through the memory operations that connect it to the response. Appendix~\ref{app:memory} gives the complete recurrence.
+The reverse pass follows the read, write, and retention steps in the opposite order. A read sends coefficients to both the state and its query. A write sends them to the incoming value, the key, and the write gate; the subtracted stored value also returns a coefficient to the retained state. Retention sends coefficients to the earlier state and the retention gate. Each product splits into content and control changes in the same way as Equation~\ref{eq:pv}. An earlier name can consequently receive credit both for stored information and for the operations that preserve or retrieve it. Appendix~\ref{app:memory} gives the full finite recurrence.
 
-% M9: State the shared-method choice in prose.
-\paragraph{Shared rules across models.}
-The same operator uses the same propagation rule in Qwen3 and Qwen3.5. Attention values use Equation~\ref{eq:pv}; query--key products and SwiGLU divide their interaction symmetrically; memory and output gates use the content-and-control allocation described above. Linear layers, residual additions, and normalization complete the traversal through each architecture. Appendix~\ref{app:operators} collects the fixed rules and their formulas.
+The remaining network operations complete the same reverse pass in both model families. Linear layers use their weight matrices, additions pass coefficients to their inputs, and nonlinearities and normalizations use finite rules. Appendix~\ref{app:operators} lists the choices for each operator, including symmetric interaction allocation for query--key products and feed-forward gating.

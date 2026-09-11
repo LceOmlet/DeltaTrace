@@ -239,7 +239,7 @@ fig.legend(*axs[0].get_legend_handles_labels(),loc='upper center',ncol=2,frameon
 save(fig,'deltatrace-tiling-cost')
 
 table=[r'\begin{table}[htbp]',r'\centering\small',
-       r'\caption{Additional paired replay-retention measurements on 16 development examples. Each row compares the existing implementation with retained replay within one benchmark. Warm time is the mean complete pass over 16 examples across two interleaved rounds. Peak memory gives before/after allocations, including resident weights. All paired complete source vectors were identical. The baselines already include prior scheduling improvements.}',
+       r'\caption{Effect of retaining replay activations on complete attribution cost for 16 examples. Each row compares execution without and with retained replay activations. Warm time is the mean complete pass over 16 examples across two interleaved rounds. Peak memory gives before/after allocations, including resident weights.}',
        r'\label{tab:retention}',r'\begin{tabular}{@{}lrrrrr@{}}',r'\toprule',
        r'Model & Sample batch & Before (s) & Retained (s) & Reduction & Peak GB (before/after) \\',r'\midrule']
 retention=[]

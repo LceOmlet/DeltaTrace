@@ -14,7 +14,7 @@ VT/HotpotQA 的预算、指标口径和 FT K3 设置均保持不变。时间图�
 并为下方斜轴增加距离。新增检查覆盖文字与文字、文字与圆形绘图区（至少 2 pt
 净距）、时间绘图区、OOM 标记以及画布边缘。最终仍需结合整页 PDF 渲染检查。
 
-摘要按空白分词从 232 词压缩为 181 词，合并重复描述，保留以下信息：
+本次图形布局修订时，摘要按空白分词从 232 词压缩为 181 词，合并重复描述，保留以下信息：
 
 | 信息 | 修订稿保留内容 |
 |---|---|
@@ -31,3 +31,5 @@ VT/HotpotQA 的预算、指标口径和 FT K3 设置均保持不变。时间图�
 可读稿 `abstract_introduction.md` 的摘要与 LaTeX 同步。最终 PDF、分页、渲染检查和
 文件哈希记录在 `../build_receipt.json`；图的源数据与碰撞检查记录在
 `../figures/intro_teaser_manifest.json`。
+
+后续正文清晰度修订已同步摘要与 Introduction；当前版本及页数以 `clarity_revision_review_zh.md` 和 `../build_receipt.json` 为准。本记录保留图形布局修订当时的检查结果。
