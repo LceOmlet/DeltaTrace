@@ -35,7 +35,7 @@
 
 审稿说服力来自“定义—机制—实现—证据”的连续关系。因果含义落实到固定模型和回答下的输入干预；有符号落实到可加的总效应分配；效率落实到实际 FA／FLA 操作和存储界。相关工作按其解释对象组织，FlashTrace 在引言中只点名一次。概括采用可以由定义、代码、证明和表格核查的具体判断。
 
-完整主结果现已接入 Qwen3-8B 的 13 个任务、1,243 例，比较 Perturbation、REAGENT、CLP、IFR、AttnLRP、FT 和 DT 七种方法。DT 的 RISE 在 9/13 个任务最低，MAS 在 11/13 个任务最低，六个检索任务的 recovery 均最高。按要求不展示 VT 与 HotpotQA 的 recovery，保留两者 RISE/MAS。
+完整主结果现已接入 Qwen3-8B 的 13 个任务、1,243 例，比较 Perturbation、REAGENT、CLP、IFR、AttnLRP、FT 和 DT 七种方法。DT 的 RISE 在 9/13 个任务最低，MAS 在 11/13 个任务最低，六个检索任务的 recovery 均最高。VT 四任务按 10%/10%/20%/30% 预算加入 recovery 表，宏平均 DT 为 84.18%；HotpotQA 支持句 Recall 同表展示，IFR 均值最高，为 75.87%。
 
 附录开发实验使用两个模型，每个模型各 8 个检索与 8 个 MoreHopQA 案例。检索 Recall@10% 在 Qwen3-8B 上为 77.52%，配对基线为 56.45%；Qwen3.5-9B 上为 73.35%，配对基线为 63.92%。对应增量为 21.07 与 9.43 个百分点。四个模型／任务组合的 MAS 均值均更低。附录表 5 保持这一明确开发样本范围，并列出 signed RISE、positive MAS 与召回数据；这些开发数据不与完整主表混合。
 

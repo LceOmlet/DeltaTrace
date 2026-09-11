@@ -122,7 +122,7 @@ The tables compare **Perturbation, REAGENT, CLP, IFR, AttnLRP, FlashTrace (FT), 
 
 These counts compare observed task means. On the six reported retrieval tasks, recovery improves over FT by **3.96–19.60 percentage points**. RISE remains higher on MQ-Q4, MQ-Q8, and VT-H10-C1; MAS remains higher on MQ-Q8.
 
-**Reporting scope:** RISE and MAS include all 13 tasks. Recovery is reported for the six multi-query and multi-value retrieval tasks. VT and HotpotQA recovery are omitted from the manuscript's selected scope; MATH and MoreHopQA have no released recovery measure. Full experiment records, including results outside that reporting scope, remain available in the [frozen evaluation snapshot](https://github.com/LceOmlet/DeltaTrace/tree/9c6497c08ac3ffa57a40189291644e5a6b99ee36/experiments/official/results/qwen3_8b_table1_20260909).
+**Reporting scope:** RISE and MAS include all 13 tasks. Recovery includes six NIAH tasks, four VT tasks at 10%/10%/20%/30% budgets, and HotpotQA supporting-fact Recall at a 10% body-token budget. The manuscript table and combined CSV state each budget and metric. MATH and MoreHopQA have no recovery measure. Earlier source records remain in the [frozen evaluation snapshot](https://github.com/LceOmlet/DeltaTrace/tree/9c6497c08ac3ffa57a40189291644e5a6b99ee36/experiments/official/results/qwen3_8b_table1_20260909).
 
 | Artifact | Contents |
 | --- | --- |

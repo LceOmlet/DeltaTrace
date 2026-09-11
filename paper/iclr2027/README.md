@@ -22,12 +22,12 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 本机已使用Ubuntu-22.04中的既有TeX Live环境完成编译：
 
 ```powershell
-wsl.exe -d Ubuntu-22.04 --cd /mnt/c/Users/Chen/Documents/ChatGPT/credit/DeltaTrace/paper/iclr2027 -- latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
+wsl.exe -d Ubuntu-22.04 -- latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 ```
 
 机制图和两张案例图由`figures/build_figures.py`生成；主结果表和两张效率图由`results/build_results.py`从冻结记录生成，均保留SVG、矢量PDF及PNG预览。图1展示方法机制，图2展示配对效率，图3展示长输入dense/tiled成本，图4、图5展示两模型在检索和多跳任务上的真实有符号归因，各含该模型自己的DT/FT删除曲线。两张案例图的颜色图例均在右栏删除曲线下方。
 
-当前主表包含Qwen3-8B的全部13个任务、1,243例，保留所有RISE/MAS，仅按作者要求不展示VT和HotpotQA recovery。主表已补齐Perturbation、REAGENT、CLP、IFR、AttnLRP，共七种方法，以RISE、MAS、recovery三张表展示。两模型各16例开发结果、方法版本与计时口径在附录中单独说明。原始来源、SHA256、完整精度数据、重建方式及核对结果见[results/README.md](results/README.md)。
+当前主表包含Qwen3-8B全部13个任务、1,243例的RISE/MAS，以及11个任务的recovery。VT四任务预算为10%/10%/20%/30%，HotpotQA采用10%正文token预算下的支持句Recall；表中列明预算并加入VT宏平均。七种方法以RISE、MAS、recovery三张表展示，完整CSV包含91行、259个指标值。数据与重建方式见[results/README.md](results/README.md)。
 
 独立图册为`output/pdf/deltatrace-figures.pdf`，两页效率图为`output/pdf/deltatrace-efficiency.pdf`。数据对齐、色标与复现说明见[figures/README.md](figures/README.md)。正文和公式保持可编辑，官方匿名投稿格式及样式保持原样。`source_verification.json`记录模板与源码核对，`build_receipt.json`记录最终PDF与逐页检查；引用核对见`editorial/citation_review.md`。
 
