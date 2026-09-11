@@ -1,0 +1,49 @@
+{
+  "version": "vt-h6-h10-budget-extension-v1",
+  "reason": "User requested increasing retrieval budgets after both tasks saturated Recall@10%. Existing Recall@20% shows H10 remains close to its budget ceiling.",
+  "history": "Retrospective budget extension. The 30% and 40% grid is fixed before calculating those new results; all methods and both tasks use every budget. No winner-selected budget.",
+  "tasks": {
+    "vt_h6_c1": 100,
+    "vt_h10_c1": 100
+  },
+  "main_methods": [
+    "DT",
+    "FT_K3",
+    "Perturbation",
+    "REAGENT",
+    "CLP",
+    "IFR",
+    "AttnLRP"
+  ],
+  "supplementary_methods": [
+    "FT_K1"
+  ],
+  "fractions": [
+    0.1,
+    0.2,
+    0.3,
+    0.4
+  ],
+  "new_fractions": [
+    0.3,
+    0.4
+  ],
+  "target_mode": "answer_only",
+  "aggregation": "signed_sum",
+  "view": "raw",
+  "ranking": "Existing float32 positive prompt scores; eligible body tokens only; descending score, ties by ascending prompt position. Gold is used only for scoring.",
+  "budget": "ceil(fraction * eligible_body_tokens)",
+  "attribution_runs": 0,
+  "previous_frozen_primary_retained": true,
+  "new_holdout": false,
+  "parent": "../all_baselines_20260910",
+  "parent_sha256": {
+    "protocol.json": "b7df1719991c8a77507c9ab85f275d960f5ffd8fa20bfb73816ddb77f17bbcf2",
+    "analysis.json": "b8af94859d9a88163bce32446eb1e9e6facfe04e345272b6dc5958cfc930ea8c",
+    "verification.json": "1b1b7559ea1832e0d4f322caa361e1b9adfdfaec108ac77398e235b5188643d6",
+    "inputs.json": "074b24aff9fcb5971d238350fbb463d96acc6cc76f33c25d69c1caee7d377c4c",
+    "candidates.json": "bd3b0854b779cb11c2256cd24c4605d9670a8dff5a7683b80b200be950cabfbe",
+    "labels.json": "620bef9d05cf99e47faa8c1050ff5f3f80370e0d1823d5295337062d4aa00390",
+    "per_case.csv": "9fac9eea7ca53dceaf9bf245ad7e4b12daf86dc4df63aad6e9516745ea336703"
+  }
+}

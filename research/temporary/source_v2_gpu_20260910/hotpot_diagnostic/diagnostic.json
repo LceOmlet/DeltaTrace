@@ -1,0 +1,174 @@
+{
+  "status": "verified_posthoc_diagnostic",
+  "case_count": 48,
+  "scope": "Raw model log-probability drop per fixed response token; no endpoint normalization or clipping",
+  "interpretation": "Higher raw drop indicates a larger deletion effect; diagnostic does not replace the original metrics.",
+  "source_results_sha256": "2b1b12c53f6d53b134008c306c40a5e9008490c07f9700c9b431cb34760ddc9e",
+  "script_sha256": "451c49df1fb3218ae8abf1f0d94fc3974bdd07ee2c057ee486b27c407c63b226",
+  "nonpositive_endpoint_cases": 6,
+  "exact_duplicate_target_cases": 15,
+  "first_step_floor_counts": {
+    "DT": 30,
+    "DT_full_reference": 22,
+    "FT_K1": 14
+  },
+  "raw_metric_means": {
+    "DT": {
+      "raw_drop_auc": 0.8713347456843813,
+      "drop_step1": 0.775840881900217,
+      "drop_step2": 0.8483291500436808
+    },
+    "DT_full_reference": {
+      "raw_drop_auc": 0.7052992053066012,
+      "drop_step1": 0.6347937867015451,
+      "drop_step2": 0.7091745203083183
+    },
+    "FT_K1": {
+      "raw_drop_auc": 0.5129744532132168,
+      "drop_step1": 0.4877453737057116,
+      "drop_step2": 0.4743517027922633
+    }
+  },
+  "raw_contrasts_vs_FT_K1": {
+    "DT_minus_FT_K1_raw_drop_auc": {
+      "mean_difference": 0.35836029247116447,
+      "ci95": [
+        0.30033099089120463,
+        0.42282734617219225
+      ]
+    },
+    "DT_minus_FT_K1_drop_step1": {
+      "mean_difference": 0.28809550819450536,
+      "ci95": [
+        0.2075651846687801,
+        0.3683215043034934
+      ]
+    },
+    "DT_minus_FT_K1_drop_step2": {
+      "mean_difference": 0.3739774472514177,
+      "ci95": [
+        0.27949519871985534,
+        0.4724094900264265
+      ]
+    },
+    "DT_full_reference_minus_FT_K1_raw_drop_auc": {
+      "mean_difference": 0.1923247520933844,
+      "ci95": [
+        0.14564846054980796,
+        0.2420222089478081
+      ]
+    },
+    "DT_full_reference_minus_FT_K1_drop_step1": {
+      "mean_difference": 0.1470484129958334,
+      "ci95": [
+        0.07068917549421778,
+        0.22601947166640848
+      ]
+    },
+    "DT_full_reference_minus_FT_K1_drop_step2": {
+      "mean_difference": 0.23482281751605508,
+      "ci95": [
+        0.1473600369244704,
+        0.32312696113405964
+      ]
+    }
+  },
+  "posthoc_worst_recall_drop_examples": [
+    {
+      "index": 45,
+      "question": "What is the name of the oldest child that attended the Trump campaign-Russian meeting? Answer:",
+      "target": "The oldest child who attended the Trump campaign–Russian meeting was Donald Trump Jr.\nThe oldest child who attended the Trump campaign–Russian meeting was Donald Trump Jr.",
+      "supporting_sentences": [
+        {
+          "sentence": "On June 9, 2016, a meeting was held in Trump Tower in New York City between three senior members of the presidential campaign of Donald TrumpDonald Trump Jr., Jared Kushner, and Paul Manafortand at least five other people, including Russian lawyer Natalia Veselnitskaya.",
+          "document_number": 4,
+          "eligible_gold_tokens": 54,
+          "recovered_tokens": {
+            "DT": 13,
+            "DT_full_reference": 38,
+            "FT_K1": 41
+          }
+        },
+        {
+          "sentence": " He is the oldest child of the 45th President of the United States, Donald Trump, and his first wife, Ivana.",
+          "document_number": 7,
+          "eligible_gold_tokens": 23,
+          "recovered_tokens": {
+            "DT": 1,
+            "DT_full_reference": 5,
+            "FT_K1": 8
+          }
+        }
+      ],
+      "new_DT_top_non_gold_token_context_lines": [
+        "Trump campaign–Russian meeting",
+        "Document 1:",
+        "Zeresenay Alemseged"
+      ]
+    },
+    {
+      "index": 17,
+      "question": "Are Bamboo Mañalac and Danny Jones both musicians? Answer:",
+      "target": "Yes, Bamboo Mañalac and Danny Jones are both musicians.\nYes, Bamboo Mañalac and Danny Jones are both musicians.",
+      "supporting_sentences": [
+        {
+          "sentence": "Francisco Gaudencio Lope Belardo Mañalac (born March 21, 1976), popularly known as Bamboo Mañalac or simply by the mononym Bamboo, is a Filipino American musician and singer-songwriter.",
+          "document_number": 5,
+          "eligible_gold_tokens": 49,
+          "recovered_tokens": {
+            "DT": 1,
+            "DT_full_reference": 9,
+            "FT_K1": 11
+          }
+        },
+        {
+          "sentence": "Danny Jones (born 12 March 1986) is a British musician who is one of the lead vocalists and guitarists for pop-rock band McFly.",
+          "document_number": 3,
+          "eligible_gold_tokens": 33,
+          "recovered_tokens": {
+            "DT": 0,
+            "DT_full_reference": 22,
+            "FT_K1": 12
+          }
+        }
+      ],
+      "new_DT_top_non_gold_token_context_lines": [
+        "Document 1:",
+        "Bamboo (band)",
+        "Bamboo was a Filipino rock band formed in 2002 and had been active from 2004 until it disbanded in 2011. It consisted of Bamboo Mañalac, Ira Cruz, Nathan Azarcon and Vic Mercado."
+      ]
+    },
+    {
+      "index": 36,
+      "question": "Where did the architect of the Governor's House, located in Knutsford, graduate from college? Answer:",
+      "target": "The architect of the Governor's House in Knutsford, Edmund Sharpe, graduated from Cambridge University.\nThe architect of the Governor's House in Knutsford, Edmund Sharpe, graduated from Cambridge University.",
+      "supporting_sentences": [
+        {
+          "sentence": " It was built for the governor of Knutsford Gaol, and has later been used as a Tourist Information Centre.",
+          "document_number": 4,
+          "eligible_gold_tokens": 23,
+          "recovered_tokens": {
+            "DT": 4,
+            "DT_full_reference": 13,
+            "FT_K1": 6
+          }
+        },
+        {
+          "sentence": " Following his graduation from Cambridge University he was awarded a travelling scholarship, enabling him to study architecture in Germany and southern France.",
+          "document_number": 6,
+          "eligible_gold_tokens": 22,
+          "recovered_tokens": {
+            "DT": 0,
+            "DT_full_reference": 4,
+            "FT_K1": 8
+          }
+        }
+      ],
+      "new_DT_top_non_gold_token_context_lines": [
+        "The former Governor's House is located in Toft Road, Knutsford, Cheshire, England. It was built for the governor of Knutsford Gaol, and has later been used as a Tourist Information Centre. It was built in 1844 and designed by the Lancaster architect Edmund Sharpe. It is recorded in the National Heritage List for England as a designated Grade II listed building. The house is constructed in red brick in Georgian style.",
+        "Julia Morgan School for Girls is an all-girls middle school in Oakland, California named for Julia Morgan, the building's architect and the first woman to be licensed in California as an architect. The school is housed in a historic and architecturally significant building she designed. The building was constructed in 1924 and was originally used for The Ming Quong Home for Chinese girls, an orphanage. It was purchased and donated to Mills College in 1936 and became known as Graduate House. After 1960 it was known as Alderwood Hall. In 2004, the building was renovated for use as the Julia Morgan School for Girls. The building is located at 5000 MacArthur Boulevard.",
+        "Edmund Sharpe (31 October 1809 – 8 May 1877) was an English architect, architectural historian, railway engineer, and sanitary reformer. Born in Knutsford, Cheshire, he was educated first by his parents and then at schools locally and in Runcorn, Greenwich and Sedbergh. Following his graduation from Cambridge University he was awarded a travelling scholarship, enabling him to study architecture in Germany and southern France. In 1835 he established an architectural practice in Lancaster, initially working on his own. In 1845 he entered into partnership with Edward Paley, one of his pupils. Sharpe's main focus was on churches, and he was a pioneer in the use of terracotta as a structural material in church building, designing what were known as \"pot\" churches, the first of which was St Stephen and All Martyrs' Church, Lever Bridge."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "version": "source-v2",
+  "scope": "evidence body only; instructions, solved demonstrations, question and answer prefix preserved",
+  "scope_coordinates": "half-open character offsets in the original unprefixed prompt",
+  "source_token_rule": "tokens wholly contained in the body, intersected with the author's keep tokens",
+  "budget_fractions": [0.05, 0.1, 0.2, 0.3, 0.5],
+  "budget_rule": "max(1, ceil(fraction * source_eligible_tokens))",
+  "token_recovery_score_view": "positive_part",
+  "recovery_tie_break": "ascending prompt token index",
+  "DT_reference": "EOS only at source eligible tokens; preserve all other input tokens",
+  "faithfulness_deletion_scope": "same source eligible tokens as the DT reference",
+  "faithfulness_score_view": "positive_part, as in the released-v1 adapter",
+  "faithfulness_steps": 20,
+  "target": "unchanged complete stored response plus terminal EOS",
+  "FT": "live same-input K1 faithfulness and K3 recovery; no published CSV substitution",
+  "sentence_recovery": "optional separate sentence/line-unit budget; mean positive score; whole units selected",
+  "published_number_comparison": false
+}

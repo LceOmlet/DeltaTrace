@@ -59,8 +59,8 @@
 
 ## 2026-09-10 完整结果与效率图接入
 
-主结果更新为冻结 Qwen3-8B 全部 13 任务、1,243 例；RISE/MAS 均保留，仅按作者要求不展示 VT 与 HotpotQA recovery。六项检索 recovery 全部进入主表。摘要与引言采用完整任务结果；两模型各 16 例的开发数据移至附录，并使用已核验的 signed RISE / positive MAS 与 recovery。
+主结果更新为冻结 Qwen3-8B 全部 13 任务、1,243 例；RISE/MAS 均保留，recovery 覆盖六项 NIAH、四项 VT 与 HotpotQA；VT 预算为 10%/10%/20%/30%，HotpotQA 为 10% 正文 token 预算下的支持句 Recall。摘要与引言采用完整任务结果；两模型各 16 例的开发数据移至附录，并使用已核验的 signed RISE / positive MAS 与 recovery。
 
 效率主图分别展示 Qwen3 的同次配对 FT 成本和 Qwen3.5 的真实 batch 加速；附录补充三条原始长输入的 dense/tiled 成本和后续 replay retention 测量。每个图、表明确版本、样本、完整归因计时范围、预热及显存单位。两张带符号案例图移至详细证据附录，颜色图例改放删除曲线右栏下方。
 
-最新补充：主比较纳入Perturbation、REAGENT、CLP、IFR、AttnLRP、FT与DT七种方法。三张表分别报告RISE/MAS/recovery，完整精度CSV包含91个方法—任务行、224个指标值；摘要按全部方法更新为RISE 9/13、MAS 11/13、检索recovery 6/6最优。两张案例曲线均加入每个模型自己的FT K1，明确整段回答（含EOS）的归一化对数似然与原作者归一化方式。
+最新补充：主比较纳入Perturbation、REAGENT、CLP、IFR、AttnLRP、FT与DT七种方法。三张表分别报告RISE/MAS/recovery，完整精度CSV包含91个方法—任务行、259个指标值；摘要按全部方法更新为RISE 9/13、MAS 11/13、NIAH recovery 6/6最优；VT分任务预算宏平均为84.18%，HotpotQA最高均值为IFR的75.87%。两张案例曲线均加入每个模型自己的FT K1，明确整段回答（含EOS）的归一化对数似然与原作者归一化方式。
