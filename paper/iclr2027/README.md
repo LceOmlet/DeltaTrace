@@ -25,7 +25,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 wsl.exe -d Ubuntu-22.04 -- latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 ```
 
-机制图和两张案例图由`figures/build_figures.py`生成；主结果表和既有实现成本图由`results/build_results.py`生成。正文的 rollout 效率图由`../../experiments/efficiency/build_curve.py`生成，以“×”标记 OOM，保留坐标和图例，不添加标题、图注或底部说明。
+机制图和两张案例图由`figures/build_figures.py`生成；主结果表和既有实现成本图由`results/build_results.py`生成。第一页摘要下方的右侧组合图由`figures/build_intro_teaser.py`生成，上方按 Recall 绘制雷达图，下方展示 Attribution time；Introduction 在左侧环绕。每个雷达轴标出独立 min/max，七种方法共享该轴范围。时间面板保留 52 个成功测量点和 4 个 OOM 标记，并注明不同硬件来源。原始全尺寸 rollout 图和全部测量记录仍保留。
 
 当前主表包含Qwen3-8B全部13个任务、1,243例的RISE/MAS，以及11个任务的recovery。VT四任务预算为10%/10%/20%/30%，HotpotQA采用10%正文token预算下的支持句Recall；表中列明预算并加入VT宏平均。七种方法以RISE、MAS、recovery三张表展示，完整CSV包含91行、259个指标值。数据与重建方式见[results/README.md](results/README.md)。
 

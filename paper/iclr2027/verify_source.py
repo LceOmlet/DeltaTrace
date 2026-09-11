@@ -29,6 +29,17 @@ def main():
     assert sha(ROOT / 'figures/draw_mechanism.py') == manifest['mechanism_builder_sha256']
     for name, digest in manifest['generated_files'].items():
         assert sha(ROOT / 'figures/generated' / name) == digest, name
+    teaser = json.loads((ROOT / 'figures/intro_teaser_manifest.json').read_bytes())
+    assert sha(ROOT / 'figures/build_intro_teaser.py') == teaser['builder_sha256']
+    for name, digest in teaser['sources'].items():
+        assert sha(ROOT.parents[1] / name) == digest, name
+    for name, digest in teaser['outputs'].items():
+        assert sha(ROOT / 'results/figures' / name) == digest, name
+    assert not teaser['outside_labels'] and not teaser['label_collisions']
+    assert not teaser['text_plot_collisions']
+    assert teaser['minimum_radar_text_clearance_pt'] >= 2
+    assert len(teaser['axes']) == 11 and len(teaser['radar_methods']) == 7
+    assert teaser['successful_timing_points'] == 52 and teaser['oom_points'] == 4
     labels = re.findall(r'\\label\{([^}]+)\}', source)
     assert len(labels) == len(set(labels)), 'Repeated labels'
     refs = re.findall(r'\\(?:eqref|ref)\{([^}]+)\}', source)
@@ -43,6 +54,8 @@ def main():
                   reference_closure=True, anonymous_style=True,
                   figure_files_verified=len(manifest['generated_files']),
                   included_vector_figures=len(graphics),
+                  intro_teaser_verified=True,
+                  intro_teaser_manifest_sha256=sha(ROOT / 'figures/intro_teaser_manifest.json'),
                   figure_manifest_sha256=sha(ROOT / 'figures/figure_manifest.json'),
                   source_files={str(f.relative_to(ROOT)):sha(f) for f in files+[ROOT/'references.bib']})
     destination = ROOT / 'source_verification.json'

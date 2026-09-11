@@ -1,5 +1,50 @@
 # DeltaTrace main figure
 
+## First-page Recall and time inset
+
+`build_intro_teaser.py` produces `../results/figures/deltatrace-recall-time.*`
+as a 2.70 by 3.96 inch vector PDF, editable SVG, and 400-dpi PNG. The manuscript
+inserts it at its native width below the abstract, with Introduction text
+wrapping on the left. It is unnumbered so the approved mechanism remains
+Figure 1. All labels are 8 pt at the actual insertion size. Directional text
+anchors keep the radar labels outside the outer circle; the builder rejects
+text overlap, clipping, intersection with either plot or OOM marks, and less
+than 2 pt clearance from the radar circle.
+
+The radar uses all 77 reported Recall values across seven methods and eleven
+tasks from the verified `all_methods.csv`. It excludes unavailable MATH and
+MoreHopQA recovery and does not duplicate tasks through a macro-average axis.
+Every axis shows its own endpoints: the observed extrema over all seven methods
+plus 8% of their span, rounded outwards to 5 percentage points for spans below
+25 points, otherwise to 10, and bounded within 0–100. All methods share the same
+range within a task. Only geometry is normalized; source percentages remain
+unchanged. The range policy and every raw value are in `intro_teaser_manifest.json`.
+The center and outer ring denote the printed minimum and maximum, respectively;
+intermediate rings divide that interval into quarters.
+
+VT-H2/H4 and HotpotQA use 10% budgets, VT-H6 20%, and VT-H10 30%, as marked on
+the figure. FT denotes the released NIAH baseline and FT K3 for VT/HotpotQA,
+matching the recovery table. NIAH/VT report answer Recall; HotpotQA reports
+supporting-fact Recall. These task scopes are retained in the manifest.
+
+The timing panel reads `../../../experiments/efficiency/curve_data.json`.
+It preserves all 52 successful points, local min/max error bars, missing-point
+gaps and four OOM crosses. DT, FT and FT-mh are local MetaX C550 measurements;
+the other curves are historical six/eight-GPU references. The inset labels this
+mixed hardware scope, and Section 4 explains it. No timings are rescaled and no
+cross-hardware speedup is claimed. The original full-size rollout assets remain
+unchanged. Both panels share method colors and marker styles.
+
+From the paper directory:
+
+```sh
+python figures/build_intro_teaser.py
+python verify_source.py
+latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
+```
+
+## Mechanism overview
+
 The manuscript overview uses four panels: (a) paired original/EOS-reference
 executions and a finite reverse traversal; (b) Attention; (c) Gated DeltaNet;
 (d) a measured signed context example. Panel (a) occupies the wider left column;
