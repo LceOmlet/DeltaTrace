@@ -106,13 +106,13 @@ tables=[]
 for metric,label,caption in [
     ('RISE','tab:full',r'RISE $\downarrow$ on the complete released Qwen3-8B tasks. FT is FlashTrace and DT is \dt{}. The five other baselines and FT use published aggregates \citep{pan2026flashtrace}; DT uses signed ranking. $n$ is the released task size. Bold marks the lowest observed mean across all seven methods.'),
     ('MAS','tab:mas',r'MAS $\downarrow$ on the same released tasks and seven methods as Table~\ref{tab:full}. DT uses its positive source contributions. Bold marks the lowest observed mean.'),
-    ('Recovery','tab:recovery',r'Evidence recovery ($\%$, higher is better) at the listed token budgets. NIAH/VT report token Recall; HotpotQA reports supporting-fact Recall. VT macro averages its four rows. For VT/HotpotQA, FT uses K3 and $\dagger$ denotes amended AttnLRP (Appendix~\ref{app:evaluation}). Bold marks the highest observed mean.')]:
+    ('Recovery','tab:recovery',r'Evidence recovery ($\%$, higher is better) at the listed token budgets. NIAH/VT report token Recall; HotpotQA reports supporting-fact Recall. VT macro averages its four rows. FT uses K3 for VT/HotpotQA. Bold marks the highest observed mean.')]:
     recovery = metric == 'Recovery'
     table=[r'\begin{table}[t]',r'\centering\footnotesize' if recovery else r'\centering\small',
            r'\caption{'+caption+'}',r'\label{'+label+'}',
            r'\setlength{\tabcolsep}{2.2pt}' if recovery else r'\setlength{\tabcolsep}{3.0pt}',
            r'\begin{tabular}{@{}lrr rrrrrrr@{}}' if recovery else r'\begin{tabular}{@{}lr rrrrrrr@{}}',r'\toprule',
-           (r'Task & $n$ & Budget & Perturbation & REAGENT & CLP & IFR & AttnLRP$^\dagger$ & FT & DT \\' if recovery else
+           (r'Task & $n$ & Budget & Perturbation & REAGENT & CLP & IFR & AttnLRP & FT & DT \\' if recovery else
             r'Task & $n$ & Perturbation & REAGENT & CLP & IFR & AttnLRP & FT & DT \\'),r'\midrule']
     best_count=0
     for i,row in enumerate(rows):
