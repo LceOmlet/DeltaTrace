@@ -123,12 +123,12 @@ def draw(data):
     import matplotlib.pyplot as plt
     from matplotlib.ticker import FixedLocator,FuncFormatter,LogLocator
     plt.rcParams.update({'font.family':'DejaVu Sans','font.size':10.5,'axes.labelsize':12,'axes.titlesize':15,'pdf.fonttype':42,'svg.fonttype':'none','svg.hashsalt':'deltatrace-rollout-20260911'})
-    fig,ax=plt.subplots(figsize=(9.3,5.9));fig.subplots_adjust(left=.095,right=.975,bottom=.245,top=.84)
+    fig,ax=plt.subplots(figsize=(9.3,5.0));fig.subplots_adjust(left=.095,right=.975,bottom=.19,top=.88)
     colors=['#b07aa1','#e6a14b','#7e95a9','#7c9b65','#a08469','#74a6a3','#9a90bc']
     for color,method in zip(colors,METHODS.values()):
         rows=sorted([r for r in data['published'] if r['method']==method],key=lambda r:r['output_tokens'])
         values={r['output_tokens']:r['seconds'] for r in rows}
-        ax.plot(LENGTHS,[values.get(n,np.nan) for n in LENGTHS],color=color,marker='o',ms=4,lw=1.25,alpha=.8,label=method+' [ref]')
+        ax.plot(LENGTHS,[values.get(n,np.nan) for n in LENGTHS],color=color,marker='o',ms=4,lw=1.25,alpha=.8,label=method)
     styles={'FlashTrace':('#db674d','s','-',2.1),'FT multi-hop':('#e5a142','D','--',1.8),'DeltaTrace':('#1769aa','o','-',2.8)}
     for method,(color,marker,line,width) in styles.items():
         rows=sorted([r for r in data['local'] if r['method']==method],key=lambda r:r['output_tokens'])
@@ -136,6 +136,13 @@ def draw(data):
         # Missing/failed cells split lines; do not bridge an unmeasured interval.
         y=[valid[n]['seconds'] if n in valid else np.nan for n in LENGTHS]
         ax.plot(LENGTHS,y,color=color,marker=marker,ms=5.4,lw=width,ls=line,label=method,zorder=5)
+        # OOM has no measured latency: mark the exact x coordinate outside the y axis.
+        oom=[r['output_tokens'] for r in rows if r['status']=='oom']
+        if oom:
+            band={'FlashTrace':1.045,'FT multi-hop':1.10}[method]
+            marks,=ax.plot(oom,[band]*len(oom),transform=ax.get_xaxis_transform(),
+                color=color,marker=r'$\times$',ms=8.5,ls='none',clip_on=False,zorder=7)
+            marks.set_gid('oom-'+method.replace(' ','-'))
         good=[r for r in rows if r['status']=='ok']
         if good:
             ax.errorbar([r['output_tokens'] for r in good],[r['seconds'] for r in good],
@@ -147,23 +154,16 @@ def draw(data):
     ax.grid(True,which='major',color='#e1e6eb',lw=.7);ax.set_axisbelow(True)
     for side in ['top','right']:ax.spines[side].set_visible(False)
     for side in ['left','bottom']:ax.spines[side].set_color('#9da6ae')
-    fig.text(.095,.955,'Qwen3-8B · Attribution efficiency',ha='left',va='top',fontsize=16,fontweight='bold')
-    fig.text(.095,.903,'Nominal 10-token input · Updated DeltaTrace and FlashTrace curves',ha='left',va='top',fontsize=10.5,color='#536171')
     handles,labels=ax.get_legend_handles_labels();order=[labels.index(x) for x in ['DeltaTrace','FlashTrace','FT multi-hop']]+list(range(7))
-    fig.legend([handles[i] for i in order],[labels[i] for i in order],loc='lower center',bbox_to_anchor=(.53,.084),ncol=5,frameon=False,fontsize=8.6,columnspacing=1.2,handlelength=2.1)
-    failed=defaultdict(list)
-    for r in data['local']:
-        if r['status']!='ok':failed[r['method']].append(str(r['output_tokens']))
-    missing='; '.join(f"{method}: {', '.join(lengths)}" for method,lengths in failed.items())
-    foot='DT / FT: same C550, complete warm API calls; cold costs recorded separately. [ref]: released 6/8-GPU results.'
-    if missing:foot+='\nOOM / failed cells (no latency inferred): '+missing+' tokens.'
-    fig.text(.095,.024,foot,ha='left',va='bottom',fontsize=8,color='#536171',linespacing=1.4)
+    fig.legend([handles[i] for i in order],[labels[i] for i in order],loc='lower center',bbox_to_anchor=(.53,.009),ncol=5,frameon=False,fontsize=8.6,columnspacing=1.2,handlelength=2.1)
     target=HERE/'figures';target.mkdir(exist_ok=True)
     for suffix in ['png','svg','pdf']:
         metadata={'Date':None} if suffix=='svg' else {'CreationDate':None,'ModDate':None} if suffix=='pdf' else None
         fig.savefig(target/('deltatrace-rollout-scaling.'+suffix),dpi=220,facecolor='white',metadata=metadata)
     plt.close(fig)
-    return {'numpy':np.__version__,'matplotlib':matplotlib.__version__,'figure_inches':[9.3,5.9],'png_dpi':220,'svg_hashsalt':'deltatrace-rollout-20260911'}
+    return {'numpy':np.__version__,'matplotlib':matplotlib.__version__,'figure_inches':[9.3,5.0],'png_dpi':220,'svg_hashsalt':'deltatrace-rollout-20260911',
+        'title':False,'subtitle':False,'footnote':False,'oom_marker':'×','oom_marker_count':sum(r['status']=='oom' for r in data['local']),
+        'oom_positions':'Exact rollout length, axes-coordinate band outside the latency axis; no time value assigned.'}
 
 def main():
     data=collect();(HERE/'curve_data.json').write_text(json.dumps(data,indent=2,allow_nan=False)+'\n',newline='\n')

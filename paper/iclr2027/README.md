@@ -25,7 +25,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 wsl.exe -d Ubuntu-22.04 --cd /mnt/c/Users/Chen/Documents/ChatGPT/credit/DeltaTrace/paper/iclr2027 -- latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 ```
 
-机制图和两张案例图由`figures/build_figures.py`生成；主结果表和两张效率图由`results/build_results.py`从冻结记录生成，均保留SVG、矢量PDF及PNG预览。图1展示方法机制，图2展示配对效率，图3展示长输入dense/tiled成本，图4、图5展示两模型在检索和多跳任务上的真实有符号归因，各含该模型自己的DT/FT删除曲线。两张案例图的颜色图例均在右栏删除曲线下方。
+机制图和两张案例图由`figures/build_figures.py`生成；主结果表和既有实现成本图由`results/build_results.py`生成。正文的 rollout 效率图由`../../experiments/efficiency/build_curve.py`生成，以“×”标记 OOM，保留坐标和图例，不添加标题、图注或底部说明。
 
 当前主表包含Qwen3-8B的全部13个任务、1,243例，保留所有RISE/MAS，仅按作者要求不展示VT和HotpotQA recovery。主表已补齐Perturbation、REAGENT、CLP、IFR、AttnLRP，共七种方法，以RISE、MAS、recovery三张表展示。两模型各16例开发结果、方法版本与计时口径在附录中单独说明。原始来源、SHA256、完整精度数据、重建方式及核对结果见[results/README.md](results/README.md)。
 
