@@ -12,6 +12,7 @@ def main():
     data=json.loads((HERE/'data/overview_role_case.json').read_bytes())
     fig=draw(data)
     fig.canvas.draw()
+    (HERE.parent/'preview').mkdir(exist_ok=True)
     fig.savefig(HERE.parent/'preview/overview-current.png',dpi=150)
     fig.canvas.draw()  # Restore the canvas renderer after the different-DPI preview.
     renderer=fig.canvas.get_renderer()
@@ -65,6 +66,9 @@ def main():
         'verified_rendered_token_runs':len(meta['displayed_runs']),
         'answer_pairs_match_source_and_target':True,
         'attention_and_gdn_equal_area':True,
+        'mechanism_layout':meta['mechanism_layout'],
+        'trace_directions':meta['trace_directions'],
+        'minimum_label_pt_at_manuscript_width':meta['minimum_label_pt_at_manuscript_width'],
         'shared_linear_scale':[meta['vmin'],meta['vmax']],
         'raw_scores_modified':False,
         'color_saturation':meta['normalization'],

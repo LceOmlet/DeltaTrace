@@ -2,10 +2,24 @@
 
 The manuscript overview uses four panels: (a) paired original/EOS-reference
 executions and a finite reverse traversal; (b) Attention; (c) Gated DeltaNet;
-(d) a measured signed context example. Attention and GDN have identical panel
-areas (4.20 x 4.31 drawing units), matching two-branch cards, font sizes, and
-arrow weights. GDN shows its full retain/write/read structure and expands the
+(d) a measured signed context example. Panel (a) occupies the wider left column;
+Attention is above GDN in the right column. Both operator panels have identical
+areas (7.35 x 2.10 drawing units), with matching two-branch allocation cards to
+the right of the forward operator, font sizes, and arrow weights. GDN shows its
+full retain/write/read structure and expands the
 retention rule T = alpha S; S abbreviates the previous state.
+
+The two gray upward arrows in (a), explicitly labeled Forward, denote the
+reference and original executions with the same model and fixed response.
+Their output scores define Delta F. The purple downward arrow, labeled Reverse,
+denotes a single reverse traversal of the finite local rules. Starting with
+coefficient 1 at the scalar score produces input coefficients m_i; taking their
+inner products with embedding differences Delta e_i gives A_i. Thus Delta F is
+the effect being allocated, while the reverse computation composes its finite
+coefficients. Appendix `app:conservation` specifies this finite chain rule.
+The caption and the opening of "Following evidence backward" use this order.
+Labels are at least 20.4 pt on the 14-inch canvas, or 8.0 pt at the manuscript's
+5.5-inch insertion width (excluding mathematical subscripts and superscripts).
 
 The main example is Qwen3.5, MoreHopQA development example 1. The question asks
 about the author of a play. The recorded name spans receive +1.5582 nats for

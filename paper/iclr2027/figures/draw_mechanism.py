@@ -1,7 +1,7 @@
-"""Balanced Attention/GDN mechanisms with a measured name-to-number example.
+"""Paired forward/reverse trace with stacked Attention/GDN mechanisms.
 
 Operator diagrams are schematic. Only the text backgrounds and full-input
-strip encode measured scores. Attention and GDN occupy identical panel areas.
+strip encode measured scores. Attention and GDN occupy identical stacked areas.
 """
 import re
 
@@ -46,7 +46,8 @@ def draw(data):
     artists=[]
 
     def text(x,y,value,size=17,color=INK,weight='normal',**kw):
-        size=max(size,17) if value not in ('−','+') else size
+        # At the manuscript's 5.5-inch width, 20.4 pt here becomes 8.0 pt.
+        size=max(size,20.4) if value not in ('−','+') else size
         t=ax.text(x,y,value,fontsize=size,color=color,fontweight=weight,
                   va=kw.pop('va','top'),fontfamily=kw.pop('fontfamily','DejaVu Sans'),
                   linespacing=1.25,**kw)
@@ -86,88 +87,93 @@ def draw(data):
                 ax.add_patch(Rectangle((x+j*cw,y+i*ch),cw-.024,ch-.024,
                                       fc=color,ec='white',lw=.5))
 
-    def allocation_cards(x,left_label,right_label,left_formula,right_formula,out,formula_size=24):
-        # Identical geometry gives both mechanisms equal visual weight.
+    def allocation_cards(x,y,left_label,right_label,left_formula,right_formula,out,formula_size=24):
+        # Place the finite allocation to the right of each forward operator.
         for xx,label,formula,fc,color in [
                 (x,left_label,left_formula,PALE_BLUE,BLUE),
-                (x+2.22,right_label,right_formula,PALE_PURPLE,PURPLE)]:
-            box(xx,2.67,1.98,.75,fc,color,.08,.9)
-            text(xx+.99,2.36,label,17,color,weight='bold',ha='center')
-            text(xx+.99,2.89,formula,formula_size,color,ha='center')
-        center=x+2.08
-        path_arrow([(x+.99,3.44),(x+.99,3.58),(center-.18,3.91)],BLUE,2,12)
-        path_arrow([(x+3.21,3.44),(x+3.21,3.58),(center+.18,3.91)],PURPLE,2,12)
-        ax.add_patch(Circle((center,3.99),.15,fc='white',ec='#9CADBC',lw=1.1))
-        text(center,3.99,'+',21,ha='center',va='center')
-        arrow((center+.17,3.99),(center+.53,3.99),INK,1.7,12)
-        text(center+.69,3.82,out,25)
+                (x+1.98,right_label,right_formula,PALE_PURPLE,PURPLE)]:
+            box(xx,y+.36,1.73,.66,fc,color,.08,.9)
+            text(xx+.865,y,label,20.4,color,weight='bold',ha='center')
+            text(xx+.865,y+.69,formula,formula_size,color,ha='center',va='center')
+        center=x+1.855
+        path_arrow([(x+.865,y+1.04),(x+.865,y+1.18),(center-.18,y+1.43)],BLUE,2,12)
+        path_arrow([(x+2.845,y+1.04),(x+2.845,y+1.18),(center+.18,y+1.43)],PURPLE,2,12)
+        ax.add_patch(Circle((center,y+1.50),.15,fc='white',ec='#9CADBC',lw=1.1))
+        text(center,y+1.50,'+',21,ha='center',va='center')
+        arrow((center+.17,y+1.50),(center+.53,y+1.50),INK,1.7,12)
+        text(center+.66,y+1.50,out,25,va='center')
 
     # (a) The paired endpoint graph and the finite reverse coefficient.
     heading(.22,.14,'a','Finite reverse trace')
-    text(.23,.56,'Two inputs. One fixed response y.',17,MUTED)
-    text(1.14,1.00,r'$F(x_0;y)$',19,ha='center')
-    text(3.25,1.00,r'$F(x_1;y)$',19,ha='center')
-    text(2.20,.92,r'$\Delta F$',22,PURPLE,ha='center')
-    text(1.75,1.18,'−',13.7,MUTED,ha='center')
-    text(2.64,1.18,'+',13.7,MUTED,ha='center')
-    arrow((1.64,1.15),(1.88,1.15),MUTED,1.2,10)
-    arrow((2.76,1.15),(2.53,1.15),MUTED,1.2,10)
-    for xc,fc,ec in [(1.14,'#F5F7F9','#BBC9D5'),(3.25,PALE_BLUE,'#87A8C7')]:
-        arrow((xc,2.93),(xc,1.37),'#B7C4CF',1.6,12,zorder=1)
-        plane(xc-.81,1.58,1.62,.42,'MLP + skip',fc,ec)
-        plane(xc-.81,2.26,1.62,.42,'Attn. / GDN',fc,ec)
-        text(xc,2.01,'⋮',17,MUTED,ha='center')
-    for yy in [1.80,2.48]:
-        ax.plot([1.96,2.44],[yy,yy],color='#C2B3DA',lw=1.1,ls=(0,(2.4,2)))
-        ax.add_patch(Circle((2.20,yy),.047,fc=PURPLE,ec='white',lw=.8,zorder=6))
-    arrow((2.20,1.32),(2.20,3.12),PURPLE,3,17,zorder=5)
-    text(2.20,3.23,r'$m_i$',17,PURPLE,ha='center')
-    box(.33,3.00,1.62,.40,'#F5F7F9','#BCC9D4',.06)
-    text(1.14,3.20,'EOS EOS …',17,MUTED,ha='center',va='center')
-    box(2.44,3.00,1.62,.40,PALE_BLUE,'#86A6C3',.06)
-    text(3.25,3.20,'source words' if roles else '9153566',17,BLUE,ha='center',va='center')
-    text(1.14,3.49,r'Reference $x_0$',17,MUTED,ha='center')
-    text(3.25,3.49,r'Original $x_1$',17,BLUE,ha='center')
-    text(2.20,3.81,'One finite reverse traversal',17,PURPLE,ha='center')
-    text(2.20,4.13,r'$A_i=\langle m_i,\,\Delta e_i\rangle$',22,PURPLE,ha='center')
-    ax.plot([4.52,4.52],[.19,4.45],color=LINE,lw=.8)
+    text(.23,.56,r'Same model and fixed response $y$',20.4,MUTED)
+    left,right,reverse=1.47,4.67,3.07
+    text(left,1.00,r'$F(x_0;y)$',23,ha='center')
+    text(right,1.00,r'$F(x_1;y)$',23,ha='center')
+    text(reverse,.94,r'$\Delta F$',25,PURPLE,ha='center')
+    text(2.34,1.21,'−',20.4,MUTED,ha='center')
+    text(3.79,1.21,'+',20.4,MUTED,ha='center')
+    arrow((2.15,1.14),(2.66,1.14),MUTED,1.2,10)
+    arrow((3.99,1.14),(3.48,1.14),MUTED,1.2,10)
+    for xc,fc,ec in [(left,'#F5F7F9','#BBC9D5'),(right,PALE_BLUE,'#87A8C7')]:
+        arrow((xc,3.02),(xc,1.39),'#A5B3BF',2.2,15,zorder=1)
+        plane(xc-.93,1.64,1.86,.44,'MLP + skip',fc,ec)
+        plane(xc-.93,2.35,1.86,.44,'Attn. / GDN',fc,ec)
+        for yy in (2.14,2.21,2.28):
+            ax.add_patch(Circle((xc,yy),.013,fc=MUTED,ec='none',zorder=3))
+    for xx in (.24,5.90):
+        text(xx,2.27,'Forward',20.4,MUTED,ha='center',va='center',rotation=90)
+    for yy in [1.86,2.57]:
+        ax.plot([2.40,3.74],[yy,yy],color='#C2B3DA',lw=1.1,ls=(0,(2.4,2)))
+        ax.add_patch(Circle((reverse,yy),.047,fc=PURPLE,ec='white',lw=.8,zorder=6))
+    arrow((reverse,1.40),(reverse,3.20),PURPLE,3.2,18,zorder=5)
+    text(reverse+.30,2.32,'Reverse',20.4,PURPLE,ha='center',va='center',rotation=270,
+         bbox=dict(facecolor='white',edgecolor='none',pad=1.0))
+    text(reverse,3.30,r'$m_i$',23,PURPLE,ha='center')
+    box(left-.93,3.08,1.86,.44,'#F5F7F9','#BCC9D4',.06)
+    text(left,3.30,'EOS EOS …',20.4,MUTED,ha='center',va='center')
+    box(right-.93,3.08,1.86,.44,PALE_BLUE,'#86A6C3',.06)
+    text(right,3.30,'source words' if roles else '9153566',20.4,BLUE,ha='center',va='center')
+    text(left,3.64,r'Reference $x_0$',20.4,MUTED,ha='center')
+    text(right,3.64,r'Original $x_1$',20.4,BLUE,ha='center')
+    text(reverse,4.06,r'$A_i=\langle m_i,\,\Delta e_i\rangle$',25,PURPLE,ha='center')
+    ax.plot([6.19,6.19],[.19,4.45],color=LINE,lw=.8)
 
     # (b) Attention: selection weights multiply the carried values.
-    heading(4.92,.14,'b','Attention')
-    text(4.95,.56,'Select and carry',17,MUTED)
-    matrix(5.26,1.16,4,4,.185,.185,'#BDAFD6')
-    matrix(6.95,1.16,4,2,.185,.185,'#8FAED0')
-    matrix(8.41,1.16,4,2,.185,.185,'#B2BFCA')
-    text(6.45,1.44,'×',23,MUTED,ha='center')
-    text(7.87,1.44,'=',23,MUTED,ha='center')
-    text(5.62,1.98,r'$P$',21,PURPLE,ha='center')
-    text(7.12,1.98,r'$V$',21,BLUE,ha='center')
-    text(8.58,1.98,r'$Y$',21,ha='center')
-    allocation_cards(4.95,'Content','Selection',r'$P_1\,\Delta V$',r'$\Delta P\,V_0$',r'$\Delta Y$')
-    ax.plot([9.39,9.39],[.19,4.45],color=LINE,lw=.8)
+    heading(6.45,.14,'b','Attention')
+    text(6.48,.55,'Select and carry',20.4,MUTED)
+    matrix(6.58,1.00,4,4,.17,.17,'#BDAFD6')
+    matrix(7.95,1.00,4,2,.17,.17,'#8FAED0')
+    matrix(9.00,1.00,4,2,.17,.17,'#B2BFCA')
+    text(7.58,1.18,'×',23,MUTED,ha='center')
+    text(8.63,1.18,'=',23,MUTED,ha='center')
+    text(6.91,1.77,r'$P$',23,PURPLE,ha='center')
+    text(8.11,1.77,r'$V$',23,BLUE,ha='center')
+    text(9.16,1.77,r'$Y$',23,ha='center')
+    allocation_cards(10.08,.55,'Content','Selection',r'$P_1\,\Delta V$',r'$\Delta P\,V_0$',r'$\Delta Y$')
+    ax.plot([6.45,13.80],[2.36,2.36],color=LINE,lw=.8)
 
     # (c) GDN: same panel size, same two-channel allocation diagram.
-    heading(9.65,.14,'c','Gated DeltaNet',21.2)
-    text(9.67,.56,'Retain, write, and read',17,MUTED)
-    text(9.83,1.69,r'$S_{t-1}$',20,BLUE,ha='center',va='center')
-    arrow((10.22,1.69),(10.45,1.69),BLUE,1.5,10)
-    box(10.48,1.46,.46,.45,PALE_PURPLE,'#BAABD0',.06)
-    text(10.71,1.69,r'$\alpha$',20,PURPLE,ha='center',va='center')
-    arrow((10.96,1.69),(11.22,1.69),BLUE,1.5,10)
-    ax.add_patch(Circle((11.36,1.69),.12,fc='white',ec='#9CADBC',lw=1.1))
-    text(11.36,1.69,'+',18,ha='center',va='center')
-    text(11.36,1.03,r'$k u^{\top}$',21,BLUE,ha='center')
-    arrow((11.36,1.36),(11.36,1.54),BLUE,1.5,10)
-    arrow((11.50,1.69),(11.75,1.69),BLUE,1.5,10)
-    box(11.79,1.45,.51,.47,PALE_BLUE,'#A5C0D9',.06)
-    text(12.04,1.69,r'$S_t$',20,BLUE,ha='center',va='center')
-    arrow((12.32,1.69),(12.55,1.69),BLUE,1.5,10)
-    box(12.59,1.46,.44,.45,PALE_PURPLE,'#BAABD0',.06)
-    text(12.81,1.69,r'$q$',20,PURPLE,ha='center',va='center')
-    arrow((13.05,1.69),(13.30,1.69),INK,1.5,10)
-    text(13.51,1.69,r'$o_t$',20,ha='center',va='center')
-    text(11.74,2.02,'Retention: T = αS',17,MUTED,ha='center')
-    allocation_cards(9.65,'Stored content','Retention gate',
+    heading(6.45,2.54,'c','Gated DeltaNet',21.2)
+    text(6.48,2.95,'Retain, write, and read',20.4,MUTED)
+    text(6.77,3.95,r'$S_{t-1}$',20.4,BLUE,ha='center',va='center')
+    arrow((7.10,3.95),(7.29,3.95),BLUE,1.5,10)
+    box(7.32,3.72,.38,.45,PALE_PURPLE,'#BAABD0',.06)
+    text(7.51,3.95,r'$\alpha$',20.4,PURPLE,ha='center',va='center')
+    arrow((7.73,3.95),(7.91,3.95),BLUE,1.5,10)
+    ax.add_patch(Circle((8.04,3.95),.12,fc='white',ec='#9CADBC',lw=1.1))
+    text(8.04,3.95,'+',20.4,ha='center',va='center')
+    text(8.04,3.35,r'$k u^{\top}$',21,BLUE,ha='center')
+    arrow((8.04,3.73),(8.04,3.81),BLUE,1.5,8)
+    arrow((8.19,3.95),(8.37,3.95),BLUE,1.5,10)
+    box(8.40,3.71,.45,.47,PALE_BLUE,'#A5C0D9',.06)
+    text(8.625,3.95,r'$S_t$',20.4,BLUE,ha='center',va='center')
+    arrow((8.88,3.95),(9.06,3.95),BLUE,1.5,10)
+    box(9.09,3.72,.35,.45,PALE_PURPLE,'#BAABD0',.06)
+    text(9.265,3.95,r'$q$',20.4,PURPLE,ha='center',va='center')
+    arrow((9.47,3.95),(9.65,3.95),INK,1.5,10)
+    text(9.82,3.95,r'$o_t$',20.4,ha='center',va='center')
+    text(8.04,4.28,r'Retention: $T=\alpha S$',20.4,MUTED,ha='center')
+    allocation_cards(10.08,2.95,'Content','Gate',
                      r'$\alpha_1\,\Delta S$',r'$S_0\,\Delta\alpha$',r'$\Delta T$',23)
 
     # (d) A direct lookup makes source and answer visually match.
@@ -178,7 +184,7 @@ def draw(data):
     for i,t in enumerate(case['tokens']):
         for j in range(*t['char_span']):owners[j].append(i)
     spans,displayed=[],[]
-    font=20.0;step=font/72*.602;line_height=font/72*1.31
+    font=20.4;step=font/72*.602;line_height=font/72*1.31
 
     def paragraph(value,x,y,width=9.21,prefix='',suffix=''):
         lo=source.index(value);hi=lo+len(value)
@@ -248,7 +254,7 @@ def draw(data):
         answer_texts.append(text(10.51,6.13,'William',25,INK,weight='bold'))
         answer_texts.append(text(10.51,6.58,'Shakespeare',25,INK,weight='bold'))
     else:
-        for y,(name,number) in zip([6.10,7.00],facts):
+        for y,(name,number) in zip([6.10,7.08],facts):
             answer_texts.append(text(10.51,y,number,28,INK,weight='bold'))
             answer_texts.append(text(10.51,y+.57,name,18,'#9A8054'))
     text(12.02,8.28-footer_shift,r'$\sum_i A_i=\Delta F$',24,PURPLE,ha='center')
@@ -276,7 +282,7 @@ def draw(data):
     hi_label=f'≥+{limit:.1f}' if roles else f'+{limit:.1f}'
     for xx,ss in [(bx,lo_label),(bx+bw/2,'0'),(bx+bw,hi_label)]:
         legend_artists.append(text(xx,tick_y,ss,17,MUTED,ha='center'))
-    legend_artists.append(text(bx+bw/2,by-.28,'nats · color saturated' if roles else 'Contribution (nats)',17,MUTED,ha='center'))
+    legend_artists.append(text(bx+bw/2,by-.40,'nats · color saturated' if roles else 'Contribution (nats)',17,MUTED,ha='center'))
 
     fig._dt_case={'model':case['model'],'dataset':case['dataset'],'index':case['index'],
         'input_sha256':case['input_sha256'],'text_excerpt_char_spans':spans,
@@ -287,10 +293,15 @@ def draw(data):
         'vmin':-limit,'vmax':limit,'normalization':'linear, zero-centered; explicitly saturated at endpoints' if roles else 'linear, centered on zero',
         'full_input_absolute_max':full_limit,
         'color_map':SIGNED_COLORS,'shared_scale':'one shared scale for all excerpts and full-input strip',
-        'color_legend':{'bar_bounds':[bx,by,bw,bh],'tick_y':tick_y,'label_y':by-.28,
+        'color_legend':{'bar_bounds':[bx,by,bw,bh],'tick_y':tick_y,'label_y':by-.40,
                         'placement':'above full-input strip, right of requested role' if roles else 'below full-input strip'},
         'selection_reason':'same-context playwright/composer role contrast with observed positive and negative name-span totals' if roles else 'direct name-to-number lookup; short exact evidence spans and answers',
-        'mechanism_panel_areas':{'attention':[4.95,.14,4.20,4.31],'gdn':[9.65,.14,4.20,4.31]},
+        'mechanism_panel_areas':{'attention':[6.45,.14,7.35,2.10],'gdn':[6.45,2.54,7.35,2.10]},
+        'trace_panel_area':[.22,.14,5.97,4.31],
+        'mechanism_layout':'attention above GDN; each finite allocation is right of its operator',
+        'trace_directions':{'gray_upward':'two forward executions with the same fixed response',
+                            'purple_downward':'one reverse traversal of finite coefficients, seeded with 1 at the scalar score'},
+        'minimum_label_pt_at_manuscript_width':20.4*5.5/W,
         'schematic_elements':'paired finite trace; PV product; GDN retain/write/read; two equally sized local content/control allocations',
         'gdn_retention_notation':'S abbreviates S_(t-1); T=alpha*S; endpoint subscripts 0 and 1 are reference and original',
         'heatmap_semantics':'unchanged raw token scores; uniformly colored matrix cells are schematic, not measured attention',
