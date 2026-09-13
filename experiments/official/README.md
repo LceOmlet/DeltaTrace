@@ -1,5 +1,22 @@
 # 版本化评测入口
 
+## 当前 Qwen3.5 官方实现
+
+默认 Qwen3.5 归因为 `gdn-symmetric-v1`，所有 GDN 层统一使用对称输出门和完整记忆系数的双端点顺序平均。Qwen3 沿用 clean-v1。方法版本独立于下面的评测范围协议；输出和汇总均保存方法版本及清单哈希。
+
+```bash
+python experiments/official/evaluate.py --family qwen35 --environment /path/environment.json \
+  --evaluation-protocol released-v1 --selection smoke --datasets niah_mq_q2 morehopqa \
+  --ft live --output /path/qwen35-official-smoke
+```
+
+该命令默认使用官方对称 GDN、signed RISE 和 positive MAS/Recall。`--rise-score-view` 可显式选择 signed/positive，结果记录相应口径。source-v2 的默认 RISE 仍保留原正值口径。重现历史 Qwen3.5 方法必须加 `--qwen35-profile clean-v1`，其 released-v1 默认仍为 positive RISE。
+
+当前论文 Qwen3.5 表来自另行冻结的 72 例：[NIAH 新键值构造与验证](../../research/temporary/qwen35_niah_causal_20260913/validation_protocol.json)、[固定 MATH/MoreHopQA 子集](../../research/temporary/qwen35_niah_causal_20260913/generalization_fresh_protocol.json)。完整复现命令见[实验报告](../../research/temporary/qwen35_niah_causal_20260913/RESULTS_zh.md)。通用入口的 `paper` 选项表示原缓存全量，不会自动选择或构造这 72 例。
+
+历史 clean-v1 13 任务数据保留，当前正文只引用 [gdn-symmetric-v1 的数据清单](../../paper/iclr2027/results/data/qwen35_official_quality_sources.json)。
+
+
 **HotpotQA v3 已完成 48/48 例。** 新入口保留原完整推理与答案输入，只改变答案初始目标权重；原生整句支付全部正文词元成本，按固定排序前缀选择。10% 预算下，保留原推理的答案 Recall：有符号总和 DT/FT K3 为 **35.59%/51.04%**，正值有效词元均值为 **48.96%/64.76%**。完整回答两项均值略高、调整区间均跨零。见 [完整结果、协议与核验](../../research/temporary/hotpot_context_v3_20260910/RESULTS.md)。这是上下文与计费的具体修正，不代表测量中立已获证明；下列旧数值保留历史定义。
 
 **HotpotQA 复审更正：两个定位修正成立，整套 v2 协议尚不能称为公平性已验证。** 第 8 例标题/正文 gold 坐标及前导空格归属有明确错误；新增原生句池化与预算属于探索性选择。`answer_only` 在全部 48 例中删除了原推理前缀，改变了模型的条件输入；其 68.58% 对 66.15% 不能冒充保留原推理的答案归因结果。整句表计价的是标点/空白过滤后的有效词元，也不能称为全部词元成本。见 [复审与最小修正口径](../../research/temporary/hotpot_fairness_20260910/REVIEW.md)。[全部 v2 数值与复现入口](../../research/temporary/hotpot_fairness_20260910/RESULTS.md) 保留；下述历史入口与原向量保持冻结。

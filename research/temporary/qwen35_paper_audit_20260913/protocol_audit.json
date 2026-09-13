@@ -1,0 +1,81 @@
+{
+  "status": "passed_static_protocol_and_fixture_audit",
+  "full_tasks": 13,
+  "full_cases": 1243,
+  "paper_recovery_cases": 448,
+  "vt_cases": 400,
+  "hotpot_cases": 48,
+  "paper_source_files": {
+    "research/temporary/all_baselines_20260910/inputs.json": "074b24aff9fcb5971d238350fbb463d96acc6cc76f33c25d69c1caee7d377c4c",
+    "research/temporary/all_baselines_20260910/candidates.json": "bd3b0854b779cb11c2256cd24c4605d9670a8dff5a7683b80b200be950cabfbe",
+    "research/temporary/all_baselines_20260910/labels.json": "620bef9d05cf99e47faa8c1050ff5f3f80370e0d1823d5295337062d4aa00390",
+    "research/temporary/all_baselines_20260910/input_audit.json": "aa56c7068ee2cc2105f14dad31f90105269a87f8bbe2966fcdad2e3f1cb219ca",
+    "research/temporary/all_baselines_20260910/protocol.json": "b7df1719991c8a77507c9ab85f275d960f5ffd8fa20bfb73816ddb77f17bbcf2"
+  },
+  "scoring_owners": {
+    "experiments/official/evidence_protocol.py": "296fc04fd2e65631e113fe1592d35b7b63abf30f863080e50b42ab6febd49b45",
+    "experiments/official/recovery_diagnostics.py": "d7f84a28d49833106f85274a6ebf09a12adf97306ff39e8d7221f2cc33766c5a",
+    "experiments/official/hotpot_evidence.py": "397f822ddeed89f3f83e645464c63d0b6059b8f74e2645724c07afc562e94ec3",
+    "experiments/official/hotpot_retrieval_v3.py": "1bd4aca3d9d656d813f944c213c4a916ccecc1c982e6af3462775ae6c872e930"
+  },
+  "fixture_sha256": "c30f5f897af52e521c976422576e3c2c52727537be056d2eca50a04ee7e2c85e",
+  "budgets": {
+    "vt_h2_c3": 0.1,
+    "vt_h4_c1": 0.1,
+    "vt_h6_c1": 0.2,
+    "vt_h10_c1": 0.3,
+    "hotpotqa_long": 0.1
+  },
+  "snapshot_protocol_sha256": "d6693a78c3153035686db518834427545c42a7a37f7ff472fde9646c711b8469",
+  "recovery_protocol_sha256": "29fa81122d8f1e943e59f06f35375cd40f425b09de8a0c3d264e1a6b1bc25b8f",
+  "method_runtime_differences": [
+    {
+      "file": "finite_fla_gpu.py",
+      "changed_existing_functions": [
+        "make_compiled_finite_pullback",
+        "pullback"
+      ],
+      "paper_sha256": "5cda23311aa508c5110281c05898bc20c3dfd4a553613a149d25239ef04a27e1",
+      "current_sha256": "84d6a924d6effaa67348fb6f689d0c31aaf137af937d43121edd5752eb57fdd4"
+    },
+    {
+      "file": "qwen35_answer_finite.py",
+      "changed_existing_functions": [
+        "__call__",
+        "__init__"
+      ],
+      "paper_sha256": "b7abab5f814ee30f9c5369a27a65df1e5c264e631c771cfbc612c00c9af75cc0",
+      "current_sha256": "f54c330a358d70001786a5ed95af2726f10c018dbbaae2e919ec82fc65b96813"
+    },
+    {
+      "file": "qwen35_clean_runner.py",
+      "changed_existing_functions": [
+        "make_qwen35_clean_runner"
+      ],
+      "paper_sha256": "e5acd0b43d75677e0416e5b856dfad31f460562ef1968f02ac2357ba268b3cf0",
+      "current_sha256": "76d546b6cd6729ad86e74de1ba49145b076b916d49725b2a97d5058b6b29c733"
+    },
+    {
+      "file": "qwen35_decoder_finite.py",
+      "changed_existing_functions": [
+        "__init__"
+      ],
+      "paper_sha256": "397ad56be41ce366cb49aa28f8491c25ff1f9e601541185bebb846828fdf3862",
+      "current_sha256": "aacb226ab423f2f0b66e93350416a3806a49a8d8abfbba8adcc16dec7519580a"
+    },
+    {
+      "file": "qwen35_dense_finite_runner.py",
+      "changed_existing_functions": [
+        "__init__"
+      ],
+      "paper_sha256": "e44239406f9a53ad50446d141a8977d4d9d7168aa844cd79c56dbf59d08a348b",
+      "current_sha256": "3148451c58a1f822b8e8da99f199d39c912d97fef4254efe08c3f892fcb960f1"
+    }
+  ],
+  "limitations": [
+    "This static audit does not certify recovery model execution; inspect saved actual inputs and target weights after all 448 calls complete.",
+    "Dynamic clean-v2 runtime differs from the paper clean-v1 snapshot; core propagation arithmetic is unchanged in the inspected Python sources, but bitwise equivalence is not asserted.",
+    "Full-benchmark one-pass timings including compilation are not the paper repeated warm development efficiency experiment.",
+    "Legacy full-response VT and HotpotQA token Recall must be replaced by the separate paper-matched recovery outputs."
+  ]
+}

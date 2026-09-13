@@ -12,6 +12,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE / 'data'
+from build_qwen35_quality import receipt as qwen35_quality_receipt
 OUT = HERE / 'figures'
 OUT.mkdir(exist_ok=True)
 parser = argparse.ArgumentParser(description=__doc__)
@@ -158,7 +159,7 @@ current_summary=dict(recovery_tasks=11,recovery_method_task_cells=77,
                      source_manifest_sha256=hashlib.sha256((DATA/'current_recovery_sources.json').read_bytes()).hexdigest())
 if args.tables_only:
     summary=json.loads((HERE/'summary.json').read_bytes())
-    summary.update(best_among_all_methods=lowest_counts,current_recovery=current_summary)
+    summary.update(best_among_all_methods=lowest_counts,current_recovery=current_summary,qwen35_quality=qwen35_quality_receipt)
     write('summary.json',json.dumps(summary,indent=2))
     print(json.dumps(dict(status='quality_tables_updated',best_among_all_methods=lowest_counts,current_recovery=current_summary)))
     raise SystemExit(0)
@@ -183,13 +184,12 @@ table += [r'\bottomrule',r'\end{tabular}',r'\end{table}']
 write('development_table.tex','\n'.join(table))
 
 cost=read('qwen3_matched_cost16')
-warm=read('qwen35_batch_cost16')
-fig,axs=plt.subplots(2,2,figsize=(7.2,4.75))
-fig.subplots_adjust(left=.085,right=.985,bottom=.095,top=.92,hspace=.69,wspace=.31)
+fig,axs=plt.subplots(1,2,figsize=(7.2,2.6))
+fig.subplots_adjust(left=.085,right=.985,bottom=.23,top=.82,wspace=.31)
 for ax in axs.flat: polish(ax)
 x=np.arange(2); width=.32
 for j,metric in enumerate(('mean_seconds','maximum_peak_bytes')):
-    ax=axs[0,j]
+    ax=axs[j]
     for i,(key,label,color) in enumerate([('both_1','FlashTrace (1 hop)',FT),('finite','DeltaTrace',DT)]):
         vals=[cost['dataset_summary'][ds]['methods'][key][metric] for ds in ('niah_mq_q2','morehopqa')]
         if j: vals=np.array(vals)/1e9
@@ -199,27 +199,7 @@ for j,metric in enumerate(('mean_seconds','maximum_peak_bytes')):
     ax.set_ylim(0,26 if j else 1.12)
     ax.set_ylabel('Peak allocated memory (GB)' if j else 'Attribution latency (s / example)')
     ax.set_title(('(b)' if j else '(a)')+' Qwen3-8B, sample batch = 1',loc='left',pad=8,fontweight='bold')
-axs[0,0].legend(loc='upper right',frameon=False,fontsize=7.7)
-ax=axs[1,0]
-ax.set_title('(c) Qwen3.5-9B, 16 examples',loc='left',pad=8,fontweight='bold')
-groups=[('Native capture',['native_root_with_CPU_checkpoints','native_root_with_cuda_checkpoints'],'#779BA5'),
-        ('Layer replay',['native_replay','native_replay'],'#B8CCD0'),
-        ('Finite propagation',['finite_decoder','finite_decoder'],DT),
-        ('Other API work',[None,None],'#DADFE4')]
-bottom=np.zeros(2)
-totals=np.array([warm['aggregate'][k]['mean_seconds_per_16'] for k in ('baseline','accelerated')])
-for name,keys,color in groups:
-    vals=np.array([warm['stage_mean_seconds_per_16'][k][keys[i]] if keys[i] else totals[i]-bottom[i] for i,k in enumerate(('baseline','accelerated'))])
-    ax.bar(x,vals,.52,bottom=bottom,color=color,label=name);bottom+=vals
-for i,total in enumerate(totals):ax.text(i,total+.35,f'{total:.2f}',ha='center',fontsize=8)
-ax.set_xticks(x,['Serial B1\nCPU checkpoints','Real B2\nGPU checkpoints'])
-ax.set_ylabel('Attribution time (s / 16 examples)');ax.set_ylim(0,21)
-ax.legend(loc='upper right',ncol=2,frameon=False,fontsize=6.6,columnspacing=.6,handlelength=1)
-ax=axs[1,1]
-ax.set_title('(d) Qwen3.5-9B memory',loc='left',pad=8,fontweight='bold')
-bars=ax.bar(x,[warm['aggregate'][k]['peak_allocated_bytes']/1e9 for k in ('baseline','accelerated')],.52,color=[FT,DT]);labelbars(ax,bars)
-ax.set_xticks(x,['Serial B1\nCPU checkpoints','Real B2\nGPU checkpoints'])
-ax.set_ylabel('Peak allocated memory (GB)');ax.set_ylim(0,29)
+axs[0].legend(loc='upper right',frameon=False,fontsize=7.7)
 save(fig,'deltatrace-efficiency')
 
 long=read('qwen3_tiling_cost')
@@ -243,7 +223,8 @@ table=[r'\begin{table}[htbp]',r'\centering\small',
        r'\label{tab:retention}',r'\begin{tabular}{@{}lrrrrr@{}}',r'\toprule',
        r'Model & Sample batch & Before (s) & Retained (s) & Reduction & Peak GB (before/after) \\',r'\midrule']
 retention=[]
-for key,label in [('qwen3_retained16','Qwen3-8B'),('qwen35_retained16','Qwen3.5-9B')]:
+for key,label in [('qwen3_retained16','Qwen3-8B')]:
+
     d=read(key); before=d['baseline_seconds']; after=d.get('candidate_seconds',d.get('retained_seconds'))
     peaks=d['warm_peak_bytes']; peak_before=peaks['baseline']/1e9; peak_after=peaks.get('candidate',peaks.get('accelerated'))/1e9
     assert all(r.get('all_six_complete_vectors_equal',r.get('all_complete_vectors_equal')) for r in d['rows'])
@@ -252,7 +233,8 @@ for key,label in [('qwen3_retained16','Qwen3-8B'),('qwen35_retained16','Qwen3.5-
 table += [r'\bottomrule',r'\end{tabular}',r'\end{table}']
 write('retention_table.tex','\n'.join(table))
 gain=[100*(float(r['DT_Recall10'])-float(r['FT_Recall10'])) for r in rows if r['DT_Recall10']]
-summary={'examples':1243,'tasks':13,'RISE_better_tasks':sum(float(r['DT_RISE'])<float(r['FT_RISE']) for r in rows),'MAS_better_tasks':sum(float(r['DT_MAS'])<float(r['FT_MAS']) for r in rows),'retrieval_recovery_gains_pp':gain,'retrieval_macro_gain_pp':float(np.mean(gain)), 'development':dev_summary,'retention':retention,'qwen35_batch_speedup':warm['aggregate']['speedup'], 'qwen3_cost_total_s':{m:sum(c['methods'][m]['median_seconds'] for c in cost['cases']) for m in ['finite','both_1','both_3']},'source_fixtures_verified':True,'best_among_all_methods':lowest_counts,'quality_methods':methods,'additional_baseline_source_files_verified':len(baseline_source['source_csv_files'])}
+summary={'examples':1243,'tasks':13,'RISE_better_tasks':sum(float(r['DT_RISE'])<float(r['FT_RISE']) for r in rows),'MAS_better_tasks':sum(float(r['DT_MAS'])<float(r['FT_MAS']) for r in rows),'retrieval_recovery_gains_pp':gain,'retrieval_macro_gain_pp':float(np.mean(gain)), 'development':dev_summary,'retention':retention,'qwen3_cost_total_s':{m:sum(c['methods'][m]['median_seconds'] for c in cost['cases']) for m in ['finite','both_1','both_3']},'source_fixtures_verified':True,'best_among_all_methods':lowest_counts,'quality_methods':methods,'additional_baseline_source_files_verified':len(baseline_source['source_csv_files'])}
 summary['current_recovery']=current_summary
+summary['qwen35_quality']=qwen35_quality_receipt
 write('summary.json',json.dumps(summary,indent=2))
 print(json.dumps({k:v for k,v in summary.items() if k not in ('development','retention')}))

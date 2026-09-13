@@ -1,0 +1,145 @@
+{
+  "version": "dt-paper-qwen35-paired-completion-20260913",
+  "authority": "DeltaTrace manuscript paper/iclr2027 at 4cbcbc8127acab3146e0256d204f7acb47a885fd",
+  "quality": {
+    "cases": 1243,
+    "tasks": 13,
+    "model": "Qwen3.5-9B",
+    "dtype": "bfloat16",
+    "response": "same released fixed response per model and method",
+    "faithfulness": {
+      "target": "full fixed response plus EOS",
+      "steps": 20,
+      "RISE": "signed DT ranking",
+      "MAS": "positive DT ranking",
+      "comparator": "FT_K1"
+    },
+    "recovery": {
+      "NIAH": "released eligible-token top 10%, FT_K3",
+      "VT": {
+        "target": "reconstructed answer without reasoning",
+        "candidate": "eligible body tokens",
+        "budgets": {
+          "vt_h2_c3": 0.1,
+          "vt_h4_c1": 0.1,
+          "vt_h6_c1": 0.2,
+          "vt_h10_c1": 0.3
+        },
+        "comparator": "FT_K3"
+      },
+      "HotpotQA": {
+        "target": "full response",
+        "pooling": "signed_sum over native sentences",
+        "cost": "all native sentence body tokens including punctuation and whitespace",
+        "budget": 0.1,
+        "selection": "longest ranking prefix",
+        "metric": "official supporting-fact Recall",
+        "comparator": "FT_K3"
+      }
+    },
+    "no_recall_gold": [
+      "math",
+      "morehopqa"
+    ]
+  },
+  "efficiency": {
+    "basis": "Apply the DT paper paired-method cost protocol to Qwen3.5; distinct from its separately recorded B1/B2 implementation experiment",
+    "selection": [
+      [
+        "niah_mq_q2",
+        0
+      ],
+      [
+        "niah_mq_q2",
+        1
+      ],
+      [
+        "niah_mq_q2",
+        2
+      ],
+      [
+        "niah_mq_q2",
+        3
+      ],
+      [
+        "niah_mq_q2",
+        4
+      ],
+      [
+        "niah_mq_q2",
+        5
+      ],
+      [
+        "niah_mq_q2",
+        6
+      ],
+      [
+        "niah_mq_q2",
+        7
+      ],
+      [
+        "morehopqa",
+        0
+      ],
+      [
+        "morehopqa",
+        1
+      ],
+      [
+        "morehopqa",
+        2
+      ],
+      [
+        "morehopqa",
+        3
+      ],
+      [
+        "morehopqa",
+        4
+      ],
+      [
+        "morehopqa",
+        5
+      ],
+      [
+        "morehopqa",
+        6
+      ],
+      [
+        "morehopqa",
+        7
+      ]
+    ],
+    "methods": [
+      "DT",
+      "FT_K1",
+      "FT_K3"
+    ],
+    "warmup_calls_per_example_method": 1,
+    "measured_calls_per_example_method": 3,
+    "order": "Rotate by (example ordinal + repeat ordinal) modulo 3",
+    "batch_real_examples": 1,
+    "dt_endpoint_batch": 2,
+    "backend": {
+      "DT": "native FlashAttention and FLA with finite pullback",
+      "FT": "existing official eager Qwen3.5 path"
+    },
+    "includes": [
+      "prompt preparation",
+      "reference preparation where required",
+      "root model calls",
+      "layer replay",
+      "attribution propagation",
+      "projection",
+      "CPU score return",
+      "actual-input audit"
+    ],
+    "excluded_reported_separately": [
+      "model loading",
+      "original eager initialization",
+      "warmup and compilation",
+      "disk serialization"
+    ],
+    "quality_link": "Save each complete output vector and compare with the full quality-run vector; do not claim bitwise equality without measuring it"
+  }
+}

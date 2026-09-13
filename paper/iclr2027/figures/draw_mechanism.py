@@ -166,14 +166,14 @@ def draw(data):
     text(12.81,1.69,r'$q$',20,PURPLE,ha='center',va='center')
     arrow((13.05,1.69),(13.30,1.69),INK,1.5,10)
     text(13.51,1.69,r'$o_t$',20,ha='center',va='center')
-    text(11.74,2.02,'Retention: T = αS',17,MUTED,ha='center')
-    allocation_cards(9.65,'Stored content','Retention gate',
-                     r'$\alpha_1\,\Delta S$',r'$S_0\,\Delta\alpha$',r'$\Delta T$',23)
+    text(11.74,2.02,'Average the two endpoint orders',17,MUTED,ha='center')
+    allocation_cards(9.65,'Order 0 to 1','Order 1 to 0',
+                     r'$m^{01}/2$',r'$m^{10}/2$',r'$m$',23)
 
     # (d) A direct lookup makes source and answer visually match.
     ax.plot([.22,13.80],[4.70,4.70],color=LINE,lw=.85)
     heading(.22,4.90,'d','Choose the playwright, not the composer.' if roles else 'Find the names. Recover the numbers.',21.2)
-    text(13.77,5.00,'Qwen3.5 · MoreHopQA example 1' if roles else 'Qwen3.5 · retrieval example 6',17,MUTED,ha='right')
+    text(13.77,5.00,'Qwen3.5 · MoreHopQA example 1' if roles else 'Qwen3.5 clean-v1 · example 6',17,MUTED,ha='right')
     owners=[[] for _ in source]
     for i,t in enumerate(case['tokens']):
         for j in range(*t['char_span']):owners[j].append(i)
@@ -291,8 +291,8 @@ def draw(data):
                         'placement':'above full-input strip, right of requested role' if roles else 'below full-input strip'},
         'selection_reason':'same-context playwright/composer role contrast with observed positive and negative name-span totals' if roles else 'direct name-to-number lookup; short exact evidence spans and answers',
         'mechanism_panel_areas':{'attention':[4.95,.14,4.20,4.31],'gdn':[9.65,.14,4.20,4.31]},
-        'schematic_elements':'paired finite trace; PV product; GDN retain/write/read; two equally sized local content/control allocations',
-        'gdn_retention_notation':'S abbreviates S_(t-1); T=alpha*S; endpoint subscripts 0 and 1 are reference and original',
+        'schematic_elements':'paired finite trace; PV content/control split; GDN retain/write/read with complete two-order coefficient average',
+        'gdn_retention_notation':'The recurrence is schematic; m01 and m10 are complete memory input coefficients from opposite endpoint orders, averaged after composition.',
         'heatmap_semantics':'unchanged raw token scores; uniformly colored matrix cells are schematic, not measured attention',
         'displayed_runs':displayed}
     fig._dt_text_artists=artists

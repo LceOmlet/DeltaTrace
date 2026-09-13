@@ -49,7 +49,7 @@
 | 固定回答干预、有符号分数、贡献守恒 | Method；附录有限链式法则和守恒证明 |
 | Attention／GDN 内容与控制 | 解析 PV、softmax、GDN 递推；首图机制面板 |
 | FlashAttention／FLA 支持 | Efficient Computation；deltatrace/clean/qwen35/finite_fla_gpu.py；实现与存储附录 |
-| 开发结果 | Evaluation 表 tab:development；开发汇总与数值核验记录 |
+| Qwen3.5 官方对称 GDN 的 72 例质量 | Evaluation 表 tab:qwen35-quality；Recall、RISE、MAS 逐任务对比 |
 | 反事实信用与优势函数 | 引言结尾；附录 Counterfactual Credit and Policy Learning |
 | 相关工作定位 | Related Work；editorial/contribution_positioning_zh.md；独立引用核验 |
 
@@ -61,6 +61,6 @@
 
 主结果更新为冻结 Qwen3-8B 全部 13 任务、1,243 例；RISE/MAS 均保留，recovery 覆盖六项 NIAH、四项 VT 与 HotpotQA；VT 预算为 10%/10%/20%/30%，HotpotQA 为 10% 正文 token 预算下的支持句 Recall。摘要与引言采用完整任务结果；两模型各 16 例的开发数据移至附录，并使用已核验的 signed RISE / positive MAS 与 recovery。
 
-效率主图分别展示 Qwen3 的同次配对 FT 成本和 Qwen3.5 的真实 batch 加速；附录补充三条原始长输入的 dense/tiled 成本和后续 replay retention 测量。每个图、表明确版本、样本、完整归因计时范围、预热及显存单位。两张带符号案例图移至详细证据附录，颜色图例改放删除曲线右栏下方。
+Qwen3.5 在正文表中汇报官方对称 GDN 的 8 任务、72 例 Recall、RISE 和 MAS，文字只概括表内可见的高低关系，不汇报效率。效率主图和附录成本测量仅保留 Qwen3。每个图、表明确版本、样本、完整归因计时范围、预热及显存单位。两张带符号案例图移至详细证据附录，颜色图例改放删除曲线右栏下方。
 
 最新补充：主比较纳入Perturbation、REAGENT、CLP、IFR、AttnLRP、FT与DT七种方法。三张表分别报告RISE/MAS/recovery，完整精度CSV包含91个方法—任务行、259个指标值；摘要按全部方法更新为RISE 9/13、MAS 11/13、NIAH recovery 6/6最优；VT分任务预算宏平均为84.18%，HotpotQA最高均值为IFR的75.87%。两张案例曲线均加入每个模型自己的FT K1，明确整段回答（含EOS）的归一化对数似然与原作者归一化方式。

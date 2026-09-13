@@ -1,0 +1,19 @@
+{
+  "version": "qwen35-niah-causal-stage-a-v1",
+  "purpose": "Separate deletion scope, selected output rows, and native-score interactions before choosing a DT propagation change.",
+  "selection": {
+    "niah_mq_q2": [11, 37, 63, 89],
+    "niah_mq_q4": [11, 37, 63, 89],
+    "niah_mv_v2": [11, 37, 63, 89]
+  },
+  "selection_note": "Fixed dispersed indices, chosen without sorting by performance. All original benchmark cases were previously inspected; this is exploratory diagnosis, not an untouched holdout.",
+  "steps": 20,
+  "scorer": "Unmodified native eager compute_logprob_response_given_prompt; preserve BF16 reduction for the original RISE and save every token log-probability for target decomposition.",
+  "inputs": "Preserve exact complete cached prompt and response plus EOS. No generation. All changed input positions must belong to the original eligible set.",
+  "target_variants": ["DT_full", "DT_full_content", "DT_answer_content", "FT_answer_K1", "FT_full_K1"],
+  "scope_variants": ["original", "restore_query_along_original_path", "only_query_along_original_path", "fixed_query_new_reference_and_nonquery_ranking"],
+  "query_definition": "Original prompt final newline starting What, including its answer prefix; all other original eligible tokens form nonquery. Do not call this subset pure formatting.",
+  "new_DT_operators": "None in stage A. Empty rule overrides, original content1 profile.",
+  "comparison_rule": "Use fresh common model outputs for paired interventions; any sum over a changed target or different deletion endpoint is a distinct diagnostic, not a replacement for the original benchmark.",
+  "next_stage": "Choose a small fixed set of mechanistically motivated uniform-rule variants after stage A. Freeze a candidate before constructing separate generalization examples. Keep original benchmark results."
+}

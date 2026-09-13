@@ -1,0 +1,51 @@
+{
+  "schema_version": 2,
+  "status": "official",
+  "adopted": "2026-09-13",
+  "qwen3": {
+    "checkpoint": "Qwen3-8B",
+    "entrypoint": "deltatrace/clean/qwen3/qwen_signed_secant_paired_vendor_fa.py:propagate_paired_secant",
+    "pv_rule": "content_P1",
+    "backend": "existing traceable FA finite extension, default model FA",
+    "precision": "original FP16 model and native FA",
+    "historical_16_case_evidence": "evidence/vendor_fa_development16_summary_20260907.json"
+  },
+  "signed_output_retained": true,
+  "qwen35": {
+    "checkpoint": "Qwen3.5-9B",
+    "profile": "gdn-symmetric-v1",
+    "entrypoint": "deltatrace/profiles/official.py:make_qwen35_runner",
+    "implementation": "deltatrace/profiles/qwen35_gdn_symmetric.py:make_qwen35_gdn_symmetric_runner",
+    "rules": {
+      "gdn_output_gate": "symmetric",
+      "gdn_memory": "average of both complete local endpoint orders",
+      "scope": "all 24 GDN layers",
+      "attention_PV": "content1",
+      "attention_output_gate": "content1",
+      "QK": "symmetric",
+      "MLP": "symmetric",
+      "key_normalization": "original"
+    },
+    "finite_FLA_calls_per_attribution": 48,
+    "native_FLA_adjoint_stages_per_attribution": 96,
+    "finite_FA_calls_per_attribution": 8,
+    "precision": "original BF16 native FA/FLA",
+    "additional_native_root_forwards": 0,
+    "quality": {
+      "tasks": 8,
+      "cases": 72,
+      "niah_cases_per_task": 10,
+      "math_cases": 6,
+      "morehopqa_cases": 6,
+      "source": "paper/iclr2027/results/data/qwen35_official_quality_sources.json",
+      "rise_view": "signed",
+      "mas_recall_view": "positive",
+      "FT_faithfulness_hops": 1,
+      "FT_recall_hops": 3
+    },
+    "historical_profile": "clean-v1"
+  },
+  "official_evaluation": "experiments/official/evaluate.py",
+  "profile_manifest": "deltatrace/profiles/sources.json",
+  "frozen_dependency_manifest": "deltatrace/clean/sources.json"
+}

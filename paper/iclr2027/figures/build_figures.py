@@ -303,7 +303,9 @@ def main():
         'lookup_fixture_sha256': hashlib.sha256(lookup_path.read_bytes()).hexdigest(),
         'builder_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'mechanism_builder_sha256': hashlib.sha256((HERE/'draw_mechanism.py').read_bytes()).hexdigest(),
-        'mechanism': 'Equally sized Attention and GDN panels; paired finite trace; actual signed playwright/composer contrast. A direct lookup overview is also supplied.',
+        'mechanism': 'Attention content/control and two-order GDN coefficients; actual official symmetric-GDN playwright/composer scores. The separately labelled clean-v1 lookup is historical.',
+        'qwen35_attribution_profile': 'gdn-symmetric-v1',
+        'lookup_attribution_profile': 'clean-v1 (historical, outside the manuscript)',
         'mechanism_case': mechanism_meta,
         'cases': specs, 'generated_files': {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                                          for p in sorted(OUT.iterdir()) if p.suffix in ('.pdf','.svg','.png')}}

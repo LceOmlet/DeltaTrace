@@ -12,6 +12,7 @@ def main():
     data=json.loads((HERE/'data/overview_role_case.json').read_bytes())
     fig=draw(data)
     fig.canvas.draw()
+    (HERE.parent/'preview').mkdir(exist_ok=True)
     fig.savefig(HERE.parent/'preview/overview-current.png',dpi=150)
     fig.canvas.draw()  # Restore the canvas renderer after the different-DPI preview.
     renderer=fig.canvas.get_renderer()

@@ -5,11 +5,11 @@ executions and a finite reverse traversal; (b) Attention; (c) Gated DeltaNet;
 (d) a measured signed context example. Attention and GDN have identical panel
 areas (4.20 x 4.31 drawing units), matching two-branch cards, font sizes, and
 arrow weights. GDN shows its full retain/write/read structure and expands the
-retention rule T = alpha S; S abbreviates the previous state.
+two complete endpoint-order memory coefficients and their average. The attention panel retains its content/control split.
 
-The main example is Qwen3.5, MoreHopQA development example 1. The question asks
-about the author of a play. The recorded name spans receive +1.5582 nats for
-William Shakespeare and -1.1331 nats for the nearby composer William Walton.
+The main example is Qwen3.5 with the official gdn-symmetric-v1 profile, fixed MoreHopQA example 1. The question asks
+about the author of a play. The recorded name spans receive +1.3092 nats for
+William Shakespeare and -0.7820 nats for the nearby composer William Walton.
 Brackets identify the exact names whose token scores are summed. Backgrounds
 retain individual token scores, including the different signs within a name.
 This is an observed role contrast under the fixed EOS reference and finite
@@ -67,7 +67,7 @@ figures now use compact paper subpanels: (a) Qwen3-8B, (b) Qwen3.5-9B, and
 titles and internal development identifiers are omitted from the artwork.
 Answer is a normal-size annotation. Context, question and full-input strips
 align across the two model columns. One quantitative colorbar sits in the right column below the deletion curve and model legend, as requested for both case figures.
-The original shared linear scales are retained. Each deletion plot has four 21-point curves: DT and one-hop FT for each model, with model colors and solid/dashed method lines. The y-axis identifies normalized log-likelihood of the full response, including EOS. Each model/example uses its own identical DT/FT full-input and fully-deleted log-likelihood endpoints; the released clipping and cumulative-minimum normalization are verified directly from the saved scores. Each displayed token run is bound to its original token score.
+Both models share one linear scale per example, recomputed from the current scores. Each deletion plot has four 21-point curves: DT and one-hop FT for each model, with model colors and solid/dashed method lines. The y-axis identifies normalized log-likelihood of the full response, including EOS. Each model/example uses its own identical DT/FT full-input and fully-deleted log-likelihood endpoints; the released clipping and cumulative-minimum normalization are verified directly from the saved scores. Each displayed token run is bound to its original token score.
 The cases export editable SVGs, vector PDFs and 600-dpi PNGs. Standalone PDFs
 also appear at `output/pdf/deltatrace-retrieval.pdf` and
 `output/pdf/deltatrace-multihop.pdf`.
@@ -79,7 +79,7 @@ python verify_source.py
 ```
 
 These are illustrations of the paired development cases described in the
-evaluation. The visual revisions use the archived scores and responses.
+evaluation. Qwen3.5 scores and its paired FT curves were recomputed on the same fixed inputs using the official GDN symmetric factory. Qwen3 retains its stored clean-v1 scores. All responses and token mappings are preserved; the three illustrative examples are separate from the 72-case quality table.
 
 The [FlashTrace overview](https://arxiv.org/html/2602.01914v4) informed the
 layered operator language, local mechanism expansion, concrete text evidence,

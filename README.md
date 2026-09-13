@@ -2,11 +2,11 @@
 
 **Efficient Signed Attribution for Reasoning Language Models**
 
-[Paper](paper/iclr2027/output/pdf/deltatrace-iclr2027-draft.pdf) · [Results](paper/iclr2027/results/all_methods.csv) · [Method code](deltatrace/clean/) · [Reproducibility](#reproducibility)
+[Paper](paper/iclr2027/output/pdf/deltatrace-iclr2027-draft.pdf) · [Results](paper/iclr2027/results/all_methods.csv) · [Method code](deltatrace/profiles/) · [Reproducibility](#reproducibility)
 
 DeltaTrace explains how an input contributes to a language model's complete reasoning response. It assigns signed credit to input tokens by tracing a finite change from a reference input to the original input through the model. The explanation follows both the evidence being carried and the attention or memory operations that determine how that evidence is used.
 
-This repository contains the method implementation for **Qwen3-8B** and **Qwen3.5-9B**, evaluation records, measured efficiency results, and the editable manuscript with its figure and table sources.
+This repository contains the method implementation for **Qwen3-8B** and **Qwen3.5-9B**, evaluation records, and the editable manuscript. Qwen3.5 now defaults to **GDN symmetric propagation**; the [official profile](deltatrace/profiles/README.md) and [active configuration](configs/official_dt_profiles.json) define its uniform rules and provenance.
 
 ![DeltaTrace overview: finite reverse propagation, attention content and selection, gated delta memory, and a signed evidence example.](paper/iclr2027/figures/generated/deltatrace-mechanism.png)
 
@@ -31,7 +31,7 @@ The implementation uses FlashAttention-style tiled propagation for dense attenti
 ## Results
 
 <!-- selected-vt-budgets:start -->
-### Current comparison with task-specific VT budgets
+### Qwen3-8B comparison with task-specific VT budgets
 
 VT retrieval budgets are **H2-C3 10%, H4-C1 10%, H6-C1 20%, H10-C1 30%**;
 HotpotQA remains at 10%. These budgets were selected by the user after viewing
@@ -132,26 +132,36 @@ These counts compare observed task means. On the six reported retrieval tasks, r
 | [Source ledger](paper/iclr2027/results/sources.json) | Original records, selected fixtures, and SHA-256 hashes |
 | [Published baseline ledger](paper/iclr2027/results/data/published_baseline_sources.json) | The 95 source CSVs and aggregation rows underlying the added baselines |
 
-### Hybrid-model development results
+### Qwen3.5-9B official profile results
 
-Qwen3.5-9B is evaluated on a separate development set of eight MQ-Q2 and eight MoreHopQA examples, with FT run on the same model. Retrieval recovery rises from **63.92% to 73.35%**, and MAS is lower on both tasks. Signed RISE improves on MoreHopQA and remains higher on MQ-Q2. These 16 examples demonstrate the hybrid attention and memory implementation; they are separate from the complete Qwen3-8B benchmark.
+The official `gdn-symmetric-v1` profile is compared with the same-model FlashTrace on **72 cases**: ten new key/value assignments for each NIAH task and six fixed released cases each for MATH and MoreHopQA. RISE uses signed DT ranking, MAS uses its positive part, and Recall uses a 10% eligible-token budget. FT uses K1 for RISE/MAS and K3 for Recall. These descriptive subsets are separate from the complete Qwen3 benchmark.
 
-The [development table](paper/iclr2027/results/development_table.tex) summarizes the 32 model–example pairs across the two models.
+| Task | n | Recall FT / DT (%) | RISE FT / DT | MAS FT / DT |
+| --- | ---: | ---: | ---: | ---: |
+| MQ-Q2 | 10 | 62.87 / 80.59 | 0.1014 / 0.1012 | 0.2535 / 0.1325 |
+| MQ-Q4 | 10 | 36.86 / 52.28 | 0.1504 / 0.1585 | 0.2675 / 0.2185 |
+| MQ-Q8 | 10 | 11.97 / 15.31 | 0.3393 / 0.3544 | 0.4017 / 0.5044 |
+| MV-V2 | 10 | 64.30 / 87.11 | 0.0971 / 0.0798 | 0.2452 / 0.1095 |
+| MV-V4 | 10 | 50.41 / 65.34 | 0.1068 / 0.1029 | 0.2471 / 0.1390 |
+| MV-V8 | 10 | 24.27 / 29.50 | 0.2357 / 0.2127 | 0.3178 / 0.2965 |
+| MATH | 6 | — | 0.3734 / 0.2662 | 0.4801 / 0.3460 |
+| MoreHopQA | 6 | — | 0.1920 / 0.1327 | 0.2763 / 0.1845 |
+
+DT has higher Recall on all six NIAH tasks, lower RISE on six of eight tasks, and lower MAS on seven. See the [full-precision CSV](paper/iclr2027/results/data/qwen35_official_quality.csv) and [source ledger](paper/iclr2027/results/data/qwen35_official_quality_sources.json). The older 13-task Qwen3.5 results remain archived under `qwen35_full_quality.csv` with the clean-v1 identity.
 
 ### Measured efficiency
 
-![Paired attribution latency and allocated memory for Qwen3-8B, and serial versus batched attribution for Qwen3.5-9B.](paper/iclr2027/results/figures/deltatrace-efficiency.png)
+![Paired attribution latency and allocated memory for Qwen3-8B.](paper/iclr2027/results/figures/deltatrace-efficiency.png)
 
 | Recorded comparison | Complete attribution time for 16 examples | Peak allocated memory |
 | --- | ---: | ---: |
 | Qwen3-8B: one-hop FT → tiled DT, sample batch 1 | 12.16 s → 11.40 s | 21.49 GB → 18.76 GB |
-| Qwen3.5-9B: serial batch 1 with CPU checkpoints → real batch 2 with GPU checkpoints | 16.68 s → 12.33 s | 21.64 GB → 23.88 GB |
 
-The Qwen3.5 configuration increases throughput by **35.3%** on the recorded 16-example workload. Each row is a separate paired implementation benchmark. The Qwen3 measurements predate the full-task quality freeze, and the Qwen3.5 comparison measures a scheduling and checkpointing change.
+These Qwen3 measurements predate the full-task quality freeze. Historical Qwen3.5 timing fixtures describe clean-v1 and do not measure the current official profile.
 
 Times include input preparation, endpoint capture, layer replay, propagation, and returning scores. Model loading, shape warmup, and deletion scoring are measured separately. Memory is peak allocated device memory, including resident weights, in decimal GB. Real batch size counts examples; each example has two endpoints.
 
-Additional [dense-versus-tiled measurements](paper/iclr2027/results/figures/deltatrace-tiling-cost.pdf) cover three recorded inputs of 1,241, 3,470, and 3,762 tokens. Later [replay-retention measurements](paper/iclr2027/results/retention_table.tex) reduce warm time by 5.80% on Qwen3 and 5.15% on Qwen3.5 against their respective baselines, with identical paired source vectors. The [measurement notes](paper/iclr2027/results/README.md) document the scope of each comparison.
+Additional [dense-versus-tiled measurements](paper/iclr2027/results/figures/deltatrace-tiling-cost.pdf) cover three recorded inputs of 1,241, 3,470, and 3,762 tokens. Later [replay-retention measurements](paper/iclr2027/results/retention_table.tex) reduce warm time by 5.80% on Qwen3 against its baseline, with identical paired source vectors. The [measurement notes](paper/iclr2027/results/README.md) document the scope of each comparison.
 
 ## Inspect an explanation
 
@@ -198,16 +208,16 @@ The current evaluation entry point defaults to **source-v2**: DT reference, dele
 
 Model execution uses a source-based research environment with compiled finite-propagation extensions. The complete Qwen3 run was recorded on a **MetaX C550 64 GB**, with Python 3.12, PyTorch `2.8.0+metax3.5.3.9`, Transformers `4.57.3`, vendor FlashAttention `2.6.3+metax3.5.3.9torch2.8`, and vendor Triton `3.0.0+metax3.5.3.9`. See the [environment receipt](paper/iclr2027/results/data/qwen3_environment.json) for the complete package and checkpoint identity.
 
-The frozen method sources are in [`deltatrace/clean/`](deltatrace/clean/), version `clean-v1-20260909`:
+Current entry points are listed below. The frozen `clean-v1-20260909` dependencies remain in [`deltatrace/clean/`](deltatrace/clean/).
 
 | Model | Entry point | Configuration |
 | --- | --- | --- |
 | Qwen3-8B | [`propagate_paired_secant`](deltatrace/clean/qwen3/qwen_signed_secant_paired_vendor_fa.py) | FP16, `content_P1`, native model FlashAttention and a separate finite-propagation extension |
-| Qwen3.5-9B | [`make_qwen35_clean_runner`](deltatrace/clean/qwen35/qwen35_clean_runner.py) | BF16, P1/content1 rules, native FA/FLA, and empty per-layer override maps |
+| Qwen3.5-9B | [`make_qwen35_runner`](deltatrace/profiles/official.py) | BF16, symmetric output gate and memory-order average in all GDN layers; native FA/FLA |
 
-The [method manifest](deltatrace/clean/sources.json) records all 27 frozen dependency files. Qwen3 and Qwen3.5 use their respective dependency environments and run in separate processes. Model weights and compiled libraries are supplied by the execution environment; their paths and identities are checked against an [environment manifest](experiments/official/environment.example.json).
+The [official profile manifest](deltatrace/profiles/sources.json) identifies the current profile. The [dependency manifest](deltatrace/clean/sources.json) retains all 27 frozen dependency files. Qwen3 and Qwen3.5 use their respective dependency environments and run in separate processes. Model weights and compiled libraries are supplied by the execution environment; their paths and identities are checked against an [environment manifest](experiments/official/environment.example.json).
 
-For the full benchmark, use the **paper evaluation snapshot** below. It contains the signed-RISE adapter and task controller used for the reported results. The earlier adapter retained on `main` uses the original development positive-score view.
+For the full benchmark, use the **paper evaluation snapshot** below. It contains the signed-RISE adapter and task controller used for the reported results. The current Qwen3.5 released-v1 adapter defaults to signed RISE for the official profile; the historical clean-v1 and source-v2 adapters retain positive RISE unless explicitly overridden.
 
 ```bash
 # From the repository root, check out the exact full-benchmark snapshot.
@@ -236,7 +246,7 @@ python experiments/official/export_qwen3_paper.py \
   --output /absolute/path/qwen3-paper-export
 ```
 
-The task controller in the frozen snapshot verifies completed tasks before reusing them when resuming. Per-example outputs include input identity, signed and positive attribution views, recorded deletion curves, metrics, and execution costs. In the current checkout, historical Qwen3.5 development runs use `--evaluation-protocol released-v1 --family qwen35 --selection development16 --ft live` with the matching Qwen3.5 environment; published Qwen3 FT results are not used as its control.
+The task controller in the frozen snapshot verifies completed tasks before reusing them when resuming. Per-example outputs include input identity, signed and positive attribution views, recorded deletion curves, metrics, and execution costs. In the current checkout, historical Qwen3.5 development runs use `--evaluation-protocol released-v1 --family qwen35 --qwen35-profile clean-v1 --selection development16 --ft live` with the matching Qwen3.5 environment; published Qwen3 FT results are not used as its control.
 
 ### Experiment snapshots
 

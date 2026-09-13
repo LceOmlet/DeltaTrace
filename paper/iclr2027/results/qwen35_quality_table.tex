@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering\small
+\caption{Qwen3.5-9B quality with symmetric GDN propagation. NIAH uses ten new key/value assignments per task on fixed templates; MATH and MoreHopQA each use six fixed released examples. Recovery is token Recall at the listed eligible-token budget. FT denotes FlashTrace: K3 for Recall and K1 for RISE/MAS. DT uses signed RISE and positive-part MAS. Bold marks the better mean; dashes indicate undefined recovery.}
+\label{tab:qwen35-quality}
+\setlength{\tabcolsep}{4.0pt}
+\begin{tabular}{@{}lrr rr rr rr@{}}
+\toprule
+Task & $n$ & Budget & \multicolumn{2}{c}{Recall (\%) $\uparrow$} & \multicolumn{2}{c}{RISE $\downarrow$} & \multicolumn{2}{c}{MAS $\downarrow$} \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(l){8-9}
+ & & & FT & DT & FT & DT & FT & DT \\
+\midrule
+MQ-Q2 & 10 & 10\% & 62.87 & \textbf{80.59} & 0.1014 & \textbf{0.1012} & 0.2535 & \textbf{0.1325} \\
+MQ-Q4 & 10 & 10\% & 36.86 & \textbf{52.28} & \textbf{0.1504} & 0.1585 & 0.2675 & \textbf{0.2185} \\
+MQ-Q8 & 10 & 10\% & 11.97 & \textbf{15.31} & \textbf{0.3393} & 0.3544 & \textbf{0.4017} & 0.5044 \\
+MV-V2 & 10 & 10\% & 64.30 & \textbf{87.11} & 0.0971 & \textbf{0.0798} & 0.2452 & \textbf{0.1095} \\
+MV-V4 & 10 & 10\% & 50.41 & \textbf{65.34} & 0.1068 & \textbf{0.1029} & 0.2471 & \textbf{0.1390} \\
+MV-V8 & 10 & 10\% & 24.27 & \textbf{29.50} & 0.2357 & \textbf{0.2127} & 0.3178 & \textbf{0.2965} \\
+\midrule
+MATH & 6 & --- & --- & --- & 0.3734 & \textbf{0.2662} & 0.4801 & \textbf{0.3460} \\
+MoreHopQA & 6 & --- & --- & --- & 0.1920 & \textbf{0.1327} & 0.2763 & \textbf{0.1845} \\
+\bottomrule
+\end{tabular}
+\end{table}

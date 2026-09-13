@@ -1,0 +1,22 @@
+{
+  "version": "qwen35-uniform-rules-screen-v1",
+  "selection": {
+    "niah_mq_q2": [11, 37, 63, 89],
+    "niah_mq_q4": [11, 37, 63, 89],
+    "niah_mv_v2": [11, 37, 63, 89]
+  },
+  "methods": ["DT_original", "DT_endpoint_symmetric", "DT_gate_symmetric", "DT_memory_symmetric", "DT_gdn_symmetric"],
+  "steps": 20,
+  "target": "Original complete fixed response plus EOS, same scalar log-probability target and same native model input for every variant.",
+  "reference": "Original eligible-token EOS reference; no query rescaling, no grouping or target selection in the variants.",
+  "rules": {
+    "DT_original": "Original content1 clean profile.",
+    "DT_endpoint_symmetric": "Half the forward signed vector minus half the vector from the same two complete endpoints in reverse order.",
+    "DT_gate_symmetric": "Symmetric normalized-content times SiLU gate product at every GDN layer; memory recurrence unchanged.",
+    "DT_memory_symmetric": "Average both endpoint orders of the local memory recurrence at every GDN layer; output gate unchanged.",
+    "DT_gdn_symmetric": "Both preceding GDN changes, uniformly at every GDN layer."
+  },
+  "metrics": "Original signed RISE, positive-part MAS and original NIAH 10% token Recall. Report all candidates, including regressions.",
+  "selection_rule": "Prefer a candidate lowering mean RISE on both MQ tasks and overall, with mean MAS worsening at most 0.01 and mean Recall worsening at most 0.02 on this exploratory screen. If none meet this criterion, do not promote one as an improvement; investigate a distinct mechanism. No per-task/layer candidate selection.",
+  "validation": "Freeze the candidate before a separate deterministic construction of novel keys and values and before broader task checks. Original 600 benchmark cases have been inspected and are not an untouched holdout."
+}
