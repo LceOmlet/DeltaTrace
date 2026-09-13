@@ -151,6 +151,9 @@ def summarize(report, protocol):
             table['reference_files'] = {kind: value['path'] for kind, value in refs.items()}
         tables.append(table)
     return {'family': report['family'], 'selection': report['selection'],
+            'attribution_profile': report.get('attribution_profile', 'clean-v1'),
+            'attribution_profile_manifest_sha256': report.get('attribution_profile_manifest_sha256'),
+            'DT_rise_score_view': report.get('DT_rise_score_view', 'positive'),
             'evaluation_protocol': evaluation_protocol,
             'evaluation_protocol_sha256': report.get('evaluation_protocol_sha256', report['protocol_sha256']),
             'sentence_recovery_enabled': report.get('sentence_recovery_enabled', False),

@@ -1,4 +1,4 @@
-"""Evaluate frozen DT under source-v2 or the explicit legacy released-v1 protocol.
+"""Evaluate versioned DT under source-v2 or the released-v1 protocol.
 
 Source-v2 uses the 11 complete evidence task caches with live, matched FT.
 Released-v1 retains the historical full-prompt masks and published comparison.
@@ -20,11 +20,31 @@ import traceback
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 sha = lambda data: hashlib.sha256(data).hexdigest()
+sys.path.insert(0, str(ROOT))
+from deltatrace.profiles.official import QWEN35_DEFAULT, QWEN35_PROFILES, make_qwen35_runner
+
+
+def use_signed_rise(metrics, method, signed_method):
+    """Use signed RISE while retaining the positive MAS/recovery record and curve."""
+    positive, signed = metrics[method], metrics[signed_method]
+    for field in ('actual_input_hashes', 'scores'):
+        assert len(positive[field]) == len(signed[field])
+        assert positive[field][0] == signed[field][0]
+        assert positive[field][-1] == signed[field][-1]
+    positive['rise_positive'] = positive['rise']
+    positive['rise'] = signed['rise']
+    positive['rise_curve_method'] = signed_method
+    positive['mas_recovery_curve_view'] = 'positive'
+    positive['rise_plus_ap_score_view'] = 'positive'
 
 
 def arguments(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--family', choices=['qwen3', 'qwen35'], required=True)
+    parser.add_argument('--qwen35-profile', choices=QWEN35_PROFILES, default=QWEN35_DEFAULT,
+                        help='Official GDN symmetric attribution; clean-v1 reproduces historical rules.')
+    parser.add_argument('--rise-score-view', choices=['auto', 'signed', 'positive'], default='auto',
+                        help='Auto uses signed RISE for official Qwen3.5 released-v1, positive for older adapters.')
     parser.add_argument('--environment', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--selection', choices=['paper', 'development16', 'smoke'], required=True)
@@ -46,9 +66,17 @@ def main():
         recovery_curve, sentence_recovery_curve, reference_token_ids, SOURCE_PROTOCOL)
     configure_run(args, protocol)
     source_mode = args.evaluation_protocol == SOURCE_PROTOCOL
+    rise_view = args.rise_score_view
+    if rise_view == 'auto':
+        rise_view = ('signed' if args.family == 'qwen35' and args.qwen35_profile == QWEN35_DEFAULT
+                     and not source_mode else 'positive')
     evaluation_path = HERE / ('source_protocol.json' if source_mode else 'protocol.json')
     evaluation_settings = json.loads(evaluation_path.read_bytes())
     sources = json.loads((ROOT / 'deltatrace/clean/sources.json').read_bytes())
+    profile_manifest_path = ROOT / 'deltatrace/profiles/sources.json'
+    profile_manifest = json.loads(profile_manifest_path.read_bytes())
+    for path, digest in profile_manifest['files'].items():
+        assert sha((ROOT / path).read_bytes()) == digest, path
     env = json.loads(args.environment.read_bytes())[args.family]
     development_inputs = json.loads((HERE/'development16_inputs.json').read_bytes())
     for path, receipt in sources['models'][args.family]['files'].items():
@@ -122,6 +150,10 @@ def main():
     torch._dynamo.config.accumulated_cache_size_limit = max(compiler_cache_before['accumulated_cache_size_limit'], 4 * required_variants)
     args.output.mkdir(parents=True, exist_ok=False)
     report = {'status': 'loading', 'family': args.family, 'selection': args.selection,
+        'attribution_profile': args.qwen35_profile if args.family == 'qwen35' else 'clean-v1',
+        'attribution_profile_manifest_sha256': sha(profile_manifest_path.read_bytes()),
+        'DT_rise_score_view': rise_view,
+        'DT_mas_recovery_score_view': 'positive',
         'protocol_sha256': sha((HERE / 'protocol.json').read_bytes()),
         'clean_sources_sha256': sha((ROOT / 'deltatrace/clean/sources.json').read_bytes()),
         'driver_sha256': sha(Path(__file__).read_bytes()),
@@ -192,15 +224,13 @@ def main():
             from vendor_fa_finite_runtime import VendorFAFiniteP1
             finite_fa = VendorFAFiniteP1(env['finite_library'], env['finite_library_sha256'])
         else:
-            from qwen35_clean_runner import make_qwen35_clean_runner
             from qwen35_answer_finite import PackedAnswerTargets
             from finite_fla_gpu import make_compiled_finite_pullback, verify_native_sources
             from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256
             verify_native_sources(env['native_stage_source_sha256'])
             finite_fa = VendorFAFiniteP1BF16D256(env['finite_library'], env['finite_library_sha256'])
-            dt_runner = make_qwen35_clean_runner(model, finite_fa, make_compiled_finite_pullback(reuse_scalar_products=False))
-            for field in ('norm_gate_rules','finite_fla_by_layer','attention_pv_rules','key_norm_by_layer'):
-                assert getattr(dt_runner, field) == {}
+            dt_runner = make_qwen35_runner(model, finite_fa,
+                make_compiled_finite_pullback(reuse_scalar_products=False), profile=args.qwen35_profile)
             from flashtrace import FlashTrace
 
         for dataset, raw_cases in caches.items():
@@ -362,8 +392,14 @@ def main():
                     row['metrics'][method] = curve
 
                 score('DT', dt_score)
+                if rise_view == 'signed':
+                    score('DT_signed_RISE', signed[positions].float())
+                    use_signed_rise(row['metrics'], 'DT', 'DT_signed_RISE')
                 if args.paired_reference_audit:
                     score('DT_full_reference', legacy_score)
+                    if rise_view == 'signed':
+                        score('DT_full_reference_signed_RISE', legacy_signed[positions].float())
+                        use_signed_rise(row['metrics'], 'DT_full_reference', 'DT_full_reference_signed_RISE')
                 if args.ft == 'live':
                     for hops in ([1,3] if gold else [1]):
                         def trace():

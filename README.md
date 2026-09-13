@@ -2,7 +2,7 @@
 
 **Efficient Signed Attribution for Reasoning Language Models**
 
-[Paper](paper/iclr2027/output/pdf/deltatrace-iclr2027-draft.pdf) · [Results](paper/iclr2027/results/all_methods.csv) · [Method code](deltatrace/clean/) · [Reproducibility](#reproducibility)
+[Paper](paper/iclr2027/output/pdf/deltatrace-iclr2027-draft.pdf) · [Results](paper/iclr2027/results/all_methods.csv) · [Method code](deltatrace/profiles/) · [Reproducibility](#reproducibility)
 
 DeltaTrace explains how an input contributes to a language model's complete reasoning response. It assigns signed credit to input tokens by tracing a finite change from a reference input to the original input through the model. The explanation follows both the evidence being carried and the attention or memory operations that determine how that evidence is used.
 
@@ -201,12 +201,12 @@ The current evaluation entry point defaults to **source-v2**: DT reference, dele
 
 Model execution uses a source-based research environment with compiled finite-propagation extensions. The complete Qwen3 run was recorded on a **MetaX C550 64 GB**, with Python 3.12, PyTorch `2.8.0+metax3.5.3.9`, Transformers `4.57.3`, vendor FlashAttention `2.6.3+metax3.5.3.9torch2.8`, and vendor Triton `3.0.0+metax3.5.3.9`. See the [environment receipt](paper/iclr2027/results/data/qwen3_environment.json) for the complete package and checkpoint identity.
 
-The frozen method sources are in [`deltatrace/clean/`](deltatrace/clean/), version `clean-v1-20260909`:
+The official Qwen3.5 implementation is **`gdn-symmetric-v1`**, selected by the [default factory](deltatrace/profiles/official.py), [active configuration](configs/active_profile.json), and evaluation driver. Qwen3 retains `clean-v1`. The shared frozen runtime remains in [`deltatrace/clean/`](deltatrace/clean/), version `clean-v1-20260909`:
 
 | Model | Entry point | Configuration |
 | --- | --- | --- |
 | Qwen3-8B | [`propagate_paired_secant`](deltatrace/clean/qwen3/qwen_signed_secant_paired_vendor_fa.py) | FP16, `content_P1`, native model FlashAttention and a separate finite-propagation extension |
-| Qwen3.5-9B | [`make_qwen35_clean_runner`](deltatrace/clean/qwen35/qwen35_clean_runner.py) | BF16, P1/content1 rules, native FA/FLA, and empty per-layer override maps |
+| Qwen3.5-9B | [`make_qwen35_runner`](deltatrace/profiles/official.py) | BF16, native FA/FLA, symmetric GDN output gates and averaged memory endpoint orders |
 
 The [method manifest](deltatrace/clean/sources.json) records all 27 frozen dependency files. Qwen3 and Qwen3.5 use their respective dependency environments and run in separate processes. Model weights and compiled libraries are supplied by the execution environment; their paths and identities are checked against an [environment manifest](experiments/official/environment.example.json).
 

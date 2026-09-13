@@ -16,8 +16,10 @@ The released deletion test masks high-ranked source tokens with a baseline token
 \paragraph{Attribution quality.}
 DT has the lowest RISE on 9 of 13 tasks and the lowest MAS on 11 (Tables~\ref{tab:full} and~\ref{tab:mas}). Against FT, the corresponding improvements cover 10 and 12 tasks. The largest absolute RISE reduction is on MATH, from 0.3484 to 0.2029. DT achieves the highest Recall on all six NIAH tasks, exceeding FT by 3.96--19.60 percentage points. At the stated VT budgets, its macro Recall is 84.18\%, compared with 76.57\% for FT K3. On HotpotQA, IFR reaches 75.87\% and DT reaches 72.05\% (Table~\ref{tab:recovery}).
 
-\paragraph{Attention and memory in Qwen3.5.}
-The paired development set contains eight MQ-Q2 and eight MoreHopQA examples for each model. On Qwen3.5-9B, DT raises MQ-Q2 Recall from FT's 63.92\% to 73.35\% and lowers MAS on both tasks. DT/FT RISE is 0.1115/0.0942 on MQ-Q2 and 0.1688/0.2356 on MoreHopQA. Table~\ref{tab:development} gives the paired results for both Qwen3-8B and Qwen3.5-9B.
+\input{results/qwen35_quality_table}
+
+\paragraph{Qwen3.5-9B results.}
+Table~\ref{tab:qwen35-quality} compares DT and FT on eight tasks comprising 72 examples: ten new key/value assignments for each of six NIAH tasks, plus six released examples each from MATH and MoreHopQA. DT achieves higher Recall on all six NIAH tasks, lower RISE on six of eight tasks, and lower MAS on seven. On MATH and MoreHopQA, DT lowers both RISE and MAS.
 
 \paragraph{Attribution time and memory.}
 The first-page timing panel varies response length on Qwen3-8B. DT, FT, and multi-hop FT (FT-mh) are measured on one MetaX C550; the other curves show the published timing references. Crosses mark out-of-memory runs. On the 16-example Qwen3-8B benchmark, the sum of per-example median attribution times is 11.40 seconds for DT and 12.16 seconds for one-hop FT; peak allocated memory is 18.76 and 21.49 GB. On Qwen3.5-9B, processing the 16 examples in batches of two with GPU checkpoints reduces time from 16.68 seconds for serial execution to 12.33 seconds, a 35.3\% throughput increase. Peak memory is 21.64 and 23.88 GB, respectively. Times cover complete attribution calls; Appendix~\ref{app:cost} gives the measurement protocol.

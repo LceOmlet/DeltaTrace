@@ -1,0 +1,104 @@
+{
+  "version": "qwen35-gdn-symmetric-frozen-validation-v1",
+  "selection": {
+    "niah_mq_q2": [
+      10005,
+      10015,
+      10025,
+      10035,
+      10045,
+      10055,
+      10065,
+      10075,
+      10085,
+      10095
+    ],
+    "niah_mq_q4": [
+      10005,
+      10015,
+      10025,
+      10035,
+      10045,
+      10055,
+      10065,
+      10075,
+      10085,
+      10095
+    ],
+    "niah_mq_q8": [
+      10005,
+      10015,
+      10025,
+      10035,
+      10045,
+      10055,
+      10065,
+      10075,
+      10085,
+      10095
+    ],
+    "niah_mv_v2": [
+      10005,
+      10015,
+      10025,
+      10035,
+      10045,
+      10055,
+      10065,
+      10075,
+      10085,
+      10095
+    ],
+    "niah_mv_v4": [
+      10005,
+      10015,
+      10025,
+      10035,
+      10045,
+      10055,
+      10065,
+      10075,
+      10085,
+      10095
+    ],
+    "niah_mv_v8": [
+      10005,
+      10015,
+      10025,
+      10035,
+      10045,
+      10055,
+      10065,
+      10075,
+      10085,
+      10095
+    ]
+  },
+  "methods": [
+    "DT_original",
+    "DT_gdn_symmetric"
+  ],
+  "steps": 20,
+  "target": "Original complete fixed response plus EOS, same scalar log-probability target and same native model input for every variant.",
+  "reference": "Original eligible-token EOS reference; no query rescaling, no grouping or target selection in the variants.",
+  "rules": {
+    "DT_original": "Original content1 clean profile.",
+    "DT_endpoint_symmetric": "Half the forward signed vector minus half the vector from the same two complete endpoints in reverse order.",
+    "DT_gate_symmetric": "Symmetric normalized-content times SiLU gate product at every GDN layer; memory recurrence unchanged.",
+    "DT_memory_symmetric": "Average both endpoint orders of the local memory recurrence at every GDN layer; output gate unchanged.",
+    "DT_gdn_symmetric": "Both preceding GDN changes, uniformly at every GDN layer."
+  },
+  "metrics": "Original signed RISE, positive-part MAS and original NIAH 10% token Recall. Report all candidates, including regressions.",
+  "selection_rule": "No selection in validation: candidate is already frozen. Report every task and paired metric.",
+  "validation": "Freeze the candidate before a separate deterministic construction of novel keys and values and before broader task checks. Original 600 benchmark cases have been inspected and are not an untouched holdout.",
+  "expected_cases": 60,
+  "validation_cases_sha256": "760e0f0d52b0d55b60e1994ea3f0a3499f79726cf529e5b0b22cd984bfd8c45b",
+  "candidate_receipt_sha256": "1d64bf4497655474e3d9515c84e0a39e1c6a2616c73f2d8db0729781f60bd7fd",
+  "validation_success": "Macro paired RISE improves with a task-stratified bootstrap 95% upper bound below zero, while macro MAS and Recall do not worsen in mean. Inspect and report individual task regressions separately.",
+  "bootstrap": {
+    "seed": 20260913,
+    "samples": 10000,
+    "unit": "Paired cases, sampled within each of six tasks; equal task mean weighting."
+  },
+  "runtime_validation": "Repeat original DT after the candidate on every example; repeat the candidate on the first example. Do not relax the existing 1e-4 vector consistency threshold."
+}
