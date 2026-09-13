@@ -1,0 +1,65 @@
+{
+  "source_commit": "2edcdb31239784f19faeb43791f5f714013d25ac",
+  "attribution_profile": "clean-v1",
+  "model": "Qwen3.5-9B",
+  "tasks": [
+    "vt_h2_c3",
+    "vt_h4_c1",
+    "vt_h6_c1",
+    "vt_h10_c1",
+    "hotpotqa_long"
+  ],
+  "cases": 448,
+  "cases_per_task": {
+    "vt_h2_c3": 100,
+    "vt_h4_c1": 100,
+    "vt_h6_c1": 100,
+    "vt_h10_c1": 100,
+    "hotpotqa_long": 48
+  },
+  "extraction": "Selected dataset rows copied from the frozen CSVs; all recorded methods retained. No metrics recomputed.",
+  "files": [
+    {
+      "destination": "paper/iclr2027/results/data/qwen35_clean_vt_hotpot_quality.csv",
+      "source": "research/temporary/qwen35_paper_full_20260913/results/task_means.csv"
+    },
+    {
+      "destination": "paper/iclr2027/results/data/qwen35_clean_vt_hotpot_cases.csv",
+      "source": "research/temporary/qwen35_paper_full_20260913/results/per_case.csv"
+    },
+    {
+      "destination": "paper/iclr2027/results/data/qwen35_clean_vt_hotpot_recovery_cases.csv",
+      "source": "research/temporary/qwen35_paper_full_20260913/raw_completion/export_dynamic_with_ifr/paper_recovery_per_case.csv"
+    }
+  ],
+  "protocol_source": "research/temporary/qwen35_paper_full_20260913/protocol.json",
+  "faithfulness": {
+    "target": "full fixed response plus EOS",
+    "steps": 20,
+    "RISE": "signed DT ranking",
+    "MAS": "positive DT ranking",
+    "comparator": "FT_K1"
+  },
+  "recovery": {
+    "VT": {
+      "target": "reconstructed answer without reasoning",
+      "candidate": "eligible body tokens",
+      "budgets": {
+        "vt_h2_c3": 0.1,
+        "vt_h4_c1": 0.1,
+        "vt_h6_c1": 0.2,
+        "vt_h10_c1": 0.3
+      },
+      "comparator": "FT_K3"
+    },
+    "HotpotQA": {
+      "target": "full response",
+      "pooling": "signed_sum over native sentences",
+      "cost": "all native sentence body tokens including punctuation and whitespace",
+      "budget": 0.1,
+      "selection": "longest ranking prefix",
+      "metric": "official supporting-fact Recall",
+      "comparator": "FT_K3"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering\small
-\caption{Qwen3.5-9B quality with symmetric GDN propagation. NIAH uses ten new key/value assignments per task on fixed templates; MATH and MoreHopQA each use six fixed released examples. Recovery is token Recall at the listed eligible-token budget. FT denotes FlashTrace: K3 for Recall and K1 for RISE/MAS. DT uses signed RISE and positive-part MAS. Bold marks the better mean; dashes indicate undefined recovery.}
+\caption{Qwen3.5-9B attribution quality. Blocks identify the DT rules used for each result. NIAH uses ten new key/value assignments per task on fixed templates; MATH and MoreHopQA each use six released examples. VT and HotpotQA use all released examples. Recall measures NIAH/VT tokens or HotpotQA supporting facts at the listed token budgets. FT uses K3 for Recall and K1 for RISE/MAS; DT uses signed RISE and positive-part MAS. Bold marks the better mean; dashes indicate undefined recovery.}
 \label{tab:qwen35-quality}
 \setlength{\tabcolsep}{4.0pt}
 \begin{tabular}{@{}lrr rr rr rr@{}}
@@ -9,6 +9,7 @@ Task & $n$ & Budget & \multicolumn{2}{c}{Recall (\%) $\uparrow$} & \multicolumn{
 \cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(l){8-9}
  & & & FT & DT & FT & DT & FT & DT \\
 \midrule
+\multicolumn{9}{@{}l}{\textit{DT: symmetric GDN (official)}} \\
 MQ-Q2 & 10 & 10\% & 62.87 & \textbf{80.59} & 0.1014 & \textbf{0.1012} & 0.2535 & \textbf{0.1325} \\
 MQ-Q4 & 10 & 10\% & 36.86 & \textbf{52.28} & \textbf{0.1504} & 0.1585 & 0.2675 & \textbf{0.2185} \\
 MQ-Q8 & 10 & 10\% & 11.97 & \textbf{15.31} & \textbf{0.3393} & 0.3544 & \textbf{0.4017} & 0.5044 \\
@@ -18,6 +19,13 @@ MV-V8 & 10 & 10\% & 24.27 & \textbf{29.50} & 0.2357 & \textbf{0.2127} & 0.3178 &
 \midrule
 MATH & 6 & --- & --- & --- & 0.3734 & \textbf{0.2662} & 0.4801 & \textbf{0.3460} \\
 MoreHopQA & 6 & --- & --- & --- & 0.1920 & \textbf{0.1327} & 0.2763 & \textbf{0.1845} \\
+\midrule
+\multicolumn{9}{@{}l}{\textit{DT: original GDN (\texttt{clean-v1})}} \\
+VT H2-C3 & 100 & 10\% & 67.80 & \textbf{80.04} & 0.1514 & \textbf{0.1212} & 0.2226 & \textbf{0.1461} \\
+VT H4-C1 & 100 & 10\% & 69.07 & \textbf{70.56} & \textbf{0.1161} & 0.1163 & 0.1889 & \textbf{0.1499} \\
+VT H6-C1 & 100 & 20\% & \textbf{83.06} & 80.27 & 0.1301 & \textbf{0.1285} & 0.2050 & \textbf{0.1632} \\
+VT H10-C1 & 100 & 30\% & \textbf{81.90} & 76.35 & \textbf{0.1537} & 0.1703 & 0.2304 & \textbf{0.2244} \\
+HotpotQA & 48 & 10\% & 57.12 & \textbf{76.56} & 0.2154 & \textbf{0.1906} & 0.3123 & \textbf{0.3086} \\
 \bottomrule
 \end{tabular}
 \end{table}
