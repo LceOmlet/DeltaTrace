@@ -17,8 +17,12 @@ Reference-based methods already assign prediction differences to inputs through 
 
 The difficulty is that content and control change together. Changing a token can alter both its value vector and the attention weights that select it. Those weights compete because their sum is one. In gated memory, a new value changes a state assembled from earlier tokens, while keys, queries, and gates determine what is written, retained, and read \citep{yang2024gated}. Tracing only the transported content leaves these selection and memory decisions outside the explanation. Tracing both requires local rules that account for their joint changes and can be composed across the whole response.
 
-\dt{} begins with two forward runs that supply the original and reference activations. Analytic rules use these pairs to replace each local Jacobian with a finite map. One reverse pass applies the transposed maps to coefficients, starting with $1$ at the response score. At the input, each coefficient vector is dotted with its embedding difference to obtain a token attribution score. These scores sum to the response-score difference.
-
-The computation follows the same structure as accelerated attention. FlashAttention-style tiles process small blocks of token interactions \citep{dao2022flashattention}, and Flash Linear Attention (FLA) processes memory in consecutive chunks \citep{yang2024fla}. Accumulating coefficients within these blocks gives auxiliary storage linear in sequence length at fixed model dimensions and chunk size.
+\newpage
+\paragraph{Contributions.}
+\begin{itemize}
+\item \textbf{Attribution for complete responses.} \dt{} assigns signed token contributions to the log-probability difference between original and reference prompts for a fixed, complete response. Two forward executions and one finite reverse pass produce scores that sum to this difference.
+\item \textbf{Content and control.} Analytic finite rules for attention and Gated DeltaNet trace values together with the operations that select, retain, write, and read them.
+\item \textbf{Efficient computation.} Finite reverse propagation uses FlashAttention-style tiles \citep{dao2022flashattention} and Flash Linear Attention (FLA) chunks \citep{yang2024fla}. Auxiliary storage grows linearly with sequence length at fixed model dimensions and chunk size.
+\end{itemize}
 
 On Qwen3-8B retrieval and reasoning tasks, \dt{} achieves the lowest deletion-faithfulness scores on most tasks and the highest evidence recovery across the six needle-in-a-haystack tasks (Section~\ref{sec:evaluation}). Qwen3.5-9B measurements evaluate finite reverse propagation through attention and gated memory. Appendix~\ref{app:credit} discusses the connection between counterfactual return differences and policy advantages \citep{sutton1999policy,foerster2018counterfactual}.
