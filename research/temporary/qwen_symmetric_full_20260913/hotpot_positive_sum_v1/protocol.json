@@ -1,0 +1,32 @@
+{
+  "version": "hotpot-token-positive-sum-v1",
+  "requested_change": "User explicitly requested positive contributions for HotpotQA retrieval.",
+  "models": [
+    "qwen3",
+    "qwen35"
+  ],
+  "cases_each": 48,
+  "methods": [
+    "DT",
+    "FT_K3",
+    "FT_K1"
+  ],
+  "pooling": "sum(max(token_attribution, 0)) over every native sentence token; preserve source dtype before float64 accumulation",
+  "budget": "ceil(fraction * all native sentence body token count)",
+  "selection": "unchanged ranked prefix, same tie-break and full sentence token charge",
+  "primary_fraction": 0.1,
+  "fractions": [
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5
+  ],
+  "target": "unchanged fixed full response and matched non-stop target weights",
+  "supersedes": "Only HotpotQA Recall signed-sum entries in final_results; other task metrics remain unchanged.",
+  "metric": "supporting_fact_recall",
+  "source_archive_sha256": "6acd36198314b9cd50580b8cc51fa4759e12d413e6dc0e26de1b51a1ec73af60",
+  "bootstrap": "Within-task descriptive paired bootstrap, 5000 draws, seed 20260914",
+  "model_calls": 0
+}
