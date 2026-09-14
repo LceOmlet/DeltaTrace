@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering\small
-\caption{Qwen3.5-9B quality with symmetric GDN propagation. NIAH uses ten new key/value assignments per task on fixed templates; MATH and MoreHopQA each use six fixed released examples. Recovery is token Recall at the listed eligible-token budget. FT denotes FlashTrace: K3 for Recall and K1 for RISE/MAS. DT uses signed RISE and positive-part MAS. Bold marks the better mean; dashes indicate undefined recovery.}
+\caption{Qwen3.5-9B quality with symmetric GDN propagation. NIAH uses ten new key/value assignments per task on fixed templates. MATH and MoreHopQA each use six fixed released examples. VT and HotpotQA use all released examples. Recovery is token Recall for NIAH/VT and Full-support Recall@30\% for HotpotQA, as defined in Table~\ref{tab:recovery}. FT denotes FlashTrace, with K3 for Recall and K1 for RISE/MAS. DT uses signed RISE and positive-part MAS. Bold marks the better mean. Dashes indicate undefined recovery.}
 \label{tab:qwen35-quality}
 \setlength{\tabcolsep}{4.0pt}
 \begin{tabular}{@{}lrr rr rr rr@{}}
@@ -18,6 +18,12 @@ MV-V8 & 10 & 10\% & 24.27 & \textbf{29.50} & 0.2357 & \textbf{0.2127} & 0.3178 &
 \midrule
 MATH & 6 & --- & --- & --- & 0.3734 & \textbf{0.2662} & 0.4801 & \textbf{0.3460} \\
 MoreHopQA & 6 & --- & --- & --- & 0.1920 & \textbf{0.1327} & 0.2763 & \textbf{0.1845} \\
+\midrule
+VT H2-C3 & 100 & 10\% & 67.80 & \textbf{94.20} & 0.1514 & \textbf{0.1095} & 0.2224 & \textbf{0.1295} \\
+VT H4-C1 & 100 & 10\% & 69.07 & \textbf{71.89} & 0.1161 & \textbf{0.1013} & 0.1888 & \textbf{0.1343} \\
+VT H6-C1 & 100 & 20\% & 83.06 & \textbf{97.35} & 0.1300 & \textbf{0.1154} & 0.2051 & \textbf{0.1504} \\
+VT H10-C1 & 100 & 30\% & 81.90 & \textbf{94.23} & \textbf{0.1537} & 0.1561 & 0.2307 & \textbf{0.2040} \\
+HotpotQA & 48 & 30\% & 58.33 & \textbf{95.83} & 0.2154 & \textbf{0.1470} & 0.3125 & \textbf{0.2367} \\
 \bottomrule
 \end{tabular}
 \end{table}

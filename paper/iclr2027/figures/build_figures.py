@@ -29,7 +29,7 @@ POS = '#238778'
 NEG = '#CA6854'
 VIOLET = '#746B91'
 CMAP = LinearSegmentedColormap.from_list('dt_signed', SIGNED_COLORS)
-plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10.2,
+plt.rcParams.update({'font.family': 'Times New Roman', 'mathtext.fontset': 'stix', 'font.size': 10.2,
                      'text.color': INK, 'axes.labelcolor': INK,
                      'pdf.fonttype': 42, 'ps.fonttype': 42, 'svg.fonttype': 'none',
                      'axes.unicode_minus': False})
@@ -88,7 +88,7 @@ def heatmap(ax, case, x, y, width, norm, font=10.15, sections=False, records=Non
                 text(ax,x,y,'Question',8.4,color=MUTED)
                 y += .20
             else:
-                text(ax, x, y + .005, '···', 9.4, color=MUTED)
+                text(ax, x, y + .005, '...', 9.4, color=MUTED)
                 y += .15 if sections else .20
         groups = []
         for match in re.finditer(r'\S+\s*', source[lo:hi]):
@@ -124,7 +124,7 @@ def heatmap(ax, case, x, y, width, norm, font=10.15, sections=False, records=Non
                                        facecolor=color, edgecolor='none'))
                 string = ''.join(source[j] for j in run)
                 text(ax, x + col * step, y + .012, string, font,
-                     fontfamily='DejaVu Sans Mono')
+                     fontfamily='Courier New')
                 if records is not None:
                     records.append({'model':case['model'], 'token_index':owner,
                                     'char_span':[run[0],run[-1]+1], 'score':token['score'],
@@ -184,7 +184,7 @@ def case_figure_compact(cases, dataset):
     text(ax,right,.42,'Answer',8.4,color=MUTED)
     if dataset=='niah_mq_q2':
         answer='5443951, 8698256'
-        text(ax,right,.65,answer,9.3,fontfamily='DejaVu Sans Mono')
+        text(ax,right,.65,answer,9.3,fontfamily='Courier New')
     else:
         answer='6 consonants in Jennings'
         text(ax,right,.65,'6 consonants\nin Jennings',9.3)
@@ -303,7 +303,7 @@ def main():
         'lookup_fixture_sha256': hashlib.sha256(lookup_path.read_bytes()).hexdigest(),
         'builder_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'mechanism_builder_sha256': hashlib.sha256((HERE/'draw_mechanism.py').read_bytes()).hexdigest(),
-        'mechanism': 'Four-step paired-forward and reverse-coefficient trace; stacked Attention and GDN panels pair each change identity with its reverse rules, to the right of its operator; unchanged signed playwright/composer evidence. A direct lookup overview is also supplied.',
+        'mechanism': 'Four-step paired-forward and reverse-coefficient trace; stacked Attention and GDN panels pair each output difference decomposition with its reverse rules, to the right of its operator; unchanged signed playwright/composer evidence. A direct lookup overview is also supplied.',
         'mechanism_case': mechanism_meta,
         'cases': specs, 'generated_files': {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                                          for p in sorted(OUT.iterdir()) if p.suffix in ('.pdf','.svg','.png')}}

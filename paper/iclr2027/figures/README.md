@@ -49,7 +49,7 @@ The manuscript overview uses four panels: (a) paired original/EOS-reference
 executions and a finite reverse traversal; (b) Attention; (c) Gated DeltaNet;
 (d) a measured signed context example. Panel (a) occupies the wider left column;
 Attention is above GDN in the right column. Both operator panels have identical
-areas (7.35 x 3.00 drawing units), with matching change identities and reverse
+areas (7.35 x 3.00 drawing units), with matching output difference decompositions and reverse
 coefficient rules to the right of the forward operator. Content is blue, control
 is gold, and reverse coefficients are purple. GDN shows its
 full retain/write/read structure and expands the
@@ -65,9 +65,9 @@ the effect being allocated, while the reverse computation composes its finite
 coefficients. Appendix `app:conservation` specifies this finite chain rule.
 Panel (a), the caption, and Section 2.2 follow four steps: two forward runs,
 local rules from paired activations, reverse coefficient propagation, and input
-token scores. Panels (b,c) pair each change identity with the reverse updates it
+token scores. Panels (b,c) pair each output difference decomposition with the reverse updates it
 defines. Delta Y and Delta T label the identities; the arrows below connect each
-identity to its coefficient rules. The backward outputs are M_V/M_P and
+decomposition to its coefficient rules, labeled "Derive reverse rules". The backward outputs are M_V/M_P and
 M_S/m_alpha. The figure defines endpoint subscripts 0 and 1 as reference and
 original, and labels the propagated quantity as coefficients m.
 Labels are at least 20.4 pt on the 14-inch canvas, or 8.0 pt at the manuscript's

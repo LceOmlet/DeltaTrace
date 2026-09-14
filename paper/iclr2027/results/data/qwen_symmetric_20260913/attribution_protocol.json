@@ -1,0 +1,63 @@
+{
+  "version": "qwen-symmetric-full-20260913-v1",
+  "qwen3": {
+    "profile": "pv-layer-symmetric-v1",
+    "formula": "Delta(PV)=0.5*(P0+P1)*DeltaV+DeltaP*0.5*(V0+V1)",
+    "tasks": {
+      "niah_mq_q2": 100,
+      "niah_mq_q4": 100,
+      "niah_mq_q8": 100,
+      "niah_mv_v2": 100,
+      "niah_mv_v4": 100,
+      "niah_mv_v8": 100,
+      "vt_h2_c3": 100,
+      "vt_h4_c1": 100,
+      "vt_h6_c1": 100,
+      "vt_h10_c1": 100,
+      "hotpotqa_long": 48,
+      "math": 100,
+      "morehopqa": 95
+    },
+    "cases": 1243
+  },
+  "qwen35": {
+    "profile": "gdn-symmetric-v1",
+    "tasks": {
+      "vt_h2_c3": 100,
+      "vt_h4_c1": 100,
+      "vt_h6_c1": 100,
+      "vt_h10_c1": 100,
+      "hotpotqa_long": 48
+    },
+    "cases": 448
+  },
+  "faithfulness": {
+    "target": "complete released response plus EOS",
+    "protocol": "released-v1",
+    "steps": 20,
+    "metrics": [
+      "signed RISE",
+      "positive MAS",
+      "positive RISE+AP"
+    ],
+    "baseline": "fresh FT K1"
+  },
+  "recovery": {
+    "NIAH": "released Recall@10%, fresh FT K3",
+    "VT": "paper answer-only input and non-stop target; body-token Recall at 10/10/20/30% for H2/H4/H6/H10",
+    "HotpotQA": "paper full response and non-stop target; native supporting-fact Recall, 10% all-body-token budget",
+    "extra_budget_fractions": [
+      0.05,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5
+    ],
+    "baseline": "fresh FT K3 and K1"
+  },
+  "timings": "record actual run latency and peak memory; no separate warm repeated cost benchmark",
+  "manuscript_edits": false,
+  "selection": "all cached cases, no winner-based selection",
+  "operator_validation": "pv_gpu_verification.json"
+}

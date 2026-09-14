@@ -54,7 +54,7 @@ def draw(data):
         # At the manuscript's 5.5-inch width, 20.4 pt here becomes 8.0 pt.
         size=max(size,20.4) if value not in ('−','+') else size
         t=ax.text(x,y,value,fontsize=size,color=color,fontweight=weight,
-                  va=kw.pop('va','top'),fontfamily=kw.pop('fontfamily','DejaVu Sans'),
+                  va=kw.pop('va','top'),fontfamily=kw.pop('fontfamily','Times New Roman'),
                   linespacing=1.25,**kw)
         artists.append(t)
         return t
@@ -102,7 +102,7 @@ def draw(data):
             text(xx+w/2,y,label,20.4,color,weight='bold',ha='center')
             text(xx+w/2,y+.69,formula,formula_size,color,ha='center',va='center')
         text(x+2.285,y+.69,'+',21,ha='center',va='center')
-        text(x+1.855,y+1.36,'Change identity',20.4,MUTED,ha='center')
+        text(x+1.855,y+1.36,'Derive reverse rules',20.4,MUTED,ha='center')
         arrow((x+1.855,y+1.76),(x+1.855,y+2.02),PURPLE,1.6,12)
 
     # (a) The paired endpoint graph and the finite reverse coefficient.
@@ -159,43 +159,55 @@ def draw(data):
     text(6.91,1.77,r'$P$',23,CONTROL,ha='center')
     text(8.11,1.77,r'$V$',23,BLUE,ha='center')
     text(9.16,1.77,r'$Y$',23,ha='center')
-    allocation_cards(10.08,.55,'Content','Selection',r'$P_1\,\Delta V$',r'$\Delta P\,V_0$',r'$\Delta Y$')
-    text(6.48,2.16,'0: reference; 1: original',20.4,MUTED)
+    allocation_cards(10.08,.55,'Content','Selection',r'$\bar P\,\Delta V$',r'$\Delta P\,\bar V$',r'$\Delta Y$')
+    text(6.48,2.16,r'$\bar P=(P_0+P_1)/2,\quad\bar V=(V_0+V_1)/2$',20.4,MUTED)
     text(6.48,2.66,'Reverse',20.4,PURPLE,weight='bold')
-    text(13.77,2.82,r'$M_V=P_1^{\top}M_Y\quad M_P=M_YV_0^{\top}$',23,PURPLE,ha='right',va='center')
+    text(13.77,2.82,r'$M_V=\bar P^{\top}M_Y\quad M_P=M_Y\bar V^{\top}$',23,PURPLE,ha='right',va='center')
     ax.plot([6.45,13.80],[3.22,3.22],color=LINE,lw=.8)
 
-    # (c) GDN: same panel size, same two-channel allocation diagram.
-    heading(6.45,3.40,'c','Gated DeltaNet',21.2)
-    text(6.48,3.81,'Retain, write, and read',20.4,MUTED)
-    text(6.77,4.81,r'$S_{t-1}$',20.4,BLUE,ha='center',va='center')
-    arrow((7.10,4.81),(7.29,4.81),BLUE,1.5,10)
-    box(7.32,4.58,.38,.45,PALE_CONTROL,CONTROL,.06)
-    text(7.51,4.81,r'$\alpha$',20.4,CONTROL,ha='center',va='center')
-    arrow((7.73,4.81),(7.91,4.81),BLUE,1.5,10)
-    ax.add_patch(Circle((8.04,4.81),.12,fc='white',ec='#9CADBC',lw=1.1))
-    text(8.04,4.81,'+',20.4,ha='center',va='center')
-    text(8.04,4.21,r'$k u^{\top}$',21,BLUE,ha='center')
-    arrow((8.04,4.59),(8.04,4.67),BLUE,1.5,8)
-    arrow((8.19,4.81),(8.37,4.81),BLUE,1.5,10)
-    box(8.40,4.57,.45,.47,PALE_BLUE,'#A5C0D9',.06)
-    text(8.625,4.81,r'$S_t$',20.4,BLUE,ha='center',va='center')
-    arrow((8.88,4.81),(9.06,4.81),BLUE,1.5,10)
-    box(9.09,4.58,.35,.45,PALE_CONTROL,CONTROL,.06)
-    text(9.265,4.81,r'$q$',20.4,CONTROL,ha='center',va='center')
-    arrow((9.47,4.81),(9.65,4.81),INK,1.5,10)
-    text(9.82,4.81,r'$o_t$',20.4,ha='center',va='center')
-    text(8.04,5.14,r'Retention: $T=\alpha S$',20.4,MUTED,ha='center')
-    allocation_cards(10.08,3.81,'Content','Gate',
-                     r'$\alpha_1\,\Delta S$',r'$S_0\,\Delta\alpha$',r'$\Delta T$',23)
-    text(6.48,5.92,'Reverse',20.4,PURPLE,weight='bold')
-    text(13.77,6.08,r'$M_S=\alpha_1 M_T\quad m_{\alpha}=\langle M_T,S_0\rangle$',23,PURPLE,ha='right',va='center')
+    # (c) GDN: memory content, control, output gating, and reverse coefficients.
+    text(464.4/72,254/72,'(c)',27.5,'#20252b',ha='left',va='center',weight='bold')
+    text(507.6/72,254/72,'Gated DeltaNet',27.5,'#20252b',ha='left',va='center',weight='bold')
+    text(466.56/72,289/72,'Store and retrieve',23,'#20252b',ha='left',va='center')
+    ax.add_patch(Rectangle((482/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((494/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((506/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((518/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((482/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((494/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((506/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((518/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((482/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((494/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((506/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((518/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((482/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((494/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((506/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((518/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
+    ax.add_patch(Rectangle((651/72,323/72),12/72,10/72,fc='#a9bbc8',ec='none'))
+    ax.add_patch(Rectangle((651/72,335/72),12/72,10/72,fc='#a9bbc8',ec='none'))
+    ax.add_patch(Rectangle((651/72,347/72),12/72,10/72,fc='#a9bbc8',ec='none'))
+    ax.add_patch(Rectangle((651/72,359/72),12/72,10/72,fc='#a9bbc8',ec='none'))
+    arrow((537/72,346/72),(640/72,346/72),'#657581',1.8,14)
+    text(505/72,387/72,'Memory',23,'#245c89',ha='center',va='center')
+    text(657/72,387/72,'Readout',23,'#20252b',ha='center',va='center')
+    text(790/72,290/72,'Content',24,'#245c89',ha='center',va='center',weight='bold')
+    text(933/72,290/72,'Control',24,'#785823',ha='center',va='center',weight='bold')
+    box(724/72,314/72,132/72,54/72,'#ecf4fb','#86a8c4',4/72,1.0)
+    box(868/72,314/72,130/72,54/72,'#fcf8ed','#785823',4/72,1.0)
+    text(790/72,341/72,'Stored values',22,'#245c89',ha='center',va='center')
+    text(933/72,341/72,'Memory use',23,'#785823',ha='center',va='center')
+    arrow((790/72,370/72),(821/72,420/72),'#67448f',1.9,12)
+    arrow((933/72,370/72),(900/72,420/72),'#67448f',1.9,12)
+    text(861/72,391/72,'Reverse',23,'#67448f',ha='center',va='center')
+    text(861/72,440/72,'Input token scores',23,'#67448f',ha='center',va='center')
 
     # (d) A direct lookup makes source and answer visually match.
     upper_artists=set(ax.get_children())
     ax.plot([.22,13.80],[4.70,4.70],color=LINE,lw=.85)
     heading(.22,4.90,'d','Choose the playwright, not the composer.' if roles else 'Find the names. Recover the numbers.',21.2)
-    text(13.77,5.00,'Qwen3.5 · MoreHopQA example 1' if roles else 'Qwen3.5 · retrieval example 6',17,MUTED,ha='right')
+    text(13.77,5.00,'Qwen3.5, MoreHopQA example 1' if roles else 'Qwen3.5, retrieval example 6',17,MUTED,ha='right')
     owners=[[] for _ in source]
     for i,t in enumerate(case['tokens']):
         for j in range(*t['char_span']):owners[j].append(i)
@@ -226,7 +238,7 @@ def draw(data):
                 token=case['tokens'][owner];xx=x+col*step;ww=len(chars)*step
                 ax.add_patch(Rectangle((xx,y),ww,line_height*.89,
                     fc=cmap(norm(token['score'])) if token['eligible'] else 'white',ec='none',zorder=1))
-                text(xx,y+.013,''.join(source[j] for j in chars),font,fontfamily='DejaVu Sans Mono',zorder=2)
+                text(xx,y+.013,''.join(source[j] for j in chars),font,fontfamily='Courier New',zorder=2)
                 displayed.append({'token_index':owner,'char_span':[chars[0],chars[-1]+1],
                                   'score':token['score'],'bbox':[xx,y,ww,line_height*.89]})
                 col+=len(chars)
@@ -253,7 +265,7 @@ def draw(data):
         text(.26,6.85,'REQUESTED ROLE (EXCERPT)',17,MUTED,weight='bold')
         question='the author of the play'
     else:
-        text(9.72,5.43,'name selects · number supplies',17,MUTED,ha='right')
+        text(9.72,5.43,'name selects , number supplies',17,MUTED,ha='right')
         paragraph('billowy-method is: 9937326.',.57,5.82,prefix='…')
         paragraph('bright-system is: 9153566.',.57,6.30,prefix='…')
         text(.26,6.85,'QUESTION',17,MUTED,weight='bold')
@@ -289,7 +301,7 @@ def draw(data):
     text(9.71,8.72-footer_shift,'Shown spans underlined',17,MUTED,ha='right')
 
     # The role excerpt leaves room for the legend above the full-input strip.
-    bx,by,bw,bh=(5.225,7.23,2.45,.09) if roles else (3.68,8.98-footer_shift,2.45,.09)
+    bx,by,bw,bh=(6.475,7.23,2.45,.09) if roles else (3.68,8.98-footer_shift,2.45,.09)
     tick_y=by+.17
     legend_artists=[]
     for i in range(256):
@@ -298,7 +310,7 @@ def draw(data):
     hi_label=f'≥+{limit:.1f}' if roles else f'+{limit:.1f}'
     for xx,ss in [(bx,lo_label),(bx+bw/2,'0'),(bx+bw,hi_label)]:
         legend_artists.append(text(xx,tick_y,ss,17,MUTED,ha='center'))
-    legend_artists.append(text(bx+bw/2,by-.40,'nats · color saturated' if roles else 'Contribution (nats)',17,MUTED,ha='center'))
+    legend_artists.append(text(bx+bw/2,by-.40,'Token contribution (nats)',17,MUTED,ha='center'))
 
     # Translate the unchanged evidence panel as one unit to make room for the flow.
     evidence_transform=Affine2D().translate(0,FLOW_SPACE)+ax.transData

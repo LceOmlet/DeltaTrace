@@ -1,13 +1,13 @@
 {
-  "created_at": "2026-09-11T07:17:04.264414+00:00",
+  "created_at": "2026-09-11T09:43:13.524451+00:00",
   "pdf": "output/pdf/deltatrace-iclr2027-draft.pdf",
-  "sha256": "77e88e830a47d7ee19d5f2c65d2c34490150435abf14fc60cca4e5a60655314e",
+  "sha256": "d06312a4aad3deb50715eae369eef3c40890dce8b416ee7e077076af4ad8a36b",
   "pages": 17,
   "compiler": "pdfTeX 3.141592653-2.6-1.40.26, TeX Live 2024, Windows",
   "command": "latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex",
   "official_archive_sha256": "0d940dfa9398ae99a18f24a85a8a683f367204b6af6d17d2899e60a67102529e",
-  "source_verification_sha256": "65cdbc720d6138e0c3a7e537d03fa65717e1884bcc7b4abebaf4025d5248e4bb",
-  "figure_manifest_sha256": "1c3d1420754d005a4c29c122434926ad615831dcb798ae0729dcba6ecc6280bb",
+  "source_verification_sha256": "96df90be378015433ad2fb20491393a01d1fba7938fb2ac4e358b93ddaee6da8",
+  "figure_manifest_sha256": "eb256017ff3952e8de46340cc1c1a014fdd53eaaf329ae199d58f2b8de8ab298",
   "results_verification_sha256": "b550419f35f896da3ab8206b0d7155eacc1bac5705c64ae3b7dfc568f4ab5553",
   "undefined_references": false,
   "overfull_boxes": false,
@@ -50,7 +50,7 @@
       16,
       17
     ],
-    "review_method": "All 17 final pages inspected in contact sheets; pages 2 through 8 inspected individually, including the new main figure and comparison table. The unchanged first page was previously inspected at 180 dpi.",
+    "review_method": "All 17 pages inspected during the flow revision. The label revision changed pages 2 and 3, which were re-rendered and inspected. The counterfactual problem definition subsequently changed only pages 1 and 3, which were inspected individually; page 1 was also inspected at 180 dpi. All other pages render identically to the preceding manuscript.",
     "checks": [
       "First-page Recall/time inset and Introduction wrapping retained without text/plot collisions",
       "Figure 1 separates two forward executions, local change identities, reverse coefficients, and final token scores; no label collision or clipping",
@@ -59,9 +59,9 @@
       "All 259 quality metric values and VT/HotpotQA data preserved"
     ],
     "page_image_sha256": {
-      "1": "4c7e706893c01138a896d3d4180a4b7529667cbbe01cc76fccfda970de63d041",
-      "2": "59b789918bb90b07359e5cea309fe4b914c5a9ebcd3fe0c50584ba54ff282e9a",
-      "3": "bfacb410c82ec2fd42a3a59c4dc5e79c230d3940e35d652e16b7bc0aeaa0b865",
+      "1": "ddc89dc3b5f7996ffa59cd5165c9fdbbf13cb47b1000ebc4269425c0a60cc195",
+      "2": "2639e8c75bf7d3da3fb1796fa3b09c365d76c4986f1a13bf2759576288afea3a",
+      "3": "6740ddddaa8372a1a312885dddb57fdf92c19e00837704c8f78abfb565cae5b0",
       "4": "560ccd9f5cf42ffa4317f6d7cfcb5afe2e06cb2ff0d9aa1239c7e9e48f881519",
       "5": "4c6052f817dbd617950f5e2a6093367457a75ec8e6db9b97e900467971ff4018",
       "6": "80ed0b05d72a1c3adf0be3e53332356e74d93cc9911d8ecd320b1f78a11f8c62",
@@ -80,7 +80,7 @@
   },
   "figure_collection": {
     "pdf": "output/pdf/deltatrace-figures.pdf",
-    "sha256": "fc1b0fde82f6c301a800bd90e946ab99f436dac18af6597e063a04f58e1ebcd0",
+    "sha256": "b7fb2c1e95cae3d427b717ffded724f64cb2a09bacc3409cdc15cd2745eacae9",
     "pages": 3
   },
   "efficiency_collection": {
@@ -90,7 +90,7 @@
   },
   "main_figure": {
     "pdf": "output/pdf/deltatrace-overview.pdf",
-    "sha256": "14a6f3f69171db5de52de36fac8964acb47559bd33dbdc96d124ad2d69a4914a",
+    "sha256": "0916f821d4fcae4a9d72839721204edcb3fd5d3e2ef55e3dce075828c2068b4b",
     "pages": 1
   },
   "case_figures": [
@@ -224,5 +224,33 @@
       "manuscript.pdf": "69e02dd5fda5db2e5616dbadc5ae68071f0b7fc4718143da1766ef712faf4584"
     }
   },
-  "figure1_flow_review": "editorial/figure1_flow_review_zh.md"
+  "figure1_flow_review": "editorial/figure1_flow_review_zh.md",
+  "figure1_label_revision": {
+    "label": "Derive reverse rules",
+    "replaces": "Change identity",
+    "caption": "Names Delta Y and Delta T and explains that splitting their changes into content and control gives the reverse formulas.",
+    "changed_rendered_pages": [
+      2,
+      3
+    ],
+    "formulas_changed": false,
+    "case_data_changed": false,
+    "label_collisions": false
+  },
+  "counterfactual_problem_revision": {
+    "introduction_page": 1,
+    "definition_page": 3,
+    "target_equation": 1,
+    "source_intervention": "Selected prompt tokens replaced with EOS at the same positions; other prompt tokens fixed.",
+    "target": "Fixed span positions T within a stored response y; score sums log probabilities over T with fixed response prefixes.",
+    "full_response_case": "T = {1, ..., L}, including reasoning, answer, and EOS.",
+    "attribution": "Signed shares of the joint score difference for the selected source intervention.",
+    "changed_rendered_pages": [
+      1,
+      3
+    ],
+    "numbered_main_equations": 5,
+    "experimental_data_changed": false,
+    "first_page_wrap_checked_at_dpi": 180
+  }
 }

@@ -51,7 +51,7 @@ Substitution proves Equation~\ref{eq:softmax}. For a target coordinate $y$,
 \begin{equation}
 \D\log p_y=\left(e_y-\frac{\ell}{\tau}\right)^\top\D z.
 \end{equation}
-The coincident-probability definition follows from the continuous limit of the logarithmic mean. The score operator is symmetric positive semidefinite: for $w_i=\ell_i/\tau$,
+The coincident-probability definition follows from the continuous limit of the logarithmic mean. The score operator is symmetric positive semidefinite. For $w_i=\ell_i/\tau$,
 \begin{equation}
 u^\top\left(\diag(\ell)-\frac{\ell\ell^\top}{\tau}\right)u
 =\tau\left(\sum_iw_i u_i^2-\left(\sum_iw_i u_i\right)^2\right)\geq0.
@@ -67,9 +67,9 @@ m_{z,i}=\ell_i(u_i-\bar u_\ell),\qquad
 \end{equation}
 The response coefficient for a log-softmax target is $m_z=e_y-\ell/\tau$, where $e_y$ is the one-hot vector selecting the target vocabulary coordinate.
 
-\subsection{Shared operator rules}
+\subsection{Finite operator rules}
 \label{app:operators}
-For attention output $Y=PV$, Equation~\ref{eq:pv} gives the coefficients $m_V=P_1^\top U$ and $m_P=UV_0^\top$ for an upstream coefficient $U$.
+For attention output $Y=PV$, Equation~\ref{eq:pv} gives the coefficients $m_V=\bar P^\top U$ and $m_P=U\bar V^\top$ for an upstream coefficient $U$.
 
 Query--key scores use the symmetric product identity,
 \begin{equation}
@@ -77,22 +77,22 @@ Query--key scores use the symmetric product identity,
 \bar Q=(Q_0+Q_1)/2,
 \label{eq:qk}
 \end{equation}
-with $\bar K$ defined in the same way. The common operator rules appear in Table~\ref{tab:rules}. They depend on the operator and its role, and are shared by the two model families. Normalization, rotary position transformations, and grouped heads follow their respective model definitions.
+with $\bar K$ defined in the same way. Table~\ref{tab:rules} lists the finite decompositions by operator. Normalization, rotary position transformations, and grouped heads follow their respective model definitions.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Fixed propagation rules shared across architectures. Bars denote endpoint averages. Gated-memory operations extend the same content-oriented rule to recurrent states.}
+\caption{Finite propagation rules by operator. Bars denote endpoint averages. The gated-memory recurrence is given in Appendix~\ref{app:memory}.}
 \label{tab:rules}
 \begin{tabular}{@{}p{0.27\linewidth}p{0.65\linewidth}@{}}
 \toprule
 Operation & Change decomposition \\
 \midrule
 Linear and residual & $\D(Wx+b)=W\D x$; $\D(a+b)=\D a+\D b$ \\
-Attention values & $\D(PV)=P_1\D V+\D P V_0$ \\
+Attention values & $\D(PV)=\bar P\D V+\D P\bar V$ \\
 Attention scores & $\D(QK^\top)=\D Q\bar K^\top+\bar Q\D K^\top$ \\
 SwiGLU & $\D(us)=\bar s\odot\D u+\bar u\odot\D s$, $s=\silu(g)$ \\
-Output gating & $\D(ns)=s_1\odot\D n+n_0\odot\D s$ \\
+GDN output gating & $\D(n\odot s)=\bar s\odot\D n+\bar n\odot\D s$ \\
 RMS normalization & Analytic finite rule for $wx/\sqrt{\operatorname{mean}(x^2)+\epsilon}$ \\
 \bottomrule
 \end{tabular}
@@ -106,7 +106,7 @@ T_t&=\alpha_t S_{t-1}, & r_t&=T_t^\top k_t, \nonumber\\
 c_t&=v_t-r_t, & u_t&=\beta_t c_t, \label{eq:gdn}\\
 S_t&=T_t+k_tu_t^\top, & o_t&=S_t^\top q_t. \nonumber
 \end{align}
-The query includes the model's fixed attention scale. The state $T_t$ contains retained evidence, $r_t$ reads existing content, and $u_t$ writes the update. \dt{} follows the change of this computation using fixed content-oriented products:
+The query includes the model's fixed attention scale. The state $T_t$ contains retained evidence, $r_t$ reads existing content, and $u_t$ writes the update. One endpoint ordering constructs a finite map $D_{\mathrm{GDN}}^{01}$ for the complete memory recurrence through
 \begin{align}
 \D T_t&=\alpha_{t,1}\D S_{t-1}+S_{t-1,0}\D\alpha_t, \nonumber\\
 \D r_t&=(\D T_t)^\top k_{t,1}+T_{t,0}^\top\D k_t, \nonumber\\
@@ -114,7 +114,13 @@ The query includes the model's fixed attention scale. The state $T_t$ contains r
 \D S_t&=\D T_t+k_{t,1}\D u_t^\top+\D k_t\,u_{t,0}^\top, \nonumber\\
 \D o_t&=(\D S_t)^\top q_{t,1}+S_{t,0}^\top\D q_t. \nonumber
 \end{align}
-This recurrence assigns contributions to new values, retrieval keys, queries, and both gates. Reversing it carries the response coefficient through stored evidence to earlier sources. Scalar gate nonlinearities and query/key normalization use the same finite propagation construction as the surrounding network.
+Swapping the reference and original activations used as coefficients gives $D_{\mathrm{GDN}}^{10}$. Within each GDN layer, we average these memory-recurrence maps and propagate the readout coefficients as
+\begin{equation}
+\bar D_{\mathrm{GDN}}=\frac{D_{\mathrm{GDN}}^{01}+D_{\mathrm{GDN}}^{10}}{2},
+\qquad m_{\mathrm{in}}=\bar D_{\mathrm{GDN}}^\top m_o.
+\label{eq:gdn-symmetric}
+\end{equation}
+Here $m_o$ collects the coefficients of all readouts $o_t$ in the layer, and $m_{\mathrm{in}}$ collects those returned to the recurrence inputs. Equivalently, apply each transpose map to the same $m_o$ and average the returned coefficients. Both maps express the same finite output difference, so their mean preserves it. The recurrence assigns contributions to values, keys, queries, and both gates, carrying credit through stored evidence to earlier sources. Scalar gate nonlinearities and query/key normalization use the surrounding network's finite rules. Output gating uses the symmetric product in Table~\ref{tab:rules}, with $n_t$ the normalized readout and $s_t$ its activated output-gate vector.
 
 \subsection{Product and normalization identities}
 For a bilinear map $B$, both
@@ -122,7 +128,7 @@ For a bilinear map $B$, both
 \D B(a,b)&=B(\D a,\bar b)+B(\bar a,\D b),\\
 \D B(a,b)&=B(\D a,b_1)+B(a_0,\D b)
 \end{align}
-follow by expansion. Equation~\ref{eq:pv}, the shared SwiGLU rule, and every product in Equation~\ref{eq:gdn-finite} are direct instances with the stated argument ordering. Subtraction and state addition are linear, completing the finite memory recurrence.
+follow by expansion. Equation~\ref{eq:pv} and the SwiGLU rule use the first, symmetric identity. The second identity, with the displayed argument ordering, gives the products in Equation~\ref{eq:gdn-finite}. Its swapped ordering gives the other layer map averaged in Equation~\ref{eq:gdn-symmetric}. Subtraction and state addition are linear.
 
 For RMS normalization $f(x)=w\odot x/r(x)$, $r(x)=\sqrt{\|x\|^2/d+\epsilon}$, the symmetric product rule gives an analytic coefficient. With $\bar x=(x_0+x_1)/2$, $r_b=r(x_b)$, and $v=w\odot m$, its transpose action is
 \begin{equation}
@@ -143,20 +149,20 @@ Native endpoint queries, keys, values, and log-normalizers determine the probabi
 The implementation processes 64-token chunks using FLA's native chunk-state adjoints and batched contractions with saved endpoint states. An associative affine scan computes the finite decay contribution. Convolution and surrounding projections use the installed model primitives and their linear transpose actions.
 
 \paragraph{Storage.}
-For sequence length $T$, head dimension $d$, and tile or chunk width $C$, attention vectors and row statistics occupy $O(Td)$ storage per head; pairwise products reside in bounded tiles. Dense attention arithmetic is $O(T^2d)$. Chunked memory occupies $O(Td+TC+(T/C)d^2)$ auxiliary storage per head for token coefficients, within-chunk products, and boundary states. Both storage expressions are linear in $T$ at fixed $d$ and $C$. Layer replay supplies intermediate activations, with checkpoint storage accounted for separately.
+For sequence length $T$, head dimension $d$, and tile or chunk width $C$, attention vectors and row statistics occupy $O(Td)$ storage per head. Pairwise products reside in bounded tiles. Dense attention arithmetic is $O(T^2d)$. Chunked memory occupies $O(Td+TC+(T/C)d^2)$ auxiliary storage per head for token coefficients, within-chunk products, and boundary states. Both storage expressions are linear in $T$ at fixed $d$ and $C$. Layer replay supplies intermediate activations, with checkpoint storage accounted for separately.
 
 \section{Evaluation Specification}
 \label{app:evaluation}
-The FlashTrace release fixes the prompts, stored responses, eligible source positions, and evidence annotations used in the quality comparison. An eligible position is an input position included in the task's attribution and deletion domain. For NIAH, this domain follows the released token selection; VT and HotpotQA recovery select from the passage body.
+Qwen3-8B uses the released prompts, stored responses, eligible source positions, and evidence annotations. Qwen3.5 NIAH uses new key/value assignments on fixed templates. Table~\ref{tab:qwen35-quality} specifies the Qwen3.5 examples for each task. An eligible position is an input position included in the task's attribution and deletion domain. For NIAH, this domain follows the released token selection. VT and HotpotQA recovery select from the passage body.
 
 \paragraph{Deletion scores.}
 For a signed source vector $A$, DT ranks tokens by $A_i$ for RISE and by $\max(A_i,0)$ for MAS. The evaluator records 21 response scores across 20 deletion steps. Each score sums log-probabilities over the complete fixed response plus EOS. Full-input and fully-deleted scores define the normalization endpoints. The normalized values are clipped to $[0,1]$ and made nonincreasing by a cumulative minimum. The case-study curves use the positive ranking and share these endpoints between DT and FT for each model and example.
 
 \paragraph{Baseline comparisons.}
-RISE/MAS and NIAH baseline values use the published task aggregates accompanying FlashTrace. VT and HotpotQA recovery compare all seven methods on the same 448 inputs. The paired development comparison uses the same inputs and stored responses for DT and FT on each model, with one FT recursive step for faithfulness and three for recovery.
+VT and HotpotQA recovery compare all seven methods on the same 448 inputs. The paired development comparison uses the same inputs and stored responses for DT and FT on each model, with one FT recursive step for faithfulness and three for recovery.
 
 \paragraph{Recovery targets and budgets.}
-NIAH selects the highest positive-scoring eligible tokens up to a 10\% budget. VT scores the cached answer tokens and ranks positive body-token scores. Its H2/H4/H6/H10 budgets are 10\%/10\%/20\%/30\%. HotpotQA scores the full response, sums signed token scores within each body sentence, and selects the longest ranked sentence prefix within a 10\% body-token budget. Recall compares these selections with the annotated evidence tokens for NIAH/VT and supporting sentences for HotpotQA.
+NIAH selects the top 10\% of eligible input tokens ranked by positive-part attribution scores. VT scores the cached answer tokens and ranks positive body-token scores. Its H2/H4/H6/H10 budgets are 10\%/10\%/20\%/30\%. HotpotQA scores the full response, ranks native body sentences by the sum of their positive token contributions, and selects the longest ranked sentence prefix within 30\% of all body tokens. NIAH/VT report the fraction of annotated evidence tokens recovered. HotpotQA reports Full-support Recall@30\%. Each example scores one if every official supporting fact is selected and zero otherwise. The reported value is the mean across examples.
 
 \input{results/development_table}
 
@@ -173,7 +179,7 @@ Figure~\ref{fig:tiling-cost} compares dense and tiled finite propagation on the 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{results/figures/deltatrace-tiling-cost.pdf}
-\caption{\textbf{Dense and tiled finite propagation on three released Qwen3-8B examples.} Complete warm attribution latency is the median of repeated calls. Memory is peak allocated device memory, including resident weights. Each input keeps its original prompt and full stored response. The three groups are distinct tasks and response lengths; bars show the measured examples.}
+\caption{\textbf{Dense and tiled finite propagation on three released Qwen3-8B examples.} Complete warm attribution latency is the median of repeated calls. Memory is peak allocated device memory, including resident weights. Each input keeps its original prompt and full stored response. The three groups are distinct tasks and response lengths. Bars show the measured examples.}
 \label{fig:tiling-cost}
 \end{figure}
 
@@ -190,7 +196,7 @@ The Qwen3.5 comparison processes the same 16 examples serially and in batches of
 \section{Counterfactual Credit and Policy Learning}
 \label{app:credit}
 
-The response attribution studied here suggests a broader research direction: propagating finite reward differences to actions that contribute to them. The connection to reinforcement learning is particularly direct when counterfactual returns are averaged exactly. The following identity expresses the familiar action-independent-baseline principle \citep{sutton1999policy} in counterfactual form. COMA uses the related construction to assign credit by averaging one agent's action while fixing the others \citep{foerster2018counterfactual}.
+The response attribution studied here suggests a broader research direction based on propagating finite reward differences to actions that contribute to them. The connection to reinforcement learning is particularly direct when counterfactual returns are averaged exactly. The following identity expresses the familiar action-independent-baseline principle \citep{sutton1999policy} in counterfactual form. COMA uses the related construction to assign credit by averaging one agent's action while fixing the others \citep{foerster2018counterfactual}.
 
 Let $h$ be a decision history and $\pi$ a fixed continuation policy. Write $G^\pi(h,a;\xi)$ for the integrable return obtained by setting the current action to $a$ and subsequently following $\pi$, with $\xi$ supplying environment and policy randomness. Define
 \begin{equation}
@@ -223,4 +229,4 @@ V^{\pi_\theta}(h)\sum_a\pi_\theta(a\mid h)\nabla_\theta\log\pi_\theta(a\mid h)
 Subtracting this term proves the result. Credit and action value serve as weights in the score-function update.
 \end{proof}
 
-This equality provides a concrete target for extending finite attribution to learning: a reward-level construction whose averaged action credit recovers the advantage. The resulting research questions concern how computational or environmental structure can make this credit efficient to estimate, how reference choices and coupled rollouts affect its variance, and how the estimate behaves when a trajectory is extended by steps irrelevant to the reward. These questions connect signed attribution to the quality and temporal stability of a learning signal.
+This equality provides a concrete target for extending finite attribution to learning. The averaged action credit of a reward-level construction should recover the advantage. The resulting research questions concern how computational or environmental structure can make this credit efficient to estimate, how reference choices and coupled rollouts affect its variance, and how the estimate behaves when a trajectory is extended by steps irrelevant to the reward. These questions connect signed attribution to the quality and temporal stability of a learning signal.

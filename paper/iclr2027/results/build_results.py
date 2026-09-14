@@ -17,7 +17,7 @@ OUT.mkdir(exist_ok=True)
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--tables-only', action='store_true', help='Update quality tables without rebuilding unrelated figures.')
 args = parser.parse_args()
-plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 8.4,
+plt.rcParams.update({'font.family': 'Times New Roman', 'mathtext.fontset': 'stix', 'font.size': 8.4,
                      'axes.titlesize': 9.4, 'axes.labelsize': 8.4,
                      'xtick.labelsize': 8, 'ytick.labelsize': 8,
                      'pdf.fonttype': 42, 'ps.fonttype': 42,

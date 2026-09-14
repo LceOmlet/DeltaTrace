@@ -5,10 +5,10 @@ plus 8% of their span, rounded outward to 5 pp (span < 25) or 10 pp.
 The input percentages and timing records are never rescaled in the exports.
 Only the radar's geometric radius is normalized to its labeled axis range.
 """
-import csv
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 
 import matplotlib
@@ -16,6 +16,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FixedLocator, FuncFormatter
+from matplotlib.transforms import ScaledTranslation
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
@@ -27,7 +28,7 @@ TASKS = [
     ('niah_mq_q2', 'MQ-Q2'), ('niah_mq_q4', 'MQ-Q4'), ('niah_mq_q8', 'MQ-Q8'),
     ('niah_mv_v2', 'MV-V2'), ('niah_mv_v4', 'MV-V4'), ('niah_mv_v8', 'MV-V8'),
     ('vt_h2_c3', 'VT-H2'), ('vt_h4_c1', 'VT-H4'),
-    ('vt_h6_c1', 'VT-H6†'), ('vt_h10_c1', 'VT-H10‡'), ('hotpotqa_long', 'HotpotQA')]
+    ('vt_h6_c1', 'VT-H6†'), ('vt_h10_c1', 'VT-H10‡'), ('hotpotqa_long', 'HotpotQA‡')]
 METHODS = ['DT', 'FT', 'Perturbation', 'REAGENT', 'CLP', 'IFR', 'AttnLRP']
 STYLE = {
     'DT': ('#1769AA', 'o', '-', 1.45),
@@ -45,17 +46,28 @@ TIME_NAMES = {'DeltaTrace': 'DT', 'FlashTrace': 'FT'}
 sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
 
 
-def load_records():
-    recall_path = PAPER / 'results/all_methods.csv'
-    time_path = ROOT / 'experiments/efficiency/curve_data.json'
-    verification = json.loads((PAPER / 'results/verification.json').read_bytes())
-    assert verification['status'] == 'passed'
-    assert sha(recall_path) == verification['output_sha256']['all_methods.csv']
-    with recall_path.open(encoding='utf8', newline='') as stream:
-        rows = {(r['dataset'], r['method']): r for r in csv.DictReader(stream)}
+def load_recall_axes():
+    """Use the percentages printed in the manuscript's recovery table."""
+    recall_path = PAPER / 'results/full_table.tex'
+    table = recall_path.read_text(encoding='utf8').split(r'\label{tab:recovery}', 1)[1]
+    task_names = dict(zip(
+        ['MQ-Q2', 'MQ-Q4', 'MQ-Q8', 'MV-V2', 'MV-V4', 'MV-V8',
+         'VT-H2-C3', 'VT-H4-C1', 'VT-H6-C1', 'VT-H10-C1', 'HotpotQA'],
+        [task for task, _ in TASKS]))
+    columns = ['Perturbation', 'REAGENT', 'CLP', 'IFR', 'AttnLRP', 'FT', 'DT']
+    rows = {}
+    for line in table.splitlines():
+        cells = [cell.strip() for cell in line.split('&')]
+        if cells[0] not in task_names:
+            continue
+        values = [float(re.sub(r'[^0-9.]', '', cell)) for cell in cells[3:]]
+        rows[task_names[cells[0]]] = {
+            'values': dict(zip(columns, values)),
+            'budget': float(re.sub(r'[^0-9.]', '', cells[2])) / 100,
+        }
     axes = []
     for task, label in TASKS:
-        values = {m: 100 * float(rows[task, m]['Recovery']) for m in METHODS}
+        values = rows[task]['values']
         low, high = min(values.values()), max(values.values())
         span = high - low
         step = 5 if span < 25 else 10
@@ -63,8 +75,16 @@ def load_records():
         upper = min(100, step * math.ceil((high + .08 * span) / step))
         assert lower < upper and all(lower <= v <= upper for v in values.values())
         axes.append(dict(dataset=task, label=label, minimum=lower, maximum=upper,
-                         budget=float(rows[task, 'DT']['RecoveryBudgetFraction']),
-                         metric=rows[task, 'DT']['RecoveryMetric'], recall_percent=values))
+                         budget=rows[task]['budget'],
+                         metric='Full-support Recall' if task == 'hotpotqa_long' else 'token Recall',
+                         recall_percent=values))
+    return axes
+
+
+def load_records():
+    recall_path = PAPER / 'results/full_table.tex'
+    time_path = ROOT / 'experiments/efficiency/curve_data.json'
+    axes = load_recall_axes()
     timing = json.loads(time_path.read_bytes())
     assert len(timing['local']) == 21 and len(timing['published']) == 35
     return axes, timing, {str(p.relative_to(ROOT)).replace('\\', '/'): sha(p)
@@ -72,7 +92,7 @@ def load_records():
 
 
 def draw(axes, timing):
-    plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 8,
+    plt.rcParams.update({'font.family': 'Times New Roman', 'mathtext.fontset': 'stix', 'font.size': 8,
                          'axes.labelsize': 8, 'xtick.labelsize': 8, 'ytick.labelsize': 8,
                          'text.color': '#263442', 'axes.labelcolor': '#263442',
                          'pdf.fonttype': 42, 'svg.fonttype': 'none',
@@ -112,7 +132,13 @@ def draw(axes, timing):
         ha = 'center' if abs(sx)<.1 else 'left' if sx>0 else 'right'
         va = 'bottom' if sy>.7 else 'top' if sy<-.8 else 'center'
         label_radius = 1.24 if -.8 < sy < -.6 else 1.12
-        t = radar.text(angle, label_radius, f"{axis['label']}\n{axis['minimum']}–{axis['maximum']}",
+        axis_range = f"{axis['minimum']}–{axis['maximum']}"
+        label = f"{axis['label']}\n{axis_range}"
+        label_transform = radar.transData
+        if axis['dataset'] == 'hotpotqa_long':
+            label = f"{axis['label']}\nFull-support\n{axis_range}"
+            label_transform = radar.transData + ScaledTranslation(-.14, -.16, fig.dpi_scale_trans)
+        t = radar.text(angle, label_radius, label, transform=label_transform,
                        fontsize=8, ha=ha, va=va, linespacing=1.05, clip_on=False)
         labels.append(t)
     text(.02, 3.84, '(a) Recall (%)', weight='bold')
@@ -225,7 +251,7 @@ def main():
                    successful_timing_points=sum(r['status']=='ok' for r in timing['local']+timing['published']),
                    oom_points=sum(r['status']=='oom' for r in timing['local']),
                    time_scope={k:timing[k] for k in ('new_curves_timing_scope','published_reference_scope')},
-                   ft_recall_scope='FT_K3 for VT and HotpotQA; released FT recovery for NIAH.',
+                   ft_recall_scope='FT K3, as reported in the manuscript recovery table.',
                    sources=sources, builder_sha256=sha(Path(__file__)),
                    outputs={f'deltatrace-recall-time.{s}':sha(OUT/f'deltatrace-recall-time.{s}') for s in ('pdf','svg','png')},
                    outside_labels=outside, label_collisions=collisions,
