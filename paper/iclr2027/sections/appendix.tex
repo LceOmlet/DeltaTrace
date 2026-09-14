@@ -24,13 +24,13 @@ Replacing a node's contribution by the contributions of its parents therefore pr
 
 \subsection{Finite attention normalization}
 \label{app:softmax}
-For an attention row $p_b=\sm(z_b)$, $b\in\{0,1\}$, the logarithmic mean and its sum are
+For an attention row $p_b=\sm(z_b)$, $b\in\{0,1\}$, the finite rule first converts changes in log-probabilities into changes in probabilities. The coefficient of this conversion is the logarithmic mean $\ell_i$. We define it and its sum as
 \begin{equation}
 \ell_i=\frac{p_{1,i}-p_{0,i}}{\log p_{1,i}-\log p_{0,i}},\qquad
 \tau=\sum_i\ell_i,
 \label{eq:logmean}
 \end{equation}
-with $\ell_i=p_{0,i}$ at coincident probabilities. All quantities are evaluated on the common unmasked support.
+with $\ell_i=p_{0,i}$ at coincident probabilities. Dividing by $\tau$ gives weights that sum to one for the row averages below. All quantities are evaluated on the common unmasked support.
 \begin{proposition}[Finite attention normalization]
 For finite logits on a common support,
 \begin{equation}
@@ -51,12 +51,7 @@ Substitution proves Equation~\ref{eq:softmax}. For a target coordinate $y$,
 \begin{equation}
 \D\log p_y=\left(e_y-\frac{\ell}{\tau}\right)^\top\D z.
 \end{equation}
-The coincident-probability definition follows from the continuous limit of the logarithmic mean. The score operator is symmetric positive semidefinite. For $w_i=\ell_i/\tau$,
-\begin{equation}
-u^\top\left(\diag(\ell)-\frac{\ell\ell^\top}{\tau}\right)u
-=\tau\left(\sum_iw_i u_i^2-\left(\sum_iw_i u_i\right)^2\right)\geq0.
-\end{equation}
-This is the weighted variance of $u$ multiplied by $\tau$.
+The coincident-probability definition follows from the continuous limit of the logarithmic mean.
 
 \end{proof}
 The operator is symmetric. For an incoming coefficient $u_i$ at probability $p_i$, the coefficient at its query--key score $z_i$ is
@@ -69,7 +64,7 @@ The response coefficient for a log-softmax target is $m_z=e_y-\ell/\tau$, where 
 
 \subsection{Finite operator rules}
 \label{app:operators}
-For attention output $Y=PV$, Equation~\ref{eq:pv} gives the coefficients $m_V=\bar P^\top U$ and $m_P=U\bar V^\top$ for an upstream coefficient $U$.
+For attention output $Y=PV$, Equation~\ref{eq:pv} gives the coefficients $M_V=\bar P^\top M_Y$ and $M_P=M_Y\bar V^\top$ for an incoming coefficient matrix $M_Y$.
 
 Query--key scores use the symmetric product identity,
 \begin{equation}
@@ -156,13 +151,13 @@ For sequence length $T$, head dimension $d$, and tile or chunk width $C$, attent
 Qwen3-8B uses the released prompts, stored responses, eligible source positions, and evidence annotations. Qwen3.5 NIAH uses new key/value assignments on fixed templates. Table~\ref{tab:qwen35-quality} specifies the Qwen3.5 examples for each task. An eligible position is an input position included in the task's attribution and deletion domain. For NIAH, this domain follows the released token selection. VT and HotpotQA recovery select from the passage body.
 
 \paragraph{Deletion scores.}
-For a signed source vector $A$, DT ranks tokens by $A_i$ for RISE and by $\max(A_i,0)$ for MAS. The evaluator records 21 response scores across 20 deletion steps. Each score sums log-probabilities over the complete fixed response plus EOS. Full-input and fully-deleted scores define the normalization endpoints. The normalized values are clipped to $[0,1]$ and made nonincreasing by a cumulative minimum. The case-study curves use the positive ranking and share these endpoints between DT and FT for each model and example.
+For token attribution scores $A$, DT ranks tokens by $A_i$ for RISE and by $\max(A_i,0)$ for MAS. The evaluator records 21 response scores across 20 deletion steps. Each score sums log-probabilities over the complete fixed response plus EOS. Replacing all eligible tokens with EOS gives the attribution reference. Full-input and fully-deleted scores define the normalization endpoints. The normalized values are clipped to $[0,1]$ and made nonincreasing by a cumulative minimum. For MAS, the remaining attribution share is the positive-score sum over undeleted tokens divided by the initial positive-score sum over eligible tokens. We add its absolute difference from the normalized response score to that score, clip to $[0,1]$, and rescale the resulting curve to $[0,1]$ by its minimum and maximum. MAS is the trapezoidal area under this curve. The case-study curves use the positive ranking and share these endpoints between DT and FT for each model and example.
 
 \paragraph{Baseline comparisons.}
 VT and HotpotQA recovery compare all seven methods on the same 448 inputs. The paired development comparison uses the same inputs and stored responses for DT and FT on each model, with one FT recursive step for faithfulness and three for recovery.
 
 \paragraph{Recovery targets and budgets.}
-NIAH selects the top 10\% of eligible input tokens ranked by positive-part attribution scores. VT scores the cached answer tokens and ranks positive body-token scores. Its H2/H4/H6/H10 budgets are 10\%/10\%/20\%/30\%. HotpotQA scores the full response, ranks native body sentences by the sum of their positive token contributions, and selects the longest ranked sentence prefix within 30\% of all body tokens. NIAH/VT report the fraction of annotated evidence tokens recovered. HotpotQA reports Full-support Recall@30\%. Each example scores one if every official supporting fact is selected and zero otherwise. The reported value is the mean across examples.
+For NIAH, DT attributes the complete response plus EOS. We select the top 10\% of eligible input tokens ranked by positive-part attribution scores. VT scores the answer tokens and ranks positive body-token scores. Its H2/H4/H6/H10 budgets are 10\%/10\%/20\%/30\%. HotpotQA scores the full response, ranks passage sentences by the sum of their positive token contributions, and selects the longest ranked sentence prefix within 30\% of all body tokens. NIAH/VT report the fraction of annotated evidence tokens recovered. HotpotQA reports Full-support Recall@30\%. Each example scores one if every official supporting fact is selected and zero otherwise. The reported value is the mean across examples.
 
 \input{results/development_table}
 
@@ -229,4 +224,4 @@ V^{\pi_\theta}(h)\sum_a\pi_\theta(a\mid h)\nabla_\theta\log\pi_\theta(a\mid h)
 Subtracting this term proves the result. Credit and action value serve as weights in the score-function update.
 \end{proof}
 
-This equality provides a concrete target for extending finite attribution to learning. The averaged action credit of a reward-level construction should recover the advantage. The resulting research questions concern how computational or environmental structure can make this credit efficient to estimate, how reference choices and coupled rollouts affect its variance, and how the estimate behaves when a trajectory is extended by steps irrelevant to the reward. These questions connect signed attribution to the quality and temporal stability of a learning signal.
+This equality provides a concrete target for extending finite attribution to learning. The averaged action credit of a reward-level construction should recover the advantage.
