@@ -4,7 +4,7 @@
 
 Input attribution assigns scores to the words in a prompt to explain a model's response. A reasoning response depends on both the information available and the computations that select and combine it \citep{ferrando2024information}. Figure~\ref{fig:overview}(d) shows a passage containing a playwright, William Shakespeare, and a composer, William Walton. The names supply candidate answers, and the phrase ``the author of the play'' specifies which role to use. An explanation should follow both the supplied content and the control that directs its use. It should also distinguish words that support the response from words that oppose it.
 
-We ask how replacing selected prompt tokens would change the model's score for a chosen response span. The reference replaces these source tokens with end-of-sequence (EOS) tokens at the same positions. Both executions score the same target span using the fixed response prefix. The target can be an answer span or the complete reasoning and answer. We assign each source token a signed share of the resulting log-probability difference, so the contributions add across words or passages.
+We ask how replacing selected prompt tokens would change the model's score for a chosen response span. The reference replaces these source tokens with a common reference token at the same positions. Both executions score the same target span using the fixed response prefix. The target can be an answer span or the complete reasoning and answer. We assign each source token a signed share of the resulting log-probability difference, so the contributions add across words or passages.
 
 \begin{figure}[t]
 \centering
@@ -26,4 +26,4 @@ The difficulty is that content and control change together. Changing a token can
 \item \textbf{Efficient computation.} Finite reverse propagation uses FlashAttention-style tiles \citep{dao2022flashattention} and Flash Linear Attention (FLA) chunks \citep{yang2024fla}. Auxiliary storage grows linearly with sequence length at fixed model dimensions and chunk size.
 \end{itemize}
 
-On Qwen3-8B retrieval and reasoning tasks, \dt{} achieves the lowest deletion-faithfulness scores on most tasks and the highest evidence recovery across the six needle-in-a-haystack tasks (Section~\ref{sec:evaluation}). Qwen3.5-9B measurements evaluate finite reverse propagation through attention and gated memory. Appendix~\ref{app:credit} discusses the connection between counterfactual return differences and policy advantages \citep{sutton1999policy,foerster2018counterfactual}.
+On Qwen3-8B retrieval and reasoning tasks, \dt{} achieves the lowest deletion-faithfulness scores on most tasks and the highest evidence recovery across the six needle-in-a-haystack tasks (Section~\ref{sec:evaluation}). On Qwen3.5-9B, \dt{} lowers RISE on 10 of 13 tasks and MAS on 12 relative to FlashTrace.

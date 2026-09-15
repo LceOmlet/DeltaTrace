@@ -141,7 +141,7 @@ The identity follows from $\D r=(2\ip{\bar x}{\D x}/d)/(r_0+r_1)$ and $\D(r^{-1}
 Native endpoint queries, keys, values, and log-normalizers determine the probabilities within each FlashAttention tile. The first sweep accumulates the logarithmic-mean normalizers and weighted centers in Equation~\ref{eq:softmax-vjp}. Subsequent sweeps accumulate query, key, and value coefficients. Endpoint averages reside in linear-size buffers or are computed inside the tiles.
 
 \paragraph{Memory.}
-The implementation processes 64-token chunks using FLA's native chunk-state adjoints and batched contractions with saved endpoint states. An associative affine scan computes the finite decay contribution. Convolution and surrounding projections use the installed model primitives and their linear transpose actions.
+The implementation processes 64-token chunks using FLA's native chunk-state adjoints and batched contractions with saved endpoint states. An associative affine scan computes the finite decay contribution. Convolutions and linear projections propagate coefficients through their transpose operations.
 
 \paragraph{Storage.}
 For sequence length $T$, head dimension $d$, and tile or chunk width $C$, attention vectors and row statistics occupy $O(Td)$ storage per head. Pairwise products reside in bounded tiles. Dense attention arithmetic is $O(T^2d)$. Chunked memory occupies $O(Td+TC+(T/C)d^2)$ auxiliary storage per head for token coefficients, within-chunk products, and boundary states. Both storage expressions are linear in $T$ at fixed $d$ and $C$. Layer replay supplies intermediate activations, with checkpoint storage accounted for separately.
@@ -191,7 +191,7 @@ The Qwen3.5 comparison processes the same 16 examples serially and in batches of
 \section{Counterfactual Credit and Policy Learning}
 \label{app:credit}
 
-The response attribution studied here suggests a broader research direction based on propagating finite reward differences to actions that contribute to them. The connection to reinforcement learning is particularly direct when counterfactual returns are averaged exactly. The following identity expresses the familiar action-independent-baseline principle \citep{sutton1999policy} in counterfactual form. COMA uses the related construction to assign credit by averaging one agent's action while fixing the others \citep{foerster2018counterfactual}.
+Under a fixed continuation policy, the expected return difference between an action and a reference action drawn from that policy equals the action's advantage. This identity expresses the action-independent-baseline principle \citep{sutton1999policy} in counterfactual form. COMA uses the related construction to assign credit by averaging one agent's action while fixing the others \citep{foerster2018counterfactual}.
 
 Let $h$ be a decision history and $\pi$ a fixed continuation policy. Write $G^\pi(h,a;\xi)$ for the integrable return obtained by setting the current action to $a$ and subsequently following $\pi$, with $\xi$ supplying environment and policy randomness. Define
 \begin{equation}
