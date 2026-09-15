@@ -10,6 +10,7 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Polygon, Rectangle, Circle
 from matplotlib.path import Path
 from matplotlib.transforms import Affine2D
+from draw_reverse_examples import draw_overview_top
 
 INK='#233547'
 MUTED='#748293'
@@ -92,122 +93,14 @@ def draw(data):
                 ax.add_patch(Rectangle((x+j*cw,y+i*ch),cw-.024,ch-.024,
                                       fc=color,ec='white',lw=.5))
 
-    def allocation_cards(x,y,left_label,right_label,left_formula,right_formula,out,formula_size=24):
-        # This is an identity defining local maps, not an extra output to compute.
-        text(x-.04,y+.69,out[:-1]+'=$',22,ha='left',va='center')
-        for xx,w,label,formula,fc,color in [
-                (x+.96,1.20,left_label,left_formula,PALE_BLUE,BLUE),
-                (x+2.41,1.30,right_label,right_formula,PALE_CONTROL,CONTROL)]:
-            box(xx,y+.36,w,.66,fc,color,.08,.9)
-            text(xx+w/2,y,label,20.4,color,weight='bold',ha='center')
-            text(xx+w/2,y+.69,formula,formula_size,color,ha='center',va='center')
-        text(x+2.285,y+.69,'+',21,ha='center',va='center')
-        text(x+1.855,y+1.36,'Derive reverse rules',20.4,MUTED,ha='center')
-        arrow((x+1.855,y+1.76),(x+1.855,y+2.02),PURPLE,1.6,12)
-
-    # (a) The paired endpoint graph and the finite reverse coefficient.
-    heading(.22,.14,'a','From input change to credit')
-    text(.23,.56,r'1  Two forward runs; fixed response $y$',20.4,MUTED)
-    left,right,reverse=1.47,4.67,3.07
-    text(left,1.00,r'$F(x_0;y)$',23,ha='center')
-    text(right,1.00,r'$F(x_1;y)$',23,ha='center')
-    text(reverse,.94,r'$\Delta F$',25,INK,ha='center')
-    text(2.34,1.21,'−',20.4,MUTED,ha='center')
-    text(3.79,1.21,'+',20.4,MUTED,ha='center')
-    arrow((2.15,1.14),(2.66,1.14),MUTED,1.2,10)
-    arrow((3.99,1.14),(3.48,1.14),MUTED,1.2,10)
-    for xc,fc,ec in [(left,'#F5F7F9','#BBC9D5'),(right,PALE_BLUE,'#87A8C7')]:
-        arrow((xc,3.02),(xc,1.39),'#A5B3BF',2.2,15,zorder=1)
-        plane(xc-.93,1.64,1.86,.44,'MLP + skip',fc,ec)
-        plane(xc-.93,2.35,1.86,.44,'Attn. / GDN',fc,ec)
-        for yy in (2.14,2.21,2.28):
-            ax.add_patch(Circle((xc,yy),.013,fc=MUTED,ec='none',zorder=3))
-    for xx in (.24,5.90):
-        text(xx,2.27,'Forward',20.4,MUTED,ha='center',va='center',rotation=90)
-    for yy in [1.86,2.57]:
-        ax.plot([2.40,3.74],[yy,yy],color='#C2B3DA',lw=1.1,ls=(0,(2.4,2)))
-        ax.add_patch(Circle((reverse,yy),.047,fc=PURPLE,ec='white',lw=.8,zorder=6))
-    text(reverse,1.46,r'$m_F=1$',22,PURPLE,ha='center')
-    arrow((reverse,1.90),(reverse,3.20),PURPLE,3.2,18,zorder=5)
-    text(reverse+.30,2.48,'Reverse',20.4,PURPLE,ha='center',va='center',rotation=270,
-         bbox=dict(facecolor='white',edgecolor='none',pad=1.0))
-    text(reverse,3.30,r'$m_i$',23,PURPLE,ha='center')
-    box(left-.93,3.08,1.86,.44,'#F5F7F9','#BCC9D4',.06)
-    text(left,3.30,'EOS EOS …',20.4,MUTED,ha='center',va='center')
-    box(right-.93,3.08,1.86,.44,PALE_BLUE,'#86A6C3',.06)
-    text(right,3.30,'source words' if roles else '9153566',20.4,BLUE,ha='center',va='center')
-    text(left,3.64,r'Reference $x_0$',20.4,MUTED,ha='center')
-    text(right,3.64,r'Original $x_1$',20.4,BLUE,ha='center')
-    text(.27,4.18,'2  Local rules',21.2,BLUE,weight='bold')
-    text(.27,4.55,'from both runs',20.4,MUTED)
-    text(4.30,4.43,r'$\Delta h=D_f\,\Delta a$',24,BLUE,ha='center',va='center')
-    text(.27,4.97,'3  Reverse',21.2,PURPLE,weight='bold')
-    text(.27,5.45,r'propagate coefficients $m$',20.4,MUTED)
-    text(4.30,5.22,r'$m_a=D_f^{\top}m_h$',24,PURPLE,ha='center',va='center')
-    text(.27,5.89,'4  Token score',21.2,INK,weight='bold')
-    text(4.30,6.05,r'$A_i=\langle m_i,\,\Delta e_i\rangle$',24,PURPLE,ha='center',va='center')
-    ax.plot([6.19,6.19],[.19,6.30],color=LINE,lw=.8)
-
-    # (b) Attention: selection weights multiply the carried values.
-    heading(6.45,.14,'b','Attention')
-    text(6.48,.55,'Select and carry',20.4,MUTED)
-    matrix(6.58,1.00,4,4,.17,.17,'#C5B18E')
-    matrix(7.95,1.00,4,2,.17,.17,'#8FAED0')
-    matrix(9.00,1.00,4,2,.17,.17,'#B2BFCA')
-    text(7.58,1.18,'×',23,MUTED,ha='center')
-    text(8.63,1.18,'=',23,MUTED,ha='center')
-    text(6.91,1.77,r'$P$',23,CONTROL,ha='center')
-    text(8.11,1.77,r'$V$',23,BLUE,ha='center')
-    text(9.16,1.77,r'$Y$',23,ha='center')
-    allocation_cards(10.08,.55,'Content','Selection',r'$\bar P\,\Delta V$',r'$\Delta P\,\bar V$',r'$\Delta Y$')
-    text(6.48,2.16,r'$\bar P=(P_0+P_1)/2,\quad\bar V=(V_0+V_1)/2$',20.4,MUTED)
-    text(6.48,2.66,'Reverse',20.4,PURPLE,weight='bold')
-    text(13.77,2.82,r'$M_V=\bar P^{\top}M_Y\quad M_P=M_Y\bar V^{\top}$',23,PURPLE,ha='right',va='center')
-    ax.plot([6.45,13.80],[3.22,3.22],color=LINE,lw=.8)
-
-    # (c) GDN: memory content, control, output gating, and reverse coefficients.
-    text(464.4/72,254/72,'(c)',27.5,'#20252b',ha='left',va='center',weight='bold')
-    text(507.6/72,254/72,'Gated DeltaNet',27.5,'#20252b',ha='left',va='center',weight='bold')
-    text(466.56/72,289/72,'Store and retrieve',23,'#20252b',ha='left',va='center')
-    ax.add_patch(Rectangle((482/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((494/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((506/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((518/72,323/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((482/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((494/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((506/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((518/72,335/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((482/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((494/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((506/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((518/72,347/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((482/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((494/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((506/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((518/72,359/72),10/72,10/72,fc='#86a8c4',ec='none'))
-    ax.add_patch(Rectangle((651/72,323/72),12/72,10/72,fc='#a9bbc8',ec='none'))
-    ax.add_patch(Rectangle((651/72,335/72),12/72,10/72,fc='#a9bbc8',ec='none'))
-    ax.add_patch(Rectangle((651/72,347/72),12/72,10/72,fc='#a9bbc8',ec='none'))
-    ax.add_patch(Rectangle((651/72,359/72),12/72,10/72,fc='#a9bbc8',ec='none'))
-    arrow((537/72,346/72),(640/72,346/72),'#657581',1.8,14)
-    text(505/72,387/72,'Memory',23,'#245c89',ha='center',va='center')
-    text(657/72,387/72,'Readout',23,'#20252b',ha='center',va='center')
-    text(790/72,290/72,'Content',24,'#245c89',ha='center',va='center',weight='bold')
-    text(933/72,290/72,'Control',24,'#785823',ha='center',va='center',weight='bold')
-    box(724/72,314/72,132/72,54/72,'#ecf4fb','#86a8c4',4/72,1.0)
-    box(868/72,314/72,130/72,54/72,'#fcf8ed','#785823',4/72,1.0)
-    text(790/72,341/72,'Stored values',22,'#245c89',ha='center',va='center')
-    text(933/72,341/72,'Memory use',23,'#785823',ha='center',va='center')
-    arrow((790/72,370/72),(821/72,420/72),'#67448f',1.9,12)
-    arrow((933/72,370/72),(900/72,420/72),'#67448f',1.9,12)
-    text(861/72,391/72,'Reverse',23,'#67448f',ha='center',va='center')
-    text(861/72,440/72,'Input token scores',23,'#67448f',ha='center',va='center')
+    # Complete attribution on the left, backward-calculation examples on the right.
+    artists.extend(draw_overview_top(ax))
 
     # (d) A direct lookup makes source and answer visually match.
     upper_artists=set(ax.get_children())
     ax.plot([.22,13.80],[4.70,4.70],color=LINE,lw=.85)
     heading(.22,4.90,'d','Choose the playwright, not the composer.' if roles else 'Find the names. Recover the numbers.',21.2)
-    text(13.77,5.00,'Qwen3.5, MoreHopQA example 1' if roles else 'Qwen3.5, retrieval example 6',17,MUTED,ha='right')
+    text(13.77,5.00,'MoreHopQA example 1' if roles else 'Retrieval example 6',17,MUTED,ha='right')
     owners=[[] for _ in source]
     for i,t in enumerate(case['tokens']):
         for j in range(*t['char_span']):owners[j].append(i)
@@ -334,13 +227,13 @@ def draw(data):
         'selection_reason':'same-context playwright/composer role contrast with observed positive and negative name-span totals' if roles else 'direct name-to-number lookup; short exact evidence spans and answers',
         'mechanism_panel_areas':{'attention':[6.45,.14,7.35,3.00],'gdn':[6.45,3.40,7.35,3.00]},
         'trace_panel_area':[.22,.14,5.97,6.20],
-        'mechanism_layout':'attention above GDN; finite change allocation right of each operator; reverse coefficients below each allocation',
+        'mechanism_layout':'complete method on the left; attention and GDN backward examples within one shared boundary on the right',
         'trace_directions':{'gray_upward':'two forward executions with the same fixed response',
                             'purple_downward':'one reverse traversal of finite coefficients, seeded with 1 at the scalar score'},
         'minimum_label_pt_at_manuscript_width':20.4*5.5/W,
-        'reading_order':['two forward executions','local rules from paired activations','reverse coefficients seeded by one','input coefficient dot embedding difference'],
-        'phase_notation':{'activation_differences':'Delta, from the two forward executions','reverse_coefficients':'m or M, propagated backward','token_score':'A_i = <m_i, Delta e_i>'},
-        'schematic_elements':'paired finite trace; PV product; GDN retain/write/read; two equally sized local content/control allocations',
+        'reading_order':['two forward executions identify the observed changes','operation-specific backward calculations connect changes to the response score','reverse coefficients reach the input embeddings','multiply matching entries and sum to form token contributions'],
+        'phase_notation':{'activation_differences':'Delta, from the two forward executions','reverse_coefficients':'m, propagated backward; subscript names the associated activation','token_score':'A_i = <m_(e_i), Delta e_i>'},
+        'schematic_elements':'paired full-method trace; attention and GDN examples of backward calculations',
         'gdn_retention_notation':'S abbreviates S_(t-1); T=alpha*S; endpoint subscripts 0 and 1 are reference and original',
         'heatmap_semantics':'unchanged raw token scores; uniformly colored matrix cells are schematic, not measured attention',
         'displayed_runs':displayed}

@@ -54,17 +54,17 @@ Substitution proves Equation~\ref{eq:softmax}. For a target coordinate $y$,
 The coincident-probability definition follows from the continuous limit of the logarithmic mean.
 
 \end{proof}
-The operator is symmetric. For an incoming coefficient $u_i$ at probability $p_i$, the coefficient at its query--key score $z_i$ is
+The operator is symmetric. For incoming coefficients $m_p$ at probabilities $p$, the coefficient at query--key score $z_i$ is
 \begin{equation}
-m_{z,i}=\ell_i(u_i-\bar u_\ell),\qquad
-\bar u_\ell=\frac{\sum_j\ell_j u_j}{\sum_j\ell_j}.
+m_{z,i}=\ell_i(m_{p,i}-\bar m_p),\qquad
+\bar m_p=\frac{\sum_j\ell_j m_{p,j}}{\sum_j\ell_j}.
 \label{eq:softmax-vjp}
 \end{equation}
 The response coefficient for a log-softmax target is $m_z=e_y-\ell/\tau$, where $e_y$ is the one-hot vector selecting the target vocabulary coordinate.
 
 \subsection{Finite operator rules}
 \label{app:operators}
-For attention output $Y=PV$, Equation~\ref{eq:pv} gives the coefficients $M_V=\bar P^\top M_Y$ and $M_P=M_Y\bar V^\top$ for an incoming coefficient matrix $M_Y$.
+For the attention example with output $Y=PV$, Equation~\ref{eq:pv} gives the coefficients $m_V=\bar P^\top m_Y$ and $m_P=m_Y\bar V^\top$ for an incoming coefficient matrix $m_Y$.
 
 Query--key scores use the symmetric product identity,
 \begin{equation}
@@ -93,7 +93,7 @@ RMS normalization & Analytic finite rule for $wx/\sqrt{\operatorname{mean}(x^2)+
 \end{tabular}
 \end{table}
 
-\subsection{Gated-memory recurrence}
+\subsection{Backward calculation for the Gated DeltaNet example}
 \label{app:memory}
 With column vectors and a key-by-value state $S_t\in\R^{d_k\times d_v}$, its per-token computation is
 \begin{align}
@@ -101,7 +101,7 @@ T_t&=\alpha_t S_{t-1}, & r_t&=T_t^\top k_t, \nonumber\\
 c_t&=v_t-r_t, & u_t&=\beta_t c_t, \label{eq:gdn}\\
 S_t&=T_t+k_tu_t^\top, & o_t&=S_t^\top q_t. \nonumber
 \end{align}
-The query includes the model's fixed attention scale. The state $T_t$ contains retained evidence, $r_t$ reads existing content, and $u_t$ writes the update. One endpoint ordering constructs a finite map $D_{\mathrm{GDN}}^{01}$ for the complete memory recurrence through
+The query includes the model's fixed attention scale. $T_t$ is the retained state, $r_t$ is its readout at key $k_t$, and $u_t$ is the gated difference between the incoming value and that readout. One endpoint ordering constructs a finite map $D_{\mathrm{GDN}}^{01}$ for the complete memory recurrence through
 \begin{align}
 \D T_t&=\alpha_{t,1}\D S_{t-1}+S_{t-1,0}\D\alpha_t, \nonumber\\
 \D r_t&=(\D T_t)^\top k_{t,1}+T_{t,0}^\top\D k_t, \nonumber\\
@@ -115,7 +115,7 @@ Swapping the reference and original activations used as coefficients gives $D_{\
 \qquad m_{\mathrm{in}}=\bar D_{\mathrm{GDN}}^\top m_o.
 \label{eq:gdn-symmetric}
 \end{equation}
-Here $m_o$ collects the coefficients of all readouts $o_t$ in the layer, and $m_{\mathrm{in}}$ collects those returned to the recurrence inputs. Equivalently, apply each transpose map to the same $m_o$ and average the returned coefficients. Both maps express the same finite output difference, so their mean preserves it. The recurrence assigns contributions to values, keys, queries, and both gates, carrying credit through stored evidence to earlier sources. Scalar gate nonlinearities and query/key normalization use the surrounding network's finite rules. Output gating uses the symmetric product in Table~\ref{tab:rules}, with $n_t$ the normalized readout and $s_t$ its activated output-gate vector.
+Here $m_o$ collects the coefficients of all readouts $o_t$ in the layer, and $m_{\mathrm{in}}$ collects those returned to the recurrence inputs. Equivalently, apply each transpose map to the same $m_o$ and average the returned coefficients. Both maps express the same finite output difference, so their mean preserves it. The recurrence returns coefficients for values, keys, queries, and both gates, and propagates state coefficients to earlier token positions. Scalar gate nonlinearities and query/key normalization use the surrounding network's finite rules. Output gating uses the symmetric product in Table~\ref{tab:rules}, with $n_t$ the normalized readout and $s_t$ its activated output-gate vector.
 
 \subsection{Product and normalization identities}
 For a bilinear map $B$, both

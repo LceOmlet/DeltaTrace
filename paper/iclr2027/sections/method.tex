@@ -9,81 +9,97 @@ F(x;y)=\sum_{t\in\mathcal{T}}\log p_\theta(y_t\mid x,y_{<t}),
 \end{equation}
 where $p_\theta$ is the model's next-token probability and $y_{<t}$ is the response prefix before position $t$. A higher score means the model assigns greater probability to the target span given its preceding tokens. For full-response attribution, $y$ includes the reasoning, answer, and end-of-sequence (EOS) token, and $\mathcal{T}=\{1,\ldots,L\}$. The response tokens and target positions stay fixed, while their hidden representations can change as they read the different prompts.
 
-The prompt positions chosen for explanation are the source positions. They can include context words and question words. Let $x_1$ be the original prompt and $x_0$ its reference. We construct $x_0$ by replacing all source tokens together with EOS at the same positions, preserving token alignment between the two executions. The remaining prompt tokens stay fixed. This reference text sets the zero point for attribution. The reference execution processes the full sequence, including the replacement tokens, to score the same target span. The two forward executions give $\D F=F(x_1;y)-F(x_0;y)$. A positive $\D F$ means these replacements lower the target score. We assign each source token a signed share $A_i$ of this joint score difference, with the contributions adding to $\D F$. Positive and negative token scores express support and opposition under this reference, as illustrated in Figure~\ref{fig:overview}.
+The source positions are the context or question tokens chosen for explanation. Let $x_1$ be the original prompt. Its reference $x_0$ replaces all source tokens together with EOS at the same positions (Figure~\ref{fig:overview}(a)), keeping all other prompt tokens fixed. Both executions process the full input sequence and score the same target span, giving
+\[
+\D F=F(x_1;y)-F(x_0;y).
+\]
+A positive $\D F$ means these replacements lower the target score. The attribution task is to divide this difference among the source tokens. Each token receives a signed contribution $A_i$, and adding the contributions recovers $\D F$. Positive and negative scores indicate support and opposition under this reference (Figure~\ref{fig:overview}(d)).
 
 Subscripts $0$ and $1$ denote reference and original activations, and $\D U=U_1-U_0$ denotes their difference. For source token $i$, $e_{i,0}$ is the EOS embedding and $e_{i,1}$ is its original embedding, so $\D e_i=e_{i,1}-e_{i,0}$. Tokens held fixed have zero embedding difference. The reverse computation below converts these vector differences into the scalar scores $A_i$.
 
-\subsection{Two forward runs and one reverse pass}
+\subsection{From the score difference to token contributions}
 \label{sec:reverse}
-Figure~\ref{fig:overview}(a) shows four steps. We collect paired activations in two forward executions, obtain local rules from those activations, propagate coefficients backward, and form token scores at the input. The forward executions supply the actual changes, and the reverse pass computes the coefficients that turn those changes into contributions to $\D F$.
+\dt{} replaces the local derivatives used in backpropagation to explain the measured response-score difference. Consider an activation with a single numerical input and output. Ordinary backpropagation uses the local slope at the original input. DT uses the slope between the reference and original values, obtained by dividing the output difference by the input difference. Multiplying this slope by the actual input difference recovers the actual output difference. Equal inputs use the local derivative.
 
-For an operation $h=f(a)$, $a$ collects its input activations and $h$ is its output. Let $J_f$ be the matrix of local derivatives at one execution. A Jacobian--vector product (JVP) maps an infinitesimal input change $da$ to an output change $dh$. A vector--Jacobian product (VJP) maps an incoming gradient $g_h$ back to the input gradient $g_a$.\footnote{PyTorch documentation for \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.jvp.html}{\texttt{torch.func.jvp}} and \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.vjp.html}{\texttt{torch.func.vjp}}.} Table~\ref{tab:reverse-comparison} shows the corresponding finite relations.
+The backward pass carries one coefficient for each activation entry. Multiplying a coefficient by the change in its activation gives that entry's contribution to the response-score difference. The pass starts with coefficient one at the final score, because the entire measured score difference is to be assigned. Table~\ref{tab:reverse-comparison} compares how ordinary backpropagation and DT pass their respective quantities from an operation's output to its input.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{\textbf{From gradients to finite reverse propagation.} Paired activations define the finite map $D_f$ that replaces $J_f$. Changes appear in the left column, and coefficients propagate backward in the right column.}
+\caption{\textbf{The same activation, two backward calculations.} The activation has input $a$ and output $h=f(a)$. Here $d$ denotes an infinitesimal change and $\Delta$ the observed difference between the two executions.}
 \label{tab:reverse-comparison}
-\renewcommand{\arraystretch}{1.15}
+\renewcommand{\arraystretch}{1.35}
 \begin{tabular}{@{}lcc@{}}
 \toprule
-Method & \shortstack{Change relation\\(JVP form)} & \shortstack{Backward coefficients\\(VJP form)} \\
+ & Ordinary backpropagation & \dt{} \\
 \midrule
-Gradient backpropagation & $dh=J_f\,da$ & $g_a=J_f^\top g_h$ \\
-\dt{} & $\D h=D_f\,\D a$ & $m_a=D_f^\top m_h$ \\
+Multiplier & $f'(a_1)$ & $\dfrac{\D h}{\D a}=\dfrac{h_1-h_0}{a_1-a_0}$ \\
+\addlinespace[3pt]
+Output change & $dh=f'(a_1)\,da$ & $\D h=\dfrac{\D h}{\D a}\,\D a$ \\
+\addlinespace[3pt]
+Backward calculation & $\dfrac{\partial F}{\partial a}=f'(a_1)\dfrac{\partial F}{\partial h}$ & $m_a=\dfrac{\D h}{\D a}\,m_h$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-An analytic rule constructs $D_f$ from the two executions so that $\D h=D_f\D a$. This identity specifies how the input changes account for the output change. For a scalar nonlinearity, $D_f=\D h/\D a$ is the secant slope joining the observed points, replacing the tangent slope $f'(a_1)$. At coincident inputs, it becomes the derivative. For operations with multiple inputs, the rules below specify their joint allocation. The algorithm obtains its activation differences from the two forward executions and evaluates the transpose products during the reverse pass.
+In the DT column, multiplying the coefficient from later operations by the slope expresses the same contribution at the input. Each coefficient's subscript names the activation it belongs to.
 
-The coefficient vector $m_h$ supplies a multiplier for each component of $\D h$. Their dot product $\langle m_h,\D h\rangle$ is the contribution assigned at that output. Substituting the local change relation gives $\langle m_h,D_f\D a\rangle=\langle D_f^\top m_h,\D a\rangle$. Reading off the input coefficients yields the reverse rule $m_a=D_f^\top m_h$.
+The two forward executions already provide the input and output differences. For array operations, we use the operation's formula and its original and reference values to express the output difference as a weighted sum of input differences. The multipliers form the matrix $D_f$. Linear operations use their existing weights. For a product, splitting the term involving both input changes equally between them gives equal weight to the two possible change orders. This produces the mean attention weights and mean values in Section~\ref{sec:attention}.
 
-Starting with $\D F=1\cdot\D F$, the reverse pass repeatedly rewrites weighted output changes as weighted input changes. At a residual addition, the coefficient passes to each summand. Coefficients returning from multiple consumers add. This reaches the input embeddings and gives
+The first equation below expresses the already observed differences using these constructed multipliers. The second uses the same multipliers to pass the assigned contribution backward,
 \begin{equation}
-A_i=m_i^\top\D e_i,
+\D h=D_f\D a,
+\qquad m_a=D_f^\top m_h.
+\label{eq:reverse-contribution}
+\end{equation}
+The transpose multiplies each output coefficient by the corresponding multipliers and sums the products for each input. This expresses the same contribution in terms of input changes. These multipliers replace local derivatives, and the backward coefficients replace propagated gradients. The two products have the forms of a Jacobian--vector product (JVP) and a vector--Jacobian product (VJP), respectively.\footnote{PyTorch documentation for \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.jvp.html}{\texttt{torch.func.jvp}} and \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.vjp.html}{\texttt{torch.func.vjp}}.}
+
+Repeating this calculation through the model returns coefficients for each input token's embedding. Multiplying these coefficients by the embedding changes and summing across dimensions gives the token contributions,
+\begin{equation}
+A_i=\ip{m_{e_i}}{\D e_i},
 \qquad \sum_i A_i=\D F.
 \label{eq:attribution}
 \end{equation}
-Each component of $m_i$ multiplies the corresponding embedding change, and summing those products gives the token attribution score $A_i$. A fixed token has $\D e_i=0$ and contributes zero. The scores use natural-log units (nats) and add into name, sentence, or passage scores. Appendix~\ref{app:conservation} derives the conservation identity.
+Every backward calculation preserves the contribution being divided, so the token scores add to the measured response-score difference. Positive and negative scores identify support and opposition across the chosen response span. They use natural-log units (nats) and can be summed into name, sentence, or passage contributions. A fixed token's embedding does not change, so its contribution is zero. Appendix~\ref{app:conservation} gives the full derivation.
 
-\subsection{What attention carries and selects}
+Figure~\ref{fig:overview}(a) shows the complete method. The next two subsections give examples of its backward calculations for attention and Gated DeltaNet (Figure~\ref{fig:overview}(b, c)). Linear layers, additions, activation functions, and normalizations complete the same reverse pass. Their formulas are collected in Appendix~\ref{app:operators}.
+
+\subsection{Attention example}
 \label{sec:attention}
-An attention head lets each position read its own representation and those of earlier positions. Its query describes what to retrieve, each source key describes how to match that source, and each value carries the source's content. Query--key similarity scores are normalized by softmax into attention weights. Let $P_{ij}$ be the weight with which position $i$ reads source $j$, and let the rows of $V$ contain the source value vectors. The output $Y=PV$ is their weighted sum.
+An attention product provides a first example of how \dt{} constructs an operation's backward calculation. Let $P_{ij}$ be the attention weight with which position $i$ reads source $j$, and let the rows of $V$ contain the source value vectors. The output $Y=PV$ is their weighted sum. The weights come from softmax normalization of query--key similarity scores.
 
-Changing a source can change both its value and the weight assigned to it. To separate their effects in $PV$, we consider two algebraic decompositions, with $V$ changing before $P$ or $P$ before $V$. The first order weights $\D V$ by $P_0$ and applies $\D P$ to $V_1$. The second uses $P_1$ and $V_0$, respectively. We average the two decompositions to give both orders equal weight. Writing $\bar P=(P_0+P_1)/2$ and $\bar V=(V_0+V_1)/2$, we obtain
+Let $\D P$, $\D V$, and $\D Y$ denote the observed differences in weights, values, and output between the two executions. Expanding the product gives a term involving both input changes. DT splits this term equally between the inputs, giving equal weight to the two possible change orders,
 \begin{equation}
-\D Y=
-\underbrace{\bar P\,\D V}_{\text{content change}}
-+\underbrace{\D P\,\bar V}_{\text{selection change}}.
+\begin{aligned}
+\D Y
+&=P_0\D V+\D P\,V_0+\underbrace{\D P\,\D V}_{\text{split equally}}\\
+&=\underbrace{\left(P_0+\tfrac12\D P\right)}_{\bar P}\D V
++\D P\underbrace{\left(V_0+\tfrac12\D V\right)}_{\bar V}.
+\end{aligned}
 \label{eq:pv}
 \end{equation}
-The two terms sum to the observed output difference, with the interaction $\D P\,\D V$ shared equally between them. In the running example, the name supplies content, while the requested role can change which person's information is selected.
+The terms in parentheses are the means of the original and reference weights and values. These are the two sets of local multipliers represented by $D_f$ in Equation~\ref{eq:reverse-contribution}. The mean weights multiply the value changes, and the mean values multiply the weight changes.
 
-The two forward executions supply the endpoints for $\bar P$ and $\bar V$. Given an incoming coefficient matrix $M_Y$, Equation~\ref{eq:pv} rewrites $\langle M_Y,\D Y\rangle$ as $\langle\bar P^\top M_Y,\D V\rangle+\langle M_Y\bar V^\top,\D P\rangle$. The coefficients of the two input changes are therefore
+The output coefficient $m_Y$ arrives from later operations. Weighting the two terms in the second line by this coefficient divides the output's assigned contribution between the value and weight changes. The backward calculation reuses the two multipliers, giving the same two products as ordinary backpropagation with means replacing the original activations,
 \begin{equation}
-M_V=\bar P^\top M_Y,\qquad M_P=M_Y\bar V^\top.
+\begin{aligned}
+\text{Backpropagation}\quad &
+\frac{\partial F}{\partial V}=P_1^\top\frac{\partial F}{\partial Y},
+&\quad \frac{\partial F}{\partial P}=\frac{\partial F}{\partial Y}V_1^\top,\\
+\text{DeltaTrace}\quad &
+m_V=\bar P^\top m_Y,
+&\quad m_P=m_Y\bar V^\top.
+\end{aligned}
 \label{eq:pv-reverse}
 \end{equation}
-These updates use $\bar P$, $\bar V$, and the incoming $M_Y$ directly. The identity for $\D Y$ explains their allocation. The quantities returned backward are $M_V$ and $M_P$. Both coefficient paths continue to the input representations that produced $V$ and $P$.
+Figure~\ref{fig:overview}(b) places each returned coefficient below its corresponding matrix. These coefficients continue through preceding operations to the input embeddings.
 
-Selection is relative because the attention weights in a row sum to one, so increasing one source's share reduces the total share of the others. The finite softmax rule carries this competition backward by subtracting a weighted row average from the incoming coefficients. Its weights depend on the probabilities in both executions. A source therefore receives selection credit relative to the alternatives that the same query could read. The coefficients then pass through the query--key scores to their input representations. The same construction handles the vocabulary normalization used to score each response token. Appendix~\ref{app:softmax} gives the rule and its derivation.
+Attention weights in a row sum to one, so increasing one source's weight reduces the total weight assigned to the others. The backward calculation for softmax carries this competition through a weighted row average subtracted from the incoming coefficients. Its weights depend on the probabilities in both executions. The coefficients then pass through the query--key scores to their input representations. The same construction handles the vocabulary normalization used to score each response token. Appendix~\ref{app:softmax} gives the formula and its derivation.
 
-\subsection{What memory keeps and updates}
+\subsection{Gated DeltaNet example}
 \label{sec:memory}
-Qwen3.5 interleaves attention with Gated DeltaNet memory \citep{yang2024gated}. A memory layer carries a state matrix $S_{t-1}$ from one token position to the next. This matrix stores associations between keys and values. At position $t$, the model supplies a key $k_t$, a value $v_t$, a read query $q_t$, a retention gate $\alpha_t$, and a write gate $\beta_t$. The two gates are scalars controlling how much information is kept and written.
+Gated DeltaNet provides a second example of the backward calculations designed for \dt{}, this time for recurrent linear attention \citep{yang2024gated}. Its memory stores associations between keys and values across token positions. Figure~\ref{fig:overview}(c) shows one step from the previous memory $S_{t-1}$ to the updated memory $S_t$ and its readout $o_t$. A retention gate controls how much earlier memory is kept, and a write gate controls a correction toward the current value at its key. A query reads from $S_t$ to produce $o_t$. Normalization, an output gate, and a linear projection then produce the layer output. Appendix~\ref{app:memory} gives the state equations.
 
-The update first retains $T_t=\alpha_tS_{t-1}$. Reading this retained state at key $k_t$ gives $T_t^\top k_t$, the value already stored for that key. The correction $u_t=\beta_t(v_t-T_t^\top k_t)$ writes the difference between the incoming and stored values. The new state and the output read by the query are
-\begin{equation}
-S_t=\underbrace{T_t}_{\text{retained content}}+
-\underbrace{k_tu_t^\top}_{\text{write correction}},
-\qquad o_t=S_t^\top q_t.
-\label{eq:memory-overview}
-\end{equation}
-Here $o_t$ is the memory readout at position $t$. It is normalized to $n_t$, multiplied elementwise by an activated output-gate vector $s_t$, and linearly projected to form the layer output. This sequence lets early information survive later updates and reach the response.
+Information written by an earlier token can affect a later readout, so its contribution must pass backward through the intervening memory updates. The readout coefficients $m_{o_t}$ pass backward to the memory and query. At $S_t$, the contribution from this readout joins those from later memory states. The resulting $m_{S_t}$ passes through the update to $S_{t-1}$, the value, the key, and the retention and write gates (Figure~\ref{fig:overview}(c)). These are coefficients for the recurrence's inputs. They continue through preceding operations to the input embeddings, where Equation~\ref{eq:attribution} gives token scores.
 
-Reverse coefficients first split between normalized content and the output gate. The memory readout then sends coefficients to the state and query. Reversing the updates carries them to earlier states, values, keys, and retention and write gates. The coefficients continue to the input embeddings, where Equation~\ref{eq:attribution} produces token scores. A word can therefore receive credit for providing information and for changing how that information is stored or retrieved.
-
-As in attention, the products in memory updates allow two decompositions that exchange the roles of the original and reference activations. Each choice defines a finite reverse recurrence over the complete memory sequence, and both account for the same readout changes. During the model's single reverse pass, each GDN layer applies the two recurrences to the same readout coefficients. We average the returned coefficients for values, keys, queries, and retention and write gates before continuing backward. This gives the two executions equal roles within each layer. The output product $n_t\odot s_t$ also uses symmetric allocation between content and gate changes. Appendix~\ref{app:memory} gives the finite recurrence and output-gating rules.
-
-The remaining network operations complete the same reverse pass in both model families. Linear layers use their weight matrices, additions pass coefficients to their inputs, and nonlinearities and normalizations use finite rules. Appendix~\ref{app:operators} lists the choices for each operator, including symmetric interaction allocation for attention values, query--key products, and feed-forward gating.
+The original and reference activations allow two decompositions of the same readout changes, each defining a backward calculation over the layer's complete memory sequence. To give both decompositions equal weight, each GDN layer averages their returned coefficients before propagation continues to earlier layers. Both calculations receive the same readout coefficients, and the results are averaged for each value, key, query, and gate. This averaging takes place within each layer of the model's single reverse pass. The separate output-gating product also splits contributions between its two changing inputs using their two-run means. Appendix~\ref{app:memory} gives these calculations.
