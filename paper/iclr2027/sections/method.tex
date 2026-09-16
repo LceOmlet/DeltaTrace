@@ -66,7 +66,7 @@ We next apply these rules to attention and Gated DeltaNet (Figure~\ref{fig:overv
 \label{sec:attention}
 For attention, $P_{ij}$ is the weight with which position $i$ reads source $j$, and the rows of $V$ contain source value vectors. The output $Y=PV$ is their weighted sum, with $P$ obtained by softmax normalization of query--key similarity scores.
 
-Let $\D P$, $\D V$, and $\D Y$ denote the observed differences in weights, values, and output between the two executions. Expanding the product gives a term involving both input changes. DT splits this term equally between the inputs, giving equal weight to the two possible change orders,
+We use the two-run means so that the weighted input changes sum exactly to the observed output change. Let $\D P$, $\D V$, and $\D Y$ denote the differences in weights, values, and output between the two executions. Splitting the interaction term $\D P\,\D V$ equally between the inputs gives equal weight to the two possible change orders:
 \begin{equation}
 \begin{aligned}
 \D Y
@@ -76,7 +76,7 @@ Let $\D P$, $\D V$, and $\D Y$ denote the observed differences in weights, value
 \end{aligned}
 \label{eq:pv}
 \end{equation}
-The terms in parentheses are the means of the original and reference weights and values. These are the two sets of local slopes represented by $D_f$ in Equation~\ref{eq:reverse-contribution}. The mean weights multiply the value changes, and the mean values multiply the weight changes.
+Here $\bar P$ and $\bar V$ are the means of the original and reference weights and values. They provide the two sets of local slopes in $D_f$ (Equation~\ref{eq:reverse-contribution}): the mean weights multiply the value changes, and the mean values multiply the weight changes.
 
 The incoming slopes $m_Y$ weight the two terms in the second line of Equation~\ref{eq:pv}, dividing the output's assigned contribution between value and weight changes. The backward calculation uses the same two products as ordinary backpropagation, with means replacing the original activations,
 \begin{equation}
