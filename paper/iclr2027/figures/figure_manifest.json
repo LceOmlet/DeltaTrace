@@ -2,9 +2,10 @@
   "fixture_sha256": "e6253d05a62d477cd1a501ff8346ef3ec4e2b9ebf691e707e7ec53e56efdb828",
   "overview_fixture_sha256": "8ad2f651f1acc204bfb00a8dc408d569d51b2ab10a114f12a8b6203464fb2283",
   "lookup_fixture_sha256": "281aa3a92ec6db1f252b41bc911f0afcc5d6abe28feca6591fd947d42752e59e",
-  "builder_sha256": "9c0de539a7bdfa2950aa6552efeb0496ac1519903016fc6413c7727515f3d31c",
-  "mechanism_builder_sha256": "e16b01ae2b191058495716dd12e5db0281116465b439dacdff7903e4442272ba",
-  "mechanism": "Complete method in (a), with long, centered reverse arrows above and below local multiplier construction and application. Attention and GDN remain examples in (b,c), sharing a D_f transpose backward legend. Attention-product multiplier details are confined to the manuscript; signed evidence is unchanged in (d).",
+  "builder_sha256": "8bebb210d55e77e13c31d0d790b2b47d1c0580bd2ca08d09bc9970260f6edcc1",
+  "mechanism_builder_sha256": "3122d1e60018ea31749ed4e3299680db764951a14b1f6466d05f8ef255e212e6",
+  "reverse_builder_sha256": "dd5c1d6d251299254c8445eaf4ec815c8c1401cf631afffe4a978be6307bb1b3",
+  "mechanism": "Four-step paired-forward and reverse-coefficient trace; stacked Attention and GDN panels pair each output difference decomposition with its reverse rules, to the right of its operator; unchanged signed playwright/composer evidence. A direct lookup overview is also supplied.",
   "mechanism_case": {
     "model": "qwen35",
     "dataset": "morehopqa",
@@ -72,7 +73,7 @@
     "shared_scale": "one shared scale for all excerpts and full-input strip",
     "color_legend": {
       "bar_bounds": [
-        5.225,
+        6.475,
         9.030000000000001,
         2.45,
         0.09
@@ -105,23 +106,22 @@
     "mechanism_layout": "complete method on the left; attention and GDN backward examples within one shared boundary on the right",
     "trace_directions": {
       "gray_upward": "two forward executions with the same fixed response",
-      "purple_downward": "one reverse traversal of finite coefficients, seeded with 1 at the scalar score"
+      "purple_downward": "one reverse traversal of effective secant slopes, seeded with 1 at the scalar score"
     },
     "minimum_label_pt_at_manuscript_width": 8.014285714285714,
     "reading_order": [
-      "compare the two forward executions",
-      "connect activation changes to the response score through backward calculations",
-      "return coefficients to the input embeddings",
-      "multiply by embedding changes and sum to obtain token contributions"
+      "two forward executions identify the observed changes",
+      "operation-specific backward calculations connect changes to the response score",
+      "effective secant slopes reach the input embeddings",
+      "multiply displacements by slopes and sum within each token"
     ],
     "phase_notation": {
       "activation_differences": "Delta, from the two forward executions",
-      "reverse_coefficients": "m, with subscript naming the associated activation",
-      "token_score": "A_i = <m_(e_i), Delta e_i>",
-      "local_multipliers": "D_f, constructed from the operation formula and original/reference activations; its transpose is used in the reverse pass"
+      "reverse_coefficients": "m, effective secant slopes under the fixed local allocation; subscript names the associated activation",
+      "token_score": "A_i = <m_(e_i), Delta e_i>"
     },
-    "schematic_elements": "The two executions of operation f supply local multiplier construction. Long, centered purple arrows carry coefficients into and out of the local Build D_f / Apply D_f transpose node. Attention and GDN share the backward D_f transpose legend and show their input/output coefficient paths without operator-specific multiplier formulas.",
-    "gdn_retention_notation": "S_(t-1) is previous memory, S_t is updated memory, and o_t is the readout; both retention and write gates participate in the update",
+    "schematic_elements": "paired full-method trace; attention and GDN examples of backward calculations",
+    "gdn_retention_notation": "S abbreviates S_(t-1); T=alpha*S; endpoint subscripts 0 and 1 are reference and original",
     "heatmap_semantics": "unchanged raw token scores; uniformly colored matrix cells are schematic, not measured attention",
     "displayed_runs": [
       {
@@ -348,16 +348,7 @@
           0.33033833333333334
         ]
       }
-    ],
-    "overview_notation": {
-      "P": "attention weights",
-      "V": "value vectors",
-      "Y": "attention output",
-      "Delta e_i": "embedding difference for token i",
-      "M": "reverse coefficients, defined in the caption",
-      "Delta": "original minus reference, defined in the caption",
-      "m_(e_i)": "coefficients for token i"
-    }
+    ]
   },
   "cases": {
     "deltatrace-retrieval": {
@@ -9058,18 +9049,17 @@
     }
   },
   "generated_files": {
-    "deltatrace-lookup-overview.pdf": "b7cee3419609dfef2e12382f145c192f8501e409c7a1779af70949c14c403478",
-    "deltatrace-lookup-overview.png": "9e81f22e0ed94075d378d430e356319633dd3a021442e3be105fcbe2950ed32e",
-    "deltatrace-lookup-overview.svg": "4ed0656aaf884dfbfa7c37d62dc9c587553801fee61597979cd3012ccc1231f5",
-    "deltatrace-mechanism.pdf": "458eeb3715d9177e6e277932359f167b0c1825b2bdaa7cf417a3bbce9a29b480",
-    "deltatrace-mechanism.png": "c2a937ff36fcc462b866b34cbb906349a2b1cd2aea794dd2275bceb62a233f73",
-    "deltatrace-mechanism.svg": "68637fa1073c2b88ad08876c4253456b21b2df62686a1f169171eab019c07965",
-    "deltatrace-multihop.pdf": "7cd93f364bcdb362e34a554ba10a4a201dbfed3a1abce510963dcbdc2910c018",
-    "deltatrace-multihop.png": "ca18c204cd17795c24c2cd49ae092a4db19383f34e848564b19ebb8d8344559d",
-    "deltatrace-multihop.svg": "890cda834b98cb842a94756b1940c7be68ecd41b9b7b7855bd98d6da60fe2b51",
-    "deltatrace-retrieval.pdf": "228d39a649b2265a95aef62953cbbc73440c757b2bbd309afa34eb3067301cf5",
-    "deltatrace-retrieval.png": "b834447630d0015b3ccf384e78407e4e15ee595c329595218d6589e36a0b6597",
-    "deltatrace-retrieval.svg": "a007dfd03fa61d49d1a62c872d7b864cdaaf075eb5598951695d142c521eb062"
-  },
-  "reverse_examples_builder_sha256": "50e4f3945098a00a69bc7fd9fdfd88fd7eea454517f44d1133ffee0aa0bf5b3b"
+    "deltatrace-lookup-overview.pdf": "7fe0ea5412de11b2852272d51866f6e9d0755693788c82ae744f9b851b257dd9",
+    "deltatrace-lookup-overview.png": "7c7536272d6e4abfb0803821b368e08be3479472e8bd3e34ce9d8dae73116a0e",
+    "deltatrace-lookup-overview.svg": "0fb8f146ccab66ca06ff99f16b26be7975fcd467594eb71d4e8026f4f0827da2",
+    "deltatrace-mechanism.pdf": "a8b6f6cf4c28a10696fb1eecb32faf2e6d481ebf9f4169655cd2dd3be247a49c",
+    "deltatrace-mechanism.png": "5a93d9677a089dedfaf27c8da9f512dfa0cc6700f2a00564b1e9ed2e844699ad",
+    "deltatrace-mechanism.svg": "5242587a0f9eedc035bc6f86c05f4613fa34da69bf3eaf003335223d48cd550c",
+    "deltatrace-multihop.pdf": "0d82d070f97abbb5f986d14f76f2776fb7d103c2891a5d0c62c38cacd9915283",
+    "deltatrace-multihop.png": "614588a4e5ff95f80d18aa470c7899e32eb83073398c72ac1eb63596396527c6",
+    "deltatrace-multihop.svg": "bd3b2a399be03b9fdc6154c056ecd8c134c395d2e8849d969525032dab890e35",
+    "deltatrace-retrieval.pdf": "c9776d373feccb0439176f5fafe1a790a131c69706834ac3a96bbe8a872aedce",
+    "deltatrace-retrieval.png": "637837f5b1ce63ebaa56ea830676d3f94fa7b9efae2cd56161baa444b1e1931e",
+    "deltatrace-retrieval.svg": "238b4011217d0a11fb714fb7af1dc0c352ce3aa56b52f2b1cfe4c1f61260f0aa"
+  }
 }

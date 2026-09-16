@@ -19,9 +19,9 @@ Subscripts $0$ and $1$ denote reference and original activations, and $\D U=U_1-
 
 \subsection{From the score difference to token contributions}
 \label{sec:reverse}
-\dt{} replaces the local derivatives used in backpropagation to explain the measured response-score difference. Consider an activation with a single numerical input and output. Ordinary backpropagation uses the local slope at the original input. DT uses the slope between the reference and original values, obtained by dividing the output difference by the input difference. Multiplying this slope by the actual input difference recovers the actual output difference. Equal inputs use the local derivative.
+\dt{} replaces tangent slopes with secant slopes to trace the measured output change back to the inputs. For a scalar activation, the secant connects its reference and original points: its slope converts the horizontal input displacement into the vertical output displacement. A tangent slope gives only a first-order approximation to this finite change. Equal inputs use the local derivative.
 
-The backward pass carries one coefficient for each activation entry. Multiplying a coefficient by the change in its activation gives that entry's contribution to the response-score difference. The pass starts with coefficient one at the final score, because the entire measured score difference is to be assigned. Table~\ref{tab:reverse-comparison} compares how ordinary backpropagation and DT pass their respective quantities from an operation's output to its input.
+The backward pass carries $m$ for each activation entry, its effective secant slope to the final response score under the chosen allocation rules. Multiplying this slope by the entry's displacement gives its assigned contribution. Subscripts identify the associated activation. The pass starts with $m_F=1$, since the full score difference is to be allocated. Table~\ref{tab:reverse-comparison} contrasts tangent and secant propagation through the same activation.
 
 \begin{table}[htbp]
 \centering
@@ -31,9 +31,9 @@ The backward pass carries one coefficient for each activation entry. Multiplying
 \renewcommand{\arraystretch}{1.35}
 \begin{tabular}{@{}lcc@{}}
 \toprule
- & Ordinary backpropagation & \dt{} \\
+ & \shortstack{Ordinary backpropagation\\Tangent} & \shortstack{\dt{}\\Secant} \\
 \midrule
-Multiplier & $f'(a_1)$ & $\dfrac{\D h}{\D a}=\dfrac{h_1-h_0}{a_1-a_0}$ \\
+Local slope & $f'(a_1)$ & $\dfrac{\D h}{\D a}=\dfrac{h_1-h_0}{a_1-a_0}$ \\
 \addlinespace[3pt]
 Output change & $dh=f'(a_1)\,da$ & $\D h=\dfrac{\D h}{\D a}\,\D a$ \\
 \addlinespace[3pt]
@@ -41,8 +41,6 @@ Backward calculation & $\dfrac{\partial F}{\partial a}=f'(a_1)\dfrac{\partial F}
 \bottomrule
 \end{tabular}
 \end{table}
-
-In the DT column, multiplying the coefficient from later operations by the slope expresses the same contribution at the input. Each coefficient's subscript names the activation it belongs to.
 
 The two forward executions already provide the input and output differences. For array operations, we use the operation's formula and its original and reference values to express the output difference as a weighted sum of input differences. The multipliers form the matrix $D_f$. Linear operations use their existing weights. For a product, splitting the term involving both input changes equally between them gives equal weight to the two possible change orders. This produces the mean attention weights and mean values in Section~\ref{sec:attention}.
 
@@ -52,9 +50,9 @@ The first equation below expresses the already observed differences using these 
 \qquad m_a=D_f^\top m_h.
 \label{eq:reverse-contribution}
 \end{equation}
-The transpose multiplies each output coefficient by the corresponding multipliers and sums the products for each input. This expresses the same contribution in terms of input changes. These multipliers replace local derivatives, and the backward coefficients replace propagated gradients. The two products have the forms of a Jacobian--vector product (JVP) and a vector--Jacobian product (VJP), respectively.\footnote{PyTorch documentation for \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.jvp.html}{\texttt{torch.func.jvp}} and \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.vjp.html}{\texttt{torch.func.vjp}}.}
+The transpose multiplies each output's effective slope by the corresponding multipliers and sums the products for each input. This expresses the same contribution in terms of input changes. These multipliers replace local derivatives, and the propagated slopes replace gradients. The two products have the forms of a Jacobian--vector product (JVP) and a vector--Jacobian product (VJP), respectively.\footnote{PyTorch documentation for \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.jvp.html}{\texttt{torch.func.jvp}} and \href{https://docs.pytorch.org/docs/2.14/generated/torch.func.vjp.html}{\texttt{torch.func.vjp}}.}
 
-Repeating this calculation through the model returns coefficients for each input token's embedding. Multiplying these coefficients by the embedding changes and summing across dimensions gives the token contributions,
+At the input embeddings, the propagated $m_{e_i}$ give the effective secant slopes for each token. Summing their products with the corresponding embedding displacements yields the token contributions,
 \begin{equation}
 A_i=\ip{m_{e_i}}{\D e_i},
 \qquad \sum_i A_i=\D F.

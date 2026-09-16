@@ -27,6 +27,7 @@ def main():
     assert sha(ROOT / 'figures/data/overview_case.json') == manifest['lookup_fixture_sha256']
     assert sha(ROOT / 'figures/build_figures.py') == manifest['builder_sha256']
     assert sha(ROOT / 'figures/draw_mechanism.py') == manifest['mechanism_builder_sha256']
+    assert sha(ROOT / 'figures/draw_reverse_examples.py') == manifest['reverse_builder_sha256']
     for name, digest in manifest['generated_files'].items():
         assert sha(ROOT / 'figures/generated' / name) == digest, name
     teaser = json.loads((ROOT / 'figures/intro_teaser_manifest.json').read_bytes())
