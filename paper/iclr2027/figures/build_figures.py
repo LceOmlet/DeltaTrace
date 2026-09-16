@@ -209,8 +209,8 @@ def case_figure_compact(cases, dataset):
     cax.tick_params(labelsize=8.1,length=2,pad=2,colors=MUTED)
     cax.spines[['top','right']].set_visible(False)
     cax.spines[['bottom','left']].set_color(LINE)
-    cax.set_xlabel('Input removed (%)',fontsize=8.2,labelpad=3)
-    cax.set_ylabel('Normalized log-likelihood\nof full response',fontsize=7.4,labelpad=3,linespacing=1.15)
+    cax.set_xlabel('Input masked (%)',fontsize=8.2,labelpad=3)
+    cax.set_ylabel('Normalized log-probability\nof full response',fontsize=7.4,labelpad=3,linespacing=1.15)
     cax.grid(axis='y',color=LINE,lw=.5)
     for i,model in enumerate(['Qwen3-8B','Qwen3.5-9B']):
         for j,method in enumerate(['DT','FT']):
@@ -241,7 +241,7 @@ def case_figure_compact(cases, dataset):
           'answer_summary':answer, 'displayed_runs':runs,
           'deletion_curve':'saved original normalized_model_response for each model and method; released clipped cumulative-minimum normalization, with no additional smoothing',
           'deletion_baseline':'one-hop FlashTrace on the same model, input, and full fixed response plus EOS',
-          'deletion_y_axis':'Normalized log-likelihood of full response',
+          'deletion_y_axis':'Normalized log-probability of full response',
           'deletion_series':curve_data,
           'scope':'development case illustration'}
     fig._case_meta=meta

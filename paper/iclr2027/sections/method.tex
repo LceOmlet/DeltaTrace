@@ -2,18 +2,18 @@
 \label{sec:method}
 
 \subsection{The counterfactual question and attribution target}
-We explain how replacing selected prompt tokens changes the score of a fixed target span. The inputs are a trained language model with fixed parameters $\theta$, a prompt $x$ containing the context and question, and a stored response $y=(y_1,\ldots,y_L)$ of $L$ tokens. Let $\mathcal{T}$ be the positions of the target span within $y$. Both executions score these positions using the same preceding response tokens. The scalar target score is
+We explain how masking selected prompt tokens changes the score of a fixed target span. The inputs are a trained language model with fixed parameters $\theta$, a prompt $x$ containing the context and question, and a stored response $y=(y_1,\ldots,y_L)$ of $L$ tokens. Let $\mathcal{T}$ be the positions of the target span within $y$. Both executions score these positions using the same preceding response tokens. The scalar target score is
 \begin{equation}
 F(x;y)=\sum_{t\in\mathcal{T}}\log p_\theta(y_t\mid x,y_{<t}),
 \label{eq:target}
 \end{equation}
 where $p_\theta$ is the model's next-token probability and $y_{<t}$ is the response prefix before position $t$. A higher score means the model assigns greater probability to the target span given its preceding tokens. For full-response attribution, $y$ includes the reasoning, answer, and end-of-sequence (EOS) token, and $\mathcal{T}=\{1,\ldots,L\}$. The response tokens and target positions stay fixed, while their hidden representations can change as they read the different prompts.
 
-The source positions are the context or question tokens chosen for explanation. Let $x_1$ be the original prompt. Its reference $x_0$ replaces all source tokens together with EOS at the same positions (Figure~\ref{fig:overview}(a)), keeping all other prompt tokens fixed. Both executions process the full input sequence and score the same target span, giving
+The source positions are the context or question tokens chosen for explanation. Let $x_1$ be the original prompt. Its reference $x_0$ masks all source tokens together with EOS at the same positions (Figure~\ref{fig:overview}(a)), keeping all other prompt tokens fixed. Both executions process the full input sequence and score the same target span, giving
 \[
 \D F=F(x_1;y)-F(x_0;y).
 \]
-A positive $\D F$ means these replacements lower the target score. The attribution task is to divide this difference among the source tokens. Each token receives a signed contribution $A_i$, and adding the contributions recovers $\D F$. Positive and negative scores indicate support and opposition under this reference (Figure~\ref{fig:overview}(d)).
+A positive $\D F$ means masking these tokens lowers the target score. The attribution task is to divide this difference among the source tokens. Each token receives a signed contribution $A_i$, and adding the contributions recovers $\D F$. Positive and negative scores indicate support and opposition under this reference (Figure~\ref{fig:overview}(d)).
 
 Subscripts $0$ and $1$ denote reference and original activations, and $\D U=U_1-U_0$ denotes their difference. For source token $i$, $e_{i,0}$ is the EOS embedding and $e_{i,1}$ is its original embedding, so $\D e_i=e_{i,1}-e_{i,0}$. Tokens held fixed have zero embedding difference. The reverse pass converts these embedding differences into token contributions.
 
@@ -21,7 +21,7 @@ Subscripts $0$ and $1$ denote reference and original activations, and $\D U=U_1-
 \label{sec:reverse}
 \dt{} replaces tangent slopes with secant slopes to trace the measured output change back to the inputs. For a scalar activation, the secant connects its reference and original points: its slope converts the horizontal input displacement into the vertical output displacement. A tangent slope gives only a first-order approximation to this finite change. Equal inputs use the local derivative.
 
-The backward pass carries $m$ for each activation entry, its effective secant slope to the final response score under the chosen allocation rules. Multiplying this slope by the entry's displacement gives its assigned contribution. Subscripts identify the associated activation. The pass starts with $m_F=1$, since the full score difference is to be allocated. Table~\ref{tab:reverse-comparison} contrasts tangent and secant propagation through the same activation.
+The reverse pass carries $m$ for each activation entry, its effective secant slope to the final response score under the chosen allocation rules. Multiplying this slope by the entry's displacement gives its assigned contribution. Subscripts identify the associated activation. The pass starts with $m_F=1$, since the full score difference is to be allocated. Table~\ref{tab:reverse-comparison} contrasts tangent and secant propagation through the same activation.
 
 \begin{table}[htbp]
 \centering

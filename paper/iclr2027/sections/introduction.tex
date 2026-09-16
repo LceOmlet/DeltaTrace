@@ -4,7 +4,7 @@
 
 Input attribution assigns scores to the words in a prompt to explain a model's response. A reasoning response depends on both the information available and the computations that select and combine it \citep{ferrando2024information}. Figure~\ref{fig:overview}(d) shows a passage containing a playwright, William Shakespeare, and a composer, William Walton. The names supply candidate answers, and the phrase ``the author of the play'' specifies which role to use. Attribution should account for how both the candidate names and the requested role affect the response. It should also distinguish words that support the response from words that oppose it.
 
-We ask how replacing selected prompt tokens would change the model's score for a chosen response span. The reference replaces these source tokens with a common reference token at the same positions. Both executions score the same target span using the fixed response prefix. The target can be an answer span or the complete reasoning and answer. We assign each source token a signed share of the resulting log-probability difference, so the contributions add across words or passages.
+We ask how masking selected prompt tokens would change the model's score for a chosen response span. The reference masks these source tokens with an end-of-sequence (EOS) token at the same positions. Both executions score the same target span using the fixed response prefix. The target can be an answer span or the full reasoning and answer. We assign each source token a signed share of the resulting log-probability difference, so the contributions add across words or passages.
 
 \begin{figure}[t]
 \centering
