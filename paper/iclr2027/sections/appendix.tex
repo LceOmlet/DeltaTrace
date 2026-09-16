@@ -166,7 +166,7 @@ For NIAH, DT attributes the full response plus EOS. We select the top 10\% of el
 Each timing comparison uses the same inputs and responses for its alternatives. Complete attribution time covers the two forward executions, the reverse pass, and returning the source scores. Peak allocated device memory includes model weights. Sequence length counts both input and response tokens.
 
 \paragraph{Paired Qwen3 cost.}
-Every method has one warm call followed by three measured calls in rotated order on each of 16 development examples. Per-example medians are aggregated by task. The maximum allocated memory includes model weights. Three-hop FlashTrace takes 18.27 seconds for the same 16 examples.
+Every method has one warm call followed by three measured calls in rotated order on each of 16 development examples. Aggregate times sum the per-example medians. Across examples, the ratio of DT to one-hop FT time has median 0.928, interquartile range 0.880--1.008, and full range 0.758--1.405; DT is faster on 11 of 16 examples. Three-hop FT totals 18.27 seconds.
 
 \paragraph{Tiling on longer released examples.}
 Figure~\ref{fig:tiling-cost} compares dense and tiled finite propagation on the 1,241-token retrieval control, the longest released HotpotQA context (3,470 total tokens), and the longest MATH rollout (3,762 total tokens). At 3,470 tokens, tiling reduces complete attribution time from 5.32 to 3.02 seconds and peak allocation from 32.66 to 22.54 GB. At 3,762 tokens, the corresponding values are 6.12 to 3.40 seconds and 37.18 to 30.06 GB.
