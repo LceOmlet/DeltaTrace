@@ -19,9 +19,9 @@ On Qwen3-8B, DT has the lowest RISE on 10 of 13 tasks and the lowest MAS on 11 (
 \input{results/qwen35_quality_table}
 
 \paragraph{Qwen3.5-9B results.}
-We also evaluate DT and FT on the hybrid Qwen3.5-9B model using 13 tasks comprising 520 examples, including all 400 VT and 48 HotpotQA examples (Table~\ref{tab:qwen35-quality}). DT has lower RISE on 10 tasks and lower MAS on 12. Recall is higher on all six NIAH and all four VT tasks. On HotpotQA, DT reaches 95.83\% Full-support Recall, compared with 58.33\% for FT K3, and lowers both RISE and MAS.
+We also evaluate DT and FT on the hybrid Qwen3.5-9B model using 13 tasks comprising 1,243 examples, including all 400 VT and 48 HotpotQA examples (Table~\ref{tab:qwen35-quality}). DT has lower RISE on 9 tasks and lower MAS on 12. Recall is higher on all six NIAH and all four VT tasks. On HotpotQA, DT reaches 95.83\% Full-support Recall, compared with 58.33\% for FT K3, and lowers both RISE and MAS.
 
-Across both models, DT's higher MQ Recall reflects better evidence recovery, while deletion sensitivity can remain low when the unmasked context preserves the same information.
+Across both models, DT recovers more annotated MQ evidence within the same 10\% token budget, with higher Recall for 2, 4, and 8 queried keys.
 
 \paragraph{Attribution time and memory.}
 The first-page timing panel varies response length on Qwen3-8B. DT, FT, and multi-hop FT (FT-mh) are measured on one MetaX C550; the other curves are published references from different hardware. Crosses mark out-of-memory runs. In the 16-example Qwen3-8B benchmark, DT has comparable attribution time to one-hop FT (11.40 versus 12.16 seconds, summing per-example medians) with lower peak allocated memory (18.76 versus 21.49 GB). On Qwen3.5-9B, processing the 16 examples in batches of two with GPU checkpoints reduces time from 16.68 seconds for serial execution to 12.33 seconds, a 35.3\% throughput increase. Peak memory is 21.64 and 23.88 GB, respectively. Times cover complete attribution calls. Appendix~\ref{app:cost} gives the protocol and paired time distribution.
