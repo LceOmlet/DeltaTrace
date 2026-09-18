@@ -182,7 +182,7 @@ def draw(axes, timing):
     for side in ('left','bottom'):
         ax.spines[side].set_linewidth(.45); ax.spines[side].set_color('#9DA6AE')
     text(.34, 1.91, '(b)', weight='bold')
-    text(.80, 1.91, 'Mixed hardware')
+    text(.80, 1.91, 'Attribution time')
 
     order = ['DT','Perturbation','IFR','FT','REAGENT','AttnLRP','FT multi-hop','CLP','IG','IG × Attention']
     short = {'Perturbation':'Perturb.', 'FT multi-hop':'FT-mh', 'IG × Attention':'IG×Attn.'}
