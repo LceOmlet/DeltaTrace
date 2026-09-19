@@ -22,6 +22,7 @@ MAX_RESPONSE="${MAX_RESPONSE:-512}"
 MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
 LORA_RANK="${LORA_RANK:-8}"
 LORA_ALPHA="${LORA_ALPHA:-16}"
+ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
@@ -101,7 +102,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.actor.use_kl_loss=False \
   actor_rollout_ref.actor.kl_loss_coef=0.01 \
   actor_rollout_ref.model.enable_gradient_checkpointing=True \
-  actor_rollout_ref.actor.strategy=fsdp2 \
+  actor_rollout_ref.actor.strategy="$ACTOR_STRATEGY" \
   actor_rollout_ref.actor.use_torch_compile=False \
   actor_rollout_ref.actor.fsdp_config.offload_policy=True \
   +actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
