@@ -303,23 +303,28 @@ def main() -> None:
 
     hf_rollout = args.verl_root / HF_ROLLOUT_FILE
     text = hf_rollout.read_text()
+    hf_rollout_changed = False
     # Make the compatibility patch idempotent across revisions. Older
     # checkouts may contain the invalid torch-module device block.
     if HF_ROLLOUT_BAD_BLOCK in text:
         text = text.replace(HF_ROLLOUT_BAD_BLOCK, "", 1)
+        hf_rollout_changed = True
         print(f"removed stale {hf_rollout} device compatibility block")
     if HF_ROLLOUT_IMPORT_NEW not in text:
         if HF_ROLLOUT_IMPORT_OLD not in text:
             raise RuntimeError(f"cannot find HF rollout device import anchor in {hf_rollout}")
         text = text.replace(HF_ROLLOUT_IMPORT_OLD, HF_ROLLOUT_IMPORT_NEW, 1)
+        hf_rollout_changed = True
     if HF_ROLLOUT_NEW not in text:
         if HF_ROLLOUT_OLD not in text:
             raise RuntimeError(f"cannot find HF rollout device anchor in {hf_rollout}")
         text = text.replace(HF_ROLLOUT_OLD, HF_ROLLOUT_NEW, 1)
-        hf_rollout.write_text(text)
+        hf_rollout_changed = True
         print(f"patched {hf_rollout} device compatibility")
     else:
         print(f"already patched {hf_rollout} device compatibility")
+    if hf_rollout_changed:
+        hf_rollout.write_text(text)
 
 
 if __name__ == "__main__":
