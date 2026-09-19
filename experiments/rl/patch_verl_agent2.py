@@ -104,6 +104,8 @@ VISION_CHECK_OLD = "            if type(actor_model_config) in AutoModelForVisio
 VISION_CHECK_NEW = "            if AutoModelForVision2Seq is not None and type(actor_model_config) in AutoModelForVision2Seq._model_mapping.keys():"
 LORA_CALL_OLD = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config))"
 LORA_CALL_NEW = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config), autocast_adapter_dtype=False)"
+FSDP_ORIG_PARAMS_OLD = "                use_orig_params=False,"
+FSDP_ORIG_PARAMS_NEW = "                use_orig_params=self._is_lora,"
 TRL_BLOCK_OLD = """    if is_trl_available():
         from trl import AutoModelForCausalLMWithValueHead  # type: ignore
 
@@ -279,6 +281,10 @@ def main() -> None:
         if LORA_CALL_OLD not in text:
             raise RuntimeError(f"cannot find PEFT LoRA dtype anchor in {fsdp}")
         text = text.replace(LORA_CALL_OLD, LORA_CALL_NEW, 1)
+    if FSDP_ORIG_PARAMS_NEW not in text:
+        if FSDP_ORIG_PARAMS_OLD not in text:
+            raise RuntimeError(f"cannot find FSDP LoRA orig-params anchor in {fsdp}")
+        text = text.replace(FSDP_ORIG_PARAMS_OLD, FSDP_ORIG_PARAMS_NEW, 1)
     fsdp.write_text(text)
     print(f"patched {fsdp} Transformers compatibility")
     monkey = args.verl_root / "verl/models/transformers/monkey_patch.py"
