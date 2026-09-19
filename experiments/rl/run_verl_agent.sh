@@ -24,6 +24,7 @@ LORA_RANK="${LORA_RANK:-1}"
 LORA_ALPHA="${LORA_ALPHA:-2}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
 PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
+ACTOR_CPU_OFFLOAD="${ACTOR_CPU_OFFLOAD:-False}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
@@ -59,6 +60,11 @@ export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
 # Face SDPA is the portable upstream attention backend; set this to
 # flash_attention_2 on a host with a compatible flash-attn build.
 export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
+if [[ "$ACTOR_CPU_OFFLOAD" == "True" ]]; then
+  export VERL_ACTOR_CPU_OFFLOAD=1
+else
+  export VERL_ACTOR_CPU_OFFLOAD=0
+fi
 
 "$VENV_PYTHON" "$DT_ROOT/experiments/rl/patch_verl_agent2.py" "$VERL_ROOT"
 if [[ "$ENV_NAME" == "Webshop" && -d "$VERL_ROOT/agent_system/environments/env_package/webshop/webshop/search_engine/indexes_1k" ]]; then

@@ -106,6 +106,12 @@ LORA_CALL_OLD = "                actor_module = get_peft_model(actor_module, Lor
 LORA_CALL_NEW = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config), autocast_adapter_dtype=False)"
 FSDP_ORIG_PARAMS_OLD = "                use_orig_params=False,"
 FSDP_ORIG_PARAMS_NEW = "                use_orig_params=self._is_lora,"
+# FSDP's upstream actor path disables CPU parameter offload because older
+# gradient-accumulation code could observe stale handles.  The single-GPU
+# LoRA path has one microbatch per optimizer step, so opt in explicitly when
+# requested instead of changing the trainer or optimizer implementation.
+FSDP_ACTOR_OFFLOAD_OLD = "        cpu_offload = None if role == \"actor\" else CPUOffload(offload_params=True)"
+FSDP_ACTOR_OFFLOAD_NEW = "        cpu_offload = CPUOffload(offload_params=True) if role == \"actor\" and os.getenv(\"VERL_ACTOR_CPU_OFFLOAD\", \"0\") == \"1\" else (None if role == \"actor\" else CPUOffload(offload_params=True))"
 TRL_BLOCK_OLD = """    if is_trl_available():
         from trl import AutoModelForCausalLMWithValueHead  # type: ignore
 
@@ -285,6 +291,10 @@ def main() -> None:
         if FSDP_ORIG_PARAMS_OLD not in text:
             raise RuntimeError(f"cannot find FSDP LoRA orig-params anchor in {fsdp}")
         text = text.replace(FSDP_ORIG_PARAMS_OLD, FSDP_ORIG_PARAMS_NEW, 1)
+    if FSDP_ACTOR_OFFLOAD_NEW not in text:
+        if FSDP_ACTOR_OFFLOAD_OLD not in text:
+            raise RuntimeError(f"cannot find FSDP actor offload anchor in {fsdp}")
+        text = text.replace(FSDP_ACTOR_OFFLOAD_OLD, FSDP_ACTOR_OFFLOAD_NEW, 1)
     fsdp.write_text(text)
     print(f"patched {fsdp} Transformers compatibility")
     monkey = args.verl_root / "verl/models/transformers/monkey_patch.py"
