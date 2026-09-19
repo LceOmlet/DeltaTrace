@@ -15,9 +15,15 @@ VENV_PYTHON="${VENV_PYTHON:-$DT_ROOT/env/bin/python}"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 TRAIN_SIZE="${TRAIN_SIZE:-4}"
 VAL_SIZE="${VAL_SIZE:-4}"
-GROUP_SIZE="${GROUP_SIZE:-4}"
-MAX_PROMPT="${MAX_PROMPT:-4096}"
+GROUP_SIZE="${GROUP_SIZE:-4}"           # environment rollouts per prompt (GRPO group)
+MINI_BATCH_SIZE="${MINI_BATCH_SIZE:-4}"
+MAX_PROMPT="${MAX_PROMPT:-32256}"
 MAX_RESPONSE="${MAX_RESPONSE:-512}"
+MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
+LORA_RANK="${LORA_RANK:-8}"
+LORA_ALPHA="${LORA_ALPHA:-16}"
+VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
+TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
 
 case "$METHOD" in
@@ -86,10 +92,13 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   data.return_raw_chat=True \
   actor_rollout_ref.model.path="$MODEL_PATH" \
   actor_rollout_ref.model.trust_remote_code=True \
+  actor_rollout_ref.model.lora_rank="$LORA_RANK" \
+  actor_rollout_ref.model.lora_alpha="$LORA_ALPHA" \
   actor_rollout_ref.actor.optim.lr=1e-6 \
-  actor_rollout_ref.actor.ppo_mini_batch_size=1 \
+  actor_rollout_ref.actor.ppo_mini_batch_size="$MINI_BATCH_SIZE" \
   actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=1 \
-  actor_rollout_ref.actor.use_kl_loss=True \
+  actor_rollout_ref.actor.ppo_max_token_len_per_gpu="$MAX_TOTAL_TOKENS" \
+  actor_rollout_ref.actor.use_kl_loss=False \
   actor_rollout_ref.actor.kl_loss_coef=0.01 \
   actor_rollout_ref.model.enable_gradient_checkpointing=True \
   actor_rollout_ref.actor.strategy=fsdp2 \
@@ -104,9 +113,6 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.rollout.gpu_memory_utilization=0.75 \
   actor_rollout_ref.rollout.val_kwargs.temperature=0.4 \
   actor_rollout_ref.rollout.val_kwargs.do_sample=True \
-  actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=1 \
-  +actor_rollout_ref.ref.fsdp_config.model_dtype=bfloat16 \
-  actor_rollout_ref.ref.fsdp_config.param_offload=True \
   algorithm.use_kl_in_reward=False \
   env.env_name="$ENV_NAME" \
   env.seed=0 \
@@ -123,6 +129,6 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   trainer.n_gpus_per_node=1 \
   trainer.nnodes=1 \
   trainer.save_freq=-1 \
-  trainer.test_freq=1 \
+  trainer.test_freq="$TEST_FREQ" \
   trainer.total_epochs="$TOTAL_EPOCHS" \
-  trainer.val_before_train=True
+  trainer.val_before_train="$VAL_BEFORE_TRAIN"

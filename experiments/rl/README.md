@@ -26,6 +26,7 @@ gym-sokoban==0.0.6
 ray==2.55.1
 torchdata==0.11.0
 pyserini==0.22.1 (--no-deps)
+qwen-vl-utils==0.0.14
 ```
 
 WebShop uses Princeton's official text environment and its official 1k
@@ -69,12 +70,21 @@ TRAIN_SIZE=1 VAL_SIZE=1 GROUP_SIZE=1 \
 bash experiments/rl/run_verl_agent.sh
 ```
 
-For a first A6000 smoke, leave the defaults (`TRAIN_SIZE=4`, `VAL_SIZE=4`,
-`GROUP_SIZE=4`, `MAX_RESPONSE=512`, `TOTAL_EPOCHS=1`). Increase
-`MAX_PROMPT=32768`, batch sizes, and epochs only after the environment smoke
-passes. The launcher uses the upstream HF rollout backend (`rollout.name=hf`)
-to avoid assuming an incompatible vLLM build for Qwen3.5; switching to vLLM
-is an explicit host-level choice.
+The A6000 profile is deliberately memory bounded: `GROUP_SIZE=4` gives four
+environment rollouts per prompt for GRPO, `MINI_BATCH_SIZE=4` is the upstream
+policy minibatch, and the default `MAX_PROMPT=32256` plus
+`MAX_RESPONSE=512` reserves a 32768-token per-GPU budget. It uses upstream
+PEFT LoRA (`LORA_RANK=8`), disables the reference/KL worker when KL is not
+requested, disables dynamic batching and `torch.compile`, and enables the
+upstream FSDP2 parameter/optimizer offload. Thus the four-sample group does not
+instantiate a second full reference model or compile a new graph for every
+length. Set `VAL_BEFORE_TRAIN=True` or `TEST_FREQ=1` when an online validation
+pass is desired; they default off to avoid duplicating the rollout during a
+memory/throughput run.
+
+The launcher uses the upstream HF rollout backend (`rollout.name=hf`) to avoid
+assuming an incompatible vLLM build for Qwen3.5; switching to vLLM is an
+explicit host-level choice.
 
 AppWorld requires its official service before launching. The command above
 uses one train and one validation worker, so one service is enough for the
