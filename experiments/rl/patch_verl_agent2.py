@@ -136,6 +136,19 @@ FSDP_POLICY_NEW = """            if transformer_cls is None:
         if not transformer_cls_to_wrap:
             raise Exception("Could not find the transformer layer class to wrap in the model.")
 """
+FSDP2_FILE = "verl/utils/fsdp_utils.py"
+FSDP2_OLD = """    if isinstance(fsdp_transformer_layer_cls_to_wrap, str):
+        fsdp_transformer_layer_cls_to_wrap = [fsdp_transformer_layer_cls_to_wrap]
+
+    assert len(fsdp_transformer_layer_cls_to_wrap) > 0 and fsdp_transformer_layer_cls_to_wrap[0] is not None
+"""
+FSDP2_NEW = """    if isinstance(fsdp_transformer_layer_cls_to_wrap, str):
+        fsdp_transformer_layer_cls_to_wrap = [fsdp_transformer_layer_cls_to_wrap]
+    elif isinstance(fsdp_transformer_layer_cls_to_wrap, (set, tuple)):
+        fsdp_transformer_layer_cls_to_wrap = list(fsdp_transformer_layer_cls_to_wrap)
+
+    assert len(fsdp_transformer_layer_cls_to_wrap) > 0 and fsdp_transformer_layer_cls_to_wrap[0] is not None
+"""
 
 
 def main() -> None:
@@ -246,6 +259,15 @@ def main() -> None:
         print(f"patched {policy} Transformers layer compatibility")
     else:
         print(f"already patched {policy} Transformers layer compatibility")
+    text = policy.read_text()
+    if FSDP2_NEW not in text:
+        if FSDP2_OLD not in text:
+            raise RuntimeError(f"cannot find FSDP2 policy anchor in {policy}")
+        text = text.replace(FSDP2_OLD, FSDP2_NEW, 1)
+        policy.write_text(text)
+        print(f"patched {policy} FSDP2 compatibility")
+    else:
+        print(f"already patched {policy} FSDP2 compatibility")
 
 
 if __name__ == "__main__":
