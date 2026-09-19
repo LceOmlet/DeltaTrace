@@ -100,6 +100,11 @@ On the A6000/Qwen3.5-9B setup this completed one upstream GRPO optimizer step
 with `prompt_length=32219`, `response_length=64`, peak allocated/reserved
 memory `38.482/42.932 GiB`, and no OOM.
 
+That boundary fixture uses one environment step. For multi-turn episodes the
+official observation history grows, so leave headroom (for example,
+`PROMPT_FILL_TOKENS=30000`); a two-step run reached `prompt_length=30493`
+without an FSDP or optimizer-state error.
+
 The launcher uses the upstream HF rollout backend (`rollout.name=hf`) to avoid
 assuming an incompatible vLLM build for Qwen3.5; switching to vLLM is an
 explicit host-level choice.
