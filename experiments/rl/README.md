@@ -108,16 +108,23 @@ For the text-only Qwen3.5 checkpoint, Sokoban defaults to the upstream
 `tiny_rgb_array` ASCII observation (`SOKOBAN_MODE=tiny_rgb_array`). Set
 `SOKOBAN_MODE=rgb_array` only when using a vision-capable processor and model.
 
-AppWorld requires its official service before launching. The command above
-uses one train and one validation worker, so one service is enough for the
-smoke. For a real run, start enough ports for the chosen train/validation
-batch sizes:
+AppWorld requires its official service before launching. The environment
+manager assigns one port per training rollout and one validation port. Thus
+the GRPO smoke above (`TRAIN_SIZE=1`, `GROUP_SIZE=4`, `VAL_SIZE=1`) needs five
+official service instances. Start them from the AppWorld repository root so
+the server resolves `./data/tasks`:
 
 ```bash
 cd "$DT_ROOT/third_party/appworld"
 echo 7000 > appworld_ports.ports
-nohup "$DT_ROOT/env/bin/appworld" serve environment --port 7000 \
-  > /tmp/appworld7000.log 2>&1 &
+echo 7001 >> appworld_ports.ports
+echo 7002 >> appworld_ports.ports
+echo 7003 >> appworld_ports.ports
+echo 7004 >> appworld_ports.ports
+for port in 7000 7001 7002 7003 7004; do
+  nohup "$DT_ROOT/env/bin/appworld" serve environment --port "$port" \
+    > "/tmp/appworld-${port}.log" 2>&1 &
+done
 ```
 
 The upstream AppWorld wrapper reads `appworld_ports.ports` from its current
