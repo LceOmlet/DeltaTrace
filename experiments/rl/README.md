@@ -1,52 +1,115 @@
-# Counterfactual RL development branch
+# RL development branch: upstream environments and trainers
 
-This directory is an engineering branch for Qwen3.5-9B on the existing A6000
-container.  It does not install packages or alter the owner Transformers,
-FlashAttention, FLA, or DeltaTrace sources.
+This branch deliberately does not contain a local PPO, GRPO, rollout, or
+LoRA implementation. Training is delegated to the pinned
+[verl-agent2](https://github.com/blackkiring/verl-agent2) fork of VERL. Its
+environment managers are used for WebShop, Sokoban, and AppWorld; this branch
+only supplies a prompt-parquet helper, a launcher, and the DeltaTrace credit
+adapter.
 
-The policy signal follows the proposition in
-`paper/iclr2027/sections/appendix.tex`: for a fixed history and continuation
-policy, an independently sampled reference action gives
+The upstream revision used for the A6000 setup is:
 
-\[
-C(h,a)=\mathbb E_{a'}[G(h,a)-G(h,a')]=Q(h,a)-V(h).
-\]
+```
+verl-agent2 732f37acd7684b8c24d14ba3ededfe9fab1ed472
+```
 
-`counterfactual.py` computes this action-level signal and detaches it before
-the score-function loss.  `deltatrace_credit.py` is deliberately strict about
-the scalar endpoint: it accepts a DeltaTrace result only when the endpoint
-effect agrees with the runner's compiled scalar seed.  It records any
-signed-vector residual as an attribution diagnostic.  The vector itself is
-never used as a per-token GRPO/PPO weight, because the owner runner explicitly
-keeps that residual unassigned.
+The remote environment already contains the heavyweight CUDA stack and these
+RL/task packages. The versions are recorded so another host can reproduce the
+setup without silently replacing its existing PyTorch:
 
-`train_counterfactual.py` is a short MATH-data smoke trainer.  Its return is a
-bounded prefix-match verifier score after a forced first action, with the
-continuation sampled from the same policy for the selected and reference
-actions.  It uses a small LoRA adapter
-(`q_proj`/`v_proj`, rank 4) because the shared environment has no PEFT/TRL and
-full Qwen3.5-9B updates do not fit the requested single-card budget.  The
-truncation and three-step settings are runtime checks, not final benchmark
-claims.
+```
+verl-agent2 (editable, --no-deps)
+trl==1.13.0
+peft==0.21.0
+bitsandbytes==0.50.2
+gym-sokoban==0.0.6
+ray==2.55.1
+torchdata==0.11.0
+pyserini==0.22.1 (--no-deps)
+```
 
-The owner DeltaTrace evaluator must run inside the existing CUDA container:
-the host venv exposes GLIBC-incompatible wheels even though the container's
-same venv imports `causal-conv1d 1.5.4` and `flash-attn 2.8.3` correctly.
+WebShop uses Princeton's official text environment and its official 1k
+product/instruction files plus a Pyserini Lucene index. AppWorld uses the
+official `appworld install --repo` and `appworld download data` commands and
+the official environment server. Sokoban uses the gym-sokoban dependency
+through verl-agent2's environment package. No task environment is copied into
+this repository.
 
-The first measured A6000 baseline (Qwen3.5-9B, BF16, 12-token prompt,
-3-token greedy generation) loads in 7.6 s and reaches 12.5 generated tokens/s
-after warm-up, with 18.9 GB peak allocation.  A real action-intervention DT
-trace on a 108-token prompt and 8 target tokens takes 9.8 s cold and 1.31 s on
-the second identical call in the same process, at 19.0 GB peak allocation.
-With a 340-token prompt and 247 target tokens it takes 10.6 s in a fresh
-process using the already populated shared compiler cache and 1.64 s on the
-second identical call, at 20.1 GB peak allocation.  A clean official smoke
-process measured 53.4 s for a comparable 357-token/248-target case, showing
-that the cold cost includes cache population.  The gap is compiler and Triton
-work concentrated in the first finite decoder calls; the runner's steady-state
-memory is nearly flat for these lengths.
+After cloning the three official repositories, prepare their assets with
+`experiments/rl/prepare_task_assets.sh`. It only creates symlinks into the
+upstream environment and runs AppWorld's official installer/download commands;
+it does not generate a replacement task implementation.
 
-The LoRA compatibility check also passes with a nonzero rank-4 update: the
-effective linear weight exposed by `lora.py` keeps the owner finite pullback's
-transpose maps exact, while the adapter still reports the scalar endpoint
-effect independently of the signed-vector residual.
+## Run
+
+On a prepared Linux host, set `DT_ROOT` to the checkout and point
+`MODEL_PATH` to a local Qwen3.5 checkpoint. The launcher uses the upstream
+`verl.trainer.main_ppo` entry point. `METHOD=grpo` selects upstream GRPO
+(`algorithm.adv_estimator=grpo`); `METHOD=ppo` selects upstream GAE/PPO. The
+same command supports all three tasks:
+
+```bash
+DT_ROOT=/path/to/DeltaTrace \
+MODEL_PATH=/data/models/Qwen3.5-9B \
+CUDA_VISIBLE_DEVICES=0 \
+ENV_NAME=Webshop METHOD=grpo \
+bash experiments/rl/run_verl_agent.sh
+
+DT_ROOT=/path/to/DeltaTrace \
+MODEL_PATH=/data/models/Qwen3.5-9B \
+CUDA_VISIBLE_DEVICES=0 \
+ENV_NAME=Sokoban METHOD=ppo \
+bash experiments/rl/run_verl_agent.sh
+
+DT_ROOT=/path/to/DeltaTrace \
+MODEL_PATH=/data/models/Qwen3.5-9B \
+CUDA_VISIBLE_DEVICES=0 \
+ENV_NAME=AppWorld METHOD=grpo \
+TRAIN_SIZE=1 VAL_SIZE=1 GROUP_SIZE=1 \
+bash experiments/rl/run_verl_agent.sh
+```
+
+For a first A6000 smoke, leave the defaults (`TRAIN_SIZE=4`, `VAL_SIZE=4`,
+`GROUP_SIZE=4`, `MAX_RESPONSE=512`, `TOTAL_EPOCHS=1`). Increase
+`MAX_PROMPT=32768`, batch sizes, and epochs only after the environment smoke
+passes. The launcher uses the upstream HF rollout backend (`rollout.name=hf`)
+to avoid assuming an incompatible vLLM build for Qwen3.5; switching to vLLM
+is an explicit host-level choice.
+
+AppWorld requires its official service before launching. The command above
+uses one train and one validation worker, so one service is enough for the
+smoke. For a real run, start enough ports for the chosen train/validation
+batch sizes:
+
+```bash
+cd "$DT_ROOT/third_party/appworld"
+echo 7000 > appworld_ports.ports
+nohup "$DT_ROOT/env/bin/appworld" serve environment --port 7000 \
+  > /tmp/appworld7000.log 2>&1 &
+```
+
+The upstream AppWorld wrapper reads `appworld_ports.ports` from its current
+working directory. Run the launcher with `cd "$DT_ROOT/third_party/appworld"`
+or keep the port file in the launcher working directory.
+
+## DeltaTrace credit contract
+
+`counterfactual.py` and `deltatrace_credit.py` implement only the policy-credit
+contract: independently sampled reference actions produce
+`G(selected) - mean(G(reference))`, which is the policy-average
+`Q(h,a)-V(h)` signal. The DeltaTrace signed input vector is retained for
+diagnostics and is never used as a token-wise GRPO/PPO advantage. The upstream
+VERL optimizer remains the optimizer; the adapter is the narrow place to add
+counterfactual endpoint values once the rollout records selected/reference
+traces. It does not duplicate VERL's trainer.
+
+`patch_verl_agent2.py` applies one compatibility-only fix to the pinned
+upstream tree: it makes the Sokoban factory lazy to avoid that tree's nested
+package import cycle under Python 3.12. It changes no environment dynamics or
+RL math.
+
+The local invariant test is:
+
+```bash
+python -m experiments.rl.test_counterfactual
+```
