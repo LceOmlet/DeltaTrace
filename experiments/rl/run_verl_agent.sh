@@ -93,6 +93,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.actor.kl_loss_coef=0.01 \
   actor_rollout_ref.model.enable_gradient_checkpointing=True \
   actor_rollout_ref.actor.strategy=fsdp2 \
+  actor_rollout_ref.actor.use_torch_compile=False \
   actor_rollout_ref.actor.fsdp_config.offload_policy=True \
   +actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
   actor_rollout_ref.actor.fsdp_config.param_offload=True \
