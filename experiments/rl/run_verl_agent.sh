@@ -44,6 +44,11 @@ export PYTHONPATH="$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package
 export TOKENIZERS_PARALLELISM=false
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
 export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
+# The pinned upstream tree requests FlashAttention 2 by default, but its
+# optional CUDA extension may be unavailable on older-glibc hosts.  Hugging
+# Face SDPA is the portable upstream attention backend; set this to
+# flash_attention_2 on a host with a compatible flash-attn build.
+export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
 
 "$VENV_PYTHON" "$DT_ROOT/experiments/rl/patch_verl_agent2.py" "$VERL_ROOT"
 if [[ "$ENV_NAME" == "Webshop" && -d "$VERL_ROOT/agent_system/environments/env_package/webshop/webshop/search_engine/indexes_1k" ]]; then
