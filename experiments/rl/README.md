@@ -74,7 +74,7 @@ The A6000 profile is deliberately memory bounded: `GROUP_SIZE=4` gives four
 environment rollouts per prompt for GRPO, `MINI_BATCH_SIZE=4` is the upstream
 policy minibatch, and the default `MAX_PROMPT=32256` plus
 `MAX_RESPONSE=512` reserves a 32768-token per-GPU budget. It uses upstream
-PEFT LoRA (`LORA_RANK=8`), disables the reference/KL worker when KL is not
+PEFT LoRA (`LORA_RANK=1` by default; raise it only after checking peak VRAM), disables the reference/KL worker when KL is not
 requested, disables dynamic batching and `torch.compile`, and enables the
 upstream FSDP2 parameter/optimizer offload. Thus the four-sample group does not
 instantiate a second full reference model or compile a new graph for every

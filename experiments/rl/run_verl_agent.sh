@@ -20,8 +20,8 @@ MINI_BATCH_SIZE="${MINI_BATCH_SIZE:-4}"
 MAX_PROMPT="${MAX_PROMPT:-32256}"
 MAX_RESPONSE="${MAX_RESPONSE:-512}"
 MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
-LORA_RANK="${LORA_RANK:-8}"
-LORA_ALPHA="${LORA_ALPHA:-16}"
+LORA_RANK="${LORA_RANK:-1}"
+LORA_ALPHA="${LORA_ALPHA:-2}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
 PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
@@ -51,6 +51,7 @@ export CUDA_VISIBLE_DEVICES
 export PYTHONPATH="$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package/webshop/webshop:${APPWORLD_ROOT}:${PYTHONPATH:-}"
 export TOKENIZERS_PARALLELISM=false
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
 # The pinned upstream tree requests FlashAttention 2 by default, but its
 # optional CUDA extension may be unavailable on older-glibc hosts.  Hugging
