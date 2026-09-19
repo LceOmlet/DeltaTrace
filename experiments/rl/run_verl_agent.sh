@@ -23,6 +23,7 @@ MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
 LORA_RANK="${LORA_RANK:-8}"
 LORA_ALPHA="${LORA_ALPHA:-16}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
+PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
@@ -106,7 +107,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.actor.use_torch_compile=False \
   actor_rollout_ref.actor.fsdp_config.offload_policy=True \
   +actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
-  actor_rollout_ref.actor.fsdp_config.param_offload=True \
+  actor_rollout_ref.actor.fsdp_config.param_offload="$PARAM_OFFLOAD" \
   actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
   actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
   actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
