@@ -27,6 +27,7 @@ PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
+MAX_STEPS="${MAX_STEPS:-15}"
 
 case "$METHOD" in
   grpo) ADV_ESTIMATOR=grpo ;;
@@ -119,7 +120,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   algorithm.use_kl_in_reward=False \
   env.env_name="$ENV_NAME" \
   env.seed=0 \
-  env.max_steps=15 \
+  env.max_steps="$MAX_STEPS" \
   env.rollout.n="$GROUP_SIZE" \
   env.sokoban.mode=rgb_array \
   env.sokoban.num_boxes=1 \
