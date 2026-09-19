@@ -209,6 +209,8 @@ HF_ROLLOUT_BAD_BLOCK = """        # FSDP2 CPU parameter offload can leave positi
         attention_mask = attention_mask.to(device)
         position_ids = position_ids.to(device)
 """
+HF_SUMMON_OLD = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=False)"
+HF_SUMMON_NEW = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=True)"
 
 QWEN35_OLD = "        position_ids_expanded = position_ids[:, :, None, :].float()  # shape (3, bs, 1, positions)"
 QWEN35_NEW = "        position_ids_expanded = position_ids[:, :, None, :].float().to(x.device)  # shape (3, bs, 1, positions)"
@@ -383,6 +385,14 @@ def main() -> None:
         print(f"already patched {hf_rollout} device compatibility")
     if hf_rollout_changed:
         hf_rollout.write_text(text)
+    text = hf_rollout.read_text()
+    if HF_SUMMON_NEW not in text:
+        if HF_SUMMON_OLD not in text:
+            raise RuntimeError(f"cannot find HF FSDP summon anchor in {hf_rollout}")
+        hf_rollout.write_text(text.replace(HF_SUMMON_OLD, HF_SUMMON_NEW, 1))
+        print(f"patched {hf_rollout} nested FSDP summon")
+    else:
+        print(f"already patched {hf_rollout} nested FSDP summon")
 
     # Transformers 5.13's Qwen3.5 RoPE path can receive position ids created
     # on CPU after HF generation prepares the first step. Under FSDP2 CPU
