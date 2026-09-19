@@ -112,6 +112,23 @@ FSDP_ORIG_PARAMS_NEW = "                use_orig_params=self._is_lora,"
 # requested instead of changing the trainer or optimizer implementation.
 FSDP_ACTOR_OFFLOAD_OLD = "        cpu_offload = None if role == \"actor\" else CPUOffload(offload_params=True)"
 FSDP_ACTOR_OFFLOAD_NEW = "        cpu_offload = CPUOffload(offload_params=True) if role == \"actor\" and os.getenv(\"VERL_ACTOR_CPU_OFFLOAD\", \"0\") == \"1\" else (None if role == \"actor\" else CPUOffload(offload_params=True))"
+ACTOR_FORWARD_OLD = """                output = self.actor_module(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    **multi_modal_inputs,
+                    use_cache=False,
+                    **extra_args,
+                )  # prevent model thinks we are generating"""
+ACTOR_FORWARD_NEW = """                output = self.actor_module(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    logits_to_keep=response_length + 1,
+                    **multi_modal_inputs,
+                    use_cache=False,
+                    **extra_args,
+                )  # prevent model thinks we are generating"""
 TRL_BLOCK_OLD = """    if is_trl_available():
         from trl import AutoModelForCausalLMWithValueHead  # type: ignore
 
@@ -297,6 +314,15 @@ def main() -> None:
         text = text.replace(FSDP_ACTOR_OFFLOAD_OLD, FSDP_ACTOR_OFFLOAD_NEW, 1)
     fsdp.write_text(text)
     print(f"patched {fsdp} Transformers compatibility")
+    actor_policy = args.verl_root / ACTOR_FILE
+    text = actor_policy.read_text()
+    if ACTOR_FORWARD_NEW not in text:
+        if ACTOR_FORWARD_OLD not in text:
+            raise RuntimeError(f"cannot find actor logits retention anchor in {actor_policy}")
+        actor_policy.write_text(text.replace(ACTOR_FORWARD_OLD, ACTOR_FORWARD_NEW, 1))
+        print(f"patched {actor_policy} response-logit retention")
+    else:
+        print(f"already patched {actor_policy} response-logit retention")
     monkey = args.verl_root / "verl/models/transformers/monkey_patch.py"
     text = monkey.read_text()
     if TRL_BLOCK_NEW not in text:
