@@ -25,6 +25,7 @@ LORA_ALPHA="${LORA_ALPHA:-2}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
 PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
 ACTOR_CPU_OFFLOAD="${ACTOR_CPU_OFFLOAD:-False}"
+FSDP_MIN_PARAMS="${FSDP_MIN_PARAMS:-0}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
@@ -117,6 +118,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   +actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
   actor_rollout_ref.actor.fsdp_config.param_offload="$PARAM_OFFLOAD" \
   actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
+  actor_rollout_ref.actor.fsdp_config.wrap_policy.min_num_params="$FSDP_MIN_PARAMS" \
   actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
   actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
   actor_rollout_ref.rollout.name=hf \
