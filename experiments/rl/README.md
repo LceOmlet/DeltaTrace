@@ -104,6 +104,10 @@ The launcher uses the upstream HF rollout backend (`rollout.name=hf`) to avoid
 assuming an incompatible vLLM build for Qwen3.5; switching to vLLM is an
 explicit host-level choice.
 
+For the text-only Qwen3.5 checkpoint, Sokoban defaults to the upstream
+`tiny_rgb_array` ASCII observation (`SOKOBAN_MODE=tiny_rgb_array`). Set
+`SOKOBAN_MODE=rgb_array` only when using a vision-capable processor and model.
+
 AppWorld requires its official service before launching. The command above
 uses one train and one validation worker, so one service is enough for the
 smoke. For a real run, start enough ports for the chosen train/validation

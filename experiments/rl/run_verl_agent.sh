@@ -30,6 +30,7 @@ FSDP_MIN_PARAMS="${FSDP_MIN_PARAMS:-0}"
 HF_FSDP_WRAP="${HF_FSDP_WRAP:-False}"
 ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-1}"
 PROMPT_FILL_TOKENS="${PROMPT_FILL_TOKENS:-0}"
+SOKOBAN_MODE="${SOKOBAN_MODE:-tiny_rgb_array}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
@@ -142,7 +143,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   env.seed=0 \
   env.max_steps="$MAX_STEPS" \
   env.rollout.n="$GROUP_SIZE" \
-  env.sokoban.mode=rgb_array \
+  env.sokoban.mode="$SOKOBAN_MODE" \
   env.sokoban.num_boxes=1 \
   env.sokoban.search_depth=30 \
   env.resources_per_worker.num_cpus=0.1 \
