@@ -215,6 +215,7 @@ HF_SUMMON_NEW = "            param_ctx = FSDP.summon_full_params(self.module, wr
 QWEN35_OLD = "        position_ids_expanded = position_ids[:, :, None, :].float()  # shape (3, bs, 1, positions)"
 QWEN35_NEW = "        position_ids_expanded = position_ids[:, :, None, :].float().to(x.device)  # shape (3, bs, 1, positions)"
 QWEN35_RMS_OLD = "        output = output * (1.0 + self.weight.float())"
+QWEN35_RMS_PREV = "        weight = self.weight.to_local() if hasattr(self.weight, \"to_local\") else self.weight\n        output = output * (1.0 + weight.float())"
 QWEN35_RMS_NEW = "        weight = self.weight.to_local() if hasattr(self.weight, \"to_local\") else self.weight\n        output = output * (1.0 + weight.float().to(output.device))"
 HF_WRAP_OLD = '        if self._is_rollout and self.config.rollout.name == "hf":\n            # TODO(zhangchi.usc1992, shengguangming) fix me. Current, auto_wrap_policy causes HFRollout to hang in Gemma\n            auto_wrap_policy = None'
 HF_WRAP_NEW = '        if self._is_rollout and self.config.rollout.name == "hf" and os.getenv("VERL_ENABLE_HF_FSDP_WRAP", "0") != "1":\n            # Keep upstream HF rollout\'s conservative default; long-context\n            # single-GPU runs can opt into layer wrapping explicitly.\n            auto_wrap_policy = None'
@@ -415,10 +416,14 @@ def main() -> None:
         else:
             print(f"already patched {qwen35} RoPE device compatibility")
         if QWEN35_RMS_NEW not in qwen_text:
-            if QWEN35_RMS_OLD not in qwen_text:
+            if QWEN35_RMS_PREV in qwen_text:
+                qwen35.write_text(qwen_text.replace(QWEN35_RMS_PREV, QWEN35_RMS_NEW, 1))
+                print(f"patched {qwen35} FSDP2 RMSNorm device compatibility")
+            elif QWEN35_RMS_OLD not in qwen_text:
                 raise RuntimeError(f"cannot find Qwen3.5 RMSNorm anchor in {qwen35}")
-            qwen35.write_text(qwen35.read_text().replace(QWEN35_RMS_OLD, QWEN35_RMS_NEW, 1))
-            print(f"patched {qwen35} FSDP2 RMSNorm compatibility")
+            else:
+                qwen35.write_text(qwen_text.replace(QWEN35_RMS_OLD, QWEN35_RMS_NEW, 1))
+                print(f"patched {qwen35} FSDP2 RMSNorm compatibility")
         else:
             print(f"already patched {qwen35} FSDP2 RMSNorm compatibility")
 
