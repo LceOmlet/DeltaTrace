@@ -92,7 +92,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.actor.use_kl_loss=True \
   actor_rollout_ref.actor.kl_loss_coef=0.01 \
   actor_rollout_ref.model.enable_gradient_checkpointing=True \
-  actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
+  +actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
   actor_rollout_ref.actor.fsdp_config.param_offload=True \
   actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
   actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
@@ -102,7 +102,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.rollout.val_kwargs.temperature=0.4 \
   actor_rollout_ref.rollout.val_kwargs.do_sample=True \
   actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=1 \
-  actor_rollout_ref.ref.fsdp_config.model_dtype=bfloat16 \
+  +actor_rollout_ref.ref.fsdp_config.model_dtype=bfloat16 \
   actor_rollout_ref.ref.fsdp_config.param_offload=True \
   algorithm.use_kl_in_reward=False \
   env.env_name="$ENV_NAME" \
