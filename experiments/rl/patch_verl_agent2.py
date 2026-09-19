@@ -14,6 +14,7 @@ environment dynamics or trainer math.
 from __future__ import annotations
 
 import argparse
+import importlib
 from pathlib import Path
 
 
@@ -182,6 +183,9 @@ HF_ROLLOUT_BAD_BLOCK = """        # FSDP2 CPU parameter offload can leave positi
         position_ids = position_ids.to(device)
 """
 
+QWEN35_OLD = "        position_ids_expanded = position_ids[:, :, None, :].float()  # shape (3, bs, 1, positions)"
+QWEN35_NEW = "        position_ids_expanded = position_ids[:, :, None, :].float().to(x.device)  # shape (3, bs, 1, positions)"
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -325,6 +329,25 @@ def main() -> None:
         print(f"already patched {hf_rollout} device compatibility")
     if hf_rollout_changed:
         hf_rollout.write_text(text)
+
+    # Transformers 5.13's Qwen3.5 RoPE path can receive position ids created
+    # on CPU after HF generation prepares the first step. Under FSDP2 CPU
+    # parameter offload, hidden states are already on CUDA, so the upstream
+    # rotary matmul must move this derived tensor to x.device as well.
+    try:
+        transformers = importlib.import_module("transformers")
+        qwen35 = Path(next(iter(transformers.__path__))) / "models" / "qwen3_5" / "modeling_qwen3_5.py"
+    except (ImportError, StopIteration):
+        qwen35 = None
+    if qwen35 is not None and qwen35.is_file():
+        qwen_text = qwen35.read_text()
+        if QWEN35_NEW not in qwen_text:
+            if QWEN35_OLD not in qwen_text:
+                raise RuntimeError(f"cannot find Qwen3.5 RoPE device anchor in {qwen35}")
+            qwen35.write_text(qwen_text.replace(QWEN35_OLD, QWEN35_NEW, 1))
+            print(f"patched {qwen35} RoPE device compatibility")
+        else:
+            print(f"already patched {qwen35} RoPE device compatibility")
 
 
 if __name__ == "__main__":
