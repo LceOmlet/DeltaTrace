@@ -72,15 +72,33 @@ bash experiments/rl/run_verl_agent.sh
 
 The A6000 profile is deliberately memory bounded: `GROUP_SIZE=4` gives four
 environment rollouts per prompt for GRPO, `MINI_BATCH_SIZE=4` is the upstream
-policy minibatch, and the default `MAX_PROMPT=32256` plus
-`MAX_RESPONSE=512` reserves a 32768-token per-GPU budget. It uses upstream
-PEFT LoRA (`LORA_RANK=1` by default; raise it only after checking peak VRAM), disables the reference/KL worker when KL is not
-requested, disables dynamic batching and `torch.compile`, and enables the
-upstream FSDP2 parameter/optimizer offload. Thus the four-sample group does not
-instantiate a second full reference model or compile a new graph for every
-length. Set `VAL_BEFORE_TRAIN=True` or `TEST_FREQ=1` when an online validation
-pass is desired; they default off to avoid duplicating the rollout during a
+policy minibatch, and `MAX_TOTAL_TOKENS=32768` is the per-GPU token budget.
+It uses upstream PEFT LoRA (`LORA_RANK=1` by default; raise it only after
+checking peak VRAM), disables the reference/KL worker when KL is not requested,
+disables dynamic batching and `torch.compile`, and keeps the single-GPU actor
+parameters on CUDA (`ACTOR_OFFLOAD_POLICY=False`) while offloading only the
+optimizer state. This avoids per-layer CPU/CUDA copies; set
+`ACTOR_OFFLOAD_POLICY=True` only when host memory is the priority. The launcher
+also serializes HF generation with `ROLLOUT_MICRO_BATCH_SIZE=1`, so the four
+rollouts do not multiply the long-context activation peak. Set
+`VAL_BEFORE_TRAIN=True` or `TEST_FREQ=1` when an online validation pass is
+desired; they default off to avoid duplicating the rollout during a
 memory/throughput run.
+
+For a real 32k resource check, set `PROMPT_FILL_TOKENS=32000`. The helper puts
+the filler in a prior assistant turn so the upstream collector preserves it
+when it appends the official environment observation:
+
+```bash
+PROMPT_FILL_TOKENS=32000 MAX_PROMPT=32256 MAX_RESPONSE=64 \
+GROUP_SIZE=4 MINI_BATCH_SIZE=4 ROLLOUT_MICRO_BATCH_SIZE=1 \
+TRAIN_SIZE=1 VAL_SIZE=1 MAX_STEPS=1 ENV_NAME=Webshop METHOD=grpo \
+bash experiments/rl/run_verl_agent.sh
+```
+
+On the A6000/Qwen3.5-9B setup this completed one upstream GRPO optimizer step
+with `prompt_length=32219`, `response_length=64`, peak allocated/reserved
+memory `38.482/42.932 GiB`, and no OOM.
 
 The launcher uses the upstream HF rollout backend (`rollout.name=hf`) to avoid
 assuming an incompatible vLLM build for Qwen3.5; switching to vLLM is an

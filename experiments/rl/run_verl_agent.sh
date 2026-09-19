@@ -25,9 +25,11 @@ LORA_ALPHA="${LORA_ALPHA:-2}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
 PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
 ACTOR_CPU_OFFLOAD="${ACTOR_CPU_OFFLOAD:-False}"
+ACTOR_OFFLOAD_POLICY="${ACTOR_OFFLOAD_POLICY:-False}"
 FSDP_MIN_PARAMS="${FSDP_MIN_PARAMS:-0}"
 HF_FSDP_WRAP="${HF_FSDP_WRAP:-False}"
 ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-1}"
+PROMPT_FILL_TOKENS="${PROMPT_FILL_TOKENS:-0}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
@@ -85,9 +87,11 @@ fi
 DATA_ROOT="${DATA_ROOT:-$HOME/data/verl-agent/delta-agent}"
 mkdir -p "$DATA_ROOT"
 "$VENV_PYTHON" "$DT_ROOT/experiments/rl/prepare_agent_data.py" \
-  --output "$DATA_ROOT/train.parquet" --size "$TRAIN_SIZE" --split train
+  --output "$DATA_ROOT/train.parquet" --size "$TRAIN_SIZE" --split train \
+  --prompt-fill-tokens "$PROMPT_FILL_TOKENS"
 "$VENV_PYTHON" "$DT_ROOT/experiments/rl/prepare_agent_data.py" \
-  --output "$DATA_ROOT/test.parquet" --size "$VAL_SIZE" --split test
+  --output "$DATA_ROOT/test.parquet" --size "$VAL_SIZE" --split test \
+  --prompt-fill-tokens "$PROMPT_FILL_TOKENS"
 
 cd "$VERL_ROOT"
 if [[ "$ENV_NAME" == "AppWorld" && -f "$APPWORLD_ROOT/appworld_ports.ports" ]]; then
@@ -121,7 +125,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.model.enable_gradient_checkpointing=True \
   actor_rollout_ref.actor.strategy="$ACTOR_STRATEGY" \
   actor_rollout_ref.actor.use_torch_compile=False \
-  actor_rollout_ref.actor.fsdp_config.offload_policy=True \
+  actor_rollout_ref.actor.fsdp_config.offload_policy="$ACTOR_OFFLOAD_POLICY" \
   +actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
   actor_rollout_ref.actor.fsdp_config.param_offload="$PARAM_OFFLOAD" \
   actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \

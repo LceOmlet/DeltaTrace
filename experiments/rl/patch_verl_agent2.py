@@ -210,7 +210,26 @@ HF_ROLLOUT_BAD_BLOCK = """        # FSDP2 CPU parameter offload can leave positi
         position_ids = position_ids.to(device)
 """
 HF_SUMMON_OLD = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=False)"
-HF_SUMMON_NEW = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=True)"
+HF_SUMMON_NEW = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=False)"
+HF_SUMMON_PREVIOUS = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=True)"
+
+# FSDP2 must be attached to the actual Transformers root when PEFT wraps it.
+# PeftModel.forward delegates into base_model.model; attaching the root state
+# to the wrapper can leave child FSDP states lazy-initialized first and fail in
+# the upstream log-prob pass. This only selects the upstream forward owner.
+FSDP2_ACTOR_OLD = (
+    "            full_state = actor_module.state_dict()\n"
+    "            apply_fsdp2(actor_module, fsdp_kwargs, fsdp_config)\n"
+    "            fsdp2_load_full_state_dict(actor_module, full_state, fsdp_mesh, cpu_offload)\n"
+    "            actor_module_fsdp = actor_module\n"
+)
+FSDP2_ACTOR_NEW = (
+    "            fsdp2_model = getattr(getattr(actor_module, \"base_model\", None), \"model\", actor_module)\n"
+    "            full_state = fsdp2_model.state_dict()\n"
+    "            apply_fsdp2(fsdp2_model, fsdp_kwargs, fsdp_config)\n"
+    "            fsdp2_load_full_state_dict(fsdp2_model, full_state, fsdp_mesh, cpu_offload)\n"
+    "            actor_module_fsdp = actor_module\n"
+)
 
 QWEN35_OLD = "        position_ids_expanded = position_ids[:, :, None, :].float()  # shape (3, bs, 1, positions)"
 QWEN35_NEW = "        position_ids_expanded = position_ids[:, :, None, :].float().to(x.device)  # shape (3, bs, 1, positions)"
@@ -326,6 +345,10 @@ def main() -> None:
         if HF_WRAP_OLD not in text:
             raise RuntimeError(f"cannot find HF FSDP wrap anchor in {fsdp}")
         text = text.replace(HF_WRAP_OLD, HF_WRAP_NEW, 1)
+    if FSDP2_ACTOR_NEW not in text:
+        if FSDP2_ACTOR_OLD not in text:
+            raise RuntimeError(f"cannot find FSDP2 PEFT root anchor in {fsdp}")
+        text = text.replace(FSDP2_ACTOR_OLD, FSDP2_ACTOR_NEW, 1)
     fsdp.write_text(text)
     print(f"patched {fsdp} Transformers compatibility")
     actor_policy = args.verl_root / ACTOR_FILE
@@ -392,6 +415,11 @@ def main() -> None:
     if hf_rollout_changed:
         hf_rollout.write_text(text)
     text = hf_rollout.read_text()
+    if HF_SUMMON_PREVIOUS in text:
+        text = text.replace(HF_SUMMON_PREVIOUS, HF_SUMMON_NEW, 1)
+        hf_rollout.write_text(text)
+        print(f"restored upstream {hf_rollout} nested FSDP summon")
+        text = hf_rollout.read_text()
     if HF_SUMMON_NEW not in text:
         if HF_SUMMON_OLD not in text:
             raise RuntimeError(f"cannot find HF FSDP summon anchor in {hf_rollout}")
