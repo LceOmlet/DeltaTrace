@@ -170,6 +170,17 @@ HF_ROLLOUT_NEW = """        idx = prompts.batch[\"input_ids\"]  # (bs, prompt_le
         attention_mask = attention_mask.to(device)
         position_ids = position_ids.to(device)
 """
+# A previous revision injected the device block with get_torch_device(), which
+# returns a torch module rather than a torch.device. Remove that stale block
+# when upgrading an already patched checkout.
+HF_ROLLOUT_BAD_BLOCK = """        # FSDP2 CPU parameter offload can leave position_ids on CPU while
+        # Qwen3.5's rotary kernel runs on CUDA. Keep all generation inputs on
+        # the active torch device; this is an upstream device-placement fix.
+        device = get_torch_device()
+        idx = idx.to(device)
+        attention_mask = attention_mask.to(device)
+        position_ids = position_ids.to(device)
+"""
 
 
 def main() -> None:
@@ -292,6 +303,11 @@ def main() -> None:
 
     hf_rollout = args.verl_root / HF_ROLLOUT_FILE
     text = hf_rollout.read_text()
+    # Make the compatibility patch idempotent across revisions. Older
+    # checkouts may contain the invalid torch-module device block.
+    if HF_ROLLOUT_BAD_BLOCK in text:
+        text = text.replace(HF_ROLLOUT_BAD_BLOCK, "", 1)
+        print(f"removed stale {hf_rollout} device compatibility block")
     if HF_ROLLOUT_IMPORT_NEW not in text:
         if HF_ROLLOUT_IMPORT_OLD not in text:
             raise RuntimeError(f"cannot find HF rollout device import anchor in {hf_rollout}")
@@ -299,7 +315,8 @@ def main() -> None:
     if HF_ROLLOUT_NEW not in text:
         if HF_ROLLOUT_OLD not in text:
             raise RuntimeError(f"cannot find HF rollout device anchor in {hf_rollout}")
-        hf_rollout.write_text(text.replace(HF_ROLLOUT_OLD, HF_ROLLOUT_NEW, 1))
+        text = text.replace(HF_ROLLOUT_OLD, HF_ROLLOUT_NEW, 1)
+        hf_rollout.write_text(text)
         print(f"patched {hf_rollout} device compatibility")
     else:
         print(f"already patched {hf_rollout} device compatibility")
