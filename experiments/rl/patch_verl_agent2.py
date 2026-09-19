@@ -150,6 +150,25 @@ FSDP2_NEW = """    if isinstance(fsdp_transformer_layer_cls_to_wrap, str):
     assert len(fsdp_transformer_layer_cls_to_wrap) > 0 and fsdp_transformer_layer_cls_to_wrap[0] is not None
 """
 
+HF_ROLLOUT_FILE = "verl/workers/rollout/hf_rollout.py"
+HF_ROLLOUT_OLD = """        idx = prompts.batch[\"input_ids\"]  # (bs, prompt_length)
+        prompt_length = idx.size(1)
+        attention_mask = prompts.batch[\"attention_mask\"]  # left-padded attention_mask
+        position_ids = prompts.batch[\"position_ids\"]
+"""
+HF_ROLLOUT_NEW = """        idx = prompts.batch[\"input_ids\"]  # (bs, prompt_length)
+        prompt_length = idx.size(1)
+        attention_mask = prompts.batch[\"attention_mask\"]  # left-padded attention_mask
+        position_ids = prompts.batch[\"position_ids\"]
+        # FSDP2 CPU parameter offload can leave position_ids on CPU while
+        # Qwen3.5's rotary kernel runs on CUDA. Keep all generation inputs on
+        # the active torch device; this is an upstream device-placement fix.
+        device = get_torch_device()
+        idx = idx.to(device)
+        attention_mask = attention_mask.to(device)
+        position_ids = position_ids.to(device)
+"""
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -268,6 +287,16 @@ def main() -> None:
         print(f"patched {policy} FSDP2 compatibility")
     else:
         print(f"already patched {policy} FSDP2 compatibility")
+
+    hf_rollout = args.verl_root / HF_ROLLOUT_FILE
+    text = hf_rollout.read_text()
+    if HF_ROLLOUT_NEW not in text:
+        if HF_ROLLOUT_OLD not in text:
+            raise RuntimeError(f"cannot find HF rollout device anchor in {hf_rollout}")
+        hf_rollout.write_text(text.replace(HF_ROLLOUT_OLD, HF_ROLLOUT_NEW, 1))
+        print(f"patched {hf_rollout} device compatibility")
+    else:
+        print(f"already patched {hf_rollout} device compatibility")
 
 
 if __name__ == "__main__":
