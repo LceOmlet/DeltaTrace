@@ -212,6 +212,8 @@ HF_ROLLOUT_BAD_BLOCK = """        # FSDP2 CPU parameter offload can leave positi
 
 QWEN35_OLD = "        position_ids_expanded = position_ids[:, :, None, :].float()  # shape (3, bs, 1, positions)"
 QWEN35_NEW = "        position_ids_expanded = position_ids[:, :, None, :].float().to(x.device)  # shape (3, bs, 1, positions)"
+HF_WRAP_OLD = '        if self._is_rollout and self.config.rollout.name == "hf":\n            # TODO(zhangchi.usc1992, shengguangming) fix me. Current, auto_wrap_policy causes HFRollout to hang in Gemma\n            auto_wrap_policy = None'
+HF_WRAP_NEW = '        if self._is_rollout and self.config.rollout.name == "hf" and os.getenv("VERL_ENABLE_HF_FSDP_WRAP", "0") != "1":\n            # Keep upstream HF rollout\'s conservative default; long-context\n            # single-GPU runs can opt into layer wrapping explicitly.\n            auto_wrap_policy = None'
 
 
 def main() -> None:
@@ -312,6 +314,10 @@ def main() -> None:
         if FSDP_ACTOR_OFFLOAD_OLD not in text:
             raise RuntimeError(f"cannot find FSDP actor offload anchor in {fsdp}")
         text = text.replace(FSDP_ACTOR_OFFLOAD_OLD, FSDP_ACTOR_OFFLOAD_NEW, 1)
+    if HF_WRAP_NEW not in text:
+        if HF_WRAP_OLD not in text:
+            raise RuntimeError(f"cannot find HF FSDP wrap anchor in {fsdp}")
+        text = text.replace(HF_WRAP_OLD, HF_WRAP_NEW, 1)
     fsdp.write_text(text)
     print(f"patched {fsdp} Transformers compatibility")
     actor_policy = args.verl_root / ACTOR_FILE
