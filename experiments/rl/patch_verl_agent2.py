@@ -230,6 +230,8 @@ RAY_ROLLOUT_FILE = "agent_system/multi_turn_rollout/rollout_loop.py"
 ROLLOUT_STEP_ANCHOR = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n"
 ROLLOUT_STEP_INSERT = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n            batch.non_tensor_batch['env_step'] = np.full(batch_size, _step, dtype=np.int64)\n"
 GATHER_ANCHOR = "        batch_size = len(total_batch_list)\n\n        success_rate = {}\n"
+GATHER_BROKEN_IMPORT = "            try:\n                try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n"
+GATHER_GOOD_IMPORT = "            try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n"
 GATHER_INSERT = "        batch_size = len(total_batch_list)\n\n        # Exact finite-sample policy baseline for the first action. The\n        # leave-one-out mean excludes the selected rollout itself; later\n        # actions have no same-history reference and are explicitly masked.\n        if str(self.config.algorithm.adv_estimator) == \"counterfactual\":\n            from experiments.rl.deltatrace_credit import averaged_traced_credit\n            group_indices = {}\n            for idx, rows in enumerate(total_batch_list):\n                if not rows:\n                    raise RuntimeError(\"counterfactual rollout has no trajectory rows\")\n                group_indices.setdefault(rows[0][\"uid\"], []).append(idx)\n            for indices in group_indices.values():\n                if len(indices) < 2:\n                    raise ValueError(\"counterfactual estimator requires env.rollout.n >= 2\")\n                group_returns = torch.as_tensor(episode_rewards[indices], dtype=torch.float32)\n                for local_idx, rollout_idx in enumerate(indices):\n                    selected = group_returns[local_idx : local_idx + 1]\n                    references = torch.cat((group_returns[:local_idx], group_returns[local_idx + 1 :])).unsqueeze(0)\n                    credit = averaged_traced_credit(selected, references).credit[0]\n                    reference_mean = references.mean()\n                    for row in total_batch_list[rollout_idx]:\n                        row[\"counterfactual_credit\"] = credit.detach().clone()\n                        row[\"counterfactual_selected_return\"] = selected[0].detach().clone()\n                        row[\"counterfactual_reference_return\"] = reference_mean.detach().clone()\n                        row[\"counterfactual_action_mask\"] = torch.tensor(int(row.get(\"env_step\", 0)) == 0, dtype=torch.bool)\n\n        success_rate = {}\n"
 
 # FSDP2 must be attached to the actual Transformers root when PEFT wraps it.
@@ -513,21 +515,28 @@ def main() -> None:
     # before collate_fn turns trajectory rows into DataProto tensors.
     rollout = args.verl_root / RAY_ROLLOUT_FILE
     text = rollout.read_text()
+    if GATHER_BROKEN_IMPORT in text:
+        text = text.replace(GATHER_BROKEN_IMPORT, GATHER_GOOD_IMPORT, 1)
+    gather_inserted = False
     if ROLLOUT_STEP_INSERT not in text:
         if ROLLOUT_STEP_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout step anchor in {rollout}")
         text = text.replace(ROLLOUT_STEP_ANCHOR, ROLLOUT_STEP_INSERT, 1)
-    if GATHER_INSERT not in text and "            try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit" not in text:
+    if GATHER_INSERT not in text and GATHER_GOOD_IMPORT not in text:
         if GATHER_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
         text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
+        gather_inserted = True
     # Ray workers may expose the adapter directory directly rather than the
-    # repository namespace; keep the import at the same thin boundary.
-    text = text.replace(
-        "            from experiments.rl.deltatrace_credit import averaged_traced_credit\n",
-        "            try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n",
-        1,
-    )
+    # repository namespace; keep the import at the same thin boundary. Only
+    # rewrite the import on the same pass that inserted the fresh block;
+    # otherwise a second idempotent patch could nest another try statement.
+    if gather_inserted:
+        text = text.replace(
+            "            from experiments.rl.deltatrace_credit import averaged_traced_credit\n",
+            GATHER_GOOD_IMPORT,
+            1,
+        )
     rollout.write_text(text)
     print(f"patched {rollout} counterfactual collector")
 
