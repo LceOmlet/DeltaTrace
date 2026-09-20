@@ -176,3 +176,14 @@ The local invariant test is:
 ```bash
 python -m experiments.rl.test_counterfactual
 ```
+
+With the pinned VERL checkout on `PYTHONPATH`, the upstream advantage seam can
+be checked independently with:
+
+```bash
+python -m experiments.rl.test_verl_counterfactual
+```
+
+The non-degenerate test expects credits `[1, -3]`, leave-one-out credits
+`[1.5, 0, -1.5]`, and a first-action advantage row `[2, 2, 0]` while a later
+action row is all zero.
