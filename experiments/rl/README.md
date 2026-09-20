@@ -93,25 +93,26 @@ rollouts do not multiply the long-context activation peak. Set
 desired; they default off to avoid duplicating the rollout during a
 memory/throughput run.
 
-For a real 32k resource check, set `PROMPT_FILL_TOKENS=32000`. The helper puts
+For a real 32k resource check, set `PROMPT_FILL_TOKENS=30000`. The helper puts
 the filler in a prior assistant turn so the upstream collector preserves it
 when it appends the official environment observation:
 
 ```bash
-PROMPT_FILL_TOKENS=32000 MAX_PROMPT=32256 MAX_RESPONSE=64 \
+PROMPT_FILL_TOKENS=30000 MAX_PROMPT=32256 MAX_TOTAL_TOKENS=32768 MAX_RESPONSE=64 \
 GROUP_SIZE=4 MINI_BATCH_SIZE=4 ROLLOUT_MICRO_BATCH_SIZE=1 \
-TRAIN_SIZE=1 VAL_SIZE=1 MAX_STEPS=1 ENV_NAME=Webshop METHOD=grpo \
+TRAIN_SIZE=1 VAL_SIZE=1 MAX_STEPS=1 ENV_NAME=Webshop METHOD=counterfactual \
 bash experiments/rl/run_verl_agent.sh
 ```
 
-On the A6000/Qwen3.5-9B setup this completed one upstream GRPO optimizer step
-with `prompt_length=32219`, `response_length=64`, peak allocated/reserved
-memory `38.482/42.932 GiB`, and no OOM.
+On the A6000/Qwen3.5-9B setup this completed one upstream optimizer step for
+WebShop, Sokoban, and AppWorld with `prompt_length` 30219--31802 and no OOM;
+peak allocated/reserved memory was `38.482/42.932 GiB`. The exact per-task
+logs and throughput are recorded in
+`results_counterfactual_32k_a6000.json`.
 
 That boundary fixture uses one environment step. For multi-turn episodes the
-official observation history grows, so leave headroom (for example,
-`PROMPT_FILL_TOKENS=30000`); a two-step run reached `prompt_length=30493`
-without an FSDP or optimizer-state error.
+official observation history grows, so leave headroom. The two-step Sokoban
+semantic smoke is recorded in `results_counterfactual_multistep.json`.
 
 The launcher uses the upstream HF rollout backend (`rollout.name=hf`) to avoid
 assuming an incompatible vLLM build for Qwen3.5; switching to vLLM is an
@@ -120,6 +121,9 @@ explicit host-level choice.
 For the text-only Qwen3.5 checkpoint, Sokoban defaults to the upstream
 `tiny_rgb_array` ASCII observation (`SOKOBAN_MODE=tiny_rgb_array`). Set
 `SOKOBAN_MODE=rgb_array` only when using a vision-capable processor and model.
+For multi-turn Qwen text runs, the patch preserves decoded actions before
+calling the upstream projection, whose Sokoban implementation normalizes its
+input list in place.
 
 AppWorld requires its official service before launching. The environment
 manager assigns one port per training rollout and one validation port. Thus

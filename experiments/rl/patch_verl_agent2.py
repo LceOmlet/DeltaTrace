@@ -229,6 +229,12 @@ RAY_USE_CRITIC_NEW = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELIN
 RAY_ROLLOUT_FILE = "agent_system/multi_turn_rollout/rollout_loop.py"
 ROLLOUT_STEP_ANCHOR = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n"
 ROLLOUT_STEP_INSERT = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n            batch.non_tensor_batch['env_step'] = np.full(batch_size, _step, dtype=np.int64)\n"
+# Some upstream environment projections (notably Sokoban) normalize the
+# list passed to ``envs.step`` in place, replacing decoded text with integer
+# action ids. Preserve the decoded response for the next chat turn; this is a
+# one-line collector seam, not a second environment implementation.
+ROLLOUT_ACTION_COPY_OLD = "            text_actions = self.tokenizer.batch_decode(batch.batch['responses'], skip_special_tokens=True)\n            \n            next_obs, rewards, dones, infos = envs.step(text_actions)\n"
+ROLLOUT_ACTION_COPY_NEW = "            text_actions = self.tokenizer.batch_decode(batch.batch['responses'], skip_special_tokens=True)\n            env_actions = list(text_actions)\n            next_obs, rewards, dones, infos = envs.step(env_actions)\n"
 GATHER_ANCHOR = "        batch_size = len(total_batch_list)\n\n        success_rate = {}\n"
 GATHER_BROKEN_IMPORT = "            try:\n                try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n"
 GATHER_GOOD_IMPORT = "            try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n"
@@ -517,6 +523,13 @@ def main() -> None:
     text = rollout.read_text()
     if GATHER_BROKEN_IMPORT in text:
         text = text.replace(GATHER_BROKEN_IMPORT, GATHER_GOOD_IMPORT, 1)
+    if ROLLOUT_ACTION_COPY_NEW not in text:
+        if ROLLOUT_ACTION_COPY_OLD not in text:
+            raise RuntimeError(f"cannot find decoded-action preservation anchor in {rollout}")
+        text = text.replace(ROLLOUT_ACTION_COPY_OLD, ROLLOUT_ACTION_COPY_NEW, 1)
+        print(f"patched {rollout} decoded-action preservation")
+    else:
+        print(f"already patched {rollout} decoded-action preservation")
     gather_inserted = False
     if ROLLOUT_STEP_INSERT not in text:
         if ROLLOUT_STEP_ANCHOR not in text:
