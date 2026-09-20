@@ -46,8 +46,9 @@ it does not generate a replacement task implementation.
 On a prepared Linux host, set `DT_ROOT` to the checkout and point
 `MODEL_PATH` to a local Qwen3.5 checkpoint. The launcher uses the upstream
 `verl.trainer.main_ppo` entry point. `METHOD=grpo` selects upstream GRPO
-(`algorithm.adv_estimator=grpo`); `METHOD=ppo` selects upstream GAE/PPO. The
-same command supports all three tasks:
+(`algorithm.adv_estimator=grpo`); `METHOD=ppo` selects upstream GAE/PPO;
+`METHOD=counterfactual` (or `METHOD=dt`) selects the pinned trainer's
+counterfactual estimator. The same command supports all three tasks:
 
 ```bash
 DT_ROOT=/path/to/DeltaTrace \
@@ -67,6 +68,13 @@ MODEL_PATH=/data/models/Qwen3.5-9B \
 CUDA_VISIBLE_DEVICES=0 \
 ENV_NAME=AppWorld METHOD=grpo \
 TRAIN_SIZE=1 VAL_SIZE=1 GROUP_SIZE=1 \
+bash experiments/rl/run_verl_agent.sh
+
+DT_ROOT=/path/to/DeltaTrace \
+MODEL_PATH=/data/models/Qwen3.5-9B \
+CUDA_VISIBLE_DEVICES=0 \
+ENV_NAME=Webshop METHOD=counterfactual \
+TRAIN_SIZE=1 VAL_SIZE=1 GROUP_SIZE=4 MAX_STEPS=2 \
 bash experiments/rl/run_verl_agent.sh
 ```
 
@@ -141,16 +149,23 @@ or keep the port file in the launcher working directory.
 `counterfactual.py` and `deltatrace_credit.py` implement only the policy-credit
 contract: independently sampled reference actions produce
 `G(selected) - mean(G(reference))`, which is the policy-average
-`Q(h,a)-V(h)` signal. The DeltaTrace signed input vector is retained for
-diagnostics and is never used as a token-wise GRPO/PPO advantage. The upstream
-VERL optimizer remains the optimizer; the adapter is the narrow place to add
-counterfactual endpoint values once the rollout records selected/reference
-traces. It does not duplicate VERL's trainer.
+`Q(h,a)-V(h)` signal. The patched upstream collector uses a leave-one-out mean
+over the same initial-state rollout group, so the selected rollout is excluded
+from its own reference set. This credit is attached only to the first
+environment action; later actions are masked because the group rollouts no
+longer share a history. The upstream VERL optimizer remains the optimizer and
+the signed DeltaTrace input vector is never used as a token-wise advantage.
 
-`patch_verl_agent2.py` applies one compatibility-only fix to the pinned
-upstream tree: it makes the Sokoban factory lazy to avoid that tree's nested
-package import cycle under Python 3.12. It changes no environment dynamics or
-RL math.
+The `counterfactual` estimator is a reward-level policy signal, not the
+model-log-probability `root_effect` returned by the attribution runner.
+`dt_action_smoke.py` separately checks that the owner DeltaTrace runner can
+produce and audit an action intervention; it is diagnostic and must not be
+substituted for the environment return in the policy loss.
+
+`patch_verl_agent2.py` applies the pinned tree's compatibility fixes and adds
+only the counterfactual estimator/collector seam described above. It does not
+copy the trainer, alter environment dynamics, or replace the upstream actor
+optimizer.
 
 The local invariant test is:
 

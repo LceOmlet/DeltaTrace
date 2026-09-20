@@ -1,4 +1,4 @@
-"""Apply compatibility-only patches required by the pinned verl-agent2 tree.
+"""Apply compatibility and one minimal estimator seam to the pinned tree.
 
 The upstream Sokoban package has a nested package with the same name as its
 parent.  Eagerly importing both modules creates a Python 3.12 import cycle
@@ -7,8 +7,9 @@ also needs its checker disabled, and Sokoban must not import Transformers in a
 Ray worker. The pinned tree also assumes a CUDA flash-attn binary at import
 time; on hosts whose glibc cannot load that optional binary, we keep upstream
 Hugging Face SDPA as the default and only import flash-attn when VERL's
-remove-padding path is explicitly enabled. These edits do not change
-environment dynamics or trainer math.
+remove-padding path is explicitly enabled. The counterfactual estimator is
+added at VERL's existing advantage boundary; it does not replace the trainer,
+rollout, optimizer, or environment dynamics.
 """
 
 from __future__ import annotations
@@ -212,6 +213,24 @@ HF_ROLLOUT_BAD_BLOCK = """        # FSDP2 CPU parameter offload can leave positi
 HF_SUMMON_OLD = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=False)"
 HF_SUMMON_NEW = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=False)"
 HF_SUMMON_PREVIOUS = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=True)"
+
+# The trainer remains the semantic owner of policy optimization. This patch
+# only adds a new estimator at its existing advantage boundary; rollout and
+# actor updates stay upstream. The collector supplies a leave-one-out
+# action-level return difference for the first environment action in each
+# independent rollout group.
+RAY_TRAINER_FILE = "verl/trainer/ppo/ray_trainer.py"
+RAY_ADV_ENUM_OLD = "    GiGPO = 'gigpo'\n"
+RAY_ADV_ENUM_NEW = "    GiGPO = 'gigpo'\n    COUNTERFACTUAL = 'counterfactual'\n"
+RAY_ADV_INSERT_ANCHOR = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    else:\n        raise NotImplementedError\n    return data\n"
+RAY_ADV_INSERT = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    elif adv_estimator == AdvantageEstimator.COUNTERFACTUAL:\n        if \"counterfactual_credit\" not in data.batch or \"counterfactual_action_mask\" not in data.batch:\n            raise RuntimeError(\"counterfactual estimator requires collector-provided action credit\")\n        credit = data.batch[\"counterfactual_credit\"].to(device=data.batch[\"responses\"].device, dtype=torch.float32)\n        action_mask = data.batch[\"counterfactual_action_mask\"].to(device=data.batch[\"responses\"].device, dtype=torch.bool)\n        response_mask = data.batch[\"response_mask\"].to(dtype=torch.float32)\n        advantages = response_mask * credit[:, None] * action_mask[:, None].to(torch.float32)\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = advantages.detach().clone()\n    else:\n        raise NotImplementedError\n    return data\n"
+RAY_USE_CRITIC_OLD = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO\n        ]:\n"
+RAY_USE_CRITIC_NEW = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.COUNTERFACTUAL\n        ]:\n"
+RAY_ROLLOUT_FILE = "agent_system/multi_turn_rollout/rollout_loop.py"
+ROLLOUT_STEP_ANCHOR = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n"
+ROLLOUT_STEP_INSERT = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n            batch.non_tensor_batch['env_step'] = np.full(batch_size, _step, dtype=np.int64)\n"
+GATHER_ANCHOR = "        batch_size = len(total_batch_list)\n\n        success_rate = {}\n"
+GATHER_INSERT = "        batch_size = len(total_batch_list)\n\n        # Exact finite-sample policy baseline for the first action. The\n        # leave-one-out mean excludes the selected rollout itself; later\n        # actions have no same-history reference and are explicitly masked.\n        if str(self.config.algorithm.adv_estimator) == \"counterfactual\":\n            from experiments.rl.deltatrace_credit import averaged_traced_credit\n            group_indices = {}\n            for idx, rows in enumerate(total_batch_list):\n                if not rows:\n                    raise RuntimeError(\"counterfactual rollout has no trajectory rows\")\n                group_indices.setdefault(rows[0][\"uid\"], []).append(idx)\n            for indices in group_indices.values():\n                if len(indices) < 2:\n                    raise ValueError(\"counterfactual estimator requires env.rollout.n >= 2\")\n                group_returns = torch.as_tensor(episode_rewards[indices], dtype=torch.float32)\n                for local_idx, rollout_idx in enumerate(indices):\n                    selected = group_returns[local_idx : local_idx + 1]\n                    references = torch.cat((group_returns[:local_idx], group_returns[local_idx + 1 :])).unsqueeze(0)\n                    credit = averaged_traced_credit(selected, references).credit[0]\n                    reference_mean = references.mean()\n                    for row in total_batch_list[rollout_idx]:\n                        row[\"counterfactual_credit\"] = credit.detach().clone()\n                        row[\"counterfactual_selected_return\"] = selected[0].detach().clone()\n                        row[\"counterfactual_reference_return\"] = reference_mean.detach().clone()\n                        row[\"counterfactual_action_mask\"] = torch.tensor(int(row.get(\"env_step\", 0)) == 0, dtype=torch.bool)\n\n        success_rate = {}\n"
 
 # FSDP2 must be attached to the actual Transformers root when PEFT wraps it.
 # PeftModel.forward delegates into base_model.model; attaching the root state
@@ -469,6 +488,41 @@ def main() -> None:
                 print(f"patched {qwen35} FSDP2 lm_head compatibility")
         else:
             print(f"already patched {qwen35} FSDP2 lm_head compatibility")
+
+    # Add the counterfactual estimator at VERL's existing owner boundary.
+    # This is intentionally a source patch to the pinned upstream tree rather
+    # than a second trainer implementation.
+    ray_trainer = args.verl_root / RAY_TRAINER_FILE
+    text = ray_trainer.read_text()
+    if RAY_ADV_ENUM_NEW not in text:
+        if RAY_ADV_ENUM_OLD not in text:
+            raise RuntimeError(f"cannot find VERL advantage enum anchor in {ray_trainer}")
+        text = text.replace(RAY_ADV_ENUM_OLD, RAY_ADV_ENUM_NEW, 1)
+    if RAY_ADV_INSERT not in text:
+        if RAY_ADV_INSERT_ANCHOR not in text:
+            raise RuntimeError(f"cannot find VERL advantage branch anchor in {ray_trainer}")
+        text = text.replace(RAY_ADV_INSERT_ANCHOR, RAY_ADV_INSERT, 1)
+    if RAY_USE_CRITIC_NEW not in text:
+        if RAY_USE_CRITIC_OLD not in text:
+            raise RuntimeError(f"cannot find VERL critic-selection anchor in {ray_trainer}")
+        text = text.replace(RAY_USE_CRITIC_OLD, RAY_USE_CRITIC_NEW, 1)
+    ray_trainer.write_text(text)
+    print(f"patched {ray_trainer} counterfactual estimator")
+
+    # Preserve the collector's step identity and attach group-level returns
+    # before collate_fn turns trajectory rows into DataProto tensors.
+    rollout = args.verl_root / RAY_ROLLOUT_FILE
+    text = rollout.read_text()
+    if ROLLOUT_STEP_INSERT not in text:
+        if ROLLOUT_STEP_ANCHOR not in text:
+            raise RuntimeError(f"cannot find rollout step anchor in {rollout}")
+        text = text.replace(ROLLOUT_STEP_ANCHOR, ROLLOUT_STEP_INSERT, 1)
+    if GATHER_INSERT not in text:
+        if GATHER_ANCHOR not in text:
+            raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
+        text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
+    rollout.write_text(text)
+    print(f"patched {rollout} counterfactual collector")
 
 
 if __name__ == "__main__":

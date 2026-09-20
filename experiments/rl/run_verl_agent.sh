@@ -5,7 +5,7 @@ set -euo pipefail
 # reimplement PPO/GRPO, rollout, or any environment.  Override variables for
 # another machine instead of editing the command below.
 
-METHOD="${METHOD:-grpo}"             # grpo or ppo
+METHOD="${METHOD:-grpo}"             # grpo, ppo, or counterfactual
 ENV_NAME="${ENV_NAME:-Webshop}"      # Webshop, Sokoban, or AppWorld
 DT_ROOT="${DT_ROOT:-$PWD}"
 MODEL_PATH="${MODEL_PATH:-/data/liangchen/models/Qwen3.5-9B}"
@@ -39,7 +39,8 @@ MAX_STEPS="${MAX_STEPS:-15}"
 case "$METHOD" in
   grpo) ADV_ESTIMATOR=grpo ;;
   ppo) ADV_ESTIMATOR=gae ;;
-  *) echo "METHOD must be grpo or ppo" >&2; exit 2 ;;
+  counterfactual|dt) ADV_ESTIMATOR=counterfactual ;;
+  *) echo "METHOD must be grpo, ppo, or counterfactual" >&2; exit 2 ;;
 esac
 case "$ENV_NAME" in
   Webshop|Sokoban|AppWorld) ;;
@@ -56,7 +57,7 @@ if [[ ! -d "$VERL_ROOT" ]]; then
 fi
 
 export CUDA_VISIBLE_DEVICES
-export PYTHONPATH="$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package/webshop/webshop:${APPWORLD_ROOT}:${PYTHONPATH:-}"
+export PYTHONPATH="$DT_ROOT:$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package/webshop/webshop:${APPWORLD_ROOT}:${PYTHONPATH:-}"
 export TOKENIZERS_PARALLELISM=false
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
