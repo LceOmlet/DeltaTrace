@@ -14,15 +14,26 @@ def main() -> None:
     probs = torch.tensor([[0.2, 0.5, 0.3], [0.6, 0.1, 0.3]])
     assert_advantage_equivalence(q, probs)
 
-    selected = torch.tensor([3.0, 2.0])
+    # Non-degenerate cases are required here: an equal-return fixture would
+    # only test the zero-credit special case and could not catch a sign or
+    # leave-one-out bug.
+    selected = torch.tensor([4.0, -1.0])
     references = torch.tensor([[1.0, 3.0, 5.0], [4.0, 0.0, 2.0]])
     batch = averaged_counterfactual_credit(selected, references)
-    expected = torch.tensor([0.0, 0.0])
+    expected = torch.tensor([1.0, -3.0])
     assert torch.allclose(batch.credit, expected)
     log_prob = torch.tensor([-0.4, -0.7], requires_grad=True)
     loss = score_function_loss(log_prob, batch.credit)
     loss.backward()
-    assert torch.allclose(log_prob.grad, torch.zeros_like(log_prob))
+    assert torch.allclose(log_prob.grad, torch.tensor([-0.5, 1.5]))
+
+    # The collector's leave-one-out contract must exclude the selected
+    # rollout from its reference mean.  For returns [1, 0, -1], the credits
+    # are [1.5, 0, -1.5], not a group-centred average with self included.
+    loo_selected = torch.tensor([1.0, 0.0, -1.0])
+    loo_references = torch.tensor([[0.0, -1.0], [1.0, -1.0], [1.0, 0.0]])
+    loo = averaged_counterfactual_credit(loo_selected, loo_references)
+    assert torch.allclose(loo.credit, torch.tensor([1.5, 0.0, -1.5]))
     class FakeSelection:
         def __init__(self, cases, offsets, length, device):
             assert cases and offsets == [[0]] and length == 3
@@ -38,7 +49,13 @@ def main() -> None:
         packed_answer_targets=FakeSelection,
     )
     assert effect == 1.25 and detail["policy_credit_signed_vector_used"] is False
-    print({"status": "passed", "credit": batch.credit.tolist(), "loss": float(loss.detach())})
+    print({
+        "status": "passed",
+        "credit": batch.credit.tolist(),
+        "loo_credit": loo.credit.tolist(),
+        "loss": float(loss.detach()),
+        "grad": log_prob.grad.tolist(),
+    })
 
 
 if __name__ == "__main__":

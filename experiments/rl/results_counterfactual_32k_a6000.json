@@ -14,6 +14,14 @@
   "trainer_owner": "upstream verl-agent2/verl",
   "credit_source": "leave-one-out environment return via deltatrace_credit.averaged_traced_credit",
   "credit_policy": "credit is repeated only over response tokens of env_step==0; later action rows are masked",
+  "invariant_test": {
+    "status": "passed",
+    "selected_return": [4.0, -1.0],
+    "reference_returns": [[1.0, 3.0, 5.0], [4.0, 0.0, 2.0]],
+    "credit": [1.0, -3.0],
+    "loo_credit_for_group_returns_1_0_-1": [1.5, 0.0, -1.5],
+    "score_function_gradient": [-0.5, 1.5]
+  },
   "runs": [
     {
       "env": "Webshop",
@@ -52,5 +60,5 @@
       "log": "/tmp/dt_cf_appworld_32k.log"
     }
   ],
-  "notes": "These are capacity/integration smokes with a 30k-token prior-context fixture; equal returns in each one-step group make the measured counterfactual credit numerically zero. They validate the real upstream environments, collector seam, and actor update, not learning quality."
+  "notes": "These are capacity/integration smokes with a 30k-token prior-context fixture. The one-step environment groups happened to have equal returns, so their measured credit is zero; the non-degenerate invariant test above separately verifies positive/negative sign, leave-one-out exclusion, and score-function propagation. These runs validate the real upstream environments, collector seam, and actor update, not learning quality."
 }
