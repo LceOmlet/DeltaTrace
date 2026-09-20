@@ -57,7 +57,7 @@ if [[ ! -d "$VERL_ROOT" ]]; then
 fi
 
 export CUDA_VISIBLE_DEVICES
-export PYTHONPATH="$DT_ROOT:$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package/webshop/webshop:${APPWORLD_ROOT}:${PYTHONPATH:-}"
+export PYTHONPATH="$DT_ROOT/experiments/rl:$DT_ROOT:$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package/webshop/webshop:${APPWORLD_ROOT}:${PYTHONPATH:-}"
 export TOKENIZERS_PARALLELISM=false
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"

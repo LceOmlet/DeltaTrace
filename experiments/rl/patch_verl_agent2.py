@@ -521,6 +521,13 @@ def main() -> None:
         if GATHER_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
         text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
+    # Ray workers may expose the adapter directory directly rather than the
+    # repository namespace; keep the import at the same thin boundary.
+    text = text.replace(
+        "            from experiments.rl.deltatrace_credit import averaged_traced_credit\n",
+        "            try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n",
+        1,
+    )
     rollout.write_text(text)
     print(f"patched {rollout} counterfactual collector")
 
