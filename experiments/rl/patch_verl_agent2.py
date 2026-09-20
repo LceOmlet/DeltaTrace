@@ -517,7 +517,7 @@ def main() -> None:
         if ROLLOUT_STEP_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout step anchor in {rollout}")
         text = text.replace(ROLLOUT_STEP_ANCHOR, ROLLOUT_STEP_INSERT, 1)
-    if GATHER_INSERT not in text:
+    if GATHER_INSERT not in text and "            try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit" not in text:
         if GATHER_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
         text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
