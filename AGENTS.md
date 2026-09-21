@@ -5,6 +5,15 @@ It is the sole method specification accepted by the user. The RL README is
 only a status/index document; environment receipts and historical results do
 not define the method. Do not introduce an alternative plan in another file.
 
+Preserve the user's clarified idealization: exact model-estimated token values
+are the corresponding real-world variable values. Use that premise to check
+composition, while allowing practical DT estimates and numerical/reference
+computations to be approximate. Do not require an exact world simulator or
+zero estimation error before development. Keep approximation error, interface
+defects, and measured efficiency separate. Do not impose a rule that only one
+component may be changed at a time; that was not a user requirement. Preserve
+accepted conclusions unless evidence or a user instruction actually changes them.
+
 Keep the specified token-level Q^{DT}, V^{DT}, A^{DT}=Q^{DT}-V^{DT}, observation
 mask, and upstream PPO objective. Every reasoning, tool-call, and final token
 is a separate policy action. Do not substitute scalar/span credit, a learned
