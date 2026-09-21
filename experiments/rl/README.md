@@ -34,6 +34,15 @@ clipped objective。实现和测试应先核对该文件。
 传播 seed 已有归属，后续接入复用这些实现。当前未定部分是正式 DT 输出到固定
 token 价值/策略参照的对应；上游 rollout、环境、PPO 损失和 optimizer 不因此重写。
 
+2026-09-21 经新 A6000 地址核对了实际任务奖励接口：WebShop worker 保留
+`info['task_score']`，并将终局满分映射为训练 reward 10、其他为 0；AppWorld
+在结束时使用官方 `evaluate().success`，reward 为 10 或 0；Sokoban 原环境
+包含步惩罚 -0.1、箱子离开目标 -1、进入目标 +1 和完成 +10。环境已有奖励，
+不需要复制其评分器。正式 DT 当前 `PackedAnswerTargets` 接收文本 token IDs
+及目标位置，`FiniteAnswerOps` 计算这些文本的 log-prob。将这些文本目标对应到
+上述任务奖励结果、再计算同前缀旧策略参照的具体实现仍未闭合；未启动旧适配
+训练来替代这项工作，也未声称当前固定算法已经无缺口。
+
 ## 环境与历史记录
 
 已有 A6000 环境、权重、上游版本、缓存和任务资产的复用方式见

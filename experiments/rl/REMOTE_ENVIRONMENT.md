@@ -9,14 +9,18 @@
 本机 PowerShell：
 
 ```powershell
-ssh -o BatchMode=yes -J 4090 -p 2501 liangchen@10.70.23.124
+ssh -o BatchMode=yes -J 4090 -p 2501 liangchen@10.70.5.230
 ```
 
 不使用本机别名的同一入口：
 
 ```powershell
-ssh -J chen@e1b4acb6c4c142d5a00d326cec07fb11.hn.takin.cc:10179 -p 2501 liangchen@10.70.23.124
+ssh -J chen@e1b4acb6c4c142d5a00d326cec07fb11.hn.takin.cc:10179 -p 2501 liangchen@10.70.5.230
 ```
+
+2026-09-21 用户更新 A6000 内网地址为 `10.70.5.230`。已通过旧地址记录的
+SSH 主机密钥验证并成功登录，主机名 `hit`、账号 `liangchen`；新地址的
+known_hosts 记录复用该已验证密钥。该变更只适用于 A6000，不改 3090 记录。
 
 远端 Bash：
 
@@ -140,5 +144,21 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
 - 旧 `results_counterfactual_32k_a6000.json` 使用旧信用方案，不能作为当前
   token DT 方案成功的证据。
 
-本次整理末尾的 SSH 复核遇到 banner 超时，因此新文件的远端同步及当前进程状态
-尚未确认。这里保存的是已有环境信息和恢复入口，不声称完成了新的远端验收。
+## 2026-09-21 新地址恢复检查
+
+- 已通过 `10.70.5.230:2501` 经 4090 登录，并验证它与旧地址的 SSH 主机密钥相同。
+- 已同步本地唯一 PLAN、状态 README、本记录和 `a6000.env.sh`；旧文档快照保存在
+  运行根目录的 `receipts/docs-before-sync-*` 下，不是活动方法规范。
+- 已实际 source `a6000.env.sh` 并调用原有 Python，没有安装、下载或编译步骤。
+  Python 解析位置为 `/backup01/liangchen/conda_envs/mem1_train/bin/python3.12`。
+- 已查询安装版本：Torch `2.8.0+cu128`、Transformers `5.13.0`、
+  VERL `0.3.1.dev0`、AppWorld `0.2.0.dev0`；VERL Git HEAD 与上述固定基线一致。
+- 模型 `config.json` 及两个持久缓存目录存在。已有 AppWorld 7000--7004 进程存在；
+  本次未重启服务，也没有据进程存在宣称任务评估通过。
+- GPU 占用检查发现所有六张卡都有已有进程。GPU 1/2/5 约各占 1.8 GiB，
+  GPU 4 约占 40.7 GiB，其他卡也有进程；这些不是本任务的资源预留。
+  未终止这些进程，未启动新的训练。
+- `*.sh` 同步时使用 LF。PowerShell 直接将 CRLF 脚本管入远端 Bash 会导致
+  `true\\r` 一类解析错误；应修复传输换行，不重配 Python/CUDA 环境。
+
+上述是连接与环境复用检查。当前固定 Q/V 方法的三个任务训练仍未验收。
