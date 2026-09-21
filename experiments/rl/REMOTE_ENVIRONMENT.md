@@ -1,7 +1,8 @@
 # A6000 环境记录与复用入口
 
 整理日期：2026-09-21。**这台机器已经配置过环境；恢复工作应从复用开始。**
-本文件记录环境、路径和已知问题，不代表当前 DT 多轮训练已经验收通过。
+本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
+本文件和历史运行记录不代表该计划已实现或 DT 多轮训练已经验收通过。
 
 ## 连接与加载配置
 
@@ -119,18 +120,11 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
 都不是预留卡。断线后先确认已有训练/服务是否仍在运行，再发起下一次测试。
 若 SSH banner 超时，先排查连接，不创建新环境。
 
-需要恢复训练时，复用配置并显式选择当前空闲 GPU。例如已经确认 GPU 4 空闲时：
+训练脚本路径为 `experiments/rl/run_verl_agent.sh`。当前 DT 适配代码尚未按
+[PLAN.md](PLAN.md) 完成核对与修正，故此处撤下旧 `METHOD=dt` 启动示例，
+避免将旧算法入口当作固定计划的可用实现。环境复用和上述只读检查仍然有效。
 
-```bash
-source experiments/rl/environments/a6000.env.sh
-CUDA_VISIBLE_DEVICES=4 METHOD=dt ENV_NAME=Webshop \
-GROUP_SIZE=4 MINI_BATCH_SIZE=4 ROLLOUT_MICRO_BATCH_SIZE=1 \
-MAX_PROMPT=32256 MAX_RESPONSE=512 MAX_TOTAL_TOKENS=32768 \
-PARAM_OFFLOAD=False bash experiments/rl/run_verl_agent.sh
-```
-
-这是启动入口，不是成功训练回执。`32768` 是配置的总长度上限，实际轨迹长度
-必须从日志另行报告。`ENV_NAME` 可选 `Sokoban`、`AppWorld`。
+`32768` 是要求的总上下文上限，实际轨迹长度必须从日志另行报告。
 
 ## 已验证范围与尚未通过的部分
 
