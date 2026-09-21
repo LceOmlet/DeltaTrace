@@ -22,6 +22,12 @@ clipped objective。实现和测试应先核对该文件。
 不构成本计划的实现依据。后续修改应直接对照 [PLAN.md](PLAN.md)，不沿用旧说明。
 本次修订固定上述边界，没有修改训练算法，也没有新增训练通过记录。
 
+同日已补充奖励根节点的代数推导：将正式 DT 的 log-prob 差通过概率的
+对数平均精确转换为 reward 加权的概率差，并证明在原有条件价值与旧策略参照
+下，其奖励结果求和对应 Q-V。正负奖励和等端点的 CPU 数值检查已完成；这只
+验证该恒等式，未验证真实模型归因或任务训练。三个任务的奖励结果与正式文本
+目标的具体对应，以及其结果期望的实际计算，仍未完成，不能用此推导冒充接通。
+
 已从本地 Git 提交核对正式入口 `deltatrace/profiles/official.py` 中的
 `make_qwen35_runner`，以及 `deltatrace/clean/qwen35/qwen35_answer_finite.py`
 中的 `PackedAnswerTargets`、`FiniteAnswerOps`。目标行选择、原模型输出与有限
