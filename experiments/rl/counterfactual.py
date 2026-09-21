@@ -8,6 +8,8 @@ See PLAN.md for the sampling and support conditions of the estimator.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections.abc import Iterable, Sequence
+from typing import Any
 import torch
 
 
@@ -17,6 +19,58 @@ class DTTokenCredit:
     advantages: torch.Tensor
     q_estimates: torch.Tensor
     v_estimates: torch.Tensor
+
+
+@torch.no_grad()
+def policy_marginal_log_ratio(
+    contrast_chunks: Iterable[tuple[torch.Tensor, torch.Tensor]],
+) -> torch.Tensor:
+    """Convert same-prefix DT candidate contrasts to the PLAN policy reference.
+
+    A chunk contains C[..., b] = log p(y|h,a) - log p(y|h,b), and
+    log_weights[..., b] for the *same prefix* old-policy probability measure.
+    Then exp(-d) = sum_b weight_b * exp(-C_b). The returned d is minus
+    this sum's log, never the arithmetic average of the log contrasts.
+
+    Chunking the candidate axis avoids storing [events,tokens,vocabulary].
+    Weights across all chunks must already sum to one; the function does not
+    silently renormalize a truncated policy. For references actually sampled
+    iid from pi_old, empirical weights are 1/M (not pi_old a second time).
+    This is only the reference reduction, not the native DT contrast producer.
+    """
+    log_factor = log_mass = None
+    for contrasts, log_weights in contrast_chunks:
+        if contrasts.ndim < 1 or not contrasts.is_floating_point() or not log_weights.is_floating_point():
+            raise ValueError("candidate contrasts and log weights must be floating tensors")
+        if contrasts.device != log_weights.device:
+            raise ValueError("candidate contrasts and weights must use the same device")
+        dtype = torch.promote_types(contrasts.dtype, log_weights.dtype)
+        if dtype in (torch.float16, torch.bfloat16):
+            dtype = torch.float32
+        c, w = torch.broadcast_tensors(contrasts.to(dtype), log_weights.to(dtype))
+        if c.shape != contrasts.shape or c.shape[-1] == 0:
+            raise ValueError("weights must broadcast to the nonempty candidate axis of contrasts")
+        if not bool((torch.isfinite(w) | torch.isneginf(w)).all()):
+            raise ValueError("log weights must represent nonnegative finite probabilities")
+        supported = ~torch.isneginf(w)
+        if not bool((torch.isfinite(c[supported]) | torch.isposinf(c[supported])).all()):
+            raise ValueError("supported candidate contrasts cannot be NaN or negative infinity")
+        terms = torch.where(supported, w - c, -torch.inf)
+        chunk_factor = torch.logsumexp(terms, dim=-1)
+        chunk_mass = torch.logsumexp(w, dim=-1)
+        if log_factor is None:
+            log_factor, log_mass = chunk_factor, chunk_mass
+        else:
+            if chunk_factor.shape != log_factor.shape:
+                raise ValueError("candidate chunks must retain the same event/token identities")
+            log_factor = torch.logaddexp(log_factor, chunk_factor)
+            log_mass = torch.logaddexp(log_mass, chunk_mass)
+    if log_factor is None:
+        raise ValueError("at least one candidate chunk is required")
+    tolerance = 32 * torch.finfo(log_mass.dtype).eps
+    if not bool((log_mass.abs() <= tolerance).all()):
+        raise ValueError("reference weights must sum to one across all candidate chunks")
+    return -log_factor
 
 
 @torch.no_grad()
@@ -92,6 +146,68 @@ def reward_event_token_credit(
     if not all(bool(torch.isfinite(value).all()) for value in (advantages, q_estimates, v_estimates)):
         raise FloatingPointError("reward-event estimate overflow; no silent ratio clamp is applied")
     return DTTokenCredit(advantages, q_estimates, v_estimates)
+
+
+@torch.no_grad()
+def reward_event_credit_for_episode(
+    rows: Sequence[dict[str, Any]],
+    event_log_ratios: Sequence[torch.Tensor],
+    *,
+    discounts: Sequence[torch.Tensor] | None = None,
+) -> list[dict[str, torch.Tensor]]:
+    """Compose owner ratios on the *original* VERL response rows.
+
+    Each input ratio is [active reward events, padded response tokens]. Event
+    order is the order of active env.step rows, including zero-reward steps.
+    A row's reward is settled after that response; its tokens can receive that
+    event and later events. Inactive rows contribute neither actions nor events.
+    The attention mask emitted by rollout identifies response padding. No text
+    matching, retokenization, observation routing, or task scorer is involved.
+
+    This consumes ratios; it does not produce or validate their DT semantics.
+    Optional discounts use the same row/event/token layout as the ratios.
+    """
+    if not rows or len(rows) != len(event_log_ratios):
+        raise ValueError("one event log-ratio matrix is required per original rollout row")
+    if discounts is not None and len(discounts) != len(rows):
+        raise ValueError("one discount matrix is required per original rollout row")
+    active_rows = [row for row in rows if bool(row["active_masks"])]
+    event_steps = [int(row["env_step"]) for row in active_rows]
+    if event_steps != sorted(set(event_steps)):
+        raise ValueError("reward events must retain unique increasing environment step identities")
+    if any(row["traj_uid"] != rows[0]["traj_uid"] for row in rows):
+        raise ValueError("rows from different trajectories cannot share reward events")
+    output = []
+    for index, (row, ratios) in enumerate(zip(rows, event_log_ratios)):
+        response = row["responses"]
+        if response.ndim != 1 or response.numel() == 0:
+            raise ValueError("an original rollout response must be a nonempty 1-D tensor")
+        width = response.numel()
+        if ratios.shape != (len(active_rows), width):
+            raise ValueError("event log ratios must align with active events and original response tokens")
+        attention = row["attention_mask"]
+        if attention.ndim != 1 or attention.numel() < width:
+            raise ValueError("rollout attention mask must include the complete response")
+        policy = attention[-width:].to(device=ratios.device, dtype=torch.bool)
+        policy = policy & bool(row["active_masks"])
+        future = torch.tensor(
+            [step >= int(row["env_step"]) for step in event_steps],
+            device=ratios.device, dtype=torch.bool,
+        )[:, None].expand(-1, width)
+        rewards = torch.tensor(
+            [[float(event["rewards"]) for event in active_rows]],
+            device=ratios.device, dtype=torch.float32,
+        )
+        credit = reward_event_token_credit(
+            ratios.unsqueeze(0), rewards, future.unsqueeze(0), policy.unsqueeze(0),
+            discounts=None if discounts is None else discounts[index].unsqueeze(0),
+        )
+        output.append({
+            "dt_token_advantages": credit.advantages[0],
+            "dt_q_estimates": credit.q_estimates[0],
+            "dt_v_estimates": credit.v_estimates[0],
+        })
+    return output
 
 
 def assert_token_advantage_contract(

@@ -119,8 +119,10 @@ if [[ "$ENV_NAME" == "AppWorld" && ! -f "$VERL_ROOT/appworld_ports.ports" ]]; th
   echo "AppWorld needs appworld_ports.ports; start the official service first" >&2
   exit 2
 fi
+# Use the original PPO clipped objective, without the optional dual clipping.
 exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   algorithm.adv_estimator="$ADV_ESTIMATOR" \
+  actor_rollout_ref.actor.clip_ratio_c=inf \
   data.train_files="$DATA_ROOT/train.parquet" \
   data.val_files="$DATA_ROOT/test.parquet" \
   data.train_batch_size="$TRAIN_SIZE" \

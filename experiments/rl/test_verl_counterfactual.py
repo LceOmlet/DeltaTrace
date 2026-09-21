@@ -11,6 +11,7 @@ from counterfactual import reward_event_token_credit
 @pytest.mark.parametrize("ratios,expected_loss,expected_gradient", [
     ([1.0, 1.0, 1.0, 1.0], 0.0, [-1/3, 2/3, 0.0, -1/3]),
     ([1.5, 0.5, 5.0, 1.0], -0.2, [0.0, 0.0, 0.0, -1/3]),
+    ([1.0, 4.0, 5.0, 1.0], 2.0, [-1/3, 8/3, 0.0, -1/3]),
 ])
 def test_sampled_advantages_enter_upstream_ppo(ratios, expected_loss, expected_gradient):
     policy = torch.tensor([[True, True, False, True]])

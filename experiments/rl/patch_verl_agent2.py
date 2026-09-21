@@ -1,4 +1,4 @@
-"""Apply compatibility and one minimal estimator seam to the pinned tree.
+"""Apply compatibility and the owner DeltaTrace token seam to the pinned tree.
 
 The upstream Sokoban package has a nested package with the same name as its
 parent.  Eagerly importing both modules creates a Python 3.12 import cycle
@@ -7,7 +7,7 @@ also needs its checker disabled, and Sokoban must not import Transformers in a
 Ray worker. The pinned tree also assumes a CUDA flash-attn binary at import
 time; on hosts whose glibc cannot load that optional binary, we keep upstream
 Hugging Face SDPA as the default and only import flash-attn when VERL's
-remove-padding path is explicitly enabled. The counterfactual estimator is
+remove-padding path is explicitly enabled. The DeltaTrace token estimator is
 added at VERL's existing advantage boundary; it does not replace the trainer,
 rollout, optimizer, or environment dynamics.
 """
@@ -214,21 +214,60 @@ HF_SUMMON_OLD = "            param_ctx = FSDP.summon_full_params(self.module, wr
 HF_SUMMON_NEW = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=False)"
 HF_SUMMON_PREVIOUS = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=True)"
 
+HF_DT_METHOD_ANCHOR = "        return DataProto(batch=batch)\n"
+HF_DT_METHOD_OLD = "    def compute_dt_token_advantages(self, episodes, episode_returns):\n"
+HF_DT_METHOD_MARKER = "    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):\n"
+HF_DT_METHOD = '''        return DataProto(batch=batch)
+
+    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):
+        """Run the owner DeltaTrace producer on completed factual episodes."""
+        from deltatrace_rollout import DeltaTraceRolloutProducer
+
+        if not hasattr(self, "_deltatrace_producer"):
+            self._deltatrace_producer = DeltaTraceRolloutProducer(
+                self.module, eos_token_id=eos_token_id, pad_token_id=pad_token_id
+            )
+        return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)
+'''
+
+FSDP_DT_METHOD_MARKER = "    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):\n"
+FSDP_DT_METHOD_OLD = "    def compute_dt_token_advantages(self, episodes, episode_returns):\n"
+FSDP_DT_METHOD_ANCHOR = "    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)\n    def compute_log_prob(self, data: DataProto):\n"
+FSDP_DT_METHOD = '''    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
+    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):
+        """Delegate DT attribution to the existing HF rollout model."""
+        if not hasattr(self, "rollout") or not hasattr(self.rollout, "compute_dt_token_advantages"):
+            raise RuntimeError("DeltaTrace requires the upstream HF rollout backend")
+        return self.rollout.compute_dt_token_advantages(
+            episodes, episode_returns, eos_token_id=eos_token_id, pad_token_id=pad_token_id
+        )
+
+    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
+    def compute_log_prob(self, data: DataProto):
+'''
+
 # The trainer remains the semantic owner of policy optimization. This patch
-# only adds a new estimator at its existing advantage boundary; rollout and
-# actor updates stay upstream. The collector supplies a leave-one-out
-# action-level return difference for the first environment action in each
-# independent rollout group.
+# only adds the DT token-advantage estimator at its existing advantage
+# boundary; rollout and actor updates stay upstream. The collector must attach
+# the owner-produced sampled Q/V and advantage to every trajectory row.
 RAY_TRAINER_FILE = "verl/trainer/ppo/ray_trainer.py"
 RAY_ADV_ENUM_OLD = "    GiGPO = 'gigpo'\n"
-RAY_ADV_ENUM_NEW = "    GiGPO = 'gigpo'\n    COUNTERFACTUAL = 'counterfactual'\n"
+RAY_ADV_ENUM_NEW = "    GiGPO = 'gigpo'\n    DELTATRACE = 'deltatrace'\n"
+RAY_ADV_ENUM_STALE = "    GiGPO = 'gigpo'\n    COUNTERFACTUAL = 'counterfactual'\n"
 RAY_ADV_INSERT_ANCHOR = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    else:\n        raise NotImplementedError\n    return data\n"
-RAY_ADV_INSERT = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    elif adv_estimator == AdvantageEstimator.COUNTERFACTUAL:\n        if \"counterfactual_credit\" not in data.batch or \"counterfactual_action_mask\" not in data.batch:\n            raise RuntimeError(\"counterfactual estimator requires collector-provided action credit\")\n        credit = data.batch[\"counterfactual_credit\"].to(device=data.batch[\"responses\"].device, dtype=torch.float32)\n        action_mask = data.batch[\"counterfactual_action_mask\"].to(device=data.batch[\"responses\"].device, dtype=torch.bool)\n        response_mask = data.batch[\"response_mask\"].to(dtype=torch.float32)\n        advantages = response_mask * credit[:, None] * action_mask[:, None].to(torch.float32)\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = advantages.detach().clone()\n    else:\n        raise NotImplementedError\n    return data\n"
-RAY_USE_CRITIC_OLD = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO\n        ]:\n"
-RAY_USE_CRITIC_NEW = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.COUNTERFACTUAL\n        ]:\n"
+RAY_ADV_INSERT_PREVIOUS = '        data.batch[\'advantages\'] = advantages\n        data.batch[\'returns\'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        if "dt_token_advantages" not in data.batch:\n            raise RuntimeError("deltatrace estimator requires owner-produced token advantages")\n        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)\n        advantages = data.batch["dt_token_advantages"].to(device=data.batch["responses"].device, dtype=torch.float32)\n        if advantages.shape != response_mask.shape:\n            raise RuntimeError("owner DT token advantages must align with responses")\n        advantages = advantages * response_mask.to(dtype=advantages.dtype)\n        if not torch.isfinite(advantages).all():\n            raise RuntimeError("owner DT token advantages contain non-finite values")\n        data.batch["advantages"] = advantages\n        data.batch["returns"] = advantages.detach().clone()\n    else:\n        raise NotImplementedError\n    return data\n'
+RAY_ADV_INSERT = '        data.batch[\'advantages\'] = advantages\n        data.batch[\'returns\'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)\n        for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):\n            if name not in data.batch:\n                raise RuntimeError(f"deltatrace estimator requires {name}")\n            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)\n            if value.shape != response_mask.shape:\n                raise RuntimeError(f"{name} must align with original response tokens")\n            if not torch.isfinite(value).all():\n                raise RuntimeError(f"{name} contains non-finite values")\n            data.batch[name] = torch.where(response_mask, value, 0.0)\n        data.batch["advantages"] = data.batch["dt_token_advantages"]\n        data.batch["returns"] = data.batch["dt_q_estimates"]\n    else:\n        raise NotImplementedError\n    return data\n'
+RAY_ADV_INSERT_STALE = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    elif adv_estimator == AdvantageEstimator.COUNTERFACTUAL:\n        if \"counterfactual_credit\" not in data.batch or \"counterfactual_action_mask\" not in data.batch:\n            raise RuntimeError(\"counterfactual estimator requires collector-provided action credit\")\n        credit = data.batch[\"counterfactual_credit\"].to(device=data.batch[\"responses\"].device, dtype=torch.float32)\n        action_mask = data.batch[\"counterfactual_action_mask\"].to(device=data.batch[\"responses\"].device, dtype=torch.bool)\n        response_mask = data.batch[\"response_mask\"].to(dtype=torch.float32)\n        advantages = response_mask * credit[:, None] * action_mask[:, None].to(torch.float32)\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = advantages.detach().clone()\n    else:\n        raise NotImplementedError\n    return data\n"
+RAY_USE_CRITIC_OLD = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.COUNTERFACTUAL\n        ]:\n"
+RAY_USE_CRITIC_PRISTINE = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO\n        ]:\n"
+RAY_USE_CRITIC_NEW = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.DELTATRACE\n        ]:\n"
 RAY_ROLLOUT_FILE = "agent_system/multi_turn_rollout/rollout_loop.py"
 ROLLOUT_STEP_ANCHOR = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n"
 ROLLOUT_STEP_INSERT = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n            batch.non_tensor_batch['env_step'] = np.full(batch_size, _step, dtype=np.int64)\n"
+ROLLOUT_EVENT_ANCHOR = '            batch_list: list[dict] = to_list_of_dict(batch)\n'
+ROLLOUT_EVENT_INSERT = '            batch_list: list[dict] = to_list_of_dict(batch)\n\n            if str(self.config.algorithm.adv_estimator) == "deltatrace":\n                from copy import deepcopy\n                for event_index, row in enumerate(batch_list):\n                    row["dt_env_outcome"] = {\n                        "observation": deepcopy({\n                            key: None if value is None else value[event_index]\n                            for key, value in next_obs.items()\n                        }),\n                        "info": deepcopy(infos[event_index]),\n                        "done": bool(dones[event_index]),\n                    }\n'
+RAW_PROMPT_KEEP_OLD = '            non_tensor_batch_keys_to_pop = ["raw_prompt_ids"]\n'
+RAW_PROMPT_KEEP_NEW = '            non_tensor_batch_keys_to_pop = []\n'
 # Some upstream environment projections (notably Sokoban) normalize the
 # list passed to ``envs.step`` in place, replacing decoded text with integer
 # action ids. Preserve the decoded response for the next chat turn; this is a
@@ -237,8 +276,31 @@ ROLLOUT_ACTION_COPY_OLD = "            text_actions = self.tokenizer.batch_decod
 ROLLOUT_ACTION_COPY_NEW = "            text_actions = self.tokenizer.batch_decode(batch.batch['responses'], skip_special_tokens=True)\n            env_actions = list(text_actions)\n            next_obs, rewards, dones, infos = envs.step(env_actions)\n"
 GATHER_ANCHOR = "        batch_size = len(total_batch_list)\n\n        success_rate = {}\n"
 GATHER_BROKEN_IMPORT = "            try:\n                try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n"
-GATHER_GOOD_IMPORT = "            try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n"
-GATHER_INSERT = "        batch_size = len(total_batch_list)\n\n        # Exact finite-sample policy baseline for the first action. The\n        # leave-one-out mean excludes the selected rollout itself; later\n        # actions have no same-history reference and are explicitly masked.\n        if str(self.config.algorithm.adv_estimator) == \"counterfactual\":\n            from experiments.rl.deltatrace_credit import averaged_traced_credit\n            group_indices = {}\n            for idx, rows in enumerate(total_batch_list):\n                if not rows:\n                    raise RuntimeError(\"counterfactual rollout has no trajectory rows\")\n                group_indices.setdefault(rows[0][\"uid\"], []).append(idx)\n            for indices in group_indices.values():\n                if len(indices) < 2:\n                    raise ValueError(\"counterfactual estimator requires env.rollout.n >= 2\")\n                group_returns = torch.as_tensor(episode_rewards[indices], dtype=torch.float32)\n                for local_idx, rollout_idx in enumerate(indices):\n                    selected = group_returns[local_idx : local_idx + 1]\n                    references = torch.cat((group_returns[:local_idx], group_returns[local_idx + 1 :])).unsqueeze(0)\n                    credit = averaged_traced_credit(selected, references).credit[0]\n                    reference_mean = references.mean()\n                    for row in total_batch_list[rollout_idx]:\n                        row[\"counterfactual_credit\"] = credit.detach().clone()\n                        row[\"counterfactual_selected_return\"] = selected[0].detach().clone()\n                        row[\"counterfactual_reference_return\"] = reference_mean.detach().clone()\n                        row[\"counterfactual_action_mask\"] = torch.tensor(int(row.get(\"env_step\", 0)) == 0, dtype=torch.bool)\n\n        success_rate = {}\n"
+GATHER_GOOD_IMPORT = ""
+GATHER_OLD_MARKER = "        # Exact finite-sample policy baseline for the first action."
+GATHER_INSERT_PREVIOUS = '        batch_size = len(total_batch_list)\n\n        if str(self.config.algorithm.adv_estimator) == "deltatrace":\n            # The owner DT boundary must already have attached one aligned\n            # token-advantage vector to every active trajectory row. Do not\n            # fabricate a scalar, broadcast a span value, or fall back to a\n            # group mean here.\n            for rows in total_batch_list:\n                if not rows:\n                    raise RuntimeError("deltatrace rollout has no trajectory rows")\n                for row in rows:\n                    if "dt_token_advantages" not in row:\n                        raise RuntimeError("owner DT token advantages are missing from a rollout row")\n                    value = row["dt_token_advantages"]\n                    if not isinstance(value, torch.Tensor) or value.ndim != 1:\n                        raise RuntimeError("owner DT token advantages must be a 1-D tensor per row")\n                    if not torch.isfinite(value).all():\n                        raise RuntimeError("owner DT token advantages contain non-finite values")\n\n        success_rate = {}\n'
+GATHER_INSERT = '        batch_size = len(total_batch_list)\n\n        if str(self.config.algorithm.adv_estimator) == "deltatrace":\n            for rows in total_batch_list:\n                for row in rows:\n                    if not row["active_masks"]:\n                        continue\n                    for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):\n                        value = row.get(name)\n                        if not isinstance(value, torch.Tensor) or value.shape != row["responses"].shape:\n                            raise RuntimeError(f"{name} must align with original response tokens")\n                        if not torch.isfinite(value).all():\n                            raise RuntimeError(f"{name} contains non-finite values")\n\n        success_rate = {}\n'
+ROLLOUT_DT_CALL_ANCHOR = "        # Create trajectory data\n        gen_batch_output: DataProto = self.gather_rollout_data(\n"
+ROLLOUT_DT_CALL_PREVIOUS = '        # Create token advantages with the owner DeltaTrace runner. The\n        # worker receives the complete factual episode so observations can be\n        # folded back to the policy token that generated each tool call.\n        if str(self.config.algorithm.adv_estimator) == "deltatrace":\n            dt_values = actor_rollout_wg.compute_dt_token_advantages(\n                total_batch_list,\n                total_episode_rewards.tolist(),\n                eos_token_id=int(self.tokenizer.eos_token_id),\n                pad_token_id=int(self.tokenizer.pad_token_id),\n            )\n            if isinstance(dt_values, list) and len(dt_values) == 1:\n                dt_values = dt_values[0]\n            if len(dt_values) != len(total_batch_list):\n                raise RuntimeError("owner DT returned the wrong episode count")\n            for rows, values in zip(total_batch_list, dt_values):\n                if len(rows) != len(values):\n                    raise RuntimeError("owner DT returned the wrong row count")\n                for row, value in zip(rows, values):\n                    row["dt_token_advantages"] = value\n\n        # Create trajectory data\n        gen_batch_output: DataProto = self.gather_rollout_data(\n'
+ROLLOUT_DT_CALL = '        # Preserve each factual reward event and each generated token. The\n        # producer returns sampled Q/V and advantages, with no O-credit routing.\n        if str(self.config.algorithm.adv_estimator) == "deltatrace":\n            dt_values = actor_rollout_wg.compute_dt_token_advantages(\n                total_batch_list,\n                total_episode_rewards.tolist(),\n                eos_token_id=int(self.tokenizer.eos_token_id),\n                pad_token_id=int(self.tokenizer.pad_token_id),\n            )\n            if isinstance(dt_values, list) and len(dt_values) == 1:\n                dt_values = dt_values[0]\n            if len(dt_values) != len(total_batch_list):\n                raise RuntimeError("owner DT returned the wrong episode count")\n            for rows, values in zip(total_batch_list, dt_values):\n                if len(rows) != len(values):\n                    raise RuntimeError("owner DT returned the wrong row count")\n                for row, value in zip(rows, values):\n                    for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):\n                        row[name] = value[name]\n\n        # Create trajectory data\n        gen_batch_output: DataProto = self.gather_rollout_data(\n'
+ROLLOUT_DT_CALL_STALE = '''        # Create token advantages with the owner DeltaTrace runner. The
+        # worker receives the complete factual episode so observations can be
+        # folded back to the policy token that generated each tool call.
+        if str(self.config.algorithm.adv_estimator) == "deltatrace":
+            dt_values = actor_rollout_wg.compute_dt_token_advantages(
+                total_batch_list, total_episode_rewards.tolist()
+            )
+            if isinstance(dt_values, list) and len(dt_values) == 1:
+                dt_values = dt_values[0]
+            if len(dt_values) != len(total_batch_list):
+                raise RuntimeError("owner DT returned the wrong episode count")
+            for rows, values in zip(total_batch_list, dt_values):
+                if len(rows) != len(values):
+                    raise RuntimeError("owner DT returned the wrong row count")
+                for row, value in zip(rows, values):
+                    row["dt_token_advantages"] = value
+
+'''
 
 # FSDP2 must be attached to the actual Transformers root when PEFT wraps it.
 # PeftModel.forward delegates into base_model.model; attaching the root state
@@ -455,6 +517,43 @@ def main() -> None:
     else:
         print(f"already patched {hf_rollout} nested FSDP summon")
 
+    text = hf_rollout.read_text()
+    if HF_DT_METHOD_MARKER not in text:
+        if HF_DT_METHOD_OLD in text:
+            text = text.replace(HF_DT_METHOD_OLD, HF_DT_METHOD_MARKER, 1)
+            text = text.replace(
+                "self._deltatrace_producer = DeltaTraceRolloutProducer(self.module)",
+                "self._deltatrace_producer = DeltaTraceRolloutProducer(\n                self.module, eos_token_id=eos_token_id, pad_token_id=pad_token_id\n            )",
+                1,
+            )
+            hf_rollout.write_text(text)
+        elif HF_DT_METHOD_ANCHOR in text:
+            hf_rollout.write_text(text.replace(HF_DT_METHOD_ANCHOR, HF_DT_METHOD, 1))
+        else:
+            raise RuntimeError(f"cannot find HF rollout DeltaTrace anchor in {hf_rollout}")
+        print(f"patched {hf_rollout} owner DeltaTrace producer")
+    else:
+        print(f"already patched {hf_rollout} owner DeltaTrace producer")
+
+    fsdp_workers = args.verl_root / FSDP_FILE
+    text = fsdp_workers.read_text()
+    if FSDP_DT_METHOD_MARKER not in text:
+        if FSDP_DT_METHOD_OLD in text:
+            text = text.replace(FSDP_DT_METHOD_OLD, FSDP_DT_METHOD_MARKER, 1)
+            text = text.replace(
+                "return self.rollout.compute_dt_token_advantages(episodes, episode_returns)",
+                "return self.rollout.compute_dt_token_advantages(\n            episodes, episode_returns, eos_token_id=eos_token_id, pad_token_id=pad_token_id\n        )",
+                1,
+            )
+            fsdp_workers.write_text(text)
+        elif FSDP_DT_METHOD_ANCHOR in text:
+            fsdp_workers.write_text(text.replace(FSDP_DT_METHOD_ANCHOR, FSDP_DT_METHOD, 1))
+        else:
+            raise RuntimeError(f"cannot find worker DeltaTrace anchor in {fsdp_workers}")
+        print(f"patched {fsdp_workers} worker DeltaTrace producer")
+    else:
+        print(f"already patched {fsdp_workers} worker DeltaTrace producer")
+
     # Transformers 5.13's Qwen3.5 RoPE path can receive position ids created
     # on CPU after HF generation prepares the first step. Under FSDP2 CPU
     # parameter offload, hidden states are already on CUDA, so the upstream
@@ -497,11 +596,17 @@ def main() -> None:
         else:
             print(f"already patched {qwen35} FSDP2 lm_head compatibility")
 
-    # Add the counterfactual estimator at VERL's existing owner boundary.
+    # Add the owner DeltaTrace token estimator at VERL's existing boundary.
     # This is intentionally a source patch to the pinned upstream tree rather
     # than a second trainer implementation.
     ray_trainer = args.verl_root / RAY_TRAINER_FILE
     text = ray_trainer.read_text()
+    if RAY_ADV_ENUM_STALE in text:
+        text = text.replace(RAY_ADV_ENUM_STALE, RAY_ADV_ENUM_NEW, 1)
+    if RAY_ADV_INSERT_PREVIOUS in text:
+        text = text.replace(RAY_ADV_INSERT_PREVIOUS, RAY_ADV_INSERT, 1)
+    if RAY_ADV_INSERT_STALE in text:
+        text = text.replace(RAY_ADV_INSERT_STALE, RAY_ADV_INSERT, 1)
     if RAY_ADV_ENUM_NEW not in text:
         if RAY_ADV_ENUM_OLD not in text:
             raise RuntimeError(f"cannot find VERL advantage enum anchor in {ray_trainer}")
@@ -511,13 +616,16 @@ def main() -> None:
             raise RuntimeError(f"cannot find VERL advantage branch anchor in {ray_trainer}")
         text = text.replace(RAY_ADV_INSERT_ANCHOR, RAY_ADV_INSERT, 1)
     if RAY_USE_CRITIC_NEW not in text:
-        if RAY_USE_CRITIC_OLD not in text:
+        if RAY_USE_CRITIC_OLD in text:
+            text = text.replace(RAY_USE_CRITIC_OLD, RAY_USE_CRITIC_NEW, 1)
+        elif RAY_USE_CRITIC_PRISTINE in text:
+            text = text.replace(RAY_USE_CRITIC_PRISTINE, RAY_USE_CRITIC_NEW, 1)
+        else:
             raise RuntimeError(f"cannot find VERL critic-selection anchor in {ray_trainer}")
-        text = text.replace(RAY_USE_CRITIC_OLD, RAY_USE_CRITIC_NEW, 1)
     ray_trainer.write_text(text)
-    print(f"patched {ray_trainer} counterfactual estimator")
+    print(f"patched {ray_trainer} DeltaTrace token estimator")
 
-    # Preserve the collector's step identity and attach group-level returns
+    # Preserve the collector's event and token identities
     # before collate_fn turns trajectory rows into DataProto tensors.
     rollout = args.verl_root / RAY_ROLLOUT_FILE
     text = rollout.read_text()
@@ -530,16 +638,46 @@ def main() -> None:
         print(f"patched {rollout} decoded-action preservation")
     else:
         print(f"already patched {rollout} decoded-action preservation")
+    if RAW_PROMPT_KEEP_NEW not in text:
+        if RAW_PROMPT_KEEP_OLD not in text:
+            raise RuntimeError(f"cannot find raw prompt retention anchor in {rollout}")
+        text = text.replace(RAW_PROMPT_KEEP_OLD, RAW_PROMPT_KEEP_NEW, 1)
+        print(f"patched {rollout} raw prompt retention")
+    else:
+        print(f"already patched {rollout} raw prompt retention")
+    if GATHER_OLD_MARKER in text:
+        start = text.index(GATHER_OLD_MARKER)
+        end = text.index("        success_rate = {}", start)
+        text = text[:start] + text[end:]
+        print(f"removed stale scalar counterfactual collector from {rollout}")
+    if GATHER_INSERT_PREVIOUS in text:
+        text = text.replace(GATHER_INSERT_PREVIOUS, GATHER_INSERT, 1)
+    if ROLLOUT_DT_CALL_PREVIOUS in text:
+        text = text.replace(ROLLOUT_DT_CALL_PREVIOUS, ROLLOUT_DT_CALL, 1)
+    if ROLLOUT_EVENT_INSERT not in text:
+        if ROLLOUT_EVENT_ANCHOR not in text:
+            raise RuntimeError(f"cannot find reward event capture anchor in {rollout}")
+        text = text.replace(ROLLOUT_EVENT_ANCHOR, ROLLOUT_EVENT_INSERT, 1)
     gather_inserted = False
     if ROLLOUT_STEP_INSERT not in text:
         if ROLLOUT_STEP_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout step anchor in {rollout}")
         text = text.replace(ROLLOUT_STEP_ANCHOR, ROLLOUT_STEP_INSERT, 1)
-    if GATHER_INSERT not in text and GATHER_GOOD_IMPORT not in text:
+    if GATHER_INSERT not in text:
         if GATHER_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
         text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
         gather_inserted = True
+
+    if ROLLOUT_DT_CALL_STALE in text:
+        text = text.replace(ROLLOUT_DT_CALL_STALE, "", 1)
+        print(f"removed stale {rollout} DeltaTrace producer call")
+
+    if ROLLOUT_DT_CALL not in text:
+        if ROLLOUT_DT_CALL_ANCHOR not in text:
+            raise RuntimeError(f"cannot find rollout DeltaTrace call anchor in {rollout}")
+        text = text.replace(ROLLOUT_DT_CALL_ANCHOR, ROLLOUT_DT_CALL, 1)
+        print(f"patched {rollout} owner DeltaTrace producer call")
     # Ray workers may expose the adapter directory directly rather than the
     # repository namespace; keep the import at the same thin boundary. Only
     # rewrite the import on the same pass that inserted the fresh block;
@@ -551,7 +689,7 @@ def main() -> None:
             1,
         )
     rollout.write_text(text)
-    print(f"patched {rollout} counterfactual collector")
+    print(f"patched {rollout} DeltaTrace collector")
 
 
 if __name__ == "__main__":

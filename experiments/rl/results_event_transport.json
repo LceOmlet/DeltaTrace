@@ -1,0 +1,169 @@
+{
+  "timestamp_utc": "2026-09-21T10:32:31.783950+00:00",
+  "scope": "Reference reduction and factual reward/token transport through installed VERL; DT native contrast producer not executed",
+  "tests": {
+    "tests": "30",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "13.809"
+  },
+  "task_worker_checks": {
+    "timestamp_utc": "2026-09-21T10:22:21.276068+00:00",
+    "context_cap": 32768,
+    "model_loaded": false,
+    "action_source": "scripted interface fixtures; not model-generated",
+    "ratio_source": "synthetic interface fixtures; not DeltaTrace output",
+    "training_verified": false,
+    "dt_estimator_verified": false,
+    "tasks": {
+      "sokoban": {
+        "events": 5,
+        "rewards": [
+          -0.1,
+          -0.1,
+          -0.1,
+          -0.1,
+          10.9
+        ],
+        "done": [
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "token_lengths_for_scripted_actions": [
+          {
+            "prompt": 81,
+            "response": 14,
+            "total": 95
+          },
+          {
+            "prompt": 169,
+            "response": 14,
+            "total": 183
+          },
+          {
+            "prompt": 257,
+            "response": 14,
+            "total": 271
+          },
+          {
+            "prompt": 345,
+            "response": 14,
+            "total": 359
+          },
+          {
+            "prompt": 433,
+            "response": 14,
+            "total": 447
+          }
+        ],
+        "first_q_sample": 10.5,
+        "transport_passed": true
+      },
+      "webshop": {
+        "events": 3,
+        "rewards": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "done": [
+          false,
+          false,
+          true
+        ],
+        "token_lengths_for_scripted_actions": [
+          {
+            "prompt": 66,
+            "response": 17,
+            "total": 83
+          },
+          {
+            "prompt": 625,
+            "response": 22,
+            "total": 647
+          },
+          {
+            "prompt": 829,
+            "response": 17,
+            "total": 846
+          }
+        ],
+        "first_q_sample": 0.0,
+        "transport_passed": true
+      },
+      "appworld": {
+        "events": 2,
+        "rewards": [
+          0.0,
+          0.0
+        ],
+        "done": [
+          false,
+          true
+        ],
+        "token_lengths_for_scripted_actions": [
+          {
+            "prompt": 25,
+            "response": 14,
+            "total": 39
+          },
+          {
+            "prompt": 267,
+            "response": 19,
+            "total": 286
+          }
+        ],
+        "first_q_sample": 0.0,
+        "transport_passed": true
+      }
+    }
+  },
+  "patch_replay": {
+    "pristine_pinned_source": true,
+    "second_apply_unchanged": true,
+    "runtime_apply_unchanged": true,
+    "transformers_unchanged": true,
+    "tested_files": [
+      "agent_system/environments/env_package/sokoban/__init__.py",
+      "agent_system/environments/env_package/sokoban/sokoban/base.py",
+      "agent_system/environments/env_package/sokoban/sokoban/env.py",
+      "agent_system/environments/env_package/webshop/envs.py",
+      "agent_system/multi_turn_rollout/rollout_loop.py",
+      "verl/models/transformers/monkey_patch.py",
+      "verl/trainer/ppo/ray_trainer.py",
+      "verl/utils/fsdp_utils.py",
+      "verl/workers/actor/dp_actor.py",
+      "verl/workers/critic/dp_critic.py",
+      "verl/workers/fsdp_workers.py",
+      "verl/workers/rollout/hf_rollout.py"
+    ]
+  },
+  "source_sha256": {
+    "counterfactual.py": "d7134933ad54b85b885489c43dad8cc03194d040774d1f4ec06ebe8fd4795675",
+    "patch_verl_agent2.py": "1661a578a3582dfc04765c0bf524982d23d591ad5671104deccb123eae4274a1",
+    "run_verl_agent.sh": "68b76168ffea30cc736beedb2785cea8b04e36a7e003a67e06910611c9e4c9a7",
+    "test_counterfactual.py": "5948419a79fad21be09843dd3b6e5d608861e9b7961ef0e38a8d272bde2b9565",
+    "test_verl_counterfactual.py": "666aee56f04ee78540c4784481ff4e038f39b93bf497a81730d93f896bf8e440",
+    "test_rollout_credit.py": "b6e6668bf4e8c1e26b61df1388669a41ff7c87bc1bb4cb01e4ee3fb332504506",
+    "verify_task_reward_events.py": "d5b44c51ecb8991349a7bab9feaa4551bad4c609c81bcd2fadfcfb5b8a06850c"
+  },
+  "upstream_sha256": {
+    "verl/trainer/ppo/ray_trainer.py": "eaa2e5bc63bcf9b2c4106034f96e3f686a9bf948000666f4a328ec4b03c64421",
+    "agent_system/multi_turn_rollout/rollout_loop.py": "40f3183c61338ac497939f75b086120b1fab3be4eb0144c324a2a5b62d06e258"
+  },
+  "upstream_head": "732f37acd7684b8c24d14ba3ededfe9fab1ed472",
+  "torch_version": "2.8.0+cu128",
+  "device": "cpu",
+  "model_loaded": false,
+  "dt_ratio_producer_tested": false,
+  "training_verified": false,
+  "record_path": "/data/liangchen/deltatrace_resume_20260917/receipts/event-transport-20260921",
+  "actor_config": {
+    "hydra_override": "actor_rollout_ref.actor.clip_ratio_c=inf",
+    "parsed_float_infinity": true
+  }
+}
