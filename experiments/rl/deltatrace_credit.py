@@ -1,10 +1,8 @@
-"""A guarded DeltaTrace-to-policy-credit adapter.
+"""Inspect the official DT text-attribution interface without relabelling it.
 
-DeltaTrace's signed input scores are not policy advantages.  This adapter
-uses the existing runner only to obtain and audit the scalar endpoint return
-difference for two action interventions.  The scalar difference is the
-counterfactual ``G(h,a)-G(h,a')``; the per-input signed vector is retained for
-diagnostics and is never used as a token-wise policy-loss multiplier.
+The signed source vector is not automatically a same-prefix, policy-marginal
+reward-event log ratio. Reward-event composition lives in counterfactual.py;
+the old observation-routing and whole-return normalization are removed.
 """
 
 from __future__ import annotations
@@ -13,12 +11,6 @@ from typing import Any
 
 import torch
 
-try:
-    from .counterfactual import CounterfactualCredit, averaged_counterfactual_credit
-except ImportError:  # direct execution from the remote experiment directory
-    from counterfactual import CounterfactualCredit, averaged_counterfactual_credit
-
-
 def _finite_scalar(value: Any, name: str) -> float:
     value = float(value)
     if not torch.isfinite(torch.tensor(value)):
@@ -26,7 +18,7 @@ def _finite_scalar(value: Any, name: str) -> float:
     return value
 
 
-def trace_endpoint_difference(
+def trace_token_attribution(
     dt_runner: Any,
     reference_input_ids: torch.Tensor,
     selected_input_ids: torch.Tensor,
@@ -34,33 +26,49 @@ def trace_endpoint_difference(
     target_offsets: list[int],
     *,
     packed_answer_targets: Any,
-    attribution_tolerance: float = 5e-3,
-) -> tuple[float, dict[str, Any]]:
-    """Run the owner DeltaTrace runner for one counterfactual pair.
+    # The owner runner reports the endpoint scalar in FP32 while the signed
+    # pullback is accumulated in BF16/FP32 mixed kernels.  The pinned A6000
+    # owner receipt measures a <=1.2% residual; keep a fail-closed 2% audit
+    # envelope rather than silently renormalizing or inserting a baseline.
+    attribution_tolerance: float = 2e-2,
+) -> tuple[torch.Tensor, torch.Tensor, dict[str, Any]]:
+    """Return the owner DT signed source-token attribution.
 
-    ``reference_input_ids`` and ``selected_input_ids`` must have the same
-    shape and differ at the action intervention.  ``packed_answer_targets`` is
-    the checked ``PackedAnswerTargets`` class imported from the owner source
-    tree.  The runner's scalar ``root_effect`` is returned only after it agrees
-    with the runner's compiled scalar seed.  The signed input vector's
-    residual is recorded as an attribution diagnostic; it is not silently
-    treated as an advantage and is never required to be zero for the policy
-    signal.
+    ``reference_input_ids`` and ``selected_input_ids`` are the owner runner's
+    equal-shaped reference/original endpoints. The returned signed tensor is
+    shaped ``[1, sequence_length]``. It remains an owner artifact; no local
+    attribution is reconstructed here.
     """
 
     if reference_input_ids.shape != selected_input_ids.shape or reference_input_ids.ndim != 2:
-        raise ValueError("counterfactual endpoints must be equal-shaped [1, length] tensors")
+        raise ValueError("DT endpoints must have equal shape [1, sequence_length]")
     if reference_input_ids.shape[0] != 1:
-        raise ValueError("one selected/reference action pair is required per trace call")
+        raise ValueError("one trajectory endpoint pair is required per trace call")
     pair = torch.cat((reference_input_ids, selected_input_ids), dim=0)
     selection = packed_answer_targets(
         [target_case], [target_offsets], pair.shape[1], selected_input_ids.device
     )
-    signed, detail = dt_runner.attribute(
-        pair, torch.ones_like(pair), selection, select_output_rows=True, observer=None
-    )
-    signed_sum = float(signed.sum().item())
+    try:
+        signed, detail = dt_runner.attribute(
+            pair, torch.ones_like(pair), selection, select_output_rows=True, observer=None
+        )
+    finally:
+        release = getattr(getattr(dt_runner, "model", None), "release_owner_params", None)
+        if callable(release):
+            release()
+    if signed.shape != reference_input_ids.shape:
+        raise ValueError(
+            f"owner DT returned {tuple(signed.shape)}, expected {tuple(reference_input_ids.shape)}"
+        )
+    if not torch.isfinite(signed).all():
+        raise ValueError("owner DT signed attribution is non-finite")
     root_effect = _finite_scalar(detail["root_effect"], "DeltaTrace root_effect")
+    signed_sum = float(signed.sum().item())
+    if abs(root_effect - signed_sum) > attribution_tolerance * max(1.0, abs(root_effect)):
+        raise AssertionError(
+            "owner DT conservation failed: "
+            f"root_effect={root_effect}, signed_sum={signed_sum}"
+        )
     seed_effect = detail.get("compiled_seed_logprob_effect")
     if seed_effect is not None and abs(root_effect - float(seed_effect)) > attribution_tolerance * max(1.0, abs(root_effect)):
         raise AssertionError(
@@ -68,19 +76,12 @@ def trace_endpoint_difference(
             f"root_effect={root_effect}, seed_effect={seed_effect}"
         )
     detail = dict(detail)
-    detail["policy_credit_source"] = "DeltaTrace scalar endpoint difference"
-    detail["policy_credit_signed_vector_used"] = False
-    detail["policy_credit_root_effect"] = root_effect
-    detail["policy_credit_signed_residual"] = root_effect - signed_sum
-    detail["policy_credit_signed_residual_relative"] = (
-        (root_effect - signed_sum) / root_effect if root_effect else None
+    detail.update(
+        {
+            "policy_credit_source": "text attribution diagnostic only; no reward-event log ratios",
+            "policy_credit_signed_vector_used": False,
+            "policy_credit_root_effect": root_effect,
+            "policy_credit_signed_sum": signed_sum,
+        }
     )
-    return root_effect, detail
-
-
-def averaged_traced_credit(
-    selected_effect: torch.Tensor, reference_effects: torch.Tensor
-) -> CounterfactualCredit:
-    """Build the policy credit after independently tracing reference actions."""
-
-    return averaged_counterfactual_credit(selected_effect, reference_effects)
+    return signed, torch.tensor([root_effect], device=selected_input_ids.device), detail

@@ -5,7 +5,7 @@ set -euo pipefail
 # reimplement PPO/GRPO, rollout, or any environment.  Override variables for
 # another machine instead of editing the command below.
 
-METHOD="${METHOD:-grpo}"             # grpo, ppo, or counterfactual
+METHOD="${METHOD:-grpo}"             # grpo, ppo, or dt
 ENV_NAME="${ENV_NAME:-Webshop}"      # Webshop, Sokoban, or AppWorld
 DT_ROOT="${DT_ROOT:-$PWD}"
 MODEL_PATH="${MODEL_PATH:-/data/liangchen/models/Qwen3.5-9B}"
@@ -23,7 +23,7 @@ MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
 LORA_RANK="${LORA_RANK:-1}"
 LORA_ALPHA="${LORA_ALPHA:-2}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
-PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
+PARAM_OFFLOAD="${PARAM_OFFLOAD:-False}"
 ACTOR_CPU_OFFLOAD="${ACTOR_CPU_OFFLOAD:-False}"
 ACTOR_OFFLOAD_POLICY="${ACTOR_OFFLOAD_POLICY:-False}"
 FSDP_MIN_PARAMS="${FSDP_MIN_PARAMS:-0}"
@@ -39,8 +39,11 @@ MAX_STEPS="${MAX_STEPS:-15}"
 case "$METHOD" in
   grpo) ADV_ESTIMATOR=grpo ;;
   ppo) ADV_ESTIMATOR=gae ;;
-  counterfactual|dt) ADV_ESTIMATOR=counterfactual ;;
-  *) echo "METHOD must be grpo, ppo, or counterfactual" >&2; exit 2 ;;
+  dt)
+    echo "DT training stopped: reward-event composition is implemented, but the official runner does not yet produce per-token same-prefix policy-marginal event log ratios. See experiments/rl/PLAN.md. The old EOS/reward-normalization producer is removed." >&2
+    exit 2
+    ;;
+  *) echo "METHOD must be grpo, ppo, or dt" >&2; exit 2 ;;
 esac
 case "$ENV_NAME" in
   Webshop|Sokoban|AppWorld) ;;
@@ -57,6 +60,15 @@ if [[ ! -d "$VERL_ROOT" ]]; then
 fi
 
 export CUDA_VISIBLE_DEVICES
+export DT_ROOT
+if [[ -z "${DT_ENVIRONMENT_JSON:-}" ]]; then
+  if [[ -f "$DT_ROOT/environment.json" ]]; then
+    export DT_ENVIRONMENT_JSON="$DT_ROOT/environment.json"
+  else
+    export DT_ENVIRONMENT_JSON="$DT_ROOT/../../environment.json"
+  fi
+fi
+if [[ -n "${DT_OFFICIAL_ROOT:-}" ]]; then export DT_OFFICIAL_ROOT; fi
 export PYTHONPATH="$DT_ROOT/experiments/rl:$DT_ROOT:$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package/webshop/webshop:${APPWORLD_ROOT}:${PYTHONPATH:-}"
 export TOKENIZERS_PARALLELISM=false
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
@@ -66,7 +78,11 @@ export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
 # optional CUDA extension may be unavailable on older-glibc hosts.  Hugging
 # Face SDPA is the portable upstream attention backend; set this to
 # flash_attention_2 on a host with a compatible flash-attn build.
-export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
+if [[ "$METHOD" == "dt" ]]; then
+  export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-flash_attention_2}"
+else
+  export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
+fi
 if [[ "$ACTOR_CPU_OFFLOAD" == "True" ]]; then
   export VERL_ACTOR_CPU_OFFLOAD=1
 else

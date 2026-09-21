@@ -8,40 +8,28 @@ clipped objective。实现和测试应先核对该文件。
 
 ## 当前实现状态
 
-**固定计划尚未完成实现与验收。** 当前工作区仍有偏离该计划的实验代码，不能将
-`METHOD=dt` 的名称、已有归因向量或一次 optimizer step 视为计划已经实现。
-当前信用适配代码尚未构造并验证计划要求的逐 token \(Q^{DT}/V^{DT}\)。
+**终局／过程奖励的采样组合已实现；真实 DT 概率比生产和三个任务的训练尚未接通。**
 
-用户最新明确的 token 反事实/价值假设、固定 Q/V 组合与近似部分已写入
-同一份 [PLAN.md](PLAN.md)。实际 DT 估计允许近似；估计误差本身不阻止开发，
-也不否定已经正确的组合与接口。当前需要继续核对正式 DT 输出的语义对应，并
-完成三个任务的训练与资源验证；不能把估计误差和已有适配代码的错误混为一谈。
-“每次只处理一个未定部分”是此前自行添加的约束，已按用户纠正撤下。
+- `counterfactual.py::reward_event_token_credit` 接收逐 token、逐奖励事件的
+  DT log ratio 和真实环境奖励，按 PLAN 的采样修正构造 Q/V 估计与 advantage。
+  保留奖励的正负号、过程事件、原折扣及 policy mask；过去事件不回传到后续 token。
+- 旧的归因总和归一化、整局奖励缩放、观测归因位置搬运已移除。`dt_action_smoke.py`
+  只检查正式 DT 文本归因，不作为 RL 信号验收。
+- `test_counterfactual.py` 检查有限结果分布下的期望 Q/V/advantage、过程奖励、
+  终局单事件、观测/过去奖励屏蔽、数值稳定性，以及 minibatch 4 × 32768 的 CPU
+  张量边界。`test_verl_counterfactual.py` 直接调用现有 VERL PPO loss 检查 clipping
+  与 actor 梯度，没有重写 PPO。结果记录见 `results_reward_events.json`。
+- 正式 DT 当前提供固定目标文本及两个联合输入端点的 log-prob 与 signed attribution；
+  它们尚未接成同前缀旧策略边缘下的逐 token／逐奖励事件 log ratio。训练入口
+  `METHOD=dt` 在加载模型前明确停止，避免继续执行旧算法。
 
-2026-09-21 的检查发现，旧适配代码仍在进行归因缩放及观测位置映射；这些代码
-不构成本计划的实现依据。后续修改应直接对照 [PLAN.md](PLAN.md)，不沿用旧说明。
-本次修订固定上述边界，没有修改训练算法，也没有新增训练通过记录。
+这些测试使用 A6000 主机已有 Python/VERL 的 CPU 运算；没有安装依赖、下载数据、
+清空缓存、占用 GPU 或运行模型。CPU 32k 张量检查不代表 32k 模型训练成功。
+WebShop、Sokoban、AppWorld 当前固定方法均未取得新的训练／评估通过记录。
 
-同日已补充奖励根节点的代数推导：将正式 DT 的 log-prob 差通过概率的
-对数平均精确转换为 reward 加权的概率差，并证明在原有条件价值与旧策略参照
-下，其奖励结果求和对应 Q-V。正负奖励和等端点的 CPU 数值检查已完成；这只
-验证该恒等式，未验证真实模型归因或任务训练。三个任务的奖励结果与正式文本
-目标的具体对应，以及其结果期望的实际计算，仍未完成，不能用此推导冒充接通。
-
-已从本地 Git 提交核对正式入口 `deltatrace/profiles/official.py` 中的
-`make_qwen35_runner`，以及 `deltatrace/clean/qwen35/qwen35_answer_finite.py`
-中的 `PackedAnswerTargets`、`FiniteAnswerOps`。目标行选择、原模型输出与有限
-传播 seed 已有归属，后续接入复用这些实现。当前未定部分是正式 DT 输出到固定
-token 价值/策略参照的对应；上游 rollout、环境、PPO 损失和 optimizer 不因此重写。
-
-2026-09-21 经新 A6000 地址核对了实际任务奖励接口：WebShop worker 保留
-`info['task_score']`，并将终局满分映射为训练 reward 10、其他为 0；AppWorld
-在结束时使用官方 `evaluate().success`，reward 为 10 或 0；Sokoban 原环境
-包含步惩罚 -0.1、箱子离开目标 -1、进入目标 +1 和完成 +10。环境已有奖励，
-不需要复制其评分器。正式 DT 当前 `PackedAnswerTargets` 接收文本 token IDs
-及目标位置，`FiniteAnswerOps` 计算这些文本的 log-prob。将这些文本目标对应到
-上述任务奖励结果、再计算同前缀旧策略参照的具体实现仍未闭合；未启动旧适配
-训练来替代这项工作，也未声称当前固定算法已经无缺口。
+现有任务的实际奖励已核对：WebShop 使用 worker 的训练奖励；AppWorld 使用官方
+`evaluate().success` 对应的训练奖励；Sokoban 使用官方环境每步返回的奖励。适配层
+不复制评分器。环境、rollout、模型 forward、有限传播与 PPO optimizer 均保留原归属。
 
 ## 环境与历史记录
 

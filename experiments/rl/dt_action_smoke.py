@@ -1,9 +1,8 @@
-"""Run one real action-intervention through the owner Qwen3.5 DT runner.
+"""Run one real token-attribution trace through the owner Qwen3.5 runner.
 
 The selected and reference endpoints differ at one first-response action
-position.  The runner's scalar endpoint effect is passed through the guarded
-policy-credit adapter; the signed token vector is checked for conservation but
-never used as a policy-loss weight.
+position. The owner signed vector is checked for conservation. This diagnostic
+does not produce reward-event log ratios or validate the RL advantage method.
 """
 
 from __future__ import annotations
@@ -41,7 +40,7 @@ def main() -> None:
     from finite_fla_gpu import make_compiled_finite_pullback, verify_native_sources
     from qwen35_answer_finite import PackedAnswerTargets
     from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256
-    from deltatrace_credit import trace_endpoint_difference
+    from deltatrace_credit import trace_token_attribution
 
     verify_native_sources(env["native_stage_source_sha256"])
     tokenizer = AutoTokenizer.from_pretrained(env["checkpoint"], local_files_only=True)
@@ -78,12 +77,12 @@ def main() -> None:
     reference = selected.clone()
     reference[0, prompt_len] = (reference[0, prompt_len] + 1) % model.lm_head.out_features
     target_case = {"target_ids": target_ids.detach().cpu(), "prompt_length": prompt_len}
-    def summarize(effect, detail, elapsed):
+    def summarize(signed, root_effect, detail, elapsed):
         grouped = defaultdict(float)
         for row in detail.get("calls", []):
             grouped[row.get("kind")] += float(row.get("seconds", 0.0))
         return {
-            "endpoint_effect": effect, "signed_sum": float(detail["signed_sum"]),
+            "root_effect": float(root_effect.item()), "signed_sum": float(signed.sum().item()),
             "relative_residual": detail.get("relative_residual"), "seconds": elapsed,
             "runner_seconds": detail.get("complete_attribution_seconds_with_diagnostics"),
             "peak_allocated": detail.get("peak_allocated"), "peak_reserved": detail.get("peak_reserved"),
@@ -94,12 +93,13 @@ def main() -> None:
     runs = []
     for _ in range(2):
         started = time.perf_counter()
-        effect, detail = trace_endpoint_difference(
+        signed, root_effect, detail = trace_token_attribution(
             runner, reference, selected, target_case, list(range(int(target_ids.numel()))),
             packed_answer_targets=PackedAnswerTargets,
         )
-        runs.append(summarize(effect, detail, time.perf_counter() - started))
+        runs.append(summarize(signed, root_effect, detail, time.perf_counter() - started))
     result = {
+        "scope": "official text attribution only; not RL reward-event credit",
         "status": "passed", "prompt_tokens": prompt_len, "target_tokens": int(target_ids.numel()),
         "action_position": prompt_len, "selected_action": int(selected[0, prompt_len]),
         "reference_action": int(reference[0, prompt_len]), "runs": runs,
