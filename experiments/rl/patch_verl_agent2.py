@@ -237,13 +237,20 @@ HF_SUMMON_PREVIOUS = "            param_ctx = FSDP.summon_full_params(self.modul
 
 HF_DT_METHOD_ANCHOR = "        return DataProto(batch=batch)\n"
 HF_TRIM_ANCHOR = "        self.module.eval()\n        param_ctx = contextlib.nullcontext()"
-HF_TRIM_INSERT = '''        # Trim only shared left padding for native generation; restore exact
+HF_TRIM_PREVIOUS = '''        # Trim only shared left padding for native generation; restore exact
         # DataProto width below so collector IDs/masks keep their original ABI.
         generation_left_trim = 0
         if os.getenv("VERL_TRIM_SHARED_PADDING", "0") == "1":
             generation_left_trim = int(attention_mask.long().argmax(-1).min().item())
         self.module.eval()
         param_ctx = contextlib.nullcontext()'''
+HF_TRIM_INSERT = HF_TRIM_PREVIOUS.replace(
+    '            generation_left_trim = int(attention_mask.long().argmax(-1).min().item())',
+    '''            generation_left_trim = int(attention_mask.long().argmax(-1).min().item())
+            if getattr(getattr(self.module, "config", None), "model_type", None) in ("qwen3_5", "qwen3_5_text"):
+                # Pinned FLA uses 64-token chunks. Keep its original chunk grid;
+                # moving real tokens across chunk boundaries changes BF16 results.
+                generation_left_trim -= generation_left_trim % 64''')
 HF_TRIM_CALL_OLD = '''            output = self.module.generate(
                 input_ids=idx,
                 attention_mask=attention_mask,
@@ -258,7 +265,7 @@ HF_TRIM_RESTORE = '''        seq = output.sequences
             padding = padding.repeat_interleave(seq.size(0) // idx.size(0), dim=0)
             seq = torch.cat((padding, seq), dim=-1)'''
 ACTOR_TRIM_ANCHOR = '            else:  # not using rmpad and no ulysses sp\n                extra_args = {}'
-ACTOR_TRIM_INSERT = '''            else:  # not using rmpad and no ulysses sp
+ACTOR_TRIM_PREVIOUS = '''            else:  # not using rmpad and no ulysses sp
                 # Preserve the response columns and original tensors. Only
                 # columns masked out for every example leave the model input.
                 if not multi_modal_inputs and os.getenv("VERL_TRIM_SHARED_PADDING", "0") == "1":
@@ -267,6 +274,12 @@ ACTOR_TRIM_INSERT = '''            else:  # not using rmpad and no ulysses sp
                     attention_mask = attention_mask[:, left_trim:]
                     position_ids = position_ids[..., left_trim:]
                 extra_args = {}'''
+ACTOR_TRIM_INSERT = ACTOR_TRIM_PREVIOUS.replace(
+    '                    left_trim = int(attention_mask.long().argmax(-1).min().item())',
+    '''                    left_trim = int(attention_mask.long().argmax(-1).min().item())
+                    if getattr(getattr(self.actor_module, "config", None), "model_type", None) in ("qwen3_5", "qwen3_5_text"):
+                        # Match the pinned FLA 64-token chunk grid in forward/backward.
+                        left_trim -= left_trim % 64''')
 HF_DT_METHOD_OLD = "    def compute_dt_token_advantages(self, episodes, episode_returns):\n"
 HF_DT_METHOD_MARKER = "    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):\n"
 HF_DT_METHOD = '''        return DataProto(batch=batch)
@@ -380,6 +393,21 @@ QWEN35_RMS_NEW = "        weight = self.weight.to_local() if hasattr(self.weight
 QWEN35_LM_OLD = "        logits = self.lm_head(hidden_states[:, slice_indices, :])"
 QWEN35_LM_PREV = "        lm_weight = self.lm_head.weight.to_local() if hasattr(self.lm_head.weight, \"to_local\") else self.lm_head.weight\n        lm_bias = self.lm_head.bias.to_local() if getattr(self.lm_head, \"bias\", None) is not None and hasattr(self.lm_head.bias, \"to_local\") else getattr(self.lm_head, \"bias\", None)\n        logits = F.linear(hidden_states[:, slice_indices, :], lm_weight, lm_bias)"
 QWEN35_LM_NEW = "        lm_weight = self.lm_head.weight.to_local() if hasattr(self.lm_head.weight, \"to_local\") else self.lm_head.weight\n        lm_bias = self.lm_head.bias.to_local() if getattr(self.lm_head, \"bias\", None) is not None and hasattr(self.lm_head.bias, \"to_local\") else getattr(self.lm_head, \"bias\", None)\n        lm_weight = lm_weight.to(hidden_states.device)\n        lm_bias = lm_bias.to(hidden_states.device) if lm_bias is not None else None\n        logits = F.linear(hidden_states[:, slice_indices, :], lm_weight, lm_bias)"
+# Backport only the owner's padding-mask fix from Transformers 59eed1a6:
+# create_recurrent_attention_mask already supplies an aligned local 2D mask
+# or None for cached forwards. Batch size 1 must not skip a supplied mask.
+QWEN35_PADDING_OLD = "    # NOTE: attention mask is a 2D boolean tensor\n    if attention_mask is not None and attention_mask.shape[1] > 1 and attention_mask.shape[0] > 1:"
+QWEN35_PADDING_NEW = "    # NOTE: attention mask is a 2D boolean tensor\n    if attention_mask is not None:"
+
+
+def patch_qwen35_padding_mask(text: str) -> str:
+    if QWEN35_PADDING_NEW in text:
+        return text
+    if text.count(QWEN35_PADDING_OLD) != 1:
+        raise RuntimeError("cannot find the Qwen3.5 batch-one padding-mask owner anchor")
+    return text.replace(QWEN35_PADDING_OLD, QWEN35_PADDING_NEW, 1)
+
+
 HF_WRAP_OLD = '        if self._is_rollout and self.config.rollout.name == "hf":\n            # TODO(zhangchi.usc1992, shengguangming) fix me. Current, auto_wrap_policy causes HFRollout to hang in Gemma\n            auto_wrap_policy = None'
 HF_WRAP_NEW = '        if self._is_rollout and self.config.rollout.name == "hf" and os.getenv("VERL_ENABLE_HF_FSDP_WRAP", "0") != "1":\n            # Keep upstream HF rollout\'s conservative default; long-context\n            # single-GPU runs can opt into layer wrapping explicitly.\n            auto_wrap_policy = None'
 
@@ -678,6 +706,7 @@ def main() -> None:
             print(f"patched {qwen35} RoPE device compatibility")
         else:
             print(f"already patched {qwen35} RoPE device compatibility")
+        qwen_text = qwen35.read_text()
         if QWEN35_RMS_NEW not in qwen_text:
             if QWEN35_RMS_PREV in qwen_text:
                 qwen35.write_text(qwen_text.replace(QWEN35_RMS_PREV, QWEN35_RMS_NEW, 1))
@@ -701,6 +730,13 @@ def main() -> None:
                 print(f"patched {qwen35} FSDP2 lm_head compatibility")
         else:
             print(f"already patched {qwen35} FSDP2 lm_head compatibility")
+        qwen_text = qwen35.read_text()
+        patched_qwen_text = patch_qwen35_padding_mask(qwen_text)
+        if patched_qwen_text != qwen_text:
+            qwen35.write_text(patched_qwen_text)
+            print(f"patched {qwen35} upstream batch-one padding mask")
+        else:
+            print(f"already patched {qwen35} upstream batch-one padding mask")
 
     # Add the owner DeltaTrace token estimator at VERL's existing boundary.
     # This is intentionally a source patch to the pinned upstream tree rather
@@ -808,6 +844,10 @@ def main() -> None:
         (actor, [(ACTOR_TRIM_ANCHOR, ACTOR_TRIM_INSERT)]),
     ]:
         text = path.read_text()
+        for previous, current in [(HF_TRIM_PREVIOUS, HF_TRIM_INSERT),
+                                  (ACTOR_TRIM_PREVIOUS, ACTOR_TRIM_INSERT)]:
+            if previous in text:
+                text = text.replace(previous, current, 1)
         if '\nimport os\n' not in text:
             text = text.replace('\nimport torch\n', '\nimport os\nimport torch\n', 1)
         for old, new in replacements:

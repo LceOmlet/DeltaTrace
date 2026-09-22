@@ -1,0 +1,3836 @@
+{
+  "scope": "Same worker, weights, original optimizer and DT advantages; installed actor versus pristine pinned VERL actor. FA/math calibration uses only real action positions.",
+  "owner_tolerance": "max absolute error to independent FP32 <= 2x original BF16 math pipeline error to FP32",
+  "cases": {
+    "reshard": {
+      "status": "passed",
+      "errors": {
+        "old_log_probs": {
+          "elements": 2124,
+          "changed_elements": 576,
+          "max_abs": 0.18749237060546875,
+          "absolute_l2": 0.5477965268521123,
+          "relative_l2": 0.0011472032768060033
+        },
+        "after_0": {
+          "elements": 2704896,
+          "changed_elements": 560195,
+          "max_abs": 2.0265579223632812e-06,
+          "absolute_l2": 0.00044856992769157683,
+          "relative_l2": 4.934173633072675e-05
+        },
+        "after_1": {
+          "elements": 2704896,
+          "changed_elements": 778811,
+          "max_abs": 4.023313522338867e-06,
+          "absolute_l2": 0.0006702172935412069,
+          "relative_l2": 7.37224725509508e-05
+        },
+        "policy_forward_log_probs": {
+          "elements": 4248,
+          "changed_elements": 636,
+          "max_abs": 0.31023597717285156,
+          "absolute_l2": 0.9487546303646095,
+          "relative_l2": 0.0014048672628893645
+        },
+        "raw_gradients": {
+          "elements": 5409792,
+          "changed_elements": 4056109,
+          "max_abs": 0.03515625,
+          "absolute_l2": 0.41235648317229007,
+          "relative_l2": 0.14281292618745706
+        },
+        "parameter_delta_0": {
+          "elements": 2704896,
+          "changed_elements": 560195,
+          "max_abs": 2.0265579223632812e-06,
+          "absolute_l2": 0.00044856992769157683,
+          "relative_l2": 0.37568259650322905
+        },
+        "parameter_delta_1": {
+          "elements": 2704896,
+          "changed_elements": 778811,
+          "max_abs": 4.023313522338867e-06,
+          "absolute_l2": 0.0006702172935412069,
+          "relative_l2": 0.2864900336735935
+        }
+      },
+      "receipt": {
+        "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+        "attention": "flash_attention_2",
+        "reshard_after_forward": true,
+        "actor_source": "installed",
+        "context_cap": 32768,
+        "verifier_sha256": "4db8195c7194eb2845f5f9959d3d498f8300499ba82e8f9b6d89f18e7f2c7035",
+        "comparison_performed": false,
+        "trim_shared_padding": true,
+        "transformers_model_source_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+        "actor_source_sha256": "52defe321a0a27a9ca38c30b383ea8fc463d2ed1a559dae9864a76fc99611522",
+        "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+        "dt_report": {
+          "task": "Sokoban",
+          "policy_tokens": 14,
+          "nonzero_reward_events": 1,
+          "finite_trace_calls": 1,
+          "max_readout_length": 618,
+          "actual_row_lengths": [
+            447
+          ],
+          "traces": [
+            {
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "query_tokens": 170,
+              "root_effect": -0.08771967887878418,
+              "signed_sum": -0.09377193322494229,
+              "conservation_residual": 0.006052254346158109,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "seconds": 21.859267038293183,
+              "peak_allocated": 26050100224,
+              "peak_reserved": 26512195584,
+              "source_log_ratio_min": -0.0448671355843544,
+              "source_log_ratio_max": 0.03591737896203995
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 21.87292934767902,
+          "nonzero_advantages": 13,
+          "conservation_failures": 0
+        },
+        "input_tokens": 1129,
+        "effective_input_tokens": 447,
+        "explicit_left_padding": 165,
+        "updates": [
+          {
+            "actor/pg_loss": [
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.109375
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 24.261046409606934,
+            "perf/max_memory_reserved_gb": 24.708984375,
+            "perf/cpu_memory_used_gb": 161.23614883422852,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              0.07450859248638153,
+              0.07450859248638153,
+              0.07450859248638153,
+              0.07450859248638153
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.03087466023862362,
+              0.03087466023862362,
+              0.03087466023862362,
+              0.03087466023862362
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.0625
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 24.261046409606934,
+            "perf/max_memory_reserved_gb": 24.708984375,
+            "perf/cpu_memory_used_gb": 161.27159881591797,
+            "actor/lr": 1e-06
+          }
+        ],
+        "status": "artifacts_ready",
+        "paired_updates": [
+          {
+            "actor/pg_loss": [
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.078125
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 24.261046409606934,
+            "perf/max_memory_reserved_gb": 24.708984375,
+            "perf/cpu_memory_used_gb": 161.25884246826172,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              0.0701250359416008,
+              0.0701250359416008,
+              0.0701250359416008,
+              0.0701250359416008
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.006304468493908644,
+              0.006304468493908644,
+              0.006304468493908644,
+              0.006304468493908644
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.0
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 24.261046409606934,
+            "perf/max_memory_reserved_gb": 24.708984375,
+            "perf/cpu_memory_used_gb": 161.24460220336914,
+            "actor/lr": 1e-06
+          }
+        ],
+        "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+        "paired_math_updates": [
+          {
+            "actor/pg_loss": [
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.140625
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 24.261046409606934,
+            "perf/max_memory_reserved_gb": 24.708984375,
+            "perf/cpu_memory_used_gb": 161.24481201171875,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              0.08074327558279037,
+              0.08074327558279037,
+              0.08074327558279037,
+              0.08074327558279037
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              -0.02527727372944355,
+              -0.02527727372944355,
+              -0.02527727372944355,
+              -0.02527727372944355
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.453125
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 24.261046409606934,
+            "perf/max_memory_reserved_gb": 24.708984375,
+            "perf/cpu_memory_used_gb": 160.23702239990234,
+            "actor/lr": 1e-06
+          }
+        ],
+        "comparison_tolerance": "owner FA/math max-absolute and L2 error, no multiplier"
+      },
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-aligned-trimmed-reshard.json",
+      "receipt_sha256": "868a529bb49e870a5b0d8f2036434d354b293f52c5d54c67e51415edb323c56b",
+      "artifacts_sha256": "ec8f6cc7fafae4ac75b16335918e24acc70dfd65e4412647b985ea40ed6e84be",
+      "fa_math_log_prob_error": {
+        "elements": 56,
+        "changed_elements": 56,
+        "max_abs": 0.18495559692382812,
+        "absolute_l2": 0.5184885672813315,
+        "relative_l2": 0.0073414966149407245
+      },
+      "fa_repeat_log_prob_error": {
+        "elements": 56,
+        "changed_elements": 0,
+        "max_abs": 0.0,
+        "absolute_l2": 0.0,
+        "relative_l2": 0.0
+      },
+      "active_token_count": 56,
+      "fa_bounded_comparison": {
+        "old_log_probs": {
+          "error": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.1434040069580078,
+            "absolute_l2": 0.3397356266739125,
+            "relative_l2": 0.004801711890684938
+          },
+          "owner_fa_math_error": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.1697998046875,
+            "absolute_l2": 0.523200031784564,
+            "relative_l2": 0.007350450593462614
+          },
+          "passed": true
+        },
+        "policy_forward_log_probs": {
+          "error": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.31023597717285156,
+            "absolute_l2": 0.7581883735844054,
+            "relative_l2": 0.007569582469802573
+          },
+          "owner_fa_math_error": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.1862506866455078,
+            "absolute_l2": 0.8084986122496647,
+            "relative_l2": 0.008050417029128168
+          },
+          "passed": false
+        },
+        "raw_gradients": {
+          "error": {
+            "elements": 5409792,
+            "changed_elements": 4056109,
+            "max_abs": 0.03515625,
+            "absolute_l2": 0.41235648317229007,
+            "relative_l2": 0.14281292618745706
+          },
+          "owner_fa_math_error": {
+            "elements": 5409792,
+            "changed_elements": 4095467,
+            "max_abs": 0.02783203125,
+            "absolute_l2": 0.6607390309471554,
+            "relative_l2": 0.2028928521515627
+          },
+          "passed": false
+        },
+        "parameter_delta_0": {
+          "error": {
+            "elements": 2704896,
+            "changed_elements": 560195,
+            "max_abs": 2.0265579223632812e-06,
+            "absolute_l2": 0.00044856992769157683,
+            "relative_l2": 0.37568259650322905
+          },
+          "owner_fa_math_error": {
+            "elements": 2704896,
+            "changed_elements": 564675,
+            "max_abs": 2.0265579223632812e-06,
+            "absolute_l2": 0.0004223304717083229,
+            "relative_l2": 0.3536695511778261
+          },
+          "passed": false
+        },
+        "parameter_delta_1": {
+          "error": {
+            "elements": 2704896,
+            "changed_elements": 778811,
+            "max_abs": 4.023313522338867e-06,
+            "absolute_l2": 0.0006702172935412069,
+            "relative_l2": 0.2864900336735935
+          },
+          "owner_fa_math_error": {
+            "elements": 2704896,
+            "changed_elements": 851093,
+            "max_abs": 4.023313522338867e-06,
+            "absolute_l2": 0.0006285581823384394,
+            "relative_l2": 0.2704127396671591
+          },
+          "passed": false
+        }
+      },
+      "fa_standard_comparison": {
+        "old_log_probs": {
+          "error_to_fp32": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.1388378143310547,
+            "absolute_l2": 0.40303122586038503,
+            "relative_l2": 0.005661082256748426
+          },
+          "baseline_error_to_fp32": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.10597610473632812,
+            "absolute_l2": 0.26553569317503484,
+            "relative_l2": 0.003729783958941478
+          },
+          "passed": true
+        },
+        "policy_forward_log_probs": {
+          "error_to_fp32": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.1464405059814453,
+            "absolute_l2": 0.5993524217462196,
+            "relative_l2": 0.005950917028321303
+          },
+          "baseline_error_to_fp32": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.2359447479248047,
+            "absolute_l2": 0.6297069924884647,
+            "relative_l2": 0.006252304868535781
+          },
+          "passed": true
+        },
+        "raw_gradients": {
+          "error_to_fp32": {
+            "elements": 5409792,
+            "changed_elements": 4131835,
+            "max_abs": 0.018392086029052734,
+            "absolute_l2": 0.3144895112215548,
+            "relative_l2": 0.10669587533843285
+          },
+          "baseline_error_to_fp32": {
+            "elements": 5409792,
+            "changed_elements": 4131839,
+            "max_abs": 0.028788365423679352,
+            "absolute_l2": 0.5927544551785325,
+            "relative_l2": 0.20110195475318823
+          },
+          "passed": true
+        },
+        "parameter_delta_0": {
+          "error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 1426939,
+            "max_abs": 2.013271000578243e-06,
+            "absolute_l2": 0.0004215230286274829,
+            "relative_l2": 0.35302755647968476
+          },
+          "baseline_error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 1426939,
+            "max_abs": 2.013266453104734e-06,
+            "absolute_l2": 0.00040488652721829563,
+            "relative_l2": 0.3390944068247781
+          },
+          "passed": true
+        },
+        "parameter_delta_1": {
+          "error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 2704792,
+            "max_abs": 4.012753379356582e-06,
+            "absolute_l2": 0.0010321617062584347,
+            "relative_l2": 0.4125283270749945
+          },
+          "baseline_error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 2704794,
+            "max_abs": 4.024937879876234e-06,
+            "absolute_l2": 0.0010297550249634278,
+            "relative_l2": 0.41156643883363464
+          },
+          "passed": true
+        },
+        "actor/pg_loss": {
+          "error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 4,
+            "max_abs": 7.489323616027832e-05,
+            "absolute_l2": 0.00014978647232055664,
+            "relative_l2": 0.0007052473026405485
+          },
+          "baseline_error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 4,
+            "max_abs": 0.006309576332569122,
+            "absolute_l2": 0.012619152665138245,
+            "relative_l2": 0.059415401409895235
+          },
+          "passed": true
+        },
+        "actor/pg_clipfrac": {
+          "error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "baseline_error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "passed": true
+        },
+        "actor/pg_clipfrac_lower": {
+          "error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "baseline_error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "passed": true
+        }
+      }
+    },
+    "noreshard": {
+      "status": "passed",
+      "errors": {
+        "old_log_probs": {
+          "elements": 2124,
+          "changed_elements": 576,
+          "max_abs": 0.18749237060546875,
+          "absolute_l2": 0.5477965268521123,
+          "relative_l2": 0.0011472032768060033
+        },
+        "after_0": {
+          "elements": 2704896,
+          "changed_elements": 560195,
+          "max_abs": 2.0265579223632812e-06,
+          "absolute_l2": 0.00044856992769157683,
+          "relative_l2": 4.934173633072675e-05
+        },
+        "after_1": {
+          "elements": 2704896,
+          "changed_elements": 778811,
+          "max_abs": 4.023313522338867e-06,
+          "absolute_l2": 0.0006702172935412069,
+          "relative_l2": 7.37224725509508e-05
+        },
+        "policy_forward_log_probs": {
+          "elements": 4248,
+          "changed_elements": 636,
+          "max_abs": 0.31023597717285156,
+          "absolute_l2": 0.9487546303646095,
+          "relative_l2": 0.0014048672628893645
+        },
+        "raw_gradients": {
+          "elements": 5409792,
+          "changed_elements": 4056109,
+          "max_abs": 0.03515625,
+          "absolute_l2": 0.41235648317229007,
+          "relative_l2": 0.14281292618745706
+        },
+        "parameter_delta_0": {
+          "elements": 2704896,
+          "changed_elements": 560195,
+          "max_abs": 2.0265579223632812e-06,
+          "absolute_l2": 0.00044856992769157683,
+          "relative_l2": 0.37568259650322905
+        },
+        "parameter_delta_1": {
+          "elements": 2704896,
+          "changed_elements": 778811,
+          "max_abs": 4.023313522338867e-06,
+          "absolute_l2": 0.0006702172935412069,
+          "relative_l2": 0.2864900336735935
+        }
+      },
+      "receipt": {
+        "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+        "attention": "flash_attention_2",
+        "reshard_after_forward": false,
+        "actor_source": "installed",
+        "context_cap": 32768,
+        "verifier_sha256": "4db8195c7194eb2845f5f9959d3d498f8300499ba82e8f9b6d89f18e7f2c7035",
+        "comparison_performed": false,
+        "trim_shared_padding": true,
+        "transformers_model_source_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+        "actor_source_sha256": "52defe321a0a27a9ca38c30b383ea8fc463d2ed1a559dae9864a76fc99611522",
+        "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+        "dt_report": {
+          "task": "Sokoban",
+          "policy_tokens": 14,
+          "nonzero_reward_events": 1,
+          "finite_trace_calls": 1,
+          "max_readout_length": 618,
+          "actual_row_lengths": [
+            447
+          ],
+          "traces": [
+            {
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "query_tokens": 170,
+              "root_effect": -0.08771967887878418,
+              "signed_sum": -0.09377193322494229,
+              "conservation_residual": 0.006052254346158109,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "seconds": 21.828546513803303,
+              "peak_allocated": 36736921088,
+              "peak_reserved": 40183529472,
+              "source_log_ratio_min": -0.0448671355843544,
+              "source_log_ratio_max": 0.03591737896203995
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 21.84281900152564,
+          "nonzero_advantages": 13,
+          "conservation_failures": 0
+        },
+        "input_tokens": 1129,
+        "effective_input_tokens": 447,
+        "explicit_left_padding": 165,
+        "updates": [
+          {
+            "actor/pg_loss": [
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.109375
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 34.213923931121826,
+            "perf/max_memory_reserved_gb": 37.431640625,
+            "perf/cpu_memory_used_gb": 161.22339630126953,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              0.07450859248638153,
+              0.07450859248638153,
+              0.07450859248638153,
+              0.07450859248638153
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.03087466023862362,
+              0.03087466023862362,
+              0.03087466023862362,
+              0.03087466023862362
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.0625
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 34.213923931121826,
+            "perf/max_memory_reserved_gb": 37.44140625,
+            "perf/cpu_memory_used_gb": 161.24590301513672,
+            "actor/lr": 1e-06
+          }
+        ],
+        "status": "artifacts_ready",
+        "paired_updates": [
+          {
+            "actor/pg_loss": [
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.078125
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 34.213923931121826,
+            "perf/max_memory_reserved_gb": 37.890625,
+            "perf/cpu_memory_used_gb": 161.25283432006836,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              0.0701250359416008,
+              0.0701250359416008,
+              0.0701250359416008,
+              0.0701250359416008
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.006304468493908644,
+              0.006304468493908644,
+              0.006304468493908644,
+              0.006304468493908644
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.0
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 34.213923931121826,
+            "perf/max_memory_reserved_gb": 37.890625,
+            "perf/cpu_memory_used_gb": 161.24576568603516,
+            "actor/lr": 1e-06
+          }
+        ],
+        "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+        "paired_math_updates": [
+          {
+            "actor/pg_loss": [
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988,
+              0.07574200630187988
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.140625
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 34.213923931121826,
+            "perf/max_memory_reserved_gb": 37.890625,
+            "perf/cpu_memory_used_gb": 161.2447509765625,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              0.08074327558279037,
+              0.08074327558279037,
+              0.08074327558279037,
+              0.08074327558279037
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              -0.02527727372944355,
+              -0.02527727372944355,
+              -0.02527727372944355,
+              -0.02527727372944355
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.453125
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 34.213923931121826,
+            "perf/max_memory_reserved_gb": 37.890625,
+            "perf/cpu_memory_used_gb": 161.2382583618164,
+            "actor/lr": 1e-06
+          }
+        ],
+        "comparison_tolerance": "owner FA/math max-absolute and L2 error, no multiplier"
+      },
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-aligned-trimmed-noreshard.json",
+      "receipt_sha256": "99a4402d95319dc9f3bd472ae59eaf082771055d5def612e01e1d7d1d2478336",
+      "artifacts_sha256": "3e2b05caf20fce253f0b26a023bf740025d0df892503ba16d918e486ff838fdc",
+      "fa_math_log_prob_error": {
+        "elements": 56,
+        "changed_elements": 56,
+        "max_abs": 0.18495559692382812,
+        "absolute_l2": 0.5184885672813315,
+        "relative_l2": 0.0073414966149407245
+      },
+      "fa_repeat_log_prob_error": {
+        "elements": 56,
+        "changed_elements": 0,
+        "max_abs": 0.0,
+        "absolute_l2": 0.0,
+        "relative_l2": 0.0
+      },
+      "active_token_count": 56,
+      "fa_bounded_comparison": {
+        "old_log_probs": {
+          "error": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.1434040069580078,
+            "absolute_l2": 0.3397356266739125,
+            "relative_l2": 0.004801711890684938
+          },
+          "owner_fa_math_error": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.1697998046875,
+            "absolute_l2": 0.523200031784564,
+            "relative_l2": 0.007350450593462614
+          },
+          "passed": true
+        },
+        "policy_forward_log_probs": {
+          "error": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.31023597717285156,
+            "absolute_l2": 0.7581883735844054,
+            "relative_l2": 0.007569582469802573
+          },
+          "owner_fa_math_error": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.1862506866455078,
+            "absolute_l2": 0.8084986122496647,
+            "relative_l2": 0.008050417029128168
+          },
+          "passed": false
+        },
+        "raw_gradients": {
+          "error": {
+            "elements": 5409792,
+            "changed_elements": 4056109,
+            "max_abs": 0.03515625,
+            "absolute_l2": 0.41235648317229007,
+            "relative_l2": 0.14281292618745706
+          },
+          "owner_fa_math_error": {
+            "elements": 5409792,
+            "changed_elements": 4095467,
+            "max_abs": 0.02783203125,
+            "absolute_l2": 0.6607390309471554,
+            "relative_l2": 0.2028928521515627
+          },
+          "passed": false
+        },
+        "parameter_delta_0": {
+          "error": {
+            "elements": 2704896,
+            "changed_elements": 560195,
+            "max_abs": 2.0265579223632812e-06,
+            "absolute_l2": 0.00044856992769157683,
+            "relative_l2": 0.37568259650322905
+          },
+          "owner_fa_math_error": {
+            "elements": 2704896,
+            "changed_elements": 564675,
+            "max_abs": 2.0265579223632812e-06,
+            "absolute_l2": 0.0004223304717083229,
+            "relative_l2": 0.3536695511778261
+          },
+          "passed": false
+        },
+        "parameter_delta_1": {
+          "error": {
+            "elements": 2704896,
+            "changed_elements": 778811,
+            "max_abs": 4.023313522338867e-06,
+            "absolute_l2": 0.0006702172935412069,
+            "relative_l2": 0.2864900336735935
+          },
+          "owner_fa_math_error": {
+            "elements": 2704896,
+            "changed_elements": 851093,
+            "max_abs": 4.023313522338867e-06,
+            "absolute_l2": 0.0006285581823384394,
+            "relative_l2": 0.2704127396671591
+          },
+          "passed": false
+        }
+      },
+      "fa_standard_comparison": {
+        "old_log_probs": {
+          "error_to_fp32": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.1388378143310547,
+            "absolute_l2": 0.40303122586038503,
+            "relative_l2": 0.005661082256748426
+          },
+          "baseline_error_to_fp32": {
+            "elements": 56,
+            "changed_elements": 56,
+            "max_abs": 0.10597610473632812,
+            "absolute_l2": 0.26553569317503484,
+            "relative_l2": 0.003729783958941478
+          },
+          "passed": true
+        },
+        "policy_forward_log_probs": {
+          "error_to_fp32": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.1464405059814453,
+            "absolute_l2": 0.5993524217462196,
+            "relative_l2": 0.005950917028321303
+          },
+          "baseline_error_to_fp32": {
+            "elements": 112,
+            "changed_elements": 112,
+            "max_abs": 0.2359447479248047,
+            "absolute_l2": 0.6297069924884647,
+            "relative_l2": 0.006252304868535781
+          },
+          "passed": true
+        },
+        "raw_gradients": {
+          "error_to_fp32": {
+            "elements": 5409792,
+            "changed_elements": 4131835,
+            "max_abs": 0.018392086029052734,
+            "absolute_l2": 0.3144895112215548,
+            "relative_l2": 0.10669587533843285
+          },
+          "baseline_error_to_fp32": {
+            "elements": 5409792,
+            "changed_elements": 4131839,
+            "max_abs": 0.028788365423679352,
+            "absolute_l2": 0.5927544551785325,
+            "relative_l2": 0.20110195475318823
+          },
+          "passed": true
+        },
+        "parameter_delta_0": {
+          "error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 1426939,
+            "max_abs": 2.013271000578243e-06,
+            "absolute_l2": 0.0004215230286274829,
+            "relative_l2": 0.35302755647968476
+          },
+          "baseline_error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 1426939,
+            "max_abs": 2.013266453104734e-06,
+            "absolute_l2": 0.00040488652721829563,
+            "relative_l2": 0.3390944068247781
+          },
+          "passed": true
+        },
+        "parameter_delta_1": {
+          "error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 2704792,
+            "max_abs": 4.012753379356582e-06,
+            "absolute_l2": 0.0010321617062584347,
+            "relative_l2": 0.4125283270749945
+          },
+          "baseline_error_to_fp32": {
+            "elements": 2704896,
+            "changed_elements": 2704794,
+            "max_abs": 4.024937879876234e-06,
+            "absolute_l2": 0.0010297550249634278,
+            "relative_l2": 0.41156643883363464
+          },
+          "passed": true
+        },
+        "actor/pg_loss": {
+          "error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 4,
+            "max_abs": 7.489323616027832e-05,
+            "absolute_l2": 0.00014978647232055664,
+            "relative_l2": 0.0007052473026405485
+          },
+          "baseline_error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 4,
+            "max_abs": 0.006309576332569122,
+            "absolute_l2": 0.012619152665138245,
+            "relative_l2": 0.059415401409895235
+          },
+          "passed": true
+        },
+        "actor/pg_clipfrac": {
+          "error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "baseline_error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "passed": true
+        },
+        "actor/pg_clipfrac_lower": {
+          "error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "baseline_error_to_fp32": {
+            "elements": 8,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "absolute_l2": 0.0,
+            "relative_l2": 0.0
+          },
+          "passed": true
+        }
+      }
+    }
+  },
+  "tolerance_source": "https://github.com/Dao-AILab/flash-attention/blob/v2.6.3/tests/test_flash_attn.py",
+  "tolerance_scope": "FA official forward/backward criterion applied to active token log-probs, policy gradients and parameter increments; L2 is reported, not an extra gate",
+  "fp32_reference": {
+    "receipt": {
+      "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+      "attention": "sdpa",
+      "reshard_after_forward": true,
+      "actor_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/upstream-dp_actor-732f37.py",
+      "context_cap": 32768,
+      "verifier_sha256": "8833e4a5ed054efb187e964f70efdd9ac0d2683e503859f15e2c57483c1f0676",
+      "comparison_performed": false,
+      "trim_shared_padding": false,
+      "transformers_model_source_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+      "fp32_reference": {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-aligned-trimmed-reshard.pt",
+        "source_sha256": "ec8f6cc7fafae4ac75b16335918e24acc70dfd65e4412647b985ea40ed6e84be",
+        "gdn": "original Transformers torch_chunk_gated_delta_rule",
+        "attention": "original math SDPA",
+        "autocast": false,
+        "tf32": false,
+        "dt_advantages": "fixed saved BF16 run; no DT recomputation"
+      },
+      "actor_source_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+      "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "input_tokens": 1129,
+      "effective_input_tokens": 447,
+      "explicit_left_padding": 165,
+      "updates": [
+        {
+          "actor/pg_loss": [
+            0.07574200630187988,
+            0.07574200630187988,
+            0.07574200630187988,
+            0.07574200630187988
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            2.1004343032836914
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 41.06819725036621,
+          "perf/max_memory_reserved_gb": 62.482421875,
+          "perf/cpu_memory_used_gb": 149.15644454956055,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.07443369925022125,
+            0.07443369925022125,
+            0.07443369925022125,
+            0.07443369925022125
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0030243736691772938,
+            0.0030243736691772938,
+            0.0030243736691772938,
+            0.0030243736691772938
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            2.067878484725952
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 41.08862113952637,
+          "perf/max_memory_reserved_gb": 62.482421875,
+          "perf/cpu_memory_used_gb": 149.20343017578125,
+          "actor/lr": 1e-06
+        }
+      ],
+      "status": "artifacts_ready"
+    },
+    "artifacts_sha256": "a60c975c9558f817c729bbc1faacbb948f3b91c073a5d02114614bf75b4b7a2c"
+  },
+  "status": "passed",
+  "default_path_zero_tolerance": {
+    "scope": "Same worker, weights, original optimizer and DT advantages; installed actor versus pristine pinned VERL actor. FA/math calibration uses only real action positions.",
+    "owner_tolerance": {
+      "atol": 0,
+      "rtol": 0
+    },
+    "cases": {
+      "reshard": {
+        "status": "passed",
+        "errors": {
+          "old_log_probs": {
+            "elements": 2124,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "after_0": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "after_1": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "policy_forward_log_probs": {
+            "elements": 4248,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "raw_gradients": {
+            "elements": 5409792,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "parameter_delta_0": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "parameter_delta_1": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          }
+        },
+        "receipt": {
+          "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+          "attention": "flash_attention_2",
+          "reshard_after_forward": true,
+          "actor_source": "installed",
+          "context_cap": 32768,
+          "verifier_sha256": "c9f32792c1799e3c780236c7c28e81869fe167eaa97c615b65328dba2238e359",
+          "comparison_performed": true,
+          "actor_source_sha256": "bc2c576791385fac72046b72bc8243008fa7e7e04669e017d5ae614cc77829fc",
+          "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+          "dt_report": {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 618,
+            "actual_row_lengths": [
+              447
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 618,
+                "query_tokens": 170,
+                "root_effect": -0.11290553212165833,
+                "signed_sum": -0.10898883610380652,
+                "conservation_residual": -0.003916696017851801,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 21.663310013711452,
+                "peak_allocated": 26050100224,
+                "peak_reserved": 26512195584,
+                "source_log_ratio_min": -0.05717306211590767,
+                "source_log_ratio_max": 0.028821857646107674
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 21.677446925081313,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          "input_tokens": 1001,
+          "effective_input_tokens": 447,
+          "updates": [
+            {
+              "actor/pg_loss": [
+                0.08816774934530258,
+                0.08816774934530258,
+                0.08816774934530258,
+                0.08816774934530258
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.328125
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 24.261046409606934,
+              "perf/max_memory_reserved_gb": 24.708984375,
+              "perf/cpu_memory_used_gb": 265.8412437438965,
+              "actor/lr": 1e-06
+            },
+            {
+              "actor/pg_loss": [
+                0.08905201405286789,
+                0.08905201405286789,
+                0.08905201405286789,
+                0.08905201405286789
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                -0.002846786053851247,
+                -0.002846786053851247,
+                -0.002846786053851247,
+                -0.002846786053851247
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.546875
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 24.261046409606934,
+              "perf/max_memory_reserved_gb": 24.708984375,
+              "perf/cpu_memory_used_gb": 265.86304473876953,
+              "actor/lr": 1e-06
+            }
+          ],
+          "status": "passed",
+          "paired_updates": [
+            {
+              "actor/pg_loss": [
+                0.08816774934530258,
+                0.08816774934530258,
+                0.08816774934530258,
+                0.08816774934530258
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.328125
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 24.261046409606934,
+              "perf/max_memory_reserved_gb": 24.708984375,
+              "perf/cpu_memory_used_gb": 265.86225509643555,
+              "actor/lr": 1e-06
+            },
+            {
+              "actor/pg_loss": [
+                0.08905201405286789,
+                0.08905201405286789,
+                0.08905201405286789,
+                0.08905201405286789
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                -0.002846786053851247,
+                -0.002846786053851247,
+                -0.002846786053851247,
+                -0.002846786053851247
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.546875
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 24.261046409606934,
+              "perf/max_memory_reserved_gb": 24.708984375,
+              "perf/cpu_memory_used_gb": 264.87038803100586,
+              "actor/lr": 1e-06
+            }
+          ],
+          "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+          "comparison_tolerance": {
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-paired-reshard.json",
+        "receipt_sha256": "18ca23e6dc7c30c34817af72b19087c4a0dd99c7270b71ee7cc6b85589fb8aef",
+        "artifacts_sha256": "e7f1ed783562425d6927bd9da75a1011dcf5f4c5bbabc428fb84a57a9a5caeb1",
+        "fa_math_log_prob_error": {
+          "elements": 56,
+          "changed_elements": 52,
+          "max_abs": 0.10156822204589844,
+          "relative_l2": 0.0044510191693057834
+        },
+        "fa_repeat_log_prob_error": {
+          "elements": 56,
+          "changed_elements": 0,
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "active_token_count": 56
+      },
+      "noreshard": {
+        "status": "passed",
+        "errors": {
+          "old_log_probs": {
+            "elements": 2124,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "after_0": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "after_1": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "policy_forward_log_probs": {
+            "elements": 4248,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "raw_gradients": {
+            "elements": 5409792,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "parameter_delta_0": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "parameter_delta_1": {
+            "elements": 2704896,
+            "changed_elements": 0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          }
+        },
+        "receipt": {
+          "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+          "attention": "flash_attention_2",
+          "reshard_after_forward": false,
+          "actor_source": "installed",
+          "context_cap": 32768,
+          "verifier_sha256": "c9f32792c1799e3c780236c7c28e81869fe167eaa97c615b65328dba2238e359",
+          "comparison_performed": true,
+          "actor_source_sha256": "bc2c576791385fac72046b72bc8243008fa7e7e04669e017d5ae614cc77829fc",
+          "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+          "dt_report": {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 618,
+            "actual_row_lengths": [
+              447
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 618,
+                "query_tokens": 170,
+                "root_effect": -0.08771967887878418,
+                "signed_sum": -0.09377193322494229,
+                "conservation_residual": 0.006052254346158109,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 21.611955866217613,
+                "peak_allocated": 36736921088,
+                "peak_reserved": 40183529472,
+                "source_log_ratio_min": -0.0448671355843544,
+                "source_log_ratio_max": 0.03591737896203995
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 21.626454185694456,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          "input_tokens": 1001,
+          "effective_input_tokens": 447,
+          "updates": [
+            {
+              "actor/pg_loss": [
+                0.07574200630187988,
+                0.07574200630187988,
+                0.07574200630187988,
+                0.07574200630187988
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.203125
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 34.213923931121826,
+              "perf/max_memory_reserved_gb": 37.431640625,
+              "perf/cpu_memory_used_gb": 265.82971954345703,
+              "actor/lr": 1e-06
+            },
+            {
+              "actor/pg_loss": [
+                0.07613592594861984,
+                0.07613592594861984,
+                0.07613592594861984,
+                0.07613592594861984
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                0.010593278333544731,
+                0.010593278333544731,
+                0.010593278333544731,
+                0.010593278333544731
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.140625
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 34.213923931121826,
+              "perf/max_memory_reserved_gb": 37.44140625,
+              "perf/cpu_memory_used_gb": 265.8651313781738,
+              "actor/lr": 1e-06
+            }
+          ],
+          "status": "passed",
+          "paired_updates": [
+            {
+              "actor/pg_loss": [
+                0.07574200630187988,
+                0.07574200630187988,
+                0.07574200630187988,
+                0.07574200630187988
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.203125
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 34.213923931121826,
+              "perf/max_memory_reserved_gb": 37.44140625,
+              "perf/cpu_memory_used_gb": 265.8627014160156,
+              "actor/lr": 1e-06
+            },
+            {
+              "actor/pg_loss": [
+                0.07613592594861984,
+                0.07613592594861984,
+                0.07613592594861984,
+                0.07613592594861984
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                0.010593278333544731,
+                0.010593278333544731,
+                0.010593278333544731,
+                0.010593278333544731
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                2.140625
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 34.213923931121826,
+              "perf/max_memory_reserved_gb": 37.44140625,
+              "perf/cpu_memory_used_gb": 265.8641128540039,
+              "actor/lr": 1e-06
+            }
+          ],
+          "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+          "comparison_tolerance": {
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-paired-noreshard.json",
+        "receipt_sha256": "e10384fb99be3e1163003fc4959e9b037812cc8592a697a15bf293aa5cb9fa1e",
+        "artifacts_sha256": "ffc76c508d7b1c8af2e831f7afaa5741d60ebdffe7fb577cf695a5ef8f35a239",
+        "fa_math_log_prob_error": {
+          "elements": 56,
+          "changed_elements": 52,
+          "max_abs": 0.12493133544921875,
+          "relative_l2": 0.00622523686727781
+        },
+        "fa_repeat_log_prob_error": {
+          "elements": 56,
+          "changed_elements": 0,
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "active_token_count": 56
+      }
+    },
+    "status": "passed",
+    "dt_lifecycle_regressions": {
+      "dt-lifecycle-comparison": {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-lifecycle-comparison.json",
+        "sha256": "6f0f4c703ca23dc092de9cfe83bd93ee3fdbbfba27e5893f8e052ea8ad322df1",
+        "result": {
+          "scope": "Compare actual DT vectors before/after FSDP parameter-lifetime changes.\n\nThe prior adapter is an archived source file, not a second production path.\nUses the real checkpoint and recorded official fixture, with exact comparison.\nThis numerical regression does not replace the separate exact-32k capacity run.\n",
+          "previous_adapter_sha256": "c378b39a76e5e15b465c4db2c10537010686870219bfabf81ecb506b2d1cbe01",
+          "previous": {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 618,
+            "actual_row_lengths": [
+              447
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 618,
+                "query_tokens": 170,
+                "root_effect": -0.15559887886047363,
+                "signed_sum": -0.12751442600057306,
+                "conservation_residual": -0.028084452859900577,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": false,
+                "seconds": 31.746891867369413,
+                "peak_allocated": 36761765376,
+                "peak_reserved": 40938504192,
+                "source_log_ratio_min": -0.06994552910327911,
+                "source_log_ratio_max": 0.06038105487823486
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 31.7649397412315,
+            "nonzero_advantages": 13,
+            "conservation_failures": 1
+          },
+          "layerwise": {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 618,
+            "actual_row_lengths": [
+              447
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 618,
+                "query_tokens": 170,
+                "root_effect": -0.15559887886047363,
+                "signed_sum": -0.12751442600057306,
+                "conservation_residual": -0.028084452859900577,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": false,
+                "seconds": 1.467416631989181,
+                "peak_allocated": 36736921088,
+                "peak_reserved": 40938504192,
+                "source_log_ratio_min": -0.06994552910327911,
+                "source_log_ratio_max": 0.06038105487823486
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 1.4710829118266702,
+            "nonzero_advantages": 13,
+            "conservation_failures": 1
+          },
+          "signed_and_qva_exactly_equal": true,
+          "all_parameters_resharded_after_each_trace": true,
+          "status": "passed"
+        }
+      },
+      "dt-lifecycle-speed16k": {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-lifecycle-speed16k.json",
+        "sha256": "ad945982b5d6af5be92210b1b111ec754329e63b3731b1ee82fe128d8f57bef0",
+        "result": {
+          "scope": "Compare actual DT vectors before/after FSDP parameter-lifetime changes.\n\nThe prior adapter is an archived source file, not a second production path.\nUses the real checkpoint and recorded official fixture, with exact comparison.\nThis numerical regression does not replace the separate exact-32k capacity run.\n",
+          "previous_adapter_sha256": "c378b39a76e5e15b465c4db2c10537010686870219bfabf81ecb506b2d1cbe01",
+          "synthetic_filler_tokens": 15766,
+          "previous": [
+            {
+              "task": "Sokoban",
+              "policy_tokens": 14,
+              "nonzero_reward_events": 1,
+              "finite_trace_calls": 1,
+              "max_readout_length": 16384,
+              "actual_row_lengths": [
+                16213
+              ],
+              "traces": [
+                {
+                  "source_step": 4,
+                  "event_step": 4,
+                  "context_tokens": 16384,
+                  "query_tokens": 170,
+                  "root_effect": 0.23426637053489685,
+                  "signed_sum": 0.23275695361093263,
+                  "conservation_residual": 0.0015094169239642241,
+                  "conservation_tolerance": 0.02,
+                  "conservation_verified": true,
+                  "seconds": 68.1248125480488,
+                  "peak_allocated": 58182991872,
+                  "peak_reserved": 62664998912,
+                  "source_log_ratio_min": -0.006561095826327801,
+                  "source_log_ratio_max": 0.06051734834909439
+                }
+              ],
+              "max_length": 32768,
+              "ratio_source": "official_eos_dt_signed_attribution_estimate",
+              "reference_token_samples": 0,
+              "per_token_probability_queries": 0,
+              "seconds": 68.18954845704138,
+              "nonzero_advantages": 13,
+              "conservation_failures": 0
+            },
+            {
+              "task": "Sokoban",
+              "policy_tokens": 14,
+              "nonzero_reward_events": 1,
+              "finite_trace_calls": 1,
+              "max_readout_length": 16384,
+              "actual_row_lengths": [
+                16213
+              ],
+              "traces": [
+                {
+                  "source_step": 4,
+                  "event_step": 4,
+                  "context_tokens": 16384,
+                  "query_tokens": 170,
+                  "root_effect": 0.23426637053489685,
+                  "signed_sum": 0.23275695361093263,
+                  "conservation_residual": 0.0015094169239642241,
+                  "conservation_tolerance": 0.02,
+                  "conservation_verified": true,
+                  "seconds": 40.46405843831599,
+                  "peak_allocated": 58182991872,
+                  "peak_reserved": 62664998912,
+                  "source_log_ratio_min": -0.006561095826327801,
+                  "source_log_ratio_max": 0.06051734834909439
+                }
+              ],
+              "max_length": 32768,
+              "ratio_source": "official_eos_dt_signed_attribution_estimate",
+              "reference_token_samples": 0,
+              "per_token_probability_queries": 0,
+              "seconds": 40.50739185884595,
+              "nonzero_advantages": 13,
+              "conservation_failures": 0
+            },
+            {
+              "task": "Sokoban",
+              "policy_tokens": 14,
+              "nonzero_reward_events": 1,
+              "finite_trace_calls": 1,
+              "max_readout_length": 16384,
+              "actual_row_lengths": [
+                16213
+              ],
+              "traces": [
+                {
+                  "source_step": 4,
+                  "event_step": 4,
+                  "context_tokens": 16384,
+                  "query_tokens": 170,
+                  "root_effect": 0.23426637053489685,
+                  "signed_sum": 0.23275695361093263,
+                  "conservation_residual": 0.0015094169239642241,
+                  "conservation_tolerance": 0.02,
+                  "conservation_verified": true,
+                  "seconds": 40.48767760582268,
+                  "peak_allocated": 58182991872,
+                  "peak_reserved": 62664998912,
+                  "source_log_ratio_min": -0.006561095826327801,
+                  "source_log_ratio_max": 0.06051734834909439
+                }
+              ],
+              "max_length": 32768,
+              "ratio_source": "official_eos_dt_signed_attribution_estimate",
+              "reference_token_samples": 0,
+              "per_token_probability_queries": 0,
+              "seconds": 40.533943582326174,
+              "nonzero_advantages": 13,
+              "conservation_failures": 0
+            }
+          ],
+          "previous_warm_median_seconds": 40.52066772058606,
+          "layerwise": [
+            {
+              "task": "Sokoban",
+              "policy_tokens": 14,
+              "nonzero_reward_events": 1,
+              "finite_trace_calls": 1,
+              "max_readout_length": 16384,
+              "actual_row_lengths": [
+                16213
+              ],
+              "traces": [
+                {
+                  "source_step": 4,
+                  "event_step": 4,
+                  "context_tokens": 16384,
+                  "query_tokens": 170,
+                  "root_effect": 0.23426637053489685,
+                  "signed_sum": 0.23275695361093263,
+                  "conservation_residual": 0.0015094169239642241,
+                  "conservation_tolerance": 0.02,
+                  "conservation_verified": true,
+                  "seconds": 40.63971000816673,
+                  "peak_allocated": 42741160448,
+                  "peak_reserved": 62664998912,
+                  "source_log_ratio_min": -0.006561095826327801,
+                  "source_log_ratio_max": 0.06051734834909439
+                }
+              ],
+              "max_length": 32768,
+              "ratio_source": "official_eos_dt_signed_attribution_estimate",
+              "reference_token_samples": 0,
+              "per_token_probability_queries": 0,
+              "seconds": 40.674515191465616,
+              "nonzero_advantages": 13,
+              "conservation_failures": 0
+            },
+            {
+              "task": "Sokoban",
+              "policy_tokens": 14,
+              "nonzero_reward_events": 1,
+              "finite_trace_calls": 1,
+              "max_readout_length": 16384,
+              "actual_row_lengths": [
+                16213
+              ],
+              "traces": [
+                {
+                  "source_step": 4,
+                  "event_step": 4,
+                  "context_tokens": 16384,
+                  "query_tokens": 170,
+                  "root_effect": 0.23426637053489685,
+                  "signed_sum": 0.23275695361093263,
+                  "conservation_residual": 0.0015094169239642241,
+                  "conservation_tolerance": 0.02,
+                  "conservation_verified": true,
+                  "seconds": 40.65625692438334,
+                  "peak_allocated": 42741160448,
+                  "peak_reserved": 62664998912,
+                  "source_log_ratio_min": -0.006561095826327801,
+                  "source_log_ratio_max": 0.06051734834909439
+                }
+              ],
+              "max_length": 32768,
+              "ratio_source": "official_eos_dt_signed_attribution_estimate",
+              "reference_token_samples": 0,
+              "per_token_probability_queries": 0,
+              "seconds": 40.69049049075693,
+              "nonzero_advantages": 13,
+              "conservation_failures": 0
+            },
+            {
+              "task": "Sokoban",
+              "policy_tokens": 14,
+              "nonzero_reward_events": 1,
+              "finite_trace_calls": 1,
+              "max_readout_length": 16384,
+              "actual_row_lengths": [
+                16213
+              ],
+              "traces": [
+                {
+                  "source_step": 4,
+                  "event_step": 4,
+                  "context_tokens": 16384,
+                  "query_tokens": 170,
+                  "root_effect": 0.23426637053489685,
+                  "signed_sum": 0.23275695361093263,
+                  "conservation_residual": 0.0015094169239642241,
+                  "conservation_tolerance": 0.02,
+                  "conservation_verified": true,
+                  "seconds": 40.6709950985387,
+                  "peak_allocated": 42741160448,
+                  "peak_reserved": 62664998912,
+                  "source_log_ratio_min": -0.006561095826327801,
+                  "source_log_ratio_max": 0.06051734834909439
+                }
+              ],
+              "max_length": 32768,
+              "ratio_source": "official_eos_dt_signed_attribution_estimate",
+              "reference_token_samples": 0,
+              "per_token_probability_queries": 0,
+              "seconds": 40.705811007879674,
+              "nonzero_advantages": 13,
+              "conservation_failures": 0
+            }
+          ],
+          "layerwise_warm_median_seconds": 40.6981507493183,
+          "signed_and_qva_exactly_equal": true,
+          "all_parameters_resharded_after_each_trace": true,
+          "warm_time_ratio_new_over_previous": 1.00438006179849,
+          "status": "passed"
+        }
+      }
+    },
+    "fa_operator_calibration": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/metax-fa-backward.json",
+      "sha256": "34478f23b78d6e2d76c9958e7d527d9b92a2be947b6fd7cb202783c25c86cd6d",
+      "result": {
+        "shape": {
+          "heads": 16,
+          "kv_heads": 4,
+          "head_dim": 256,
+          "length": 128
+        },
+        "forward_relative_l2": 0.0018578568706288934,
+        "backward_relative_l2": [
+          0.002546122530475259,
+          0.0030509433709084988,
+          0.0028441331814974546
+        ],
+        "all_finite": true,
+        "scope": "installed FlashAttention numerical backward at model head layout; not 32k training"
+      }
+    }
+  },
+  "historical_failed_checks": {
+    "short-parity-trimmed-comparison": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-trimmed-comparison.json",
+      "sha256": "7610da598afe9a7a72b8a5a4eb4d2cad95ee3d332dbd18ddbed4c9464be44522",
+      "result": {
+        "scope": "Same worker, weights, original optimizer and DT advantages; installed actor versus pristine pinned VERL actor. FA/math calibration uses only real action positions.",
+        "owner_tolerance": "owner FA/math max-absolute and L2 error, no multiplier",
+        "cases": {
+          "reshard": {
+            "status": "failed",
+            "errors": {
+              "old_log_probs": {
+                "elements": 2124,
+                "changed_elements": 2124,
+                "max_abs": 7.277399063110352,
+                "absolute_l2": 117.40965952113048,
+                "relative_l2": 0.23908993596820177
+              },
+              "after_0": {
+                "elements": 2704896,
+                "changed_elements": 950976,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.0015916442165718656,
+                "relative_l2": 0.0001750774726920976
+              },
+              "after_1": {
+                "elements": 2704896,
+                "changed_elements": 1165985,
+                "max_abs": 4.038214683532715e-06,
+                "absolute_l2": 0.003087016275741413,
+                "relative_l2": 0.00033956520502456536
+              },
+              "policy_forward_log_probs": {
+                "elements": 4248,
+                "changed_elements": 4248,
+                "max_abs": 7.455079078674316,
+                "absolute_l2": 167.4935150908385,
+                "relative_l2": 0.24067584588769766
+              },
+              "raw_gradients": {
+                "elements": 5409792,
+                "changed_elements": 4126869,
+                "max_abs": 0.5908203125,
+                "absolute_l2": 4.540066363734276,
+                "relative_l2": 1.314152561698918
+              },
+              "parameter_delta_0": {
+                "elements": 2704896,
+                "changed_elements": 950976,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.0015916442165718656,
+                "relative_l2": 1.3325371142819133
+              },
+              "parameter_delta_1": {
+                "elements": 2704896,
+                "changed_elements": 1165985,
+                "max_abs": 4.038214683532715e-06,
+                "absolute_l2": 0.003087016275741413,
+                "relative_l2": 1.3333402065217193
+              }
+            },
+            "receipt": {
+              "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+              "attention": "flash_attention_2",
+              "reshard_after_forward": true,
+              "actor_source": "installed",
+              "context_cap": 32768,
+              "verifier_sha256": "6de6cee65b076724902d54e59cf91678d31bd135af82b620095a823b9c431679",
+              "comparison_performed": false,
+              "trim_shared_padding": true,
+              "actor_source_sha256": "bc2c576791385fac72046b72bc8243008fa7e7e04669e017d5ae614cc77829fc",
+              "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+              "dt_report": {
+                "task": "Sokoban",
+                "policy_tokens": 14,
+                "nonzero_reward_events": 1,
+                "finite_trace_calls": 1,
+                "max_readout_length": 618,
+                "actual_row_lengths": [
+                  447
+                ],
+                "traces": [
+                  {
+                    "source_step": 4,
+                    "event_step": 4,
+                    "context_tokens": 618,
+                    "query_tokens": 170,
+                    "root_effect": -0.11290553212165833,
+                    "signed_sum": -0.10898883610380652,
+                    "conservation_residual": -0.003916696017851801,
+                    "conservation_tolerance": 0.02,
+                    "conservation_verified": true,
+                    "seconds": 21.99444628506899,
+                    "peak_allocated": 26050100224,
+                    "peak_reserved": 26512195584,
+                    "source_log_ratio_min": -0.05717306211590767,
+                    "source_log_ratio_max": 0.028821857646107674
+                  }
+                ],
+                "max_length": 32768,
+                "ratio_source": "official_eos_dt_signed_attribution_estimate",
+                "reference_token_samples": 0,
+                "per_token_probability_queries": 0,
+                "seconds": 22.008370985276997,
+                "nonzero_advantages": 13,
+                "conservation_failures": 0
+              },
+              "input_tokens": 1001,
+              "effective_input_tokens": 447,
+              "updates": [
+                {
+                  "actor/pg_loss": [
+                    0.08816774934530258,
+                    0.08816774934530258,
+                    0.08816774934530258,
+                    0.08816774934530258
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.5
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 204.3703842163086,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.0830882117152214,
+                    0.0830882117152214,
+                    0.0830882117152214,
+                    0.0830882117152214
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0714285746216774,
+                    0.0714285746216774,
+                    0.0714285746216774,
+                    0.0714285746216774
+                  ],
+                  "actor/ppo_kl": [
+                    -0.030922207981348038,
+                    -0.030922207981348038,
+                    -0.030922207981348038,
+                    -0.030922207981348038
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.5
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 204.4075698852539,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "status": "artifacts_ready",
+              "paired_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.08816774934530258,
+                    0.08816774934530258,
+                    0.08816774934530258,
+                    0.08816774934530258
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.328125
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 204.3905792236328,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.08905201405286789,
+                    0.08905201405286789,
+                    0.08905201405286789,
+                    0.08905201405286789
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    -0.002846786053851247,
+                    -0.002846786053851247,
+                    -0.002846786053851247,
+                    -0.002846786053851247
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.546875
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 204.38488006591797,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+              "paired_math_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.08816774934530258,
+                    0.08816774934530258,
+                    0.08816774934530258,
+                    0.08816774934530258
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.359375
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 204.39426803588867,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.08374188840389252,
+                    0.08374188840389252,
+                    0.08374188840389252,
+                    0.08374188840389252
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.01639080047607422,
+                    0.01639080047607422,
+                    0.01639080047607422,
+                    0.01639080047607422
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.28125
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 203.4299774169922,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "comparison_tolerance": "owner FA/math max-absolute and L2 error, no multiplier"
+            },
+            "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-trimmed-reshard.json",
+            "receipt_sha256": "c3b2444bffba41643836e422cc2cb4b6bab99ad52b88644313bada0ea4ae1193",
+            "artifacts_sha256": "6ebc17e03edfa9a4e1564784fa35aa081daeed590bf6f0c8675d2230ffad602d",
+            "fa_math_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 56,
+              "max_abs": 0.16957855224609375,
+              "absolute_l2": 0.5978723083530418,
+              "relative_l2": 0.008471992930999877
+            },
+            "fa_repeat_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 0,
+              "max_abs": 0.0,
+              "absolute_l2": 0.0,
+              "relative_l2": 0.0
+            },
+            "active_token_count": 56,
+            "fa_bounded_comparison": {
+              "old_log_probs": {
+                "error": {
+                  "elements": 56,
+                  "changed_elements": 56,
+                  "max_abs": 4.465550422668457,
+                  "absolute_l2": 11.06428608100215,
+                  "relative_l2": 0.17089436534601324
+                },
+                "owner_fa_math_error": {
+                  "elements": 56,
+                  "changed_elements": 52,
+                  "max_abs": 0.10156822204589844,
+                  "absolute_l2": 0.28715432628239607,
+                  "relative_l2": 0.0044510191693057834
+                },
+                "passed": false
+              },
+              "policy_forward_log_probs": {
+                "error": {
+                  "elements": 112,
+                  "changed_elements": 112,
+                  "max_abs": 4.465550422668457,
+                  "absolute_l2": 15.639525939049669,
+                  "relative_l2": 0.17100793329639857
+                },
+                "owner_fa_math_error": {
+                  "elements": 112,
+                  "changed_elements": 108,
+                  "max_abs": 0.1718578338623047,
+                  "absolute_l2": 0.5984294121019277,
+                  "relative_l2": 0.006547273450820709
+                },
+                "passed": false
+              },
+              "raw_gradients": {
+                "error": {
+                  "elements": 5409792,
+                  "changed_elements": 4126869,
+                  "max_abs": 0.5908203125,
+                  "absolute_l2": 4.540066363734276,
+                  "relative_l2": 1.314152561698918
+                },
+                "owner_fa_math_error": {
+                  "elements": 5409792,
+                  "changed_elements": 4086965,
+                  "max_abs": 0.0439453125,
+                  "absolute_l2": 0.6683955256140804,
+                  "relative_l2": 0.20372043151325142
+                },
+                "passed": false
+              },
+              "parameter_delta_0": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 950976,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.0015916442165718656,
+                  "relative_l2": 1.3325371142819133
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 607779,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.0004750392508024947,
+                  "relative_l2": 0.39781038881962083
+                },
+                "passed": false
+              },
+              "parameter_delta_1": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 1165985,
+                  "max_abs": 4.038214683532715e-06,
+                  "absolute_l2": 0.003087016275741413,
+                  "relative_l2": 1.3333402065217193
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 913635,
+                  "max_abs": 4.0084123611450195e-06,
+                  "absolute_l2": 0.0006749218245225579,
+                  "relative_l2": 0.2904741020816521
+                },
+                "passed": false
+              }
+            }
+          },
+          "noreshard": {
+            "status": "failed",
+            "errors": {
+              "old_log_probs": {
+                "elements": 2124,
+                "changed_elements": 2124,
+                "max_abs": 6.910289764404297,
+                "absolute_l2": 110.23712283236654,
+                "relative_l2": 0.22270473097107257
+              },
+              "after_0": {
+                "elements": 2704896,
+                "changed_elements": 939158,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.00158397079823489,
+                "relative_l2": 0.00017423341302478387
+              },
+              "after_1": {
+                "elements": 2704896,
+                "changed_elements": 1134905,
+                "max_abs": 4.038214683532715e-06,
+                "absolute_l2": 0.003081819797170665,
+                "relative_l2": 0.0003389936034643728
+              },
+              "policy_forward_log_probs": {
+                "elements": 4248,
+                "changed_elements": 4248,
+                "max_abs": 7.223492622375488,
+                "absolute_l2": 160.3906940994315,
+                "relative_l2": 0.22903483598731586
+              },
+              "raw_gradients": {
+                "elements": 5409792,
+                "changed_elements": 4126651,
+                "max_abs": 0.60888671875,
+                "absolute_l2": 3.797248510824677,
+                "relative_l2": 1.2354720805934698
+              },
+              "parameter_delta_0": {
+                "elements": 2704896,
+                "changed_elements": 939158,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.00158397079823489,
+                "relative_l2": 1.326505026624794
+              },
+              "parameter_delta_1": {
+                "elements": 2704896,
+                "changed_elements": 1134905,
+                "max_abs": 4.038214683532715e-06,
+                "absolute_l2": 0.003081819797170665,
+                "relative_l2": 1.3299007926044304
+              }
+            },
+            "receipt": {
+              "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+              "attention": "flash_attention_2",
+              "reshard_after_forward": false,
+              "actor_source": "installed",
+              "context_cap": 32768,
+              "verifier_sha256": "6de6cee65b076724902d54e59cf91678d31bd135af82b620095a823b9c431679",
+              "comparison_performed": false,
+              "trim_shared_padding": true,
+              "actor_source_sha256": "bc2c576791385fac72046b72bc8243008fa7e7e04669e017d5ae614cc77829fc",
+              "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+              "dt_report": {
+                "task": "Sokoban",
+                "policy_tokens": 14,
+                "nonzero_reward_events": 1,
+                "finite_trace_calls": 1,
+                "max_readout_length": 618,
+                "actual_row_lengths": [
+                  447
+                ],
+                "traces": [
+                  {
+                    "source_step": 4,
+                    "event_step": 4,
+                    "context_tokens": 618,
+                    "query_tokens": 170,
+                    "root_effect": -0.08771967887878418,
+                    "signed_sum": -0.09377193322494229,
+                    "conservation_residual": 0.006052254346158109,
+                    "conservation_tolerance": 0.02,
+                    "conservation_verified": true,
+                    "seconds": 21.97647857386619,
+                    "peak_allocated": 36736921088,
+                    "peak_reserved": 40183529472,
+                    "source_log_ratio_min": -0.0448671355843544,
+                    "source_log_ratio_max": 0.03591737896203995
+                  }
+                ],
+                "max_length": 32768,
+                "ratio_source": "official_eos_dt_signed_attribution_estimate",
+                "reference_token_samples": 0,
+                "per_token_probability_queries": 0,
+                "seconds": 21.990759486332536,
+                "nonzero_advantages": 13,
+                "conservation_failures": 0
+              },
+              "input_tokens": 1001,
+              "effective_input_tokens": 447,
+              "updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.09375
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.431640625,
+                  "perf/cpu_memory_used_gb": 204.3488540649414,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.07074544578790665,
+                    0.07074544578790665,
+                    0.07074544578790665,
+                    0.07074544578790665
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.024329867213964462,
+                    0.024329867213964462,
+                    0.024329867213964462,
+                    0.024329867213964462
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    1.96875
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.44140625,
+                  "perf/cpu_memory_used_gb": 204.39764022827148,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "status": "artifacts_ready",
+              "paired_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.203125
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.44140625,
+                  "perf/cpu_memory_used_gb": 204.4023323059082,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.07613592594861984,
+                    0.07613592594861984,
+                    0.07613592594861984,
+                    0.07613592594861984
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.010593278333544731,
+                    0.010593278333544731,
+                    0.010593278333544731,
+                    0.010593278333544731
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.140625
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.44140625,
+                  "perf/cpu_memory_used_gb": 204.41065979003906,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+              "paired_math_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.1875
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.44140625,
+                  "perf/cpu_memory_used_gb": 204.39656829833984,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.06655193120241165,
+                    0.06655193120241165,
+                    0.06655193120241165,
+                    0.06655193120241165
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.019888265058398247,
+                    0.019888265058398247,
+                    0.019888265058398247,
+                    0.019888265058398247
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.046875
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.44140625,
+                  "perf/cpu_memory_used_gb": 204.3924446105957,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "comparison_tolerance": "owner FA/math max-absolute and L2 error, no multiplier"
+            },
+            "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-trimmed-noreshard.json",
+            "receipt_sha256": "83da7a95d866a858d71dcc2a0cbf684b7e64c35272c32afcd4de68977490151a",
+            "artifacts_sha256": "b6166737e311e03c730b345c0a804f455a912f2ef52f61f96437e052d7374136",
+            "fa_math_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 56,
+              "max_abs": 0.06241798400878906,
+              "absolute_l2": 0.21973410960984946,
+              "relative_l2": 0.00311990195463439
+            },
+            "fa_repeat_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 0,
+              "max_abs": 0.0,
+              "absolute_l2": 0.0,
+              "relative_l2": 0.0
+            },
+            "active_token_count": 56,
+            "fa_bounded_comparison": {
+              "old_log_probs": {
+                "error": {
+                  "elements": 56,
+                  "changed_elements": 56,
+                  "max_abs": 4.223428726196289,
+                  "absolute_l2": 10.736084996106023,
+                  "relative_l2": 0.16598864720576975
+                },
+                "owner_fa_math_error": {
+                  "elements": 56,
+                  "changed_elements": 52,
+                  "max_abs": 0.12493133544921875,
+                  "absolute_l2": 0.4024451584114297,
+                  "relative_l2": 0.00622523686727781
+                },
+                "passed": false
+              },
+              "policy_forward_log_probs": {
+                "error": {
+                  "elements": 112,
+                  "changed_elements": 112,
+                  "max_abs": 4.434516906738281,
+                  "absolute_l2": 15.468007299809694,
+                  "relative_l2": 0.1689132310817709
+                },
+                "owner_fa_math_error": {
+                  "elements": 112,
+                  "changed_elements": 108,
+                  "max_abs": 0.12493133544921875,
+                  "absolute_l2": 0.5046658827559508,
+                  "relative_l2": 0.0055091332058476794
+                },
+                "passed": false
+              },
+              "raw_gradients": {
+                "error": {
+                  "elements": 5409792,
+                  "changed_elements": 4126651,
+                  "max_abs": 0.60888671875,
+                  "absolute_l2": 3.797248510824677,
+                  "relative_l2": 1.2354720805934698
+                },
+                "owner_fa_math_error": {
+                  "elements": 5409792,
+                  "changed_elements": 4070181,
+                  "max_abs": 0.026123046875,
+                  "absolute_l2": 0.39057311603778894,
+                  "relative_l2": 0.13031611550556813
+                },
+                "passed": false
+              },
+              "parameter_delta_0": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 939158,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.00158397079823489,
+                  "relative_l2": 1.326505026624794
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 551960,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.00040278227601013886,
+                  "relative_l2": 0.3373449457019905
+                },
+                "passed": false
+              },
+              "parameter_delta_1": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 1134905,
+                  "max_abs": 4.038214683532715e-06,
+                  "absolute_l2": 0.003081819797170665,
+                  "relative_l2": 1.3299007926044304
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 860086,
+                  "max_abs": 4.023313522338867e-06,
+                  "absolute_l2": 0.0005730653382879744,
+                  "relative_l2": 0.24721789946255623
+                },
+                "passed": false
+              }
+            }
+          }
+        },
+        "status": "failed"
+      }
+    },
+    "short-parity-aligned-comparison": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-aligned-comparison.json",
+      "sha256": "380715707c6253cfb10318242318f9371856885a1d419f190905454fd9ab55ff",
+      "result": {
+        "scope": "Same worker, weights, original optimizer and DT advantages; installed actor versus pristine pinned VERL actor. FA/math calibration uses only real action positions.",
+        "owner_tolerance": "owner FA/math max-absolute and L2 error, no multiplier",
+        "cases": {
+          "reshard": {
+            "status": "failed",
+            "errors": {
+              "old_log_probs": {
+                "elements": 2124,
+                "changed_elements": 576,
+                "max_abs": 0.18749237060546875,
+                "absolute_l2": 0.5477965268521123,
+                "relative_l2": 0.0011472032768060033
+              },
+              "after_0": {
+                "elements": 2704896,
+                "changed_elements": 560195,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.00044856992769157683,
+                "relative_l2": 4.934173633072675e-05
+              },
+              "after_1": {
+                "elements": 2704896,
+                "changed_elements": 778811,
+                "max_abs": 4.023313522338867e-06,
+                "absolute_l2": 0.0006702172935412069,
+                "relative_l2": 7.37224725509508e-05
+              },
+              "policy_forward_log_probs": {
+                "elements": 4248,
+                "changed_elements": 636,
+                "max_abs": 0.31023597717285156,
+                "absolute_l2": 0.9487546303646095,
+                "relative_l2": 0.0014048672628893645
+              },
+              "raw_gradients": {
+                "elements": 5409792,
+                "changed_elements": 4056109,
+                "max_abs": 0.03515625,
+                "absolute_l2": 0.41235648317229007,
+                "relative_l2": 0.14281292618745706
+              },
+              "parameter_delta_0": {
+                "elements": 2704896,
+                "changed_elements": 560195,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.00044856992769157683,
+                "relative_l2": 0.37568259650322905
+              },
+              "parameter_delta_1": {
+                "elements": 2704896,
+                "changed_elements": 778811,
+                "max_abs": 4.023313522338867e-06,
+                "absolute_l2": 0.0006702172935412069,
+                "relative_l2": 0.2864900336735935
+              }
+            },
+            "receipt": {
+              "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+              "attention": "flash_attention_2",
+              "reshard_after_forward": true,
+              "actor_source": "installed",
+              "context_cap": 32768,
+              "verifier_sha256": "4db8195c7194eb2845f5f9959d3d498f8300499ba82e8f9b6d89f18e7f2c7035",
+              "comparison_performed": false,
+              "trim_shared_padding": true,
+              "transformers_model_source_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+              "actor_source_sha256": "52defe321a0a27a9ca38c30b383ea8fc463d2ed1a559dae9864a76fc99611522",
+              "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+              "dt_report": {
+                "task": "Sokoban",
+                "policy_tokens": 14,
+                "nonzero_reward_events": 1,
+                "finite_trace_calls": 1,
+                "max_readout_length": 618,
+                "actual_row_lengths": [
+                  447
+                ],
+                "traces": [
+                  {
+                    "source_step": 4,
+                    "event_step": 4,
+                    "context_tokens": 618,
+                    "query_tokens": 170,
+                    "root_effect": -0.08771967887878418,
+                    "signed_sum": -0.09377193322494229,
+                    "conservation_residual": 0.006052254346158109,
+                    "conservation_tolerance": 0.02,
+                    "conservation_verified": true,
+                    "seconds": 21.859267038293183,
+                    "peak_allocated": 26050100224,
+                    "peak_reserved": 26512195584,
+                    "source_log_ratio_min": -0.0448671355843544,
+                    "source_log_ratio_max": 0.03591737896203995
+                  }
+                ],
+                "max_length": 32768,
+                "ratio_source": "official_eos_dt_signed_attribution_estimate",
+                "reference_token_samples": 0,
+                "per_token_probability_queries": 0,
+                "seconds": 21.87292934767902,
+                "nonzero_advantages": 13,
+                "conservation_failures": 0
+              },
+              "input_tokens": 1129,
+              "effective_input_tokens": 447,
+              "explicit_left_padding": 165,
+              "updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.109375
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 161.23614883422852,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.07450859248638153,
+                    0.07450859248638153,
+                    0.07450859248638153,
+                    0.07450859248638153
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.03087466023862362,
+                    0.03087466023862362,
+                    0.03087466023862362,
+                    0.03087466023862362
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.0625
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 161.27159881591797,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "status": "artifacts_ready",
+              "paired_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.078125
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 161.25884246826172,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.0701250359416008,
+                    0.0701250359416008,
+                    0.0701250359416008,
+                    0.0701250359416008
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.006304468493908644,
+                    0.006304468493908644,
+                    0.006304468493908644,
+                    0.006304468493908644
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.0
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 161.24460220336914,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+              "paired_math_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.140625
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 161.24481201171875,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.08074327558279037,
+                    0.08074327558279037,
+                    0.08074327558279037,
+                    0.08074327558279037
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    -0.02527727372944355,
+                    -0.02527727372944355,
+                    -0.02527727372944355,
+                    -0.02527727372944355
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.453125
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 24.261046409606934,
+                  "perf/max_memory_reserved_gb": 24.708984375,
+                  "perf/cpu_memory_used_gb": 160.23702239990234,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "comparison_tolerance": "owner FA/math max-absolute and L2 error, no multiplier"
+            },
+            "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-aligned-trimmed-reshard.json",
+            "receipt_sha256": "868a529bb49e870a5b0d8f2036434d354b293f52c5d54c67e51415edb323c56b",
+            "artifacts_sha256": "ec8f6cc7fafae4ac75b16335918e24acc70dfd65e4412647b985ea40ed6e84be",
+            "fa_math_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 56,
+              "max_abs": 0.18495559692382812,
+              "absolute_l2": 0.5184885672813315,
+              "relative_l2": 0.0073414966149407245
+            },
+            "fa_repeat_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 0,
+              "max_abs": 0.0,
+              "absolute_l2": 0.0,
+              "relative_l2": 0.0
+            },
+            "active_token_count": 56,
+            "fa_bounded_comparison": {
+              "old_log_probs": {
+                "error": {
+                  "elements": 56,
+                  "changed_elements": 56,
+                  "max_abs": 0.1434040069580078,
+                  "absolute_l2": 0.3397356266739125,
+                  "relative_l2": 0.004801711890684938
+                },
+                "owner_fa_math_error": {
+                  "elements": 56,
+                  "changed_elements": 56,
+                  "max_abs": 0.1697998046875,
+                  "absolute_l2": 0.523200031784564,
+                  "relative_l2": 0.007350450593462614
+                },
+                "passed": true
+              },
+              "policy_forward_log_probs": {
+                "error": {
+                  "elements": 112,
+                  "changed_elements": 112,
+                  "max_abs": 0.31023597717285156,
+                  "absolute_l2": 0.7581883735844054,
+                  "relative_l2": 0.007569582469802573
+                },
+                "owner_fa_math_error": {
+                  "elements": 112,
+                  "changed_elements": 112,
+                  "max_abs": 0.1862506866455078,
+                  "absolute_l2": 0.8084986122496647,
+                  "relative_l2": 0.008050417029128168
+                },
+                "passed": false
+              },
+              "raw_gradients": {
+                "error": {
+                  "elements": 5409792,
+                  "changed_elements": 4056109,
+                  "max_abs": 0.03515625,
+                  "absolute_l2": 0.41235648317229007,
+                  "relative_l2": 0.14281292618745706
+                },
+                "owner_fa_math_error": {
+                  "elements": 5409792,
+                  "changed_elements": 4095467,
+                  "max_abs": 0.02783203125,
+                  "absolute_l2": 0.6607390309471554,
+                  "relative_l2": 0.2028928521515627
+                },
+                "passed": false
+              },
+              "parameter_delta_0": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 560195,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.00044856992769157683,
+                  "relative_l2": 0.37568259650322905
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 564675,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.0004223304717083229,
+                  "relative_l2": 0.3536695511778261
+                },
+                "passed": false
+              },
+              "parameter_delta_1": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 778811,
+                  "max_abs": 4.023313522338867e-06,
+                  "absolute_l2": 0.0006702172935412069,
+                  "relative_l2": 0.2864900336735935
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 851093,
+                  "max_abs": 4.023313522338867e-06,
+                  "absolute_l2": 0.0006285581823384394,
+                  "relative_l2": 0.2704127396671591
+                },
+                "passed": false
+              }
+            }
+          },
+          "noreshard": {
+            "status": "failed",
+            "errors": {
+              "old_log_probs": {
+                "elements": 2124,
+                "changed_elements": 576,
+                "max_abs": 0.18749237060546875,
+                "absolute_l2": 0.5477965268521123,
+                "relative_l2": 0.0011472032768060033
+              },
+              "after_0": {
+                "elements": 2704896,
+                "changed_elements": 560195,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.00044856992769157683,
+                "relative_l2": 4.934173633072675e-05
+              },
+              "after_1": {
+                "elements": 2704896,
+                "changed_elements": 778811,
+                "max_abs": 4.023313522338867e-06,
+                "absolute_l2": 0.0006702172935412069,
+                "relative_l2": 7.37224725509508e-05
+              },
+              "policy_forward_log_probs": {
+                "elements": 4248,
+                "changed_elements": 636,
+                "max_abs": 0.31023597717285156,
+                "absolute_l2": 0.9487546303646095,
+                "relative_l2": 0.0014048672628893645
+              },
+              "raw_gradients": {
+                "elements": 5409792,
+                "changed_elements": 4056109,
+                "max_abs": 0.03515625,
+                "absolute_l2": 0.41235648317229007,
+                "relative_l2": 0.14281292618745706
+              },
+              "parameter_delta_0": {
+                "elements": 2704896,
+                "changed_elements": 560195,
+                "max_abs": 2.0265579223632812e-06,
+                "absolute_l2": 0.00044856992769157683,
+                "relative_l2": 0.37568259650322905
+              },
+              "parameter_delta_1": {
+                "elements": 2704896,
+                "changed_elements": 778811,
+                "max_abs": 4.023313522338867e-06,
+                "absolute_l2": 0.0006702172935412069,
+                "relative_l2": 0.2864900336735935
+              }
+            },
+            "receipt": {
+              "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+              "attention": "flash_attention_2",
+              "reshard_after_forward": false,
+              "actor_source": "installed",
+              "context_cap": 32768,
+              "verifier_sha256": "4db8195c7194eb2845f5f9959d3d498f8300499ba82e8f9b6d89f18e7f2c7035",
+              "comparison_performed": false,
+              "trim_shared_padding": true,
+              "transformers_model_source_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+              "actor_source_sha256": "52defe321a0a27a9ca38c30b383ea8fc463d2ed1a559dae9864a76fc99611522",
+              "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+              "dt_report": {
+                "task": "Sokoban",
+                "policy_tokens": 14,
+                "nonzero_reward_events": 1,
+                "finite_trace_calls": 1,
+                "max_readout_length": 618,
+                "actual_row_lengths": [
+                  447
+                ],
+                "traces": [
+                  {
+                    "source_step": 4,
+                    "event_step": 4,
+                    "context_tokens": 618,
+                    "query_tokens": 170,
+                    "root_effect": -0.08771967887878418,
+                    "signed_sum": -0.09377193322494229,
+                    "conservation_residual": 0.006052254346158109,
+                    "conservation_tolerance": 0.02,
+                    "conservation_verified": true,
+                    "seconds": 21.828546513803303,
+                    "peak_allocated": 36736921088,
+                    "peak_reserved": 40183529472,
+                    "source_log_ratio_min": -0.0448671355843544,
+                    "source_log_ratio_max": 0.03591737896203995
+                  }
+                ],
+                "max_length": 32768,
+                "ratio_source": "official_eos_dt_signed_attribution_estimate",
+                "reference_token_samples": 0,
+                "per_token_probability_queries": 0,
+                "seconds": 21.84281900152564,
+                "nonzero_advantages": 13,
+                "conservation_failures": 0
+              },
+              "input_tokens": 1129,
+              "effective_input_tokens": 447,
+              "explicit_left_padding": 165,
+              "updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.109375
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.431640625,
+                  "perf/cpu_memory_used_gb": 161.22339630126953,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.07450859248638153,
+                    0.07450859248638153,
+                    0.07450859248638153,
+                    0.07450859248638153
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.03087466023862362,
+                    0.03087466023862362,
+                    0.03087466023862362,
+                    0.03087466023862362
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.0625
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.44140625,
+                  "perf/cpu_memory_used_gb": 161.24590301513672,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "status": "artifacts_ready",
+              "paired_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.078125
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.890625,
+                  "perf/cpu_memory_used_gb": 161.25283432006836,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.0701250359416008,
+                    0.0701250359416008,
+                    0.0701250359416008,
+                    0.0701250359416008
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.006304468493908644,
+                    0.006304468493908644,
+                    0.006304468493908644,
+                    0.006304468493908644
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.0
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.890625,
+                  "perf/cpu_memory_used_gb": 161.24576568603516,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+              "paired_math_updates": [
+                {
+                  "actor/pg_loss": [
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988,
+                    0.07574200630187988
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.140625
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.890625,
+                  "perf/cpu_memory_used_gb": 161.2447509765625,
+                  "actor/lr": 1e-06
+                },
+                {
+                  "actor/pg_loss": [
+                    0.08074327558279037,
+                    0.08074327558279037,
+                    0.08074327558279037,
+                    0.08074327558279037
+                  ],
+                  "actor/pg_clipfrac": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/ppo_kl": [
+                    -0.02527727372944355,
+                    -0.02527727372944355,
+                    -0.02527727372944355,
+                    -0.02527727372944355
+                  ],
+                  "actor/pg_clipfrac_lower": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "actor/grad_norm": [
+                    2.453125
+                  ],
+                  "perf/mfu/actor": 0.0,
+                  "perf/max_memory_allocated_gb": 34.213923931121826,
+                  "perf/max_memory_reserved_gb": 37.890625,
+                  "perf/cpu_memory_used_gb": 161.2382583618164,
+                  "actor/lr": 1e-06
+                }
+              ],
+              "comparison_tolerance": "owner FA/math max-absolute and L2 error, no multiplier"
+            },
+            "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-aligned-trimmed-noreshard.json",
+            "receipt_sha256": "99a4402d95319dc9f3bd472ae59eaf082771055d5def612e01e1d7d1d2478336",
+            "artifacts_sha256": "3e2b05caf20fce253f0b26a023bf740025d0df892503ba16d918e486ff838fdc",
+            "fa_math_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 56,
+              "max_abs": 0.18495559692382812,
+              "absolute_l2": 0.5184885672813315,
+              "relative_l2": 0.0073414966149407245
+            },
+            "fa_repeat_log_prob_error": {
+              "elements": 56,
+              "changed_elements": 0,
+              "max_abs": 0.0,
+              "absolute_l2": 0.0,
+              "relative_l2": 0.0
+            },
+            "active_token_count": 56,
+            "fa_bounded_comparison": {
+              "old_log_probs": {
+                "error": {
+                  "elements": 56,
+                  "changed_elements": 56,
+                  "max_abs": 0.1434040069580078,
+                  "absolute_l2": 0.3397356266739125,
+                  "relative_l2": 0.004801711890684938
+                },
+                "owner_fa_math_error": {
+                  "elements": 56,
+                  "changed_elements": 56,
+                  "max_abs": 0.1697998046875,
+                  "absolute_l2": 0.523200031784564,
+                  "relative_l2": 0.007350450593462614
+                },
+                "passed": true
+              },
+              "policy_forward_log_probs": {
+                "error": {
+                  "elements": 112,
+                  "changed_elements": 112,
+                  "max_abs": 0.31023597717285156,
+                  "absolute_l2": 0.7581883735844054,
+                  "relative_l2": 0.007569582469802573
+                },
+                "owner_fa_math_error": {
+                  "elements": 112,
+                  "changed_elements": 112,
+                  "max_abs": 0.1862506866455078,
+                  "absolute_l2": 0.8084986122496647,
+                  "relative_l2": 0.008050417029128168
+                },
+                "passed": false
+              },
+              "raw_gradients": {
+                "error": {
+                  "elements": 5409792,
+                  "changed_elements": 4056109,
+                  "max_abs": 0.03515625,
+                  "absolute_l2": 0.41235648317229007,
+                  "relative_l2": 0.14281292618745706
+                },
+                "owner_fa_math_error": {
+                  "elements": 5409792,
+                  "changed_elements": 4095467,
+                  "max_abs": 0.02783203125,
+                  "absolute_l2": 0.6607390309471554,
+                  "relative_l2": 0.2028928521515627
+                },
+                "passed": false
+              },
+              "parameter_delta_0": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 560195,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.00044856992769157683,
+                  "relative_l2": 0.37568259650322905
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 564675,
+                  "max_abs": 2.0265579223632812e-06,
+                  "absolute_l2": 0.0004223304717083229,
+                  "relative_l2": 0.3536695511778261
+                },
+                "passed": false
+              },
+              "parameter_delta_1": {
+                "error": {
+                  "elements": 2704896,
+                  "changed_elements": 778811,
+                  "max_abs": 4.023313522338867e-06,
+                  "absolute_l2": 0.0006702172935412069,
+                  "relative_l2": 0.2864900336735935
+                },
+                "owner_fa_math_error": {
+                  "elements": 2704896,
+                  "changed_elements": 851093,
+                  "max_abs": 4.023313522338867e-06,
+                  "absolute_l2": 0.0006285581823384394,
+                  "relative_l2": 0.2704127396671591
+                },
+                "passed": false
+              }
+            }
+          }
+        },
+        "status": "failed"
+      }
+    },
+    "short-parity-maskfixed-trimmed-reshard": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-maskfixed-trimmed-reshard.json",
+      "sha256": "da95afeeafc49b942e83268bf085c762ea252d7bc9b928190e76bc08ff1a3b16",
+      "status": "failed",
+      "error": "Tensor-likes are not equal!\n\nMismatched elements: 9 / 32 (28.1%)\nGreatest absolute difference: 4.842877388000488e-08 at index (17, 0)\nGreatest relative difference: 0.058837890625 at index (17, 0)\n\nThe failure occurred for item ['base_model.model.model.layers.0.linear_attn.in_proj_a.lora_B.default.weight']",
+      "scope": "Strict zero-tolerance continuity test; full original artifacts retained. Not the FA FP32 criterion."
+    },
+    "short-parity-maskfixed-trimmed-noreshard": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-maskfixed-trimmed-noreshard.json",
+      "sha256": "e437ad07f964984483a2cb9968e275d906c9e88ebb4845b34d6cc7251be581d0",
+      "status": "failed",
+      "error": "Tensor-likes are not equal!\n\nMismatched elements: 15 / 32 (46.9%)\nGreatest absolute difference: 1.996755599975586e-06 at index (20, 0)\nGreatest relative difference: 2.0 at index (20, 0)\n\nThe failure occurred for item ['base_model.model.model.layers.0.linear_attn.in_proj_a.lora_B.default.weight']",
+      "scope": "Strict zero-tolerance continuity test; full original artifacts retained. Not the FA FP32 criterion."
+    }
+  },
+  "upstream_mask_backport": {
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/qwen35-padding-mask-patch.json",
+    "sha256": "be70329430af73ec8cd9ea91be311cc98db3f9def8556d75213e94ebad1f1eae",
+    "result": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "previous_sha256": "3ef131eadfaf519937e2b78e3122549b50952e9c55f3553f908a4755ce34edb4",
+      "patched_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+      "source_commit": "59eed1a6ba3566d5d4e8bec23bc1a21bfbda3e84",
+      "source_url": "https://github.com/huggingface/transformers/blob/59eed1a6ba3566d5d4e8bec23bc1a21bfbda3e84/src/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "scope": "Only backport apply_mask_to_padding_states condition; no dependency upgrade, other kernels unchanged"
+    }
+  },
+  "interface_tests": {
+    "qwen35-padding-mask-tests": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/qwen35-padding-mask-tests.log",
+      "sha256": "9edce960170e4c73565689615cda3af6097ed45d16ad91dc808f41c85df9e5eb",
+      "text": "..                                                                       [100%]\n2 passed in 6.16s\n"
+    },
+    "chunk-align-interface-tests": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/chunk-align-interface-tests.log",
+      "sha256": "c4e51ed678aba79793c2d693fd2df7e9bde723532e5fbb4f27489a76d10e00b5",
+      "text": "............                                                             [100%]\n=============================== warnings summary ===============================\ntest_shared_padding.py::test_owner_generation_metadata_uses_tokenizer_for_unset_fields[None-expected0]\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute\n\ntest_shared_padding.py::test_owner_generation_metadata_uses_tokenizer_for_unset_fields[None-expected0]\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n12 passed, 2 warnings in 18.88s\nsys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n"
+    }
+  }
+}

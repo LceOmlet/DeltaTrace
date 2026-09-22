@@ -10,6 +10,54 @@
 本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
 本文件和历史运行记录不代表该计划已实现或 DT 多轮训练已经验收通过。
 
+## 2026-09-22 最新短链对拍与 padding 修复
+
+- 继续复用 MetaX 原 Python、权重和缓存。安装版 Qwen3.5 的
+  `apply_mask_to_padding_states` 在 batch=1 时跳过 mask，实际有效 token
+  log-prob 偏差超过 4；PPO microbatch=1 正好触发。只回补官方提交
+  `59eed1a6ba3566d5d4e8bec23bc1a21bfbda3e84` 的条件修复，没有升级依赖栈。
+  [官方源码](https://github.com/huggingface/transformers/blob/59eed1a6ba3566d5d4e8bec23bc1a21bfbda3e84/src/transformers/models/qwen3_5/modeling_qwen3_5.py)，
+  [相关缺陷说明](https://github.com/huggingface/transformers/pull/46773)。
+- 实际模型源码从 `3ef131eadfaf519937e2b78e3122549b50952e9c55f3553f908a4755ce34edb4`
+  变为 `f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be`。
+  记录在 `receipts/training-setup/qwen35-padding-mask-patch.json`，旧源码保存在
+  `qwen35-before-padding-mask.py`。环境 JSON 的 `qwen35.rl_runtime_model_sha256`
+  与 `rl_runtime_model_patch_receipt` 记录当前 RL 补丁；原 native_model_sha256
+  保留为历史 owner 快照，不能误当成安装后当前文件校验值。
+- Qwen 的共有 padding 裁剪按已固定 FLA 的 64-token chunk 对齐，最多保留
+  63 个 padding；其他模型及关闭裁剪时仍保持原行为。`qwen35-padding-mask-tests.log`
+  为 2 passed，`chunk-align-interface-tests.log` 为 12 passed，重复应用补丁
+  后模型源码 SHA 不变。没有改动 PPO loss、DT 公式、模型权重或 FLA 算法。
+- 原 actor 基线来自 VERL 提交 `732f37acd7684b8c24d14ba3ededfe9fab1ed472`，
+  源码 SHA `38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918`。
+  `core_algos.py` 仍为 `5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6`。
+  两个 actor 共享同一实际模型、原 optimizer、输入和 DT 信号；每组前恢复初值
+  及 optimizer/scheduler/RNG，分别执行两次真实更新，不复制 PPO 计算。
+- `short-parity-fa-standard.json` 是最终数值验收：相同 165-token 左 padding、
+  447 个有效输入 token、14 个 policy token（batch 4 共 56），DT 实际长度 618，
+  配置上限仍为 32768。原 actor 的 FP32 math SDPA 与 HF 原 GDN fallback 是
+  独立数值参考；BF16 训练路径不变。PPO loss/clipping、有效 token log-prob、
+  原梯度和参数增量均通过 [FA 2.6.3 官方误差判据](https://github.com/Dao-AILab/flash-attention/blob/v2.6.3/tests/test_flash_attn.py)：
+  相对 FP32 的最大误差不超过原 BF16 math 路径误差的两倍。该判据在本次验证
+  中延伸到 PPO 的梯度/参数增量；不是声称 FA 官方提供了 PPO 测试。
+  两边读取同一 checkpoint，LoRA 初值和 DT 输入逐元素核对；checkpoint 中
+  727 个 BF16、48 个 FP32 参数张量的加载精度差异计入普通 BF16 基线误差，
+  不把整个 FP32/BF16 模型说成字节相同。清单 `checkpoint-dtype-inventory.json`。
+- `short-parity-comparison.json` 记录关闭裁剪时的零误差对照。
+  `short-parity-trimmed-comparison.json`、`short-parity-aligned-comparison.json`
+  及 `short-parity-maskfixed-trimmed-*` 的失败保留：前两者采用的 BF16 路径差值
+  1x 门槛不等于 FA 的 FP32 参考判据，后者还包含额外的严格零误差连续性检查。
+  不覆盖这些历史状态，也不拿默认路径零误差替代真实优化路径验收。
+- 1024-action 的精确 32768 容量补充：`dt-capacity-32k-response1024-{reshard,noreshard}.json`，
+  均完成四次 DT 和两次非零 PPO 更新。allocated 60.596 GiB，reserved
+  62.289/62.250 GiB，总耗时 748.51/743.78 秒。这是显式容量夹具，包含合成
+  action/filler，不能当成真实任务。原始 JSON/PT 和各失败记录都保留在远端。
+- v3 三任务结果另存 `native-training-v3.json`；Sokoban 第二轮旧作业仅按
+  `/tmp/dt-mx-soko-v3` 的确切自有环境变量筛选后停止，182 个进程的清单在
+  `soko-v3-stopped-for-parity-fix.json`。Ray 驱动随后显示 aborted 是这次主动
+  停止的结果，不是另一次训练失败；其他用户 GPU 0–2 的进程未操作。
+  新版本训练的 PID、启动版本和设置以运行根目录 `active-training.json` 为准。
+
 ## 连接与加载配置
 
 本机 PowerShell：

@@ -56,7 +56,8 @@ class HeadOnlyModel(torch.nn.Module):
         return SimpleNamespace(logits=logits)
 
 
-def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monkeypatch):
+@pytest.mark.parametrize('model_type, trimmed_length', [(None, 9), ('qwen3_5', 64), ('qwen3_5_text', 64)])
+def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monkeypatch, model_type, trimmed_length):
     import verl.utils.torch_functional as functional
     # Exercise the owner's existing CPU logprob branch in this CPU-only test;
     # the installed optional FlashAttention cross entropy is CUDA-only.
@@ -68,6 +69,7 @@ def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monk
     positions = (attention.cumsum(-1)-1).clamp_min(0)
     batch = dict(input_ids=ids, attention_mask=attention, position_ids=positions, responses=ids[:, -4:])
     model = HeadOnlyModel()
+    model.config = SimpleNamespace(model_type=model_type)
     actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
                             use_fused_kernels=False)
     gradients, probabilities = [], []
@@ -76,7 +78,7 @@ def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monk
         _, lp = DataParallelPPOActor._forward_micro_batch(actor, batch, 1.0, False)
         probabilities.append(lp.detach())
         lp.sum().backward();gradients.append(model.weight.grad.clone());model.weight.grad = None
-    assert model.lengths == [32768, 9]
+    assert model.lengths == [32768, trimmed_length]
     torch.testing.assert_close(*probabilities)
     torch.testing.assert_close(*gradients)
     assert batch['input_ids'].shape == (4, 32768)
@@ -95,7 +97,8 @@ class GenerationModel(torch.nn.Module):
 
 
 @pytest.mark.parametrize('copies', [1, 2])
-def test_hf_generation_removes_compute_padding_and_restores_original_dataproto(monkeypatch, copies):
+@pytest.mark.parametrize('model_type, trimmed_length', [(None, 3), ('qwen3_5_text', 64)])
+def test_hf_generation_removes_compute_padding_and_restores_original_dataproto(monkeypatch, copies, model_type, trimmed_length):
     import verl.workers.rollout.hf_rollout as owner
     monkeypatch.setattr(owner, 'get_device_name', lambda: 'cpu')
     monkeypatch.setattr(owner, 'get_device_id', lambda: 0)
@@ -106,12 +109,12 @@ def test_hf_generation_removes_compute_padding_and_restores_original_dataproto(m
     prompts = DataProto(batch=TensorDict(dict(input_ids=ids, attention_mask=mask, position_ids=pos), batch_size=[2]),
                        meta_info={'eos_token_id':7, 'pad_token_id':0})
     config = OmegaConf.create(dict(do_sample=True, temperature=1., response_length=512, top_p=1., top_k=0, n=copies))
-    model = GenerationModel();rollout = HFRollout(model, config)
+    model = GenerationModel();model.config = SimpleNamespace(model_type=model_type);rollout = HFRollout(model, config)
     outputs = []
     for flag in ['0', '1']:
         monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', flag)
         outputs.append(rollout._generate_minibatch(prompts))
-    assert [value[0].shape[-1] for value in model.inputs] == [32256, 3]
+    assert [value[0].shape[-1] for value in model.inputs] == [32256, trimmed_length]
     assert outputs[1].batch['input_ids'].shape == (2*copies, 32768)
     for name in outputs[0].batch.keys():
         torch.testing.assert_close(outputs[0].batch[name], outputs[1].batch[name])

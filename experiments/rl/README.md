@@ -20,6 +20,23 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 
 ## 当前验证范围
 
+- 短链数值对拍已覆盖真实训练的共有 padding 裁剪路径。发现安装版 Qwen3.5
+  在 batch=1 时跳过线性注意力 mask，回补 Transformers `59eed1a6` 的官方
+  条件修复；Qwen 裁剪保留原 FLA 64-token 分块边界，最多留 63 个 padding。
+  固定 VERL 原 actor、相同初值/输入/DT 优势/optimizer、两次更新，对照独立
+  FP32 原生模型与 BF16 math 基线，按 FA 官方的 **2 倍基线最大误差** 判据
+  通过。旧 log-prob、更新 log-prob、梯度误差倍数为 1.310、0.621、0.639，
+  两次参数增量为 1.000、0.997；PPO loss/clipping 也通过。True/False 两种
+  FSDP 设置都检查；没有把 FP32 配置用于训练。关闭裁剪的默认路径另有
+  零容差对拍，不能拿该结果代替开启裁剪的验收。
+  原先两条 BF16 路径差值的 1x 检查与严格零误差连续性失败均保留，未改写；
+  它们不是 FA 的独立 FP32 判据。14 项 mask/裁剪接口检查通过。
+  见 [results_short_owner_parity.json](results_short_owner_parity.json)。
+- 修复前 v3 原生模型训练已记录：WebShop 两轮成功率 0/25%，第二轮 11 次
+  DT、非零梯度；AppWorld 两轮 50%/0，首轮 26 次 DT、非零梯度；Sokoban
+  首轮 100%、140 次 DT、非零梯度，第二轮因本次数值修复留存日志后主动停止。
+  这些是小规模训练接线记录，不是测试集指标或修复后验收。新版本的三任务
+  连续训练需单独记录；详见 [results_native_training_metax.json](results_native_training_metax.json)。
 - 发现并修复 Qwen3.5-9B 聊天停止边界：checkpoint 没有 generation_config.json，
   原模型回退只用 `<|endoftext|>`（248044），漏掉 tokenizer 的 `<|im_end|>`
   （248046），导致模型在动作后继续编造后续轮次。固定 VERL worker 仅在这个
@@ -32,7 +49,10 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   512 token，总宽度 32768；FSDP reshard=True/False 的生成 IDs 完全一致。
   预热后 93.355/77.174 秒，allocated 40.317/54.308 GiB，reserved
   44.588/59.293 GiB。关闭每步 reshard 省时 17.3%，代价是保留参数占用。
-  较长 1024-action 的 DT/PPO 容量正在单独测试，不能从生成前向推断反向通过。
+  1024-action 容量也已独立验证：两个 DT 端点均为 32768，minibatch=4，
+  四次正式 DT 加两次非零原 PPO 更新，allocated 60.596 GiB；True/False
+  的 reserved 为 62.289/62.250 GiB、总耗时 748.51/743.78 秒。该输入含
+  显式合成 action 和前文 filler，奖励只作容量检查系数，不算自然任务成功。
   详见 [results_runtime_efficiency.json](results_runtime_efficiency.json)。
 - Ray CPU 配置从未被 trainer 读取的 `ray_kwargs.ray_init.num_cpus` 改为固定
   上游的 `ray_init.num_cpus`；真实 Hydra compose→原 run_ppo→ray.init 参数
@@ -55,7 +75,7 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   observation，WebShop 保留当前 admissible actions；初始 prompt 和默认
   路径与固定上游完全一致，4 项对照通过。DT 启动显式关闭上游默认熵正则
   和额外无效动作罚分，避免混入固定计划外的梯度或奖励。三任务正在以此
-  配置重跑，尚不能据容量夹具宣布任务训练通过。
+  配置重跑，任务结果另按真实 rollout 记录，容量夹具不代替任务验收。
 - FSDP1 分层 LoRA 的参数恢复错误已定位到本地补丁：它把上游
   `use_orig_params=False` 无条件改成了 LoRA 下的 `True`。现对有 auto-wrap
   policy 的路径恢复上游设置。真实 Qwen 的旧 log-prob 和连续两次非零更新，
@@ -102,12 +122,14 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   回归通过，原生非零 LoRA 的 Sokoban 15 次 DT/Q/V 组合完成；数值审计
   仍失败 8/15，不能当作三任务训练或整网精度通过。
 
-**当前 EOS 路径的三任务模型训练、稳定连续训练及任务吞吐验收尚未完成。
-上面的精确 32k 容量夹具已通过；它不能替代真实任务训练与成功率评估。**
+**当前数值修复的短链对拍已通过；修复后的三任务连续训练仍需完成。
+精确 32k 容量夹具已通过；它不能替代真实任务训练与成功率评估。**
 
 ## 入口与历史结果
 
 - `run_verl_agent.sh`：固定上游 VERL 训练入口，DT/PPO/GRPO 共用原训练基建。
+- `verify_short_owner_parity.py` / `compare_short_owner_parity.py`：固定原 actor
+  的真实短链对拍，独立 FP32 校准；只用于测试，不接管训练。
 - `patch_verl_agent2.py`：固定上游的薄接口补丁与共有左 padding 裁剪；默认上游路径
   保持原行为。环境、rollout、optimizer 和 PPO clipping 都由上游实现。
 - `verify_upstream_actor_update.py`：复用真实 worker 的非零更新回归，可复现旧
