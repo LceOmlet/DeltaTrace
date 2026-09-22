@@ -61,6 +61,17 @@ def main():
             if exists(sftp, manifest):
                 with sftp.open(manifest) as f:
                     jobs = json.load(f)['jobs']
+            ray_logs = []
+            for job in jobs:
+                # These are the exact per-job owner log roots from the launch
+                # manifest. Resolve session_latest so restic archives files,
+                # rather than only the symlink, without traversing other jobs.
+                ray_root = PurePosixPath(job['ray_tmpdir'])
+                latest = ray_root/'ray/session_latest/logs'
+                if exists(sftp, str(latest)):
+                    resolved = PurePosixPath(sftp.normalize(str(latest)))
+                    resolved.relative_to(ray_root)
+                    ray_logs.append(str(resolved))
             # The official AppWorld client writes API traces/evaluation files
             # alongside its configured port file, outside trainer rollouts.
             for job in jobs:
@@ -100,6 +111,9 @@ def main():
                 cmd += ['--exclude=*.pt', '--exclude=__pycache__', '--exclude=*/checkpoints',
                         '--exclude=*/checkpoint-owner-roundtrip*']
             absolute_paths = [str(PurePosixPath(args.source_root)/path) for path in paths]
+            if not immutable:
+                absolute_paths += ray_logs
+                report['metadata_sources'] = absolute_paths
             cmd += ['--', *absolute_paths]
             print('Direct backup', label, flush=True)
             _, output, errors = client.exec_command(shlex.join(cmd))
