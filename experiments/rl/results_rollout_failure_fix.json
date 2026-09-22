@@ -1,0 +1,523 @@
+{
+  "scope": "Formal v3 failure diagnosis and bounded owner fixes; not a claim that full paper-scale training has recovered.",
+  "failure": {
+    "at": "2026-09-23 06:41 Asia/Shanghai",
+    "training_source": "c28bc06c43d87d5f095197c43b3c7d1305cadf7c",
+    "formal_updates_completed": 0,
+    "webshop_taskrunner_gib_reported_by_ray": 373.14,
+    "cgroup_gib_reported_by_ray": 883.18,
+    "cgroup_limit_gib": 900,
+    "cause": "to_list_of_dict produced row tensor views; Ray cloudpickle repeated full batch storage at the DT RPC boundary. Live stack includes cloudpickle.dump, SerializationContext._serialize_to_pickle5 and the DT RPC call.",
+    "status": "failed_jobs_stopped",
+    "stop_receipt": {
+      "path": "receipts/training-setup/formal-v3-oom-stop.json",
+      "sha256": "c1f28a2f60cf4f5ae50486f18662d3c9456e93453bbc1b669574be8e9a321dd9",
+      "time": "2026-09-23 06:45:58",
+      "processes_terminated": 162
+    }
+  },
+  "fixes": [
+    "Opt-in clone_tensors at original owner row conversion; no change to tensor values, identities, rewards or DT/PPO construction.",
+    "Original HF microbatch uses collector active mask, generates active rows only and restores row alignment; default all-active behavior retained.",
+    "Generation start/end and DT RPC phase logs with timing, active counts, generated token counts and process peak RSS."
+  ],
+  "validation": {
+    "owner_tests": "29 passed; default path, active alignment, Ray serialization and Q/V-to-original-PPO transport",
+    "paper_scale_storage": "All three exact budget upper-bound fixtures passed; this measures serialization, not full live environment+DT+PPO peak",
+    "real_generation_cost": "Passed exact token comparison against the same-shape original HF owner. Original owner batch2 itself differs by the same 84 tokens from batch4; cross-batch failure retained as diagnostic, not relabelled exact equality. Warm seconds: all4 78.745, active2 68.011, none 0.0199. This does not validate full-iteration throughput.",
+    "remaining": [
+      "Formal jobs remain stopped. Full iteration throughput has not recovered or been accepted.",
+      "Original HF rollout processes fixed groups of four sequentially; measured small-batch decode cost remains material. Prioritize profiling this phase, not more blind full runs.",
+      "Environment/client/server replication still needs separate memory and throughput assessment.",
+      "OOM occurred after six hours of rollout; it does not explain all preceding generation time."
+    ],
+    "unchanged_ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+    "tests_log_sha256": "7feaa996a5e829d6b2df89489396e2efa322d4ba12df4b21b5be80cec6b30659"
+  },
+  "receipts": {
+    "storage-Webshop.json": {
+      "sha256": "f4d0b0efa1f883bb89859f992adcb2253fe5c95705b1c80e8a383da98e272ace",
+      "result": {
+        "task": "Webshop",
+        "scope": "Measure pinned Ray serialization at paper batch/turn counts and 32k width.\n\nThis is a transport capacity fixture, not a new environment rollout or a claim\nabout task reward/DT quality. Original IDs, masks and per-row tensor ownership\nare tested separately in test_rollout_storage.py.\n",
+        "batch": 128,
+        "turns": 15,
+        "width": 32768,
+        "phases": [
+          {
+            "phase": "bounded_baseline",
+            "peak_rss_gib": 1.5068855285644531,
+            "clone_tensors": false,
+            "batch": 16,
+            "turns": 1,
+            "serialized_bytes": 335570758,
+            "seconds": 0.3063266249373555
+          },
+          {
+            "phase": "bounded_baseline",
+            "peak_rss_gib": 1.5068855285644531,
+            "clone_tensors": true,
+            "batch": 16,
+            "turns": 1,
+            "serialized_bytes": 16803133,
+            "seconds": 0.016437279991805553
+          },
+          {
+            "phase": "full_scale_rows",
+            "peak_rss_gib": 2.8421478271484375,
+            "logical_tensor_bytes": 2013265920,
+            "seconds": 1.021389496512711
+          },
+          {
+            "phase": "full_scale_serialized",
+            "peak_rss_gib": 6.5119476318359375,
+            "serialized_bytes": 2016384064,
+            "seconds": 2.176297311671078
+          }
+        ],
+        "status": "passed"
+      }
+    },
+    "storage-Sokoban.json": {
+      "sha256": "58bccd050c63a77b7c42e37306f397aeb36e427f0532737db92770341e739f6f",
+      "result": {
+        "task": "Sokoban",
+        "scope": "Measure pinned Ray serialization at paper batch/turn counts and 32k width.\n\nThis is a transport capacity fixture, not a new environment rollout or a claim\nabout task reward/DT quality. Original IDs, masks and per-row tensor ownership\nare tested separately in test_rollout_storage.py.\n",
+        "batch": 256,
+        "turns": 15,
+        "width": 32768,
+        "phases": [
+          {
+            "phase": "bounded_baseline",
+            "peak_rss_gib": 1.508819580078125,
+            "clone_tensors": false,
+            "batch": 16,
+            "turns": 1,
+            "serialized_bytes": 335570758,
+            "seconds": 0.31374435778707266
+          },
+          {
+            "phase": "bounded_baseline",
+            "peak_rss_gib": 1.508819580078125,
+            "clone_tensors": true,
+            "batch": 16,
+            "turns": 1,
+            "serialized_bytes": 16803133,
+            "seconds": 0.017512871883809566
+          },
+          {
+            "phase": "full_scale_rows",
+            "peak_rss_gib": 4.817081451416016,
+            "logical_tensor_bytes": 4026531840,
+            "seconds": 2.078024100512266
+          },
+          {
+            "phase": "full_scale_serialized",
+            "peak_rss_gib": 12.156715393066406,
+            "serialized_bytes": 4032770138,
+            "seconds": 4.592876045033336
+          }
+        ],
+        "status": "passed"
+      }
+    },
+    "storage-AppWorld.json": {
+      "sha256": "319910fecb7dc56bd74207e56b78595091b37f000691c464387533325030a7ef",
+      "result": {
+        "task": "AppWorld",
+        "scope": "Measure pinned Ray serialization at paper batch/turn counts and 32k width.\n\nThis is a transport capacity fixture, not a new environment rollout or a claim\nabout task reward/DT quality. Original IDs, masks and per-row tensor ownership\nare tested separately in test_rollout_storage.py.\n",
+        "batch": 240,
+        "turns": 40,
+        "width": 32768,
+        "phases": [
+          {
+            "phase": "bounded_baseline",
+            "peak_rss_gib": 1.5094642639160156,
+            "clone_tensors": false,
+            "batch": 16,
+            "turns": 1,
+            "serialized_bytes": 335570758,
+            "seconds": 0.30983798671513796
+          },
+          {
+            "phase": "bounded_baseline",
+            "peak_rss_gib": 1.5094642639160156,
+            "clone_tensors": true,
+            "batch": 16,
+            "turns": 1,
+            "serialized_bytes": 16803133,
+            "seconds": 0.0174426743760705
+          },
+          {
+            "phase": "full_scale_rows",
+            "peak_rss_gib": 10.44393539428711,
+            "logical_tensor_bytes": 10066329600,
+            "seconds": 5.179887336678803
+          },
+          {
+            "phase": "full_scale_serialized",
+            "peak_rss_gib": 29.090579986572266,
+            "serialized_bytes": 10081929022,
+            "seconds": 11.43476136494428
+          }
+        ],
+        "status": "passed"
+      }
+    },
+    "slow-rollout-soko-live-values.json": {
+      "sha256": "71ed37eaab2e8e889a3f7768101b5d1c012d7a43a24a819d9115753c6e73553c",
+      "result": {
+        "task": "soko",
+        "time": 1790116211.3162992,
+        "batch_size": 256,
+        "interaction_zero_based": 5,
+        "active_masks_true": 112,
+        "is_done_true": 144,
+        "episode_lengths": {
+          "min": 1.0,
+          "max": 5.0,
+          "sum": 1018.0,
+          "positive_count": 256,
+          "histogram": {
+            "1.0": 4,
+            "2.0": 40,
+            "3.0": 51,
+            "4.0": 24,
+            "5.0": 137
+          }
+        },
+        "episode_rewards": {
+          "min": -0.5,
+          "max": 10.899999618530273,
+          "sum": 1482.200005531311,
+          "positive_count": 144,
+          "histogram": {
+            "-0.5": 112,
+            "10.5": 25,
+            "10.600000381469727": 24,
+            "10.699999809265137": 51,
+            "10.800000190734863": 40,
+            "10.899999618530273": 4
+          }
+        },
+        "microbatch_one_based": 42,
+        "microbatch_count": 64,
+        "generation_prompt_tokens": 4883
+      }
+    },
+    "slow-rollout-shop-live-values.json": {
+      "sha256": "b6ab02faec0065c6bb44c487f0973202fb55fd401e69444fcf8a71c0022e88c1",
+      "result": {
+        "task": "shop",
+        "time": 1790116211.318483,
+        "batch_size": 128,
+        "interaction_zero_based": 14,
+        "active_masks_true": 105,
+        "is_done_true": 23,
+        "episode_lengths": {
+          "min": 5.0,
+          "max": 14.0,
+          "sum": 1693.0,
+          "positive_count": 128,
+          "histogram": {
+            "5.0": 2,
+            "6.0": 1,
+            "7.0": 2,
+            "8.0": 1,
+            "9.0": 6,
+            "10.0": 1,
+            "11.0": 2,
+            "12.0": 5,
+            "13.0": 3,
+            "14.0": 105
+          }
+        },
+        "episode_rewards": {
+          "min": 0.0,
+          "max": 10.0,
+          "sum": 50.0,
+          "positive_count": 5,
+          "histogram": {
+            "0.0": 123,
+            "10.0": 5
+          }
+        },
+        "microbatch_one_based": 26,
+        "microbatch_count": 32,
+        "generation_prompt_tokens": 13934
+      }
+    },
+    "slow-rollout-app-live-values.json": {
+      "sha256": "4e3a3caf7be2dbe249b7348ac14eb392be0b32730ceb3456a591ec382578973d",
+      "result": {
+        "task": "app",
+        "time": 1790116211.3171139,
+        "batch_size": 240,
+        "interaction_zero_based": 12,
+        "active_masks_true": 209,
+        "is_done_true": 31,
+        "episode_lengths": {
+          "min": 5.0,
+          "max": 12.0,
+          "sum": 2816.0,
+          "positive_count": 240,
+          "histogram": {
+            "5.0": 1,
+            "7.0": 1,
+            "8.0": 5,
+            "9.0": 6,
+            "10.0": 4,
+            "11.0": 6,
+            "12.0": 217
+          }
+        },
+        "episode_rewards": {
+          "min": 0.0,
+          "max": 10.0,
+          "sum": 100.0,
+          "positive_count": 10,
+          "histogram": {
+            "0.0": 230,
+            "10.0": 10
+          }
+        },
+        "microbatch_one_based": 32,
+        "microbatch_count": 60,
+        "generation_prompt_tokens": 8174
+      }
+    },
+    "active-generation-cost-v2.json": {
+      "sha256": "244e6c33450127920eee2c25b05aaeb2c5c349035811146f38dd676db46b693f",
+      "result": {
+        "scope": "Same pinned HF/FSDP2 owner, real Qwen weights, fixed 32k capacity fixture; compare all-row generation with collector active-mask transport. No claim about task success or complete iteration throughput.",
+        "prompt_tokens": 32256,
+        "response_cap": 512,
+        "context_cap": 32768,
+        "rollout_batch": 4,
+        "cases": [
+          {
+            "reshard_after_forward": false,
+            "runs": [
+              {
+                "repeat": 0,
+                "warmup": true,
+                "seconds": 104.2484132302925,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 54.30795860290527,
+                "peak_reserved_gib": 59.60546875,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              },
+              {
+                "repeat": 1,
+                "warmup": false,
+                "seconds": 79.69083852134645,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 54.30795860290527,
+                "peak_reserved_gib": 59.703125,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              }
+            ],
+            "active_rows": [
+              true,
+              true,
+              true,
+              true
+            ],
+            "warm_seconds": 79.69083852134645
+          },
+          {
+            "reshard_after_forward": false,
+            "runs": [],
+            "active_rows": [
+              true,
+              false,
+              true,
+              false
+            ]
+          }
+        ],
+        "allocator_config": "expandable_segments:True",
+        "generation_eos_token_id": [
+          248046,
+          248044
+        ],
+        "status": "failed",
+        "error": "Tensor-likes are not equal!\n\nMismatched elements: 84 / 1024 (8.2%)\nGreatest absolute difference: 16925 at index (0, 509)\nGreatest relative difference: 890.7894897460938 at index (0, 509)",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/rollout-fix/verify_fsdp_generation_cost.py\", line 105, in main\n    torch.testing.assert_close(responses[selected], reference[selected], rtol=0, atol=0)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/testing/_comparison.py\", line 1587, in assert_close\n    raise error_metas[0].to_error(msg)\nAssertionError: Tensor-likes are not equal!\n\nMismatched elements: 84 / 1024 (8.2%)\nGreatest absolute difference: 16925 at index (0, 509)\nGreatest relative difference: 890.7894897460938 at index (0, 509)\n"
+      }
+    },
+    "active-generation-cost-v3.json": {
+      "sha256": "65c95313e20cf4957b273024479c7c018568051213b72eb253150f702f5da5ed",
+      "result": {
+        "scope": "Same pinned HF/FSDP2 owner, real Qwen weights, fixed 32k capacity fixture; compare all-row generation with collector active-mask transport. No claim about task success or complete iteration throughput.",
+        "prompt_tokens": 32256,
+        "response_cap": 512,
+        "context_cap": 32768,
+        "rollout_batch": 4,
+        "cases": [
+          {
+            "reshard_after_forward": false,
+            "runs": [
+              {
+                "repeat": 0,
+                "warmup": true,
+                "seconds": 93.616101982072,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 54.30795860290527,
+                "peak_reserved_gib": 59.60546875,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              },
+              {
+                "repeat": 1,
+                "warmup": false,
+                "seconds": 78.74480273481458,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 54.30795860290527,
+                "peak_reserved_gib": 59.703125,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              }
+            ],
+            "active_rows": [
+              true,
+              true,
+              true,
+              true
+            ],
+            "warm_seconds": 78.74480273481458
+          },
+          {
+            "reshard_after_forward": false,
+            "runs": [
+              {
+                "repeat": 0,
+                "warmup": true,
+                "seconds": 70.03639600798488,
+                "actual_response_lengths": [
+                  512,
+                  0,
+                  512,
+                  0
+                ],
+                "peak_allocated_gib": 43.864866733551025,
+                "peak_reserved_gib": 48.001953125,
+                "response_sha256": "468d373cd0c3456d4eb5d5db5b63c6eb056a105871be4c428db14629b74a5f81"
+              },
+              {
+                "repeat": 1,
+                "warmup": false,
+                "seconds": 68.01126263756305,
+                "actual_response_lengths": [
+                  512,
+                  0,
+                  512,
+                  0
+                ],
+                "peak_allocated_gib": 43.864866733551025,
+                "peak_reserved_gib": 48.080078125,
+                "response_sha256": "468d373cd0c3456d4eb5d5db5b63c6eb056a105871be4c428db14629b74a5f81"
+              }
+            ],
+            "original_owner_selected_rows": 2,
+            "original_owner_changed_tokens_vs_batch4": 84,
+            "active_rows": [
+              true,
+              false,
+              true,
+              false
+            ],
+            "warm_seconds": 68.01126263756305
+          },
+          {
+            "reshard_after_forward": false,
+            "runs": [
+              {
+                "repeat": 0,
+                "warmup": true,
+                "seconds": 0.03233630396425724,
+                "actual_response_lengths": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "peak_allocated_gib": 16.725255012512207,
+                "peak_reserved_gib": 32.041015625,
+                "response_sha256": "751c5291ee687261c7ae3d32788c01dc3091a70e1d88715491bfa844c258e84f"
+              },
+              {
+                "repeat": 1,
+                "warmup": false,
+                "seconds": 0.01988905854523182,
+                "actual_response_lengths": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "peak_allocated_gib": 16.725255012512207,
+                "peak_reserved_gib": 16.828125,
+                "response_sha256": "751c5291ee687261c7ae3d32788c01dc3091a70e1d88715491bfa844c258e84f"
+              }
+            ],
+            "active_rows": [
+              false,
+              false,
+              false,
+              false
+            ],
+            "warm_seconds": 0.01988905854523182
+          }
+        ],
+        "allocator_config": "expandable_segments:True",
+        "generation_eos_token_id": [
+          248046,
+          248044
+        ],
+        "warm_ratio_active2_over_all4": 0.8636920822140046,
+        "active_generated_ids_exactly_equal_to_same_shape_owner": true,
+        "status": "passed"
+      }
+    }
+  },
+  "phase_diagnosis": {
+    "Sokoban": {
+      "completed_generation_microbatches_at_sample": 361,
+      "elapsed_since_formal_launch_seconds": 22998.813416481018,
+      "wall_seconds_per_completed_microbatch_approx": 63.70862442238509,
+      "scope": "Elapsed average includes initialization, environment and other waits; not isolated GPU compute time. Live stack places current work in HF generation."
+    },
+    "Webshop": {
+      "completed_generation_microbatches_at_sample": 473,
+      "elapsed_since_formal_launch_seconds": 22998.815600395203,
+      "wall_seconds_per_completed_microbatch_approx": 48.623288795761525,
+      "scope": "Elapsed average includes initialization, environment and other waits; not isolated GPU compute time. Live stack places current work in HF generation.",
+      "later_failure_phase": "Ray cloudpickle argument serialization before DT execution"
+    },
+    "AppWorld": {
+      "completed_generation_microbatches_at_sample": 751,
+      "elapsed_since_formal_launch_seconds": 22998.814231157303,
+      "wall_seconds_per_completed_microbatch_approx": 30.624253303804664,
+      "scope": "Elapsed average includes initialization, environment and other waits; not isolated GPU compute time. Live stack places current work in HF generation."
+    }
+  }
+}

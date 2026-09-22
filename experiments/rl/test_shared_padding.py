@@ -4,6 +4,7 @@ These tests prove index/shape/default-path behavior, not Qwen quality or speed.
 """
 from types import SimpleNamespace
 import pytest
+import numpy as np
 import torch
 from omegaconf import OmegaConf
 from tensordict import TensorDict
@@ -118,3 +119,36 @@ def test_hf_generation_removes_compute_padding_and_restores_original_dataproto(m
     assert outputs[1].batch['input_ids'].shape == (2*copies, 32768)
     for name in outputs[0].batch.keys():
         torch.testing.assert_close(outputs[0].batch[name], outputs[1].batch[name])
+
+
+@pytest.mark.parametrize('copies', [1, 2])
+@pytest.mark.parametrize('active', [[True]*8, [True, False, True, False]+[False]*4, [False]*8])
+def test_hf_skips_finished_rows_with_original_chunking_and_alignment(monkeypatch, copies, active):
+    import verl.workers.rollout.hf_rollout as owner
+    monkeypatch.setattr(owner, 'get_device_name', lambda: 'cpu')
+    monkeypatch.setattr(owner, 'get_device_id', lambda: 0)
+    monkeypatch.setattr(owner, 'get_torch_device', lambda: SimpleNamespace(empty_cache=lambda: None))
+    monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', '1')
+    ids = torch.zeros((8, 32256), dtype=torch.long)
+    ids[:, -3:] = torch.arange(24).reshape(8, 3) + 1
+    mask = ids.ne(0).long();pos = (mask.cumsum(-1)-1).clamp_min(0)
+    prompts = DataProto(batch=TensorDict(dict(input_ids=ids, attention_mask=mask, position_ids=pos), batch_size=[8]),
+                       meta_info={'eos_token_id':7, 'pad_token_id':0})
+    config = OmegaConf.create(dict(do_sample=True, temperature=1., response_length=512,
+                                   top_p=1., top_k=0, n=copies, micro_batch_size=4))
+    model = GenerationModel();model.config = SimpleNamespace(model_type='qwen3_5_text')
+    rollout = HFRollout(model, config)
+    expected = rollout.generate_sequences(prompts)
+    assert [x[0].shape[0] for x in model.inputs] == [4, 4]
+    model.inputs.clear()
+    prompts.non_tensor_batch['rollout_active_mask'] = np.array(active, dtype=bool)
+    actual = rollout.generate_sequences(prompts)
+    assert sum(x[0].shape[0] for x in model.inputs) == sum(active)
+    assert all(x[0].shape[0] <= 4 for x in model.inputs)
+    select = torch.tensor(active).repeat_interleave(copies)
+    for key in expected.batch.keys():
+        torch.testing.assert_close(actual.batch[key][select], expected.batch[key][select], rtol=0, atol=0)
+    torch.testing.assert_close(actual.batch['prompts'], ids.repeat_interleave(copies, dim=0), rtol=0, atol=0)
+    assert actual.batch['input_ids'].shape == (8*copies, 32768)
+    assert not actual.batch['responses'][~select].any()
+    assert not actual.batch['attention_mask'][~select, 32256:].any()

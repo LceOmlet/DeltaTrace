@@ -3,6 +3,20 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+**2026-09-23 06:41 更新：正式 v3 三组作业均未完成一次更新，随后发生主机
+OOM，现已停止失败作业。** WebShop 完成约 6.5 小时 rollout 后，在向 DT
+传递轨迹的 Ray RPC 边界，TaskRunner 内存达到 373 GiB，容器 883/900 GiB，
+导致三个 policy worker 被 Ray 杀掉。先前“有 GPU 活动、尚无 OOM”的采样不能
+证明训练健康。已修复逐行 tensor 视图重复序列化整个 batch storage；
+跳过已结束轨迹的生成改动已与同输入形状的原 HF owner 逐 token 对齐。
+真实 32k 夹具中，4 条生成预热后 78.745 秒、2 条有效输入仍为 68.011 秒；
+全无效微批次为 0.020 秒。生成阶段的整轮吞吐仍未验收，不能自动恢复正式规模。
+后续先查现有进程栈和阶段耗时，再对已定位问题测试。实际恢复以新回执为准，
+不能沿用 v3 启动状态。
+四轨迹 pilot 的成功记录仍有效，但没有覆盖这个正式规模传输缺陷。
+诊断、规模传输峰值和当前修复验证见
+[results_rollout_failure_fix.json](results_rollout_failure_fix.json)。
+
 ## 当前实现：EOS DT → 奖励事件 → token PPO
 
 2026-09-22 已移除额外参考 token 采样和逐 token 前后奖励询问。
@@ -67,8 +81,8 @@ batch/轨迹总预算完全不变。验证仍按原环境 reset 的采样方式�
 1.235/0.709 GiB；按 132 个环境外推，匿名内存差约 593 GiB。原 worker 的 reset、
 搜索、商品/选项点击、购买终止和官方评分完全相同，见
 [results_environment_memory.json](results_environment_memory.json)。未修改环境、奖励或采样批量。
-修复后的 v3 三组原文预算作业已进入首轮 rollout，容器内存抽样约 542–550 GiB，
-尚未完成首轮大批次。启动身份、阶段采样与未完成项见
+v3 三组原文预算作业曾进入首轮 rollout，容器内存抽样约 542–550 GiB；
+06:41 在后续 DT RPC 阶段失败，尚未完成首轮更新。历史启动身份和阶段采样见
 [results_paper_scale_launch.json](results_paper_scale_launch.json)；不把启动等同于实验完成。
 00:59 的 `/proc/*/smaps_rollup` 核算中，WebShop/Sokoban/AppWorld 环境进程
 PSS 分别为 96.7/74.7/79.7 GiB。99 个编译子进程 RSS 总和为 470.1 GiB，

@@ -201,6 +201,75 @@ FSDP2_NEW = """    if isinstance(fsdp_transformer_layer_cls_to_wrap, str):
 """
 
 HF_ROLLOUT_FILE = "verl/workers/rollout/hf_rollout.py"
+ROLLOUT_UTILS_FILE = "agent_system/multi_turn_rollout/utils.py"
+ROW_CALL = "            batch_list: list[dict] = to_list_of_dict(batch)"
+COMPACT_ROW_CALL = ('            batch_list: list[dict] = to_list_of_dict(\n'
+                    '                batch, clone_tensors=str(self.config.algorithm.adv_estimator) == "deltatrace"\n'
+                    '            )')
+
+
+def patch_rollout_row_storage(text: str) -> str:
+    """Keep row storage bounded when factual rows cross the DT Ray RPC.
+
+    The owner returns tensor views into a whole rollout batch. Python/Ray's
+    tensor pickle serializes that entire storage for every separate row view.
+    Clone only at the existing row conversion boundary, opt-in for DT; leave
+    the owner's default view behavior and all tensor values unchanged.
+    """
+    old = "def to_list_of_dict(batch: DataProto) -> list[dict]:"
+    new = "def to_list_of_dict(batch: DataProto, *, clone_tensors: bool = False) -> list[dict]:"
+    if new in text:
+        return text
+    assignment = "            save_dict[key] = val[bs]"
+    if text.count(old) != 1 or text.count(assignment) != 2:
+        raise RuntimeError("cannot find pinned rollout row conversion anchors")
+    text = text.replace(old, new, 1)
+    return text.replace(assignment,
+                        "            save_dict[key] = val[bs].clone() if clone_tensors else val[bs]", 1)
+
+
+def patch_rollout_phase_logs(text: str) -> str:
+    """Expose progress at existing owner boundaries, without changing work."""
+    marker = '                print(f"[DT rollout] phase=generation_start'
+    if marker in text:
+        return text
+    start = '            batch_output_padded = actor_rollout_wg.generate_sequences(batch_input_padded)'
+    end = '            batch_output = unpad_dataproto(batch_output_padded, pad_size=pad_size)'
+    rpc = '            dt_values = actor_rollout_wg.compute_dt_token_advantages('
+    if any(text.count(anchor) != 1 for anchor in (start, end, rpc)):
+        raise RuntimeError('cannot find pinned rollout phase log boundaries')
+    text = text.replace(start, '''            if str(self.config.algorithm.adv_estimator) == "deltatrace":
+                from time import perf_counter
+                from resource import getrusage, RUSAGE_SELF
+                _dt_round_started = perf_counter()
+                print(f"[DT rollout] phase=generation_start step={_step + 1}/{self.config.env.max_steps} "
+                      f"active={int(active_masks.sum())}/{batch_size} "
+                      f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
+''' + start, 1)
+    text = text.replace(end, end + '''
+            if str(self.config.algorithm.adv_estimator) == "deltatrace":
+                _dt_generated = int(batch_output.batch["attention_mask"][
+                    :, -batch_output.batch["responses"].shape[-1]:].sum().item())
+                _dt_seconds = perf_counter() - _dt_round_started
+                print(f"[DT rollout] phase=generation_end step={_step + 1} "
+                      f"seconds={_dt_seconds:.3f} generated_tokens={_dt_generated} "
+                      f"tokens_per_second={_dt_generated / _dt_seconds:.3f} "
+                      f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
+''', 1)
+    text = text.replace(rpc, '''            from time import perf_counter
+            from resource import getrusage, RUSAGE_SELF
+            _dt_rpc_started = perf_counter()
+            print(f"[DT rollout] phase=dt_rpc_start episodes={len(total_batch_list)} "
+                  f"rows={sum(map(len, total_batch_list))} "
+                  f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
+''' + rpc, 1)
+    end_rpc = '            if isinstance(dt_values, list) and len(dt_values) == 1:'
+    text = text.replace(end_rpc, '''            print(f"[DT rollout] phase=dt_rpc_end seconds={perf_counter() - _dt_rpc_started:.3f} "
+                  f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
+''' + end_rpc, 1)
+    return text
+
+
 HF_ROLLOUT_IMPORT_OLD = "from verl.utils.device import get_torch_device"
 HF_ROLLOUT_IMPORT_NEW = "from verl.utils.device import get_device_id, get_device_name, get_torch_device"
 HF_ROLLOUT_OLD = """        idx = prompts.batch[\"input_ids\"]  # (bs, prompt_length)
@@ -264,6 +333,59 @@ HF_TRIM_RESTORE = '''        seq = output.sequences
             padding = idx[:, :generation_left_trim]
             padding = padding.repeat_interleave(seq.size(0) // idx.size(0), dim=0)
             seq = torch.cat((padding, seq), dim=-1)'''
+
+HF_ACTIVE_MARKER = '        # Skip finished trajectories using the collector-owned mask.'
+
+
+def patch_hf_active_rows(text: str) -> str:
+    """Compact only inside the owner's existing microbatch; retain row ABI."""
+    if HF_ACTIVE_MARKER in text:
+        return text
+    start = text.index('        with param_ctx, torch.autocast(')
+    end = text.index('        generated_batch_size = seq.size(0)', start)
+    block = text[start:end]
+    if HF_TRIM_CALL_NEW not in block or HF_TRIM_RESTORE not in block:
+        raise RuntimeError('cannot find pinned HF generation/restore block')
+    # Reuse the original generate call, options, FSDP context and trim restore.
+    block = block.replace('input_ids=idx[:,', 'input_ids=generation_idx[:,')
+    block = block.replace('attention_mask=attention_mask[:,', 'attention_mask=generation_mask[:,')
+    block = block.replace('position_ids=position_ids[...,', 'position_ids=generation_positions[...,')
+    block = block.replace('padding = idx[:,', 'padding = generation_idx[:,')
+    block = block.replace('seq.size(0) // idx.size(0)', 'seq.size(0) // generation_idx.size(0)')
+    indented = ''.join('    ' + line if line.strip() else line for line in block.splitlines(keepends=True))
+    before = '''        # Skip finished trajectories using the collector-owned mask.
+        # No mask means the unchanged owner path. Compact within (not across)
+        # original microbatches, so the configured maximum batch size stays put.
+        active_mask = prompts.non_tensor_batch.get("rollout_active_mask")
+        active_rows = None
+        generation_idx, generation_mask, generation_positions = idx, attention_mask, position_ids
+        copies = kwargs.get("num_return_sequences", 1)
+        if active_mask is not None and not all(active_mask):
+            active_rows = torch.as_tensor(active_mask, dtype=torch.bool).nonzero().flatten().to(idx.device)
+            generation_idx = idx.index_select(0, active_rows)
+            generation_mask = attention_mask.index_select(0, active_rows)
+            generation_positions = position_ids.index_select(0, active_rows)
+        if generation_idx.size(0) == 0:
+            seq = idx.repeat_interleave(copies, dim=0)
+        else:
+'''
+    after = '''            if active_rows is not None:
+                full_seq = idx.new_full((idx.size(0) * copies, seq.size(1)), pad_token_id)
+                full_seq[:, :prompt_length] = idx.repeat_interleave(copies, dim=0)
+                output_rows = (active_rows[:, None] * copies + torch.arange(copies, device=idx.device)).flatten()
+                full_seq.index_copy_(0, output_rows, seq)
+                seq = full_seq
+'''
+    text = text[:start] + before + indented + after + text[end:]
+    mask_line = '        attention_mask = torch.cat((attention_mask, response_attention_mask), dim=-1)'
+    text = text.replace(mask_line, '''        if active_rows is not None:
+            response_attention_mask *= torch.as_tensor(
+                active_mask, dtype=response_attention_mask.dtype, device=response_attention_mask.device
+            ).repeat_interleave(copies)[:, None]
+''' + mask_line, 1)
+    return text
+
+
 ACTOR_TRIM_ANCHOR = '            else:  # not using rmpad and no ulysses sp\n                extra_args = {}'
 ACTOR_TRIM_PREVIOUS = '''            else:  # not using rmpad and no ulysses sp
                 # Preserve the response columns and original tensors. Only
@@ -858,7 +980,7 @@ def main() -> None:
         text = text.replace(GATHER_INSERT_PREVIOUS, GATHER_INSERT, 1)
     if ROLLOUT_DT_CALL_PREVIOUS in text:
         text = text.replace(ROLLOUT_DT_CALL_PREVIOUS, ROLLOUT_DT_CALL, 1)
-    if ROLLOUT_EVENT_INSERT not in text:
+    if ROLLOUT_EVENT_INSERT not in text and ROLLOUT_EVENT_INSERT.replace(ROW_CALL, COMPACT_ROW_CALL) not in text:
         if ROLLOUT_EVENT_ANCHOR not in text:
             raise RuntimeError(f"cannot find reward event capture anchor in {rollout}")
         text = text.replace(ROLLOUT_EVENT_ANCHOR, ROLLOUT_EVENT_INSERT, 1)
@@ -877,7 +999,7 @@ def main() -> None:
         text = text.replace(ROLLOUT_DT_CALL_STALE, "", 1)
         print(f"removed stale {rollout} DeltaTrace producer call")
 
-    if ROLLOUT_DT_CALL not in text:
+    if ROLLOUT_DT_CALL not in text and 'print(f"[DT rollout] phase=dt_rpc_start' not in text:
         if ROLLOUT_DT_CALL_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout DeltaTrace call anchor in {rollout}")
         text = text.replace(ROLLOUT_DT_CALL_ANCHOR, ROLLOUT_DT_CALL, 1)
@@ -892,7 +1014,23 @@ def main() -> None:
             GATHER_GOOD_IMPORT,
             1,
         )
-    rollout.write_text(text)
+    row_call, compact_row_call = ROW_CALL, COMPACT_ROW_CALL
+    if compact_row_call not in text:
+        if text.count(row_call) != 1:
+            raise RuntimeError("cannot find factual rollout row conversion call")
+        text = text.replace(row_call, compact_row_call, 1)
+    utils = args.verl_root / ROLLOUT_UTILS_FILE
+    utils.write_text(patch_rollout_row_storage(utils.read_text()))
+    active_anchor = '            batch_input.meta_info = gen_batch.meta_info'
+    active_insert = active_anchor + '''
+            if str(self.config.algorithm.adv_estimator) == "deltatrace":
+                batch_input.non_tensor_batch["rollout_active_mask"] = active_masks
+'''
+    if active_insert not in text:
+        if text.count(active_anchor) != 1:
+            raise RuntimeError("cannot find collector generation mask boundary")
+        text = text.replace(active_anchor, active_insert, 1)
+    rollout.write_text(patch_rollout_phase_logs(text))
     print(f"patched {rollout} DeltaTrace collector")
 
     # The observed 32k cap was also being used as a compute length for short
@@ -906,6 +1044,8 @@ def main() -> None:
         (actor, [(ACTOR_TRIM_ANCHOR, ACTOR_TRIM_INSERT)]),
     ]:
         text = path.read_text()
+        if path == args.verl_root / HF_ROLLOUT_FILE and HF_ACTIVE_MARKER in text:
+            continue  # The active-row extension already contains this trim fix.
         for previous, current in [(HF_TRIM_PREVIOUS, HF_TRIM_INSERT),
                                   (ACTOR_TRIM_PREVIOUS, ACTOR_TRIM_INSERT)]:
             if previous in text:
@@ -918,6 +1058,9 @@ def main() -> None:
                     raise RuntimeError(f'cannot find shared-padding anchor in {path}')
                 text = text.replace(old, new, 1)
         path.write_text(text)
+
+    hf = args.verl_root / HF_ROLLOUT_FILE
+    hf.write_text(patch_hf_active_rows(hf.read_text()))
 
 
 if __name__ == "__main__":

@@ -12,6 +12,18 @@
 
 ## 2026-09-22 正式规模启动与监控
 
+- **2026-09-23 06:41，v3 正式训练失败并已停止。** WebShop 首轮 rollout 后
+  `compute_dt_token_advantages` 的 Ray 参数序列化将单行 tensor 视图所引用的
+  整批 storage 重复打包；TaskRunner 达 373 GiB、容器 883/900 GiB，Ray
+  杀掉三组 policy worker。不要自动重启旧代码。记录见运行根目录
+  `receipts/training-setup/formal-v3-oom-stop.json` 和 `rollout-fix/`。
+  原 `to_list_of_dict` 只在 DT 调用启用行级 clone，值/顺序/mask 不变，默认
+  owner 路径保留。原 HF microbatch 同时跳过 collector 标记已结束的行。
+  原规模、最长轮数、每行 32768 的独立序列化夹具峰值分别为 WebShop
+  6.512 GiB、Sokoban 12.157 GiB、AppWorld 29.091 GiB；这只证明传输容量，
+  不代替完整训练吞吐或所有环境常驻内存验收。每小时检查须回显真实阶段、
+  轮次/有效轨迹/token 吞吐；不能把进程存活或 GPU 忙当作训练健康。
+
 - 2026-09-23 按 phase 定位前两次内存失败：Pyserini 的 Lucene 导入会间接
   加载加速依赖。GPU 可见的 WebShop Ray worker 为 RSS 9.383/RssAnon 5.203 GiB；
   原 Ray `runtime_env.env_vars` 将 CPU 环境的 CUDA/MACA 可见性置空后为

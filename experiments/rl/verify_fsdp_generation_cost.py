@@ -13,6 +13,7 @@ import time
 import traceback
 from pathlib import Path
 
+import numpy as np
 import torch
 from omegaconf import OmegaConf
 from tensordict import TensorDict
@@ -24,10 +25,16 @@ from verl.workers.fsdp_workers import ActorRolloutRefWorker
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--compare-active-mask', action='store_true',
+                        help='Compare original all-row generation with skipping finished rows.')
     args = parser.parse_args()
     result = dict(scope=__doc__, prompt_tokens=32256, response_cap=512,
                   context_cap=32768, rollout_batch=4, cases=[],
                   allocator_config=os.environ.get('PYTORCH_CUDA_ALLOC_CONF'))
+    if args.compare_active_mask:
+        result['scope'] = ('Same pinned HF/FSDP2 owner, real Qwen weights, fixed 32k capacity fixture; '
+                           'compare all-row generation with collector active-mask transport. '
+                           'No claim about task success or complete iteration throughput.')
     try:
         torch.manual_seed(2026)
         torch.use_deterministic_algorithms(True)
@@ -67,10 +74,30 @@ def main():
         assert modules
         reference = None
         # Default FSDP2 root does not reshard; change only descendant settings.
-        for enabled in (True, False):
+        cases = [(True, None), (False, None)] if not args.compare_active_mask else [
+            (False, None), (False, [True, False, True, False]), (False, [False]*4)]
+        for enabled, active in cases:
             for m in modules[1:]:
                 m.set_reshard_after_forward(enabled, recurse=False)
             case = dict(reshard_after_forward=enabled, runs=[])
+            owner_active_reference = None
+            if active is not None and any(active):
+                # Same-shape owner comparison: ordinary HF on these exact rows,
+                # with no mask extension. Cross-batch long greedy continuations
+                # can diverge due to the owner's own BF16 rounding; record that
+                # difference, rather than inventing a bitwise cross-batch gate.
+                prompts.non_tensor_batch.pop('rollout_active_mask', None)
+                selected_prompts = prompts.select_idxs(np.flatnonzero(active))
+                owner_active_reference = worker.generate_sequences(selected_prompts).batch['responses'].cpu()
+                case['original_owner_selected_rows'] = int(sum(active))
+                case['original_owner_changed_tokens_vs_batch4'] = int(
+                    (owner_active_reference != reference[torch.tensor(active)]).sum())
+            if active is None:
+                prompts.non_tensor_batch.pop('rollout_active_mask', None)
+            else:
+                prompts.non_tensor_batch['rollout_active_mask'] = np.array(active, dtype=bool)
+            if args.compare_active_mask:
+                case['active_rows'] = active or [True]*4
             result['cases'].append(case)
             for repeat in range(2):
                 for m in reversed(modules):
@@ -85,8 +112,13 @@ def main():
                 effective = output.batch['attention_mask'][:, -result['response_cap']:].sum(-1).tolist()
                 if reference is None:
                     reference = responses.clone()
+                elif owner_active_reference is not None:
+                    torch.testing.assert_close(responses[torch.tensor(active)], owner_active_reference, rtol=0, atol=0)
                 else:
-                    torch.testing.assert_close(responses, reference, rtol=0, atol=0)
+                    selected = torch.tensor(active if active is not None else [True]*4)
+                    torch.testing.assert_close(responses[selected], reference[selected], rtol=0, atol=0)
+                if active is not None:
+                    assert responses[~torch.tensor(active)].eq(worker.tokenizer.pad_token_id).all()
                 assert output.batch['input_ids'].shape == (4, 32768)
                 rec = dict(repeat=repeat, warmup=repeat == 0, seconds=elapsed,
                     actual_response_lengths=effective,
@@ -97,8 +129,9 @@ def main():
                 args.output.write_text(json.dumps(result, indent=2)+'\n')
                 print('GENERATION_COST', enabled, rec, flush=True)
             case['warm_seconds'] = statistics.median(r['seconds'] for r in case['runs'][1:])
-        result['warm_ratio_false_over_true'] = result['cases'][1]['warm_seconds']/result['cases'][0]['warm_seconds']
-        result['all_generated_ids_exactly_equal'] = True
+        key = 'warm_ratio_active2_over_all4' if args.compare_active_mask else 'warm_ratio_false_over_true'
+        result[key] = result['cases'][1]['warm_seconds']/result['cases'][0]['warm_seconds']
+        result['active_generated_ids_exactly_equal_to_same_shape_owner' if args.compare_active_mask else 'all_generated_ids_exactly_equal'] = True
         result['status'] = 'passed'
     except Exception as exc:
         result.update(status='failed', error=str(exc), traceback=traceback.format_exc())
