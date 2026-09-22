@@ -10,7 +10,7 @@ from collections.abc import Mapping
 import torch
 from flash_attn import flash_attn_func,flash_attn_varlen_func
 from transformers.integrations.flash_attention import flash_attention_forward
-from qwen35_answer_finite import FiniteAnswerOps
+from qwen35_answer_finite import FiniteAnswerOps,outcome_log_probs,selected_target_log_probs
 from qwen35_decoder_finite import NativeDecoderCapture,FiniteBoundaryOps,attention_finite_pullback,decoder_finite_pullback
 from qwen35_gdn_finite import NativeGDNCapture,gdn_finite_pullback
 from native_dense_attention_capture import NativeDenseAttentionCapture
@@ -85,6 +85,23 @@ class Qwen35DenseFiniteRunner:
             if not callable(callback):raise TypeError('A finite key normalization callback must be callable.')
         self.boundaries=FiniteBoundaryOps(True);self.answer=FiniteAnswerOps(True)
 
+    @torch.no_grad()
+    def forward_prefix(self,input_ids,*,past_key_values=None):
+        """Native cached prefix/branch evaluation, retaining only the last logits.
+
+        The caller owns cache forks; the HF model owns every cache transition.
+        No captures, replay, compilation or finite pullback are needed to read
+        the root of a single-input-position intervention.
+        """
+        forward=getattr(self.model,'forward_root',self.model)
+        return forward(input_ids=input_ids,past_key_values=past_key_values,
+                       use_cache=True,logits_to_keep=1)
+
+    @torch.no_grad()
+    def read_outcomes(self,input_ids,outcome_token_ids,*,past_key_values=None):
+        out=self.forward_prefix(input_ids,past_key_values=past_key_values)
+        return outcome_log_probs(out.logits[:,-1],outcome_token_ids)
+
     def attribute(self,paired_ids,mask,selection,select_output_rows=True,observer=None):
         if paired_ids.shape!=mask.shape or paired_ids.shape!=(2*selection.batch,selection.length):
             raise ValueError('Endpoint input/mask/target dimensions disagree.')
@@ -125,8 +142,7 @@ class Qwen35DenseFiniteRunner:
         # Match the established root-G diagnostic independently of the compiled
         # seed's internal log-softmax fusion. Neither result replaces model logits.
         with torch.no_grad():
-            root_logp=timed('actual_root_FP32_logprob_diagnostic',lambda:z.float().log_softmax(-1).gather(
-                -1,selection.labels.repeat_interleave(2)[:,None]).squeeze(-1))
+            root_logp=timed('actual_root_FP32_logprob_diagnostic',lambda:selected_target_log_probs(z,selection))
         root_lp0=root_logp[0::2].detach().cpu();root_lp1=root_logp[1::2].detach().cpu();del root_logp
         # Consume only actual original logits, with the unchanged full-vocabulary seed.
         with torch.no_grad():mnorm,seed=timed('finite_seed',lambda:self.answer(z,model.lm_head,selection))

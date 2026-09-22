@@ -215,6 +215,37 @@ HF_SUMMON_NEW = "            param_ctx = FSDP.summon_full_params(self.module, wr
 HF_SUMMON_PREVIOUS = "            param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=True)"
 
 HF_DT_METHOD_ANCHOR = "        return DataProto(batch=batch)\n"
+HF_TRIM_ANCHOR = "        self.module.eval()\n        param_ctx = contextlib.nullcontext()"
+HF_TRIM_INSERT = '''        # Trim only shared left padding for native generation; restore exact
+        # DataProto width below so collector IDs/masks keep their original ABI.
+        generation_left_trim = 0
+        if os.getenv("VERL_TRIM_SHARED_PADDING", "0") == "1":
+            generation_left_trim = int(attention_mask.long().argmax(-1).min().item())
+        self.module.eval()
+        param_ctx = contextlib.nullcontext()'''
+HF_TRIM_CALL_OLD = '''            output = self.module.generate(
+                input_ids=idx,
+                attention_mask=attention_mask,
+                position_ids=position_ids,'''
+HF_TRIM_CALL_NEW = '''            output = self.module.generate(
+                input_ids=idx[:, generation_left_trim:],
+                attention_mask=attention_mask[:, generation_left_trim:],
+                position_ids=position_ids[..., generation_left_trim:],'''
+HF_TRIM_RESTORE = '''        seq = output.sequences
+        if generation_left_trim:
+            padding = idx[:, :generation_left_trim]
+            padding = padding.repeat_interleave(seq.size(0) // idx.size(0), dim=0)
+            seq = torch.cat((padding, seq), dim=-1)'''
+ACTOR_TRIM_ANCHOR = '            else:  # not using rmpad and no ulysses sp\n                extra_args = {}'
+ACTOR_TRIM_INSERT = '''            else:  # not using rmpad and no ulysses sp
+                # Preserve the response columns and original tensors. Only
+                # columns masked out for every example leave the model input.
+                if not multi_modal_inputs and os.getenv("VERL_TRIM_SHARED_PADDING", "0") == "1":
+                    left_trim = int(attention_mask.long().argmax(-1).min().item())
+                    input_ids = input_ids[:, left_trim:]
+                    attention_mask = attention_mask[:, left_trim:]
+                    position_ids = position_ids[..., left_trim:]
+                extra_args = {}'''
 HF_DT_METHOD_OLD = "    def compute_dt_token_advantages(self, episodes, episode_returns):\n"
 HF_DT_METHOD_MARKER = "    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):\n"
 HF_DT_METHOD = '''        return DataProto(batch=batch)
@@ -690,6 +721,26 @@ def main() -> None:
         )
     rollout.write_text(text)
     print(f"patched {rollout} DeltaTrace collector")
+
+    # The observed 32k cap was also being used as a compute length for short
+    # prompts. Opt-in owner fixes retain the unmodified external tensor ABI.
+    for path, replacements in [
+        (args.verl_root / HF_ROLLOUT_FILE, [
+            (HF_TRIM_ANCHOR, HF_TRIM_INSERT),
+            (HF_TRIM_CALL_OLD, HF_TRIM_CALL_NEW),
+            ('        seq = output.sequences', HF_TRIM_RESTORE),
+        ]),
+        (actor, [(ACTOR_TRIM_ANCHOR, ACTOR_TRIM_INSERT)]),
+    ]:
+        text = path.read_text()
+        if '\nimport os\n' not in text:
+            text = text.replace('\nimport torch\n', '\nimport os\nimport torch\n', 1)
+        for old, new in replacements:
+            if new not in text:
+                if old not in text:
+                    raise RuntimeError(f'cannot find shared-padding anchor in {path}')
+                text = text.replace(old, new, 1)
+        path.write_text(text)
 
 
 if __name__ == "__main__":

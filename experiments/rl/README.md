@@ -8,7 +8,8 @@ clipped objective。实现和测试应先核对该文件。
 
 ## 当前实现状态
 
-**终局／过程奖励的采样组合已实现；真实 DT 概率比生产和三个任务的训练尚未接通。**
+**用户批准的奖励事件目标读出已实现并接入生产器；真实 Qwen 读出与有限传播已执行，
+三个任务的完整训练仍在验证，尚未验收。**
 
 - `counterfactual.py::reward_event_token_credit` 接收逐 token、逐奖励事件的
   DT log ratio 和真实环境奖励，按 PLAN 的采样修正构造 Q/V 估计与 advantage。
@@ -30,13 +31,31 @@ clipped objective。实现和测试应先核对该文件。
   终局单事件、观测/过去奖励屏蔽、数值稳定性，以及 minibatch 4 × 32768 的 CPU
   张量边界。`test_verl_counterfactual.py` 直接调用现有 VERL PPO loss 检查 clipping
   与 actor 梯度，没有重写 PPO。结果记录见 `results_reward_events.json`。
-- 正式 DT 当前提供固定目标文本及两个联合输入端点的 log-prob 与 signed attribution；
-  它们尚未接成同前缀旧策略边缘下的逐 token／逐奖励事件 log ratio。训练入口
-  `METHOD=dt` 在加载模型前明确停止，避免继续执行旧算法。
+- `reward_readout.py` 使用原始 rollout token 前缀，对每个 action 和旧策略采样
+  参照构建单位置反事实。正式 owner 的新增 categorical target 读出复用同一个
+  Qwen head；其事件类别归一化与旧策略概率边缘分别计算，没有训练额外 head。
+  `deltatrace_rollout.py` 已将这些比值送入既定逐事件 Q/V 组合，`METHOD=dt` 已开放
+  实际联调。开放入口不代表训练已通过。
+- 前缀使用 HF 原生缓存，分支复制防止污染事实轨迹；同长度事件采用原生 cache
+  `reorder_cache` 批量查询，重复参考、相同端点和零奖励项避免重复读出。
+  Actor 保留 SDPA 以使用现有可用反向；读出不把 actor 切换成前向专用 FA 构建。
 
 这些测试使用 A6000 主机已有 Python/VERL 的 CPU 运算；没有安装依赖、下载数据、
 清空缓存、占用 GPU 或运行模型。CPU 32k 张量检查不代表 32k 模型训练成功。
 WebShop、Sokoban、AppWorld 当前固定方法均未取得新的训练／评估通过记录。
+
+2026-09-22 的新增结果见 [results_reward_readout.json](results_reward_readout.json)。
+40 项 CPU 测试通过，覆盖新增读出边界、真实 HF 混合 cache 分支与上游 padding
+修复。真实 Qwen/DT 探针输出了非零类别 log ratio，并完成单 action 变化的有限传播
+对照：目标差 0.07384、action 归因 0.06987；这记录实际数值残差，不声称零误差。
+缓存与整段前向的最大 log-prob 差为 0.11676，仍需单独评估其影响。
+探针在同一个 Sokoban 状态前缀上检查了三套奖励类别，实际上下文为 225--252 tokens，
+不是三个任务的完整轨迹或 32k 满长训练。后续训练状态以对应日志验收为准。
+
+已在上游 HF rollout/actor 加入显式启用的共有左 padding 裁剪：实际前向仅处理
+非共有 padding 的列，rollout 返回时恢复原始宽度，token IDs、mask 和 response
+位置不变。`VERL_TRIM_SHARED_PADDING=1` 由本训练入口启用；上游默认路径不变。
+32k 是容量上限，不能强迫原本很短的任务每一步都计算 32k padding。
 
 2026-09-21 新增接线验证见 [results_event_transport.json](results_event_transport.json)：
 30 项测试通过，含真实 VERL collector、advantage 入口和 PPO loss；原始固定版本

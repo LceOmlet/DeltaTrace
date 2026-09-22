@@ -16,7 +16,7 @@ class PackedAnswerTargets:
     sink intervals must be expanded by the caller. The causal predictor is at
     prompt_length + target_offset - 1. CPU validation happens once.
     """
-    def __init__(self,cases,target_offsets,padded_length,device):
+    def __init__(self,cases,target_offsets,padded_length,device,*,outcome_token_ids=None):
         if not cases or len(cases)!=len(target_offsets):raise ValueError('One explicit target selection per case is required.')
         samples=[];positions=[];labels=[];self.counts=[];self.offsets=[]
         for b,(case,offsets) in enumerate(zip(cases,target_offsets)):
@@ -30,6 +30,14 @@ class PackedAnswerTargets:
         self.positions=torch.tensor(positions,device=device,dtype=torch.long);self.labels=torch.tensor(labels,device=device,dtype=torch.long)
         self.paired_samples=(2*self.samples[:,None]+torch.arange(2,device=device)[None,:]).flatten()
         self.paired_positions=self.positions.repeat_interleave(2)
+        self.outcome_token_ids=None
+        if outcome_token_ids is not None:
+            ids=torch.as_tensor(outcome_token_ids,device=device,dtype=torch.long)
+            if ids.ndim!=1 or len(ids)<2 or len(ids.unique())!=len(ids):
+                raise ValueError('Outcome labels must be distinct vocabulary tokens.')
+            if not bool(torch.isin(self.labels,ids).all()):
+                raise ValueError('Each target must belong to the declared outcome alphabet.')
+            self.outcome_token_ids=ids
 
     def pack_hidden(self,paired_hidden):
         assert paired_hidden.ndim==3 and paired_hidden.shape[:2]==(2*self.batch,self.length)
@@ -69,8 +77,33 @@ class FiniteAnswerOps:
         assert head.out_features==head.weight.shape[0]  # Full model vocabulary.
         z0=original_packed_logits[1::2] if equal_endpoint else original_packed_logits[0::2]
         z1=original_packed_logits[1::2]
-        result=self.seed(z0,z1,selection.labels,head.weight)
+        target=selection.labels;weight=head.weight
+        outcomes=getattr(selection,'outcome_token_ids',None)
+        if outcomes is not None:
+            # This explicitly requested categorical target uses the same head
+            # rows and established finite logsoftmax rule. Default text targets
+            # retain their full-vocabulary normalization unchanged.
+            z0=z0.index_select(-1,outcomes);z1=z1.index_select(-1,outcomes)
+            weight=weight.index_select(0,outcomes)
+            target=(target[:,None]==outcomes[None,:]).long().argmax(-1)
+        result=self.seed(z0,z1,target,weight)
         hidden,valid,*diagnostics=result
         if not bool(valid):raise ValueError('Finite answer seed invalid.')
         return selection.scatter_hidden(hidden),{'packed_hidden':hidden,'logp0':diagnostics[0],
             'logp1':diagnostics[1],'allocated_logit_effect':diagnostics[2]}
+
+
+def outcome_log_probs(original_logits,outcome_token_ids):
+    """Declared event alphabet on original logits; no new head or forward."""
+    return original_logits.index_select(-1,outcome_token_ids).float().log_softmax(-1)
+
+
+def selected_target_log_probs(original_logits,selection):
+    outcomes=getattr(selection,'outcome_token_ids',None)
+    labels=selection.labels
+    if outcomes is None:
+        logp=original_logits.float().log_softmax(-1)
+    else:
+        logp=outcome_log_probs(original_logits,outcomes)
+        labels=(labels[:,None]==outcomes[None,:]).long().argmax(-1)
+    return logp.gather(-1,labels.repeat_interleave(2)[:,None]).squeeze(-1)

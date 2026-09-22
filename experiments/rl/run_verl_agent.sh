@@ -39,10 +39,7 @@ MAX_STEPS="${MAX_STEPS:-15}"
 case "$METHOD" in
   grpo) ADV_ESTIMATOR=grpo ;;
   ppo) ADV_ESTIMATOR=gae ;;
-  dt)
-    echo "DT training stopped: reward-event composition is implemented, but the official runner does not yet produce per-token same-prefix policy-marginal event log ratios. See experiments/rl/PLAN.md. The old EOS/reward-normalization producer is removed." >&2
-    exit 2
-    ;;
+  dt) ADV_ESTIMATOR=deltatrace ;;
   *) echo "METHOD must be grpo, ppo, or dt" >&2; exit 2 ;;
 esac
 case "$ENV_NAME" in
@@ -71,6 +68,7 @@ fi
 if [[ -n "${DT_OFFICIAL_ROOT:-}" ]]; then export DT_OFFICIAL_ROOT; fi
 export PYTHONPATH="$DT_ROOT/experiments/rl:$DT_ROOT:$VERL_ROOT:${VERL_ROOT}/agent_system/environments/env_package/webshop/webshop:${APPWORLD_ROOT}:${PYTHONPATH:-}"
 export TOKENIZERS_PARALLELISM=false
+export VERL_TRIM_SHARED_PADDING=1
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
@@ -79,7 +77,10 @@ export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
 # Face SDPA is the portable upstream attention backend; set this to
 # flash_attention_2 on a host with a compatible flash-attn build.
 if [[ "$METHOD" == "dt" ]]; then
-  export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-flash_attention_2}"
+  export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
+  export DT_TASK="$ENV_NAME" DT_MAX_STEPS="$MAX_STEPS" DT_MAX_LENGTH="$MAX_TOTAL_TOKENS"
+  export DT_REFERENCE_SAMPLES="${DT_REFERENCE_SAMPLES:-1}"
+  export DT_EVENT_BATCH_SIZE="${DT_EVENT_BATCH_SIZE:-4}"
 else
   export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
 fi
@@ -154,6 +155,9 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   +actor_rollout_ref.rollout.micro_batch_size="$ROLLOUT_MICRO_BATCH_SIZE" \
   actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
   actor_rollout_ref.rollout.name=hf \
+  actor_rollout_ref.rollout.temperature=1.0 \
+  actor_rollout_ref.rollout.top_p=1.0 \
+  actor_rollout_ref.rollout.top_k=-1 \
   actor_rollout_ref.rollout.gpu_memory_utilization=0.75 \
   actor_rollout_ref.rollout.val_kwargs.temperature=0.4 \
   actor_rollout_ref.rollout.val_kwargs.do_sample=True \

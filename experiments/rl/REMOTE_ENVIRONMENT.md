@@ -162,3 +162,17 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   `true\\r` 一类解析错误；应修复传输换行，不重配 Python/CUDA 环境。
 
 上述是连接与环境复用检查。当前固定 Q/V 方法的三个任务训练仍未验收。
+
+## 2026-09-22 目标读出与运行记录
+
+- 继续复用上述 Python、权重和缓存，没有安装或下载步骤。
+- 新增 categorical target 支持位于正式 `clean/qwen35/qwen35_answer_finite.py`
+  与 `qwen35_dense_finite_runner.py`；同步时保留远端已有动态 shape 执行兼容修改。
+  修改前源码保存在 `receipts/readout-before-20260922T084710`。
+- 真实模型探针及 CPU 检查记录在运行根目录的 `receipts/readout-20260922/`。
+  当次使用 GPU 3 前确认其空闲；该编号不构成后续预留。
+- DT 训练现在保持 actor 的 SDPA。奖励事件读出只需原始前向与 head，不需要
+  前向专用 FlashAttention wheel 的反向；完整 finite 对照独立运行。
+- `VERL_TRIM_SHARED_PADDING=1` 在 HF rollout 和 actor 内移除共有左 padding
+  的无效计算。其改动前源码保存在 `receipts/readout-20260922/before-padding/`。
+  `patch_verl_agent2.py` 维护该补丁，不重新安装 VERL 或 Transformers。
