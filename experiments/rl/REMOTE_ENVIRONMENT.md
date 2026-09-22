@@ -305,3 +305,53 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   新增“调用第二次 GAE 即失败、传入优势逐元素不变”的断言，仍复用原有
   collector→trainer→PPO 梯度测试；该检查 1 项通过，日志为
   `receipts/training-setup/no-second-gae.log`。这不替代尚未通过的整网 DT。
+
+## 2026-09-22 MetaX 三任务资产与官方服务就绪
+
+- AppWorld 官方 `install --repo` 和 `download data --root "$APPWORLD_ROOT"`
+  已完成。当前 `data/datasets` 含 train/dev/test_normal/test_challenge；不再下载。
+  原本地 worker 执行官方训练答案返回 `10, done=True`。随后直接使用已安装
+  CLI 的 `serve environment --num-servers 20 --port -1 --no-show-usage
+  --without-setup --root "$APPWORLD_ROOT"` 启动服务，未执行旧 VERL 脚本中的
+  全局 kill 或新建 conda 环境。20 个 `/openapi.json` 均通过检查，原远程
+  `AppWorldWorker.reset/step` 执行同一官方答案返回 `10, done=True`。
+- 服务地址来自官方 CLI 输出 `receipts/appworld-services.log`；端口文件在
+  `$APPWORLD_ROOT/appworld_ports.ports`，VERL 同名文件链接到它。服务进程使用
+  现有 Python、CPU，不占 GPU；恢复时先检查这份日志中的地址是否仍存活，
+  不重复启动。机器/服务重启后端口可能变化，历史端口不构成预留。
+- WebShop 原 Google Drive 链接在 MetaX 不可达、本机返回 404。缺失的三个
+  JSON 改从公开镜像取得：`HongbangYuan/webshop` 固定 commit
+  `0129d4a81dbdb827e76afd20a1e2c38b61098613`，并与
+  `sparklabutah/timewarp-env-data/webshop` 逐文件核对 SHA256 相同。
+  来源、原 Drive ID、字节数和哈希保存在 `$WEBSHOP_ROOT/data/receipt.json`
+  及 `results_eos_events.json`。这是数据镜像核验，不声称重新验证了不可达的
+  原 Drive 文件。三个文件已经在 MetaX，不再下载。
+- 已使用固定上游 `convert_product_file_format.py` 和官方
+  `python -m pyserini.index.lucene` 构建 1k 索引，日志确认 1,000 documents、
+  0 errors。`search_engine/indexes` 链接到 `indexes_1k`；原 worker 实际搜索、
+  选项点击、购买的奖励为 `[0,0,0,0,0,10]`，最终 done=True。
+- 现有 `en_core_web_sm` 已确认可用，没有重复安装。索引启动暴露缺失 `faiss`，
+  只补装 `faiss-cpu==1.15.1`，使用已有 protected-constraints，未改变模型栈。
+  新增安装报告 `receipts/training-setup/faiss-installed.json`。
+- 奖励/服务日志：`receipts/training-setup/webshop-index-reward.log`、
+  `appworld-official-reward.log`、`appworld-remote-reward.log/.json`。
+  这些使用脚本或训练答案验证环境，不能当作模型任务成功率或 DT 训练结果。
+- GRPO 在 MetaX 的独立运行检查保持 minibatch=4、group=4、总上限 32768、
+  max_steps=15。首次 Ray 初始化因运行根目录过长超过 107-byte Unix socket
+  限制失败；短 IPC 目录改为 `/tmp/dt-rl-mx-20260922`，已写入 env.sh。
+  日志为 `receipts/training-setup/grpo-Sokoban-short-ray.log`，尚待训练结果。
+- DT 控制检查：同一张空闲卡、同一对输入的三次原生类别 log-prob 完全相同；
+  之后仍在第 2 个事件复现 `root=0.10085296630859375`、
+  `signed_sum=0.04567181524601055`。`receipts/boundary-audit/repeat-native*`
+  及 `controlled*` 保存结果。没有修改有限规则、信用公式或验收阈值。
+- MetaX SDPA 在真实 actor 启动时提示没有编译 memory-efficient attention。
+  对已安装 FA2 做了模型实际头布局（16 Q heads、4 KV heads、head_dim=256、
+  BF16）的前向/反向核验：对 FP32 math SDPA 的前向相对 L2 为 0.001858，
+  Q/K/V 梯度相对 L2 为 `[0.002546,0.003051,0.002844]`，全部有限。
+  `receipts/training-setup/metax-fa-backward.log/.json` 保存结果。当地 env.sh
+  因此默认 `VERL_ATTN_IMPLEMENTATION=flash_attention_2`，复用已安装且具备
+  backward 的库；没有新增注意力实现。这不是 32k 训练通过的证据。
+- 后续 least-change 局部舍入候选仍未通过整网检查，已撤回并恢复正式 owner。
+  候选与诊断保留在 `receipts/boundary-audit/least-change*`；未调整验收阈值。
+  `verify_reward_readout.py` 现在也会在整体检查失败时保存已有的单 token EOS
+  数值对照；保持原失败状态，额外前向只用于诊断，不作为训练 credit fallback。

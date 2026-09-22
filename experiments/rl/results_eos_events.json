@@ -324,9 +324,9 @@
       "transport_passed": true,
       "model_generated": false
     },
-    "webshop_data_ready": false,
-    "webshop_data_issue": "MetaX egress to drive.google.com:443 failed with Network is unreachable; installed packages retained",
-    "appworld_assets_status": "LFS bundles verified and unpacked; official data download pending verification",
+    "webshop_data_ready": true,
+    "webshop_data_issue": null,
+    "appworld_assets_status": "Official data installed; 20 official remote environment services ready; real remote worker success reward verified",
     "training_verified": false,
     "owner_source_commit": "4df76746",
     "native_rounding_candidate_adopted": false,
@@ -337,6 +337,113 @@
       "receipts/boundary-audit",
       "receipts/appworld-remaining-lfs.log",
       "receipts/webshop-assets.log"
-    ]
+    ],
+    "official_webshop_fixture": {
+      "rewards": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10.0
+      ],
+      "done": true,
+      "model_generated": false,
+      "index_documents": 1000
+    },
+    "official_appworld_fixture": {
+      "local_reward": 10.0,
+      "remote_reward": 10.0,
+      "remote_done": true,
+      "model_generated": false,
+      "services": 20
+    },
+    "webshop_asset_receipt": {
+      "items_shuffle_1000.json": {
+        "url": "https://huggingface.co/datasets/HongbangYuan/webshop/resolve/0129d4a81dbdb827e76afd20a1e2c38b61098613/items_shuffle_1000.json",
+        "verified_mirror": "https://huggingface.co/datasets/sparklabutah/timewarp-env-data/resolve/main/webshop/items_shuffle_1000.json",
+        "original_google_drive_id": "1EgHdxQ_YxqIQlvvq5iKlCrkEKR6-j0Ib",
+        "bytes": 4467013,
+        "sha256": "30a4765c3a327af72d9a9a95a6b2486d516f0fa1d3ecd83681901ce82a21b269"
+      },
+      "items_ins_v2_1000.json": {
+        "url": "https://huggingface.co/datasets/HongbangYuan/webshop/resolve/0129d4a81dbdb827e76afd20a1e2c38b61098613/items_ins_v2_1000.json",
+        "verified_mirror": "https://huggingface.co/datasets/sparklabutah/timewarp-env-data/resolve/main/webshop/items_ins_v2_1000.json",
+        "original_google_drive_id": "1IduG0xl544V_A_jv3tHXC0kyFi7PnyBu",
+        "bytes": 147099,
+        "sha256": "f88a36314a397b53b3d9c3fa5878e5f7b26d35019a51ec83fbedeca61a948f6f"
+      },
+      "items_human_ins.json": {
+        "url": "https://huggingface.co/datasets/HongbangYuan/webshop/resolve/0129d4a81dbdb827e76afd20a1e2c38b61098613/items_human_ins.json",
+        "verified_mirror": "https://huggingface.co/datasets/sparklabutah/timewarp-env-data/resolve/main/webshop/items_human_ins.json",
+        "original_google_drive_id": "14Kb5SPBk_jfdLZ_CDBNitW98QLDlKR5O",
+        "bytes": 5137548,
+        "sha256": "cf78667548a71786e1d9049c24b802e48e1084ad4bb021cae56ce1f6d96954a3"
+      }
+    },
+    "faiss_cpu": "1.15.1",
+    "ray_temp_path_issue": "Initial AF_UNIX socket path exceeded 107 bytes; retry uses /tmp/dt-rl-mx-20260922",
+    "no_second_gae_after_launcher_patch": {
+      "passed": 1,
+      "seconds": 12.83
+    },
+    "installed_flashattention_backward": {
+      "shape": {
+        "heads": 16,
+        "kv_heads": 4,
+        "head_dim": 256,
+        "length": 128
+      },
+      "forward_relative_l2": 0.0018578568706288934,
+      "backward_relative_l2": [
+        0.002546122530475259,
+        0.0030509433709084988,
+        0.0028441331814974546
+      ],
+      "all_finite": true,
+      "scope": "installed FlashAttention numerical backward at model head layout; not 32k training"
+    },
+    "actor_attention_backend": "flash_attention_2",
+    "grpo_runtime_check": {
+      "status": "running_after_switch_to_verified_installed_FA2",
+      "method": "upstream GRPO baseline, not DT acceptance",
+      "minibatch": 4,
+      "group": 4,
+      "max_length": 32768,
+      "max_steps": 15,
+      "log": "receipts/training-setup/grpo-Sokoban-fa.log"
+    },
+    "least_change_rounding_candidate": {
+      "adopted": false,
+      "local_tests_passed": 8,
+      "full_dt_passed": false,
+      "reason": "failed original whole-network check; owner restored"
+    },
+    "single_token_numerical_diagnostic": {
+      "task": "Sokoban",
+      "status": "whole_trace_failed; diagnostic now runs despite aggregate failure",
+      "whole_trace_error": "owner DT conservation failed: root_effect=0.015408515930175781, signed_sum=-0.017321496768406303",
+      "points": [
+        {
+          "position": 81,
+          "direct_single_eos_log_ratio": -0.08482217788696289,
+          "dt_signed_estimate": 0.02355627178244135,
+          "difference": 0.10837844966940424
+        },
+        {
+          "position": 82,
+          "direct_single_eos_log_ratio": -0.07357501983642578,
+          "dt_signed_estimate": 0.10234872526303035,
+          "difference": 0.17592374509945613
+        },
+        {
+          "position": 83,
+          "direct_single_eos_log_ratio": 0.11315560340881348,
+          "dt_signed_estimate": 0.16501067547598575,
+          "difference": 0.05185507206717227
+        }
+      ],
+      "scope": "native text EOS endpoint comparison; no accuracy or training pass"
+    }
   }
 }

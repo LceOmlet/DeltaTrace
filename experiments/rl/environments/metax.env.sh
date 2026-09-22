@@ -15,6 +15,15 @@ export FLA_BOUNDED_NORM_TUNING=1
 export VERL_ROOT="${VERL_ROOT:-$DT_RUNTIME_ROOT/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472}"
 export APPWORLD_ROOT="${APPWORLD_ROOT:-$DT_RUNTIME_ROOT/third_party/appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5}"
 export APPWORLD_BIN="${APPWORLD_BIN:-$(dirname "$VENV_PYTHON")/appworld}"
+export WEBSHOP_ROOT="${WEBSHOP_ROOT:-$VERL_ROOT/agent_system/environments/env_package/webshop/webshop}"
+export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
+# Ray adds a session directory and Unix socket filename; the mounted runtime
+# prefix exceeds Linux's 107-byte socket-path limit. Keep only IPC in /tmp.
+export RAY_TMPDIR="${RAY_TMPDIR:-/tmp/dt-rl-mx-20260922}"
+# Installed MetaX FA2 backward was checked against FP32 math SDPA at the
+# checkpoint's GQA/head layout. The local SDPA build lacks memory-efficient
+# attention; reuse the verified installed FA2 kernel for the actor as well.
+export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-flash_attention_2}"
 # Set CUDA_VISIBLE_DEVICES and MACA_VISIBLE_DEVICES after checking mx-smi.
 # Pinned sources and Python installs exist; task assets/services still require
 # their separate verification receipts. This file never installs or starts them.

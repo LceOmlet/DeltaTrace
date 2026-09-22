@@ -61,6 +61,33 @@ class RecordFirstTrace:
         return signed, detail
 
 
+def single_eos_spot_check(owner, tokenizer, first):
+    """Audit the first finite trace even when the whole episode was rejected.
+
+    These extra native forwards are diagnostics, never a credit fallback.
+    Keeping them independent of conservation avoids hiding individual-token
+    errors behind the first failed aggregate check.
+    """
+    if first is None:
+        return []
+    pair, selection, signed = first
+    labels = selection.outcome_token_ids
+    target_index = int((labels == int(selection.labels[0])).nonzero()[0])
+    factual = pair[1:2, :-1]
+    audit = []
+    with torch.no_grad():
+        factual_lp = owner.read_outcomes(factual, labels)[0, target_index]
+        for position in (pair[0] != pair[1]).nonzero().flatten().tolist()[:3]:
+            deleted = factual.clone()
+            deleted[0, position] = tokenizer.eos_token_id
+            deleted_lp = owner.read_outcomes(deleted, labels)[0, target_index]
+            direct = float(factual_lp-deleted_lp)
+            estimate = float(signed[0, position])
+            audit.append(dict(position=position, direct_single_eos_log_ratio=direct,
+                              dt_signed_estimate=estimate, difference=estimate-direct))
+    return audit
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -133,6 +160,11 @@ def main():
                 row_lengths=lengths, error_type=type(exc).__name__, error=str(exc),
                 first_trace_detail=recorded.first_detail,
             )
+            try:
+                result['tasks'][task]['native_single_eos_spot_check'] = single_eos_spot_check(
+                    owner, tokenizer, recorded.first)
+            except Exception as audit_exc:
+                result['tasks'][task]['native_single_eos_spot_check_error'] = repr(audit_exc)
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(result, indent=2)+'\n')
             raise
@@ -146,23 +178,7 @@ def main():
                                 advantages=credit['dt_token_advantages'][mask].tolist(),
                                 q=credit['dt_q_estimates'][mask].tolist(),
                                 v=credit['dt_v_estimates'][mask].tolist()))
-        pair, selection, signed = recorded.first
-        labels = selection.outcome_token_ids
-        target_id = int(selection.labels[0])
-        target_index = int((labels == target_id).nonzero()[0])
-        factual = pair[1:2, :-1]
-        with torch.no_grad():
-            factual_lp = owner.read_outcomes(factual, labels)[0, target_index]
-            audit = []
-            # Numerical audit only: never used as training credit or fallback.
-            for position in (pair[0] != pair[1]).nonzero().flatten().tolist()[:3]:
-                deleted = factual.clone()
-                deleted[0, position] = tokenizer.eos_token_id
-                deleted_lp = owner.read_outcomes(deleted, labels)[0, target_index]
-                direct = float(factual_lp-deleted_lp)
-                estimate = float(signed[0, position])
-                audit.append(dict(position=position, direct_single_eos_log_ratio=direct,
-                                  dt_signed_estimate=estimate, difference=estimate-direct))
+        audit = single_eos_spot_check(owner, tokenizer, recorded.first)
         result['tasks'][task] = dict(readout=readout.last_report, row_lengths=lengths,
                                      credit_rows=reports, native_single_eos_spot_check=audit,
                                      first_trace_detail=recorded.first_detail)
