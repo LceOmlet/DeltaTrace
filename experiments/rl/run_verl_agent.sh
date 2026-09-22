@@ -152,7 +152,7 @@ if [[ "$ENV_NAME" == "AppWorld" && ! -f "$VERL_ROOT/appworld_ports.ports" ]]; th
 fi
 # Use the original PPO clipped objective, without the optional dual clipping.
 exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
-  +ray_kwargs.ray_init.num_cpus="${DT_RAY_NUM_CPUS:-null}" \
+  ray_init.num_cpus="${DT_RAY_NUM_CPUS:-null}" \
   algorithm.adv_estimator="$ADV_ESTIMATOR" \
   algorithm.gamma=1.0 \
   actor_rollout_ref.actor.clip_ratio_c=inf \

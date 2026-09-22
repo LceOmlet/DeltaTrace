@@ -1,0 +1,898 @@
+{
+  "scope": "Measured runtime and official-owner interface regressions; historical pre-chat-EOS training kept separate from corrected training",
+  "hardware": "MetaX C550, Qwen3.5-9B, single device per run, 32768 cap, actor minibatch 4",
+  "receipts": {
+    "fsdp-generation-cost32k": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/fsdp-generation-cost32k.json",
+      "sha256": "a71a44c3840d998f601fe865a7e3cea4b4da26f47b3093b13a46c6236cd1eb25",
+      "result": {
+        "scope": "Measure original HF rollout with FSDP2 resharding on/off on identical input.\n\nUses a synthetic long prefix and deterministic decoding for a capacity/cost\ncomparison, not task training or success-rate evaluation. Only the public FSDP\nsetter changes; the pinned worker and HF generation implementation are reused.\n",
+        "prompt_tokens": 32256,
+        "response_cap": 512,
+        "context_cap": 32768,
+        "rollout_batch": 4,
+        "cases": [
+          {
+            "reshard_after_forward": true,
+            "runs": [
+              {
+                "repeat": 0,
+                "warmup": true,
+                "seconds": 118.47117639891803,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 40.31742238998413,
+                "peak_reserved_gib": 44.880859375,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              },
+              {
+                "repeat": 1,
+                "warmup": false,
+                "seconds": 93.35530789289623,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 40.31742238998413,
+                "peak_reserved_gib": 44.587890625,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              }
+            ],
+            "warm_seconds": 93.35530789289623
+          },
+          {
+            "reshard_after_forward": false,
+            "runs": [
+              {
+                "repeat": 0,
+                "warmup": true,
+                "seconds": 75.55067306477576,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 54.30795860290527,
+                "peak_reserved_gib": 59.234375,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              },
+              {
+                "repeat": 1,
+                "warmup": false,
+                "seconds": 77.17437471821904,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 54.30795860290527,
+                "peak_reserved_gib": 59.29296875,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              }
+            ],
+            "warm_seconds": 77.17437471821904
+          }
+        ],
+        "allocator_config": "expandable_segments:True",
+        "generation_eos_token_id": [
+          248046,
+          248044
+        ],
+        "warm_ratio_false_over_true": 0.8266736670908836,
+        "all_generated_ids_exactly_equal": true,
+        "status": "passed"
+      }
+    },
+    "fsdp-generation-cost32k-old-stop-default-allocator": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/fsdp-generation-cost32k-old-stop-default-allocator.json",
+      "sha256": "ae6d662bf325998b12e9b5a1cacd0f6d18bba8546f859bb42746b4061dfc5de4",
+      "result": {
+        "scope": "Measure original HF rollout with FSDP2 resharding on/off on identical input.\n\nUses a synthetic long prefix and deterministic decoding for a capacity/cost\ncomparison, not task training or success-rate evaluation. Only the public FSDP\nsetter changes; the pinned worker and HF generation implementation are reused.\n",
+        "prompt_tokens": 32256,
+        "response_cap": 512,
+        "context_cap": 32768,
+        "rollout_batch": 4,
+        "cases": [
+          {
+            "reshard_after_forward": true,
+            "runs": [
+              {
+                "repeat": 0,
+                "warmup": true,
+                "seconds": 113.7342716595158,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 40.31986379623413,
+                "peak_reserved_gib": 54.205078125,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              },
+              {
+                "repeat": 1,
+                "warmup": false,
+                "seconds": 95.31649242155254,
+                "actual_response_lengths": [
+                  512,
+                  512,
+                  512,
+                  512
+                ],
+                "peak_allocated_gib": 40.31925344467163,
+                "peak_reserved_gib": 54.111328125,
+                "response_sha256": "8ec6e47ea2d7bd1085757f61d78a948b0c8d55cb36bcdb265831b7577480c83b"
+              }
+            ],
+            "warm_seconds": 95.31649242155254
+          },
+          {
+            "reshard_after_forward": false,
+            "runs": []
+          }
+        ],
+        "status": "failed",
+        "error": "CUDA out of memory. Tried to allocate 2.95 GiB. GPU 0 has a total capacity of 63.59 GiB of which 1.43 GiB is free. Of the allocated memory 48.97 GiB is allocated by PyTorch, and 11.32 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_fsdp_generation_cost.py\", line 79, in main\n    output = worker.generate_sequences(prompts)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/single_controller/base/decorator.py\", line 534, in inner\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/workers/fsdp_workers.py\", line 668, in generate_sequences\n    output = self.rollout.generate_sequences(prompts=prompts)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/workers/rollout/hf_rollout.py\", line 50, in generate_sequences\n    output = [self._generate_minibatch(p) for p in batch_prompts]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/workers/rollout/hf_rollout.py\", line 123, in _generate_minibatch\n    output = self.module.generate(\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/peft/peft_model.py\", line 2048, in generate\n    outputs = self.base_model.generate(*args, **kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/generation/utils.py\", line 2645, in generate\n    result = decoding_method(\n             ^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/generation/utils.py\", line 2845, in _sample\n    outputs = self._prefill(\n              ^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/generation/utils.py\", line 3896, in _prefill\n    return self(**model_inputs, return_dict=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1773, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1879, in _call_impl\n    return inner()\n           ^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1827, in inner\n    result = forward_call(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/utils/generic.py\", line 911, in wrapper\n    output = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py\", line 1655, in forward\n    outputs: BaseModelOutputWithPast = self.model(\n                                       ^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1773, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1784, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/utils/generic.py\", line 1040, in wrapper\n    output = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/utils/output_capturing.py\", line 252, in wrapper\n    outputs = func(self, *args, **kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py\", line 1213, in forward\n    hidden_states = decoder_layer(\n                    ^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/modeling_layers.py\", line 93, in __call__\n    return super().__call__(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1773, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1879, in _call_impl\n    return inner()\n           ^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1827, in inner\n    result = forward_call(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py\", line 811, in forward\n    hidden_states = self.mlp(hidden_states)\n                    ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1773, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1784, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py\", line 736, in forward\n    down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))\n                                                                ^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1773, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1784, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/peft/tuners/lora/layer.py\", line 807, in forward\n    result = result + lora_B(lora_A(dropout(x))) * scaling\n                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.95 GiB. GPU 0 has a total capacity of 63.59 GiB of which 1.43 GiB is free. Of the allocated memory 48.97 GiB is allocated by PyTorch, and 11.32 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n"
+      }
+    },
+    "dt-capacity-exact32k-layerwise-noreshard": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-capacity-exact32k-layerwise-noreshard.json",
+      "sha256": "d97335d6f282e4b06f07c6450d855250bb2ac174fb409758848a123db795acc2",
+      "result": {
+        "scope": "Exercise an exact 32768-token DT boundary and the original actor update.\n\nUses an explicitly padded capacity fixture from recorded official task rewards.\nThis is neither a generated task trajectory nor a task success-rate evaluation.\nNo model, finite rule, advantage formula, or PPO implementation is replaced.\n",
+        "context_cap": 32768,
+        "minibatch": 4,
+        "reshard_after_forward": false,
+        "stages": [
+          {
+            "name": "owner_init",
+            "seconds": 14.844776096753776,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "producer_init",
+            "seconds": 15.513821947388351,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "oversize_rejected",
+            "seconds": 15.553500865586102,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20386414592
+          },
+          {
+            "name": "dt_0",
+            "seconds": 169.43642414361238,
+            "allocated": 17946620928,
+            "peak_allocated": 65064524288,
+            "peak_reserved": 67050143744
+          },
+          {
+            "name": "dt_1",
+            "seconds": 300.9391978736967,
+            "allocated": 17946620928,
+            "peak_allocated": 65064524288,
+            "peak_reserved": 66840428544
+          },
+          {
+            "name": "dt_2",
+            "seconds": 432.4187730457634,
+            "allocated": 17946620928,
+            "peak_allocated": 65064524288,
+            "peak_reserved": 66840428544
+          },
+          {
+            "name": "dt_3",
+            "seconds": 563.8292825743556,
+            "allocated": 17946620928,
+            "peak_allocated": 65064524288,
+            "peak_reserved": 66840428544
+          },
+          {
+            "name": "old_log_probs",
+            "seconds": 579.6009801672772,
+            "allocated": 33828575232,
+            "peak_allocated": 65064524288,
+            "peak_reserved": 66840428544
+          },
+          {
+            "name": "actor_update_0",
+            "seconds": 666.3392667444423,
+            "allocated": 17983309824,
+            "peak_allocated": 65064524288,
+            "peak_reserved": 66840428544
+          },
+          {
+            "name": "actor_update_1",
+            "seconds": 741.9222088325769,
+            "allocated": 17983309824,
+            "peak_allocated": 65064524288,
+            "peak_reserved": 66840428544
+          }
+        ],
+        "synthetic_filler_tokens": 32150,
+        "original_response_tokens": 14,
+        "actor_input_tokens": 32597,
+        "query_tokens": 170,
+        "dt_input_tokens": 32768,
+        "official_fixture_reward": 10.9,
+        "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+        "readouts": [
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 153.7915536109358,
+                "peak_allocated": 65064524288,
+                "peak_reserved": 67050143744,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 153.8587476219982,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 131.41066602338105,
+                "peak_allocated": 65064524288,
+                "peak_reserved": 66840428544,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 131.47623603139073,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 131.3844686737284,
+                "peak_allocated": 65064524288,
+                "peak_reserved": 66840428544,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 131.45311737433076,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 131.3132607350126,
+                "peak_allocated": 65064524288,
+                "peak_reserved": 66840428544,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 131.38461982551962,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          }
+        ],
+        "updates": [
+          {
+            "actor/pg_loss": [
+              -0.15255513787269592,
+              -0.15255513787269592,
+              -0.15255513787269592,
+              -0.15255513787269592
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.4375
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 60.596060276031494,
+            "perf/max_memory_reserved_gb": 62.25,
+            "perf/cpu_memory_used_gb": 198.2357177734375,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              -0.15185758471488953,
+              -0.15185758471488953,
+              -0.15185758471488953,
+              -0.15185758471488953
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              -0.0070367539301514626,
+              -0.0070367539301514626,
+              -0.0070367539301514626,
+              -0.0070367539301514626
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.515625
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 60.596060276031494,
+            "perf/max_memory_reserved_gb": 62.25,
+            "perf/cpu_memory_used_gb": 278.1458320617676,
+            "actor/lr": 1e-06
+          }
+        ],
+        "changed_elements": 1449284,
+        "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+        "status": "passed",
+        "seconds": 742.0175139242783
+      }
+    },
+    "dt-capacity-noreshard-default-allocator": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-capacity-noreshard-default-allocator.json",
+      "sha256": "d6c8b4fa3e6cb455d2ff689aabcdd34dea02d08cbb16ccdc3d6ae056e351117a",
+      "result": {
+        "scope": "Exercise an exact 32768-token DT boundary and the original actor update.\n\nUses an explicitly padded capacity fixture from recorded official task rewards.\nThis is neither a generated task trajectory nor a task success-rate evaluation.\nNo model, finite rule, advantage formula, or PPO implementation is replaced.\n",
+        "context_cap": 32768,
+        "minibatch": 4,
+        "reshard_after_forward": false,
+        "stages": [
+          {
+            "name": "owner_init",
+            "seconds": 14.722216283902526,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20371734528
+          },
+          {
+            "name": "producer_init",
+            "seconds": 15.416147856973112,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20371734528
+          },
+          {
+            "name": "oversize_rejected",
+            "seconds": 15.456260482780635,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20373831680
+          }
+        ],
+        "synthetic_filler_tokens": 32150,
+        "original_response_tokens": 14,
+        "actor_input_tokens": 32597,
+        "query_tokens": 170,
+        "dt_input_tokens": 32768,
+        "official_fixture_reward": 10.9,
+        "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+        "status": "failed",
+        "error_type": "OutOfMemoryError",
+        "error": "CUDA out of memory. Tried to allocate 1024.00 MiB. GPU 0 has a total capacity of 63.59 GiB of which 0 bytes is free. Of the allocated memory 57.85 GiB is allocated by PyTorch, and 4.35 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 120, in main\n    values.append(producer.attribute_episode([row], float(original['rewards']))[0])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/deltatrace_rollout.py\", line 333, in attribute_episode\n    result = self.readout.episode(rows)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/reward_readout.py\", line 159, in episode\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/deltatrace_credit.py\", line 51, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 114, in recorded_attribute\n    signed, detail = native_attribute(*a, **kw)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 214, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 119, in timed\n    torch.cuda.synchronize();tick=time.perf_counter();value=fn();torch.cuda.synchronize()\n                                                            ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 214, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 205, in decoder_finite_pullback\n    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)\n                                   ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 211, in mixer\n    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_gdn_finite.py\", line 155, in gdn_finite_pullback\n    mpre=mconv*_scalar_secant(p0,p1,y0,y1,_silu_derivative(p0))\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_gdn_finite.py\", line 85, in _scalar_secant\n    return torch.where(nonzero,(y1-y0)/torch.where(nonzero,delta,torch.ones_like(delta)),derivative0)\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 1024.00 MiB. GPU 0 has a total capacity of 63.59 GiB of which 0 bytes is free. Of the allocated memory 57.85 GiB is allocated by PyTorch, and 4.35 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n",
+        "seconds": 63.59568174555898
+      }
+    },
+    "chat-stop-regression.log": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/chat-stop-regression.log",
+      "sha256": "d373341dd4db197490d18f231106db41ab726f1171d63bd6e37403f1f75ce8d1",
+      "text": "...........                                                              [100%]\n=============================== warnings summary ===============================\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute\n\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n11 passed, 2 warnings in 17.25s\nsys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n"
+    },
+    "ray-config-regression.log": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/ray-config-regression.log",
+      "sha256": "c1c348a1add4f728913c28807e03588d32f157fd5dcaaaee725366b1af0d280e",
+      "text": ".                                                                        [100%]\n=============================== warnings summary ===============================\ntest_runtime_config.py::test_launcher_cpu_limit_reaches_owner_ray_init\n  /opt/conda/lib/python3.12/site-packages/ray/util/state/util.py:55: DeprecationWarning: Ray state API is no longer experimental. Please import from `ray.util.state`. instead. Importing from `ray.experimental` will be deprecated in future releases. \n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1 passed, 1 warning in 18.04s\n"
+    }
+  },
+  "pre_chat_stop_training": {
+    "Sokoban": {
+      "metrics": [
+        "step:1 - global_seqlen/min:153104.000 - global_seqlen/max:153104.000 - global_seqlen/minmax_diff:0.000 - global_seqlen/balanced_min:153104.000 - global_seqlen/balanced_max:153104.000 - global_seqlen/mean:153104.000 - actor/entropy_loss:0.306 - actor/pg_loss:0.002 - actor/pg_clipfrac:0.001 - actor/ppo_kl:0.001 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.148 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:29.791 - perf/max_memory_reserved_gb:34.051 - perf/cpu_memory_used_gb:310.146 - actor/lr:0.000 - training/global_step:1.000 - training/epoch:0.000 - critic/score/mean:10.106 - critic/score/max:10.300 - critic/score/min:10.000 - critic/rewards/mean:10.106 - critic/rewards/max:10.300 - critic/rewards/min:10.000 - critic/advantages/mean:-0.000 - critic/advantages/max:11.682 - critic/advantages/min:-2.176 - critic/returns/mean:10.445 - critic/returns/max:10.900 - critic/returns/min:10.000 - response_length/mean:632.914 - response_length/max:1024.000 - response_length/min:10.000 - response_length/clip_ratio:0.371 - prompt_length/mean:3741.486 - prompt_length/max:8040.000 - prompt_length/min:453.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:10.125 - episode/reward/max:10.300 - episode/reward/min:10.000 - episode/length/mean:8.750 - episode/length/max:10.000 - episode/length/min:7.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:1.000 - timing_s/gen:2201.950 - timing_s/reward:0.030 - timing_s/old_log_prob:21.938 - timing_s/adv:0.001 - timing_s/update_actor:86.519 - timing_s/dump_rollout_generations:0.274 - timing_s/step:2310.724 - timing_per_token_ms/update_actor:0.565 - timing_per_token_ms/gen:99.402 - timing_per_token_ms/adv:0.000 - perf/total_num_tokens:153104.000 - perf/time_per_step:2310.724 - perf/throughput:66.258"
+      ],
+      "worker_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/pre-chat-stop-soko-v2-worker.log",
+      "trainer_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/pre-chat-stop-soko-v2-trainer.log",
+      "episodes": [
+        {
+          "task": "Sokoban",
+          "policy_tokens": 5434,
+          "nonzero_reward_events": 8,
+          "finite_trace_calls": 36,
+          "max_readout_length": 6780,
+          "actual_row_lengths": [
+            1477,
+            2387,
+            3513,
+            4641,
+            5443,
+            5876,
+            6288,
+            6609
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 220.47285130154341,
+          "nonzero_advantages": 5429,
+          "conservation_failures": 19
+        },
+        {
+          "task": "Sokoban",
+          "policy_tokens": 6303,
+          "nonzero_reward_events": 10,
+          "finite_trace_calls": 55,
+          "max_readout_length": 7855,
+          "actual_row_lengths": [
+            974,
+            1889,
+            2241,
+            2475,
+            3601,
+            4113,
+            4446,
+            5572,
+            6701,
+            7682
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 261.189147695899,
+          "nonzero_advantages": 6296,
+          "conservation_failures": 20
+        },
+        {
+          "task": "Sokoban",
+          "policy_tokens": 3569,
+          "nonzero_reward_events": 7,
+          "finite_trace_calls": 28,
+          "max_readout_length": 4811,
+          "actual_row_lengths": [
+            1477,
+            2606,
+            2956,
+            3670,
+            4067,
+            4402,
+            4640
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 126.30260503292084,
+          "nonzero_advantages": 3564,
+          "conservation_failures": 19
+        },
+        {
+          "task": "Sokoban",
+          "policy_tokens": 6846,
+          "nonzero_reward_events": 10,
+          "finite_trace_calls": 55,
+          "max_readout_length": 8405,
+          "actual_row_lengths": [
+            1477,
+            2606,
+            3735,
+            3850,
+            4976,
+            6105,
+            6971,
+            7468,
+            7938,
+            8232
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 380.85318556800485,
+          "nonzero_advantages": 6841,
+          "conservation_failures": 31
+        }
+      ],
+      "dt_total_seconds": 988.8177895983681,
+      "formal_trace_calls": 174,
+      "conservation_failures": 89
+    },
+    "Webshop": {
+      "metrics": [
+        "step:1 - global_seqlen/min:431187.000 - global_seqlen/max:431187.000 - global_seqlen/minmax_diff:0.000 - global_seqlen/balanced_min:431187.000 - global_seqlen/balanced_max:431187.000 - global_seqlen/mean:431187.000 - actor/entropy_loss:0.429 - actor/pg_loss:0.000 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.000 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:31.050 - perf/max_memory_reserved_gb:34.836 - perf/cpu_memory_used_gb:274.728 - actor/lr:0.000 - training/global_step:1.000 - training/epoch:0.000 - critic/score/mean:0.000 - critic/score/max:0.000 - critic/score/min:0.000 - critic/rewards/mean:0.000 - critic/rewards/max:0.000 - critic/rewards/min:0.000 - critic/advantages/mean:0.000 - critic/advantages/max:0.000 - critic/advantages/min:0.000 - critic/returns/mean:0.000 - critic/returns/max:0.000 - critic/returns/min:0.000 - response_length/mean:335.200 - response_length/max:1024.000 - response_length/min:159.000 - response_length/clip_ratio:0.073 - prompt_length/mean:7504.563 - prompt_length/max:17020.000 - prompt_length/min:211.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:0.000 - episode/reward/max:0.000 - episode/reward/min:0.000 - episode/length/mean:13.750 - episode/length/max:15.000 - episode/length/min:10.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.000 - episode/webshop_task_score (not success_rate):0.200 - timing_s/gen:1108.091 - timing_s/reward:0.079 - timing_s/old_log_prob:56.217 - timing_s/adv:0.002 - timing_s/update_actor:213.955 - timing_s/dump_rollout_generations:0.259 - timing_s/step:1378.623 - timing_per_token_ms/gen:60.105 - timing_per_token_ms/adv:0.000 - timing_per_token_ms/update_actor:0.496 - perf/total_num_tokens:431187.000 - perf/time_per_step:1378.623 - perf/throughput:312.766"
+      ],
+      "worker_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/pre-chat-stop-shop-v2-worker.log",
+      "trainer_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/pre-chat-stop-shop-v2-trainer.log",
+      "episodes": [
+        {
+          "task": "Webshop",
+          "policy_tokens": 6512,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            412,
+            2279,
+            3859,
+            4949,
+            6784,
+            7782,
+            8899,
+            9987,
+            11048,
+            12123,
+            13958,
+            14133,
+            15172,
+            16209,
+            17272
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.009291634894907475,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        },
+        {
+          "task": "Webshop",
+          "policy_tokens": 2424,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            386,
+            590,
+            1621,
+            2669,
+            2881,
+            4193,
+            5279,
+            6374,
+            7408,
+            8424
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.006339900195598602,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        },
+        {
+          "task": "Webshop",
+          "policy_tokens": 4535,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            438,
+            1748,
+            2938,
+            3956,
+            5000,
+            6152,
+            7227,
+            8334,
+            9659,
+            10796,
+            11910,
+            13025,
+            14002,
+            15104,
+            16128
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.008562770672142506,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        },
+        {
+          "task": "Webshop",
+          "policy_tokens": 4965,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            418,
+            1583,
+            2690,
+            3706,
+            5556,
+            6595,
+            7584,
+            8313,
+            8590,
+            9785,
+            10894,
+            12035,
+            13107,
+            14124,
+            15099
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.008306882344186306,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        }
+      ],
+      "dt_total_seconds": 0.03250118810683489,
+      "formal_trace_calls": 0,
+      "conservation_failures": 0
+    },
+    "AppWorld": {
+      "metrics": [
+        "step:1 - global_seqlen/min:347038.000 - global_seqlen/max:347038.000 - global_seqlen/minmax_diff:0.000 - global_seqlen/balanced_min:347038.000 - global_seqlen/balanced_max:347038.000 - global_seqlen/mean:347038.000 - actor/entropy_loss:0.600 - actor/pg_loss:0.000 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.000 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:25.814 - perf/max_memory_reserved_gb:29.463 - perf/cpu_memory_used_gb:289.202 - actor/lr:0.000 - training/global_step:1.000 - training/epoch:0.000 - critic/score/mean:0.000 - critic/score/max:0.000 - critic/score/min:0.000 - critic/rewards/mean:0.000 - critic/rewards/max:0.000 - critic/rewards/min:0.000 - critic/advantages/mean:0.000 - critic/advantages/max:0.000 - critic/advantages/min:0.000 - critic/returns/mean:0.000 - critic/returns/max:0.000 - critic/returns/min:0.000 - response_length/mean:528.133 - response_length/max:1024.000 - response_length/min:58.000 - response_length/clip_ratio:0.317 - prompt_length/mean:5255.833 - prompt_length/max:9263.000 - prompt_length/min:1807.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:0.000 - episode/reward/max:0.000 - episode/reward/min:0.000 - episode/length/mean:15.000 - episode/length/max:15.000 - episode/length/min:15.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.000 - timing_s/gen:1661.274 - timing_s/reward:0.070 - timing_s/old_log_prob:46.413 - timing_s/adv:0.002 - timing_s/update_actor:170.675 - timing_s/dump_rollout_generations:0.260 - timing_s/step:1878.720 - timing_per_token_ms/update_actor:0.492 - timing_per_token_ms/gen:52.426 - timing_per_token_ms/adv:0.000 - perf/total_num_tokens:347038.000 - perf/time_per_step:1878.720 - perf/throughput:184.720"
+      ],
+      "worker_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/pre-chat-stop-app-v2-worker.log",
+      "trainer_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/pre-chat-stop-app-v2-trainer.log",
+      "episodes": [
+        {
+          "task": "AppWorld",
+          "policy_tokens": 7890,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            2115,
+            3521,
+            3759,
+            3920,
+            5046,
+            5715,
+            6749,
+            6901,
+            7282,
+            8316,
+            8775,
+            8871,
+            9711,
+            9186,
+            9641
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.008611904457211494,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        },
+        {
+          "task": "AppWorld",
+          "policy_tokens": 9627,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            2119,
+            3525,
+            4545,
+            3971,
+            5105,
+            4332,
+            4537,
+            5463,
+            5709,
+            6243,
+            7301,
+            8075,
+            8403,
+            9461,
+            9691
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.008036687970161438,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        },
+        {
+          "task": "AppWorld",
+          "policy_tokens": 8390,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            2382,
+            3272,
+            3115,
+            3306,
+            4814,
+            4773,
+            6045,
+            6549,
+            6140,
+            6580,
+            7692,
+            7549,
+            8102,
+            7462,
+            7803
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.007787482813000679,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        },
+        {
+          "task": "AppWorld",
+          "policy_tokens": 5781,
+          "nonzero_reward_events": 0,
+          "finite_trace_calls": 0,
+          "max_readout_length": 0,
+          "actual_row_lengths": [
+            2092,
+            2281,
+            3093,
+            3242,
+            3420,
+            3988,
+            4667,
+            4723,
+            4964,
+            5821,
+            6443,
+            6922,
+            6671,
+            7769,
+            7370
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 0.007721815258264542,
+          "nonzero_advantages": 0,
+          "conservation_failures": 0
+        }
+      ],
+      "dt_total_seconds": 0.03215789049863815,
+      "formal_trace_calls": 0,
+      "conservation_failures": 0
+    }
+  },
+  "pre_chat_stop_source": {
+    "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/pre-chat-stop-v2.json",
+    "sha256": "ddf376b61c527c60d478897f9ad10daf06f513896cddde19317b9d982dfe000a"
+  },
+  "official_sources": [
+    "https://huggingface.co/Qwen/Qwen3.5-9B/tree/main",
+    "https://huggingface.co/Qwen/Qwen3.5-9B/blob/main/tokenizer_config.json",
+    "https://huggingface.co/Qwen/Qwen3.5-9B/blob/main/config.json"
+  ]
+}

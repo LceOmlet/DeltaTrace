@@ -378,9 +378,11 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   使用其已有参数 `ROLLOUT_MICRO_BATCH_SIZE=4`。GRPO 当前运行记录
   `receipts/training-setup/grpo-Sokoban-fa-b4.log`；此前 b1 运行已主动中止，
   不据其未完成状态声称吞吐比较或参数更新成功。
-- Ray 使用现有 `+ray_kwargs.ray_init.num_cpus=8` 配置（环境变量
+- 更正：固定 VERL 读取 `ray_init.num_cpus=8`（环境变量
   `DT_RAY_NUM_CPUS`），避免按宿主全部 CPU 预启动大量 worker。
-  用 `--cfg job` 验证了此 Hydra 参数；该固定 config 要求新增键的 `+` 语法。
+  之前用 `+ray_kwargs.ray_init.num_cpus` 只证明 Hydra 接受了新增键，实际 trainer
+  并不读取它。当前键在原 config 中已存在，不加 `+`；用真实 Hydra compose
+  和原 `run_ppo` 验证它最终传入 `ray.init`，不再将配置显示当成生效证据。
 - 同时启动多个任务会同时写固定上游补丁，实际复现了 shared-padding anchor
   检查失败。启动脚本现用系统 `/usr/bin/flock` 对
   `$VERL_ROOT/.deltatrace-patch.lock` 加锁，串行调用原补丁程序；单次串行复核
@@ -508,6 +510,40 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   更新梯度范数 2.4375、1.0234375，改变 1,448,475 个可训练参数元素。
   总过程 717.22 秒，allocated/reserved 60.627/62.328 GiB，无 OOM。
   原始 owner ledger 保存在 `dt-capacity-exact32k-layerwise.json`。
+
+## 2026-09-22 聊天停止边界与完整生成成本
+
+- 当前 checkpoint 的 `text_config.eos_token_id=248044` 是 `<|endoftext|>`，
+  官方 tokenizer 的聊天 EOS 是 `<|im_end|>`（248046），且本地与该模型主分支
+  都没有 generation_config.json。实际 rollout 曾在一次动作后继续生成伪造的
+  user/assistant 对话。仅在固定 worker 的 Qwen3.5 模型配置回退路径加入
+  tokenizer EOS，同时保留原 EOS；不修改共享模型文件，不套用其他模型的
+  温度/top_p 等参数。显式 generation config 和其他模型路径不变。
+- `chat-stop-regression.log`：11 项通过，含实际 tokenizer、HF EosTokenCriteria、
+  VERL get_response_mask 及既有 padding 接口；真实权重速度另由
+  `verify_fsdp_generation_cost.py` 测试。该脚本复用原 worker，使用公共 FSDP
+  setter 对比相同长输入与生成结果，不替代训练或任务成功率评估。
+- 官方来源核对：[文件树](https://huggingface.co/Qwen/Qwen3.5-9B/tree/main)、
+  [tokenizer 配置](https://huggingface.co/Qwen/Qwen3.5-9B/blob/main/tokenizer_config.json)、
+  [模型配置](https://huggingface.co/Qwen/Qwen3.5-9B/blob/main/config.json)。未采用其他
+  用户的模型 PR 或其他模型的采样参数配置。
+- `fsdp-generation-cost32k.json`：同输入 32256+512、batch=4，True/False 的四次
+  生成逐 token 一致；预热后分别 93.355/77.174 秒，peak reserved 为
+  44.588/59.293 GiB。默认分层释放的 DT 修复在 False 下也完成精确 32768
+  输入的四次 DT 与两次非零原 PPO 更新（14-action 脚本容量夹具），记录在
+  `dt-capacity-exact32k-layerwise-noreshard.json`；1024-action 上限测试另报。
+- `ray-config-regression.log`：1 项通过，读取实际 launcher 的 CPU 参数键，
+  经原 Hydra 配置和 run_ppo 验证传给原 ray.init 的 num_cpus=8。旧错误键的
+  Hydra 配置可显示但从未被 trainer 使用，故以前大量 idle worker 仍被启动。
+- 单独容量脚本也必须复用训练入口的 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`。
+  默认 allocator 下曾出现 32k OOM，仍有 4.35/11.32 GiB reserved 未分配；失败
+  保留为 `dt-capacity-noreshard-default-allocator.*` 与
+  `fsdp-generation-cost32k-old-stop-default-allocator.*`。配置已写入 metax.env.sh，
+  不清空编译缓存，不通过重装处理碎片问题。
+- 旧 v2 三任务的第一轮和 worker DT 报告保存在 `pre-chat-stop-v2.json` 及对应
+  `.log`。旧作业只按确切自有 RAY_TMPDIR 停止；现有 AppWorld 服务和其他用户
+  的 GPU 作业保留。运行根目录 `active-training.json` 才是最新作业记录，
+  receipts/training-setup 下同名文件仅是更早历史快照，不能用旧 PID 判断占用。
   本地结果及原记录 SHA256：[results_dt_context_capacity.json](results_dt_context_capacity.json)。
 - 上述独立 worker 验证需设置空闲 CUDA_VISIBLE_DEVICES，并以单进程环境
   `RANK=0 LOCAL_RANK=0 WORLD_SIZE=1 MASTER_ADDR=127.0.0.1 MASTER_PORT=<空闲端口>`

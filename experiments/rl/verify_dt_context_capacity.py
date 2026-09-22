@@ -26,6 +26,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
     parser.add_argument('--reshard-after-forward', action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument('--response-tokens', type=int, default=0,
+                        help='Explicit synthetic action-span width; 0 keeps the recorded script actions')
     args = parser.parse_args()
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   reshard_after_forward=args.reshard_after_forward, stages=[])
@@ -82,11 +84,17 @@ def main():
         count = sum(original['attention_mask'][-width:])
         prompt = torch.tensor(original['input_ids'][:-width])[torch.tensor(original['attention_mask'][:-width]).bool()]
         actions = torch.tensor(original['responses'][:count])
+        filler_id = worker.tokenizer.encode(' context', add_special_tokens=False)[0]
+        if args.response_tokens:
+            assert args.response_tokens >= count
+            actions = torch.cat((torch.full((args.response_tokens-count,), filler_id), actions))
+        result.update(capacity_response_tokens=actions.numel(),
+                      synthetic_response_tokens=actions.numel()-count,
+                      reward_scope='Recorded official reward used as a numerical capacity coefficient; not a reward claim for the synthetic trajectory')
         step = int(original['env_step'])
         query = producer.readout.alphabet.query_ids(worker.tokenizer, current_step=step, event_step=step, max_steps=15)
         fill = 32768 - len(query) - 1 - prompt.numel() - actions.numel()
         assert fill > 0
-        filler_id = worker.tokenizer.encode(' context', add_special_tokens=False)[0]
         row = {**original, 'responses': actions,
                'input_ids': torch.cat((torch.full((fill,), filler_id), prompt, actions)),
                'attention_mask': torch.ones(32768-len(query)-1, dtype=torch.long)}

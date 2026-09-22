@@ -20,6 +20,23 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 
 ## 当前验证范围
 
+- 发现并修复 Qwen3.5-9B 聊天停止边界：checkpoint 没有 generation_config.json，
+  原模型回退只用 `<|endoftext|>`（248044），漏掉 tokenizer 的 `<|im_end|>`
+  （248046），导致模型在动作后继续编造后续轮次。固定 VERL worker 仅在这个
+  模型的回退配置中加入聊天 EOS，保留显式配置，仍用 HF 原生成器与 VERL
+  原 mask。11 项停止符/共有 padding 接口回归通过；修复后的真实训练另测。
+  旧配置下 Sokoban 第一轮四条真实轨迹均成功、DT 优势非零且原 PPO grad_norm
+  为 0.148；WebShop/AppWorld 第一轮实际奖励与梯度为零。三者旧日志均保留，
+  不将零梯度当作学习，也不将旧停止配置结果冒充修复后的训练验收。
+- 完整生成成本对照：原 HF worker 同一 32256-token 前文、batch=4，各生成
+  512 token，总宽度 32768；FSDP reshard=True/False 的生成 IDs 完全一致。
+  预热后 93.355/77.174 秒，allocated 40.317/54.308 GiB，reserved
+  44.588/59.293 GiB。关闭每步 reshard 省时 17.3%，代价是保留参数占用。
+  较长 1024-action 的 DT/PPO 容量正在单独测试，不能从生成前向推断反向通过。
+  详见 [results_runtime_efficiency.json](results_runtime_efficiency.json)。
+- Ray CPU 配置从未被 trainer 读取的 `ray_kwargs.ray_init.num_cpus` 改为固定
+  上游的 `ray_init.num_cpus`；真实 Hydra compose→原 run_ppo→ray.init 参数
+  对照通过。没有新调度器；当前已经开始的 v3 作业保留原启动资源，后续生效。
 - MetaX 按用户最新要求以物理 64 GB、不 OOM 验收。显式容量夹具把 DT
   两个端点各固定为 **32768 个有效 token**（actor 输入 32597，加事件询问
   170、目标 1），32769 被原读出接口拒绝。正式 DT 连续四次归因后，原 VERL

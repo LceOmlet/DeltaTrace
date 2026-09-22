@@ -102,6 +102,15 @@ FSDP_GENERATION_IDS_NEW = '''            # A GenerationConfig may exist with uns
             # that already owns the collector's prompt padding and EOS mask.
             "eos_token_id": self.generation_config.eos_token_id if getattr(self.generation_config, "eos_token_id", None) is not None else self.tokenizer.eos_token_id,
             "pad_token_id": self.generation_config.pad_token_id if getattr(self.generation_config, "pad_token_id", None) is not None else self.tokenizer.pad_token_id,'''
+FSDP_QWEN_CHAT_EOS_ANCHOR = '        self.generation_config = get_generation_config(local_path, trust_remote_code=trust_remote_code)\n'
+FSDP_QWEN_CHAT_EOS = FSDP_QWEN_CHAT_EOS_ANCHOR + '''        # Qwen3.5-9B has no generation_config.json: its model fallback ends
+        # documents, but the supplied chat tokenizer ends turns with im_end.
+        # Keep explicit generation configs and other model families unchanged.
+        if getattr(actor_model_config, "model_type", None) == "qwen3_5" and getattr(self.generation_config, "_from_model_config", False):
+            model_eos = self.generation_config.eos_token_id
+            model_eos = model_eos if isinstance(model_eos, list) else ([] if model_eos is None else [model_eos])
+            self.generation_config.eos_token_id = list(dict.fromkeys([self.tokenizer.eos_token_id, *model_eos]))
+'''
 VISION_IMPORT_OLD = "        from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForVision2Seq"
 VISION_IMPORT_NEW = """        from transformers import AutoConfig, AutoModelForCausalLM
         try:
@@ -500,6 +509,10 @@ def main() -> None:
     else:
         print(f"already patched {fsdp}")
     text = fsdp.read_text()
+    if FSDP_QWEN_CHAT_EOS not in text:
+        if FSDP_QWEN_CHAT_EOS_ANCHOR not in text:
+            raise RuntimeError(f"cannot find Qwen chat generation config anchor in {fsdp}")
+        text = text.replace(FSDP_QWEN_CHAT_EOS_ANCHOR, FSDP_QWEN_CHAT_EOS, 1)
     if FSDP_GENERATION_IDS_NEW not in text:
         if FSDP_GENERATION_IDS_OLD not in text:
             raise RuntimeError(f"cannot find generation special-token metadata anchor in {fsdp}")

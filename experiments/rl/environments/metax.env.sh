@@ -24,6 +24,9 @@ export RAY_TMPDIR="${RAY_TMPDIR:-/tmp/dt-rl-mx-20260922}"
 # checkpoint's GQA/head layout. The local SDPA build lacks memory-efficient
 # attention; reuse the verified installed FA2 kernel for the actor as well.
 export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-flash_attention_2}"
+# Match the training launcher's allocator in standalone capacity/owner probes.
+# The default allocator fragmented at 32k even with several GiB unallocated.
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 # Reuse upstream batching and Ray resource settings. The actor minibatch is
 # independently fixed at 4 by run_verl_agent.sh.
 export ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-4}"
