@@ -303,7 +303,6 @@ class DeltaTraceRolloutProducer:
             AutoTokenizer.from_pretrained(env['checkpoint'], local_files_only=True),
             task=os.environ['DT_TASK'],
             max_steps=int(os.environ['DT_MAX_STEPS']),
-            reference_samples=int(os.environ.get('DT_REFERENCE_SAMPLES', '1')),
             max_length=int(os.environ.get('DT_MAX_LENGTH', '32768')),
             event_batch_size=int(os.environ.get('DT_EVENT_BATCH_SIZE', '4')),
         )

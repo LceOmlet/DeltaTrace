@@ -143,7 +143,8 @@
     },
     {
       "log": "receipts/readout-20260922/train-sokoban-trim.log",
-      "status": "running",
+      "status": "stopped_by_agent",
+      "reason": "Paused after user questioned the added M=1 old-policy reference token sampling. Driver and owned workers exited; no DT event readout completion was observed. This run does not verify training.",
       "task": "Sokoban",
       "model": "Qwen3.5-9B",
       "minibatch": 4,
@@ -154,5 +155,151 @@
   ],
   "environment_reinstalled": false,
   "checkpoint_redownloaded": false,
-  "caches_cleared": false
+  "caches_cleared": false,
+  "pre_post_revision": {
+    "reference_token_sampling": false,
+    "cpu_tests": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "42",
+      "time": "18.048",
+      "timestamp": "2026-09-22T09:33:34.960838+08:00",
+      "hostname": "hit"
+    },
+    "native_readout_probe": {
+      "scope": "pre/post event readout and cache comparison; not task training",
+      "model": "/data/liangchen/models/Qwen3.5-9B",
+      "context_cap": 32768,
+      "prefix_task": "Sokoban",
+      "task_alphabets_only": true,
+      "attention": "sdpa",
+      "tasks": {
+        "Sokoban": {
+          "values": [
+            -0.1,
+            0.0,
+            10.9
+          ],
+          "cached_probabilities": [
+            [
+              0.07980964332818985,
+              0.06215580925345421,
+              0.8580345511436462
+            ],
+            [
+              0.08794894814491272,
+              0.0776146724820137,
+              0.8344364166259766
+            ]
+          ],
+          "full_probabilities": [
+            [
+              0.08948525041341782,
+              0.06150225177407265,
+              0.8490124940872192
+            ],
+            [
+              0.08794894814491272,
+              0.0776146724820137,
+              0.8344364166259766
+            ]
+          ],
+          "cached_full_max_logp_difference": 0.11442947387695312,
+          "pre_post_log_ratios": [
+            0.09711217880249023,
+            0.22211217880249023,
+            -0.027887850999832153
+          ],
+          "boundary_order": [
+            "before_actual_token",
+            "after_actual_token"
+          ],
+          "query_tokens": 170,
+          "actual_context_tokens": 252
+        },
+        "Webshop": {
+          "values": [
+            0.0,
+            10.0
+          ],
+          "cached_probabilities": [
+            [
+              0.8175744414329529,
+              0.18242549896240234
+            ],
+            [
+              0.7772998809814453,
+              0.22270016372203827
+            ]
+          ],
+          "full_probabilities": [
+            [
+              0.8354835510253906,
+              0.16451647877693176
+            ],
+            [
+              0.7981867790222168,
+              0.2018132209777832
+            ]
+          ],
+          "cached_full_max_logp_difference": 0.10333120822906494,
+          "pre_post_log_ratios": [
+            -0.050515711307525635,
+            0.19948434829711914
+          ],
+          "boundary_order": [
+            "before_actual_token",
+            "after_actual_token"
+          ],
+          "query_tokens": 143,
+          "actual_context_tokens": 225
+        },
+        "AppWorld": {
+          "values": [
+            0.0,
+            10.0
+          ],
+          "cached_probabilities": [
+            [
+              0.8175744414329529,
+              0.18242549896240234
+            ],
+            [
+              0.7981867790222168,
+              0.2018132209777832
+            ]
+          ],
+          "full_probabilities": [
+            [
+              0.8175744414329529,
+              0.18242549896240234
+            ],
+            [
+              0.7981867790222168,
+              0.2018132209777832
+            ]
+          ],
+          "cached_full_max_logp_difference": 0.0,
+          "pre_post_log_ratios": [
+            -0.02399928867816925,
+            0.10100078582763672
+          ],
+          "boundary_order": [
+            "before_actual_token",
+            "after_actual_token"
+          ],
+          "query_tokens": 143,
+          "actual_context_tokens": 225
+        }
+      },
+      "seconds": 5.599869586061686,
+      "peak_allocated_bytes": 18965490688,
+      "peak_reserved_bytes": 18983419904,
+      "status": "completed"
+    },
+    "training_verified": false,
+    "numerical_note": "Native cached/full-forward max log-prob discrepancy 0.11442947387695312. Recorded, not treated as exact numerical parity. All alphabets share one official Sokoban prefix; not three-task evaluation."
+  }
 }

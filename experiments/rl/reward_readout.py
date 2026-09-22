@@ -15,7 +15,7 @@ from typing import Any
 
 import torch
 
-from counterfactual import policy_marginal_log_ratio, reward_event_credit_for_episode
+from counterfactual import reward_event_credit_for_episode
 
 
 @dataclass(frozen=True)
@@ -74,15 +74,15 @@ class RewardAlphabet:
 
 
 class EventRatioReadout:
-    """Native, cached, single-token counterfactuals on original rollout IDs."""
+    """Read event probabilities before/after each actual rollout token."""
 
     def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,
-                 reference_samples: int = 1, max_length: int = 32768, event_batch_size: int = 4):
-        if reference_samples < 1 or max_steps < 1:
-            raise ValueError('Reference sample count and horizon must be positive')
+                 max_length: int = 32768, event_batch_size: int = 4):
+        if max_steps < 1:
+            raise ValueError('Horizon must be positive')
         self.runner, self.tokenizer = runner, tokenizer
         self.alphabet = RewardAlphabet.for_task(task)
-        self.max_steps, self.reference_samples, self.max_length = max_steps, reference_samples, max_length
+        self.max_steps, self.max_length = max_steps, max_length
         if event_batch_size < 1:
             raise ValueError('Event readout microbatch must be positive')
         self.event_batch_size = event_batch_size
@@ -98,12 +98,12 @@ class EventRatioReadout:
         # Zero observed reward contributes exactly zero to both sampled Q/V;
         # its conditional probability remains in the categorical normalizer.
         log_ratios = []
-        report = dict(task=self.alphabet.task, reference_samples=self.reference_samples,
+        report = dict(task=self.alphabet.task,
                       policy_tokens=0, nonzero_reward_events=sum(float(r['rewards']) != 0 for r in events),
                       native_forward_calls=0, prefix_prefill_tokens=0, factual_decode_tokens=0,
                       query_tokens=0, max_readout_length=0, actual_row_lengths=[],
-                      identical_reference_prefixes=0,
-                      max_length=self.max_length, ratio_source='native_dt_categorical_endpoint_difference')
+                      boundary_readouts=0,
+                      max_length=self.max_length, ratio_source='native_dt_pre_post_event_log_ratio')
 
         def forward(ids, cache=None):
             report['native_forward_calls'] += 1
@@ -128,7 +128,7 @@ class EventRatioReadout:
             report['actual_row_lengths'].append(prompt.numel() + len(positions))
             future = [k for k, event in enumerate(events)
                       if int(event['env_step']) >= int(row['env_step']) and float(event['rewards']) != 0]
-            if not future:
+            if not future or not positions:
                 continue
             print(f"[DT event readout] step={int(row['env_step'])} policy_tokens={len(positions)} "
                   f"future_nonzero_events={len(future)}", flush=True)
@@ -136,6 +136,17 @@ class EventRatioReadout:
                 self.tokenizer, current_step=int(row['env_step']),
                 event_step=int(events[k]['env_step']), max_steps=self.max_steps,
             ), device=device)[None, :] for k in future}
+            # Reuse the identical query prefix across future event indices.
+            # Fork before the differing event index; no outcome from one
+            # forecast conditions another forecast.
+            shared_query_length = 0
+            if len(future) > 1:
+                token_lists = [queries[k][0].tolist() for k in future]
+                for tokens in zip(*token_lists):
+                    if len(set(tokens)) != 1:
+                        break
+                    shared_query_length += 1
+                shared_query_length = min(shared_query_length, min(map(len, token_lists))-1)
             # Exact-length buckets avoid padding, altered GDN cache semantics,
             # and per-length compilation. HF owns cache batch expansion.
             by_length = defaultdict(list)
@@ -150,60 +161,50 @@ class EventRatioReadout:
             report['max_readout_length'] = max(report['max_readout_length'], length)
             report['prefix_prefill_tokens'] += prompt.numel()
             out = forward(prompt)
-            cache, next_logits = out.past_key_values, out.logits[:, -1].float()
+            cache = out.past_key_values
             del out
+
+            def read_boundary(factual_cache):
+                # The query reads a prefix; it must never become part of it.
+                # Before a_i this estimates the policy-marginal event law;
+                # after a_i it estimates the action-conditional event law.
+                report['boundary_readouts'] += 1
+                query_base = factual_cache
+                if shared_query_length:
+                    common = queries[future[0]][:, :shared_query_length]
+                    common_output = forward(common, deepcopy(factual_cache))
+                    query_base = common_output.past_key_values
+                    del common_output
+                    report['query_tokens'] += common.numel()
+                values = {}
+                for group in groups:
+                    report['native_forward_calls'] += 1
+                    query = torch.cat([queries[k][:, shared_query_length:] for k in group])
+                    report['query_tokens'] += query.numel()
+                    query_cache = deepcopy(query_base)
+                    if len(group) > 1:
+                        # HF owns expansion of both KV and recurrent states.
+                        query_cache.reorder_cache(torch.zeros(len(group), dtype=torch.long, device=device))
+                    lp = self.runner.read_outcomes(query, labels, past_key_values=query_cache)
+                    for j, k in enumerate(group):
+                        values[k] = lp[j, observed[k]]
+                    del query_cache
+                return torch.stack([values[k] for k in future])
+
+            before = read_boundary(cache)
             for i, actual in enumerate(action_ids.tolist()):
-                # This is the very same old-policy distribution as DT rollout:
-                # temperature=1, no truncation, actor update has not begun.
-                references = torch.multinomial(next_logits.softmax(-1), self.reference_samples,
-                                               replacement=True)[0].tolist()
-                if all(b == actual for b in references):
-                    # All endpoint differences are exactly zero. No target
-                    # scoring, cache copy or finite replay can add information.
-                    branch = forward(torch.tensor([[actual]], device=device), cache)
-                    cache, next_logits = branch.past_key_values, branch.logits[:, -1].float()
-                    del branch
-                    report['factual_decode_tokens'] += 1
-                    report['identical_reference_prefixes'] += 1
-                    continue
-                candidates = list(dict.fromkeys([actual, *references]))
-                scores = {}
-                actual_cache = actual_logits = None
-                for candidate in candidates:
-                    ids = torch.tensor([[candidate]], device=device)
-                    # HF cache mutates in place. Fork before every branch; a
-                    # query or reference must never contaminate the factual h_i.
-                    branch = forward(ids, deepcopy(cache))
-                    candidate_cache = branch.past_key_values
-                    if candidate == actual:
-                        actual_cache = candidate_cache
-                        actual_logits = branch.logits[:, -1].float()
-                    del branch
-                    values = {}
-                    for group in groups:
-                        report['native_forward_calls'] += 1
-                        query = torch.cat([queries[k] for k in group])
-                        report['query_tokens'] += query.numel()
-                        query_cache = deepcopy(candidate_cache)
-                        if len(group) > 1:
-                            # Qwen's hybrid cache supports beam reordering for
-                            # both KV and recurrent layers. Its installed
-                            # linear layers do not expose batch_repeat_interleave.
-                            query_cache.reorder_cache(torch.zeros(len(group), dtype=torch.long, device=device))
-                        lp = self.runner.read_outcomes(
-                            query, labels, past_key_values=query_cache)
-                        for j, k in enumerate(group):
-                            values[k] = lp[j, observed[k]]
-                        del query_cache
-                    scores[candidate] = torch.stack([values[k] for k in future])
-                    del candidate_cache
-                contrasts = torch.stack([scores[actual] - scores[b] for b in references], dim=-1)
-                weights = torch.full_like(contrasts, -math.log(self.reference_samples))
-                d = policy_marginal_log_ratio([(contrasts, weights)])
-                matrix[future, i] = d.cpu()
-                cache, next_logits = actual_cache, actual_logits
+                # Advance only the actual rollout token. No alternate-token
+                # sampling, enumeration, replacement or reference forward.
+                out = forward(torch.tensor([[actual]], device=device), cache)
+                cache = out.past_key_values
+                del out
+                after = read_boundary(cache)
+                matrix[future, i] = (after - before).cpu()
+                # Only within this response: the next row includes a real
+                # environment transition and must have a fresh initial read.
+                before = after
                 report['factual_decode_tokens'] += 1
-            del cache, next_logits
+            del cache, before, after
             print(f"[DT event readout] step={int(row['env_step'])} "
                   f"seconds={time.perf_counter()-row_started:.3f}", flush=True)
         report['seconds'] = time.perf_counter() - started
