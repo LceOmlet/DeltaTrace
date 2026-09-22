@@ -12,6 +12,13 @@
 
 ## 2026-09-22 最新短链对拍与 padding 修复
 
+- 数值探针启用 `torch.use_deterministic_algorithms(True)` 时须在进程启动前
+  传入 `CUBLAS_WORKSPACE_CONFIG=:4096:8`。16k 探针首次缺少该变量，失败
+  记录保存为 `long-parity-16k-missing-workspace.*`，未重装环境。16k 的
+  head/padding 分离对照完成后发现相同输入/初值/DT 信号的跨次更新波动，
+  正在以 HF 原有 `FLASH_ATTENTION_DETERMINISTIC=1` 和同路径重复检查；
+  具体 PID/参数见 `long-parity-16k-deterministic-launch.json`。这些设置只
+  用于数值探针，生产训练未因此改变。测量见 `results_policy_effects.json`。
 - 继续复用 MetaX 原 Python、权重和缓存。安装版 Qwen3.5 的
   `apply_mask_to_padding_states` 在 batch=1 时跳过 mask，实际有效 token
   log-prob 偏差超过 4；PPO microbatch=1 正好触发。只回补官方提交

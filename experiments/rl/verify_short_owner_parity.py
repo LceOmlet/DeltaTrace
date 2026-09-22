@@ -50,6 +50,8 @@ def main():
                    help='Also run the BF16 math baseline; long direct owner comparisons can omit it')
     p.add_argument('--head-only-comparison', action='store_true',
                    help='Also use the installed actor with trimming disabled to separate head slicing from padding effects')
+    p.add_argument('--repeat-installed', action='store_true',
+                   help='Repeat the identical installed path after restoring state to measure execution variability')
     p.add_argument('--fp32-reference-from', type=Path,
                    help='Original FP32 math reference from the same checkpoint, saved LoRA initial values, IDs and DT advantages')
     p.add_argument('--output', type=Path, required=True)
@@ -62,6 +64,8 @@ def main():
     result['verifier_sha256'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     result['comparison_performed'] = False
     result['trim_shared_padding'] = args.trim_shared_padding
+    result['runtime_numerics'] = {k:os.environ.get(k) for k in
+        ('CUBLAS_WORKSPACE_CONFIG', 'FLASH_ATTENTION_DETERMINISTIC')}
     artifacts = {}
     started = time.perf_counter()
     try:
@@ -272,6 +276,9 @@ def main():
             torch.set_rng_state(cpu_rng)
             torch.cuda.set_rng_state(device_rng)
 
+        if args.repeat_installed:
+            restore_training_state()
+            artifacts['repeat_installed'], result['repeat_installed_updates'] = run_updates()
         if args.paired_owner_source:
             restore_training_state()
             spec = importlib.util.spec_from_file_location('paired_pristine_actor', args.paired_owner_source)

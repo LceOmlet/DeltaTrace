@@ -20,6 +20,12 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 
 ## 当前验证范围
 
+- 修复版 v4 的真实训练：WebShop 已完成两轮，成功率 0/25%，第二轮 15 次
+  DT、非零 PPO 梯度；Sokoban 首轮 100%、147 次 DT、非零梯度，第二轮仍在
+  运行。AppWorld 两轮的 8 条轨迹全部零奖励，因此尚不构成非零 DT 学习
+  验证；保留结果后，以原上游 `env.seed=1` 启动 v5 四轮采样训练，其他方法
+  和 32k/minibatch 设置不变。启动器新增 `ENV_SEED` 只转发原配置，默认仍为 0。
+  详见 [results_native_training_metax.json](results_native_training_metax.json)。
 - 短链数值对拍已覆盖真实训练的共有 padding 裁剪路径。发现安装版 Qwen3.5
   在 batch=1 时跳过线性注意力 mask，回补 Transformers `59eed1a6` 的官方
   条件修复；Qwen 裁剪保留原 FLA 64-token 分块边界，最多留 63 个 padding。
@@ -49,6 +55,10 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   0.978/0.905，逐次参数增量余弦 0.904/0.921，不能称为严格一致。当前
   继续区分 head 输出裁剪和 padding 裁剪的影响。夹具不当作自然任务长度
   或任务成功率。
+  第二组分离测量与第一组具有完全相同的初值、输入、DT Q/V/A 和旧 log-prob，
+  但后续梯度/参数增量不同；额外的同路径重复测试正在用 HF 原有
+  `FLASH_ATTENTION_DETERMINISTIC=1` 检查执行波动。该选项仅用于探针，不能
+  把跨次波动全部归因于某项优化，也不能把这些记录称为训练可靠性证明。
   详见 [results_policy_effects.json](results_policy_effects.json)。
 - 修复前 v3 原生模型训练已记录：WebShop 两轮成功率 0/25%，第二轮 11 次
   DT、非零梯度；AppWorld 两轮 50%/0，首轮 26 次 DT、非零梯度；Sokoban

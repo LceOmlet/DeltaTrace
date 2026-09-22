@@ -918,7 +918,7 @@
       "status": "measured; no training-reliability certification or new tolerance gate"
     }
   },
-  "long_case_status": "measured, not declared equivalent: 4 of 4096 policy positions change clipping branch on update 2; separating head slicing and shared-padding effects in a further owner comparison",
+  "long_case_status": "Long comparisons measured differences. Identical inputs, initial weights, DT signals and old log-probs across two runs but different subsequent gradients/updates; deterministic FA backward plus same-path repetition is running to separate execution variability from the two optimization seams.",
   "short_clipping_scope": "Both short runs have zero actively clipped tokens; zero branch disagreement does not establish parity when clipping is active.",
   "long_case": {
     "long-policy-effects-16k.json": {
@@ -1353,5 +1353,795 @@
       "peak_allocated": 26050992128,
       "peak_reserved": 26782728192
     }
+  },
+  "long_isolation": {
+    "long-parity-16k-isolated.json": {
+      "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+      "attention": "flash_attention_2",
+      "reshard_after_forward": false,
+      "actor_source": "installed",
+      "context_cap": 32768,
+      "verifier_sha256": "220e5228c51bba846fd262d94f75e5fdd0f33f1c5e2db25c3259344713d33659",
+      "comparison_performed": true,
+      "trim_shared_padding": true,
+      "policy_loss_config": {
+        "clip_ratio": 0.2,
+        "clip_ratio_low": 0.2,
+        "clip_ratio_high": 0.2,
+        "loss_agg_mode": "token-mean",
+        "clip_ratio_c": "inf"
+      },
+      "transformers_model_source_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+      "actor_source_sha256": "52defe321a0a27a9ca38c30b383ea8fc463d2ed1a559dae9864a76fc99611522",
+      "ppo_core_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "numerical_fixture": {
+        "synthetic_context_tokens": 14927,
+        "synthetic_action_tokens": 1010,
+        "original_action_tokens": 14,
+        "scope": "Explicit long numerical input; recorded reward is a test coefficient, not a reward claim for this synthetic trajectory"
+      },
+      "dt_report": {
+        "task": "Sokoban",
+        "policy_tokens": 1024,
+        "nonzero_reward_events": 1,
+        "finite_trace_calls": 1,
+        "max_readout_length": 16555,
+        "actual_row_lengths": [
+          16384
+        ],
+        "traces": [
+          {
+            "source_step": 4,
+            "event_step": 4,
+            "context_tokens": 16555,
+            "query_tokens": 170,
+            "root_effect": -0.041094034910202026,
+            "signed_sum": -0.04854487472112731,
+            "conservation_residual": 0.007450839810925286,
+            "conservation_tolerance": 0.02,
+            "conservation_verified": true,
+            "seconds": 62.3547462914139,
+            "peak_allocated": 43117514752,
+            "peak_reserved": 47838134272,
+            "source_log_ratio_min": -0.0943884626030922,
+            "source_log_ratio_max": 0.0678030326962471
+          }
+        ],
+        "max_length": 32768,
+        "ratio_source": "official_eos_dt_signed_attribution_estimate",
+        "reference_token_samples": 0,
+        "per_token_probability_queries": 0,
+        "seconds": 62.41912349499762,
+        "nonzero_advantages": 1023,
+        "conservation_failures": 0
+      },
+      "input_tokens": 16568,
+      "effective_input_tokens": 16384,
+      "explicit_left_padding": 165,
+      "updates": [
+        {
+          "actor/pg_loss": [
+            0.0007146957796066999,
+            0.0007146957796066999,
+            0.0007146957796066999,
+            0.0007146957796066999
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.033447265625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 40.156314849853516,
+          "perf/max_memory_reserved_gb": 44.560546875,
+          "perf/cpu_memory_used_gb": 178.17378997802734,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.000634383934084326,
+            0.000634383934084326,
+            0.000634383934084326,
+            0.000634383934084326
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            1.9138678908348083e-05,
+            1.9138678908348083e-05,
+            1.9138678908348083e-05,
+            1.9138678908348083e-05
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.0322265625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 40.156314849853516,
+          "perf/max_memory_reserved_gb": 44.5703125,
+          "perf/cpu_memory_used_gb": 178.21256256103516,
+          "actor/lr": 1e-06
+        }
+      ],
+      "status": "artifacts_ready",
+      "paired_updates": [
+        {
+          "actor/pg_loss": [
+            0.0007146957796066999,
+            0.0007146957796066999,
+            0.0007146957796066999,
+            0.0007146957796066999
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.033203125
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 51.16856288909912,
+          "perf/max_memory_reserved_gb": 55.64453125,
+          "perf/cpu_memory_used_gb": 178.23414993286133,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.0007367685320787132,
+            0.0007367685320787132,
+            0.0007367685320787132,
+            0.0007367685320787132
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            -0.0004966333508491516,
+            -0.0004966333508491516,
+            -0.0004966333508491516,
+            -0.0004966333508491516
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.0322265625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 51.17891597747803,
+          "perf/max_memory_reserved_gb": 55.64453125,
+          "perf/cpu_memory_used_gb": 178.2488021850586,
+          "actor/lr": 1e-06
+        }
+      ],
+      "paired_owner_sha256": "38cdd5545a62aeb8e17364ec24b245f4cc449aedce99d9b78f1e4be497504918",
+      "head_only_updates": [
+        {
+          "actor/pg_loss": [
+            0.0007146957796066999,
+            0.0007146957796066999,
+            0.0007146957796066999,
+            0.0007146957796066999
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.033203125
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 51.17891597747803,
+          "perf/max_memory_reserved_gb": 55.64453125,
+          "perf/cpu_memory_used_gb": 178.11531829833984,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.0004922408843412995,
+            0.0004922408843412995,
+            0.0004922408843412995,
+            0.0004922408843412995
+          ],
+          "actor/pg_clipfrac": [
+            0.0009765625,
+            0.0009765625,
+            0.0009765625,
+            0.0009765625
+          ],
+          "actor/ppo_kl": [
+            -7.495284080505371e-05,
+            -7.495284080505371e-05,
+            -7.495284080505371e-05,
+            -7.495284080505371e-05
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.0302734375
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 51.17891597747803,
+          "perf/max_memory_reserved_gb": 55.64453125,
+          "perf/cpu_memory_used_gb": 178.12407684326172,
+          "actor/lr": 1e-06
+        }
+      ],
+      "comparison_tolerance": "Direct paired owner measurements only; no borrowed FP32 error bound",
+      "seconds": 289.02509786747396,
+      "peak_allocated": 54952942592,
+      "peak_reserved": 59747860480
+    },
+    "long-policy-effects-isolated.json": {
+      "scope": "Read saved owner runs and diagnose PPO effects using the original PPO function.\n\nThis is a CPU evidence reader, not a second objective or a training hook.\nDirection/ratio/branch measurements have no newly invented pass threshold.\n",
+      "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/long-parity-16k-isolated.pt",
+      "artifact_sha256": "d3d7b676b465b433827bc8e330f34b1654421710f99a2c6a05fa917b766a0a96",
+      "owner_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/trainer/ppo/core_algos.py",
+      "owner_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "policy_loss_config": {
+        "clip_ratio": 0.2,
+        "clip_ratio_low": 0.2,
+        "clip_ratio_high": 0.2,
+        "loss_agg_mode": "token-mean",
+        "clip_ratio_c": "inf"
+      },
+      "input_tokens": 16568,
+      "effective_input_tokens": 16384,
+      "active_tokens": 4096,
+      "comparisons": {
+        "paired_owner": [
+          {
+            "update": 0,
+            "ratio_error": {
+              "elements": 4096,
+              "actual_norm": 64.0,
+              "reference_norm": 64.0,
+              "cosine": 1.0,
+              "relative_l2": 0.0,
+              "max_abs": 0.0,
+              "norm_ratio": 1.0,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4096
+            },
+            "actual_ratio_range": [
+              1.0,
+              1.0
+            ],
+            "reference_ratio_range": [
+              1.0,
+              1.0
+            ],
+            "ratio_abs_error_mean": 0.0,
+            "ratio_abs_error_p95": 0.0,
+            "clipped_branch_disagreements": 0,
+            "actual_clipped_tokens": 0,
+            "reference_clipped_tokens": 0,
+            "owner_loss_derivative": {
+              "elements": 4096,
+              "actual_norm": 0.0010300181504391218,
+              "reference_norm": 0.0010300181504391218,
+              "cosine": 0.9999999999999996,
+              "relative_l2": 0.0,
+              "max_abs": 0.0,
+              "norm_ratio": 1.0,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4092
+            },
+            "raw_gradient": {
+              "elements": 2704896,
+              "actual_norm": 0.03339367736238338,
+              "reference_norm": 0.03325115122952747,
+              "cosine": 0.978549786441594,
+              "relative_l2": 0.2076118644322243,
+              "max_abs": 0.0004138946533203125,
+              "norm_ratio": 1.0042863518280034,
+              "sign_disagreements_on_joint_nonzero": 72437,
+              "jointly_nonzero": 1426934
+            },
+            "incremental_parameter_update": {
+              "elements": 2704896,
+              "actual_norm": 0.0011861168783218693,
+              "reference_norm": 0.001186123315913268,
+              "cosine": 0.904202239381995,
+              "relative_l2": 0.43771506873282445,
+              "max_abs": 2.0265579223632812e-06,
+              "norm_ratio": 0.999994572578321,
+              "sign_disagreements_on_joint_nonzero": 72437,
+              "jointly_nonzero": 1426934
+            },
+            "actual_owner_metrics": {
+              "loss": 0.0007146956049837172,
+              "clipfrac": 0.0,
+              "kl": 0.0,
+              "lower": 0.0
+            },
+            "reference_owner_metrics": {
+              "loss": 0.0007146956049837172,
+              "clipfrac": 0.0,
+              "kl": 0.0,
+              "lower": 0.0
+            }
+          },
+          {
+            "update": 1,
+            "ratio_error": {
+              "elements": 4096,
+              "actual_norm": 64.00014258181031,
+              "reference_norm": 64.03975236693933,
+              "cosine": 0.9999379040976953,
+              "relative_l2": 0.011157847240968539,
+              "max_abs": 0.21197640895843506,
+              "norm_ratio": 0.9993814812883401,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4096
+            },
+            "actual_ratio_range": [
+              0.9236782789230347,
+              1.0741558074951172
+            ],
+            "reference_ratio_range": [
+              0.9160060286521912,
+              1.2755941152572632
+            ],
+            "ratio_abs_error_mean": 0.0010094258468598127,
+            "ratio_abs_error_p95": 0.0006281137466430664,
+            "clipped_branch_disagreements": 0,
+            "actual_clipped_tokens": 0,
+            "reference_clipped_tokens": 0,
+            "owner_loss_derivative": {
+              "elements": 4096,
+              "actual_norm": 0.0010055773618918296,
+              "reference_norm": 0.0010397898331275972,
+              "cosine": 0.9980510304744968,
+              "relative_l2": 0.06965851297631583,
+              "max_abs": 2.2726431780029088e-05,
+              "norm_ratio": 0.9670967438363389,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4092
+            },
+            "raw_gradient": {
+              "elements": 2704896,
+              "actual_norm": 0.03231634292005496,
+              "reference_norm": 0.032260905504332804,
+              "cosine": 0.9618593769518385,
+              "relative_l2": 0.2764331408695526,
+              "max_abs": 0.0005681514739990234,
+              "norm_ratio": 1.0017184085460562,
+              "sign_disagreements_on_joint_nonzero": 118238,
+              "jointly_nonzero": 2704883
+            },
+            "incremental_parameter_update": {
+              "elements": 2704896,
+              "actual_norm": 0.0011448503939703253,
+              "reference_norm": 0.0011400877568373063,
+              "cosine": 0.955664964375375,
+              "relative_l2": 0.2984257616475176,
+              "max_abs": 2.0116567611694336e-06,
+              "norm_ratio": 1.0041774302938145,
+              "sign_disagreements_on_joint_nonzero": 55076,
+              "jointly_nonzero": 1440547
+            },
+            "actual_owner_metrics": {
+              "loss": 0.0006343838758766651,
+              "clipfrac": 0.0,
+              "kl": 1.9138678908348083e-05,
+              "lower": 0.0
+            },
+            "reference_owner_metrics": {
+              "loss": 0.0007367684738710523,
+              "clipfrac": 0.0,
+              "kl": -0.0004966333508491516,
+              "lower": 0.0
+            }
+          }
+        ],
+        "optimized_vs_untrimmed_head": [
+          {
+            "update": 0,
+            "ratio_error": {
+              "elements": 4096,
+              "actual_norm": 64.0,
+              "reference_norm": 64.0,
+              "cosine": 1.0,
+              "relative_l2": 0.0,
+              "max_abs": 0.0,
+              "norm_ratio": 1.0,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4096
+            },
+            "actual_ratio_range": [
+              1.0,
+              1.0
+            ],
+            "reference_ratio_range": [
+              1.0,
+              1.0
+            ],
+            "ratio_abs_error_mean": 0.0,
+            "ratio_abs_error_p95": 0.0,
+            "clipped_branch_disagreements": 0,
+            "actual_clipped_tokens": 0,
+            "reference_clipped_tokens": 0,
+            "owner_loss_derivative": {
+              "elements": 4096,
+              "actual_norm": 0.0010300181504391218,
+              "reference_norm": 0.0010300181504391218,
+              "cosine": 0.9999999999999996,
+              "relative_l2": 0.0,
+              "max_abs": 0.0,
+              "norm_ratio": 1.0,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4092
+            },
+            "raw_gradient": {
+              "elements": 2704896,
+              "actual_norm": 0.03339367736238338,
+              "reference_norm": 0.03325870006017466,
+              "cosine": 0.9784971139642383,
+              "relative_l2": 0.20783834488733297,
+              "max_abs": 0.0004138946533203125,
+              "norm_ratio": 1.0040584058295876,
+              "sign_disagreements_on_joint_nonzero": 72465,
+              "jointly_nonzero": 1426935
+            },
+            "incremental_parameter_update": {
+              "elements": 2704896,
+              "actual_norm": 0.0011861168783218693,
+              "reference_norm": 0.0011861289428922494,
+              "cosine": 0.9041765488920135,
+              "relative_l2": 0.4377727184345901,
+              "max_abs": 2.0265579223632812e-06,
+              "norm_ratio": 0.9999898286181681,
+              "sign_disagreements_on_joint_nonzero": 72465,
+              "jointly_nonzero": 1426935
+            },
+            "actual_owner_metrics": {
+              "loss": 0.0007146956049837172,
+              "clipfrac": 0.0,
+              "kl": 0.0,
+              "lower": 0.0
+            },
+            "reference_owner_metrics": {
+              "loss": 0.0007146956049837172,
+              "clipfrac": 0.0,
+              "kl": 0.0,
+              "lower": 0.0
+            }
+          },
+          {
+            "update": 1,
+            "ratio_error": {
+              "elements": 4096,
+              "actual_norm": 64.00014258181031,
+              "reference_norm": 64.01023665713326,
+              "cosine": 0.9999631859187967,
+              "relative_l2": 0.008581457874796868,
+              "max_abs": 0.1490006446838379,
+              "norm_ratio": 0.9998423052959947,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4096
+            },
+            "actual_ratio_range": [
+              0.9236782789230347,
+              1.0741558074951172
+            ],
+            "reference_ratio_range": [
+              0.7974504828453064,
+              1.1599671840667725
+            ],
+            "ratio_abs_error_mean": 0.0008336130413226783,
+            "ratio_abs_error_p95": 0.0007303953170776367,
+            "clipped_branch_disagreements": 4,
+            "actual_clipped_tokens": 0,
+            "reference_clipped_tokens": 4,
+            "owner_loss_derivative": {
+              "elements": 4096,
+              "actual_norm": 0.0010055773618918296,
+              "reference_norm": 0.0008978763757160839,
+              "cosine": 0.8741069734224893,
+              "relative_l2": 0.5444044307522448,
+              "max_abs": 0.0002433120389468968,
+              "norm_ratio": 1.119950796221641,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4088
+            },
+            "raw_gradient": {
+              "elements": 2704896,
+              "actual_norm": 0.03231634292005496,
+              "reference_norm": 0.030297904118592674,
+              "cosine": 0.8762551504083087,
+              "relative_l2": 0.5180884019226172,
+              "max_abs": 0.0006182193756103516,
+              "norm_ratio": 1.066619750117423,
+              "sign_disagreements_on_joint_nonzero": 379600,
+              "jointly_nonzero": 2704886
+            },
+            "incremental_parameter_update": {
+              "elements": 2704896,
+              "actual_norm": 0.0011448503939703253,
+              "reference_norm": 0.001035384958408296,
+              "cosine": 0.8893070766827161,
+              "relative_l2": 0.5059341594480381,
+              "max_abs": 2.0042061805725098e-06,
+              "norm_ratio": 1.105724382678218,
+              "sign_disagreements_on_joint_nonzero": 122955,
+              "jointly_nonzero": 1438271
+            },
+            "actual_owner_metrics": {
+              "loss": 0.0006343838758766651,
+              "clipfrac": 0.0,
+              "kl": 1.9138678908348083e-05,
+              "lower": 0.0
+            },
+            "reference_owner_metrics": {
+              "loss": 0.0004922410007566214,
+              "clipfrac": 0.0009765625,
+              "kl": -7.495284080505371e-05,
+              "lower": 0.0
+            }
+          }
+        ],
+        "untrimmed_head_vs_owner": [
+          {
+            "update": 0,
+            "ratio_error": {
+              "elements": 4096,
+              "actual_norm": 64.0,
+              "reference_norm": 64.0,
+              "cosine": 1.0,
+              "relative_l2": 0.0,
+              "max_abs": 0.0,
+              "norm_ratio": 1.0,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4096
+            },
+            "actual_ratio_range": [
+              1.0,
+              1.0
+            ],
+            "reference_ratio_range": [
+              1.0,
+              1.0
+            ],
+            "ratio_abs_error_mean": 0.0,
+            "ratio_abs_error_p95": 0.0,
+            "clipped_branch_disagreements": 0,
+            "actual_clipped_tokens": 0,
+            "reference_clipped_tokens": 0,
+            "owner_loss_derivative": {
+              "elements": 4096,
+              "actual_norm": 0.0010300181504391218,
+              "reference_norm": 0.0010300181504391218,
+              "cosine": 0.9999999999999996,
+              "relative_l2": 0.0,
+              "max_abs": 0.0,
+              "norm_ratio": 1.0,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4092
+            },
+            "raw_gradient": {
+              "elements": 2704896,
+              "actual_norm": 0.03325870006017466,
+              "reference_norm": 0.03325115122952747,
+              "cosine": 0.9999467382166346,
+              "relative_l2": 0.010324693235989679,
+              "max_abs": 1.71661376953125e-05,
+              "norm_ratio": 1.0002270246402922,
+              "sign_disagreements_on_joint_nonzero": 3177,
+              "jointly_nonzero": 1426929
+            },
+            "incremental_parameter_update": {
+              "elements": 2704896,
+              "actual_norm": 0.0011861289428922494,
+              "reference_norm": 0.001186123315913268,
+              "cosine": 0.9971072331575854,
+              "relative_l2": 0.07606287631923432,
+              "max_abs": 1.996755599975586e-06,
+              "norm_ratio": 1.000004744008406,
+              "sign_disagreements_on_joint_nonzero": 3177,
+              "jointly_nonzero": 1426929
+            },
+            "actual_owner_metrics": {
+              "loss": 0.0007146956049837172,
+              "clipfrac": 0.0,
+              "kl": 0.0,
+              "lower": 0.0
+            },
+            "reference_owner_metrics": {
+              "loss": 0.0007146956049837172,
+              "clipfrac": 0.0,
+              "kl": 0.0,
+              "lower": 0.0
+            }
+          },
+          {
+            "update": 1,
+            "ratio_error": {
+              "elements": 4096,
+              "actual_norm": 64.01023665713326,
+              "reference_norm": 64.03975236693933,
+              "cosine": 0.9999479012435638,
+              "relative_l2": 0.01021576792722916,
+              "max_abs": 0.21246516704559326,
+              "norm_ratio": 0.9995391033113785,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4096
+            },
+            "actual_ratio_range": [
+              0.7974504828453064,
+              1.1599671840667725
+            ],
+            "reference_ratio_range": [
+              0.9160060286521912,
+              1.2755941152572632
+            ],
+            "ratio_abs_error_mean": 0.0008947858586907387,
+            "ratio_abs_error_p95": 0.0005110502243041992,
+            "clipped_branch_disagreements": 4,
+            "actual_clipped_tokens": 4,
+            "reference_clipped_tokens": 0,
+            "owner_loss_derivative": {
+              "elements": 4096,
+              "actual_norm": 0.0008978763757160839,
+              "reference_norm": 0.0010397898331275972,
+              "cosine": 0.8649174916495947,
+              "relative_l2": 0.5019160223931229,
+              "max_abs": 0.0002604950568638742,
+              "norm_ratio": 0.8635171715570156,
+              "sign_disagreements_on_joint_nonzero": 0,
+              "jointly_nonzero": 4088
+            },
+            "raw_gradient": {
+              "elements": 2704896,
+              "actual_norm": 0.030297904118592674,
+              "reference_norm": 0.032260905504332804,
+              "cosine": 0.8615560919199358,
+              "relative_l2": 0.5135584430797087,
+              "max_abs": 0.00058746337890625,
+              "norm_ratio": 0.9391523159361882,
+              "sign_disagreements_on_joint_nonzero": 381799,
+              "jointly_nonzero": 2704885
+            },
+            "incremental_parameter_update": {
+              "elements": 2704896,
+              "actual_norm": 0.001035384958408296,
+              "reference_norm": 0.0011400877568373063,
+              "cosine": 0.8980967792465682,
+              "relative_l2": 0.43991305281202503,
+              "max_abs": 1.9297003746032715e-06,
+              "norm_ratio": 0.9081625095953454,
+              "sign_disagreements_on_joint_nonzero": 121417,
+              "jointly_nonzero": 1438192
+            },
+            "actual_owner_metrics": {
+              "loss": 0.0004922410007566214,
+              "clipfrac": 0.0009765625,
+              "kl": -7.495284080505371e-05,
+              "lower": 0.0
+            },
+            "reference_owner_metrics": {
+              "loss": 0.0007367684738710523,
+              "clipfrac": 0.0,
+              "kl": -0.0004966333508491516,
+              "lower": 0.0
+            }
+          }
+        ]
+      },
+      "status": "measured; no training-reliability certification or new tolerance gate"
+    },
+    "long-parity-16k-isolated-launch.json": {
+      "pid": 1928995,
+      "gpu": 7,
+      "time": "2026-09-22T21:50:24.736811",
+      "command": [
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_short_owner_parity.py",
+        "--paired-owner-source",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/upstream-dp_actor-732f37.py",
+        "--trim-shared-padding",
+        "--no-reshard-after-forward",
+        "--no-owner-math",
+        "--head-only-comparison",
+        "--effective-input-tokens",
+        "16384",
+        "--response-tokens",
+        "1024",
+        "--output",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/long-parity-16k-isolated.json",
+        "--artifacts",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/long-parity-16k-isolated.pt"
+      ],
+      "cublas_workspace_config": ":4096:8"
+    }
+  },
+  "deterministic_repeat_launch": {
+    "pid": 2185410,
+    "gpu": 7,
+    "time": "2026-09-22T22:01:13.550439",
+    "command": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_short_owner_parity.py",
+      "--paired-owner-source",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/upstream-dp_actor-732f37.py",
+      "--trim-shared-padding",
+      "--no-reshard-after-forward",
+      "--no-owner-math",
+      "--head-only-comparison",
+      "--repeat-installed",
+      "--effective-input-tokens",
+      "16384",
+      "--response-tokens",
+      "1024",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/long-parity-16k-deterministic.json",
+      "--artifacts",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/long-parity-16k-deterministic.pt"
+    ],
+    "cublas_workspace_config": ":4096:8",
+    "flash_attention_deterministic": "1"
   }
 }

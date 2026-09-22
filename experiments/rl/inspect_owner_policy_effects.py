@@ -81,7 +81,8 @@ def main():
                   policy_loss_config=clip, input_tokens=receipt['input_tokens'],
                   effective_input_tokens=receipt['effective_input_tokens'],
                   active_tokens=int(state['response_mask'].sum()), comparisons={})
-    pairs = [(label, state, state[label]) for label in ('paired_owner', 'paired_owner_math') if label in state]
+    pairs = [(label, state, state[label]) for label in
+             ('paired_owner', 'paired_owner_math', 'repeat_installed') if label in state]
     if 'paired_owner_math' in state:
         pairs.append(('owner_fa_vs_math', state['paired_owner'], state['paired_owner_math']))
     if 'paired_untrimmed_head' in state:
