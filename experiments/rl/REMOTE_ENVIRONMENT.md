@@ -10,6 +10,35 @@
 本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
 本文件和历史运行记录不代表该计划已实现或 DT 多轮训练已经验收通过。
 
+## 2026-09-22 正式规模启动与监控
+
+- 训练预算配置：`experiments/rl/paper_scale.json`；当前进程与精确启动时间以
+  MetaX 运行根目录 `formal-training.json` 为准，不把旧 PID 当作当前进程。
+  第一版并发验证环境过多，Ray 的 900 GiB 容器内存阈值触发杀 worker；证据
+  `receipts/training-setup/formal-v1-memory-evidence.json`、
+  `formal-v1-host-memory-stop.json`。只按三个确切 RAY_TMPDIR 停止自有进程。
+  使用原 `data.val_batch_size` 分批验证，验证数据条数与训练预算保留。
+- 原检查点路径已完成真实保存/清空 LoRA/恢复，参数逐项相同。修复仅在
+  原 checkpoint metadata 与原 FSDP1 附加 adapter 导出边界；FSDP2 完整
+  model/optimizer/extra 检查点未换格式。记录 `checkpoint-owner-roundtrip-v3.json`。
+- AppWorld 官方 load_task_ids 的 difficulty 1/2 并集为 72 个任务，生成
+  `data/datasets/train_difficulty_1_and_train_difficulty_2.txt`；无新采样器。
+  既有20服务补充277时官方随机端口重复4个，保留日志并另外补4个服务，
+  去重后297个端口的 /openapi.json 全部200。正式端口表是 AppWorld 根下
+  `appworld_ports_formal.ports`，不会覆盖旧端口表。没有重装环境。
+- 本机可用 SSH 密钥不被该容器接受，且容器 authorized_keys 是只读挂载。
+  后续使用已授权密码的 Windows DPAPI 记录（仓库外）及
+  `C:/Users/Administrator/.codex/private/metax_exec.py`，不要重复设置密钥或输出密码。
+- 每小时线程检查已创建，automation id=`deltatrace`。先检查 Codex 剩余额度，
+  低于20%停止代理后续实验操作；正常远端训练保持运行。检查与备份遵循本任务
+  状态记录，不因一小时未结束大批次就重启任务。
+- 异机备份目标为 `liangchen@10.70.5.230:2501`（经4090），目录
+  `/data/liangchen/deltatrace_rl_metax_backup`；只用于存储，A6000不运行训练。
+  restic 0.19.1 来自官方发布，压缩包 SHA256 为
+  `f415415624dcc452f2a02b8c33641791a8c6d6d3b65bbb3543fcf9a25151585c`。
+  repository.password 位于该私有目录（0600），本机另有 DPAPI 加密恢复副本，
+  均不入 Git。每份备份的 restore/check 结果另报，不以仓库创建冒充备份完成。
+
 ## 2026-09-22 最新短链对拍与 padding 修复
 
 - 数值探针启用 `torch.use_deterministic_algorithms(True)` 时须在进程启动前

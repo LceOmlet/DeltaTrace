@@ -25,7 +25,7 @@
       "iterations": 150,
       "episodes_per_iteration": 128,
       "total_episodes": 19200,
-      "env": {"TRAIN_SIZE":"16","GROUP_SIZE":"8","TOTAL_EPOCHS":"150","MAX_STEPS":"15","VAL_SIZE":"128","VAL_DATA_SIZE":"256","DT_RAY_NUM_CPUS":"32","ENV_SEED":"0"},
+      "env": {"TRAIN_SIZE":"16","GROUP_SIZE":"8","TOTAL_EPOCHS":"150","MAX_STEPS":"15","VAL_SIZE":"4","VAL_DATA_SIZE":"256","DT_RAY_NUM_CPUS":"32","ENV_SEED":"0"},
       "differences": "Pinned upstream script inherits webshop.use_small=True (1k products) and human_goals=False. Full chat history and 32k/1024 limits follow our fixed method, not the paper's 4096/512 and history length 2. Original paper minibatch 64 and gamma .95 are not substituted. One run, not three-seed aggregate."
     },
     "Sokoban": {
@@ -35,7 +35,7 @@
       "iterations": 150,
       "episodes_per_iteration": 256,
       "total_episodes": 38400,
-      "env": {"TRAIN_SIZE":"32","GROUP_SIZE":"8","TOTAL_EPOCHS":"150","MAX_STEPS":"15","VAL_SIZE":"128","DT_RAY_NUM_CPUS":"48","ENV_SEED":"0","SOKOBAN_MODE":"tiny_rgb_array"},
+      "env": {"TRAIN_SIZE":"32","GROUP_SIZE":"8","TOTAL_EPOCHS":"150","MAX_STEPS":"15","VAL_SIZE":"4","VAL_DATA_SIZE":"128","DT_RAY_NUM_CPUS":"48","ENV_SEED":"0","SOKOBAN_MODE":"tiny_rgb_array"},
       "differences": "Budget comes from the pinned official script; the paper does not separately state Sokoban iteration count. Our existing text rendering and Qwen3.5-9B differ from the paper's visual Qwen2.5-VL-3B setup. Official process rewards and one-box configuration stay fixed. One run, not three-seed aggregate."
     },
     "AppWorld": {
@@ -45,7 +45,7 @@
       "episodes_per_iteration": 240,
       "total_episodes": 48000,
       "train_tasks": 72,
-      "env": {"TRAIN_SIZE":"40","GROUP_SIZE":"6","TOTAL_EPOCHS":"200","MAX_STEPS":"40","VAL_SIZE":"57","DT_RAY_NUM_CPUS":"32","ENV_SEED":"0","APPWORLD_TRAIN_DATASET":"train_difficulty_1_and_train_difficulty_2","APPWORLD_VAL_DATASET":"dev","APPWORLD_MAX_INTERACTIONS":"40"},
+      "env": {"TRAIN_SIZE":"40","GROUP_SIZE":"6","TOTAL_EPOCHS":"200","MAX_STEPS":"40","VAL_SIZE":"3","VAL_DATA_SIZE":"57","DT_RAY_NUM_CPUS":"32","ENV_SEED":"0","APPWORLD_TRAIN_DATASET":"train_difficulty_1_and_train_difficulty_2","APPWORLD_VAL_DATASET":"dev","APPWORLD_MAX_INTERACTIONS":"40"},
       "differences": "LOOP source gives nominal 240 rollouts and early-stops stragglers at >=90%; our fixed owner collects all 240. No LOOP filters, reward normalization, trained value model or replacement PPO are added. Existing VERL official success reward 10/0 stays fixed; LOOP used test-pass fractions. The original max response 1500, LoRA rank16, LR5e-5 and minibatch32 are not substituted. Dev evaluation uses existing owner 40-turn loop, versus paper evaluation 50. One run, not three-seed aggregate."
     }
   }

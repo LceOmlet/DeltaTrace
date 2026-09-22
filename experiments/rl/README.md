@@ -56,6 +56,11 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 load_task_ids(difficulty=1/2) 取得 72 个任务，与论文的 24 个 scenario 对齐。
 这是每任务一组实验的采样预算，不是三随机种子结果，也不替换固定 DT 方法。
 具体论文/脚本来源以及模型、观测、奖励、上下文和评估差异均列在配置中。
+正式首启触发主机内存问题：Ray 的 900 GiB 容器上限、95% 阈值产生明确的
+worker-killed-by-memory-pressure 记录。已停止该次自有作业；验证 batch 分别
+改为 4/4/3，数据条数仍为 WebShop 256、Sokoban 128、AppWorld 57，训练
+batch/轨迹总预算完全不变。验证仍按原环境 reset 的采样方式，不声称小批次
+采样与一次抽取整个验证集得到相同任务集合。没有关闭 Ray 内存保护。
 
 [run_verl_agent.sh](run_verl_agent.sh) 只透传上游 checkpoint save/resume/retention
 与任务配置。检查点仍由原 FSDPCheckpointManager 保存完整 model、optimizer、
