@@ -36,7 +36,10 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   DT、非零梯度；AppWorld 两轮 50%/0，首轮 26 次 DT、非零梯度；Sokoban
   首轮 100%、140 次 DT、非零梯度，第二轮因本次数值修复留存日志后主动停止。
   这些是小规模训练接线记录，不是测试集指标或修复后验收。新版本的三任务
-  连续训练需单独记录；详见 [results_native_training_metax.json](results_native_training_metax.json)。
+  连续训练需单独记录。修复版 v4 已从 `ada1925f` 在 MetaX GPU 4/5/6 启动，
+  使用已通过对拍及精确 32k 容量检查的 `reshard_after_forward=False`，
+  启动记录见 [results_native_training_metax.json](results_native_training_metax.json)；
+  该启动记录不代表训练已经完成。
 - 发现并修复 Qwen3.5-9B 聊天停止边界：checkpoint 没有 generation_config.json，
   原模型回退只用 `<|endoftext|>`（248044），漏掉 tokenizer 的 `<|im_end|>`
   （248046），导致模型在动作后继续编造后续轮次。固定 VERL worker 仅在这个
@@ -56,7 +59,7 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   详见 [results_runtime_efficiency.json](results_runtime_efficiency.json)。
 - Ray CPU 配置从未被 trainer 读取的 `ray_kwargs.ray_init.num_cpus` 改为固定
   上游的 `ray_init.num_cpus`；真实 Hydra compose→原 run_ppo→ray.init 参数
-  对照通过。没有新调度器；当前已经开始的 v3 作业保留原启动资源，后续生效。
+  对照通过。没有新调度器；v4 启动日志已确认 `num_cpus=8` 生效。
 - MetaX 按用户最新要求以物理 64 GB、不 OOM 验收。显式容量夹具把 DT
   两个端点各固定为 **32768 个有效 token**（actor 输入 32597，加事件询问
   170、目标 1），32769 被原读出接口拒绝。正式 DT 连续四次归因后，原 VERL
