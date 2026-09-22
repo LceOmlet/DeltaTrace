@@ -68,6 +68,10 @@ F_i 只含该 token 之后结算的事件；过去奖励不会分给后来的 to
 | O | 状态，不参与 actor loss | 相同 |
 | Actor loss | 原 token PPO ratio/clipping | 完全复用固定 VERL 的原实现 |
 
+这里的 A_hat（也记作 C_i^{DT}）已经汇总该 token 之后的奖励事件，直接进入
+它自己的 PPO ratio 和逐 token clipping。**不再对 A_hat 做 GAE、第二次
+return-to-go 累加或 span 平均。** O/padding 仍不参与策略损失。
+
 保留既定精确 PPO 对照目标：
 
 \[
@@ -151,7 +155,9 @@ Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局�
 - 保持 48 GB 单卡、Qwen3.5-9B、minibatch 4、总长度上限 32768；GRPO 对照
   group size 4。smoke 同样保持 32768 上限，实际长度另报，不能用 padding
   冒充原始任务上下文。读出询问和 target 占用也计入上限。
-- A6000 先读环境记录并复用 Python/权重/持久缓存；先确认空闲显卡。
+- 2026-09-22 用户指定后续全部改用 MetaX，不再使用 A6000。先读环境记录并
+  复用 Python/权重/持久缓存；先确认空闲显卡。平台变更不改变上述 Q/V、
+  minibatch 或上下文约束；MetaX 的物理显存与实测占用必须如实分别报告。
   归因阶段使用正式 runner 要求的 FA，结束后恢复原 actor attention 后端，
   包括异常路径；不能让前向专用 FA wheel 接管 PPO backward。
 - 复用已有动态 shape 执行配置，记录首轮/后续耗时和编译；不能清缓存假装恢复。

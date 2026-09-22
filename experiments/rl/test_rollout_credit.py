@@ -61,7 +61,11 @@ def test_original_rows_keep_future_events_and_individual_tokens():
         assert before["dt_env_outcome"] == after["dt_env_outcome"]
 
 
-def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient():
+def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient(monkeypatch):
+    from verl.trainer.ppo import core_algos
+    def reject_second_gae(*args, **kwargs):
+        pytest.fail('DT already sums future reward events; it must not enter GAE again')
+    monkeypatch.setattr(core_algos, 'compute_gae_advantage_return', reject_second_gae)
     rows = episode_rows()
     for row, values in zip(rows, reward_event_credit_for_episode(rows, ratio_fixture())):
         row.update(values)
@@ -72,7 +76,9 @@ def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient():
     )
     assert len(data) == 2  # Inactive terminal padding did not become an event/action.
     original_ids = data.batch["responses"].clone()
+    original_advantages = data.batch["dt_token_advantages"].clone()
     data = compute_advantage(data, AdvantageEstimator.DELTATRACE)
+    torch.testing.assert_close(data.batch["advantages"], original_advantages, atol=0, rtol=0)
     torch.testing.assert_close(data.batch["responses"], original_ids)
     torch.testing.assert_close(data.batch["returns"], data.batch["dt_q_estimates"])
     assert not torch.equal(data.batch["returns"], data.batch["advantages"])

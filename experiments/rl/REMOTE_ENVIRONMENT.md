@@ -1,4 +1,8 @@
-# A6000 环境记录与复用入口
+# 远端环境记录与复用入口
+
+**当前执行平台（2026-09-22 用户最新指令）：只用 MetaX，不再使用 A6000。**
+下方 A6000 内容仅保留为已有环境与历史验证记录。当前任务没有在 A6000
+运行的自有训练/探针作业；后续从本文的 MetaX 复用入口恢复。
 
 整理日期：2026-09-21。**这台机器已经配置过环境；恢复工作应从复用开始。**
 本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
@@ -265,3 +269,39 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   包含 CPU、编译对照及原生整网结果。修改前 owner 源码在其 `before/` 中。
 - A6000 仅在已有 owner overlay 上应用相应差分；保留此前去除 head shape hook
   的执行兼容修改。原始隐藏行通过已有 norm hook 获取，避免依赖该旧 hook。
+
+## 2026-09-22 MetaX 训练组件接入（当前入口）
+
+- 用户指定只使用 MetaX；不再在 A6000 启动测试或训练。Goal 保持 active，
+  三任务完整 DT→PPO 尚未通过，不能把本节的环境准备记成训练成功。
+- 已在原 `deltatrace_qwen35_20260912/env` 补齐缺失组件，没有新建环境。
+  固定 VERL 源码：`$DT_RUNTIME_ROOT/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472`，
+  editable 安装时使用 `--no-deps`，随后应用现有 `patch_verl_agent2.py`。
+  AppWorld 源码同层：`appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5`。
+  路径已写入 `environments/metax.env.sh`，恢复时不要重复下载或安装。
+- 新增 hydra-core 1.3.2、tensordict 0.10.0、gym 0.26.2、gym-sokoban 0.0.6、
+  codetiming 1.4.0、torchdata 0.11.0、wandb 0.30.0；AppWorld 及 WebShop
+  必需包亦已安装。安装时用版本约束保护原 Torch、Transformers、Triton、
+  FlashAttention、NumPy、PEFT、Ray、Accelerate 和 torchvision。
+- 记录目录 `$DT_RUNTIME_ROOT/receipts/training-setup/` 保存安装前后 freeze、
+  保护约束、pip 安装报告、固定源码来源、CPU 回归和 Sokoban 奖励记录。
+  42 项既有组合/collector/PPO 回归通过，Sokoban 官方脚本奖励接口通过。
+- WebShop 新增 Java 17.0.20；apt 原有索引过期导致 404，更新索引后安装，
+  未升级模型依赖。断线后的 dpkg 配置已完成；`java -version` 已通过。
+  商品数据下载日志为 `receipts/webshop-assets.log`；首次 Google Drive 下载
+  因该主机到 `drive.google.com:443` 的网络不可达而失败。包安装已成功，
+  此问题需要取得官方资产，不应重新安装包。之后还需构建官方 1k Lucene
+  index。不能运行完整旧 `setup.sh` 重装依赖。
+- AppWorld GitHub 源码归档含 Git LFS 指针。必需 bundle 从该固定 commit 的
+  GitHub media URL 获取，并核对指针中的 SHA256 和字节数后替换。
+  已验证的文件不重复获取；余下安装/数据下载见 `receipts/appworld-remaining-lfs.log`
+  及同名 `.pid`，恢复时先查看进程和输出，再决定下一步。任务服务尚未启动。
+- 数值诊断及未采用候选位于 `receipts/boundary-audit/`。残差/归一化原生
+  舍入候选通过局部检查，但整网系数放大，未合入。当地正式两个 owner 文件
+  已恢复 `4df76746`；没有放宽阈值或更改奖励公式。FP32 线性转置仅作为
+  诊断比较，未接入训练；完整 DT 数值问题继续处理。
+- 用户再次确认 token PPO 目标后，核对了当地实际 `DELTATRACE` 分支直接
+  传递 `dt_token_advantages`，actor 使用 `vanilla` token PPO loss。
+  新增“调用第二次 GAE 即失败、传入优势逐元素不变”的断言，仍复用原有
+  collector→trainer→PPO 梯度测试；该检查 1 项通过，日志为
+  `receipts/training-setup/no-second-gae.log`。这不替代尚未通过的整网 DT。

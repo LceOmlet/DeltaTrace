@@ -15,11 +15,15 @@ O/padding 不参与 actor loss；实际 EOS action 保留 action 身份，其 EO
 对比可以为零。各事件分别变换后相加，不广播 span，不归一化 credit。
 
 归因阶段通过 HF 公共接口临时切换到 FA；正常和异常退出都恢复原 actor
-后端。复用 A6000 已记录的动态 shape 执行配置和持久缓存。启动脚本按实际
+后端。当前按用户指令只使用 MetaX，复用其已记录的动态 shape 执行配置和持久缓存。启动脚本按实际
 tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不截断已生成 action。
 
 ## 当前验证范围
 
+- MetaX 训练环境：固定 VERL 已安装并应用现有接口补丁，42 项奖励组合、
+  collector、PPO 接口回归通过；另已在当地官方 Sokoban worker 验证真实
+  `[-0.1,-0.1,-0.1,-0.1,10.9]` 奖励轨迹。WebShop/AppWorld 资产仍在准备。
+  这些是环境及接口结果，尚不表示完整 DT 训练通过。
 - CPU：54 项测试通过（含新增 12 项原生 BF16 head 舍入边界回归）。
   覆盖数学奖励组合、终局/过程奖励、真实上游 collector/PPO loss、token 身份、
   O/padding mask、EOS 端点构造、逐事件 nonlinear 变换、后端恢复等检查。
