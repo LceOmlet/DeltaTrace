@@ -20,6 +20,25 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 
 ## 当前验证范围
 
+- MetaX 按用户最新要求以物理 64 GB、不 OOM 验收。显式容量夹具把 DT
+  两个端点各固定为 **32768 个有效 token**（actor 输入 32597，加事件询问
+  170、目标 1），32769 被原读出接口拒绝。正式 DT 连续四次归因后，原 VERL
+  minibatch=4 完成两次非零 PPO 更新，1,448,475 个可训练参数元素改变；
+  peak allocated **60.627 GiB** / reserved **62.328 GiB**。
+  夹具使用官方脚本动作的 14 个 action token 和显式长前文，不是自然任务
+  长度或 512 个模型生成 token 的端到端吞吐。记录见
+  [results_dt_context_capacity.json](results_dt_context_capacity.json)。
+- FSDP2 归因按当前层使用公共 unshard/reshard，不再整模型驻留所有 gathered
+  参数。相同 16384-token 输入、非零 LoRA 下，完整 signed 向量与 Q/V/A
+  逐元素相等（零容差）；预热后中位耗时 40.521→40.698 秒（+0.44%），
+  allocated 54.187→39.806 GiB。保留修复前 32k 的 OOM 与 reshard 接口
+  失败记录；这不是用 offload 或改变有限公式换容量。50 项接口回归通过。
+- 完整 chat collector 已保留历史，环境此前又在每轮重复插入旧历史与任务
+  说明。现通过上游 manager 的 opt-in `full_chat_observations` 只发送新
+  observation，WebShop 保留当前 admissible actions；初始 prompt 和默认
+  路径与固定上游完全一致，4 项对照通过。DT 启动显式关闭上游默认熵正则
+  和额外无效动作罚分，避免混入固定计划外的梯度或奖励。三任务正在以此
+  配置重跑，尚不能据容量夹具宣布任务训练通过。
 - FSDP1 分层 LoRA 的参数恢复错误已定位到本地补丁：它把上游
   `use_orig_params=False` 无条件改成了 LoRA 下的 `True`。现对有 auto-wrap
   policy 的路径恢复上游设置。真实 Qwen 的旧 log-prob 和连续两次非零更新，
@@ -66,8 +85,8 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   回归通过，原生非零 LoRA 的 Sokoban 15 次 DT/Q/V 组合完成；数值审计
   仍失败 8/15，不能当作三任务训练或整网精度通过。
 
-**当前 EOS 路径的三任务模型训练、32k 实机容量、稳定多步更新和吞吐/显存验收
-尚未完成。旧生成前后读出探针、旧 32k 训练及 CPU 张量检查均不能替代。**
+**当前 EOS 路径的三任务模型训练、稳定连续训练及任务吞吐验收尚未完成。
+上面的精确 32k 容量夹具已通过；它不能替代真实任务训练与成功率评估。**
 
 ## 入口与历史结果
 

@@ -375,10 +375,54 @@ HF_WRAP_OLD = '        if self._is_rollout and self.config.rollout.name == "hf":
 HF_WRAP_NEW = '        if self._is_rollout and self.config.rollout.name == "hf" and os.getenv("VERL_ENABLE_HF_FSDP_WRAP", "0") != "1":\n            # Keep upstream HF rollout\'s conservative default; long-context\n            # single-GPU runs can opt into layer wrapping explicitly.\n            auto_wrap_policy = None'
 
 
+def patch_conversation_observations(text: str) -> str:
+    """Opt-in owner rendering for the collector's existing full chat history.
+
+    Legacy state prompts repeat instructions and recent actions inside every
+    observation. The full-chat collector already retains these exact messages.
+    Keep the initial prompt and legacy default unchanged; render only the new
+    observation (plus WebShop's current admissible actions) on later turns.
+    """
+    additions = {
+        'SokobanEnvironmentManager': '''        if not init and self.config.env.get("full_chat_observations", False) and not self.is_multi_modal:
+            return [f"Your current observation is:\\n{value}\\nYour admissible actions are [\\"up\\", \\"down\\", \\"left\\", \\"right\\"]."
+                    for value in text_obs]
+
+''',
+        'WebshopEnvironmentManager': '''        if not init and self.config.env.get("full_chat_observations", False):
+            result = []
+            for value, info in zip(text_obs, infos):
+                actions = "\\n".join(f"'{s}'," for s in self.format_avail_actions(info['available_actions']))
+                result.append(f"Your current observation is: {value}.\\nYour admissible actions of the current situation are:\\n[\\n{actions}\\n].")
+            return result
+
+''',
+        'AppWorldEnvironmentManager': '''        if not init and self.config.env.get("full_chat_observations", False):
+            return list(text_obs)
+
+''',
+    }
+    for name, insertion in additions.items():
+        start = text.index('class '+name+'(')
+        end = text.find('\nclass ', start+1)
+        end = len(text) if end < 0 else end
+        section = text[start:end]
+        if insertion in section:
+            continue
+        method = section.index('    def build_text_obs(')
+        anchor = section.index('        postprocess_text_obs = []', method)
+        section = section[:anchor]+insertion+section[anchor:]
+        text = text[:start]+section+text[end:]
+    return text
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("verl_root", type=Path)
     args = parser.parse_args()
+    env_manager = args.verl_root / 'agent_system/environments/env_manager.py'
+    env_text = env_manager.read_text()
+    env_manager.write_text(patch_conversation_observations(env_text))
     target = args.verl_root / "agent_system/environments/env_package/sokoban/__init__.py"
     if not target.is_file():
         raise FileNotFoundError(target)

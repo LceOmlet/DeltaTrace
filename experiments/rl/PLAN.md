@@ -152,12 +152,17 @@ Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局�
 
 - 正式 DT 负责有限传播，现有 VERL 负责 rollout、PPO clipping、optimizer，
   官方 task worker 负责 reward。禁止复制这些实现。
-- 保持 48 GB 单卡、Qwen3.5-9B、minibatch 4、总长度上限 32768；GRPO 对照
+- 保持单卡、Qwen3.5-9B、minibatch 4、总长度上限 32768；GRPO 对照
   group size 4。smoke 同样保持 32768 上限，实际长度另报，不能用 padding
   冒充原始任务上下文。读出询问和 target 占用也计入上限。
 - 2026-09-22 用户指定后续全部改用 MetaX，不再使用 A6000。先读环境记录并
   复用 Python/权重/持久缓存；先确认空闲显卡。平台变更不改变上述 Q/V、
-  minibatch 或上下文约束；MetaX 的物理显存与实测占用必须如实分别报告。
+  minibatch 或上下文约束。2026-09-22 用户进一步明确：MetaX 按物理 64 GB
+  显存、不 OOM 验收，不再要求 48 GB；物理容量与实测占用仍分别报告。
+  32k 容量须用已知长度的输入主动测试：DT 输入连同事件询问和目标恰好
+  32768 tokens，并验证原始 PPO 更新；不能等待真实任务偶然接近上限。
+  容量夹具与原始任务长度分开报告，越界必须明确拒绝而非静默截断。
+  显存修复必须同时对比相同输入的预热后耗时，不能以严重拖慢训练换取通过。
   归因阶段使用正式 runner 要求的 FA，结束后恢复原 actor attention 后端，
   包括异常路径；不能让前向专用 FA wheel 接管 PPO backward。
 - 复用已有动态 shape 执行配置，记录首轮/后续耗时和编译；不能清缓存假装恢复。

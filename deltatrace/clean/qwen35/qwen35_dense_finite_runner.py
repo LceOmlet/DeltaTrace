@@ -174,6 +174,11 @@ class Qwen35DenseFiniteRunner:
             def replay():
                 with torch.no_grad(),dc,mc:return layer(x,**kw)
             y=timed('native_replay_'+str(i),replay)
+            # Optional parameter-lifetime boundary for an existing FSDP actor.
+            # The native replay and every finite rule remain unchanged. Plain
+            # HF owners expose no callback and retain their original behavior.
+            prepare_layer=getattr(model,'prepare_finite_layer',None)
+            if callable(prepare_layer):prepare_layer(layer)
             if dc.calls!={k:1 for k in ('input_norm','post_norm','gate','up','silu','down','mlp','decoder')}:raise ValueError('Missing actual decoder captures.')
             if mc.calls!=({'module':1,'interface':1,'native_varlen':0,'native_dense':1} if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError('Missing actual native mixer captures.')
             d,c,e=dc.values,mc.values,getattr(mc,'endpoints',{});scale=getattr(mc,'scale',0.0625)
@@ -211,6 +216,8 @@ class Qwen35DenseFiniteRunner:
             if focused:observer.decoder(i,d,c,e,m,new,terms)
             del terms
             row['input_effect']=_effect(new,d['input_norm_input']);m=new;del new,d,c,e,lse,kw
+            release_layer=getattr(model,'release_finite_layer',None)
+            if callable(release_layer):release_layer(layer)
             if observer is not None:observer.boundary(str(i),m.detach(),root[str(i)])
         x=root['0'].to('cuda');signed=(m.double()*(x[1::2].double()-x[0::2].double())).sum(-1).cpu()
         torch.cuda.synchronize();seconds=time.perf_counter()-started

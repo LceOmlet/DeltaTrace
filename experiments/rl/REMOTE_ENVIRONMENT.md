@@ -1,6 +1,8 @@
 # 远端环境记录与复用入口
 
 **当前执行平台（2026-09-22 用户最新指令）：只用 MetaX，不再使用 A6000。**
+**最新显存约束：MetaX 使用物理 64 GB 上限、不 OOM；不再要求 48 GB。
+32k 须主动构造已知长度验证，显存修复须同时对比预热后的速度。**
 下方 A6000 内容仅保留为已有环境与历史验证记录。当前任务没有在 A6000
 运行的自有训练/探针作业；后续从本文的 MetaX 复用入口恢复。
 
@@ -481,3 +483,49 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   另一个 FSDP2、rollout microbatch=2
   对照已走完 rollout/log-prob/update，allocated 33.866 / reserved 36.389 GiB；
   其 GRPO 优势为零，不能把这次容量检查当作有效任务学习。
+
+## 2026-09-22 精确 32k DT 边界与 FSDP2 生命周期
+
+- 记录目录仍为 `$DT_RUNTIME_ROOT/receipts/training-setup/`，无新环境或缓存。
+  `dt-capacity-exact32k.json` 记录 reshard=True 时 replay 后权重又变回
+  DTensor 的失败；`dt-capacity-exact32k-noreshard.json` 记录保留整模型参数
+  时的真实 32k OOM。均保留，未改成通过。
+- 修复只在原 runner 的层边界调用 actor 公共 `unshard()` / `reshard()`；
+  参数数值、前向、有限规则及 PPO 均不改。正常和异常退出仍统一 release。
+  旧适配层保存为 `pre-layerwise/deltatrace_rollout.py`，供数值对照使用。
+- `verify_dt_owner_lifecycle.py --previous-adapter <上述文件> --context-length
+  16384 --output <JSON>`：同一个真实 Qwen actor，LoRA B 注入非零测试值，
+  旧/新各执行三次，第一轮不计入速度对比。其余中位耗时 40.521/40.698 秒，
+  allocated 54.187/39.806 GiB，完整 signed attribution 和 Q/V/A 零容差
+  一致。结果 `dt-lifecycle-speed16k.json`；短原始夹具结果另存
+  `dt-lifecycle-comparison.json`，不能用其冷/热耗时宣称提速。
+- `verify_dt_context_capacity.py --output <JSON> --artifacts <PT>`：FSDP2
+  reshard=True、LoRA r=1/alpha=2、actor minibatch=4/microbatch=1；四次真实
+  DT 输入各 32768 有效 token，32769 明确拒绝。actor 输入 32597，含官方
+  脚本夹具的 14 个 action token；其余增加的是明确的前文容量 filler。
+  不把该 fixture 当作自然任务 rollout 或 512-token 生成速度。
+  四次读出为 157.03/131.63/131.67/131.68 秒，两次原 PPO
+  更新梯度范数 2.4375、1.0234375，改变 1,448,475 个可训练参数元素。
+  总过程 717.22 秒，allocated/reserved 60.627/62.328 GiB，无 OOM。
+  原始 owner ledger 保存在 `dt-capacity-exact32k-layerwise.json`。
+  本地结果及原记录 SHA256：[results_dt_context_capacity.json](results_dt_context_capacity.json)。
+- 上述独立 worker 验证需设置空闲 CUDA_VISIBLE_DEVICES，并以单进程环境
+  `RANK=0 LOCAL_RANK=0 WORLD_SIZE=1 MASTER_ADDR=127.0.0.1 MASTER_PORT=<空闲端口>`
+  运行，另设 `DT_TASK=Sokoban DT_MAX_STEPS=15 DT_MAX_LENGTH=32768`。
+  数值对照使用 `FLASH_ATTENTION_DETERMINISTIC=1`、
+  `CUBLAS_WORKSPACE_CONFIG=:4096:8`、`PYTHONHASHSEED=0`；不修改训练默认值。
+- `lifecycle-interface-regression.log`：50 passed；
+  `observations-regression.log`：4 passed（与固定上游原始 manager 源码对照）。
+  原始 manager 保存于 `pinned-env_manager.py`，测试使用环境变量
+  `PINNED_ENV_MANAGER_SOURCE` 指向它；不要求远端安装 Git。
+- 三任务新运行使用 `full_chat_observations=True`；DT 配置 entropy_coeff=0，
+  use_invalid_action_penalty=False，官方事件奖励保持原值。使用原
+  `trainer.rollout_data_dir` 保存可检查的 rollout，不另建日志器。
+  新配置为 TRAIN_SIZE=1/GROUP_SIZE=4/MINI_BATCH_SIZE=4、MAX_STEPS=15、
+  MAX_RESPONSE=1024、MAX_TOTAL_TOKENS=32768、TOTAL_EPOCHS=2、
+  ENABLE_THINKING=False、FSDP_RESHARD_AFTER_FORWARD=True、DT_RAY_NUM_CPUS=8。
+  4 号卡 Sokoban、5 号卡 WebShop、6 号卡 AppWorld；日志分别
+  `dt-{Sokoban,Webshop,AppWorld}-v2.log`，Ray 目录
+  `/tmp/dt-mx-{soko,shop,app}-v2`。这是启动记录，不是完成声明或卡号预留。
+  旧作业结果保存在 `superseded-*-reports.json` 与 `superseded-*-worker.log`；
+  只停止已核对 RAY_TMPDIR 的本任务进程，其他用户的 GPU 0–2 作业未操作。

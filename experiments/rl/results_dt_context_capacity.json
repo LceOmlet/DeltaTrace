@@ -1,0 +1,730 @@
+{
+  "scope": "Exact context capacity and FSDP lifecycle comparison; explicitly synthetic filler with official scripted Sokoban reward, not native task performance",
+  "hardware": "MetaX C550 physical 64 GiB",
+  "user_memory_limit": "MetaX physical 64 GB without OOM; prior 48 GB requirement superseded",
+  "receipts": {
+    "dt-capacity-exact32k": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-capacity-exact32k.json",
+      "sha256": "e9f21f48b8c79fda8556e9b422a58e885d596c327881482833354cb6c4728f4b",
+      "result": {
+        "scope": "Exercise an exact 32768-token DT boundary and the original actor update.\n\nUses an explicitly padded capacity fixture from recorded official task rewards.\nThis is neither a generated task trajectory nor a task success-rate evaluation.\nNo model, finite rule, advantage formula, or PPO implementation is replaced.\n",
+        "context_cap": 32768,
+        "minibatch": 4,
+        "reshard_after_forward": true,
+        "stages": [
+          {
+            "name": "owner_init",
+            "seconds": 16.54258663393557,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "producer_init",
+            "seconds": 17.278651765547693,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "oversize_rejected",
+            "seconds": 17.318479668349028,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20386414592
+          }
+        ],
+        "synthetic_filler_tokens": 32150,
+        "original_response_tokens": 14,
+        "actor_input_tokens": 32597,
+        "query_tokens": 170,
+        "dt_input_tokens": 32768,
+        "official_fixture_reward": 10.9,
+        "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+        "status": "failed",
+        "error_type": "TorchRuntimeError",
+        "error": "Dynamo failed to run FX node with fake tensors: call_function <built-in method bmm of type object at 0x7fba941861c0>(*(FakeTensor(..., device='cuda:0', size=(1, s83, 4096), dtype=torch.bfloat16), DTensor(local_tensor=FakeTensor(..., device='cuda:0', size=(1, 4096, 12288), dtype=torch.bfloat16), device_mesh=DeviceMesh('cuda', [0], mesh_dim_names=('fsdp',)), placements=(Shard(dim=1),))), **{'out_dtype': torch.float32}): got RuntimeError('aten.bmm.dtype: got mixed torch.Tensor and DTensor, need to convert all torch.Tensor to DTensor before calling distributed operators!')\n\nfrom user code:\n   File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 89, in _mlp_input_rule\n    product=_linear_transpose(upstream,down_weight)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 66, in _linear_transpose\n    result=_linear_transpose(upstream,weight[0])\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 71, in _linear_transpose\n    return _mm(upstream.reshape(1,-1,shape[-1]),weight.unsqueeze(0)).reshape(*shape[:-1],weight.shape[-1])\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/finite_fla_gpu.py\", line 80, in _mm\n    return torch.bmm(a.to(torch.bfloat16), b.to(torch.bfloat16), out_dtype=torch.float32)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 120, in main\n    values.append(producer.attribute_episode([row], float(original['rewards']))[0])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/deltatrace_rollout.py\", line 324, in attribute_episode\n    result = self.readout.episode(rows)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/reward_readout.py\", line 159, in episode\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/deltatrace_credit.py\", line 51, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 114, in recorded_attribute\n    signed, detail = native_attribute(*a, **kw)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 209, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 119, in timed\n    torch.cuda.synchronize();tick=time.perf_counter();value=fn();torch.cuda.synchronize()\n                                                            ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 209, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 200, in decoder_finite_pullback\n    mnorm=boundaries.mlp(c['gate_output'][0::2],c['gate_output'][1::2],\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 153, in varying\n    return _op(*args)\n           ^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py\", line 736, in compile_wrapper\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py\", line 1495, in __call__\n    return self._torchdynamo_orig_callable(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py\", line 629, in __call__\n    return _compile(\n           ^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py\", line 1111, in _compile\n    guarded_code = compile_inner(code, one_graph, hooks, transform)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_utils_internal.py\", line 97, in wrapper_function\n    return function(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py\", line 793, in compile_inner\n    return _compile_inner(code, one_graph, hooks, transform)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py\", line 832, in _compile_inner\n    out_code = transform_code_object(code, transform)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/bytecode_transformation.py\", line 1424, in transform_code_object\n    transformations(instructions, code_options)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py\", line 267, in _fn\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py\", line 753, in transform\n    tracer.run()\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 3497, in run\n    super().run()\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1363, in run\n    while self.step():\n          ^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1267, in step\n    self.dispatch_table[inst.opcode](self, inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 834, in wrapper\n    return inner_fn(self, inst)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2910, in CALL\n    self._call(inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2904, in _call\n    self.call_function(fn, args, kwargs)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1193, in call_function\n    self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/lazy.py\", line 201, in realize_and_forward\n    return getattr(self.realize(), name)(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/functions.py\", line 529, in call_function\n    return super().call_function(tx, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/functions.py\", line 293, in call_function\n    return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1210, in inline_user_function_return\n    return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 3698, in inline_call\n    return tracer.inline_call_()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 3901, in inline_call_\n    self.run()\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1363, in run\n    while self.step():\n          ^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1267, in step\n    self.dispatch_table[inst.opcode](self, inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 834, in wrapper\n    return inner_fn(self, inst)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2910, in CALL\n    self._call(inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2904, in _call\n    self.call_function(fn, args, kwargs)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1193, in call_function\n    self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/lazy.py\", line 201, in realize_and_forward\n    return getattr(self.realize(), name)(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/functions.py\", line 529, in call_function\n    return super().call_function(tx, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/functions.py\", line 293, in call_function\n    return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1210, in inline_user_function_return\n    return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 3698, in inline_call\n    return tracer.inline_call_()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 3901, in inline_call_\n    self.run()\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1363, in run\n    while self.step():\n          ^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1267, in step\n    self.dispatch_table[inst.opcode](self, inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 834, in wrapper\n    return inner_fn(self, inst)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2910, in CALL\n    self._call(inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2904, in _call\n    self.call_function(fn, args, kwargs)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1193, in call_function\n    self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/lazy.py\", line 201, in realize_and_forward\n    return getattr(self.realize(), name)(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/functions.py\", line 529, in call_function\n    return super().call_function(tx, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/functions.py\", line 293, in call_function\n    return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1210, in inline_user_function_return\n    return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 3698, in inline_call\n    return tracer.inline_call_()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 3901, in inline_call_\n    self.run()\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1363, in run\n    while self.step():\n          ^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1267, in step\n    self.dispatch_table[inst.opcode](self, inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 834, in wrapper\n    return inner_fn(self, inst)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2910, in CALL\n    self._call(inst)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 2904, in _call\n    self.call_function(fn, args, kwargs)\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py\", line 1193, in call_function\n    self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/lazy.py\", line 201, in realize_and_forward\n    return getattr(self.realize(), name)(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/torch.py\", line 1338, in call_function\n    tensor_variable = wrap_fx_proxy(\n                      ^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/builder.py\", line 2559, in wrap_fx_proxy\n    return wrap_fx_proxy_cls(target_cls=TensorVariable, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/builder.py\", line 2625, in wrap_fx_proxy_cls\n    return _wrap_fx_proxy(\n           ^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/variables/builder.py\", line 2723, in _wrap_fx_proxy\n    example_value = get_fake_value(proxy.node, tx, allow_non_graph_fake=True)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/utils.py\", line 3355, in get_fake_value\n    raise TorchRuntimeError(str(e)).with_traceback(e.__traceback__) from None\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/utils.py\", line 3253, in get_fake_value\n    ret_val = wrap_fake_exception(\n              ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/utils.py\", line 2753, in wrap_fake_exception\n    return fn()\n           ^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/utils.py\", line 3254, in <lambda>\n    lambda: run_node(tx.output, node, args, kwargs, nnmodule)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/utils.py\", line 3462, in run_node\n    raise RuntimeError(make_error_message(e)).with_traceback(\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/utils.py\", line 3421, in run_node\n    return node.target(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_compile.py\", line 53, in inner\n    return disable_fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py\", line 929, in _fn\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/distributed/tensor/_api.py\", line 350, in __torch_dispatch__\n    return DTensor._op_dispatcher.dispatch(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/distributed/tensor/_dispatch.py\", line 151, in dispatch\n    op_info = self.unwrap_to_op_info(op_call, args, kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/distributed/tensor/_dispatch.py\", line 350, in unwrap_to_op_info\n    self._try_replicate_spec_for_scalar_tensor(\n  File \"/opt/conda/lib/python3.12/site-packages/torch/distributed/tensor/_dispatch.py\", line 452, in _try_replicate_spec_for_scalar_tensor\n    raise RuntimeError(\ntorch._dynamo.exc.TorchRuntimeError: Dynamo failed to run FX node with fake tensors: call_function <built-in method bmm of type object at 0x7fba941861c0>(*(FakeTensor(..., device='cuda:0', size=(1, s83, 4096), dtype=torch.bfloat16), DTensor(local_tensor=FakeTensor(..., device='cuda:0', size=(1, 4096, 12288), dtype=torch.bfloat16), device_mesh=DeviceMesh('cuda', [0], mesh_dim_names=('fsdp',)), placements=(Shard(dim=1),))), **{'out_dtype': torch.float32}): got RuntimeError('aten.bmm.dtype: got mixed torch.Tensor and DTensor, need to convert all torch.Tensor to DTensor before calling distributed operators!')\n\nfrom user code:\n   File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 89, in _mlp_input_rule\n    product=_linear_transpose(upstream,down_weight)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 66, in _linear_transpose\n    result=_linear_transpose(upstream,weight[0])\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 71, in _linear_transpose\n    return _mm(upstream.reshape(1,-1,shape[-1]),weight.unsqueeze(0)).reshape(*shape[:-1],weight.shape[-1])\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/finite_fla_gpu.py\", line 80, in _mm\n    return torch.bmm(a.to(torch.bfloat16), b.to(torch.bfloat16), out_dtype=torch.float32)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n\n",
+        "seconds": 47.369333683513105
+      },
+      "full_owner_ledger_preserved_remotely": false
+    },
+    "dt-capacity-exact32k-noreshard": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-capacity-exact32k-noreshard.json",
+      "sha256": "cdd4bd21398cccd0f300994a7c997ffef8a07c4c291dc331bc4adf6182b91958",
+      "result": {
+        "scope": "Exercise an exact 32768-token DT boundary and the original actor update.\n\nUses an explicitly padded capacity fixture from recorded official task rewards.\nThis is neither a generated task trajectory nor a task success-rate evaluation.\nNo model, finite rule, advantage formula, or PPO implementation is replaced.\n",
+        "context_cap": 32768,
+        "minibatch": 4,
+        "reshard_after_forward": false,
+        "stages": [
+          {
+            "name": "owner_init",
+            "seconds": 15.359130713157356,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "producer_init",
+            "seconds": 16.029244079254568,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "oversize_rejected",
+            "seconds": 16.067729208618402,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20386414592
+          }
+        ],
+        "synthetic_filler_tokens": 32150,
+        "original_response_tokens": 14,
+        "actor_input_tokens": 32597,
+        "query_tokens": 170,
+        "dt_input_tokens": 32768,
+        "official_fixture_reward": 10.9,
+        "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+        "status": "failed",
+        "error_type": "OutOfMemoryError",
+        "error": "CUDA out of memory. Tried to allocate 512.00 MiB. GPU 0 has a total capacity of 63.59 GiB of which 0 bytes is free. Of the allocated memory 62.24 GiB is allocated by PyTorch, and 65.28 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 120, in main\n    values.append(producer.attribute_episode([row], float(original['rewards']))[0])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/deltatrace_rollout.py\", line 324, in attribute_episode\n    result = self.readout.episode(rows)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/reward_readout.py\", line 159, in episode\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/deltatrace_credit.py\", line 51, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 114, in recorded_attribute\n    signed, detail = native_attribute(*a, **kw)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 209, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 119, in timed\n    torch.cuda.synchronize();tick=time.perf_counter();value=fn();torch.cuda.synchronize()\n                                                            ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 209, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_decoder_finite.py\", line 205, in decoder_finite_pullback\n    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)\n                                   ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_dense_finite_runner.py\", line 206, in mixer\n    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/clean/qwen35/qwen35_gdn_finite.py\", line 134, in gdn_finite_pullback\n    coeff=fla_pullback(e,native_mo,scale)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/profiles/qwen35_gdn_symmetric.py\", line 32, in averaged\n    reversed_endpoints[name] = value.index_select(0, permutation)\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 512.00 MiB. GPU 0 has a total capacity of 63.59 GiB of which 0 bytes is free. Of the allocated memory 62.24 GiB is allocated by PyTorch, and 65.28 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n",
+        "seconds": 58.23805658146739
+      },
+      "full_owner_ledger_preserved_remotely": false
+    },
+    "dt-capacity-exact32k-layerwise": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-capacity-exact32k-layerwise.json",
+      "sha256": "fdb2c03859dcd945ec20def6cea8d5af856a63be1ff2ef67dd5091c7deda5685",
+      "result": {
+        "scope": "Exercise an exact 32768-token DT boundary and the original actor update.\n\nUses an explicitly padded capacity fixture from recorded official task rewards.\nThis is neither a generated task trajectory nor a task success-rate evaluation.\nNo model, finite rule, advantage formula, or PPO implementation is replaced.\n",
+        "context_cap": 32768,
+        "minibatch": 4,
+        "reshard_after_forward": true,
+        "stages": [
+          {
+            "name": "owner_init",
+            "seconds": 15.631824512965977,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "producer_init",
+            "seconds": 16.36410069372505,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20384317440
+          },
+          {
+            "name": "oversize_rejected",
+            "seconds": 16.403435136191547,
+            "allocated": 17913066496,
+            "peak_allocated": 19947312128,
+            "peak_reserved": 20386414592
+          },
+          {
+            "name": "dt_0",
+            "seconds": 173.45583361387253,
+            "allocated": 17980175360,
+            "peak_allocated": 65098078720,
+            "peak_reserved": 66588770304
+          },
+          {
+            "name": "dt_1",
+            "seconds": 305.1100031239912,
+            "allocated": 17980175360,
+            "peak_allocated": 65098078720,
+            "peak_reserved": 66924314624
+          },
+          {
+            "name": "dt_2",
+            "seconds": 436.806478144601,
+            "allocated": 17980175360,
+            "peak_allocated": 65098078720,
+            "peak_reserved": 66924314624
+          },
+          {
+            "name": "dt_3",
+            "seconds": 568.5075188670307,
+            "allocated": 17980175360,
+            "peak_allocated": 65098078720,
+            "peak_reserved": 66924314624
+          },
+          {
+            "name": "old_log_probs",
+            "seconds": 584.7721804743633,
+            "allocated": 17983309824,
+            "peak_allocated": 65098078720,
+            "peak_reserved": 66924314624
+          },
+          {
+            "name": "actor_update_0",
+            "seconds": 657.2004726072773,
+            "allocated": 18050418688,
+            "peak_allocated": 65098078720,
+            "peak_reserved": 66924314624
+          },
+          {
+            "name": "actor_update_1",
+            "seconds": 717.1299045849591,
+            "allocated": 18050418688,
+            "peak_allocated": 65098078720,
+            "peak_reserved": 66924314624
+          }
+        ],
+        "synthetic_filler_tokens": 32150,
+        "original_response_tokens": 14,
+        "actor_input_tokens": 32597,
+        "query_tokens": 170,
+        "dt_input_tokens": 32768,
+        "official_fixture_reward": 10.9,
+        "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+        "readouts": [
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 156.95930145680904,
+                "peak_allocated": 65098078720,
+                "peak_reserved": 66588770304,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 157.0279753105715,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 131.56568458396941,
+                "peak_allocated": 65098078720,
+                "peak_reserved": 66924314624,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 131.62541373353451,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 131.60826392751187,
+                "peak_allocated": 65098078720,
+                "peak_reserved": 66924314624,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 131.6683936342597,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 32768,
+            "actual_row_lengths": [
+              32597
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 32768,
+                "query_tokens": 170,
+                "root_effect": 0.18901994824409485,
+                "signed_sum": 0.20146427078310558,
+                "conservation_residual": -0.012444322539010733,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 131.61019701883197,
+                "peak_allocated": 65098078720,
+                "peak_reserved": 66924314624,
+                "source_log_ratio_min": -0.022119322791695595,
+                "source_log_ratio_max": 0.06428719311952591
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 131.67510533612221,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          }
+        ],
+        "updates": [
+          {
+            "actor/pg_loss": [
+              -0.15255513787269592,
+              -0.15255513787269592,
+              -0.15255513787269592,
+              -0.15255513787269592
+            ],
+            "actor/pg_clipfrac": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              2.4375
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 60.627310276031494,
+            "perf/max_memory_reserved_gb": 62.328125,
+            "perf/cpu_memory_used_gb": 303.4146156311035,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              -0.1616169512271881,
+              -0.1616169512271881,
+              -0.1616169512271881,
+              -0.1616169512271881
+            ],
+            "actor/pg_clipfrac": [
+              0.0714285746216774,
+              0.0714285746216774,
+              0.0714285746216774,
+              0.0714285746216774
+            ],
+            "actor/ppo_kl": [
+              -0.03674384579062462,
+              -0.03674384579062462,
+              -0.03674384579062462,
+              -0.03674384579062462
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "actor/grad_norm": [
+              1.0234375
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 60.627310276031494,
+            "perf/max_memory_reserved_gb": 62.328125,
+            "perf/cpu_memory_used_gb": 303.4449920654297,
+            "actor/lr": 1e-06
+          }
+        ],
+        "changed_elements": 1448475,
+        "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+        "status": "passed",
+        "seconds": 717.2234997302294
+      },
+      "full_owner_ledger_preserved_remotely": true
+    },
+    "dt-lifecycle-comparison": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-lifecycle-comparison.json",
+      "sha256": "6f0f4c703ca23dc092de9cfe83bd93ee3fdbbfba27e5893f8e052ea8ad322df1",
+      "result": {
+        "scope": "Compare actual DT vectors before/after FSDP parameter-lifetime changes.\n\nThe prior adapter is an archived source file, not a second production path.\nUses the real checkpoint and recorded official fixture, with exact comparison.\nThis numerical regression does not replace the separate exact-32k capacity run.\n",
+        "previous_adapter_sha256": "c378b39a76e5e15b465c4db2c10537010686870219bfabf81ecb506b2d1cbe01",
+        "previous": {
+          "task": "Sokoban",
+          "policy_tokens": 14,
+          "nonzero_reward_events": 1,
+          "finite_trace_calls": 1,
+          "max_readout_length": 618,
+          "actual_row_lengths": [
+            447
+          ],
+          "traces": [
+            {
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "query_tokens": 170,
+              "root_effect": -0.15559887886047363,
+              "signed_sum": -0.12751442600057306,
+              "conservation_residual": -0.028084452859900577,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "seconds": 31.746891867369413,
+              "peak_allocated": 36761765376,
+              "peak_reserved": 40938504192,
+              "source_log_ratio_min": -0.06994552910327911,
+              "source_log_ratio_max": 0.06038105487823486
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 31.7649397412315,
+          "nonzero_advantages": 13,
+          "conservation_failures": 1
+        },
+        "layerwise": {
+          "task": "Sokoban",
+          "policy_tokens": 14,
+          "nonzero_reward_events": 1,
+          "finite_trace_calls": 1,
+          "max_readout_length": 618,
+          "actual_row_lengths": [
+            447
+          ],
+          "traces": [
+            {
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "query_tokens": 170,
+              "root_effect": -0.15559887886047363,
+              "signed_sum": -0.12751442600057306,
+              "conservation_residual": -0.028084452859900577,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "seconds": 1.467416631989181,
+              "peak_allocated": 36736921088,
+              "peak_reserved": 40938504192,
+              "source_log_ratio_min": -0.06994552910327911,
+              "source_log_ratio_max": 0.06038105487823486
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 1.4710829118266702,
+          "nonzero_advantages": 13,
+          "conservation_failures": 1
+        },
+        "signed_and_qva_exactly_equal": true,
+        "all_parameters_resharded_after_each_trace": true,
+        "status": "passed"
+      },
+      "full_owner_ledger_preserved_remotely": false
+    },
+    "dt-lifecycle-speed16k": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/dt-lifecycle-speed16k.json",
+      "sha256": "ad945982b5d6af5be92210b1b111ec754329e63b3731b1ee82fe128d8f57bef0",
+      "result": {
+        "scope": "Compare actual DT vectors before/after FSDP parameter-lifetime changes.\n\nThe prior adapter is an archived source file, not a second production path.\nUses the real checkpoint and recorded official fixture, with exact comparison.\nThis numerical regression does not replace the separate exact-32k capacity run.\n",
+        "previous_adapter_sha256": "c378b39a76e5e15b465c4db2c10537010686870219bfabf81ecb506b2d1cbe01",
+        "synthetic_filler_tokens": 15766,
+        "previous": [
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 16384,
+            "actual_row_lengths": [
+              16213
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 16384,
+                "query_tokens": 170,
+                "root_effect": 0.23426637053489685,
+                "signed_sum": 0.23275695361093263,
+                "conservation_residual": 0.0015094169239642241,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 68.1248125480488,
+                "peak_allocated": 58182991872,
+                "peak_reserved": 62664998912,
+                "source_log_ratio_min": -0.006561095826327801,
+                "source_log_ratio_max": 0.06051734834909439
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 68.18954845704138,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 16384,
+            "actual_row_lengths": [
+              16213
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 16384,
+                "query_tokens": 170,
+                "root_effect": 0.23426637053489685,
+                "signed_sum": 0.23275695361093263,
+                "conservation_residual": 0.0015094169239642241,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 40.46405843831599,
+                "peak_allocated": 58182991872,
+                "peak_reserved": 62664998912,
+                "source_log_ratio_min": -0.006561095826327801,
+                "source_log_ratio_max": 0.06051734834909439
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 40.50739185884595,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 16384,
+            "actual_row_lengths": [
+              16213
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 16384,
+                "query_tokens": 170,
+                "root_effect": 0.23426637053489685,
+                "signed_sum": 0.23275695361093263,
+                "conservation_residual": 0.0015094169239642241,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 40.48767760582268,
+                "peak_allocated": 58182991872,
+                "peak_reserved": 62664998912,
+                "source_log_ratio_min": -0.006561095826327801,
+                "source_log_ratio_max": 0.06051734834909439
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 40.533943582326174,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          }
+        ],
+        "previous_warm_median_seconds": 40.52066772058606,
+        "layerwise": [
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 16384,
+            "actual_row_lengths": [
+              16213
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 16384,
+                "query_tokens": 170,
+                "root_effect": 0.23426637053489685,
+                "signed_sum": 0.23275695361093263,
+                "conservation_residual": 0.0015094169239642241,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 40.63971000816673,
+                "peak_allocated": 42741160448,
+                "peak_reserved": 62664998912,
+                "source_log_ratio_min": -0.006561095826327801,
+                "source_log_ratio_max": 0.06051734834909439
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 40.674515191465616,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 16384,
+            "actual_row_lengths": [
+              16213
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 16384,
+                "query_tokens": 170,
+                "root_effect": 0.23426637053489685,
+                "signed_sum": 0.23275695361093263,
+                "conservation_residual": 0.0015094169239642241,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 40.65625692438334,
+                "peak_allocated": 42741160448,
+                "peak_reserved": 62664998912,
+                "source_log_ratio_min": -0.006561095826327801,
+                "source_log_ratio_max": 0.06051734834909439
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 40.69049049075693,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          },
+          {
+            "task": "Sokoban",
+            "policy_tokens": 14,
+            "nonzero_reward_events": 1,
+            "finite_trace_calls": 1,
+            "max_readout_length": 16384,
+            "actual_row_lengths": [
+              16213
+            ],
+            "traces": [
+              {
+                "source_step": 4,
+                "event_step": 4,
+                "context_tokens": 16384,
+                "query_tokens": 170,
+                "root_effect": 0.23426637053489685,
+                "signed_sum": 0.23275695361093263,
+                "conservation_residual": 0.0015094169239642241,
+                "conservation_tolerance": 0.02,
+                "conservation_verified": true,
+                "seconds": 40.6709950985387,
+                "peak_allocated": 42741160448,
+                "peak_reserved": 62664998912,
+                "source_log_ratio_min": -0.006561095826327801,
+                "source_log_ratio_max": 0.06051734834909439
+              }
+            ],
+            "max_length": 32768,
+            "ratio_source": "official_eos_dt_signed_attribution_estimate",
+            "reference_token_samples": 0,
+            "per_token_probability_queries": 0,
+            "seconds": 40.705811007879674,
+            "nonzero_advantages": 13,
+            "conservation_failures": 0
+          }
+        ],
+        "layerwise_warm_median_seconds": 40.6981507493183,
+        "signed_and_qva_exactly_equal": true,
+        "all_parameters_resharded_after_each_trace": true,
+        "warm_time_ratio_new_over_previous": 1.00438006179849,
+        "status": "passed"
+      },
+      "full_owner_ledger_preserved_remotely": false
+    }
+  },
+  "source_sha256": {
+    "experiments/rl/deltatrace_rollout.py": "f1539b726d1d09dc58507948f33830e84aa0baea09fb83ad8ec51c0e85ec7596",
+    "experiments/rl/verify_dt_context_capacity.py": "76ede35b567f21d43731c78f1ec305906dd0ae5716b728964443947c2e7354e5",
+    "experiments/rl/verify_dt_owner_lifecycle.py": "be966e3bf0e7723f2fb416a68351af20686faba9cf56ecdf16cdebe7fb9caf55",
+    "clean/qwen35/qwen35_dense_finite_runner.py": "bba3532dfa45e96a4a025b40a9b3364178c75e57a331494cebe399548dd5f3eb",
+    "experiments/rl/PLAN.md": "c404c87110e3d79e9518dbc745c3ac151b7cfa94852457a00f74efa367377b0f",
+    "experiments/rl/run_verl_agent.sh": "2ab8f8de5cfd4e95051ffe2c3acc5667549eef8a3b9742dc8b5e97370aea81a5",
+    "experiments/rl/patch_verl_agent2.py": "e9b0e267307c6254ac0e4353243307f11b978e5d6bd4d7baf5db8d57384321c1"
+  },
+  "regressions": {
+    "lifecycle-interface-regression": "..................................................                       [100%]\n=============================== warnings summary ===============================\n../opt/conda/lib/python3.12/site-packages/ray/util/state/util.py:55\n  /opt/conda/lib/python3.12/site-packages/ray/util/state/util.py:55: DeprecationWarning: Ray state API is no longer experimental. Please import from `ray.util.state`. instead. Importing from `ray.experimental` will be deprecated in future releases. \n    warnings.warn(\n\ntest_shared_padding.py::test_owner_generation_metadata_uses_tokenizer_for_unset_fields[None-expected0]\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute\n\ntest_shared_padding.py::test_owner_generation_metadata_uses_tokenizer_for_unset_fields[None-expected0]\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n50 passed, 3 warnings in 20.31s\nsys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n",
+    "observations-regression": "....                                                                     [100%]\n4 passed in 2.13s\n"
+  }
+}

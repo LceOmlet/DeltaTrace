@@ -37,6 +37,7 @@ TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
 MAX_STEPS="${MAX_STEPS:-15}"
 CHAT_TEMPLATE_ARGS=()
+METHOD_ARGS=()
 if [[ -n "${ENABLE_THINKING:-}" ]]; then
   CHAT_TEMPLATE_ARGS+=("+data.apply_chat_template_kwargs.enable_thinking=$ENABLE_THINKING")
 fi
@@ -44,7 +45,13 @@ fi
 case "$METHOD" in
   grpo) ADV_ESTIMATOR=grpo ;;
   ppo) ADV_ESTIMATOR=gae ;;
-  dt) ADV_ESTIMATOR=deltatrace ;;
+  dt)
+    ADV_ESTIMATOR=deltatrace
+    # PLAN uses official event rewards and the token clipped objective alone.
+    # Otherwise entropy-only updates could be mistaken for DT learning.
+    METHOD_ARGS+=("actor_rollout_ref.actor.entropy_coeff=0.0"
+                 "actor_rollout_ref.actor.use_invalid_action_penalty=False")
+    ;;
   *) echo "METHOD must be grpo, ppo, or dt" >&2; exit 2 ;;
 esac
 case "$ENV_NAME" in
@@ -191,6 +198,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   env.env_name="$ENV_NAME" \
   env.seed=0 \
   env.max_steps="$MAX_STEPS" \
+  +env.full_chat_observations=True \
   env.rollout.n="$GROUP_SIZE" \
   env.sokoban.mode="$SOKOBAN_MODE" \
   env.sokoban.num_boxes=1 \
@@ -198,6 +206,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   env.resources_per_worker.num_cpus=0.1 \
   trainer.critic_warmup=0 \
   trainer.logger="['console']" \
+  trainer.rollout_data_dir="${ROLLOUT_DATA_DIR:-null}" \
   trainer.project_name=delta_trace_agent \
   trainer.experiment_name="${METHOD}_${ENV_NAME}_qwen35_9b" \
   trainer.n_gpus_per_node=1 \
@@ -206,4 +215,5 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   trainer.test_freq="$TEST_FREQ" \
   trainer.total_epochs="$TOTAL_EPOCHS" \
   trainer.val_before_train="$VAL_BEFORE_TRAIN" \
-  "${CHAT_TEMPLATE_ARGS[@]}"
+  "${CHAT_TEMPLATE_ARGS[@]}" \
+  "${METHOD_ARGS[@]}"

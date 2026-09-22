@@ -71,10 +71,6 @@ class _Qwen35CausalOwnerView:
         register_fsdp_forward_method(forward_model, self._owner_forward_name)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        output = getattr(self._forward_model, self._owner_forward_name)(*args, **kwargs)
-        # The official FSDP2 hook reshares after the owner forward.  Keep the
-        # same gathered actor parameters available for DT's official finite
-        # seed/pullback, which consumes lm_head.weight after that forward.
         modules = []
         seen = set()
         # Traverse both the actor root and the ABI shell.  The shell aliases
@@ -88,14 +84,17 @@ class _Qwen35CausalOwnerView:
                 seen.add(id(module))
                 if hasattr(module, "_get_fsdp_state"):
                     modules.append(module)
-        # FSDP2 owns parameters at multiple nested module boundaries.  The
-        # normal forward hooks gather and reshard each boundary independently;
-        # DT's reviewed finite pullback runs after that forward and therefore
-        # needs the same public unshard operation at every boundary.  This is
-        # lifecycle management only: no parameter, attribution rule, or
-        # fallback computation is introduced here.
-        for module in modules:
-            module.unshard()
+        self._owner_fsdp_modules = modules
+        self._owner_params_unsharded = True
+        output = getattr(self._forward_model, self._owner_forward_name)(*args, **kwargs)
+        # Finite propagation consumes one decoder at a time. Keeping every
+        # decoder unsharded here duplicated almost the entire 9B checkpoint and
+        # caused an actual OOM at 32768 tokens. Release native-forward gathers;
+        # only the root-owned head/final norm are needed for the next seed.
+        # Each decoder is gathered at its replay/finite boundary below.
+        for module in reversed(modules):
+            module.reshard()
+        self._forward_model.unshard()
         if not getattr(self, "_owner_lifecycle_reported", False):
             from torch.distributed.tensor import DTensor
 
@@ -106,13 +105,23 @@ class _Qwen35CausalOwnerView:
             ]
             print(
                 f"[DeltaTrace] owner FSDP2 lifecycle modules={len(modules)} "
-                f"remaining_dtensor={len(remaining)} sample={remaining[:3]}",
+                f"layerwise=True remaining_dtensor={len(remaining)} sample={remaining[:3]}",
                 flush=True,
             )
             self._owner_lifecycle_reported = True
-        self._owner_fsdp_modules = modules
-        self._owner_params_unsharded = True
         return output
+
+    def prepare_finite_layer(self, layer: Any) -> None:
+        # Replay's official post-forward hook may already have resharded.
+        # Public unshard restores the ordinary weights for the finite rules.
+        for module in layer.modules():
+            if hasattr(module, "_get_fsdp_state"):
+                module.unshard()
+
+    def release_finite_layer(self, layer: Any) -> None:
+        for module in reversed(list(layer.modules())):
+            if hasattr(module, "_get_fsdp_state"):
+                module.reshard()
 
     def forward_root(self, *args: Any, **kwargs: Any) -> Any:
         # A root readout finishes at native logits. Unlike finite pullback it
