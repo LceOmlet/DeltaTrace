@@ -48,6 +48,10 @@ def main():
         args.receipt.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
 
     try:
+        previous = json.loads(destination(restic+['snapshots', '--json']))
+        verified_labels = {tag for snap in previous
+                           if 'dt-checkpoint-restore-sha256' in snap.get('tags', [])
+                           for tag in snap.get('tags', [])}
         with client.open_sftp() as sftp:
             entries = [x for x in ('repo/experiments/rl', 'receipts', 'runs', 'formal-training.json',
                                    'active-training.json', 'active-source.json', 'environment.json')
@@ -57,6 +61,14 @@ def main():
             if exists(sftp, manifest):
                 with sftp.open(manifest) as f:
                     jobs = json.load(f)['jobs']
+            # The official AppWorld client writes API traces/evaluation files
+            # alongside its configured port file, outside trainer rollouts.
+            for job in jobs:
+                port_file = job.get('settings', {}).get('APPWORLD_PORT_FILE')
+                if job['task'] == 'AppWorld' and port_file:
+                    outputs = PurePosixPath(port_file).parent/'experiments/outputs'
+                    if exists(sftp, str(outputs)):
+                        entries.append(str(outputs.relative_to(args.source_root)))
             snapshots = [('metadata', entries, False)]
             for job in jobs:
                 root = PurePosixPath(job['checkpoint_dir'])
@@ -70,11 +82,13 @@ def main():
                         continue
                     step = int(name.removeprefix('global_step_'))
                     label = f"{PurePosixPath(job['run_dir']).name}-step-{step}"
-                    if step <= latest:
+                    if step <= latest and label not in verified_labels:
                         rel = str((root/name).relative_to(args.source_root))
                         snapshots.append((label, [rel], True))
             if args.checkpoint:
-                snapshots.append(('checkpoint-roundtrip-probe', [args.checkpoint], True))
+                label = 'probe-'+PurePosixPath(args.checkpoint).name
+                if label not in verified_labels:
+                    snapshots.append((label, [args.checkpoint], True))
         for label, paths, immutable in snapshots:
             for path in paths:
                 if PurePosixPath(path).is_absolute() or '..' in PurePosixPath(path).parts:
@@ -136,6 +150,15 @@ print(json.dumps(out,sort_keys=True))
                     raise RuntimeError(f'{label}: restored checkpoint files differ from source')
                 row['source_restored_sha256'] = source_hashes
             row['restore_verified'] = True
+            if immutable:
+                # Restic owns the durable marker. Subsequent hourly checks do
+                # not transfer/restore an already verified immutable checkpoint.
+                destination(restic+['tag', '--add', 'dt-checkpoint-restore-sha256', snapshot])
+                tagged = json.loads(destination(restic+['snapshots', '--json']))
+                verified = [s for s in tagged if label in s.get('tags', [])
+                            and 'dt-checkpoint-restore-sha256' in s.get('tags', [])]
+                row['original_snapshot_id'] = snapshot
+                row['snapshot_id'] = verified[-1]['id']
             record()
             cleanup = """import pathlib,shutil,sys
 base=pathlib.Path(sys.argv[1]).resolve(); target=pathlib.Path(sys.argv[2]).resolve()
