@@ -431,3 +431,16 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   peak allocated 19792867328 bytes。原数值审计仍有 8/15 项失败；不把
   接口修复说成整网精度通过。该夹具修改了适配器权重，与基础模型结果
   不是同一受控速度/精度对照，不能从两者的差值声称收益。
+- FSDP1 的长输入测试已完成 rollout/旧 log-prob，进入 actor 更新后失败：
+  `Cannot writeback when the parameter shape changes`，期望扁平
+  `[1017118720]`、实际 `[248320,4096]`。这是 FSDP 生命周期错误，不能
+  当作容量或 PPO 更新通过。当前容量运行回到 FSDP2、重分片开启、rollout
+  microbatch=2；PPO minibatch/group 仍为 4，context cap 仍为 32768。
+  日志 `grpo-capacity-32k-b2.log`，结果尚待完成。
+- 当前 Qwen tokenizer 的默认模板以未闭合 `<think>` 开始生成。实际 Sokoban
+  rollout 的多轮行动有较多无效项，尚未确认原因。启动器现可显式传入
+  `ENABLE_THINKING=False`，直接透传上游已有
+  `data.apply_chat_template_kwargs.enable_thinking`；未设置时保留默认行为。
+  独立对照运行 `dt-Sokoban-nonthinking.log`；不改变 DT 信用公式、token mask
+  或 PPO。默认思考配置的三个任务继续保留各自运行与日志，不能提前宣称
+  关闭思考改善了成功率或吞吐。

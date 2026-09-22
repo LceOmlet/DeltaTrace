@@ -36,6 +36,10 @@ VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
 MAX_STEPS="${MAX_STEPS:-15}"
+CHAT_TEMPLATE_ARGS=()
+if [[ -n "${ENABLE_THINKING:-}" ]]; then
+  CHAT_TEMPLATE_ARGS+=("+data.apply_chat_template_kwargs.enable_thinking=$ENABLE_THINKING")
+fi
 
 case "$METHOD" in
   grpo) ADV_ESTIMATOR=grpo ;;
@@ -201,4 +205,5 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   trainer.save_freq=-1 \
   trainer.test_freq="$TEST_FREQ" \
   trainer.total_epochs="$TOTAL_EPOCHS" \
-  trainer.val_before_train="$VAL_BEFORE_TRAIN"
+  trainer.val_before_train="$VAL_BEFORE_TRAIN" \
+  "${CHAT_TEMPLATE_ARGS[@]}"
