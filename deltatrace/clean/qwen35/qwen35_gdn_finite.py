@@ -13,7 +13,7 @@ import sys
 import torch
 import torch.nn.functional as F
 from signed_secant_rules import rmsnorm_secant_pullback
-from finite_fla_gpu import _mm
+from qwen35_decoder_finite import _linear_transpose, _linear_weights
 
 
 def resolve_native_gdn_forward(module_type):
@@ -80,11 +80,6 @@ class NativeGDNCapture:
         sys.setprofile(None)
 
 
-def _linear_transpose(upstream,weight):
-    shape=upstream.shape
-    return _mm(upstream.reshape(1,-1,shape[-1]),weight.unsqueeze(0)).reshape(*shape[:-1],weight.shape[-1])
-
-
 def _scalar_secant(x0,x1,y0,y1,derivative0):
     delta=x1-x0;nonzero=delta!=0
     return torch.where(nonzero,(y1-y0)/torch.where(nonzero,delta,torch.ones_like(delta)),derivative0)
@@ -119,7 +114,7 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
     batch,length,width=upstream.shape;assert values['input'].shape==(2*batch,length,width)
     left=lambda x:x[0::2].float();right=lambda x:x[1::2].float()
     e=endpoints;c=values;terms={}
-    mnorm=_linear_transpose(upstream,module.out_proj.weight)
+    mnorm=_linear_transpose(upstream,_linear_weights(module.out_proj))
     m=mnorm.reshape(batch,length,module.num_v_heads,module.head_v_dim)
     o0,o1=left(e['o']),right(e['o']);z0,z1=left(c['z']),right(c['z'])
     weight=module.norm.weight.float();eps=module.norm.eps
@@ -161,10 +156,10 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         seed=torch.zeros_like(pre);seed[1::2]=mpre.to(pre.dtype)
         mprojected,=torch.autograd.grad(pre,projected,seed)
     mqkv=mprojected[1::2].transpose(1,2)
-    mx=_linear_transpose(mqkv,module.in_proj_qkv.weight)
-    mx=mx+_linear_transpose(mz.flatten(2),module.in_proj_z.weight)
-    mx=mx+_linear_transpose(mb,module.in_proj_b.weight)
-    mx=mx+_linear_transpose(ma,module.in_proj_a.weight)
+    mx=_linear_transpose(mqkv,_linear_weights(module.in_proj_qkv))
+    mx=mx+_linear_transpose(mz.flatten(2),_linear_weights(module.in_proj_z))
+    mx=mx+_linear_transpose(mb,_linear_weights(module.in_proj_b))
+    mx=mx+_linear_transpose(ma,_linear_weights(module.in_proj_a))
     mask=c['mask']
     if mask is not None and mask.shape[0]>1 and mask.shape[1]>1:mx=mx*mask[1::2,:,None]
     if diagnostics:

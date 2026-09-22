@@ -405,3 +405,29 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   `receipts/training-setup/dt-{Sokoban,Webshop,AppWorld}-tokenids.log`。
   另有 `grpo-capacity-32k.log`，显式使用 31800 个 filler token、max_steps=1，
   只检查长输入资源容量；不是原始任务长度、完整任务训练或成功率实验。
+
+## 2026-09-22 LoRA 线性边界核查与容量候选
+
+- 对已安装 PEFT 的实际 Linear 做非零适配器输入梯度核对，确认 `.weight`
+  仅返回 base 权重。旧 DT 读取方式在该边界的最大误差为 1；使用 PEFT
+  `get_delta_weight` 提供的增量后误差为 2.22e-16（FP64 边界检查）。
+  记录 `receipts/training-setup/peft-linear-contract.json`。
+- 修复候选保存在 `receipts/training-setup/peft-linear-candidate/`；完成下述
+  原生 Qwen 检查后已同步到 active owner，旧文件保存在 `peft-linear-before/`。它直接读取 PEFT 的 delta，不复制
+  LoRA 公式或 merge/unmerge 参数。base/delta 分别走已有线性转置，避免
+  先加到 BF16 base 时把小更新舍入消失；这会增加适配器相关矩阵计算，
+  其整网开销仍需测量。当前只接入训练所用 vanilla LoRA。
+- 原 head 及新增原生/编译线性边界测试 17 项通过（25.28 秒），包括适配器
+  激活/关闭/合并状态和原权重不变。日志 `peft-linear-tests.log`；同模型
+  非零 LoRA 的正式 DT 检查见 `peft-native-Sokoban.log/.json`，不是模型训练。
+- `reshard_after_forward=False` 的 32k 长输入候选实际板卡占用达到
+  55749 MiB（包含设备基础占用），已经超过 48 GiB 目标，主动停止，
+  不能报告为合格的省显存配置。长输入首次因 prompt 超出 5 tokens 被
+  原接口拒绝，filler 改为 31750；总上限和 minibatch 均未改。
+  下一项使用上游既有 `ACTOR_STRATEGY=fsdp, HF_FSDP_WRAP=True`，
+  日志 `grpo-capacity-32k-fsdp1.log`。仍只属于显式扩长的容量检查。
+- 非零 LoRA 的完整原生 Sokoban Q/V 组合已经完成：15 次正式 DT、65 个
+  非零 token 优势，约 39.47 秒（首个 27.03 秒，其余 0.77–1.18 秒），
+  peak allocated 19792867328 bytes。原数值审计仍有 8/15 项失败；不把
+  接口修复说成整网精度通过。该夹具修改了适配器权重，与基础模型结果
+  不是同一受控速度/精度对照，不能从两者的差值声称收益。

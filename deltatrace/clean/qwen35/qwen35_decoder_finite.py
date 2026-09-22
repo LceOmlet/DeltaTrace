@@ -41,7 +41,32 @@ class NativeDecoderCapture:
         self.handles.clear()
 
 
+def _linear_weights(module):
+    """Read the active linear map through PEFT's existing delta-weight API.
+
+    PEFT exposes the base weight as ``.weight`` even while its unmerged
+    forward uses adapters. Keep their weights separate: adding a small LoRA
+    update to a BF16 base first can round the update away entirely. No actor
+    parameter is merged, copied back or mutated by this readout.
+    """
+    weight=module.weight
+    if not hasattr(module,'get_delta_weight'):
+        return weight
+    if module.disable_adapters or module.merged:
+        return weight
+    weights=[weight]
+    for adapter in module.active_adapters:
+        if adapter in module.lora_A:
+            weights.append(module.get_delta_weight(adapter))
+    return tuple(weights) if len(weights)>1 else weight
+
+
 def _linear_transpose(upstream,weight):
+    if isinstance(weight,tuple):
+        result=_linear_transpose(upstream,weight[0])
+        for delta in weight[1:]:
+            result=result+_linear_transpose(upstream,delta)
+        return result
     shape=upstream.shape
     return _mm(upstream.reshape(1,-1,shape[-1]),weight.unsqueeze(0)).reshape(*shape[:-1],weight.shape[-1])
 
@@ -145,7 +170,7 @@ def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layou
     assert cos.shape==sin.shape and cos.shape[0]==2*b and cos.shape[1]==t
     assert module.q_norm.eps==module.k_norm.eps and module.attention_dropout==0
     mcontent,mgate=boundaries.attention_gate(c['q_proj_output'][0::2],c['q_proj_output'][1::2],
-        c['attention_output'][0::2],upstream,module.o_proj.weight,heads,dim)
+        c['attention_output'][0::2],upstream,_linear_weights(module.o_proj),heads,dim)
     ops={'q0':c['query'][0::2],'q1':c['query'][1::2],'k0':c['key'][0::2],'k1':c['key'][1::2],
          'v0':c['value'][0::2],'u':mcontent,'lse0':lse[0::2],'lse1':lse[1::2]}
     if pv_rule=='content0':
@@ -160,7 +185,7 @@ def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layou
     mx=boundaries.attention_input(coeff['dq'],coeff['dk'],coeff['dv'],mgate,
         c['q_norm_input'][0::2],c['q_norm_input'][1::2],c['k_norm_input'][0::2],c['k_norm_input'][1::2],
         module.q_norm.weight,module.k_norm.weight,cos[1::2],sin[1::2],
-        module.q_proj.weight,module.k_proj.weight,module.v_proj.weight,module.q_norm.eps,module.num_key_value_groups)
+        _linear_weights(module.q_proj),_linear_weights(module.k_proj),_linear_weights(module.v_proj),module.q_norm.eps,module.num_key_value_groups)
     diagnostics_out={'mcontent':mcontent,'mgate':mgate,'coeff':coeff,'finite_FA_activity':activity} if diagnostics else {}
     return mx,diagnostics_out
 
@@ -174,7 +199,7 @@ def decoder_finite_pullback(layer,values,upstream,mixer_pullback,boundaries,diag
     c=values
     mnorm=boundaries.mlp(c['gate_output'][0::2],c['gate_output'][1::2],
         c['up_output'][0::2],c['up_output'][1::2],c['silu_output'][0::2],c['silu_output'][1::2],
-        upstream,layer.mlp.down_proj.weight,layer.mlp.up_proj.weight,layer.mlp.gate_proj.weight)
+        upstream,_linear_weights(layer.mlp.down_proj),_linear_weights(layer.mlp.up_proj),_linear_weights(layer.mlp.gate_proj))
     mmixer=boundaries.norm_residual(c['post_norm_input'][0::2],c['post_norm_input'][1::2],
         layer.post_attention_layernorm.weight,mnorm,upstream,layer.post_attention_layernorm.eps)
     mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)
