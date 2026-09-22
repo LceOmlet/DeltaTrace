@@ -117,7 +117,10 @@ root=pathlib.Path(sys.argv[1]); out={}
 for name in sys.argv[2:]:
  for f in sorted((root/name).rglob('*')):
   if f.is_file():
-   with f.open('rb') as stream: out[str(f.relative_to(root))]=hashlib.file_digest(stream,'sha256').hexdigest()
+   digest=hashlib.sha256()
+   with f.open('rb') as stream:
+    for chunk in iter(lambda: stream.read(8*1024*1024), b''): digest.update(chunk)
+   out[str(f.relative_to(root))]=digest.hexdigest()
 print(json.dumps(out,sort_keys=True))
 """
                 remote_python = '/opt/conda/bin/python'
