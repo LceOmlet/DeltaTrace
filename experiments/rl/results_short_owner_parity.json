@@ -1126,7 +1126,7 @@
     }
   },
   "tolerance_source": "https://github.com/Dao-AILab/flash-attention/blob/v2.6.3/tests/test_flash_attn.py",
-  "tolerance_scope": "FA official forward/backward criterion applied to active token log-probs, policy gradients and parameter increments; L2 is reported, not an extra gate",
+  "tolerance_scope": "Local whole-pipeline extension borrowing the FA error-comparison form. The denominator includes weight rounding, other layers and update accumulation. This is not an official FA test or a certification of PPO training reliability.",
   "fp32_reference": {
     "receipt": {
       "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe upstream case imports an archived pristine owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
@@ -3832,5 +3832,7 @@
       "sha256": "c4e51ed678aba79793c2d693fd2df7e9bde723532e5fbb4f27489a76d10e00b5",
       "text": "............                                                             [100%]\n=============================== warnings summary ===============================\ntest_shared_padding.py::test_owner_generation_metadata_uses_tokenizer_for_unset_fields[None-expected0]\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute\n\ntest_shared_padding.py::test_owner_generation_metadata_uses_tokenizer_for_unset_fields[None-expected0]\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n12 passed, 2 warnings in 18.88s\nsys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n"
     }
-  }
+  },
+  "status_scope": "Only the stated short-chain numerical error bound; not training reliability",
+  "reporting_correction": "The prior wording official FA criterion was too broad for this whole-PPO comparison. Retain all measured values and statuses with the narrower scope; separately inspect ratios, clipping branches, update direction and representative long sequences."
 }

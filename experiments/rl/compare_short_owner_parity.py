@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--trim-shared-padding', action='store_true')
     parser.add_argument('--case-prefix', help='Receipt filename prefix when retaining before/after repair cases')
     parser.add_argument('--fp32-reference', type=Path,
-                        help='Independent FP32 owner artifact; use the official FA 2x error criterion')
+                        help='Independent FP32 owner artifact; borrow the FA 2x error comparison for this local pipeline test')
     args = parser.parse_args()
     result = dict(scope='Same worker, weights, original optimizer and DT advantages; '
                         'installed actor versus pristine pinned VERL actor. '
@@ -48,8 +48,10 @@ def main():
         assert fp32_receipt['status'] == 'artifacts_ready' and fp32_receipt['fp32_reference']
         result['owner_tolerance'] = 'max absolute error to independent FP32 <= 2x original BF16 math pipeline error to FP32'
         result['tolerance_source'] = 'https://github.com/Dao-AILab/flash-attention/blob/v2.6.3/tests/test_flash_attn.py'
-        result['tolerance_scope'] = ('FA official forward/backward criterion applied to active token log-probs, '
-                                     'policy gradients and parameter increments; L2 is reported, not an extra gate')
+        result['tolerance_scope'] = ('Local whole-pipeline extension borrowing the FA error-comparison form. '
+                                     'The denominator includes weight rounding, other layers and update accumulation. '
+                                     'This is not an official FA test or a certification of PPO training reliability.')
+        result['status_scope'] = 'Only the stated short-chain numerical error bound; not training reliability'
         result['fp32_reference'] = dict(receipt=fp32_receipt,
             artifacts_sha256=hashlib.sha256(args.fp32_reference.read_bytes()).hexdigest())
     for setting in ('reshard', 'noreshard'):

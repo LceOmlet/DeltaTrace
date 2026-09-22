@@ -13,6 +13,7 @@ import importlib.util
 import json
 import os
 import random
+import time
 import traceback
 from pathlib import Path
 from unittest.mock import patch
@@ -41,6 +42,14 @@ def main():
                    help='Check production active-token updates before/after the owner mask backport')
     p.add_argument('--left-padding', type=int, default=165,
                    help='Explicit shared padding; 165 exercises removal of two complete FLA chunks')
+    p.add_argument('--effective-input-tokens', type=int, default=0,
+                   help='Explicit long numerical fixture length; 0 keeps the recorded short row')
+    p.add_argument('--response-tokens', type=int, default=0,
+                   help='Explicit synthetic action width for long numerical comparison; not task evaluation')
+    p.add_argument('--owner-math', action=argparse.BooleanOptionalAction, default=True,
+                   help='Also run the BF16 math baseline; long direct owner comparisons can omit it')
+    p.add_argument('--head-only-comparison', action='store_true',
+                   help='Also use the installed actor with trimming disabled to separate head slicing from padding effects')
     p.add_argument('--fp32-reference-from', type=Path,
                    help='Original FP32 math reference from the same checkpoint, saved LoRA initial values, IDs and DT advantages')
     p.add_argument('--output', type=Path, required=True)
@@ -54,6 +63,7 @@ def main():
     result['comparison_performed'] = False
     result['trim_shared_padding'] = args.trim_shared_padding
     artifacts = {}
+    started = time.perf_counter()
     try:
         random.seed(2026)
         np.random.seed(2026)
@@ -91,6 +101,9 @@ def main():
         c.rollout.n = 1
         c.rollout.tensor_model_parallel_size = 1
         c.rollout.log_prob_micro_batch_size_per_gpu = 1
+        result['policy_loss_config'] = {k:c.actor[k] for k in
+            ('clip_ratio', 'clip_ratio_low', 'clip_ratio_high', 'loss_agg_mode')}
+        result['policy_loss_config']['clip_ratio_c'] = 'inf'
         worker = ActorRolloutRefWorker(c, 'actor_rollout')
         worker.init_model()
         installed_actor_type = type(worker.actor)
@@ -135,6 +148,25 @@ def main():
         row = fixture['tasks']['Sokoban']['rows'][-1]
         row = {k: torch.tensor(v) if k in ('input_ids', 'attention_mask', 'responses') else v for k, v in row.items()}
         pad = worker.tokenizer.pad_token_id
+        if args.effective_input_tokens or args.response_tokens:
+            width = row['responses'].numel()
+            prompt = row['input_ids'][:-width][row['attention_mask'][:-width].bool()]
+            actions = row['responses'][row['attention_mask'][-width:].bool()]
+            original_count = actions.numel()
+            filler = worker.tokenizer.encode(' context', add_special_tokens=False)[0]
+            if args.response_tokens:
+                assert args.response_tokens >= original_count
+                actions = torch.cat((torch.full((args.response_tokens-original_count,), filler), actions))
+            length = args.effective_input_tokens or prompt.numel()+actions.numel()
+            fill = length-prompt.numel()-actions.numel()
+            assert fill >= 0
+            row['input_ids'] = torch.cat((torch.full((fill,), filler), prompt, actions))
+            row['attention_mask'] = torch.ones(length, dtype=torch.long)
+            row['responses'] = actions
+            result['numerical_fixture'] = dict(synthetic_context_tokens=fill,
+                synthetic_action_tokens=actions.numel()-original_count,
+                original_action_tokens=original_count,
+                scope='Explicit long numerical input; recorded reward is a test coefficient, not a reward claim for this synthetic trajectory')
         # Exercise the actual shared-padding optimization, including EOS/padding.
         row['input_ids'] = torch.cat((torch.full((args.left_padding,), pad), row['input_ids'], torch.full((19,), pad)))
         row['attention_mask'] = torch.cat((torch.zeros(args.left_padding, dtype=torch.long), row['attention_mask'], torch.zeros(19, dtype=torch.long)))
@@ -251,7 +283,18 @@ def main():
             reference, result['paired_updates'] = run_updates()
             artifacts['paired_owner'] = reference
             result['paired_owner_sha256'] = hashlib.sha256(args.paired_owner_source.read_bytes()).hexdigest()
-            if args.trim_shared_padding:
+            if args.head_only_comparison:
+                assert args.trim_shared_padding
+                restore_training_state()
+                worker.actor = installed_actor_type(c.actor, worker.actor_module_fsdp, worker.actor_optimizer)
+                trim = os.environ['VERL_TRIM_SHARED_PADDING']
+                try:
+                    os.environ['VERL_TRIM_SHARED_PADDING'] = '0'
+                    artifacts['paired_untrimmed_head'], result['head_only_updates'] = run_updates()
+                finally:
+                    os.environ['VERL_TRIM_SHARED_PADDING'] = trim
+                    worker.actor = module.DataParallelPPOActor(c.actor, worker.actor_module_fsdp, worker.actor_optimizer)
+            if args.trim_shared_padding and args.owner_math:
                 # Measure the owner's own FA/math error on identical weights,
                 # DT advantages and optimizer state; do not inflate it to fit
                 # any difference introduced by the shared-padding patch.
@@ -264,7 +307,7 @@ def main():
                 finally:
                     text_model.set_attn_implementation(saved_attention)
                 result['comparison_tolerance'] = 'owner FA/math max-absolute and L2 error, no multiplier'
-            else:
+            elif not args.trim_shared_padding:
                 result['comparison_performed'] = True
                 result['comparison_tolerance'] = {'atol': 0, 'rtol': 0}
                 torch.testing.assert_close(current, reference, atol=0, rtol=0)
@@ -273,6 +316,9 @@ def main():
                         if key.startswith('actor/'):
                             assert actual[key] == expected[key], (key, actual[key], expected[key])
                 result['status'] = 'passed'
+            else:
+                result['comparison_performed'] = True
+                result['comparison_tolerance'] = 'Direct paired owner measurements only; no borrowed FP32 error bound'
         if args.previous_padding_source:
             assert args.trim_shared_padding, 'Continuity check targets the production trimmed path'
             restore_training_state()
@@ -300,6 +346,10 @@ def main():
         result.update(status='failed', error=str(exc), traceback=traceback.format_exc())
         traceback.print_exc()
     finally:
+        result['seconds'] = time.perf_counter()-started
+        if torch.cuda.is_initialized():
+            result['peak_allocated'] = torch.cuda.max_memory_allocated()
+            result['peak_reserved'] = torch.cuda.max_memory_reserved()
         args.output.write_text(json.dumps(result, indent=2, default=str)+'\n')
         torch.save(artifacts, args.artifacts)
         if torch.distributed.is_initialized():

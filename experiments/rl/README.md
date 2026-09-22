@@ -24,14 +24,32 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   在 batch=1 时跳过线性注意力 mask，回补 Transformers `59eed1a6` 的官方
   条件修复；Qwen 裁剪保留原 FLA 64-token 分块边界，最多留 63 个 padding。
   固定 VERL 原 actor、相同初值/输入/DT 优势/optimizer、两次更新，对照独立
-  FP32 原生模型与 BF16 math 基线，按 FA 官方的 **2 倍基线最大误差** 判据
-  通过。旧 log-prob、更新 log-prob、梯度误差倍数为 1.310、0.621、0.639，
-  两次参数增量为 1.000、0.997；PPO loss/clipping 也通过。True/False 两种
+  FP32 原生模型与 BF16 math 基线，通过了**借鉴 FA 误差比较方式的短链对照**：
+  最大误差不超过普通 BF16 整网基线误差的 2 倍。旧 log-prob、更新 log-prob、
+  梯度误差倍数为 1.310、0.621、0.639，
+  两次参数增量为 1.000、0.997；PPO loss/clipping 的聚合量也满足该误差界。True/False 两种
   FSDP 设置都检查；没有把 FP32 配置用于训练。关闭裁剪的默认路径另有
   零容差对拍，不能拿该结果代替开启裁剪的验收。
   原先两条 BF16 路径差值的 1x 检查与严格零误差连续性失败均保留，未改写；
   它们不是 FA 的独立 FP32 判据。14 项 mask/裁剪接口检查通过。
+  FA 官方检查同一 Q/K/V 的 attention 输出和梯度；这里的整网分母还包含权重
+  精度、其他层和更新累计误差。这是本地扩展，不是 FA 官方对 PPO 的可靠性
+  认证；最大误差界也不能代替逐 token 概率比、clipping 分支及更新方向检查。
   见 [results_short_owner_parity.json](results_short_owner_parity.json)。
+- 补充短链诊断直接调用原 PPO 函数：两次更新均无 clipping 分支分歧，但两边
+  实际被裁剪的 token 数都为零，不能据此宣称覆盖了裁剪生效时的行为；当前
+  对原版的梯度余弦为 0.992/0.989，逐次参数增量余弦为 0.929/0.965。
+  原版 FA 对原版 math 的对应参数增量余弦为 0.937/0.961；第二次更新的
+  概率比最大差分别为 0.302 和 0.330。不能将这些差异描述为完全相同，也
+  不事后新增方向阈值宣布通过。两种 FSDP 设置结果相同。16k 有效输入、
+  每行 1024 个 action token 的数值夹具也完成原版/当前版本各两次更新，
+  峰值 allocated 51.179 / reserved 55.645 GiB。第二次更新的概率比最大差
+  0.332、平均绝对差 0.00137，4/4096 个 action 位置改变 clipping 分支；
+  batch 重复同一行四次，因此是一个 token 位置的差异重复四次。梯度余弦
+  0.978/0.905，逐次参数增量余弦 0.904/0.921，不能称为严格一致。当前
+  继续区分 head 输出裁剪和 padding 裁剪的影响。夹具不当作自然任务长度
+  或任务成功率。
+  详见 [results_policy_effects.json](results_policy_effects.json)。
 - 修复前 v3 原生模型训练已记录：WebShop 两轮成功率 0/25%，第二轮 11 次
   DT、非零梯度；AppWorld 两轮 50%/0，首轮 26 次 DT、非零梯度；Sokoban
   首轮 100%、140 次 DT、非零梯度，第二轮因本次数值修复留存日志后主动停止。
@@ -125,7 +143,8 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
   回归通过，原生非零 LoRA 的 Sokoban 15 次 DT/Q/V 组合完成；数值审计
   仍失败 8/15，不能当作三任务训练或整网精度通过。
 
-**当前数值修复的短链对拍已通过；修复后的三任务连续训练仍需完成。
+**当前数值修复通过了借鉴 FA 方式的短链误差界检查；这不能单独证明训练可靠。
+修复后的三任务连续训练仍需完成。
 精确 32k 容量夹具已通过；它不能替代真实任务训练与成功率评估。**
 
 ## 入口与历史结果
@@ -133,6 +152,8 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 - `run_verl_agent.sh`：固定上游 VERL 训练入口，DT/PPO/GRPO 共用原训练基建。
 - `verify_short_owner_parity.py` / `compare_short_owner_parity.py`：固定原 actor
   的真实短链对拍，独立 FP32 校准；只用于测试，不接管训练。
+- `inspect_owner_policy_effects.py`：读取已保存的 log-prob/梯度/权重，调用原
+  PPO 函数检查实际概率比、clipping 分支和更新方向；只报告测量，不新设门槛。
 - `patch_verl_agent2.py`：固定上游的薄接口补丁与共有左 padding 裁剪；默认上游路径
   保持原行为。环境、rollout、optimizer 和 PPO clipping 都由上游实现。
 - `verify_upstream_actor_update.py`：复用真实 worker 的非零更新回归，可复现旧

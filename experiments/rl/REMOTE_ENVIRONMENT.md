@@ -33,13 +33,15 @@
   `core_algos.py` 仍为 `5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6`。
   两个 actor 共享同一实际模型、原 optimizer、输入和 DT 信号；每组前恢复初值
   及 optimizer/scheduler/RNG，分别执行两次真实更新，不复制 PPO 计算。
-- `short-parity-fa-standard.json` 是最终数值验收：相同 165-token 左 padding、
+- `short-parity-fa-standard.json` 是短链误差界检查的历史文件名：相同 165-token 左 padding、
   447 个有效输入 token、14 个 policy token（batch 4 共 56），DT 实际长度 618，
   配置上限仍为 32768。原 actor 的 FP32 math SDPA 与 HF 原 GDN fallback 是
   独立数值参考；BF16 训练路径不变。PPO loss/clipping、有效 token log-prob、
-  原梯度和参数增量均通过 [FA 2.6.3 官方误差判据](https://github.com/Dao-AILab/flash-attention/blob/v2.6.3/tests/test_flash_attn.py)：
+  原梯度和参数增量均满足借鉴 [FA 2.6.3 测试](https://github.com/Dao-AILab/flash-attention/blob/v2.6.3/tests/test_flash_attn.py) 的本地误差界：
   相对 FP32 的最大误差不超过原 BF16 math 路径误差的两倍。该判据在本次验证
-  中延伸到 PPO 的梯度/参数增量；不是声称 FA 官方提供了 PPO 测试。
+  中延伸到 PPO 的梯度/参数增量。官方检查同一 Q/K/V 的 attention；本地分母
+  还包含整网权重精度、其他层和更新累计误差，不能把该界单独作为整条训练
+  可靠性的证明。2 是借用的工程常数，不是 PPO 数值误差的理论保证。
   两边读取同一 checkpoint，LoRA 初值和 DT 输入逐元素核对；checkpoint 中
   727 个 BF16、48 个 FP32 参数张量的加载精度差异计入普通 BF16 基线误差，
   不把整个 FP32/BF16 模型说成字节相同。清单 `checkpoint-dtype-inventory.json`。

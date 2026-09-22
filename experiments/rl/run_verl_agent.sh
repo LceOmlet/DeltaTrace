@@ -7,6 +7,7 @@ set -euo pipefail
 
 METHOD="${METHOD:-grpo}"             # grpo, ppo, or dt
 ENV_NAME="${ENV_NAME:-Webshop}"      # Webshop, Sokoban, or AppWorld
+ENV_SEED="${ENV_SEED:-0}"            # Existing upstream environment seed
 DT_ROOT="${DT_ROOT:-$PWD}"
 MODEL_PATH="${MODEL_PATH:-/data/liangchen/models/Qwen3.5-9B}"
 VERL_ROOT="${VERL_ROOT:-$DT_ROOT/third_party/verl-agent2}"
@@ -196,7 +197,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.rollout.val_kwargs.do_sample=True \
   algorithm.use_kl_in_reward=False \
   env.env_name="$ENV_NAME" \
-  env.seed=0 \
+  env.seed="$ENV_SEED" \
   env.max_steps="$MAX_STEPS" \
   +env.full_chat_observations=True \
   env.rollout.n="$GROUP_SIZE" \
