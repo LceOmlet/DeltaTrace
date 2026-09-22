@@ -67,6 +67,9 @@ batch/轨迹总预算完全不变。验证仍按原环境 reset 的采样方式�
 1.235/0.709 GiB；132 个环境的匿名内存差约 593 GiB。原 worker 的 reset、
 搜索、商品/选项点击、购买终止和官方评分完全相同，见
 [results_environment_memory.json](results_environment_memory.json)。未修改环境、奖励或采样批量。
+修复后的 v3 三组原文预算作业已进入首轮 rollout，容器内存抽样约 542–548 GiB，
+尚未完成首轮大批次。启动身份、阶段采样与未完成项见
+[results_paper_scale_launch.json](results_paper_scale_launch.json)；不把启动等同于实验完成。
 
 [run_verl_agent.sh](run_verl_agent.sh) 只透传上游 checkpoint save/resume/retention
 与任务配置。检查点仍由原 FSDPCheckpointManager 保存完整 model、optimizer、
