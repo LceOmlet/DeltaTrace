@@ -95,6 +95,13 @@ CRITIC_SINGLE_UNPAD = "                input_ids_rmpad, indices, *_ = unpad_inpu
 FSDP_FILE = "verl/workers/fsdp_workers.py"
 FSDP_ATTN_OLD = 'attn_implementation="flash_attention_2"'
 FSDP_ATTN_NEW = 'attn_implementation=os.getenv("VERL_ATTN_IMPLEMENTATION", "sdpa")'
+FSDP_GENERATION_IDS_OLD = '''            "eos_token_id": self.generation_config.eos_token_id if self.generation_config is not None else self.tokenizer.eos_token_id,
+            "pad_token_id": self.generation_config.pad_token_id if self.generation_config is not None else self.tokenizer.pad_token_id,'''
+FSDP_GENERATION_IDS_NEW = '''            # A GenerationConfig may exist with unset special-token fields.
+            # Preserve explicit generation IDs, otherwise use the tokenizer
+            # that already owns the collector's prompt padding and EOS mask.
+            "eos_token_id": self.generation_config.eos_token_id if getattr(self.generation_config, "eos_token_id", None) is not None else self.tokenizer.eos_token_id,
+            "pad_token_id": self.generation_config.pad_token_id if getattr(self.generation_config, "pad_token_id", None) is not None else self.tokenizer.pad_token_id,'''
 VISION_IMPORT_OLD = "        from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForVision2Seq"
 VISION_IMPORT_NEW = """        from transformers import AutoConfig, AutoModelForCausalLM
         try:
@@ -444,6 +451,10 @@ def main() -> None:
     else:
         print(f"already patched {fsdp}")
     text = fsdp.read_text()
+    if FSDP_GENERATION_IDS_NEW not in text:
+        if FSDP_GENERATION_IDS_OLD not in text:
+            raise RuntimeError(f"cannot find generation special-token metadata anchor in {fsdp}")
+        text = text.replace(FSDP_GENERATION_IDS_OLD, FSDP_GENERATION_IDS_NEW, 1)
     if VISION_IMPORT_NEW not in text:
         if VISION_IMPORT_OLD not in text:
             raise RuntimeError(f"cannot find Transformers vision import anchor in {fsdp}")

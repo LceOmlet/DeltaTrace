@@ -317,8 +317,9 @@ class DeltaTraceRolloutProducer:
         attention = text_model.config._attn_implementation
         try:
             # Public HF dispatch switches the existing layers, without new
-            # weights. The installed FA wheel supports finite forward/replay;
-            # it does not support the subsequent actor backward.
+            # weights. Restore the actor's selected backend afterwards; some
+            # hosts have a forward-only FA wheel, while MetaX's installed FA2
+            # backward is separately verified in its environment receipt.
             text_model.set_attn_implementation('flash_attention_2')
             result = self.readout.episode(rows)
             print('[DeltaTrace readout] ' + json.dumps(self.readout.last_report), flush=True)

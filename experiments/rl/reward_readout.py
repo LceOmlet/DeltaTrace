@@ -170,6 +170,9 @@ class EventRatioReadout:
                     source_step=int(row['env_step']), event_step=int(event['env_step']),
                     context_tokens=length, query_tokens=query.numel(),
                     root_effect=detail['root_effect'], signed_sum=detail['policy_credit_signed_sum'],
+                    conservation_residual=detail['conservation_residual'],
+                    conservation_tolerance=detail['conservation_tolerance'],
+                    conservation_verified=detail['conservation_verified'],
                     seconds=detail.get('complete_attribution_seconds_with_diagnostics'),
                     peak_allocated=detail.get('peak_allocated'), peak_reserved=detail.get('peak_reserved'),
                     source_log_ratio_min=float(matrix[k, :len(positions)].min()),
@@ -177,9 +180,12 @@ class EventRatioReadout:
                 ))
                 print(f"[DT EOS event] step={int(row['env_step'])} event={int(event['env_step'])} "
                       f"tokens={len(positions)} length={length} "
-                      f"seconds={report['traces'][-1]['seconds']}", flush=True)
+                      f"seconds={report['traces'][-1]['seconds']} "
+                      f"conservation_verified={detail['conservation_verified']} "
+                      f"residual={detail['conservation_residual']}", flush=True)
         result = reward_event_credit_for_episode(rows, log_ratios)
         report['seconds'] = time.perf_counter() - started
         report['nonzero_advantages'] = sum(int(r['dt_token_advantages'].count_nonzero()) for r in result)
+        report['conservation_failures'] = sum(not trace['conservation_verified'] for trace in report['traces'])
         self.last_report = report
         return result

@@ -13,6 +13,37 @@ from verl.workers.actor.dp_actor import DataParallelPPOActor
 from verl.workers.rollout.hf_rollout import HFRollout
 
 
+@pytest.mark.parametrize('generation_config, expected', [
+    (None, (7, 0)),
+    (SimpleNamespace(eos_token_id=None, pad_token_id=None), (7, 0)),
+    (SimpleNamespace(eos_token_id=[8, 9], pad_token_id=0), ([8, 9], 0)),
+    (SimpleNamespace(eos_token_id=8, pad_token_id=6), (8, 6)),
+    (SimpleNamespace(eos_token_id=8, pad_token_id=None), (8, 0)),
+])
+def test_owner_generation_metadata_uses_tokenizer_for_unset_fields(monkeypatch, generation_config, expected):
+    from verl.workers import fsdp_workers as owner
+    from verl.workers.sharding_manager.base import BaseShardingManager
+
+    monkeypatch.setattr(owner, 'get_torch_device', lambda: SimpleNamespace(
+        current_device=lambda: 'cpu', empty_cache=lambda: None))
+    monkeypatch.setattr(owner, 'log_gpu_memory_usage', lambda *args, **kwargs: None)
+    received = {}
+
+    def generate_sequences(prompts):
+        received.update(prompts.meta_info)
+        return prompts
+
+    worker = SimpleNamespace(
+        _is_rollout=True, generation_config=generation_config,
+        tokenizer=SimpleNamespace(eos_token_id=7, pad_token_id=0),
+        rollout=SimpleNamespace(generate_sequences=generate_sequences),
+        rollout_sharding_manager=BaseShardingManager(),
+    )
+    prompts = DataProto(batch=TensorDict({'input_ids': torch.tensor([[1, 2]])}, batch_size=[1]))
+    owner.ActorRolloutRefWorker.generate_sequences(worker, prompts)
+    assert (received['eos_token_id'], received['pad_token_id']) == expected
+
+
 class HeadOnlyModel(torch.nn.Module):
     def __init__(self):
         super().__init__()

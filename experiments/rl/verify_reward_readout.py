@@ -181,12 +181,17 @@ def main():
         audit = single_eos_spot_check(owner, tokenizer, recorded.first)
         result['tasks'][task] = dict(readout=readout.last_report, row_lengths=lengths,
                                      credit_rows=reports, native_single_eos_spot_check=audit,
+                                     conservation_verified=readout.last_report['conservation_failures'] == 0,
                                      first_trace_detail=recorded.first_detail)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, indent=2)+'\n')
         print(task, json.dumps(readout.last_report), flush=True)
-    result['status'] = 'completed_fixture_checks_not_training'
+    result['conservation_verified'] = all(t['conservation_verified'] for t in result['tasks'].values())
+    result['status'] = ('completed_fixture_checks_not_training' if result['conservation_verified']
+                        else 'failed_numerical_audit_after_completed_credit_composition')
     args.output.write_text(json.dumps(result, indent=2)+'\n')
+    if not result['conservation_verified']:
+        raise AssertionError('DT numerical audit failed; full per-event Q/V and residual evidence saved')
 
 
 if __name__ == '__main__':

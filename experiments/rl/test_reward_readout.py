@@ -119,6 +119,40 @@ def test_zero_observed_rewards_do_not_invent_a_signal():
     assert not output[0]['dt_token_advantages'].any()
 
 
+def test_rounding_audit_failure_preserves_raw_token_credit_and_failed_status():
+    class RoundedRunner(Runner):
+        def attribute(self, *args, **kwargs):
+            signed, detail = super().attribute(*args, **kwargs)
+            detail['root_effect'] += .5
+            detail['compiled_seed_logprob_effect'] += .5
+            return signed, detail
+    expected = readout().episode([row(0, -.1)])[0]
+    dt = readout(RoundedRunner())
+    actual = dt.episode([row(0, -.1)])[0]
+    # A numerical failure must not rescale, zero, broadcast or otherwise
+    # substitute a different token signal. Nor may it be reported as passed.
+    for key in expected:
+        torch.testing.assert_close(actual[key], expected[key], atol=0, rtol=0)
+    assert dt.last_report['conservation_failures'] == 1
+    assert not dt.last_report['traces'][0]['conservation_verified']
+    assert dt.last_report['traces'][0]['conservation_tolerance'] == .02
+    assert dt.last_report['traces'][0]['conservation_residual'] == pytest.approx(.5)
+
+
+@pytest.mark.parametrize('failure', ['nonfinite', 'seed_mismatch'])
+def test_invalid_owner_values_are_still_rejected(failure):
+    class InvalidRunner(Runner):
+        def attribute(self, *args, **kwargs):
+            signed, detail = super().attribute(*args, **kwargs)
+            if failure == 'nonfinite':
+                signed[0, 2] = float('nan')
+            else:
+                detail['compiled_seed_logprob_effect'] += .5
+            return signed, detail
+    with pytest.raises((ValueError, AssertionError), match='non-finite|endpoint/seed mismatch'):
+        readout(InvalidRunner()).episode([row(0, -.1)])
+
+
 def test_total_context_includes_readout_and_target_no_silent_truncation():
     dt = readout(max_length=6)
     with pytest.raises(ValueError, match='context 7 exceeds cap 6'):

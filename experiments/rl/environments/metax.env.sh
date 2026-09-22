@@ -24,6 +24,10 @@ export RAY_TMPDIR="${RAY_TMPDIR:-/tmp/dt-rl-mx-20260922}"
 # checkpoint's GQA/head layout. The local SDPA build lacks memory-efficient
 # attention; reuse the verified installed FA2 kernel for the actor as well.
 export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-flash_attention_2}"
+# Reuse upstream batching and Ray resource settings. The actor minibatch is
+# independently fixed at 4 by run_verl_agent.sh.
+export ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-4}"
+export DT_RAY_NUM_CPUS="${DT_RAY_NUM_CPUS:-8}"
 # Set CUDA_VISIBLE_DEVICES and MACA_VISIBLE_DEVICES after checking mx-smi.
 # Pinned sources and Python installs exist; task assets/services still require
 # their separate verification receipts. This file never installs or starts them.

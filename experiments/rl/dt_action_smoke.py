@@ -97,6 +97,9 @@ def main() -> None:
             runner, reference, selected, target_case, list(range(int(target_ids.numel()))),
             packed_answer_targets=PackedAnswerTargets,
         )
+        assert detail['conservation_verified'], (
+            f"DT numerical audit failed: residual={detail['conservation_residual']}"
+        )
         runs.append(summarize(signed, root_effect, detail, time.perf_counter() - started))
     result = {
         "scope": "official text attribution only; not RL reward-event credit",

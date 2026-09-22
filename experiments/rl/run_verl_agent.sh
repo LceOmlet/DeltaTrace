@@ -27,6 +27,7 @@ PARAM_OFFLOAD="${PARAM_OFFLOAD:-False}"
 ACTOR_CPU_OFFLOAD="${ACTOR_CPU_OFFLOAD:-False}"
 ACTOR_OFFLOAD_POLICY="${ACTOR_OFFLOAD_POLICY:-False}"
 FSDP_MIN_PARAMS="${FSDP_MIN_PARAMS:-0}"
+FSDP_RESHARD_AFTER_FORWARD="${FSDP_RESHARD_AFTER_FORWARD:-True}"
 HF_FSDP_WRAP="${HF_FSDP_WRAP:-False}"
 ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-1}"
 PROMPT_FILL_TOKENS="${PROMPT_FILL_TOKENS:-0}"
@@ -110,7 +111,10 @@ else
   export VERL_ENABLE_HF_FSDP_WRAP=0
 fi
 
-"$VENV_PYTHON" "$DT_ROOT/experiments/rl/patch_verl_agent2.py" "$VERL_ROOT"
+# Parallel task runs share this pinned checkout. Serialize the existing
+# patcher rather than allowing simultaneous writes to installed Python files.
+flock "$VERL_ROOT/.deltatrace-patch.lock" \
+  "$VENV_PYTHON" "$DT_ROOT/experiments/rl/patch_verl_agent2.py" "$VERL_ROOT"
 if [[ "$ENV_NAME" == "Webshop" && -d "$VERL_ROOT/agent_system/environments/env_package/webshop/webshop/search_engine/indexes_1k" ]]; then
   # The upstream manager passes num_products=None, which selects `indexes`.
   # The A6000 smoke uses the official 1k index; replace this link with the
@@ -137,6 +141,7 @@ if [[ "$ENV_NAME" == "AppWorld" && ! -f "$VERL_ROOT/appworld_ports.ports" ]]; th
 fi
 # Use the original PPO clipped objective, without the optional dual clipping.
 exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
+  +ray_kwargs.ray_init.num_cpus="${DT_RAY_NUM_CPUS:-null}" \
   algorithm.adv_estimator="$ADV_ESTIMATOR" \
   algorithm.gamma=1.0 \
   actor_rollout_ref.actor.clip_ratio_c=inf \
@@ -167,6 +172,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.actor.fsdp_config.param_offload="$PARAM_OFFLOAD" \
   actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
   actor_rollout_ref.actor.fsdp_config.wrap_policy.min_num_params="$FSDP_MIN_PARAMS" \
+  actor_rollout_ref.actor.fsdp_config.reshard_after_forward="$FSDP_RESHARD_AFTER_FORWARD" \
   actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
   +actor_rollout_ref.rollout.micro_batch_size="$ROLLOUT_MICRO_BATCH_SIZE" \
   actor_rollout_ref.rollout.tensor_model_parallel_size=1 \

@@ -355,3 +355,53 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   候选与诊断保留在 `receipts/boundary-audit/least-change*`；未调整验收阈值。
   `verify_reward_readout.py` 现在也会在整体检查失败时保存已有的单 token EOS
   数值对照；保持原失败状态，额外前向只用于诊断，不作为训练 credit fallback。
+
+## 2026-09-22 原始 DT 数值诊断与训练接口分离
+
+- 以实际部署的 `profiles/qwen35_gdn_symmetric.py` 和 dense runner 为准，
+  原生舍入残差是正式接口的诊断输出；`0.02` 阻断此前由 RL 适配层加入。
+  按 PLAN 对近似和接口的区分，保留同一阈值及 `conservation_verified=False`，
+  原始 signed 向量仍按既定逐事件 expm1 公式接入 Q/V。数值 verifier 仍会
+  保存全部结果并以失败退出；这不是修好或放宽了数值验收。
+- 三任务当地官方正奖励轨迹已全部完成原生 DT/Q/V 组合。文件为
+  `receipts/training-setup/native-{Sokoban,Webshop,AppWorld}-events.json/.log`。
+  Sokoban 的 15 次 trace 合计约 30.79 秒：首次 20.43 秒，随后 0.66–0.92 秒；
+  WebShop 6 次约 36.00 秒；AppWorld 1 次约 20.20 秒。首次时间含运行初始化
+  和编译，不应当逐次相乘估计稳态卡时。实际上下文远短于 32768，上限未改。
+- 三任务非零 token 优势数分别为 65、46、341；Q−V、mask 和有限值检查通过。
+  原守恒审计分别失败 6/15、3/6、1/1；这些失败保留在结果中，不能作为精度
+  或真实模型训练验收通过。相关 38 项 CPU 回归通过，日志
+  `receipts/training-setup/audit-contract-tests.log`。
+- 原 HF rollout 的 micro_batch_size=1 会串行生成 16 条 rollout；当地入口
+  使用其已有参数 `ROLLOUT_MICRO_BATCH_SIZE=4`。GRPO 当前运行记录
+  `receipts/training-setup/grpo-Sokoban-fa-b4.log`；此前 b1 运行已主动中止，
+  不据其未完成状态声称吞吐比较或参数更新成功。
+- Ray 使用现有 `+ray_kwargs.ray_init.num_cpus=8` 配置（环境变量
+  `DT_RAY_NUM_CPUS`），避免按宿主全部 CPU 预启动大量 worker。
+  用 `--cfg job` 验证了此 Hydra 参数；该固定 config 要求新增键的 `+` 语法。
+- 同时启动多个任务会同时写固定上游补丁，实际复现了 shared-padding anchor
+  检查失败。启动脚本现用系统 `/usr/bin/flock` 对
+  `$VERL_ROOT/.deltatrace-patch.lock` 加锁，串行调用原补丁程序；单次串行复核
+  通过，日志 `receipts/training-setup/serialized-patch-check.log`。没有复制
+  补丁算法或重新安装库。并行任务使用各自的 Ray 短目录和已有数据目录。
+
+## 2026-09-22 生成 token 配置修复与训练采样
+
+- AppWorld、WebShop 模型生成提前结束后，上游 HF rollout 补齐 response 时
+  复现 `NoneType * Tensor`。固定 VERL 的 FSDP worker 仅判断
+  `GenerationConfig` 对象是否存在，没有判断其 `pad_token_id` 字段是否为空。
+  原模型目录没有独立的 generation_config.json。已在该元数据拥有者处修复：
+  EOS/PAD 未设置时使用原 tokenizer，明确配置的值（包括 0 和 EOS 列表）保留。
+  8 项原上游元数据/补齐接口测试通过（17.80 秒），日志为
+  `receipts/training-setup/generation-fix-tests.log`。没有重新安装模型或库。
+- 10 秒 py-spy 生成采样中，主线程 874 个样本有 282 个包含 FSDP 栈。
+  文件 `receipts/training-setup/grpo-generation-profile.json` 及 summary.json。
+  这只是 CPU 栈采样，不能当作 GPU 总耗时比例或实测速比。
+  当前通过上游已有 `fsdp_config.reshard_after_forward=False` 测量重复收集
+  参数的开销；启动器提供 `FSDP_RESHARD_AFTER_FORWARD`，通用默认值仍为 True。
+  显存/速度验收未完成，不提前把这个候选配置写为当地最优设置。
+- 原进程使用了缺失 EOS/PAD 的旧元数据；已中止尚未完成的 Sokoban/GRPO
+  运行，保存原日志。修复后的三任务运行记录为
+  `receipts/training-setup/dt-{Sokoban,Webshop,AppWorld}-tokenids.log`。
+  另有 `grpo-capacity-32k.log`，显式使用 31800 个 filler token、max_steps=1，
+  只检查长输入资源容量；不是原始任务长度、完整任务训练或成功率实验。
