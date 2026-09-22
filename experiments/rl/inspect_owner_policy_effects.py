@@ -64,6 +64,8 @@ def policy_observables(state, values, clip):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--artifact', type=Path, required=True)
+    p.add_argument('--owner-math-artifact', type=Path,
+                   help='Standalone original BF16 math run with exactly the same saved inputs, initial LoRA and DT values')
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     state = torch.load(args.artifact, map_location='cpu', weights_only=True)
@@ -81,6 +83,22 @@ def main():
                   policy_loss_config=clip, input_tokens=receipt['input_tokens'],
                   effective_input_tokens=receipt['effective_input_tokens'],
                   active_tokens=int(state['response_mask'].sum()), comparisons={})
+    if args.owner_math_artifact:
+        math_receipt = json.loads(args.owner_math_artifact.with_suffix('.json').read_text())
+        assert math_receipt['status'] == 'artifacts_ready'
+        assert math_receipt['attention'] == 'sdpa' and not math_receipt.get('fp32_reference')
+        assert math_receipt['actor_source_sha256'] == receipt['paired_owner_sha256']
+        assert math_receipt['ppo_core_sha256'] == receipt['ppo_core_sha256']
+        assert math_receipt['transformers_model_source_sha256'] == receipt['transformers_model_source_sha256']
+        assert math_receipt['policy_loss_config'] == clip
+        math_state = torch.load(args.owner_math_artifact, map_location='cpu', weights_only=True)
+        for key in ('input_ids', 'attention_mask', 'position_ids', 'responses', 'response_mask',
+                    'before', 'dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates'):
+            torch.testing.assert_close(state[key], math_state[key], atol=0, rtol=0)
+        state['paired_owner_math'] = math_state
+        result['standalone_math_reference'] = dict(receipt=math_receipt,
+            artifact=str(args.owner_math_artifact),
+            sha256=hashlib.sha256(args.owner_math_artifact.read_bytes()).hexdigest())
     pairs = [(label, state, state[label]) for label in
              ('paired_owner', 'paired_owner_math', 'repeat_installed') if label in state]
     if 'paired_owner_math' in state:

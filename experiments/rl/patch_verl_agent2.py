@@ -460,6 +460,68 @@ def main() -> None:
     env_manager = args.verl_root / 'agent_system/environments/env_manager.py'
     env_text = env_manager.read_text()
     env_manager.write_text(patch_conversation_observations(env_text))
+    # The owner already accepts dataset, service ports and interaction limit.
+    # Expose those arguments; retain all historical defaults and owner sampling.
+    env_text = env_manager.read_text()
+    app_replacements = [
+        ("build_appworld_envs(dataset_name='train', seed=",
+         "build_appworld_envs(dataset_name=config.env.get('appworld_train_dataset', 'train'), seed="),
+        ("build_appworld_envs(dataset_name='test_normal', seed=",
+         "build_appworld_envs(dataset_name=config.env.get('appworld_val_dataset', 'test_normal'), seed="),
+        ("start_server_id=0, resources_per_worker=resources_per_worker)",
+         "start_server_id=0, resources_per_worker=resources_per_worker, port_file=config.env.get('appworld_port_file', 'appworld_ports.ports'), max_interactions=config.env.get('appworld_max_interactions', 50))"),
+        ("start_server_id=config.data.train_batch_size*group_n, resources_per_worker=resources_per_worker)",
+         "start_server_id=config.data.train_batch_size*group_n, resources_per_worker=resources_per_worker, port_file=config.env.get('appworld_port_file', 'appworld_ports.ports'), max_interactions=config.env.get('appworld_max_interactions', 50))"),
+    ]
+    for old, new in app_replacements:
+        if new not in env_text:
+            if env_text.count(old) != 1:
+                raise RuntimeError(f'cannot find unique AppWorld configuration anchor: {old}')
+            env_text = env_text.replace(old, new, 1)
+    env_manager.write_text(env_text)
+    app_envs = args.verl_root / 'agent_system/environments/env_package/appworld/envs.py'
+    app_text = app_envs.read_text()
+    for old, new in [
+        ('                        resources_per_worker={"num_cpus": 0.1},\n                        ):',
+         '                        resources_per_worker={"num_cpus": 0.1},\n                        port_file="appworld_ports.ports",\n                        ):'),
+        ('        resources_per_worker=resources_per_worker\n    )',
+         '        resources_per_worker=resources_per_worker,\n        port_file=port_file\n    )'),
+    ]:
+        if new not in app_text:
+            if app_text.count(old) != 1:
+                raise RuntimeError('cannot find unique AppWorld factory port argument anchor')
+            app_text = app_text.replace(old, new, 1)
+    app_envs.write_text(app_text)
+    checkpoint = args.verl_root / 'verl/utils/checkpoint/fsdp_checkpoint_manager.py'
+    checkpoint_text = checkpoint.read_text()
+    old = '                generation_config = GenerationConfig.from_pretrained(model_config.name_or_path)'
+    new = '''                # Qwen3.5 has no separate generation_config.json. Reuse HF's
+                # already loaded model configuration for this local-file case.
+                if os.path.isdir(model_config.name_or_path) and not os.path.isfile(os.path.join(model_config.name_or_path, "generation_config.json")):
+                    generation_config = getattr(unwrap_model, "generation_config", None)
+                    if generation_config is None:
+                        generation_config = GenerationConfig.from_model_config(model_config)
+                else:
+                    generation_config = GenerationConfig.from_pretrained(model_config.name_or_path)'''
+    if new not in checkpoint_text:
+        if checkpoint_text.count(old) != 1:
+            raise RuntimeError('cannot find checkpoint generation metadata anchor')
+        checkpoint.write_text(checkpoint_text.replace(old, new, 1))
+    # The optional adapter-only export is implemented by this owner for FSDP1.
+    # FSDP2 already saved all model/LoRA/optimizer state above; it must not access
+    # the nonexistent self.actor_module field in that FSDP1-only extra export.
+    worker_path = args.verl_root / 'verl/workers/fsdp_workers.py'
+    worker_text = worker_path.read_text()
+    worker_text = worker_text.replace(
+        '        if self._is_lora and isinstance(self.actor_module, PeftModel):',
+        '        if self._is_lora and isinstance(self.actor_module_fsdp, FSDP) and isinstance(self.actor_module_fsdp._fsdp_wrapped_module, PeftModel):',
+        1,
+    ).replace(
+        "asdict(self.actor_module.peft_config.get('default', {}))",
+        "asdict(self.actor_module_fsdp._fsdp_wrapped_module.peft_config.get('default', {}))",
+        1,
+    )
+    worker_path.write_text(worker_text)
     target = args.verl_root / "agent_system/environments/env_package/sokoban/__init__.py"
     if not target.is_file():
         raise FileNotFoundError(target)

@@ -16,6 +16,7 @@ VENV_PYTHON="${VENV_PYTHON:-$DT_ROOT/env/bin/python}"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 TRAIN_SIZE="${TRAIN_SIZE:-4}"
 VAL_SIZE="${VAL_SIZE:-4}"
+VAL_DATA_SIZE="${VAL_DATA_SIZE:-$VAL_SIZE}"
 GROUP_SIZE="${GROUP_SIZE:-4}"           # environment rollouts per prompt (GRPO group)
 MINI_BATCH_SIZE="${MINI_BATCH_SIZE:-4}"
 MAX_PROMPT="${MAX_PROMPT:-32256}"
@@ -37,6 +38,15 @@ VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
 MAX_STEPS="${MAX_STEPS:-15}"
+SAVE_FREQ="${SAVE_FREQ:--1}"
+CHECKPOINT_DIR="${CHECKPOINT_DIR:-checkpoints/delta_trace_agent/${METHOD}_${ENV_NAME}_qwen35_9b}"
+MAX_ACTOR_CKPT_TO_KEEP="${MAX_ACTOR_CKPT_TO_KEEP:-2}"
+RESUME_MODE="${RESUME_MODE:-auto}"
+ENV_CPUS_PER_WORKER="${ENV_CPUS_PER_WORKER:-0.1}"
+APPWORLD_TRAIN_DATASET="${APPWORLD_TRAIN_DATASET:-train}"
+APPWORLD_VAL_DATASET="${APPWORLD_VAL_DATASET:-test_normal}"
+APPWORLD_PORT_FILE="${APPWORLD_PORT_FILE:-appworld_ports.ports}"
+APPWORLD_MAX_INTERACTIONS="${APPWORLD_MAX_INTERACTIONS:-50}"
 CHAT_TEMPLATE_ARGS=()
 METHOD_ARGS=()
 if [[ -n "${ENABLE_THINKING:-}" ]]; then
@@ -140,7 +150,7 @@ mkdir -p "$DATA_ROOT"
   --output "$DATA_ROOT/train.parquet" --size "$TRAIN_SIZE" --split train \
   --prompt-fill-tokens "$PROMPT_FILL_TOKENS"
 "$VENV_PYTHON" "$DT_ROOT/experiments/rl/prepare_agent_data.py" \
-  --output "$DATA_ROOT/test.parquet" --size "$VAL_SIZE" --split test \
+  --output "$DATA_ROOT/test.parquet" --size "$VAL_DATA_SIZE" --split test \
   --prompt-fill-tokens "$PROMPT_FILL_TOKENS"
 
 cd "$VERL_ROOT"
@@ -204,7 +214,11 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   env.sokoban.mode="$SOKOBAN_MODE" \
   env.sokoban.num_boxes=1 \
   env.sokoban.search_depth=30 \
-  env.resources_per_worker.num_cpus=0.1 \
+  +env.appworld_train_dataset="$APPWORLD_TRAIN_DATASET" \
+  +env.appworld_val_dataset="$APPWORLD_VAL_DATASET" \
+  +env.appworld_port_file="$APPWORLD_PORT_FILE" \
+  +env.appworld_max_interactions="$APPWORLD_MAX_INTERACTIONS" \
+  env.resources_per_worker.num_cpus="$ENV_CPUS_PER_WORKER" \
   trainer.critic_warmup=0 \
   trainer.logger="['console']" \
   trainer.rollout_data_dir="${ROLLOUT_DATA_DIR:-null}" \
@@ -212,7 +226,10 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   trainer.experiment_name="${METHOD}_${ENV_NAME}_qwen35_9b" \
   trainer.n_gpus_per_node=1 \
   trainer.nnodes=1 \
-  trainer.save_freq=-1 \
+  trainer.save_freq="$SAVE_FREQ" \
+  trainer.default_local_dir="$CHECKPOINT_DIR" \
+  trainer.max_actor_ckpt_to_keep="$MAX_ACTOR_CKPT_TO_KEEP" \
+  trainer.resume_mode="$RESUME_MODE" \
   trainer.test_freq="$TEST_FREQ" \
   trainer.total_epochs="$TOTAL_EPOCHS" \
   trainer.val_before_train="$VAL_BEFORE_TRAIN" \

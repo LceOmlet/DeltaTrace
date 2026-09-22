@@ -8,6 +8,7 @@ import argparse
 import ast
 import contextlib
 import copy
+import faulthandler
 import hashlib
 import importlib.util
 import json
@@ -28,6 +29,7 @@ from verl.workers.fsdp_workers import ActorRolloutRefWorker
 
 
 def main():
+    faulthandler.enable()
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--actor-source', type=Path, help='Pristine pinned actor file; omitted uses installed actor')
     p.add_argument('--paired-owner-source', type=Path,
@@ -54,11 +56,25 @@ def main():
                    help='Repeat the identical installed path after restoring state to measure execution variability')
     p.add_argument('--fp32-reference-from', type=Path,
                    help='Original FP32 math reference from the same checkpoint, saved LoRA initial values, IDs and DT advantages')
+    p.add_argument('--saved-run-from', type=Path,
+                   help='Replay saved initial LoRA values, exact input IDs and DT signals in a standalone BF16 owner reference')
+    p.add_argument('--reference-save-on-cpu', action='store_true',
+                   help='Use the original Torch saved-tensor CPU offload only for a standalone math reference')
+    p.add_argument('--math-bf16-reduction', action='store_true',
+                   help='Additional BF16 math diagnostic using the original Torch reduction setting; not an FP32 reference')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--artifacts', type=Path, required=True)
+    p.add_argument('--checkpoint-dir', type=Path,
+                   help='Exercise the original worker checkpoint save/load and verify restored LoRA values')
     args = p.parse_args()
     if args.actor_source and args.paired_owner_source:
         p.error('Use either a standalone reference actor or a paired owner comparison')
+    if args.saved_run_from and (args.fp32_reference_from or not args.actor_source or args.paired_owner_source or args.attention_check):
+        p.error('Saved BF16 replay requires a standalone owner source, without FP32 replay or attention-check')
+    if args.reference_save_on_cpu and not (args.saved_run_from and args.actor_source and args.attention == 'sdpa'):
+        p.error('Saved-tensor CPU offload is only for the standalone saved BF16 math reference')
+    if args.math_bf16_reduction and not (args.saved_run_from and args.actor_source and args.attention == 'sdpa'):
+        p.error('BF16 math reduction is only for the standalone saved BF16 math diagnostic')
     result = dict(scope=__doc__, attention=args.attention, reshard_after_forward=args.reshard_after_forward,
                   actor_source=str(args.actor_source) if args.actor_source else 'installed', context_cap=32768)
     result['verifier_sha256'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -66,6 +82,8 @@ def main():
     result['trim_shared_padding'] = args.trim_shared_padding
     result['runtime_numerics'] = {k:os.environ.get(k) for k in
         ('CUBLAS_WORKSPACE_CONFIG', 'FLASH_ATTENTION_DETERMINISTIC')}
+    result['reference_save_on_cpu'] = args.reference_save_on_cpu
+    result['math_bf16_reduction'] = args.math_bf16_reduction
     artifacts = {}
     started = time.perf_counter()
     try:
@@ -73,6 +91,8 @@ def main():
         np.random.seed(2026)
         torch.manual_seed(2026)
         torch.use_deterministic_algorithms(True)
+        if args.math_bf16_reduction:
+            torch.backends.cuda.allow_fp16_bf16_reduction_math_sdp(True)
         os.environ['VERL_ATTN_IMPLEMENTATION'] = args.attention
         os.environ['VERL_TRIM_SHARED_PADDING'] = '1' if args.trim_shared_padding else '0'
         cfg = OmegaConf.load(Path(os.environ['VERL_ROOT'])/'verl/trainer/config/ppo_trainer.yaml')
@@ -91,11 +111,16 @@ def main():
         c.actor.fsdp_config.model_dtype = 'bfloat16'
         c.actor.fsdp_config.optimizer_offload = True
         c.actor.fsdp_config.reshard_after_forward = args.reshard_after_forward
-        fp32_input = None
+        saved_input = None
+        replay_path = args.fp32_reference_from or args.saved_run_from
+        if replay_path:
+            saved_input = torch.load(replay_path, map_location='cpu', weights_only=True)
+            result['saved_run_replay'] = dict(source=str(replay_path),
+                sha256=hashlib.sha256(replay_path.read_bytes()).hexdigest(),
+                scope='Exact saved input IDs, initial LoRA weights and fixed DT values; no DT recomputation')
         if args.fp32_reference_from:
             assert args.attention == 'sdpa' and args.actor_source and not args.trim_shared_padding
             assert not args.paired_owner_source and not args.attention_check
-            fp32_input = torch.load(args.fp32_reference_from, map_location='cpu', weights_only=True)
             c.actor.fsdp_config.model_dtype = 'float32'
             c.actor.fsdp_config.mixed_precision = dict(param_dtype='fp32', reduce_dtype='fp32', buffer_dtype='fp32')
             torch.backends.cuda.matmul.allow_tf32 = False
@@ -113,12 +138,13 @@ def main():
         installed_actor_type = type(worker.actor)
         model_module = importlib.import_module('transformers.models.qwen3_5.modeling_qwen3_5')
         result['transformers_model_source_sha256'] = hashlib.sha256(Path(model_module.__file__).read_bytes()).hexdigest()
-        if fp32_input is not None:
+        if saved_input is not None:
             with torch.no_grad():
                 for name, param in worker.actor_module_fsdp.named_parameters():
                     if param.requires_grad:
                         target = param.to_local() if hasattr(param, 'to_local') else param
-                        target.copy_(fp32_input['before'][name].to(target.device, dtype=target.dtype))
+                        target.copy_(saved_input['before'][name].to(target.device, dtype=target.dtype))
+        if args.fp32_reference_from:
             # The FLA chunk kernel accepts low precision only. The same HF
             # module already provides its native differentiable FP32 fallback.
             for layer in worker.actor_module_fsdp.modules():
@@ -175,20 +201,20 @@ def main():
         row['input_ids'] = torch.cat((torch.full((args.left_padding,), pad), row['input_ids'], torch.full((19,), pad)))
         row['attention_mask'] = torch.cat((torch.zeros(args.left_padding, dtype=torch.long), row['attention_mask'], torch.zeros(19, dtype=torch.long)))
         row['responses'] = torch.cat((row['responses'], torch.full((19,), pad)))
-        if fp32_input is None:
+        if saved_input is None:
             from deltatrace_rollout import DeltaTraceRolloutProducer
             producer = DeltaTraceRolloutProducer(worker.actor_module_fsdp,
                 eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=pad)
             values = producer.attribute_episode([row], float(row['rewards']))[0]
             result['dt_report'] = producer.readout.last_report
         else:
-            values = {name: fp32_input[name][0] for name in
+            values = {name: saved_input[name][0] for name in
                       ('dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates')}
-            torch.testing.assert_close(row['input_ids'], fp32_input['input_ids'][0], atol=0, rtol=0)
-            torch.testing.assert_close(row['attention_mask'], fp32_input['attention_mask'][0], atol=0, rtol=0)
-            torch.testing.assert_close(row['responses'], fp32_input['responses'][0], atol=0, rtol=0)
-            torch.testing.assert_close(artifacts['before'],
-                                       {k:v.float() for k,v in fp32_input['before'].items()}, atol=0, rtol=0)
+            torch.testing.assert_close(row['input_ids'], saved_input['input_ids'][0], atol=0, rtol=0)
+            torch.testing.assert_close(row['attention_mask'], saved_input['attention_mask'][0], atol=0, rtol=0)
+            torch.testing.assert_close(row['responses'], saved_input['responses'][0], atol=0, rtol=0)
+            torch.testing.assert_close({k:v.float() for k,v in artifacts['before'].items()},
+                                       {k:v.float() for k,v in saved_input['before'].items()}, atol=0, rtol=0)
         result['input_tokens'] = row['input_ids'].numel()
         result['effective_input_tokens'] = int(row['attention_mask'].sum())
         result['explicit_left_padding'] = args.left_padding
@@ -243,15 +269,21 @@ def main():
             autocast = torch.autocast
             precision_ctx = (patch('torch.autocast', lambda device_type, **kw:
                              autocast(device_type=device_type, **{**kw, 'enabled':False}))
-                             if fp32_input is not None else contextlib.nullcontext())
+                             if args.fp32_reference_from else contextlib.nullcontext())
+            saved_tensor_ctx = (torch.autograd.graph.save_on_cpu(pin_memory=True)
+                                if args.reference_save_on_cpu else contextlib.nullcontext())
             try:
-                with ctx, precision_ctx:
+                with ctx, precision_ctx, saved_tensor_ctx:
+                    print('[owner probe] old_log_prob start', flush=True)
                     out = worker.compute_log_prob(batch)
+                    print('[owner probe] old_log_prob done', flush=True)
                     batch.batch['old_log_probs'] = out.batch['old_log_probs'].cuda()
                     captured['old_log_probs'] = cpu_tensor(batch.batch['old_log_probs'])
                     forward_records.clear()
                     for index in range(2):
+                        print(f'[owner probe] update {index} start', flush=True)
                         update = worker.update_actor(batch)
+                        print(f'[owner probe] update {index} done', flush=True)
                         metrics.append(update.meta_info['metrics'])
                         captured['after_'+str(index)] = trainable_state()
             finally:
@@ -349,6 +381,17 @@ def main():
                                        torch.cat(previous['policy_forward_log_probs'])[mask.repeat(2, 1)], atol=0, rtol=0)
             result['production_mask_backport_continuity'] = dict(status='passed', atol=0, rtol=0,
                 previous_sha256=hashlib.sha256(args.previous_padding_source.read_bytes()).hexdigest())
+        if args.checkpoint_dir:
+            before_save = trainable_state()
+            worker.save_checkpoint(str(args.checkpoint_dir), global_step=2)
+            with torch.no_grad():
+                for value in worker.actor_module_fsdp.parameters():
+                    if value.requires_grad:
+                        value.zero_()
+            worker.load_checkpoint(str(args.checkpoint_dir))
+            torch.testing.assert_close(before_save, trainable_state(), atol=0, rtol=0)
+            result['checkpoint_roundtrip'] = dict(status='passed', path=str(args.checkpoint_dir),
+                restored='all trainable LoRA parameters, exact equality')
     except Exception as exc:
         result.update(status='failed', error=str(exc), traceback=traceback.format_exc())
         traceback.print_exc()

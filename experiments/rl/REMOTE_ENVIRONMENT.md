@@ -16,9 +16,16 @@
   传入 `CUBLAS_WORKSPACE_CONFIG=:4096:8`。16k 探针首次缺少该变量，失败
   记录保存为 `long-parity-16k-missing-workspace.*`，未重装环境。16k 的
   head/padding 分离对照完成后发现相同输入/初值/DT 信号的跨次更新波动，
-  正在以 HF 原有 `FLASH_ATTENTION_DETERMINISTIC=1` 和同路径重复检查；
-  具体 PID/参数见 `long-parity-16k-deterministic-launch.json`。这些设置只
-  用于数值探针，生产训练未因此改变。测量见 `results_policy_effects.json`。
+  以 HF 原有 `FLASH_ATTENTION_DETERMINISTIC=1` 完成同路径重复，两次
+  log-prob/原梯度/参数更新零误差一致。优化版对原版的长链差异仍在，测量见
+  `long-policy-effects-deterministic.json`，不把重复一致说成两实现一致。
+  原版 16k 默认 math 对照先在 MCBLASLT 内中止；添加阶段日志与 Torch 原生
+  `save_on_cpu(pin_memory=True)` 后，定位到 backward 申请额外 16.36 GiB 时
+  OOM。记录 `long-parity-16k-math-owner*`；没有重装依赖或清缓存。
+  额外 BF16 math 诊断使用 Torch 现有 `allow_fp16_bf16_reduction_math_sdp(True)`，
+  保留同一输入/LoRA 初值/DT QVA，明确区别于默认 math 中间精度，不作为新的
+  FP32 基准或放宽验收。记录 `long-parity-16k-math-bf16*`。CPU saved-tensor
+  offload、阶段日志和确定性选项仅用于探针，生产训练未因此改变。
 - 继续复用 MetaX 原 Python、权重和缓存。安装版 Qwen3.5 的
   `apply_mask_to_padding_states` 在 batch=1 时跳过 mask，实际有效 token
   log-prob 偏差超过 4；PPO microbatch=1 正好触发。只回补官方提交
