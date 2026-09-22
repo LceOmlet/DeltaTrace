@@ -12,6 +12,20 @@
 
 ## 2026-09-22 正式规模启动与监控
 
+- 2026-09-23 按 phase 定位前两次内存失败：Pyserini 的 Lucene 导入会间接
+  加载加速依赖。GPU 可见的 WebShop Ray worker 为 RSS 9.383/RssAnon 5.203 GiB；
+  原 Ray `runtime_env.env_vars` 将 CPU 环境的 CUDA/MACA 可见性置空后为
+  1.235/0.709 GiB。只改原资源配置；policy actor 的 GPU 配置保留。
+  原 worker 实际 reset/search/click/options/购买和 task_score 对拍一致。
+  证据：`webshop-memory-phase-visible.json`、`webshop-ray-cpu-memory-v2.json`。
+  第一版对拍没有走到购买终止，不用它代替第二版的奖励路径检查。
+- 异机备份改为 MetaX 的 restic 直接经 4090 到 A6000 存储。MetaX
+  `backup-access/` 保存专用出站私钥、严格 host-key 配置、repo 密码和原 restic。
+  跳板公钥只允许到目标端口的转发，存储端公钥强制 SFTP；凭据不入仓库或日志。
+  A6000 的原 Qwen3.5-9B 文件已加入同一 restic 仓库作为去重种子，避免再次
+  传输能由相同块复用的权重；实际节省量以 restic summary 为准。
+  每次备份在存储端执行 restore --verify，检查点另外对源/恢复文件 SHA256。
+  本机旧 tar 中转仅完成元数据验证，完整检查点流已停止，不能称为成功。
 - 训练预算配置：`experiments/rl/paper_scale.json`；当前进程与精确启动时间以
   MetaX 运行根目录 `formal-training.json` 为准，不把旧 PID 当作当前进程。
   第一版并发验证环境过多，Ray 的 900 GiB 容器内存阈值触发杀 worker；证据

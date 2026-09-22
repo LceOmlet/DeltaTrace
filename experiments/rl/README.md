@@ -56,21 +56,28 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 load_task_ids(difficulty=1/2) 取得 72 个任务，与论文的 24 个 scenario 对齐。
 这是每任务一组实验的采样预算，不是三随机种子结果，也不替换固定 DT 方法。
 具体论文/脚本来源以及模型、观测、奖励、上下文和评估差异均列在配置中。
-正式首启触发主机内存问题：Ray 的 900 GiB 容器上限、95% 阈值产生明确的
-worker-killed-by-memory-pressure 记录。已停止该次自有作业；验证 batch 分别
+正式前两次启动触发主机内存问题：Ray 的 900 GiB 容器上限、95% 阈值产生明确的
+worker-killed-by-memory-pressure 记录。已停止失败的自有作业；验证 batch 分别
 改为 4/4/3，数据条数仍为 WebShop 256、Sokoban 128、AppWorld 57，训练
 batch/轨迹总预算完全不变。验证仍按原环境 reset 的采样方式，不声称小批次
 采样与一次抽取整个验证集得到相同任务集合。没有关闭 Ray 内存保护。
+阶段探针进一步定位到 Pyserini Lucene 导入：环境进程继承 GPU 可见性时，
+额外加载加速库，单 WebShop worker RSS 9.383 GiB、RssAnon 5.203 GiB。
+使用原 Ray runtime_env 仅屏蔽 CPU 环境 worker 的 CUDA/MACA 后，分别降至
+1.235/0.709 GiB；132 个环境的匿名内存差约 593 GiB。原 worker 的 reset、
+搜索、商品/选项点击、购买终止和官方评分完全相同，见
+[results_environment_memory.json](results_environment_memory.json)。未修改环境、奖励或采样批量。
 
 [run_verl_agent.sh](run_verl_agent.sh) 只透传上游 checkpoint save/resume/retention
 与任务配置。检查点仍由原 FSDPCheckpointManager 保存完整 model、optimizer、
 extra state，trainer 保存 dataloader 和 latest marker。正式启动与恢复状态以
 远端运行根目录的 formal-training.json 为准；尚未生成该记录时不能称作已启动。
 
-[backup_metax_to_restic.py](backup_metax_to_restic.py) 通过 SSH/tar 将已完成的原
-检查点、rollout 数据、配置和日志传给异机 restic，复用其加密、压缩、去重与
-仓库校验。每份归档都通过 restic dump 读回并核对 SHA256；未完成写入的检查点
-不备份。此脚本不实现检查点格式，也不自行删除历史备份。
+[backup_metax_to_restic.py](backup_metax_to_restic.py) 让 MetaX 的原 restic 经
+4090 跳板直接写入异机仓库，复用其加密、压缩、去重。备份机执行原
+restore --verify；检查点还逐文件核对源端/恢复端 SHA256。只选上游完成标记
+覆盖的检查点，不改变检查点格式、不删除历史备份。早期本机 tar 中转已因
+实测低吞吐停止，其已验证的元数据备份保留；完整检查点未传完不称作成功。
 
 ## 入口与历史结果
 

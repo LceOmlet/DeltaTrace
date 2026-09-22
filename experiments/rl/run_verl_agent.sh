@@ -43,6 +43,9 @@ CHECKPOINT_DIR="${CHECKPOINT_DIR:-checkpoints/delta_trace_agent/${METHOD}_${ENV_
 MAX_ACTOR_CKPT_TO_KEEP="${MAX_ACTOR_CKPT_TO_KEEP:-2}"
 RESUME_MODE="${RESUME_MODE:-auto}"
 ENV_CPUS_PER_WORKER="${ENV_CPUS_PER_WORKER:-0.1}"
+# These task environments are CPU consumers. The original Ray runtime_env below
+# hides accelerators only in env actors: MetaX-visible Pyserini imports otherwise
+# add ~4.5 GiB anonymous memory per WebShop worker. Policy actors retain the GPU.
 APPWORLD_TRAIN_DATASET="${APPWORLD_TRAIN_DATASET:-train}"
 APPWORLD_VAL_DATASET="${APPWORLD_VAL_DATASET:-test_normal}"
 APPWORLD_PORT_FILE="${APPWORLD_PORT_FILE:-appworld_ports.ports}"
@@ -219,6 +222,8 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   +env.appworld_port_file="$APPWORLD_PORT_FILE" \
   +env.appworld_max_interactions="$APPWORLD_MAX_INTERACTIONS" \
   env.resources_per_worker.num_cpus="$ENV_CPUS_PER_WORKER" \
+  '+env.resources_per_worker.runtime_env.env_vars.CUDA_VISIBLE_DEVICES=""' \
+  '+env.resources_per_worker.runtime_env.env_vars.MACA_VISIBLE_DEVICES=""' \
   trainer.critic_warmup=0 \
   trainer.logger="['console']" \
   trainer.rollout_data_dir="${ROLLOUT_DATA_DIR:-null}" \

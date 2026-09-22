@@ -1,11 +1,10 @@
-"""Stream owner artifacts to an off-machine restic repository and verify restore.
+"""Back up owner artifacts directly from MetaX to restic and verify off-machine restore.
 
-This orchestrates SSH, tar and restic. It neither creates training checkpoints
+This orchestrates SSH and restic. It neither creates training checkpoints
 nor implements backup storage, compression, encryption or deduplication.
 The connector is a local credential provider exposing connect() -> SSHClient.
 """
 import argparse
-import hashlib
 import importlib.util
 import json
 from pathlib import Path, PurePosixPath
@@ -33,8 +32,13 @@ def main():
     b = PurePosixPath(args.backup_root)
     restic = [str(b/'bin/restic'), '-r', str(b/'repository'), '--password-file', str(b/'repository.password'),
               '--cache-dir', str(b/'cache')]
+    access = PurePosixPath(args.source_root)/'backup-access'
+    remote_restic = [str(access/'restic'), '-r', 'sftp:backup-a6000:'+str(b/'repository'),
+                     '--password-file', str(access/'repository.password'),
+                     '--cache-dir', str(access/'cache'),
+                     '-o', 'sftp.command=ssh -F '+str(access/'ssh_config')+' backup-a6000 -s sftp']
     report = {'source_root': args.source_root, 'destination': args.destination,
-              'backup_root': args.backup_root, 'started': time.time(), 'snapshots': []}
+              'backup_root': args.backup_root, 'started': time.time(), 'transport': 'MetaX direct SFTP through 4090; no PC data relay', 'snapshots': []}
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
 
     def destination(cmd):
@@ -44,8 +48,6 @@ def main():
         args.receipt.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
 
     try:
-        previous = json.loads(destination(restic+['snapshots', '--json']))
-        tags = {tag for snap in previous for tag in snap.get('tags', [])}
         with client.open_sftp() as sftp:
             entries = [x for x in ('repo/experiments/rl', 'receipts', 'runs', 'formal-training.json',
                                    'active-training.json', 'active-source.json', 'environment.json')
@@ -67,61 +69,78 @@ def main():
                     if not name.startswith('global_step_'):
                         continue
                     step = int(name.removeprefix('global_step_'))
-                    label = f"{job['task']}-step-{step}"
-                    if step <= latest and label not in tags:
+                    label = f"{PurePosixPath(job['run_dir']).name}-step-{step}"
+                    if step <= latest:
                         rel = str((root/name).relative_to(args.source_root))
                         snapshots.append((label, [rel], True))
             if args.checkpoint:
                 snapshots.append(('checkpoint-roundtrip-probe', [args.checkpoint], True))
         for label, paths, immutable in snapshots:
-            if immutable and label in tags:
-                continue
             for path in paths:
                 if PurePosixPath(path).is_absolute() or '..' in PurePosixPath(path).parts:
                     raise ValueError('Backup sources must remain within the recorded runtime')
-            tar = ['tar', '-C', args.source_root]
-            if not immutable:
-                tar += ['--exclude=*.pt', '--exclude=__pycache__', '--exclude=*/checkpoints',
-                        '--exclude=*/checkpoint-owner-roundtrip', '--exclude=*/checkpoint-owner-roundtrip-v2',
-                        '--exclude=*/checkpoint-owner-roundtrip-v3']
-            tar += ['-cf', '-', '--', *paths]
-            _, stream, errors = client.exec_command(shlex.join(tar))
-            filename = label+'.tar'
             log = args.receipt.with_name(args.receipt.stem+'-'+label+'.log')
-            cmd = restic+['backup', '--stdin', '--stdin-filename', filename, '--host', 'deltatrace-metax',
-                          '--tag', 'dt-rl', '--tag', label, '--json']
-            digest = hashlib.sha256()
-            size = 0
-            print('Backing up', label, flush=True)
-            with log.open('wb') as output:
-                proc = subprocess.Popen(ssh+[shlex.join(cmd)], stdin=subprocess.PIPE, stdout=output, stderr=output)
-                try:
-                    while chunk := stream.read(4*1024*1024):
-                        digest.update(chunk)
-                        size += len(chunk)
-                        proc.stdin.write(chunk)
-                    proc.stdin.close()
-                    status = proc.wait()
-                finally:
-                    if proc.poll() is None:
-                        proc.terminate()
-            source_status = stream.channel.recv_exit_status()
-            source_stderr = errors.read().decode()
-            if status or source_status:
-                raise RuntimeError(f'{label}: restic={status}, source tar={source_status}: {source_stderr}')
+            cmd = remote_restic+['backup', '--host', 'deltatrace-metax',
+                                 '--tag', 'dt-rl-direct', '--tag', label, '--json']
+            if not immutable:
+                cmd += ['--exclude=*.pt', '--exclude=__pycache__', '--exclude=*/checkpoints',
+                        '--exclude=*/checkpoint-owner-roundtrip*']
+            absolute_paths = [str(PurePosixPath(args.source_root)/path) for path in paths]
+            cmd += ['--', *absolute_paths]
+            print('Direct backup', label, flush=True)
+            _, output, errors = client.exec_command(shlex.join(cmd))
+            with log.open('w', encoding='utf-8') as stream:
+                for line in output:
+                    stream.write(line)
+                    stream.flush()
+                error_text = errors.read().decode()
+                stream.write(error_text)
+            status = output.channel.recv_exit_status()
+            if status:
+                raise RuntimeError(f'{label}: restic exit {status}: {error_text}')
             summary = next(json.loads(line) for line in reversed(log.read_text().splitlines())
                            if line.startswith('{') and json.loads(line).get('message_type') == 'summary')
             snapshot = summary['snapshot_id']
-            # Verify every archived byte by reading it back through restic on
-            # the other host. No second copy of a model lands on this PC.
-            verify_cmd = shlex.join(restic+['dump', snapshot, '/'+filename])+' | sha256sum'
-            restored_hash = subprocess.check_output(ssh+['bash -o pipefail -c '+shlex.quote(verify_cmd)], text=True).split()[0]
-            if restored_hash != digest.hexdigest():
-                raise RuntimeError(f'{label}: restored archive checksum differs')
-            report['snapshots'].append(dict(label=label, snapshot_id=snapshot, archive_bytes=size,
-                archive_sha256=restored_hash, restore_verified=True, summary=summary))
+            row = dict(label=label, snapshot_id=snapshot, restore_verified=False, summary=summary)
+            report['snapshots'].append(row)
             record()
-            print('Verified restore', label, snapshot, size, flush=True)
+            # The destination's original restic restores and verifies every file,
+            # without sending a second checkpoint through this PC or to MetaX.
+            restore_root = b/'restore-check'/snapshot
+            restored = destination(restic+['restore', snapshot, '--target', str(restore_root), '--verify'])
+            row['restic_restore'] = restored
+            if immutable:
+                # Compare full source/restored SHA256, including model, optimizer
+                # and extra state, in addition to restic's content verification.
+                hash_script = """import hashlib,json,pathlib,sys
+root=pathlib.Path(sys.argv[1]); out={}
+for name in sys.argv[2:]:
+ for f in sorted((root/name).rglob('*')):
+  if f.is_file():
+   with f.open('rb') as stream: out[str(f.relative_to(root))]=hashlib.file_digest(stream,'sha256').hexdigest()
+print(json.dumps(out,sort_keys=True))
+"""
+                remote_python = '/opt/conda/bin/python'
+                _, hashes, hash_errors = client.exec_command(shlex.join(
+                    [remote_python, '-c', hash_script, args.source_root, *paths]))
+                source_hashes = json.loads(hashes.read().decode())
+                if hashes.channel.recv_exit_status():
+                    raise RuntimeError(hash_errors.read().decode())
+                restored_source_root = str(restore_root/args.source_root.lstrip('/'))
+                destination_hashes = json.loads(destination(
+                    ['python3', '-c', hash_script, restored_source_root, *paths]))
+                if not source_hashes or source_hashes != destination_hashes:
+                    raise RuntimeError(f'{label}: restored checkpoint files differ from source')
+                row['source_restored_sha256'] = source_hashes
+            row['restore_verified'] = True
+            record()
+            cleanup = """import pathlib,shutil,sys
+base=pathlib.Path(sys.argv[1]).resolve(); target=pathlib.Path(sys.argv[2]).resolve()
+assert target.parent == base and target.name.isalnum()
+shutil.rmtree(target)
+"""
+            destination(['python3', '-c', cleanup, str(b/'restore-check'), str(restore_root)])
+            print('Verified off-machine restore', label, snapshot, flush=True)
         report['repository_check'] = destination(restic+['check'])
         report.update(status='passed', finished=time.time())
         record()
