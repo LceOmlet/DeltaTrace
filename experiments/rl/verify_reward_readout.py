@@ -17,13 +17,36 @@ import torch
 class RecordFirstTrace:
     """Retain one real owner artifact for a native-forward numerical audit."""
     def __init__(self, runner):
-        self.runner, self.first = runner, None
+        self.runner, self.first, self.first_detail = runner, None, None
         self.model = runner.model
 
     def attribute(self, *args, **kwargs):
-        signed, detail = self.runner.attribute(*args, **kwargs)
+        head_capture = {}
+        def capture_head(_module, inputs, output):
+            head_capture['hidden'] = inputs[0].detach().clone()
+            head_capture['logits'] = output.detach().clone()
+        handle = self.model.lm_head.register_forward_hook(capture_head) if self.first is None else None
+        try:
+            signed, detail = self.runner.attribute(*args, **kwargs)
+        finally:
+            if handle is not None:
+                handle.remove()
         if self.first is None:
             self.first = (args[0].detach().clone(), args[2], signed.clone())
+            self.first_detail = detail
+            selection = args[2]
+            # The owner currently evaluates a single categorical predictor row.
+            # Compare its captured native head with its own finite seed; this
+            # diagnostic does not replace any forward value or attribution.
+            logits = head_capture['logits'].flatten(0, 1)
+            hidden = head_capture['hidden'].flatten(0, 1)
+            from qwen35_answer_finite import FiniteAnswerOps
+            _, seed = FiniteAnswerOps(compiled=False)(logits, self.model.lm_head, selection)
+            detail['head_audit'] = dict(
+                allocated_logit_effect=float(seed['allocated_logit_effect'].double().sum()),
+                captured_head_input_effect=float((seed['packed_hidden'].double()
+                    * (hidden[1::2].double()-hidden[0::2].double())).sum()),
+            )
         return signed, detail
 
 
@@ -64,7 +87,8 @@ def main():
         execution = dict(dynamic_shapes=True, compiler_options=env.get('dt_compiler_options', {}))
     owner = make_qwen35_runner(
         model, VendorFAFiniteP1BF16D256(env['finite_library'], env['finite_library_sha256']),
-        make_compiled_finite_pullback(reuse_scalar_products=False, **execution), **execution,
+        make_compiled_finite_pullback(reuse_scalar_products=False, **execution),
+        answer_compiled=env.get('dt_answer_compiled', True), **execution,
     )
     result = dict(timestamp_utc=datetime.now(timezone.utc).isoformat(),
                   scope='official task reward artifacts and native finite DT; not actor training',
@@ -86,7 +110,19 @@ def main():
         recorded = RecordFirstTrace(owner)
         readout = EventRatioReadout(recorded, tokenizer, task=task, max_steps=15,
                                    packed_answer_targets=PackedAnswerTargets, max_length=32768)
-        values = readout.episode(rows)
+        try:
+            values = readout.episode(rows)
+        except Exception as exc:
+            # Preserve the owner's diagnostics even when the adapter correctly
+            # rejects the trace. Never turn a failed invariant into a pass.
+            result['status'] = 'failed'
+            result['tasks'][task] = dict(
+                row_lengths=lengths, error_type=type(exc).__name__, error=str(exc),
+                first_trace_detail=recorded.first_detail,
+            )
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(result, indent=2)+'\n')
+            raise
         reports = []
         for row, credit in zip(rows, values):
             mask = row['attention_mask'][-row['responses'].numel():].bool()
@@ -115,7 +151,8 @@ def main():
                 audit.append(dict(position=position, direct_single_eos_log_ratio=direct,
                                   dt_signed_estimate=estimate, difference=estimate-direct))
         result['tasks'][task] = dict(readout=readout.last_report, row_lengths=lengths,
-                                     credit_rows=reports, native_single_eos_spot_check=audit)
+                                     credit_rows=reports, native_single_eos_spot_check=audit,
+                                     first_trace_detail=recorded.first_detail)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, indent=2)+'\n')
         print(task, json.dumps(readout.last_report), flush=True)

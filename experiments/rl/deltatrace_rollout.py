@@ -280,6 +280,7 @@ class DeltaTraceRolloutProducer:
             owner_model,
             finite_fa,
             make_compiled_finite_pullback(reuse_scalar_products=False, **execution),
+            answer_compiled=env.get('dt_answer_compiled', True),
             **execution,
         )
         self.packed_answer_targets = PackedAnswerTargets

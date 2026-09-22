@@ -209,3 +209,35 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
 - 原 runtime 设置含 `MACA_TORCH_COMPILE_CONF=maca.disable_maca_triton_heuristics:1`
   和 `FLA_BOUNDED_NORM_TUNING=1`，动态编译选项也已记录。
 - 以上只证明资源与已有环境存在；不证明本轮 RL/DT 已在 MetaX 跑通。
+
+## 2026-09-22 MetaX 复用入口与实测故障
+
+- 当前隔离源码/日志根目录：
+  `/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922`。
+  源码在 `repo`，运行配置在 `environment.json`，记录在 `receipts`。
+  旧 20260912 目录仍提供 Python、有限传播库及持久缓存，没有被覆盖。
+- 在新源码目录执行 `source experiments/rl/environments/metax.env.sh`。
+  该文件只导出已核验路径和 `MACA_PATH=/opt/maca` 等已有运行变量；不安装。
+  原 JSON 的旧挂载路径只在新运行配置中修正，没有修改旧配置。
+- 使用前查询 `mx-smi`，再同时设置 `CUDA_VISIBLE_DEVICES` 和
+  `MACA_VISIBLE_DEVICES`。本轮探针使用 GPU 3，结束后已释放；没有资源预留。
+- 该 Python 尚缺 VERL、hydra-core、tensordict、gym/gym-sokoban、codetiming、
+  wandb 和 AppWorld。本轮没有安装这些包。三个官方正奖励轨迹从 A6000 导出，
+  在 MetaX 复用原始 token/reward 夹具，只检查模型归因，不冒充当地任务服务或训练。
+- 实测 MetaX 编译后的 categorical `FiniteAnswerOps` 触发非法地址；独立小算子
+  在 no-grad 下复现。使用同一正式 seed 的 eager 执行可越过该错误。新增显式
+  `qwen35.dt_answer_compiled=false`，仅用于此运行配置；owner 默认仍为 true，
+  其他有限传播图保持既有动态编译。未复制 seed 算法，也未清编译缓存。
+- 真实 Qwen 探针随后未通过已有归因守恒阈值。最新记录：原生目标差及 seed
+  log-prob 差均为 `0.015408515930175781`，head 输入端有限贡献为
+  `0.08401765790792126`，最终 norm 输入端为 `0.08037153781038953`，
+  全部 source token 归因和为 `0.05778632130990635`。32 层原生重放 L2 差为 0。
+  这将差异定位到 head 有限拉回边界；具体数值原因尚未修复，不能将其归结为
+  环境 reward 或 PPO 接线错误，也不能据此改变 PLAN。
+- 最新失败 trace 实际长度 266（保持总上限 32768），含诊断用时约 19.79 秒，
+  peak allocated 为 19426050048 字节。这不是 32k 容量、训练吞吐或已通过的
+  信用分配结果。首次/后续编译成本尚未完成受控测量。
+- `receipts/native-eos.json` 保留失败状态和完整逐层诊断；
+  `receipts/metax-runtime.json` 保留版本、路径及源码哈希；
+  `receipts/probe_answer_seed.py` 和对应日志保留编译器复现。
+  本地结果索引为 `results_eos_events.json`。阈值未放宽，归因未归一化，未启动 PPO 更新。

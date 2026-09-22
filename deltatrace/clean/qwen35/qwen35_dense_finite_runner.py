@@ -31,7 +31,7 @@ def _effect(m,x):return float((m.double()*(x[1::2].double()-x[0::2].double())).s
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -84,7 +84,9 @@ class Qwen35DenseFiniteRunner:
                 raise ValueError(f'key_norm_by_layer requires an existing GDN layer: {index!r}')
             if not callable(callback):raise TypeError('A finite key normalization callback must be callable.')
         self.boundaries=FiniteBoundaryOps(True,dynamic_shapes=dynamic_shapes,compiler_options=compiler_options)
-        self.answer=FiniteAnswerOps(True,dynamic_shapes=dynamic_shapes,compiler_options=compiler_options)
+        # Same owner seed, with an explicit execution choice for platforms
+        # whose compiler miscompiles the tiny categorical log-softmax.
+        self.answer=FiniteAnswerOps(answer_compiled,dynamic_shapes=dynamic_shapes,compiler_options=compiler_options)
 
     @torch.no_grad()
     def forward_prefix(self,input_ids,*,past_key_values=None):
