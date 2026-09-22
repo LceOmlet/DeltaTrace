@@ -19,6 +19,12 @@
   原 worker 实际 reset/search/click/options/购买和 task_score 对拍一致。
   证据：`webshop-memory-phase-visible.json`、`webshop-ray-cpu-memory-v2.json`。
   第一版对拍没有走到购买终止，不用它代替第二版的奖励路径检查。
+- v3 首轮 rollout 的 PSS 证据保存在
+  `receipts/training-setup/formal-v3-rollout-memory-pss.json`：容器 549.4/900 GiB，
+  环境进程 PSS 合计约 251.1 GiB；编译子进程 RSS 合计 470.1 GiB，但 PSS
+  14.6 GiB、Private_Dirty 0.19 GiB。用 smaps_rollup 区分 fork 共享页，不能
+  简单加 RSS/RssAnon 判断真实物理占用。此时三组均在实际 rollout 生成，
+  正式规模的 DT/PPO/checkpoint 阶段峰值尚待记录。
 - 异机备份改为 MetaX 的 restic 直接经 4090 到 A6000 存储。MetaX
   `backup-access/` 保存专用出站私钥、严格 host-key 配置、repo 密码和原 restic。
   跳板公钥只允许到目标端口的转发，存储端公钥强制 SFTP；凭据不入仓库或日志。
@@ -26,6 +32,16 @@
   传输能由相同块复用的权重；实际节省量以 restic summary 为准。
   每次备份在存储端执行 restore --verify，检查点另外对源/恢复文件 SHA256。
   本机旧 tar 中转仅完成元数据验证，完整检查点流已停止，不能称为成功。
+- 2026-09-23 直接备份已通过完整校验：原 roundtrip 检查点 9 文件 / 17.945 GB，
+  异机 SHA256 全部一致，已验证快照为
+  `17463d66fdc2acfc56a4b42bcafa3715efeb46f8576e241832de4b3b95d52ebe`。
+  最新数据/日志快照为
+  `32f46d86cf76b30a29c08bf5985cb9b2c293d0a0160bbd0c1271be86d904ee6c`，
+  包含 AppWorld 原输出及三个作业各自的 Ray 日志，恢复/check 均通过。
+  原低速中转留下的失效锁在核对 owner PID 已消失后用 restic unlock 清理。
+  备份机 Python 3.8 使用流式 hashlib.sha256；不要使用 file_digest。
+  逐文件校验清单若通过本机 SSH stdin 传递，使用 bytes，避免 Windows 自动
+  把 LF 转成 CRLF。正式训练首个检查点尚待原 trainer 完成，不能混淆两者。
 - 训练预算配置：`experiments/rl/paper_scale.json`；当前进程与精确启动时间以
   MetaX 运行根目录 `formal-training.json` 为准，不把旧 PID 当作当前进程。
   第一版并发验证环境过多，Ray 的 900 GiB 容器内存阈值触发杀 worker；证据

@@ -64,12 +64,17 @@ batch/轨迹总预算完全不变。验证仍按原环境 reset 的采样方式�
 阶段探针进一步定位到 Pyserini Lucene 导入：环境进程继承 GPU 可见性时，
 额外加载加速库，单 WebShop worker RSS 9.383 GiB、RssAnon 5.203 GiB。
 使用原 Ray runtime_env 仅屏蔽 CPU 环境 worker 的 CUDA/MACA 后，分别降至
-1.235/0.709 GiB；132 个环境的匿名内存差约 593 GiB。原 worker 的 reset、
+1.235/0.709 GiB；按 132 个环境外推，匿名内存差约 593 GiB。原 worker 的 reset、
 搜索、商品/选项点击、购买终止和官方评分完全相同，见
 [results_environment_memory.json](results_environment_memory.json)。未修改环境、奖励或采样批量。
-修复后的 v3 三组原文预算作业已进入首轮 rollout，容器内存抽样约 542–548 GiB，
+修复后的 v3 三组原文预算作业已进入首轮 rollout，容器内存抽样约 542–550 GiB，
 尚未完成首轮大批次。启动身份、阶段采样与未完成项见
 [results_paper_scale_launch.json](results_paper_scale_launch.json)；不把启动等同于实验完成。
+00:59 的 `/proc/*/smaps_rollup` 核算中，WebShop/Sokoban/AppWorld 环境进程
+PSS 分别为 96.7/74.7/79.7 GiB。99 个编译子进程 RSS 总和为 470.1 GiB，
+但 PSS 仅 14.6 GiB、私有脏页 0.19 GiB；不能把 fork 共享页重复算作内存泄漏。
+此时容器使用 549.4/900 GiB；采样只覆盖 rollout，后续 DT/PPO/checkpoint
+峰值由每小时检查继续记录，不提前声称正式规模全阶段峰值已通过。
 
 [run_verl_agent.sh](run_verl_agent.sh) 只透传上游 checkpoint save/resume/retention
 与任务配置。检查点仍由原 FSDPCheckpointManager 保存完整 model、optimizer、
@@ -79,8 +84,13 @@ extra state，trainer 保存 dataloader 和 latest marker。正式启动与恢�
 [backup_metax_to_restic.py](backup_metax_to_restic.py) 让 MetaX 的原 restic 经
 4090 跳板直接写入异机仓库，复用其加密、压缩、去重。备份机执行原
 restore --verify；检查点还逐文件核对源端/恢复端 SHA256。只选上游完成标记
-覆盖的检查点，不改变检查点格式、不删除历史备份。早期本机 tar 中转已因
-实测低吞吐停止，其已验证的元数据备份保留；完整检查点未传完不称作成功。
+覆盖的检查点，不改变检查点格式、不删除历史备份。原 roundtrip 检查点的
+9 个文件（17.945 GB）已异机恢复并逐文件 SHA256 一致；借助已有权重块，
+新增压缩数据约 495.5 MB。当前实验数据、AppWorld 官方输出、三组原 Ray
+日志共 13,725 个文件也已备份并恢复验证，仓库 check 无错误。记录见
+[results_backup_metax.json](results_backup_metax.json)。正式训练尚未产生首个
+检查点，每小时检查会继续备份原生完成标记覆盖的检查点；不将探针检查点
+说成正式实验结果。早期中转与校验包装错误均保留，未删除历史快照。
 
 ## 入口与历史结果
 
