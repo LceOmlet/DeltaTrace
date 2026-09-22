@@ -228,16 +228,40 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   在 no-grad 下复现。使用同一正式 seed 的 eager 执行可越过该错误。新增显式
   `qwen35.dt_answer_compiled=false`，仅用于此运行配置；owner 默认仍为 true，
   其他有限传播图保持既有动态编译。未复制 seed 算法，也未清编译缓存。
-- 真实 Qwen 探针随后未通过已有归因守恒阈值。最新记录：原生目标差及 seed
+- 修复前的真实 Qwen 探针未通过已有归因守恒阈值。当时记录：原生目标差及 seed
   log-prob 差均为 `0.015408515930175781`，head 输入端有限贡献为
   `0.08401765790792126`，最终 norm 输入端为 `0.08037153781038953`，
   全部 source token 归因和为 `0.05778632130990635`。32 层原生重放 L2 差为 0。
-  这将差异定位到 head 有限拉回边界；具体数值原因尚未修复，不能将其归结为
-  环境 reward 或 PPO 接线错误，也不能据此改变 PLAN。
-- 最新失败 trace 实际长度 266（保持总上限 32768），含诊断用时约 19.79 秒，
+  这将差异定位到 head 有限拉回边界；该项已由下面的舍入边界修复处理，
+  后续层的整网误差仍单独记录，不改变 PLAN。
+- 该次失败 trace 实际长度 266（保持总上限 32768），含诊断用时约 19.79 秒，
   peak allocated 为 19426050048 字节。这不是 32k 容量、训练吞吐或已通过的
   信用分配结果。首次/后续编译成本尚未完成受控测量。
 - `receipts/native-eos.json` 保留失败状态和完整逐层诊断；
   `receipts/metax-runtime.json` 保留版本、路径及源码哈希；
   `receipts/probe_answer_seed.py` 和对应日志保留编译器复现。
   本地结果索引为 `results_eos_events.json`。阈值未放宽，归因未归一化，未启动 PPO 更新。
+
+## 2026-09-22 head 舍入边界修复
+
+- 原生 BF16 head 的 `delta(logits)` 与未舍入线性运算 `W delta(hidden)` 不同。
+  在捕获的真实操作数上，单纯提高转置乘法精度仍有约 0.087 的差额，主要来自
+  原生输出舍入。正式 head 有限规则现已使用已有 `_secant` 计入该操作，再做
+  类别行的 FP32 转置乘法；没有改变模型原生输出或把最终归因重新缩放。
+- 所需隐藏行由已有 final norm hook 按正式 target selection 打包，只保留
+  目标 predictor 行；不复制完整序列，不增加原生模型前向。默认完整词表
+  文本 seed 路径保留；categorical seed 必须提供对应的原生隐藏行。
+- MetaX 继续使用 `dt_answer_compiled=false`；A6000 保持默认编译设置。
+  没有安装依赖、下载权重、重建缓存或重启已有服务。
+- A6000 CPU 回归 54 项通过；MetaX 重跑其中 12 项 head 回归通过。
+  A6000 GPU 3 确认空闲后，9 项宽度 4096 的编译/eager 对照通过，最大有限
+  边界误差 `1.1920928955078125e-7`。编号仍不代表资源预留。
+- MetaX 三任务首个真实 head 检查误差分别为：Sokoban `5.57e-8`、WebShop
+  `3.41e-8`、AppWorld `7.52e-8`。A6000 真实 Qwen 首个 head 检查误差约 `1.79e-7`。
+  三任务的整网归因仍未通过原有守恒阈值；head 修复通过不等于完整 DT/训练通过。
+- MetaX 新记录：运行根目录下 `receipts/head-fix/`，包含捕获的 `head.pt`、
+  修改前后诊断、三个任务的独立日志和 `task-summary.json`。
+  A6000 新记录：`/data/liangchen/deltatrace_resume_20260917/receipts/head-fix-20260922/`，
+  包含 CPU、编译对照及原生整网结果。修改前 owner 源码在其 `before/` 中。
+- A6000 仅在已有 owner overlay 上应用相应差分；保留此前去除 head shape hook
+  的执行兼容修改。原始隐藏行通过已有 norm hook 获取，避免依赖该旧 hook。

@@ -6,7 +6,7 @@ padding labels, tokenizer-size vocabulary crop or implicit sink convention.
 """
 import torch
 from compiled_logprob_seed import seed_with_checks
-from qwen35_decoder_finite import _linear_transpose
+from qwen35_decoder_finite import _linear_transpose, _secant
 
 
 class PackedAnswerTargets:
@@ -66,13 +66,38 @@ def _answer_seed_rule(z0,z1,target,weight):
     return hidden,checks,logp0,logp1,allocated
 
 
+def _rounded_answer_seed_rule(z0,z1,target,weight,h0,h1):
+    """Include the native categorical head's output-rounding boundary.
+
+    The original BF16 head can have delta(z) != W delta(h) after rounding.
+    Apply the existing elementwise finite secant to that observed boundary,
+    then the original linear transpose. Only the few selected category rows
+    use FP32 operands; neither the forward logits nor model weights change.
+    """
+    z0=z0.float();z1=z1.float();weight=weight.float()
+    seed,checks=seed_with_checks(z0,z1,target)
+    linear_delta=torch.nn.functional.linear(h1.float()-h0.float(),weight)
+    native_delta=z1-z0
+    zero=torch.zeros_like(linear_delta)
+    rounding=_secant(zero,linear_delta,zero,native_delta,zero)
+    # A changed output with exactly zero linear displacement has no scalar
+    # rounding secant. Do not hide that unsupported native discrepancy.
+    checks=checks & ((linear_delta!=0)|(native_delta==0)).all()
+    hidden=(seed*rounding)@weight
+    logp0=z0.log_softmax(-1).gather(-1,target[:,None]).squeeze(-1)
+    logp1=z1.log_softmax(-1).gather(-1,target[:,None]).squeeze(-1)
+    return hidden,checks,logp0,logp1,(seed*native_delta).sum(-1)
+
+
 class FiniteAnswerOps:
     def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):
         self.dynamic_shapes=compiled and dynamic_shapes
         self.seed=torch.compile(_answer_seed_rule,fullgraph=True,dynamic=None if dynamic_shapes else False,
             options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else _answer_seed_rule
+        self.rounded_seed=torch.compile(_rounded_answer_seed_rule,fullgraph=True,dynamic=None if dynamic_shapes else False,
+            options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else _rounded_answer_seed_rule
 
-    def __call__(self,original_packed_logits,head,selection,equal_endpoint=False):
+    def __call__(self,original_packed_logits,head,selection,equal_endpoint=False,*,original_packed_hidden=None):
         assert isinstance(head,torch.nn.Linear) and head.bias is None
         assert original_packed_logits.shape==(2*len(selection.labels),head.out_features)
         assert head.out_features==head.weight.shape[0]  # Full model vocabulary.
@@ -90,7 +115,15 @@ class FiniteAnswerOps:
             z0=z0.index_select(-1,outcomes);z1=z1.index_select(-1,outcomes)
             weight=weight.index_select(0,outcomes)
             target=(target[:,None]==outcomes[None,:]).long().argmax(-1)
-        result=self.seed(z0,z1,target,weight)
+            if original_packed_hidden is None or original_packed_hidden.shape!=(2*len(selection.labels),head.in_features):
+                raise ValueError('Categorical finite head requires its captured native input rows.')
+            h0=original_packed_hidden[1::2] if equal_endpoint else original_packed_hidden[0::2]
+            h1=original_packed_hidden[1::2]
+            if self.dynamic_shapes and len(selection.labels)>1:
+                for value in (h0,h1):torch._dynamo.mark_dynamic(value,0)
+            result=self.rounded_seed(z0,z1,target,weight,h0,h1)
+        else:
+            result=self.seed(z0,z1,target,weight)
         hidden,valid,*diagnostics=result
         if not bool(valid):raise ValueError('Finite answer seed invalid.')
         return selection.scatter_hidden(hidden),{'packed_hidden':hidden,'logp0':diagnostics[0],

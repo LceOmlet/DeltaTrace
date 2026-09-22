@@ -127,6 +127,10 @@ class Qwen35DenseFiniteRunner:
         def final_norm(_module,args,output):
             root['final_norm_input']=_copy(args[0],'cpu')
             if observer is not None:root['final_norm_output']=_copy(output,'cpu')
+            if selection.outcome_token_ids is not None:
+                # Qwen's native head consumes these final-normalized predictor
+                # rows. Keep only packed rows, not another full checkpoint.
+                root['packed_head_input']=_copy(selection.pack_hidden(output),'cpu')
         handles.append(norm.register_forward_hook(final_norm))
         def head_input(_module,args):head_shapes.append(list(args[0].shape))
         handles.append(model.lm_head.register_forward_pre_hook(head_input))
@@ -148,7 +152,11 @@ class Qwen35DenseFiniteRunner:
             root_logp=timed('actual_root_FP32_logprob_diagnostic',lambda:selected_target_log_probs(z,selection))
         root_lp0=root_logp[0::2].detach().cpu();root_lp1=root_logp[1::2].detach().cpu();del root_logp
         # Consume only actual original logits, with the unchanged full-vocabulary seed.
-        with torch.no_grad():mnorm,seed=timed('finite_seed',lambda:self.answer(z,model.lm_head,selection))
+        packed_head=root.pop('packed_head_input',None)
+        if packed_head is not None:packed_head=packed_head.to(z.device)
+        with torch.no_grad():mnorm,seed=timed('finite_seed',lambda:self.answer(z,model.lm_head,selection,
+            original_packed_hidden=packed_head))
+        del packed_head
         if observer is not None:observer.boundary('norm',mnorm.detach(),root['final_norm_output'])
         lp0=seed['logp0'].detach().cpu();lp1=seed['logp1'].detach().cpu()
         effect_G=float((root_lp1.double()-root_lp0.double()).sum())

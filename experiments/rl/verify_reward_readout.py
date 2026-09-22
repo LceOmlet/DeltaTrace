@@ -16,9 +16,10 @@ import torch
 
 class RecordFirstTrace:
     """Retain one real owner artifact for a native-forward numerical audit."""
-    def __init__(self, runner):
+    def __init__(self, runner, head_artifact=None):
         self.runner, self.first, self.first_detail = runner, None, None
         self.model = runner.model
+        self.head_artifact = head_artifact
 
     def attribute(self, *args, **kwargs):
         head_capture = {}
@@ -40,8 +41,18 @@ class RecordFirstTrace:
             # diagnostic does not replace any forward value or attribution.
             logits = head_capture['logits'].flatten(0, 1)
             hidden = head_capture['hidden'].flatten(0, 1)
+            if self.head_artifact is not None:
+                outcomes = selection.outcome_token_ids
+                self.head_artifact.parent.mkdir(parents=True, exist_ok=True)
+                torch.save(dict(
+                    hidden=hidden.cpu(),
+                    logits=logits.index_select(-1, outcomes).cpu(),
+                    weight=self.model.lm_head.weight.detach().index_select(0, outcomes).cpu(),
+                    target=(selection.labels[:, None] == outcomes[None, :]).long().argmax(-1).cpu(),
+                ), self.head_artifact)
             from qwen35_answer_finite import FiniteAnswerOps
-            _, seed = FiniteAnswerOps(compiled=False)(logits, self.model.lm_head, selection)
+            _, seed = FiniteAnswerOps(compiled=False)(logits, self.model.lm_head, selection,
+                                                     original_packed_hidden=hidden)
             detail['head_audit'] = dict(
                 allocated_logit_effect=float(seed['allocated_logit_effect'].double().sum()),
                 captured_head_input_effect=float((seed['packed_hidden'].double()
@@ -56,6 +67,8 @@ def main():
     parser.add_argument('--task', choices=['Sokoban', 'Webshop', 'AppWorld', 'all'], default='all')
     parser.add_argument('--rollout-fixtures', type=Path,
                         help='Reuse explicitly scripted official task artifacts exported on another host')
+    parser.add_argument('--head-artifact', type=Path,
+                        help='Save captured head operands for an independent numerical regression')
     args = parser.parse_args()
     root = Path(os.environ['DT_ROOT'])
     env = json.loads(Path(os.environ['DT_ENVIRONMENT_JSON']).read_text())['qwen35']
@@ -107,7 +120,7 @@ def main():
         else:
             transitions = fn()
             rows, lengths = task_rows(task, transitions, tokenizer)
-        recorded = RecordFirstTrace(owner)
+        recorded = RecordFirstTrace(owner, args.head_artifact)
         readout = EventRatioReadout(recorded, tokenizer, task=task, max_steps=15,
                                    packed_answer_targets=PackedAnswerTargets, max_length=32768)
         try:
