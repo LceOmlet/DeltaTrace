@@ -8,7 +8,7 @@ See PLAN.md for the sampling and support conditions of the estimator.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Any
 import torch
 
@@ -22,58 +22,6 @@ class DTTokenCredit:
 
 
 @torch.no_grad()
-def policy_marginal_log_ratio(
-    contrast_chunks: Iterable[tuple[torch.Tensor, torch.Tensor]],
-) -> torch.Tensor:
-    """Convert same-prefix DT candidate contrasts to the PLAN policy reference.
-
-    A chunk contains C[..., b] = log p(y|h,a) - log p(y|h,b), and
-    log_weights[..., b] for the *same prefix* old-policy probability measure.
-    Then exp(-d) = sum_b weight_b * exp(-C_b). The returned d is minus
-    this sum's log, never the arithmetic average of the log contrasts.
-
-    Chunking the candidate axis avoids storing [events,tokens,vocabulary].
-    Weights across all chunks must already sum to one; the function does not
-    silently renormalize a truncated policy. For references actually sampled
-    iid from pi_old, empirical weights are 1/M (not pi_old a second time).
-    This is only the reference reduction, not the native DT contrast producer.
-    """
-    log_factor = log_mass = None
-    for contrasts, log_weights in contrast_chunks:
-        if contrasts.ndim < 1 or not contrasts.is_floating_point() or not log_weights.is_floating_point():
-            raise ValueError("candidate contrasts and log weights must be floating tensors")
-        if contrasts.device != log_weights.device:
-            raise ValueError("candidate contrasts and weights must use the same device")
-        dtype = torch.promote_types(contrasts.dtype, log_weights.dtype)
-        if dtype in (torch.float16, torch.bfloat16):
-            dtype = torch.float32
-        c, w = torch.broadcast_tensors(contrasts.to(dtype), log_weights.to(dtype))
-        if c.shape != contrasts.shape or c.shape[-1] == 0:
-            raise ValueError("weights must broadcast to the nonempty candidate axis of contrasts")
-        if not bool((torch.isfinite(w) | torch.isneginf(w)).all()):
-            raise ValueError("log weights must represent nonnegative finite probabilities")
-        supported = ~torch.isneginf(w)
-        if not bool((torch.isfinite(c[supported]) | torch.isposinf(c[supported])).all()):
-            raise ValueError("supported candidate contrasts cannot be NaN or negative infinity")
-        terms = torch.where(supported, w - c, -torch.inf)
-        chunk_factor = torch.logsumexp(terms, dim=-1)
-        chunk_mass = torch.logsumexp(w, dim=-1)
-        if log_factor is None:
-            log_factor, log_mass = chunk_factor, chunk_mass
-        else:
-            if chunk_factor.shape != log_factor.shape:
-                raise ValueError("candidate chunks must retain the same event/token identities")
-            log_factor = torch.logaddexp(log_factor, chunk_factor)
-            log_mass = torch.logaddexp(log_mass, chunk_mass)
-    if log_factor is None:
-        raise ValueError("at least one candidate chunk is required")
-    tolerance = 32 * torch.finfo(log_mass.dtype).eps
-    if not bool((log_mass.abs() <= tolerance).all()):
-        raise ValueError("reference weights must sum to one across all candidate chunks")
-    return -log_factor
-
-
-@torch.no_grad()
 def reward_event_token_credit(
     log_ratios: torch.Tensor,
     rewards: torch.Tensor,
@@ -84,7 +32,7 @@ def reward_event_token_credit(
 ) -> DTTokenCredit:
     """Compose sampled terminal/process rewards into individual token advantages.
 
-    log_ratios[b,k,i] = log P(y_k|h_i,a_i) - log P(y_k|h_i,pi_old).
+    log_ratios[b,k,i] = log p_k(y_k) - log p_k_without_i(y_k).
     Each observed y_k is sampled after a_i under the old continuation policy.
     rewards[b,k] is its actual reward. future_event_mask[b,k,i] identifies
     events not yet settled at token i, using rollout event identities. Only
@@ -95,7 +43,9 @@ def reward_event_token_credit(
     V_hat_i = sum_k discount_ki * r_k * exp(-d_ki)
     A_hat_i = sum_k discount_ki * r_k * (1 - exp(-d_ki)).
 
-    Under PLAN.md's conditions E[A_hat_i|h_i,a_i] = Q_i - V_i.
+    Exact ratios give the factual-minus-counterfactual reward expectation.
+    This equals PPO Q-V when the counterfactual endpoint has the PLAN V
+    semantics; conservation alone does not establish that alignment.
     A terminal reward is one event. No cross-token normalization,
     probability-difference substitution, clipping, or learned baseline occurs.
     """

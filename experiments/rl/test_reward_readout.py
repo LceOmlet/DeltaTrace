@@ -1,4 +1,4 @@
-"""Readout boundary contracts. Fake runner below is explicitly a test double."""
+"""EOS event adapter contracts with an explicitly labelled owner test double."""
 from copy import deepcopy
 from types import SimpleNamespace
 
@@ -6,9 +6,12 @@ import pytest
 import torch
 
 from reward_readout import RewardAlphabet, EventRatioReadout
+from deltatrace_rollout import DeltaTraceRolloutProducer
 
 
 class Tokenizer:
+    eos_token_id = 99
+
     def __init__(self):
         self.queries = []
 
@@ -19,24 +22,41 @@ class Tokenizer:
         return [8, 9]
 
 
+class Targets:
+    """Captures the exact arguments sent to the real owner selection class."""
+    def __init__(self, cases, offsets, length, device, **kwargs):
+        self.cases, self.offsets, self.length = cases, offsets, length
+        self.outcomes = kwargs['outcome_token_ids']
+
+
 class Runner:
     def __init__(self):
-        self.model = SimpleNamespace(lm_head=SimpleNamespace(weight=torch.empty(1)))
-        self.prefixes, self.query_prefixes = [], []
+        self.calls, self.releases = [], 0
+        self.model = SimpleNamespace(lm_head=SimpleNamespace(weight=torch.empty(1)),
+                                     release_owner_params=self.release)
 
-    def forward_prefix(self, ids, past_key_values=None):
-        cache = [] if past_key_values is None else past_key_values
-        cache.extend(ids[0].tolist())
-        self.prefixes.append(tuple(cache))
-        logits = torch.full((1, 1, 12), -torch.inf)
-        logits[..., 2] = 0  # Unused by event readout: it never samples tokens.
-        return SimpleNamespace(past_key_values=cache, logits=logits)
+    def release(self):
+        self.releases += 1
 
-    def read_outcomes(self, ids, labels, past_key_values=None):
-        self.query_prefixes.append(tuple(past_key_values))
-        past_key_values.extend(ids[0].tolist())  # Test native in-place cache mutation.
-        value = (sum(past_key_values) + len(past_key_values)) * .03
-        return torch.tensor([[value, -.1, -value]])[:, :len(labels)].log_softmax(-1)
+    def attribute(self, pair, mask, selection, **kwargs):
+        self.calls.append((pair.clone(), mask.clone(), selection))
+        assert mask.eq(1).all()
+        assert selection.offsets == [[0]]
+        assert selection.cases[0]['prompt_length'] == pair.shape[1] - 1
+        changed = (pair[0] != pair[1]).nonzero().flatten()
+        assert pair[0, changed].eq(99).all()
+        # Deliberately nonuniform signed contributions, different per event.
+        signed = torch.zeros(1, pair.shape[1], dtype=torch.float64)
+        scale = .1 * (int(selection.cases[0]['target_ids'][0]) + 1)
+        signed[0, changed] = scale * torch.arange(1, len(changed) + 1, dtype=torch.float64) * (-1.)**torch.arange(len(changed))
+        return signed, dict(root_effect=float(signed.sum()),
+                            compiled_seed_logprob_effect=float(signed.sum()),
+                            complete_attribution_seconds_with_diagnostics=0.)
+
+    def forward_prefix(self, *args, **kwargs):
+        raise AssertionError('Per-token prefix forecasting is not the accepted path')
+
+    read_outcomes = forward_prefix
 
 
 def row(step, reward, *, active=True):
@@ -47,7 +67,13 @@ def row(step, reward, *, active=True):
                 dt_env_outcome={'observation': 'NEVER INCLUDE FUTURE STATE', 'done': step == 1})
 
 
-def test_queries_have_horizon_and_absence_without_sampled_future():
+def readout(runner=None, tokenizer=None, **kwargs):
+    return EventRatioReadout(runner or Runner(), tokenizer or Tokenizer(),
+                            task=kwargs.pop('task', 'Sokoban'), max_steps=15,
+                            packed_answer_targets=Targets, **kwargs)
+
+
+def test_queries_encode_reward_events_without_revealing_sampled_future():
     tokenizer = Tokenizer()
     alphabet = RewardAlphabet.for_task('Sokoban')
     alphabet.query_ids(tokenizer, current_step=1, event_step=4, max_steps=15)
@@ -56,52 +82,131 @@ def test_queries_have_horizon_and_absence_without_sampled_future():
     assert 'never occurs' in text and '10.9' in text and '-0.1' in text
     assert alphabet.observed_index(10.8999999) == 2
     with pytest.raises(ValueError, match='outside'):
-        alphabet.observed_index(0.9)  # Multi-box reward is outside the accepted one-box setting.
+        alphabet.observed_index(0.9)
 
 
-def test_pre_post_boundaries_reuse_reads_without_sampling_or_query_leaks(monkeypatch):
-    def forbidden(*args, **kwargs):
-        raise AssertionError('Extra token sampling is forbidden')
-    monkeypatch.setattr(torch, 'multinomial', forbidden)
+def test_official_finite_vector_per_event_and_original_token_alignment(monkeypatch):
+    monkeypatch.setattr(torch, 'multinomial', lambda *a, **kw: pytest.fail('No reference sampling'))
     runner, tokenizer = Runner(), Tokenizer()
     rows = [row(0, -.1), row(1, 10.9), row(2, 0, active=False)]
     original = deepcopy(rows)
-    readout = EventRatioReadout(runner, tokenizer, task='Sokoban', max_steps=15, event_batch_size=1)
-    output = readout.episode(rows)
-    assert runner.query_prefixes[:4] == [(4, 5, 8), (4, 5, 8), (4, 5, 6, 8), (4, 5, 6, 8)]
-    assert (4, 5, 6, 7, 8) in runner.query_prefixes
-    assert all(2 not in prefix for prefix in runner.query_prefixes)
-    assert (4, 5, 6, 7) in runner.prefixes  # Factual advance has no query prefix.
-    assert all(9 not in prefix for prefix in runner.prefixes)
-    assert all('NEVER INCLUDE FUTURE STATE' not in query for query in tokenizer.queries)
-    assert readout.last_report['prefix_prefill_tokens'] == 4
-    assert readout.last_report['factual_decode_tokens'] == 4
-    # Two responses of two tokens: each has three boundary reads, not four.
-    assert readout.last_report['boundary_readouts'] == 6
-    assert len(runner.prefixes) == 9
-    for before, after in zip(original, rows):
-        torch.testing.assert_close(before['input_ids'], after['input_ids'])
-    for values in output:
-        assert values['dt_token_advantages'][-1] == 0
-        torch.testing.assert_close(values['dt_q_estimates']-values['dt_v_estimates'],
-                                   values['dt_token_advantages'])
-    assert output[0]['dt_token_advantages'][0] != output[0]['dt_token_advantages'][1]
+    dt = readout(runner, tokenizer)
+    output = dt.episode(rows)
+    assert len(runner.calls) == 3  # response/event pairs, independent of token count.
+    assert runner.releases == 3
+    assert runner.calls[0][0].tolist() == [[4, 5, 99, 99, 8, 9, 0], [4, 5, 6, 7, 8, 9, 0]]
+    assert runner.calls[1][0].tolist() == [[4, 5, 99, 99, 8, 9, 2], [4, 5, 6, 7, 8, 9, 2]]
+    assert runner.calls[0][2].outcomes == [0, 1, 2]
+    d0, d1 = torch.tensor([.1, -.2]), torch.tensor([.3, -.6])
+    expected = -.1 * (-torch.expm1(-d0)) + 10.9 * (-torch.expm1(-d1))
+    torch.testing.assert_close(output[0]['dt_token_advantages'][:2], expected)
+    torch.testing.assert_close(output[1]['dt_token_advantages'][:2], 10.9 * (-torch.expm1(-d1)))
+    assert not torch.allclose(expected, 10.8 * (-torch.expm1(-(d0+d1))))
     assert not output[-1]['dt_token_advantages'].any()
+    for before, after, values in zip(original, rows, output):
+        torch.testing.assert_close(before['input_ids'], after['input_ids'])
+        assert values['dt_token_advantages'][-1] == 0
+        torch.testing.assert_close(values['dt_q_estimates']-values['dt_v_estimates'], values['dt_token_advantages'])
+    assert all('NEVER INCLUDE FUTURE STATE' not in q for q in tokenizer.queries)
+    assert dt.last_report['per_token_probability_queries'] == 0
 
 
-def test_zero_observed_rewards_skip_native_work_without_inventing_signal():
-    runner, tokenizer = Runner(), Tokenizer()
-    readout = EventRatioReadout(runner, tokenizer, task='Webshop', max_steps=15)
-    output = readout.episode([row(0, 0)])
-    assert not runner.prefixes
+def test_zero_observed_rewards_do_not_invent_a_signal():
+    runner = Runner()
+    dt = readout(runner, task='Webshop')
+    output = dt.episode([row(0, 0)])
+    assert not runner.calls
     assert not output[0]['dt_token_advantages'].any()
-    assert readout.last_report['nonzero_reward_events'] == 0
 
 
-def test_readout_context_includes_query_and_does_not_truncate():
-    readout = EventRatioReadout(Runner(), Tokenizer(), task='Sokoban', max_steps=15, max_length=5)
-    with pytest.raises(ValueError, match='context 6 exceeds cap 5'):
-        readout.episode([row(0, -.1)])
+def test_total_context_includes_readout_and_target_no_silent_truncation():
+    dt = readout(max_length=6)
+    with pytest.raises(ValueError, match='context 7 exceeds cap 6'):
+        dt.episode([row(0, -.1)])
+
+
+def test_readout_budget_reuses_actual_query_encoding():
+    tokenizer = Tokenizer()
+    assert RewardAlphabet.for_task('Sokoban').readout_token_budget(tokenizer, 15) == 3
+    assert len(tokenizer.queries) == 15 * 16 // 2
+
+
+def test_full_32768_adapter_endpoint_preserves_ids():
+    # Capacity of adapter tensors only; NOT a 32k model/GPU training result.
+    r = row(0, -.1)
+    r['input_ids'] = torch.cat((torch.full((32762,), 5), r['responses']))
+    r['attention_mask'] = torch.ones_like(r['input_ids'])
+    r['attention_mask'][-1] = 0
+    runner = Runner()
+    dt = readout(runner)
+    dt.episode([r])
+    assert runner.calls[0][0].shape == (2, 32767)
+    assert dt.last_report['max_length'] == 32768
+    # Add one original prompt token, reaching the exact configured total cap.
+    r['input_ids'] = torch.cat((torch.tensor([5]), r['input_ids']))
+    r['attention_mask'] = torch.cat((torch.tensor([1]), r['attention_mask']))
+    dt.episode([r])
+    assert runner.calls[-1][0].shape == (2, 32768)
+
+
+def test_past_tool_observation_is_preserved_and_not_a_source_action():
+    runner = Runner()
+    rows = [row(0, -.1), row(1, 10.9)]
+    rows[1]['input_ids'] = torch.tensor([4, 5, 6, 7, 10, 11, 6, 7, 0])
+    rows[1]['attention_mask'] = torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, 0])
+    output = readout(runner).episode(rows)
+    pair = runner.calls[-1][0]
+    assert pair[:, :6].tolist() == [[4, 5, 6, 7, 10, 11]] * 2
+    assert (pair[0] != pair[1]).nonzero().flatten().tolist() == [6, 7]
+    assert all(values['dt_token_advantages'].shape == (3,) for values in output)
+
+
+def test_actual_eos_action_is_kept_with_zero_eos_contrast():
+    r = row(0, -.1)
+    r['responses'][1] = r['input_ids'][-2] = 99
+    result = readout().episode([r])[0]
+    assert result['dt_token_advantages'][1] == 0
+    assert result['dt_q_estimates'][1] != 0  # Action not masked as padding.
+
+
+def test_owner_parameters_released_on_failure():
+    runner = Runner()
+    def fail(*a, **kw):
+        raise RuntimeError('owner failure')
+    runner.attribute = fail
+    with pytest.raises(RuntimeError, match='owner failure'):
+        readout(runner).episode([row(0, -.1)])
+    assert runner.releases == 1
+
+
+@pytest.mark.parametrize('fails', [False, True])
+def test_actor_attention_and_training_mode_restored_after_finite_trace(fails):
+    class Model:
+        def __init__(self):
+            self.config = SimpleNamespace(_attn_implementation='sdpa')
+            self.training = True
+        def set_attn_implementation(self, name):
+            self.config._attn_implementation = name
+        def train(self, mode):
+            self.training = mode
+        def eval(self):
+            self.training = False
+    actor = Model()
+    producer = object.__new__(DeltaTraceRolloutProducer)
+    producer.actor = actor
+    producer.runner = SimpleNamespace(model=SimpleNamespace(model=SimpleNamespace(language_model=actor)))
+    def episode(rows):
+        assert not actor.training and actor.config._attn_implementation == 'flash_attention_2'
+        if fails:
+            raise RuntimeError('trace error')
+        return []
+    producer.readout = SimpleNamespace(episode=episode, last_report={})
+    if fails:
+        with pytest.raises(RuntimeError, match='trace error'):
+            producer.attribute_episode([], 123)
+    else:
+        producer.attribute_episode([], 123)
+    assert actor.training and actor.config._attn_implementation == 'sdpa'
 
 
 def test_reward_label_or_horizon_mismatch_is_not_silently_repaired():
@@ -109,67 +214,3 @@ def test_reward_label_or_horizon_mismatch_is_not_silently_repaired():
         RewardAlphabet.for_task('Sokoban').query_ids(Tokenizer(), current_step=2, event_step=1, max_steps=15)
     with pytest.raises(ValueError, match='No approved'):
         RewardAlphabet.for_task('invented')
-
-
-def test_installed_hf_hybrid_cache_branch_expansion_and_isolation():
-    from transformers.cache_utils import Cache, DynamicLayer, LinearAttentionLayer
-    cache = Cache(layers=[DynamicLayer(), LinearAttentionLayer()])
-    keys, values = torch.randn(1, 2, 8, 4), torch.randn(1, 2, 8, 4)
-    conv, recurrent = torch.randn(1, 8, 4), torch.randn(1, 2, 4, 4)
-    cache.layers[0].update(keys, values)
-    cache.layers[1].update_conv_state(conv)
-    cache.layers[1].update_recurrent_state(recurrent)
-    branch = deepcopy(cache)
-    branch.reorder_cache(torch.zeros(4, dtype=torch.long))
-    for name in ['keys', 'values']:
-        original, expanded = getattr(cache.layers[0], name), getattr(branch.layers[0], name)
-        torch.testing.assert_close(expanded, original.expand(4, -1, -1, -1))
-    for name in ['conv_states', 'recurrent_states']:
-        original, expanded = getattr(cache.layers[1], name), getattr(branch.layers[1], name)
-        assert expanded.shape[0] == 4
-        torch.testing.assert_close(expanded[3], original[0])
-        expanded.zero_()
-        assert original.count_nonzero() > 0
-
-
-def test_unchanged_event_distribution_has_zero_advantage():
-    runner = Runner()
-    runner.read_outcomes = lambda ids, labels, past_key_values: torch.zeros(1, len(labels)).log_softmax(-1)
-    readout = EventRatioReadout(runner, Tokenizer(), task='Sokoban', max_steps=15)
-    output = readout.episode([row(0, -.1)])
-    assert readout.last_report['boundary_readouts'] == 3
-    assert not output[0]['dt_token_advantages'].any()
-
-
-def test_probability_before_token_is_policy_marginal_and_reward_composition_is_unbiased():
-    # Enumerated distribution fixture: the identity under test is conditional
-    # expectation, not a claim that this double predicts real task rewards.
-    policy = torch.tensor([.25, .75], dtype=torch.float64)
-    after = torch.tensor([[.8, .1, .1], [.2, .3, .5]], dtype=torch.float64)
-    before = policy @ after
-    rewards = torch.tensor([-.1, 0., 10.9], dtype=torch.float64)
-    from counterfactual import reward_event_token_credit
-    q, v = after @ rewards, before @ rewards
-    for action in range(2):
-        d = (after[action].log() - before.log()).reshape(3, 1, 1)
-        values = reward_event_token_credit(d, rewards[:, None],
-            torch.ones_like(d, dtype=torch.bool), torch.ones(3, 1, dtype=torch.bool))
-        torch.testing.assert_close(after[action] @ values.q_estimates[:, 0], q[action])
-        torch.testing.assert_close(after[action] @ values.v_estimates[:, 0], v)
-        torch.testing.assert_close(after[action] @ values.advantages[:, 0], q[action] - v)
-
-
-def test_tool_observation_starts_fresh_boundary_and_is_not_an_action():
-    runner = Runner()
-    rows = [row(0, -.1), row(1, 10.9)]
-    # Next prompt contains the original response followed by observation 10,11.
-    # The preceding response's last read must NOT replace this row's first read.
-    rows[1]['input_ids'] = torch.tensor([4, 5, 6, 7, 10, 11, 6, 7, 0])
-    rows[1]['attention_mask'] = torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, 0])
-    readout = EventRatioReadout(runner, Tokenizer(), task='Sokoban', max_steps=15, event_batch_size=1)
-    output = readout.episode(rows)
-    assert runner.query_prefixes[-3:] == [
-        (4, 5, 6, 7, 10, 11), (4, 5, 6, 7, 10, 11, 6), (4, 5, 6, 7, 10, 11, 6, 7)]
-    assert readout.last_report['policy_tokens'] == 4
-    assert readout.last_report['boundary_readouts'] == 6
-    assert all(r['dt_token_advantages'].shape == (3,) for r in output)

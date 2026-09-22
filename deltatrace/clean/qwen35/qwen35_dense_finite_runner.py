@@ -31,7 +31,7 @@ def _effect(m,x):return float((m.double()*(x[1::2].double()-x[0::2].double())).s
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -83,7 +83,8 @@ class Qwen35DenseFiniteRunner:
             if isinstance(index,bool) or not isinstance(index,int) or not 0<=index<len(layers) or layers[index].block_type!='linear_attention':
                 raise ValueError(f'key_norm_by_layer requires an existing GDN layer: {index!r}')
             if not callable(callback):raise TypeError('A finite key normalization callback must be callable.')
-        self.boundaries=FiniteBoundaryOps(True);self.answer=FiniteAnswerOps(True)
+        self.boundaries=FiniteBoundaryOps(True,dynamic_shapes=dynamic_shapes,compiler_options=compiler_options)
+        self.answer=FiniteAnswerOps(True,dynamic_shapes=dynamic_shapes,compiler_options=compiler_options)
 
     @torch.no_grad()
     def forward_prefix(self,input_ids,*,past_key_values=None):

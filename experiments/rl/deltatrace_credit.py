@@ -1,8 +1,7 @@
-"""Inspect the official DT text-attribution interface without relabelling it.
+"""Thin call boundary to the official finite attribution implementation.
 
-The signed source vector is not automatically a same-prefix, policy-marginal
-reward-event log ratio. Reward-event composition lives in counterfactual.py;
-the old observation-routing and whole-return normalization are removed.
+The output remains the owner's signed vector. The caller defines its target
+and EOS baseline; reward conversion lives in counterfactual.py.
 """
 
 from __future__ import annotations
@@ -26,10 +25,9 @@ def trace_token_attribution(
     target_offsets: list[int],
     *,
     packed_answer_targets: Any,
-    # The owner runner reports the endpoint scalar in FP32 while the signed
-    # pullback is accumulated in BF16/FP32 mixed kernels.  The pinned A6000
-    # owner receipt measures a <=1.2% residual; keep a fail-closed 2% audit
-    # envelope rather than silently renormalizing or inserting a baseline.
+    outcome_token_ids: list[int] | None = None,
+    # Absolute/relative mixed envelope, NOT a 2% relative-error claim when
+    # abs(root_effect) < 1. Never renormalize the returned attribution.
     attribution_tolerance: float = 2e-2,
 ) -> tuple[torch.Tensor, torch.Tensor, dict[str, Any]]:
     """Return the owner DT signed source-token attribution.
@@ -45,8 +43,9 @@ def trace_token_attribution(
     if reference_input_ids.shape[0] != 1:
         raise ValueError("one trajectory endpoint pair is required per trace call")
     pair = torch.cat((reference_input_ids, selected_input_ids), dim=0)
+    options = {} if outcome_token_ids is None else {"outcome_token_ids": outcome_token_ids}
     selection = packed_answer_targets(
-        [target_case], [target_offsets], pair.shape[1], selected_input_ids.device
+        [target_case], [target_offsets], pair.shape[1], selected_input_ids.device, **options
     )
     try:
         signed, detail = dt_runner.attribute(
@@ -78,8 +77,8 @@ def trace_token_attribution(
     detail = dict(detail)
     detail.update(
         {
-            "policy_credit_source": "text attribution diagnostic only; no reward-event log ratios",
-            "policy_credit_signed_vector_used": False,
+            "attribution_source": "official_finite_signed_input_vector",
+            "categorical_target": outcome_token_ids is not None,
             "policy_credit_root_effect": root_effect,
             "policy_credit_signed_sum": signed_sum,
         }

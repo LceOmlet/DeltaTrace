@@ -67,9 +67,10 @@ def _answer_seed_rule(z0,z1,target,weight):
 
 
 class FiniteAnswerOps:
-    def __init__(self,compiled=True):
-        self.seed=torch.compile(_answer_seed_rule,fullgraph=True,dynamic=False,
-            options={'triton.cudagraphs':False,'max_autotune':False}) if compiled else _answer_seed_rule
+    def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):
+        self.dynamic_shapes=compiled and dynamic_shapes
+        self.seed=torch.compile(_answer_seed_rule,fullgraph=True,dynamic=None if dynamic_shapes else False,
+            options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else _answer_seed_rule
 
     def __call__(self,original_packed_logits,head,selection,equal_endpoint=False):
         assert isinstance(head,torch.nn.Linear) and head.bias is None
@@ -77,6 +78,9 @@ class FiniteAnswerOps:
         assert head.out_features==head.weight.shape[0]  # Full model vocabulary.
         z0=original_packed_logits[1::2] if equal_endpoint else original_packed_logits[0::2]
         z1=original_packed_logits[1::2]
+        if self.dynamic_shapes and len(selection.labels)>1:
+            for value in (z0,z1,selection.labels):
+                torch._dynamo.mark_dynamic(value,0)
         target=selection.labels;weight=head.weight
         outcomes=getattr(selection,'outcome_token_ids',None)
         if outcomes is not None:

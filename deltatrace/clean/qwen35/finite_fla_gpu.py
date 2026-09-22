@@ -173,7 +173,7 @@ def finite_fla_pullback(endpoints, do, scale):
     return mixed_coefficients(endpoints,native_input_adjoints(endpoints,do,scale),scale)
 
 
-def make_compiled_finite_pullback(reuse_scalar_products=False):
+def make_compiled_finite_pullback(reuse_scalar_products=False, *, dynamic_shapes=False, compiler_options=None):
     """Use the official compiler to fuse layout/scalar work; keep native FLA calls.
 
     Compile time and steady cost must be recorded separately. CUDA graphs and
@@ -183,8 +183,19 @@ def make_compiled_finite_pullback(reuse_scalar_products=False):
     """
     def mixed(endpoints, adjoints, scale):
         return mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products)
-    compiled = torch.compile(mixed, fullgraph=True, dynamic=False,
-        options={'triton.cudagraphs':False, 'max_autotune':False})
+    compiled = torch.compile(mixed, fullgraph=True, dynamic=None if dynamic_shapes else False,
+        options={'triton.cudagraphs':False, 'max_autotune':False, **(compiler_options or {})})
     def pullback(endpoints, do, scale):
-        return compiled(endpoints, native_input_adjoints(endpoints,do,scale), scale)
+        adjoints = native_input_adjoints(endpoints,do,scale)
+        if dynamic_shapes:
+            # Sequence rows and the corresponding number of 64-token chunks
+            # vary; endpoint count, head count and head width stay fixed.
+            for name in ('q','k','v','raw_g','g','beta','A','v_new','h'):
+                value = endpoints[name]
+                if value.shape[1] > 1:
+                    torch._dynamo.mark_dynamic(value, 1)
+            for value in adjoints.values():
+                if value.shape[1] > 1:
+                    torch._dynamo.mark_dynamic(value, 1)
+        return compiled(endpoints, adjoints, scale)
     return pullback

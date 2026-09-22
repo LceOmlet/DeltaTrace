@@ -108,12 +108,25 @@ class FiniteBoundaryOps:
     be counted; disabling max_autotune does not disable all compiler tuning.
     No hidden eager fallback is installed when a graph fails to compile.
     """
-    def __init__(self,compiled=True):
+    def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):
         self.compiled=compiled
+        varying_dimensions={
+            'mlp':[(i,1) for i in range(7)],
+            'norm_residual':[(i,1) for i in (0,1,3,4)],
+            'attention_gate':[(i,1) for i in range(4)],
+            'attention_input':[(i,2) for i in range(3)]+[(i,1) for i in (3,4,5,6,7,10,11)],
+        }
         for name,fn in [('mlp',_mlp_input_rule),('norm_residual',_norm_residual_rule),
                         ('attention_gate',_attention_gate_rule),('attention_input',_attention_input_rule)]:
-            op=torch.compile(fn,fullgraph=True,dynamic=False,
-                options={'triton.cudagraphs':False,'max_autotune':False}) if compiled else fn
+            op=torch.compile(fn,fullgraph=True,dynamic=None if dynamic_shapes else False,
+                options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else fn
+            if compiled and dynamic_shapes:
+                def varying(*args,_op=op,_dimensions=varying_dimensions[name]):
+                    for index,dimension in _dimensions:
+                        if args[index].shape[dimension]>1:
+                            torch._dynamo.mark_dynamic(args[index],dimension)
+                    return _op(*args)
+                op=varying
             setattr(self,name,op)
 
 

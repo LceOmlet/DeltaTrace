@@ -5,49 +5,7 @@ import torch
 
 from counterfactual import (
     reward_event_token_credit, assert_token_advantage_contract,
-    policy_marginal_log_ratio,
 )
-
-
-def test_policy_reference_reduces_probabilities_and_streams_candidates():
-    # Separate token prefixes; each candidate has two possible event outcomes.
-    p = torch.tensor([
-        [[0.8, 0.2], [0.3, 0.7], [0.6, 0.4]],
-        [[0.4, 0.6], [0.9, 0.1], [0.2, 0.8]],
-    ], dtype=torch.float64)
-    policy = torch.tensor([[0.2, 0.3, 0.5], [0.6, 0.1, 0.3]], dtype=torch.float64)
-    actual = p[:, 0, :].T
-    contrasts = actual.log().unsqueeze(-1) - p.permute(2, 0, 1).log()
-    chunks = ((contrasts[..., start:end], policy[:, start:end].log())
-              for start, end in [(0, 1), (1, 3)])
-    d = policy_marginal_log_ratio(chunks)
-    expected = actual.log() - (policy[..., None] * p).sum(1).T.log()
-    torch.testing.assert_close(d, expected)
-    assert not torch.allclose(d, (contrasts * policy).sum(-1))
-
-
-def test_sampled_reference_is_not_weighted_by_policy_twice():
-    probabilities = torch.tensor([0.8, 0.3, 0.6], dtype=torch.float64)
-    policy = torch.tensor([0.2, 0.3, 0.5], dtype=torch.float64)
-    actual = probabilities[0]
-    factors = []
-    for probability in probabilities:
-        contrast = (actual.log() - probability.log()).reshape(1)
-        d = policy_marginal_log_ratio([(contrast, torch.zeros_like(contrast))])
-        factors.append(torch.exp(-d))
-    torch.testing.assert_close(policy @ torch.stack(factors), (policy @ probabilities) / actual)
-
-
-def test_policy_reference_preserves_zero_weight_and_zero_probability():
-    contrasts = torch.tensor([0.0, float("inf"), float("nan")], dtype=torch.float64)
-    weights = torch.tensor([0.25, 0.75, 0.0], dtype=torch.float64)
-    d = policy_marginal_log_ratio([(contrasts, weights.log())])
-    assert torch.exp(-d).item() == pytest.approx(0.25)
-
-
-def test_policy_reference_does_not_renormalize_missing_mass():
-    with pytest.raises(ValueError, match="sum to one"):
-        policy_marginal_log_ratio([(torch.zeros(2), torch.tensor([0.2, 0.3]).log())])
 
 
 def compose(d, rewards, future=None, policy=None, discounts=None):

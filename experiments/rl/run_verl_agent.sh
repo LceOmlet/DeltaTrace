@@ -79,7 +79,23 @@ export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
 if [[ "$METHOD" == "dt" ]]; then
   export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
   export DT_TASK="$ENV_NAME" DT_MAX_STEPS="$MAX_STEPS" DT_MAX_LENGTH="$MAX_TOTAL_TOKENS"
-  export DT_EVENT_BATCH_SIZE="${DT_EVENT_BATCH_SIZE:-4}"
+  # Keep attribution inside the same 32k cap, including its event query and
+  # target. Reserve this space at the upstream prompt-length boundary rather
+  # than truncating an already-generated action or exceeding the cap later.
+  DT_READOUT_TOKENS=$("$VENV_PYTHON" - "$MODEL_PATH" "$ENV_NAME" "$MAX_STEPS" <<'PY'
+import sys
+from transformers import AutoTokenizer
+from reward_readout import RewardAlphabet
+tokenizer = AutoTokenizer.from_pretrained(sys.argv[1], local_files_only=True)
+print(RewardAlphabet.for_task(sys.argv[2]).readout_token_budget(tokenizer, int(sys.argv[3])))
+PY
+)
+  DT_PROMPT_LIMIT=$((MAX_TOTAL_TOKENS - MAX_RESPONSE - DT_READOUT_TOKENS))
+  if (( DT_PROMPT_LIMIT < 1 )); then
+    echo "DT context cap cannot fit the response and event readout" >&2; exit 2
+  fi
+  if (( MAX_PROMPT > DT_PROMPT_LIMIT )); then MAX_PROMPT="$DT_PROMPT_LIMIT"; fi
+  echo "DT context budget: prompt=$MAX_PROMPT response=$MAX_RESPONSE readout=$DT_READOUT_TOKENS cap=$MAX_TOTAL_TOKENS"
 else
   export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
 fi
@@ -122,6 +138,7 @@ fi
 # Use the original PPO clipped objective, without the optional dual clipping.
 exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   algorithm.adv_estimator="$ADV_ESTIMATOR" \
+  algorithm.gamma=1.0 \
   actor_rollout_ref.actor.clip_ratio_c=inf \
   data.train_files="$DATA_ROOT/train.parquet" \
   data.val_files="$DATA_ROOT/test.parquet" \

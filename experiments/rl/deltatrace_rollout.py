@@ -165,9 +165,7 @@ class DeltaTraceRolloutProducer:
         from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256
 
         verify_native_sources(env["native_stage_source_sha256"])
-        # Root-only event readout uses the actor's native attention backend.
-        # Do not switch the shared actor to a forward-only FA wheel: its next
-        # PPO update needs the existing SDPA backward implementation.
+        # Finite attribution temporarily uses FA; actor updates retain SDPA.
         finite_fa = VendorFAFiniteP1BF16D256(env["finite_library"], env["finite_library_sha256"])
         # VERL's FSDP2 rollout object is a wrapper around the actor (and may
         # also be a PEFT wrapper).  The owner runner must receive the actual
@@ -273,14 +271,16 @@ class DeltaTraceRolloutProducer:
                 "DeltaTrace owner requires an HF Qwen3.5 module; received "
                 + ", ".join(type(value).__name__ for value in candidates)
             )
+        # Reuse the host's recorded, already-tested dynamic execution overlay.
+        # Do not recreate its compiler caches or silently change its profile.
+        execution = {}
+        if env.get("dt_dynamic_shapes", False):
+            execution = {"dynamic_shapes": True, "compiler_options": env.get("dt_compiler_options", {})}
         self.runner = make_qwen35_runner(
             owner_model,
             finite_fa,
-            # These callbacks remain the official profile's operators, but
-            # root-only readout never invokes/compiles a pullback. Keep the
-            # base owner ABI so this producer also works outside the A6000
-            # execution overlay; the finite validation tool uses that overlay.
-            make_compiled_finite_pullback(reuse_scalar_products=False),
+            make_compiled_finite_pullback(reuse_scalar_products=False, **execution),
+            **execution,
         )
         self.packed_answer_targets = PackedAnswerTargets
         self.eos_token_id = int(
@@ -304,7 +304,7 @@ class DeltaTraceRolloutProducer:
             task=os.environ['DT_TASK'],
             max_steps=int(os.environ['DT_MAX_STEPS']),
             max_length=int(os.environ.get('DT_MAX_LENGTH', '32768')),
-            event_batch_size=int(os.environ.get('DT_EVENT_BATCH_SIZE', '4')),
+            packed_answer_targets=self.packed_answer_targets,
         )
 
     def attribute_episode(self, rows: list[dict[str, Any]], episode_return: float) -> list[dict[str, torch.Tensor]]:
@@ -312,11 +312,18 @@ class DeltaTraceRolloutProducer:
         # by episode_return again. RPC retains that upstream summary argument.
         training = self.actor.training
         self.actor.eval()
+        text_model = self.runner.model.model.language_model
+        attention = text_model.config._attn_implementation
         try:
+            # Public HF dispatch switches the existing layers, without new
+            # weights. The installed FA wheel supports finite forward/replay;
+            # it does not support the subsequent actor backward.
+            text_model.set_attn_implementation('flash_attention_2')
             result = self.readout.episode(rows)
             print('[DeltaTrace readout] ' + json.dumps(self.readout.last_report), flush=True)
             return result
         finally:
+            text_model.set_attn_implementation(attention)
             self.actor.train(training)
 
     def attribute_episodes(self, episodes: list[list[dict[str, Any]]], returns: list[float]) -> list[list[dict[str, torch.Tensor]]]:

@@ -1,0 +1,173 @@
+{
+  "timestamp_utc": "2026-09-22T02:51:58.761177+00:00",
+  "method": "official_eos_dt_reward_event_credit",
+  "status": "cpu_and_official_reward_checks_passed_gpu_pending",
+  "cpu_tests": {
+    "suite_passed": 41,
+    "suite_seconds": 20.64,
+    "additional_ppo_file_passed": 4,
+    "additional_ppo_file_seconds": 9.93,
+    "unique_tests_passed": 42,
+    "scope": "owner interface doubles, sampled reward algebra, real pinned VERL collector and PPO loss; no native model finite run"
+  },
+  "native_attention_dispatch": {
+    "implementations": [
+      "sdpa",
+      "flash_attention_2",
+      "sdpa"
+    ],
+    "meta_only": true,
+    "no_gpu_compute": true
+  },
+  "task_reward_fixtures": {
+    "scope": "official positive reward fixtures plus synthetic-ratio transport; no model/performance/training claim",
+    "oracle_access": true,
+    "split": "train",
+    "context_cap": 32768,
+    "tasks": {
+      "Sokoban": {
+        "events": 5,
+        "rewards": [
+          -0.1,
+          -0.1,
+          -0.1,
+          -0.1,
+          10.9
+        ],
+        "done": [
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "token_lengths_for_scripted_actions": [
+          {
+            "prompt": 81,
+            "response": 14,
+            "total": 95
+          },
+          {
+            "prompt": 169,
+            "response": 14,
+            "total": 183
+          },
+          {
+            "prompt": 257,
+            "response": 14,
+            "total": 271
+          },
+          {
+            "prompt": 345,
+            "response": 14,
+            "total": 359
+          },
+          {
+            "prompt": 433,
+            "response": 14,
+            "total": 447
+          }
+        ],
+        "first_q_sample": 10.5,
+        "transport_passed": true
+      },
+      "Webshop": {
+        "events": 6,
+        "rewards": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          10.0
+        ],
+        "done": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "token_lengths_for_scripted_actions": [
+          {
+            "prompt": 66,
+            "response": 19,
+            "total": 85
+          },
+          {
+            "prompt": 641,
+            "response": 12,
+            "total": 653
+          },
+          {
+            "prompt": 846,
+            "response": 5,
+            "total": 851
+          },
+          {
+            "prompt": 1044,
+            "response": 5,
+            "total": 1049
+          },
+          {
+            "prompt": 1242,
+            "response": 5,
+            "total": 1247
+          },
+          {
+            "prompt": 1440,
+            "response": 6,
+            "total": 1446
+          }
+        ],
+        "first_q_sample": 10.0,
+        "transport_passed": true
+      },
+      "AppWorld": {
+        "events": 1,
+        "rewards": [
+          10.0
+        ],
+        "done": [
+          true
+        ],
+        "token_lengths_for_scripted_actions": [
+          {
+            "prompt": 25,
+            "response": 342,
+            "total": 367
+          }
+        ],
+        "first_q_sample": 10.0,
+        "transport_passed": true
+      }
+    }
+  },
+  "readout_context_budget": {
+    "total_cap": 32768,
+    "response_max": 512,
+    "Sokoban": {
+      "readout": 173,
+      "prompt_max": 32083
+    },
+    "Webshop": {
+      "readout": 146,
+      "prompt_max": 32110
+    },
+    "AppWorld": {
+      "readout": 146,
+      "prompt_max": 32110
+    }
+  },
+  "native_eos_dt_verified": false,
+  "training_verified": false,
+  "actual_32k_gpu_verified": false,
+  "remote_receipts": "/data/liangchen/deltatrace_resume_20260917/receipts/eos-events-20260922/",
+  "receipt_sha256": {
+    "cpu-tests.log": "8ac69fa85e20fccad4dc2d7cf85873e72dc349e7df9329db5d8c7494f5e3bcc7",
+    "official-rewards.json": "ecf1f465ac0c3c6c3775db2d0de42cd334781f52cc71ec9f4daed5ae2fdce28e",
+    "official-rewards.log": "5b8ffaa1d44419236702892be3b09bf45a8991c50eea7d2959f9d437fdc273a0",
+    "ppo-gradient-tests.log": "80b0258bde81ac7d12ccd0069b3b5511bf95e6131d07dc59d37aae245231201a"
+  }
+}

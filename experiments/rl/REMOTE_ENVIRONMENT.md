@@ -171,8 +171,41 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   修改前源码保存在 `receipts/readout-before-20260922T084710`。
 - 真实模型探针及 CPU 检查记录在运行根目录的 `receipts/readout-20260922/`。
   当次使用 GPU 3 前确认其空闲；该编号不构成后续预留。
-- DT 训练现在保持 actor 的 SDPA。奖励事件读出只需原始前向与 head，不需要
-  前向专用 FlashAttention wheel 的反向；完整 finite 对照独立运行。
+- 历史生成前后读出使用 actor 的 SDPA 和原始 head；该读出方法已撤下，
+  其探针不能证明当前 EOS finite 归因路径通过。
 - `VERL_TRIM_SHARED_PADDING=1` 在 HF rollout 和 actor 内移除共有左 padding
   的无效计算。其改动前源码保存在 `receipts/readout-20260922/before-padding/`。
   `patch_verl_agent2.py` 维护该补丁，不重新安装 VERL 或 Transformers。
+
+## 2026-09-22 EOS 事件接入修订
+
+- 当前 producer 调用正式 finite `attribute`，临时通过 HF 公共接口切换到 FA，
+  完成或异常后恢复 actor 原后端。FA wheel 仍只用于归因前向/重放，PPO 反向保留 SDPA。
+- 显式复用 `environment.json.qwen35.dt_dynamic_shapes` 和 `dt_compiler_options`，
+  不重新编译/清空持久缓存作为恢复步骤。对应远端 execution overlay 已存在，
+  不用本地基础源码直接覆盖它。
+- 本次只同步 RL 适配代码、测试和文档，未安装软件、下载权重、重启 AppWorld 服务。
+- 新记录目录：`/data/liangchen/deltatrace_resume_20260917/receipts/eos-events-20260922/`。
+  GPU 训练结果以该方法的新日志为准；CPU 验证不能替代。
+
+## 2026-09-22 MetaX 资源检查
+
+- 用户提供入口：`ssh -p 32036 root@ssh.v5000-prod-gw.nhss.zhejianglab.com`。
+  不在任何仓库文件或运行配置中存放登录密码。
+- 查询时 8 张 MetaX C550，各 65536 MiB。GPU 0–2 有 vLLM 进程；GPU 3–7
+  无计算进程、利用率 0%、各约 864 MiB 基础占用。此记录不是预留，启动前重查。
+- 权重已存在：`/mnt/si0021787ci2/default/models/Qwen3.5-9B`。
+- 已有专用运行根目录：
+  `/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912`。
+  `env/bin/python` 可运行，复用系统 MetaX Torch，不新建第二套依赖环境。
+- 该专用环境：Torch `2.8.0+metax3.5.3.9`、Transformers `5.13.0`、
+  Triton `3.0.0+metax3.5.3.9`、FA `2.6.3+metax3.5.3.9torch2.8`、FLA `0.4.1`；
+  当前 Python 尚未发现 VERL 模块。不能把默认 `/opt/conda/bin/python`
+  的 Transformers `4.57.3` 当成这套专用环境。
+- 原 `build/libdeltatrace_fa_finite_bf16_d256.so` 的 ELF 依赖是 MetaX 的
+  `libruntime_cu.so`、`libmccompiler.so`、`libmcruntime.so` 等，已有平台产物。
+- 旧环境 JSON 中路径仍为 `/mnt/geogpt-doc-new/...`，恢复时须核对当前挂载映射；
+  路径变化不是重装依据。旧运行目录与其他服务不覆盖、不清缓存。
+- 原 runtime 设置含 `MACA_TORCH_COMPILE_CONF=maca.disable_maca_triton_heuristics:1`
+  和 `FLA_BOUNDED_NORM_TUNING=1`，动态编译选项也已记录。
+- 以上只证明资源与已有环境存在；不证明本轮 RL/DT 已在 MetaX 跑通。
