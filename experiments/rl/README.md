@@ -20,6 +20,13 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 
 ## 当前验证范围
 
+- FSDP1 分层 LoRA 的参数恢复错误已定位到本地补丁：它把上游
+  `use_orig_params=False` 无条件改成了 LoRA 下的 `True`。现对有 auto-wrap
+  policy 的路径恢复上游设置。真实 Qwen 的旧 log-prob 和连续两次非零更新，
+  在同卡、同初值及库的确定性选项下与上游参数配置逐元素一致（零容差）；
+  20 项 owner 接口回归通过。32k 显式长输入夹具也完成两次非零更新，
+  peak reserved 36.16 GiB。详见 [results_fsdp_owner.json](results_fsdp_owner.json)。
+  这些是 actor 接入与容量检查，不代表三任务 DT 训练通过。
 - MetaX 训练环境：固定 VERL 已安装并应用现有接口补丁，42 项奖励组合、
   collector、PPO 接口回归通过；另已在当地官方 Sokoban worker 验证真实
   `[-0.1,-0.1,-0.1,-0.1,10.9]` 奖励轨迹。WebShop 官方 1k 索引已构建，
@@ -42,7 +49,7 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 - MetaX 三任务首个真实 head 边界误差均小于 `8e-8`；A6000 的 9 项编译/eager
   对照通过，最大误差约 `1.2e-7`。这是 head 修复的证据。
 - 三任务完整 DT 仍在后续层累计误差上未通过原阈值；A6000 原生整网检查同样
-  未通过。失败和逐层诊断保留在结果索引中；尚未运行本修订的 PPO 更新。
+  未通过。失败和逐层诊断保留在结果索引中；本修订的 DT→PPO 训练尚未验收。
 - MetaX 三个任务的完整官方奖励→正式 DT→逐事件 Q/V 组合已实际执行：
   Sokoban 15 次 trace / 65 个非零 token 优势，WebShop 6 / 46，AppWorld 1 / 341。
   使用官方脚本/训练答案作接口验证，不能当作模型 rollout 或训练成功率。
@@ -67,6 +74,9 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 - `run_verl_agent.sh`：固定上游 VERL 训练入口，DT/PPO/GRPO 共用原训练基建。
 - `patch_verl_agent2.py`：固定上游的薄接口补丁与共有左 padding 裁剪；默认上游路径
   保持原行为。环境、rollout、optimizer 和 PPO clipping 都由上游实现。
+- `verify_upstream_actor_update.py`：复用真实 worker 的非零更新回归，可复现旧
+  FSDP1 参数配置、对照上游参数配置，并保存初始/每次更新后的可训练权重。
+  明确使用测试优势与脚本动作；不产生 DT 估计，不作为任务训练数据。
 - `results_env_smoke.json`：历史环境 readiness。
 - `results_reward_events.json`、`results_event_transport.json`：奖励代数和传输历史检查。
 - `results_reward_readout.json`：已撤下的逐前缀读出历史结果，非当前 EOS 方法结果。

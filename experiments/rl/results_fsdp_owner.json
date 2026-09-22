@@ -1,0 +1,669 @@
+{
+  "date": "2026-09-22",
+  "scope": "FSDP1 layer-wrapped LoRA eval-to-train repair; not full DT or task-learning acceptance",
+  "upstream": "blackkiring/verl-agent2@732f37acd7684b8c24d14ba3ededfe9fab1ed472",
+  "remote_receipts": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup",
+  "cause": "Local patch forced use_orig_params=True for layer-wrapped LoRA instead of upstream False; restoring False alone removes reproduced parameter writeback exception.",
+  "repair": "Use upstream False whenever auto_wrap_policy is present; preserve existing unwrapped mixed-requires-grad handling. FSDP2, PPO objective, update_policy, Q/V and masks unchanged.",
+  "numerical_comparison": {
+    "same_gpu": 5,
+    "torch_deterministic": true,
+    "FLASH_ATTENTION_DETERMINISTIC": "1",
+    "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+    "PYTHONHASHSEED": "0",
+    "rtol": 0,
+    "atol": 0,
+    "objects": [
+      "initial trainable weights",
+      "old log probabilities",
+      "all trainable weights after update 1",
+      "all trainable weights after update 2"
+    ],
+    "passed": true,
+    "ordinary_kernel_comparison": "Old log probabilities identical; post-update bitwise comparison failed before enabling deterministic owner options. Do not claim default-kernel bitwise reproducibility."
+  },
+  "regression": {
+    "passed": 20,
+    "seconds": 14.27,
+    "files": [
+      "test_shared_padding.py",
+      "test_verl_counterfactual.py",
+      "test_rollout_credit.py"
+    ],
+    "log": "origparam-owner-regression.log"
+  },
+  "raw_checks": {
+    "owner-update-before.json": {
+      "scope": "real Qwen checkpoint and upstream worker; scripted input and nonuniform advantage fixture, not task training",
+      "orig_params": "patched",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "stages": [
+        "init",
+        "old_log_probs"
+      ],
+      "writeback_failure": {
+        "fqns": [
+          "base_model.model.model.embed_tokens.weight",
+          "base_model.model.model.norm.weight",
+          "base_model.model.lm_head.weight"
+        ],
+        "shape": [
+          248320,
+          4096
+        ]
+      },
+      "status": "failed",
+      "error": "Cannot writeback when the parameter shape changes\nExpects torch.Size([1017118720]) but got torch.Size([248320, 4096])"
+    },
+    "owner-update-upstream.json": {
+      "scope": "real Qwen checkpoint and upstream worker; scripted input and nonuniform advantage fixture, not task training",
+      "orig_params": "upstream",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "stages": [
+        "init",
+        "old_log_probs",
+        "update_0",
+        "update_1"
+      ],
+      "metrics": [
+        {
+          "actor/pg_loss": [
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.88671875
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.158203125,
+          "perf/cpu_memory_used_gb": 248.0540885925293,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.19568957388401031,
+            0.2048715204000473,
+            0.19406798481941223,
+            0.1933564394712448
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            -0.008455753326416016,
+            -0.04715946689248085,
+            0.0005427769501693547,
+            0.0020431790035218
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.94140625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.16015625,
+          "perf/cpu_memory_used_gb": 245.61275482177734,
+          "actor/lr": 1e-06
+        }
+      ],
+      "changed_elements": 1449109,
+      "status": "passed"
+    },
+    "owner-reference.json": {
+      "scope": "real Qwen checkpoint and upstream worker; scripted input and nonuniform advantage fixture, not task training",
+      "orig_params": "upstream",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "synthetic_long_input": false,
+      "stages": [
+        "init",
+        "old_log_probs",
+        "update_0",
+        "update_1"
+      ],
+      "actual_root_use_orig_params": false,
+      "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "metrics": [
+        {
+          "actor/pg_loss": [
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.88671875
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.158203125,
+          "perf/cpu_memory_used_gb": 287.63659286499023,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.19205045700073242,
+            0.1928199678659439,
+            0.19585593044757843,
+            0.19209548830986023
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.009123938158154488,
+            0.006784575525671244,
+            -0.008836610242724419,
+            0.009875706396996975
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.90234375
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.16015625,
+          "perf/cpu_memory_used_gb": 287.4470558166504,
+          "actor/lr": 1e-06
+        }
+      ],
+      "changed_elements": 1449070,
+      "status": "passed"
+    },
+    "owner-fixed.json": {
+      "scope": "real Qwen checkpoint and upstream worker; scripted input and nonuniform advantage fixture, not task training",
+      "orig_params": "current",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "synthetic_long_input": false,
+      "stages": [
+        "init",
+        "old_log_probs",
+        "update_0",
+        "update_1"
+      ],
+      "actual_root_use_orig_params": false,
+      "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "metrics": [
+        {
+          "actor/pg_loss": [
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.88671875
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.158203125,
+          "perf/cpu_memory_used_gb": 287.62306213378906,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.1978694647550583,
+            0.1993522346019745,
+            0.19840487837791443,
+            0.19220352172851562
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0714285746216774,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            -0.019923415035009384,
+            -0.002847126452252269,
+            -0.0190745759755373,
+            0.008205004967749119
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.921875
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.16015625,
+          "perf/cpu_memory_used_gb": 287.818302154541,
+          "actor/lr": 1e-06
+        }
+      ],
+      "changed_elements": 1449076,
+      "status": "passed"
+    },
+    "owner-reference-deterministic.json": {
+      "scope": "real Qwen checkpoint and upstream worker; scripted input and nonuniform advantage fixture, not task training",
+      "orig_params": "upstream",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "synthetic_long_input": false,
+      "stages": [
+        "init",
+        "old_log_probs",
+        "update_0",
+        "update_1"
+      ],
+      "actual_root_use_orig_params": false,
+      "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "metrics": [
+        {
+          "actor/pg_loss": [
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.890625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.158203125,
+          "perf/cpu_memory_used_gb": 289.4652099609375,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.1980680674314499,
+            0.19245901703834534,
+            0.19480207562446594,
+            0.19780465960502625
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            -0.020868301391601562,
+            0.009451593272387981,
+            -0.0029773712158203125,
+            -0.01978342793881893
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.94140625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.16015625,
+          "perf/cpu_memory_used_gb": 285.68307876586914,
+          "actor/lr": 1e-06
+        }
+      ],
+      "changed_elements": 1449095,
+      "status": "passed"
+    },
+    "owner-fixed-deterministic.json": {
+      "scope": "real Qwen checkpoint and upstream worker; scripted input and nonuniform advantage fixture, not task training",
+      "orig_params": "current",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "synthetic_long_input": false,
+      "stages": [
+        "init",
+        "old_log_probs",
+        "update_0",
+        "update_1"
+      ],
+      "actual_root_use_orig_params": false,
+      "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "metrics": [
+        {
+          "actor/pg_loss": [
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.890625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.158203125,
+          "perf/cpu_memory_used_gb": 295.5180854797363,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.1980680674314499,
+            0.19245901703834534,
+            0.19480207562446594,
+            0.19780465960502625
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            -0.020868301391601562,
+            0.009451593272387981,
+            -0.0029773712158203125,
+            -0.01978342793881893
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.94140625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 20.471890926361084,
+          "perf/max_memory_reserved_gb": 25.16015625,
+          "perf/cpu_memory_used_gb": 307.4215545654297,
+          "actor/lr": 1e-06
+        }
+      ],
+      "changed_elements": 1449095,
+      "reference_identical": true,
+      "status": "passed"
+    },
+    "active-ppo-provenance.json": {
+      "verl/trainer/ppo/core_algos.py": {
+        "file_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+        "function": "compute_policy_loss",
+        "ast_sha256": "f464939b562d7b63695679841cdeb1332287e2fee940dbbd681d332b67f137c6"
+      },
+      "verl/workers/actor/dp_actor.py": {
+        "file_sha256": "bc2c576791385fac72046b72bc8243008fa7e7e04669e017d5ae614cc77829fc",
+        "function": "update_policy",
+        "ast_sha256": "cc9e4bfde2c3b973e27dec0c048c19b922ec0faa7132d164fb9bf58f7e328a8e"
+      }
+    },
+    "owner-fixed-long.json": {
+      "scope": "real Qwen checkpoint and upstream worker; scripted input and nonuniform advantage fixture, not task training",
+      "orig_params": "current",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "synthetic_long_input": true,
+      "stages": [
+        "init",
+        "old_log_probs",
+        "update_0",
+        "update_1"
+      ],
+      "actual_root_use_orig_params": false,
+      "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "metrics": [
+        {
+          "actor/pg_loss": [
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657,
+            0.19363991916179657
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.7421875
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 33.06945466995239,
+          "perf/max_memory_reserved_gb": 36.158203125,
+          "perf/cpu_memory_used_gb": 290.6098823547363,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.19550766050815582,
+            0.18847063183784485,
+            0.1887986660003662,
+            0.19399823248386383
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            -0.009216240607202053,
+            0.02801799774169922,
+            0.025521619245409966,
+            -0.0007529939757660031
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.72265625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 33.07980823516846,
+          "perf/max_memory_reserved_gb": 36.16015625,
+          "perf/cpu_memory_used_gb": 289.2972412109375,
+          "actor/lr": 1e-06
+        }
+      ],
+      "changed_elements": 1448885,
+      "status": "passed"
+    }
+  },
+  "native_task_training_passed": false,
+  "fsdp1_32k_retest": {
+    "status": "completed",
+    "native_task_learning": false,
+    "note": "Official Sokoban rollout with synthetic long input, one interaction; GRPO outcome advantages zero. Nonzero learning check recorded separately.",
+    "log": "grpo-capacity-32k-fsdp1-fixed.log",
+    "context_cap": 32768,
+    "minibatch": 4,
+    "group": 4,
+    "rollout_microbatch": 4,
+    "filler_tokens": 31750,
+    "metrics": {
+      "step": 1.0,
+      "global_seqlen/min": 523111.0,
+      "global_seqlen/max": 523111.0,
+      "global_seqlen/minmax_diff": 0.0,
+      "global_seqlen/balanced_min": 523111.0,
+      "global_seqlen/balanced_max": 523111.0,
+      "global_seqlen/mean": 523111.0,
+      "actor/entropy_loss": 0.403,
+      "episode/valid_action_ratio": 0.0,
+      "actor/pg_loss": 0.0,
+      "actor/pg_clipfrac": 0.0,
+      "actor/ppo_kl": -0.0,
+      "actor/pg_clipfrac_lower": 0.0,
+      "actor/grad_norm": 0.0,
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 37.631,
+      "perf/max_memory_reserved_gb": 38.834,
+      "perf/cpu_memory_used_gb": 275.482,
+      "actor/lr": 0.0,
+      "training/global_step": 1.0,
+      "training/epoch": 0.0,
+      "critic/score/mean": -0.2,
+      "critic/score/max": -0.2,
+      "critic/score/min": -0.2,
+      "critic/rewards/mean": -0.2,
+      "critic/rewards/max": -0.2,
+      "critic/rewards/min": -0.2,
+      "critic/advantages/mean": 0.0,
+      "critic/advantages/max": 0.0,
+      "critic/advantages/min": 0.0,
+      "critic/returns/mean": 0.0,
+      "critic/returns/max": 0.0,
+      "critic/returns/min": 0.0,
+      "response_length/mean": 483.438,
+      "response_length/max": 512.0,
+      "response_length/min": 55.0,
+      "response_length/clip_ratio": 0.938,
+      "prompt_length/mean": 32211.0,
+      "prompt_length/max": 32211.0,
+      "prompt_length/min": 32211.0,
+      "prompt_length/clip_ratio": 0.0,
+      "episode/reward/mean": -0.1,
+      "episode/reward/max": -0.1,
+      "episode/reward/min": -0.1,
+      "episode/length/mean": 1.0,
+      "episode/length/max": 1.0,
+      "episode/length/min": 1.0,
+      "episode/tool_call_count/mean": 0.0,
+      "episode/success_rate": 0.0,
+      "timing_s/gen": 467.789,
+      "timing_s/reward": 0.132,
+      "timing_s/old_log_prob": 62.091,
+      "timing_s/adv": 0.003,
+      "timing_s/update_actor": 253.903,
+      "timing_s/step": 783.927,
+      "timing_per_token_ms/adv": 0.0,
+      "timing_per_token_ms/update_actor": 0.485,
+      "timing_per_token_ms/gen": 60.477,
+      "perf/total_num_tokens": 523111.0,
+      "perf/time_per_step": 783.927,
+      "perf/throughput": 667.295
+    },
+    "raw_metric_line": "(TaskRunner pid=2318698) step:1 - global_seqlen/min:523111.000 - global_seqlen/max:523111.000 - global_seqlen/minmax_diff:0.000 - global_seqlen/balanced_min:523111.000 - global_seqlen/balanced_max:523111.000 - global_seqlen/mean:523111.000 - actor/entropy_loss:0.403 - episode/valid_action_ratio:0.000 - actor/pg_loss:0.000 - actor/pg_clipfrac:0.000 - actor/ppo_kl:-0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.000 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:37.631 - perf/max_memory_reserved_gb:38.834 - perf/cpu_memory_used_gb:275.482 - actor/lr:0.000 - training/global_step:1.000 - training/epoch:0.000 - critic/score/mean:-0.200 - critic/score/max:-0.200 - critic/score/min:-0.200 - critic/rewards/mean:-0.200 - critic/rewards/max:-0.200 - critic/rewards/min:-0.200 - critic/advantages/mean:0.000 - critic/advantages/max:0.000 - critic/advantages/min:0.000 - critic/returns/mean:0.000 - critic/returns/max:0.000 - critic/returns/min:0.000 - response_length/mean:483.438 - response_length/max:512.000 - response_length/min:55.000 - response_length/clip_ratio:0.938 - prompt_length/mean:32211.000 - prompt_length/max:32211.000 - prompt_length/min:32211.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:-0.100 - episode/reward/max:-0.100 - episode/reward/min:-0.100 - episode/length/mean:1.000 - episode/length/max:1.000 - episode/length/min:1.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.000 - timing_s/gen:467.789 - timing_s/reward:0.132 - timing_s/old_log_prob:62.091 - timing_s/adv:0.003 - timing_s/update_actor:253.903 - timing_s/step:783.927 - timing_per_token_ms/adv:0.000 - timing_per_token_ms/update_actor:0.485 - timing_per_token_ms/gen:60.477 - perf/total_num_tokens:523111.000 - perf/time_per_step:783.927 - perf/throughput:667.295",
+    "metric_precision_note": "Console metrics rounded to three decimals; zero printed grad_norm or lr is not proof of exact zero."
+  }
+}

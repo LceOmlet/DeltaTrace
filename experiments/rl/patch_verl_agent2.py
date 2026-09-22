@@ -113,7 +113,12 @@ VISION_CHECK_NEW = "            if AutoModelForVision2Seq is not None and type(a
 LORA_CALL_OLD = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config))"
 LORA_CALL_NEW = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config), autocast_adapter_dtype=False)"
 FSDP_ORIG_PARAMS_OLD = "                use_orig_params=False,"
-FSDP_ORIG_PARAMS_NEW = "                use_orig_params=self._is_lora,"
+FSDP_ORIG_PARAMS_PREVIOUS = "                use_orig_params=self._is_lora,"
+# The owner's LoRA auto-wrap policy separates frozen/trainable parameters and
+# uses flat parameters. Retain that behavior: forcing orig params on the
+# layer-wrapped Qwen path breaks eval -> train parameter writeback. Only the
+# unwrapped HF/LoRA path needs orig params for mixed requires_grad in one handle.
+FSDP_ORIG_PARAMS_NEW = "                use_orig_params=self._is_lora and auto_wrap_policy is None,"
 # FSDP's upstream actor path disables CPU parameter offload because older
 # gradient-accumulation code could observe stale handles.  The single-GPU
 # LoRA path has one microbatch per optimizer step, so opt in explicitly when
@@ -464,6 +469,8 @@ def main() -> None:
         if LORA_CALL_OLD not in text:
             raise RuntimeError(f"cannot find PEFT LoRA dtype anchor in {fsdp}")
         text = text.replace(LORA_CALL_OLD, LORA_CALL_NEW, 1)
+    if FSDP_ORIG_PARAMS_PREVIOUS in text:
+        text = text.replace(FSDP_ORIG_PARAMS_PREVIOUS, FSDP_ORIG_PARAMS_NEW, 1)
     if FSDP_ORIG_PARAMS_NEW not in text:
         if FSDP_ORIG_PARAMS_OLD not in text:
             raise RuntimeError(f"cannot find FSDP LoRA orig-params anchor in {fsdp}")

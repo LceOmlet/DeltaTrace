@@ -444,3 +444,40 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   独立对照运行 `dt-Sokoban-nonthinking.log`；不改变 DT 信用公式、token mask
   或 PPO。默认思考配置的三个任务继续保留各自运行与日志，不能提前宣称
   关闭思考改善了成功率或吞吐。
+
+## 2026-09-22 FSDP1 上游行为对照与参数恢复修复
+
+- 原错误已在真实 Qwen3.5-9B、原 VERL worker 的 eval log-prob→train 更新
+  转换中复现，不依赖 DT 或生成。原因是本地补丁强制 LoRA 使用
+  `use_orig_params=True`；有上游 LoRA auto-wrap policy 时原设置为 False。
+  只恢复这一项即可连续完成两次非零更新。修复保留无 auto-wrap 的旧混合
+  requires_grad 配置；本次不将该未测试路径宣称为通过。FSDP2 没有改动。
+- 正式修订在有 auto-wrap policy 时使用上游 False；兼容补丁可将旧 True
+  改动迁移，重复运行保持幂等。未改 Torch writeback、张量形状或参数存储。
+- 远端 `core_algos.py` SHA256 与固定上游文件相同；`update_policy` 的 AST
+  也相同。对照记录 `active-ppo-provenance.json`，结果索引
+  [results_fsdp_owner.json](results_fsdp_owner.json)。没有改 PPO loss、Q/V、mask。
+- 旧错误：`owner-update-before.json/.log`；仅恢复上游配置：
+  `owner-update-upstream.json/.log`。修复后独立运行：`owner-fixed.json/.log`。
+  普通内核的独立运行旧 log-prob 相同，但更新后权重的逐位比较失败，未放宽
+  阈值。随后在同一 GPU 5 使用 `PYTHONHASHSEED=0`、
+  `CUBLAS_WORKSPACE_CONFIG=:4096:8`、`FLASH_ATTENTION_DETERMINISTIC=1` 和
+  Torch `use_deterministic_algorithms(True)`；参考与修复版的初值、旧 log-prob、
+  两次更新后的全部可训练权重完全一致，rtol=atol=0。
+  记录 `owner-{reference,fixed}-deterministic.json/.pt/.log`；确定性配置只用于
+  这项对照，没有悄悄改变训练默认设置。20 项 owner 接口回归通过（14.27 秒），
+  日志 `origparam-owner-regression.log`。
+- `owner-fixed-long.json/.log` 使用显式合成长 prompt、512 response 槽位、
+  总宽度 32768、minibatch=4、microbatch=1，执行原 worker 两次非零更新：
+  梯度范数 0.7421875、0.72265625，1,448,885 个可训练参数元素发生变化，
+  peak allocated 33.080 GiB / reserved 36.160 GiB。输入动作和优势是明确的
+  测试夹具；这是长输入更新验证，不是自然任务长度或 DT 学习有效性证明。
+- 原 32k FSDP1 Ray rollout 配置已正常完成：
+  `grpo-capacity-32k-fsdp1-fixed.log/.json`。实际 prompt 32211，response
+  最大 512，minibatch/group=4，rollout microbatch=4；allocated 37.631 /
+  reserved 38.834 GiB。生成 467.789 秒、旧 log-prob 62.091 秒、actor 更新
+  253.903 秒，整个训练 step 783.927 秒（不含启动）。这批 GRPO 优势为零，
+  只证明原报错路径与容量检查通过；非零参数更新证据来自上一项。
+  另一个 FSDP2、rollout microbatch=2
+  对照已走完 rollout/log-prob/update，allocated 33.866 / reserved 36.389 GiB；
+  其 GRPO 优势为零，不能把这次容量检查当作有效任务学习。
