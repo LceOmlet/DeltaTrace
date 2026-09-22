@@ -12,6 +12,18 @@
 
 ## 2026-09-22 正式规模启动与监控
 
+- 2026-09-23 vLLM 复用检查：系统已有 `vllm==0.15.0` 和
+  `vllm-metax==0.15.0+g24fb31.d20260310.maca3.5.3.20.torch2.8`，位于
+  `/opt/conda/lib/python3.12/site-packages`；现有训练 Python 可直接导入。
+  厂商 `vllm_metax.models.qwen3_5` 注册了当前权重的
+  `Qwen3_5ForConditionalGeneration`。原 `EngineArgs.create_model_config()`
+  已对当前 MODEL_PATH、BF16、max_model_len=32768 成功解析；原 registry
+  识别为 hybrid text-generation 模型，原 LLM 有 sleep/wake_up/collective_rpc。
+  此检查没有加载推理引擎或测量生成，不能据此称 LoRA 同步/训练已通过。
+  当前 launcher 仍为 HF，DT worker 仍通过 HF rollout 取得同一个 actor。
+  生成侧接入应复用现有 vLLM 和固定 VERL 边界，不重装栈或复制其生成实现。
+  核对 pinned VERL 的权重同步与 vLLM V1 接口后再切换；原方法 PLAN 不变。
+
 - **2026-09-23 06:41，v3 正式训练失败并已停止。** WebShop 首轮 rollout 后
   `compute_dt_token_advantages` 的 Ray 参数序列化将单行 tensor 视图所引用的
   整批 storage 重复打包；TaskRunner 达 373 GiB、容器 883/900 GiB，Ray
