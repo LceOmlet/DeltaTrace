@@ -7,6 +7,21 @@ import sys
 import torch
 
 
+def copy_capture_tensor(value, destination, *, copy=True, preserve_strides=False, pinned_host=False):
+    value=value.detach()
+    if pinned_host and torch.device(destination).type=='cpu' and value.is_cuda:
+        # The capture owner waits once at scope exit before CPU consumption.
+        # Reuse Torch's pinned allocator and ordinary stream-ordered copy.
+        return torch.empty_strided(value.shape,value.stride(),dtype=value.dtype,
+                                   device='cpu',pin_memory=True).copy_(value,non_blocking=True)
+    if preserve_strides:
+        # Explicit storage layout avoids the MetaX cross-device 4-D copy
+        # choosing channels-last and changing downstream reduction kernels.
+        return torch.empty_strided(value.shape,value.stride(),dtype=value.dtype,
+                                   device=destination).copy_(value)
+    return value.to(destination,copy=copy)
+
+
 def _metadata_scalar(value):
     if isinstance(value, torch.Tensor):
         if value.numel() != 1:
@@ -16,17 +31,22 @@ def _metadata_scalar(value):
 
 
 class NativeAttentionCapture:
-    def __init__(self, module, attention_interface, native_varlen_function, destination='cpu'):
+    def __init__(self, module, attention_interface, native_varlen_function, destination='cpu', *, copy_tensors=True, retained_names=None, preserve_strides=False):
         self.module = module
         self.interface = attention_interface
         self.native_varlen = native_varlen_function
         self.destination = destination
+        self.copy_tensors = copy_tensors
+        self.retained_names = retained_names
+        self.preserve_strides = preserve_strides
         self.values = {}
         self.calls = {'module': 0, 'interface': 0, 'native_varlen': 0}
         self.handles = []
 
     def retain(self, name, value):
-        self.values[name] = value.detach().to(self.destination).clone()
+        if self.retained_names is None or name in self.retained_names:
+            self.values[name] = copy_capture_tensor(value,self.destination,
+                copy=self.copy_tensors,preserve_strides=self.preserve_strides)
 
     def profile(self, frame, event, result):
         if frame.f_code is self.native_varlen.__code__ and event == 'call':

@@ -12,11 +12,13 @@ from finite_fla_gpu import _mm
 
 class NativeDecoderCapture:
     """Module hooks only, so the mixer can use its existing passive observer."""
-    def __init__(self, layer, destination='cpu'):
+    def __init__(self, layer, destination='cpu', *, copy_tensors=True, retained_names=None):
         self.layer=layer;self.destination=destination;self.values={};self.handles=[];self.calls={}
+        self.copy_tensors=copy_tensors;self.retained_names=retained_names
 
     def retain(self,name,value):
-        self.values[name]=value.detach().to(self.destination,copy=True)
+        if self.retained_names is None or name in self.retained_names:
+            self.values[name]=value.detach().to(self.destination,copy=self.copy_tensors)
 
     def __enter__(self):
         targets={'input_norm':self.layer.input_layernorm,'post_norm':self.layer.post_attention_layernorm,
@@ -63,10 +65,15 @@ def _linear_weights(module):
 
 def _linear_transpose(upstream,weight):
     if isinstance(weight,tuple):
-        result=_linear_transpose(upstream,weight[0])
+        # Base and adapter maps consume the same BF16 operand. Construct it
+        # once: Inductor otherwise retains duplicate full-width casts for
+        # every adapter matmul (several GiB each at batch4/32k).
+        shape=upstream.shape
+        operand=upstream.reshape(1,-1,shape[-1]).to(torch.bfloat16)
+        result=_mm(operand,weight[0].unsqueeze(0))
         for delta in weight[1:]:
-            result=result+_linear_transpose(upstream,delta)
-        return result
+            result=result+_mm(operand,delta.unsqueeze(0))
+        return result.reshape(*shape[:-1],weight[0].shape[-1])
     shape=upstream.shape
     return _mm(upstream.reshape(1,-1,shape[-1]),weight.unsqueeze(0)).reshape(*shape[:-1],weight.shape[-1])
 
@@ -127,22 +134,26 @@ def _attention_input_rule(dq,dk,dv,mgate,q0,q1,k0,k1,qweight,kweight,cos,sin,
 
 
 class FiniteBoundaryOps:
-    """Four composite graphs; native/vendor operations stay externally visible.
+    """Composite finite graphs; native/vendor operations stay externally visible.
 
     Compiles only finite attribution. Cold compiler/default tuning costs must
     be counted; disabling max_autotune does not disable all compiler tuning.
     No hidden eager fallback is installed when a graph fails to compile.
     """
     def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):
+        from qwen35_gdn_finite import _norm_gate_finite_rule,_conv_silu_finite_rule
         self.compiled=compiled
         varying_dimensions={
             'mlp':[(i,1) for i in range(7)],
             'norm_residual':[(i,1) for i in (0,1,3,4)],
             'attention_gate':[(i,1) for i in range(4)],
+            'gdn_norm_gate':[(i,1) for i in range(3)],
+            'gdn_conv_silu':[(i,2) for i in range(3)],
             'attention_input':[(i,2) for i in range(3)]+[(i,1) for i in (3,4,5,6,7,10,11)],
         }
         for name,fn in [('mlp',_mlp_input_rule),('norm_residual',_norm_residual_rule),
-                        ('attention_gate',_attention_gate_rule),('attention_input',_attention_input_rule)]:
+                        ('attention_gate',_attention_gate_rule),('attention_input',_attention_input_rule),
+                        ('gdn_norm_gate',_norm_gate_finite_rule),('gdn_conv_silu',_conv_silu_finite_rule)]:
             op=torch.compile(fn,fullgraph=True,dynamic=None if dynamic_shapes else False,
                 options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else fn
             if compiled and dynamic_shapes:
@@ -155,7 +166,7 @@ class FiniteBoundaryOps:
             setattr(self,name,op)
 
 
-def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1'):
+def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False):
     """Input coefficients for the actual standard-attention module.
 
     lse is the publicly returned paired FA LSE, [2B,H,T]. Endpoints share
@@ -171,6 +182,9 @@ def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layou
     assert module.q_norm.eps==module.k_norm.eps and module.attention_dropout==0
     mcontent,mgate=boundaries.attention_gate(c['q_proj_output'][0::2],c['q_proj_output'][1::2],
         c['attention_output'][0::2],upstream,_linear_weights(module.o_proj),heads,dim)
+    if consume_captures:
+        for name in ('input','q_proj_output','attention_output'):
+            del c[name]
     ops={'q0':c['query'][0::2],'q1':c['query'][1::2],'k0':c['key'][0::2],'k1':c['key'][1::2],
          'v0':c['value'][0::2],'u':mcontent,'lse0':lse[0::2],'lse1':lse[1::2]}
     if pv_rule=='content0':
@@ -182,6 +196,10 @@ def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layou
         ops['v0']=c['value'][1::2]
     activity={} if diagnostics else None
     coeff=finite_fa(ops,module.scaling,layout,activity)
+    if consume_captures:
+        del ops,mcontent
+        for name in ('query','key','value'):
+            del c[name]
     mx=boundaries.attention_input(coeff['dq'],coeff['dk'],coeff['dv'],mgate,
         c['q_norm_input'][0::2],c['q_norm_input'][1::2],c['k_norm_input'][0::2],c['k_norm_input'][1::2],
         module.q_norm.weight,module.k_norm.weight,cos[1::2],sin[1::2],
@@ -190,7 +208,7 @@ def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layou
     return mx,diagnostics_out
 
 
-def decoder_finite_pullback(layer,values,upstream,mixer_pullback,boundaries,diagnostics=False):
+def decoder_finite_pullback(layer,values,upstream,mixer_pullback,boundaries,diagnostics=False,*,consume_captures=False):
     """Both original decoder families: symmetric MLP + two residual/norm paths.
 
     mixer_pullback receives the actual mixer-output cotangent and returns its
@@ -200,8 +218,16 @@ def decoder_finite_pullback(layer,values,upstream,mixer_pullback,boundaries,diag
     mnorm=boundaries.mlp(c['gate_output'][0::2],c['gate_output'][1::2],
         c['up_output'][0::2],c['up_output'][1::2],c['silu_output'][0::2],c['silu_output'][1::2],
         upstream,_linear_weights(layer.mlp.down_proj),_linear_weights(layer.mlp.up_proj),_linear_weights(layer.mlp.gate_proj))
+    # The owner consumes these operands exactly once. Production replay can
+    # release them before restoring mixer captures; observers keep all values.
+    if consume_captures:
+        for name in ('gate_output','up_output','silu_output'):
+            del c[name]
     mmixer=boundaries.norm_residual(c['post_norm_input'][0::2],c['post_norm_input'][1::2],
         layer.post_attention_layernorm.weight,mnorm,upstream,layer.post_attention_layernorm.eps)
+    if consume_captures:
+        del c['post_norm_input']
+        del mnorm
     mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)
     mx=boundaries.norm_residual(c['input_norm_input'][0::2],c['input_norm_input'][1::2],
         layer.input_layernorm.weight,mmixer_input,mmixer,layer.input_layernorm.eps)

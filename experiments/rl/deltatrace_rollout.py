@@ -167,8 +167,10 @@ class DeltaTraceRolloutProducer:
         # top-level); the local worktree wraps it one directory deeper.
         try:
             from deltatrace.profiles.official import make_qwen35_runner
+            from deltatrace.accelerated.qwen35 import qwen35_code_local_capture
         except ModuleNotFoundError:
             from profiles.official import make_qwen35_runner
+            from accelerated.qwen35 import qwen35_code_local_capture
         from finite_fla_gpu import make_compiled_finite_pullback, verify_native_sources
         from qwen35_answer_finite import PackedAnswerTargets
         from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256
@@ -263,8 +265,9 @@ class DeltaTraceRolloutProducer:
                     # loader, so this does not create a second model or
                     # bypass the active adapter weights.
                     forward_model = causal_model if causal_model is not None else value
-                    # Register DT on the official actor root, including PEFT,
-                    # so actor-first and DT-first share the same FSDP lifecycle.
+                    # Official VERL shards the PEFT actor itself. Register DT
+                    # on that same root so PPO-first and DT-first calls share
+                    # FSDP's initialization and parameter lifecycle.
                     from torch.distributed.fsdp import FSDPModule
                     if isinstance(model, FSDPModule):
                         forward_model = model
@@ -295,6 +298,13 @@ class DeltaTraceRolloutProducer:
             finite_fa,
             make_compiled_finite_pullback(reuse_scalar_products=False, **execution),
             answer_compiled=env.get('dt_answer_compiled', True),
+            copy_replay_captures=False,
+            capture_backend=qwen35_code_local_capture,
+            defer_diagnostics=True,
+            offload_replay_mixer=env.get('dt_offload_replay_mixer', False),
+            gdn_head_batch_size=env.get('dt_gdn_head_batch_size'),
+            compile_gdn_scalar_rules=env.get('dt_compile_gdn_scalar_rules', False),
+            pin_replay_host=env.get('dt_pin_replay_host', False),
             **execution,
         )
         self.packed_answer_targets = PackedAnswerTargets
@@ -323,6 +333,11 @@ class DeltaTraceRolloutProducer:
         )
 
     def attribute_episode(self, rows: list[dict[str, Any]], episode_return: float) -> list[dict[str, torch.Tensor]]:
+        return self.attribute_episodes([rows], [episode_return])[0]
+
+    def attribute_episodes(self, episodes: list[list[dict[str, Any]]], returns: list[float]) -> list[list[dict[str, torch.Tensor]]]:
+        if len(episodes) != len(returns):
+            raise ValueError("episode and return counts differ")
         # Per-event official rewards in rows are authoritative; never multiply
         # by episode_return again. RPC retains that upstream summary argument.
         training = self.actor.training
@@ -335,14 +350,9 @@ class DeltaTraceRolloutProducer:
             # hosts have a forward-only FA wheel, while MetaX's installed FA2
             # backward is separately verified in its environment receipt.
             text_model.set_attn_implementation('flash_attention_2')
-            result = self.readout.episode(rows)
+            result = self.readout.episodes(episodes)
             print('[DeltaTrace readout] ' + json.dumps(self.readout.last_report), flush=True)
             return result
         finally:
             text_model.set_attn_implementation(attention)
             self.actor.train(training)
-
-    def attribute_episodes(self, episodes: list[list[dict[str, Any]]], returns: list[float]) -> list[list[dict[str, torch.Tensor]]]:
-        if len(episodes) != len(returns):
-            raise ValueError("episode and return counts differ")
-        return [self.attribute_episode(rows, reward) for rows, reward in zip(episodes, returns)]

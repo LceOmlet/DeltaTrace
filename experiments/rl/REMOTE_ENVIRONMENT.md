@@ -10,6 +10,57 @@
 本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
 本文件和历史运行记录不代表该计划已实现或 DT 多轮训练已经验收通过。
 
+## 2026-09-23 已有加速分支的复用
+
+- 分支头已通过 origin 复核：clean-v1-acceleration 为 `2b36c4ec`，
+  qwen35-cause-and-tolerance 为 `e1e37bb4`。复用源码及迁移边界见
+  `deltatrace/accelerated/README.md`；方法仍只以 PLAN.md 为准。
+- 当前 MetaX 生产 Python 仍为 `eda0e231` 的根模块修复版本；新 minibatch、
+  capture、延后同步和 GDN 分阶段内存候选均在
+  `$DT_RUNTIME_ROOT/candidates/dt-minibatch`。不把候选测试当作正式部署。
+- `execution-reuse-v1.json`：同一 9B actor、B4/635 tokens 的 12 次执行
+  全 signed/target/QVA 一致。预热均值 borrowed 3.293、retained 3.280、
+  local-events 3.083、deferred 3.045 秒；不是 32k 或完整反向成本结论。
+- `minibatch-parity-v10-staging-isolated.json` 分开测试 head 分组和 CPU
+  搬运，同分组的搬运前后逐值一致。`fla-coincident-head-partition.json`
+  为完整/head8 的两端重合算子检查；使用官方 FLA FP32 recurrence 和原阈值。
+  完整原生 BF16/L2 复合测试的历史失败没有被此局部通过覆盖。
+- `gdn-norm-official-tests.json` 通过原 `test_rmsnorm_gated` 的 8 个
+  原生/有限对照；有限端点重合后对应输入梯度，权重梯度仍由原生算子负责。
+  公式只从原 GDN 函数中提取，再交给既有 FiniteBoundaryOps 编译接口。
+- `reuse-interface-regression-v2.log`：27 passed，已回显实际导入候选路径。
+  第一次错误使用历史串行 test double 的 4 个失败保留在旧日志。
+- `batch-capacity-v11-reused-staged-gdn.json`：精确 32768、B4/1024 action
+  槽位约 182 秒时，在 GDN 有限 RMS 的 2 GiB 临时分配处 OOM。v12 融合
+  原 RMS/SiLU 有限规则后通过该处，随后卷积 SiLU 的 4 GiB 临时张量 OOM。
+  v13 通过相同编译接口融合这段原公式后完整通过：DT B4 一次调用
+  671.653 秒；两次非零 PPO 梯度范数 0.030762/0.024170，改变 1,439,802
+  个参数元素，200 层 LoRA 原生同步，无 OOM。整体 917.039 秒。
+  回执 `batch-capacity-v13-compiled-conv.json`；只验收容量与调用链，速度未达标。
+- 候选 receipt 的 `qwen35.dt_offload_replay_mixer=true`、
+  `dt_gdn_head_batch_size=8`、`dt_compile_gdn_scalar_rules=true` 通过原
+  make_qwen35_runner 选项接入；生产 receipt 未修改。v14 用这些配置复测，
+  不通过测试 wrapper 注入参数。
+- `measure_native_backward.py` 使用原 VERL actor、同 B4/32768 事实输入和
+  checkpoint，单独计时原生前向/反向，不含 PPO/optimizer。无 activation
+  offload 的 v1 在原生 FLA 前向 OOM；v2 显式启用已有 VERL activation
+  offload，结果另存，不能隐藏失败或将 PPO 更新总耗时冒充纯反向。
+- `fa-key32-cost32k.json`：64×32 tile 候选 16.187 秒，慢于保留的
+  64×64 候选 14.616 秒，未采用。未修改生产 finite FA 库或持久缓存。
+
+- v14 配置入口容量复测通过，完整 DT 725.507 秒、总计 973.729 秒；
+  不是提速。此前 v13/v14 均为 PPO minibatch4/microbatch1。
+- 原生反向对照 `native-backward32k-v3-vllm-ppo.json` 启用原 VERL
+  activation offload，包含原生 vLLM 同步/休眠残留。B4/32768 预热反向
+  44.007 秒；PPO 实际两次 `[4,32597]`、68.353/67.520 秒，非零梯度，
+  更新后的 vLLM 同步通过。无 offload OOM 不作为速度基线。
+- 新搬运候选单独位于 `candidates/dt-minibatch/pinned-capture`；主候选
+  v13/v14 文件未覆盖。`dt_pin_replay_host=true` 只启用 Torch 的 pinned
+  GDN 捕获，退出作用域前同步。去除未读的 norm_output/output 后，每层
+  复制 37.109→33.109 GiB；单原生层成本对照和短链搬运逐值对照已通过。
+  完整 v15 在 GPU5（仅本次进程记录，不是预留）使用 actor microbatch4、
+  activation offload 和 vLLM；尚不能宣称完整效率通过。
+
 ## 2026-09-22 正式规模启动与监控
 
 - 2026-09-23 MetaX 有限 FA 候选继续复用同一厂商 framework。`gemm_rs` 快速
@@ -22,7 +73,7 @@
   官方短算子断言、32k 非零端点诊断、完整短 DT 差异及失败结果见
   [results_dt_minibatch_candidate.json](results_dt_minibatch_candidate.json)。
   CPU capture 的跨设备复制需要保留 strides；MetaX 默认复制曾改变四维布局，
-  修正后同批次短链 Q/V/A 逐位相同。32k×4 容量仍未通过，不重装依赖解决。
+  修正后同批次短链 Q/V/A 逐位相同。最新 v13 容量通过，速度仍未验收。
 - FSDP root 修复后的 WebShop/AppWorld 恢复作业正常结束，完成 step 2/4，
   但这轮均为零奖励/零优势/零梯度。新回执为
   `receipts/training-setup/vllm/task-pilots-v2-results.json`；不是非零 DT 验收。

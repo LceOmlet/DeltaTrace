@@ -14,6 +14,7 @@ from qwen35_answer_finite import FiniteAnswerOps,outcome_log_probs,selected_targ
 from qwen35_decoder_finite import NativeDecoderCapture,FiniteBoundaryOps,attention_finite_pullback,decoder_finite_pullback
 from qwen35_gdn_finite import NativeGDNCapture,gdn_finite_pullback
 from native_dense_attention_capture import NativeDenseAttentionCapture
+from native_attention_capture import copy_capture_tensor
 from native_target_logit_rows import NativeTargetLogitRows
 from vendor_fa_finite_bf16_d256 import RightPaddedLengths
 
@@ -27,11 +28,33 @@ def _copy(value,device):
     return value
 
 
-def _effect(m,x):return float((m.double()*(x[1::2].double()-x[0::2].double())).sum())
+def _token_effect(m,x):
+    # The final contraction is independent across tokens. Bound temporary
+    # FP64 storage instead of materializing several full B*T*H tensors.
+    tokens=max(1,4*1024*1024//(m.shape[0]*m.shape[-1]))
+    return torch.cat([(m[:,start:start+tokens].double()*
+        (x[1::2,start:start+tokens].double()-x[0::2,start:start+tokens].double())).sum(-1)
+        for start in range(0,m.shape[1],tokens)],dim=1)
+
+
+def _effect(m,x):return float(_token_effect(m,x).sum())
+
+
+def _relative_l2(actual,reference,*,deferred=False):
+    # Diagnostic only: stream the same error/reference squared sums. This
+    # statistic must not create the largest live tensors in a training step.
+    tokens=max(1,4*1024*1024//(actual.shape[0]*actual[0,0].numel()))
+    squares=torch.zeros(2,device=actual.device,dtype=torch.float64)
+    for start in range(0,actual.shape[1],tokens):
+        a=actual[:,start:start+tokens].float();r=reference[:,start:start+tokens].float()
+        squares[0]+=(a-r).square().sum(dtype=torch.float64)
+        squares[1]+=r.square().sum(dtype=torch.float64)
+    value=squares[0].sqrt()/squares[1].sqrt().clamp_min(1e-30)
+    return value if deferred else float(value)
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -74,6 +97,13 @@ class Qwen35DenseFiniteRunner:
             if not isinstance(rule,str) or rule not in ('content1','content0'):
                 raise ValueError(f'Unsupported attention_pv_rule at layer {index}: {rule!r}')
         self.model=model;self.finite_fa=finite_fa;self.finite_fla=finite_fla
+        self.copy_replay_captures=copy_replay_captures
+        self.offload_replay_mixer=offload_replay_mixer
+        self.gdn_head_batch_size=gdn_head_batch_size
+        self.capture_backend=capture_backend
+        self.defer_diagnostics=defer_diagnostics
+        self.compile_gdn_scalar_rules=compile_gdn_scalar_rules
+        self.pin_replay_host=pin_replay_host
         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
         if not isinstance(key_rules,Mapping):
             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
@@ -115,7 +145,19 @@ class Qwen35DenseFiniteRunner:
             raise ValueError('Original model must use its default FA implementation.')
         torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats();started=time.perf_counter()
         root={};kwargs={};handles=[];calls=[];ledger={};head_shapes=[]
+        events=[];validity=[]
+        def effect(coefficients,endpoints):
+            value=_token_effect(coefficients,endpoints).sum()
+            return value if self.defer_diagnostics else float(value)
         def timed(kind,fn):
+            if self.defer_diagnostics:
+                # Ported from accelerated/qwen35/controller_deferred.py:
+                # keep every diagnostic, resolve stream events at API return.
+                begin=torch.cuda.Event(enable_timing=True);end=torch.cuda.Event(enable_timing=True)
+                begin.record();tick=time.perf_counter();value=fn();end.record()
+                calls.append({'kind':kind,'host_enqueue_seconds':time.perf_counter()-tick,'allocated_after':torch.cuda.memory_allocated()})
+                events.append((begin,end))
+                return value
             torch.cuda.synchronize();tick=time.perf_counter();value=fn();torch.cuda.synchronize()
             calls.append({'kind':kind,'seconds':time.perf_counter()-tick,'allocated_after':torch.cuda.memory_allocated()})
             return value
@@ -164,13 +206,29 @@ class Qwen35DenseFiniteRunner:
         x=root['final_norm_input'].to('cuda')
         with torch.no_grad():m=timed('finite_final_norm',lambda:self.boundaries.norm_residual(x[0::2],x[1::2],norm.weight,mnorm,torch.zeros_like(mnorm),norm.eps))
         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
-        seed_effect=_effect(m,x);del x,mnorm,seed,z
+        seed_effect=effect(m,x);del x,mnorm,seed,z
         layout=RightPaddedLengths([selection.length]*selection.batch,selection.length,paired_ids.device)
         for i in reversed(range(32)):
             layer=layers[i];is_fa=layer.block_type=='full_attention';x=root[str(i)].to('cuda');kw=_copy(kwargs[str(i)],'cuda')
-            dc=NativeDecoderCapture(layer,destination='cuda')
-            mc=(NativeDenseAttentionCapture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination='cuda')
-                if is_fa else NativeGDNCapture(layer.linear_attn,device='cuda'))
+            # The no-cache Qwen path consumes these activations without
+            # mutating them. Optional borrowing keeps their native storage,
+            # instead of cloning every projection input and its views again.
+            # Observers retain the complete copied diagnostic trace.
+            copy_captures=self.copy_replay_captures or observer is not None
+            offload_mixer=self.offload_replay_mixer and observer is None
+            mixer_device='cpu' if offload_mixer else 'cuda'
+            needed=None if copy_captures else {'input_norm_input','post_norm_input',
+                                               'gate_output','up_output','silu_output'}
+            attention_needed=None if copy_captures else {'input','q_proj_output',
+                'attention_output','query','key','value','q_norm_input','k_norm_input',
+                'dense_q','dense_k','dense_v'}
+            backend=self.capture_backend
+            decoder_capture=NativeDecoderCapture if backend is None else backend.NativeDecoderCapture
+            attention_capture=NativeDenseAttentionCapture if backend is None else backend.NativeDenseAttentionCapture
+            gdn_capture=NativeGDNCapture if backend is None else backend.NativeGDNCapture
+            dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed)
+            mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer)
+                if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host))
             def replay():
                 with torch.no_grad(),dc,mc:return layer(x,**kw)
             y=timed('native_replay_'+str(i),replay)
@@ -184,42 +242,67 @@ class Qwen35DenseFiniteRunner:
             d,c,e=dc.values,mc.values,getattr(mc,'endpoints',{});scale=getattr(mc,'scale',0.0625)
             expected=root['final_norm_input' if i==31 else str(i+1)].to('cuda')
             row={'block_type':layer.block_type,'decoder_calls':dc.calls,'mixer_calls':mc.calls,
-                 'root_output_effect':_effect(m,expected),'replay_output_effect':_effect(m,y),
-                 'replay_relative_L2':float((expected.float()-y.float()).norm()/expected.float().norm().clamp_min(1e-30))}
+                 'root_output_effect':effect(m,expected),'replay_output_effect':effect(m,y),
+                 'replay_relative_L2':_relative_l2(y,expected,deferred=self.defer_diagnostics)}
             ledger[str(i)]=row;del expected,y,x
             lse=None
             if is_fa:
                 args={k:v for k,v in mc.dense_arguments.items() if k!='return_attn_probs'}
                 if args['dropout_p']!=0 or not args['causal']:raise ValueError('Unsupported native FA settings.')
-                with torch.no_grad():aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args))
-                if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
-                row['FA_auxiliary_relative_L2']=float((aux.float()-c['attention_output'].float()).norm()/aux.float().norm().clamp_min(1e-30));del aux,unused
+                if not offload_mixer:
+                    with torch.no_grad():aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args))
+                    if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                    row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
             del dc,mc
             focused=(observer is not None and callable(getattr(observer,'wants_decoder',None))
                      and bool(observer.wants_decoder(i)))
             if focused and not callable(getattr(observer,'decoder',None)):
                 raise ValueError('A focused decoder observer requires a decoder callback.')
             def mixer(upstream):
+                nonlocal lse
+                if offload_mixer and is_fa:
+                    # Reuse the captures' existing CPU destination. Restore
+                    # only after the MLP finite operator has consumed its
+                    # large operands; no model forward or rule is replaced.
+                    def restore():
+                        for capture in (c,e):
+                            for name,value in capture.items():
+                                if isinstance(value,torch.Tensor):
+                                    capture[name]=copy_capture_tensor(value,'cuda',preserve_strides=True)
+                    timed('restore_mixer_captures_'+str(i),restore)
                 if is_fa:
+                    if offload_mixer:
+                        aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args))
+                        if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                        row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
+                        for name in ('dense_q','dense_k','dense_v'):
+                            del c[name]
                     cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused,
-                        pv_rule=self.attention_pv_rules.get(i,'content1'))
+                        pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=offload_mixer)
                 finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
                 if i in self.key_norm_by_layer:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i])
+                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,
+                        norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
+                        conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
                 if i in self.norm_gate_rules:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules[i])
-                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused)
-            with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused))
-            if not bool(torch.isfinite(new).all()):raise ValueError('Nonfinite DT coefficients.')
+                        norm_gate_rule=self.norm_gate_rules[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,
+                        norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
+                        conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
+                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,
+                        norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
+                        conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
+            with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))
+            if self.defer_diagnostics:validity.append(torch.isfinite(new).all())
+            elif not bool(torch.isfinite(new).all()):raise ValueError('Nonfinite DT coefficients.')
             if focused:observer.decoder(i,d,c,e,m,new,terms)
             del terms
-            row['input_effect']=_effect(new,d['input_norm_input']);m=new;del new,d,c,e,lse,kw
+            row['input_effect']=effect(new,d['input_norm_input']);m=new;del new,d,c,e,lse,kw
             release_layer=getattr(model,'release_finite_layer',None)
             if callable(release_layer):release_layer(layer)
             if observer is not None:observer.boundary(str(i),m.detach(),root[str(i)])
-        x=root['0'].to('cuda');signed=(m.double()*(x[1::2].double()-x[0::2].double())).sum(-1).cpu()
+        x=root['0'].to('cuda');signed=_token_effect(m,x).cpu()
         torch.cuda.synchronize();seconds=time.perf_counter()-started
         info={'select_output_rows':select_output_rows,'complete_attribution_seconds_with_diagnostics':seconds,
               'norm_gate_rules':{str(i):rule for i,rule in sorted(self.norm_gate_rules.items())},
@@ -234,4 +317,31 @@ class Qwen35DenseFiniteRunner:
               'calls':calls,'layers':ledger,'target_logp0':root_lp0.tolist(),'target_logp1':root_lp1.tolist(),
               'compiled_seed_logprob_effect':compiled_seed_G,
               'compiled_seed_logprob_effect_minus_root':compiled_seed_G-effect_G}
+        if self.defer_diagnostics:
+            flags=torch.stack(validity).cpu().tolist()
+            if not all(flags):raise ValueError('Nonfinite DT coefficients; deferred check failed before return.')
+            for record,(begin,end) in zip(calls,events):
+                record['stream_elapsed_seconds']=begin.elapsed_time(end)/1000
+            scalar_tensors=[]
+            def collect(value):
+                if isinstance(value,torch.Tensor):
+                    if value.ndim!=0:raise ValueError('Unexpected nonscalar diagnostic')
+                    scalar_tensors.append(value)
+                elif isinstance(value,dict):
+                    for item in value.values():collect(item)
+                elif isinstance(value,(list,tuple)):
+                    for item in value:collect(item)
+            collect(info)
+            scalar_values=torch.stack([v.double() for v in scalar_tensors]).cpu().tolist()
+            resolved={id(v):float(x) for v,x in zip(scalar_tensors,scalar_values)}
+            def convert(value):
+                if isinstance(value,torch.Tensor):return resolved[id(value)]
+                if isinstance(value,dict):return {k:convert(v) for k,v in value.items()}
+                if isinstance(value,list):return [convert(v) for v in value]
+                if isinstance(value,tuple):return tuple(convert(v) for v in value)
+                return value
+            info=convert(info)
+            info['controller_diagnostic_scheduling']={'all_32_finite_checks_passed':True,
+                'deferred_scalar_count':len(scalar_values),'stage_timing':'CUDA stream elapsed plus host enqueue; no per-stage barrier'}
+            info['complete_attribution_seconds_with_diagnostics']=time.perf_counter()-started
         return signed,info

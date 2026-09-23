@@ -21,6 +21,36 @@ from verl.trainer.ppo.ray_trainer import compute_advantage
 from verl.workers.fsdp_workers import ActorRolloutRefWorker
 
 
+def capacity_fixture(original, tokenizer, alphabet, response_tokens=1024):
+    """One shared factual input for DT, native backward and PPO capacity tests."""
+    width = len(original['responses'])
+    count = sum(original['attention_mask'][-width:])
+    prompt = torch.tensor(original['input_ids'][:-width])[torch.tensor(original['attention_mask'][:-width]).bool()]
+    actions = torch.tensor(original['responses'][:count])
+    filler_id = tokenizer.encode(' context', add_special_tokens=False)[0]
+    if response_tokens:
+        assert response_tokens >= count
+        actions = torch.cat((torch.full((response_tokens-count,), filler_id), actions))
+    step = int(original['env_step'])
+    query = alphabet.query_ids(tokenizer, current_step=step, event_step=step, max_steps=15)
+    fill = 32768-len(query)-1-prompt.numel()-actions.numel()
+    assert fill > 0
+    row = {**original, 'responses': actions,
+           'input_ids': torch.cat((torch.full((fill,), filler_id), prompt, actions)),
+           'attention_mask': torch.ones(32768-len(query)-1, dtype=torch.long)}
+    label = alphabet.label_ids(tokenizer)[alphabet.observed_index(float(original['rewards']))]
+    factual = torch.cat((row['input_ids'], torch.tensor(query), torch.tensor([label])))
+    assert factual.shape == (32768,)
+    detail = dict(capacity_response_tokens=actions.numel(), synthetic_response_tokens=actions.numel()-count,
+                  synthetic_filler_tokens=fill, original_response_tokens=count,
+                  actor_input_tokens=row['input_ids'].numel(), query_tokens=len(query),
+                  dt_input_tokens=factual.numel(), official_fixture_reward=float(original['rewards']),
+                  reward_scope='Recorded official reward used as a numerical capacity coefficient; not a reward claim for the synthetic trajectory',
+                  factual_input_ids_sha256=hashlib.sha256(factual.numpy().tobytes()).hexdigest(),
+                  actor_input_ids_sha256=hashlib.sha256(row['input_ids'].numpy().tobytes()).hexdigest())
+    return row, factual, detail, filler_id
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -29,10 +59,13 @@ def main():
     parser.add_argument('--reshard-after-forward', action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument('--response-tokens', type=int, default=0,
                         help='Explicit synthetic action-span width; 0 keeps the recorded script actions')
+    parser.add_argument('--actor-microbatch', type=int, choices=(1, 4), default=1)
+    parser.add_argument('--activation-offload', action='store_true')
     args = parser.parse_args()
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
-                  reshard_after_forward=args.reshard_after_forward, stages=[])
+                  reshard_after_forward=args.reshard_after_forward,
+                  actor_microbatch=args.actor_microbatch, activation_offload=args.activation_offload, stages=[])
     artifacts = {}
 
     def stage(name):
@@ -60,9 +93,11 @@ def main():
         c.model.path = os.environ['MODEL_PATH']
         c.model.lora_rank, c.model.lora_alpha = 1, 2
         c.model.trust_remote_code = True
+        c.model.enable_activation_offload = args.activation_offload
         c.actor.strategy = 'fsdp2'
         c.actor.ppo_mini_batch_size = 4
-        c.actor.ppo_micro_batch_size_per_gpu = 1
+        c.actor.ppo_micro_batch_size_per_gpu = args.actor_microbatch
+        c.actor.use_dynamic_bsz = False
         c.actor.ppo_max_token_len_per_gpu = 32768
         c.actor.use_torch_compile = False
         c.actor.entropy_coeff = 0.0
@@ -74,7 +109,7 @@ def main():
         c.rollout.name = args.backend
         c.rollout.n = 1
         c.rollout.tensor_model_parallel_size = 1
-        c.rollout.log_prob_micro_batch_size_per_gpu = 1
+        c.rollout.log_prob_micro_batch_size_per_gpu = args.actor_microbatch
         c.rollout.micro_batch_size = 4
         if args.backend == 'vllm':
             c.actor.fsdp_config.param_offload = True
@@ -101,28 +136,9 @@ def main():
         stage('producer_init')
         fixture = json.loads((Path(os.environ['DT_RUNTIME_ROOT'])/'receipts/rollout-fixtures.json').read_text())
         original = fixture['tasks']['Sokoban']['rows'][-1]
-        width = len(original['responses'])
-        count = sum(original['attention_mask'][-width:])
-        prompt = torch.tensor(original['input_ids'][:-width])[torch.tensor(original['attention_mask'][:-width]).bool()]
-        actions = torch.tensor(original['responses'][:count])
-        filler_id = worker.tokenizer.encode(' context', add_special_tokens=False)[0]
-        if args.response_tokens:
-            assert args.response_tokens >= count
-            actions = torch.cat((torch.full((args.response_tokens-count,), filler_id), actions))
-        result.update(capacity_response_tokens=actions.numel(),
-                      synthetic_response_tokens=actions.numel()-count,
-                      reward_scope='Recorded official reward used as a numerical capacity coefficient; not a reward claim for the synthetic trajectory')
-        step = int(original['env_step'])
-        query = producer.readout.alphabet.query_ids(worker.tokenizer, current_step=step, event_step=step, max_steps=15)
-        fill = 32768 - len(query) - 1 - prompt.numel() - actions.numel()
-        assert fill > 0
-        row = {**original, 'responses': actions,
-               'input_ids': torch.cat((torch.full((fill,), filler_id), prompt, actions)),
-               'attention_mask': torch.ones(32768-len(query)-1, dtype=torch.long)}
-        result.update(synthetic_filler_tokens=fill, original_response_tokens=count,
-                      actor_input_tokens=row['input_ids'].numel(), query_tokens=len(query),
-                      dt_input_tokens=row['input_ids'].numel()+len(query)+1,
-                      official_fixture_reward=float(original['rewards']))
+        row, _, fixture_detail, filler_id = capacity_fixture(
+            original, worker.tokenizer, producer.readout.alphabet, args.response_tokens)
+        result.update(fixture_detail)
         assert result['dt_input_tokens'] == 32768
         # Exercise the actual readout's guard. It must fail before the runner.
         oversized = copy.copy(row)

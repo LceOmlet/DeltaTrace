@@ -32,6 +32,48 @@ LoRA API 兼容回补来自 VERL v0.7.0；vLLM 0.15 的 weights pool 上下文�
 同时 batch=4 已通过。证据见
 [results_vllm_integration.json](results_vllm_integration.json)。
 
+2026-09-23 补查确认：仅核对 main 的 FA/FLA 内核不足以确认完整加速路径。
+`codex/clean-v1-acceleration=2b36c4ec` 和
+`codex/qwen35-cause-and-tolerance=e1e37bb4` 的远端分支头已核对。候选现在
+复用后者的 Qwen3.5 retained/code-local capture，并把原 deferred 控制器的
+延后同步接入当前 official runner；既有动态编译继续使用，没有另建控制器。
+真实 9B、相同 B4/635-token 输入的 12 次调用，完整 signed 向量、目标分数和
+Q/V/A 逐值一致；两轮预热后均值 3.293 → 3.045 秒，降低 7.52%。这些是短链
+执行开销结果，不是 32k 或一次反向效率验收。迁移范围和未直接采用的 Qwen3
+冻结图、投影缓存、D128/FP16 库见 [加速来源](../../deltatrace/accelerated/README.md)。
+
+32k 候选按 head 分组调用原 FLA，仍保留所有 4 条轨迹、完整序列和两端对称
+规则。搬运/分组分开核验；同分组下搬运前后逐值一致。两端重合的原生/完整
+有限/8-head 有限算子，在 T=128/447 的 dq/dk/dv/db/dg 上通过 FLA 原误差函数
+和阈值。这不覆盖先前完整 BF16 `test_chunk` 的 L2-normalization 复合路径
+失败，旧失败仍保留。GDN 输出 RMS/SiLU 有限规则另通过官方
+`test_rmsnorm_gated` 的 8 个原生/有限对照，未改变 1e-3 阈值。
+最新 `batch-capacity-v13-compiled-conv.json` 已通过精确 32768、DT batch4，
+一次批量归因后完成两次非零原 PPO 更新及 200 层 LoRA 同步；共改变
+1,439,802 个可训练参数元素。输入仍是明确的容量夹具，包含 1024 action
+槽位和 170-token 事件询问；不是自然任务成功率。完整 DT 671.653 秒，
+整次含初始化/PPO/同步 917.039 秒，无 OOM。Torch 105.18 GiB allocated
+包含休眠的未映射 vLLM pool，不能报告为物理显存占用。
+原 PPO 源码 SHA 未变。近一次原生反向的效率要求尚未通过；正式训练、
+检查和备份仍暂停。配置路径的预热复测及原生反向参照单独记录。
+
+对比条件另已核清：上述 v13/v14 的 PPO 为 minibatch4、microbatch1；
+不能据此声称四条同时反向通过。`native-backward32k-v3-vllm-ppo.json`
+在原 vLLM 同步/休眠后启用官方 activation offload，四条 32768-token 原生
+反向预热后 44.007 秒，随后原 PPO 实际两次接收 `[4,32597]`，耗时
+68.353/67.520 秒，非零梯度与更新后同步完成。vLLM 残留算在同一卡内。
+无 offload 的失败仅保留为容量诊断，不作为速度基准。DT/原生反向测试
+现共用原容量输入构造函数；CPU 逐值对照证明与已有输入完全相同。
+
+GDN 搬运大头已单独定位：原捕获每层复制 37.109 GiB。两个未被有限传播
+读取的模块输出占 4 GiB，候选去除后为 33.109 GiB，并使用 Torch pinned
+allocator/异步复制，在 capture 退出前统一等待。相同真实 9B 层、同一
+B8/32768 隐状态容量夹具，全部共同捕获值和 stride 完全一致；两轮预热
+记录为旧捕获 6.584/11.546 秒，新捕获 0.958/2.766 秒。该局部改进不被
+当作完整 DT 达标。新路径完整短归因和 Q/V/A 的搬运对照也逐值一致。
+`pinned-capture/batch-capacity-v15-pinned-micro4.*` 正在验证完整 DT B4、
+PPO microbatch4、官方 offload、vLLM 同进程组合；以完成回执为准。
+
 最新 `origin/main=6ca8dc07` 的 MetaX 路径已核对并在使用：模型前向走已安装
 FA 2.6.3 / FLA 0.4.1；DT 有限传播复用 main 的 MetaX FA 扩展和 FLA 原反向
 子内核。32k、batch=4 的 FA 算子诊断中，原有限传播约 48.77 秒，原生 FA
@@ -39,8 +81,8 @@ FA 2.6.3 / FLA 0.4.1；DT 有限传播复用 main 的 MetaX FA 扩展和 FLA 原
 比值当作完整 DT/完整模型反向比值。
 候选在两端重合时通过原 FA 测试（长度 128/447），非零端点与原有限内核
 另做数值对照。DT minibatch 接口的同批次复制/复用张量结果相同，但串行/
-批量仍有归因差异，真实 32k×4 候选仍在重算阶段 OOM。因此没有切换正式
-训练到这些候选。记录见 [results_dt_minibatch_candidate.json](results_dt_minibatch_candidate.json)。
+批量仍有归因差异；此前 32k×4 重算 OOM 已在上述 v13 容量候选中消除。
+完整速度和三任务连续训练尚未验收，因此没有切换正式训练到候选。记录见 [results_dt_minibatch_candidate.json](results_dt_minibatch_candidate.json)。
 
 候选复用厂商 `gemm_opt` 和 `gemm_rs`：后者的快速转置加载接口每次接受
 128 列，因此 D256 使用两个视图调用，保留原有限公式；不是重写 GEMM。
@@ -49,8 +91,9 @@ FA 2.6.3 / FLA 0.4.1；DT 有限传播复用 main 的 MetaX FA 扩展和 FLA 原
 CPU capture 候选必须保留原 strides；默认跨设备复制曾改变四维布局。
 修正后短链 Q/V/A 与未 offload 的同批次结果逐位一致。候选已消除诊断 FP64
 大临时张量、base/LoRA GEMM 重复 BF16 副本，并释放已消费的 FA 缓存；
-最新 32k×4 已通过第 31 层，但下一 GDN 层同时恢复全部缓存后仍 OOM。
-这些 Python 内存/批处理候选尚未接入正式环境，容量和完整 DT 效率均未验收。
+早期候选在 GDN 同时恢复全部缓存后 OOM；v13 已按原 head 独立递推分组，
+并编译原 RMS/SiLU 有限公式后通过完整容量检查。候选尚未接入正式环境，
+容量通过不代表完整 DT 效率达标。
 
 FSDP 修复后的 WebShop/AppWorld vLLM 恢复作业已分别完成 step 2/4，耗时
 1134.59/980.84 秒；两轮实际 reward、DT 优势、梯度均为零，不能作为非零
@@ -86,7 +129,7 @@ tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不�
 
 ## 当前验证范围
 
-- 三任务原生训练均已完成连续迭代，且各有真实非零奖励、DT token 优势与原 PPO
+- 此前 HF 后端三任务完成过连续迭代，且各有真实非零奖励、DT token 优势与原 PPO
   非零更新。Sokoban 两轮成功率 100%/75%；WebShop 两轮 0%/25%；AppWorld
   seed=1 四轮 25%/0%/0%/75%。AppWorld 第四轮 44 次 DT、7251 个非零 token
   优势、grad_norm=0.199。这些每轮仅四条轨迹，是接线/连续训练验证，不能作为

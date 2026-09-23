@@ -28,6 +28,9 @@ class Targets:
         self.cases, self.offsets, self.length = cases, offsets, length
         self.outcomes = kwargs['outcome_token_ids']
 
+    def sample_sums(self, values):
+        return values  # This test double has one target per case.
+
 
 class Runner:
     def __init__(self):
@@ -70,6 +73,7 @@ def row(step, reward, *, active=True):
 def readout(runner=None, tokenizer=None, **kwargs):
     return EventRatioReadout(runner or Runner(), tokenizer or Tokenizer(),
                             task=kwargs.pop('task', 'Sokoban'), max_steps=15,
+                            minibatch_size=kwargs.pop('minibatch_size', 1),
                             packed_answer_targets=Targets, **kwargs)
 
 
@@ -117,6 +121,41 @@ def test_zero_observed_rewards_do_not_invent_a_signal():
     output = dt.episode([row(0, 0)])
     assert not runner.calls
     assert not output[0]['dt_token_advantages'].any()
+
+
+def test_minibatch_preserves_each_episode_event_and_expm1():
+    class BatchedRunner(Runner):
+        def attribute(self, pair, mask, selection, **kwargs):
+            self.calls.append((pair.clone(), mask.clone(), selection))
+            outputs, roots = [], []
+            for index, case in enumerate(selection.cases):
+                end = case['prompt_length'] + 1
+                assert pair[2*index:2*index+2, end:].eq(99).all()
+                original = Runner()
+                selected = Targets([case], [[0]], end, pair.device, outcome_token_ids=selection.outcomes)
+                signed, detail = original.attribute(pair[2*index:2*index+2, :end],
+                                                    mask[2*index:2*index+2, :end], selected)
+                outputs.append(torch.nn.functional.pad(signed, (0, pair.shape[1]-end)))
+                roots.append(detail['root_effect'])
+            return torch.cat(outputs), dict(root_effect=sum(roots),
+                compiled_seed_logprob_effect=sum(roots), target_logp0=[0.]*len(roots),
+                target_logp1=roots, complete_attribution_seconds_with_diagnostics=0.)
+    episodes = [[row(0, -.1), row(1, 10.9)], [row(0, -.1)]]
+    # Different true prefix lengths exercise compute padding after the target.
+    episodes[1][0]['input_ids'] = torch.cat((torch.tensor([4, 4, 4]), episodes[1][0]['input_ids']))
+    episodes[1][0]['attention_mask'] = torch.cat((torch.ones(3, dtype=torch.long), episodes[1][0]['attention_mask']))
+    expected = [readout().episode(rows) for rows in episodes]
+    runner = BatchedRunner()
+    dt = readout(runner, minibatch_size=4)
+    actual = dt.episodes(episodes)
+    assert len(runner.calls) == 1 and runner.calls[0][0].shape[0] == 8
+    assert dt.last_report['finite_trace_calls'] == 1
+    assert dt.last_report['event_contrasts'] == 4
+    for before, after in zip(expected, actual):
+        for a, b in zip(before, after):
+            for name in a:
+                torch.testing.assert_close(a[name], b[name], rtol=0, atol=0)
+    assert all(t['conservation_verified'] for t in dt.last_report['traces'])
 
 
 def test_rounding_audit_failure_preserves_raw_token_credit_and_failed_status():
@@ -234,7 +273,7 @@ def test_actor_attention_and_training_mode_restored_after_finite_trace(fails):
         if fails:
             raise RuntimeError('trace error')
         return []
-    producer.readout = SimpleNamespace(episode=episode, last_report={})
+    producer.readout = SimpleNamespace(episodes=lambda episodes: [episode(episodes[0])], last_report={})
     if fails:
         with pytest.raises(RuntimeError, match='trace error'):
             producer.attribute_episode([], 123)

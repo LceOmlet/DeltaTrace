@@ -9,8 +9,9 @@ from native_attention_capture import NativeAttentionCapture, _metadata_scalar
 
 class NativeDenseAttentionCapture(NativeAttentionCapture):
     def __init__(self, module, attention_interface, native_varlen_function,
-                 native_dense_function, destination='cpu'):
-        super().__init__(module, attention_interface, native_varlen_function, destination)
+                 native_dense_function, destination='cpu', *, copy_tensors=True, retained_names=None, preserve_strides=False):
+        super().__init__(module, attention_interface, native_varlen_function, destination,
+                         copy_tensors=copy_tensors, retained_names=retained_names, preserve_strides=preserve_strides)
         self.native_dense = native_dense_function
         self.calls['native_dense'] = 0
         self.dense_arguments = None

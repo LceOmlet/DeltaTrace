@@ -21,8 +21,8 @@ def trace_token_attribution(
     dt_runner: Any,
     reference_input_ids: torch.Tensor,
     selected_input_ids: torch.Tensor,
-    target_case: dict[str, Any],
-    target_offsets: list[int],
+    target_case: dict[str, Any] | list[dict[str, Any]],
+    target_offsets: list[int] | list[list[int]],
     *,
     packed_answer_targets: Any,
     outcome_token_ids: list[int] | None = None,
@@ -34,18 +34,23 @@ def trace_token_attribution(
 
     ``reference_input_ids`` and ``selected_input_ids`` are the owner runner's
     equal-shaped reference/original endpoints. The returned signed tensor is
-    shaped ``[1, sequence_length]``. It remains an owner artifact; no local
+    shaped ``[batch, sequence_length]``. It remains an owner artifact; no local
     attribution is reconstructed here.
     """
 
     if reference_input_ids.shape != selected_input_ids.shape or reference_input_ids.ndim != 2:
-        raise ValueError("DT endpoints must have equal shape [1, sequence_length]")
-    if reference_input_ids.shape[0] != 1:
-        raise ValueError("one trajectory endpoint pair is required per trace call")
-    pair = torch.cat((reference_input_ids, selected_input_ids), dim=0)
+        raise ValueError("DT endpoints must have equal shape [batch, sequence_length]")
+    batch = reference_input_ids.shape[0]
+    cases = [target_case] if isinstance(target_case, dict) else target_case
+    offsets = [target_offsets] if isinstance(target_case, dict) else target_offsets
+    if len(cases) != batch or len(offsets) != batch:
+        raise ValueError("each endpoint pair requires its own target selection")
+    # The owner ABI interleaves endpoints per sample, never all references
+    # followed by all factual rows. Targets and event identities stay separate.
+    pair = torch.stack((reference_input_ids, selected_input_ids), dim=1).flatten(0, 1)
     options = {} if outcome_token_ids is None else {"outcome_token_ids": outcome_token_ids}
     selection = packed_answer_targets(
-        [target_case], [target_offsets], pair.shape[1], selected_input_ids.device, **options
+        cases, offsets, pair.shape[1], selected_input_ids.device, **options
     )
     try:
         signed, detail = dt_runner.attribute(
@@ -87,4 +92,25 @@ def trace_token_attribution(
             "conservation_verified": conservation_verified,
         }
     )
-    return signed, torch.tensor([root_effect], device=selected_input_ids.device), detail
+    if batch == 1:
+        roots = torch.tensor([root_effect], device=selected_input_ids.device)
+    else:
+        # Read native target endpoint scores through the owner's packing map.
+        # Do not use the batch sum as an individual event's root difference.
+        delta = torch.as_tensor(detail['target_logp1'], device=selected_input_ids.device,
+                                dtype=torch.float64) - torch.as_tensor(
+            detail['target_logp0'], device=selected_input_ids.device, dtype=torch.float64)
+        roots = selection.sample_sums(delta)
+        detail['per_sample'] = []
+        for index, root in enumerate(roots.tolist()):
+            total = float(signed[index].sum())
+            residual = root - total
+            detail['per_sample'].append(dict(
+                root_effect=root, policy_credit_signed_sum=total,
+                conservation_residual=residual, conservation_tolerance=attribution_tolerance,
+                conservation_verified=abs(residual) <= attribution_tolerance * max(1.0, abs(root)),
+                attribution_batch_size=batch,
+                owner_batch_seconds=detail.get('complete_attribution_seconds_with_diagnostics'),
+                peak_allocated=detail.get('peak_allocated'), peak_reserved=detail.get('peak_reserved'),
+            ))
+    return signed, roots, detail

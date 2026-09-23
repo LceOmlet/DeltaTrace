@@ -79,7 +79,7 @@ class RewardAlphabet:
 
 
 class EventRatioReadout:
-    """One official EOS trace per response/future reward event, not per token.
+    """Batch independent response/event contrasts through the official runner.
 
     DT's signed vector estimates the individual deletion log-prob effects in
     PLAN.md. It is not a measured collection of leave-one-out forward passes.
@@ -87,21 +87,21 @@ class EventRatioReadout:
     """
 
     def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,
-                 packed_answer_targets: Any, max_length: int = 32768):
+                 packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4):
         if max_steps < 1:
             raise ValueError('Horizon must be positive')
         if tokenizer.eos_token_id is None:
             raise ValueError('EOS attribution requires the checkpoint EOS token')
+        if minibatch_size < 1:
+            raise ValueError('DT minibatch_size must be positive')
+        self.minibatch_size = minibatch_size
         self.runner, self.tokenizer = runner, tokenizer
         self.alphabet = RewardAlphabet.for_task(task)
         self.max_steps, self.max_length = max_steps, max_length
         self.packed_answer_targets = packed_answer_targets
         self.last_report: dict[str, Any] = {}
 
-    @torch.no_grad()
-    def episode(self, rows: list[dict[str, Any]]) -> list[dict[str, torch.Tensor]]:
-        started = time.perf_counter()
-        device = self.runner.model.lm_head.weight.device
+    def _prepare_episode(self, rows, report):
         events = [row for row in rows if bool(row['active_masks'])]
         labels = self.alphabet.label_ids(self.tokenizer)
         observed = [self.alphabet.observed_index(float(row['rewards'])) for row in events]
@@ -111,14 +111,10 @@ class EventRatioReadout:
         if any(row['traj_uid'] != rows[0]['traj_uid'] for row in rows):
             raise ValueError('Cannot attribute mixed trajectories')
         log_ratios = []
-        report = dict(task=self.alphabet.task, policy_tokens=0,
-                      nonzero_reward_events=sum(float(r['rewards']) != 0 for r in events),
-                      finite_trace_calls=0, max_readout_length=0, actual_row_lengths=[],
-                      traces=[], max_length=self.max_length,
-                      ratio_source='official_eos_dt_signed_attribution_estimate',
-                      reference_token_samples=0, per_token_probability_queries=0)
+        requests = []
+        report['nonzero_reward_events'] += sum(float(r['rewards']) != 0 for r in events)
 
-        for row in rows:
+        for row_index, row in enumerate(rows):
             response = row['responses']
             width = response.numel()
             matrix = torch.zeros((len(events), width), dtype=torch.float32)
@@ -129,8 +125,8 @@ class EventRatioReadout:
             positions = attention[-width:].nonzero().flatten().tolist()
             if positions != list(range(len(positions))):
                 raise ValueError('Original generated response must have right padding only')
-            prompt = row['input_ids'][:-width][attention[:-width]].to(device)
-            actions = response[:len(positions)].to(device)
+            prompt = row['input_ids'][:-width][attention[:-width]].cpu()
+            actions = response[:len(positions)].cpu()
             if not torch.equal(row['input_ids'][-width:].cpu(), response.cpu()):
                 raise ValueError('Original rollout input and response token identities differ')
             report['policy_tokens'] += len(positions)
@@ -143,49 +139,90 @@ class EventRatioReadout:
                 query = torch.tensor(self.alphabet.query_ids(
                     self.tokenizer, current_step=int(row['env_step']),
                     event_step=int(event['env_step']), max_steps=self.max_steps,
-                ), device=device, dtype=torch.long)
-                target = torch.tensor([labels[observed[k]]], device=device, dtype=torch.long)
-                selected = torch.cat((prompt, actions, query, target))[None, :]
-                length = selected.shape[1]
+                ), device='cpu', dtype=torch.long)
+                target = torch.tensor([labels[observed[k]]], device='cpu', dtype=torch.long)
+                length = prompt.numel() + actions.numel() + query.numel() + target.numel()
                 if length > self.max_length:
                     raise ValueError(f'Reward readout context {length} exceeds cap {self.max_length}; no silent truncation')
-                reference = selected.clone()
                 start, end = prompt.numel(), prompt.numel() + actions.numel()
                 # The original row prompt includes *past* observations. It and
                 # the event query/label are identical at both endpoints. Future
                 # observations and future generated actions never enter this
                 # input. Only the current generated source tokens become EOS.
-                reference[:, start:end] = self.tokenizer.eos_token_id
-                signed, _, detail = trace_token_attribution(
-                    self.runner, reference, selected,
-                    {'target_ids': target.cpu(), 'prompt_length': length - 1}, [0],
-                    packed_answer_targets=self.packed_answer_targets,
-                    outcome_token_ids=labels,
-                )
-                matrix[k, :len(positions)] = signed[0, start:end].cpu()
-                # Keep per-event attribution separate until after expm1.
-                report['finite_trace_calls'] += 1
-                report['max_readout_length'] = max(report['max_readout_length'], length)
-                report['traces'].append(dict(
+                requests.append(dict(prompt=prompt, actions=actions, query=query, target=target,
+                    case={'target_ids': target, 'prompt_length': length - 1},
+                    start=start, end=end, matrix=matrix, event_index=k,
                     source_step=int(row['env_step']), event_step=int(event['env_step']),
-                    context_tokens=length, query_tokens=query.numel(),
-                    root_effect=detail['root_effect'], signed_sum=detail['policy_credit_signed_sum'],
-                    conservation_residual=detail['conservation_residual'],
-                    conservation_tolerance=detail['conservation_tolerance'],
-                    conservation_verified=detail['conservation_verified'],
-                    seconds=detail.get('complete_attribution_seconds_with_diagnostics'),
-                    peak_allocated=detail.get('peak_allocated'), peak_reserved=detail.get('peak_reserved'),
-                    source_log_ratio_min=float(matrix[k, :len(positions)].min()),
-                    source_log_ratio_max=float(matrix[k, :len(positions)].max()),
+                    context_tokens=length, query_tokens=query.numel(), row_index=row_index))
+        return log_ratios, requests
+
+    @torch.no_grad()
+    def episodes(self, episodes: list[list[dict[str, Any]]]) -> list[list[dict[str, torch.Tensor]]]:
+        started = time.perf_counter()
+        device = self.runner.model.lm_head.weight.device
+        report = dict(task=self.alphabet.task, policy_tokens=0, nonzero_reward_events=0,
+                      finite_trace_calls=0, event_contrasts=0, minibatch_size=self.minibatch_size,
+                      max_readout_length=0, actual_row_lengths=[], traces=[], max_length=self.max_length,
+                      ratio_source='official_eos_dt_signed_attribution_estimate',
+                      reference_token_samples=0, per_token_probability_queries=0)
+        matrices, requests = [], []
+        for episode_index, rows in enumerate(episodes):
+            values, pending = self._prepare_episode(rows, report)
+            matrices.append(values)
+            for request in pending:
+                request['episode_index'] = episode_index
+            requests.extend(pending)
+        # Right extension comes strictly after the scored target. Causality
+        # leaves every real prefix and predictor unchanged; it is compute
+        # padding, not task history or a masked model/finite implementation.
+        # The official runner receives its existing dense interleaved ABI.
+        requests.sort(key=lambda request: request['context_tokens'])
+        labels = self.alphabet.label_ids(self.tokenizer)
+        for offset in range(0, len(requests), self.minibatch_size):
+            batch = requests[offset:offset + self.minibatch_size]
+            length = max(request['context_tokens'] for request in batch)
+            selected = torch.full((len(batch), length), self.tokenizer.eos_token_id,
+                                  device=device, dtype=torch.long)
+            reference = selected.clone()
+            for index, request in enumerate(batch):
+                end = request['context_tokens']
+                selected[index, :end] = torch.cat(tuple(request[name] for name in
+                    ('prompt', 'actions', 'query', 'target'))).to(device)
+                reference[index, :end] = selected[index, :end]
+                reference[index, request['start']:request['end']] = self.tokenizer.eos_token_id
+            signed, _, detail = trace_token_attribution(
+                self.runner, reference, selected, [request['case'] for request in batch],
+                [[0] for _ in batch], packed_answer_targets=self.packed_answer_targets,
+                outcome_token_ids=labels,
+            )
+            report['finite_trace_calls'] += 1
+            report['event_contrasts'] += len(batch)
+            report['max_readout_length'] = max(report['max_readout_length'], length)
+            for index, request in enumerate(batch):
+                values = signed[index, request['start']:request['end']].cpu()
+                request['matrix'][request['event_index'], :len(values)] = values
+                item = detail['per_sample'][index] if len(batch) > 1 else detail
+                report['traces'].append(dict(
+                    episode_index=request['episode_index'], source_step=request['source_step'],
+                    event_step=request['event_step'], context_tokens=request['context_tokens'],
+                    compute_tokens=length, query_tokens=request['query_tokens'],
+                    root_effect=item['root_effect'], signed_sum=item['policy_credit_signed_sum'],
+                    conservation_residual=item['conservation_residual'],
+                    conservation_tolerance=item['conservation_tolerance'],
+                    conservation_verified=item['conservation_verified'],
+                    owner_batch_index=report['finite_trace_calls'] - 1,
+                    source_log_ratio_min=float(values.min()), source_log_ratio_max=float(values.max()),
                 ))
-                print(f"[DT EOS event] step={int(row['env_step'])} event={int(event['env_step'])} "
-                      f"tokens={len(positions)} length={length} "
-                      f"seconds={report['traces'][-1]['seconds']} "
-                      f"conservation_verified={detail['conservation_verified']} "
-                      f"residual={detail['conservation_residual']}", flush=True)
-        result = reward_event_credit_for_episode(rows, log_ratios)
+            print(f"[DT EOS minibatch] contrasts={len(batch)} length={length} "
+                  f"seconds={detail.get('complete_attribution_seconds_with_diagnostics')}", flush=True)
+        result = [reward_event_credit_for_episode(rows, values)
+                  for rows, values in zip(episodes, matrices)]
         report['seconds'] = time.perf_counter() - started
-        report['nonzero_advantages'] = sum(int(r['dt_token_advantages'].count_nonzero()) for r in result)
+        report['nonzero_advantages'] = sum(int(row['dt_token_advantages'].count_nonzero())
+                                          for episode in result for row in episode)
         report['conservation_failures'] = sum(not trace['conservation_verified'] for trace in report['traces'])
         self.last_report = report
         return result
+
+    def episode(self, rows: list[dict[str, Any]]) -> list[dict[str, torch.Tensor]]:
+        return self.episodes([rows])[0]
