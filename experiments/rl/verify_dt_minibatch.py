@@ -25,6 +25,10 @@ def main():
                    help='Save real actor weight fingerprints and the first B4 native root inputs for offload diagnosis.')
     p.add_argument('--gdn-suffix-comparison', action='store_true',
                    help='Only compare the unchanged offloaded route with GDN/FA suffix controls; operator gates are separate.')
+    p.add_argument('--root-pin-comparison', action='store_true',
+                   help='Compare complete short attribution with only the original checkpoint transfer destination pinned.')
+    p.add_argument('--compact-gdn-comparison', action='store_true',
+                   help='Compare actual native captures and convolution boundary, then full short attribution with compact captures.')
     p.add_argument('--execution-reuse', action='store_true',
                    help='Compare reused retained/local-event captures and deferred diagnostics at fixed batch geometry.')
     args = p.parse_args()
@@ -89,12 +93,41 @@ def main():
         mixer_baselines = {}
         mixer_seen = set()
         current_run = ''
+        compact_baseline = {}
         for kind in ('attention', 'gdn'):
             function_name = kind+'_finite_pullback'
             original = getattr(owner, function_name)
             def check_mixer(*a, _kind=kind, _original=original, **kw):
+                if args.compact_gdn_comparison and _kind=='gdn' and (current_run,_kind) not in mixer_seen:
+                    mixer_seen.add((current_run,_kind))
+                    module,values,endpoints=a[:3]
+                    if current_run=='batch_both_suffix':
+                        compact_baseline['values']={k:v.detach().cpu() for k,v in values.items() if isinstance(v,torch.Tensor)}
+                        compact_baseline['endpoints']={k:v.detach().cpu() for k,v in endpoints.items()}
+                        with torch.no_grad():
+                            pre=module.causal_conv1d_fn(values['projected_qkv'].to('cuda'),module.conv1d.weight.squeeze(1),activation=None)
+                        compact_baseline['pre']=pre.cpu()
+                        del pre
+                    else:
+                        cut=kw['capture_start'];context_start=max(0,cut-module.conv1d.weight.shape[-1]+1)
+                        checks={}
+                        for group,captured in [('values',values),('endpoints',endpoints)]:
+                            for key,value in captured.items():
+                                if not isinstance(value,torch.Tensor) or key=='input':continue
+                                dimension=2 if key in ('projected_qkv','conv_output') else 1
+                                start=(context_start if key=='projected_qkv' else cut//64 if key=='h' else cut)
+                                reference=compact_baseline[group][key].narrow(dimension,start,compact_baseline[group][key].shape[dimension]-start)
+                                assert torch.equal(reference,value.cpu()),(group,key)
+                                assert value.untyped_storage().nbytes()==value.numel()*value.element_size(),(group,key,'retained prefix storage')
+                                checks[group+'.'+key]=dict(exact=True,bytes=value.numel()*value.element_size())
+                        with torch.no_grad():
+                            pre=module.causal_conv1d_fn(values['projected_qkv'].to('cuda'),module.conv1d.weight.squeeze(1),activation=None)
+                        assert torch.equal(compact_baseline['pre'][...,cut:],pre[...,cut-context_start:].cpu())
+                        result['compact_native_capture_check']=dict(coefficient_start=cut,conv_left_context=cut-context_start,
+                            operands=checks,convolution_preactivations_exact=True)
+                        del pre
                 value = _original(*a, **kw)
-                if not args.gdn_suffix_comparison and current_run in ('batch_head8', 'batch_offloaded') and (current_run, _kind) not in mixer_seen:
+                if not (args.gdn_suffix_comparison or args.compact_gdn_comparison) and current_run in ('batch_head8', 'batch_offloaded') and (current_run, _kind) not in mixer_seen:
                     mixer_seen.add((current_run, _kind))
                     tensors = {f'{index}.{key}': (tensor.detach().cpu(), tensor.stride())
                         for index, arg in enumerate(a) if isinstance(arg, dict)
@@ -174,6 +207,12 @@ def main():
             configurations.append(('batch_gdn_suffix', 4, False))
             if producer.runner.fa_coefficient_suffix:
                 configurations.append(('batch_both_suffix', 4, False))
+        if args.compact_gdn_comparison:
+            assert producer.runner.compact_gdn_captures
+            configurations=[('batch_both_suffix',4,False),('batch_compact_gdn',4,False)]
+        if args.root_pin_comparison:
+            assert producer.runner.pin_root_host
+            configurations=[('batch_compact_gdn',4,False),('batch_root_pinned',4,False)]*3
         if args.gdn_suffix_comparison:
             assert producer.runner.gdn_coefficient_suffix
             configurations=[entry for entry in configurations if entry[0] in
@@ -184,9 +223,11 @@ def main():
             producer.runner.defer_diagnostics = False
             producer.readout.minibatch_size = batch
             producer.runner.copy_replay_captures = copies
-            suffix_run=name in ('batch_fa_suffix','batch_gdn_suffix','batch_both_suffix')
-            producer.runner.fa_coefficient_suffix = name in ('batch_fa_suffix','batch_both_suffix')
-            producer.runner.gdn_coefficient_suffix = name in ('batch_gdn_suffix','batch_both_suffix')
+            suffix_run=name in ('batch_fa_suffix','batch_gdn_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned')
+            producer.runner.fa_coefficient_suffix = name in ('batch_fa_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned')
+            producer.runner.gdn_coefficient_suffix = name in ('batch_gdn_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned')
+            producer.runner.compact_gdn_captures = name in ('batch_compact_gdn','batch_root_pinned')
+            producer.runner.pin_root_host = name=='batch_root_pinned'
             producer.runner.offload_replay_mixer = name == 'batch_offloaded' or suffix_run
             producer.runner.pin_replay_host = name == 'batch_offloaded' or suffix_run
             producer.runner.compile_gdn_scalar_rules = name in ('batch_compiled_gate','batch_head8','batch_offloaded') or suffix_run
@@ -204,7 +245,12 @@ def main():
         # a numerical difference can be inspected without another model load.
         torch.save(outputs,args.output.with_suffix('.pt'))
         result['comparison_artifacts']=str(args.output.with_suffix('.pt'))
-        for name in ('batch_gdn_suffix','batch_both_suffix'):
+        if args.root_pin_comparison:
+            torch.testing.assert_close(outputs['batch_compact_gdn'],outputs['batch_root_pinned'],rtol=0,atol=0)
+            result['status']='passed_root_pinned_exact_short_parity'
+            return
+        comparison_reference='batch_both_suffix' if args.compact_gdn_comparison else 'batch_offloaded'
+        for name in (('batch_compact_gdn',) if args.compact_gdn_comparison else ('batch_gdn_suffix','batch_both_suffix')):
             if name in outputs:
                 # FLA chunk counts change vendor GEMM/compiler scheduling.
                 # Its original FP32-reference operator thresholds are tested
@@ -212,15 +258,20 @@ def main():
                 # do not invent a whole-PPO tolerance or equate it to copies.
                 differences={}
                 for key in ('dt_q_estimates','dt_v_estimates','dt_token_advantages'):
-                    reference=torch.cat([ep[0][key] for ep in outputs['batch_offloaded'][0]]).double()
+                    reference=torch.cat([ep[0][key] for ep in outputs[comparison_reference][0]]).double()
                     actual=torch.cat([ep[0][key] for ep in outputs[name][0]]).double()
                     differences[key]=dict(max_abs=float((reference-actual).abs().max()),
                         relative_l2=float((reference-actual).norm()/reference.norm().clamp_min(1e-30)))
-                signed_reference=torch.cat([c['signed'] for c in outputs['batch_offloaded'][1]]).double()
+                signed_reference=torch.cat([c['signed'] for c in outputs[comparison_reference][1]]).double()
                 signed_actual=torch.cat([c['signed'] for c in outputs[name][1]]).double()
                 differences['signed']=dict(max_abs=float((signed_reference-signed_actual).abs().max()),
                     relative_l2=float((signed_reference-signed_actual).norm()/signed_reference.norm().clamp_min(1e-30)))
                 result[name+'_differences']=differences
+        if args.compact_gdn_comparison:
+            for key in ('target_logp0','target_logp1'):
+                assert outputs['batch_both_suffix'][1][0][key]==outputs['batch_compact_gdn'][1][0][key]
+            result['status']='passed_compact_native_captures_with_chain_diagnostic'
+            return
         if args.gdn_suffix_comparison:
             result['status']='completed_gdn_suffix_diagnostic'
             return

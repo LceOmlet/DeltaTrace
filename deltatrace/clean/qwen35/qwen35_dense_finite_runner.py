@@ -19,11 +19,18 @@ from native_target_logit_rows import NativeTargetLogitRows
 from vendor_fa_finite_bf16_d256 import RightPaddedLengths
 
 
-def _copy(value,device):
-    if isinstance(value,torch.Tensor):return value.detach().to(device,copy=True)
-    if isinstance(value,tuple):return tuple(_copy(v,device) for v in value)
-    if isinstance(value,list):return [_copy(v,device) for v in value]
-    if isinstance(value,dict):return {k:_copy(v,device) for k,v in value.items()}
+def _copy(value,device,*,pinned_host=False):
+    if isinstance(value,torch.Tensor):
+        # Native position IDs may be expanded zero-stride views. Such views
+        # cannot be copy_ destinations; materialize their actual values before
+        # using the existing stride-preserving pinned capture interface.
+        if pinned_host and any(n>1 and stride==0 for n,stride in zip(value.shape,value.stride())):
+            value=value.contiguous()
+        return (copy_capture_tensor(value,device,preserve_strides=True,pinned_host=True)
+                if pinned_host else value.detach().to(device,copy=True))
+    if isinstance(value,tuple):return tuple(_copy(v,device,pinned_host=pinned_host) for v in value)
+    if isinstance(value,list):return [_copy(v,device,pinned_host=pinned_host) for v in value]
+    if isinstance(value,dict):return {k:_copy(v,device,pinned_host=pinned_host) for k,v in value.items()}
     if value is not None and not isinstance(value,(str,int,float,bool)):raise TypeError(type(value))
     return value
 
@@ -54,7 +61,7 @@ def _relative_l2(actual,reference,*,deferred=False):
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -107,6 +114,8 @@ class Qwen35DenseFiniteRunner:
         self.gdn_gpu_capture_names=tuple(gdn_gpu_capture_names)
         self.fa_coefficient_suffix=fa_coefficient_suffix
         self.gdn_coefficient_suffix=gdn_coefficient_suffix
+        self.compact_gdn_captures=compact_gdn_captures
+        self.pin_root_host=pin_root_host
         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
         if not isinstance(key_rules,Mapping):
             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
@@ -166,16 +175,16 @@ class Qwen35DenseFiniteRunner:
             return value
         for i,layer in enumerate(layers):
             def capture(_module,args,kw,i=i):
-                x=args[0] if args else kw['hidden_states'];root[str(i)]=_copy(x,'cpu')
-                kwargs[str(i)]=_copy({k:v for k,v in kw.items() if k!='hidden_states'},'cpu')
+                x=args[0] if args else kw['hidden_states'];root[str(i)]=_copy(x,'cpu',pinned_host=self.pin_root_host)
+                kwargs[str(i)]=_copy({k:v for k,v in kw.items() if k!='hidden_states'},'cpu',pinned_host=self.pin_root_host)
             handles.append(layer.register_forward_pre_hook(capture,with_kwargs=True))
         def final_norm(_module,args,output):
-            root['final_norm_input']=_copy(args[0],'cpu')
-            if observer is not None:root['final_norm_output']=_copy(output,'cpu')
+            root['final_norm_input']=_copy(args[0],'cpu',pinned_host=self.pin_root_host)
+            if observer is not None:root['final_norm_output']=_copy(output,'cpu',pinned_host=self.pin_root_host)
             if selection.outcome_token_ids is not None:
                 # Qwen's native head consumes these final-normalized predictor
                 # rows. Keep only packed rows, not another full checkpoint.
-                root['packed_head_input']=_copy(selection.pack_hidden(output),'cpu')
+                root['packed_head_input']=_copy(selection.pack_hidden(output),'cpu',pinned_host=self.pin_root_host)
         handles.append(norm.register_forward_hook(final_norm))
         def head_input(_module,args):head_shapes.append(list(args[0].shape))
         handles.append(model.lm_head.register_forward_pre_hook(head_input))
@@ -184,6 +193,7 @@ class Qwen35DenseFiniteRunner:
             with torch.no_grad():out=timed('native_root_with_CPU_checkpoints',lambda:model(input_ids=paired_ids,attention_mask=mask,use_cache=False,
                 **({'logits_to_keep':selector.rows} if selector is not None else {})))
         finally:
+            if self.pin_root_host:torch.cuda.current_stream().synchronize()
             for h in handles:h.remove()
         expected_rows=len(selector.rows) if selector is not None else selection.length
         if head_shapes!=[[2*selection.batch,expected_rows,model.lm_head.in_features]]:
@@ -206,7 +216,7 @@ class Qwen35DenseFiniteRunner:
         lp0=seed['logp0'].detach().cpu();lp1=seed['logp1'].detach().cpu()
         effect_G=float((root_lp1.double()-root_lp0.double()).sum())
         compiled_seed_G=float((lp1.double()-lp0.double()).sum())
-        x=root['final_norm_input'].to('cuda')
+        x=root['final_norm_input'].to('cuda',non_blocking=self.pin_root_host)
         with torch.no_grad():m=timed('finite_final_norm',lambda:self.boundaries.norm_residual(x[0::2],x[1::2],norm.weight,mnorm,torch.zeros_like(mnorm),norm.eps))
         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
         seed_effect=effect(m,x);del x,mnorm,seed,z
@@ -225,7 +235,7 @@ class Qwen35DenseFiniteRunner:
         gdn_cut=(min(min(coefficient_starts)//64,(selection.length-1)//64)*64
                  if self.gdn_coefficient_suffix and coefficient_starts is not None else 0)
         for i in reversed(range(32)):
-            layer=layers[i];is_fa=layer.block_type=='full_attention';x=root[str(i)].to('cuda');kw=_copy(kwargs[str(i)],'cuda')
+            layer=layers[i];is_fa=layer.block_type=='full_attention';x=root[str(i)].to('cuda',non_blocking=self.pin_root_host);kw=_copy(kwargs[str(i)],'cuda',pinned_host=self.pin_root_host)
             # The no-cache Qwen path consumes these activations without
             # mutating them. Optional borrowing keeps their native storage,
             # instead of cloning every projection input and its views again.
@@ -244,7 +254,7 @@ class Qwen35DenseFiniteRunner:
             gdn_capture=NativeGDNCapture if backend is None else backend.NativeGDNCapture
             dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed)
             mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host)
-                if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures,gpu_capture_names=self.gdn_gpu_capture_names if offload_mixer else ()))
+                if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures,gpu_capture_names=self.gdn_gpu_capture_names if offload_mixer else (),coefficient_start=gdn_cut if self.compact_gdn_captures else 0))
             def replay():
                 with torch.no_grad(),dc,mc:return layer(x,**kw)
             y=timed('native_replay_'+str(i),replay)
@@ -257,8 +267,9 @@ class Qwen35DenseFiniteRunner:
             if mc.calls!=({'module':1,'interface':1,'native_varlen':0,'native_dense':1} if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError('Missing actual native mixer captures.')
             d,c,e=dc.values,mc.values,getattr(mc,'endpoints',{});scale=getattr(mc,'scale',0.0625)
             mixer_input_shape=getattr(mc,'input_shape',None)
+            gdn_capture_start=getattr(mc,'coefficient_start',0)
             dense_aliases=getattr(mc,'dense_aliases',{})
-            expected=root['final_norm_input' if i==31 else str(i+1)].to('cuda')
+            expected=root['final_norm_input' if i==31 else str(i+1)].to('cuda',non_blocking=self.pin_root_host)
             row={'block_type':layer.block_type,'decoder_calls':dc.calls,'mixer_calls':mc.calls,
                  'root_output_effect':effect(m,expected),'replay_output_effect':effect(m,y),
                  'replay_relative_L2':_relative_l2(y,expected,deferred=self.defer_diagnostics)}
@@ -302,15 +313,15 @@ class Qwen35DenseFiniteRunner:
                 finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
                 if i in self.key_norm_by_layer:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,
+                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,capture_start=gdn_capture_start,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
                 if i in self.norm_gate_rules:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,
+                        norm_gate_rule=self.norm_gate_rules[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,capture_start=gdn_capture_start,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
-                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,
+                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,capture_start=gdn_capture_start,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
             with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))
@@ -322,7 +333,7 @@ class Qwen35DenseFiniteRunner:
             release_layer=getattr(model,'release_finite_layer',None)
             if callable(release_layer):release_layer(layer)
             if observer is not None:observer.boundary(str(i),m.detach(),root[str(i)])
-        x=root['0'].to('cuda');signed=_token_effect(m,x).cpu()
+        x=root['0'].to('cuda',non_blocking=self.pin_root_host);signed=_token_effect(m,x).cpu()
         torch.cuda.synchronize();seconds=time.perf_counter()-started
         info={'select_output_rows':select_output_rows,'complete_attribution_seconds_with_diagnostics':seconds,
               'fa_coefficient_starts':coefficient_starts if self.fa_coefficient_suffix else None,

@@ -22,11 +22,46 @@ from accelerated.qwen35 import qwen35_code_local_capture
 # This observes the owner implementation without substituting tensor transport.
 native_gdn_copy = qwen35_code_local_capture.NativeGDNCapture.copy
 native_gdn_exit = qwen35_code_local_capture.NativeGDNCapture.__exit__
+compact_copy_records = []
+compact_copy_sources = {}
+if os.environ.get('DT_PROFILE_COMPACT_COPIES') == '1':
+    native_select_time=qwen35_code_local_capture.NativeGDNCapture.select_time
+    def observe_selected_time(self,value,dimension=1,*,start=None):
+        if value is None or self.module.layer_idx!=30:
+            return native_select_time(self,value,dimension,start=start)
+        torch.cuda.synchronize();tick=time.perf_counter()
+        selected=native_select_time(self,value,dimension,start=start)
+        torch.cuda.synchronize()
+        compact_copy_sources[id(selected)]=(value,dimension,
+            self.coefficient_start if start is None else start,time.perf_counter()-tick)
+        return selected
+    qwen35_code_local_capture.NativeGDNCapture.select_time=observe_selected_time
 
 
 def timed_gdn_copy(self, value, **kwargs):
     if value is None or self.module.layer_idx != 30:
         return native_gdn_copy(self, value, **kwargs)
+    source=compact_copy_sources.pop(id(value),None)
+    if source is not None:
+        full,dimension,cut,pack_seconds=source
+        destination=kwargs.get('device',self.device)
+        if destination is None:destination=self.device
+        row=dict(source_shape=list(full.shape),selected_shape=list(value.shape),
+            source_bytes=full.numel()*full.element_size(),selected_bytes=value.numel()*value.element_size(),
+            destination=str(destination),pack_seconds=pack_seconds,records=[])
+        reference=None
+        if torch.device(destination).type=='cpu':
+            for name,operand in [('full_cold',full),('compact_cold',value),('full_warm_0',full),
+                                 ('compact_warm_0',value),('compact_warm_1',value),('full_warm_1',full)]:
+                torch.cuda.synchronize();tick=time.perf_counter()
+                copied=native_gdn_copy(self,operand,**kwargs)
+                torch.cuda.synchronize();elapsed=time.perf_counter()-tick
+                actual=copied.narrow(dimension,cut,copied.shape[dimension]-cut) if name.startswith('full') else copied
+                if reference is None:reference=actual.clone()
+                assert torch.equal(reference,actual)
+                row['records'].append(dict(name=name,seconds=elapsed,selected_values_exact=True))
+                del copied,actual
+        compact_copy_records.append(row)
     start = time.perf_counter()
     result = native_gdn_copy(self, value, **kwargs)
     records = getattr(self, '_copy_cost_records', [])
@@ -133,6 +168,44 @@ qwen35_decoder_finite.NativeDecoderCapture.__exit__ = decoder_exit
 # partial output nor this profile is reported as a completed capacity check.
 class DiagnosticStop(BaseException):
     pass
+
+
+if os.environ.get('DT_PROFILE_PROGRESS')=='1':
+    original_decoder_finite=qwen35_dense_finite_runner.decoder_finite_pullback
+    def record_decoder_progress(layer,*args,**kwargs):
+        mixer=layer.self_attn if layer.block_type=='full_attention' else layer.linear_attn
+        print('FINITE_PHASE_ENQUEUE_START',mixer.layer_idx,time.time(),flush=True)
+        result=original_decoder_finite(layer,*args,**kwargs)
+        print('FINITE_PHASE_ENQUEUE_END',mixer.layer_idx,time.time(),flush=True)
+        return result
+    qwen35_dense_finite_runner.decoder_finite_pullback=record_decoder_progress
+
+
+if os.environ.get('DT_PROFILE_ROOT_COPY') == '1':
+    original_root_copy=qwen35_dense_finite_runner._copy
+    root_copy_recorded=False
+    def compare_root_copy(value,device,*,pinned_host=False):
+        global root_copy_recorded
+        if (not root_copy_recorded and isinstance(value,torch.Tensor) and value.is_cuda
+                and str(device)=='cpu' and tuple(value.shape)==(8,32768,4096)):
+            root_copy_recorded=True
+            rows=[];reference=None
+            for name,pinned in [('pageable_cold',False),('pinned_cold',True),('pageable_warm_0',False),
+                                ('pinned_warm_0',True),('pinned_warm_1',True),('pageable_warm_1',False)]:
+                torch.cuda.synchronize();tick=time.perf_counter()
+                copied=original_root_copy(value,device,pinned_host=pinned)
+                torch.cuda.synchronize();elapsed=time.perf_counter()-tick
+                if reference is None:reference=copied
+                assert copied.stride()==reference.stride() and torch.equal(copied,reference)
+                rows.append(dict(name=name,seconds=elapsed,exact_values_and_strides=True))
+                del copied
+            result=dict(scope='Same actual first 2 GiB paired layer input, current actor and sleeping vLLM; capture transfer only',
+                bytes=value.numel()*value.element_size(),records=rows)
+            Path(os.environ['DT_PROFILE_ROOT_COPY_OUTPUT']).write_text(json.dumps(result,indent=2)+'\n')
+            print('ROOT_COPY_COMPARE',json.dumps(result),flush=True)
+            if os.environ.get('DT_PROFILE_STOP_AFTER_ROOT_COPY')=='1':raise DiagnosticStop()
+        return original_root_copy(value,device,pinned_host=pinned_host)
+    qwen35_dense_finite_runner._copy=compare_root_copy
 
 
 if os.environ.get('DT_PROFILE_FA_SUFFIX') == '1':
@@ -348,7 +421,8 @@ if limit:
                             inclusive_cpu_seconds=e.cpu_time_total/1e6) for e in operators[:20]])
         records.append(record)
         profile_output.write_text(json.dumps(dict(scope='Partial real 32k DT diagnostic; not capacity or training acceptance',
-            status='observed_requested_phases' if len(records)==limit else 'running', records=records), indent=2)+'\n')
+            status='observed_requested_phases' if len(records)==limit else 'running', records=records,
+            compact_capture_comparisons=compact_copy_records), indent=2)+'\n')
         print('GDN_IN_CONTEXT_PROFILE', json.dumps(record), flush=True)
         if len(records) == limit:
             raise DiagnosticStop()

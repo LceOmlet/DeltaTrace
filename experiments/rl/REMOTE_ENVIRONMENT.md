@@ -12,6 +12,34 @@
 
 ## 2026-09-23 已有加速分支的复用
 
+- 隔离候选 `candidates/dt-minibatch/compact-gdn` 增加
+  `dt_compact_gdn_captures=true`；`pinned-root` 叠加
+  `dt_pin_root_host=true`。沿用所有下层候选、原模型和持久缓存，未重装环境。
+  前者只捕获原始 GDN 末段，包含原 FLA h 和原生卷积左窗口；后者复用原
+  pinned copy 接口保存根前向检查点，不改变模型或有限公式。
+- `compact-copies32k.json`：相同实际张量的 D2H 22.109375→0.820831 GiB，
+  GPU 保存量 9→0.333984 GiB；拷贝预热合计 0.417647/0.417222→
+  0.016649/0.020149 秒，打包另计 0.034629 秒。18 项捕获值与原切片相同。
+  完整短链 A 相对 L2 差 0.008337，单独记录，不创造整网容差。
+- `short-root-pin-v2.json`：原位置 ID 的零步幅视图在拷贝边界先实体化，
+  随后完整短链 signed/target/Q/V/A 与原搬运路径逐值相同。首个失败日志
+  `short-root-pin.log` 保留。`root-copy32k.json` 的实际 2 GiB 输入拷贝预热
+  0.351250/0.341406→0.037766/0.037749 秒，值和步幅相同。
+- 原生反向的主要参照保持 `native-backward32k-v3-vllm-ppo.json` 的
+  44.007159 秒；当前相同参数卸载选项的 `native-policy-offload32k.json`
+  为 44.231252 秒，仅作诊断，不替换原参照。双方可以采用各自可行、高效
+  的卸载方式；模型、卡、输入、B4/32768、vLLM 驻留和物理容量条件须对应。
+- `pinned-root/capacity-compact-pinned32k.json`：DT 输入精确 32768，B4
+  成对内部 batch8，1024 action 槽位，actor microbatch4。两次 DT 耗时
+  158.108/121.332 秒；两次原 PPO 更新梯度非零，1,440,439 个元素改变，
+  200 层 LoRA 通过原 vLLM manager 同步，无 OOM。记录各阶段物理显存与
+  进程 RSS；RSS 不是驱动固定页内存和整个主机占用的总和。
+- 热调用根前向 34.624、native replay 44.801、finite decoder 31.134 秒；
+  decoder 已包含恢复 5.068 和公开 FA LSE 5.395 秒。相对原 44.007 秒
+  反向仍约 2.76 倍，完整效率未达标。未选择为生产、未恢复正式训练或检查。
+  对应代码与原始回执哈希见 `results_dt_minibatch_candidate.json` 的
+  `compact_gdn_captures` 和 `pinned_root_checkpoints`。
+
 - 最新 GDN 隔离候选为 `candidates/dt-minibatch/gdn-suffix`，叠加于下述
   `coefficient-suffix` 等已记录目录；未改生产选择。`dt_gdn_coefficient_suffix`
   使原 FLA 有限回调使用从首个变化 token 所在 64-token 块开始的实际保存

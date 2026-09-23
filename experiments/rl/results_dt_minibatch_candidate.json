@@ -8652,5 +8652,487 @@
         "sha256": "2577fae8e614a2f8dc9d931c664a2f1fe71b0e925e6a98b67f6bca52ea490bb5"
       }
     ]
+  },
+  "compact_gdn_captures": {
+    "implementation": "Select actual saved native GDN tensors before capture; preserve incoming FLA h and native convolution left window; compact views own only selected storage. Same finite formulas and upstream PPO. Default disabled.",
+    "same_actual_32k_copies": {
+      "source_cpu_gib": 22.109375,
+      "selected_cpu_gib": 0.820831298828125,
+      "source_gpu_gib": 9.0,
+      "selected_gpu_gib": 0.333984375,
+      "warm_summed_copy_seconds": {
+        "full_warm_0": 0.4176468048244715,
+        "compact_warm_0": 0.016648592427372932,
+        "full_warm_1": 0.41722164675593376,
+        "compact_warm_1": 0.020149270072579384
+      },
+      "packing_seconds": 0.03462942596524954,
+      "all_selected_values_exact": true,
+      "scope": "First native GDN replay at B4/32768; exact same captured tensors, CPU copy timings include synchronization; packing reported separately. First finite call is cold/profiled and not a warm speed claim."
+    },
+    "short_chain": {
+      "status": "passed_compact_native_captures_with_chain_diagnostic",
+      "native_capture_check": {
+        "coefficient_start": 384,
+        "conv_left_context": 3,
+        "operands": {
+          "values.projected_qkv": {
+            "exact": true,
+            "bytes": 33292288
+          },
+          "values.conv_output": {
+            "exact": true,
+            "bytes": 32899072
+          },
+          "values.raw_q": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "values.raw_k": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "values.a": {
+            "exact": true,
+            "bytes": 128512
+          },
+          "values.b": {
+            "exact": true,
+            "bytes": 128512
+          },
+          "values.z": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "endpoints.raw_g": {
+            "exact": true,
+            "bytes": 257024
+          },
+          "endpoints.q": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "endpoints.k": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "endpoints.v": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "endpoints.g": {
+            "exact": true,
+            "bytes": 257024
+          },
+          "endpoints.beta": {
+            "exact": true,
+            "bytes": 128512
+          },
+          "endpoints.A": {
+            "exact": true,
+            "bytes": 8224768
+          },
+          "endpoints.w": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "endpoints.v_new": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "endpoints.o": {
+            "exact": true,
+            "bytes": 16449536
+          },
+          "endpoints.h": {
+            "exact": true,
+            "bytes": 33554432
+          }
+        },
+        "convolution_preactivations_exact": true
+      },
+      "differences": {
+        "dt_q_estimates": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "dt_v_estimates": {
+          "max_abs": 0.012850761413574219,
+          "relative_l2": 0.00027859306779581247
+        },
+        "dt_token_advantages": {
+          "max_abs": 0.012849926948547363,
+          "relative_l2": 0.008336673471474427
+        },
+        "signed": {
+          "max_abs": 0.0013289243868388895,
+          "relative_l2": 0.008597815992749325
+        }
+      },
+      "scope": "Exact selected capture values/storage and native convolution preactivations; whole-chain rounding remains diagnostic, no invented PPO tolerance."
+    },
+    "production_selected": false,
+    "evidence": [
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/compact-gdn/compact-copies32k.json",
+        "sha256": "0412e07c5479cf952f87bd3c40d450e710f560bc5ba7ec7bc7995233866db73d"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/compact-gdn/compact-copies32k.log",
+        "sha256": "07cda8e299d43f9f3e910647108466a5bcfbd88c1837d8ab5e09a0647830347f"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/compact-gdn/partial-capacity.json",
+        "sha256": "a583cee2b9bc1b23ceaaf64a272055be527ecc25a71a4cab29d86e0bec2351c9"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/compact-gdn/short-compact.json",
+        "sha256": "fe96702008bfa51de0d704d257b593247610965c98488ba7074b82b3486a1f8b"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/compact-gdn/short-compact.log",
+        "sha256": "3c5ce1c910aff7c7bd1e8b18877f46ef0e2fc76c625ed86b3870af17d8d61bd7"
+      }
+    ]
+  },
+  "pinned_root_checkpoints": {
+    "implementation": "Reuse existing pinned transport for original root layer checkpoints and kwargs. Materialize observed zero-stride position-ID views before stride-preserving copy. Default disabled; no model or finite-rule changes.",
+    "short_gate": {
+      "status": "passed_root_pinned_exact_short_parity",
+      "exact_last_paired_signed_target_qva": true,
+      "runs": [
+        {
+          "name": "batch_compact_gdn",
+          "seconds": 15.344736735336483
+        },
+        {
+          "name": "batch_root_pinned",
+          "seconds": 3.960953819565475
+        },
+        {
+          "name": "batch_compact_gdn",
+          "seconds": 4.177064592950046
+        },
+        {
+          "name": "batch_root_pinned",
+          "seconds": 3.90364539809525
+        },
+        {
+          "name": "batch_compact_gdn",
+          "seconds": 4.378670357167721
+        },
+        {
+          "name": "batch_root_pinned",
+          "seconds": 3.9165146043524146
+        }
+      ]
+    },
+    "failure_preserved": "Initial short run failed on native expanded position IDs; fixed only the root transfer boundary. First failure raw log retained.",
+    "production_selected": false,
+    "evidence": [
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/capacity-compact-pinned32k.json",
+        "sha256": "0837209118533a1073c27da551d4332c8006a866ed007795f2b04eb5b4e038d1"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/capacity-compact-pinned32k.log",
+        "sha256": "6c728a51bd722b6d927a42bb76fa700ee35b017896f26ddba790b1c973cc853b"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/environment.json",
+        "sha256": "86dfbe8a1c55eb605ea20bff39fb03109d57ae3c3909054df2a4186788dd832b"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/native-policy-offload32k.json",
+        "sha256": "9f93d0538e062f3885855bc53b639c6447fce576d825a9ff474e1d4b9d94f3e9"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/native-policy-offload32k.log",
+        "sha256": "2723f90ac8c0b79b076fecd6d0ae2cce2fe6627c64d78f473fa8fbec4fea8674"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/root-copy32k.json",
+        "sha256": "f900cbb811158b10d7f41e89f8d21492e7a8b93e06fc09008730d21af5c01a42"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/short-root-pin-v2.json",
+        "sha256": "476d3f3f18d3aed65548a3f2bf82027dc377cd93c410e6f95fc29c3a6815c861"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/short-root-pin-v2.log",
+        "sha256": "7d601fff7dd4777126ec60b78d0d3ea6afc03e62e11f5389e7b0606d4f370309"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/short-root-pin.json",
+        "sha256": "79ff07165f2f8d3467e0881325265742a8333701b9347525fad8708de370e3a9"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/pinned-root/short-root-pin.log",
+        "sha256": "43d308af5a4e1f42926af5a738f600a089f5b6742771a1f3ea8fb5860470704f"
+      }
+    ],
+    "native_parameter_policy_diagnostic": {
+      "scope": "Time the pinned Qwen/VERL actor's native backward at the DT capacity shape.\n\nUses the same factual 32768-token event input and B4 as the capacity test.\nNative checkpoint recomputation inside backward is included and reported.\nOptional original PPO updates are reported separately from this cost reference.\nThis is not a numerical equivalence test or a task trajectory.\n",
+      "batch": 4,
+      "tokens": 32768,
+      "response_tokens": 1024,
+      "native_gradient_checkpointing": true,
+      "parameter_offload_policy": true,
+      "native_activation_offload": true,
+      "backend": "vllm",
+      "runs": [
+        {
+          "repeat": 0,
+          "forward_seconds": 33.73831708263606,
+          "backward_seconds": 69.88484061695635,
+          "peak_allocated": 90975213568,
+          "peak_reserved": 98140422144,
+          "device_used_bytes": 53697843200,
+          "device_total_bytes": 68283269120,
+          "finite_gradients": true,
+          "loss": 2.049565553665161
+        },
+        {
+          "repeat": 1,
+          "forward_seconds": 15.231813805177808,
+          "backward_seconds": 44.23125221114606,
+          "peak_allocated": 90975213568,
+          "peak_reserved": 98203336704,
+          "device_used_bytes": 53760757760,
+          "device_total_bytes": 68283269120,
+          "finite_gradients": true,
+          "loss": 2.049565553665161
+        }
+      ],
+      "after_native_vllm_sleep_device_used_bytes": 2454138880,
+      "capacity_response_tokens": 1024,
+      "synthetic_response_tokens": 1010,
+      "synthetic_filler_tokens": 31140,
+      "original_response_tokens": 14,
+      "actor_input_tokens": 32597,
+      "query_tokens": 170,
+      "dt_input_tokens": 32768,
+      "official_fixture_reward": 10.9,
+      "reward_scope": "Recorded official reward used as a numerical capacity coefficient; not a reward claim for the synthetic trajectory",
+      "factual_input_ids_sha256": "05eec206f32e6cc7c0fa87bf7818d7d457ba23534650c67dba4858e906266c15",
+      "actor_input_ids_sha256": "8c030215a1a8a5f16d7e3648fb3bf04ccc79a784a449ffda12e4aaa9248e11e4",
+      "phase": "backward_1",
+      "status": "passed"
+    },
+    "primary_native_reference": "native-backward32k-v3-vllm-ppo",
+    "comparison_policy": "Original feasible official backward remains the performance target (warm 44.007159 s). Internal offload implementations need not be identical; same model/card/input/B4/32768/vLLM residency and physical memory limit govern comparison. Extra parameter-policy run is a diagnostic, not a replacement or slower acceptance reference.",
+    "same_actual_32k_root_copy": {
+      "scope": "Same actual first 2 GiB paired layer input, current actor and sleeping vLLM; capture transfer only",
+      "bytes": 2147483648,
+      "records": [
+        {
+          "name": "pageable_cold",
+          "seconds": 0.3394181178882718,
+          "exact_values_and_strides": true
+        },
+        {
+          "name": "pinned_cold",
+          "seconds": 0.3490326339378953,
+          "exact_values_and_strides": true
+        },
+        {
+          "name": "pageable_warm_0",
+          "seconds": 0.3512496240437031,
+          "exact_values_and_strides": true
+        },
+        {
+          "name": "pinned_warm_0",
+          "seconds": 0.03776567615568638,
+          "exact_values_and_strides": true
+        },
+        {
+          "name": "pinned_warm_1",
+          "seconds": 0.03774851281195879,
+          "exact_values_and_strides": true
+        },
+        {
+          "name": "pageable_warm_1",
+          "seconds": 0.3414057372137904,
+          "exact_values_and_strides": true
+        }
+      ]
+    },
+    "complete_capacity": {
+      "status": "passed",
+      "context_cap": 32768,
+      "minibatch": 4,
+      "backend": "vllm",
+      "actor_microbatch": 4,
+      "activation_offload": true,
+      "parameter_offload_policy": true,
+      "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+      "stages": [
+        {
+          "name": "owner_init",
+          "seconds": 86.51475934684277,
+          "host_rss_bytes": 11592421376,
+          "device_used_bytes": 2453495808,
+          "device_total_bytes": 68283269120,
+          "allocated": 47076798464,
+          "peak_allocated": 47128162304,
+          "peak_reserved": 47158657024
+        },
+        {
+          "name": "producer_init",
+          "seconds": 87.21373890619725,
+          "host_rss_bytes": 11804692480,
+          "device_used_bytes": 2453495808,
+          "device_total_bytes": 68283269120,
+          "allocated": 47076798464,
+          "peak_allocated": 47128162304,
+          "peak_reserved": 47158657024
+        },
+        {
+          "name": "oversize_rejected",
+          "seconds": 87.24822274502367,
+          "host_rss_bytes": 11804962816,
+          "device_used_bytes": 2453495808,
+          "device_total_bytes": 68283269120,
+          "allocated": 47076798464,
+          "peak_allocated": 47128162304,
+          "peak_reserved": 47158657024
+        },
+        {
+          "name": "dt_worker_batch_4",
+          "seconds": 245.3851757114753,
+          "host_rss_bytes": 11869630464,
+          "device_used_bytes": 61947293696,
+          "device_total_bytes": 68283269120,
+          "allocated": 47076868608,
+          "peak_allocated": 95381773312,
+          "peak_reserved": 106298343424
+        },
+        {
+          "name": "dt_worker_batch_4_repeat_1",
+          "seconds": 366.76773014478385,
+          "host_rss_bytes": 11856191488,
+          "device_used_bytes": 61947293696,
+          "device_total_bytes": 68283269120,
+          "allocated": 47076938752,
+          "peak_allocated": 95381843456,
+          "peak_reserved": 106298343424
+        },
+        {
+          "name": "old_log_probs",
+          "seconds": 382.5555137125775,
+          "host_rss_bytes": 11856629760,
+          "device_used_bytes": 61968265216,
+          "device_total_bytes": 68283269120,
+          "allocated": 47080076288,
+          "peak_allocated": 95381843456,
+          "peak_reserved": 106298343424
+        },
+        {
+          "name": "actor_update_0",
+          "seconds": 469.5839513698593,
+          "host_rss_bytes": 11884769280,
+          "device_used_bytes": 64204046336,
+          "device_total_bytes": 68283269120,
+          "allocated": 47147185152,
+          "peak_allocated": 95381843456,
+          "peak_reserved": 108441632768
+        },
+        {
+          "name": "actor_update_1",
+          "seconds": 528.2466008774936,
+          "host_rss_bytes": 11889414144,
+          "device_used_bytes": 64204050432,
+          "device_total_bytes": 68283269120,
+          "allocated": 47147185152,
+          "peak_allocated": 95381843456,
+          "peak_reserved": 108441632768
+        },
+        {
+          "name": "updated_lora_native_sync_and_sleep",
+          "seconds": 529.2646092493087,
+          "host_rss_bytes": 11890450432,
+          "device_used_bytes": 2952290304,
+          "device_total_bytes": 68283269120,
+          "allocated": 47147185152,
+          "peak_allocated": 95381843456,
+          "peak_reserved": 108441632768
+        }
+      ],
+      "updates": [
+        {
+          "actor/pg_loss": [
+            0.0018558613955974579
+          ],
+          "actor/pg_clipfrac": [
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.0308837890625
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 88.83126401901245,
+          "perf/max_memory_reserved_gb": 100.994140625,
+          "perf/cpu_memory_used_gb": 436.04369354248047,
+          "actor/lr": 1e-06
+        },
+        {
+          "actor/pg_loss": [
+            0.0018624024232849479
+          ],
+          "actor/pg_clipfrac": [
+            0.0009765625
+          ],
+          "actor/ppo_kl": [
+            -2.7839094400405884e-05
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.02783203125
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 88.83126401901245,
+          "perf/max_memory_reserved_gb": 100.994140625,
+          "perf/cpu_memory_used_gb": 436.0589828491211,
+          "actor/lr": 1e-06
+        }
+      ],
+      "changed_elements": 1440439,
+      "updated_native_lora": {
+        "loaded_layers": 200,
+        "unused_layers": [],
+        "nonzero_b_elements": 1426944
+      },
+      "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "seconds": 529.3097295369953,
+      "factual_input_ids_sha256": "05eec206f32e6cc7c0fa87bf7818d7d457ba23534650c67dba4858e906266c15",
+      "dt_seconds": [
+        158.10819847229868,
+        121.33151320647448
+      ],
+      "warm_phase_seconds": {
+        "native_root_with_CPU_checkpoints": 34.62417578125,
+        "pack_actual_target_logits": 0.00018534399569034577,
+        "actual_root_FP32_logprob_diagnostic": 0.0003888640105724335,
+        "finite_seed": 0.0033152000904083253,
+        "finite_final_norm": 0.010864640235900879,
+        "native_replay": 44.800692504882804,
+        "restore_mixer_captures": 5.067952575683593,
+        "public_FA_LSE": 5.395363037109376,
+        "finite_decoder": 31.13417584228515
+      },
+      "phase_note": "restore_mixer_captures/public_FA_LSE are nested within finite_decoder, not additive to it.",
+      "current_input_hash_matches_native_diagnostic": true,
+      "warm_dt_to_original_backward_ratio": 2.757085800664262,
+      "full_dt_efficiency_accepted": false,
+      "three_task_training_accepted": false
+    }
   }
 }

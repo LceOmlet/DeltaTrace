@@ -37,7 +37,7 @@ def resolve_native_gdn_forward(module_type):
 
 class NativeGDNCapture:
     """Passive, single-module capture; never wraps a native operator or forward."""
-    def __init__(self, module, device='cpu', *, copy_tensors=True, preserve_strides=False, capture_module_outputs=True, pinned_host=False, capture_input=True, gpu_capture_names=()):
+    def __init__(self, module, device='cpu', *, copy_tensors=True, preserve_strides=False, capture_module_outputs=True, pinned_host=False, capture_input=True, gpu_capture_names=(), coefficient_start=0):
         self.module=module;self.device=device;self.values={};self.endpoints={}
         self.copy_tensors=copy_tensors
         self.preserve_strides=preserve_strides
@@ -45,6 +45,8 @@ class NativeGDNCapture:
         self.pinned_host=pinned_host
         self.capture_input=capture_input;self.input_shape=None
         self.gpu_capture_names=frozenset(gpu_capture_names)
+        self.coefficient_start=coefficient_start
+        self.conv_context_start=max(0,coefficient_start-module.conv1d.weight.shape[-1]+1)
         self.active=False;self.calls={};self.scale=None
         chunk=importlib.import_module('fla.ops.gated_delta_rule.chunk')
         self.codes={inspect.unwrap(f).__code__:label for label,f in [
@@ -55,6 +57,17 @@ class NativeGDNCapture:
         return None if x is None else copy_capture_tensor(x,self.device if device is None else device,copy=self.copy_tensors,
                                                           preserve_strides=self.preserve_strides,pinned_host=self.pinned_host)
 
+    def select_time(self,value,dimension=1,*,start=None):
+        """Compact an actual native operand before capture/offload.
+
+        Materialize the selected view so borrowing it cannot retain the entire
+        prefix storage, and pinned empty_strided cannot allocate prefix gaps.
+        The zero-start/default path preserves the original layouts unchanged.
+        """
+        if value is None:return None
+        start=self.coefficient_start if start is None else start
+        return value.narrow(dimension,start,value.shape[dimension]-start).contiguous() if start else value
+
     def event(self,frame,kind,value):
         label=self.codes.get(frame.f_code);f=frame.f_locals
         if label=='module' and kind=='call' and f['self'] is self.module:
@@ -62,25 +75,29 @@ class NativeGDNCapture:
             assert f.get('cache_params') is None and not f.get('kwargs',{}).get('cu_seq_lens_q')
             self.active=True
             self.input_shape=tuple(f['hidden_states'].shape)
+            if self.coefficient_start<0 or self.coefficient_start%64 or self.coefficient_start>=self.input_shape[1]:
+                raise ValueError('GDN capture range must start in a nonempty native 64-token chunk.')
             if self.capture_input:self.values['input']=self.copy(f['hidden_states'])
-            self.values['mask']=self.copy(f.get('attention_mask'))
+            mask=f.get('attention_mask')
+            self.values['mask']=self.copy(self.select_time(mask) if mask is not None and mask.shape[1]>1 else mask)
         if not self.active:return
         if kind=='call' and label:self.calls[label]=self.calls.get(label,0)+1
-        if kind=='call' and label=='conv':self.values['projected_qkv']=self.copy(f['x'])
-        if kind=='return' and label=='conv' and value is not None:self.values['conv_output']=self.copy(value)
+        if kind=='call' and label=='conv':self.values['projected_qkv']=self.copy(self.select_time(f['x'],2,start=self.conv_context_start))
+        if kind=='return' and label=='conv' and value is not None:self.values['conv_output']=self.copy(self.select_time(value,2))
         if kind=='call' and label=='FLA':
-            for name in ['q','k']:self.values['raw_'+name]=self.copy(f[name])
-            self.endpoints['raw_g']=self.copy(f['g'])
+            for name in ['q','k']:self.values['raw_'+name]=self.copy(self.select_time(f[name]))
+            self.endpoints['raw_g']=self.copy(self.select_time(f['g']))
         if kind=='return' and label=='stage' and value is not None:
             assert f['initial_state'] is None and f['cu_seqlens'] is None
             self.scale=float(f['scale'])
             for name in ['q','k','v','g','beta','A','w','v_new','o','h']:
-                self.endpoints[name]=self.copy(f[name],device=f[name].device if name in self.gpu_capture_names else None)
+                selected=self.select_time(f[name],start=self.coefficient_start//64 if name=='h' else self.coefficient_start)
+                self.endpoints[name]=self.copy(selected,device=f[name].device if name in self.gpu_capture_names else None)
         if kind=='return' and label=='module' and f['self'] is self.module:
             assert value is not None
             b,t,_=f['hidden_states'].shape
-            for name in ['a','b']:self.values[name]=self.copy(f[name])
-            self.values['z']=self.copy(f['z'].reshape(b,t,self.module.num_v_heads,self.module.head_v_dim))
+            for name in ['a','b']:self.values[name]=self.copy(self.select_time(f[name]))
+            self.values['z']=self.copy(self.select_time(f['z'].reshape(b,t,self.module.num_v_heads,self.module.head_v_dim)))
             if self.capture_module_outputs:
                 # These two outputs belong only to the full diagnostic trace;
                 # finite propagation consumes neither of them.
@@ -135,7 +152,7 @@ def _conv_silu_finite_rule(pre,output,upstream):
     return upstream*_scalar_secant(p0,p1,y0,y1,_silu_derivative(p0))
 
 
-def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diagnostics=False,*,norm_gate_rule='content1',key_norm_pullback=None,offload_endpoints=False,fla_head_batch_size=None,norm_gate_pullback=None,conv_silu_pullback=None,input_shape=None,fla_coefficient_start=0):
+def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diagnostics=False,*,norm_gate_rule='content1',key_norm_pullback=None,offload_endpoints=False,fla_head_batch_size=None,norm_gate_pullback=None,conv_silu_pullback=None,input_shape=None,fla_coefficient_start=0,capture_start=0):
     """Return input finite coefficients; actual input rows are 1,3,... .
 
     The supplied FLA callback is the traceable finite extension. The native
@@ -157,6 +174,12 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
     batch,length,width=upstream.shape
     if input_shape is None:input_shape=values['input'].shape
     assert tuple(input_shape)==(2*batch,length,width)
+    if capture_start:
+        if diagnostics or capture_start>fla_coefficient_start or capture_start%64:
+            raise ValueError('Compact captures require the selected coefficient range and no full-trace observer.')
+        upstream=upstream[:,capture_start:]
+        length-=capture_start
+        fla_coefficient_start-=capture_start
     left=lambda x:x[0::2].float();right=lambda x:x[1::2].float()
     e=endpoints;c=values;terms={}
     def restore(capture,*names):
@@ -233,13 +256,14 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
     with torch.enable_grad():
         projected=c['projected_qkv'].detach().requires_grad_(True)
         pre=module.causal_conv1d_fn(projected,module.conv1d.weight.squeeze(1),activation=None)
+        context=pre.shape[-1]-length
         conv_silu=_conv_silu_finite_rule if conv_silu_pullback is None else conv_silu_pullback
-        mpre=conv_silu(pre.detach(),c['conv_output'],mconv)
-        seed=torch.zeros_like(pre);seed[1::2]=mpre.to(pre.dtype)
+        mpre=conv_silu(pre.detach()[...,context:],c['conv_output'],mconv)
+        seed=torch.zeros_like(pre);seed[1::2,:,context:]=mpre.to(pre.dtype)
         mprojected,=torch.autograd.grad(pre,projected,seed)
     if offload_endpoints:
         del c['projected_qkv'],c['conv_output'],pre,mpre,seed,projected,mconv
-    mqkv=mprojected[1::2].transpose(1,2)
+    mqkv=mprojected[1::2,:,context:].transpose(1,2)
     mx=_linear_transpose(mqkv,_linear_weights(module.in_proj_qkv))
     if offload_endpoints:del mprojected,mqkv
     mx=mx+_linear_transpose(mz.flatten(2),_linear_weights(module.in_proj_z))
@@ -256,4 +280,4 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         terms={'mnorm':mnorm,'mo_before_cast':mo,'mo_native':native_mo,'mz':mz,'coeff':coeff,
             'mq':mq,'mk':mk,'mb':mb,'ma':ma,'mconv':mconv,'pre':pre.detach(),'mpre':mpre,
             'mprojected':mprojected.detach(),'pre_collision':(p0==p1)&(y0!=y1)}
-    return mx,terms
+    return F.pad(mx,(0,0,capture_start,0)) if capture_start else mx,terms

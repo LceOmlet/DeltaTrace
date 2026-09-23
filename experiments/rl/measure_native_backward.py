@@ -23,6 +23,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--activation-offload', action='store_true')
+    parser.add_argument('--parameter-offload-policy', action='store_true',
+                        help='Use the same installed FSDP2 CPUOffloadPolicy as the DT candidate')
     parser.add_argument('--backend', choices=('hf', 'vllm'), default='hf')
     parser.add_argument('--ppo-artifacts', type=Path,
                         help='Use recorded exact-capacity DT advantages for two original PPO updates at microbatch 4')
@@ -30,6 +32,7 @@ def main():
     args = parser.parse_args()
     result = dict(scope=__doc__, batch=4, tokens=32768, response_tokens=1024,
                   native_gradient_checkpointing=True,
+                  parameter_offload_policy=args.parameter_offload_policy,
                   native_activation_offload=args.activation_offload, backend=args.backend, runs=[])
     try:
         torch.manual_seed(2026)
@@ -50,6 +53,7 @@ def main():
         c.actor.clip_ratio_c = float('inf')
         c.actor.fsdp_config.model_dtype = 'bfloat16'
         c.actor.fsdp_config.reshard_after_forward = True
+        c.actor.fsdp_config.offload_policy = args.parameter_offload_policy
         c.actor.optim.total_training_steps = 3
         c.actor.fsdp_config.optimizer_offload = True
         c.rollout.name = args.backend
@@ -72,7 +76,8 @@ def main():
             free, total = torch.cuda.mem_get_info()
             result['after_native_vllm_sleep_device_used_bytes'] = total-free
             from verl.utils.fsdp_utils import load_fsdp_model_to_gpu
-            load_fsdp_model_to_gpu(worker.actor_module_fsdp)
+            if worker._is_offload_param:
+                load_fsdp_model_to_gpu(worker.actor_module_fsdp)
         actor = worker.actor_module_fsdp
         actor.train()
         fixture = json.loads((Path(os.environ['DT_RUNTIME_ROOT'])/'receipts/rollout-fixtures.json').read_text())

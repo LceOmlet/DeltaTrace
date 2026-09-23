@@ -61,6 +61,8 @@ def main():
                         help='Explicit synthetic action-span width; 0 keeps the recorded script actions')
     parser.add_argument('--actor-microbatch', type=int, choices=(1, 4), default=1)
     parser.add_argument('--activation-offload', action='store_true')
+    parser.add_argument('--dt-repeats', type=int, default=1,
+                        help='Repeat identical B4 DT calls before any update to measure warm execution')
     parser.add_argument('--parameter-offload-policy', action='store_true',
                         help='Use the installed VERL FSDP2 CPUOffloadPolicy for layer parameters')
     args = parser.parse_args()
@@ -75,6 +77,7 @@ def main():
         torch.cuda.synchronize()
         free, total = torch.cuda.mem_get_info()
         result['stages'].append(dict(name=name, seconds=time.perf_counter()-started,
+                                    host_rss_bytes=int(Path('/proc/self/statm').read_text().split()[1])*os.sysconf('SC_PAGE_SIZE'),
                                     device_used_bytes=total-free,
                                     device_total_bytes=total,
                                     allocated=torch.cuda.memory_allocated(),
@@ -167,14 +170,15 @@ def main():
         producer.runner.attribute = recorded_attribute
         values = []
         if args.backend == 'vllm':
-            episodes = worker.compute_dt_token_advantages(
-                [[row] for _ in range(4)], [float(original['rewards'])]*4,
-                eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id,
-            )
-            values = [episode[0] for episode in episodes]
-            assert producer.readout.last_report['max_readout_length'] == 32768
-            result['readouts'] = [producer.readout.last_report]
-            stage('dt_worker_batch_4')
+            for repeat in range(args.dt_repeats):
+                episodes = worker.compute_dt_token_advantages(
+                    [[row] for _ in range(4)], [float(original['rewards'])]*4,
+                    eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id,
+                )
+                values = [episode[0] for episode in episodes]
+                assert producer.readout.last_report['max_readout_length'] == 32768
+                result.setdefault('readouts', []).append(producer.readout.last_report)
+                stage('dt_worker_batch_4' if repeat==0 else 'dt_worker_batch_4_repeat_'+str(repeat))
         for index in range(4) if args.backend == 'hf' else []:
             values.append(producer.attribute_episode([row], float(original['rewards']))[0])
             assert producer.readout.last_report['max_readout_length'] == 32768

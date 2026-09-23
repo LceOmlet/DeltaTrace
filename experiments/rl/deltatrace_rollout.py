@@ -319,6 +319,8 @@ class DeltaTraceRolloutProducer:
             gdn_gpu_capture_names=env.get('dt_gdn_gpu_capture_names', ()),
             fa_coefficient_suffix=env.get('dt_fa_coefficient_suffix', False),
             gdn_coefficient_suffix=env.get('dt_gdn_coefficient_suffix', False),
+            compact_gdn_captures=env.get('dt_compact_gdn_captures', False),
+            pin_root_host=env.get('dt_pin_root_host', False),
             **execution,
         )
         self.packed_answer_targets = PackedAnswerTargets
