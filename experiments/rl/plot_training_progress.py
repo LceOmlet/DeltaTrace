@@ -216,7 +216,12 @@ def render(snapshot, history, output):
                     vals = [m for m in metrics if val_key in m['values']]
                     line(ax, [m['step'] for m in vals], [m['values'][val_key] * 100 for m in vals], '评估: ' + val_key[4:], '#9333ea', linestyle='--')
                 ax.set_ylim(-3, 103)
-            ax.xaxis.set_major_locator(MaxNLocator(integer=True)); finish(ax)
+            ax.set_xlim(0, max(2, max((m['step'] for m in metrics), default=0) + 1))
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            if row > 0 and ax.lines:
+                low, high = ax.get_ylim()
+                ax.set_ylim(min(0, low), max(0, high))
+            finish(ax)
     fig.text(.065, .012, '缺失不填零，不平滑，不混入 pilot · 回报来自 episode/reward/mean · 梯度按原 console 三位小数显示', color='#64748b', fontsize=9)
     fig.subplots_adjust(left=.075, right=.985, bottom=.08, top=.86, hspace=.6, wspace=.3)
     for name in ('effects.png', f'effects-{stamp}.png'):
