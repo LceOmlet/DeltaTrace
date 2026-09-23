@@ -98,6 +98,14 @@
     "batch-capacity-v9-shared-casts": {
       "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/batch-capacity-v9-shared-casts.json",
       "sha256": "d236749a2b440144d6285d0a11f1d036e38a0214d96a112bca3717a2bc43630c"
+    },
+    "batch-capacity-v10-consume-fa": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/batch-capacity-v10-consume-fa.json",
+      "sha256": "cf3d6e014df7bd517eb059d33c9e681e3958031bee9a97d2d0820923a893e00f"
+    },
+    "minibatch-parity-v8-consume-fa": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/minibatch-parity-v8-consume-fa.json",
+      "sha256": "29bc212077bc5ac27b58f24f9e581ee52db03777044f1735007e8fc22d0e05ee"
     }
   },
   "fa-cost32k": {
@@ -1422,7 +1430,9 @@
     "fatbin_identical_to_timed_split_rs": true,
     "profiler_run_exit": "B1 completed, B4 current completed, process then segfaulted; isolated no-profiler B4 test completed. Profiler crash not silently counted as success.",
     "full_dt_short_candidate_result": "Operator-level official gates passed; full-model Q unchanged, V relative L2 0.000343, A relative L2 0.01027. No invented whole-model threshold applied.",
-    "capacity_status": "Not accepted: v9 passed finite MLP and finite FA, OOM in attention-input projection with spent captures still retained; v10 consumption test running."
+    "capacity_status": "Not accepted: v10 passed layer31 attention/MLP; OOM at next GDN finite stage, after restoring all GDN captures. Need stage-wise GDN operand residency, not a smaller minibatch/context.",
+    "production_python_candidate_changed": false,
+    "kernel_source_commit": "35241555"
   },
   "minibatch-parity-v7-optimized-fa": {
     "scope": "Check real Qwen DT minibatching and borrowed replay operands.\n\nThe copy/no-copy comparison holds batch and inputs fixed and expects exact\nvalues. Serial/batched differences are recorded separately; this script does\nnot invent a whole-model FA tolerance or replace the exact-32k capacity test.\n",
@@ -1604,5 +1614,174 @@
     "error": "CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 63.59 GiB of which 317.79 MiB is free. Of the allocated memory 104.76 GiB is allocated by PyTorch, with 21.23 MiB allocated in private pools (e.g., CUDA Graphs), and 63.43 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
     "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 149, in main\n    episodes = worker.compute_dt_token_advantages(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/single_controller/base/decorator.py\", line 534, in inner\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/workers/fsdp_workers.py\", line 702, in compute_dt_token_advantages\n    return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/deltatrace_rollout.py\", line 345, in attribute_episodes\n    result = self.readout.episodes(episodes)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/reward_readout.py\", line 193, in episodes\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/deltatrace_credit.py\", line 56, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 143, in recorded_attribute\n    signed, detail = native_attribute(*a, **kw)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 266, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 143, in timed\n    torch.cuda.synchronize();tick=time.perf_counter();value=fn();torch.cuda.synchronize()\n                                                            ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 266, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_decoder_finite.py\", line 220, in decoder_finite_pullback\n    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)\n                                   ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 256, in mixer\n    cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused,\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_decoder_finite.py\", line 192, in attention_finite_pullback\n    mx=boundaries.attention_input(coeff['dq'],coeff['dk'],coeff['dv'],mgate,\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_decoder_finite.py\", line 160, in varying\n    return _op(*args)\n           ^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py\", line 736, in compile_wrapper\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_decoder_finite.py\", line 120, in _attention_input_rule\n    def _attention_input_rule(dq,dk,dv,mgate,q0,q1,k0,k1,qweight,kweight,cos,sin,\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py\", line 929, in _fn\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_functorch/aot_autograd.py\", line 1241, in forward\n    return compiled_fn(full_args)\n           ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_functorch/_aot_autograd/runtime_wrappers.py\", line 384, in runtime_wrapper\n    all_outs = call_func_at_runtime_with_args(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_functorch/_aot_autograd/utils.py\", line 126, in call_func_at_runtime_with_args\n    out = normalize_as_list(f(args))\n                            ^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_functorch/_aot_autograd/runtime_wrappers.py\", line 750, in inner_fn\n    outs = compiled_fn(args)\n           ^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_functorch/_aot_autograd/runtime_wrappers.py\", line 556, in wrapper\n    return compiled_fn(runtime_args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_inductor/output_code.py\", line 584, in __call__\n    return self.current_callable(inputs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/_inductor/utils.py\", line 2720, in run\n    out = model(new_inputs)\n          ^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor/3w/c3wrkgek4iqrqoghlpq5kkc76zndfwdlmhvbhbxnhtv624y66frg.py\", line 911, in call\n    buf19 = empty_strided_cuda((1, 4*s12, 4096), (16384*s12, 4096, 1), torch.float32)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 63.59 GiB of which 317.79 MiB is free. Of the allocated memory 104.76 GiB is allocated by PyTorch, with 21.23 MiB allocated in private pools (e.g., CUDA Graphs), and 63.43 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n",
     "seconds": 212.59488960169256
+  },
+  "batch-capacity-v10-consume-fa": {
+    "scope": "Exercise an exact 32768-token DT boundary and the original actor update.\n\nUses an explicitly padded capacity fixture from recorded official task rewards.\nThis is neither a generated task trajectory nor a task success-rate evaluation.\nNo model, finite rule, advantage formula, or PPO implementation is replaced.\n",
+    "context_cap": 32768,
+    "minibatch": 4,
+    "backend": "vllm",
+    "reshard_after_forward": true,
+    "stages": [
+      {
+        "name": "owner_init",
+        "seconds": 75.75586424488574,
+        "device_used_bytes": 20342509568,
+        "device_total_bytes": 68283269120,
+        "allocated": 64989863936,
+        "peak_allocated": 64989888512,
+        "peak_reserved": 65047363584
+      },
+      {
+        "name": "producer_init",
+        "seconds": 76.42761746048927,
+        "device_used_bytes": 20342403072,
+        "device_total_bytes": 68283269120,
+        "allocated": 64989863936,
+        "peak_allocated": 64989888512,
+        "peak_reserved": 65047363584
+      },
+      {
+        "name": "oversize_rejected",
+        "seconds": 76.45703746378422,
+        "device_used_bytes": 20342403072,
+        "device_total_bytes": 68283269120,
+        "allocated": 64989863936,
+        "peak_allocated": 64989888512,
+        "peak_reserved": 65047363584
+      }
+    ],
+    "capacity_response_tokens": 1024,
+    "synthetic_response_tokens": 1010,
+    "reward_scope": "Recorded official reward used as a numerical capacity coefficient; not a reward claim for the synthetic trajectory",
+    "synthetic_filler_tokens": 31140,
+    "original_response_tokens": 14,
+    "actor_input_tokens": 32597,
+    "query_tokens": 170,
+    "dt_input_tokens": 32768,
+    "official_fixture_reward": 10.9,
+    "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+    "status": "failed",
+    "error_type": "OutOfMemoryError",
+    "error": "CUDA out of memory. Tried to allocate 32.00 MiB. GPU 0 has a total capacity of 63.59 GiB of which 0 bytes is free. Of the allocated memory 106.03 GiB is allocated by PyTorch, with 21.23 MiB allocated in private pools (e.g., CUDA Graphs), and 26.85 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 149, in main\n    episodes = worker.compute_dt_token_advantages(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/single_controller/base/decorator.py\", line 534, in inner\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/workers/fsdp_workers.py\", line 702, in compute_dt_token_advantages\n    return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/deltatrace_rollout.py\", line 345, in attribute_episodes\n    result = self.readout.episodes(episodes)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/reward_readout.py\", line 193, in episodes\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/deltatrace_credit.py\", line 56, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/repo/experiments/rl/verify_dt_context_capacity.py\", line 143, in recorded_attribute\n    signed, detail = native_attribute(*a, **kw)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 268, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 143, in timed\n    torch.cuda.synchronize();tick=time.perf_counter();value=fn();torch.cuda.synchronize()\n                                                            ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 268, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_decoder_finite.py\", line 227, in decoder_finite_pullback\n    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)\n                                   ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_dense_finite_runner.py\", line 265, in mixer\n    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_gdn_finite.py\", line 121, in gdn_finite_pullback\n    mnorm=_linear_transpose(upstream,_linear_weights(module.out_proj))\n                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/qwen35_decoder_finite.py\", line 62, in _linear_weights\n    weights.append(module.get_delta_weight(adapter))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/peft/tuners/lora/layer.py\", line 768, in get_delta_weight\n    output_tensor = transpose(weight_B @ weight_A, self.fan_in_fan_out) * self.scaling[adapter]\n                              ~~~~~~~~~^~~~~~~~~~\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 32.00 MiB. GPU 0 has a total capacity of 63.59 GiB of which 0 bytes is free. Of the allocated memory 106.03 GiB is allocated by PyTorch, with 21.23 MiB allocated in private pools (e.g., CUDA Graphs), and 26.85 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n",
+    "seconds": 217.95929771661758
+  },
+  "minibatch-parity-v8-consume-fa": {
+    "scope": "Check real Qwen DT minibatching and borrowed replay operands.\n\nThe copy/no-copy comparison holds batch and inputs fixed and expects exact\nvalues. Serial/batched differences are recorded separately; this script does\nnot invent a whole-model FA tolerance or replace the exact-32k capacity test.\n",
+    "max_length": 32768,
+    "runs": [
+      {
+        "name": "serial",
+        "seconds": 15.15517983213067,
+        "paired_shapes": [
+          [
+            2,
+            618
+          ],
+          [
+            2,
+            621
+          ],
+          [
+            2,
+            626
+          ],
+          [
+            2,
+            635
+          ]
+        ],
+        "report_summary": {
+          "finite_trace_calls": 4,
+          "minibatch_size": 1,
+          "max_readout_length": 635,
+          "nonzero_advantages": 52
+        }
+      },
+      {
+        "name": "batch_copied",
+        "seconds": 18.186359128914773,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report_summary": {
+          "finite_trace_calls": 1,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "nonzero_advantages": 52
+        }
+      },
+      {
+        "name": "batch_borrowed",
+        "seconds": 5.146783374249935,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report_summary": {
+          "finite_trace_calls": 1,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "nonzero_advantages": 52
+        }
+      },
+      {
+        "name": "batch_offloaded",
+        "seconds": 8.162859289906919,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report_summary": {
+          "finite_trace_calls": 1,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "nonzero_advantages": 52
+        }
+      }
+    ],
+    "actor_forward_before_dt": true,
+    "borrowed_matches_copied_exactly": true,
+    "offloaded_matches_borrowed_exactly": true,
+    "serial_batch_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 2.696702480316162,
+        "relative_l2": 0.05161385302426845
+      },
+      "dt_token_advantages": {
+        "max_abs": 2.6967029720544815,
+        "relative_l2": 0.9006008750759866
+      }
+    },
+    "candidate_fa": {
+      "sha256": "21c55032fc04d08c5fb8346dd961cf31bea772320b38f5c5751d2bf8800f35d1",
+      "seconds": 3.164448075927794,
+      "differences": {
+        "dt_q_estimates": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "dt_v_estimates": {
+          "max_abs": 0.013930320739746094,
+          "relative_l2": 0.00023702650550059528
+        },
+        "dt_token_advantages": {
+          "max_abs": 0.01393038034439087,
+          "relative_l2": 0.008043443629724957
+        }
+      }
+    },
+    "status": "passed_memory_copy_parity_and_batch_interface"
   }
 }
