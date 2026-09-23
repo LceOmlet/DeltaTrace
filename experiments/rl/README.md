@@ -13,6 +13,22 @@ AppWorld 200×240。`formal-training.json` / `active-training.json` 指向
 核心哈希未改，部署导入核验与 6 项原配置/传输边界测试通过。论文预算来源及
 模型、算法等差异仍见 [paper_scale.json](paper_scale.json)。
 
+用户要求额外检查环境状态与调用行为。`verify_environment_state.py` 直接调用
+固定上游 worker / projection，复用现有资产；检查已通过：Sokoban 两实例
+棋盘隔离、重置和 `−0.1×4 → 10.9`；WebShop 独立会话、搜索/选项/购买与
+原 task_score=1→reward=10；AppWorld 两个未被正式任务占用的现有服务上的
+REPL 隔离、重置清理、40 步终止、`complete_task()` 状态隔离和重置。
+WebShop 正例使用已标明的训练目标 fixture，未混入策略样本；没有重置或
+写入当前训练服务。结果见 [环境检查](results_environment_state.json)。
+
+652 条 pilot 输出的原解析器检查表明，651 条缺完整 `<think>` 标签，因而
+原 `is_action_valid` 格式标记为假；该标记不表示环境没有执行动作。当前 DT
+配置关闭原 invalid-action penalty，源码确认它未进入其他奖励/损失路径。
+三个环境不填 `tool_calling`，故 trainer 的 tool_call_count=0 也不能解释为
+调用次数。AppWorld 真实任务 `229360a_3` 的 4 份原 API 日志分别有
+32/32/19/58 次调用；第一条轨迹的官方评估为 6/6 通过，与 pilot 成功一致。
+这项检查覆盖代表性状态/调用链和现有日志，不宣称穷尽所有环境行为。
+
 最新 `native-prefix` 候选直接复用 Qwen 原生混合缓存：共同前缀只计算一次，
 原缓存复制到两个端点，后续原生前向/重放只计算变化后的部分，完整 K/V 历史
 仍然保留。精确 32768、DT B4、actor microbatch4、休眠 vLLM 驻留下，完整
