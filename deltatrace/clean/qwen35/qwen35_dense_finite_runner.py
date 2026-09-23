@@ -54,7 +54,7 @@ def _relative_l2(actual,reference,*,deferred=False):
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -106,6 +106,7 @@ class Qwen35DenseFiniteRunner:
         self.pin_replay_host=pin_replay_host
         self.gdn_gpu_capture_names=tuple(gdn_gpu_capture_names)
         self.fa_coefficient_suffix=fa_coefficient_suffix
+        self.gdn_coefficient_suffix=gdn_coefficient_suffix
         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
         if not isinstance(key_rules,Mapping):
             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
@@ -210,7 +211,7 @@ class Qwen35DenseFiniteRunner:
         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
         seed_effect=effect(m,x);del x,mnorm,seed,z
         coefficient_starts=None
-        if self.fa_coefficient_suffix and observer is None:
+        if (self.fa_coefficient_suffix or self.gdn_coefficient_suffix) and observer is None:
             # Every operation in this reviewed no-cache decoder is causal.
             # The identical input prefix therefore has zero displacement at
             # every layer. Its finite coefficients cannot contribute to the
@@ -220,7 +221,9 @@ class Qwen35DenseFiniteRunner:
             changed=paired_ids[0::2]!=paired_ids[1::2]
             coefficient_starts=torch.where(changed,positions,selection.length).amin(-1).cpu().tolist()
         layout=RightPaddedLengths([selection.length]*selection.batch,selection.length,paired_ids.device,
-                                  coefficient_starts=coefficient_starts)
+                                  coefficient_starts=coefficient_starts if self.fa_coefficient_suffix else None)
+        gdn_cut=(min(min(coefficient_starts)//64,(selection.length-1)//64)*64
+                 if self.gdn_coefficient_suffix and coefficient_starts is not None else 0)
         for i in reversed(range(32)):
             layer=layers[i];is_fa=layer.block_type=='full_attention';x=root[str(i)].to('cuda');kw=_copy(kwargs[str(i)],'cuda')
             # The no-cache Qwen path consumes these activations without
@@ -299,15 +302,15 @@ class Qwen35DenseFiniteRunner:
                 finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
                 if i in self.key_norm_by_layer:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,
+                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
                 if i in self.norm_gate_rules:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,
+                        norm_gate_rule=self.norm_gate_rules[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
-                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,
+                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,fla_coefficient_start=gdn_cut,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
             with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))
@@ -322,7 +325,8 @@ class Qwen35DenseFiniteRunner:
         x=root['0'].to('cuda');signed=_token_effect(m,x).cpu()
         torch.cuda.synchronize();seconds=time.perf_counter()-started
         info={'select_output_rows':select_output_rows,'complete_attribution_seconds_with_diagnostics':seconds,
-              'fa_coefficient_starts':coefficient_starts,
+              'fa_coefficient_starts':coefficient_starts if self.fa_coefficient_suffix else None,
+              'gdn_fla_coefficient_start':gdn_cut,
               'norm_gate_rules':{str(i):rule for i,rule in sorted(self.norm_gate_rules.items())},
               'finite_fla_by_layer':sorted(self.finite_fla_by_layer),
               'attention_pv_rules':{str(i):rule for i,rule in sorted(self.attention_pv_rules.items())},

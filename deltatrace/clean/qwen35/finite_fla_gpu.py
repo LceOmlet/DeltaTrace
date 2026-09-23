@@ -74,6 +74,19 @@ def native_input_adjoints(endpoints, do, scale):
     return {'do':do, 'dh_end':dh, 'dU_WY':du}
 
 
+def slice_native_fla_endpoints(endpoints, start):
+    """Select whole native chunks, preserving their actual incoming states.
+
+    Cumulative g and WY A/w reset within each native 64-token chunk. Saved h
+    carries all earlier history into the selected chunk; it is never zeroed
+    or recomputed. Reverse adjoints for this suffix depend only on its output
+    adjoints. The caller decides whether earlier input coefficients are needed.
+    """
+    if type(start) is not int or start < 0 or start % 64 or start >= endpoints['q'].shape[1]:
+        raise ValueError('FLA suffix must start at a nonempty native 64-token chunk.')
+    return {name:value[:,start//64 if name=='h' else start:] for name,value in endpoints.items()}
+
+
 def _mm(a, b):
     # Reuse the installed vendor GEMM, including its normal BF16 accumulation
     # path. No custom matrix multiplication kernel or elevated input precision.

@@ -37,6 +37,14 @@ the same runner with the setting disabled.
 
 Other audited historical capabilities are kept distinct:
 
+The optional `gdn_coefficient_suffix` uses the same causal range argument for
+GDN, rounded down to the installed FLA's 64-token chunk. It selects the saved
+native intermediates, including the actual incoming `h`; it never restarts
+the forward recurrence at zero. The existing finite FLA callback computes the
+selected adjoints. Its original FP32-reference operator tolerances are checked
+separately from whole-chain rounding diagnostics. It currently reduces restore
+and propagation work, but capture still retains full-length tensors.
+
 - Dynamic compilation already exists in the current owner's public options.
 - The old Qwen3.5 controller supports GPU checkpoints and native variable
   lengths. Those controller features have not yet been migrated here. At

@@ -15,6 +15,7 @@ import torch.nn.functional as F
 from signed_secant_rules import rmsnorm_secant_pullback
 from qwen35_decoder_finite import _linear_transpose, _linear_weights
 from native_attention_capture import copy_capture_tensor
+from finite_fla_gpu import slice_native_fla_endpoints
 
 
 def resolve_native_gdn_forward(module_type):
@@ -134,7 +135,7 @@ def _conv_silu_finite_rule(pre,output,upstream):
     return upstream*_scalar_secant(p0,p1,y0,y1,_silu_derivative(p0))
 
 
-def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diagnostics=False,*,norm_gate_rule='content1',key_norm_pullback=None,offload_endpoints=False,fla_head_batch_size=None,norm_gate_pullback=None,conv_silu_pullback=None,input_shape=None):
+def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diagnostics=False,*,norm_gate_rule='content1',key_norm_pullback=None,offload_endpoints=False,fla_head_batch_size=None,norm_gate_pullback=None,conv_silu_pullback=None,input_shape=None,fla_coefficient_start=0):
     """Return input finite coefficients; actual input rows are 1,3,... .
 
     The supplied FLA callback is the traceable finite extension. The native
@@ -181,6 +182,11 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
     native_mo=mo.to(e['o'].dtype)
     if offload_endpoints:
         del e['o'],c['z'],mnorm,m,mo
+    # Keep the boundary chunk containing the first changed token. Native h
+    # preserves its incoming history. No forward is rerun, and the original
+    # FLA callback still owns reverse recurrence and all finite formulas.
+    cut=min(fla_coefficient_start//64,(length-1)//64)*64
+    fla_endpoints=slice_native_fla_endpoints(e,cut) if cut else e
     if fla_head_batch_size is not None:
         # Head-local state recurrences are independent. Keep every trajectory
         # and time step in each owner call. The callback still owns both
@@ -189,14 +195,17 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         parts=[]
         for start in range(0,module.num_v_heads,fla_head_batch_size):
             group={name:head_group(value,start)
-                   for name,value in e.items() if name!='o'}
-            parts.append(fla_pullback(group,native_mo[:,:,start:start+fla_head_batch_size].contiguous(),scale))
+                   for name,value in fla_endpoints.items() if name!='o'}
+            parts.append(fla_pullback(group,native_mo[:,cut:,start:start+fla_head_batch_size].contiguous(),scale))
             del group
         coeff={name:torch.cat([part[name] for part in parts],dim=2) for name in parts[0]}
         del parts
     else:
-        if offload_endpoints:restore(e,*tuple(e))
-        coeff=fla_pullback(e,native_mo,scale)
+        if offload_endpoints:restore(fla_endpoints,*tuple(fla_endpoints))
+        coeff=fla_pullback(fla_endpoints,native_mo[:,cut:],scale)
+    del fla_endpoints
+    if cut:
+        coeff={name:F.pad(value,(0,0)*(value.ndim-2)+(cut,0)) for name,value in coeff.items()}
     if offload_endpoints:del native_mo
     restore(c,'raw_q','raw_k')
     mq=_l2_pullback(c['raw_q'][0::2],c['raw_q'][1::2],coeff['q'])

@@ -23,6 +23,8 @@ def main():
     p.add_argument('--parameter-offload-policy', action='store_true')
     p.add_argument('--snapshot-output', type=Path,
                    help='Save real actor weight fingerprints and the first B4 native root inputs for offload diagnosis.')
+    p.add_argument('--gdn-suffix-comparison', action='store_true',
+                   help='Only compare the unchanged offloaded route with GDN/FA suffix controls; operator gates are separate.')
     p.add_argument('--execution-reuse', action='store_true',
                    help='Compare reused retained/local-event captures and deferred diagnostics at fixed batch geometry.')
     args = p.parse_args()
@@ -92,7 +94,7 @@ def main():
             original = getattr(owner, function_name)
             def check_mixer(*a, _kind=kind, _original=original, **kw):
                 value = _original(*a, **kw)
-                if current_run in ('batch_head8', 'batch_offloaded') and (current_run, _kind) not in mixer_seen:
+                if not args.gdn_suffix_comparison and current_run in ('batch_head8', 'batch_offloaded') and (current_run, _kind) not in mixer_seen:
                     mixer_seen.add((current_run, _kind))
                     tensors = {f'{index}.{key}': (tensor.detach().cpu(), tensor.stride())
                         for index, arg in enumerate(a) if isinstance(arg, dict)
@@ -168,17 +170,27 @@ def main():
         configurations = [('serial', 1, False), ('batch_copied', 4, True), ('batch_borrowed', 4, False), ('batch_compiled_gate', 4, False), ('batch_head8', 4, False), ('batch_offloaded', 4, False)]
         if producer.runner.fa_coefficient_suffix:
             configurations.append(('batch_fa_suffix', 4, False))
+        if producer.runner.gdn_coefficient_suffix:
+            configurations.append(('batch_gdn_suffix', 4, False))
+            if producer.runner.fa_coefficient_suffix:
+                configurations.append(('batch_both_suffix', 4, False))
+        if args.gdn_suffix_comparison:
+            assert producer.runner.gdn_coefficient_suffix
+            configurations=[entry for entry in configurations if entry[0] in
+                            ('batch_offloaded','batch_gdn_suffix','batch_both_suffix')]
         for name, batch, copies in configurations:
             current_run = name
             producer.runner.capture_backend = None
             producer.runner.defer_diagnostics = False
             producer.readout.minibatch_size = batch
             producer.runner.copy_replay_captures = copies
-            producer.runner.fa_coefficient_suffix = name == 'batch_fa_suffix'
-            producer.runner.offload_replay_mixer = name in ('batch_offloaded', 'batch_fa_suffix')
-            producer.runner.pin_replay_host = name in ('batch_offloaded', 'batch_fa_suffix')
-            producer.runner.compile_gdn_scalar_rules = name in ('batch_compiled_gate', 'batch_head8', 'batch_offloaded', 'batch_fa_suffix')
-            producer.runner.gdn_head_batch_size = 8 if name in ('batch_head8', 'batch_offloaded', 'batch_fa_suffix') else None
+            suffix_run=name in ('batch_fa_suffix','batch_gdn_suffix','batch_both_suffix')
+            producer.runner.fa_coefficient_suffix = name in ('batch_fa_suffix','batch_both_suffix')
+            producer.runner.gdn_coefficient_suffix = name in ('batch_gdn_suffix','batch_both_suffix')
+            producer.runner.offload_replay_mixer = name == 'batch_offloaded' or suffix_run
+            producer.runner.pin_replay_host = name == 'batch_offloaded' or suffix_run
+            producer.runner.compile_gdn_scalar_rules = name in ('batch_compiled_gate','batch_head8','batch_offloaded') or suffix_run
+            producer.runner.gdn_head_batch_size = 8 if name in ('batch_head8','batch_offloaded') or suffix_run else None
             calls.clear()
             start = time.perf_counter()
             value = producer.attribute_episodes(episodes, [float(row['rewards'])]*4)
@@ -188,6 +200,30 @@ def main():
             result['runs'].append(dict(name=name, seconds=time.perf_counter()-start,
                 paired_shapes=[v['paired_shape'] for v in calls], report=producer.readout.last_report))
             args.output.write_text(json.dumps(result, indent=2)+'\n')
+        # Retain the small actual token/call outputs before any assertion, so
+        # a numerical difference can be inspected without another model load.
+        torch.save(outputs,args.output.with_suffix('.pt'))
+        result['comparison_artifacts']=str(args.output.with_suffix('.pt'))
+        for name in ('batch_gdn_suffix','batch_both_suffix'):
+            if name in outputs:
+                # FLA chunk counts change vendor GEMM/compiler scheduling.
+                # Its original FP32-reference operator thresholds are tested
+                # by verify_dt_fla_partition.py. Record whole-chain drift;
+                # do not invent a whole-PPO tolerance or equate it to copies.
+                differences={}
+                for key in ('dt_q_estimates','dt_v_estimates','dt_token_advantages'):
+                    reference=torch.cat([ep[0][key] for ep in outputs['batch_offloaded'][0]]).double()
+                    actual=torch.cat([ep[0][key] for ep in outputs[name][0]]).double()
+                    differences[key]=dict(max_abs=float((reference-actual).abs().max()),
+                        relative_l2=float((reference-actual).norm()/reference.norm().clamp_min(1e-30)))
+                signed_reference=torch.cat([c['signed'] for c in outputs['batch_offloaded'][1]]).double()
+                signed_actual=torch.cat([c['signed'] for c in outputs[name][1]]).double()
+                differences['signed']=dict(max_abs=float((signed_reference-signed_actual).abs().max()),
+                    relative_l2=float((signed_reference-signed_actual).norm()/signed_reference.norm().clamp_min(1e-30)))
+                result[name+'_differences']=differences
+        if args.gdn_suffix_comparison:
+            result['status']='completed_gdn_suffix_diagnostic'
+            return
         torch.testing.assert_close(outputs['batch_copied'], outputs['batch_borrowed'], rtol=0, atol=0)
         result['borrowed_matches_copied_exactly'] = True
         torch.testing.assert_close(outputs['batch_head8'], outputs['batch_offloaded'], rtol=0, atol=0)

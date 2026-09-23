@@ -7985,5 +7985,672 @@
         "sha256": "d78503401f9b5cf5104d4d601828d1b7f199350038901bf91298a9d54d7345eb"
       }
     ]
+  },
+  "gdn_coefficient_suffix": {
+    "implementation": "Select saved native 64-token chunks, preserving incoming h; unchanged finite FLA callback and EOS/Q/V/PPO. Default disabled, no input truncation.",
+    "official_operator_gate": {
+      "scope": "Check the existing finite FLA at coincident endpoints using owner tolerances.\n\nNative FLA supplies the actual saved intermediates. The unchanged pinned FLA\nFP32 recurrence supplies the reference. No initial/final-state adjoints are\nrequested: the DT interface starts with zero state and only consumes output\nadjoints. Head partitioning calls the same finite owner; it is not another\nrecurrence. This does not certify nonzero finite interventions or whole PPO.\n",
+      "cases": [
+        {
+          "length": 128,
+          "batch": 4,
+          "heads": 32,
+          "variant": "native",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.003247363656554124,
+              "max_abs": 0.001953125,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.006058670937110595,
+              "max_abs": 0.00146484375,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.004058158798765642,
+              "max_abs": 0.001953125,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.003633847099406021,
+              "max_abs": 0.006409704685211182,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.004683489372911244,
+              "max_abs": 0.0036644041538238525,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "status": "passed"
+        },
+        {
+          "length": 128,
+          "batch": 4,
+          "heads": 32,
+          "variant": "finite_full",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.0028682274017596595,
+              "max_abs": 0.0011188536882400513,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.005223928915081817,
+              "max_abs": 0.0012312643229961395,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.0036924986251639876,
+              "max_abs": 0.0021479427814483643,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.0034895750013177714,
+              "max_abs": 0.0059397220611572266,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.003923163357774226,
+              "max_abs": 0.002668052911758423,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "status": "passed"
+        },
+        {
+          "length": 128,
+          "batch": 4,
+          "heads": 32,
+          "variant": "finite_head8",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.0028682274017596595,
+              "max_abs": 0.0011188536882400513,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.00522390215382392,
+              "max_abs": 0.001231260597705841,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.0036924986251639876,
+              "max_abs": 0.0021479427814483643,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.0034895753552728697,
+              "max_abs": 0.0059397220611572266,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.003923094610250816,
+              "max_abs": 0.002668052911758423,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "status": "passed"
+        },
+        {
+          "length": 128,
+          "batch": 4,
+          "heads": 32,
+          "variant": "finite_suffix_head8",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.002878080477986765,
+              "max_abs": 0.0011188536882400513,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.0052711613917508105,
+              "max_abs": 0.001231260597705841,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.0036323976198287017,
+              "max_abs": 0.0015489459037780762,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.003453284320620666,
+              "max_abs": 0.005939781665802002,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.0038901713777330085,
+              "max_abs": 0.002383410930633545,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "coefficient_start": 64,
+          "saved_incoming_state_nonzero": true,
+          "exact_full_owner_suffix": {
+            "q": true,
+            "k": false,
+            "v": true,
+            "beta": false,
+            "alpha": false,
+            "g": false
+          },
+          "full_owner_suffix_differences": {
+            "q": {
+              "max_abs": 0.0,
+              "rms_ratio": 0.0
+            },
+            "k": {
+              "max_abs": 2.9802322387695312e-08,
+              "rms_ratio": 5.9401538085092516e-08
+            },
+            "v": {
+              "max_abs": 0.0,
+              "rms_ratio": 0.0
+            },
+            "beta": {
+              "max_abs": 1.1920928955078125e-07,
+              "rms_ratio": 5.3165643881476864e-08
+            },
+            "alpha": {
+              "max_abs": 1.7881393432617188e-07,
+              "rms_ratio": 4.953764026159554e-08
+            },
+            "g": {
+              "max_abs": 1.1920928955078125e-07,
+              "rms_ratio": 5.008494989120858e-08
+            }
+          },
+          "status": "passed"
+        },
+        {
+          "length": 447,
+          "batch": 4,
+          "heads": 32,
+          "variant": "native",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.0032087045748301225,
+              "max_abs": 0.001953125,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.006098530614328429,
+              "max_abs": 0.00146484375,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.004079860182716261,
+              "max_abs": 0.001953125,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.003667240952560947,
+              "max_abs": 0.006865561008453369,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.004701000662298928,
+              "max_abs": 0.0039634108543396,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "status": "passed"
+        },
+        {
+          "length": 447,
+          "batch": 4,
+          "heads": 32,
+          "variant": "finite_full",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.002864410491072031,
+              "max_abs": 0.001171112060546875,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.0052991925200775135,
+              "max_abs": 0.0011073201894760132,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.0037305187637299386,
+              "max_abs": 0.0021489709615707397,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.0035363934896758486,
+              "max_abs": 0.007044851779937744,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.003939063309171791,
+              "max_abs": 0.0030717849731445312,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "status": "passed"
+        },
+        {
+          "length": 447,
+          "batch": 4,
+          "heads": 32,
+          "variant": "finite_head8",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.002864410491072031,
+              "max_abs": 0.001171112060546875,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.005299142646824158,
+              "max_abs": 0.0011073201894760132,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.0037305190948667783,
+              "max_abs": 0.0021489709615707397,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.0035363927860813825,
+              "max_abs": 0.0070449113845825195,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.00393907811262759,
+              "max_abs": 0.0030717849731445312,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "status": "passed"
+        },
+        {
+          "length": 447,
+          "batch": 4,
+          "heads": 32,
+          "variant": "finite_suffix_head8",
+          "quantities": {
+            "q": {
+              "rms_ratio": 0.0028654399127068567,
+              "max_abs": 0.001171112060546875,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "k": {
+              "rms_ratio": 0.005293155423579951,
+              "max_abs": 0.0011073201894760132,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "v": {
+              "rms_ratio": 0.003727439853390997,
+              "max_abs": 0.0021489709615707397,
+              "threshold": 0.008,
+              "status": "passed"
+            },
+            "beta": {
+              "rms_ratio": 0.003528824955392081,
+              "max_abs": 0.0070449113845825195,
+              "threshold": 0.02,
+              "status": "passed"
+            },
+            "g": {
+              "rms_ratio": 0.00392826590591073,
+              "max_abs": 0.0030717849731445312,
+              "threshold": 0.02,
+              "status": "passed"
+            }
+          },
+          "coefficient_start": 64,
+          "saved_incoming_state_nonzero": true,
+          "exact_full_owner_suffix": {
+            "q": false,
+            "k": false,
+            "v": true,
+            "beta": false,
+            "alpha": false,
+            "g": false
+          },
+          "full_owner_suffix_differences": {
+            "q": {
+              "max_abs": 2.9802322387695312e-08,
+              "rms_ratio": 3.7558868768569536e-08
+            },
+            "k": {
+              "max_abs": 5.960464477539063e-08,
+              "rms_ratio": 1.0411395599115598e-07
+            },
+            "v": {
+              "max_abs": 0.0,
+              "rms_ratio": 0.0
+            },
+            "beta": {
+              "max_abs": 1.1920928955078125e-07,
+              "rms_ratio": 6.113251125299242e-08
+            },
+            "alpha": {
+              "max_abs": 2.682209014892578e-07,
+              "rms_ratio": 4.9821773672532565e-08
+            },
+            "g": {
+              "max_abs": 1.7881393432617188e-07,
+              "rms_ratio": 5.0238651447404916e-08
+            }
+          },
+          "status": "passed"
+        }
+      ],
+      "slice_arithmetic_diagnostics": [
+        {
+          "length": 128,
+          "eager_full_vs_suffix": {
+            "q": {
+              "exact": true,
+              "max_abs": 0.0
+            },
+            "k": {
+              "exact": false,
+              "max_abs": 2.9802322387695312e-08
+            },
+            "v": {
+              "exact": true,
+              "max_abs": 0.0
+            },
+            "beta": {
+              "exact": false,
+              "max_abs": 1.1920928955078125e-07
+            },
+            "alpha": {
+              "exact": false,
+              "max_abs": 2.384185791015625e-07
+            },
+            "g": {
+              "exact": false,
+              "max_abs": 1.7881393432617188e-07
+            }
+          },
+          "compiled_vs_eager_suffix": {
+            "q": {
+              "max_abs": 8.046627044677734e-07,
+              "rms_ratio": 1.3054793075979953e-07
+            },
+            "k": {
+              "max_abs": 8.065253496170044e-07,
+              "rms_ratio": 2.4149533528543327e-07
+            },
+            "v": {
+              "max_abs": 0.0,
+              "rms_ratio": 0.0
+            },
+            "beta": {
+              "max_abs": 4.76837158203125e-07,
+              "rms_ratio": 1.0824834754451633e-07
+            },
+            "alpha": {
+              "max_abs": 2.384185791015625e-07,
+              "rms_ratio": 9.787603218088246e-08
+            },
+            "g": {
+              "max_abs": 1.7881393432617188e-07,
+              "rms_ratio": 1.0212314230783923e-07
+            }
+          }
+        },
+        {
+          "length": 447,
+          "eager_full_vs_suffix": {
+            "q": {
+              "exact": true,
+              "max_abs": 0.0
+            },
+            "k": {
+              "exact": false,
+              "max_abs": 5.960464477539063e-08
+            },
+            "v": {
+              "exact": true,
+              "max_abs": 0.0
+            },
+            "beta": {
+              "exact": false,
+              "max_abs": 1.7881393432617188e-07
+            },
+            "alpha": {
+              "exact": false,
+              "max_abs": 2.980232238769531e-07
+            },
+            "g": {
+              "exact": false,
+              "max_abs": 1.4901161193847656e-07
+            }
+          },
+          "compiled_vs_eager_suffix": {
+            "q": {
+              "max_abs": 1.3738870620727539e-05,
+              "rms_ratio": 9.430555579030083e-07
+            },
+            "k": {
+              "max_abs": 1.2733042240142822e-05,
+              "rms_ratio": 2.229912836833785e-06
+            },
+            "v": {
+              "max_abs": 0.0,
+              "rms_ratio": 0.0
+            },
+            "beta": {
+              "max_abs": 0.00036144256591796875,
+              "rms_ratio": 5.129373568235616e-06
+            },
+            "alpha": {
+              "max_abs": 2.384185791015625e-07,
+              "rms_ratio": 9.95385576714859e-08
+            },
+            "g": {
+              "max_abs": 1.7881393432617188e-07,
+              "rms_ratio": 1.0274183248887634e-07
+            }
+          }
+        }
+      ],
+      "status": "passed"
+    },
+    "short_chain": {
+      "status": "completed_gdn_suffix_diagnostic",
+      "differences": {
+        "dt_q_estimates": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "dt_v_estimates": {
+          "max_abs": 0.01640033721923828,
+          "relative_l2": 0.00037209683864136006
+        },
+        "dt_token_advantages": {
+          "max_abs": 0.016401350498199463,
+          "relative_l2": 0.011752732601152824
+        },
+        "signed": {
+          "max_abs": 0.0013903395295361554,
+          "relative_l2": 0.01146984909559176
+        }
+      },
+      "scope": "Full short signed attribution and Q/V/A diagnostic, no invented whole-PPO threshold or bitwise equality claim."
+    },
+    "same_actual_32k_first_gdn": {
+      "scope": "Same actual first-GDN32k captures/upstream, original actor and sleeping vLLM; official operator tolerance is checked separately, no invented whole-GDN threshold",
+      "status": "observed_requested_phases",
+      "coefficient_start": 31552,
+      "records": [
+        {
+          "name": "full_cold",
+          "seconds": 12.725226944312453,
+          "before": {
+            "device_used_bytes": 60328120320,
+            "allocated_bytes": 65730060800,
+            "reserved_bytes": 104838725632,
+            "captures": {},
+            "unique_capture_bytes": 0
+          },
+          "exact_suffix": true,
+          "suffix_max_abs": 0.0,
+          "suffix_relative_l2": 0.0
+        },
+        {
+          "name": "suffix_cold",
+          "seconds": 0.8254823479801416,
+          "before": {
+            "device_used_bytes": 60359577600,
+            "allocated_bytes": 65730060800,
+            "reserved_bytes": 104838725632,
+            "captures": {},
+            "unique_capture_bytes": 0
+          },
+          "exact_suffix": false,
+          "suffix_max_abs": 3.4924596548080444e-08,
+          "suffix_relative_l2": 4.8888132369029336e-06
+        },
+        {
+          "name": "full_warm_0",
+          "seconds": 3.3609496112912893,
+          "before": {
+            "device_used_bytes": 60363771904,
+            "allocated_bytes": 65730060800,
+            "reserved_bytes": 104842919936,
+            "captures": {},
+            "unique_capture_bytes": 0
+          },
+          "exact_suffix": true,
+          "suffix_max_abs": 0.0,
+          "suffix_relative_l2": 0.0
+        },
+        {
+          "name": "suffix_warm_0",
+          "seconds": 0.8186372239142656,
+          "before": {
+            "device_used_bytes": 60363771904,
+            "allocated_bytes": 65730060800,
+            "reserved_bytes": 104842919936,
+            "captures": {},
+            "unique_capture_bytes": 0
+          },
+          "exact_suffix": false,
+          "suffix_max_abs": 3.4924596548080444e-08,
+          "suffix_relative_l2": 4.8888132369029336e-06
+        },
+        {
+          "name": "suffix_warm_1",
+          "seconds": 0.8202284267172217,
+          "before": {
+            "device_used_bytes": 60363771904,
+            "allocated_bytes": 65730060800,
+            "reserved_bytes": 104842919936,
+            "captures": {},
+            "unique_capture_bytes": 0
+          },
+          "exact_suffix": false,
+          "suffix_max_abs": 3.4924596548080444e-08,
+          "suffix_relative_l2": 4.8888132369029336e-06
+        },
+        {
+          "name": "full_warm_1",
+          "seconds": 3.3494531381875277,
+          "before": {
+            "device_used_bytes": 60363771904,
+            "allocated_bytes": 65730060800,
+            "reserved_bytes": 104842919936,
+            "captures": {},
+            "unique_capture_bytes": 0
+          },
+          "exact_suffix": true,
+          "suffix_max_abs": 0.0,
+          "suffix_relative_l2": 0.0
+        }
+      ]
+    },
+    "full_dt_efficiency_accepted": false,
+    "production_selected": false,
+    "remaining": "Capture still copies full-length endpoints; full DT/native-backward comparison and three-task training not accepted.",
+    "preserved_failures": [
+      "Full-short exact-equality assertion: FLA chunk shape changes numerical reduction.",
+      "First shortened diagnostic: omitted attention baseline caused KeyError; diagnostic guard repaired."
+    ],
+    "evidence": [
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/fla-suffix-official-v2.json",
+        "sha256": "5e1daa897d93e6b53b2727d4c4b90efde00d49b5c7aec0b4e8b52a4ee3cefff4"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/fla-suffix-official-v2.log",
+        "sha256": "3503e1f5b4dbba9dfb84ccbffa6d25e13ce2d3eb8514fb3399c920a2a3f717b9"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/short-suffix-diagnostic-v2.json",
+        "sha256": "885db4aa0e6a0604ede9af447899c163bb921aaa05081b69988dafc8f6c22d87"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/short-suffix-diagnostic-v2.log",
+        "sha256": "7a7b6272ed7b1b2622dea5f3604e0db52dd782fc655c1512fa7b5682eabe76b8"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/short-suffix-diagnostic.json",
+        "sha256": "12b49b69ca2e05e7edce0a5ccd6f3f520a210db1b9fe5abaa1f329e7259d7f19"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/short-suffix-diagnostic.log",
+        "sha256": "2d55c872716b7ee1cf39f59acbac16d007821dcbfef77c0a1dcdf86468492e9b"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/full-short-parity.json",
+        "sha256": "013c001915ee72704fdfaacf20a3f2accae9ce5b6871aa2215cb88f9aeab15a4"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/full-short-parity.log",
+        "sha256": "70119790dc14a1b2b1dec53395e35f48481124819f0a4eaf9ac453e7311b6067"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/same-gdn-operands32k.json",
+        "sha256": "6aeccd9b68315565c8c0e473c2556066f2e49b6e3f270e128655b96acbdeacca"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/gdn-suffix/same-gdn-operands32k.log",
+        "sha256": "2577fae8e614a2f8dc9d931c664a2f1fe71b0e925e6a98b67f6bca52ea490bb5"
+      }
+    ]
   }
 }

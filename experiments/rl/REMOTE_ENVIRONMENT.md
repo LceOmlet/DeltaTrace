@@ -12,6 +12,20 @@
 
 ## 2026-09-23 已有加速分支的复用
 
+- 最新 GDN 隔离候选为 `candidates/dt-minibatch/gdn-suffix`，叠加于下述
+  `coefficient-suffix` 等已记录目录；未改生产选择。`dt_gdn_coefficient_suffix`
+  使原 FLA 有限回调使用从首个变化 token 所在 64-token 块开始的实际保存
+  张量，保留进入该块的原 h 状态。没有复写 FLA 递推或改变 EOS/Q/V/PPO。
+- `fla-suffix-official-v2.json`：128/447 的原 FP32 recurrence 与原 FLA
+  assert_close 均通过；完整短链另记录 Q/V/A 差异，不将逐值相同作为新增门槛。
+  `short-suffix-diagnostic-v2.json` 已完成，A 相对 L2 差 0.01175、最大差
+  0.016401。此前整网零容差失败和精简测试漏读基准的 KeyError 日志均保留。
+- `same-gdn-operands32k.json`：原 actor/休眠 vLLM，同一次实际首层 GDN
+  捕获和 upstream、相同驻留，完整预热 3.361/3.349 秒，范围受限
+  0.819/0.820 秒，所需输出最大差 3.49e-8、相对 L2 差 4.89e-6。
+  随后主动退出，未运行其余 DT/PPO，未验收完整效率或恢复三任务。
+  原始回执哈希见 `results_dt_minibatch_candidate.json::gdn_coefficient_suffix`。
+
 - 后续有限 FA 候选在 `candidates/dt-minibatch/coefficient-suffix`，库
   `libfinite_d256_suffix.so` 的 SHA256 为
   `63ad5dde0b2e2f02275e4960ee1f654e076c55fc9963b15a760d30f853c722fa`。

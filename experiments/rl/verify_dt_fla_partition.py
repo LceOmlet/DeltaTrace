@@ -17,7 +17,7 @@ import torch
 import torch.nn.functional as F
 import fla.utils
 from fla.ops.gated_delta_rule import chunk_gated_delta_rule
-from finite_fla_gpu import make_compiled_finite_pullback
+from finite_fla_gpu import make_compiled_finite_pullback, finite_fla_pullback, slice_native_fla_endpoints
 from profiles.qwen35_gdn_symmetric import average_memory_endpoint_orders
 from verify_official_kernel_tolerances import load
 
@@ -26,12 +26,14 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--sources',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--coefficient-start',type=int,default=0)
     args=p.parse_args()
     source=args.sources/'test_gated_delta_v041.py'
     assert hashlib.sha256(source.read_bytes()).hexdigest()=='35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813'
     test=load('official_fla_reference',source)
     assert not fla.utils.FLA_CI_ENV
     owner=average_memory_endpoint_orders(make_compiled_finite_pullback(dynamic_shapes=True))
+    eager_owner=average_memory_endpoint_orders(finite_fla_pullback)
     result=dict(scope=__doc__,cases=[])
     stage=importlib.import_module('fla.ops.gated_delta_rule.chunk').chunk_gated_delta_rule_fwd
     for length in (128,447):
@@ -65,10 +67,38 @@ def main():
             parts=[owner({name:value[:,:,start:start+8].contiguous() for name,value in endpoints.items()},
                          upstream[:,:,start:start+8].contiguous(),128**-.5) for start in range(0,32,8)]
             coefficients['finite_head8']={name:torch.cat([part[name] for part in parts],2) for name in parts[0]}
+            if args.coefficient_start:
+                cut=args.coefficient_start
+                selected=slice_native_fla_endpoints(endpoints,cut)
+                parts=[owner({name:value[:,:,start:start+8].contiguous() for name,value in selected.items()},
+                             upstream[:,cut:,start:start+8].contiguous(),128**-.5) for start in range(0,32,8)]
+                coefficients['finite_suffix_head8']={name:torch.cat([part[name] for part in parts],2) for name in parts[0]}
+                # Separate cropping arithmetic from compiler scheduling on
+                # the same real native endpoints, using the uncompiled owner.
+                eager={}
+                for name,values,do in [('full',endpoints,upstream),('suffix',selected,upstream[:,cut:])]:
+                    pieces=[eager_owner({k:v[:,:,head:head+8].contiguous() for k,v in values.items()},
+                                        do[:,:,head:head+8].contiguous(),128**-.5) for head in range(0,32,8)]
+                    eager[name]={k:torch.cat([piece[k] for piece in pieces],2) for k in pieces[0]}
+                result.setdefault('slice_arithmetic_diagnostics',[]).append(dict(length=length,
+                    eager_full_vs_suffix={k:dict(exact=torch.equal(eager['full'][k][:,cut:],v),
+                        max_abs=float(fla.utils.get_abs_err(eager['full'][k][:,cut:],v))) for k,v in eager['suffix'].items()},
+                    compiled_vs_eager_suffix={k:dict(max_abs=float(fla.utils.get_abs_err(eager['suffix'][k],v)),
+                        rms_ratio=float(fla.utils.get_err_ratio(eager['suffix'][k],v))) for k,v in coefficients['finite_suffix_head8'].items()}))
         variants={'native':dict(zip(('q','k','v','beta','g'),native)),**coefficients}
         for variant,actual in variants.items():
             row=dict(length=length,batch=4,heads=32,variant=variant,quantities={})
+            if variant=='finite_suffix_head8':
+                row['coefficient_start']=args.coefficient_start
+                row['saved_incoming_state_nonzero']=bool(endpoints['h'][:,args.coefficient_start//64].count_nonzero())
+                row['exact_full_owner_suffix']={name:torch.equal(coefficients['finite_head8'][name][:,args.coefficient_start:],value)
+                    for name,value in actual.items()}
+                row['full_owner_suffix_differences']={name:dict(
+                    max_abs=float(fla.utils.get_abs_err(coefficients['finite_head8'][name][:,args.coefficient_start:],value)),
+                    rms_ratio=float(fla.utils.get_err_ratio(coefficients['finite_head8'][name][:,args.coefficient_start:],value)))
+                    for name,value in actual.items()}
             for name,ref_grad in zip(('q','k','v','beta','g'),reference):
+                if variant=='finite_suffix_head8':ref_grad=ref_grad[:,args.coefficient_start:]
                 threshold=.02 if name in ('beta','g') else .008
                 item=dict(rms_ratio=float(fla.utils.get_err_ratio(ref_grad,actual[name])),
                           max_abs=float(fla.utils.get_abs_err(ref_grad,actual[name])),threshold=threshold)

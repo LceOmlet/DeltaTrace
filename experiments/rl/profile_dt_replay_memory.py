@@ -237,6 +237,34 @@ if limit:
         qwen35_code_local_capture.NativeGDNCapture.__init__=comparison_capture_init
 
     def observed_gdn(module, *args, **kwargs):
+        if os.environ.get('DT_PROFILE_GDN_SUFFIX') == '1':
+            cut=kwargs['fla_coefficient_start']
+            if not cut:
+                raise ValueError('GDN suffix comparison requires the actual common-prefix bound.')
+            reference=None
+            for name,selected in [('full_cold',0),('suffix_cold',cut),('full_warm_0',0),
+                                  ('suffix_warm_0',cut),('suffix_warm_1',cut),('full_warm_1',0)]:
+                operands=(dict(args[0]),dict(args[1]),*args[2:])
+                options=dict(kwargs,fla_coefficient_start=selected)
+                torch.cuda.synchronize()
+                before=storage_report()
+                start=time.perf_counter()
+                value=original_gdn(module,*operands,**options)
+                torch.cuda.synchronize()
+                elapsed=time.perf_counter()-start
+                actual=value[0].detach()[:,cut:].cpu()
+                if reference is None:reference=actual
+                difference=actual-reference
+                record=dict(name=name,seconds=elapsed,before=before,exact_suffix=torch.equal(actual,reference),
+                    suffix_max_abs=float(difference.abs().max()),
+                    suffix_relative_l2=float(difference.norm()/reference.norm().clamp_min(1e-30)))
+                records.append(record)
+                print('GDN_SUFFIX_IN_CONTEXT',json.dumps(record),flush=True)
+                del value,actual,operands,difference
+            profile_output.write_text(json.dumps(dict(
+                scope='Same actual first-GDN32k captures/upstream, original actor and sleeping vLLM; official operator tolerance is checked separately, no invented whole-GDN threshold',
+                status='observed_requested_phases',coefficient_start=cut,records=records),indent=2)+'\n')
+            raise DiagnosticStop()
         if os.environ.get('DT_PROFILE_SELECTIVE_CAPTURE') == '1':
             # Compare the same captured native endpoint tensors, with the same
             # GPU tensors retained throughout both routes. Only their source
