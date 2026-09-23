@@ -19,7 +19,7 @@ import time
 
 ANSI = re.compile(r'\x1b\[[0-9;]*m')
 NUMBER = r'[-+]?(?:\d*\.?\d+(?:[eE][-+]?\d+)?|nan|inf)'
-METRIC = re.compile(r'(?:^| - )([^ :]+):(' + NUMBER + r')(?= - |$)', re.I)
+METRIC = re.compile(r'(?:^| - )([^:]+):(' + NUMBER + r')(?= - |$)', re.I)
 
 
 def parse_logs(records):
@@ -210,7 +210,8 @@ def render(snapshot, history, output):
             line(ax, [m['step'] for m in metrics],
                  [m['values'][key] * scale if key in m['values'] else None for m in metrics], '训练', color)
             if row == 0:
-                val_keys = sorted({k for m in metrics for k in m['values'] if k.startswith('val/') and 'success_rate' in k})
+                val_keys = sorted({k for m in metrics for k in m['values']
+                                   if k.startswith('val/') and k.endswith('/success_rate')})
                 for val_key in val_keys:
                     vals = [m for m in metrics if val_key in m['values']]
                     line(ax, [m['step'] for m in vals], [m['values'][val_key] * 100 for m in vals], '评估: ' + val_key[4:], '#9333ea', linestyle='--')
