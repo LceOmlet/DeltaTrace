@@ -30,6 +30,10 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 # Reuse upstream batching and Ray resource settings. The actor minibatch is
 # independently fixed at 4 by run_verl_agent.sh.
 export ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-4}"
+# Same-card task-text replay: 32 concurrent requests improved generation RPC
+# from 92.713s (4) to 29.948s. Exact-32k DT/PPO capacity also passed at 32.
+# This is independent of the actor and DT minibatch sizes.
+export ROLLOUT_MAX_NUM_SEQS="${ROLLOUT_MAX_NUM_SEQS:-32}"
 export DT_RAY_NUM_CPUS="${DT_RAY_NUM_CPUS:-8}"
 # Set CUDA_VISIBLE_DEVICES and MACA_VISIBLE_DEVICES after checking mx-smi.
 # Pinned sources and Python installs exist; task assets/services still require

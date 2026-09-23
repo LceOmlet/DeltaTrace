@@ -3,7 +3,10 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-2026-09-24：正式规模暴露了 rollout 入口漏接：collector 传出的
+2026-09-24：三组正式作业已主动停止以修复 rollout 吞吐，保留 WebShop
+已完成的第 1 次更新和检查点；未完成采集不再用于更新。当前运行状态以
+`formal-training.json` 的 `stopped_for_rollout_throughput_repair` 为准。
+正式规模暴露了 rollout 入口漏接：collector 传出的
 `rollout_active_mask` 只在 HF 后端使用，vLLM 仍为已结束的轨迹生成文本。
 Sokoban 前 9 轮的 2,304 个请求中，939 个无效；AppWorld 前 25 轮的
 6,000 个请求中，1,743 个无效。不能把进程存活、无 OOM 当作效率正常。
@@ -12,9 +15,36 @@ Sokoban 前 9 轮的 2,304 个请求中，939 个无效；AppWorld 前 25 轮的
 核验请求、LoRA、返回索引、零 mask、无 mask 原路径，活跃行逐值一致）。
 这项测试不是实际模型吞吐或 FA/FLA 数值验收。运行中 worker 的加载状态及
 生效后的耗时须另看远端 `receipts/vllm-active-rows/`，源码落盘不表示已生效。
-生成并发 `max_num_seqs=4` 也独立于 actor/DT minibatch4；提高并发尚未对照
-实际显存和吞吐，不把推测的加速倍数当测量。WebShop 已完成正式第 1 次更新
-及检查点：纯生成 13,730.372 秒，DT RPC 235.493 秒，总迭代 22,441.507 秒。
+WebShop 第 1 轮 1,920 个请求中有 156 个无效；请求比例不直接等于耗时比例。
+原第 1 次更新：生成 RPC 总耗时 13,730.372 秒，DT RPC 235.493 秒，
+总迭代 22,441.507 秒。生成 RPC 包含 prefill、decode、唤醒、权重同步和搬运，
+不能将 46.75 output token/s 称为 decode 内核吞吐。
+
+[同卡并发对照](benchmark_rollout_concurrency.py) 复用原 VERL/vLLM worker、
+32k 上限、actor minibatch4 和卸载设置。32 条相同输入共 199,420 prompt
+tokens，实际最长 16,489，每条强制生成 128 tokens；预热后重复调用如下：
+
+| vLLM max_num_seqs | 生成调用秒数 | output token/s | 相对并发 4 |
+| --- | ---: | ---: | ---: |
+| 4 | 92.713 | 44.18 | 1.00× |
+| 16 | 39.930 | 102.58 | 2.32× |
+| 32 | 29.948 | 136.77 | 3.10× |
+
+三组均无 OOM；2 秒间隔物理显存采样最大 58,327 / 65,536 MiB，非连续峰值。
+输入来自 owner 导出的任务文本（导出时已移除特殊 token），因此是等输入吞吐
+回放，不是原 on-policy token 轨迹复现、任务效果评估或完整迭代提速结论。
+并发 4 下仅提交 8 个活跃请求后耗时 23.241 秒，原 32 行运输顺序保持不变。
+
+并发 32 的重复调用中，引擎 `generate` 占 29.050 秒，外层边界占 0.898 秒。
+实际 `RequestOutput.num_cached_tokens` 合计仅 2,048 / 199,420；相同输入
+重复提交也未复用上一调用的前缀。已核实每个工具轮次退出 sharding manager
+都会调用 `LLM.sleep(level=1)`，其内部先 `reset_prefix_cache()`。这是缓存
+生命周期事实；尚未隔离量出重复 prefill 的耗时，暂不因此扩展异步架构改造。
+完整记录在远端 `receipts/vllm-active-rows/concurrency-{4,16,32}.json`。
+已有容量脚本在并发 32 下复核通过：DT 输入恰好 32768、B4、1024 action
+槽位、休眠 vLLM 驻留、两次原 PPO 更新及 200 层 LoRA 同步均完成，无 OOM。
+32769 明确拒绝，总计 356.327 秒。MetaX 环境默认生成并发已设为 32，actor/DT
+minibatch 仍为 4；真实完整 rollout 的修复后耗时尚待验证。
 
 每小时检查同时运行 [日志绘图](plot_training_progress.py)：
 `python -X utf8 experiments/rl/plot_training_progress.py --source-root /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922 --publish`。
@@ -34,8 +64,8 @@ AppWorld 200×240。`formal-training.json` / `active-training.json` 指向
 训练继续复用原 VERL/vLLM、token Q/V/A、32k、actor/DT minibatch4，原 PPO
 核心哈希未改，部署导入核验与 6 项原配置/传输边界测试通过。论文预算来源及
 模型、算法等差异仍见 [paper_scale.json](paper_scale.json)。
-三组均已进入真实生成，WebShop 已进入第二次环境交互；正式首轮迭代及检查点
-尚未完成。已有每小时检查 `deltatrace` 已恢复，每次回显，且删除了额度查询/
+以下为当时的启动记录；当前主动停止状态见本页开头。已有每小时检查
+`deltatrace` 每次回显，且删除了额度查询/
 20% 停工规则。首轮源码、配置、数据和日志的异机 restic 备份及 restore 校验
 已通过（快照 `90fa82b7`）；新检查点须等待原 owner 完成标记后再备份。
 

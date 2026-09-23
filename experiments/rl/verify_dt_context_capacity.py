@@ -56,6 +56,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
     parser.add_argument('--backend', choices=('hf', 'vllm'), default='hf')
+    parser.add_argument('--rollout-max-num-seqs', type=int, default=4,
+                        help='Use the measured vLLM concurrency while retaining actor/DT minibatch 4')
     parser.add_argument('--reshard-after-forward', action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument('--response-tokens', type=int, default=0,
                         help='Explicit synthetic action-span width; 0 keeps the recorded script actions')
@@ -72,6 +74,7 @@ def main():
         parser.error('--tail-batch-probe requires the real vllm worker lifecycle')
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
+                  rollout_max_num_seqs=args.rollout_max_num_seqs,
                   reshard_after_forward=args.reshard_after_forward,
                   actor_microbatch=args.actor_microbatch, activation_offload=args.activation_offload,
                   parameter_offload_policy=args.parameter_offload_policy, stages=[])
@@ -129,7 +132,7 @@ def main():
             c.actor.fsdp_config.param_offload = True
             c.rollout.load_format = 'safetensors'
             c.rollout.max_model_len = 32768
-            c.rollout.max_num_seqs = 4
+            c.rollout.max_num_seqs = args.rollout_max_num_seqs
             c.rollout.max_num_batched_tokens = 32768
             c.rollout.gpu_memory_utilization = 0.75
             c.rollout.engine_kwargs.vllm.limit_mm_per_prompt = {'image': 0, 'video': 0}
