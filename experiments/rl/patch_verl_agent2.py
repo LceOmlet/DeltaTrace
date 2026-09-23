@@ -387,6 +387,60 @@ def patch_hf_active_rows(text: str) -> str:
     return text
 
 
+VLLM_ROLLOUT_FILE = "verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py"
+VLLM_ACTIVE_MARKER = "        # Only live collector rows become vLLM requests."
+
+
+def patch_vllm_active_rows(text: str) -> str:
+    """Use the collector mask at the pinned vLLM request boundary, preserving rows."""
+    if VLLM_ACTIVE_MARKER in text:
+        return text
+    anchor = "        # users can customize different sampling_params at different run\n"
+    select = '''        # Only live collector rows become vLLM requests.
+        # Sampling, LoRA handling and generation remain owned by vLLM.
+        active_mask = non_tensor_batch.pop("rollout_active_mask", None)
+        active_rows = None
+        if active_mask is not None and not all(active_mask):
+            active_rows = np.flatnonzero(active_mask).tolist()
+            vllm_inputs = [vllm_inputs[row] for row in active_rows]
+            if lora_requests is not None:
+                lora_requests = [lora_requests[row] for row in active_rows]
+
+'''
+    call = '''            outputs = self.inference_engine.generate(
+                prompts=vllm_inputs,  # because we have already convert it to prompt token id
+                sampling_params=self.sampling_params,
+                lora_request=lora_requests,
+                use_tqdm=False,
+            )'''
+    restore_anchor = "            response = pad_2d_list_to_length(response, self.pad_token_id, max_length=self.config.response_length).to(idx.device)\n"
+    restore = '''            if active_rows is not None:
+                # Restore the owner's original row/sample order. Finished rows
+                # have no generated tokens and remain excluded by active_masks.
+                copies = self.sampling_params.n
+                output_rows = [row * copies + sample for row in active_rows for sample in range(copies)]
+                full_response = [[] for _ in range(batch_size * copies)]
+                full_log_probs = [[] for _ in range(batch_size * copies)]
+                for src, dst in enumerate(output_rows):
+                    full_response[dst] = response[src]
+                    full_log_probs[dst] = rollout_log_probs[src]
+                response, rollout_log_probs = full_response, full_log_probs
+
+'''
+    mask_anchor = "        attention_mask = torch.cat((attention_mask, response_attention_mask), dim=-1)\n"
+    mask = '''        if active_rows is not None:
+            response_attention_mask *= torch.as_tensor(
+                active_mask, dtype=response_attention_mask.dtype, device=response_attention_mask.device
+            ).repeat_interleave(copies)[:, None]
+'''
+    for old, new in [(anchor, select + anchor), (call, call + " if vllm_inputs else []"),
+                     (restore_anchor, restore + restore_anchor), (mask_anchor, mask + mask_anchor)]:
+        if text.count(old) != 1:
+            raise RuntimeError("cannot find unique pinned vLLM active-row anchor")
+        text = text.replace(old, new, 1)
+    return text
+
+
 ACTOR_TRIM_ANCHOR = '            else:  # not using rmpad and no ulysses sp\n                extra_args = {}'
 ACTOR_TRIM_PREVIOUS = '''            else:  # not using rmpad and no ulysses sp
                 # Preserve the response columns and original tensors. Only
@@ -1235,6 +1289,9 @@ def main() -> None:
 
     hf = args.verl_root / HF_ROLLOUT_FILE
     hf.write_text(patch_hf_active_rows(hf.read_text()))
+
+    vllm = args.verl_root / VLLM_ROLLOUT_FILE
+    vllm.write_text(patch_vllm_active_rows(vllm.read_text()))
 
 
 if __name__ == "__main__":

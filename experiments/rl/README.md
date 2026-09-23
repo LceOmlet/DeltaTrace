@@ -3,6 +3,19 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+2026-09-24：正式规模暴露了 rollout 入口漏接：collector 传出的
+`rollout_active_mask` 只在 HF 后端使用，vLLM 仍为已结束的轨迹生成文本。
+Sokoban 前 9 轮的 2,304 个请求中，939 个无效；AppWorld 前 25 轮的
+6,000 个请求中，1,743 个无效。不能把进程存活、无 OOM 当作效率正常。
+`patch_verl_agent2.py` 已补上固定 vLLM owner 的请求过滤与原行序恢复；
+`test_vllm_active_rows.py` 的 48 项官方接口对照通过（显式 engine double，
+核验请求、LoRA、返回索引、零 mask、无 mask 原路径，活跃行逐值一致）。
+这项测试不是实际模型吞吐或 FA/FLA 数值验收。运行中 worker 的加载状态及
+生效后的耗时须另看远端 `receipts/vllm-active-rows/`，源码落盘不表示已生效。
+生成并发 `max_num_seqs=4` 也独立于 actor/DT minibatch4；提高并发尚未对照
+实际显存和吞吐，不把推测的加速倍数当测量。WebShop 已完成正式第 1 次更新
+及检查点：纯生成 13,730.372 秒，DT RPC 235.493 秒，总迭代 22,441.507 秒。
+
 每小时检查同时运行 [日志绘图](plot_training_progress.py)：
 `python -X utf8 experiments/rl/plot_training_progress.py --source-root /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922 --publish`。
 它只读当前正式 manifest 的原 Ray worker 日志，生成进度/效果 PNG、指标 CSV
