@@ -5844,6 +5844,1685 @@
       "saved_seconds": 3.300100116059184,
       "exact_output": true,
       "scope": "Same captured operands, upstream, actor and vLLM-sleep state; one warm pair, not an alternating multi-round steady-state estimate."
+    },
+    "historical_snapshot": "0289dd2, before shape-only input removal; current counts in redundant_capture_removal"
+  },
+  "latest_shape_metadata_parity": {
+    "scope": "Check real Qwen DT minibatching and borrowed replay operands.\n\nThe copy/no-copy comparison holds batch and inputs fixed and expects exact\nvalues. Serial/batched differences are recorded separately; this script does\nnot invent a whole-model FA tolerance or replace the exact-32k capacity test.\n",
+    "max_length": 32768,
+    "runs": [
+      {
+        "name": "serial",
+        "seconds": 15.767278372310102,
+        "paired_shapes": [
+          [
+            2,
+            618
+          ],
+          [
+            2,
+            621
+          ],
+          [
+            2,
+            626
+          ],
+          [
+            2,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 4,
+          "event_contrasts": 4,
+          "minibatch_size": 1,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 618,
+              "query_tokens": 170,
+              "root_effect": -0.11290553212165833,
+              "signed_sum": -0.13536491842610376,
+              "conservation_residual": 0.02245938630444544,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10039297381448346,
+              "source_log_ratio_max": 0.026672600423435007
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 621,
+              "query_tokens": 170,
+              "root_effect": -0.03867879509925842,
+              "signed_sum": -0.07271997785769126,
+              "conservation_residual": 0.034041182758432834,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 1,
+              "source_log_ratio_min": -0.1426796332883319,
+              "source_log_ratio_max": 0.2304149030914423
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 626,
+              "query_tokens": 170,
+              "root_effect": -0.01854264736175537,
+              "signed_sum": -0.017994203543035135,
+              "conservation_residual": -0.0005484438187202366,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 2,
+              "source_log_ratio_min": -0.06294298828863401,
+              "source_log_ratio_max": 0.05343235707740687
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.01854264736175537,
+              "signed_sum": -0.01921238537648772,
+              "conservation_residual": 0.0006697380147323503,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 3,
+              "source_log_ratio_min": -0.11208283886944592,
+              "source_log_ratio_max": 0.05380356175788028
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 15.74850338511169,
+          "nonzero_advantages": 52,
+          "conservation_failures": 2
+        }
+      },
+      {
+        "name": "batch_copied",
+        "seconds": 18.029367645271122,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.11033478143052133,
+              "conservation_residual": 0.021665570758142794,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04665099532192324,
+              "source_log_ratio_max": 0.04760419757684909
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05547329929529009,
+              "conservation_residual": 0.004527689487321948,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10240902994895662,
+              "source_log_ratio_max": 0.11920085648304479
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.008103546768483863,
+              "conservation_residual": -0.0009586838185217522,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07705172626996706,
+              "source_log_ratio_max": 0.03960128334642311
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025854816968262015,
+              "conservation_residual": -0.0033034294198153596,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017793895440764734,
+              "source_log_ratio_max": 0.02552671331221863
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 18.01174991298467,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_borrowed",
+        "seconds": 4.685138378292322,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.11033478143052133,
+              "conservation_residual": 0.021665570758142794,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04665099532192324,
+              "source_log_ratio_max": 0.04760419757684909
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05547329929529009,
+              "conservation_residual": 0.004527689487321948,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10240902994895662,
+              "source_log_ratio_max": 0.11920085648304479
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.008103546768483863,
+              "conservation_residual": -0.0009586838185217522,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07705172626996706,
+              "source_log_ratio_max": 0.03960128334642311
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025854816968262015,
+              "conservation_residual": -0.0033034294198153596,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017793895440764734,
+              "source_log_ratio_max": 0.02552671331221863
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 4.6675318498164415,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_compiled_gate",
+        "seconds": 3.5587989408522844,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.1102329292253128,
+              "conservation_residual": 0.021563718552934263,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.046692760988947146,
+              "source_log_ratio_max": 0.04749805187116013
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05416641111800527,
+              "conservation_residual": 0.00322080131003713,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10101737187903415,
+              "source_log_ratio_max": 0.12031684948214619
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.0093809935013534,
+              "conservation_residual": 0.0003187629143477852,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07772139567445173,
+              "source_log_ratio_max": 0.039513152149388095
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.026004563165203044,
+              "conservation_residual": -0.0034531756167563883,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.01779781568835405,
+              "source_log_ratio_max": 0.025510710587041706
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 3.541119930334389,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_head8",
+        "seconds": 13.268180935643613,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.10985429413424928,
+              "conservation_residual": 0.021185083461870743,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04556116248388162,
+              "source_log_ratio_max": 0.04735558670691256
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05602001950013849,
+              "conservation_residual": 0.005074409692170351,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10214924973273565,
+              "source_log_ratio_max": 0.11923916295288549
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.007388400792186667,
+              "conservation_residual": -0.0016738297948189484,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07712276732975856,
+              "source_log_ratio_max": 0.039342502767748595
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025804255939550956,
+              "conservation_residual": -0.0032528683911043008,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017500640820208718,
+              "source_log_ratio_max": 0.025144835418869912
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 13.250609397888184,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_offloaded",
+        "seconds": 4.776096879504621,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.10985429413424928,
+              "conservation_residual": 0.021185083461870743,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04556116248388162,
+              "source_log_ratio_max": 0.04735558670691256
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05602001950013849,
+              "conservation_residual": 0.005074409692170351,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10214924973273565,
+              "source_log_ratio_max": 0.11923916295288549
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.007388400792186667,
+              "conservation_residual": -0.0016738297948189484,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07712276732975856,
+              "source_log_ratio_max": 0.039342502767748595
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025804255939550956,
+              "conservation_residual": -0.0032528683911043008,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017500640820208718,
+              "source_log_ratio_max": 0.025144835418869912
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 4.753796551376581,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      }
+    ],
+    "actor_forward_before_dt": true,
+    "first_mixer_differences": {
+      "attention": {
+        "1.q_norm_input": {
+          "max_abs": 0.0,
+          "stride": [
+            5201920,
+            8192,
+            512,
+            1
+          ],
+          "baseline_stride": [
+            5201920,
+            8192,
+            512,
+            1
+          ]
+        },
+        "1.k_norm_input": {
+          "max_abs": 0.0,
+          "stride": [
+            650240,
+            1024,
+            256,
+            1
+          ],
+          "baseline_stride": [
+            650240,
+            1024,
+            256,
+            1
+          ]
+        },
+        "output": {
+          "max_abs": 0.0,
+          "stride": [
+            2600960,
+            4096,
+            1
+          ],
+          "baseline_stride": [
+            2600960,
+            4096,
+            1
+          ]
+        }
+      },
+      "gdn": {
+        "1.a": {
+          "max_abs": 0.0,
+          "stride": [
+            20320,
+            32,
+            1
+          ],
+          "baseline_stride": [
+            20320,
+            32,
+            1
+          ]
+        },
+        "1.b": {
+          "max_abs": 0.0,
+          "stride": [
+            20320,
+            32,
+            1
+          ],
+          "baseline_stride": [
+            20320,
+            32,
+            1
+          ]
+        },
+        "output": {
+          "max_abs": 0.0,
+          "stride": [
+            2600960,
+            4096,
+            1
+          ],
+          "baseline_stride": [
+            2600960,
+            4096,
+            1
+          ]
+        }
+      }
+    },
+    "borrowed_matches_copied_exactly": true,
+    "offloaded_matches_same_head_partition_exactly": true,
+    "compiled_gate_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 0.016793251037597656,
+        "relative_l2": 0.0003236882778858667
+      },
+      "dt_token_advantages": {
+        "max_abs": 0.016793131828308105,
+        "relative_l2": 0.0096790654540519
+      }
+    },
+    "head_partition_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 0.0136566162109375,
+        "relative_l2": 0.00033625145280241154
+      },
+      "dt_token_advantages": {
+        "max_abs": 0.01365649700164795,
+        "relative_l2": 0.010055157161465506
+      }
+    },
+    "serial_batch_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 1.5675201416015625,
+        "relative_l2": 0.037130870055260834
+      },
+      "dt_token_advantages": {
+        "max_abs": 1.5675200819969177,
+        "relative_l2": 0.7099746605573198
+      }
+    },
+    "candidate_fa": {
+      "sha256": "60704ae8a0b344b796888a3b924204c9b849ff4bf32d57d6fa59a5c57ab43962",
+      "seconds": 3.1568502318114042,
+      "differences": {
+        "dt_q_estimates": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "dt_v_estimates": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "dt_token_advantages": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        }
+      }
+    },
+    "status": "passed_memory_copy_parity_and_batch_interface",
+    "raw_result": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/shape-only/shape-metadata-parity.json",
+      "sha256": "2012a4d1665696dedd8c6f53d6b3b01d24dd22bb359d847e1c853eeb62de6f30"
+    }
+  },
+  "latest_dense_alias_parity": {
+    "scope": "Check real Qwen DT minibatching and borrowed replay operands.\n\nThe copy/no-copy comparison holds batch and inputs fixed and expects exact\nvalues. Serial/batched differences are recorded separately; this script does\nnot invent a whole-model FA tolerance or replace the exact-32k capacity test.\n",
+    "max_length": 32768,
+    "runs": [
+      {
+        "name": "serial",
+        "seconds": 15.175789635628462,
+        "paired_shapes": [
+          [
+            2,
+            618
+          ],
+          [
+            2,
+            621
+          ],
+          [
+            2,
+            626
+          ],
+          [
+            2,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 4,
+          "event_contrasts": 4,
+          "minibatch_size": 1,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 618,
+              "query_tokens": 170,
+              "root_effect": -0.11290553212165833,
+              "signed_sum": -0.13536491842610376,
+              "conservation_residual": 0.02245938630444544,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10039297381448346,
+              "source_log_ratio_max": 0.026672600423435007
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 621,
+              "query_tokens": 170,
+              "root_effect": -0.03867879509925842,
+              "signed_sum": -0.07271997785769126,
+              "conservation_residual": 0.034041182758432834,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 1,
+              "source_log_ratio_min": -0.1426796332883319,
+              "source_log_ratio_max": 0.2304149030914423
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 626,
+              "query_tokens": 170,
+              "root_effect": -0.01854264736175537,
+              "signed_sum": -0.017994203543035135,
+              "conservation_residual": -0.0005484438187202366,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 2,
+              "source_log_ratio_min": -0.06294298828863401,
+              "source_log_ratio_max": 0.05343235707740687
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.01854264736175537,
+              "signed_sum": -0.01921238537648772,
+              "conservation_residual": 0.0006697380147323503,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 3,
+              "source_log_ratio_min": -0.11208283886944592,
+              "source_log_ratio_max": 0.05380356175788028
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 15.157464656978846,
+          "nonzero_advantages": 52,
+          "conservation_failures": 2
+        }
+      },
+      {
+        "name": "batch_copied",
+        "seconds": 17.917692695744336,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.11033478143052133,
+              "conservation_residual": 0.021665570758142794,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04665099532192324,
+              "source_log_ratio_max": 0.04760419757684909
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05547329929529009,
+              "conservation_residual": 0.004527689487321948,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10240902994895662,
+              "source_log_ratio_max": 0.11920085648304479
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.008103546768483863,
+              "conservation_residual": -0.0009586838185217522,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07705172626996706,
+              "source_log_ratio_max": 0.03960128334642311
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025854816968262015,
+              "conservation_residual": -0.0033034294198153596,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017793895440764734,
+              "source_log_ratio_max": 0.02552671331221863
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 17.900448877364397,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_borrowed",
+        "seconds": 4.745592290535569,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.11033478143052133,
+              "conservation_residual": 0.021665570758142794,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04665099532192324,
+              "source_log_ratio_max": 0.04760419757684909
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05547329929529009,
+              "conservation_residual": 0.004527689487321948,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10240902994895662,
+              "source_log_ratio_max": 0.11920085648304479
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.008103546768483863,
+              "conservation_residual": -0.0009586838185217522,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07705172626996706,
+              "source_log_ratio_max": 0.03960128334642311
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025854816968262015,
+              "conservation_residual": -0.0033034294198153596,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017793895440764734,
+              "source_log_ratio_max": 0.02552671331221863
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 4.728216758929193,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_compiled_gate",
+        "seconds": 3.6191651560366154,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.1102329292253128,
+              "conservation_residual": 0.021563718552934263,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.046692760988947146,
+              "source_log_ratio_max": 0.04749805187116013
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05416641111800527,
+              "conservation_residual": 0.00322080131003713,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10101737187903415,
+              "source_log_ratio_max": 0.12031684948214619
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.0093809935013534,
+              "conservation_residual": 0.0003187629143477852,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07772139567445173,
+              "source_log_ratio_max": 0.039513152149388095
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.026004563165203044,
+              "conservation_residual": -0.0034531756167563883,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.01779781568835405,
+              "source_log_ratio_max": 0.025510710587041706
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 3.601412939839065,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_head8",
+        "seconds": 13.43351187929511,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.10985429413424928,
+              "conservation_residual": 0.021185083461870743,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04556116248388162,
+              "source_log_ratio_max": 0.04735558670691256
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05602001950013849,
+              "conservation_residual": 0.005074409692170351,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10214924973273565,
+              "source_log_ratio_max": 0.11923916295288549
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.007388400792186667,
+              "conservation_residual": -0.0016738297948189484,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07712276732975856,
+              "source_log_ratio_max": 0.039342502767748595
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025804255939550956,
+              "conservation_residual": -0.0032528683911043008,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017500640820208718,
+              "source_log_ratio_max": 0.025144835418869912
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 13.41618163138628,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      },
+      {
+        "name": "batch_offloaded",
+        "seconds": 4.780213315039873,
+        "paired_shapes": [
+          [
+            8,
+            635
+          ]
+        ],
+        "report": {
+          "task": "Sokoban",
+          "policy_tokens": 56,
+          "nonzero_reward_events": 4,
+          "finite_trace_calls": 1,
+          "event_contrasts": 4,
+          "minibatch_size": 4,
+          "max_readout_length": 635,
+          "actual_row_lengths": [
+            447,
+            450,
+            455,
+            464
+          ],
+          "traces": [
+            {
+              "episode_index": 0,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 618,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.08866921067237854,
+              "signed_sum": -0.10985429413424928,
+              "conservation_residual": 0.021185083461870743,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": false,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.04556116248388162,
+              "source_log_ratio_max": 0.04735558670691256
+            },
+            {
+              "episode_index": 1,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 621,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.05094560980796814,
+              "signed_sum": -0.05602001950013849,
+              "conservation_residual": 0.005074409692170351,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.10214924973273565,
+              "source_log_ratio_max": 0.11923916295288549
+            },
+            {
+              "episode_index": 2,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 626,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": -0.009062230587005615,
+              "signed_sum": -0.007388400792186667,
+              "conservation_residual": -0.0016738297948189484,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.07712276732975856,
+              "source_log_ratio_max": 0.039342502767748595
+            },
+            {
+              "episode_index": 3,
+              "source_step": 4,
+              "event_step": 4,
+              "context_tokens": 635,
+              "compute_tokens": 635,
+              "query_tokens": 170,
+              "root_effect": 0.022551387548446655,
+              "signed_sum": 0.025804255939550956,
+              "conservation_residual": -0.0032528683911043008,
+              "conservation_tolerance": 0.02,
+              "conservation_verified": true,
+              "owner_batch_index": 0,
+              "source_log_ratio_min": -0.017500640820208718,
+              "source_log_ratio_max": 0.025144835418869912
+            }
+          ],
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 4.75853999517858,
+          "nonzero_advantages": 52,
+          "conservation_failures": 1
+        }
+      }
+    ],
+    "actor_forward_before_dt": true,
+    "first_mixer_differences": {
+      "attention": {
+        "1.q_norm_input": {
+          "max_abs": 0.0,
+          "stride": [
+            5201920,
+            8192,
+            512,
+            1
+          ],
+          "baseline_stride": [
+            5201920,
+            8192,
+            512,
+            1
+          ]
+        },
+        "1.k_norm_input": {
+          "max_abs": 0.0,
+          "stride": [
+            650240,
+            1024,
+            256,
+            1
+          ],
+          "baseline_stride": [
+            650240,
+            1024,
+            256,
+            1
+          ]
+        },
+        "output": {
+          "max_abs": 0.0,
+          "stride": [
+            2600960,
+            4096,
+            1
+          ],
+          "baseline_stride": [
+            2600960,
+            4096,
+            1
+          ]
+        }
+      },
+      "gdn": {
+        "1.a": {
+          "max_abs": 0.0,
+          "stride": [
+            20320,
+            32,
+            1
+          ],
+          "baseline_stride": [
+            20320,
+            32,
+            1
+          ]
+        },
+        "1.b": {
+          "max_abs": 0.0,
+          "stride": [
+            20320,
+            32,
+            1
+          ],
+          "baseline_stride": [
+            20320,
+            32,
+            1
+          ]
+        },
+        "output": {
+          "max_abs": 0.0,
+          "stride": [
+            2600960,
+            4096,
+            1
+          ],
+          "baseline_stride": [
+            2600960,
+            4096,
+            1
+          ]
+        }
+      }
+    },
+    "borrowed_matches_copied_exactly": true,
+    "offloaded_matches_same_head_partition_exactly": true,
+    "compiled_gate_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 0.016793251037597656,
+        "relative_l2": 0.0003236882778858667
+      },
+      "dt_token_advantages": {
+        "max_abs": 0.016793131828308105,
+        "relative_l2": 0.0096790654540519
+      }
+    },
+    "head_partition_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 0.0136566162109375,
+        "relative_l2": 0.00033625145280241154
+      },
+      "dt_token_advantages": {
+        "max_abs": 0.01365649700164795,
+        "relative_l2": 0.010055157161465506
+      }
+    },
+    "serial_batch_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 1.5675201416015625,
+        "relative_l2": 0.037130870055260834
+      },
+      "dt_token_advantages": {
+        "max_abs": 1.5675200819969177,
+        "relative_l2": 0.7099746605573198
+      }
+    },
+    "status": "passed_memory_copy_parity_and_batch_interface",
+    "raw_result": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/shape-only/dense-alias-minibatch-parity.json",
+      "sha256": "a99da8b4a3ad7597f8eef8fc91782d9764b584e2b4ca97026fcb73fb5c98d34d"
+    }
+  },
+  "latest_dense_alias_copy32k": {
+    "scope": "Same actual first-FA 32k replay operands, original actor and sleeping vLLM; capture-only comparison",
+    "status": "observed_requested_copies",
+    "records": [
+      {
+        "name": "q",
+        "bytes": 2147483648,
+        "previous_seconds": 0.34154426865279675,
+        "current_seconds": 7.208157330751419e-05,
+        "exact_values_and_strides": true,
+        "alias": "query"
+      },
+      {
+        "name": "k",
+        "bytes": 536870912,
+        "previous_seconds": 0.08718266244977713,
+        "current_seconds": 6.092432886362076e-05,
+        "exact_values_and_strides": true,
+        "alias": "key"
+      },
+      {
+        "name": "v",
+        "bytes": 536870912,
+        "previous_seconds": 0.009648574516177177,
+        "current_seconds": 2.8843991458415985e-05,
+        "exact_values_and_strides": true,
+        "alias": "value"
+      }
+    ],
+    "raw_result": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/shape-only/dense-alias-in-context32k.json",
+      "sha256": "b9c8bcfabbf11a2a106917aa69923b363b419c83112985d4edbda886f4efbcb0"
+    }
+  },
+  "redundant_capture_removal": {
+    "scope": "Four paired trajectories [8,32768,4096] BF16, 24 GDN and 8 full-attention layers; cumulative transfer counts, not resident memory",
+    "shape_only_input": {
+      "source_bytes_per_layer": 2147483648,
+      "removed_d2h_bytes": 68719476736,
+      "removed_h2d_bytes": 17179869184,
+      "gdn_d2h_bytes_per_layer_after": 33403437056
+    },
+    "dense_fa_views": {
+      "removed_d2h_bytes": 25769803776,
+      "removed_h2d_bytes": 25769803776,
+      "condition": "Actual native pointer/dtype/shape/stride matches interface transpose; independent copy otherwise"
+    },
+    "total_removed_transfer_bytes": 137438953472,
+    "same_actual_fa_capture_previous_seconds": 0.43837550561875105,
+    "same_actual_fa_capture_current_seconds": 0.00016184989362955093,
+    "timing_scope": "One actual 32k FA replay, same actor and sleeping vLLM; D2H capture-only observation. H2D bytes derived from restore call sites; no new full-chain speed claim.",
+    "full_short_output_parity": "Exact signed attribution, target log probabilities and Q/V/A at fixed head partition. Actual lengths 618-635, max_length 32768.",
+    "production_selected": false,
+    "candidate_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/shape-only"
+  },
+  "finite_fa_resource_audit": {
+    "scope": "Installed public mcFuncGetAttributes, one library per process; metadata only, not a kernel speed attribution",
+    "records": [
+      {
+        "library": "libfinite_d256_owner_optimized.so",
+        "symbol": "_Z45__device_stub__deltatrace_fa_finite_p1_kernelILi0E23Flash_fwd_kernel_traitsILi256ELi64ELi64ELi4ELb0ELb0EN7mctlass10bfloat16_tE19Flash_kernel_traitsILi256ELi64ELi64ELi4ES2_EEEv12FiniteParams",
+        "status": 0,
+        "attributes": {
+          "binaryVersion": 10,
+          "cacheModeCA": 0,
+          "constSizeBytes": 0,
+          "localSizeBytes": 0,
+          "maxDynamicSharedSizeBytes": 65536,
+          "maxThreadsPerBlock": 512,
+          "numRegs": 176,
+          "preferredShmemCarveout": 50,
+          "ptxVersion": 10,
+          "sharedSizeBytes": 0
+        }
+      },
+      {
+        "library": "libfinite_d256_owner_optimized.so",
+        "symbol": "_Z45__device_stub__deltatrace_fa_finite_p1_kernelILi1E23Flash_fwd_kernel_traitsILi256ELi64ELi64ELi4ELb0ELb0EN7mctlass10bfloat16_tE19Flash_kernel_traitsILi256ELi64ELi64ELi4ES2_EEEv12FiniteParams",
+        "status": 0,
+        "attributes": {
+          "binaryVersion": 10,
+          "cacheModeCA": 0,
+          "constSizeBytes": 0,
+          "localSizeBytes": 52,
+          "maxDynamicSharedSizeBytes": 65536,
+          "maxThreadsPerBlock": 512,
+          "numRegs": 256,
+          "preferredShmemCarveout": 50,
+          "ptxVersion": 10,
+          "sharedSizeBytes": 0
+        }
+      },
+      {
+        "library": "libfinite_d256_owner_optimized.so",
+        "symbol": "_Z45__device_stub__deltatrace_fa_finite_p1_kernelILi2E23Flash_fwd_kernel_traitsILi256ELi64ELi64ELi4ELb0ELb0EN7mctlass10bfloat16_tE19Flash_kernel_traitsILi256ELi64ELi64ELi4ES2_EEEv12FiniteParams",
+        "status": 0,
+        "attributes": {
+          "binaryVersion": 10,
+          "cacheModeCA": 0,
+          "constSizeBytes": 0,
+          "localSizeBytes": 636,
+          "maxDynamicSharedSizeBytes": 65536,
+          "maxThreadsPerBlock": 512,
+          "numRegs": 256,
+          "preferredShmemCarveout": 50,
+          "ptxVersion": 10,
+          "sharedSizeBytes": 0
+        }
+      },
+      {
+        "library": "libfinite_d256_cached_owner.so",
+        "symbol": "_Z45__device_stub__deltatrace_fa_finite_p1_kernelILi0E23Flash_fwd_kernel_traitsILi256ELi64ELi64ELi4ELb0ELb0EN7mctlass10bfloat16_tE19Flash_kernel_traitsILi256ELi64ELi64ELi4ES2_EEEv12FiniteParams",
+        "status": 0,
+        "attributes": {
+          "binaryVersion": 10,
+          "cacheModeCA": 0,
+          "constSizeBytes": 0,
+          "localSizeBytes": 0,
+          "maxDynamicSharedSizeBytes": 65536,
+          "maxThreadsPerBlock": 512,
+          "numRegs": 176,
+          "preferredShmemCarveout": 50,
+          "ptxVersion": 10,
+          "sharedSizeBytes": 0
+        }
+      },
+      {
+        "library": "libfinite_d256_cached_owner.so",
+        "symbol": "_Z45__device_stub__deltatrace_fa_finite_p1_kernelILi1E23Flash_fwd_kernel_traitsILi256ELi64ELi64ELi4ELb0ELb0EN7mctlass10bfloat16_tE19Flash_kernel_traitsILi256ELi64ELi64ELi4ES2_EEEv12FiniteParams",
+        "status": 0,
+        "attributes": {
+          "binaryVersion": 10,
+          "cacheModeCA": 0,
+          "constSizeBytes": 0,
+          "localSizeBytes": 156,
+          "maxDynamicSharedSizeBytes": 65536,
+          "maxThreadsPerBlock": 512,
+          "numRegs": 256,
+          "preferredShmemCarveout": 50,
+          "ptxVersion": 10,
+          "sharedSizeBytes": 0
+        }
+      },
+      {
+        "library": "libfinite_d256_cached_owner.so",
+        "symbol": "_Z45__device_stub__deltatrace_fa_finite_p1_kernelILi2E23Flash_fwd_kernel_traitsILi256ELi64ELi64ELi4ELb0ELb0EN7mctlass10bfloat16_tE19Flash_kernel_traitsILi256ELi64ELi64ELi4ES2_EEEv12FiniteParams",
+        "status": 0,
+        "attributes": {
+          "binaryVersion": 10,
+          "cacheModeCA": 0,
+          "constSizeBytes": 0,
+          "localSizeBytes": 764,
+          "maxDynamicSharedSizeBytes": 65536,
+          "maxThreadsPerBlock": 512,
+          "numRegs": 256,
+          "preferredShmemCarveout": 50,
+          "ptxVersion": 10,
+          "sharedSizeBytes": 0
+        }
+      }
+    ],
+    "raw_result": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/fa-kernel-attributes-separated.json",
+      "sha256": "a08bf3b8b4374cc5d92cc593f6058a384b4b00f0f182f2a5af1d521f60f867fc"
+    },
+    "initial_query_failure": "Loading identically named kernel symbols from both libraries in one process returned InvalidDeviceFunction for the second. Repeated in separate processes; all statuses 0.",
+    "candidate_rejection": "Native backward 4x2 warp partition does not satisfy the existing fast-transpose view interface (layout_fn unavailable). Compilation rejected; no GPU run, deployment or production source change.",
+    "rejection_log": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/compile-backward-warp-layout.log",
+      "sha256": "345acd315c93dcc9a5585f3acf6eaa255671f83cbecf08b49ec38ecbbf6f6a16"
     }
   }
 }
