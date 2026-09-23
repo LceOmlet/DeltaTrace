@@ -4,6 +4,7 @@ Consumes actual original head logits, never reconstructs a model forward. The
 caller supplies target offsets explicitly: no default whole-response objective,
 padding labels, tokenizer-size vocabulary crop or implicit sink convention.
 """
+import copy
 import torch
 from compiled_logprob_seed import seed_with_checks
 from qwen35_decoder_finite import _linear_transpose, _secant
@@ -52,6 +53,20 @@ class PackedAnswerTargets:
     def sample_sums(self,values):
         assert values.shape==(len(self.labels),)
         return values.new_zeros(self.batch).index_add_(0,self.samples,values)
+
+    def suffix(self,start):
+        """Rebase the same target identities onto a native cached suffix.
+
+        Only positions and the activation extent change; samples, labels and
+        endpoint ordering remain the exact artifacts selected by the caller.
+        """
+        if type(start) is not int or not 0<=start<self.length or not bool((self.positions>=start).all()):
+            raise ValueError('Every target predictor must lie in the cached suffix.')
+        selected=copy.copy(self)
+        selected.length=self.length-start
+        selected.positions=self.positions-start
+        selected.paired_positions=self.paired_positions-start
+        return selected
 
 
 def _answer_seed_rule(z0,z1,target,weight):

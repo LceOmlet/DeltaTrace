@@ -5,6 +5,7 @@ Shared controller for full versus native-selected output rows. All finite
 mathematics is imported unchanged. This path currently requires unpadded equal
 length endpoints; it does not claim variable-length multi-example acceptance.
 """
+import copy
 import time
 from collections.abc import Mapping
 import torch
@@ -61,7 +62,7 @@ def _relative_l2(actual,reference,*,deferred=False):
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False,reuse_native_prefix=False):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -116,6 +117,7 @@ class Qwen35DenseFiniteRunner:
         self.gdn_coefficient_suffix=gdn_coefficient_suffix
         self.compact_gdn_captures=compact_gdn_captures
         self.pin_root_host=pin_root_host
+        self.reuse_native_prefix=reuse_native_prefix
         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
         if not isinstance(key_rules,Mapping):
             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
@@ -173,10 +175,36 @@ class Qwen35DenseFiniteRunner:
             torch.cuda.synchronize();tick=time.perf_counter();value=fn();torch.cuda.synchronize()
             calls.append({'kind':kind,'seconds':time.perf_counter()-tick,'allocated_after':torch.cuda.memory_allocated()})
             return value
+        original_length=selection.length
+        coefficient_starts=None
+        if (self.fa_coefficient_suffix or self.gdn_coefficient_suffix or self.reuse_native_prefix) and observer is None:
+            positions=torch.arange(original_length,device=paired_ids.device)
+            changed=paired_ids[0::2]!=paired_ids[1::2]
+            coefficient_starts=torch.where(changed,positions,original_length).amin(-1).cpu().tolist()
+        prefix_start=0;replay_cache=None;native_cache=None
+        if self.reuse_native_prefix and observer is None:
+            # The native hybrid cache contains the real full-attention K/V,
+            # GDN recurrent state, and causal-convolution window. Evaluate the
+            # common prefix once per sample, then let the owner duplicate it
+            # into the interleaved endpoints. No model layer is reimplemented.
+            prefix_start=min(min(coefficient_starts),int(selection.positions.min()))//64*64
+            if prefix_start:
+                forward=getattr(model,'forward_root',model)
+                with torch.no_grad():
+                    prefix=timed('native_shared_prefix',lambda:forward(
+                        input_ids=paired_ids[1::2,:prefix_start],use_cache=True,logits_to_keep=1))
+                replay_cache=prefix.past_key_values
+                del prefix
+                replay_cache.reorder_cache(torch.arange(selection.batch,device=paired_ids.device).repeat_interleave(2))
+                # HF GDN updates its cache in place. Keep the original state
+                # for the later native layer replay; the root owns this fork.
+                native_cache=timed('fork_native_prefix_cache',lambda:copy.deepcopy(replay_cache))
+                paired_ids=paired_ids[:,prefix_start:]
+                selection=selection.suffix(prefix_start)
         for i,layer in enumerate(layers):
             def capture(_module,args,kw,i=i):
                 x=args[0] if args else kw['hidden_states'];root[str(i)]=_copy(x,'cpu',pinned_host=self.pin_root_host)
-                kwargs[str(i)]=_copy({k:v for k,v in kw.items() if k!='hidden_states'},'cpu',pinned_host=self.pin_root_host)
+                kwargs[str(i)]=_copy({k:v for k,v in kw.items() if k not in ('hidden_states','past_key_values')},'cpu',pinned_host=self.pin_root_host)
             handles.append(layer.register_forward_pre_hook(capture,with_kwargs=True))
         def final_norm(_module,args,output):
             root['final_norm_input']=_copy(args[0],'cpu',pinned_host=self.pin_root_host)
@@ -190,11 +218,12 @@ class Qwen35DenseFiniteRunner:
         handles.append(model.lm_head.register_forward_pre_hook(head_input))
         selector=NativeTargetLogitRows(selection) if select_output_rows else None
         try:
-            with torch.no_grad():out=timed('native_root_with_CPU_checkpoints',lambda:model(input_ids=paired_ids,attention_mask=mask,use_cache=False,
+            with torch.no_grad():out=timed('native_root_with_CPU_checkpoints',lambda:model(input_ids=paired_ids,attention_mask=mask,use_cache=bool(prefix_start),past_key_values=native_cache,
                 **({'logits_to_keep':selector.rows} if selector is not None else {})))
         finally:
             if self.pin_root_host:torch.cuda.current_stream().synchronize()
             for h in handles:h.remove()
+        native_cache=None
         expected_rows=len(selector.rows) if selector is not None else selection.length
         if head_shapes!=[[2*selection.batch,expected_rows,model.lm_head.in_features]]:
             raise ValueError('Actual native head did not receive the requested rows.')
@@ -220,23 +249,16 @@ class Qwen35DenseFiniteRunner:
         with torch.no_grad():m=timed('finite_final_norm',lambda:self.boundaries.norm_residual(x[0::2],x[1::2],norm.weight,mnorm,torch.zeros_like(mnorm),norm.eps))
         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
         seed_effect=effect(m,x);del x,mnorm,seed,z
-        coefficient_starts=None
-        if (self.fa_coefficient_suffix or self.gdn_coefficient_suffix) and observer is None:
-            # Every operation in this reviewed no-cache decoder is causal.
-            # The identical input prefix therefore has zero displacement at
-            # every layer. Its finite coefficients cannot contribute to the
-            # signed input effect or feed later-position coefficients. Keep
-            # full K/V history, omitting only those finite-FA output positions.
-            positions=torch.arange(selection.length,device=paired_ids.device)
-            changed=paired_ids[0::2]!=paired_ids[1::2]
-            coefficient_starts=torch.where(changed,positions,selection.length).amin(-1).cpu().tolist()
-        layout=RightPaddedLengths([selection.length]*selection.batch,selection.length,paired_ids.device,
-                                  coefficient_starts=coefficient_starts if self.fa_coefficient_suffix else None)
-        gdn_cut=(min(min(coefficient_starts)//64,(selection.length-1)//64)*64
-                 if self.gdn_coefficient_suffix and coefficient_starts is not None else 0)
+        layout=RightPaddedLengths([original_length]*selection.batch,original_length,paired_ids.device,
+                                  coefficient_starts=coefficient_starts if self.fa_coefficient_suffix or prefix_start else None,
+                                  query_start=prefix_start)
+        local_starts=None if coefficient_starts is None else [start-prefix_start for start in coefficient_starts]
+        gdn_cut=(min(min(local_starts)//64,(selection.length-1)//64)*64
+                 if self.gdn_coefficient_suffix and local_starts is not None else 0)
         for i in reversed(range(32)):
             layer=layers[i];is_fa=layer.block_type=='full_attention';x=root[str(i)].to('cuda',non_blocking=self.pin_root_host);kw=_copy(kwargs[str(i)],'cuda',pinned_host=self.pin_root_host)
-            # The no-cache Qwen path consumes these activations without
+            kw['past_key_values']=replay_cache
+            # Native Qwen consumes these input activations without
             # mutating them. Optional borrowing keeps their native storage,
             # instead of cloning every projection input and its views again.
             # Observers retain the complete copied diagnostic trace.
@@ -334,10 +356,11 @@ class Qwen35DenseFiniteRunner:
             if callable(release_layer):release_layer(layer)
             if observer is not None:observer.boundary(str(i),m.detach(),root[str(i)])
         x=root['0'].to('cuda',non_blocking=self.pin_root_host);signed=_token_effect(m,x).cpu()
+        if prefix_start:signed=torch.nn.functional.pad(signed,(prefix_start,0))
         torch.cuda.synchronize();seconds=time.perf_counter()-started
         info={'select_output_rows':select_output_rows,'complete_attribution_seconds_with_diagnostics':seconds,
               'fa_coefficient_starts':coefficient_starts if self.fa_coefficient_suffix else None,
-              'gdn_fla_coefficient_start':gdn_cut,
+              'gdn_fla_coefficient_start':gdn_cut,'native_shared_prefix_length':prefix_start,
               'norm_gate_rules':{str(i):rule for i,rule in sorted(self.norm_gate_rules.items())},
               'finite_fla_by_layer':sorted(self.finite_fla_by_layer),
               'attention_pv_rules':{str(i):rule for i,rule in sorted(self.attention_pv_rules.items())},

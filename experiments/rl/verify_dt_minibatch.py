@@ -25,6 +25,7 @@ def main():
                    help='Save real actor weight fingerprints and the first B4 native root inputs for offload diagnosis.')
     p.add_argument('--gdn-suffix-comparison', action='store_true',
                    help='Only compare the unchanged offloaded route with GDN/FA suffix controls; operator gates are separate.')
+    p.add_argument('--native-prefix-comparison', action='store_true',help='Compare full and native cached-prefix attribution on the same actor.')
     p.add_argument('--root-pin-comparison', action='store_true',
                    help='Compare complete short attribution with only the original checkpoint transfer destination pinned.')
     p.add_argument('--compact-gdn-comparison', action='store_true',
@@ -77,6 +78,7 @@ def main():
             sample['attention_mask'] = torch.cat((torch.ones(count, dtype=torch.long), row['attention_mask']))
             episodes.append([sample])
         outputs = {}
+        prefix_root_inputs={}
         if args.snapshot_output:
             import hashlib
             from torch.distributed.tensor import DTensor
@@ -127,7 +129,7 @@ def main():
                             operands=checks,convolution_preactivations_exact=True)
                         del pre
                 value = _original(*a, **kw)
-                if not (args.gdn_suffix_comparison or args.compact_gdn_comparison) and current_run in ('batch_head8', 'batch_offloaded') and (current_run, _kind) not in mixer_seen:
+                if not (args.gdn_suffix_comparison or args.compact_gdn_comparison) and not args.native_prefix_comparison and current_run in ('batch_head8', 'batch_offloaded') and (current_run, _kind) not in mixer_seen:
                     mixer_seen.add((current_run, _kind))
                     tensors = {f'{index}.{key}': (tensor.detach().cpu(), tensor.stride())
                         for index, arg in enumerate(a) if isinstance(arg, dict)
@@ -146,6 +148,24 @@ def main():
         native = producer.runner.attribute
         def record(*a, **kw):
             handles = []
+            if args.native_prefix_comparison:
+                seen=set()
+                for index,layer in enumerate(producer.runner.model.model.language_model.layers):
+                    def compare_native_input(module,inputs,kwargs,index=index):
+                        hidden=inputs[0] if inputs else kwargs['hidden_states']
+                        # Shared prefill has batch B; compare the B*2 root
+                        # suffix once, before the later decoder replay.
+                        if index in seen or hidden.shape[0]!=a[0].shape[0]:return
+                        seen.add(index)
+                        actual=hidden.detach().cpu()
+                        if current_run=='batch_root_pinned':prefix_root_inputs[index]=actual
+                        else:
+                            reference=prefix_root_inputs[index][:,-actual.shape[1]:]
+                            delta=actual.float()-reference.float()
+                            result.setdefault('native_prefix_root_layers',[]).append(dict(
+                                layer=index,shape=list(actual.shape),exact=torch.equal(actual,reference),
+                                max_abs=float(delta.abs().max()),relative_l2=float(delta.norm()/reference.float().norm().clamp_min(1e-30))))
+                    handles.append(layer.register_forward_pre_hook(compare_native_input,with_kwargs=True))
             if args.snapshot_output and current_run == 'batch_borrowed':
                 torch.save(dict(ids=a[0].cpu(), mask=a[1].cpu()), args.snapshot_output/'inputs.pt')
                 layers = producer.runner.model.model.language_model.layers
@@ -170,6 +190,9 @@ def main():
                     handle.remove()
             calls.append(dict(paired_shape=list(a[0].shape), signed=value.cpu(),
                               target_logp0=detail['target_logp0'], target_logp1=detail['target_logp1']))
+            if args.native_prefix_comparison:
+                result.setdefault('native_prefix_owner_diagnostics',[]).append(dict(
+                    run=current_run,prefix_length=detail['native_shared_prefix_length'],layers=detail['layers']))
             return value, detail
         producer.runner.attribute = record
         if args.execution_reuse:
@@ -213,6 +236,9 @@ def main():
         if args.root_pin_comparison:
             assert producer.runner.pin_root_host
             configurations=[('batch_compact_gdn',4,False),('batch_root_pinned',4,False)]*3
+        if args.native_prefix_comparison:
+            assert producer.runner.reuse_native_prefix
+            configurations=[('batch_root_pinned',4,False),('batch_native_prefix',4,False)]*2
         if args.gdn_suffix_comparison:
             assert producer.runner.gdn_coefficient_suffix
             configurations=[entry for entry in configurations if entry[0] in
@@ -223,11 +249,12 @@ def main():
             producer.runner.defer_diagnostics = False
             producer.readout.minibatch_size = batch
             producer.runner.copy_replay_captures = copies
-            suffix_run=name in ('batch_fa_suffix','batch_gdn_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned')
-            producer.runner.fa_coefficient_suffix = name in ('batch_fa_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned')
-            producer.runner.gdn_coefficient_suffix = name in ('batch_gdn_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned')
-            producer.runner.compact_gdn_captures = name in ('batch_compact_gdn','batch_root_pinned')
-            producer.runner.pin_root_host = name=='batch_root_pinned'
+            suffix_run=name in ('batch_fa_suffix','batch_gdn_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned','batch_native_prefix')
+            producer.runner.fa_coefficient_suffix = name in ('batch_fa_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned','batch_native_prefix')
+            producer.runner.gdn_coefficient_suffix = name in ('batch_gdn_suffix','batch_both_suffix','batch_compact_gdn','batch_root_pinned','batch_native_prefix')
+            producer.runner.compact_gdn_captures = name in ('batch_compact_gdn','batch_root_pinned','batch_native_prefix')
+            producer.runner.pin_root_host = name in ('batch_root_pinned','batch_native_prefix')
+            producer.runner.reuse_native_prefix = name=='batch_native_prefix'
             producer.runner.offload_replay_mixer = name == 'batch_offloaded' or suffix_run
             producer.runner.pin_replay_host = name == 'batch_offloaded' or suffix_run
             producer.runner.compile_gdn_scalar_rules = name in ('batch_compiled_gate','batch_head8','batch_offloaded') or suffix_run
@@ -248,6 +275,15 @@ def main():
         if args.root_pin_comparison:
             torch.testing.assert_close(outputs['batch_compact_gdn'],outputs['batch_root_pinned'],rtol=0,atol=0)
             result['status']='passed_root_pinned_exact_short_parity'
+            return
+        if args.native_prefix_comparison:
+            differences={}
+            for key in ('dt_q_estimates','dt_v_estimates','dt_token_advantages'):
+                reference=torch.cat([ep[0][key] for ep in outputs['batch_root_pinned'][0]]).double()
+                actual=torch.cat([ep[0][key] for ep in outputs['batch_native_prefix'][0]]).double()
+                differences[key]=dict(max_abs=float((reference-actual).abs().max()),relative_l2=float((reference-actual).norm()/reference.norm().clamp_min(1e-30)))
+            result['native_prefix_chain_differences']=differences
+            result['status']='completed_native_prefix_chain_diagnostic'
             return
         comparison_reference='batch_both_suffix' if args.compact_gdn_comparison else 'batch_offloaded'
         for name in (('batch_compact_gdn',) if args.compact_gdn_comparison else ('batch_gdn_suffix','batch_both_suffix')):

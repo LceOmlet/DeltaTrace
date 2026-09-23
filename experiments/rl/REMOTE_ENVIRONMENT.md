@@ -12,6 +12,24 @@
 
 ## 2026-09-23 已有加速分支的复用
 
+- `candidates/dt-minibatch/native-prefix` 复用原模型混合缓存，新增可选
+  `dt_reuse_native_prefix=true`。已编译库 `libfinite_cached_queries.so` 的
+  SHA256 为 `5d2af760abb2684401682029e41ac68aefc58ed2796082d435874a2b74bbcebb`。
+  不重建缓存/环境。原有限 FA 只扩展 Q 后缀、完整 K/V 的输入布局，有限公式
+  不变；原生 GDN 使用真实缓存状态和卷积左窗口。仍是隔离候选，未正式部署。
+- `capacity32k.json` 状态 passed，退出码 0，总计 337.772 秒；完整热 DT
+  27.814 秒，原版官方反向主参照 44.007 秒。B4/32768、1024 action 槽位、
+  vLLM 驻留、actor microbatch4、原 activation offload 和 FSDP2 参数卸载。
+  两次 PPO 更新及原生 LoRA 同步完成，1,441,630 个可训练元素改变。
+  32769 明确拒绝。该输入是容量夹具，不能称为真实任务的成功率/吞吐验收。
+  DT 结束物理占用约 31.44 GiB，PPO 阶段快照约 51.27 GiB；这不是物理
+  峰值的连续采样。完整作业无 OOM，进程 RSS 约 11.1 GiB，不代表整机用量。
+- 原生/有限 FA 的官方输出和 dQKV 断言，以及 FLA 的原 FP32 recurrence/
+  assert_close 已用于缓存续算对照。短链累计差异单独保留，不另造整网门槛：
+  A 相对 L2 约 1.78，V 约 0.0526；原生 GDN 前向首先出现差异，逐层重放
+  与对应根前向相同。后续部署须保留这些诊断，不把守恒或算子通过冒充整网
+  逐值一致。当前三任务正式训练与监控/备份仍未恢复。
+
 - 隔离候选 `candidates/dt-minibatch/compact-gdn` 增加
   `dt_compact_gdn_captures=true`；`pinned-root` 叠加
   `dt_pin_root_host=true`。沿用所有下层候选、原模型和持久缓存，未重装环境。

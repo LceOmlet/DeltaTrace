@@ -67,3 +67,19 @@ def test_zero_linear_displacement_cannot_hide_changed_native_output():
     hidden[1] = hidden[0]
     with pytest.raises(ValueError, match='Finite answer seed invalid'):
         FiniteAnswerOps(compiled=False)(logits, head, targets, original_packed_hidden=hidden)
+
+
+def test_cached_suffix_preserves_target_identity_and_endpoint_packing():
+    targets=PackedAnswerTargets([
+        {'prompt_length':9,'target_ids':torch.tensor([3,4])},
+        {'prompt_length':11,'target_ids':torch.tensor([5])},
+    ],[[0,1],[0]],12,'cpu')
+    hidden=torch.arange(4*12*3).reshape(4,12,3)
+    suffix=targets.suffix(8)
+    assert torch.equal(targets.pack_hidden(hidden),suffix.pack_hidden(hidden[:,8:]))
+    assert suffix.labels is targets.labels and suffix.paired_samples is targets.paired_samples
+    assert targets.length==12 and targets.positions.tolist()==[8,9,10]
+    packed=torch.tensor([[1.,2.],[3.,4.],[5.,6.]])
+    assert torch.equal(targets.scatter_hidden(packed)[:,8:],suffix.scatter_hidden(packed))
+    with pytest.raises(ValueError,match='predictor'):
+        targets.suffix(9)

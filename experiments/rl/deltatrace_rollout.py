@@ -321,6 +321,7 @@ class DeltaTraceRolloutProducer:
             gdn_coefficient_suffix=env.get('dt_gdn_coefficient_suffix', False),
             compact_gdn_captures=env.get('dt_compact_gdn_captures', False),
             pin_root_host=env.get('dt_pin_root_host', False),
+            reuse_native_prefix=env.get('dt_reuse_native_prefix', False),
             **execution,
         )
         self.packed_answer_targets = PackedAnswerTargets

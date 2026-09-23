@@ -19,6 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--candidate', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--cached-only', action='store_true')
     args = parser.parse_args()
     digest = hashlib.sha256(args.candidate.read_bytes()).hexdigest()
     owner = VendorFAFiniteP1BF16D256(args.candidate, digest)
@@ -31,10 +32,12 @@ def main():
         torch.cuda.synchronize()
         return value, time.perf_counter()-start
 
-    for length, lengths, starts in [
+    cases=[
             (128, [128, 97, 66, 1], [0, 1, 64, 1]),
             (447, [447, 389, 321, 256], [64, 65, 321, 128]),
-            (32768, [32768]*4, [31573]*4)]:
+            (32768, [32768]*4, [31573]*4)]
+    if args.cached_only:cases=[(128,[128]*4,[64,65,100,128]),(447,[447,389,321,256],[64,65,321,128]),(32768,[32768]*4,[31573]*4)]
+    for length, lengths, starts in cases:
         for coincident in ([True, False] if length < 32768 else [False]):
             torch.manual_seed(2026)
             q0 = torch.randn(4, length, 16, 256, device='cuda', dtype=torch.bfloat16)
@@ -62,6 +65,16 @@ def main():
             entry = dict(length=length, valid_lengths=lengths, coefficient_starts=starts,
                 coincident=coincident, suffix_values_exact=True, omitted_coefficients_zero=True,
                 full_cold_seconds=full_cold, suffix_cold_seconds=suffix_cold, warm=[])
+            if args.cached_only:
+                cut=min(starts)//64*64
+                cached_layout=RightPaddedLengths(lengths,length,q0.device,coefficient_starts=starts,query_start=cut)
+                cached_operands={k:(v[:,:,cut:] if k in ('q0','q1','u','lse0','lse1') else v) for k,v in operands.items()}
+                cached,cached_seconds=timed(cached_operands,cached_layout)
+                for key in reference:
+                    for index,start in enumerate(starts):
+                        assert torch.equal(reference[key][index,:,start:],cached[key][index,:,start-cut:]),('cached',key,index)
+                entry['cached_queries']=dict(start=cut,seconds=cached_seconds,required_outputs_exact=True)
+                del cached,cached_operands
             if length == 32768:
                 for name, layout in [('full',full), ('suffix',suffix), ('suffix',suffix), ('full',full)]:
                     value, seconds = timed(operands, layout)

@@ -24,6 +24,7 @@ def main():
     p.add_argument('--candidate', type=Path, required=True)
     p.add_argument('--sources', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
+    p.add_argument('--cached-native',action='store_true',help='Also run original FA tests for native cached Q/K extents.')
     p.add_argument('--finite-lengths', type=int, nargs='+', default=[128, 447],
                    help='Lengths for nonzero-endpoint diagnostics against the current finite owner.')
     args = p.parse_args()
@@ -38,6 +39,12 @@ def main():
     owners = dict(current=VendorFAFiniteP1BF16D256(env['finite_library'], env['finite_library_sha256']),
                   candidate=VendorFAFiniteP1BF16D256(args.candidate, hashlib.sha256(args.candidate.read_bytes()).hexdigest()))
     result = dict(scope=__doc__, cases=[], finite_pair_differences=[], candidate_sha256=hashlib.sha256(args.candidate.read_bytes()).hexdigest())
+    if args.cached_native:
+        for qlen,klen in ((64,128),(383,447)):
+            test.flash_attn_func=flash_attn_func
+            test.test_flash_attn_output(seqlen_q=qlen,seqlen_k=klen,d=256,dropout_p=0.,causal=True,
+                local=False,alibi=False,deterministic=True,mha_type='gqa',dtype=torch.bfloat16,kvpacked=False,softcap=0.)
+            result.setdefault('native_cached_cases',[]).append(dict(query_length=qlen,key_length=klen,status='passed'))
 
     def bridge(owner):
         class FiniteGradient(torch.autograd.Function):

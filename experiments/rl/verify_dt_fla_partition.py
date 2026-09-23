@@ -2,8 +2,8 @@
 
 Native FLA supplies the actual saved intermediates. The unchanged pinned FLA
 FP32 recurrence supplies the reference. No initial/final-state adjoints are
-requested: the DT interface starts with zero state and only consumes output
-adjoints. Head partitioning calls the same finite owner; it is not another
+requested: the DT interface holds the unchanged native prefix state fixed
+and only consumes output adjoints. Head partitioning calls the same finite owner; it is not another
 recurrence. This does not certify nonzero finite interventions or whole PPO.
 """
 import argparse
@@ -27,6 +27,8 @@ def main():
     p.add_argument('--sources',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--coefficient-start',type=int,default=0)
+    p.add_argument('--initial-state',action='store_true',help='Use an actual nonzero native recurrent cache state.')
+    p.add_argument('--native-cache-split',action='store_true',help='Check native prefix/state/suffix composition with the same official FP32 reference.')
     args=p.parse_args()
     source=args.sources/'test_gated_delta_v041.py'
     assert hashlib.sha256(source.read_bytes()).hexdigest()=='35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813'
@@ -44,6 +46,7 @@ def main():
         beta=torch.rand(shape[:-1],device='cuda').sigmoid().requires_grad_()
         g=F.logsigmoid(torch.rand(shape[:-1],device='cuda')).requires_grad_()
         inputs=(q,k,v,beta,g)
+        initial=torch.randn(4,32,128,128,device='cuda',dtype=torch.float32) if args.initial_state else None
         endpoints={}
         def capture(frame,event,value):
             if frame.f_code is stage.__code__ and event=='return' and value is not None:
@@ -53,14 +56,32 @@ def main():
         sys.setprofile(capture)
         try:
             out,_=chunk_gated_delta_rule(q=q,k=k,v=v,beta=beta,g=g,scale=128**-.5,
-                initial_state=None,output_final_state=False,use_qk_l2norm_in_kernel=False)
+                initial_state=initial,output_final_state=False,use_qk_l2norm_in_kernel=False)
         finally:sys.setprofile(None)
         endpoints['raw_g']=g.detach().repeat_interleave(2,0)
         upstream=torch.randn_like(out)
         native=torch.autograd.grad(out,inputs,upstream)
         ref,_=test.recurrent_gated_delta_rule_ref(q,k,v,beta,g,scale=128**-.5,
-            initial_state=None,output_final_state=False)
+            initial_state=initial,output_final_state=False)
         reference=torch.autograd.grad(ref,inputs,upstream.float())
+        if args.native_cache_split:
+            cut=64
+            with torch.no_grad():
+                _,state=chunk_gated_delta_rule(q=q[:,:cut],k=k[:,:cut],v=v[:,:cut],beta=beta[:,:cut],g=g[:,:cut],
+                    scale=128**-.5,initial_state=initial,output_final_state=True,use_qk_l2norm_in_kernel=False)
+            suffix_inputs=tuple(x[:,cut:].detach().requires_grad_() for x in inputs)
+            qs,ks,vs,bs,gs=suffix_inputs
+            suffix_out,_=chunk_gated_delta_rule(q=qs,k=ks,v=vs,beta=bs,g=gs,scale=128**-.5,
+                initial_state=state,output_final_state=False,use_qk_l2norm_in_kernel=False)
+            suffix_grads=torch.autograd.grad(suffix_out,suffix_inputs,upstream[:,cut:])
+            fla.utils.assert_close('cached native o',ref[:,cut:],suffix_out,.005)
+            quantities={}
+            for name,expected,actual in zip(('q','k','v','beta','g'),reference,suffix_grads):
+                threshold=.02 if name in ('beta','g') else .008
+                fla.utils.assert_close('cached native d'+name,expected[:,cut:],actual,threshold)
+                quantities[name]=dict(rms_ratio=float(fla.utils.get_err_ratio(expected[:,cut:],actual)),threshold=threshold)
+            result.setdefault('native_cached_composition',[]).append(dict(length=length,split=cut,
+                output_rms_ratio=float(fla.utils.get_err_ratio(ref[:,cut:],suffix_out)),quantities=quantities,status='passed'))
         coefficients={}
         with torch.no_grad():
             coefficients['finite_full']=owner(endpoints,upstream,128**-.5)
@@ -87,7 +108,7 @@ def main():
                         rms_ratio=float(fla.utils.get_err_ratio(eager['suffix'][k],v))) for k,v in coefficients['finite_suffix_head8'].items()}))
         variants={'native':dict(zip(('q','k','v','beta','g'),native)),**coefficients}
         for variant,actual in variants.items():
-            row=dict(length=length,batch=4,heads=32,variant=variant,quantities={})
+            row=dict(length=length,batch=4,heads=32,variant=variant,nonzero_initial_state=args.initial_state,quantities={})
             if variant=='finite_suffix_head8':
                 row['coefficient_start']=args.coefficient_start
                 row['saved_incoming_state_nonzero']=bool(endpoints['h'][:,args.coefficient_start//64].count_nonzero())

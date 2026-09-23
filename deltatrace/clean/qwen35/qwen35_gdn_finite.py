@@ -72,7 +72,7 @@ class NativeGDNCapture:
         label=self.codes.get(frame.f_code);f=frame.f_locals
         if label=='module' and kind=='call' and f['self'] is self.module:
             assert not self.active and not self.values
-            assert f.get('cache_params') is None and not f.get('kwargs',{}).get('cu_seq_lens_q')
+            assert not f.get('kwargs',{}).get('cu_seq_lens_q')
             self.active=True
             self.input_shape=tuple(f['hidden_states'].shape)
             if self.coefficient_start<0 or self.coefficient_start%64 or self.coefficient_start>=self.input_shape[1]:
@@ -82,13 +82,19 @@ class NativeGDNCapture:
             self.values['mask']=self.copy(self.select_time(mask) if mask is not None and mask.shape[1]>1 else mask)
         if not self.active:return
         if kind=='call' and label:self.calls[label]=self.calls.get(label,0)+1
-        if kind=='call' and label=='conv':self.values['projected_qkv']=self.copy(self.select_time(f['x'],2,start=self.conv_context_start))
-        if kind=='return' and label=='conv' and value is not None:self.values['conv_output']=self.copy(self.select_time(value,2))
+        if kind=='call' and label=='conv':
+            # Native cached multi-token forward prepends the actual conv state.
+            # Keep its left window; finite coefficients are needed only for
+            # current tokens, never for the unchanged cached prefix.
+            self.cached_conv_context=f['x'].shape[2]-self.input_shape[1]
+            self.values['projected_qkv']=self.copy(self.select_time(f['x'],2,start=self.conv_context_start))
+        if kind=='return' and label=='conv' and value is not None:
+            self.values['conv_output']=self.copy(self.select_time(value,2,start=self.cached_conv_context+self.coefficient_start))
         if kind=='call' and label=='FLA':
             for name in ['q','k']:self.values['raw_'+name]=self.copy(self.select_time(f[name]))
             self.endpoints['raw_g']=self.copy(self.select_time(f['g']))
         if kind=='return' and label=='stage' and value is not None:
-            assert f['initial_state'] is None and f['cu_seqlens'] is None
+            assert f['cu_seqlens'] is None
             self.scale=float(f['scale'])
             for name in ['q','k','v','g','beta','A','w','v_new','o','h']:
                 selected=self.select_time(f[name],start=self.coefficient_start//64 if name=='h' else self.coefficient_start)
