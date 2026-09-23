@@ -27,6 +27,8 @@ using namespace cute;
 using FiniteTraits=Flash_fwd_kernel_traits<256,DELTATRACE_FINITE_TILE,DELTATRACE_FINITE_TILE,
     DELTATRACE_FINITE_WARPS,false,false,mctlass::bfloat16_t>;
 
+using CachedTraits=FiniteTraits;
+
 struct FiniteParams {
     const void *q0,*k0,*q1,*k1,*v0,*u;
     const float *lse0,*lse1;
@@ -120,10 +122,30 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
     auto accV=make_fragment_like(accQ);
     clear(accQ);clear(accV);
 
+    // Reuse the historical Qwen3 register-retention schedule through the
+    // same vendor A_in_regs GEMM and the unchanged D256 tile layout.
+    auto owner0=make_fragment_like(regA);
+    auto owner1=make_fragment_like(regA);
+    auto ownerU=make_fragment_like(regA);
+    if constexpr(Phase!=0) {
+        auto load_owner=[&](const E *left,auto &reg) {
+            __syncthreads();
+            auto gA=make_tensor(make_gmem_ptr(left+pair_left_offset+int64_t(row0)*D),
+                               Shape<Int<M>,Int<D>>{},Stride<Int<D>,_1>{});
+            auto fromGA=global_thread.partition_S(gA);
+            flash::copy<false,true,true>(global_copy,fromGA,toA,coordsA,predA,valid-row0);
+            __syncthreads();
+            auto register_view=threadA.retile_D(reg);
+            cute::copy(copyA,fromA,register_view);
+            __syncthreads();
+        };
+        if constexpr(Phase==2) {load_owner(k0,owner0);load_owner(k1,owner1);load_owner(v0,ownerU);}
+        else {load_owner(q0,owner0);load_owner(q1,owner1);load_owner(u,ownerU);}
+    }
     const int begin=Phase==2 ? row0 : 0;
     const int end=Phase==2 ? valid : min(valid,row0+M);
     for(int col0=begin;col0<end;col0+=N) {
-        auto pair=[&](const E *left,const E *right,auto &acc) __attribute__((always_inline)) {
+        auto pair=[&](const E *left,const E *right,auto &acc,int endpoint) __attribute__((always_inline)) {
             __syncthreads();
             auto gA=make_tensor(make_gmem_ptr(left+pair_left_offset+int64_t(row0)*D),
                                Shape<Int<M>,Int<D>>{},Stride<Int<D>,_1>{});
@@ -131,19 +153,22 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
                                Shape<Int<N>,Int<D>>{},Stride<Int<D>,_1>{});
             auto fromGA=global_thread.partition_S(gA);
             auto fromGB=global_thread.partition_S(gB);
-            flash::copy<false,true,true>(global_copy,fromGA,toA,coordsA,predA,valid-row0);
+            if constexpr(Phase==0) flash::copy<false,true,true>(global_copy,fromGA,toA,coordsA,predA,valid-row0);
             flash::copy<false,true,true>(global_copy,fromGB,toB,coordsB,predB,valid-col0);
             __syncthreads();
             clear(acc);
-            flash::gemm_opt(acc,regA,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+            if constexpr(Phase==0) flash::gemm_opt(acc,regA,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+            else if(endpoint==0) flash::gemm_opt<true,false>(acc,owner0,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+            else if(endpoint==1) flash::gemm_opt<true,false>(acc,owner1,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+            else flash::gemm_opt<true,false>(acc,ownerU,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
         };
         auto a0=partition_fragment_C(mma,Shape<Int<M>,Int<N>>{});
         auto a1=make_fragment_like(a0);
         auto at=make_fragment_like(a0);
         if constexpr(Phase==2) {
-            pair(k0,q0,a0);pair(k1,q1,a1);pair(v0,u,at);
+            pair(k0,q0,a0,0);pair(k1,q1,a1,1);pair(v0,u,at,2);
         } else {
-            pair(q0,k0,a0);pair(q1,k1,a1);pair(u,v0,at);
+            pair(q0,k0,a0,0);pair(q1,k1,a1,1);pair(u,v0,at,2);
         }
         #pragma unroll
         for(int i=0;i<size(a0);++i) {
@@ -270,8 +295,10 @@ extern "C" int deltatrace_fa_finite_p1_bf16_d256(
     auto stream=reinterpret_cast<cudaStream_t>(stream_ptr);
     deltatrace_fa_finite_p1_kernel<0><<<grid,FiniteTraits::kNThreads,shared,stream>>>(p);
     auto error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
-    deltatrace_fa_finite_p1_kernel<1><<<grid,FiniteTraits::kNThreads,shared,stream>>>(p);
+    dim3 cachedGrid((length+CachedTraits::kBlockM-1)/CachedTraits::kBlockM,batch*heads);
+    constexpr int cachedShared=(size(typename CachedTraits::SmemLayoutQ{})+size(typename CachedTraits::SmemLayoutKV{}))*sizeof(E);
+    deltatrace_fa_finite_p1_kernel<1,CachedTraits><<<cachedGrid,CachedTraits::kNThreads,cachedShared,stream>>>(p);
     error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
-    deltatrace_fa_finite_p1_kernel<2><<<grid,FiniteTraits::kNThreads,shared,stream>>>(p);
+    deltatrace_fa_finite_p1_kernel<2,CachedTraits><<<cachedGrid,CachedTraits::kNThreads,cachedShared,stream>>>(p);
     return int(cudaGetLastError());
 }

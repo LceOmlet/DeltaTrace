@@ -227,7 +227,7 @@ class Qwen35DenseFiniteRunner:
             attention_capture=NativeDenseAttentionCapture if backend is None else backend.NativeDenseAttentionCapture
             gdn_capture=NativeGDNCapture if backend is None else backend.NativeGDNCapture
             dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed)
-            mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer)
+            mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host)
                 if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host))
             def replay():
                 with torch.no_grad(),dc,mc:return layer(x,**kw)

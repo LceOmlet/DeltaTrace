@@ -154,6 +154,13 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         if offload_endpoints:
             for name in names:
                 capture[name]=copy_capture_tensor(capture[name],'cuda',preserve_strides=True)
+    def head_group(value,start):
+        part=value[:,:,start:start+fla_head_batch_size]
+        if part.device.type=='cpu' and part.is_pinned():
+            # Torch copies the strided pinned source directly into the same
+            # contiguous GPU layout. Do not repack into pageable host memory.
+            return torch.empty(part.shape,device='cuda',dtype=part.dtype).copy_(part,non_blocking=True)
+        return copy_capture_tensor(part.contiguous(),'cuda',preserve_strides=True)
     restore(e,'o');restore(c,'z')
     mnorm=_linear_transpose(upstream,_linear_weights(module.out_proj))
     m=mnorm.reshape(batch,length,module.num_v_heads,module.head_v_dim)
@@ -171,8 +178,7 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         # copying and kernel-shape roundoff can be checked independently.
         parts=[]
         for start in range(0,module.num_v_heads,fla_head_batch_size):
-            group={name:copy_capture_tensor(value[:,:,start:start+fla_head_batch_size].contiguous(),
-                                            'cuda',preserve_strides=True)
+            group={name:head_group(value,start)
                    for name,value in e.items() if name!='o'}
             parts.append(fla_pullback(group,native_mo[:,:,start:start+fla_head_batch_size].contiguous(),scale))
             del group

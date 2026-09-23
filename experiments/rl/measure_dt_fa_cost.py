@@ -25,7 +25,10 @@ def main():
     parser.add_argument('--length', type=int, default=32768)
     parser.add_argument('--batches', type=int, nargs='+', default=[1, 4])
     parser.add_argument('--profile', action='store_true')
+    parser.add_argument('--repeats', type=int, default=3)
     args = parser.parse_args()
+    if args.repeats < 1:
+        parser.error('--repeats must be positive')
     env = json.loads(Path(os.environ['DT_ENVIRONMENT_JSON']).read_text())['qwen35']
     sys.path.insert(0, str(Path(os.environ['DT_ROOT'])/'clean/qwen35'))
     from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256, RightPaddedLengths
@@ -67,12 +70,13 @@ def main():
             output, (q1, k1, v), upstream, retain_graph=True)
         for name, function in owners.items():
             seconds = []
-            for repeat in range(3):
+            for repeat in range(args.repeats):
                 value, elapsed = timed(lambda: function(operands, .0625, layout))
                 seconds.append(elapsed)
                 del value
+                print('FA_SAMPLE', dict(batch=batch, operation=name, repeat=repeat, seconds=elapsed), flush=True)
             row = dict(batch=batch, operation=name, seconds=seconds,
-                       warm_median_seconds=statistics.median(seconds[1:]))
+                       warm_median_seconds=statistics.median(seconds[1:]) if len(seconds)>1 else None)
             result['records'].append(row)
             save()
             print('FA_COST', row, flush=True)

@@ -5,9 +5,11 @@ boundaries; they do not modify model outputs, finite rules, or execution order.
 Run with verify_dt_context_capacity.py's arguments, redirecting stdout to a log.
 """
 import json
+import importlib.util
 import os
 import runpy
 import time
+from pathlib import Path
 
 import torch
 import native_attention_capture
@@ -121,4 +123,80 @@ native_attention_capture.NativeAttentionCapture.__enter__ = attention_enter
 native_attention_capture.NativeAttentionCapture.__exit__ = attention_exit
 qwen35_decoder_finite.NativeDecoderCapture.__enter__ = decoder_enter
 qwen35_decoder_finite.NativeDecoderCapture.__exit__ = decoder_exit
-runpy.run_path(os.environ['DT_ROOT']+'/experiments/rl/verify_dt_context_capacity.py', run_name='__main__')
+
+# A diagnostic may stop as soon as it has observed the requested bottleneck.
+# BaseException deliberately bypasses the capacity verifier's ordinary failure
+# handler; its finally block still releases distributed resources. Neither its
+# partial output nor this profile is reported as a completed capacity check.
+class DiagnosticStop(BaseException):
+    pass
+
+
+limit = int(os.environ.get('DT_PROFILE_GDN_LAYERS', '0'))
+if limit:
+    profile_output = Path(os.environ['DT_PROFILE_OUTPUT'])
+    records = []
+    original_gdn = qwen35_dense_finite_runner.gdn_finite_pullback
+    previous_gdn = None
+    if os.environ.get('DT_PROFILE_PREVIOUS_OWNER'):
+        previous = Path(os.environ['DT_PROFILE_PREVIOUS_OWNER'])
+        def load_previous(name, filename):
+            spec = importlib.util.spec_from_file_location(name,previous/filename)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+        capture_owner = load_previous('previous_capture_owner','native_attention_capture.py')
+        gdn_owner = load_previous('previous_gdn_owner','qwen35_gdn_finite.py')
+        gdn_owner.copy_capture_tensor = capture_owner.copy_capture_tensor
+        previous_gdn = gdn_owner.gdn_finite_pullback
+
+    def observed_gdn(module, *args, **kwargs):
+        if previous_gdn is not None:
+            # Identical real layer captures and upstream; each owner consumes
+            # only its own shallow dictionaries. CPU output comparisons occur
+            # outside the measured calls and avoid retaining a GPU output.
+            reference = None
+            for name, function in [('current_cold', original_gdn), ('previous_warm',previous_gdn),
+                                   ('current_warm',original_gdn)]:
+                operands = (dict(args[0]),dict(args[1]),*args[2:])
+                torch.cuda.synchronize()
+                start = time.perf_counter()
+                value = function(module,*operands,**kwargs)
+                torch.cuda.synchronize()
+                elapsed = time.perf_counter()-start
+                actual = value[0].detach().cpu()
+                if reference is None:
+                    reference = actual
+                assert torch.equal(reference,actual), name
+                records.append(dict(layer=module.layer_idx,name=name,seconds=elapsed,exact_output=True))
+                profile_output.write_text(json.dumps(dict(scope='Same real 32k layer, captures and upstream; isolated transport comparison',
+                    status='running',records=records),indent=2)+'\n')
+                print('GDN_IN_CONTEXT_COMPARE',json.dumps(records[-1]),flush=True)
+                del value,actual,operands
+            profile_output.write_text(json.dumps(dict(scope='Partial real 32k DT diagnostic; not capacity or training acceptance',
+                status='observed_requested_phases',records=records),indent=2)+'\n')
+            raise DiagnosticStop()
+        with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU]) as profile:
+            torch.cuda.synchronize()
+            start = time.perf_counter()
+            value = original_gdn(module, *args, **kwargs)
+            torch.cuda.synchronize()
+            elapsed = time.perf_counter()-start
+        operators = sorted(profile.key_averages(), key=lambda e:e.self_cpu_time_total, reverse=True)
+        record = dict(layer=module.layer_idx, seconds=elapsed,
+            operators=[dict(name=e.key, calls=e.count, self_cpu_seconds=e.self_cpu_time_total/1e6,
+                            inclusive_cpu_seconds=e.cpu_time_total/1e6) for e in operators[:20]])
+        records.append(record)
+        profile_output.write_text(json.dumps(dict(scope='Partial real 32k DT diagnostic; not capacity or training acceptance',
+            status='observed_requested_phases' if len(records)==limit else 'running', records=records), indent=2)+'\n')
+        print('GDN_IN_CONTEXT_PROFILE', json.dumps(record), flush=True)
+        if len(records) == limit:
+            raise DiagnosticStop()
+        return value
+
+    qwen35_dense_finite_runner.gdn_finite_pullback = observed_gdn
+
+try:
+    runpy.run_path(os.environ.get('DT_CAPACITY_SCRIPT',os.environ['DT_ROOT']+'/experiments/rl/verify_dt_context_capacity.py'), run_name='__main__')
+except DiagnosticStop:
+    print('DIAGNOSTIC_STOP: requested GDN phases recorded; remaining DT/PPO intentionally not run', flush=True)

@@ -48,7 +48,7 @@
 - `fa-key32-cost32k.json`：64×32 tile 候选 16.187 秒，慢于保留的
   64×64 候选 14.616 秒，未采用。未修改生产 finite FA 库或持久缓存。
 
-- v14 配置入口容量复测通过，完整 DT 725.507 秒、总计 973.729 秒；
+- v14 配置入口容量复测通过，完整 DT 725.507 秒、总计 973.723 秒；
   不是提速。此前 v13/v14 均为 PPO minibatch4/microbatch1。
 - 原生反向对照 `native-backward32k-v3-vllm-ppo.json` 启用原 VERL
   activation offload，包含原生 vLLM 同步/休眠残留。B4/32768 预热反向
@@ -58,8 +58,46 @@
   v13/v14 文件未覆盖。`dt_pin_replay_host=true` 只启用 Torch 的 pinned
   GDN 捕获，退出作用域前同步。去除未读的 norm_output/output 后，每层
   复制 37.109→33.109 GiB；单原生层成本对照和短链搬运逐值对照已通过。
-  完整 v15 在 GPU5（仅本次进程记录，不是预留）使用 actor microbatch4、
-  activation offload 和 vLLM；尚不能宣称完整效率通过。
+  完整 v15 已通过 actor microbatch4、activation offload 和 vLLM：DT
+  487.649 秒、总计 742.741 秒，两次非零 PPO 更新和原生 LoRA 同步完成。
+  GPU5 进程已退出，卡号不是预留；完整效率仍未通过。
+
+
+- 后续搬运候选在 `candidates/dt-minibatch/pinned-restore`；生产目录仍未
+  切换。它将同一 pinned capture 接到 FA，并允许 Torch 在当前流内直接
+  恢复 pinned GDN 切片。`restore-minibatch-parity.json` 中，同一 head8
+  分组的完整短归因、目标 log-prob、Q/V/A 与原非 offload 路径逐值相同。
+- `profile_dt_replay_memory.py` 可设 `DT_PROFILE_GDN_LAYERS=2`、
+  `DT_PROFILE_OUTPUT=<JSON>`，观察指定 GDN 阶段后主动退出。输出明确属于
+  部分运行诊断，不作完整容量/训练通过；`DT_CAPACITY_SCRIPT` 指向已暂存的
+  同版容量入口。vLLM 启动仍须 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False`，
+  回到 DT/PPO 后由原 sharding manager 恢复 True。首次诊断漏设该启动参数
+  被原 allocator 拒绝，失败日志保留，未据此重装或改 allocator。
+- 实际首两个 GDN 层诊断在 `in-context-gdn32k-v2.json` 后主动结束：首层
+  包含编译约 12.615 秒，下一层约 5.010 秒。CPU profiler 显示主要仍是搬运；
+  不能用孤立单层 2.206 秒取代真实上下文下的耗时。随后同一次实际捕获、
+  同一 upstream 的对拍为旧路径 5.589 秒、新路径 2.289 秒，输出逐值一致；
+  `in-context-transport-compare32k.json` 保存该单次对拍，不能扩大为整网稳态收益。
+- 原生 mcTracer 的 `fa-native-trace32k-v2/` 确认当前有限 FA 三个 GPU 阶段
+  分别约 1.934/5.035/7.719 秒，主要成本在 Q 与 K/V 传播。trace 原时间单位
+  按纳秒换算后与同步墙钟约 14.7 秒相符；CPU 同步等待不另加到 GPU 时间。
+
+
+- 复用历史 Qwen3 的固定左矩阵寄存器缓存方式，仍调用厂商
+  `flash::gemm_opt<true,false>`；D256 保持原 64×64/4-warps 布局。
+  `libfinite_d256_cached_owner.so` 的 B4/32768 预热为 13.797 秒，当前
+  14.616 秒参照另存；改进有限，不能据此报告整体达标。候选通过固定 FA
+  128/447 原断言，32768 非零端点 dq/dk/dv/tau/center 与原候选全部逐值相同。
+  新源文件已保留，生产库仍未选择；尝试 M32 的厂商布局编译拒绝也保留。
+
+
+- 实際捕获清单已与 layer30 的 19 次 copy 记录对齐：每层 D2H 为
+  35,550,920,704 bytes（33.109375 GiB）。input 2 GiB 只用于 shape 检查，
+  仍属待删除的冗余；不能宣称全部搬运必要。当前 restore 调用按实际形状
+  推得 H2D 31.15625 GiB，旧 head 切片额外 pageable CPU 重排 15.078125 GiB
+  已由同一 Torch copy 接口的 pinned 源路径省去。24 个 GDN 层的累计 D2H/H2D
+  约 1.506 TiB 是搬运量，不是驻留内存。此清单索引在
+  `results_dt_minibatch_candidate.json::gdn_transfer_inventory`。
 
 ## 2026-09-22 正式规模启动与监控
 

@@ -18,7 +18,9 @@ def copy_capture_tensor(value, destination, *, copy=True, preserve_strides=False
         # Explicit storage layout avoids the MetaX cross-device 4-D copy
         # choosing channels-last and changing downstream reduction kernels.
         return torch.empty_strided(value.shape,value.stride(),dtype=value.dtype,
-                                   device=destination).copy_(value)
+                                   device=destination).copy_(value,non_blocking=(
+                                       value.device.type=='cpu' and value.is_pinned()
+                                       and torch.device(destination).type=='cuda'))
     return value.to(destination,copy=copy)
 
 
@@ -31,7 +33,7 @@ def _metadata_scalar(value):
 
 
 class NativeAttentionCapture:
-    def __init__(self, module, attention_interface, native_varlen_function, destination='cpu', *, copy_tensors=True, retained_names=None, preserve_strides=False):
+    def __init__(self, module, attention_interface, native_varlen_function, destination='cpu', *, copy_tensors=True, retained_names=None, preserve_strides=False, pinned_host=False):
         self.module = module
         self.interface = attention_interface
         self.native_varlen = native_varlen_function
@@ -39,6 +41,7 @@ class NativeAttentionCapture:
         self.copy_tensors = copy_tensors
         self.retained_names = retained_names
         self.preserve_strides = preserve_strides
+        self.pinned_host = pinned_host
         self.values = {}
         self.calls = {'module': 0, 'interface': 0, 'native_varlen': 0}
         self.handles = []
@@ -46,7 +49,7 @@ class NativeAttentionCapture:
     def retain(self, name, value):
         if self.retained_names is None or name in self.retained_names:
             self.values[name] = copy_capture_tensor(value,self.destination,
-                copy=self.copy_tensors,preserve_strides=self.preserve_strides)
+                copy=self.copy_tensors,preserve_strides=self.preserve_strides,pinned_host=self.pinned_host)
 
     def profile(self, frame, event, result):
         if frame.f_code is self.native_varlen.__code__ and event == 'call':
@@ -91,3 +94,5 @@ class NativeAttentionCapture:
         for handle in self.handles:
             handle.remove()
         self.handles.clear()
+        if self.pinned_host:
+            torch.cuda.current_stream().synchronize()

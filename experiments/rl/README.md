@@ -71,8 +71,17 @@ allocator/异步复制，在 capture 退出前统一等待。相同真实 9B 层
 B8/32768 隐状态容量夹具，全部共同捕获值和 stride 完全一致；两轮预热
 记录为旧捕获 6.584/11.546 秒，新捕获 0.958/2.766 秒。该局部改进不被
 当作完整 DT 达标。新路径完整短归因和 Q/V/A 的搬运对照也逐值一致。
-`pinned-capture/batch-capacity-v15-pinned-micro4.*` 正在验证完整 DT B4、
-PPO microbatch4、官方 offload、vLLM 同进程组合；以完成回执为准。
+`pinned-capture/batch-capacity-v15-pinned-micro4.json` 已通过完整 DT B4、
+PPO microbatch4、官方 offload、vLLM 同进程组合：DT 487.649 秒，整次
+742.741 秒，两次非零 PPO 更新，改变 1,441,808 个参数元素，200 层 LoRA
+原生同步通过。这里确认容量和调用链；仍未满足接近原生反向的效率要求。
+分阶段主开销为 root 67.134 秒、重放 107.569 秒、有限 decoder 300.555 秒；
+有限 decoder 包含嵌套 restore/LSE，不能重复相加。
+
+后续已用前两个 GDN 层完成真实上下文的早停诊断，保留 vLLM 休眠占用。
+同一层、同一实际捕获及 upstream 的搬运对拍为旧 5.589 秒、新 2.289 秒，
+输出逐值一致；短链完整归因、目标 log-prob 和 Q/V/A 搬运对照也逐值一致。
+该局部结果不代替完整 DT 速度；诊断到指定阶段即退出，不等整轮跑完。
 
 最新 `origin/main=6ca8dc07` 的 MetaX 路径已核对并在使用：模型前向走已安装
 FA 2.6.3 / FLA 0.4.1；DT 有限传播复用 main 的 MetaX FA 扩展和 FLA 原反向
