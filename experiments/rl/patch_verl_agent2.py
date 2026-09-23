@@ -441,6 +441,50 @@ def patch_vllm_active_rows(text: str) -> str:
     return text
 
 
+def patch_actor_response_head(text: str) -> str:
+    """Select live response columns through Qwen's existing head interface."""
+    marker = '                # Select response head rows; decoder inputs and kernels stay unchanged.'
+    if marker in text:
+        return text
+    anchor = '''                output = self.actor_module(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,'''
+    select = '''                # Select response head rows; decoder inputs and kernels stay unchanged.
+                head_response_length = response_length
+                head_positions = response_length + 1
+                if (not multi_modal_inputs and not self.use_fused_kernels
+                        and os.getenv("VERL_TRIM_RESPONSE_HEAD", "0") == "1"
+                        and getattr(getattr(self.actor_module, "config", None), "model_type", None)
+                        in ("qwen3_5", "qwen3_5_text")):
+                    columns = torch.arange(1, response_length + 1, device=attention_mask.device)
+                    head_response_length = max(1, int((attention_mask[:, -response_length:] * columns).max().item()))
+                    if head_response_length < response_length:
+                        start = input_ids.shape[-1] - response_length - 1
+                        head_positions = torch.arange(start, start + head_response_length + 1, device=input_ids.device)
+'''
+    old_head = '''                    logits = logits[:, -response_length - 1 : -1, :]  # (bsz, response_length, vocab_size)
+                    log_probs = logprobs_from_logits(logits, micro_batch["responses"])
+                    if calculate_entropy:
+                        entropy = verl_F.entropy_from_logits(logits)  # (bsz, response_length)'''
+    new_head = '''                    logits = logits[:, -head_response_length - 1 : -1, :]
+                    log_probs = logprobs_from_logits(logits, micro_batch["responses"][:, :head_response_length])
+                    if calculate_entropy:
+                        entropy = verl_F.entropy_from_logits(logits)
+                    if head_response_length < response_length:
+                        # The owner's PPO tensors keep their original columns/masks.
+                        log_probs = torch.nn.functional.pad(log_probs, (0, response_length - head_response_length))
+                        if calculate_entropy:
+                            entropy = torch.nn.functional.pad(entropy, (0, response_length - head_response_length))'''
+    replacements = [(anchor, select + anchor),
+                    ('                    logits_to_keep=response_length + 1,',
+                     '                    logits_to_keep=head_positions,'), (old_head, new_head)]
+    for old, new in replacements:
+        if text.count(old) != 1:
+            raise RuntimeError('cannot find unique pinned actor response-head anchor')
+        text = text.replace(old, new, 1)
+    return text
+
+
 ACTOR_TRIM_ANCHOR = '            else:  # not using rmpad and no ulysses sp\n                extra_args = {}'
 ACTOR_TRIM_PREVIOUS = '''            else:  # not using rmpad and no ulysses sp
                 # Preserve the response columns and original tensors. Only
@@ -979,7 +1023,7 @@ def main() -> None:
     print(f"patched {fsdp} Transformers compatibility")
     actor_policy = args.verl_root / ACTOR_FILE
     text = actor_policy.read_text()
-    if ACTOR_FORWARD_NEW not in text:
+    if ACTOR_FORWARD_NEW not in text and '                    logits_to_keep=head_positions,' not in text:
         if ACTOR_FORWARD_OLD not in text:
             raise RuntimeError(f"cannot find actor logits retention anchor in {actor_policy}")
         actor_policy.write_text(text.replace(ACTOR_FORWARD_OLD, ACTOR_FORWARD_NEW, 1))
@@ -1289,6 +1333,8 @@ def main() -> None:
 
     hf = args.verl_root / HF_ROLLOUT_FILE
     hf.write_text(patch_hf_active_rows(hf.read_text()))
+
+    actor.write_text(patch_actor_response_head(actor.read_text()))
 
     vllm = args.verl_root / VLLM_ROLLOUT_FILE
     vllm.write_text(patch_vllm_active_rows(vllm.read_text()))

@@ -71,7 +71,8 @@
           "output_shape": [
             32,
             17513
-          ]
+          ],
+          "prompt_tokens_scope": "Original harness recorded full transported batch length here; actual submitted prompt total was 42814, as verified on identical selected rows in concurrency32."
         }
       ]
     },
@@ -143,7 +144,8 @@
           "output_shape": [
             32,
             17513
-          ]
+          ],
+          "prompt_tokens_scope": "Original harness recorded full transported batch length here; actual submitted prompt total was 42814, as verified on identical selected rows in concurrency32."
         }
       ]
     },
@@ -772,6 +774,188 @@
   },
   "physical_memory_sample_count": 338,
   "memory_scope": "Sampled every 2s; sampling began during concurrency4, so this is not a continuous peak or full-run concurrency4 coverage.",
-  "response_padding_audit": "Pending exact batch audit; mean response occupancy is not batch trimming savings.",
-  "receipt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/vllm-active-rows"
+  "response_padding_audit": {
+    "scope": "Approximate re-tokenized owner text dump in stored order; special tokens removed by owner, not exact training tensors.",
+    "rows": 1764,
+    "mean": 336.09297052154193,
+    "median": 270.0,
+    "max": 1024,
+    "b4_max_mean": 539.1972789115646,
+    "b4_max_median": 510,
+    "original_head_slots": 1806336,
+    "estimated_b4_head_slots": 951144,
+    "b4_at_least_1000": 39,
+    "batches": 441
+  },
+  "receipt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/vllm-active-rows",
+  "capacity32k_seqs32": {
+    "scope": "Exercise an exact 32768-token DT boundary and the original actor update.\n\nUses an explicitly padded capacity fixture from recorded official task rewards.\nThis is neither a generated task trajectory nor a task success-rate evaluation.\nNo model, finite rule, advantage formula, or PPO implementation is replaced.\n",
+    "context_cap": 32768,
+    "minibatch": 4,
+    "backend": "vllm",
+    "rollout_max_num_seqs": 32,
+    "reshard_after_forward": true,
+    "actor_microbatch": 4,
+    "activation_offload": true,
+    "parameter_offload_policy": true,
+    "stages": [
+      {
+        "name": "owner_init",
+        "seconds": 100.06123574450612,
+        "host_rss_bytes": 11552641024,
+        "device_used_bytes": 2452574208,
+        "device_total_bytes": 68283269120,
+        "allocated": 47076827136,
+        "peak_allocated": 47488626176,
+        "peak_reserved": 47529852928
+      },
+      {
+        "name": "producer_init",
+        "seconds": 100.81621455214918,
+        "host_rss_bytes": 11744751616,
+        "device_used_bytes": 2452574208,
+        "device_total_bytes": 68283269120,
+        "allocated": 47076827136,
+        "peak_allocated": 47488626176,
+        "peak_reserved": 47529852928
+      },
+      {
+        "name": "oversize_rejected",
+        "seconds": 100.84374150633812,
+        "host_rss_bytes": 11745292288,
+        "device_used_bytes": 2452574208,
+        "device_total_bytes": 68283269120,
+        "allocated": 47076827136,
+        "peak_allocated": 47488626176,
+        "peak_reserved": 47529852928
+      },
+      {
+        "name": "dt_worker_batch_4",
+        "seconds": 165.72146320156753,
+        "host_rss_bytes": 11865497600,
+        "device_used_bytes": 33760706560,
+        "device_total_bytes": 68283269120,
+        "allocated": 47076897280,
+        "peak_allocated": 72190663680,
+        "peak_reserved": 78276198400
+      },
+      {
+        "name": "dt_worker_batch_4_repeat_1",
+        "seconds": 194.38089186046273,
+        "host_rss_bytes": 11865804800,
+        "device_used_bytes": 33760706560,
+        "device_total_bytes": 68283269120,
+        "allocated": 47076967424,
+        "peak_allocated": 72190733824,
+        "peak_reserved": 78276198400
+      },
+      {
+        "name": "old_log_probs",
+        "seconds": 211.67749460134655,
+        "host_rss_bytes": 11866386432,
+        "device_used_bytes": 33781678080,
+        "device_total_bytes": 68283269120,
+        "allocated": 47080175104,
+        "peak_allocated": 72190733824,
+        "peak_reserved": 78276198400
+      },
+      {
+        "name": "actor_update_0",
+        "seconds": 296.6112873740494,
+        "host_rss_bytes": 11909656576,
+        "device_used_bytes": 55044984832,
+        "device_total_bytes": 68283269120,
+        "allocated": 47147283968,
+        "peak_allocated": 90769328640,
+        "peak_reserved": 99440656384
+      },
+      {
+        "name": "actor_update_1",
+        "seconds": 355.2670789398253,
+        "host_rss_bytes": 11914006528,
+        "device_used_bytes": 55044988928,
+        "device_total_bytes": 68283269120,
+        "allocated": 47147283968,
+        "peak_allocated": 90769328640,
+        "peak_reserved": 99440656384
+      },
+      {
+        "name": "updated_lora_native_sync_and_sleep",
+        "seconds": 356.30572902876884,
+        "host_rss_bytes": 11914502144,
+        "device_used_bytes": 2796339200,
+        "device_total_bytes": 68283269120,
+        "allocated": 47147213824,
+        "peak_allocated": 90769328640,
+        "peak_reserved": 99440656384
+      }
+    ],
+    "capacity_response_tokens": 1024,
+    "synthetic_response_tokens": 1010,
+    "synthetic_filler_tokens": 31140,
+    "original_response_tokens": 14,
+    "actor_input_tokens": 32597,
+    "query_tokens": 170,
+    "dt_input_tokens": 32768,
+    "official_fixture_reward": 10.9,
+    "reward_scope": "Recorded official reward used as a numerical capacity coefficient; not a reward claim for the synthetic trajectory",
+    "factual_input_ids_sha256": "05eec206f32e6cc7c0fa87bf7818d7d457ba23534650c67dba4858e906266c15",
+    "actor_input_ids_sha256": "8c030215a1a8a5f16d7e3648fb3bf04ccc79a784a449ffda12e4aaa9248e11e4",
+    "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+    "updates": [
+      {
+        "actor/pg_loss": [
+          0.001450313488021493
+        ],
+        "actor/pg_clipfrac": [
+          0.0
+        ],
+        "actor/ppo_kl": [
+          0.0
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.0291748046875
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 84.53552484512329,
+        "perf/max_memory_reserved_gb": 92.611328125,
+        "perf/cpu_memory_used_gb": 364.99565505981445,
+        "actor/lr": 1e-06
+      },
+      {
+        "actor/pg_loss": [
+          0.0014705436769872904
+        ],
+        "actor/pg_clipfrac": [
+          0.0
+        ],
+        "actor/ppo_kl": [
+          0.0002391338348388672
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.0306396484375
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 84.53552484512329,
+        "perf/max_memory_reserved_gb": 92.611328125,
+        "perf/cpu_memory_used_gb": 365.03586196899414,
+        "actor/lr": 1e-06
+      }
+    ],
+    "changed_elements": 1441390,
+    "updated_native_lora": {
+      "loaded_layers": 200,
+      "unused_layers": [],
+      "nonzero_b_elements": 1426944
+    },
+    "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+    "status": "passed",
+    "seconds": 356.32671951223165
+  }
 }

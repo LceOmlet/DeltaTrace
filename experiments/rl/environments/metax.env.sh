@@ -34,6 +34,9 @@ export ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-4}"
 # from 92.713s (4) to 29.948s. Exact-32k DT/PPO capacity also passed at 32.
 # This is independent of the actor and DT minibatch sizes.
 export ROLLOUT_MAX_NUM_SEQS="${ROLLOUT_MAX_NUM_SEQS:-32}"
+# Qwen's existing indexed logits_to_keep skips common response-tail head work.
+# Real B4 comparison preserved active logprobs, gradients and two updates exactly.
+export VERL_TRIM_RESPONSE_HEAD="${VERL_TRIM_RESPONSE_HEAD:-1}"
 export DT_RAY_NUM_CPUS="${DT_RAY_NUM_CPUS:-8}"
 # Set CUDA_VISIBLE_DEVICES and MACA_VISIBLE_DEVICES after checking mx-smi.
 # Pinned sources and Python installs exist; task assets/services still require

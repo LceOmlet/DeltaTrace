@@ -10,6 +10,22 @@
 本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
 本文件和历史运行记录不代表该计划已实现或 DT 多轮训练已经验收通过。
 
+## 2026-09-24 rollout 修复与复用
+
+- 三组旧正式作业主动停止，状态是 `stopped_for_rollout_throughput_repair`；
+  WebShop 完成的 step 1 检查点保留，未完成轨迹按用户指令丢弃。恢复时读取
+  当前 manifest，不复用已终止 PID，不重新安装环境/权重/缓存。
+- MetaX `ROLLOUT_MAX_NUM_SEQS` 默认 32，独立于 actor/DT minibatch4。
+  同卡重复生成调用 92.713→29.948 秒；并发 32 的 32768 DT/PPO 容量复核通过。
+  `VERL_TRIM_RESPONSE_HEAD=1` 调用 Qwen 原选择性 logits 接口；真实短链有效
+  log-prob、两次 PPO 梯度/参数与修改前相同。完整任务耗时尚需实际检查。
+- 数值对照复用 `CUBLAS_WORKSPACE_CONFIG=:4096:8` 和
+  `FLASH_ATTENTION_DETERMINISTIC=1`，满足原测试的确定性设置；不是新的训练
+  参数要求。候选目录仅加 PYTHONPATH 不保证加载，因为工厂会插入发布路径；
+  检查实际 `__file__`，正式运行使用带哈希 manifest 的统一发布目录。
+- `receipts/vllm-active-rows/` 保留并发、物理显存、32k 容量、接口、真实 head
+  数值对照与 B1 编译回归结果。早期测试启动/配置/旧模块加载失败也保留。
+
 ## 2026-09-23 已有加速分支的复用
 
 - 当前正式预算运行使用已推送提交 `6d1a946`，完整发布目录

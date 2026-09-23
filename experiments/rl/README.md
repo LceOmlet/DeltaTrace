@@ -46,6 +46,22 @@ tokens，实际最长 16,489，每条强制生成 128 tokens；预热后重复�
 32769 明确拒绝，总计 356.327 秒。MetaX 环境默认生成并发已设为 32，actor/DT
 minibatch 仍为 4；真实完整 rollout 的修复后耗时尚待验证。
 
+response padding 修复使用 Qwen 原 `logits_to_keep` 的位置选择接口，只跳过
+B4 中所有行都无效的右侧词表投影；decoder 输入、FA/FLA、response 形状和
+PPO mask 保持原样。开关 `VERL_TRIM_RESPONSE_HEAD` 在 MetaX 默认为 1。
+24 项接口测试通过；真实 9B、B4、128 有效 action + 896 padding 的短链中，
+有效 log-prob、两次 PPO 更新的梯度及参数逐值一致，省去 3,584 个无效槽位的
+log-prob 计算。热更新分别为原版 2.835 秒、选择头 2.734 秒；首次调用包含
+编译/预热，不用于提速比较。这不是完整训练吞吐或官方 FA/FLA 的整网认证。
+已保存 WebShop 文本按 B4 顺序估算，共同右侧空白约 47%，不是按所有回复
+均值算出的 67%；文本导出移除了特殊 token，精确训练统计仍以原张量为准。
+
+对照同时复现并修复 DT B1 尾批编译错误：成对 batch=2 与单条 adjoint 的
+特殊化不能强制为动态符号。仅将 batch 标记改为官方 `maybe_mark_dynamic`，
+时间维及有限传播公式不变，不增加 eager 回退。B4/B2/B1 的 Dynamo 回归及
+真实 Qwen B1 Inductor 路径已通过。候选验证时须核对实际模块路径；工厂会
+插入发布目录，不能仅凭 PYTHONPATH 写了候选路径就认为已加载新代码。
+
 每小时检查同时运行 [日志绘图](plot_training_progress.py)：
 `python -X utf8 experiments/rl/plot_training_progress.py --source-root /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922 --publish`。
 它只读当前正式 manifest 的原 Ray worker 日志，生成进度/效果 PNG、指标 CSV

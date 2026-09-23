@@ -1,6 +1,6 @@
 """Short-chain numerical artifacts from the actual pinned PPO actor.
 
-The upstream case imports an archived pristine owner source file for comparison
+The reference case imports an archived owner source file for comparison
 only. Both cases use the same real Qwen, DT advantages, worker and optimizer.
 This is a numerical interface test, not task evaluation or a timing benchmark.
 """
@@ -44,6 +44,10 @@ def main():
                    help='Check production active-token updates before/after the owner mask backport')
     p.add_argument('--left-padding', type=int, default=165,
                    help='Explicit shared padding; 165 exercises removal of two complete FLA chunks')
+    p.add_argument('--right-padding', type=int, default=19)
+    p.add_argument('--actor-microbatch', type=int, choices=(1, 4), default=1)
+    p.add_argument('--trim-response-head', action='store_true',
+                   help='Measure Qwen indexed head selection against the prior installed actor')
     p.add_argument('--effective-input-tokens', type=int, default=0,
                    help='Explicit long numerical fixture length; 0 keeps the recorded short row')
     p.add_argument('--response-tokens', type=int, default=0,
@@ -77,9 +81,13 @@ def main():
         p.error('BF16 math reduction is only for the standalone saved BF16 math diagnostic')
     result = dict(scope=__doc__, attention=args.attention, reshard_after_forward=args.reshard_after_forward,
                   actor_source=str(args.actor_source) if args.actor_source else 'installed', context_cap=32768)
+    if args.trim_response_head:
+        result['reference_scope'] = 'Previous installed pinned actor including existing compatibility patches; only the indexed response head is new.'
     result['verifier_sha256'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     result['comparison_performed'] = False
     result['trim_shared_padding'] = args.trim_shared_padding
+    result['trim_response_head'] = args.trim_response_head
+    result['actor_microbatch'] = args.actor_microbatch
     result['runtime_numerics'] = {k:os.environ.get(k) for k in
         ('CUBLAS_WORKSPACE_CONFIG', 'FLASH_ATTENTION_DETERMINISTIC')}
     result['reference_save_on_cpu'] = args.reference_save_on_cpu
@@ -95,6 +103,7 @@ def main():
             torch.backends.cuda.allow_fp16_bf16_reduction_math_sdp(True)
         os.environ['VERL_ATTN_IMPLEMENTATION'] = args.attention
         os.environ['VERL_TRIM_SHARED_PADDING'] = '1' if args.trim_shared_padding else '0'
+        os.environ['VERL_TRIM_RESPONSE_HEAD'] = '1' if args.trim_response_head else '0'
         cfg = OmegaConf.load(Path(os.environ['VERL_ROOT'])/'verl/trainer/config/ppo_trainer.yaml')
         c = cfg.actor_rollout_ref
         c.model.path = os.environ['MODEL_PATH']
@@ -102,7 +111,7 @@ def main():
         c.model.trust_remote_code = True
         c.actor.strategy = 'fsdp2'
         c.actor.ppo_mini_batch_size = 4
-        c.actor.ppo_micro_batch_size_per_gpu = 1
+        c.actor.ppo_micro_batch_size_per_gpu = args.actor_microbatch
         c.actor.ppo_max_token_len_per_gpu = 32768
         c.actor.use_torch_compile = False
         c.actor.entropy_coeff = 0.0
@@ -129,7 +138,7 @@ def main():
         c.rollout.name = 'hf'
         c.rollout.n = 1
         c.rollout.tensor_model_parallel_size = 1
-        c.rollout.log_prob_micro_batch_size_per_gpu = 1
+        c.rollout.log_prob_micro_batch_size_per_gpu = args.actor_microbatch
         result['policy_loss_config'] = {k:c.actor[k] for k in
             ('clip_ratio', 'clip_ratio_low', 'clip_ratio_high', 'loss_agg_mode')}
         result['policy_loss_config']['clip_ratio_c'] = 'inf'
@@ -198,9 +207,9 @@ def main():
                 original_action_tokens=original_count,
                 scope='Explicit long numerical input; recorded reward is a test coefficient, not a reward claim for this synthetic trajectory')
         # Exercise the actual shared-padding optimization, including EOS/padding.
-        row['input_ids'] = torch.cat((torch.full((args.left_padding,), pad), row['input_ids'], torch.full((19,), pad)))
-        row['attention_mask'] = torch.cat((torch.zeros(args.left_padding, dtype=torch.long), row['attention_mask'], torch.zeros(19, dtype=torch.long)))
-        row['responses'] = torch.cat((row['responses'], torch.full((19,), pad)))
+        row['input_ids'] = torch.cat((torch.full((args.left_padding,), pad), row['input_ids'], torch.full((args.right_padding,), pad)))
+        row['attention_mask'] = torch.cat((torch.zeros(args.left_padding, dtype=torch.long), row['attention_mask'], torch.zeros(args.right_padding, dtype=torch.long)))
+        row['responses'] = torch.cat((row['responses'], torch.full((args.right_padding,), pad)))
         if saved_input is None:
             from deltatrace_rollout import DeltaTraceRolloutProducer
             producer = DeltaTraceRolloutProducer(worker.actor_module_fsdp,
@@ -249,6 +258,11 @@ def main():
 
         def run_updates(backend=args.attention):
             captured, metrics = {}, []
+            timings = {'update_seconds': [], 'model_logit_shapes': []}
+            # The installed causal owner uses F.linear for its DTensor head;
+            # an lm_head module hook would silently miss the actual projection.
+            head_hook = worker.actor_module_fsdp.register_forward_hook(
+                lambda _module, _inputs, output: timings['model_logit_shapes'].append(list(output.logits.shape)))
             forward = worker.actor._forward_micro_batch
             forward_records = []
             def record_forward(*a, **kw):
@@ -275,22 +289,28 @@ def main():
             try:
                 with ctx, precision_ctx, saved_tensor_ctx:
                     print('[owner probe] old_log_prob start', flush=True)
+                    tick = time.perf_counter()
                     out = worker.compute_log_prob(batch)
+                    timings['old_log_prob_seconds'] = time.perf_counter() - tick
                     print('[owner probe] old_log_prob done', flush=True)
                     batch.batch['old_log_probs'] = out.batch['old_log_probs'].cuda()
                     captured['old_log_probs'] = cpu_tensor(batch.batch['old_log_probs'])
                     forward_records.clear()
                     for index in range(2):
                         print(f'[owner probe] update {index} start', flush=True)
+                        tick = time.perf_counter()
                         update = worker.update_actor(batch)
+                        timings['update_seconds'].append(time.perf_counter() - tick)
                         print(f'[owner probe] update {index} done', flush=True)
                         metrics.append(update.meta_info['metrics'])
                         captured['after_'+str(index)] = trainable_state()
             finally:
+                head_hook.remove()
                 worker.actor._forward_micro_batch = forward
                 worker.actor._optimizer_step = optimizer_step
             captured['policy_forward_log_probs'] = forward_records
             captured['raw_gradients'] = gradient_records
+            result.setdefault('run_timings', []).append(timings)
             return captured, metrics
 
         current, result['updates'] = run_updates()
@@ -322,6 +342,21 @@ def main():
             reference, result['paired_updates'] = run_updates()
             artifacts['paired_owner'] = reference
             result['paired_owner_sha256'] = hashlib.sha256(args.paired_owner_source.read_bytes()).hexdigest()
+            if args.trim_response_head:
+                mask = artifacts['response_mask'].bool()
+                result['response_head_comparison'] = {'exact_active_values_and_updates': True,
+                    'scope': 'Diagnostic exact comparison, not an additional required tolerance beyond official FA/FLA operator checks.'}
+                for key in ('old_log_probs', 'policy_forward_log_probs', 'raw_gradients', 'after_0', 'after_1'):
+                    actual, expected = current[key], reference[key]
+                    if key == 'old_log_probs':
+                        actual, expected = actual[mask], expected[mask]
+                    elif key == 'policy_forward_log_probs':
+                        actual, expected = torch.cat(actual)[mask.repeat(2, 1)], torch.cat(expected)[mask.repeat(2, 1)]
+                    try:
+                        torch.testing.assert_close(actual, expected, rtol=0, atol=0)
+                    except AssertionError as exc:
+                        result['response_head_comparison']['exact_active_values_and_updates'] = False
+                        result['response_head_comparison'][key] = str(exc)
             if args.head_only_comparison:
                 assert args.trim_shared_padding
                 restore_training_state()

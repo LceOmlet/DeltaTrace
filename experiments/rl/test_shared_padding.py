@@ -53,7 +53,8 @@ class HeadOnlyModel(torch.nn.Module):
 
     def forward(self, input_ids, attention_mask, position_ids, logits_to_keep, **kwargs):
         self.lengths.append(input_ids.shape[-1])
-        logits = self.weight[input_ids[:, -logits_to_keep:]]
+        selected = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep
+        logits = self.weight[input_ids[:, selected]]
         return SimpleNamespace(logits=logits)
 
 
@@ -83,6 +84,40 @@ def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monk
     torch.testing.assert_close(*probabilities)
     torch.testing.assert_close(*gradients)
     assert batch['input_ids'].shape == (4, 32768)
+
+
+@pytest.mark.parametrize('lengths', [[1, 9, 20, 3], [64]*4, [0]*4])
+@pytest.mark.parametrize('calculate_entropy', [False, True])
+def test_response_head_selection_preserves_decoder_and_active_outputs(monkeypatch, lengths, calculate_entropy):
+    import verl.utils.torch_functional as functional
+    monkeypatch.setattr(functional, 'FLAH_ATTN_CROSS_ENTROPY_LOSS_AVAILABLE', False)
+    monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', '0')
+    ids = torch.arange(4*192).reshape(4, 192) % 8
+    attention = torch.ones_like(ids)
+    for index, length in enumerate(lengths):
+        attention[index, 128+length:] = 0
+    batch = dict(input_ids=ids, attention_mask=attention,
+                 position_ids=(attention.cumsum(-1)-1).clamp_min(0), responses=ids[:, -64:])
+    model = HeadOnlyModel()
+    model.config = SimpleNamespace(model_type='qwen3_5')
+    actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
+                            use_fused_kernels=False)
+    mask = attention[:, -64:].bool()
+    values, grads, selected_rows = [], [], []
+    hook = model.register_forward_hook(lambda _m, _a, out: selected_rows.append(out.logits.shape[1]))
+    for flag in ('0', '1'):
+        monkeypatch.setenv('VERL_TRIM_RESPONSE_HEAD', flag)
+        entropy, lp = DataParallelPPOActor._forward_micro_batch(actor, batch, 1., calculate_entropy)
+        assert lp.shape == (4, 64)
+        value = lp if entropy is None else lp+entropy
+        values.append(value.detach()[mask])
+        value[mask].sum().backward()
+        grads.append(model.weight.grad.clone()); model.weight.grad = None
+    hook.remove()
+    assert model.lengths == [192, 192]
+    assert selected_rows == [65, max(1, max(lengths))+1]
+    torch.testing.assert_close(*values, rtol=0, atol=0)
+    torch.testing.assert_close(*grads, rtol=0, atol=0)
 
 
 class GenerationModel(torch.nn.Module):
