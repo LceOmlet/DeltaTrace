@@ -335,12 +335,15 @@
   既有20服务补充277时官方随机端口重复4个，保留日志并另外补4个服务，
   去重后297个端口的 /openapi.json 全部200。正式端口表是 AppWorld 根下
   `appworld_ports_formal.ports`，不会覆盖旧端口表。没有重装环境。
-- 本机可用 SSH 密钥不被该容器接受，且容器 authorized_keys 是只读挂载。
-  后续使用已授权密码的 Windows DPAPI 记录（仓库外）及
-  `C:/Users/Administrator/.codex/private/metax_exec.py`，不要重复设置密钥或输出密码。
-- 每小时线程检查已创建，automation id=`deltatrace`。先检查 Codex 剩余额度，
-  低于20%停止代理后续实验操作；正常远端训练保持运行。检查与备份遵循本任务
-  状态记录，不因一小时未结束大批次就重启任务。
+- 早期连接时本机 SSH 密钥未被接受。2026-09-23 复查时，原生
+  `ssh -oBatchMode=yes -p 32036 root@ssh.v5000-prod-gw.nhss.zhejianglab.com`
+  已以现有公钥认证成功，原生 SFTP 也可复用；本次没有新配密钥。
+  原 Windows DPAPI 记录（仓库外）及
+  `C:/Users/Administrator/.codex/private/metax_exec.py` 仍保留。握手曾短暂超时，
+  随后同一入口恢复；不能据此判断训练结束或重新配置环境，不输出密码。
+- 每小时线程检查已创建，automation id=`deltatrace`。2026-09-23 用户已取消
+  Codex 剩余额度 20% 停工条件，不再查询额度或按该条件停止操作。
+  检查与备份仍须等训练修好并正式启动后恢复，不因一小时未结束大批次就重启任务。
 - 异机备份目标为 `liangchen@10.70.5.230:2501`（经4090），目录
   `/data/liangchen/deltatrace_rl_metax_backup`；只用于存储，A6000不运行训练。
   restic 0.19.1 来自官方发布，压缩包 SHA256 为

@@ -65,12 +65,19 @@ def main():
                         help='Repeat identical B4 DT calls before any update to measure warm execution')
     parser.add_argument('--parameter-offload-policy', action='store_true',
                         help='Use the installed VERL FSDP2 CPUOffloadPolicy for layer parameters')
+    parser.add_argument('--tail-batch-probe', action='store_true',
+                        help='After B4 warmup, measure B2/B2/B4 compiler and phase costs; skip already-tested PPO updates.')
     args = parser.parse_args()
+    if args.tail_batch_probe and args.backend != 'vllm':
+        parser.error('--tail-batch-probe requires the real vllm worker lifecycle')
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   reshard_after_forward=args.reshard_after_forward,
                   actor_microbatch=args.actor_microbatch, activation_offload=args.activation_offload,
                   parameter_offload_policy=args.parameter_offload_policy, stages=[])
+    if args.tail_batch_probe:
+        result['scope'] = ('Tail-batch compile/phase diagnosis at exact 32768 with the original actor and '
+                           'sleeping vLLM. Does not rerun or claim PPO-update verification.')
     artifacts = {}
 
     def stage(name):
@@ -179,6 +186,36 @@ def main():
                 assert producer.readout.last_report['max_readout_length'] == 32768
                 result.setdefault('readouts', []).append(producer.readout.last_report)
                 stage('dt_worker_batch_4' if repeat==0 else 'dt_worker_batch_4_repeat_'+str(repeat))
+        if args.tail_batch_probe:
+            # Diagnose the observed slow first B2 tail using the same actor,
+            # 32768-token fixture, resident sleeping vLLM and owner DT runner.
+            # Read the compiler's own counters; no cache reset or model patch.
+            from torch._dynamo.utils import counters, compile_times
+            result['tail_batch_runs'] = []
+            for size in (2, 2, 4):
+                before = {group: dict(values) for group, values in counters.items()}
+                first_ledger = len(ledgers)
+                tick = time.perf_counter()
+                probe = worker.compute_dt_token_advantages(
+                    [[row] for _ in range(size)], [float(original['rewards'])]*size,
+                    eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id,
+                )
+                torch.cuda.synchronize()
+                assert len(probe) == size
+                assert all(torch.isfinite(ep[0]['dt_token_advantages']).all() for ep in probe)
+                after = {group: dict(values) for group, values in counters.items()}
+                delta = {group: {key: value-before.get(group, {}).get(key, 0)
+                                for key, value in values.items()
+                                if value != before.get(group, {}).get(key, 0)}
+                         for group, values in after.items()}
+                result['tail_batch_runs'].append(dict(batch=size, seconds=time.perf_counter()-tick,
+                    compiler_counter_delta={key: value for key, value in delta.items() if value},
+                    owner_ledgers=ledgers[first_ledger:]))
+                stage('tail_batch_'+str(size)+'_'+str(len(result['tail_batch_runs'])))
+            result['compiler_times'] = compile_times()
+            result['owner_ledgers'] = ledgers
+            result['status'] = 'completed_tail_batch_diagnostic'
+            return
         for index in range(4) if args.backend == 'hf' else []:
             values.append(producer.attribute_episode([row], float(original['rewards']))[0])
             assert producer.readout.last_report['max_readout_length'] == 32768
@@ -237,7 +274,7 @@ def main():
         torch.save(artifacts, args.artifacts)
         if torch.distributed.is_initialized():
             torch.distributed.destroy_process_group()
-    if result['status'] != 'passed':
+    if result['status'] not in ('passed', 'completed_tail_batch_diagnostic'):
         raise SystemExit(1)
 
 
