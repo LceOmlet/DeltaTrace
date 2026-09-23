@@ -18,15 +18,34 @@ OOM，现已停止失败作业。** WebShop 完成约 6.5 小时 rollout 后，�
 [results_rollout_failure_fix.json](results_rollout_failure_fix.json)。
 
 2026-09-23 已通过 `ROLLOUT_BACKEND=vllm` 接入固定 VERL 的原 rollout、LoRA
-同步和 sleep/wake；没有独立服务 client 或第二套权重同步。当前三任务在做
-原生 vLLM 连续训练试跑，正式规模未恢复，定时检查和备份保持暂停。
+同步和 sleep/wake；没有独立服务 client 或第二套权重同步。原生 vLLM 试跑中，
+Sokoban 两轮均有非零优势/更新，成功率均为 100%；WebShop、AppWorld 分别完成 1、3 次零奖励
+更新后，在首次非零奖励 DT 处遇到 FSDP 根模块初始化错误。三任务连续训练
+尚未通过，正式规模未恢复，定时检查和备份保持暂停。
 LoRA API 兼容回补来自 VERL v0.7.0；vLLM 0.15 的 weights pool 上下文遗漏
 回补官方 v0.17.0 修复后，9B 休眠物理占用从 19.056 降到 2.285 GiB。
 真实 native loader 已绑定 200 层 LoRA。相同 32256+512、batch4 的生成
 预热后为 67.189 秒（包含官方同步与休眠；并发 CPU 负载不完全相同），
-修复前同接口为 64.447 秒，输出相同。完整 32k DT/PPO 容量和三任务结果
-待本次回执完成；不沿用之前 HF 的通过状态。证据见
+修复前同接口为 64.447 秒，输出相同。vLLM 完整容量夹具已完成：每条 DT
+恰好 32768 tokens（含 1024 action tokens 和读出目标），四次串行 DT、两次
+非零原 PPO 更新及更新后的 LoRA 同步完成，总计 851.49 秒。这不代表 DT
+同时 batch=4 已通过。证据见
 [results_vllm_integration.json](results_vllm_integration.json)。
+
+最新 `origin/main=6ca8dc07` 的 MetaX 路径已核对并在使用：模型前向走已安装
+FA 2.6.3 / FLA 0.4.1；DT 有限传播复用 main 的 MetaX FA 扩展和 FLA 原反向
+子内核。32k、batch=4 的 FA 算子诊断中，原有限传播 49.03 秒，原生 FA
+反向 1.008 秒。优化候选为 31.07 秒，尚未达到效率要求；不能把这个算子
+比值当作完整 DT/完整模型反向比值。
+候选在两端重合时通过原 FA 测试（长度 128/447），非零端点与原有限内核
+另做数值对照。DT minibatch 接口的同批次复制/复用张量结果相同，但串行/
+批量仍有归因差异，真实 32k×4 候选仍在重算阶段 OOM。因此没有切换正式
+训练到这些候选。记录见 [results_dt_minibatch_candidate.json](results_dt_minibatch_candidate.json)。
+
+FSDP 修复恢复官方 VERL 对完整 PEFT actor 的包裹位置，DT 注册在同一根
+模块的公共 forward 接口。已验证先 actor 后 DT、先 DT 后 actor 的两种
+顺序，并在真实 9B 上复现先 actor 后非零 DT。原生 vLLM 仍绑定 200 个 LoRA
+层、无未绑定键，sleep 后占 2.285 GiB；这不代替三任务重新试跑。
 
 此前 HF 参照为 78.745 秒处理四条
 32256-token prompt、各生成 512 tokens，约 26.0 输出 tokens/s（包含 prefill）；

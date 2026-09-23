@@ -512,10 +512,9 @@ ROLLOUT_DT_CALL_STALE = '''        # Create token advantages with the owner Delt
 
 '''
 
-# FSDP2 must be attached to the actual Transformers root when PEFT wraps it.
-# PeftModel.forward delegates into base_model.model; attaching the root state
-# to the wrapper can leave child FSDP states lazy-initialized first and fail in
-# the upstream log-prob pass. This only selects the upstream forward owner.
+# Preserve official VERL's FSDP2 root at actor_module, including PEFT. PEFT's
+# tuner calls base_model.model.forward directly, bypassing an inner root's
+# hooks. Restore the official block in checkouts carrying the former patch.
 FSDP2_ACTOR_OLD = (
     "            full_state = actor_module.state_dict()\n"
     "            apply_fsdp2(actor_module, fsdp_kwargs, fsdp_config)\n"
@@ -918,10 +917,10 @@ def main() -> None:
         if HF_WRAP_OLD not in text:
             raise RuntimeError(f"cannot find HF FSDP wrap anchor in {fsdp}")
         text = text.replace(HF_WRAP_OLD, HF_WRAP_NEW, 1)
-    if FSDP2_ACTOR_NEW not in text:
-        if FSDP2_ACTOR_OLD not in text:
-            raise RuntimeError(f"cannot find FSDP2 PEFT root anchor in {fsdp}")
-        text = text.replace(FSDP2_ACTOR_OLD, FSDP2_ACTOR_NEW, 1)
+    if FSDP2_ACTOR_NEW in text:
+        text = text.replace(FSDP2_ACTOR_NEW, FSDP2_ACTOR_OLD, 1)
+    elif FSDP2_ACTOR_OLD not in text:
+        raise RuntimeError(f"cannot find FSDP2 PEFT root anchor in {fsdp}")
     fsdp.write_text(text)
     print(f"patched {fsdp} Transformers compatibility")
     actor_policy = args.verl_root / ACTOR_FILE

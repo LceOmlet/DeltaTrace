@@ -1,0 +1,282 @@
+{
+  "scope": "DT batch and MetaX owner kernel audit; candidates not accepted for formal training",
+  "main_commit": "6ca8dc07",
+  "owner_paths": {
+    "forward": "installed MetaX FA 2.6.3 and FLA 0.4.1",
+    "finite_fa": "main vendor_fa_finite_p1_bf16_d256.cu using MetaX-MACA/mcXformer aef88de756194e077460a1c8b8b341baa429259a",
+    "finite_fla": "main finite_fla_gpu with native chunk_bwd_dv_local and chunk_gated_delta_rule_bwd_dhu"
+  },
+  "evidence": {
+    "fa-cost32k": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/fa-cost32k.json",
+      "sha256": "d547eedda1dd3b3edee1a93858699851b95e36b773483df0e0b2e77c3df3453c"
+    },
+    "fa-gemm-opt-b4-32k": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/fa-gemm-opt-b4-32k.json",
+      "sha256": "77a5602d07bd7b47e7f441f4c15615cbc0efefae80457275a1ab5af500031d36"
+    },
+    "fa-gemm-opt-numerics-v2": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/fa-gemm-opt-numerics-v2.json",
+      "sha256": "e275541b4399184e0af6781c424ea38613c0a9a865f55a5ec6970c5f0ccda173"
+    },
+    "minibatch-parity-v3-root-fixed": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/minibatch-parity-v3-root-fixed.json",
+      "sha256": "ed4dd640d91dcb3488fdafbf5e44cbba8c904b60c7b650c22661a18bd469e042"
+    },
+    "batch-capacity-v2": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/batch-capacity-v2.json",
+      "sha256": "923258aeaa76a7f2f4a7ef9aef747a106f0ed4abacbbb87103a8d6e1c4f681dc"
+    },
+    "batch-capacity-v3-reshard": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/batch-capacity-v3-reshard.json",
+      "sha256": "03fdd86cb20c2dcee997c13fe7c16b8ec6e37372e6fa0f2e5b09c5c3c1d91f67"
+    },
+    "batch-capacity-v4-borrow": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/batch-capacity-v4-borrow.json",
+      "sha256": "a7c39aa91ed922903033f033fc9c8bae383e6b62db1475e292962e67fac31fb2"
+    },
+    "batch-capacity-v5-retain-needed": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/batch-capacity-v5-retain-needed.json",
+      "sha256": "795be8563d3f50086c3da6c1a175247ee82980cb7a7cbd350a5db8cb27f29e58"
+    }
+  },
+  "fa-cost32k": {
+    "scope": "Measure existing finite FA versus installed FA backward at Qwen's shape.\n\nSynthetic operator operands; this is a cost diagnostic, not a correctness or\nwhole-model training claim. Candidate libraries are never installed by this tool.\n",
+    "length": 32768,
+    "records": [
+      {
+        "batch": 1,
+        "operation": "current",
+        "seconds": [
+          12.222424750216305,
+          12.21597917471081,
+          12.222876760177314
+        ],
+        "warm_median_seconds": 12.219427967444062
+      },
+      {
+        "batch": 1,
+        "operation": "candidate",
+        "seconds": [
+          9.685072134248912,
+          9.689514170400798,
+          9.688628870993853
+        ],
+        "warm_median_seconds": 9.689071520697325
+      },
+      {
+        "batch": 1,
+        "operation": "native_fa_backward",
+        "seconds": [
+          0.6483811922371387,
+          0.2522588735446334,
+          0.2519656140357256
+        ],
+        "warm_median_seconds": 0.2521122437901795
+      },
+      {
+        "batch": 4,
+        "operation": "current",
+        "seconds": [
+          48.7936535468325,
+          48.82017125375569,
+          48.79291023686528
+        ],
+        "warm_median_seconds": 48.806540745310485
+      },
+      {
+        "batch": 4,
+        "operation": "candidate",
+        "seconds": [
+          38.6529437713325,
+          38.666292120702565,
+          38.65341695025563
+        ],
+        "warm_median_seconds": 38.6598545354791
+      },
+      {
+        "batch": 4,
+        "operation": "native_fa_backward",
+        "seconds": [
+          1.0081898299977183,
+          1.0099645666778088,
+          1.0096182068809867
+        ],
+        "warm_median_seconds": 1.0097913867793977
+      }
+    ],
+    "status": "timed_not_numerically_validated"
+  },
+  "fa-gemm-opt-b4-32k": {
+    "scope": "Measure existing finite FA versus installed FA backward at Qwen's shape.\n\nSynthetic operator operands; this is a cost diagnostic, not a correctness or\nwhole-model training claim. Candidate libraries are never installed by this tool.\n",
+    "length": 32768,
+    "records": [
+      {
+        "batch": 4,
+        "operation": "current",
+        "seconds": [
+          49.00844095740467,
+          49.030919953249395,
+          49.02873444091529
+        ],
+        "warm_median_seconds": 49.02982719708234
+      },
+      {
+        "batch": 4,
+        "operation": "candidate",
+        "seconds": [
+          31.08801503572613,
+          31.079941902309656,
+          31.06282487511635
+        ],
+        "warm_median_seconds": 31.071383388713002
+      },
+      {
+        "batch": 4,
+        "operation": "native_fa_backward",
+        "seconds": [
+          1.2640309128910303,
+          1.007593852467835,
+          1.0086480593308806
+        ],
+        "warm_median_seconds": 1.0081209558993578
+      }
+    ],
+    "status": "timed_not_numerically_validated"
+  },
+  "fa-gemm-opt-numerics-v2": {
+    "scope": "Exercise a candidate finite FA library through the pinned FA test.\n\nAt coincident endpoints finite coefficients are ordinary attention gradients.\nThe test-only bridge substitutes that backward into FA's unchanged test, using\nits FP32 reference, low-precision baseline, and original assertions. Nonzero\nendpoint comparisons against the installed finite owner are diagnostics only.\nNo candidate library is installed or selected by training here.\n",
+    "cases": [
+      {
+        "owner": "current",
+        "length": 128,
+        "function": "test_flash_attn_output",
+        "endpoint_difference": 0,
+        "status": "passed"
+      },
+      {
+        "owner": "candidate",
+        "length": 128,
+        "function": "test_flash_attn_output",
+        "endpoint_difference": 0,
+        "status": "passed"
+      },
+      {
+        "owner": "current",
+        "length": 447,
+        "function": "test_flash_attn_output",
+        "endpoint_difference": 0,
+        "status": "passed"
+      },
+      {
+        "owner": "candidate",
+        "length": 447,
+        "function": "test_flash_attn_output",
+        "endpoint_difference": 0,
+        "status": "passed"
+      }
+    ],
+    "finite_pair_differences": [
+      {
+        "length": 128,
+        "values": {
+          "dq": {
+            "max_abs": 6.103515625e-05,
+            "relative_l2": 1.9434115472449776e-07
+          },
+          "dk": {
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "dv": {
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "tau": {
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "center": {
+            "max_abs": 9.5367431640625e-07,
+            "relative_l2": 1.8596113093849453e-08
+          }
+        }
+      },
+      {
+        "length": 447,
+        "values": {
+          "dq": {
+            "max_abs": 0.0009765625,
+            "relative_l2": 4.666808308684267e-06
+          },
+          "dk": {
+            "max_abs": 0.00048828125,
+            "relative_l2": 4.037387952848803e-06
+          },
+          "dv": {
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "tau": {
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          "center": {
+            "max_abs": 1.430511474609375e-06,
+            "relative_l2": 2.7394667867497446e-08
+          }
+        }
+      }
+    ],
+    "candidate_sha256": "101011e9e8bcb759c0133142a57f6a1602aefe7844c03a81939d6b2873a3605a",
+    "status": "passed_coincident_endpoint_official_tests"
+  },
+  "minibatch_short": {
+    "status": "passed_memory_copy_parity_and_batch_interface",
+    "actor_forward_before_dt": true,
+    "borrowed_matches_copied_exactly": true,
+    "serial_batch_differences": {
+      "dt_q_estimates": {
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      "dt_v_estimates": {
+        "max_abs": 1.5696172714233398,
+        "relative_l2": 0.03719522556605884
+      },
+      "dt_token_advantages": {
+        "max_abs": 1.5696177780628204,
+        "relative_l2": 0.7110167044130608
+      }
+    },
+    "lengths": [
+      618,
+      621,
+      626,
+      635
+    ]
+  },
+  "capacity_failures": {
+    "batch-capacity-v2": {
+      "status": "failed",
+      "error": "'Parameter' object has no attribute '_local_tensor'",
+      "dt_input_tokens": 32768
+    },
+    "batch-capacity-v3-reshard": {
+      "status": "failed",
+      "error": "CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 63.59 GiB of which 797.01 MiB is free. Of the allocated memory 104.29 GiB is allocated by PyTorch, with 21.23 MiB allocated in private pools (e.g., CUDA Graphs), and 63.26 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+      "dt_input_tokens": 32768
+    },
+    "batch-capacity-v4-borrow": {
+      "status": "failed",
+      "error": "CUDA out of memory. Tried to allocate 6.00 GiB. GPU 0 has a total capacity of 63.59 GiB of which 3.79 GiB is free. Of the allocated memory 101.29 GiB is allocated by PyTorch, with 21.23 MiB allocated in private pools (e.g., CUDA Graphs), and 55.26 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+      "dt_input_tokens": 32768
+    },
+    "batch-capacity-v5-retain-needed": {
+      "status": "failed",
+      "error": "CUDA out of memory. Tried to allocate 6.00 GiB. GPU 0 has a total capacity of 63.59 GiB of which 4.25 GiB is free. Of the allocated memory 100.79 GiB is allocated by PyTorch, with 21.23 MiB allocated in private pools (e.g., CUDA Graphs), and 86.76 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+      "dt_input_tokens": 32768
+    }
+  },
+  "status": "not_complete_32k_batch4_OOM_and_efficiency_below_requirement"
+}

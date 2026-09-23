@@ -263,6 +263,11 @@ class DeltaTraceRolloutProducer:
                     # loader, so this does not create a second model or
                     # bypass the active adapter weights.
                     forward_model = causal_model if causal_model is not None else value
+                    # Register DT on the official actor root, including PEFT,
+                    # so actor-first and DT-first share the same FSDP lifecycle.
+                    from torch.distributed.fsdp import FSDPModule
+                    if isinstance(model, FSDPModule):
+                        forward_model = model
                     actual_head = next(
                         (
                             child

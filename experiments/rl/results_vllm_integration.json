@@ -1,5 +1,5 @@
 {
-  "scope": "Native VERL-vLLM integration and official sleep-context backport; complete training pending",
+  "scope": "Native VERL-vLLM integration; serial32k DT/PPO passed, three-task continuous training not yet passed",
   "method": "experiments/rl/PLAN.md unchanged",
   "owner_interfaces": [
     "ActorRolloutRefWorker",
@@ -170,8 +170,8 @@
     "native_sleep_context": 1,
     "fsdp2_roundtrip": 1
   },
-  "full_32k_status": "running owner-capacity-v2",
-  "three_task_status": "running task-pilots-v1",
+  "full_32k_status": "passed serial DT (four calls), PPO minibatch4; not simultaneous DT batch4",
+  "three_task_status": "Sokoban vLLM pilot completed two nonzero updates. WebShop/AppWorld failed at first nonzero DT after zero-reward PPO; owner-root fix passed narrow checks, rerun pending.",
   "formal_status": "not restarted",
   "backup_and_heartbeat": "paused",
   "evidence": {
@@ -198,6 +198,102 @@
     "boundary-tests-v1.log": {
       "sha256": "18f61cbf13e06c08bab19a00cb1bf9fbdd0e70c69646857923b70ef0203c754b",
       "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/boundary-tests-v1.log"
+    },
+    "owner-capacity-v2.json": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/owner-capacity-v2.json",
+      "sha256": "e8d5c1f34970c00c6f280f56d6c5440a023001b676558b4dcadfc1275020e2ef"
+    },
+    "fsdp-root-vllm-handoff-v2.json": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/fsdp-root-vllm-handoff-v2.json",
+      "sha256": "fbf269cfabb9ad5652fe957cd0427e109c50079c5e8d4c54b229d557c208528c"
     }
+  },
+  "full_32k": {
+    "status": "passed",
+    "dt_input_tokens": 32768,
+    "capacity_response_tokens": 1024,
+    "changed_elements": 1441440,
+    "updated_native_lora": {
+      "loaded_layers": 200,
+      "unused_layers": [],
+      "nonzero_b_elements": 1426944
+    },
+    "seconds": 851.4932671636343,
+    "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6"
+  },
+  "three_task_completed_updates": {
+    "WebShop": 1,
+    "AppWorld": 3,
+    "Sokoban": 2
+  },
+  "three_task_nonzero_updates": {
+    "WebShop": 0,
+    "AppWorld": 0,
+    "Sokoban": 2
+  },
+  "pilot_failure": "FSDP state has already been lazily initialized for model.embed_tokens; inner PEFT root hooks bypassed by native PEFT forward",
+  "sokoban_vllm_pilot": {
+    "step_seconds": [
+      1740.829,
+      3225.037
+    ],
+    "episode_success_rate": [
+      1.0,
+      1.0
+    ],
+    "grad_norm": [
+      0.003,
+      0.014
+    ],
+    "dt_mode": "four trajectories with serial DT calls; not DT minibatch4 acceptance"
+  },
+  "fsdp_root_fix": {
+    "official_owner": "https://github.com/verl-project/verl/blob/v0.7.0/verl/workers/fsdp_workers.py#L504",
+    "tiny_native_root_order_tests": 2,
+    "real_9b_actor_before_dt": true,
+    "lora_binding": {
+      "actor_model_type": "qwen3_5_text",
+      "rollout_model_type": "qwen3_5",
+      "loaded_layers": 200,
+      "available_layers": 224,
+      "unused_layers": [],
+      "layer_examples": [
+        "language_model.model.layers.0.linear_attn.in_proj_a",
+        "language_model.model.layers.0.linear_attn.in_proj_b",
+        "language_model.model.layers.0.linear_attn.in_proj_qkv",
+        "language_model.model.layers.0.linear_attn.in_proj_z",
+        "language_model.model.layers.0.linear_attn.out_proj"
+      ]
+    },
+    "sleep": {
+      "worker_type": "<class 'vllm.v1.worker.gpu_worker.Worker'>",
+      "sleep_source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/patch/device_allocator/device_allocator.py",
+      "pool_source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/patch/device_allocator/device_allocator.py",
+      "sleeping_after_init": {
+        "free_gib": 61.30864715576172,
+        "device_used_gib": 2.2851028442382812,
+        "torch_allocated_gib": 43.76555919647217,
+        "pool_bytes": 46690992128,
+        "pool_allocations": 172,
+        "backed_up_allocations": 163
+      },
+      "awake": {
+        "free_gib": 17.824115753173828,
+        "device_used_gib": 45.76963424682617,
+        "torch_allocated_gib": 43.76555919647217,
+        "pool_bytes": 46690992128,
+        "pool_allocations": 172,
+        "backed_up_allocations": 0
+      },
+      "after_exit": {
+        "free_gib": 61.30864715576172,
+        "device_used_gib": 2.2851028442382812,
+        "torch_allocated_gib": 43.76555919647217,
+        "pool_bytes": 46690992128,
+        "pool_allocations": 172,
+        "backed_up_allocations": 163
+      }
+    },
+    "scope": "Root lifecycle and native handoff, not a new three-task pass; DT batch4 32k not accepted"
   }
 }

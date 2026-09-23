@@ -12,6 +12,17 @@
 
 ## 2026-09-22 正式规模启动与监控
 
+- 2026-09-23 FSDP 接入修正：vLLM 的 WebShop/AppWorld pilot 在先做零奖励
+  PPO、后首次进入非零奖励 DT 时，报 `FSDP state has already been lazily
+  initialized for model.embed_tokens`。原本地补丁把 FSDP2 放在 PEFT 内层，
+  而 PEFT `BaseTuner.forward` 直接调用内层 `.forward`，绕过根模块 hook。
+  现恢复固定 VERL 原 `apply_fsdp2(actor_module, ...)`，与官方 v0.7.0 相同；
+  DT 使用同一 FSDP 根的 `register_fsdp_forward_method`。已有 Python/模型/
+  缓存均复用。小模型两种调用顺序及真实 9B actor-first→DT 通过，后续三任务
+  仍须重新验证，不以此前失败进程或零奖励更新作为成功。
+- main 路径审计：`origin/main=6ca8dc07` 已有并正在复用 MetaX 有限 FA/FLA
+  实现。`candidates/dt-minibatch/` 内是隔离数值/性能候选；原 environment.json
+  的有限 FA 库没有切换。32k batch4 的归因内存与速度未验收，不自动重启正式规模。
 - 2026-09-23 vLLM 复用检查：系统已有 `vllm==0.15.0` 和
   `vllm-metax==0.15.0+g24fb31.d20260310.maca3.5.3.20.torch2.8`，位于
   `/opt/conda/lib/python3.12/site-packages`；现有训练 Python 可直接导入。
