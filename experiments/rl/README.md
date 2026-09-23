@@ -3,6 +3,16 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+2026-09-23 20:35:24 +08：三个两迭代 pilot 均已退出 0，各任务至少有一轮
+真实非零奖励、DT 优势和 PPO 梯度。AppWorld 第二轮为零奖励、零优势/梯度，
+不冒充非零更新。尾批次修复及回归验证后，已推送的 `6d1a946` 以 94 个文件
+的独立发布目录启动三组正式预算作业：WebShop 150×128、Sokoban 150×256、
+AppWorld 200×240。`formal-training.json` / `active-training.json` 指向
+`runs/native-prefix-6d1a946-formal`；本次启动不代表已完成正式训练或收敛。
+训练继续复用原 VERL/vLLM、token Q/V/A、32k、actor/DT minibatch4，原 PPO
+核心哈希未改，部署导入核验与 6 项原配置/传输边界测试通过。论文预算来源及
+模型、算法等差异仍见 [paper_scale.json](paper_scale.json)。
+
 最新 `native-prefix` 候选直接复用 Qwen 原生混合缓存：共同前缀只计算一次，
 原缓存复制到两个端点，后续原生前向/重放只计算变化后的部分，完整 K/V 历史
 仍然保留。精确 32768、DT B4、actor microbatch4、休眠 vLLM 驻留下，完整
@@ -13,8 +23,8 @@ DT 热调用 **27.814 秒**，主参照仍是原版官方反向 **44.007 秒**�
 FA/FLA 仍使用固定官方测试的原 FP32 参考和断言，包含原生缓存续算的算子
 对照。完整短链缓存/全量前向的 A 相对 L2 差约 1.78，V 约 0.0526，单独
 保留：首个差异发生在原生 GDN 前向，每层重放与自己的根前向相同。这不是
-逐值一致或整网容差通过的声明。三任务正式训练尚未恢复；候选结果不能替代
-三任务验收。正式启动入口已补齐官方 activation offload、actor/log-prob
+逐值一致或整网容差通过的声明。算子结果不能替代三任务验收；三任务后续运行
+状态见上方更新。正式启动入口已补齐官方 activation offload、actor/log-prob
 microbatch4，避免与容量验收设置脱节。
 
 提交 `d6b7351` 已推送并发布到 MetaX `releases/d6b7351`。三任务两迭代 pilot
@@ -32,8 +42,8 @@ AppWorld 首轮已读出 1 个非零奖励事件、20 个对照，5 次 DT 共 1
 8 条轨迹奖励全零，DT/梯度也为零；第二轮 3/8 成功，34 个事件对照经 9 次
 DT 得到 12198 个非零 token 优势，原 PPO 梯度范数 0.012。Sokoban 第二轮
 完成 451 个过程/终局事件对照，PPO 梯度范数 0.002。2026-09-23 20:10 +08
-Sokoban/WebShop 均已两迭代完成、退出码 0；AppWorld 第二轮仍在运行，
-三任务正式规模实验、定时检查与备份尚未启动。
+Sokoban/WebShop 均已两迭代完成、退出码 0；AppWorld 随后也两迭代完成、
+退出码 0，第二轮原 PPO 更新 635.14 秒，整轮 2115.26 秒，无 OOM。
 
 Sokoban 首轮最后的 B2 尾批次用了 71.86 秒，前面的热 B4 约 9–14 秒。
 额外 `verify_dt_context_capacity.py --tail-batch-probe` 复用同一官方 worker、

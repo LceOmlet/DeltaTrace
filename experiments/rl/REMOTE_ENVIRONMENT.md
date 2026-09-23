@@ -12,7 +12,18 @@
 
 ## 2026-09-23 已有加速分支的复用
 
-- 当前三任务 pilot 使用已推送提交 `d6b7351` 的完整发布目录
+- 当前正式预算运行使用已推送提交 `6d1a946`，完整发布目录
+  `$DT_RUNTIME_ROOT/releases/6d1a946`。其 94 个 Git 文件及 10 个实际导入路径
+  已校验，部署边界测试 6 passed；`environment.json` 原样复用前一发布目录，
+  未重配环境/权重/缓存。新修复只给现有动态编译标记补上 batch 维，消除
+  B4→B2 时的 7 次图编译，未改有限传播公式、Q/V/A 或 PPO。
+  2026-09-23 20:35:24 +08 启动，运行目录
+  `runs/native-prefix-6d1a946-formal`。任务、PID、检查点、Ray 目录与预算均
+  记录在当前 `formal-training.json` / `active-training.json`，源目录由
+  `active-source.json` 指定。启动时 GPU 4/5/6 空闲，分别运行
+  Sokoban 150×256、WebShop 150×128、AppWorld 200×240；GPU 编号不是预约。
+  备份脚本已按该 manifest 增加实际发布目录，不能只备份历史 `repo/`。
+- 已完成的三任务 pilot 使用已推送提交 `d6b7351` 的完整发布目录
   `$DT_RUNTIME_ROOT/releases/d6b7351`，其 `source-manifest.json` 记录 93 个
   文件的 Git 来源和 SHA256。设 `DT_ROOT` 为此目录、`DT_ENVIRONMENT_JSON`
   为目录内 `environment.json`，再 source 原 `experiments/rl/environments/metax.env.sh`。
@@ -23,13 +34,14 @@
   （2026-09-23 18:59:31 +08）。Sokoban/WebShop/AppWorld
   分别使用当前空闲 GPU 4/5/6，均为两迭代验收、32k 上限、actor/DT batch4；
   AppWorld 保留 40 轮。`active-source.json`/`active-training.json` 已更新，
-  旧 `formal-training.json` 仍是历史失败作业，不代表正式重启。原 PPO 核心
+  三个 pilot 已两迭代退出 0，每个任务均有真实非零奖励/DT/PPO 更新；旧失败
+  manifest 作为 `previous-formal-training.json` 保存在新运行目录。原 PPO 核心
   SHA256 仍为 `5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6`。
 - `candidates/dt-minibatch/native-prefix` 复用原模型混合缓存，新增可选
   `dt_reuse_native_prefix=true`。已编译库 `libfinite_cached_queries.so` 的
   SHA256 为 `5d2af760abb2684401682029e41ac68aefc58ed2796082d435874a2b74bbcebb`。
   不重建缓存/环境。原有限 FA 只扩展 Q 后缀、完整 K/V 的输入布局，有限公式
-  不变；原生 GDN 使用真实缓存状态和卷积左窗口。仍是隔离候选，未正式部署。
+  不变；原生 GDN 使用真实缓存状态和卷积左窗口，已纳入上述完整发布目录。
 - `capacity32k.json` 状态 passed，退出码 0，总计 337.772 秒；完整热 DT
   27.814 秒，原版官方反向主参照 44.007 秒。B4/32768、1024 action 槽位、
   vLLM 驻留、actor microbatch4、原 activation offload 和 FSDP2 参数卸载。
