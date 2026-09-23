@@ -20,6 +20,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--candidate', type=Path)
+    parser.add_argument('--candidate-only', action='store_true',
+                        help='Compare candidate with native backward; reuse an already measured current-owner baseline.')
     parser.add_argument('--length', type=int, default=32768)
     parser.add_argument('--batches', type=int, nargs='+', default=[1, 4])
     parser.add_argument('--profile', action='store_true')
@@ -31,6 +33,10 @@ def main():
     if args.candidate:
         methods['candidate'] = VendorFAFiniteP1BF16D256(args.candidate,
             hashlib.sha256(args.candidate.read_bytes()).hexdigest())
+    if args.candidate_only:
+        if not args.candidate:
+            parser.error('--candidate-only requires --candidate')
+        del methods['current']
     result = dict(scope=__doc__, length=args.length, records=[], status='running')
     def save():
         args.output.write_text(json.dumps(result, indent=2)+'\n')

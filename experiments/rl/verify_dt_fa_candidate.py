@@ -24,6 +24,8 @@ def main():
     p.add_argument('--candidate', type=Path, required=True)
     p.add_argument('--sources', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
+    p.add_argument('--finite-lengths', type=int, nargs='+', default=[128, 447],
+                   help='Lengths for nonzero-endpoint diagnostics against the current finite owner.')
     args = p.parse_args()
     source = args.sources/'test_flash_attn_v263.py'
     assert hashlib.sha256(source.read_bytes()).hexdigest() == 'a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9'
@@ -78,6 +80,7 @@ def main():
             result['cases'].append(entry)
             print(entry, flush=True)
             args.output.write_text(json.dumps(result, indent=2)+'\n')
+    for length in args.finite_lengths:
         torch.manual_seed(2026)
         q0 = torch.randn(4, length, 16, 256, device='cuda', dtype=torch.bfloat16)
         k0 = torch.randn(4, length, 4, 256, device='cuda', dtype=torch.bfloat16)

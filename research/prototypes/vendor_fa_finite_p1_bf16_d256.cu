@@ -6,7 +6,7 @@
  * This is an explicitly named finite-attribution operator, NOT model backward.
  * Q/K/V and U: BF16; MMA/softmax/row reductions: FP32; output: BF16.
  * Compact GQA inputs; query-head outputs retain the existing FP32 grouped reduction.
- * Endpoint means reuse existing RHS tile loads; no global Q/K midpoint buffers.
+ * Endpoint means use the existing RHS shared tile; no global midpoint buffers.
  * D256; right-padding lengths; full padding tiles skip arithmetic and write zeros.
  * No integral quadrature, no global N-by-N buffer, no model/package patch.
  */
@@ -18,7 +18,14 @@
 #include "softmax.h"
 
 using namespace cute;
-using FiniteTraits=Flash_fwd_kernel_traits<256,32,32,2,false,false,mctlass::bfloat16_t>;
+#ifndef DELTATRACE_FINITE_TILE
+#define DELTATRACE_FINITE_TILE 64
+#endif
+#ifndef DELTATRACE_FINITE_WARPS
+#define DELTATRACE_FINITE_WARPS 4
+#endif
+using FiniteTraits=Flash_fwd_kernel_traits<256,DELTATRACE_FINITE_TILE,DELTATRACE_FINITE_TILE,
+    DELTATRACE_FINITE_WARPS,false,false,mctlass::bfloat16_t>;
 
 struct FiniteParams {
     const void *q0,*k0,*q1,*k1,*v0,*u;
@@ -75,14 +82,13 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
     auto sB=make_tensor(sA.data()+size(sA),typename Traits::SmemLayoutKV{});
     auto sBt=make_tensor(sB.data(),typename Traits::SmemLayoutVtransposed{});
     auto sBtPlain=make_tensor(sB.data(),typename Traits::SmemLayoutVtransposedNoSwizzle{});
-    // Retain the BF16 midpoint in registers until the score products finish.
-    // Their shared B tile is then dead and is reused for the multiplier GEMM.
+    // Form the midpoint only after score products finish. Retaining a whole
+    // RHS tile across those GEMMs caused register spills on the MetaX path.
 
     typename Traits::GmemTiledCopyQKV global_copy;
     auto global_thread=global_copy.get_thread_slice(tid);
     auto toA=global_thread.partition_D(sA);
     auto toB=global_thread.partition_D(sB);
-    auto firstEndpointB=make_fragment_like(toB);
     auto coordA=make_identity_tensor(Shape<Int<M>,Int<D>>{});
     auto coordB=make_identity_tensor(Shape<Int<N>,Int<D>>{});
     auto coordsA=global_thread.partition_S(coordA);
@@ -117,7 +123,7 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
     const int begin=Phase==2 ? row0 : 0;
     const int end=Phase==2 ? valid : min(valid,row0+M);
     for(int col0=begin;col0<end;col0+=N) {
-        auto pair=[&](const E *left,const E *right,auto &acc,int endpoint) {
+        auto pair=[&](const E *left,const E *right,auto &acc) __attribute__((always_inline)) {
             __syncthreads();
             auto gA=make_tensor(make_gmem_ptr(left+pair_left_offset+int64_t(row0)*D),
                                Shape<Int<M>,Int<D>>{},Stride<Int<D>,_1>{});
@@ -128,24 +134,16 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
             flash::copy<false,true,true>(global_copy,fromGA,toA,coordsA,predA,valid-row0);
             flash::copy<false,true,true>(global_copy,fromGB,toB,coordsB,predB,valid-col0);
             __syncthreads();
-            if constexpr(Phase!=0) {
-                if(endpoint==0) cute::copy(toB,firstEndpointB);
-                if(endpoint==1) {
-                    #pragma unroll
-                    for(int i=0;i<size(firstEndpointB);++i)
-                        firstEndpointB(i)=E((float(firstEndpointB(i))+float(toB(i)))*0.5f);
-                }
-            }
             clear(acc);
-            flash::gemm(acc,regA,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+            flash::gemm_opt(acc,regA,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
         };
         auto a0=partition_fragment_C(mma,Shape<Int<M>,Int<N>>{});
         auto a1=make_fragment_like(a0);
         auto at=make_fragment_like(a0);
         if constexpr(Phase==2) {
-            pair(k0,q0,a0,0);pair(k1,q1,a1,1);pair(v0,u,at,-1);
+            pair(k0,q0,a0);pair(k1,q1,a1);pair(v0,u,at);
         } else {
-            pair(q0,k0,a0,0);pair(q1,k1,a1,1);pair(u,v0,at,-1);
+            pair(q0,k0,a0);pair(q1,k1,a1);pair(u,v0,at);
         }
         #pragma unroll
         for(int i=0;i<size(a0);++i) {
@@ -172,10 +170,27 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
             flash::thread_reduce_<false>(lrows,denominator,sum);
             flash::thread_reduce_<false>(trows,numerator,sum);
         } else {
-            auto multiply=[&](auto &weights,const E *values,auto &acc,bool shared_mean) {
+            auto multiply=[&](auto &weights,const E *values,auto &acc,bool shared_mean) __attribute__((always_inline)) {
                 __syncthreads();
                 if(shared_mean) {
-                    cute::copy(firstEndpointB,toB);
+                    const E *right0=Phase==1?k0:q0;
+                    const E *right1=Phase==1?k1:q1;
+                    auto gB0=make_tensor(make_gmem_ptr(right0+pair_right_offset+int64_t(col0)*D),
+                                        Shape<Int<N>,Int<D>>{},Stride<Int<D>,_1>{});
+                    auto gB1=make_tensor(make_gmem_ptr(right1+pair_right_offset+int64_t(col0)*D),
+                                        Shape<Int<N>,Int<D>>{},Stride<Int<D>,_1>{});
+                    auto fromGB0=global_thread.partition_S(gB0);
+                    auto fromGB1=global_thread.partition_S(gB1);
+                    flash::copy<false,true,true>(global_copy,fromGB0,toB,coordsB,predB,valid-col0);
+                    __syncthreads();
+                    auto firstEndpointB=make_fragment_like(toB);
+                    cute::copy(toB,firstEndpointB);
+                    __syncthreads();
+                    flash::copy<false,true,true>(global_copy,fromGB1,toB,coordsB,predB,valid-col0);
+                    __syncthreads();
+                    #pragma unroll
+                    for(int j=0;j<size(firstEndpointB);++j)
+                        toB(j)=E((float(firstEndpointB(j))+float(toB(j)))*0.5f);
                 } else {
                 auto gB=make_tensor(make_gmem_ptr(values+(Phase==1?kv_offset:head_offset)+int64_t(col0)*D),
                                    Shape<Int<N>,Int<D>>{},Stride<Int<D>,_1>{});
@@ -185,7 +200,29 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
                 __syncthreads();
                 CONVERT_TENSOR_TYPE(float,E,weights,half_weights)
                 auto regWeights=make_tensor(half_weights.data(),weights.layout());
-                flash::gemm_rs(acc,regWeights,regBt,fromBt,mma,copyBt,threadBt);
+                // The vendor copy_trans fast path consumes a 128-column
+                // operand (four source pointer pairs). Invoke that owner
+                // helper on two views of D256, rather than indexing beyond
+                // its native source pointer array.
+                uint32_t offsets[5];
+                const uint32_t lane=__lane_id();
+                const uint32_t rr=((lane>>4)<<2)+(lane&3);
+                const uint32_t cc=((lane>>2)&3)<<1;
+                #pragma unroll
+                for(int j=0;j<4;++j) offsets[j]=((((cc+j*8)>>2)^(rr&7))<<2)+(cc&3)+rr*32;
+                offsets[4]=((lane&7)<<1)+((lane>>5)<<10);
+                #pragma unroll
+                for(int part=0;part<2;++part) {
+                    auto sharedHalf=local_tile(sBt,Shape<_128,Int<N>>{},make_coord(part,0));
+                    auto plainHalf=local_tile(sBtPlain,Shape<_128,Int<N>>{},make_coord(part,0));
+                    auto registerHalf=mma_thread.partition_fragment_B(plainHalf);
+                    auto fromHalf=threadBt.partition_S(sharedHalf);
+                    auto accHalf=make_tensor(acc.data()+part*8*get<2>(stride(acc)),
+                        make_layout(make_shape(get<0>(shape(acc)),get<1>(shape(acc)),_8{}),stride(acc)));
+                    const uint32_t sourceStride=get<1>(get<1>(fromHalf(_,_,_0{}).layout().layout_fn().stride()))/2;
+                    const uint32_t destinationStride=get<1>(get<1>(registerHalf(_,_,_0{}).layout().stride()))/2;
+                    flash::gemm_rs<false,true>(accHalf,regWeights,registerHalf,fromHalf,mma,offsets,sourceStride,destinationStride);
+                }
             };
             if constexpr(Phase==1) multiply(a0,nullptr,accQ,true);
             else {multiply(a0,nullptr,accQ,true);multiply(a1,u,accV,false);}

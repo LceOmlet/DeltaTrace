@@ -12,6 +12,20 @@
 
 ## 2026-09-22 正式规模启动与监控
 
+- 2026-09-23 MetaX 有限 FA 候选继续复用同一厂商 framework。`gemm_rs` 快速
+  转置接口按两个 128 列视图处理 D256；64×64、4 warps 的预热 batch4/32k
+  为 14.616 秒，原有限核约 48.771 秒，原生 FA backward 1.009 秒。
+  候选库位于 `candidates/dt-minibatch/libfinite_d256_owner_optimized.so`，SHA256
+  `21c55032fc04d08c5fb8346dd961cf31bea772320b38f5c5751d2bf8800f35d1`。
+  device fatbin 与已计时/长数值检查的 split-rs 候选逐字节相同。
+  原 environment.json 未切换；恢复环境时不可把候选状态当正式训练已通过。
+  官方短算子断言、32k 非零端点诊断、完整短 DT 差异及失败结果见
+  [results_dt_minibatch_candidate.json](results_dt_minibatch_candidate.json)。
+  CPU capture 的跨设备复制需要保留 strides；MetaX 默认复制曾改变四维布局，
+  修正后同批次短链 Q/V/A 逐位相同。32k×4 容量仍未通过，不重装依赖解决。
+- FSDP root 修复后的 WebShop/AppWorld 恢复作业正常结束，完成 step 2/4，
+  但这轮均为零奖励/零优势/零梯度。新回执为
+  `receipts/training-setup/vllm/task-pilots-v2-results.json`；不是非零 DT 验收。
 - 2026-09-23 FSDP 接入修正：vLLM 的 WebShop/AppWorld pilot 在先做零奖励
   PPO、后首次进入非零奖励 DT 时，报 `FSDP state has already been lazily
   initialized for model.embed_tokens`。原本地补丁把 FSDP2 放在 PEFT 内层，

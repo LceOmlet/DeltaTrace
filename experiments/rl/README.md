@@ -34,13 +34,25 @@ LoRA API 兼容回补来自 VERL v0.7.0；vLLM 0.15 的 weights pool 上下文�
 
 最新 `origin/main=6ca8dc07` 的 MetaX 路径已核对并在使用：模型前向走已安装
 FA 2.6.3 / FLA 0.4.1；DT 有限传播复用 main 的 MetaX FA 扩展和 FLA 原反向
-子内核。32k、batch=4 的 FA 算子诊断中，原有限传播 49.03 秒，原生 FA
-反向 1.008 秒。优化候选为 31.07 秒，尚未达到效率要求；不能把这个算子
+子内核。32k、batch=4 的 FA 算子诊断中，原有限传播约 48.77 秒，原生 FA
+反向 1.009 秒。最新候选为 14.62 秒，尚未达到效率要求；不能把这个算子
 比值当作完整 DT/完整模型反向比值。
 候选在两端重合时通过原 FA 测试（长度 128/447），非零端点与原有限内核
 另做数值对照。DT minibatch 接口的同批次复制/复用张量结果相同，但串行/
 批量仍有归因差异，真实 32k×4 候选仍在重算阶段 OOM。因此没有切换正式
 训练到这些候选。记录见 [results_dt_minibatch_candidate.json](results_dt_minibatch_candidate.json)。
+
+候选复用厂商 `gemm_opt` 和 `gemm_rs`：后者的快速转置加载接口每次接受
+128 列，因此 D256 使用两个视图调用，保留原有限公式；不是重写 GEMM。
+32k 非零端点对照中 dV 相同，dQ/dK 差异另存原始结果。扩大输出并行度的
+另一候选为 21.35 秒，比 14.62 秒更慢，未采用。训练环境的有限 FA 库尚未切换。
+CPU capture 候选必须保留原 strides；默认跨设备复制曾改变四维布局。
+修正后短链 Q/V/A 与未 offload 的同批次结果逐位一致。32k 仍需完成容量检查；
+正在修复诊断 FP64 大临时张量，以及 base/LoRA GEMM 重复的 BF16 输入副本。
+
+FSDP 修复后的 WebShop/AppWorld vLLM 恢复作业已分别完成 step 2/4，耗时
+1134.59/980.84 秒；两轮实际 reward、DT 优势、梯度均为零，不能作为非零
+DT 更新或任务学习验收。正式实验、每小时检查和异机备份仍未恢复。
 
 FSDP 修复恢复官方 VERL 对完整 PEFT actor 的包裹位置，DT 注册在同一根
 模块的公共 forward 接口。已验证先 actor 后 DT、先 DT 后 actor 的两种
