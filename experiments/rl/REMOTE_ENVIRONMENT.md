@@ -355,7 +355,13 @@
   随后同一入口恢复；不能据此判断训练结束或重新配置环境，不输出密码。
 - 每小时线程检查已创建，automation id=`deltatrace`。2026-09-23 用户已取消
   Codex 剩余额度 20% 停工条件，不再查询额度或按该条件停止操作。
-  检查与备份仍须等训练修好并正式启动后恢复，不因一小时未结束大批次就重启任务。
+  三任务 pilot 通过且正式预算作业进入生成后，已恢复该检查并保留每次回显；
+  不因一小时未结束大批次就重启任务。首轮 metadata 异机备份/restore 已通过，
+  回执为本机 `research/temporary/rl_backup_20260922/formal-6d1a946-initial.json`，
+  快照 `90fa82b72894b4c2b25bee6f2bb68dcc27a037fe489e82eb523a490d34e50c10`。
+  当时新正式检查点尚未产生，不能将该 metadata 回执当作新检查点备份成功。
+  环境状态/调用审计另见 `receipts/environment-state-20260923.json`，未更改
+  正式训练状态；定时检查须区分原格式有效性标记与实际动作/API 执行结果。
 - 异机备份目标为 `liangchen@10.70.5.230:2501`（经4090），目录
   `/data/liangchen/deltatrace_rl_metax_backup`；只用于存储，A6000不运行训练。
   restic 0.19.1 来自官方发布，压缩包 SHA256 为

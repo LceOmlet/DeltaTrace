@@ -12,6 +12,10 @@ AppWorld 200×240。`formal-training.json` / `active-training.json` 指向
 训练继续复用原 VERL/vLLM、token Q/V/A、32k、actor/DT minibatch4，原 PPO
 核心哈希未改，部署导入核验与 6 项原配置/传输边界测试通过。论文预算来源及
 模型、算法等差异仍见 [paper_scale.json](paper_scale.json)。
+三组均已进入真实生成，WebShop 已进入第二次环境交互；正式首轮迭代及检查点
+尚未完成。已有每小时检查 `deltatrace` 已恢复，每次回显，且删除了额度查询/
+20% 停工规则。首轮源码、配置、数据和日志的异机 restic 备份及 restore 校验
+已通过（快照 `90fa82b7`）；新检查点须等待原 owner 完成标记后再备份。
 
 用户要求额外检查环境状态与调用行为。`verify_environment_state.py` 直接调用
 固定上游 worker / projection，复用现有资产；检查已通过：Sokoban 两实例
