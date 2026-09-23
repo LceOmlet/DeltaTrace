@@ -12,6 +12,10 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 04:54:46 +08 已从 `releases/88685db` 恢复正式预算作业，99 个发布文件哈希
+  核对通过；运行目录 `runs/rollout-repair-88685db`。WebShop 复用原完成的
+  step 1 检查点路径，另两任务重采首轮。启动不是新一轮训练通过的结论。
+  当前资源/日志/PID 从新 manifest 读取，以下停止说明是此前修复阶段的记录。
 - 三组旧正式作业主动停止，状态是 `stopped_for_rollout_throughput_repair`；
   WebShop 完成的 step 1 检查点保留，未完成轨迹按用户指令丢弃。恢复时读取
   当前 manifest，不复用已终止 PID，不重新安装环境/权重/缓存。

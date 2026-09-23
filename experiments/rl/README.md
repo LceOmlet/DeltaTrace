@@ -3,9 +3,16 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-2026-09-24：三组正式作业已主动停止以修复 rollout 吞吐，保留 WebShop
+2026-09-24 04:54:46 +08：修复发布 `88685db` 的 99 个源码文件哈希已核对，
+三组正式预算作业已恢复，运行目录为 `runs/rollout-repair-88685db`。WebShop
+由原 owner 自动恢复已有 step 1，Sokoban/AppWorld 重采未完成的首轮。
+生成并发 32、actor/DT minibatch4、总上限32768，预算与 Q/V/A/PPO 均保持。
+当前处于初始化/真实 rollout 验证，不把启动当成完整迭代健康；每小时检查
+已更新到新 manifest，备份等待修复后完整 rollout/更新确认。
+
+此前三组正式作业主动停止以修复 rollout 吞吐，保留 WebShop
 已完成的第 1 次更新和检查点；未完成采集不再用于更新。当前运行状态以
-`formal-training.json` 的 `stopped_for_rollout_throughput_repair` 为准。
+`formal-training.json` 为准；历史主动停止状态不是当前运行故障。
 正式规模暴露了 rollout 入口漏接：collector 传出的
 `rollout_active_mask` 只在 HF 后端使用，vLLM 仍为已结束的轨迹生成文本。
 Sokoban 前 9 轮的 2,304 个请求中，939 个无效；AppWorld 前 25 轮的

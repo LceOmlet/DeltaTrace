@@ -89,8 +89,11 @@ def collect(root):
 
 
 def completed(job):
-    return max((int(m['values']['training/global_step']) for m in job['metrics']
-                if 'training/global_step' in m['values']), default=0)
+    # On owner checkpoint resume, the new log has no metric until the next
+    # update. Preserve the already-completed formal checkpoint in that gap.
+    return max(int(job.get('checkpoint_step') or 0),
+               max((int(m['values']['training/global_step']) for m in job['metrics']
+                    if 'training/global_step' in m['values']), default=0))
 
 
 def phase_label(job):
