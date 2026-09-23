@@ -1,0 +1,203 @@
+{
+  "scope": "Native VERL-vLLM integration and official sleep-context backport; complete training pending",
+  "method": "experiments/rl/PLAN.md unchanged",
+  "owner_interfaces": [
+    "ActorRolloutRefWorker",
+    "vLLMRollout",
+    "FSDPVLLMShardingManager",
+    "TensorLoRARequest",
+    "LLM.sleep/wake_up"
+  ],
+  "ppo_source_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+  "sleep_before": {
+    "worker_type": "<class 'vllm.v1.worker.gpu_worker.Worker'>",
+    "sleep_source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/patch/device_allocator/device_allocator.py",
+    "pool_source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/patch/device_allocator/device_allocator.py",
+    "sleeping_after_init": {
+      "free_gib": 44.5377082824707,
+      "device_used_gib": 19.056041717529297,
+      "torch_allocated_gib": 43.74993419647217,
+      "pool_bytes": 28624027648,
+      "pool_allocations": 9,
+      "backed_up_allocations": 0
+    },
+    "awake": {
+      "free_gib": 17.879409790039062,
+      "device_used_gib": 45.71434020996094,
+      "torch_allocated_gib": 43.74993419647217,
+      "pool_bytes": 28624027648,
+      "pool_allocations": 9,
+      "backed_up_allocations": 0
+    },
+    "after_exit": {
+      "free_gib": 44.5377082824707,
+      "device_used_gib": 19.056041717529297,
+      "torch_allocated_gib": 43.74993419647217,
+      "pool_bytes": 28624027648,
+      "pool_allocations": 9,
+      "backed_up_allocations": 0
+    }
+  },
+  "sleep_after": {
+    "worker_type": "<class 'vllm.v1.worker.gpu_worker.Worker'>",
+    "sleep_source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/patch/device_allocator/device_allocator.py",
+    "pool_source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/patch/device_allocator/device_allocator.py",
+    "sleeping_after_init": {
+      "free_gib": 61.30865478515625,
+      "device_used_gib": 2.28509521484375,
+      "torch_allocated_gib": 43.76555919647217,
+      "pool_bytes": 46690992128,
+      "pool_allocations": 172,
+      "backed_up_allocations": 163
+    },
+    "awake": {
+      "free_gib": 17.824127197265625,
+      "device_used_gib": 45.769622802734375,
+      "torch_allocated_gib": 43.76555919647217,
+      "pool_bytes": 46690992128,
+      "pool_allocations": 172,
+      "backed_up_allocations": 0
+    },
+    "after_exit": {
+      "free_gib": 61.30865478515625,
+      "device_used_gib": 2.28509521484375,
+      "torch_allocated_gib": 43.76555919647217,
+      "pool_bytes": 46690992128,
+      "pool_allocations": 172,
+      "backed_up_allocations": 163
+    }
+  },
+  "lora_binding": {
+    "actor_model_type": "qwen3_5_text",
+    "rollout_model_type": "qwen3_5",
+    "loaded_layers": 200,
+    "available_layers": 224,
+    "unused_layers": [],
+    "layer_examples": [
+      "language_model.model.layers.0.linear_attn.in_proj_a",
+      "language_model.model.layers.0.linear_attn.in_proj_b",
+      "language_model.model.layers.0.linear_attn.in_proj_qkv",
+      "language_model.model.layers.0.linear_attn.in_proj_z",
+      "language_model.model.layers.0.linear_attn.out_proj"
+    ]
+  },
+  "generation_before": [
+    {
+      "reshard_after_forward": false,
+      "runs": [
+        {
+          "repeat": 0,
+          "warmup": true,
+          "seconds": 85.14759022183716,
+          "actual_response_lengths": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "peak_allocated_gib": 60.43568420410156,
+          "peak_reserved_gib": 60.453125,
+          "response_sha256": "f7365c2fb085259bc87d0748c90404c67b19bf9c38177d82977bb7c5c2ef643d"
+        },
+        {
+          "repeat": 1,
+          "warmup": false,
+          "seconds": 64.44662536960095,
+          "actual_response_lengths": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "peak_allocated_gib": 60.435856342315674,
+          "peak_reserved_gib": 60.453125,
+          "response_sha256": "f7365c2fb085259bc87d0748c90404c67b19bf9c38177d82977bb7c5c2ef643d"
+        }
+      ],
+      "repeat_changed_tokens": 0,
+      "warm_seconds": 64.44662536960095
+    }
+  ],
+  "generation_after": [
+    {
+      "reshard_after_forward": false,
+      "runs": [
+        {
+          "repeat": 0,
+          "warmup": true,
+          "seconds": 82.42488258797675,
+          "actual_response_lengths": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "peak_allocated_gib": 60.45130920410156,
+          "peak_reserved_gib": 60.48828125,
+          "response_sha256": "f7365c2fb085259bc87d0748c90404c67b19bf9c38177d82977bb7c5c2ef643d"
+        },
+        {
+          "repeat": 1,
+          "warmup": false,
+          "seconds": 67.18924797978252,
+          "actual_response_lengths": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "peak_allocated_gib": 60.451481342315674,
+          "peak_reserved_gib": 60.48828125,
+          "response_sha256": "f7365c2fb085259bc87d0748c90404c67b19bf9c38177d82977bb7c5c2ef643d"
+        }
+      ],
+      "repeat_changed_tokens": 0,
+      "warm_seconds": 67.18924797978252
+    }
+  ],
+  "generation_scope": "Same 32256 prompt +512 response, batch4, original VERL worker. End-to-end generation includes native LoRA handoff; concurrent CPU activity differs. No pure-server or task-throughput speedup claim.",
+  "backend_versions": {
+    "vllm": "0.15.0",
+    "vllm_metax": "0.15.0+g24fb31.d20260310.maca3.5.3.20.torch2.8",
+    "verl_commit": "732f37acd7684b8c24d14ba3ededfe9fab1ed472"
+  },
+  "backports": {
+    "lora": "https://github.com/verl-project/verl/blob/v0.7.0/verl/utils/vllm/utils.py",
+    "sleep": "https://github.com/vllm-project/vllm/blob/v0.17.0/vllm/v1/worker/gpu_worker.py"
+  },
+  "tests": {
+    "boundary_tests": 23,
+    "native_sleep_context": 1,
+    "fsdp2_roundtrip": 1
+  },
+  "full_32k_status": "running owner-capacity-v2",
+  "three_task_status": "running task-pilots-v1",
+  "formal_status": "not restarted",
+  "backup_and_heartbeat": "paused",
+  "evidence": {
+    "owner-sleep-v3.json": {
+      "sha256": "900245b6b3a3d85fa53464fe093a506a8a520552b6764fef691e3303149ffe41",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/owner-sleep-v3.json"
+    },
+    "owner-sleep-v4.json": {
+      "sha256": "ddd6f9da25dc22f97eb7f613f6bbcee7853519b51686edec25215560938c68de",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/owner-sleep-v4.json"
+    },
+    "owner-generation-v9.json": {
+      "sha256": "c30735e17789d5cd55ff2c80f3318375d07c6c9c644533faa37303d009c7fb34",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/owner-generation-v9.json"
+    },
+    "owner-generation-v10.json": {
+      "sha256": "b845169f0897e9481634cc1464e02e8b8c8aadbeffeec2bba7741cfb76e7fd2f",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/owner-generation-v10.json"
+    },
+    "sleep-owner-test.log": {
+      "sha256": "71cecd4a03d26fc192e472bf26020cdc2172e564ac64a719b16960d8dffd73a1",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/sleep-owner-test.log"
+    },
+    "boundary-tests-v1.log": {
+      "sha256": "18f61cbf13e06c08bab19a00cb1bf9fbdd0e70c69646857923b70ef0203c754b",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/vllm/boundary-tests-v1.log"
+    }
+  }
+}

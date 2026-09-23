@@ -25,7 +25,12 @@ MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
 LORA_RANK="${LORA_RANK:-1}"
 LORA_ALPHA="${LORA_ALPHA:-2}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
-PARAM_OFFLOAD="${PARAM_OFFLOAD:-False}"
+ROLLOUT_BACKEND="${ROLLOUT_BACKEND:-hf}"
+if [[ "$ROLLOUT_BACKEND" == "vllm" ]]; then
+  PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
+else
+  PARAM_OFFLOAD="${PARAM_OFFLOAD:-False}"
+fi
 ACTOR_CPU_OFFLOAD="${ACTOR_CPU_OFFLOAD:-False}"
 ACTOR_OFFLOAD_POLICY="${ACTOR_OFFLOAD_POLICY:-False}"
 FSDP_MIN_PARAMS="${FSDP_MIN_PARAMS:-0}"
@@ -52,6 +57,17 @@ APPWORLD_PORT_FILE="${APPWORLD_PORT_FILE:-appworld_ports.ports}"
 APPWORLD_MAX_INTERACTIONS="${APPWORLD_MAX_INTERACTIONS:-50}"
 CHAT_TEMPLATE_ARGS=()
 METHOD_ARGS=()
+ROLLOUT_ARGS=()
+if [[ "$ROLLOUT_BACKEND" == "vllm" ]]; then
+  # Native VERL hybrid rollout, tensor LoRA sync, and vLLM sleep/wake.
+  ROLLOUT_ARGS+=("actor_rollout_ref.rollout.load_format=safetensors"
+                "actor_rollout_ref.rollout.max_model_len=$MAX_TOTAL_TOKENS"
+                "actor_rollout_ref.rollout.max_num_seqs=${ROLLOUT_MAX_NUM_SEQS:-4}"
+                "actor_rollout_ref.rollout.max_num_batched_tokens=$MAX_TOTAL_TOKENS"
+                "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt={image:0,video:0}")
+elif [[ "$ROLLOUT_BACKEND" != "hf" ]]; then
+  echo "ROLLOUT_BACKEND must be hf or vllm" >&2; exit 2
+fi
 if [[ -n "${ENABLE_THINKING:-}" ]]; then
   CHAT_TEMPLATE_ARGS+=("+data.apply_chat_template_kwargs.enable_thinking=$ENABLE_THINKING")
 fi
@@ -97,6 +113,11 @@ export TOKENIZERS_PARALLELISM=false
 export VERL_TRIM_SHARED_PADDING=1
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+if [[ "$ROLLOUT_BACKEND" == "vllm" ]]; then
+  # CuMem checks this at initialization. The native sharding manager switches
+  # the runtime allocator back to expandable segments on return to DT/PPO.
+  export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF//expandable_segments:True/expandable_segments:False}"
+fi
 export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
 # The pinned upstream tree requests FlashAttention 2 by default, but its
 # optional CUDA extension may be unavailable on older-glibc hosts.  Hugging
@@ -201,7 +222,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
   +actor_rollout_ref.rollout.micro_batch_size="$ROLLOUT_MICRO_BATCH_SIZE" \
   actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
-  actor_rollout_ref.rollout.name=hf \
+  actor_rollout_ref.rollout.name="$ROLLOUT_BACKEND" \
   actor_rollout_ref.rollout.temperature=1.0 \
   actor_rollout_ref.rollout.top_p=1.0 \
   actor_rollout_ref.rollout.top_k=-1 \
@@ -239,4 +260,5 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   trainer.total_epochs="$TOTAL_EPOCHS" \
   trainer.val_before_train="$VAL_BEFORE_TRAIN" \
   "${CHAT_TEMPLATE_ARGS[@]}" \
-  "${METHOD_ARGS[@]}"
+  "${METHOD_ARGS[@]}" \
+  "${ROLLOUT_ARGS[@]}"

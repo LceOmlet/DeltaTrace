@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import subprocess
 from pathlib import Path
 
 
@@ -432,6 +433,28 @@ FSDP_DT_METHOD = '''    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
     def compute_log_prob(self, data: DataProto):
 '''
+FSDP_DT_METHOD_PREVIOUS = FSDP_DT_METHOD
+FSDP_DT_METHOD = FSDP_DT_METHOD.replace(
+    '        """Delegate DT attribution to the existing HF rollout model."""\n',
+    '''        """Run DT on the existing actor after the owner's rollout exit."""
+        if self.config.rollout.name == "vllm":
+            from deltatrace_rollout import DeltaTraceRolloutProducer
+
+            # FSDPVLLMShardingManager.__exit__ already sleeps the engine.
+            # Reuse the same actor and the same memory owner as compute_log_prob.
+            if self._is_offload_param:
+                load_fsdp_model_to_gpu(self.actor_module_fsdp)
+            try:
+                if not hasattr(self, "_deltatrace_producer"):
+                    self._deltatrace_producer = DeltaTraceRolloutProducer(
+                        self.actor_module_fsdp, eos_token_id=eos_token_id, pad_token_id=pad_token_id
+                    )
+                return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)
+            finally:
+                if self._is_offload_param:
+                    offload_fsdp_model_to_cpu(self.actor_module_fsdp)
+''',
+)
 
 # The trainer remains the semantic owner of policy optimization. This patch
 # only adds the DT token-advantage estimator at its existing advantage
@@ -507,6 +530,131 @@ FSDP2_ACTOR_NEW = (
     "            actor_module_fsdp = actor_module\n"
 )
 
+
+def patch_vllm_peft_owner(text: str) -> str:
+    # Backport VERL v0.7.0's PEFT owner lookup (fsdp_utils.collect_lora_params
+    # and fsdp_workers.rollout_mode). FSDP2 has no _fsdp_wrapped_module.
+    anchor = '    def __enter__(self):\n'
+    replacement = anchor + '        peft_model = getattr(self.module, "_fsdp_wrapped_module", self.module)\n'
+    if replacement not in text:
+        if text.count(anchor) != 1:
+            raise RuntimeError('cannot find native vLLM sharding entry')
+        text = text.replace(anchor, replacement, 1)
+        text = text.replace('self.module._fsdp_wrapped_module', 'peft_model')
+    # This actor keeps the FSDP2 root inside PEFT. The old outer-wrapper
+    # classification misses it; materialize its actual DTensors with the same
+    # full_tensor conversion already used by the official FSDP branch.
+    anchor = '            params = __collect_lora_params()\n'
+    replacement = anchor + '''            params = {
+                name: param.full_tensor().detach().cpu() if isinstance(param, DTensor) else param
+                for name, param in params.items()
+            }
+'''
+    if replacement not in text:
+        if text.count(anchor) != 1:
+            raise RuntimeError('cannot find native LoRA tensor collection')
+        text = text.replace(anchor, replacement, 1)
+    anchor = '        log_gpu_memory_usage("After state_dict() in sharding manager memory", logger=logger)\n'
+    replacement = '''        # Transformers' text-only Qwen3.5 actor exposes model.layers; the
+        # checkpoint and vLLM ConditionalGeneration expose model.language_model.
+        # Restore only that ABI prefix before the native vLLM weights mapper.
+        if (peft_config is not None
+                and getattr(peft_model.config, "model_type", None) == "qwen3_5_text"
+                and getattr(self.model_config, "model_type", None) == "qwen3_5"):
+            source_prefix = "base_model.model.model."
+            target_prefix = "base_model.model.model.language_model."
+            params = {
+                target_prefix + name[len(source_prefix):] if name.startswith(source_prefix) else name: value
+                for name, value in params.items()
+            }
+''' + anchor
+    if replacement not in text:
+        if text.count(anchor) != 1:
+            raise RuntimeError('cannot find native LoRA checkpoint naming boundary')
+        text = text.replace(anchor, replacement, 1)
+    # Use the owner's allocator switch at the same rollout/trainer boundary
+    # as VERL v0.7.0. vLLM's CuMem pool cannot use expandable segments; DT/PPO
+    # retain the allocator that passed the actual 32k capacity test.
+    old = 'from verl.utils.device import get_torch_device\n'
+    new = 'from verl.utils.device import get_torch_device, set_expandable_segments\n'
+    if old in text:
+        text = text.replace(old, new, 1)
+    anchor = '            if "tags" in inspect.signature(self.inference_engine.wake_up).parameters:\n'
+    replacement = '            set_expandable_segments(False)\n' + anchor
+    if replacement not in text:
+        if text.count(anchor) != 2:
+            raise RuntimeError('cannot find native vLLM weight wake boundary')
+        text = text.replace(anchor, replacement, 1)
+    anchor = '        self.module.train()\n'
+    replacement = anchor + '        set_expandable_segments(True)\n'
+    if replacement not in text:
+        if text.count(anchor) != 1:
+            raise RuntimeError('cannot find native vLLM trainer return boundary')
+        text = text.replace(anchor, replacement, 1)
+    return text
+
+
+def patch_vllm_lazy_moe_imports(text: str) -> str:
+    # The legacy MoE workaround eagerly imports NVIDIA Qwen3-Next, registering
+    # gdn_attention_core before the installed MetaX registry loads its own op.
+    # Keep that owner workaround intact, but import its models only when it is
+    # actually called. LoRA sync returns before this full-weight MoE path.
+    marker = '    # Legacy MoE imports belong to the full-weight loader only.\n'
+    if marker in text:
+        return text
+    start = text.index('# To support different vLLM versions,')
+    end = text.index('from typing import List', start)
+    imports = text[start:end].rstrip()
+    text = text[:start] + text[end:]
+    anchor = 'def patch_vllm_moe_model_weight_loader(model):\n'
+    if text.count(anchor) != 1:
+        raise RuntimeError('cannot find legacy vLLM MoE loader owner')
+    block = '\n'.join('    ' + line if line else '' for line in imports.splitlines())
+    return text.replace(anchor, anchor + marker + block + '\n\n', 1)
+
+
+def patch_fsdp2_offload(text: str) -> str:
+    # Our PEFT actor keeps its actual Transformers root fully_sharded. Pass
+    # that exact owner to the existing memory lifecycle; don't globally alter
+    # fsdp_version or change how PPO/checkpoint callers classify their wrapper.
+    for signature in (
+        'def offload_fsdp_model_to_cpu(model: FSDP, empty_cache: bool = True):',
+        'def load_fsdp_model_to_gpu(model: FSDP):',
+    ):
+        old = signature + '\n    if fsdp_version(model) == 2:'
+        new = signature + '''
+    from peft import PeftModel
+    if isinstance(model, PeftModel) and isinstance(model.get_base_model(), FSDPModule):
+        model = model.get_base_model()
+    if fsdp_version(model) == 2:'''
+        if new not in text:
+            if old not in text:
+                raise RuntimeError(f'cannot find FSDP2 offload owner boundary: {signature}')
+            text = text.replace(old, new, 1)
+    # Upstream VERL v0.7.0 uses Module.cpu()/to() so buffers move together with
+    # parameters. Backport these owner bodies, not an independent offloader.
+    old = '''def offload_fsdp2_model_to_cpu(model, empty_cache: bool = True):
+    for param in model.parameters():
+        param.data = param.data.to(torch.device("cpu"), non_blocking=True)'''
+    new = '''def offload_fsdp2_model_to_cpu(model, empty_cache: bool = True):
+    model.cpu()'''
+    if old in text:
+        text = text.replace(old, new, 1)
+    elif new not in text:
+        raise RuntimeError('cannot find FSDP2 CPU offload owner body')
+    old = '''def load_fsdp2_model_to_gpu(model):
+    device = torch.cuda.current_device()
+    for param in model.parameters():
+        param.data = param.data.to(device, non_blocking=True)'''
+    new = '''def load_fsdp2_model_to_gpu(model):
+    device = get_torch_device().current_device()
+    model.to(device)'''
+    if old in text:
+        text = text.replace(old, new, 1)
+    elif new not in text:
+        raise RuntimeError('cannot find FSDP2 GPU load owner body')
+    return text
+
 QWEN35_OLD = "        position_ids_expanded = position_ids[:, :, None, :].float()  # shape (3, bs, 1, positions)"
 QWEN35_NEW = "        position_ids_expanded = position_ids[:, :, None, :].float().to(x.device)  # shape (3, bs, 1, positions)"
 QWEN35_RMS_OLD = "        output = output * (1.0 + self.weight.float())"
@@ -579,6 +727,24 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("verl_root", type=Path)
     args = parser.parse_args()
+
+    # Reuse the published VERL implementation for the observed vLLM 0.15
+    # LoRAModel module/API move. The patch includes its source URL and digest.
+    lora_patch = Path(__file__).with_name('patches') / 'verl-v0.7.0-vllm-lora.patch'
+    applied = subprocess.run(
+        ['patch', '--force', '--reverse', '--dry-run', '--fuzz=0', '-p1', '-i', str(lora_patch.resolve())],
+        cwd=args.verl_root, capture_output=True,
+    )
+    if applied.returncode:
+        subprocess.run(['patch', '--force', '--dry-run', '--fuzz=0', '-p1', '-i', str(lora_patch.resolve())],
+                       cwd=args.verl_root, check=True)
+        subprocess.run(['patch', '--force', '--fuzz=0', '-p1', '-i', str(lora_patch.resolve())],
+                       cwd=args.verl_root, check=True)
+        print('backported official VERL v0.7.0 vLLM LoRA compatibility')
+    vllm_utils = args.verl_root / 'verl/utils/vllm_utils.py'
+    vllm_utils.write_text(patch_vllm_lazy_moe_imports(vllm_utils.read_text()))
+    vllm_sharding = args.verl_root / 'verl/workers/sharding_manager/fsdp_vllm.py'
+    vllm_sharding.write_text(patch_vllm_peft_owner(vllm_sharding.read_text()))
     env_manager = args.verl_root / 'agent_system/environments/env_manager.py'
     env_text = env_manager.read_text()
     env_manager.write_text(patch_conversation_observations(env_text))
@@ -797,6 +963,12 @@ def main() -> None:
     else:
         print(f"already patched {policy} FSDP2 compatibility")
 
+    text = policy.read_text()
+    patched = patch_fsdp2_offload(text)
+    if patched != text:
+        policy.write_text(patched)
+        print(f"patched {policy} PEFT/FSDP2 memory lifecycle boundary")
+
     hf_rollout = args.verl_root / HF_ROLLOUT_FILE
     text = hf_rollout.read_text()
     hf_rollout_changed = False
@@ -855,6 +1027,9 @@ def main() -> None:
 
     fsdp_workers = args.verl_root / FSDP_FILE
     text = fsdp_workers.read_text()
+    if FSDP_DT_METHOD_PREVIOUS in text:
+        text = text.replace(FSDP_DT_METHOD_PREVIOUS, FSDP_DT_METHOD, 1)
+        fsdp_workers.write_text(text)
     if FSDP_DT_METHOD_MARKER not in text:
         if FSDP_DT_METHOD_OLD in text:
             text = text.replace(FSDP_DT_METHOD_OLD, FSDP_DT_METHOD_MARKER, 1)

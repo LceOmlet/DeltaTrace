@@ -17,8 +17,18 @@ OOM，现已停止失败作业。** WebShop 完成约 6.5 小时 rollout 后，�
 诊断、规模传输峰值和当前修复验证见
 [results_rollout_failure_fix.json](results_rollout_failure_fix.json)。
 
-2026-09-23 用户指定生成侧优先接入原生 vLLM，固定其版本和运行配置作为吞吐
-参照。当前实际入口仍是 HF，不能将此意向报告为已切换。78.745 秒处理四条
+2026-09-23 已通过 `ROLLOUT_BACKEND=vllm` 接入固定 VERL 的原 rollout、LoRA
+同步和 sleep/wake；没有独立服务 client 或第二套权重同步。当前三任务在做
+原生 vLLM 连续训练试跑，正式规模未恢复，定时检查和备份保持暂停。
+LoRA API 兼容回补来自 VERL v0.7.0；vLLM 0.15 的 weights pool 上下文遗漏
+回补官方 v0.17.0 修复后，9B 休眠物理占用从 19.056 降到 2.285 GiB。
+真实 native loader 已绑定 200 层 LoRA。相同 32256+512、batch4 的生成
+预热后为 67.189 秒（包含官方同步与休眠；并发 CPU 负载不完全相同），
+修复前同接口为 64.447 秒，输出相同。完整 32k DT/PPO 容量和三任务结果
+待本次回执完成；不沿用之前 HF 的通过状态。证据见
+[results_vllm_integration.json](results_vllm_integration.json)。
+
+此前 HF 参照为 78.745 秒处理四条
 32256-token prompt、各生成 512 tokens，约 26.0 输出 tokens/s（包含 prefill）；
 这个绝对耗时本身不是性能缺陷。后端比较须使用同卡、同权重/LoRA、原始输入
 IDs、精度、生成配置和缓存条件，分别报告首轮与预热耗时；原生后端与接入后

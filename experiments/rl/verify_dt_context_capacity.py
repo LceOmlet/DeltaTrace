@@ -25,17 +25,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
+    parser.add_argument('--backend', choices=('hf', 'vllm'), default='hf')
     parser.add_argument('--reshard-after-forward', action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument('--response-tokens', type=int, default=0,
                         help='Explicit synthetic action-span width; 0 keeps the recorded script actions')
     args = parser.parse_args()
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
+                  backend=args.backend,
                   reshard_after_forward=args.reshard_after_forward, stages=[])
     artifacts = {}
 
     def stage(name):
         torch.cuda.synchronize()
+        free, total = torch.cuda.mem_get_info()
         result['stages'].append(dict(name=name, seconds=time.perf_counter()-started,
+                                    device_used_bytes=total-free,
+                                    device_total_bytes=total,
                                     allocated=torch.cuda.memory_allocated(),
                                     peak_allocated=torch.cuda.max_memory_allocated(),
                                     peak_reserved=torch.cuda.max_memory_reserved()))
@@ -66,17 +71,33 @@ def main():
         c.actor.fsdp_config.model_dtype = 'bfloat16'
         c.actor.fsdp_config.optimizer_offload = True
         c.actor.fsdp_config.reshard_after_forward = args.reshard_after_forward
-        c.rollout.name = 'hf'
+        c.rollout.name = args.backend
         c.rollout.n = 1
         c.rollout.tensor_model_parallel_size = 1
         c.rollout.log_prob_micro_batch_size_per_gpu = 1
         c.rollout.micro_batch_size = 4
+        if args.backend == 'vllm':
+            c.actor.fsdp_config.param_offload = True
+            c.rollout.load_format = 'safetensors'
+            c.rollout.max_model_len = 32768
+            c.rollout.max_num_seqs = 4
+            c.rollout.max_num_batched_tokens = 32768
+            c.rollout.gpu_memory_utilization = 0.75
+            c.rollout.engine_kwargs.vllm.limit_mm_per_prompt = {'image': 0, 'video': 0}
         worker = ActorRolloutRefWorker(c, 'actor_rollout')
         worker.init_model()
+        if args.backend == 'vllm':
+            # Exercise the real sync and sleep before entering the DT phase.
+            with worker.rollout_sharding_manager:
+                pass
+            from verl.utils.fsdp_utils import load_fsdp_model_to_gpu
+            load_fsdp_model_to_gpu(worker.actor_module_fsdp)
         stage('owner_init')
         from deltatrace_rollout import DeltaTraceRolloutProducer
         producer = DeltaTraceRolloutProducer(worker.actor_module_fsdp,
             eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id)
+        if args.backend == 'vllm':
+            worker._deltatrace_producer = producer
         stage('producer_init')
         fixture = json.loads((Path(os.environ['DT_RUNTIME_ROOT'])/'receipts/rollout-fixtures.json').read_text())
         original = fixture['tasks']['Sokoban']['rows'][-1]
@@ -124,7 +145,16 @@ def main():
             return signed, detail
         producer.runner.attribute = recorded_attribute
         values = []
-        for index in range(4):
+        if args.backend == 'vllm':
+            episodes = worker.compute_dt_token_advantages(
+                [[row] for _ in range(4)], [float(original['rewards'])]*4,
+                eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id,
+            )
+            values = [episode[0] for episode in episodes]
+            assert producer.readout.last_report['max_readout_length'] == 32768
+            result['readouts'] = [producer.readout.last_report]
+            stage('dt_worker_batch_4')
+        for index in range(4) if args.backend == 'hf' else []:
             values.append(producer.attribute_episode([row], float(original['rewards']))[0])
             assert producer.readout.last_report['max_readout_length'] == 32768
             result.setdefault('readouts', []).append(producer.readout.last_report)
@@ -156,6 +186,21 @@ def main():
         artifacts['after'] = trainable_state(worker.actor_module_fsdp)
         result['changed_elements'] = sum(int((p != artifacts['before'][n]).sum()) for n, p in artifacts['after'].items())
         assert result['changed_elements'] > 0
+        if args.backend == 'vllm':
+            # A second native handoff must bind the updated, now nonzero LoRA.
+            with worker.rollout_sharding_manager:
+                manager = worker.rollout_sharding_manager.model_runner.lora_manager._adapter_manager
+                adapters = manager.list_adapters()
+                adapter = next(iter(adapters.values()))
+                unused = sorted(set(adapter.loras) - set(manager.modules))
+                nonzero_b = 0
+                for layer in adapter.loras.values():
+                    tensors = layer.lora_b if isinstance(layer.lora_b, list) else [layer.lora_b]
+                    nonzero_b += sum(int(t.count_nonzero()) for t in tensors if t is not None)
+                result['updated_native_lora'] = dict(loaded_layers=len(adapter.loras),
+                    unused_layers=unused, nonzero_b_elements=nonzero_b)
+                assert adapter.loras and not unused and nonzero_b > 0, result['updated_native_lora']
+            stage('updated_lora_native_sync_and_sleep')
         result['ppo_source_sha256'] = hashlib.sha256((Path(os.environ['VERL_ROOT'])/'verl/trainer/ppo/core_algos.py').read_bytes()).hexdigest()
         result['status'] = 'passed'
     except Exception as exc:

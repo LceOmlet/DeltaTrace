@@ -1,0 +1,142 @@
+Backport the published VERL v0.7.0 LoRA API compatibility implementation.
+Source: https://github.com/verl-project/verl/blob/v0.7.0/verl/utils/vllm/utils.py
+Source SHA256: 8e2577fd0c1e9f3c44c91256573fc13cf0657c5f6ef715c0bbdbd94da812ee4c
+
+--- a/verl/utils/vllm_utils.py
++++ b/verl/utils/vllm_utils.py
+@@ -69,7 +69,10 @@
+ 
+ from msgspec import field
+ from packaging import version as vs
+-from vllm.lora.models import LoRAModel
++try:
++    from vllm.lora.lora_model import LoRAModel
++except ImportError:
++    from vllm.lora.models import LoRAModel
+ from vllm.lora.request import LoRARequest
+ from vllm.lora.utils import get_adapter_absolute_path
+ from vllm.lora.worker_manager import LRUCacheWorkerLoRAManager
+@@ -150,7 +153,7 @@
+     lora_tensors:dict = field(default=None)
+ 
+ 
+-class VLLMHijack():
++class VLLMHijack:
+     @staticmethod
+     def hijack():
+         def hijack__load_adapter(self, lora_request: TensorLoRARequest) -> LoRAModel:
+@@ -159,18 +162,16 @@
+ 
+             Reason:
+             VLLM does not support adding LoRA from tensors directly. It only supports adding LoRA via file paths.
+-            To synchronize the LoRA tensors of the actor model, we need to find a workaround to enable VLLM to load memory-based LoRA tensors.
++            To synchronize the LoRA tensors of the actor model, we need to find a workaround to enable VLLM to
++            load memory-based LoRA tensors.
+             """
+             try:
+-                supported_lora_modules = (
+-                    self._adapter_manager.supported_lora_modules)
+-                packed_modules_mapping = (
+-                    self._adapter_manager.packed_modules_mapping)
+-                expected_lora_modules: List[str] = []
++                supported_lora_modules = self._adapter_manager.supported_lora_modules
++                packed_modules_mapping = self._adapter_manager.packed_modules_mapping
++                expected_lora_modules: list[str] = []
+                 for module in supported_lora_modules:
+                     if module in packed_modules_mapping:
+-                        expected_lora_modules.extend(
+-                            packed_modules_mapping[module])
++                        expected_lora_modules.extend(packed_modules_mapping[module])
+                     else:
+                         expected_lora_modules.append(module)
+ 
+@@ -178,6 +179,7 @@
+ 
+                 lora_tensors = None
+                 from vllm.lora.peft_helper import PEFTHelper
++
+                 if isinstance(lora_request, TensorLoRARequest):
+                     peft_config = lora_request.peft_config
+                     lora_tensors = lora_request.lora_tensors
+@@ -185,8 +187,7 @@
+                 else:
+                     lora_path = get_adapter_absolute_path(lora_request.lora_path)
+ 
+-                    peft_helper = PEFTHelper.from_local_dir(
+-                        lora_path, self.max_position_embeddings)
++                    peft_helper = PEFTHelper.from_local_dir(lora_path, self.max_position_embeddings)
+ 
+                 # Validates the LoRA configuration against requirements before
+                 # loading weights, throwing an exception if validation fails.
+@@ -196,43 +197,44 @@
+                 # to ensure correct loading of lora weights.
+                 model = self._adapter_manager.model
+                 hf_to_vllm_mapper = None
+-                if (hasattr(model, "hf_to_vllm_mapper")
+-                        and model.hf_to_vllm_mapper is not None):
++                if hasattr(model, "hf_to_vllm_mapper") and model.hf_to_vllm_mapper is not None:
+                     hf_to_vllm_mapper = model.hf_to_vllm_mapper
+ 
++                lora_request_kwargs = {
++                    "peft_helper": peft_helper,
++                    "lora_model_id": lora_request.lora_int_id,
++                    "device": "cpu",
++                    "dtype": self.lora_config.lora_dtype,
++                    "weights_mapper": hf_to_vllm_mapper,
++                }
++                if hasattr(self, "embedding_padding_modules"):
++                    lora_request_kwargs["embedding_modules"] = self.embedding_modules
++                    lora_request_kwargs["embedding_padding_modules"] = self.embedding_padding_modules
++                else:
++                    lora_request_kwargs["model_vocab_size"] = self.vocab_size
++                if hasattr(self.lora_config, "lora_extra_vocab_size"):
++                    lora_request_kwargs["target_embedding_padding"] = (
++                        self.vocab_size + self.lora_config.lora_extra_vocab_size
++                    )
+                 if isinstance(lora_request, TensorLoRARequest):
+                     lora = self._lora_model_cls.from_lora_tensors(
+-                        lora_model_id=lora_request.lora_int_id,
+                         tensors=lora_tensors,
+-                        peft_helper=peft_helper,
+-                        device="cpu",
+-                        dtype=self.lora_config.lora_dtype,
+-                        embeddings=None,
+-                        target_embedding_padding=self.vocab_size + self.lora_config.lora_extra_vocab_size,
+-                        embedding_modules=self.embedding_modules,
+-                        embedding_padding_modules=self.embedding_padding_modules,
+-                        weights_mapper=hf_to_vllm_mapper
++                        **lora_request_kwargs,
+                     )
+                 else:
+                     lora = self._lora_model_cls.from_local_checkpoint(
+                         lora_path,
+                         expected_lora_modules,
+-                        peft_helper=peft_helper,
+-                        lora_model_id=lora_request.lora_int_id,
+-                        device="cpu",
+-                        dtype=self.lora_config.lora_dtype,
+-                        target_embedding_padding=self.vocab_size +
+-                        self.lora_config.lora_extra_vocab_size,
+-                        embedding_modules=self.embedding_modules,
+-                        embedding_padding_modules=self.embedding_padding_modules,
+-                        weights_mapper=hf_to_vllm_mapper)
+-            except Exception as e:
+-                raise e
+-
+-            if lora.extra_vocab_size > self.lora_config.lora_extra_vocab_size:
+-                raise ValueError(f"LoRA added vocab size {lora.extra_vocab_size} "
+-                                f"is greater than lora_extra_vocab_size "
+-                                f"{self.lora_config.lora_extra_vocab_size}.")
++                        **lora_request_kwargs,
++                    )
++            except Exception:
++                raise
++
++            if getattr(lora, "extra_vocab_size", 0) > getattr(self.lora_config, "lora_extra_vocab_size", 0):
++                raise ValueError(
++                    f"LoRA added vocab size {lora.extra_vocab_size} is greater than lora_extra_vocab_size "
++                    f"{self.lora_config.lora_extra_vocab_size}."
++                )
+             return lora
+ 
+         def do_hijack(target_cls, target_method_name, hooking_method):
