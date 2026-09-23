@@ -3,6 +3,15 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+每小时检查同时运行 [日志绘图](plot_training_progress.py)：
+`python -X utf8 experiments/rl/plot_training_progress.py --source-root /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922 --publish`。
+它只读当前正式 manifest 的原 Ray worker 日志，生成进度/效果 PNG、指标 CSV
+和带来源行号的 JSON 快照，不改训练、奖励或记录器。输出按运行标识保存在
+`research/temporary/rl_training_plots/`，保留每小时版本；`--publish` 同步到远端
+`receipts/training-plots/`，纳入原 restic 备份。训练与独立评估成功率分开，
+缺失不填零、不混入 pilot；原 console 指标仅有三位小数。资源是定时快照，
+不是连续峰值。已用真实上游两迭代日志核对解析，并生成正式运行首版图。
+
 2026-09-23 20:35:24 +08：三个两迭代 pilot 均已退出 0，各任务至少有一轮
 真实非零奖励、DT 优势和 PPO 梯度。AppWorld 第二轮为零奖励、零优势/梯度，
 不冒充非零更新。尾批次修复及回归验证后，已推送的 `6d1a946` 以 94 个文件
