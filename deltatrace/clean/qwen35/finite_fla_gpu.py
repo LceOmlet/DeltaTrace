@@ -202,16 +202,17 @@ def make_compiled_finite_pullback(reuse_scalar_products=False, *, dynamic_shapes
         adjoints = native_input_adjoints(endpoints,do,scale)
         if dynamic_shapes:
             # Time/chunk count and minibatch size vary. The paired endpoint
-            # layout, head count and head width remain fixed.
+            # layout, head count and head width remain fixed. Batch permits
+            # the compiler's required singleton specialization for B1 tails.
             for name in ('q','k','v','raw_g','g','beta','A','v_new','h'):
                 value = endpoints[name]
                 if value.shape[0] > 1:
-                    torch._dynamo.mark_dynamic(value, 0)
+                    torch._dynamo.maybe_mark_dynamic(value, 0)
                 if value.shape[1] > 1:
                     torch._dynamo.mark_dynamic(value, 1)
             for value in adjoints.values():
                 if value.shape[0] > 1:
-                    torch._dynamo.mark_dynamic(value, 0)
+                    torch._dynamo.maybe_mark_dynamic(value, 0)
                 if value.shape[1] > 1:
                     torch._dynamo.mark_dynamic(value, 1)
         return compiled(endpoints, adjoints, scale)

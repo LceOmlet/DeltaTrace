@@ -163,7 +163,10 @@ class FiniteBoundaryOps:
                         # Mark batch before its first compilation as well as
                         # time; otherwise B4 -> B2 recompiles every boundary.
                         if args[index].shape[0]>1:
-                            torch._dynamo.mark_dynamic(args[index],0)
+                            # A singleton contrast has paired batch 2 and
+                            # singleton adjoints. Dynamo must specialize that
+                            # 0/1 case instead of rejecting a forced symbol.
+                            torch._dynamo.maybe_mark_dynamic(args[index],0)
                         if args[index].shape[dimension]>1:
                             torch._dynamo.mark_dynamic(args[index],dimension)
                     return _op(*args)
