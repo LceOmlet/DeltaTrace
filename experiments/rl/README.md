@@ -83,6 +83,23 @@ PPO microbatch4、官方 offload、vLLM 同进程组合：DT 487.649 秒，整�
 输出逐值一致；短链完整归因、目标 log-prob 和 Q/V/A 搬运对照也逐值一致。
 该局部结果不代替完整 DT 速度；诊断到指定阶段即退出，不等整轮跑完。
 
+本轮继续删除两处有确切调用证据的冗余。GDN/FA 的完整 input 副本只被读取
+shape，现保留实际 shape 元数据；按 B8/32768 计算，省去 64 GiB D2H 和
+16 GiB H2D。FA 原生 dense Q/K/V 与接口 Q/K/V 是转置视图，实际指针、
+dtype、shape、stride 一致时共享捕获，并在回传后重建视图，另省去双向各
+24 GiB。合计 128 GiB 是单次完整 DT 的累计搬运减少量，不是常驻内存。
+32k 第一层实际回放保留原 actor/vLLM 休眠状态；三次重复 D2H 原耗时合计
+0.438 秒，共享视图约 0.00016 秒，共同值和 stride 全等。观察到指定拷贝后
+主动退出，没有继续剩余层/PPO。完整短链归因、目标 log-prob、Q/V/A 与
+相同 head 分组的原路径逐值一致；实际短链 618–635 tokens，不作新32k
+全链验收。环境未重建，生产目录未切换，固定 PLAN 和 PPO 无改动。
+
+资源核查还表明：D256 有限 FA 的 Q/KV 阶段各使用 256 registers/thread；
+当前寄存器复用候选分别报告 156/764 bytes local memory/thread。它解释了
+进一步检查寄存器压力的方向，尚未量化局部存储对耗时的贡献。原生 backward
+warp 分布的编译探针不兼容现有快速转置接口，已拒绝，不进入 GPU 长跑。
+全部原始回执和失败记录索引在 `results_dt_minibatch_candidate.json`。
+
 最新 `origin/main=6ca8dc07` 的 MetaX 路径已核对并在使用：模型前向走已安装
 FA 2.6.3 / FLA 0.4.1；DT 有限传播复用 main 的 MetaX FA 扩展和 FLA 原反向
 子内核。32k、batch=4 的 FA 算子诊断中，原有限传播约 48.77 秒，原生 FA

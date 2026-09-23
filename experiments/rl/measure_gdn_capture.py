@@ -57,7 +57,7 @@ def main():
                 eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id)
             runner = producer.runner
             capture = NativeGDNCapture(layer.linear_attn, device='cpu', copy_tensors=False,
-                preserve_strides=True, capture_module_outputs=False, pinned_host=True)
+                preserve_strides=True, capture_module_outputs=False, pinned_host=True, capture_input=False)
             with torch.no_grad(), capture:
                 y = layer.linear_attn(x, attention_mask=None)
             del x, y
@@ -104,6 +104,7 @@ def main():
                         value, _ = gdn_finite_pullback(layer.linear_attn,
                             dict(capture.values), dict(capture.endpoints), upstream, capture.scale,
                             runner.finite_fla_by_layer[30], norm_gate_rule=runner.norm_gate_rules[30],
+                            input_shape=capture.input_shape,
                             offload_endpoints=True, fla_head_batch_size=8,
                             norm_gate_pullback=runner.boundaries.gdn_norm_gate,
                             conv_silu_pullback=runner.boundaries.gdn_conv_silu)
@@ -127,7 +128,7 @@ def main():
         for repeat in range(3):
             for name, outputs, pinned in (cases if repeat < 2 else reversed(cases)):
                 capture = NativeGDNCapture(layer.linear_attn, device='cpu', copy_tensors=False,
-                    preserve_strides=True, capture_module_outputs=outputs, pinned_host=pinned)
+                    preserve_strides=True, capture_module_outputs=outputs, pinned_host=pinned,capture_input=outputs)
                 torch.cuda.synchronize()
                 start = time.perf_counter()
                 with torch.no_grad(), capture:

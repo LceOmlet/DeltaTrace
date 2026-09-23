@@ -93,11 +93,25 @@
 
 - 实際捕获清单已与 layer30 的 19 次 copy 记录对齐：每层 D2H 为
   35,550,920,704 bytes（33.109375 GiB）。input 2 GiB 只用于 shape 检查，
-  仍属待删除的冗余；不能宣称全部搬运必要。当前 restore 调用按实际形状
+  在该历史快照尚未删除，后续 shape-only 候选已删除；不能宣称全部搬运必要。当前 restore 调用按实际形状
   推得 H2D 31.15625 GiB，旧 head 切片额外 pageable CPU 重排 15.078125 GiB
   已由同一 Torch copy 接口的 pinned 源路径省去。24 个 GDN 层的累计 D2H/H2D
   约 1.506 TiB 是搬运量，不是驻留内存。此清单索引在
   `results_dt_minibatch_candidate.json::gdn_transfer_inventory`。
+
+- 最新捕获候选目录 `candidates/dt-minibatch/shape-only` 同时包含 input
+  形状元数据和 FA 转置视图共享。`shape-metadata-parity.json`、
+  `dense-alias-minibatch-parity.json` 均通过相同 head 分组的完整短链搬运
+  逐值对照；前者还确认 cached finite FA 的 Q/V/A 与当前候选相同。
+- `DT_PROFILE_DENSE_ALIASES=1`、`DT_PROFILE_OUTPUT=<JSON>` 在原 32k
+  容量入口观察首个 FA 的真实 Q/K/V 拷贝，随后主动退出。回执
+  `dense-alias-in-context32k.json`：旧拷贝总计 0.438 秒，新共享视图约
+  0.00016 秒，值与 stride 全等。属于 D2H 捕获局部比较，不作完整 DT
+  速度或训练验收。两项删除按当前形状合计减少 128 GiB 累计双向搬运。
+- `fa-kernel-attributes-separated.json` 从 MetaX 公共 runtime 查询已编译
+  内核资源；每个库使用独立进程，避免相同导出符号的注册冲突。当前 Q/KV
+  阶段各 256 registers/thread、156/764 local bytes/thread。backward warp
+  布局探针被快速转置接口编译拒绝，日志保留；未运行、未替换生产有限 FA。
 
 ## 2026-09-22 正式规模启动与监控
 

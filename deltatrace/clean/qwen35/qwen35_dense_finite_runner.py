@@ -219,7 +219,7 @@ class Qwen35DenseFiniteRunner:
             mixer_device='cpu' if offload_mixer else 'cuda'
             needed=None if copy_captures else {'input_norm_input','post_norm_input',
                                                'gate_output','up_output','silu_output'}
-            attention_needed=None if copy_captures else {'input','q_proj_output',
+            attention_needed=None if copy_captures else {'q_proj_output',
                 'attention_output','query','key','value','q_norm_input','k_norm_input',
                 'dense_q','dense_k','dense_v'}
             backend=self.capture_backend
@@ -228,7 +228,7 @@ class Qwen35DenseFiniteRunner:
             gdn_capture=NativeGDNCapture if backend is None else backend.NativeGDNCapture
             dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed)
             mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host)
-                if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host))
+                if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures))
             def replay():
                 with torch.no_grad(),dc,mc:return layer(x,**kw)
             y=timed('native_replay_'+str(i),replay)
@@ -240,6 +240,8 @@ class Qwen35DenseFiniteRunner:
             if dc.calls!={k:1 for k in ('input_norm','post_norm','gate','up','silu','down','mlp','decoder')}:raise ValueError('Missing actual decoder captures.')
             if mc.calls!=({'module':1,'interface':1,'native_varlen':0,'native_dense':1} if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError('Missing actual native mixer captures.')
             d,c,e=dc.values,mc.values,getattr(mc,'endpoints',{});scale=getattr(mc,'scale',0.0625)
+            mixer_input_shape=getattr(mc,'input_shape',None)
+            dense_aliases=getattr(mc,'dense_aliases',{})
             expected=root['final_norm_input' if i==31 else str(i+1)].to('cuda')
             row={'block_type':layer.block_type,'decoder_calls':dc.calls,'mixer_calls':mc.calls,
                  'root_output_effect':effect(m,expected),'replay_output_effect':effect(m,y),
@@ -267,8 +269,10 @@ class Qwen35DenseFiniteRunner:
                     def restore():
                         for capture in (c,e):
                             for name,value in capture.items():
-                                if isinstance(value,torch.Tensor):
+                                if isinstance(value,torch.Tensor) and name not in dense_aliases:
                                     capture[name]=copy_capture_tensor(value,'cuda',preserve_strides=True)
+                        for name,source in dense_aliases.items():
+                            c[name]=c[source].transpose(1,2)
                     timed('restore_mixer_captures_'+str(i),restore)
                 if is_fa:
                     if offload_mixer:
@@ -278,19 +282,19 @@ class Qwen35DenseFiniteRunner:
                         for name in ('dense_q','dense_k','dense_v'):
                             del c[name]
                     cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused,
-                        pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=offload_mixer)
+                        pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=offload_mixer,input_shape=mixer_input_shape)
                 finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
                 if i in self.key_norm_by_layer:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,
+                        norm_gate_rule=self.norm_gate_rules.get(i,'content1'),key_norm_pullback=self.key_norm_by_layer[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
                 if i in self.norm_gate_rules:
                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
-                        norm_gate_rule=self.norm_gate_rules[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,
+                        norm_gate_rule=self.norm_gate_rules[i],offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
-                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,
+                return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,offload_endpoints=offload_mixer,fla_head_batch_size=self.gdn_head_batch_size,input_shape=mixer_input_shape,
                         norm_gate_pullback=self.boundaries.gdn_norm_gate if self.compile_gdn_scalar_rules else None,
                         conv_silu_pullback=self.boundaries.gdn_conv_silu if self.compile_gdn_scalar_rules else None)
             with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=offload_mixer))

@@ -166,7 +166,7 @@ class FiniteBoundaryOps:
             setattr(self,name,op)
 
 
-def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False):
+def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False,input_shape=None):
     """Input coefficients for the actual standard-attention module.
 
     lse is the publicly returned paired FA LSE, [2B,H,T]. Endpoints share
@@ -177,13 +177,15 @@ def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layou
     if not isinstance(pv_rule,str) or pv_rule not in ('content1','content0'):
         raise ValueError(f'Unsupported attention PV rule: {pv_rule!r}')
     c=values;b,t,width=upstream.shape;heads=module.config.num_attention_heads;dim=module.head_dim
-    assert c['input'].shape==(2*b,t,width) and lse.shape==(2*b,heads,t)
+    if input_shape is None:input_shape=c['input'].shape
+    assert tuple(input_shape)==(2*b,t,width) and lse.shape==(2*b,heads,t)
     assert cos.shape==sin.shape and cos.shape[0]==2*b and cos.shape[1]==t
     assert module.q_norm.eps==module.k_norm.eps and module.attention_dropout==0
     mcontent,mgate=boundaries.attention_gate(c['q_proj_output'][0::2],c['q_proj_output'][1::2],
         c['attention_output'][0::2],upstream,_linear_weights(module.o_proj),heads,dim)
     if consume_captures:
-        for name in ('input','q_proj_output','attention_output'):
+        c.pop('input',None)
+        for name in ('q_proj_output','attention_output'):
             del c[name]
     ops={'q0':c['query'][0::2],'q1':c['query'][1::2],'k0':c['key'][0::2],'k1':c['key'][1::2],
          'v0':c['value'][0::2],'u':mcontent,'lse0':lse[0::2],'lse1':lse[1::2]}

@@ -43,6 +43,7 @@ class NativeAttentionCapture:
         self.preserve_strides = preserve_strides
         self.pinned_host = pinned_host
         self.values = {}
+        self.input_shape = None
         self.calls = {'module': 0, 'interface': 0, 'native_varlen': 0}
         self.handles = []
 
@@ -75,7 +76,9 @@ class NativeAttentionCapture:
         if sys.getprofile() is not None:
             raise RuntimeError('Refuse to overwrite an existing profiler.')
         def before(_module, args, kwargs):
-            self.retain('input', args[0] if args else kwargs['hidden_states'])
+            value=args[0] if args else kwargs['hidden_states']
+            self.input_shape=tuple(value.shape)
+            self.retain('input', value)
         def after(_module, _args, output):
             self.calls['module'] += 1
             self.retain('output', output[0])

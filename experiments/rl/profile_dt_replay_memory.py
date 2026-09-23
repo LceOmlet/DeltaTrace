@@ -13,6 +13,7 @@ from pathlib import Path
 
 import torch
 import native_attention_capture
+import native_dense_attention_capture
 import qwen35_decoder_finite
 import qwen35_dense_finite_runner  # bind the explicitly staged owner before producer imports
 from accelerated.qwen35 import qwen35_code_local_capture
@@ -132,6 +133,45 @@ class DiagnosticStop(BaseException):
     pass
 
 
+if os.environ.get('DT_PROFILE_DENSE_ALIASES') == '1':
+    alias_records = []
+    original_retain_dense = native_dense_attention_capture.NativeDenseAttentionCapture.retain_dense
+    original_alias_exit = native_dense_attention_capture.NativeDenseAttentionCapture.__exit__
+
+    def compare_dense_capture(self, name, value):
+        # Observe the same actual operand at the native FA call. The previous
+        # route copies it independently; the new route reuses its verified
+        # interface view. Synchronize each measurement and compare outside it.
+        torch.cuda.synchronize()
+        start = time.perf_counter()
+        previous = native_attention_capture.copy_capture_tensor(value, self.destination,
+            copy=self.copy_tensors, preserve_strides=self.preserve_strides, pinned_host=self.pinned_host)
+        torch.cuda.synchronize()
+        previous_seconds = time.perf_counter()-start
+        start = time.perf_counter()
+        original_retain_dense(self, name, value)
+        torch.cuda.synchronize()
+        current_seconds = time.perf_counter()-start
+        actual = self.values['dense_'+name]
+        assert torch.equal(previous, actual)
+        assert previous.stride() == actual.stride()
+        alias_records.append(dict(name=name, bytes=value.numel()*value.element_size(),
+            previous_seconds=previous_seconds, current_seconds=current_seconds,
+            exact_values_and_strides=True, alias=self.dense_aliases.get('dense_'+name)))
+        print('DENSE_CAPTURE_COMPARE', json.dumps(alias_records[-1]), flush=True)
+
+    def finish_alias_capture(self, *exc):
+        original_alias_exit(self, *exc)
+        if exc[0] is None:
+            result = dict(scope='Same actual first-FA 32k replay operands, original actor and sleeping vLLM; capture-only comparison',
+                status='observed_requested_copies', records=alias_records)
+            Path(os.environ['DT_PROFILE_OUTPUT']).write_text(json.dumps(result, indent=2)+'\n')
+            raise DiagnosticStop()
+
+    native_dense_attention_capture.NativeDenseAttentionCapture.retain_dense = compare_dense_capture
+    native_dense_attention_capture.NativeDenseAttentionCapture.__exit__ = finish_alias_capture
+
+
 limit = int(os.environ.get('DT_PROFILE_GDN_LAYERS', '0'))
 if limit:
     profile_output = Path(os.environ['DT_PROFILE_OUTPUT'])
@@ -149,6 +189,13 @@ if limit:
         gdn_owner = load_previous('previous_gdn_owner','qwen35_gdn_finite.py')
         gdn_owner.copy_capture_tensor = capture_owner.copy_capture_tensor
         previous_gdn = gdn_owner.gdn_finite_pullback
+        # Older owners read the input solely for its shape. Retain the actual
+        # tensor for this comparison, outside the timed propagation calls.
+        native_init = qwen35_code_local_capture.NativeGDNCapture.__init__
+        def comparison_capture_init(self,*a,**kw):
+            kw['capture_input']=True
+            native_init(self,*a,**kw)
+        qwen35_code_local_capture.NativeGDNCapture.__init__=comparison_capture_init
 
     def observed_gdn(module, *args, **kwargs):
         if previous_gdn is not None:
@@ -161,7 +208,10 @@ if limit:
                 operands = (dict(args[0]),dict(args[1]),*args[2:])
                 torch.cuda.synchronize()
                 start = time.perf_counter()
-                value = function(module,*operands,**kwargs)
+                options=dict(kwargs)
+                if function is previous_gdn:
+                    options.pop('input_shape',None)
+                value = function(module,*operands,**options)
                 torch.cuda.synchronize()
                 elapsed = time.perf_counter()-start
                 actual = value[0].detach().cpu()
@@ -199,4 +249,4 @@ if limit:
 try:
     runpy.run_path(os.environ.get('DT_CAPACITY_SCRIPT',os.environ['DT_ROOT']+'/experiments/rl/verify_dt_context_capacity.py'), run_name='__main__')
 except DiagnosticStop:
-    print('DIAGNOSTIC_STOP: requested GDN phases recorded; remaining DT/PPO intentionally not run', flush=True)
+    print('DIAGNOSTIC_STOP: requested phases recorded; remaining DT/PPO intentionally not run', flush=True)

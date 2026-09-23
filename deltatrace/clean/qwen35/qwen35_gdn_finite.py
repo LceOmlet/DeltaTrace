@@ -36,12 +36,13 @@ def resolve_native_gdn_forward(module_type):
 
 class NativeGDNCapture:
     """Passive, single-module capture; never wraps a native operator or forward."""
-    def __init__(self, module, device='cpu', *, copy_tensors=True, preserve_strides=False, capture_module_outputs=True, pinned_host=False):
+    def __init__(self, module, device='cpu', *, copy_tensors=True, preserve_strides=False, capture_module_outputs=True, pinned_host=False, capture_input=True):
         self.module=module;self.device=device;self.values={};self.endpoints={}
         self.copy_tensors=copy_tensors
         self.preserve_strides=preserve_strides
         self.capture_module_outputs=capture_module_outputs
         self.pinned_host=pinned_host
+        self.capture_input=capture_input;self.input_shape=None
         self.active=False;self.calls={};self.scale=None
         chunk=importlib.import_module('fla.ops.gated_delta_rule.chunk')
         self.codes={inspect.unwrap(f).__code__:label for label,f in [
@@ -58,7 +59,8 @@ class NativeGDNCapture:
             assert not self.active and not self.values
             assert f.get('cache_params') is None and not f.get('kwargs',{}).get('cu_seq_lens_q')
             self.active=True
-            self.values['input']=self.copy(f['hidden_states'])
+            self.input_shape=tuple(f['hidden_states'].shape)
+            if self.capture_input:self.values['input']=self.copy(f['hidden_states'])
             self.values['mask']=self.copy(f.get('attention_mask'))
         if not self.active:return
         if kind=='call' and label:self.calls[label]=self.calls.get(label,0)+1
@@ -130,7 +132,7 @@ def _conv_silu_finite_rule(pre,output,upstream):
     return upstream*_scalar_secant(p0,p1,y0,y1,_silu_derivative(p0))
 
 
-def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diagnostics=False,*,norm_gate_rule='content1',key_norm_pullback=None,offload_endpoints=False,fla_head_batch_size=None,norm_gate_pullback=None,conv_silu_pullback=None):
+def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diagnostics=False,*,norm_gate_rule='content1',key_norm_pullback=None,offload_endpoints=False,fla_head_batch_size=None,norm_gate_pullback=None,conv_silu_pullback=None,input_shape=None):
     """Return input finite coefficients; actual input rows are 1,3,... .
 
     The supplied FLA callback is the traceable finite extension. The native
@@ -147,7 +149,11 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
     assert module.activation=='silu' and module.norm.activation=='silu'
     assert module.conv1d.bias is None and module.norm.bias is None
     assert type(module.norm).__module__=='fla.modules.fused_norm_gate'
-    batch,length,width=upstream.shape;assert values['input'].shape==(2*batch,length,width)
+    # Only the actual input's dimensions are consumed here. Full diagnostic
+    # captures still retain its values; normal propagation carries metadata.
+    batch,length,width=upstream.shape
+    if input_shape is None:input_shape=values['input'].shape
+    assert tuple(input_shape)==(2*batch,length,width)
     left=lambda x:x[0::2].float();right=lambda x:x[1::2].float()
     e=endpoints;c=values;terms={}
     def restore(capture,*names):
