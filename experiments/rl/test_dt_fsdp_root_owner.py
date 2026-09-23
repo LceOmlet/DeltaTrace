@@ -6,15 +6,16 @@ import pytest
 import torch
 from peft import LoraConfig, get_peft_model
 from torch.distributed.device_mesh import init_device_mesh
-from torch.distributed.fsdp import fully_shard
+from torch.distributed.fsdp import CPUOffloadPolicy, fully_shard
 from transformers import Qwen3_5Config, Qwen3_5ForCausalLM, Qwen3_5TextConfig
 
 from deltatrace_rollout import _Qwen35CausalOwnerView
 
 
 @pytest.mark.parametrize('actor_first', [True, False])
+@pytest.mark.parametrize('parameter_offload', [False, True])
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires FSDP2 GPU')
-def test_owner_and_actor_share_official_root(tmp_path, actor_first):
+def test_owner_and_actor_share_official_root(tmp_path, actor_first, parameter_offload):
     created = not torch.distributed.is_initialized()
     if created:
         torch.distributed.init_process_group('nccl', init_method='file://'+str(tmp_path/'rdzv'), rank=0, world_size=1)
@@ -31,20 +32,25 @@ def test_owner_and_actor_share_official_root(tmp_path, actor_first):
             autocast_adapter_dtype=False)
         base = model.get_base_model()
         mesh = init_device_mesh('cuda', (1,))
-        fully_shard(base.model.embed_tokens, mesh=mesh)
+        options = dict(mesh=mesh, offload_policy=CPUOffloadPolicy() if parameter_offload else None)
+        fully_shard(base.model.embed_tokens, **options)
         for layer in base.model.layers:
-            fully_shard(layer, mesh=mesh)
-        fully_shard(model, mesh=mesh)
+            fully_shard(layer, **options)
+        fully_shard(model, **options)
         ids = torch.randint(1, 128, (2, 33), device='cuda')
         model.eval()
         if actor_first:
             with torch.no_grad():
                 model(input_ids=ids, use_cache=False, logits_to_keep=1)
         view = _Qwen35CausalOwnerView(model, base.model, base.lm_head, parent)
+        assert view.execution_device == ids.device
         for _ in range(2):
             with torch.no_grad():
                 owner = view(input_ids=ids, use_cache=False, logits_to_keep=1).logits
                 view.release_owner_params()
+                if parameter_offload:
+                    assert view.lm_head.weight.device.type == 'cpu'
+                    assert view.execution_device == ids.device
                 actor = model(input_ids=ids, use_cache=False, logits_to_keep=1).logits
             torch.testing.assert_close(owner, actor, rtol=0, atol=0)
             model.train()

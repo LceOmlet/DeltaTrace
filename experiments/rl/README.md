@@ -3,6 +3,14 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+最新隔离候选已接通原 VERL FSDP2 参数卸载，并修复 DT 读出索引的计算设备。
+真实 9B 同权重/输入下，开启和关闭卸载的 32 层输入与 logits 逐值一致。
+保留 9 GiB 原生 GDN 中间量后，同一次 32k 捕获、同显存条件的预热有限阶段
+由 5.60/5.81 秒降至 3.34/3.36 秒，输出逐值一致。该结果只覆盖首个 GDN；
+完整 DT 效率和最新候选完整容量尚未通过，三任务正式训练仍未恢复。
+具体回执见 [minibatch 结果](results_dt_minibatch_candidate.json) 的
+`parameter_offload_and_selective_capture`。
+
 **2026-09-23 06:41 更新：正式 v3 三组作业均未完成一次更新，随后发生主机
 OOM，现已停止失败作业。** WebShop 完成约 6.5 小时 rollout 后，在向 DT
 传递轨迹的 Ray RPC 边界，TaskRunner 内存达到 373 GiB，容器 883/900 GiB，

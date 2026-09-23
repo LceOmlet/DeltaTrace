@@ -9,6 +9,8 @@ import torch
 
 def copy_capture_tensor(value, destination, *, copy=True, preserve_strides=False, pinned_host=False):
     value=value.detach()
+    if not copy and value.device==torch.device(destination):
+        return value
     if pinned_host and torch.device(destination).type=='cpu' and value.is_cuda:
         # The capture owner waits once at scope exit before CPU consumption.
         # Reuse Torch's pinned allocator and ordinary stream-ordered copy.

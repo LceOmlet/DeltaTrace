@@ -36,21 +36,22 @@ def resolve_native_gdn_forward(module_type):
 
 class NativeGDNCapture:
     """Passive, single-module capture; never wraps a native operator or forward."""
-    def __init__(self, module, device='cpu', *, copy_tensors=True, preserve_strides=False, capture_module_outputs=True, pinned_host=False, capture_input=True):
+    def __init__(self, module, device='cpu', *, copy_tensors=True, preserve_strides=False, capture_module_outputs=True, pinned_host=False, capture_input=True, gpu_capture_names=()):
         self.module=module;self.device=device;self.values={};self.endpoints={}
         self.copy_tensors=copy_tensors
         self.preserve_strides=preserve_strides
         self.capture_module_outputs=capture_module_outputs
         self.pinned_host=pinned_host
         self.capture_input=capture_input;self.input_shape=None
+        self.gpu_capture_names=frozenset(gpu_capture_names)
         self.active=False;self.calls={};self.scale=None
         chunk=importlib.import_module('fla.ops.gated_delta_rule.chunk')
         self.codes={inspect.unwrap(f).__code__:label for label,f in [
             ('module',resolve_native_gdn_forward(type(module))),('conv',module.causal_conv1d_fn),
             ('FLA',module.chunk_gated_delta_rule),('stage',chunk.chunk_gated_delta_rule_fwd)]}
 
-    def copy(self,x):
-        return None if x is None else copy_capture_tensor(x,self.device,copy=self.copy_tensors,
+    def copy(self,x,*,device=None):
+        return None if x is None else copy_capture_tensor(x,self.device if device is None else device,copy=self.copy_tensors,
                                                           preserve_strides=self.preserve_strides,pinned_host=self.pinned_host)
 
     def event(self,frame,kind,value):
@@ -72,7 +73,8 @@ class NativeGDNCapture:
         if kind=='return' and label=='stage' and value is not None:
             assert f['initial_state'] is None and f['cu_seqlens'] is None
             self.scale=float(f['scale'])
-            for name in ['q','k','v','g','beta','A','w','v_new','o','h']:self.endpoints[name]=self.copy(f[name])
+            for name in ['q','k','v','g','beta','A','w','v_new','o','h']:
+                self.endpoints[name]=self.copy(f[name],device=f[name].device if name in self.gpu_capture_names else None)
         if kind=='return' and label=='module' and f['self'] is self.module:
             assert value is not None
             b,t,_=f['hidden_states'].shape
@@ -162,6 +164,8 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
                 capture[name]=copy_capture_tensor(capture[name],'cuda',preserve_strides=True)
     def head_group(value,start):
         part=value[:,:,start:start+fla_head_batch_size]
+        if part.is_cuda:
+            return part.contiguous()
         if part.device.type=='cpu' and part.is_pinned():
             # Torch copies the strided pinned source directly into the same
             # contiguous GPU layout. Do not repack into pageable host memory.

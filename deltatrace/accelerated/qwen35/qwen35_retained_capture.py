@@ -57,5 +57,6 @@ class NativeDenseAttentionCapture(_Retain, _Attention):
 
 
 class NativeGDNCapture(_Retain, _GDN):
-    def copy(self, value):
-        return None if value is None else self._actual('operand_' + str(len(self._snapshots)), value, self.device)
+    def copy(self, value, *, device=None):
+        return None if value is None else self._actual('operand_' + str(len(self._snapshots)), value,
+                                                      self.device if device is None else device)

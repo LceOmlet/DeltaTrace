@@ -70,6 +70,17 @@ class _Qwen35CausalOwnerView:
         setattr(forward_model, self._owner_forward_name, types.MethodType(owner_forward, forward_model))
         register_fsdp_forward_method(forward_model, self._owner_forward_name)
 
+    @property
+    def execution_device(self) -> torch.device:
+        # CPUOffloadPolicy moves local parameter storage to CPU between calls.
+        # The DTensor's public mesh still identifies the FSDP compute device.
+        from torch.distributed.tensor import DTensor
+
+        weight = self.lm_head.weight
+        if isinstance(weight, DTensor) and weight.device_mesh.device_type == "cuda":
+            return torch.device("cuda", torch.cuda.current_device())
+        return weight.device
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         modules = []
         seen = set()
@@ -305,6 +316,7 @@ class DeltaTraceRolloutProducer:
             gdn_head_batch_size=env.get('dt_gdn_head_batch_size'),
             compile_gdn_scalar_rules=env.get('dt_compile_gdn_scalar_rules', False),
             pin_replay_host=env.get('dt_pin_replay_host', False),
+            gdn_gpu_capture_names=env.get('dt_gdn_gpu_capture_names', ()),
             **execution,
         )
         self.packed_answer_targets = PackedAnswerTargets

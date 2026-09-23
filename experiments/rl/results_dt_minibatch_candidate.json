@@ -1462,7 +1462,7 @@
     "fatbin_identical_to_timed_split_rs": true,
     "profiler_run_exit": "B1 completed, B4 current completed, process then segfaulted; isolated no-profiler B4 test completed. Profiler crash not silently counted as success.",
     "full_dt_short_candidate_result": "Operator-level official gates passed; full-model Q unchanged, V relative L2 0.000343, A relative L2 0.01027. No invented whole-model threshold applied.",
-    "capacity_status": "Not accepted: v10 passed layer31 attention/MLP; OOM at next GDN finite stage, after restoring all GDN captures. Need stage-wise GDN operand residency, not a smaller minibatch/context.",
+    "capacity_status": "Historical v15 passed exact32768, DT minibatch4, actor microbatch4, original activation offload, two PPO updates and vLLM LoRA sync. Latest parameter-offload/selective-capture changes have only bounded32k plus complete short-chain evidence, not a complete new capacity pass.",
     "production_python_candidate_changed": false,
     "kernel_source_commit": "35241555"
   },
@@ -7524,5 +7524,174 @@
       "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/compile-backward-warp-layout.log",
       "sha256": "345acd315c93dcc9a5585f3acf6eaa255671f83cbecf08b49ec38ecbbf6f6a16"
     }
+  },
+  "parameter_offload_and_selective_capture": {
+    "scope": "Optional owner transport/lifetime changes; PLAN Q/V and original PPO unchanged. Isolated candidate, not deployed.",
+    "candidate_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture",
+    "official_owner": "Installed VERL FSDP2 fsdp_config.offload_policy -> torch CPUOffloadPolicy(pin_memory=True)",
+    "interface_fix": "Use public DTensor mesh execution device, not CPU parameter storage, for event labels and input tensors; explicit whole-model GPU load only when original worker _is_offload_param requests it.",
+    "initial_physical_bytes_before": 20342590784,
+    "initial_physical_bytes_with_policy": 2453495808,
+    "initial_policy_failure": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/parameter-offload/owner-offload-partial-capacity.json",
+      "sha256": "dd3448e559a241bd11c20b720c944e6883237c852189f6d25ea83637edfcb7b7"
+    },
+    "owner_regression": {
+      "passed": 35,
+      "log": {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/parameter-offload/owner-offload-regression-v2.log",
+        "sha256": "11fb2be64cb2c4f34161f6faea9fd40aef0891a555ebda7d17ff3f757e586957"
+      },
+      "previous_test_failure": "CPU-storage assertion immediately after actor forward was wrong for an unresharded root; assert after existing release_owner_params. Previous failure log retained."
+    },
+    "root_policy_comparison": {
+      "actual_model": "Qwen3.5-9B",
+      "max_length": 32768,
+      "actual_paired_shape": [
+        8,
+        635,
+        4096
+      ],
+      "parameter_fingerprints": 923,
+      "weights_equal": true,
+      "ids_and_mask_equal": true,
+      "all_32_layer_inputs_and_logits_exact": true,
+      "raw": {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/root-policy-comparison.json",
+        "sha256": "66ab94c64d3f821428fc17898c6ec27e48971812d91fd37aca398d2195209827"
+      },
+      "limit": "Controlled short-chain equality; historical runs had different scores. Those uncontrolled differences were not reproduced as an offload effect."
+    },
+    "gpu_native_capture_names": [
+      "h",
+      "w",
+      "v_new",
+      "A"
+    ],
+    "retained_bytes": 9663676416,
+    "d2h_per_gdn_before_bytes": 33403437056,
+    "d2h_per_gdn_after_bytes": 23739760640,
+    "removed_d2h_plus_h2d_over_24_gdn_bytes": 463856467968,
+    "full_short_transport_parity": {
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-minibatch-parity.json",
+      "sha256": "373796045f1e23eecb42b39c427e95d30bc4d82ce01bbe1cdef170dff24d71e4"
+    },
+    "same_actual_capture_warm": {
+      "cpu_seconds": [
+        5.600823609158397,
+        5.813470276072621
+      ],
+      "gpu_seconds": [
+        3.3417000137269497,
+        3.356069516390562
+      ],
+      "reduction_fraction": 0.41321210076921433,
+      "all_outputs_exact": true,
+      "same_warm_start_memory": true,
+      "raw": {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-same-capture32k-v2.json",
+        "sha256": "056ad0b2432fd59cbf464c6e1936e641bfbd1e23e26ddf56f715712d7b88e111"
+      },
+      "d2h_copy_seconds": 2.658696483820677,
+      "d2h_limit": "One diagnostic pinned allocation/copy outside propagation timing, not a production steady-state D2H estimate."
+    },
+    "bounded_32k_scope": "Includes official actor and sleeping vLLM; stops after first FA and first GDN. No new complete DT/PPO capacity acceptance.",
+    "bounded_first_phase_physical_max_bytes": 68283269120,
+    "memory_limit": "Snapshot hit device total during replay, including allocator cache. No OOM in observed phases; no claim of remaining headroom or full-run fit.",
+    "startup_failure": "First same-capture command omitted required --artifacts and exited before model init. Original failure log retained; corrected command also specifies 1024 action slots.",
+    "full_dt_efficiency_accepted": false,
+    "production_selected": false,
+    "evidence": [
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/parameter-offload/owner-offload-first-gdn32k-v2.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\owner-offload-first-gdn32k-v2.json",
+        "sha256": "d90985d00787d4976329722cabb377f241016086ef27c6399a985426ac4cdd3d"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/parameter-offload/owner-offload-first-gdn32k-v2.log",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\owner-offload-first-gdn32k-v2.log",
+        "sha256": "2adbedb45cb67c4527b33e049ca9563c991a2112f0d04356af96e7a7b74efeba"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/parameter-offload/owner-offload-regression.log",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\owner-offload-regression.log",
+        "sha256": "07308a421d28cd9ed906af7bd07df043c13f1e4ede39c1f2d59540070e8fe872"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/parameter-offload/owner-offload-regression-v2.log",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\owner-offload-regression-v2.log",
+        "sha256": "11fb2be64cb2c4f34161f6faea9fd40aef0891a555ebda7d17ff3f757e586957"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/parameter-offload/owner-offload-partial-capacity.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\owner-offload-partial-capacity.json",
+        "sha256": "dd3448e559a241bd11c20b720c944e6883237c852189f6d25ea83637edfcb7b7"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-first-gdn32k.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-first-gdn32k.json",
+        "sha256": "443128f65b560a6f5a1bd9de4ca07d5b5e05777e1c168a842098e02c7abbb4dd"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-first-gdn32k.log",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-first-gdn32k.log",
+        "sha256": "3c86968ab75a6789eff488daa2e8d44337156e96a082b3601b84ef74b5922712"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-minibatch-parity.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-minibatch-parity.json",
+        "sha256": "373796045f1e23eecb42b39c427e95d30bc4d82ce01bbe1cdef170dff24d71e4"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-minibatch-parity.log",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-minibatch-parity.log",
+        "sha256": "7ac8058878394e723775a7ae1ddd9e7e05bf310bfce06bfee89043b5176250e0"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/root-audit-cpu.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\root-audit-cpu.json",
+        "sha256": "eb54f6708d7c84a1efe8d9e416c79cc6ae505f503d3b032354a9b8f687a197da"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/root-audit-gpu.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\root-audit-gpu.json",
+        "sha256": "d3a6b20c4f794bb50c5a3a0aac30f846f004440e4a4123633ddc648096fdde03"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/root-policy-comparison.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\root-policy-comparison.json",
+        "sha256": "66ab94c64d3f821428fc17898c6ec27e48971812d91fd37aca398d2195209827"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/root-audit-cpu/weights.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\root-audit-cpu-weights.json",
+        "sha256": "962b84a36effbd28fc7ff23aeff00a23e85f3f60c21154a5875294061e873c30"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/root-audit-gpu/weights.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\root-audit-gpu-weights.json",
+        "sha256": "962b84a36effbd28fc7ff23aeff00a23e85f3f60c21154a5875294061e873c30"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-same-capture32k-v2.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-same-capture32k-v2.json",
+        "sha256": "056ad0b2432fd59cbf464c6e1936e641bfbd1e23e26ddf56f715712d7b88e111"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-same-capture32k-v2.log",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-same-capture32k-v2.log",
+        "sha256": "30835365b4d5b7c3458aa660b16c259271d5ceacdc3cad68d80a3673921cff40"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-compare-partial-capacity-v2.json",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-compare-partial-capacity-v2.json",
+        "sha256": "439bb66c5abb4ac4e9887a77963a810689524232fb3472145e4c3aeb972da7e9"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/selective-capture/selective-same-capture32k.log",
+        "local": "research\\temporary\\reward_readout_20260922\\parameter_selective_capture\\selective-same-capture32k.log",
+        "sha256": "9f372c7372d99e7fcb70aa9dd8dda134c17e0adacd6de5f69cb0473a30b914c8"
+      }
+    ]
   }
 }

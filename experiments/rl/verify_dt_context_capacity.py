@@ -61,11 +61,14 @@ def main():
                         help='Explicit synthetic action-span width; 0 keeps the recorded script actions')
     parser.add_argument('--actor-microbatch', type=int, choices=(1, 4), default=1)
     parser.add_argument('--activation-offload', action='store_true')
+    parser.add_argument('--parameter-offload-policy', action='store_true',
+                        help='Use the installed VERL FSDP2 CPUOffloadPolicy for layer parameters')
     args = parser.parse_args()
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   reshard_after_forward=args.reshard_after_forward,
-                  actor_microbatch=args.actor_microbatch, activation_offload=args.activation_offload, stages=[])
+                  actor_microbatch=args.actor_microbatch, activation_offload=args.activation_offload,
+                  parameter_offload_policy=args.parameter_offload_policy, stages=[])
     artifacts = {}
 
     def stage(name):
@@ -106,6 +109,7 @@ def main():
         c.actor.fsdp_config.model_dtype = 'bfloat16'
         c.actor.fsdp_config.optimizer_offload = True
         c.actor.fsdp_config.reshard_after_forward = args.reshard_after_forward
+        c.actor.fsdp_config.offload_policy = args.parameter_offload_policy
         c.rollout.name = args.backend
         c.rollout.n = 1
         c.rollout.tensor_model_parallel_size = 1
@@ -126,7 +130,8 @@ def main():
             with worker.rollout_sharding_manager:
                 pass
             from verl.utils.fsdp_utils import load_fsdp_model_to_gpu
-            load_fsdp_model_to_gpu(worker.actor_module_fsdp)
+            if worker._is_offload_param:
+                load_fsdp_model_to_gpu(worker.actor_module_fsdp)
         stage('owner_init')
         from deltatrace_rollout import DeltaTraceRolloutProducer
         producer = DeltaTraceRolloutProducer(worker.actor_module_fsdp,

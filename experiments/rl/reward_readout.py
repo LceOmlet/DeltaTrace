@@ -159,7 +159,7 @@ class EventRatioReadout:
     @torch.no_grad()
     def episodes(self, episodes: list[list[dict[str, Any]]]) -> list[list[dict[str, torch.Tensor]]]:
         started = time.perf_counter()
-        device = self.runner.model.lm_head.weight.device
+        device = getattr(self.runner.model, 'execution_device', self.runner.model.lm_head.weight.device)
         report = dict(task=self.alphabet.task, policy_tokens=0, nonzero_reward_events=0,
                       finite_trace_calls=0, event_contrasts=0, minibatch_size=self.minibatch_size,
                       max_readout_length=0, actual_row_lengths=[], traces=[], max_length=self.max_length,

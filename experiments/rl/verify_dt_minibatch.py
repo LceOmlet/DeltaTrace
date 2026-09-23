@@ -20,10 +20,18 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--candidate-fa', type=Path)
+    p.add_argument('--parameter-offload-policy', action='store_true')
+    p.add_argument('--snapshot-output', type=Path,
+                   help='Save real actor weight fingerprints and the first B4 native root inputs for offload diagnosis.')
     p.add_argument('--execution-reuse', action='store_true',
                    help='Compare reused retained/local-event captures and deferred diagnostics at fixed batch geometry.')
     args = p.parse_args()
-    result = dict(scope=__doc__, max_length=32768, runs=[])
+    if args.snapshot_output:
+        # First-root hooks save once; require a fresh destination so an older
+        # run cannot silently supply the supposedly current tensors.
+        args.snapshot_output.mkdir(parents=True, exist_ok=False)
+    result = dict(scope=__doc__, max_length=32768,
+                  parameter_offload_policy=args.parameter_offload_policy, runs=[])
     try:
         torch.manual_seed(2026)
         cfg = OmegaConf.load(Path(os.environ['VERL_ROOT'])/'verl/trainer/config/ppo_trainer.yaml')
@@ -36,6 +44,7 @@ def main():
         c.actor.ppo_micro_batch_size_per_gpu = 1
         c.actor.fsdp_config.model_dtype = 'bfloat16'
         c.actor.fsdp_config.reshard_after_forward = True
+        c.actor.fsdp_config.offload_policy = args.parameter_offload_policy
         c.actor.optim.total_training_steps = 3
         c.rollout.name = 'hf'
         c.rollout.tensor_model_parallel_size = 1
@@ -62,6 +71,16 @@ def main():
             sample['attention_mask'] = torch.cat((torch.ones(count, dtype=torch.long), row['attention_mask']))
             episodes.append([sample])
         outputs = {}
+        if args.snapshot_output:
+            import hashlib
+            from torch.distributed.tensor import DTensor
+            fingerprints = {}
+            for name, parameter in worker.actor_module_fsdp.named_parameters():
+                local = parameter.to_local() if isinstance(parameter, DTensor) else parameter
+                raw = local.detach().cpu().contiguous()
+                fingerprints[name] = dict(shape=list(raw.shape), dtype=str(raw.dtype),
+                    sha256=hashlib.sha256(raw.view(torch.uint8).numpy().tobytes()).hexdigest())
+            (args.snapshot_output/'weights.json').write_text(json.dumps(fingerprints, indent=2)+'\n')
         # Test-only first-boundary comparison isolates transport/layout errors
         # from error accumulated across the full finite network.
         import qwen35_dense_finite_runner as owner
@@ -91,7 +110,29 @@ def main():
         calls = []
         native = producer.runner.attribute
         def record(*a, **kw):
-            value, detail = native(*a, **kw)
+            handles = []
+            if args.snapshot_output and current_run == 'batch_borrowed':
+                torch.save(dict(ids=a[0].cpu(), mask=a[1].cpu()), args.snapshot_output/'inputs.pt')
+                layers = producer.runner.model.model.language_model.layers
+                def save_input(module, inputs, kwargs, *, name):
+                    path = args.snapshot_output/(name+'.pt')
+                    if not path.exists():
+                        hidden = inputs[0] if inputs else kwargs['hidden_states']
+                        torch.save(hidden.detach().cpu(), path)
+                from functools import partial
+                for index, layer in enumerate(layers):
+                    handles.append(layer.register_forward_pre_hook(
+                        partial(save_input, name=f'layer-{index:02d}'), with_kwargs=True))
+                def save_logits(module, inputs, output):
+                    path = args.snapshot_output/'logits.pt'
+                    if not path.exists():
+                        torch.save(output.detach().cpu(), path)
+                handles.append(producer.runner.model.lm_head.register_forward_hook(save_logits))
+            try:
+                value, detail = native(*a, **kw)
+            finally:
+                for handle in handles:
+                    handle.remove()
             calls.append(dict(paired_shape=list(a[0].shape), signed=value.cpu(),
                               target_logp0=detail['target_logp0'], target_logp1=detail['target_logp1']))
             return value, detail

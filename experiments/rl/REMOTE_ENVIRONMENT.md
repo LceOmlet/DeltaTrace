@@ -12,6 +12,27 @@
 
 ## 2026-09-23 已有加速分支的复用
 
+- 最新隔离候选在 `candidates/dt-minibatch/selective-capture`，生产目录仍未
+  选择。原 VERL `fsdp_config.offload_policy` 启用 Torch FSDP2
+  `CPUOffloadPolicy(pin_memory=True)` 后，初始化物理占用约 18.95→2.285 GiB。
+  修复的是 DT 读出用 CPU 参数存储位置建立索引的接口错误：计算设备读取
+  DTensor 的原 device mesh；未实现另一套参数卸载。
+- `root-policy-comparison.json`：开启/关闭该 policy 的真实 9B，923 个参数
+  指纹、输入 IDs/mask 一致，实际 `[8,635,4096]` 的 32 层输入和最终 logits
+  全部逐值一致。历史跨运行目标分数差异没有在此受控对照中复现成 policy
+  差异；不据此宣称所有历史波动都已解释。原生根接口及奖励组合回归 35 passed。
+- 通过原 capture 可选目的设备保留 `h/w/v_new/A` 共 9 GiB，首层 GDN 的
+  D2H 从 31.109375 降至 22.109375 GiB；24 层推算减少累计双向搬运 432 GiB。
+  `selective-same-capture32k-v2.json` 使用同一次实际捕获和 upstream，双方
+  保持相同 GPU 驻留；预热 CPU 路径 5.601/5.813 秒，GPU 路径 3.342/3.356 秒，
+  输出逐值一致，约减少 41.3%。此计时只覆盖首个 GDN 有限阶段。
+- 同分组完整短归因的 signed/target/Q/V/A 仍逐值一致。32k 诊断在首个 FA
+  和 GDN 后主动停止，未跑其余层/PPO；replay 的物理快照达到设备总量
+  68,283,269,120 bytes，不能声称有剩余空间或完整容量已通过。第一条对照
+  命令缺少必填 `--artifacts`，在模型初始化前退出，日志保留；更正后通过。
+  原始回执和哈希索引见 `results_dt_minibatch_candidate.json` 的
+  `parameter_offload_and_selective_capture`。完整 DT 效率仍未达标。
+
 - 分支头已通过 origin 复核：clean-v1-acceleration 为 `2b36c4ec`，
   qwen35-cause-and-tolerance 为 `e1e37bb4`。复用源码及迁移边界见
   `deltatrace/accelerated/README.md`；方法仍只以 PLAN.md 为准。

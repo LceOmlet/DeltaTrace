@@ -54,7 +54,7 @@ def _relative_l2(actual,reference,*,deferred=False):
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=()):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -104,6 +104,7 @@ class Qwen35DenseFiniteRunner:
         self.defer_diagnostics=defer_diagnostics
         self.compile_gdn_scalar_rules=compile_gdn_scalar_rules
         self.pin_replay_host=pin_replay_host
+        self.gdn_gpu_capture_names=tuple(gdn_gpu_capture_names)
         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
         if not isinstance(key_rules,Mapping):
             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
@@ -228,7 +229,7 @@ class Qwen35DenseFiniteRunner:
             gdn_capture=NativeGDNCapture if backend is None else backend.NativeGDNCapture
             dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed)
             mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host)
-                if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures))
+                if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures,gpu_capture_names=self.gdn_gpu_capture_names if offload_mixer else ()))
             def replay():
                 with torch.no_grad(),dc,mc:return layer(x,**kw)
             y=timed('native_replay_'+str(i),replay)
