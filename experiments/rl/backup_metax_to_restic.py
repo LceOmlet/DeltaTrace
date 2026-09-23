@@ -60,7 +60,14 @@ def main():
             manifest = str(PurePosixPath(args.source_root)/'formal-training.json')
             if exists(sftp, manifest):
                 with sftp.open(manifest) as f:
-                    jobs = json.load(f)['jobs']
+                    training = json.load(f)
+                jobs = training['jobs']
+                # Current jobs load an immutable release rather than repo/.
+                # Archive that exact source and its environment/import receipt.
+                if training.get('dt_root'):
+                    release = PurePosixPath(training['dt_root']).relative_to(args.source_root)
+                    if str(release) not in entries:
+                        entries.append(str(release))
             ray_logs = []
             for job in jobs:
                 # These are the exact per-job owner log roots from the launch
