@@ -12,6 +12,19 @@
 
 ## 2026-09-23 已有加速分支的复用
 
+- 当前三任务 pilot 使用已推送提交 `d6b7351` 的完整发布目录
+  `$DT_RUNTIME_ROOT/releases/d6b7351`，其 `source-manifest.json` 记录 93 个
+  文件的 Git 来源和 SHA256。设 `DT_ROOT` 为此目录、`DT_ENVIRONMENT_JSON`
+  为目录内 `environment.json`，再 source 原 `experiments/rl/environments/metax.env.sh`。
+  `PYTHONPATH` 使用该发布目录的 `clean/qwen35`、`experiments/rl` 和目录本身，
+  不再叠加多层历史候选。实际导入回执 `import-receipt.json` 已核对；配置/
+  Ray 传输边界 6 项通过。未重新配置 Python、模型或持久缓存。
+- 启动记录为 `runs/native-prefix-d6b7351-pilots/jobs.json`
+  （2026-09-23 18:59:31 +08）。Sokoban/WebShop/AppWorld
+  分别使用当前空闲 GPU 4/5/6，均为两迭代验收、32k 上限、actor/DT batch4；
+  AppWorld 保留 40 轮。`active-source.json`/`active-training.json` 已更新，
+  旧 `formal-training.json` 仍是历史失败作业，不代表正式重启。原 PPO 核心
+  SHA256 仍为 `5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6`。
 - `candidates/dt-minibatch/native-prefix` 复用原模型混合缓存，新增可选
   `dt_reuse_native_prefix=true`。已编译库 `libfinite_cached_queries.so` 的
   SHA256 为 `5d2af760abb2684401682029e41ac68aefc58ed2796082d435874a2b74bbcebb`。

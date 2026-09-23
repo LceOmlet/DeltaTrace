@@ -1459,7 +1459,8 @@
     "capacity_status": "Passed exact32768, physical actor microbatch4, two original PPO updates and vLLM LoRA sync. Synthetic capacity fixture, not actual task throughput.",
     "production_selected": false,
     "three_task_training_accepted": false,
-    "operator_tolerance": "Pinned official FA/FLA reference functions and assertions. Whole-chain accumulated drift recorded separately."
+    "operator_tolerance": "Pinned official FA/FLA reference functions and assertions. Whole-chain accumulated drift recorded separately.",
+    "pilot_deployed_commit": "d6b7351ef4b13ade42526b79051e779fe58e789f"
   },
   "minibatch-parity-v7-optimized-fa": {
     "scope": "Check real Qwen DT minibatching and borrowed replay operands.\n\nThe copy/no-copy comparison holds batch and inputs fixed and expects exact\nvalues. Serial/batched differences are recorded separately; this script does\nnot invent a whole-model FA tolerance or replace the exact-32k capacity test.\n",
@@ -11009,7 +11010,189 @@
         "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/native-prefix/compile.log",
         "sha256": "f7d31c18fde8dfc54274795e837e500ce76d9eb6409b68c5f281cd5eaff40c03"
       }
-    ]
+    ],
+    "pilot_deployment": {
+      "source_commit": "d6b7351ef4b13ade42526b79051e779fe58e789f",
+      "dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351",
+      "environment_json": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/environment.json",
+      "started": 1790161171.7348464,
+      "scope": "Two original VERL/vLLM iterations on each real task; cap32768, actor/DT minibatch4. Not formal paper-scale jobs or claimed success before results.",
+      "jobs": [
+        {
+          "task": "Sokoban",
+          "pid": 1234393,
+          "gpu": 4,
+          "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Sokoban/train.log",
+          "exit_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Sokoban/exit-code",
+          "settings": {
+            "METHOD": "dt",
+            "MINI_BATCH_SIZE": "4",
+            "ACTOR_MICRO_BATCH_SIZE": "4",
+            "ACTOR_ACTIVATION_OFFLOAD": "True",
+            "ACTOR_OFFLOAD_POLICY": "True",
+            "ROLLOUT_BACKEND": "vllm",
+            "MAX_TOTAL_TOKENS": "32768",
+            "MAX_RESPONSE": "1024",
+            "LORA_RANK": "1",
+            "LORA_ALPHA": "2",
+            "ENABLE_THINKING": "False",
+            "FSDP_RESHARD_AFTER_FORWARD": "True",
+            "ROLLOUT_MICRO_BATCH_SIZE": "4",
+            "VAL_BEFORE_TRAIN": "False",
+            "TEST_FREQ": "-1",
+            "SAVE_FREQ": "-1",
+            "MAX_ACTOR_CKPT_TO_KEEP": "2",
+            "RESUME_MODE": "disable",
+            "TRAIN_SIZE": "1",
+            "GROUP_SIZE": "4",
+            "TOTAL_EPOCHS": "2",
+            "MAX_STEPS": "15",
+            "VAL_SIZE": "1",
+            "VAL_DATA_SIZE": "1",
+            "DT_RAY_NUM_CPUS": "8",
+            "ENV_SEED": "0",
+            "SOKOBAN_MODE": "tiny_rgb_array",
+            "ENV_NAME": "Sokoban",
+            "PARAM_OFFLOAD": "True",
+            "CUDA_VISIBLE_DEVICES": "4",
+            "MACA_VISIBLE_DEVICES": "4",
+            "DATA_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Sokoban/data",
+            "ROLLOUT_DATA_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Sokoban/rollouts",
+            "CHECKPOINT_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Sokoban/checkpoints",
+            "RAY_TMPDIR": "/tmp/dt-mx-prefix-sokoban-d6b7351",
+            "APPWORLD_PORT_FILE": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5/appworld_ports_formal.ports"
+          }
+        },
+        {
+          "task": "Webshop",
+          "pid": 1234398,
+          "gpu": 5,
+          "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Webshop/train.log",
+          "exit_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Webshop/exit-code",
+          "settings": {
+            "METHOD": "dt",
+            "MINI_BATCH_SIZE": "4",
+            "ACTOR_MICRO_BATCH_SIZE": "4",
+            "ACTOR_ACTIVATION_OFFLOAD": "True",
+            "ACTOR_OFFLOAD_POLICY": "True",
+            "ROLLOUT_BACKEND": "vllm",
+            "MAX_TOTAL_TOKENS": "32768",
+            "MAX_RESPONSE": "1024",
+            "LORA_RANK": "1",
+            "LORA_ALPHA": "2",
+            "ENABLE_THINKING": "False",
+            "FSDP_RESHARD_AFTER_FORWARD": "True",
+            "ROLLOUT_MICRO_BATCH_SIZE": "4",
+            "VAL_BEFORE_TRAIN": "False",
+            "TEST_FREQ": "-1",
+            "SAVE_FREQ": "-1",
+            "MAX_ACTOR_CKPT_TO_KEEP": "2",
+            "RESUME_MODE": "disable",
+            "TRAIN_SIZE": "2",
+            "GROUP_SIZE": "4",
+            "TOTAL_EPOCHS": "2",
+            "MAX_STEPS": "15",
+            "VAL_SIZE": "1",
+            "VAL_DATA_SIZE": "1",
+            "DT_RAY_NUM_CPUS": "8",
+            "ENV_SEED": "0",
+            "ENV_NAME": "Webshop",
+            "PARAM_OFFLOAD": "True",
+            "CUDA_VISIBLE_DEVICES": "5",
+            "MACA_VISIBLE_DEVICES": "5",
+            "DATA_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Webshop/data",
+            "ROLLOUT_DATA_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Webshop/rollouts",
+            "CHECKPOINT_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/Webshop/checkpoints",
+            "RAY_TMPDIR": "/tmp/dt-mx-prefix-webshop-d6b7351",
+            "APPWORLD_PORT_FILE": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5/appworld_ports_formal.ports"
+          }
+        },
+        {
+          "task": "AppWorld",
+          "pid": 1234402,
+          "gpu": 6,
+          "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/AppWorld/train.log",
+          "exit_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/AppWorld/exit-code",
+          "settings": {
+            "METHOD": "dt",
+            "MINI_BATCH_SIZE": "4",
+            "ACTOR_MICRO_BATCH_SIZE": "4",
+            "ACTOR_ACTIVATION_OFFLOAD": "True",
+            "ACTOR_OFFLOAD_POLICY": "True",
+            "ROLLOUT_BACKEND": "vllm",
+            "MAX_TOTAL_TOKENS": "32768",
+            "MAX_RESPONSE": "1024",
+            "LORA_RANK": "1",
+            "LORA_ALPHA": "2",
+            "ENABLE_THINKING": "False",
+            "FSDP_RESHARD_AFTER_FORWARD": "True",
+            "ROLLOUT_MICRO_BATCH_SIZE": "4",
+            "VAL_BEFORE_TRAIN": "False",
+            "TEST_FREQ": "-1",
+            "SAVE_FREQ": "-1",
+            "MAX_ACTOR_CKPT_TO_KEEP": "2",
+            "RESUME_MODE": "disable",
+            "TRAIN_SIZE": "2",
+            "GROUP_SIZE": "4",
+            "TOTAL_EPOCHS": "2",
+            "MAX_STEPS": "40",
+            "VAL_SIZE": "1",
+            "VAL_DATA_SIZE": "1",
+            "DT_RAY_NUM_CPUS": "8",
+            "ENV_SEED": "0",
+            "APPWORLD_TRAIN_DATASET": "train_difficulty_1_and_train_difficulty_2",
+            "APPWORLD_VAL_DATASET": "dev",
+            "APPWORLD_MAX_INTERACTIONS": "40",
+            "ENV_NAME": "AppWorld",
+            "PARAM_OFFLOAD": "True",
+            "CUDA_VISIBLE_DEVICES": "6",
+            "MACA_VISIBLE_DEVICES": "6",
+            "DATA_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/AppWorld/data",
+            "ROLLOUT_DATA_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/AppWorld/rollouts",
+            "CHECKPOINT_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/native-prefix-d6b7351-pilots/AppWorld/checkpoints",
+            "RAY_TMPDIR": "/tmp/dt-mx-prefix-appworld-d6b7351",
+            "APPWORLD_PORT_FILE": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5/appworld_ports_formal.ports"
+          }
+        }
+      ],
+      "import_receipt": {
+        "deltatrace_rollout": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/experiments/rl/deltatrace_rollout.py",
+          "sha256": "dbd2d21e80a621ed36661151c80953b8b6a7c4804e27fc7e23d5b3ac63163a1b"
+        },
+        "qwen35_dense_finite_runner": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/clean/qwen35/qwen35_dense_finite_runner.py",
+          "sha256": "11235dfdcf95678d316dc32a285da0bd3624c51a4702b979fedb9cffa98101df"
+        },
+        "qwen35_gdn_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/clean/qwen35/qwen35_gdn_finite.py",
+          "sha256": "08b01038cc7d547e3bc5da7a0463d7c795042d2fe1f9f40fd32bb35dc1afaa92"
+        },
+        "qwen35_answer_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/clean/qwen35/qwen35_answer_finite.py",
+          "sha256": "8d1bc8a0008387d9c383ee8155ee85644f54a2d29d3746329ef739141804c5ef"
+        },
+        "vendor_fa_finite_bf16_d256": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/clean/qwen35/vendor_fa_finite_bf16_d256.py",
+          "sha256": "f5ea2f67af2a47b2a736545b22ff6683336be14be505060674fce6f01de3f15c"
+        },
+        "profiles.official": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/profiles/official.py",
+          "sha256": "3467dd3de535d9dbc3e1838468a141b4457caf3c2e6573bc055b45398ebbbc89"
+        },
+        "accelerated.qwen35.qwen35_code_local_capture": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/d6b7351/accelerated/qwen35/qwen35_code_local_capture.py",
+          "sha256": "993ae72a49dc90901bfcbb7817e5fd32ad6004fbe630a190b775c6f1e77fbe72"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472/verl/trainer/ppo/core_algos.py",
+          "sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6"
+        }
+      },
+      "release_boundary_tests": "......                                                                   [100%]\n=============================== warnings summary ===============================\ntest_runtime_config.py::test_launcher_cpu_limit_reaches_owner_ray_init\n  /opt/conda/lib/python3.12/site-packages/ray/util/state/util.py:55: DeprecationWarning: Ray state API is no longer experimental. Please import from `ray.util.state`. instead. Importing from `ray.experimental` will be deprecated in future releases. \n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n6 passed, 1 warning in 28.53s\n",
+      "formal_training_started": false,
+      "monitors_and_backups_resumed": false
+    }
   },
   "historical_pre_native_prefix_status": {
     "fa_warm_batch4_32768_seconds": 14.615791657473892,
