@@ -191,6 +191,9 @@ def main():
             # 32768-token fixture, resident sleeping vLLM and owner DT runner.
             # Read the compiler's own counters; no cache reset or model patch.
             from torch._dynamo.utils import counters, compile_times
+            artifacts['before'] = trainable_state(worker.actor_module_fsdp)
+            artifacts['dt_batch4_warm'] = [{k: v[k].detach().cpu() for k in
+                ('dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates')} for v in values]
             result['tail_batch_runs'] = []
             for size in (2, 2, 4):
                 before = {group: dict(values) for group, values in counters.items()}
@@ -203,6 +206,9 @@ def main():
                 torch.cuda.synchronize()
                 assert len(probe) == size
                 assert all(torch.isfinite(ep[0]['dt_token_advantages']).all() for ep in probe)
+                artifacts[f'dt_batch{size}_{len(result["tail_batch_runs"])+1}'] = [
+                    {k: ep[0][k].detach().cpu() for k in
+                     ('dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates')} for ep in probe]
                 after = {group: dict(values) for group, values in counters.items()}
                 delta = {group: {key: value-before.get(group, {}).get(key, 0)
                                 for key, value in values.items()

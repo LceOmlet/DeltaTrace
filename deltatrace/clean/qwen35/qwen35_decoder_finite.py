@@ -159,6 +159,11 @@ class FiniteBoundaryOps:
             if compiled and dynamic_shapes:
                 def varying(*args,_op=op,_dimensions=varying_dimensions[name]):
                     for index,dimension in _dimensions:
+                        # The last RL minibatch can contain 1-3 contrasts.
+                        # Mark batch before its first compilation as well as
+                        # time; otherwise B4 -> B2 recompiles every boundary.
+                        if args[index].shape[0]>1:
+                            torch._dynamo.mark_dynamic(args[index],0)
                         if args[index].shape[dimension]>1:
                             torch._dynamo.mark_dynamic(args[index],dimension)
                     return _op(*args)
