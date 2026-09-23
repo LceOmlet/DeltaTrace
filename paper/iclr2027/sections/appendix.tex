@@ -146,15 +146,41 @@ The implementation processes 64-token chunks using FLA's native chunk-state adjo
 \paragraph{Storage.}
 For sequence length $T$, head dimension $d$, and tile or chunk width $C$, attention vectors and row statistics occupy $O(Td)$ storage per head. Pairwise products reside in bounded tiles. Dense attention arithmetic is $O(T^2d)$. Chunked memory occupies $O(Td+TC+(T/C)d^2)$ auxiliary storage per head for token slopes, within-chunk products, and boundary states. Both storage expressions are linear in $T$ at fixed $d$ and $C$. Layer replay supplies intermediate activations, with checkpoint storage accounted for separately.
 
+\clearpage
 \section{Evaluation Specification}
 \label{app:evaluation}
 Both models use the released prompts, stored responses, eligible source positions, and evidence annotations. Table~\ref{tab:qwen35-quality} specifies the Qwen3.5 examples for each task. An eligible position is an input position included in the task's attribution and deletion domain. For NIAH, this domain follows the released token selection. VT and HotpotQA recovery select from the passage body.
 
-\paragraph{Deletion scores.}
-For token attribution scores $A$, DT ranks tokens by $A_i$ for RISE and by $\max(A_i,0)$ for MAS. The evaluator records 21 response scores across 20 deletion steps. Each score sums log-probabilities over the full fixed response plus EOS. Masking all eligible tokens with EOS gives the attribution reference. Full-input and fully-masked scores define the normalization endpoints. The normalized values are clipped to $[0,1]$ and made nonincreasing by a cumulative minimum. For MAS, the remaining attribution share is the positive-score sum over unmasked tokens divided by the initial positive-score sum over eligible tokens. We add its absolute difference from the normalized response score to that score, clip to $[0,1]$, and rescale the resulting curve to $[0,1]$ by its minimum and maximum. MAS is the trapezoidal area under this curve. The case-study curves use the positive ranking and share these endpoints between DT and FT for each model and example.
-
 \paragraph{Baseline comparisons.}
 VT and HotpotQA recovery compare all seven methods on the same 448 inputs. The paired development comparison uses the same inputs and stored responses for DT and FT on each model, with one FT recursive step for faithfulness and three for recovery.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Attribution methods.}
+\label{tab:baseline-methods}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.17\linewidth}>{\raggedright\arraybackslash}p{.27\linewidth}>{\raggedright\arraybackslash}p{.20\linewidth}>{\raggedright\arraybackslash}p{\dimexpr.36\linewidth-6\tabcolsep\relax}@{}}
+\toprule
+Method & Principle & Strength & DT advantage \\
+\midrule
+Perturbation\newline\citep{pan2026flashtrace} & Measure effects of separate masks & Direct intervention & Additive allocation of the joint effect \\
+\addlinespace[4pt]
+REAGENT\newline\citep{zhao2024reagent} & Iteratively replace tokens and update importance & Black-box attribution & Signed scores without iterative sampling \\
+\addlinespace[4pt]
+CLP\newline\citep{cifka2023context} & Measure prediction changes as context expands & Reveals newly added information & Allocates the joint effect of selected inputs \\
+\addlinespace[4pt]
+IFR\newline\citep{ferrando2024information} & Trace contributions to internal representations & Identifies information paths & Includes changes in attention weights \\
+\addlinespace[4pt]
+AttnLRP\newline\citep{achtibat2024attnlrp} & Propagate output relevance backward & Input and neuron attribution & Explains the measured finite score change \\
+\addlinespace[4pt]
+FlashTrace\newline\citep{pan2026flashtrace} & Aggregate spans and recursively trace sources & Efficient multi-token attribution & Signed, additive response-score contributions \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Deletion scores.}
+For token attribution scores $A$, DT ranks tokens by $A_i$ for RISE and by $\max(A_i,0)$ for MAS. The evaluator records 21 response scores across 20 deletion steps. Each score sums log-probabilities over the full fixed response plus EOS. Masking all eligible tokens with EOS gives the attribution reference. Full-input and fully-masked scores define the normalization endpoints. The normalized values are clipped to $[0,1]$ and made nonincreasing by a cumulative minimum. For MAS, the remaining attribution share is the positive-score sum over unmasked tokens divided by the initial positive-score sum over eligible tokens. We add its absolute difference from the normalized response score to that score, clip to $[0,1]$, and rescale the resulting curve to $[0,1]$ by its minimum and maximum. MAS is the trapezoidal area under this curve. The case-study curves use the positive ranking and share these endpoints between DT and FT for each model and example.
 
 \paragraph{Recovery targets and budgets.}
 For NIAH, DT attributes the full response plus EOS. We select the top 10\% of eligible input tokens ranked by positive-part attribution scores. VT scores the answer tokens and ranks positive body-token scores. Its H2/H4/H6/H10 budgets are 10\%/10\%/20\%/30\%. HotpotQA scores the full response, ranks passage sentences by the sum of their positive token contributions, and selects the longest ranked sentence prefix within 30\% of all body tokens. NIAH/VT report the fraction of annotated evidence tokens recovered. HotpotQA reports Full-support Recall@30\%. Each example scores one if every official supporting fact is selected and zero otherwise. The reported value is the mean across examples.
@@ -163,25 +189,13 @@ For NIAH, DT attributes the full response plus EOS. We select the top 10\% of el
 
 \section{Implementation Cost Measurements}
 \label{app:cost}
-Each timing comparison uses the same inputs and responses for its alternatives. Complete attribution time covers the two forward executions, the reverse pass, and returning the source scores. Peak allocated device memory includes model weights. Sequence length counts both input and response tokens.
+DT and one-hop FT use the same inputs and responses in each timing comparison. Time covers the complete attribution call, including returning the source scores. For DT, this includes both forward executions and the reverse pass. Peak allocated device memory includes model weights.
 
 \paragraph{Paired Qwen3 cost.}
-Every method has one warm call followed by three measured calls in rotated order on each of 16 development examples. Aggregate times sum the per-example medians. Across examples, the ratio of DT to one-hop FT time has median 0.928, interquartile range 0.880--1.008, and full range 0.758--1.405; DT is faster on 11 of 16 examples. Three-hop FT totals 18.27 seconds.
+Each method has one warm call followed by three measured calls in rotated order on each of 16 development examples. Aggregate times sum the per-example medians.
 
-\paragraph{Tiling on longer released examples.}
-Figure~\ref{fig:tiling-cost} compares dense and tiled finite propagation on the 1,241-token retrieval control, the longest released HotpotQA context (3,470 total tokens), and the longest MATH rollout (3,762 total tokens). At 3,470 tokens, tiling reduces complete attribution time from 5.32 to 3.02 seconds and peak allocation from 32.66 to 22.54 GB. At 3,762 tokens, the corresponding values are 6.12 to 3.40 seconds and 37.18 to 30.06 GB.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{results/figures/deltatrace-tiling-cost.pdf}
-\caption{\textbf{Dense and tiled finite propagation on three released Qwen3-8B examples.} Complete warm attribution latency is the median of repeated calls. Memory is peak allocated device memory, including resident weights. Each input keeps its original prompt and full stored response. The three groups are distinct tasks and response lengths. Bars show the measured examples.}
-\label{fig:tiling-cost}
-\end{figure}
-
-\paragraph{Batching and replay retention.}
-The Qwen3.5 comparison processes the same 16 examples serially and in batches of two. With GPU checkpoints and batching, time decreases from 16.68 to 12.33 seconds. Retaining activations for reuse during the reverse pass further reduces time by 5.80\% on Qwen3 and 5.15\% on Qwen3.5 (Table~\ref{tab:retention}).
-
-\input{results/retention_table}
+\paragraph{Response-length comparison.}
+The first-page timing panel measures Qwen3-8B on one MetaX C550. Its horizontal axis counts response tokens. Each point is the mean of three complete attribution calls after two warm calls, with a fresh process for each method and length. Error bars show the minimum and maximum measured times.
 
 \clearpage
 \section{Detailed Signed Evidence Views}
