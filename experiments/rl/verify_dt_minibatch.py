@@ -165,16 +165,20 @@ def main():
                     args.output.write_text(json.dumps(result, indent=2)+'\n')
             result['status'] = 'passed_reused_execution_parity'
             return
-        for name, batch, copies in [('serial', 1, False), ('batch_copied', 4, True), ('batch_borrowed', 4, False), ('batch_compiled_gate', 4, False), ('batch_head8', 4, False), ('batch_offloaded', 4, False)]:
+        configurations = [('serial', 1, False), ('batch_copied', 4, True), ('batch_borrowed', 4, False), ('batch_compiled_gate', 4, False), ('batch_head8', 4, False), ('batch_offloaded', 4, False)]
+        if producer.runner.fa_coefficient_suffix:
+            configurations.append(('batch_fa_suffix', 4, False))
+        for name, batch, copies in configurations:
             current_run = name
             producer.runner.capture_backend = None
             producer.runner.defer_diagnostics = False
             producer.readout.minibatch_size = batch
             producer.runner.copy_replay_captures = copies
-            producer.runner.offload_replay_mixer = name == 'batch_offloaded'
-            producer.runner.pin_replay_host = name == 'batch_offloaded'
-            producer.runner.compile_gdn_scalar_rules = name in ('batch_compiled_gate', 'batch_head8', 'batch_offloaded')
-            producer.runner.gdn_head_batch_size = 8 if name in ('batch_head8', 'batch_offloaded') else None
+            producer.runner.fa_coefficient_suffix = name == 'batch_fa_suffix'
+            producer.runner.offload_replay_mixer = name in ('batch_offloaded', 'batch_fa_suffix')
+            producer.runner.pin_replay_host = name in ('batch_offloaded', 'batch_fa_suffix')
+            producer.runner.compile_gdn_scalar_rules = name in ('batch_compiled_gate', 'batch_head8', 'batch_offloaded', 'batch_fa_suffix')
+            producer.runner.gdn_head_batch_size = 8 if name in ('batch_head8', 'batch_offloaded', 'batch_fa_suffix') else None
             calls.clear()
             start = time.perf_counter()
             value = producer.attribute_episodes(episodes, [float(row['rewards'])]*4)
@@ -188,6 +192,9 @@ def main():
         result['borrowed_matches_copied_exactly'] = True
         torch.testing.assert_close(outputs['batch_head8'], outputs['batch_offloaded'], rtol=0, atol=0)
         result['offloaded_matches_same_head_partition_exactly'] = True
+        if 'batch_fa_suffix' in outputs:
+            torch.testing.assert_close(outputs['batch_offloaded'], outputs['batch_fa_suffix'], rtol=0, atol=0)
+            result['fa_coefficient_suffix_matches_full_exactly'] = True
         assert len(outputs['batch_borrowed'][1]) == 1
         assert outputs['batch_borrowed'][1][0]['paired_shape'][0] == 8
         result['compiled_gate_differences'] = {}

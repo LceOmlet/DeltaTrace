@@ -35,6 +35,7 @@ struct FiniteParams {
     float *tau,*center;
     void *dq,*dk,*dv;
     const int *valid_lengths;
+    const int *coefficient_starts;
     int batch,heads,kv_heads,length;
     float scale;
 };
@@ -55,6 +56,7 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
     const int tid=threadIdx.x, bh=blockIdx.y, row0=blockIdx.x*M;
     // Padded length remains the storage stride; valid bounds are per sample.
     const int length=p.length, valid=p.valid_lengths[bh/p.heads];
+    const int start=p.coefficient_starts?p.coefficient_starts[bh/p.heads]:0;
     const int64_t head_offset=int64_t(bh)*length*D;
     // Same GQA mapping as pinned FA flash_fwd_kernel.h: bidh / h_h_k_ratio.
     const int kv_bh=(bh/p.heads)*p.kv_heads+(bh%p.heads)/(p.heads/p.kv_heads);
@@ -63,7 +65,11 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
     const int64_t pair_right_offset=Phase==2?head_offset:kv_offset;
     // Every padding output is written, including entire empty tail tiles.
     // This branch is uniform within the block, before any synchronization.
-    if(row0>=valid) {
+    // Causal Q rows depend only on their own upstream row. K/V rows at or
+    // after start depend only on query rows at or after those K/V rows.
+    // Thus the requested suffix coefficients use the original full key
+    // history, while earlier coefficient output tiles can be omitted.
+    if(row0>=valid || row0+M<=start) {
         if constexpr(Phase==0) {
             for(int j=tid;j<M;j+=blockDim.x) if(row0+j<length) {
                 const int64_t pos=int64_t(bh)*length+row0+j;
@@ -273,11 +279,27 @@ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
             const int r=row0+get<0>(outcoords(i)),d=get<1>(outcoords(i));
             if(r<length) {
                 const int64_t pos=head_offset+int64_t(r)*D+d;
-                out[pos]=E(r<valid?accQ(i)*p.scale:0.f);
-                if constexpr(Phase==2) dv[pos]=E(r<valid?accV(i):0.f);
+                out[pos]=E(r<valid && r>=start?accQ(i)*p.scale:0.f);
+                if constexpr(Phase==2) dv[pos]=E(r<valid && r>=start?accV(i):0.f);
             }
         }
     }
+}
+
+static int launch_finite(FiniteParams p,void *stream_ptr) {
+    using E=mctlass::bfloat16_t;
+    if(p.batch<1||p.heads<1||p.kv_heads<1||p.heads%p.kv_heads!=0||p.length<1)return -1;
+    dim3 grid((p.length+FiniteTraits::kBlockM-1)/FiniteTraits::kBlockM,p.batch*p.heads);
+    constexpr int shared=(size(typename FiniteTraits::SmemLayoutQ{})+size(typename FiniteTraits::SmemLayoutKV{}))*sizeof(E);
+    auto stream=reinterpret_cast<cudaStream_t>(stream_ptr);
+    deltatrace_fa_finite_p1_kernel<0><<<grid,FiniteTraits::kNThreads,shared,stream>>>(p);
+    auto error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
+    dim3 cachedGrid((p.length+CachedTraits::kBlockM-1)/CachedTraits::kBlockM,p.batch*p.heads);
+    constexpr int cachedShared=(size(typename CachedTraits::SmemLayoutQ{})+size(typename CachedTraits::SmemLayoutKV{}))*sizeof(E);
+    deltatrace_fa_finite_p1_kernel<1,CachedTraits><<<cachedGrid,CachedTraits::kNThreads,cachedShared,stream>>>(p);
+    error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
+    deltatrace_fa_finite_p1_kernel<2,CachedTraits><<<cachedGrid,CachedTraits::kNThreads,cachedShared,stream>>>(p);
+    return int(cudaGetLastError());
 }
 
 extern "C" int deltatrace_fa_finite_p1_bf16_d256(
@@ -285,20 +307,19 @@ extern "C" int deltatrace_fa_finite_p1_bf16_d256(
     const void *u,const void *lse0,const void *lse1,
     void *tau,void *center,void *dq,void *dk,void *dv,const void *valid_lengths,int batch,int heads,int kv_heads,int length,
     float scale,void *stream_ptr) {
-    using E=mctlass::bfloat16_t;
-    if(batch<1||heads<1||kv_heads<1||heads%kv_heads!=0||length<1)return -1;
-    FiniteParams p{(const E*)q0,(const E*)k0,(const E*)q1,(const E*)k1,(const E*)v0,
-        (const E*)u,(const float*)lse0,(const float*)lse1,
-        (float*)tau,(float*)center,(E*)dq,(E*)dk,(E*)dv,(const int*)valid_lengths,batch,heads,kv_heads,length,scale};
-    dim3 grid((length+FiniteTraits::kBlockM-1)/FiniteTraits::kBlockM,batch*heads);
-    constexpr int shared=(size(typename FiniteTraits::SmemLayoutQ{})+size(typename FiniteTraits::SmemLayoutKV{}))*sizeof(E);
-    auto stream=reinterpret_cast<cudaStream_t>(stream_ptr);
-    deltatrace_fa_finite_p1_kernel<0><<<grid,FiniteTraits::kNThreads,shared,stream>>>(p);
-    auto error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
-    dim3 cachedGrid((length+CachedTraits::kBlockM-1)/CachedTraits::kBlockM,batch*heads);
-    constexpr int cachedShared=(size(typename CachedTraits::SmemLayoutQ{})+size(typename CachedTraits::SmemLayoutKV{}))*sizeof(E);
-    deltatrace_fa_finite_p1_kernel<1,CachedTraits><<<cachedGrid,CachedTraits::kNThreads,cachedShared,stream>>>(p);
-    error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
-    deltatrace_fa_finite_p1_kernel<2,CachedTraits><<<cachedGrid,CachedTraits::kNThreads,cachedShared,stream>>>(p);
-    return int(cudaGetLastError());
+    FiniteParams p{q0,k0,q1,k1,v0,u,(const float*)lse0,(const float*)lse1,
+        (float*)tau,(float*)center,dq,dk,dv,(const int*)valid_lengths,nullptr,batch,heads,kv_heads,length,scale};
+    return launch_finite(p,stream_ptr);
+}
+
+extern "C" int deltatrace_fa_finite_p1_bf16_d256_suffix(
+    const void *q0,const void *k0,const void *q1,const void *k1,const void *v0,
+    const void *u,const void *lse0,const void *lse1,
+    void *tau,void *center,void *dq,void *dk,void *dv,const void *valid_lengths,
+    const void *coefficient_starts,int batch,int heads,int kv_heads,int length,
+    float scale,void *stream_ptr) {
+    FiniteParams p{q0,k0,q1,k1,v0,u,(const float*)lse0,(const float*)lse1,
+        (float*)tau,(float*)center,dq,dk,dv,(const int*)valid_lengths,
+        (const int*)coefficient_starts,batch,heads,kv_heads,length,scale};
+    return launch_finite(p,stream_ptr);
 }

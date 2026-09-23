@@ -22,6 +22,19 @@ B4 controls compare all signed outputs, target scores and Q/V/A, with raw
 results indexed in `experiments/rl/results_dt_minibatch_candidate.json`.
 Short execution parity does not establish 32k capacity or throughput.
 
+The optional `fa_coefficient_suffix` runner setting reuses the same finite FA
+operator with an explicit output range. It derives each pair's first changed
+input token once. In this causal decoder, the common input prefix has zero
+displacement at every layer; earlier output coefficients also cannot feed
+later input coefficients. Thus its omitted coefficients do not contribute to
+the final signed attribution. The attention operator still reads the full
+K/V history. This does not truncate the model input, alter EOS endpoints, or
+change finite propagation formulas. Observer runs keep the complete trace.
+The default remains disabled; the separately exported suffix operation must
+be present in the selected, hash-checked library. Its output restriction is
+checked against the full operator, and complete short attribution against
+the same runner with the setting disabled.
+
 Other audited historical capabilities are kept distinct:
 
 - Dynamic compilation already exists in the current owner's public options.

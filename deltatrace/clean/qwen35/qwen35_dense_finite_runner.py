@@ -54,7 +54,7 @@ def _relative_l2(actual,reference,*,deferred=False):
 
 
 class Qwen35DenseFiniteRunner:
-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=()):
+    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False):
         """Optional GDN layer-index rules; unspecified layers retain content1.
 
         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
@@ -105,6 +105,7 @@ class Qwen35DenseFiniteRunner:
         self.compile_gdn_scalar_rules=compile_gdn_scalar_rules
         self.pin_replay_host=pin_replay_host
         self.gdn_gpu_capture_names=tuple(gdn_gpu_capture_names)
+        self.fa_coefficient_suffix=fa_coefficient_suffix
         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
         if not isinstance(key_rules,Mapping):
             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
@@ -208,7 +209,18 @@ class Qwen35DenseFiniteRunner:
         with torch.no_grad():m=timed('finite_final_norm',lambda:self.boundaries.norm_residual(x[0::2],x[1::2],norm.weight,mnorm,torch.zeros_like(mnorm),norm.eps))
         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
         seed_effect=effect(m,x);del x,mnorm,seed,z
-        layout=RightPaddedLengths([selection.length]*selection.batch,selection.length,paired_ids.device)
+        coefficient_starts=None
+        if self.fa_coefficient_suffix and observer is None:
+            # Every operation in this reviewed no-cache decoder is causal.
+            # The identical input prefix therefore has zero displacement at
+            # every layer. Its finite coefficients cannot contribute to the
+            # signed input effect or feed later-position coefficients. Keep
+            # full K/V history, omitting only those finite-FA output positions.
+            positions=torch.arange(selection.length,device=paired_ids.device)
+            changed=paired_ids[0::2]!=paired_ids[1::2]
+            coefficient_starts=torch.where(changed,positions,selection.length).amin(-1).cpu().tolist()
+        layout=RightPaddedLengths([selection.length]*selection.batch,selection.length,paired_ids.device,
+                                  coefficient_starts=coefficient_starts)
         for i in reversed(range(32)):
             layer=layers[i];is_fa=layer.block_type=='full_attention';x=root[str(i)].to('cuda');kw=_copy(kwargs[str(i)],'cuda')
             # The no-cache Qwen path consumes these activations without
@@ -310,6 +322,7 @@ class Qwen35DenseFiniteRunner:
         x=root['0'].to('cuda');signed=_token_effect(m,x).cpu()
         torch.cuda.synchronize();seconds=time.perf_counter()-started
         info={'select_output_rows':select_output_rows,'complete_attribution_seconds_with_diagnostics':seconds,
+              'fa_coefficient_starts':coefficient_starts,
               'norm_gate_rules':{str(i):rule for i,rule in sorted(self.norm_gate_rules.items())},
               'finite_fla_by_layer':sorted(self.finite_fla_by_layer),
               'attention_pv_rules':{str(i):rule for i,rule in sorted(self.attention_pv_rules.items())},

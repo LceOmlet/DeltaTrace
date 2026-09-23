@@ -135,6 +135,43 @@ class DiagnosticStop(BaseException):
     pass
 
 
+if os.environ.get('DT_PROFILE_FA_SUFFIX') == '1':
+    from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256, RightPaddedLengths
+    original_finite_fa = VendorFAFiniteP1BF16D256.__call__
+
+    def compare_fa_suffix(self, operands, scale, layout, activity=None):
+        if layout.coefficient_starts is None:
+            raise ValueError('Actual runner must supply its common-prefix coefficient bounds.')
+        full = RightPaddedLengths(layout.lengths, layout.padded_length, layout._tensor.device)
+        records = []
+        reference = None
+        for name, selected in [('full_cold', full), ('suffix_cold', layout),
+                               ('full_warm_0', full), ('suffix_warm_0', layout),
+                               ('suffix_warm_1', layout), ('full_warm_1', full)]:
+            torch.cuda.synchronize()
+            before = storage_report()
+            start = time.perf_counter()
+            value = original_finite_fa(self, operands, scale, selected, activity)
+            torch.cuda.synchronize()
+            elapsed = time.perf_counter()-start
+            actual = {k:v.detach().cpu() for k,v in value.items()}
+            if reference is None:
+                reference = actual
+            for key in reference:
+                for index, cut in enumerate(layout.coefficient_starts):
+                    assert torch.equal(reference[key][index,:,cut:], actual[key][index,:,cut:]), key
+            records.append(dict(name=name, seconds=elapsed, exact_suffix=True, before=before))
+            print('FA_SUFFIX_IN_CONTEXT', json.dumps(records[-1]), flush=True)
+            del value, actual
+        result = dict(scope='Same actual first-FA 32k operands/upstream, original actor and sleeping vLLM; full K/V history retained; not complete DT/PPO acceptance',
+            status='observed_requested_operator', coefficient_starts=layout.coefficient_starts,
+            valid_lengths=layout.lengths, records=records)
+        Path(os.environ['DT_PROFILE_OUTPUT']).write_text(json.dumps(result, indent=2)+'\n')
+        raise DiagnosticStop()
+
+    VendorFAFiniteP1BF16D256.__call__ = compare_fa_suffix
+
+
 if os.environ.get('DT_PROFILE_DENSE_ALIASES') == '1':
     alias_records = []
     original_retain_dense = native_dense_attention_capture.NativeDenseAttentionCapture.retain_dense

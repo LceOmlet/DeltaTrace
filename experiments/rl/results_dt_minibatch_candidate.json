@@ -7693,5 +7693,297 @@
         "sha256": "9f372c7372d99e7fcb70aa9dd8dda134c17e0adacd6de5f69cb0473a30b914c8"
       }
     ]
+  },
+  "fa_coefficient_suffix": {
+    "scope": "Optional output-range extension of the original finite FA operator; complete K/V history and original finite formulas retained. Isolated candidate, not production selected.",
+    "candidate_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix",
+    "library_sha256": "63ad5dde0b2e2f02275e4960ee1f654e076c55fc9963b15a760d30f853c722fa",
+    "runner_derivation": "Each endpoint pair first changed input position; the identical causal prefix has zero activation displacement, and earlier output coefficients cannot feed later input coefficients. Observer mode retains full coefficients.",
+    "new_export": "deltatrace_fa_finite_p1_bf16_d256_suffix; original export and default runner behavior preserved",
+    "official_default_gate": {
+      "status": "passed_coincident_endpoint_official_tests",
+      "cases": [
+        {
+          "owner": "current",
+          "length": 128,
+          "function": "test_flash_attn_output",
+          "endpoint_difference": 0,
+          "status": "passed"
+        },
+        {
+          "owner": "candidate",
+          "length": 128,
+          "function": "test_flash_attn_output",
+          "endpoint_difference": 0,
+          "status": "passed"
+        },
+        {
+          "owner": "current",
+          "length": 447,
+          "function": "test_flash_attn_output",
+          "endpoint_difference": 0,
+          "status": "passed"
+        },
+        {
+          "owner": "candidate",
+          "length": 447,
+          "function": "test_flash_attn_output",
+          "endpoint_difference": 0,
+          "status": "passed"
+        }
+      ],
+      "nonzero_endpoint_comparison": [
+        {
+          "length": 128,
+          "values": {
+            "dq": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "dk": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "dv": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "tau": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "center": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            }
+          }
+        },
+        {
+          "length": 447,
+          "values": {
+            "dq": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "dk": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "dv": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "tau": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            },
+            "center": {
+              "max_abs": 0.0,
+              "relative_l2": 0.0
+            }
+          }
+        }
+      ]
+    },
+    "restricted_operator_gate": {
+      "status": "passed_output_restriction_parity",
+      "cases": [
+        {
+          "length": 128,
+          "valid_lengths": [
+            128,
+            97,
+            66,
+            1
+          ],
+          "coefficient_starts": [
+            0,
+            1,
+            64,
+            1
+          ],
+          "coincident": true,
+          "suffix_values_exact": true,
+          "omitted_coefficients_zero": true,
+          "full_cold_seconds": 0.0023315856233239174,
+          "suffix_cold_seconds": 0.000890715979039669,
+          "warm": []
+        },
+        {
+          "length": 128,
+          "valid_lengths": [
+            128,
+            97,
+            66,
+            1
+          ],
+          "coefficient_starts": [
+            0,
+            1,
+            64,
+            1
+          ],
+          "coincident": false,
+          "suffix_values_exact": true,
+          "omitted_coefficients_zero": true,
+          "full_cold_seconds": 0.0010067839175462723,
+          "suffix_cold_seconds": 0.0007399870082736015,
+          "warm": []
+        },
+        {
+          "length": 447,
+          "valid_lengths": [
+            447,
+            389,
+            321,
+            256
+          ],
+          "coefficient_starts": [
+            64,
+            65,
+            321,
+            128
+          ],
+          "coincident": true,
+          "suffix_values_exact": true,
+          "omitted_coefficients_zero": true,
+          "full_cold_seconds": 0.0034566735848784447,
+          "suffix_cold_seconds": 0.0024810535833239555,
+          "warm": []
+        },
+        {
+          "length": 447,
+          "valid_lengths": [
+            447,
+            389,
+            321,
+            256
+          ],
+          "coefficient_starts": [
+            64,
+            65,
+            321,
+            128
+          ],
+          "coincident": false,
+          "suffix_values_exact": true,
+          "omitted_coefficients_zero": true,
+          "full_cold_seconds": 0.003369731828570366,
+          "suffix_cold_seconds": 0.0027612820267677307,
+          "warm": []
+        },
+        {
+          "length": 32768,
+          "valid_lengths": [
+            32768,
+            32768,
+            32768,
+            32768
+          ],
+          "coefficient_starts": [
+            31573,
+            31573,
+            31573,
+            31573
+          ],
+          "coincident": false,
+          "suffix_values_exact": true,
+          "omitted_coefficients_zero": true,
+          "full_cold_seconds": 13.82169848587364,
+          "suffix_cold_seconds": 0.58863315731287,
+          "warm": [
+            {
+              "name": "full",
+              "seconds": 13.809336843900383
+            },
+            {
+              "name": "suffix",
+              "seconds": 0.5819301595911384
+            },
+            {
+              "name": "suffix",
+              "seconds": 0.5835923692211509
+            },
+            {
+              "name": "full",
+              "seconds": 13.802553908899426
+            }
+          ]
+        }
+      ]
+    },
+    "full_short_gate": {
+      "status": "passed_memory_copy_parity_and_batch_interface",
+      "fa_coefficient_suffix_matches_full_exactly": true,
+      "scope": "Complete signed attribution, target log-probabilities and Q/V/A; actual618-635 tokens, max_length32768; same parameter-offload/head grouping/capture configuration.",
+      "conservation_note": "Existing finite-estimation conservation failures remain in the raw reports; parity is not a claim that estimation error disappeared."
+    },
+    "same_actual_32k_first_fa": {
+      "context_tokens": 32768,
+      "batch": 4,
+      "coefficient_starts": [
+        31573,
+        31573,
+        31573,
+        31573
+      ],
+      "full_warm_seconds": [
+        13.38072557747364,
+        13.376766801811755
+      ],
+      "suffix_warm_seconds": [
+        0.5849472023546696,
+        0.586722414009273
+      ],
+      "speedup": 22.837062603297902,
+      "all_suffix_values_exact": true,
+      "same_start_memory": true,
+      "configuration": "Original VERL FSDP2 actor, CPUOffloadPolicy, activation offload and sleeping vLLM. First actual FA operands/upstream, no regenerated surrogate tensors.",
+      "scope": "First FA finite operation only; deliberate diagnostic exit before remaining finite propagation/PPO. Not full DT throughput/capacity acceptance."
+    },
+    "full_dt_efficiency_accepted": false,
+    "production_selected": false,
+    "evidence": [
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/operator-parity32k.json",
+        "sha256": "c127e823600937cfc75bbcdf4c002f35b2321381f1443810786d0c0861147469"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/operator-parity32k.log",
+        "sha256": "5976264f8e2be7ac872550733753679803bafb09516f4c0f69259ced378daf1e"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/default-official-parity.json",
+        "sha256": "7fbdb4f36ac469c542b594c747d7a79f1e73355b73b5288214c709275731c096"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/default-official-parity.log",
+        "sha256": "f20af1f61543b9a59d3af264d04198f583ca55226f26432976a3c3867548eebf"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/full-short-parity.json",
+        "sha256": "b062ce6ff48222171b667df782cb0471770063a6e95ceb798c15e35e69a06e81"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/full-short-parity.log",
+        "sha256": "da1bd82c1fd55ba91ccd3ab5d70d10d1695a8a66f5365ff5acb06a172ac000ae"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/same-fa-operands32k.json",
+        "sha256": "653400b4f99fd6c867f60cf65ee604dbe44b0626adf41d0b82bf5e6371d22c1b"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/same-fa-operands32k.log",
+        "sha256": "e71a2a562edbef6c15150a68949e1c4fecd35c6c13c62853e8971ee419fcf346"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/partial-capacity.json",
+        "sha256": "d5d5a3e539b673919c03f1e66300158445d2a2a697002a26a0928a419260dd07"
+      },
+      {
+        "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/coefficient-suffix/compile.log",
+        "sha256": "d78503401f9b5cf5104d4d601828d1b7f199350038901bf91298a9d54d7345eb"
+      }
+    ]
   }
 }

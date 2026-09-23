@@ -11,6 +11,11 @@
 具体回执见 [minibatch 结果](results_dt_minibatch_candidate.json) 的
 `parameter_offload_and_selective_capture`。
 
+后续在原有限 FA 内加入可选的系数输出范围：完整 K/V 保留，省略共同因果
+前缀的系数计算。真实 actor/休眠 vLLM、同一份 B4/32768 首层张量对照为
+13.38 秒→0.586 秒，所需系数逐值一致；完整短归因及 Q/V/A 也逐值一致。
+这项局部结果见同文件 `fa_coefficient_suffix`，不代表完整 DT 效率已达标。
+
 **2026-09-23 06:41 更新：正式 v3 三组作业均未完成一次更新，随后发生主机
 OOM，现已停止失败作业。** WebShop 完成约 6.5 小时 rollout 后，在向 DT
 传递轨迹的 Ray RPC 边界，TaskRunner 内存达到 373 GiB，容器 883/900 GiB，

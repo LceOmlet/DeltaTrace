@@ -12,6 +12,22 @@
 
 ## 2026-09-23 已有加速分支的复用
 
+- 后续有限 FA 候选在 `candidates/dt-minibatch/coefficient-suffix`，库
+  `libfinite_d256_suffix.so` 的 SHA256 为
+  `63ad5dde0b2e2f02275e4960ee1f654e076c55fc9963b15a760d30f853c722fa`。
+  可选 `dt_fa_coefficient_suffix=true` 由同一 runner 找到每对输入首个变化
+  位置，仅省略共同因果前缀的系数输出计算，保留完整 K/V、输入、EOS 端点
+  和原有限公式。原库导出和默认行为保留，尚未选择为生产配置。
+- 新库全量路径通过原 FA 128/447 测试，与之前候选的非零端点五项输出
+  逐值一致；范围受限路径在 128/447（含非整块起点、不同有效长度）和
+  32768 上与同库全量路径的所需系数逐值一致。完整短链 signed/target/Q/V/A
+  也逐值一致；既有估计守恒误差仍保留，未当作消失。
+- `same-fa-operands32k.json`：原 actor、休眠 vLLM 和同显存起点，首个实际
+  FA 输入仍为 B4/32768，各样本系数起点 31573。全量预热 13.381/13.377 秒，
+  范围受限 0.585/0.587 秒（约 22.8 倍），所需系数逐值一致；随后主动退出。
+  这只证明该有限 FA 阶段收益，未重跑全部 DT/PPO、未恢复三任务正式训练。
+  回执和哈希位于 `results_dt_minibatch_candidate.json::fa_coefficient_suffix`。
+
 - 最新隔离候选在 `candidates/dt-minibatch/selective-capture`，生产目录仍未
   选择。原 VERL `fsdp_config.offload_policy` 启用 Torch FSDP2
   `CPUOffloadPolicy(pin_memory=True)` 后，初始化物理占用约 18.95→2.285 GiB。

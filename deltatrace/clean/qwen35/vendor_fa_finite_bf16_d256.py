@@ -16,8 +16,10 @@ class RightPaddedLengths:
 
     Only contiguous right padding, equal Q/K lengths, no packed/cache sequences.
     The private tensor must not be mutated while this layout is in use.
+    Optional coefficient_starts restrict only dQ/dK/dV output positions;
+    all K/V history remains available. They do not shorten model context.
     """
-    def __init__(self, lengths, padded_length, device):
+    def __init__(self, lengths, padded_length, device, *, coefficient_starts=None):
         self.lengths = tuple(lengths)
         if not self.lengths or not all(type(n) is int and 0 < n <= padded_length for n in self.lengths):
             raise ValueError('Require nonempty positive integer lengths within the padded extent.')
@@ -25,6 +27,14 @@ class RightPaddedLengths:
         self._tensor = torch.tensor(self.lengths, dtype=torch.int32, device=device)
         if not self._tensor.is_cuda:
             raise ValueError('The native finite operator requires a CUDA/MACA device.')
+        self.coefficient_starts = None if coefficient_starts is None else tuple(coefficient_starts)
+        self._starts = None
+        if self.coefficient_starts is not None:
+            if len(self.coefficient_starts)!=len(self.lengths) or not all(
+                    type(start) is int and 0<=start<=length
+                    for start,length in zip(self.coefficient_starts,self.lengths)):
+                raise ValueError('Coefficient suffix starts must lie within each valid sequence.')
+            self._starts = torch.tensor(self.coefficient_starts, dtype=torch.int32, device=device)
 
 
 class VendorFAFiniteP1BF16D256:
@@ -62,8 +72,18 @@ class VendorFAFiniteP1BF16D256:
         center = torch.empty_like(tau)
         dq, dk, dv = (torch.empty_like(values[0]) for _ in range(3))
         buffers = values + [tau, center, dq, dk, dv, layout._tensor]
+        operation = self.operation
+        if layout._starts is not None:
+            # This is an output restriction of the same finite operator.
+            # Full K/V history remains in values. The caller owns whether
+            # omitted prefix coefficients may be discarded by its use case.
+            operation = self.library.deltatrace_fa_finite_p1_bf16_d256_suffix
+            operation.argtypes = [ctypes.c_void_p]*15+[ctypes.c_int]*4+[ctypes.c_float,ctypes.c_void_p]
+            operation.restype = ctypes.c_int
+            buffers.append(layout._starts)
         if activity is not None:
             activity.update(query_heads=heads, kv_heads=kv_heads, valid_lengths=list(layout.lengths),
+                coefficient_starts=layout.coefficient_starts,
                 padded_length=length, GQA_input_expansion=False, global_endpoint_mean_buffers=0,
                 global_attention_matrix=False, kernel_launches_per_call=3,
                 endpoint_mean='FP32 add then BF16 storage in existing FA shared tile',
@@ -71,7 +91,7 @@ class VendorFAFiniteP1BF16D256:
                                   'bytes': v.numel() * v.element_size()} for v in buffers])
             activity['calls_attempted'] = activity.get('calls_attempted', 0) + 1
         with torch.cuda.device(ref.device):
-            status = self.operation(*[ctypes.c_void_p(v.data_ptr()) for v in buffers],
+            status = operation(*[ctypes.c_void_p(v.data_ptr()) for v in buffers],
                 batch, heads, kv_heads, length, scale,
                 ctypes.c_void_p(torch.cuda.current_stream(ref.device).cuda_stream))
         if status != 0:
