@@ -1380,6 +1380,210 @@
         }
       ],
       "decision": "Not applied to current training. About10% short-input and4% 32k reduction is modest; repeated event work remains the scaling factor. No repeated compiler counters after the first call."
+    },
+    "fsdp_replay_weight_lifetime": {
+      "status": "runtime_comparison_and_separate_capacity_passed",
+      "source": "receipts/rollout-major-cost/fsdp-replay-weight-lifetime.json",
+      "capacity_source": "receipts/rollout-major-cost/fsdp-replay-weight-capacity.json",
+      "scope": "Original FSDP2 CPU parameter/activation offload, native graph/cache-off vLLM resident, B4; only one replayed layer retained through its finite consumer. No kernel, credit or PPO formula change.",
+      "measurements": [
+        {
+          "length": 2048,
+          "original_warm_seconds": [
+            9.329604304395616
+          ],
+          "retained_warm_seconds": [
+            8.922274774871767,
+            8.88160981144756
+          ],
+          "time_reduction_fraction": 0.045839244332630535,
+          "original_gather": {
+            "calls": 133,
+            "parameter_bytes": 65549344768
+          },
+          "retained_gather": {
+            "calls": 101,
+            "parameter_bytes": 51704811520
+          }
+        },
+        {
+          "length": 32768,
+          "original_warm_seconds": [
+            28.426751976832747,
+            28.02177228219807
+          ],
+          "retained_warm_seconds": [
+            27.727853489108384,
+            27.58866102900356
+          ],
+          "time_reduction_fraction": 0.02005384119032616,
+          "original_gather": {
+            "calls": 133,
+            "parameter_bytes": 65549344768
+          },
+          "retained_gather": {
+            "calls": 101,
+            "parameter_bytes": 51704811520
+          }
+        }
+      ],
+      "same_actor_signed_endpoints_qva_exact": true,
+      "owner_settings_restored_on_success_and_injected_replay_failure": true,
+      "harness_failure": "First invocation completed all eight comparisons but diagnostic wrapper nesting caused RecursionError before PPO. The wrapper is restored and only the missing original capacity/two-update check was rerun; failed receipt retained.",
+      "capacity": {
+        "dt_tokens": 32768,
+        "actor_tokens": 32597,
+        "oversize_rejected": "Reward readout context 32769 exceeds cap 32768; no silent truncation",
+        "updates": [
+          {
+            "actor/pg_loss": [
+              0.001450313488021493
+            ],
+            "actor/pg_clipfrac": [
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.0
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0
+            ],
+            "actor/grad_norm": [
+              0.0291748046875
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 84.56691551208496,
+            "perf/max_memory_reserved_gb": 92.701171875,
+            "perf/cpu_memory_used_gb": 477.76998138427734,
+            "actor/lr": 1e-06
+          },
+          {
+            "actor/pg_loss": [
+              0.0013509433483704925
+            ],
+            "actor/pg_clipfrac": [
+              0.0
+            ],
+            "actor/ppo_kl": [
+              0.00029437802731990814
+            ],
+            "actor/pg_clipfrac_lower": [
+              0.0
+            ],
+            "actor/grad_norm": [
+              0.0311279296875
+            ],
+            "perf/mfu/actor": 0.0,
+            "perf/max_memory_allocated_gb": 84.56691551208496,
+            "perf/max_memory_reserved_gb": 92.759765625,
+            "perf/cpu_memory_used_gb": 477.82776260375977,
+            "actor/lr": 1e-06
+          }
+        ],
+        "changed_elements": 1441105,
+        "native_lora": {
+          "loaded_layers": 200,
+          "unused_layers": [],
+          "nonzero_b_elements": 1426944
+        },
+        "seconds": 379.4342278148979,
+        "stages": [
+          {
+            "name": "owner_init",
+            "seconds": 99.89260941185057,
+            "host_rss_bytes": 11924123648,
+            "device_used_bytes": 2482049024,
+            "device_total_bytes": 68283269120,
+            "allocated": 47144087040,
+            "peak_allocated": 47555886080,
+            "peak_reserved": 47626321920
+          },
+          {
+            "name": "producer_init",
+            "seconds": 100.95931026339531,
+            "host_rss_bytes": 12092366848,
+            "device_used_bytes": 2482049024,
+            "device_total_bytes": 68283269120,
+            "allocated": 47144087040,
+            "peak_allocated": 47555886080,
+            "peak_reserved": 47626321920
+          },
+          {
+            "name": "oversize_rejected",
+            "seconds": 100.99227882362902,
+            "host_rss_bytes": 12092366848,
+            "device_used_bytes": 2482049024,
+            "device_total_bytes": 68283269120,
+            "allocated": 47144087040,
+            "peak_allocated": 47555886080,
+            "peak_reserved": 47626321920
+          },
+          {
+            "name": "dt_worker_batch_4",
+            "seconds": 161.40720452927053,
+            "host_rss_bytes": 12166725632,
+            "device_used_bytes": 33827409920,
+            "device_total_bytes": 68283269120,
+            "allocated": 47144157184,
+            "peak_allocated": 72257923584,
+            "peak_reserved": 78372667392
+          },
+          {
+            "name": "dt_worker_batch_4_repeat_1",
+            "seconds": 189.06533582136035,
+            "host_rss_bytes": 12288430080,
+            "device_used_bytes": 33827409920,
+            "device_total_bytes": 68283269120,
+            "allocated": 47144227328,
+            "peak_allocated": 72257993728,
+            "peak_reserved": 78372667392
+          },
+          {
+            "name": "old_log_probs",
+            "seconds": 206.44310619868338,
+            "host_rss_bytes": 12153794560,
+            "device_used_bytes": 33848381440,
+            "device_total_bytes": 68283269120,
+            "allocated": 47147435008,
+            "peak_allocated": 72257993728,
+            "peak_reserved": 78372667392
+          },
+          {
+            "name": "actor_update_0",
+            "seconds": 305.85921956785023,
+            "host_rss_bytes": 12197969920,
+            "device_used_bytes": 55109591040,
+            "device_total_bytes": 68283269120,
+            "allocated": 47180989440,
+            "peak_allocated": 90803034112,
+            "peak_reserved": 99537125376
+          },
+          {
+            "name": "actor_update_1",
+            "seconds": 378.28390251100063,
+            "host_rss_bytes": 12201914368,
+            "device_used_bytes": 55172509696,
+            "device_total_bytes": 68283269120,
+            "allocated": 47180989440,
+            "peak_allocated": 90803034112,
+            "peak_reserved": 99600039936
+          },
+          {
+            "name": "updated_lora_native_sync_and_sleep",
+            "seconds": 379.420205806382,
+            "host_rss_bytes": 12202958848,
+            "device_used_bytes": 2842071040,
+            "device_total_bytes": 68283269120,
+            "allocated": 47180919296,
+            "peak_allocated": 90803034112,
+            "peak_reserved": 99600039936
+          }
+        ],
+        "physical_samples": 186,
+        "physical_max_mib": 51964,
+        "physical_scope": "mx-smi samples about every2s, not a continuous peak; sleeping allocator reserved bytes are not physical usage."
+      },
+      "interpretation": "Removes 32 repeated gathers per DT, about12.9GiB of parameter payload. Measured speed benefit is modest and does not remove the fixed row/event multiplicity of process rewards. Original native offloaded backward remains the32k performance reference."
     }
   },
   "formal_training": {

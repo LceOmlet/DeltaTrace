@@ -279,7 +279,9 @@ class Qwen35DenseFiniteRunner:
                 if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures,gpu_capture_names=self.gdn_gpu_capture_names if offload_mixer else (),coefficient_start=gdn_cut if self.compact_gdn_captures else 0))
             def replay():
                 with torch.no_grad(),dc,mc:return layer(x,**kw)
-            y=timed('native_replay_'+str(i),replay)
+            owner_replay=getattr(model,'replay_finite_layer',None)
+            y=timed('native_replay_'+str(i),
+                    (lambda:owner_replay(layer,replay)) if callable(owner_replay) else replay)
             # Optional parameter-lifetime boundary for an existing FSDP actor.
             # The native replay and every finite rule remain unchanged. Plain
             # HF owners expose no callback and retain their original behavior.

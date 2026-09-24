@@ -12,6 +12,22 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- FSDP 重算后重复加载同层权重已完成有界修复验证。`replay_finite_layer`
+  仅调用原 FSDP2 `set_reshard_after_forward(False)` 保留当前层，重算后立即
+  恢复原设置，有限传播后仍由原 `reshard()` 释放；默认 HF 路径、内核和公式不变。
+  同 actor 的 B4、2048/32768 原/候选/候选/原对照中，signed、端点及 Q/V/A
+  逐值一致，成功及注入重算异常后的 FSDP 设置均恢复。每次 DT 的原 gather
+  由 133 次降到 101 次，减少约 12.9 GiB 参数载荷；短输入热调用 9.330→
+  8.922/8.882 秒，32k 28.427/28.022→27.728/27.589 秒，收益约 4.6%/2.0%。
+  不把它声称为过程奖励事件调用数量的解决方案。
+  首次检查完成八组对照后，测试记录器重复包装导致 RecursionError，未进入
+  PPO；失败回执 `fsdp-replay-weight-lifetime.json` 保留。修复记录器后只补跑
+  缺失的 `fsdp-replay-weight-capacity.json`：精确 32768/B4、32769 拒绝、
+  两次原 PPO 更新、1441105 个可训练元素改变、原生 LoRA 同步全部通过。
+  全程 379.434 秒，物理采样最高 51964 MiB（50.75 GiB），无 OOM；不是连续峰值。
+  结果在 `results_upstream_audit.json`，当前连续任务未热替换此候选。
+- DT stdout 现在在开始时报告事件/对照/计划批次数，并在既有逐批耗时后报告
+  `batch=已完成/总数`。只加日志，不改变事件选择、批次组织或 Q/V/A 计算。
 - 连续检查最新完成标记：WebShop/Sokoban 均为 checkpoint2，AppWorld 为
   checkpoint1 并已进入第二轮 rollout。WebShop 两轮原梯度范数 0.001/0.002，
   checkpoint1→2 有 1437578 个 LoRA 元素改变；Sokoban 为 0.006/0.002。

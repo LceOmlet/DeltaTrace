@@ -178,6 +178,9 @@ class EventRatioReadout:
         # The official runner receives its existing dense interleaved ABI.
         requests.sort(key=lambda request: request['context_tokens'])
         labels = self.alphabet.label_ids(self.tokenizer)
+        planned_batches = (len(requests) + self.minibatch_size - 1) // self.minibatch_size
+        print(f"[DT EOS plan] events={report['nonzero_reward_events']} "
+              f"contrasts={len(requests)} batches={planned_batches}", flush=True)
         for offset in range(0, len(requests), self.minibatch_size):
             batch = requests[offset:offset + self.minibatch_size]
             length = max(request['context_tokens'] for request in batch)
@@ -214,7 +217,8 @@ class EventRatioReadout:
                     source_log_ratio_min=float(values.min()), source_log_ratio_max=float(values.max()),
                 ))
             print(f"[DT EOS minibatch] contrasts={len(batch)} length={length} "
-                  f"seconds={detail.get('complete_attribution_seconds_with_diagnostics')}", flush=True)
+                  f"seconds={detail.get('complete_attribution_seconds_with_diagnostics')} "
+                  f"batch={report['finite_trace_calls']}/{planned_batches}", flush=True)
         result = [reward_event_credit_for_episode(rows, values)
                   for rows, values in zip(episodes, matrices)]
         report['seconds'] = time.perf_counter() - started

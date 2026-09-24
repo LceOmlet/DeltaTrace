@@ -77,6 +77,8 @@ def main():
                         help='Bounded cost probe at these actual lengths, retaining the 32768 configuration cap; two B4 calls per length, no PPO updates.')
     parser.add_argument('--compare-gdn-gpu-captures', nargs='+',
                         help='Within the phase probe, compare current capture residency with these existing owner capture names; no finite rule changes.')
+    parser.add_argument('--compare-replay-weight-lifetime', action='store_true',
+                        help='Compare the replay/finite gather boundary, then run the existing 32k/two-update capacity check; exact same-actor outputs and original FSDP gather counts.')
     args = parser.parse_args()
     if args.tail_batch_probe and args.backend != 'vllm':
         parser.error('--tail-batch-probe requires the real vllm worker lifecycle')
@@ -84,6 +86,8 @@ def main():
         parser.error('--phase-profile-lengths requires vllm and cannot be combined with --tail-batch-probe')
     if args.compare_gdn_gpu_captures and not args.phase_profile_lengths:
         parser.error('--compare-gdn-gpu-captures requires --phase-profile-lengths')
+    if args.compare_replay_weight_lifetime and (not args.phase_profile_lengths or args.compare_gdn_gpu_captures):
+        parser.error('--compare-replay-weight-lifetime requires a separate --phase-profile-lengths probe')
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   rollout_max_num_seqs=args.rollout_max_num_seqs,
@@ -186,10 +190,47 @@ def main():
             native_attribute = producer.runner.attribute
             ledgers = []
             signed_results = []
+            compare_outputs = args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime
+            owner_view = producer.runner.model
+            native_replay = getattr(owner_view, 'replay_finite_layer', None)
+            gather_counts = {}
+            if args.compare_replay_weight_lifetime:
+                assert callable(native_replay)
+                def owner_settings():
+                    return [(state, state._auto_reshard_after_forward,
+                             state._fsdp_param_group.post_forward_mesh_info)
+                            for module in worker.actor_module_fsdp.modules()
+                            if hasattr(module, '_get_fsdp_state')
+                            for state in [module._get_fsdp_state()]
+                            if state._fsdp_param_group is not None]
+                original_settings = owner_settings()
+                class ReplayProbeError(Exception):
+                    pass
+                def fail_replay():
+                    raise ReplayProbeError()
+                try:
+                    native_replay(owner_view.model.language_model.layers[0], fail_replay)
+                except ReplayProbeError:
+                    pass
+                else:
+                    raise AssertionError('Injected replay failure did not propagate')
+                assert owner_settings() == original_settings
+                result['replay_exception_settings_restored'] = True
+                # Observe only actual owner all-gathers, not calls to unshard
+                # that return immediately for already resident parameters.
+                from torch.distributed.fsdp._fully_shard import _fsdp_param_group
+                original_gather = _fsdp_param_group.foreach_all_gather
+                def counted_gather(*a, **kw):
+                    gather_counts['calls'] = gather_counts.get('calls', 0) + 1
+                    parameters = a[0] if a else kw['fsdp_params']
+                    gather_counts['parameter_bytes'] = gather_counts.get('parameter_bytes', 0) + sum(
+                        p.sharded_param.numel() * p.sharded_param.element_size() for p in parameters)
+                    return original_gather(*a, **kw)
+                _fsdp_param_group.foreach_all_gather = counted_gather
             def recorded_profile(*a, **kw):
                 signed, detail = native_attribute(*a, **kw)
                 ledgers.append(detail)
-                if args.compare_gdn_gpu_captures:
+                if compare_outputs:
                     signed_results.append(signed.detach().cpu())
                 return signed, detail
             producer.runner.attribute = recorded_profile
@@ -206,9 +247,15 @@ def main():
                     candidate = tuple(args.compare_gdn_gpu_captures)
                     configurations = [('original', original_captures), ('candidate', candidate),
                                       ('candidate', candidate), ('original', original_captures)]
+                if args.compare_replay_weight_lifetime:
+                    configurations = [(name, original_captures) for name in
+                                      ('original', 'candidate', 'candidate', 'original')]
                 reference = None
                 for repeat, (name, captures) in enumerate(configurations):
                     producer.runner.gdn_gpu_capture_names = captures
+                    if args.compare_replay_weight_lifetime:
+                        owner_view.replay_finite_layer = native_replay if name == 'candidate' else None
+                        gather_counts.clear()
                     before = {key: dict(value) for key, value in counters.items()}
                     tick = time.perf_counter()
                     credit = worker.compute_dt_token_advantages(
@@ -226,8 +273,12 @@ def main():
                         gdn_gpu_capture_names=list(captures),
                         seconds=elapsed, owner_ledger=ledgers[-1],
                         compiler_counter_delta={k: v for k, v in delta.items() if v})
+                    if args.compare_replay_weight_lifetime:
+                        observation['fsdp_all_gather'] = dict(gather_counts)
+                        assert owner_settings() == original_settings
+                        observation['fsdp_settings_restored'] = True
                     result['phase_probes'].append(observation)
-                    if args.compare_gdn_gpu_captures:
+                    if compare_outputs:
                         actual = {'signed': signed_results[-1],
                             'target_logp0': ledgers[-1]['target_logp0'],
                             'target_logp1': ledgers[-1]['target_logp1'],
@@ -240,8 +291,14 @@ def main():
                         observation['same_actor_signed_endpoints_qva_exact'] = True
                     stage(f'phase_probe_{length}_{repeat}')
             producer.runner.gdn_gpu_capture_names = original_captures
+            producer.runner.attribute = native_attribute
+            if args.compare_replay_weight_lifetime:
+                owner_view.replay_finite_layer = native_replay
+                _fsdp_param_group.foreach_all_gather = original_gather
             result['status'] = 'completed_bounded_phase_probe'
-            return
+            if not args.compare_replay_weight_lifetime:
+                return
+            result['scope'] = 'Same-actor replay/finite weight-lifetime comparison followed by the existing exact32k B4/two-original-PPO-update/native-LoRA-sync capacity check; no task quality claim.'
         # Exercise the actual readout's guard. It must fail before the runner.
         oversized = copy.copy(row)
         oversized['input_ids'] = torch.cat((torch.tensor([filler_id]), row['input_ids']))

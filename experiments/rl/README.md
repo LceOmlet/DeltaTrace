@@ -3,7 +3,16 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**当前状态：正式作业已停止，正在按用户要求核对和恢复官方实现。**
+**当前状态（2026-09-24）：正式预算尚未重启，作者实现的连续训练检查正在收尾。**
+`author-962ae20-continuous` 中，WebShop/Sokoban 已退出 0 并完成 checkpoint2；
+AppWorld 已完成 checkpoint1，第二轮 rollout 和 DT 已完成，正在原 PPO 更新。
+原生 graph/cache-off vLLM 的 32k/B4 容量及更新验证通过。刚完成的同层权重
+保留修复也通过了逐值 Q/V/A 对照和独立 32k/两次 PPO 更新检查，物理采样
+最高 50.75 GiB；提速约短输入 4.6%、32k 2.0%，没有宣称整体训练大幅提速。
+每小时检查和备份仍待训练验证收尾后恢复。当前细节以
+[REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md) 和原始回执为准。
+
+以下为此前停止正式训练时的核查记录，不能替代上述当前状态。
 Sokoban 完成的 step 1、WebShop 完成的 step 3 检查点保留；AppWorld 因超限
 退出，未重启。作者仓库 `langfengQ/verl-agent@20bd331` 已实际获取并与当前
 fork 核对：PPO/任务环境核心并非全部被改写，但 fork collector 的全历史累积

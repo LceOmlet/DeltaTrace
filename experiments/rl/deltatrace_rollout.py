@@ -122,6 +122,27 @@ class _Qwen35CausalOwnerView:
             self._owner_lifecycle_reported = True
         return output
 
+    def replay_finite_layer(self, layer: Any, replay: Any) -> Any:
+        # Keep only this replayed layer's gathered weights for its immediately
+        # following finite consumer. FSDP still owns gathering and release.
+        # Its public setter has no matching getter/context manager: retain the
+        # exact prior mesh/auto settings for restoration, including on error.
+        saved = []
+        try:
+            for module in layer.modules():
+                if hasattr(module, "_get_fsdp_state"):
+                    state = module._get_fsdp_state()
+                    group = state._fsdp_param_group
+                    if group is not None:
+                        saved.append((state, group, group.post_forward_mesh_info,
+                                      state._auto_reshard_after_forward))
+                        module.set_reshard_after_forward(False, recurse=False)
+            return replay()
+        finally:
+            for state, group, mesh, auto in reversed(saved):
+                group.post_forward_mesh_info = mesh
+                state._auto_reshard_after_forward = auto
+
     def prepare_finite_layer(self, layer: Any) -> None:
         # Replay's official post-forward hook may already have resharded.
         # Public unshard restores the ordinary weights for the finite rules.
