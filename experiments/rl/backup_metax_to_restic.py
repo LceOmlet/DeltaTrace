@@ -70,11 +70,13 @@ def main():
                         entries.append(str(release))
             ray_logs = []
             for job in jobs:
-                # These are the exact per-job owner log roots from the launch
-                # manifest. Resolve session_latest so restic archives files,
-                # rather than only the symlink, without traversing other jobs.
+                # Concurrent native Ray instances share a short IPC root.
+                # Prefer the recorded instance; session_latest is only for
+                # older manifests that used separate roots per job.
                 ray_root = PurePosixPath(job['ray_tmpdir'])
-                latest = ray_root/'ray/session_latest/logs'
+                session = (PurePosixPath(job['ray_session']) if job.get('ray_session')
+                           else ray_root/'ray/session_latest')
+                latest = session/'logs'
                 if exists(sftp, str(latest)):
                     resolved = PurePosixPath(sftp.normalize(str(latest)))
                     resolved.relative_to(ray_root)
@@ -99,7 +101,10 @@ def main():
                     if not name.startswith('global_step_'):
                         continue
                     step = int(name.removeprefix('global_step_'))
-                    label = f"{PurePosixPath(job['run_dir']).name}-step-{step}"
+                    # A different run's step1 must not inherit an old run's
+                    # verified tag merely because both are named Webshop.
+                    run = PurePosixPath(job['run_dir']).relative_to(args.source_root)
+                    label = f"{'__'.join(run.parts)}-step-{step}"
                     if step <= latest and label not in verified_labels:
                         rel = str((root/name).relative_to(args.source_root))
                         snapshots.append((label, [rel], True))

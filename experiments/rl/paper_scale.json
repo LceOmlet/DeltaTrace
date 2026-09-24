@@ -1,6 +1,11 @@
 {
   "scope": "One DT run per task matching cited rollout budgets. This is not a reproduction of the papers' algorithms, models or reported scores.",
   "method_specification": "experiments/rl/PLAN.md",
+  "native_hydra_overrides": [
+    "actor_rollout_ref.rollout.enforce_eager=False",
+    "actor_rollout_ref.rollout.free_cache_engine=False",
+    "+actor_rollout_ref.rollout.engine_kwargs.vllm.enable_prefix_caching=False"
+  ],
   "fixed": {
     "METHOD": "dt",
     "MINI_BATCH_SIZE": "4",

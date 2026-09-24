@@ -12,7 +12,9 @@ export TORCHINDUCTOR_CACHE_DIR="${TORCHINDUCTOR_CACHE_DIR:-$DT_METAX_BASE/cache/
 export MACA_PATH="${MACA_PATH:-/opt/maca}"
 export MACA_TORCH_COMPILE_CONF="${MACA_TORCH_COMPILE_CONF:-maca.disable_maca_triton_heuristics:1}"
 export FLA_BOUNDED_NORM_TUNING=1
-export VERL_ROOT="${VERL_ROOT:-$DT_RUNTIME_ROOT/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472}"
+# Existing pinned author checkout with the recorded minimal DT/runtime seams.
+# Do not fall back to the older fork's full-chat collector on a manual restart.
+export VERL_ROOT="${VERL_ROOT:-$DT_RUNTIME_ROOT/candidates/official-verl-20bd331}"
 export APPWORLD_ROOT="${APPWORLD_ROOT:-$DT_RUNTIME_ROOT/third_party/appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5}"
 export APPWORLD_BIN="${APPWORLD_BIN:-$(dirname "$VENV_PYTHON")/appworld}"
 export WEBSHOP_ROOT="${WEBSHOP_ROOT:-$VERL_ROOT/agent_system/environments/env_package/webshop/webshop}"
