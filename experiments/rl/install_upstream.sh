@@ -2,11 +2,11 @@
 set -euo pipefail
 
 DT_ROOT="${DT_ROOT:-$PWD}"
-VERL_ROOT="${VERL_ROOT:-$DT_ROOT/third_party/verl-agent2}"
+VERL_ROOT="${VERL_ROOT:-$DT_ROOT/third_party/verl-agent}"
 VENV_PYTHON="${VENV_PYTHON:-$DT_ROOT/env/bin/python}"
 
 [[ -x "$VENV_PYTHON" ]] || { echo "missing VENV_PYTHON=$VENV_PYTHON" >&2; exit 2; }
-[[ -d "$VERL_ROOT" ]] || { echo "clone verl-agent2 at $VERL_ROOT first" >&2; exit 2; }
+[[ -d "$VERL_ROOT" ]] || { echo "clone the pinned author verl-agent at $VERL_ROOT first" >&2; exit 2; }
 
 # Keep the existing CUDA/PyTorch environment intact. The upstream source is
 # installed editable, while task wheels are installed without dependency

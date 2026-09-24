@@ -19,12 +19,12 @@
       "component": "agent_system/multi_turn_rollout/rollout_loop.py",
       "evidence": "Pinned fork adds full-chat accumulation relative to the author collector; 259 changed lines in source diff. Author collector uses the environment manager's per-step observation prompt.",
       "impact": "Changes history semantics and grows repeated prefill/DT/PPO input work. Effect on task score has not been measured.",
-      "action": "Isolated candidate now uses the author collector file plus the existing DT token/event seam and demonstrated transport fixes. Thirteen actual tokenizer/collector boundary tests passed on that candidate; full environment/model task comparison and production deployment are still pending."
+      "action": "Full author runtime candidate plus existing DT seams; redundant fork chat accumulator absent. Real model prefix comparison pending."
     },
     {
       "component": "agent_system/environments/env_manager.py",
       "evidence": "Fork changes include a medical task outside this experiment. Local full_chat_observations rendering overrides the author's memory prompts.",
-      "action": "Use author task renderers with the author collector; remove redundant full-history render patches together, not one side alone."
+      "action": "Removed patch_conversation_observations and launcher full_chat_observations override. Author rendering passes default/initial tests for all three tasks. AppWorld deployment waits for user resolution of the specific history-policy conflict."
     },
     {
       "component": "verl, examples and the three task env_package directories",
@@ -41,31 +41,324 @@
       "component": "AppWorld context termination candidate",
       "evidence": "13 distinct tokenizer/collector/manager/RPC boundary cases passed across focused runs. These use real owner methods and Qwen tokenizer with explicitly mocked model/environment RPCs, not task-performance evaluation.",
       "action": "Stop boundary rebased onto the author collector. All 13 boundary tests passed again (29.44s) with the pristine author collector as the valid-input reference. Not deployed; no fabricated terminal reward."
+    },
+    {
+      "component": "Text modality/size parquet preparation",
+      "evidence": "Author examples/data_preprocess/prepare.py explicitly states Geometry3k contents are unused, but unconditionally downloads it. Existing configured task assets must be reused.",
+      "action": "Removed local prepare_agent_data.py. Launcher calls author prepare.py. Minimal --metadata_only owner option supplies empty source rows offline, preserving author formatting, split/index and parquet writing; default source path unchanged. Actual 4/3-row invocation exited 0."
     }
   ],
   "settings_findings": [
-    {"task": "Webshop", "paper": "GiGPO E.1/E.2", "paper_prompt": 4096, "paper_response": 512, "paper_history": 2, "max_steps": 15, "current_response": 1024, "current_history": "full chat", "gap": "History/response differences change compute and task behavior; prior 32k capacity receipt does not validate this setting."},
-    {"task": "Sokoban", "author_script": "examples/gigpo_trainer/run_sokoban.sh", "script_prompt": 1024, "script_response": 512, "script_modality": "visual Qwen2.5-VL-3B", "current_modality": "text Qwen3.5-9B", "max_steps": 15, "gap": "Current text task cannot be labelled a reproduction of the paper's visual score. Author script now independently verified, not just fork script."},
-    {"task": "AppWorld", "paper": "LOOP Appendix D", "paper_training_context_example": 32000, "paper_response": 1500, "paper_api_output_limit": 3000, "paper_training_interactions": 40, "paper_evaluation_interactions": 50, "paper_reward": "fraction of passed official tests", "installed_verl_author_reward": "10/0 task success", "gap": "The official verl-agent AppWorld worker and official LOOP experiment are different configurations. Matching 200x240 alone is not alignment with LOOP. Fixed PLAN currently specifies official verl-agent 10/0 rewards; do not silently change the reward alphabet or method."}
+    {
+      "task": "Webshop",
+      "paper": "GiGPO E.1/E.2",
+      "paper_prompt": 4096,
+      "paper_response": 512,
+      "paper_history": 2,
+      "max_steps": 15,
+      "current_response": 1024,
+      "current_history": "full chat",
+      "gap": "History/response differences change compute and task behavior; prior 32k capacity receipt does not validate this setting."
+    },
+    {
+      "task": "Sokoban",
+      "author_script": "examples/gigpo_trainer/run_sokoban.sh",
+      "script_prompt": 1024,
+      "script_response": 512,
+      "script_modality": "visual Qwen2.5-VL-3B",
+      "current_modality": "text Qwen3.5-9B",
+      "max_steps": 15,
+      "gap": "Current text task cannot be labelled a reproduction of the paper's visual score. Author script now independently verified, not just fork script."
+    },
+    {
+      "task": "AppWorld",
+      "paper": "LOOP Appendix D",
+      "paper_training_context_example": 32000,
+      "paper_response": 1500,
+      "paper_api_output_limit": 3000,
+      "paper_training_interactions": 40,
+      "paper_evaluation_interactions": 50,
+      "paper_reward": "fraction of passed official tests",
+      "installed_verl_author_reward": "10/0 task success",
+      "gap": "The official verl-agent AppWorld worker and official LOOP experiment are different configurations. Matching 200x240 alone is not alignment with LOOP. Fixed PLAN currently specifies official verl-agent 10/0 rewards; do not silently change the reward alphabet or method."
+    }
   ],
   "runtime_findings": {
     "probe_source": "receipts/rollout-major-cost/dt-phase-lengths.json",
     "probe_configuration": "Original actor and sleeping vLLM; B4, 512 synthetic response tokens; config cap remains 32768. Synthetic cost fixture, not task-performance evaluation.",
-    "dt_warm_seconds": {"2048": 5.754177917726338, "8192": 9.030606917105615},
-    "dt_8192_stream_phase_seconds": {"native_prefix": 3.153186279296875, "native_endpoint": 0.9846284790039063, "native_replay": 1.553415687561035, "finite_decoder": 2.687941116333008},
+    "dt_warm_seconds": {
+      "2048": 5.754177917726338,
+      "8192": 9.030606917105615
+    },
+    "dt_8192_stream_phase_seconds": {
+      "native_prefix": 3.153186279296875,
+      "native_endpoint": 0.9846284790039063,
+      "native_replay": 1.553415687561035,
+      "finite_decoder": 2.687941116333008
+    },
     "compile": "First 2048 call 47.540s with 7 graph/cache loads; repeat and both 8192 calls had no new Dynamo/Inductor counters.",
-    "interpretation": "No repeated shape compilation in this bounded probe. Repeated prefix and per-event native/finite work are measured costs; task-scale savings still require aligned-owner comparison. Do not call all rollout time generation or decode."
+    "interpretation": "No repeated shape compilation in this bounded probe. Repeated prefix and per-event native/finite work are measured costs; task-scale savings still require aligned-owner comparison. Do not call all rollout time generation or decode.",
+    "sokoban_response_cap": {
+      "finding": "In first two interaction rounds, all 8 author-side Qwen3.5-9B greedy responses exhausted512 tokens. Captured first outputs were unfinished board reasoning before <action>; original parser produced Still. Candidate token/action/reward path matched exactly.",
+      "action": "Keep prior1024 response cap; do not substitute paper512 solely by model-independent copying. Retain author prompts/parser and inspect task-quality with appropriate rollout settings before formal restart.",
+      "status": "1024 comparison completed; two actions produced, two still length-limited. Not ready to claim task performance.",
+      "comparison": [
+        {
+          "source": "author-rollout-prefix-request-1.json",
+          "lengths": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "finish_reasons": [
+            "length",
+            "length",
+            "length",
+            "length"
+          ],
+          "owner_projected_actions": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "owner_format_valid": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "source": "author-response1024-request-1.json",
+          "lengths": [
+            1024,
+            558,
+            816,
+            1024
+          ],
+          "finish_reasons": [
+            "length",
+            "stop",
+            "stop",
+            "length"
+          ],
+          "owner_projected_actions": [
+            0,
+            1,
+            1,
+            0
+          ],
+          "owner_format_valid": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "appworld_idle_services": {
+      "count": 300,
+      "sum_pss_gib": 173.57243156433105,
+      "source": "receipts/rollout-major-cost/appworld-idle-service-memory.json",
+      "interpretation": "Actual PSS of the existing official AppWorld CLI services, not summed fork RSS. Read-only snapshot; no service stopped or rewritten."
+    }
   },
   "formal_training": {
     "status": "stopped_for_official_settings_and_owner_audit",
-    "preserved_completed_checkpoint": {"Sokoban": 1, "Webshop": 3, "AppWorld": null},
+    "preserved_completed_checkpoint": {
+      "Sokoban": 1,
+      "Webshop": 3,
+      "AppWorld": null
+    },
     "receipt": "receipts/rollout-major-cost/stopped-for-owner-audit.json",
     "periodic_checks": "paused by prior user instruction",
     "backup": "not started during repair"
   },
   "remaining_evidence": [
-    "Actual installed import graph and local modifications classified against author sources.",
-    "Remove redundant runtime implementations and compare official task reset, action parsing, observations, rewards and termination on identical traces.",
-    "Matched small-scale model/task evaluation and phase timing before claiming task performance preserved or restarting formal budgets."
-  ]
+    "Resolve AppWorld context contract before deploying its renderer; preserve existing rewards and DT/PPO method.",
+    "Complete representative task-level quality checks; fixed-policy prefix parity does not estimate complete-task success.",
+    "Verify full DT/PPO collector integration on the author release before resuming formal budgets; previous source/32k kernel receipts are scoped to their recorded releases."
+  ],
+  "candidate": {
+    "root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331",
+    "source": "Whole author agent_system, verl and examples from commit 20bd331; existing environment/model/assets reused. Not production-deployed.",
+    "patch_manifest": "receipts/rollout-major-cost/author-patched-files.json",
+    "patch_diff": "receipts/rollout-major-cost/author-runtime.diff",
+    "tests": {
+      "owner_boundaries": "18 passed in 20.21s on the imported full candidate",
+      "real_task_state": "All three passed; receipts/rollout-major-cost/author-environment-state.json. Scripted environment checks, not model scores.",
+      "model_comparison": {
+        "status": "passed_fixed_policy_regression",
+        "scope": "4 actual policy episodes per task, first 2 interactions, same Qwen3.5-9B initialized owner worker and greedy decoding, 512 response cap,32768 total cap. No DT readout or PPO update in this boundary fixture; not a complete-task performance estimate.",
+        "seconds_including_initialization": 500.58201101608574,
+        "comparisons": {
+          "Sokoban": {
+            "exact_active_prompt_response_reward_match": true,
+            "exact_return_length_success_match": true
+          },
+          "Webshop": {
+            "exact_active_prompt_response_reward_match": true,
+            "exact_return_length_success_match": true
+          }
+        },
+        "runs": [
+          {
+            "task": "Sokoban",
+            "implementation": "author",
+            "seconds": 108.59672104939818,
+            "rewards": [
+              -0.20000000298023224,
+              -0.20000000298023224,
+              -0.20000000298023224,
+              -0.20000000298023224
+            ],
+            "lengths": [
+              2.0,
+              2.0,
+              2.0,
+              2.0
+            ],
+            "success": {
+              "success_rate": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "active_prompt_tokens": 4128,
+            "max_prompt_tokens": 579
+          },
+          {
+            "task": "Sokoban",
+            "implementation": "candidate",
+            "seconds": 97.26947156060487,
+            "rewards": [
+              -0.20000000298023224,
+              -0.20000000298023224,
+              -0.20000000298023224,
+              -0.20000000298023224
+            ],
+            "lengths": [
+              2.0,
+              2.0,
+              2.0,
+              2.0
+            ],
+            "success": {
+              "success_rate": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "active_prompt_tokens": 4128,
+            "max_prompt_tokens": 579
+          },
+          {
+            "task": "Webshop",
+            "implementation": "author",
+            "seconds": 70.50257313903421,
+            "rewards": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lengths": [
+              2.0,
+              2.0,
+              2.0,
+              2.0
+            ],
+            "success": {
+              "success_rate": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "webshop_task_score (not success_rate)": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "active_prompt_tokens": 4775,
+            "max_prompt_tokens": 1092
+          },
+          {
+            "task": "Webshop",
+            "implementation": "candidate",
+            "seconds": 64.93495693523437,
+            "rewards": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lengths": [
+              2.0,
+              2.0,
+              2.0,
+              2.0
+            ],
+            "success": {
+              "success_rate": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "webshop_task_score (not success_rate)": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "active_prompt_tokens": 4775,
+            "max_prompt_tokens": 1092
+          }
+        ],
+        "source": "receipts/rollout-major-cost/author-rollout-prefix.json",
+        "timing_caution": "Author first then candidate; warmup and cache effects prevent claiming these time differences as stable speedup."
+      },
+      "metadata": "Author offline text preparation 4 train/3 test rows exited0; original RLHFDataset accepted both, retaining original schema and row counts.",
+      "response1024": {
+        "status": "passed_fixed_policy_regression",
+        "scope": "Same4 Sokoban first-step inputs, greedy owner generation; no task-completion claim.",
+        "comparisons": {
+          "Sokoban": {
+            "exact_active_prompt_response_reward_match": true,
+            "exact_return_length_success_match": true
+          }
+        },
+        "elapsed": 277.75884538609535,
+        "source": "receipts/rollout-major-cost/author-response1024.json"
+      }
+    },
+    "modified_file_count": 21,
+    "ppo_core": {
+      "author_bytes_equal": true,
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "normalized_lf_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6"
+    }
+  },
+  "appworld_pending_decision": {
+    "conflict": "Author verl-agent default uses last 2 interactions and clips action-history text at 10000 characters; earlier user approval retained history and ended an over-budget episode. LOOP uses another prompt/reward setup.",
+    "action": "Asked which context contract to use; no AppWorld context behavior deployed while pending. Rewards and DT/PPO fixed."
+  },
+  "patch_groups": {
+    "DT extension": "rollout_loop event/token capture; fsdp_workers callback; ray_trainer advantage dispatch. Official core_algos remains untouched.",
+    "observed runtime compatibility": "HF/TRL/Qwen API/device differences, import cycles/lazy CPU worker imports, legacy Gym checker, checkpoint metadata, published VERL v0.7.0 LoRA backport.",
+    "memory and transport": "Owner offload lifecycle, shared padding and existing Qwen logits_to_keep, active-row filtering, compact row storage. Prior focused parity receipts retained; not declared pristine upstream.",
+    "AppWorld boundary": "Forward existing dataset/port/horizon options; optional per-episode context stop and active RPC mask. Reward/dynamics/parsers unchanged.",
+    "metadata": "Opt-in offline row allocation inside author preparation script; original schema/writer reused."
+  }
 }

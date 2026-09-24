@@ -117,7 +117,9 @@ def test_actual_manager_forwards_mask_to_environment_owner(mask):
     cls = patched_class(manager_owner, patch_appworld_active_steps(
         Path(manager_owner.__file__).read_text(), manager=True), 'AppWorldEnvironmentManager')
     env = cls.__new__(cls)
-    env.config = OmegaConf.create({'env': {'full_chat_observations': True}})
+    env.config = OmegaConf.create({'env': {'history_length': 2}})
+    env.tasks = ['task0', 'task1']
+    env.supervisors = [dict(first_name='Test', last_name='Person', email='test@example.com', phone_number='0')] * 2
     env.projection_f = lambda actions: (actions, [True, True])
     env.envs = SimpleNamespace(step=Mock(return_value=(
         ['observed0', 'observed1'], [0., 10.], [True, True], [{'won': False}, {'won': True}])))

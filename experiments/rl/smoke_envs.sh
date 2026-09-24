@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DT_ROOT="${DT_ROOT:-$PWD}"
-VERL_ROOT="${VERL_ROOT:-$DT_ROOT/third_party/verl-agent2}"
+VERL_ROOT="${VERL_ROOT:-$DT_ROOT/third_party/verl-agent}"
 APPWORLD_ROOT="${APPWORLD_ROOT:-$DT_ROOT/third_party/appworld}"
 VENV_PYTHON="${VENV_PYTHON:-$DT_ROOT/env/bin/python}"
 export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"

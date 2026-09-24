@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Thin launcher around the pinned upstream verl-agent2 trainer.  It does not
+# Thin launcher around the pinned author verl-agent trainer.  It does not
 # reimplement PPO/GRPO, rollout, or any environment.  Override variables for
 # another machine instead of editing the command below.
 
@@ -14,7 +14,7 @@ fi
 ENV_SEED="${ENV_SEED:-0}"            # Existing upstream environment seed
 DT_ROOT="${DT_ROOT:-$PWD}"
 MODEL_PATH="${MODEL_PATH:-/data/liangchen/models/Qwen3.5-9B}"
-VERL_ROOT="${VERL_ROOT:-$DT_ROOT/third_party/verl-agent2}"
+VERL_ROOT="${VERL_ROOT:-$DT_ROOT/third_party/verl-agent}"
 APPWORLD_ROOT="${APPWORLD_ROOT:-$DT_ROOT/third_party/appworld}"
 VENV_PYTHON="${VENV_PYTHON:-$DT_ROOT/env/bin/python}"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
@@ -26,7 +26,7 @@ MINI_BATCH_SIZE="${MINI_BATCH_SIZE:-4}"
 ACTOR_MICRO_BATCH_SIZE="${ACTOR_MICRO_BATCH_SIZE:-4}"
 ACTOR_ACTIVATION_OFFLOAD="${ACTOR_ACTIVATION_OFFLOAD:-True}"
 MAX_PROMPT="${MAX_PROMPT:-32256}"
-MAX_RESPONSE="${MAX_RESPONSE:-512}"
+MAX_RESPONSE="${MAX_RESPONSE:-1024}"
 MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
 LORA_RANK="${LORA_RANK:-1}"
 LORA_ALPHA="${LORA_ALPHA:-2}"
@@ -43,7 +43,6 @@ FSDP_MIN_PARAMS="${FSDP_MIN_PARAMS:-0}"
 FSDP_RESHARD_AFTER_FORWARD="${FSDP_RESHARD_AFTER_FORWARD:-True}"
 HF_FSDP_WRAP="${HF_FSDP_WRAP:-False}"
 ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-1}"
-PROMPT_FILL_TOKENS="${PROMPT_FILL_TOKENS:-0}"
 SOKOBAN_MODE="${SOKOBAN_MODE:-tiny_rgb_array}"
 VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
 TEST_FREQ="${TEST_FREQ:--1}"
@@ -176,12 +175,9 @@ fi
 
 DATA_ROOT="${DATA_ROOT:-$HOME/data/verl-agent/delta-agent}"
 mkdir -p "$DATA_ROOT"
-"$VENV_PYTHON" "$DT_ROOT/experiments/rl/prepare_agent_data.py" \
-  --output "$DATA_ROOT/train.parquet" --size "$TRAIN_SIZE" --split train \
-  --prompt-fill-tokens "$PROMPT_FILL_TOKENS"
-"$VENV_PYTHON" "$DT_ROOT/experiments/rl/prepare_agent_data.py" \
-  --output "$DATA_ROOT/test.parquet" --size "$VAL_DATA_SIZE" --split test \
-  --prompt-fill-tokens "$PROMPT_FILL_TOKENS"
+"$VENV_PYTHON" "$VERL_ROOT/examples/data_preprocess/prepare.py" \
+  --mode text --metadata_only --local_dir "$DATA_ROOT" \
+  --train_data_size "$TRAIN_SIZE" --val_data_size "$VAL_DATA_SIZE"
 
 cd "$VERL_ROOT"
 if [[ "$ENV_NAME" == "AppWorld" && -f "$APPWORLD_ROOT/appworld_ports.ports" ]]; then
@@ -197,8 +193,8 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   algorithm.adv_estimator="$ADV_ESTIMATOR" \
   algorithm.gamma=1.0 \
   actor_rollout_ref.actor.clip_ratio_c=inf \
-  data.train_files="$DATA_ROOT/train.parquet" \
-  data.val_files="$DATA_ROOT/test.parquet" \
+  data.train_files="$DATA_ROOT/text/train.parquet" \
+  data.val_files="$DATA_ROOT/text/test.parquet" \
   data.train_batch_size="$TRAIN_SIZE" \
   data.val_batch_size="$VAL_SIZE" \
   data.max_prompt_length="$MAX_PROMPT" \
@@ -240,7 +236,6 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   env.env_name="$ENV_NAME" \
   env.seed="$ENV_SEED" \
   env.max_steps="$MAX_STEPS" \
-  +env.full_chat_observations=True \
   +env.context_budget_action="$CONTEXT_BUDGET_ACTION" \
   env.rollout.n="$GROUP_SIZE" \
   env.sokoban.mode="$SOKOBAN_MODE" \

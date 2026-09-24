@@ -12,6 +12,19 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 官方源码隔离候选：`$DT_RUNTIME_ROOT/candidates/official-verl-20bd331`，
+  来源 `langfengQ/verl-agent@20bd331bdbc9026a5668e11362178e10ab7400c8`。
+  包含整套 `agent_system`、`verl`、`examples`，复用现有 Python/模型/任务资产。
+  18 项边界测试通过；三个任务真实状态、奖励、重置、终止检查通过。
+  `receipts/rollout-major-cost/author-patched-files.json` 和 `author-runtime.diff`
+  记录必要补丁；不是未经修改的官方源码，也尚未部署为正式训练入口。
+  AppWorld 的官方最近两轮/10000 字符历史规则与此前用户批准的规则冲突，
+  等待明确选择，未自动引入。WebShop/Sokoban 各 4 条两轮真实模型对照已通过
+  输入/回复 token、reward 和步数一致性，合计含初始化 500.582 秒；不是完整
+  任务效果测试。Sokoban 1024 回复上限的一轮对照也通过，合计 277.758 秒。
+- 作者源码的 vLLM 文件使用 CRLF，而已核对的官方 LoRA 补丁使用 LF。
+  patcher 只规范该目标文件的行尾后用原补丁精确匹配；不调整算法或重装库。
+  本次 Transformers 兼容检查均显示 already patched，未改已有环境文件。
 - 最新：用户要求实验设置、agent 服务和训练均遵循 `integrate-upstream-first`。
   已按确切自有 RAY_TMPDIR 停止 Sokoban/WebShop，保留原完成 checkpoint 1/3；
   AppWorld 的超限失败未重启。当前 manifest 状态为

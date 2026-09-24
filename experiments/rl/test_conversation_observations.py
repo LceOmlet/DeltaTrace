@@ -1,4 +1,4 @@
-"""Compare real pinned environment renderers and the full-chat collector.
+"""Compare actual task renderers with the author-owned memory prompts.
 
 PINNED_ENV_MANAGER_SOURCE is the unmodified file from upstream.lock's commit.
 The explicit marker observations exercise rendering, not task performance.
@@ -31,7 +31,7 @@ def manager(name):
 
 
 @pytest.mark.parametrize('name', ['SokobanEnvironmentManager', 'WebshopEnvironmentManager', 'AppWorldEnvironmentManager'])
-def test_default_and_initial_prompts_match_pinned_owner_and_continuations_do_not_repeat(pristine, name):
+def test_default_and_initial_prompts_match_pinned_owner(pristine, name):
     instance = manager(name)
     original_class = next(n for n in pristine.body if isinstance(n, ast.ClassDef) and n.name == name)
     fn = next(n for n in original_class.body if isinstance(n, ast.FunctionDef) and n.name == 'build_text_obs')
@@ -45,23 +45,7 @@ def test_default_and_initial_prompts_match_pinned_owner_and_continuations_do_not
         kwargs['infos'] = infos
     for init in [False, True]:
         assert instance.build_text_obs(**kwargs, init=init) == original(**kwargs, init=init)
+    # A stale full-chat flag must no longer override the author's renderer.
     instance.config.env.full_chat_observations = True
-    assert instance.build_text_obs(**kwargs, init=True) == original(**kwargs, init=True)
-    current = instance.build_text_obs(**kwargs, init=False)[0]
-    assert current.count('CURRENT_OBSERVATION_MARKER') == 1
-    assert 'OLD_OBSERVATION_MARKER' not in current
-    assert 'OLD_ACTION_MARKER' not in current
-    assert 'TASK_MARKER' not in current
-    if name == 'WebshopEnvironmentManager':
-        for action in instance.format_avail_actions(infos[0]['available_actions']):
-            assert action in current
-    if name == 'AppWorldEnvironmentManager':
-        assert current == observations[0]
-
-
-def test_owner_patch_is_idempotent(pristine):
-    from patch_verl_agent2 import patch_conversation_observations
-    source = Path(os.environ['PINNED_ENV_MANAGER_SOURCE']).read_text()
-    patched = patch_conversation_observations(source)
-    ast.parse(patched)
-    assert patch_conversation_observations(patched) == patched
+    for init in [False, True]:
+        assert instance.build_text_obs(**kwargs, init=init) == original(**kwargs, init=init)

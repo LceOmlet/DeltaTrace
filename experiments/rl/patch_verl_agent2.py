@@ -779,47 +779,6 @@ HF_WRAP_OLD = '        if self._is_rollout and self.config.rollout.name == "hf":
 HF_WRAP_NEW = '        if self._is_rollout and self.config.rollout.name == "hf" and os.getenv("VERL_ENABLE_HF_FSDP_WRAP", "0") != "1":\n            # Keep upstream HF rollout\'s conservative default; long-context\n            # single-GPU runs can opt into layer wrapping explicitly.\n            auto_wrap_policy = None'
 
 
-def patch_conversation_observations(text: str) -> str:
-    """Opt-in owner rendering for the collector's existing full chat history.
-
-    Legacy state prompts repeat instructions and recent actions inside every
-    observation. The full-chat collector already retains these exact messages.
-    Keep the initial prompt and legacy default unchanged; render only the new
-    observation (plus WebShop's current admissible actions) on later turns.
-    """
-    additions = {
-        'SokobanEnvironmentManager': '''        if not init and self.config.env.get("full_chat_observations", False) and not self.is_multi_modal:
-            return [f"Your current observation is:\\n{value}\\nYour admissible actions are [\\"up\\", \\"down\\", \\"left\\", \\"right\\"]."
-                    for value in text_obs]
-
-''',
-        'WebshopEnvironmentManager': '''        if not init and self.config.env.get("full_chat_observations", False):
-            result = []
-            for value, info in zip(text_obs, infos):
-                actions = "\\n".join(f"'{s}'," for s in self.format_avail_actions(info['available_actions']))
-                result.append(f"Your current observation is: {value}.\\nYour admissible actions of the current situation are:\\n[\\n{actions}\\n].")
-            return result
-
-''',
-        'AppWorldEnvironmentManager': '''        if not init and self.config.env.get("full_chat_observations", False):
-            return list(text_obs)
-
-''',
-    }
-    for name, insertion in additions.items():
-        start = text.index('class '+name+'(')
-        end = text.find('\nclass ', start+1)
-        end = len(text) if end < 0 else end
-        section = text[start:end]
-        if insertion in section:
-            continue
-        method = section.index('    def build_text_obs(')
-        anchor = section.index('        postprocess_text_obs = []', method)
-        section = section[:anchor]+insertion+section[anchor:]
-        text = text[:start]+section+text[end:]
-    return text
-
-
 def patch_context_budget(text: str) -> str:
     """End an over-budget AppWorld episode at the owner's rollout boundary.
 
@@ -1032,13 +991,48 @@ def patch_rollout_owner(verl_root: Path) -> None:
     print(f"patched {rollout} DeltaTrace collector")
 
 
+def patch_metadata_preparation(text: str) -> str:
+    """Use the author formatter offline for its documented text-only metadata.
+
+    The owner's prepare.py explicitly does not use Geometry3k's task contents.
+    Its text path needs only row counts. Avoid downloading that unrelated asset;
+    keep the original formatter, split/index generation and parquet writer.
+    """
+    marker = "    parser.add_argument('--metadata_only', action='store_true',"
+    if marker in text:
+        return text
+    anchor = "    args = parser.parse_args()"
+    load = "    dataset = datasets.load_dataset(data_source)"
+    if text.count(anchor) != 1 or text.count(load) != 1:
+        raise RuntimeError('cannot find author metadata preparation anchors')
+    text = text.replace(anchor, marker + "\n"
+                        "                        help='Create text modality/count metadata without Geometry3k')\n\n" + anchor, 1)
+    return text.replace(load, '''    if args.metadata_only:
+        if args.mode != 'text':
+            parser.error('--metadata_only supports only text modality')
+        dataset = datasets.DatasetDict({
+            split: datasets.Dataset.from_dict({'problem': [''] * size, 'images': [None] * size})
+            for split, size in [('train', args.train_data_size), ('test', args.val_data_size)]
+        })
+    else:
+        dataset = datasets.load_dataset(data_source)''', 1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("verl_root", type=Path)
     args = parser.parse_args()
 
+    preparation = args.verl_root / 'examples/data_preprocess/prepare.py'
+    preparation.write_text(patch_metadata_preparation(preparation.read_text()))
+
     # Reuse the published VERL implementation for the observed vLLM 0.15
     # LoRAModel module/API move. The patch includes its source URL and digest.
+    # The author commit stores this file with CRLF. The published patch uses
+    # LF; normalize only its target before asking patch to match exact hunks.
+    vllm_utils = args.verl_root / 'verl/utils/vllm_utils.py'
+    if b'\r\n' in vllm_utils.read_bytes():
+        vllm_utils.write_bytes(vllm_utils.read_bytes().replace(b'\r\n', b'\n'))
     lora_patch = Path(__file__).with_name('patches') / 'verl-v0.7.0-vllm-lora.patch'
     applied = subprocess.run(
         ['patch', '--force', '--reverse', '--dry-run', '--fuzz=0', '-p1', '-i', str(lora_patch.resolve())],
@@ -1056,7 +1050,7 @@ def main() -> None:
     vllm_sharding.write_text(patch_vllm_peft_owner(vllm_sharding.read_text()))
     env_manager = args.verl_root / 'agent_system/environments/env_manager.py'
     env_text = env_manager.read_text()
-    env_manager.write_text(patch_appworld_active_steps(patch_conversation_observations(env_text), manager=True))
+    env_manager.write_text(patch_appworld_active_steps(env_text, manager=True))
     memory = args.verl_root / 'agent_system/memory/memory.py'
     memory.write_text(patch_memory_active_steps(memory.read_text()))
     # The owner already accepts dataset, service ports and interaction limit.
