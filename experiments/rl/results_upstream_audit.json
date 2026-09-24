@@ -229,7 +229,114 @@
         }
       ],
       "finding": "Identical token endpoints have exactly zero DT credit. Nonzero endpoint score differences also occur in the original uncached full forward, before DT finite propagation. In the all-equal fixture first uncached hidden difference is at layer2 (0.0009765625), cached root at layer0. This does not establish a new DT-only defect or an operator tolerance pass.",
-      "acceptance": "Keep original FA/FLA operator criteria and existing end-to-end diagnostics; the existing0.02 conservation observation is not a new production gate and no credit renormalization was added."
+      "acceptance": "Keep original FA/FLA operator criteria and existing end-to-end diagnostics; the existing0.02 conservation observation is not a new production gate and no credit renormalization was added.",
+      "operator_capture_source": "receipts/rollout-major-cost/author-native-operators.json",
+      "first_native_leaf_difference": {
+        "name": "0.linear_attn.in_proj_a.base_layer",
+        "input_shape": [
+          8,
+          751,
+          4096
+        ],
+        "output_shape": [
+          8,
+          751,
+          32
+        ],
+        "input_pair_delta": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "output_pair_delta": [
+          7.62939453125e-06,
+          7.62939453125e-06,
+          7.62939453125e-06,
+          7.62939453125e-06
+        ]
+      },
+      "operand_replay_source": "receipts/rollout-major-cost/author-native-operands-check.json",
+      "operand_replay": {
+        "scope": "Replay saved native operands with original PyTorch/FLA operations.\n\nThis is a numerical diagnostic, not a training implementation or a whole-model\nacceptance test. It does not load the full model or change the training runtime.\n",
+        "operands": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/author-native-operators.pt",
+        "weight": "model.language_model.layers.2.linear_attn.in_proj_a.weight",
+        "input_shape": [
+          8,
+          751,
+          4096
+        ],
+        "input_pair_delta": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "quantities": {
+          "captured_bf16": {
+            "pair_delta": [
+              0.0,
+              0.0,
+              0.00390625,
+              0.0
+            ],
+            "max_abs_vs_cpu_fp64": 0.015501176414545625,
+            "rms_vs_cpu_fp64": 0.0018895573369820259,
+            "max_abs_vs_captured": 0.0
+          },
+          "replayed_bf16": {
+            "pair_delta": [
+              0.0,
+              0.0,
+              0.00390625,
+              0.0
+            ],
+            "max_abs_vs_cpu_fp64": 0.015501176414545625,
+            "rms_vs_cpu_fp64": 0.0018895573369820259,
+            "max_abs_vs_captured": 0.0
+          },
+          "fp32": {
+            "pair_delta": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "max_abs_vs_cpu_fp64": 1.08171661850065e-05,
+            "rms_vs_cpu_fp64": 6.901372606405479e-07,
+            "max_abs_vs_captured": 0.015501976013183594
+          }
+        },
+        "unequal_coordinates": [
+          {
+            "pair": 2,
+            "token": 671,
+            "channel": 12,
+            "captured": [
+              0.59765625,
+              0.6015625
+            ],
+            "reference": [
+              0.5996100157208275,
+              0.5996100157208275
+            ],
+            "reference_rounded_bf16": [
+              0.6015625,
+              0.6015625
+            ]
+          }
+        ],
+        "fla_forward": {
+          "scope": "Saved native FLA output on its actual operands, forward only.",
+          "rms_ratio": 0.0030328207072808657,
+          "max_abs": 0.0003330335021018982,
+          "threshold": 0.005,
+          "status": "passed"
+        },
+        "seconds": 4.7874564891681075,
+        "status": "completed_operand_diagnostic_not_whole_model_acceptance"
+      },
+      "interpretation": "Recorded BF16 linear is exactly reproduced by the original PyTorch operator on saved layer2 input and checkpoint weight. One pair straddles a BF16 rounding midpoint; FP32 pair outputs coincide. Actual native FLA forward passes the original owner assertion. This is not a whole-model or finite-attribution acceptance and does not change training precision or any formula."
     },
     "model_generation_settings": {
       "source": "https://huggingface.co/Qwen/Qwen3.5-9B#best-practices",

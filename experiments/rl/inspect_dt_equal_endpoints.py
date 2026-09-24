@@ -4,6 +4,7 @@ Uses recorded owner prompt IDs and an explicitly synthetic EOS-only response.
 No environment reward, task score, PPO update or new numerical tolerance is used.
 """
 import argparse
+import contextlib
 import json
 from pathlib import Path
 import time
@@ -21,6 +22,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--request', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--native-operators-only', action='store_true',
+                        help='Capture the observed layer2 native GDN and leaf calls; skip finite propagation.')
     args = parser.parse_args()
     result = dict(scope=__doc__, status='running', observations=[])
     started = time.perf_counter()
@@ -80,6 +83,30 @@ def main():
 
                 for index, layer in enumerate(text_model.layers):
                     handles.append(layer.register_forward_hook(hook(index)))
+                capture = None
+                if args.native_operators_only:
+                    from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
+                    capture = NativeGDNCapture(text_model.layers[2].linear_attn, device='cpu')
+                    observation['native_leaf_calls'] = []
+
+                    def leaf_hook(name):
+                        def observe(module, inputs, output):
+                            if not inputs or not isinstance(inputs[0], torch.Tensor):
+                                return
+                            x = inputs[0]
+                            y = output[0] if isinstance(output, tuple) else output
+                            if not isinstance(y, torch.Tensor) or x.shape[0] != 8 or y.shape[0] != 8:
+                                return
+                            observation['native_leaf_calls'].append(dict(name=name,
+                                input_shape=list(x.shape), output_shape=list(y.shape),
+                                input_pair_delta=(x[0::2].float()-x[1::2].float()).abs().flatten(1).amax(1).tolist(),
+                                output_pair_delta=(y[0::2].float()-y[1::2].float()).abs().flatten(1).amax(1).tolist()))
+                        return observe
+
+                    for index, layer in enumerate(text_model.layers[:3]):
+                        for name, module in layer.named_modules():
+                            if name and not list(module.children()):
+                                handles.append(module.register_forward_hook(leaf_hook(f'{index}.{name}')))
                 tick = time.perf_counter()
                 try:
                     # First observe the original uncached full forward with
@@ -88,7 +115,7 @@ def main():
                     pair = torch.stack((reference, selected), dim=1).flatten(0, 1)
                     selection = producer.packed_answer_targets(
                         cases, [[0]]*4, pair.shape[1], pair.device, outcome_token_ids=labels)
-                    with torch.no_grad():
+                    with torch.no_grad(), capture if capture is not None else contextlib.nullcontext():
                         native = producer.runner.model.forward_root(
                             input_ids=pair, attention_mask=torch.ones_like(pair),
                             use_cache=False, logits_to_keep=selection.positions.unique(sorted=True))
@@ -100,6 +127,14 @@ def main():
                     observation['layer_calls'] = []
                     save()
                     del native
+                    if capture is not None:
+                        operands = args.output.with_suffix('.pt')
+                        torch.save(dict(values=capture.values, endpoints=capture.endpoints,
+                                        scale=capture.scale, calls=capture.calls), operands)
+                        observation.update(operands=str(operands), seconds=time.perf_counter()-tick)
+                        result['status'] = 'completed_native_operator_capture_not_acceptance'
+                        save()
+                        return
                     signed, roots, detail = trace_token_attribution(
                         producer.runner, reference, selected, cases, [[0]]*4,
                         packed_answer_targets=producer.packed_answer_targets, outcome_token_ids=labels)

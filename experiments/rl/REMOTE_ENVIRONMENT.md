@@ -12,6 +12,20 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 原生算子定位已完成：`author-native-operators.json` 中第一处叶算子差异是
+  第 0 层 `in_proj_a.base_layer`，输入成对完全相同，输出差 7.6294e-6；该层
+  最终输出仍成对相同。首次传播到层输出的差异位于第 2 层，其 `in_proj_a`
+  一个位置输出为 0.59765625/0.6015625。复用保存的真实操作数和原始权重，
+  原 PyTorch BF16 linear 逐值复现；FP64 参考两端均为 0.5996100157208275，
+  靠近 BF16 舍入中点，FP32 重放成对相同。原 FLA FP32 recurrence/assert_close
+  检查同批实际前向输出通过，误差比 0.00303282 < 原阈值 0.005；只覆盖该次
+  FLA 前向，不覆盖反向或整条 DT。局部检查 4.787 秒，不需重新加载整个模型。
+  结果为 `receipts/rollout-major-cost/author-native-operands-check.json`；未改
+  训练精度、内核、DT/PPO 公式，也没有新增整网误差门槛。
+- IPC 目录继承已有 `metax.env.sh` 的短 `RAY_TMPDIR`，不再把实验标签或提交号
+  拼入该变量；Ray 原生 session 名已包含时间与 PID。实验身份放在日志和
+  checkpoint 目录。当前已启动 v2 的短目录保留，避免为无关路径再次重跑。
+  新的原生算子诊断已使用环境默认值；未修改 Ray 的目录管理或长度检查。
 - 最新活动检查：`runs/author-db53629-webshop-diverse-v2/Webshop/job.json`，
   GPU5，实际 PID/启动时间以 manifest 为准。前次未加 `-v2` 的运行在模型初始化
   前因 Ray socket 路径超过 107 字节退出 1；已缩短 RAY_TMPDIR 为

@@ -108,8 +108,9 @@ def main():
         worker = ActorRolloutRefWorker(cfg.actor_rollout_ref, 'actor_rollout')
         worker.init_model()
         record('model_ready')
-        ray.init(num_cpus=8, num_gpus=0, include_dashboard=False,
-                 _temp_dir=os.environ['RAY_TMPDIR'], ignore_reinit_error=False)
+        # Ray resolves the existing runtime's temp directory and owns session
+        # names; the fixture does not need its own IPC path override.
+        ray.init(num_cpus=8, num_gpus=0, include_dashboard=False, ignore_reinit_error=False)
         engine_calls = []
         owner_generate = worker.rollout.inference_engine.generate
 
