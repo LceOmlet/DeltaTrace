@@ -820,6 +820,130 @@ def patch_conversation_observations(text: str) -> str:
     return text
 
 
+def patch_context_budget(text: str) -> str:
+    """End an over-budget AppWorld episode at the owner's rollout boundary.
+
+    Empty transport rows are never generated, executed or trained. The original
+    chat and already executed action/reward rows are retained, without truncation.
+    The capability is opt-in; the default error behavior remains unchanged.
+    """
+    if 'context_budget_exceeded' in text:
+        return text
+    raw = '        raw_prompt_ids = self.tokenizer.encode(prompt_with_vision_tokens, add_special_tokens=False)\n'
+    anchor = '        # Use prompt_with_chat_template for model inputs (keeps image placeholders for the processor).\n'
+    if text.count(raw) != 1 or text.count(anchor) != 1:
+        raise RuntimeError('cannot find owner prompt-tokenization boundary')
+    text = text.replace(raw, '', 1)
+    text = text.replace(anchor, raw + '''        context_budget_exceeded = (
+            not is_multi_modal
+            and self.config.env.get("context_budget_action", "error") == "end_episode"
+            and len(raw_prompt_ids) > self.config.data.max_prompt_length
+        )
+        if self.config.env.get("context_budget_action", "error") == "end_episode":
+            row_dict["context_budget_tokens"] = len(raw_prompt_ids) if context_budget_exceeded else 0
+        # An inert transport row, not a truncated history. The collector masks it
+        # before generation and before the environment receives any action.
+        if context_budget_exceeded:
+            raw_prompt_ids = []
+        prompt_for_model = "" if context_budget_exceeded else prompt_with_chat_template
+
+''' + anchor, 1)
+    text = text.replace('verl_F.tokenize_and_postprocess_data(prompt=prompt_with_chat_template,',
+                        'verl_F.tokenize_and_postprocess_data(prompt=prompt_for_model,', 1)
+    anchor = '            batch = self.preprocess_batch(gen_batch=gen_batch, obs=obs, messages=message_histories)\n'
+    insertion = '''
+            if self.config.env.get("context_budget_action", "error") == "end_episode":
+                exceeded = batch.non_tensor_batch.pop("context_budget_tokens")
+                newly_stopped = active_masks & (exceeded > 0)
+                if newly_stopped.any():
+                    print(f"[rollout] phase=context_budget_end step={_step + 1} "
+                          f"indices={np.flatnonzero(newly_stopped).tolist()} "
+                          f"prompt_tokens={exceeded[newly_stopped].tolist()} "
+                          f"prompt_cap={self.config.data.max_prompt_length}", flush=True)
+                is_done = np.logical_or(is_done, newly_stopped)
+                active_masks = np.logical_not(is_done)
+                if is_done.all():
+                    break
+'''
+    if text.count(anchor) != 1:
+        raise RuntimeError('cannot find owner rollout preprocessing boundary')
+    text = text.replace(anchor, anchor + insertion, 1)
+    anchor = '            next_obs, rewards, dones, infos = envs.step(env_actions)\n'
+    if text.count(anchor) != 1:
+        raise RuntimeError('cannot find owner rollout environment step')
+    return text.replace(anchor, '''            if self.config.env.get("context_budget_action", "error") == "end_episode":
+                next_obs, rewards, dones, infos = envs.step(env_actions, active_masks=active_masks)
+            else:
+                next_obs, rewards, dones, infos = envs.step(env_actions)
+''', 1)
+
+
+def patch_appworld_active_steps(text: str, *, manager: bool = False) -> str:
+    """Keep inactive AppWorld rows out of the existing environment RPCs."""
+    if manager:
+        start = text.index('class AppWorldEnvironmentManager(')
+        end = text.find('\nclass ', start + 1)
+        end = len(text) if end < 0 else end
+        section = text[start:end]
+        if 'def step(self, text_actions: List[str], active_masks=None):' in section:
+            return text
+        section = section.replace('def step(self, text_actions: List[str]):',
+                                  'def step(self, text_actions: List[str], active_masks=None):', 1)
+        section = section.replace('        text_obs, rewards, dones, infos = self.envs.step(actions)',
+                                  '''        if active_masks is None:
+            text_obs, rewards, dones, infos = self.envs.step(actions)
+        else:
+            text_obs, rewards, dones, infos = self.envs.step(actions, active_masks=active_masks)''', 1)
+        section = section.replace("        self.memory.store({'text_obs': text_obs, 'action': actions})",
+                                  "        self.memory.store({'text_obs': text_obs, 'action': actions}, active_masks=active_masks)", 1)
+        return text[:start] + section + text[end:]
+    if 'def step(self, actions, active_masks=None):' in text:
+        return text
+    text = text.replace('    def step(self, actions):', '    def step(self, actions, active_masks=None):', 1)
+    old = '''        # Send step commands to all workers
+        futures = []
+        for i, worker in enumerate(self.workers):
+            future = worker.step.remote(actions[i])
+            futures.append(future)
+
+        # Collect results
+        results = ray.get(futures)'''
+    new = '''        # Preserve the default all-worker path. With a mask, only real
+        # active actions reach AppWorld; inactive slots reuse their last actual
+        # observation/info and carry zero reward outside the collector mask.
+        indices = range(self.num_processes) if active_masks is None else np.flatnonzero(active_masks)
+        futures = [self.workers[i].step.remote(actions[i]) for i in indices]
+        received = ray.get(futures)
+        if active_masks is None:
+            results = received
+        else:
+            results = [(obs, 0.0, True, dict(info)) for obs, info in self._last_observations]
+            for i, result in zip(indices, received):
+                results[i] = result
+        self._last_observations = [(obs, dict(info)) for obs, _, _, info in results]'''
+    if text.count(old) != 1:
+        raise RuntimeError('cannot find AppWorld owner step RPC boundary')
+    text = text.replace(old, new, 1)
+    start = text.index('    def reset(self):', text.index('class AppWorldEnvs:'))
+    anchor = '        results = ray.get(futures)\n'
+    loc = text.index(anchor, start) + len(anchor)
+    return text[:loc] + '        self._last_observations = [(obs, dict(info)) for obs, info in results]\n' + text[loc:]
+
+
+def patch_memory_active_steps(text: str) -> str:
+    """Store only executed actions in the owner's per-environment memory."""
+    start = text.index('class SimpleMemory(')
+    end = text.index('\nclass ', start + 1)
+    section = text[start:end]
+    if 'def store(self, record: Dict[str, List[Any]], active_masks=None):' in section:
+        return text
+    section = section.replace('def store(self, record: Dict[str, List[Any]]):',
+                              'def store(self, record: Dict[str, List[Any]], active_masks=None):', 1)
+    section = section.replace('        for env_idx in range(self.batch_size):\n',
+                              '        for env_idx in range(self.batch_size):\n            if active_masks is not None and not active_masks[env_idx]:\n                continue\n', 1)
+    return text[:start] + section + text[end:]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("verl_root", type=Path)
@@ -844,7 +968,9 @@ def main() -> None:
     vllm_sharding.write_text(patch_vllm_peft_owner(vllm_sharding.read_text()))
     env_manager = args.verl_root / 'agent_system/environments/env_manager.py'
     env_text = env_manager.read_text()
-    env_manager.write_text(patch_conversation_observations(env_text))
+    env_manager.write_text(patch_appworld_active_steps(patch_conversation_observations(env_text), manager=True))
+    memory = args.verl_root / 'agent_system/memory/memory.py'
+    memory.write_text(patch_memory_active_steps(memory.read_text()))
     # The owner already accepts dataset, service ports and interaction limit.
     # Expose those arguments; retain all historical defaults and owner sampling.
     env_text = env_manager.read_text()
@@ -876,7 +1002,7 @@ def main() -> None:
             if app_text.count(old) != 1:
                 raise RuntimeError('cannot find unique AppWorld factory port argument anchor')
             app_text = app_text.replace(old, new, 1)
-    app_envs.write_text(app_text)
+    app_envs.write_text(patch_appworld_active_steps(app_text))
     checkpoint = args.verl_root / 'verl/utils/checkpoint/fsdp_checkpoint_manager.py'
     checkpoint_text = checkpoint.read_text()
     old = '                generation_config = GenerationConfig.from_pretrained(model_config.name_or_path)'
@@ -1302,7 +1428,7 @@ def main() -> None:
         if text.count(active_anchor) != 1:
             raise RuntimeError("cannot find collector generation mask boundary")
         text = text.replace(active_anchor, active_insert, 1)
-    rollout.write_text(patch_rollout_phase_logs(text))
+    rollout.write_text(patch_context_budget(patch_rollout_phase_logs(text)))
     print(f"patched {rollout} DeltaTrace collector")
 
     # The observed 32k cap was also being used as a compute length for short

@@ -3,6 +3,28 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+**当前状态：正式作业已停止，正在按用户要求核对和恢复官方实现。**
+Sokoban 完成的 step 1、WebShop 完成的 step 3 检查点保留；AppWorld 因超限
+退出，未重启。作者仓库 `langfengQ/verl-agent@20bd331` 已实际获取并与当前
+fork 核对：PPO/任务环境核心并非全部被改写，但 fork collector 的全历史累积
+和本地观测重写不等于作者的每步输入机制。完整证据与未完成项在
+[results_upstream_audit.json](results_upstream_audit.json)。没有声称已经全部替换
+或任务性能不下降；这些结论需要原接口及同配置任务对照后才能给出。
+
+2026-09-24 上下文核查纠正：原文不能支持“三任务的完整历史轨迹必然都能
+放进 32k”。GiGPO 的 WebShop 使用每步 4096 prompt / 512 response、两步
+历史；Sokoban 的固定 fork 脚本是视觉输入、1024/512，并非当前文本全历史。
+LOOP 的官方 AppWorld 例程设置 32000 上限、单次 API 输出最多 3000 tokens，
+遇到 `MaxSeqLenExceeded` 结束单条 episode；当前接入此前没有后两项。
+原文与固定代码链接记录在 [paper_scale.json](paper_scale.json)。
+此次 AppWorld 首批到第 26 轮之后，下一轮 prompt 31748 超过预留
+1024 response 和 146 DT 读出后的 31598 上限，异常退出整批。此前的精确
+32768 容量测试没有覆盖这种多轮超限停止路径，不能据此声称完整任务可容纳。
+用户已批准单条轨迹预算结束、保留此前官方奖励、不补造终局奖励；对应
+owner 补丁和实际 tokenizer/collector 接口测试在 `patch_verl_agent2.py`、
+`test_context_budget.py`。不自动加入 LOOP 的观测截短或修改 DT/PPO 公式。
+定时检查已按用户指令暂停，当前专注修复；下列启动说明为历史记录。
+
 2026-09-24 04:54:46 +08：修复发布 `88685db` 的 99 个源码文件哈希已核对，
 三组正式预算作业已恢复，运行目录为 `runs/rollout-repair-88685db`。WebShop
 由原 owner 自动恢复已有 step 1，Sokoban/AppWorld 重采未完成的首轮。

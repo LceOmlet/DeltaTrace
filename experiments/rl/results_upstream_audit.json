@@ -1,0 +1,71 @@
+{
+  "status": "in_progress_formal_runs_stopped",
+  "date": "2026-09-24",
+  "scope": "Source, experiment configuration, agent services, training interfaces, numerical behavior and measured runtime. No claim of complete replacement or task-performance non-regression yet.",
+  "method": "experiments/rl/PLAN.md",
+  "authors_owner": {
+    "repository": "https://github.com/langfengQ/verl-agent",
+    "commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "provenance": "Author repository master resolved via git ls-remote on 2026-09-24; this is not asserted to be the paper's exact original run commit."
+  },
+  "installed_base": {
+    "repository": "https://github.com/blackkiring/verl-agent2",
+    "commit": "732f37acd7684b8c24d14ba3ededfe9fab1ed472",
+    "local_patches": "experiments/rl/patch_verl_agent2.py",
+    "classification": "Third-party fork with local patches, not pristine author implementation."
+  },
+  "source_findings": [
+    {
+      "component": "agent_system/multi_turn_rollout/rollout_loop.py",
+      "evidence": "Pinned fork adds full-chat accumulation relative to the author collector; 259 changed lines in source diff. Author collector uses the environment manager's per-step observation prompt.",
+      "impact": "Changes history semantics and grows repeated prefill/DT/PPO input work. Effect on task score has not been measured.",
+      "action": "Replace duplicated fork collector behavior with the author owner; keep only the accepted DT token/event seam and demonstrated platform/transport fixes. Replacement not deployed yet."
+    },
+    {
+      "component": "agent_system/environments/env_manager.py",
+      "evidence": "Fork changes include a medical task outside this experiment. Local full_chat_observations rendering overrides the author's memory prompts.",
+      "action": "Use author task renderers with the author collector; remove redundant full-history render patches together, not one side alone."
+    },
+    {
+      "component": "verl, examples and the three task env_package directories",
+      "evidence": "git diff between author commit and pristine pinned fork is empty for these paths. This does not cover our installed local patches.",
+      "action": "Audit installed patches individually; do not replace verified official PPO, task dynamics or parsers merely because the enclosing repository was a fork."
+    },
+    {
+      "component": "PPO objective",
+      "installed_core_algos_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6",
+      "evidence": "Historical pinned-owner parity and current source hash retained; author and pristine fork core_algos.py are identical.",
+      "action": "Preserve official clipped objective and accepted DT advantages. No value model, second GAE, token baseline sampling or replacement PPO."
+    },
+    {
+      "component": "AppWorld context termination candidate",
+      "evidence": "13 distinct tokenizer/collector/manager/RPC boundary cases passed across focused runs. These use real owner methods and Qwen tokenizer with explicitly mocked model/environment RPCs, not task-performance evaluation.",
+      "action": "Candidate is not deployed; rebase the needed stop boundary onto the selected official owner. No fabricated terminal reward."
+    }
+  ],
+  "settings_findings": [
+    {"task": "Webshop", "paper": "GiGPO E.1/E.2", "paper_prompt": 4096, "paper_response": 512, "paper_history": 2, "max_steps": 15, "current_response": 1024, "current_history": "full chat", "gap": "History/response differences change compute and task behavior; prior 32k capacity receipt does not validate this setting."},
+    {"task": "Sokoban", "author_script": "examples/gigpo_trainer/run_sokoban.sh", "script_prompt": 1024, "script_response": 512, "script_modality": "visual Qwen2.5-VL-3B", "current_modality": "text Qwen3.5-9B", "max_steps": 15, "gap": "Current text task cannot be labelled a reproduction of the paper's visual score. Author script now independently verified, not just fork script."},
+    {"task": "AppWorld", "paper": "LOOP Appendix D", "paper_training_context_example": 32000, "paper_response": 1500, "paper_api_output_limit": 3000, "paper_training_interactions": 40, "paper_evaluation_interactions": 50, "paper_reward": "fraction of passed official tests", "installed_verl_author_reward": "10/0 task success", "gap": "The official verl-agent AppWorld worker and official LOOP experiment are different configurations. Matching 200x240 alone is not alignment with LOOP. Fixed PLAN currently specifies official verl-agent 10/0 rewards; do not silently change the reward alphabet or method."}
+  ],
+  "runtime_findings": {
+    "probe_source": "receipts/rollout-major-cost/dt-phase-lengths.json",
+    "probe_configuration": "Original actor and sleeping vLLM; B4, 512 synthetic response tokens; config cap remains 32768. Synthetic cost fixture, not task-performance evaluation.",
+    "dt_warm_seconds": {"2048": 5.754177917726338, "8192": 9.030606917105615},
+    "dt_8192_stream_phase_seconds": {"native_prefix": 3.153186279296875, "native_endpoint": 0.9846284790039063, "native_replay": 1.553415687561035, "finite_decoder": 2.687941116333008},
+    "compile": "First 2048 call 47.540s with 7 graph/cache loads; repeat and both 8192 calls had no new Dynamo/Inductor counters.",
+    "interpretation": "No repeated shape compilation in this bounded probe. Repeated prefix and per-event native/finite work are measured costs; task-scale savings still require aligned-owner comparison. Do not call all rollout time generation or decode."
+  },
+  "formal_training": {
+    "status": "stopped_for_official_settings_and_owner_audit",
+    "preserved_completed_checkpoint": {"Sokoban": 1, "Webshop": 3, "AppWorld": null},
+    "receipt": "receipts/rollout-major-cost/stopped-for-owner-audit.json",
+    "periodic_checks": "paused by prior user instruction",
+    "backup": "not started during repair"
+  },
+  "remaining_evidence": [
+    "Actual installed import graph and local modifications classified against author sources.",
+    "Remove redundant runtime implementations and compare official task reset, action parsing, observations, rewards and termination on identical traces.",
+    "Matched small-scale model/task evaluation and phase timing before claiming task performance preserved or restarting formal budgets."
+  ]
+}

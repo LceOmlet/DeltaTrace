@@ -69,9 +69,13 @@ def main():
                         help='Use the installed VERL FSDP2 CPUOffloadPolicy for layer parameters')
     parser.add_argument('--tail-batch-probe', action='store_true',
                         help='After B4 warmup, measure B2/B2/B4 compiler and phase costs; skip already-tested PPO updates.')
+    parser.add_argument('--phase-profile-lengths', type=int, nargs='+',
+                        help='Bounded cost probe at these actual lengths, retaining the 32768 configuration cap; two B4 calls per length, no PPO updates.')
     args = parser.parse_args()
     if args.tail_batch_probe and args.backend != 'vllm':
         parser.error('--tail-batch-probe requires the real vllm worker lifecycle')
+    if args.phase_profile_lengths and (args.backend != 'vllm' or args.tail_batch_probe):
+        parser.error('--phase-profile-lengths requires vllm and cannot be combined with --tail-batch-probe')
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   rollout_max_num_seqs=args.rollout_max_num_seqs,
@@ -158,6 +162,46 @@ def main():
             original, worker.tokenizer, producer.readout.alphabet, args.response_tokens)
         result.update(fixture_detail)
         assert result['dt_input_tokens'] == 32768
+        if args.phase_profile_lengths:
+            # Keep exactly the owner lifecycle and synthetic capacity fixture;
+            # remove only its declared leading filler. This measures cost as a
+            # function of length, not task quality or another capacity pass.
+            result['scope'] = 'Bounded B4 DT phase/length probe with the original actor, sleeping vLLM, and explicit capacity-fixture tokens; no task-quality claim.'
+            from torch._dynamo.utils import counters
+            native_attribute = producer.runner.attribute
+            ledgers = []
+            def recorded_profile(*a, **kw):
+                signed, detail = native_attribute(*a, **kw)
+                ledgers.append(detail)
+                return signed, detail
+            producer.runner.attribute = recorded_profile
+            result['phase_probes'] = []
+            for length in args.phase_profile_lengths:
+                remove = 32768 - length
+                if not 0 <= remove <= fixture_detail['synthetic_filler_tokens']:
+                    raise ValueError('Profile length must retain the complete original prompt, actions and readout')
+                probe = {**row, 'input_ids': row['input_ids'][remove:],
+                         'attention_mask': row['attention_mask'][remove:]}
+                for repeat in range(2):
+                    before = {key: dict(value) for key, value in counters.items()}
+                    tick = time.perf_counter()
+                    worker.compute_dt_token_advantages(
+                        [[probe] for _ in range(4)], [float(original['rewards'])]*4,
+                        eos_token_id=worker.tokenizer.eos_token_id,
+                        pad_token_id=worker.tokenizer.pad_token_id)
+                    torch.cuda.synchronize()
+                    elapsed = time.perf_counter()-tick
+                    assert producer.readout.last_report['max_readout_length'] == length
+                    delta = {group: {key: value-before.get(group, {}).get(key, 0)
+                                     for key, value in values.items()
+                                     if value != before.get(group, {}).get(key, 0)}
+                             for group, values in counters.items()}
+                    result['phase_probes'].append(dict(length=length, repeat=repeat,
+                        seconds=elapsed, owner_ledger=ledgers[-1],
+                        compiler_counter_delta={k: v for k, v in delta.items() if v}))
+                    stage(f'phase_probe_{length}_{repeat}')
+            result['status'] = 'completed_bounded_phase_probe'
+            return
         # Exercise the actual readout's guard. It must fail before the runner.
         oversized = copy.copy(row)
         oversized['input_ids'] = torch.cat((torch.tensor([filler_id]), row['input_ids']))
@@ -283,7 +327,7 @@ def main():
         torch.save(artifacts, args.artifacts)
         if torch.distributed.is_initialized():
             torch.distributed.destroy_process_group()
-    if result['status'] not in ('passed', 'completed_tail_batch_diagnostic'):
+    if result['status'] not in ('passed', 'completed_tail_batch_diagnostic', 'completed_bounded_phase_probe'):
         raise SystemExit(1)
 
 

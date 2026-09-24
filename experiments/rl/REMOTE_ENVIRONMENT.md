@@ -12,6 +12,21 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 最新：用户要求实验设置、agent 服务和训练均遵循 `integrate-upstream-first`。
+  已按确切自有 RAY_TMPDIR 停止 Sokoban/WebShop，保留原完成 checkpoint 1/3；
+  AppWorld 的超限失败未重启。当前 manifest 状态为
+  `stopped_for_official_settings_and_owner_audit`，不把以下启动记录当作仍在训练。
+  GPU 0–2 的其他用户 vLLM 服务未操作。单轨迹超限候选尚未部署，先核对
+  作者版本与实验配置，避免继续在 fork 的非官方历史路径上长跑。
+- 上下文故障：AppWorld 首批在第 26 轮后，下一轮 prompt 31748 > 31598，
+  `truncation=error` 异常导致整批退出；不是 OOM。按用户批准修复单轨迹预算
+  结束，定时检查暂时暂停。
+- 独立 vLLM 探针也必须复用 `run_verl_agent.sh` 的 allocator 初始化规则：
+  启动环境 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False`；原 sharding
+  manager 在进入 DT/PPO 后切回对应 runtime 设置。仅 source metax.env.sh
+  默认 True 会被 MetaX CuMem 初始化拒绝。不要重装或修改 allocator 内核。
+  `receipts/rollout-major-cost/dt-phase-lengths.*.allocator-start-failure` 保留这次
+  探针的初始化失败，不混入后续 phase 耗时。
 - 04:54:46 +08 已从 `releases/88685db` 恢复正式预算作业，99 个发布文件哈希
   核对通过；运行目录 `runs/rollout-repair-88685db`。WebShop 复用原完成的
   step 1 检查点路径，另两任务重采首轮。启动不是新一轮训练通过的结论。

@@ -40,7 +40,8 @@
       "episodes_per_iteration": 256,
       "total_episodes": 38400,
       "env": {"TRAIN_SIZE":"32","GROUP_SIZE":"8","TOTAL_EPOCHS":"150","MAX_STEPS":"15","VAL_SIZE":"4","VAL_DATA_SIZE":"128","DT_RAY_NUM_CPUS":"48","ENV_SEED":"0","SOKOBAN_MODE":"tiny_rgb_array"},
-      "differences": "Budget comes from the pinned official script; the paper does not separately state Sokoban iteration count. Our existing text rendering and Qwen3.5-9B differ from the paper's visual Qwen2.5-VL-3B setup. Official process rewards and one-box configuration stay fixed. One run, not three-seed aggregate."
+      "author_script": "https://github.com/langfengQ/verl-agent/blob/20bd331bdbc9026a5668e11362178e10ab7400c8/examples/gigpo_trainer/run_sokoban.sh",
+      "differences": "Budget is independently confirmed in the author script at 20bd331, identical to the pinned fork script; the paper does not separately state Sokoban iteration count. That script uses visual input, max_prompt_length=1024, max_response_length=512 and 15 steps. Our existing text rendering, full accumulated chat and Qwen3.5-9B differ from the paper's visual Qwen2.5-VL-3B setup. Neither source proves that every full-history episode fits 32768. Official process rewards and one-box configuration stay fixed. One run, not three-seed aggregate."
     },
     "AppWorld": {
       "source": "https://arxiv.org/html/2502.01600v3#A4",
@@ -50,7 +51,13 @@
       "total_episodes": 48000,
       "train_tasks": 72,
       "env": {"TRAIN_SIZE":"40","GROUP_SIZE":"6","TOTAL_EPOCHS":"200","MAX_STEPS":"40","VAL_SIZE":"3","VAL_DATA_SIZE":"57","DT_RAY_NUM_CPUS":"32","ENV_SEED":"0","APPWORLD_TRAIN_DATASET":"train_difficulty_1_and_train_difficulty_2","APPWORLD_VAL_DATASET":"dev","APPWORLD_MAX_INTERACTIONS":"40"},
-      "differences": "LOOP source gives nominal 240 rollouts and early-stops stragglers at >=90%; our fixed owner collects all 240. No LOOP filters, reward normalization, trained value model or replacement PPO are added. Existing VERL official success reward 10/0 stays fixed; LOOP used test-pass fractions. The original max response 1500, LoRA rank16, LR5e-5 and minibatch32 are not substituted. Dev evaluation uses existing owner 40-turn loop, versus paper evaluation 50. One run, not three-seed aggregate."
+      "differences": "LOOP source gives nominal 240 rollouts and early-stops stragglers at >=90%; our fixed owner collects all 240. Official training example sets learning_max_seq_len=32000, truncates each API output to 3000 tokens and ends an individual episode on MaxSeqLenExceeded; these do not guarantee that all episodes finish within the cap. Current owner retains full API observations; the user approved ending the affected episode at the reserved 32768 context budget, retaining only existing official rewards, without introducing the API-output truncation. No LOOP filters, reward normalization, trained value model or replacement PPO are added. Existing VERL official success reward 10/0 stays fixed; LOOP used test-pass fractions. The original max response 1500, LoRA rank16, LR5e-5 and minibatch32 are not substituted. Dev evaluation uses existing owner 40-turn loop, versus paper evaluation 50. One run, not three-seed aggregate.",
+      "context_sources": [
+        "https://arxiv.org/html/2502.01600v3#A4",
+        "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/README.md",
+        "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/phi_agents/rl/conf/appworld/agent/default.yaml",
+        "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/phi_agents/evals/appworld_evals.py#L234-L242"
+      ]
     }
   }
 }
