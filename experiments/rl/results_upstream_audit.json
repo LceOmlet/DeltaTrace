@@ -1589,5 +1589,67 @@
     "validation": "15 passed in31.82s: real owner default parity/full-history rendering plus real Qwen tokenizer and collector/manager boundary tests.",
     "receipt": "receipts/rollout-major-cost/author-history-boundary-tests-v2.log",
     "scope": "Boundary tests, not learned task performance or reproduction of author last2/10000char setting."
+  },
+  "continuous_training_check": {
+    "source_commit": "962ae20cdb647d5a15fe9ac1ba8d6ff648153aed",
+    "manifest": "runs/author-962ae20-continuous/jobs.json",
+    "status": "running_not_validated",
+    "scope": "Actual policy trajectories and two original PPO iterations;4/16/16 episodes per iteration for Sokoban/Webshop/AppWorld; original15/15/40 horizons. Not formal budgets.",
+    "native_overrides": [
+      "actor_rollout_ref.rollout.enforce_eager=False",
+      "actor_rollout_ref.rollout.free_cache_engine=False",
+      "+actor_rollout_ref.rollout.engine_kwargs.vllm.enable_prefix_caching=False"
+    ],
+    "plot_session_check": {
+      "scope": "Read-only production collector on current pilot logs. No periodic plots or formal runs started.",
+      "status": "passed_distinct_ray_session_sources",
+      "jobs": [
+        {
+          "task": "Sokoban",
+          "ray_session": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-24_17-49-09_705300_2592229",
+          "phase_records": 9,
+          "last_phase": {
+            "phase": "generation_start",
+            "step": "5/15",
+            "active": "4/4",
+            "peak_rss_gib": "9.688",
+            "source": {
+              "path": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-24_17-49-09_705300_2592229/logs/worker-d760e98a5d0682051da3c1225c174d37eddb6779b5b0605d8373165a-01000000-2603425.out",
+              "line": 297
+            }
+          }
+        },
+        {
+          "task": "Webshop",
+          "ray_session": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-24_17-49-08_769739_2592239",
+          "phase_records": 5,
+          "last_phase": {
+            "phase": "generation_start",
+            "step": "3/15",
+            "active": "16/16",
+            "peak_rss_gib": "9.665",
+            "source": {
+              "path": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-24_17-49-08_769739_2592239/logs/worker-a53d6e8ea2d29b149960dd7b2a6a83d600f3a6cfa42be7b6b3119365-01000000-2602343.out",
+              "line": 295
+            }
+          }
+        },
+        {
+          "task": "AppWorld",
+          "ray_session": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-24_17-49-43_394878_2592250",
+          "phase_records": 5,
+          "last_phase": {
+            "phase": "generation_start",
+            "step": "3/40",
+            "active": "16/16",
+            "peak_rss_gib": "9.724",
+            "source": {
+              "path": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-24_17-49-43_394878_2592250/logs/worker-011ead5d671abd87ee9efaa17ff8cc1a67c66a5d710a6ae27fa6ae5c-01000000-2611153.out",
+              "line": 294
+            }
+          }
+        }
+      ]
+    }
   }
 }

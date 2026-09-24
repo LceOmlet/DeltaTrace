@@ -45,7 +45,10 @@ def collect(root):
     out = {'collected_at': time.time(), 'started': manifest['started'],
            'source_commit': manifest['source_commit'], 'root': str(root), 'jobs': []}
     for job in manifest['jobs']:
-        log_root = Path(job['ray_tmpdir']) / 'ray/session_latest/logs'
+        # Several native Ray instances can share the short IPC root. Read the
+        # recorded instance, since session_latest would mix the three tasks.
+        log_root = (Path(job['ray_session']) / 'logs' if job.get('ray_session')
+                    else Path(job['ray_tmpdir']) / 'ray/session_latest/logs')
         records, errors = [], []
         # Direct worker output is authoritative; do not count its driver echo twice.
         for path in sorted(log_root.glob('worker-*.out'), key=lambda p: p.stat().st_mtime):

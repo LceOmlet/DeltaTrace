@@ -12,6 +12,17 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 当前发布 `962ae20` 已推送并部署，100 个源文件哈希核对，原 PPO 核心哈希不变。
+  正式预算仍停止；当前是 `runs/author-962ae20-continuous/jobs.json` 的三任务真实
+  连续更新检查，Sokoban/WebShop/AppWorld 分别每迭代 4/16/16 条轨迹、两迭代，
+  原交互上限 15/15/40。GPU4/5/6 是本次实际分配，不是后续卡号预留。
+  使用原 `enforce_eager=False, free_cache_engine=False` 与原引擎 prefix cache
+  关闭参数；保留 DT/PPO B4 和 32768 总上限。新检查单独保存 checkpoint，不
+  混入此前缓存异常路径产生的轨迹；此前已完成检查点保留。
+  `active-training.json` / `active-source.json` 现指向本次有界检查，并明确标记
+  尚未验收。每个 job 的 `ray_session` 是实际 Ray 实例路径，不能用三个任务共享
+  根目录的 `session_latest` 代替。绘图 reader 已对此修复，并在当前三个真实
+  worker 日志上检查来源互不混用；回执 `plot-distinct-sessions.json`。
 - 原 vLLM 图执行有界对照已完成：相同 GPU4、16 条原始 prompt IDs、每条固定
   128 tokens，热生成 RPC 13.309→4.477 秒；该比值不是整轮训练加速比。
   初始 owner 加载/编译 179.125 秒，对照 eager 为 82.729 秒。没有自写图内核。
