@@ -12,6 +12,20 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- WebShop `author-db53629-webshop-diverse-v2` 已退出 0，原完成标记为 checkpoint1。
+  16 条真实轨迹成功 2 条，14 个奖励事件对照经 4 次 DT 得到 6746 个非零 token
+  优势；原 PPO 梯度范数 0.003。检查点中 1426944 个 LoRA-B 元素非零且有限，
+  optimizer 保存 LR=1e-6。生成 RPC 1112.722 秒、DT 75.265 秒、actor 更新
+  238.876 秒、整迭代 1555.381 秒；不是正式预算运行或三任务整体验收。
+  回执为 `author-webshop-diverse-completed.json` / `author-webshop-checkpoint-update.json`。
+- 原 vLLM profiler 有界检查已退出 0，`vllm-bounded-profile.json` 与同名目录保留
+  16 个引擎步的原 trace/table。原始 WebShop prompt IDs 重复至 16 请求，固定
+  128-token 热调用 13.309 秒；4 活跃请求仍 13.838 秒。profiled decode 区间
+  通常约 129ms，其中实际 kernel/memcpy 区间并集约 23ms，共约 1605 次事件。
+  profiler 会影响绝对时间；这些数字不能冒充未插桩的 decode 速度。
+  `vllm-native-graphs-v2-job.json` 是 GPU4 图执行隔离对照，沿用原 VERL 参数
+  `enforce_eager=False, free_cache_engine=False`。首次漏配后者被原断言拒绝，
+  保留失败回执；没有删除断言、重写内核或调整正式训练。当前图执行尚待结果。
 - 原生算子定位已完成：`author-native-operators.json` 中第一处叶算子差异是
   第 0 层 `in_proj_a.base_layer`，输入成对完全相同，输出差 7.6294e-6；该层
   最终输出仍成对相同。首次传播到层输出的差异位于第 2 层，其 `in_proj_a`

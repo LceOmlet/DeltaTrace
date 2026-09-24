@@ -343,6 +343,210 @@
       "checked": "2026-09-24",
       "finding": "Qwen publishes task/mode-dependent sampling and presence penalties. The fixed training/readout policy uses temperature1 and untruncated token probabilities. Greedy comparisons only isolate owner behavior. Do not insert the model-card penalties into rollout alone and claim an unchanged policy/QV interface.",
       "change": "No training prompt, parser, reward, policy sampling or response-cap change made."
+    },
+    "bounded_native_vllm_profile": {
+      "source": "receipts/rollout-major-cost/vllm-bounded-profile.json",
+      "scope": "Measure the pinned VERL/vLLM worker with identical recorded task text.\n\nThe optional owner text dump removes special tokens; recorded RequestOutput\nprompt IDs can instead be replayed directly. Neither is a regeneration of\nidentical on-policy trajectories or an evaluation score.\nForced equal output lengths isolate throughput from sampled stopping lengths.\n",
+      "input_ids_sha256": "fa9b5f8271a84f645c233e5190d56e479f56005204a66df09449202ca505354d",
+      "stages": [
+        {
+          "phase": "owner_init",
+          "elapsed": 82.72913165204227,
+          "device_used_bytes": 2420510720
+        },
+        {
+          "phase": "warmup",
+          "elapsed": 101.84415618982166,
+          "device_used_bytes": 2468749312,
+          "seconds": 19.099786691367626,
+          "requests": 16,
+          "generated_tokens": 256,
+          "generated_tokens_per_second": 13.403291049093351,
+          "prompt_tokens": 15828,
+          "outside_engine_seconds": 0.9363662581890821,
+          "forced_decode_tokens": 16,
+          "output_shape": [
+            16,
+            2116
+          ]
+        },
+        {
+          "phase": "all_active",
+          "elapsed": 115.2273089364171,
+          "device_used_bytes": 2468761600,
+          "seconds": 13.3743855683133,
+          "requests": 16,
+          "generated_tokens": 2048,
+          "generated_tokens_per_second": 153.12852987072077,
+          "prompt_tokens": 15828,
+          "outside_engine_seconds": 0.9467623895034194,
+          "forced_decode_tokens": 128,
+          "output_shape": [
+            16,
+            2116
+          ]
+        },
+        {
+          "phase": "all_active_repeat",
+          "elapsed": 128.54871049057692,
+          "device_used_bytes": 2468761600,
+          "seconds": 13.30922509264201,
+          "requests": 16,
+          "generated_tokens": 2048,
+          "generated_tokens_per_second": 153.8782300054595,
+          "prompt_tokens": 15828,
+          "outside_engine_seconds": 0.9418385410681367,
+          "forced_decode_tokens": 128,
+          "output_shape": [
+            16,
+            2116
+          ]
+        },
+        {
+          "phase": "quarter_active",
+          "elapsed": 142.39758571516722,
+          "device_used_bytes": 2472955904,
+          "seconds": 13.838010760955513,
+          "requests": 4,
+          "generated_tokens": 512,
+          "generated_tokens_per_second": 36.99953763908234,
+          "prompt_tokens": 4368,
+          "outside_engine_seconds": 0.9980755867436528,
+          "forced_decode_tokens": 128,
+          "output_shape": [
+            16,
+            2116
+          ]
+        },
+        {
+          "phase": "profiled_owner_call_not_throughput_baseline",
+          "elapsed": 175.83700892701745,
+          "device_used_bytes": 2472955904,
+          "seconds": 33.43137322086841,
+          "requests": 16,
+          "generated_tokens": 512,
+          "generated_tokens_per_second": 15.314955703955386,
+          "prompt_tokens": 15828,
+          "outside_engine_seconds": 1.7574136145412922,
+          "forced_decode_tokens": 32,
+          "output_shape": [
+            16,
+            2116
+          ]
+        }
+      ],
+      "native_profiler": {
+        "scope": "Profiled original vLLM16 engine steps; profiler affects absolute time. Kernel/memcpy union within GPU annotations excludes idle gaps; do not equate this profile latency with unprofiled generation throughput.",
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/vllm-bounded-profile/1790238871198695847-rank-0.1790238956563797475.pt.trace.json.gz",
+        "intervals": [
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 128.594434,
+            "gpu_kernel_memcpy_union_ms": 23.0109697265625,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 129.180418,
+            "gpu_kernel_memcpy_union_ms": 22.998677734375,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 129.50092999999998,
+            "gpu_kernel_memcpy_union_ms": 22.997912109375,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_16(6751)_generation_0(0)",
+            "interval_ms": 667.369218,
+            "gpu_kernel_memcpy_union_ms": 645.520083984375,
+            "kernel_count": 2023
+          },
+          {
+            "name": "execute_context_4(1397)_generation_12(12)",
+            "interval_ms": 181.131266,
+            "gpu_kernel_memcpy_union_ms": 164.84805859375,
+            "kernel_count": 2015
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 132.39629000000002,
+            "gpu_kernel_memcpy_union_ms": 23.467900390625,
+            "kernel_count": 1671
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 128.54835400000002,
+            "gpu_kernel_memcpy_union_ms": 23.0237666015625,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 130.005506,
+            "gpu_kernel_memcpy_union_ms": 23.0460400390625,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 129.496834,
+            "gpu_kernel_memcpy_union_ms": 23.0160966796875,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 127.63827400000001,
+            "gpu_kernel_memcpy_union_ms": 23.0316962890625,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 127.896834,
+            "gpu_kernel_memcpy_union_ms": 23.0485927734375,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 131.340546,
+            "gpu_kernel_memcpy_union_ms": 23.0107158203125,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 129.59181,
+            "gpu_kernel_memcpy_union_ms": 23.069083984375,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 127.90733,
+            "gpu_kernel_memcpy_union_ms": 22.9751220703125,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 129.41107399999999,
+            "gpu_kernel_memcpy_union_ms": 22.98946875,
+            "kernel_count": 1605
+          },
+          {
+            "name": "execute_context_0(0)_generation_16(16)",
+            "interval_ms": 129.41773,
+            "gpu_kernel_memcpy_union_ms": 22.9856220703125,
+            "kernel_count": 1605
+          }
+        ]
+      },
+      "interpretation": "The measured decode intervals contain many gaps between original GPU operations. Profiling changes absolute time; only unprofiled calls are throughput baselines. Original vLLM graph execution is being evaluated in isolation, not yet adopted.",
+      "graph_candidate": {
+        "status": "running_not_validated",
+        "manifest": "receipts/rollout-major-cost/vllm-native-graphs-v2-job.json",
+        "owner_options": {
+          "enforce_eager": false,
+          "free_cache_engine": false
+        },
+        "previous_failure": "Initial probe omitted the official constructor-required free_cache_engine=False partner; stopped before vLLM initialization. Current-version native sleep/wake remains unchanged."
+      }
     }
   },
   "formal_training": {
@@ -696,7 +900,7 @@
       "results_source": "receipts/rollout-major-cost/author-training-completed.json"
     },
     "diverse_webshop_check": {
-      "status": "running_not_validated",
+      "status": "completed_one_update_not_full_acceptance",
       "manifest": "runs/author-db53629-webshop-diverse-v2/Webshop/job.json",
       "source_commit": "db536291114561436c83bfe36afed4c2dc620ca5",
       "scope": "Original sampler four tasks x group4,15 interaction horizon, one actual DT/PPO iteration. Same response1024, prompt4096, total cap32768, B4, rewards, parser, prompts and sampling policy. Prior one-task all-zero result retained.",
@@ -705,6 +909,108 @@
         "exit_code": 1,
         "error": "Ray AF_UNIX path exceeded107 bytes before model initialization",
         "repair": "Existing RAY_TMPDIR configuration shortened to /tmp/dt-ws-diverse-db53629; no code or dependency change"
+      },
+      "results_source": "receipts/rollout-major-cost/author-webshop-diverse-completed.json",
+      "result": {
+        "manifest": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/author-db53629-webshop-diverse-v2/Webshop/job.json",
+        "exit_code": 0,
+        "checkpoint_iteration": "1",
+        "metrics": {
+          "global_seqlen/min": 374675.0,
+          "global_seqlen/max": 374675.0,
+          "global_seqlen/minmax_diff": 0.0,
+          "global_seqlen/balanced_min": 374675.0,
+          "global_seqlen/balanced_max": 374675.0,
+          "global_seqlen/mean": 374675.0,
+          "actor/entropy_loss": 0.593,
+          "training/rollout_probs_diff_max": 0.663,
+          "training/rollout_probs_diff_mean": 0.006,
+          "training/rollout_probs_diff_std": 0.012,
+          "actor/pg_loss": -0.002,
+          "actor/pg_clipfrac": 0.0,
+          "actor/ppo_kl": -0.0,
+          "actor/pg_clipfrac_lower": 0.0,
+          "actor/grad_norm": 0.003,
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 57.143,
+          "perf/max_memory_reserved_gb": 65.371,
+          "perf/cpu_memory_used_gb": 424.944,
+          "actor/lr": 0.0,
+          "training/global_step": 1.0,
+          "training/epoch": 0.0,
+          "critic/score/mean": 0.729,
+          "critic/score/max": 10.0,
+          "critic/score/min": 0.0,
+          "critic/rewards/mean": 0.729,
+          "critic/rewards/max": 10.0,
+          "critic/rewards/min": 0.0,
+          "critic/advantages/mean": 0.001,
+          "critic/advantages/max": 7.432,
+          "critic/advantages/min": -6.75,
+          "critic/returns/mean": 0.707,
+          "critic/returns/max": 10.0,
+          "critic/returns/min": 0.0,
+          "response_length/mean": 498.161,
+          "response_length/max": 1024.0,
+          "response_length/min": 16.0,
+          "response_length/clip_ratio": 0.151,
+          "prompt_length/mean": 1453.271,
+          "prompt_length/max": 2471.0,
+          "prompt_length/min": 199.0,
+          "prompt_length/clip_ratio": 0.0,
+          "episode/reward/mean": 1.25,
+          "episode/reward/max": 10.0,
+          "episode/reward/min": 0.0,
+          "episode/length/mean": 11.875,
+          "episode/length/max": 15.0,
+          "episode/length/min": 4.0,
+          "episode/tool_call_count/mean": 0.0,
+          "episode/success_rate": 0.125,
+          "episode/webshop_task_score (not success_rate)": 0.345,
+          "timing_s/gen": 1191.278,
+          "timing_s/reward": 0.08,
+          "timing_s/old_log_prob": 68.002,
+          "timing_s/adv": 0.003,
+          "timing_s/update_actor": 238.876,
+          "timing_s/dump_rollout_generations": 0.279,
+          "timing_s/save_checkpoint": 56.838,
+          "timing_s/step": 1555.381,
+          "timing_per_token_ms/update_actor": 0.638,
+          "timing_per_token_ms/adv": 0.0,
+          "timing_per_token_ms/gen": 12.455,
+          "perf/total_num_tokens": 374675.0,
+          "perf/time_per_step": 1555.381,
+          "perf/throughput": 240.89
+        },
+        "dt_summary": {
+          "task": "Webshop",
+          "policy_tokens": 94788,
+          "nonzero_reward_events": 2,
+          "finite_trace_calls": 4,
+          "event_contrasts": 14,
+          "minibatch_size": 4,
+          "max_readout_length": 2394,
+          "max_length": 32768,
+          "ratio_source": "official_eos_dt_signed_attribution_estimate",
+          "reference_token_samples": 0,
+          "per_token_probability_queries": 0,
+          "seconds": 75.26523992884904,
+          "nonzero_advantages": 6746,
+          "conservation_failures": 7
+        },
+        "generation_rpc_seconds": 1112.722,
+        "scope": "Four original sampled WebShop tasks x group4, one actual DT/PPO update. Not a full task-quality non-regression or formal-scale run."
+      },
+      "checkpoint_update": {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/author-db53629-webshop-diverse-v2/Webshop/checkpoints/global_step_1/actor",
+        "scope": "Saved single-rank original FSDP2 checkpoint. Local tensor view only; no gather or model reconstruction.",
+        "lora_B_tensors": 248,
+        "nonzero_lora_B_elements": 1426944,
+        "all_lora_B_finite": true,
+        "lora_B_absmax": 1.0848045349121094e-05,
+        "optimizer_param_group_lr": [
+          1e-06
+        ]
       }
     }
   },

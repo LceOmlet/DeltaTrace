@@ -1,7 +1,8 @@
 """Measure the pinned VERL/vLLM worker with identical recorded task text.
 
-The owner dump removes special tokens. This is a throughput replay of that text,
-not a regeneration of identical on-policy trajectories or an evaluation score.
+The optional owner text dump removes special tokens; recorded RequestOutput
+prompt IDs can instead be replayed directly. Neither is a regeneration of
+identical on-policy trajectories or an evaluation score.
 Forced equal output lengths isolate throughput from sampled stopping lengths.
 """
 import argparse
@@ -23,11 +24,18 @@ from verl.workers.fsdp_workers import ActorRolloutRefWorker
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--max-num-seqs', type=int, required=True)
-    parser.add_argument('--rollouts', type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument('--rollouts', type=Path)
+    source.add_argument('--request-json', type=Path, help='Exact prompt_ids recorded from original RequestOutput.')
+    parser.add_argument('--requests', type=int, default=32)
+    parser.add_argument('--enforce-eager', action=argparse.BooleanOptionalAction, default=True,
+                        help='Forward the existing owner setting; disabling it permits native vLLM graph execution.')
+    parser.add_argument('--profile-dir', type=Path,
+                        help='Use the original vLLM profiler for a bounded extra call; no training kernel changes.')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     result = dict(scope=__doc__, max_num_seqs=args.max_num_seqs, actor_minibatch=4,
-                  model_context_cap=32768, stages=[])
+                  model_context_cap=32768, enforce_eager=args.enforce_eager, stages=[])
     started = time.perf_counter()
 
     def record(phase, **data):
@@ -71,8 +79,18 @@ def main():
         c.rollout.max_num_seqs = args.max_num_seqs
         c.rollout.max_num_batched_tokens = 32768
         c.rollout.gpu_memory_utilization = 0.75
-        c.rollout.enforce_eager = True
+        c.rollout.enforce_eager = args.enforce_eager
+        if not args.enforce_eager:
+            # The pinned VERL constructor requires this original option pair.
+            # free_cache_engine only controls its legacy vLLM 0.5/0.6 calls;
+            # the current sharding manager still owns native sleep/wake.
+            c.rollout.free_cache_engine = False
         c.rollout.engine_kwargs.vllm.limit_mm_per_prompt = {'image': 0, 'video': 0}
+        if args.profile_dir:
+            c.rollout.engine_kwargs.vllm.profiler_config = dict(
+                profiler='torch', torch_profiler_dir=str(args.profile_dir.resolve()),
+                torch_profiler_with_stack=False, torch_profiler_record_shapes=True,
+                ignore_frontend=True, max_iterations=16)
         worker = ActorRolloutRefWorker(c, 'actor_rollout')
         worker.init_model()
         record('owner_init')
@@ -81,12 +99,18 @@ def main():
         # cache hits or call this interval pure decode (it includes prefill).
         engine_calls = []
         original_generate = worker.rollout.inference_engine.generate
+        profile_next = False
 
         def measured_generate(*a, **kw):
+            if profile_next:
+                worker.rollout.inference_engine.start_profile()
             tick = time.perf_counter()
             outputs = original_generate(*a, **kw)
             torch.cuda.synchronize()
-            engine_calls.append(dict(seconds=time.perf_counter()-tick, requests=[dict(
+            seconds = time.perf_counter()-tick
+            if profile_next:
+                worker.rollout.inference_engine.stop_profile()
+            engine_calls.append(dict(seconds=seconds, profiled=profile_next, requests=[dict(
                 prompt_tokens=len(out.prompt_token_ids),
                 cached_tokens=out.num_cached_tokens,
                 generated_tokens=sum(len(sample.token_ids) for sample in out.outputs),
@@ -95,14 +119,23 @@ def main():
 
         worker.rollout.inference_engine.generate = measured_generate
 
-        lines = [json.loads(line) for line in args.rollouts.read_text().splitlines()]
-        texts = sorted((row['input'] for row in lines), key=len)
-        chosen = np.linspace(0, len(texts)-1, 32).astype(int).tolist()
-        prompts = [worker.tokenizer.encode(texts[i], add_special_tokens=False) for i in chosen]
+        if args.request_json:
+            lines = json.loads(args.request_json.read_text())
+            chosen = [i % len(lines) for i in range(args.requests)]
+            prompts = [lines[i]['prompt_ids'] for i in chosen]
+            result['input_protocol'] = 'Exact recorded prompt IDs, repeated to requested concurrency; no text reconstruction.'
+        else:
+            lines = [json.loads(line) for line in args.rollouts.read_text().splitlines()]
+            texts = sorted((row['input'] for row in lines), key=len)
+            chosen = np.linspace(0, len(texts)-1, args.requests).astype(int).tolist()
+            prompts = [worker.tokenizer.encode(texts[i], add_special_tokens=False) for i in chosen]
+            result['input_protocol'] = 'Owner decoded text sorted by length and re-tokenized; throughput fixture only.'
         assert max(map(len, prompts)) + 1024 <= 32768
-        result.update(input_source=str(args.rollouts), source_row_indices_by_sorted_length=chosen,
+        result.update(input_source=str(args.request_json or args.rollouts), source_row_indices=chosen,
                       input_token_lengths=list(map(len, prompts)),
                       input_ids_sha256=hashlib.sha256(json.dumps(prompts).encode()).hexdigest())
+        if args.rollouts:
+            result['source_row_indices_by_sorted_length'] = chosen
 
         def batch(active=None):
             rows = prompts
@@ -126,10 +159,14 @@ def main():
             output = worker.generate_sequences(inputs)
             torch.cuda.synchronize()
             seconds = time.perf_counter()-tick
-            count = 32 if active is None else sum(active)
+            count = len(prompts) if active is None else sum(active)
             engine = engine_calls[-1]
             actual_tokens = sum(row['generated_tokens'] for row in engine['requests'])
             assert actual_tokens == count*tokens
+            # Preserve exact owner outputs for an execution-path comparison.
+            artifact = args.output.with_name(f'{args.output.stem}-{phase}-outputs.pt')
+            torch.save({key: output.batch[key].detach().cpu() for key in
+                        ('responses', 'attention_mask', 'rollout_log_probs') if key in output.batch}, artifact)
             if active is not None:
                 inactive = ~torch.as_tensor(active)
                 assert not output.batch['attention_mask'][inactive, -1024:].any()
@@ -138,13 +175,18 @@ def main():
                    generated_tokens_per_second=actual_tokens/seconds,
                    prompt_tokens=sum(row['prompt_tokens'] for row in engine['requests']),
                    engine_generate=engine, outside_engine_seconds=seconds-engine['seconds'],
-                   forced_decode_tokens=tokens, output_shape=list(output.batch['input_ids'].shape))
+                   forced_decode_tokens=tokens, output_shape=list(output.batch['input_ids'].shape),
+                   output_artifact=str(artifact))
 
         run('warmup', 16)
         run('all_active', 128)
         run('all_active_repeat', 128)
-        # Same 32-row transport, but vLLM must receive only these 8 requests.
-        run('eight_active', 128, [i % 4 == 0 for i in range(32)])
+        # Same transport; vLLM receives only the actual active requests.
+        run('eight_active' if len(prompts) == 32 else 'quarter_active', 128,
+            [i % 4 == 0 for i in range(len(prompts))])
+        if args.profile_dir:
+            profile_next = True
+            run('profiled_owner_call_not_throughput_baseline', 32)
         result['status'] = 'measured'
     except Exception as exc:
         result.update(status='failed', error=repr(exc), traceback=traceback.format_exc())
