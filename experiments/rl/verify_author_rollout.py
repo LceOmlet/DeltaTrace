@@ -1,9 +1,9 @@
-"""Compare bounded interaction prefixes through the actual author collector.
+"""Observe bounded interaction prefixes through the actual author collector.
 
-Both sides use the same initialized official VERL/vLLM worker and official task
-services. Greedy decoding isolates collector changes. This is a fixed-policy
-regression fixture, not a trained success-rate estimate, DT/PPO update test, or
-a replacement rollout implementation.
+When comparing both paths, they use the same initialized official VERL/vLLM
+worker and official task services. Greedy decoding isolates collector changes.
+A single path only observes the selected configuration. Neither mode is a
+trained success-rate estimate, DT/PPO update test or replacement collector.
 """
 import argparse
 import hashlib
@@ -82,13 +82,17 @@ def main():
                    help='Bound the measured prefix; environment task horizon stays 15.')
     p.add_argument('--response-cap', type=int, default=512)
     p.add_argument('--tasks', nargs='+', choices=['Sokoban', 'Webshop'], default=['Sokoban', 'Webshop'])
+    p.add_argument('--implementations', nargs='+', choices=['author', 'candidate'],
+                   default=['author', 'candidate'],
+                   help='Use one owner path for a bounded configuration observation, or both for parity.')
     args = p.parse_args()
     spec = importlib.util.spec_from_file_location('pinned_author_collector', args.author_collector)
     original = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(original)
     started = time.perf_counter()
     result = dict(scope=__doc__, status='running', context_cap=32768, episodes_per_task=4,
-                  response_cap=args.response_cap, task_horizon=15, measured_rounds=args.rounds, runs=[], imports={
+                  response_cap=args.response_cap, task_horizon=15, measured_rounds=args.rounds,
+                  implementations=args.implementations, runs=[], imports={
         'candidate_collector': rollout_loop.__file__, 'manager': env_manager.__file__,
         'author_collector': str(args.author_collector),
         'author_sha256': hashlib.sha256(args.author_collector.read_bytes()).hexdigest()})
@@ -131,6 +135,8 @@ def main():
             pair = []
             for name, cls in [('author', original.TrajectoryCollector),
                               ('candidate', rollout_loop.TrajectoryCollector)]:
+                if name not in args.implementations:
+                    continue
                 cfg.env.max_steps = 15
                 train_env, val_env = env_manager.make_envs(cfg)
                 val_env.envs.close()
@@ -168,13 +174,17 @@ def main():
                            max_prompt_tokens=max(len(row['prompt']) for ep in rows for row in ep))
                 result['runs'].append(run)
                 record('rollout_complete', **{k: v for k, v in run.items() if k != 'calls'})
-            result.setdefault('comparisons', {})[task] = dict(
-                exact_active_prompt_response_reward_match=pair[0] == pair[1],
-                exact_return_length_success_match=all(result['runs'][-2][key] == result['runs'][-1][key]
-                                                     for key in ('rewards', 'lengths', 'success')))
-            record('comparison', task=task, **result['comparisons'][task])
-        result['status'] = ('passed_fixed_policy_regression' if all(
-            all(v.values()) for v in result['comparisons'].values()) else 'mismatch_requires_inspection')
+            if len(pair) == 2:
+                result.setdefault('comparisons', {})[task] = dict(
+                    exact_active_prompt_response_reward_match=pair[0] == pair[1],
+                    exact_return_length_success_match=all(result['runs'][-2][key] == result['runs'][-1][key]
+                                                         for key in ('rewards', 'lengths', 'success')))
+                record('comparison', task=task, **result['comparisons'][task])
+        if 'comparisons' in result:
+            result['status'] = ('passed_fixed_policy_regression' if all(
+                all(v.values()) for v in result['comparisons'].values()) else 'mismatch_requires_inspection')
+        else:
+            result['status'] = 'completed_policy_prefix_observation'
     except Exception as exc:
         result.update(status='failed', error=repr(exc))
         raise

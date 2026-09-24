@@ -57,7 +57,7 @@
       "paper_history": 2,
       "max_steps": 15,
       "current_response": 1024,
-      "current_history": "full chat",
+      "current_history": "author history2 in isolated candidate; previous full-chat formal runs stopped",
       "gap": "History/response differences change compute and task behavior; prior 32k capacity receipt does not validate this setting."
     },
     {
@@ -164,6 +164,78 @@
       "sum_pss_gib": 173.57243156433105,
       "source": "receipts/rollout-major-cost/appworld-idle-service-memory.json",
       "interpretation": "Actual PSS of the existing official AppWorld CLI services, not summed fork RSS. Read-only snapshot; no service stopped or rewritten."
+    },
+    "native_endpoint_diagnostic": {
+      "status": "completed_diagnostic_not_acceptance",
+      "source": "receipts/rollout-major-cost/author-equal-endpoints-native.json",
+      "elapsed": 181.1870971461758,
+      "scope": "Same original actor parameters, official full uncached forward and original DT runner; synthetic EOS-only responses on recorded owner prompts. No reward, task-success or new tolerance test.",
+      "observations": [
+        {
+          "mixed": false,
+          "length": 751,
+          "endpoint_tokens_different": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "native_uncached_roots": [
+            -0.06413978338241577,
+            0.0,
+            0.0,
+            0.11229777336120605
+          ],
+          "signed_max": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "roots": [
+            0.05335581302642822,
+            0.005853533744812012,
+            0.1242070198059082,
+            -0.11906552314758301
+          ]
+        },
+        {
+          "mixed": true,
+          "length": 751,
+          "endpoint_tokens_different": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "native_uncached_roots": [
+            -0.06413978338241577,
+            0.0,
+            0.0,
+            1.18906569480896
+          ],
+          "signed_max": [
+            0.0,
+            0.0,
+            0.0,
+            1.1173315564204138
+          ],
+          "roots": [
+            0.05335581302642822,
+            0.0931398868560791,
+            0.1114966869354248,
+            1.076767921447754
+          ]
+        }
+      ],
+      "finding": "Identical token endpoints have exactly zero DT credit. Nonzero endpoint score differences also occur in the original uncached full forward, before DT finite propagation. In the all-equal fixture first uncached hidden difference is at layer2 (0.0009765625), cached root at layer0. This does not establish a new DT-only defect or an operator tolerance pass.",
+      "acceptance": "Keep original FA/FLA operator criteria and existing end-to-end diagnostics; the existing0.02 conservation observation is not a new production gate and no credit renormalization was added."
+    },
+    "model_generation_settings": {
+      "source": "https://huggingface.co/Qwen/Qwen3.5-9B#best-practices",
+      "checked": "2026-09-24",
+      "finding": "Qwen publishes task/mode-dependent sampling and presence penalties. The fixed training/readout policy uses temperature1 and untruncated token probabilities. Greedy comparisons only isolate owner behavior. Do not insert the model-card penalties into rollout alone and claim an unchanged policy/QV interface.",
+      "change": "No training prompt, parser, reward, policy sampling or response-cap change made."
     }
   },
   "formal_training": {
@@ -185,8 +257,8 @@
   "candidate": {
     "root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331",
     "source": "Whole author agent_system, verl and examples from commit 20bd331; existing environment/model/assets reused. Not production-deployed.",
-    "patch_manifest": "receipts/rollout-major-cost/author-patched-files.json",
-    "patch_diff": "receipts/rollout-major-cost/author-runtime.diff",
+    "patch_manifest": "receipts/rollout-major-cost/author-patched-files-db53629.json",
+    "patch_diff": "receipts/rollout-major-cost/author-runtime-db53629-normalized.diff",
     "tests": {
       "owner_boundaries": "18 passed in 20.21s on the imported full candidate",
       "real_task_state": "All three passed; receipts/rollout-major-cost/author-environment-state.json. Scripted environment checks, not model scores.",
@@ -361,6 +433,100 @@
           "agent_system/environments/env_package/appworld/projection.py"
         ],
         "source": "receipts/rollout-major-cost/author-core-and-parser-identity.json"
+      },
+      "response2048": {
+        "status": "completed_policy_prefix_observation",
+        "source": "receipts/rollout-major-cost/author-response2048.json",
+        "elapsed": 693.0735200196505,
+        "scope": "Single candidate owner path, four distinct fixed tasks per dataset and first two interactions, greedy decoding; no author-vs-candidate parity or full task-quality claim.",
+        "Sokoban_first_step": {
+          "generated_tokens": [
+            2048,
+            558,
+            816,
+            2048
+          ],
+          "owner_actions": [
+            0,
+            1,
+            1,
+            0
+          ],
+          "interpretation": "Same action completion as1024 cap for these first-step inputs; do not adopt2048 as a proven fix."
+        },
+        "prefix_identity": {
+          "scope": "Same original first-step prompt IDs and greedy generated prefixes; not full-task score.",
+          "same_prompt_ids": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "same_generated_prefix": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "response2048": {
+            "1": {
+              "lengths": [
+                2048,
+                558,
+                816,
+                2048
+              ],
+              "finish_reasons": [
+                "length",
+                "stop",
+                "stop",
+                "length"
+              ]
+            },
+            "2": {
+              "lengths": [
+                1539,
+                2048,
+                1401,
+                886
+              ],
+              "finish_reasons": [
+                "stop",
+                "length",
+                "stop",
+                "stop"
+              ]
+            },
+            "3": {
+              "lengths": [
+                189,
+                237,
+                151,
+                148
+              ],
+              "finish_reasons": [
+                "stop",
+                "stop",
+                "stop",
+                "stop"
+              ]
+            },
+            "4": {
+              "lengths": [
+                434,
+                182,
+                344,
+                907
+              ],
+              "finish_reasons": [
+                "stop",
+                "stop",
+                "stop",
+                "stop"
+              ]
+            }
+          }
+        }
       }
     },
     "modified_file_count": 21,
@@ -370,7 +536,7 @@
       "normalized_lf_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6"
     },
     "training_check": {
-      "status": "running_not_validated",
+      "status": "pilots_completed_not_accepted",
       "source_commit": "db536291114561436c83bfe36afed4c2dc620ca5",
       "manifest": "runs/author-db53629-training-check/jobs.json",
       "scope": "Each of Webshop/Sokoban:4 factual episodes, original15-step horizon, followed by original PPO actor updates/checkpoint. Not formal scale. AppWorld not launched while context decision is pending.",
@@ -382,7 +548,51 @@
         "Webshop_prompt": 4096,
         "Sokoban_prompt": 1024
       },
-      "results": "Await actual DT/PPO completion, rewards, gradients and owner checkpoint marker; source parity is not a task-quality guarantee."
+      "results": {
+        "Sokoban": {
+          "exit_code": 0,
+          "checkpoint": 1,
+          "generation_rpc_seconds": 1158.136,
+          "dt_seconds": 1047.002885996364,
+          "finite_trace_calls": 110,
+          "event_contrasts": 438,
+          "nonzero_reward_events": 57,
+          "nonzero_advantages": 42494,
+          "trace_summary": {
+            "count": 438,
+            "failed_conservation": 250,
+            "max_abs_residual": 0.21594658248687637,
+            "zero_signed_nonzero_root": 6
+          },
+          "acceptance": "Nonzero actual DT/PPO update and checkpoint completed; native low-precision endpoint differences recorded separately. Not a complete training-quality or new tolerance acceptance.",
+          "official_metrics": "global_seqlen/min:84469.000 - global_seqlen/max:84469.000 - global_seqlen/minmax_diff:0.000 - global_seqlen/balanced_min:84469.000 - global_seqlen/balanced_max:84469.000 - global_seqlen/mean:84469.000 - actor/entropy_loss:0.340 - training/rollout_probs_diff_max:0.943 - training/rollout_probs_diff_mean:0.010 - training/rollout_probs_diff_std:0.039 - actor/pg_loss:-0.001 - actor/pg_clipfrac:0.001 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.006 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:57.113 - perf/max_memory_reserved_gb:65.074 - perf/cpu_memory_used_gb:419.913 - actor/lr:0.000 - training/global_step:1.000 - training/epoch:0.000 - critic/score/mean:0.948 - critic/score/max:9.800 - critic/score/min:-1.500 - critic/rewards/mean:0.948 - critic/rewards/max:9.800 - critic/rewards/min:-1.500 - critic/advantages/mean:0.001 - critic/advantages/max:1.021 - critic/advantages/min:-1.627 - critic/returns/mean:1.746 - critic/returns/max:10.900 - critic/returns/min:-1.500 - response_length/mean:759.817 - response_length/max:1024.000 - response_length/min:1.000 - response_length/clip_ratio:0.617 - prompt_length/mean:648.000 - prompt_length/max:674.000 - prompt_length/min:453.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:1.325 - episode/reward/max:9.800 - episode/reward/min:-1.500 - episode/length/mean:14.250 - episode/length/max:15.000 - episode/length/min:12.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.250 - timing_s/gen:2206.724 - timing_s/reward:0.019 - timing_s/old_log_prob:15.459 - timing_s/adv:0.001 - timing_s/update_actor:57.409 - timing_s/dump_rollout_generations:0.165 - timing_s/save_checkpoint:97.765 - timing_s/step:2377.550 - timing_per_token_ms/gen:48.405 - timing_per_token_ms/update_actor:0.680 - timing_per_token_ms/adv:0.000 - perf/total_num_tokens:84469.000 - perf/time_per_step:2377.550 - perf/throughput:35.528"
+        },
+        "Webshop": {
+          "exit_code": 0,
+          "checkpoint": 1,
+          "generation_rpc_seconds": 1037.743,
+          "dt_seconds": 0.022807740606367588,
+          "finite_trace_calls": 0,
+          "event_contrasts": 0,
+          "nonzero_reward_events": 0,
+          "nonzero_advantages": 0,
+          "trace_summary": {
+            "count": 0,
+            "failed_conservation": 0,
+            "max_abs_residual": null,
+            "zero_signed_nonzero_root": 0
+          },
+          "acceptance": "zero reward, zero DT calls, zero advantages and gradient; not an effective-learning acceptance",
+          "official_metrics": "global_seqlen/min:142367.000 - global_seqlen/max:142367.000 - global_seqlen/minmax_diff:0.000 - global_seqlen/balanced_min:142367.000 - global_seqlen/balanced_max:142367.000 - global_seqlen/mean:142367.000 - actor/entropy_loss:0.587 - training/rollout_probs_diff_max:0.159 - training/rollout_probs_diff_mean:0.006 - training/rollout_probs_diff_std:0.011 - actor/pg_loss:0.000 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.000 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:57.118 - perf/max_memory_reserved_gb:65.344 - perf/cpu_memory_used_gb:425.260 - actor/lr:0.000 - training/global_step:1.000 - training/epoch:0.000 - critic/score/mean:0.000 - critic/score/max:0.000 - critic/score/min:0.000 - critic/rewards/mean:0.000 - critic/rewards/max:0.000 - critic/rewards/min:0.000 - critic/advantages/mean:0.000 - critic/advantages/max:0.000 - critic/advantages/min:0.000 - critic/returns/mean:0.000 - critic/returns/max:0.000 - critic/returns/min:0.000 - response_length/mean:617.050 - response_length/max:1024.000 - response_length/min:171.000 - response_length/clip_ratio:0.300 - prompt_length/mean:1755.733 - prompt_length/max:2516.000 - prompt_length/min:211.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:0.000 - episode/reward/max:0.000 - episode/reward/min:0.000 - episode/length/mean:15.000 - episode/length/max:15.000 - episode/length/min:15.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.000 - episode/webshop_task_score (not success_rate):0.000 - timing_s/gen:1040.285 - timing_s/reward:0.030 - timing_s/old_log_prob:39.849 - timing_s/adv:0.002 - timing_s/update_actor:97.411 - timing_s/dump_rollout_generations:0.205 - timing_s/save_checkpoint:172.116 - timing_s/step:1349.904 - timing_per_token_ms/gen:28.098 - timing_per_token_ms/update_actor:0.684 - timing_per_token_ms/adv:0.000 - perf/total_num_tokens:142367.000 - perf/time_per_step:1349.904 - perf/throughput:105.465"
+        }
+      },
+      "results_source": "receipts/rollout-major-cost/author-training-completed.json"
+    },
+    "diverse_webshop_check": {
+      "status": "running_not_validated",
+      "manifest": "runs/author-db53629-webshop-diverse/Webshop/job.json",
+      "source_commit": "db536291114561436c83bfe36afed4c2dc620ca5",
+      "scope": "Original sampler four tasks x group4,15 interaction horizon, one actual DT/PPO iteration. Same response1024, prompt4096, total cap32768, B4, rewards, parser, prompts and sampling policy. Prior one-task all-zero result retained."
     }
   },
   "appworld_pending_decision": {

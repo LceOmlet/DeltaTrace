@@ -12,6 +12,39 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 最新活动检查：`runs/author-db53629-webshop-diverse/Webshop/job.json`，
+  Unix 1790236991.714 启动，GPU5，PID506447（以后以 manifest/进程实际状态
+  为准）。原 sampler 四个任务 × group4，15 次交互、一迭代；其余 response1024、
+  prompt4096、32k 总上限、DT/PPO batch4 均不变。用于检查前次仅一个任务
+  全零奖励未覆盖的学习路径；不是正式预算重启，也未声称成功。
+- 短端点诊断及原生对照均已退出 0：`author-equal-endpoints-native.json`，
+  含初始化 181.187 秒。完全相同 token 的 DT 信用为严格零；原模型不经过
+  DT 的完整前向也出现端点分数差，四项为 −0.06414/0/0/0.11230。
+  其首个隐藏差异位于第 2 层（最大 0.0009765625）。因此不能将该现象归咎于
+  新的有限传播接入，也不能凭此宣称算子容差通过。保留原 FA/FLA 官方判据，
+  既有 0.02 守恒观察范围不是新增训练门槛；未归一化信用或修改奖励/公式。
+- 作者候选的两个四轨迹 pilot 均已退出 0，并有原 owner 的 checkpoint 1 完成
+  标记，**尚不能作为全部验收通过**。Sokoban 57 个非零奖励事件、438 个事件
+  对照、110 个 DT 批次、42494 个非零 token 优势，梯度 0.006，样本成功 1/4；
+  交互生成 RPC 合计 1158.136 秒、DT 1047.003 秒、actor 更新 57.409 秒。
+  WebShop 四条轨迹同一个初始任务，奖励/DT 调用/优势/梯度均为零，不能称为
+  有效学习通过；生成 RPC 1037.743 秒，actor 更新 97.411 秒。
+  原始结果在 `receipts/rollout-major-cost/author-training-completed.json`。
+- Sokoban 首批 DT 214.302 秒的栈位于 Torch/Sympy 动态编译；后续 109 批
+  未重复同级停顿，实际长度和耗时在上述回执逐批保留。归因诊断中 250/438
+  项超出既有守恒观察范围，另有 6 项 signed=0 而 root 差值非零，不能忽略。
+  已在 GPU4 启动短端点检查，直接调用原 actor/DT 并记录原模型逐层输出；
+  `author-equal-endpoints-job.json` / `.log` / `.json` 为事实来源。不是新容差、
+  新模型或全轮重跑，未修改 DT/PPO 公式。
+- 2048 回复的两轮固定策略观测已退出 0，含初始化 693.074 秒。Sokoban 首轮
+  四条输出长 2048/558/816/2048，原解析动作 0/1/1/0，与 1024 首轮相同，
+  不能把单纯加长回复宣称为已修好。`author-response2048.json` 只有候选一条
+  owner 路径，不是作者对拍或完整任务效果验收。正式回复配置暂未改变。
+- 当前补丁的新快照为 `author-patched-files-db53629.json` 和
+  `author-runtime-db53629-normalized.diff`；后者只规范比较时的行尾，避免把
+  CRLF/LF 差异误报为整份文件改写。原始历史快照仍保留。CPU 文本诊断可直接
+  使用已有 `tokenizers.Tokenizer` 和原 projection；运行 Transformers/Torch
+  时必须 source 已有环境，避免缺少 MACA 环境变量被误判为依赖损坏。
 - 最新候选验证（15:03:53 +08 启动）：发布 `releases/db53629`，97 个源码文件
   哈希核对通过；复用下述完整作者候选。只运行 WebShop/Sokoban 各 4 条真实
   轨迹、最多 15 次交互及随后原 PPO 更新，非正式规模重启。实际 PID、参数、
