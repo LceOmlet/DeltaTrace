@@ -75,11 +75,15 @@ def main():
                         help='After B4 warmup, measure B2/B2/B4 compiler and phase costs; skip already-tested PPO updates.')
     parser.add_argument('--phase-profile-lengths', type=int, nargs='+',
                         help='Bounded cost probe at these actual lengths, retaining the 32768 configuration cap; two B4 calls per length, no PPO updates.')
+    parser.add_argument('--compare-gdn-gpu-captures', nargs='+',
+                        help='Within the phase probe, compare current capture residency with these existing owner capture names; no finite rule changes.')
     args = parser.parse_args()
     if args.tail_batch_probe and args.backend != 'vllm':
         parser.error('--tail-batch-probe requires the real vllm worker lifecycle')
     if args.phase_profile_lengths and (args.backend != 'vllm' or args.tail_batch_probe):
         parser.error('--phase-profile-lengths requires vllm and cannot be combined with --tail-batch-probe')
+    if args.compare_gdn_gpu_captures and not args.phase_profile_lengths:
+        parser.error('--compare-gdn-gpu-captures requires --phase-profile-lengths')
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   rollout_max_num_seqs=args.rollout_max_num_seqs,
@@ -181,22 +185,33 @@ def main():
             from torch._dynamo.utils import counters
             native_attribute = producer.runner.attribute
             ledgers = []
+            signed_results = []
             def recorded_profile(*a, **kw):
                 signed, detail = native_attribute(*a, **kw)
                 ledgers.append(detail)
+                if args.compare_gdn_gpu_captures:
+                    signed_results.append(signed.detach().cpu())
                 return signed, detail
             producer.runner.attribute = recorded_profile
             result['phase_probes'] = []
+            original_captures = tuple(producer.runner.gdn_gpu_capture_names)
             for length in args.phase_profile_lengths:
                 remove = 32768 - length
                 if not 0 <= remove <= fixture_detail['synthetic_filler_tokens']:
                     raise ValueError('Profile length must retain the complete original prompt, actions and readout')
                 probe = {**row, 'input_ids': row['input_ids'][remove:],
                          'attention_mask': row['attention_mask'][remove:]}
-                for repeat in range(2):
+                configurations = [('original', original_captures)] * 2
+                if args.compare_gdn_gpu_captures:
+                    candidate = tuple(args.compare_gdn_gpu_captures)
+                    configurations = [('original', original_captures), ('candidate', candidate),
+                                      ('candidate', candidate), ('original', original_captures)]
+                reference = None
+                for repeat, (name, captures) in enumerate(configurations):
+                    producer.runner.gdn_gpu_capture_names = captures
                     before = {key: dict(value) for key, value in counters.items()}
                     tick = time.perf_counter()
-                    worker.compute_dt_token_advantages(
+                    credit = worker.compute_dt_token_advantages(
                         [[probe] for _ in range(4)], [float(original['rewards'])]*4,
                         eos_token_id=worker.tokenizer.eos_token_id,
                         pad_token_id=worker.tokenizer.pad_token_id)
@@ -207,10 +222,24 @@ def main():
                                      for key, value in values.items()
                                      if value != before.get(group, {}).get(key, 0)}
                              for group, values in counters.items()}
-                    result['phase_probes'].append(dict(length=length, repeat=repeat,
+                    observation = dict(length=length, repeat=repeat, capture_config=name,
+                        gdn_gpu_capture_names=list(captures),
                         seconds=elapsed, owner_ledger=ledgers[-1],
-                        compiler_counter_delta={k: v for k, v in delta.items() if v}))
+                        compiler_counter_delta={k: v for k, v in delta.items() if v})
+                    result['phase_probes'].append(observation)
+                    if args.compare_gdn_gpu_captures:
+                        actual = {'signed': signed_results[-1],
+                            'target_logp0': ledgers[-1]['target_logp0'],
+                            'target_logp1': ledgers[-1]['target_logp1'],
+                            'credit': [{key: ep[0][key].detach().cpu() for key in
+                                ('dt_token_advantages','dt_q_estimates','dt_v_estimates')} for ep in credit]}
+                        artifacts[f'{length}_{repeat}_{name}'] = actual
+                        if reference is None:
+                            reference = actual
+                        torch.testing.assert_close(actual, reference, rtol=0, atol=0)
+                        observation['same_actor_signed_endpoints_qva_exact'] = True
                     stage(f'phase_probe_{length}_{repeat}')
+            producer.runner.gdn_gpu_capture_names = original_captures
             result['status'] = 'completed_bounded_phase_probe'
             return
         # Exercise the actual readout's guard. It must fail before the runner.

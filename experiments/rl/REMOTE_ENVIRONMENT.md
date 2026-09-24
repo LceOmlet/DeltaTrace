@@ -12,6 +12,15 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- `gdn-capture-residency.json` 已退出 0：原 actor、原参数/激活卸载、原生
+  graph/cache-off vLLM 驻留下，以 B4、2048/32768 长度做原配置/候选/候选/原配置。
+  只调用已有 `gdn_gpu_capture_names` 选项，增加 q/k/v/g/beta/o 的 GPU 保留。
+  signed、目标端点、Q/V/A 在同一 actor 上逐值一致；本项没有运行 PPO 更新。
+  短输入热调用原配置 9.878 秒、候选 8.880/8.920 秒；32k 原配置
+  29.128/28.302 秒、候选 27.763/27.495 秒。首次 67.988 秒包含已有图加载，
+  其余编译计数无增量。231 次物理采样最高 46319 MiB，完整检查 443.173 秒
+  （原 owner 初始化 233.727 秒）。候选未应用于当前训练：收益约 10%/4%，
+  不能把它说成过程奖励重复事件计算的整体解决。明细在 results_upstream_audit.json。
 - 当前发布 `962ae20` 已推送并部署，100 个源文件哈希核对，原 PPO 核心哈希不变。
   正式预算仍停止；当前是 `runs/author-962ae20-continuous/jobs.json` 的三任务真实
   连续更新检查，Sokoban/WebShop/AppWorld 分别每迭代 4/16/16 条轨迹、两迭代，
