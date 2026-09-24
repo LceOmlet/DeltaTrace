@@ -19,7 +19,7 @@
       "component": "agent_system/multi_turn_rollout/rollout_loop.py",
       "evidence": "Pinned fork adds full-chat accumulation relative to the author collector; 259 changed lines in source diff. Author collector uses the environment manager's per-step observation prompt.",
       "impact": "Changes history semantics and grows repeated prefill/DT/PPO input work. Effect on task score has not been measured.",
-      "action": "Full author runtime candidate plus existing DT seams; redundant fork chat accumulator absent. Real model prefix comparison pending."
+      "action": "Full author runtime candidate plus existing DT seams; redundant fork chat accumulator absent. Actual owner/candidate prefix comparison passed for WebShop and Sokoban; complete-task quality still requires measurement."
     },
     {
       "component": "agent_system/environments/env_manager.py",
@@ -341,6 +341,16 @@
         },
         "elapsed": 277.75884538609535,
         "source": "receipts/rollout-major-cost/author-response1024.json"
+      },
+      "patcher_reapply": {
+        "status": "passed",
+        "fresh_author_then_repeat": true,
+        "second_pass_changed_files": [],
+        "first_pass_modified_file_count": 21,
+        "source": "receipts/rollout-major-cost/author-patcher-fresh.json",
+        "observed_defect": "Training launch stopped before model initialization: repeated patch expected obsolete full-chat decoded-action copy adjacent to envs.step. Removed that unused copy; author collector does not reuse decoded actions after envs.step.",
+        "method_change": false,
+        "boundary_recheck": "18 actual owner/tokenizer/config interface cases passed in19.67s after the removal; no model-quality claim."
       }
     },
     "modified_file_count": 21,

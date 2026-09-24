@@ -576,12 +576,6 @@ ROLLOUT_EVENT_ANCHOR = '            batch_list: list[dict] = to_list_of_dict(bat
 ROLLOUT_EVENT_INSERT = '            batch_list: list[dict] = to_list_of_dict(batch)\n\n            if str(self.config.algorithm.adv_estimator) == "deltatrace":\n                from copy import deepcopy\n                for event_index, row in enumerate(batch_list):\n                    row["dt_env_outcome"] = {\n                        "observation": deepcopy({\n                            key: None if value is None else value[event_index]\n                            for key, value in next_obs.items()\n                        }),\n                        "info": deepcopy(infos[event_index]),\n                        "done": bool(dones[event_index]),\n                    }\n'
 RAW_PROMPT_KEEP_OLD = '            non_tensor_batch_keys_to_pop = ["raw_prompt_ids"]\n'
 RAW_PROMPT_KEEP_NEW = '            non_tensor_batch_keys_to_pop = []\n'
-# Some upstream environment projections (notably Sokoban) normalize the
-# list passed to ``envs.step`` in place, replacing decoded text with integer
-# action ids. Preserve the decoded response for the next chat turn; this is a
-# one-line collector seam, not a second environment implementation.
-ROLLOUT_ACTION_COPY_OLD = "            text_actions = self.tokenizer.batch_decode(batch.batch['responses'], skip_special_tokens=True)\n            \n            next_obs, rewards, dones, infos = envs.step(text_actions)\n"
-ROLLOUT_ACTION_COPY_NEW = "            text_actions = self.tokenizer.batch_decode(batch.batch['responses'], skip_special_tokens=True)\n            env_actions = list(text_actions)\n            next_obs, rewards, dones, infos = envs.step(env_actions)\n"
 GATHER_ANCHOR = "        batch_size = len(total_batch_list)\n\n        success_rate = {}\n"
 GATHER_BROKEN_IMPORT = "            try:\n                try:\n                from experiments.rl.deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n            except ImportError:\n                from deltatrace_credit import averaged_traced_credit\n"
 GATHER_GOOD_IMPORT = ""
@@ -831,13 +825,13 @@ def patch_context_budget(text: str) -> str:
     if text.count(anchor) != 1:
         raise RuntimeError('cannot find owner rollout preprocessing boundary')
     text = text.replace(anchor, anchor + insertion, 1)
-    anchor = '            next_obs, rewards, dones, infos = envs.step(env_actions)\n'
+    anchor = '            next_obs, rewards, dones, infos = envs.step(text_actions)\n'
     if text.count(anchor) != 1:
         raise RuntimeError('cannot find owner rollout environment step')
     return text.replace(anchor, '''            if self.config.env.get("context_budget_action", "error") == "end_episode":
-                next_obs, rewards, dones, infos = envs.step(env_actions, active_masks=active_masks)
+                next_obs, rewards, dones, infos = envs.step(text_actions, active_masks=active_masks)
             else:
-                next_obs, rewards, dones, infos = envs.step(env_actions)
+                next_obs, rewards, dones, infos = envs.step(text_actions)
 ''', 1)
 
 
@@ -914,13 +908,10 @@ def patch_rollout_owner(verl_root: Path) -> None:
     text = rollout.read_text()
     if GATHER_BROKEN_IMPORT in text:
         text = text.replace(GATHER_BROKEN_IMPORT, GATHER_GOOD_IMPORT, 1)
-    if ROLLOUT_ACTION_COPY_NEW not in text:
-        if ROLLOUT_ACTION_COPY_OLD not in text:
-            raise RuntimeError(f"cannot find decoded-action preservation anchor in {rollout}")
-        text = text.replace(ROLLOUT_ACTION_COPY_OLD, ROLLOUT_ACTION_COPY_NEW, 1)
-        print(f"patched {rollout} decoded-action preservation")
-    else:
-        print(f"already patched {rollout} decoded-action preservation")
+    # The author collector does not reuse decoded actions after envs.step.
+    # Remove the obsolete copy from the former full-chat fork integration.
+    text = text.replace('            env_actions = list(text_actions)\n', '')
+    text = text.replace('envs.step(env_actions', 'envs.step(text_actions')
     if RAW_PROMPT_KEEP_NEW not in text:
         if RAW_PROMPT_KEEP_OLD not in text:
             raise RuntimeError(f"cannot find raw prompt retention anchor in {rollout}")
