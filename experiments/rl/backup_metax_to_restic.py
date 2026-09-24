@@ -51,8 +51,13 @@ def main():
     try:
         previous = json.loads(destination(restic+['snapshots', '--json']))
         verified_labels = {tag for snap in previous
-                           if 'dt-checkpoint-restore-sha256' in snap.get('tags', [])
+                           if {'dt-checkpoint-restore-sha256', 'dt-artifact-restore-sha256'} & set(snap.get('tags', []))
                            for tag in snap.get('tags', [])}
+        # This completed native profiler trace is 47GiB. Preserve it in its
+        # own verified restic snapshot instead of restoring it every hour as
+        # part of mutable logs. Restic owns compression, deduplication and tags.
+        profiler_trace = 'receipts/rollout-major-cost/webshop-native-live/generation-206031.json'
+        profiler_label = 'native-profiler-webshop-generation-206031'
         with client.open_sftp() as sftp:
             entries = [x for x in ('repo/experiments/rl', 'receipts', 'runs', 'formal-training.json',
                                    'active-training.json', 'active-source.json', 'environment.json')
@@ -91,6 +96,9 @@ def main():
                     if exists(sftp, str(outputs)):
                         entries.append(str(outputs.relative_to(args.source_root)))
             snapshots = [('metadata', entries, False)]
+            if (profiler_label not in verified_labels and
+                    exists(sftp, str(PurePosixPath(args.source_root)/profiler_trace))):
+                snapshots.append((profiler_label, [profiler_trace], True))
             for job in jobs:
                 root = PurePosixPath(job['checkpoint_dir'])
                 marker = str(root/'latest_checkpointed_iteration.txt')
@@ -132,7 +140,8 @@ def main():
                                  '--tag', 'dt-rl-direct', '--tag', label, '--json']
             if not immutable:
                 cmd += ['--exclude=*.pt', '--exclude=__pycache__', '--exclude=*/checkpoints',
-                        '--exclude=*/checkpoint-owner-roundtrip*']
+                        '--exclude=*/checkpoint-owner-roundtrip*',
+                        '--exclude='+str(PurePosixPath(args.source_root)/profiler_trace)]
             absolute_paths = [str(PurePosixPath(args.source_root)/path) for path in paths]
             if not immutable:
                 absolute_paths += ray_logs
@@ -158,6 +167,10 @@ def main():
             # The destination's original restic restores and verifies every file,
             # without sending a second checkpoint through this PC or to MetaX.
             restore_root = b/'restore-check'/snapshot
+            free_bytes = int(destination(['python3', '-c',
+                'import shutil,sys;print(shutil.disk_usage(sys.argv[1]).free)', str(b)]))
+            if free_bytes < summary['total_bytes_processed']:
+                raise RuntimeError(f'{label}: restore requires {summary["total_bytes_processed"]} bytes, destination has {free_bytes} free')
             restored = destination(restic+['restore', snapshot, '--target', str(restore_root), '--verify'])
             row['restic_restore'] = restored
             if immutable:
@@ -166,7 +179,8 @@ def main():
                 hash_script = """import hashlib,json,pathlib,sys
 root=pathlib.Path(sys.argv[1]); out={}
 for name in sys.argv[2:]:
- for f in sorted((root/name).rglob('*')):
+ source=root/name
+ for f in [source] if source.is_file() else sorted(source.rglob('*')):
   if f.is_file():
    digest=hashlib.sha256()
    with f.open('rb') as stream:
@@ -190,10 +204,12 @@ print(json.dumps(out,sort_keys=True))
             if immutable:
                 # Restic owns the durable marker. Subsequent hourly checks do
                 # not transfer/restore an already verified immutable checkpoint.
-                destination(restic+['tag', '--add', 'dt-checkpoint-restore-sha256', snapshot])
+                verified_tag = ('dt-artifact-restore-sha256' if label == profiler_label
+                                else 'dt-checkpoint-restore-sha256')
+                destination(restic+['tag', '--add', verified_tag, snapshot])
                 tagged = json.loads(destination(restic+['snapshots', '--json']))
                 verified = [s for s in tagged if label in s.get('tags', [])
-                            and 'dt-checkpoint-restore-sha256' in s.get('tags', [])]
+                            and verified_tag in s.get('tags', [])]
                 row['original_snapshot_id'] = snapshot
                 row['snapshot_id'] = verified[-1]['id']
             record()
