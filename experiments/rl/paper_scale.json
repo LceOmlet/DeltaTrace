@@ -86,7 +86,7 @@
         "APPWORLD_MAX_INTERACTIONS": "40",
         "MAX_RESPONSE": "1024"
       },
-      "differences": "LOOP source gives nominal 240 rollouts and early-stops stragglers at >=90%; our fixed owner collects all 240. Official training example sets learning_max_seq_len=32000, truncates each API output to 3000 tokens and ends an individual episode on MaxSeqLenExceeded; these do not guarantee that all episodes finish within the cap. Current owner retains full API observations; the user approved ending the affected episode at the reserved 32768 context budget, retaining only existing official rewards, without introducing the API-output truncation. No LOOP filters, reward normalization, trained value model or replacement PPO are added. Existing VERL official success reward 10/0 stays fixed; LOOP used test-pass fractions. The original max response 1500, LoRA rank16, LR5e-5 and minibatch32 are not substituted. Dev evaluation uses existing owner 40-turn loop, versus paper evaluation 50. One run, not three-seed aggregate.",
+      "differences": "LOOP source gives nominal 240 rollouts and early-stops stragglers at >=90%; our fixed owner collects all 240. Official training example sets learning_max_seq_len=32000, truncates each API output to 3000 tokens and ends an individual episode on MaxSeqLenExceeded; these do not guarantee that all episodes finish within the cap. Current owner retains full API observations; the user approved ending the affected episode at the reserved 32768 context budget, retaining only existing official rewards, without introducing the API-output truncation. No LOOP filters, reward normalization, trained value model or replacement PPO are added. Existing VERL official success reward 10/0 stays fixed; LOOP used test-pass fractions. The original max response 1500, LoRA rank16, LR5e-5 and minibatch32 are not substituted. Dev evaluation uses existing owner 40-turn loop, versus paper evaluation 50. One run, not three-seed aggregate. Author verl-agent defaults to history2 and10000 characters; this run uses existing history_length=40 and a default-inert character-cap option set to null to preserve the user-approved full-history contract.",
       "context_sources": [
         "https://arxiv.org/html/2502.01600v3#A4",
         "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/README.md",
@@ -95,5 +95,5 @@
       ]
     }
   },
-  "settings_status": "Author-alignment candidate; formal jobs stopped. AppWorld context-policy decision pending. Response1024 retained: initial Qwen3.5-9B/512 Sokoban check truncated reasoning before action. Do not label prior runs or pending settings as aligned."
+  "settings_status": "Author-runtime integration with explicit user-required adaptations; formal jobs stopped. AppWorld retains previously approved full history with per-episode budget stop through original memory/renderer parameters. Response1024 retained after original512 truncated Qwen reasoning before actions. Native graph/cache-off exact32k capacity passed; continuous three-task validation still pending."
 }

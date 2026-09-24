@@ -33,12 +33,23 @@
   差异，原始输出保留，不新建全网零容差标准。固定 16 请求×128 tokens 的热
   RPC 为 eager/GPU5 13.368 秒、graph/GPU4 5.035 秒；不同卡，不作严格同卡比。
   这消除了已复现的首 token 缓存异常，未证明完整任务性能已恢复。最终配置的
-  精确 32k/B4/两次 PPO 更新已启动，manifest 是
+  精确 32k/B4/两次 PPO 更新已退出 0，manifest 是
   `vllm-graphs-cache-off-capacity32k-v2-job.json`，另有原 mx-smi 两秒采样文件。
   未加 v2 的首次检查在模型计算前因前一探针清理阶段仍持有通信端口而退出 1；
   保留原记录，确认前一 owner exit0 且 PID 消失后才重启 v2。
+  v2 两次 DT 为 67.257/27.791 秒，原 PPO 梯度范数为 0.029175/0.031128；
+  1441105 个可训练元素变化，原 manager 完成更新后 200 层 LoRA 同步。
+  总耗时 416.899 秒，物理两秒采样最高 51963 MiB（50.75 GiB），无 OOM。
+  DT 输入精确 32768、actor 输入 32597，32769 被拒绝；这是容量夹具。
   正式三任务、每小时检查及备份仍未恢复。新增配置只走原 Hydra/engine_kwargs，
   `run_verl_agent.sh` 尾部 `"$@"` 透传原生覆盖项，不创建同功能本地配置模块。
+- AppWorld 沿用用户已批准的完整历史与超预算单轨迹结束规则，无需重新选择。
+  使用作者已有 `env.history_length=MAX_STEPS` 保留全部实际交互，并在原 renderer
+  的 10000 字符硬编码处增加默认不变的 `appworld_history_char_limit` 参数；本任务
+  传 null。没有复制 renderer、memory 或完整聊天累积器。原默认行为逐值一致，
+  完整历史与真实 tokenizer/collector 预算边界合计 15 项测试通过（31.82 秒），
+  回执为 `receipts/rollout-major-cost/author-history-boundary-tests-v2.log`。
+  这仍是相对作者默认 last2/10000 字符的明确实验适配，不声称复现 LOOP 得分。
 - 图执行驻留下的 32k 容量检查 `vllm-graphs-capacity32k.json` 已退出 0：DT
   输入精确 32768、B4、1024 action 槽位；32769 拒绝。两次 DT 63.671/27.860
   秒，两次原 PPO 更新梯度 0.029175/0.031128，1441105 个可训练元素变化，

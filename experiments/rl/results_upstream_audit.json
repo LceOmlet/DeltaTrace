@@ -24,7 +24,7 @@
     {
       "component": "agent_system/environments/env_manager.py",
       "evidence": "Fork changes include a medical task outside this experiment. Local full_chat_observations rendering overrides the author's memory prompts.",
-      "action": "Removed patch_conversation_observations and launcher full_chat_observations override. Author rendering passes default/initial tests for all three tasks. AppWorld deployment waits for user resolution of the specific history-policy conflict."
+      "action": "Removed patch_conversation_observations and launcher full_chat_observations override. Original author renderer/memory retained. AppWorld uses existing history_length=MAX_STEPS plus a default-inert character-cap parameter to preserve the already approved full-history/budget-end contract."
     },
     {
       "component": "verl, examples and the three task env_package directories",
@@ -40,7 +40,7 @@
     {
       "component": "AppWorld context termination candidate",
       "evidence": "13 distinct tokenizer/collector/manager/RPC boundary cases passed across focused runs. These use real owner methods and Qwen tokenizer with explicitly mocked model/environment RPCs, not task-performance evaluation.",
-      "action": "Stop boundary rebased onto the author collector. All 13 boundary tests passed again (29.44s) with the pristine author collector as the valid-input reference. Not deployed; no fabricated terminal reward."
+      "action": "Stop boundary rebased onto the author collector; previously13 boundary tests passed. Combined with default-preserving history option,15 tests passed in31.82s. No fabricated terminal reward. Actual continuous task validation remains pending."
     },
     {
       "component": "Text modality/size parquet preparation",
@@ -1075,9 +1075,38 @@
             }
           },
           "owner_seam": "One-line engine_kwargs.pop(enable_prefix_caching, True); native vLLM implementation unchanged and default retained.",
-          "exact32k_status": "running",
-        "exact32k_manifest": "receipts/rollout-major-cost/vllm-graphs-cache-off-capacity32k-v2-job.json",
-        "previous_start_failure": "Initial attempt exited1 before model compute because the prior probe still held MASTER_PORT during cleanup. Failure preserved; v2 launched only after prior owner exit0 and PID absence."
+          "exact32k_status": "passed",
+          "exact32k_manifest": "receipts/rollout-major-cost/vllm-graphs-cache-off-capacity32k-v2-job.json",
+          "previous_start_failure": "Initial attempt exited1 before model compute because the prior probe still held MASTER_PORT during cleanup. Failure preserved; v2 launched only after prior owner exit0 and PID absence.",
+          "exact32k_result": {
+            "status": "passed",
+            "seconds": 416.8988746581599,
+            "dt_input_tokens": 32768,
+            "actor_input_tokens": 32597,
+            "minibatch": 4,
+            "actor_microbatch": 4,
+            "rollout_enforce_eager": false,
+            "rollout_enable_prefix_caching": false,
+            "changed_elements": 1441105,
+            "updated_native_lora": {
+              "loaded_layers": 200,
+              "unused_layers": [],
+              "nonzero_b_elements": 1426944
+            },
+            "ppo_source_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+            "source": "receipts/rollout-major-cost/vllm-graphs-cache-off-capacity32k-v2.json",
+            "dt_seconds": [
+              67.25685038790107,
+              27.790970655158162
+            ],
+            "gradient_norms": [
+              0.0291748046875,
+              0.0311279296875
+            ],
+            "physical_mx_smi_samples": 213,
+            "physical_observed_max_mib": 51963,
+            "physical_scope": "Approximately2-second board samples, not continuous peak. Includes vLLM resident state. Synthetic exact-capacity fixture, not a task score."
+          }
         }
       }
     }
@@ -1094,7 +1123,7 @@
     "backup": "not started during repair"
   },
   "remaining_evidence": [
-    "Resolve AppWorld context contract before deploying its renderer; preserve existing rewards and DT/PPO method.",
+    "Validate AppWorld full-history/budget-end contract during actual complete trajectories and continuous training; existing user contract is resolved.",
     "Complete representative task-level quality checks; fixed-policy prefix parity does not estimate complete-task success.",
     "Verify full DT/PPO collector integration on the author release before resuming formal budgets; previous source/32k kernel receipts are scoped to their recorded releases."
   ],
@@ -1547,15 +1576,18 @@
       }
     }
   },
-  "appworld_pending_decision": {
-    "conflict": "Author verl-agent default uses last 2 interactions and clips action-history text at 10000 characters; earlier user approval retained history and ended an over-budget episode. LOOP uses another prompt/reward setup.",
-    "action": "Asked which context contract to use; no AppWorld context behavior deployed while pending. Rewards and DT/PPO fixed."
-  },
   "patch_groups": {
     "DT extension": "rollout_loop event/token capture; fsdp_workers callback; ray_trainer advantage dispatch. Official core_algos remains untouched.",
     "observed runtime compatibility": "HF/TRL/Qwen API/device differences, import cycles/lazy CPU worker imports, legacy Gym checker, checkpoint metadata, published VERL v0.7.0 LoRA backport.",
     "memory and transport": "Owner offload lifecycle, shared padding and existing Qwen logits_to_keep, active-row filtering, compact row storage. Prior focused parity receipts retained; not declared pristine upstream.",
-    "AppWorld boundary": "Forward existing dataset/port/horizon options; optional per-episode context stop and active RPC mask. Reward/dynamics/parsers unchanged.",
+    "AppWorld boundary": "Forward existing dataset/port/horizon options; optional per-episode context stop and active RPC mask; default-inert owner history character cap parameter. Original memory,renderer,reward,dynamics and parsers retained.",
     "metadata": "Opt-in offline row allocation inside author preparation script; original schema/writer reused."
+  },
+  "appworld_context_contract": {
+    "decision": "Preserve existing user approval: full action/observation history; end only over-budget episode; retain already executed actions and official rewards. No new approval needed.",
+    "owner_interface": "env.history_length=MAX_STEPS; minimal owner appworld_history_char_limit option defaults to10000, selected null. Original renderer/memory and task service remain owners.",
+    "validation": "15 passed in31.82s: real owner default parity/full-history rendering plus real Qwen tokenizer and collector/manager boundary tests.",
+    "receipt": "receipts/rollout-major-cost/author-history-boundary-tests-v2.log",
+    "scope": "Boundary tests, not learned task performance or reproduction of author last2/10000char setting."
   }
 }

@@ -188,6 +188,12 @@ if [[ "$ENV_NAME" == "AppWorld" && ! -f "$VERL_ROOT/appworld_ports.ports" ]]; th
   exit 2
 fi
 # Use the original PPO clipped objective, without the optional dual clipping.
+APPWORLD_HISTORY_ARGS=()
+if [[ "$METHOD" == "dt" && "$ENV_NAME" == "AppWorld" ]]; then
+  # Preserve the user's approved history until the original budget boundary
+  # ends that episode. Rendering and storage stay in the author manager.
+  APPWORLD_HISTORY_ARGS=("env.history_length=$MAX_STEPS" "+env.appworld_history_char_limit=null")
+fi
 exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   ray_init.num_cpus="${DT_RAY_NUM_CPUS:-null}" \
   algorithm.adv_estimator="$ADV_ESTIMATOR" \
@@ -265,4 +271,5 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   "${CHAT_TEMPLATE_ARGS[@]}" \
   "${METHOD_ARGS[@]}" \
   "${ROLLOUT_ARGS[@]}" \
+  "${APPWORLD_HISTORY_ARGS[@]}" \
   "$@"
