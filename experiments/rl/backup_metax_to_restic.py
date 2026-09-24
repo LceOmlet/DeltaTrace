@@ -22,7 +22,8 @@ def main():
     p.add_argument('--jump', default='4090')
     p.add_argument('--backup-root', default='/data/liangchen/deltatrace_rl_metax_backup')
     p.add_argument('--receipt', type=Path, required=True)
-    p.add_argument('--checkpoint', help='Optional completed checkpoint probe relative to source-root')
+    p.add_argument('--checkpoint', action='append', default=[],
+                   help='Additional completed checkpoint relative to source-root; repeat for different runs/tasks')
     args = p.parse_args()
     spec = importlib.util.spec_from_file_location('local_ssh_credentials', args.connector)
     module = importlib.util.module_from_spec(spec)
@@ -108,10 +109,20 @@ def main():
                     if step <= latest and label not in verified_labels:
                         rel = str((root/name).relative_to(args.source_root))
                         snapshots.append((label, [rel], True))
-            if args.checkpoint:
-                label = 'probe-'+PurePosixPath(args.checkpoint).name
+            for checkpoint in args.checkpoint:
+                relative = PurePosixPath(checkpoint)
+                if relative.is_absolute() or '..' in relative.parts:
+                    raise ValueError('Checkpoint must remain within the recorded runtime')
+                if not relative.name.startswith('global_step_'):
+                    raise ValueError('Checkpoint must be an original global_step_N directory')
+                marker = PurePosixPath(args.source_root)/relative.parent/'latest_checkpointed_iteration.txt'
+                with sftp.open(str(marker)) as source:
+                    latest = int(source.read())
+                if int(relative.name.removeprefix('global_step_')) > latest:
+                    raise ValueError('Checkpoint is not covered by the original completion marker')
+                label = 'checkpoint-'+'__'.join(relative.parts)
                 if label not in verified_labels:
-                    snapshots.append((label, [args.checkpoint], True))
+                    snapshots.append((label, [checkpoint], True))
         for label, paths, immutable in snapshots:
             for path in paths:
                 if PurePosixPath(path).is_absolute() or '..' in PurePosixPath(path).parts:
