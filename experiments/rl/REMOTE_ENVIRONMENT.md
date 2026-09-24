@@ -34,7 +34,9 @@
   RPC 为 eager/GPU5 13.368 秒、graph/GPU4 5.035 秒；不同卡，不作严格同卡比。
   这消除了已复现的首 token 缓存异常，未证明完整任务性能已恢复。最终配置的
   精确 32k/B4/两次 PPO 更新已启动，manifest 是
-  `vllm-graphs-cache-off-capacity32k-job.json`，另有原 mx-smi 两秒采样文件。
+  `vllm-graphs-cache-off-capacity32k-v2-job.json`，另有原 mx-smi 两秒采样文件。
+  未加 v2 的首次检查在模型计算前因前一探针清理阶段仍持有通信端口而退出 1；
+  保留原记录，确认前一 owner exit0 且 PID 消失后才重启 v2。
   正式三任务、每小时检查及备份仍未恢复。新增配置只走原 Hydra/engine_kwargs，
   `run_verl_agent.sh` 尾部 `"$@"` 透传原生覆盖项，不创建同功能本地配置模块。
 - 图执行驻留下的 32k 容量检查 `vllm-graphs-capacity32k.json` 已退出 0：DT
