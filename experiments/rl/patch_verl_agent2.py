@@ -830,7 +830,9 @@ def patch_context_budget(text: str) -> str:
     if 'context_budget_exceeded' in text:
         return text
     raw = '        raw_prompt_ids = self.tokenizer.encode(prompt_with_vision_tokens, add_special_tokens=False)\n'
-    anchor = '        # Use prompt_with_chat_template for model inputs (keeps image placeholders for the processor).\n'
+    if raw not in text:
+        raw = '        raw_prompt_ids = self.tokenizer.encode(raw_prompt, add_special_tokens=False)\n'
+    anchor = '        input_ids, attention_mask = verl_F.tokenize_and_postprocess_data('
     if text.count(raw) != 1 or text.count(anchor) != 1:
         raise RuntimeError('cannot find owner prompt-tokenization boundary')
     text = text.replace(raw, '', 1)
@@ -851,6 +853,8 @@ def patch_context_budget(text: str) -> str:
     text = text.replace('verl_F.tokenize_and_postprocess_data(prompt=prompt_with_chat_template,',
                         'verl_F.tokenize_and_postprocess_data(prompt=prompt_for_model,', 1)
     anchor = '            batch = self.preprocess_batch(gen_batch=gen_batch, obs=obs, messages=message_histories)\n'
+    if anchor not in text:
+        anchor = '            batch = self.preprocess_batch(gen_batch=gen_batch, obs=obs)\n'
     insertion = '''
             if self.config.env.get("context_budget_action", "error") == "end_episode":
                 exceeded = batch.non_tensor_batch.pop("context_budget_tokens")
@@ -942,6 +946,90 @@ def patch_memory_active_steps(text: str) -> str:
     section = section.replace('        for env_idx in range(self.batch_size):\n',
                               '        for env_idx in range(self.batch_size):\n            if active_masks is not None and not active_masks[env_idx]:\n                continue\n', 1)
     return text[:start] + section + text[end:]
+
+
+def patch_rollout_owner(verl_root: Path) -> None:
+    # Preserve the collector's event and token identities
+    # before collate_fn turns trajectory rows into DataProto tensors.
+    rollout = verl_root / RAY_ROLLOUT_FILE
+    text = rollout.read_text()
+    if GATHER_BROKEN_IMPORT in text:
+        text = text.replace(GATHER_BROKEN_IMPORT, GATHER_GOOD_IMPORT, 1)
+    if ROLLOUT_ACTION_COPY_NEW not in text:
+        if ROLLOUT_ACTION_COPY_OLD not in text:
+            raise RuntimeError(f"cannot find decoded-action preservation anchor in {rollout}")
+        text = text.replace(ROLLOUT_ACTION_COPY_OLD, ROLLOUT_ACTION_COPY_NEW, 1)
+        print(f"patched {rollout} decoded-action preservation")
+    else:
+        print(f"already patched {rollout} decoded-action preservation")
+    if RAW_PROMPT_KEEP_NEW not in text:
+        if RAW_PROMPT_KEEP_OLD not in text:
+            raise RuntimeError(f"cannot find raw prompt retention anchor in {rollout}")
+        text = text.replace(RAW_PROMPT_KEEP_OLD, RAW_PROMPT_KEEP_NEW, 1)
+        print(f"patched {rollout} raw prompt retention")
+    else:
+        print(f"already patched {rollout} raw prompt retention")
+    if GATHER_OLD_MARKER in text:
+        start = text.index(GATHER_OLD_MARKER)
+        end = text.index("        success_rate = {}", start)
+        text = text[:start] + text[end:]
+        print(f"removed stale scalar counterfactual collector from {rollout}")
+    if GATHER_INSERT_PREVIOUS in text:
+        text = text.replace(GATHER_INSERT_PREVIOUS, GATHER_INSERT, 1)
+    if ROLLOUT_DT_CALL_PREVIOUS in text:
+        text = text.replace(ROLLOUT_DT_CALL_PREVIOUS, ROLLOUT_DT_CALL, 1)
+    if ROLLOUT_EVENT_INSERT not in text and ROLLOUT_EVENT_INSERT.replace(ROW_CALL, COMPACT_ROW_CALL) not in text:
+        if ROLLOUT_EVENT_ANCHOR not in text:
+            raise RuntimeError(f"cannot find reward event capture anchor in {rollout}")
+        text = text.replace(ROLLOUT_EVENT_ANCHOR, ROLLOUT_EVENT_INSERT, 1)
+    gather_inserted = False
+    if ROLLOUT_STEP_INSERT not in text:
+        if ROLLOUT_STEP_ANCHOR not in text:
+            raise RuntimeError(f"cannot find rollout step anchor in {rollout}")
+        text = text.replace(ROLLOUT_STEP_ANCHOR, ROLLOUT_STEP_INSERT, 1)
+    if GATHER_INSERT not in text:
+        if GATHER_ANCHOR not in text:
+            raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
+        text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
+        gather_inserted = True
+
+    if ROLLOUT_DT_CALL_STALE in text:
+        text = text.replace(ROLLOUT_DT_CALL_STALE, "", 1)
+        print(f"removed stale {rollout} DeltaTrace producer call")
+
+    if ROLLOUT_DT_CALL not in text and 'print(f"[DT rollout] phase=dt_rpc_start' not in text:
+        if ROLLOUT_DT_CALL_ANCHOR not in text:
+            raise RuntimeError(f"cannot find rollout DeltaTrace call anchor in {rollout}")
+        text = text.replace(ROLLOUT_DT_CALL_ANCHOR, ROLLOUT_DT_CALL, 1)
+        print(f"patched {rollout} owner DeltaTrace producer call")
+    # Ray workers may expose the adapter directory directly rather than the
+    # repository namespace; keep the import at the same thin boundary. Only
+    # rewrite the import on the same pass that inserted the fresh block;
+    # otherwise a second idempotent patch could nest another try statement.
+    if gather_inserted:
+        text = text.replace(
+            "            from experiments.rl.deltatrace_credit import averaged_traced_credit\n",
+            GATHER_GOOD_IMPORT,
+            1,
+        )
+    row_call, compact_row_call = ROW_CALL, COMPACT_ROW_CALL
+    if compact_row_call not in text:
+        if text.count(row_call) != 1:
+            raise RuntimeError("cannot find factual rollout row conversion call")
+        text = text.replace(row_call, compact_row_call, 1)
+    utils = verl_root / ROLLOUT_UTILS_FILE
+    utils.write_text(patch_rollout_row_storage(utils.read_text()))
+    active_anchor = '            batch_input.meta_info = gen_batch.meta_info'
+    active_insert = active_anchor + '''
+            if str(self.config.algorithm.adv_estimator) == "deltatrace":
+                batch_input.non_tensor_batch["rollout_active_mask"] = active_masks
+'''
+    if active_insert not in text:
+        if text.count(active_anchor) != 1:
+            raise RuntimeError("cannot find collector generation mask boundary")
+        text = text.replace(active_anchor, active_insert, 1)
+    rollout.write_text(patch_context_budget(patch_rollout_phase_logs(text)))
+    print(f"patched {rollout} DeltaTrace collector")
 
 
 def main() -> None:
@@ -1349,87 +1437,7 @@ def main() -> None:
     ray_trainer.write_text(text)
     print(f"patched {ray_trainer} DeltaTrace token estimator")
 
-    # Preserve the collector's event and token identities
-    # before collate_fn turns trajectory rows into DataProto tensors.
-    rollout = args.verl_root / RAY_ROLLOUT_FILE
-    text = rollout.read_text()
-    if GATHER_BROKEN_IMPORT in text:
-        text = text.replace(GATHER_BROKEN_IMPORT, GATHER_GOOD_IMPORT, 1)
-    if ROLLOUT_ACTION_COPY_NEW not in text:
-        if ROLLOUT_ACTION_COPY_OLD not in text:
-            raise RuntimeError(f"cannot find decoded-action preservation anchor in {rollout}")
-        text = text.replace(ROLLOUT_ACTION_COPY_OLD, ROLLOUT_ACTION_COPY_NEW, 1)
-        print(f"patched {rollout} decoded-action preservation")
-    else:
-        print(f"already patched {rollout} decoded-action preservation")
-    if RAW_PROMPT_KEEP_NEW not in text:
-        if RAW_PROMPT_KEEP_OLD not in text:
-            raise RuntimeError(f"cannot find raw prompt retention anchor in {rollout}")
-        text = text.replace(RAW_PROMPT_KEEP_OLD, RAW_PROMPT_KEEP_NEW, 1)
-        print(f"patched {rollout} raw prompt retention")
-    else:
-        print(f"already patched {rollout} raw prompt retention")
-    if GATHER_OLD_MARKER in text:
-        start = text.index(GATHER_OLD_MARKER)
-        end = text.index("        success_rate = {}", start)
-        text = text[:start] + text[end:]
-        print(f"removed stale scalar counterfactual collector from {rollout}")
-    if GATHER_INSERT_PREVIOUS in text:
-        text = text.replace(GATHER_INSERT_PREVIOUS, GATHER_INSERT, 1)
-    if ROLLOUT_DT_CALL_PREVIOUS in text:
-        text = text.replace(ROLLOUT_DT_CALL_PREVIOUS, ROLLOUT_DT_CALL, 1)
-    if ROLLOUT_EVENT_INSERT not in text and ROLLOUT_EVENT_INSERT.replace(ROW_CALL, COMPACT_ROW_CALL) not in text:
-        if ROLLOUT_EVENT_ANCHOR not in text:
-            raise RuntimeError(f"cannot find reward event capture anchor in {rollout}")
-        text = text.replace(ROLLOUT_EVENT_ANCHOR, ROLLOUT_EVENT_INSERT, 1)
-    gather_inserted = False
-    if ROLLOUT_STEP_INSERT not in text:
-        if ROLLOUT_STEP_ANCHOR not in text:
-            raise RuntimeError(f"cannot find rollout step anchor in {rollout}")
-        text = text.replace(ROLLOUT_STEP_ANCHOR, ROLLOUT_STEP_INSERT, 1)
-    if GATHER_INSERT not in text:
-        if GATHER_ANCHOR not in text:
-            raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
-        text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
-        gather_inserted = True
-
-    if ROLLOUT_DT_CALL_STALE in text:
-        text = text.replace(ROLLOUT_DT_CALL_STALE, "", 1)
-        print(f"removed stale {rollout} DeltaTrace producer call")
-
-    if ROLLOUT_DT_CALL not in text and 'print(f"[DT rollout] phase=dt_rpc_start' not in text:
-        if ROLLOUT_DT_CALL_ANCHOR not in text:
-            raise RuntimeError(f"cannot find rollout DeltaTrace call anchor in {rollout}")
-        text = text.replace(ROLLOUT_DT_CALL_ANCHOR, ROLLOUT_DT_CALL, 1)
-        print(f"patched {rollout} owner DeltaTrace producer call")
-    # Ray workers may expose the adapter directory directly rather than the
-    # repository namespace; keep the import at the same thin boundary. Only
-    # rewrite the import on the same pass that inserted the fresh block;
-    # otherwise a second idempotent patch could nest another try statement.
-    if gather_inserted:
-        text = text.replace(
-            "            from experiments.rl.deltatrace_credit import averaged_traced_credit\n",
-            GATHER_GOOD_IMPORT,
-            1,
-        )
-    row_call, compact_row_call = ROW_CALL, COMPACT_ROW_CALL
-    if compact_row_call not in text:
-        if text.count(row_call) != 1:
-            raise RuntimeError("cannot find factual rollout row conversion call")
-        text = text.replace(row_call, compact_row_call, 1)
-    utils = args.verl_root / ROLLOUT_UTILS_FILE
-    utils.write_text(patch_rollout_row_storage(utils.read_text()))
-    active_anchor = '            batch_input.meta_info = gen_batch.meta_info'
-    active_insert = active_anchor + '''
-            if str(self.config.algorithm.adv_estimator) == "deltatrace":
-                batch_input.non_tensor_batch["rollout_active_mask"] = active_masks
-'''
-    if active_insert not in text:
-        if text.count(active_anchor) != 1:
-            raise RuntimeError("cannot find collector generation mask boundary")
-        text = text.replace(active_anchor, active_insert, 1)
-    rollout.write_text(patch_context_budget(patch_rollout_phase_logs(text)))
-    print(f"patched {rollout} DeltaTrace collector")
+    patch_rollout_owner(args.verl_root)
 
     # The observed 32k cap was also being used as a compute length for short
     # prompts. Opt-in owner fixes retain the unmodified external tensor ABI.

@@ -33,14 +33,17 @@ def tokenizer():
 
 @pytest.fixture
 def collector(tokenizer):
-    source = Path(owner.__file__).read_text()
+    source = Path(os.environ.get('CONTEXT_COLLECTOR_SOURCE', owner.__file__)).read_text()
     cls = patched_class(owner, patch_context_budget(source), 'TrajectoryCollector')
     config = OmegaConf.create(dict(
         data=dict(max_prompt_length=31598, truncation='error', return_raw_chat=True,
                   apply_chat_template_kwargs=dict(enable_thinking=False)),
         algorithm=dict(adv_estimator='deltatrace'),
         env=dict(context_budget_action='end_episode', max_steps=4, rollout=dict(n=1))))
-    return cls(config, tokenizer)
+    result = cls(config, tokenizer)
+    reference = Path(os.environ.get('CONTEXT_COLLECTOR_REFERENCE', owner.__file__)).read_text()
+    result.reference_type = patched_class(owner, reference, 'TrajectoryCollector')
+    return result
 
 
 def batch(n=1):
@@ -61,11 +64,18 @@ def messages_at_length(tokenizer, length):
     return chat
 
 
+def preprocess_args(collector, chat):
+    kwargs = dict(item=0, gen_batch=batch(), obs={'text': [chat[0]['content']]})
+    if hasattr(collector, '_copy_messages'):
+        kwargs['messages'] = chat
+    return kwargs
+
+
 @pytest.mark.parametrize('length', [31597, 31598, 31599, 31748])
 def test_actual_qwen_tokenizer_reserved_32k_boundary(collector, length):
     chat = messages_at_length(collector.tokenizer, length)
     before = copy.deepcopy(chat)
-    kwargs = dict(item=0, gen_batch=batch(), obs={'text': ['observation']}, messages=chat)
+    kwargs = preprocess_args(collector, chat)
     result = collector.preprocess_single_sample(**kwargs)
     assert chat == before and result['raw_prompt'] == before
     if length > 31598:
@@ -75,7 +85,7 @@ def test_actual_qwen_tokenizer_reserved_32k_boundary(collector, length):
     else:
         assert result['context_budget_tokens'] == 0
         collector.config.env.context_budget_action = 'error'
-        original = owner.TrajectoryCollector(collector.config, collector.tokenizer)
+        original = collector.reference_type(collector.config, collector.tokenizer)
         expected = original.preprocess_single_sample(**kwargs)
         for key in ['input_ids', 'attention_mask', 'position_ids']:
             assert torch.equal(result[key], expected[key])
@@ -85,8 +95,8 @@ def test_actual_qwen_tokenizer_reserved_32k_boundary(collector, length):
 def test_default_still_rejects_overflow(collector):
     collector.config.env.context_budget_action = 'error'
     with pytest.raises((RuntimeError, NotImplementedError)):
-        collector.preprocess_single_sample(item=0, gen_batch=batch(), obs={'text': ['']},
-            messages=messages_at_length(collector.tokenizer, 31748))
+        collector.preprocess_single_sample(**preprocess_args(collector,
+            messages_at_length(collector.tokenizer, 31748)))
 
 
 def test_owner_patch_idempotent():

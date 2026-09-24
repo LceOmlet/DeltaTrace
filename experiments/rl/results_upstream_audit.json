@@ -19,7 +19,7 @@
       "component": "agent_system/multi_turn_rollout/rollout_loop.py",
       "evidence": "Pinned fork adds full-chat accumulation relative to the author collector; 259 changed lines in source diff. Author collector uses the environment manager's per-step observation prompt.",
       "impact": "Changes history semantics and grows repeated prefill/DT/PPO input work. Effect on task score has not been measured.",
-      "action": "Replace duplicated fork collector behavior with the author owner; keep only the accepted DT token/event seam and demonstrated platform/transport fixes. Replacement not deployed yet."
+      "action": "Isolated candidate now uses the author collector file plus the existing DT token/event seam and demonstrated transport fixes. Thirteen actual tokenizer/collector boundary tests passed on that candidate; full environment/model task comparison and production deployment are still pending."
     },
     {
       "component": "agent_system/environments/env_manager.py",
@@ -40,7 +40,7 @@
     {
       "component": "AppWorld context termination candidate",
       "evidence": "13 distinct tokenizer/collector/manager/RPC boundary cases passed across focused runs. These use real owner methods and Qwen tokenizer with explicitly mocked model/environment RPCs, not task-performance evaluation.",
-      "action": "Candidate is not deployed; rebase the needed stop boundary onto the selected official owner. No fabricated terminal reward."
+      "action": "Stop boundary rebased onto the author collector. All 13 boundary tests passed again (29.44s) with the pristine author collector as the valid-input reference. Not deployed; no fabricated terminal reward."
     }
   ],
   "settings_findings": [
