@@ -12,9 +12,10 @@
 
 ## 2026-09-24 rollout 修复与复用
 
-- 最新活动检查：`runs/author-db53629-webshop-diverse/Webshop/job.json`，
-  Unix 1790236991.714 启动，GPU5，PID506447（以后以 manifest/进程实际状态
-  为准）。原 sampler 四个任务 × group4，15 次交互、一迭代；其余 response1024、
+- 最新活动检查：`runs/author-db53629-webshop-diverse-v2/Webshop/job.json`，
+  GPU5，实际 PID/启动时间以 manifest 为准。前次未加 `-v2` 的运行在模型初始化
+  前因 Ray socket 路径超过 107 字节退出 1；已缩短 RAY_TMPDIR 为
+  `/tmp/dt-ws-diverse-db53629`，复用已生成 metadata，未改代码或重装。原 sampler 四个任务 × group4，15 次交互、一迭代；其余 response1024、
   prompt4096、32k 总上限、DT/PPO batch4 均不变。用于检查前次仅一个任务
   全零奖励未覆盖的学习路径；不是正式预算重启，也未声称成功。
 - 短端点诊断及原生对照均已退出 0：`author-equal-endpoints-native.json`，
