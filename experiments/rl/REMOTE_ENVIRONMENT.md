@@ -12,6 +12,28 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 连续检查最新完成标记：WebShop/Sokoban 均为 checkpoint2，AppWorld 为
+  checkpoint1 并已进入第二轮 rollout。WebShop 两轮原梯度范数 0.001/0.002，
+  checkpoint1→2 有 1437578 个 LoRA 元素改变；Sokoban 为 0.006/0.002。
+  AppWorld 首轮成功 3/16、原梯度 0.805，生成 RPC 994.163 秒、DT RPC
+  212.344 秒、旧 log-prob 262.108 秒、原 PPO 950.318 秒；323 条有效训练行
+  约 81 个 B4 更新，共处理 1979864 个输入 tokens。现场 py-spy 先后确认
+  batch_idx51→80，不是同一个反向卡住。已读取的三个原 checkpoint 的 LoRA
+  张量均有限且 B 非零，结果 `continuous-checkpoint-tensors.json`。
+  AppWorld 有一个 signed=-5.9209126 的条目，按原公式得到 A=-3717.51746，
+  与日志吻合；未裁剪/重归一化。其总守恒残差 0.001213 不能证明逐 token
+  删除估计准确，原记录 `appworld-advantage-extremes.json` 保留这一范围说明。
+- 发布 `6220819` 已推送并部署，101 个源文件核对。原 DT/PPO 运行时代码与
+  当前检查的 962ae20 相同；环境默认 VERL_ROOT 已改为已有作者候选目录，
+  避免手动恢复时落回旧 fork；原生 graph/cache-off 参数写入 paper_scale.json。
+  `runs/author-6220819-paper/prepared.json` 只表示正式预算已准备，尚未启动。
+  入口 `receipts/rollout-major-cost/prepare_author_formal.py --launch` 会核对
+  三个现有检查正常结束和当前显卡空闲，再运行原 trainer；不终止当前作业。
+  正式 AppWorld 所需 240+3 个已有服务端口均接受 TCP 连接；这是可用性检查，
+  不是环境或训练效果验收。每小时检查及实际备份仍未恢复。
+  备份 reader 同样使用确切 ray_session；完成标记标签包含完整 run 相对路径，
+  防止不同实验的同名 Webshop-step1 被旧已验证标签误跳过。只检查了当前
+  三个实际 manifest 的路径/标签，无新传输。
 - `gdn-capture-residency.json` 已退出 0：原 actor、原参数/激活卸载、原生
   graph/cache-off vLLM 驻留下，以 B4、2048/32768 长度做原配置/候选/候选/原配置。
   只调用已有 `gdn_gpu_capture_names` 选项，增加 q/k/v/g/beta/o 的 GPU 保留。
