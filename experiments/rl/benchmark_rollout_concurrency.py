@@ -30,12 +30,19 @@ def main():
     parser.add_argument('--requests', type=int, default=32)
     parser.add_argument('--enforce-eager', action=argparse.BooleanOptionalAction, default=True,
                         help='Forward the existing owner setting; disabling it permits native vLLM graph execution.')
+    parser.add_argument('--greedy', action='store_true', help='Use the original owner do_sample=False path.')
+    parser.add_argument('--decode-tokens', type=int, default=128)
+    parser.add_argument('--mamba-cache-mode', choices=('none', 'align', 'all'), default=None,
+                        help='Pass the native vLLM engine option through the existing engine_kwargs interface.')
+    parser.add_argument('--enable-prefix-caching', action=argparse.BooleanOptionalAction, default=None,
+                        help='Pass the native vLLM cache toggle; omitted preserves the owner default.')
     parser.add_argument('--profile-dir', type=Path,
                         help='Use the original vLLM profiler for a bounded extra call; no training kernel changes.')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     result = dict(scope=__doc__, max_num_seqs=args.max_num_seqs, actor_minibatch=4,
-                  model_context_cap=32768, enforce_eager=args.enforce_eager, stages=[])
+                  model_context_cap=32768, enforce_eager=args.enforce_eager,
+                  greedy=args.greedy, stages=[])
     started = time.perf_counter()
 
     def record(phase, **data):
@@ -86,6 +93,10 @@ def main():
             # the current sharding manager still owns native sleep/wake.
             c.rollout.free_cache_engine = False
         c.rollout.engine_kwargs.vllm.limit_mm_per_prompt = {'image': 0, 'video': 0}
+        if args.mamba_cache_mode is not None:
+            c.rollout.engine_kwargs.vllm.mamba_cache_mode = args.mamba_cache_mode
+        if args.enable_prefix_caching is not None:
+            c.rollout.engine_kwargs.vllm.enable_prefix_caching = args.enable_prefix_caching
         if args.profile_dir:
             c.rollout.engine_kwargs.vllm.profiler_config = dict(
                 profiler='torch', torch_profiler_dir=str(args.profile_dir.resolve()),
@@ -93,6 +104,8 @@ def main():
                 ignore_frontend=True, max_iterations=16)
         worker = ActorRolloutRefWorker(c, 'actor_rollout')
         worker.init_model()
+        engine_config = worker.rollout.inference_engine.llm_engine.vllm_config
+        result['native_cache_config'] = engine_config.cache_config.metrics_info()
         record('owner_init')
 
         # Read the owner's real RequestOutput counters; do not reconstruct
@@ -111,9 +124,14 @@ def main():
             if profile_next:
                 worker.rollout.inference_engine.stop_profile()
             engine_calls.append(dict(seconds=seconds, profiled=profile_next, requests=[dict(
+                request_id=out.request_id,
+                prompt_ids_sha256=hashlib.sha256(json.dumps(out.prompt_token_ids).encode()).hexdigest(),
                 prompt_tokens=len(out.prompt_token_ids),
                 cached_tokens=out.num_cached_tokens,
                 generated_tokens=sum(len(sample.token_ids) for sample in out.outputs),
+                first_tokens=[dict(token_id=sample.token_ids[0],
+                    logprob=sample.logprobs[0][sample.token_ids[0]].logprob)
+                    for sample in out.outputs if sample.token_ids],
             ) for out in outputs]))
             return outputs
 
@@ -155,6 +173,8 @@ def main():
             samples.max_tokens = samples.min_tokens = tokens
             samples.ignore_eos = True
             inputs = batch(active)
+            if args.greedy:
+                inputs.meta_info['do_sample'] = False
             tick = time.perf_counter()
             output = worker.generate_sequences(inputs)
             torch.cuda.synchronize()
@@ -179,10 +199,10 @@ def main():
                    output_artifact=str(artifact))
 
         run('warmup', 16)
-        run('all_active', 128)
-        run('all_active_repeat', 128)
+        run('all_active', args.decode_tokens)
+        run('all_active_repeat', args.decode_tokens)
         # Same transport; vLLM receives only the actual active requests.
-        run('eight_active' if len(prompts) == 32 else 'quarter_active', 128,
+        run('eight_active' if len(prompts) == 32 else 'quarter_active', args.decode_tokens,
             [i % 4 == 0 for i in range(len(prompts))])
         if args.profile_dir:
             profile_next = True

@@ -537,15 +537,547 @@
           }
         ]
       },
-      "interpretation": "The measured decode intervals contain many gaps between original GPU operations. Profiling changes absolute time; only unprofiled calls are throughput baselines. Original vLLM graph execution is being evaluated in isolation, not yet adopted.",
+      "interpretation": "Native graph execution reduces launch gaps. Existing prefix-cache path produces a reproducible incorrect cache-hit first token even in eager/greedy mode; explicit align does not fix it. Original prefix-cache toggle off removes that observed defect; hot128-token16-request RPCs13.368s eager/GPU5 and5.035s graphs/GPU4. Final config32k and continuous task checks remain; formal training stopped.",
       "graph_candidate": {
-        "status": "running_not_validated",
+        "status": "throughput_and_capacity_measured_output_difference_under_investigation_not_adopted",
         "manifest": "receipts/rollout-major-cost/vllm-native-graphs-v2-job.json",
         "owner_options": {
           "enforce_eager": false,
           "free_cache_engine": false
         },
-        "previous_failure": "Initial probe omitted the official constructor-required free_cache_engine=False partner; stopped before vLLM initialization. Current-version native sleep/wake remains unchanged."
+        "previous_failure": "Initial probe omitted the official constructor-required free_cache_engine=False partner; stopped before vLLM initialization. Current-version native sleep/wake remains unchanged.",
+        "result_source": "receipts/rollout-major-cost/vllm-native-graphs-v2.json",
+        "unprofiled_seconds": {
+          "owner_init": 179.12450774107128,
+          "warmup": 16.76739880349487,
+          "all_active": 4.486260941252112,
+          "all_active_repeat": 4.477197390049696,
+          "quarter_active": 3.763697779737413
+        },
+        "throughput_scope": "Same GPU4 and exact prompt IDs, forced16 requests x128 generated tokens. Not whole rollout/training speed.",
+        "output_comparison_source": "receipts/rollout-major-cost/vllm-graphs-output-comparison.json",
+        "output_comparison": [
+          {
+            "phase": "warmup",
+            "mask_identical": true,
+            "all_responses_identical": false,
+            "shared_prefix_tokens": 72,
+            "shared_prefix_logprob": {
+              "count": 72,
+              "max_abs": 1.9405077695846558,
+              "mean_abs": 0.056260865181684494,
+              "finite": true
+            }
+          },
+          {
+            "phase": "all_active",
+            "mask_identical": true,
+            "all_responses_identical": false,
+            "shared_prefix_tokens": 362,
+            "shared_prefix_logprob": {
+              "count": 362,
+              "max_abs": 2.280766487121582,
+              "mean_abs": 0.021655023097991943,
+              "finite": true
+            }
+          },
+          {
+            "phase": "all_active_repeat",
+            "mask_identical": true,
+            "all_responses_identical": false,
+            "shared_prefix_tokens": 243,
+            "shared_prefix_logprob": {
+              "count": 243,
+              "max_abs": 0.24602746963500977,
+              "mean_abs": 0.010762923397123814,
+              "finite": true
+            }
+          },
+          {
+            "phase": "quarter_active",
+            "mask_identical": true,
+            "all_responses_identical": false,
+            "shared_prefix_tokens": 129,
+            "shared_prefix_logprob": {
+              "count": 129,
+              "max_abs": 0.13517189025878906,
+              "mean_abs": 0.011107187718153,
+              "finite": true
+            }
+          }
+        ],
+        "next_check": "Original greedy owner path,16 token calls with request ID/prompt hash/cache-hit/first-token score capture; graphs not yet adopted.",
+        "capacity32k": {
+          "status": "passed",
+          "seconds": 398.881811324507,
+          "dt_input_tokens": 32768,
+          "actor_input_tokens": 32597,
+          "minibatch": 4,
+          "actor_microbatch": 4,
+          "changed_elements": 1441105,
+          "updated_native_lora": {
+            "loaded_layers": 200,
+            "unused_layers": [],
+            "nonzero_b_elements": 1426944
+          },
+          "ppo_source_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+          "source": "receipts/rollout-major-cost/vllm-graphs-capacity32k.json",
+          "dt_seconds": [
+            63.67101838160306,
+            27.86048454605043
+          ],
+          "gradient_norms": [
+            0.0291748046875,
+            0.0311279296875
+          ],
+          "physical_resources": {
+            "scope": "Physical mx-smi GPU4 board usage sampled every approximately 2 seconds; observed maximum, not continuous peak. Sampler began after initialization.",
+            "samples": 160,
+            "first": [
+              1790239958.6751053,
+              4823
+            ],
+            "last": [
+              1790240308.4469407,
+              959
+            ],
+            "maximum": [
+              1790240222.441529,
+              51968
+            ]
+          },
+          "scope": "Synthetic exact-capacity input; two DT calls,two original PPO updates,updated LoRA native sync. Not generated task performance."
+        },
+        "cache_hit_diagnostic": {
+          "scope": "Original greedy generation; same prompt hashes with/without cache hits. Request identity verified; both eager and graph paths change their first greedy token after a cache hit. No DT execution involved.",
+          "results": {
+            "vllm-eager-greedy": {
+              "source": "receipts/rollout-major-cost/vllm-eager-greedy.json",
+              "status": "measured",
+              "calls": [
+                {
+                  "phase": "warmup",
+                  "seconds": 18.83561609685421,
+                  "request_count": 16,
+                  "cached_count": 12,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 6,
+                  "example": {
+                    "uncached": {
+                      "request_id": "0",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.044295381754636765
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "4",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 27775,
+                          "logprob": -1.3367260694503784
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "phase": "all_active",
+                  "seconds": 3.081041617318988,
+                  "request_count": 16,
+                  "cached_count": 12,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 12,
+                  "example": {
+                    "uncached": {
+                      "request_id": "16",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.044295381754636765
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "20",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 1265,
+                          "logprob": -3.0490612983703613
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "phase": "all_active_repeat",
+                  "seconds": 3.0255576744675636,
+                  "request_count": 16,
+                  "cached_count": 12,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 12,
+                  "example": {
+                    "uncached": {
+                      "request_id": "32",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.044295381754636765
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "36",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 198,
+                          "logprob": -2.9428367614746094
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "phase": "quarter_active",
+                  "seconds": 3.503298321738839,
+                  "request_count": 4,
+                  "cached_count": 3,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 3,
+                  "example": {
+                    "uncached": {
+                      "request_id": "48",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.03912965953350067
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "49",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 27775,
+                          "logprob": -0.8077297806739807
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "vllm-graph-greedy": {
+              "source": "receipts/rollout-major-cost/vllm-graph-greedy.json",
+              "status": "measured",
+              "calls": [
+                {
+                  "phase": "warmup",
+                  "seconds": 16.899883053265512,
+                  "request_count": 16,
+                  "cached_count": 12,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 3,
+                  "example": {
+                    "uncached": {
+                      "request_id": "0",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.05106918141245842
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "4",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 40,
+                          "logprob": -0.17897635698318481
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "phase": "all_active",
+                  "seconds": 2.026976908557117,
+                  "request_count": 16,
+                  "cached_count": 12,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 3,
+                  "example": {
+                    "uncached": {
+                      "request_id": "16",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.05106918141245842
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "20",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 40,
+                          "logprob": -0.17897635698318481
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "phase": "all_active_repeat",
+                  "seconds": 2.029137374833226,
+                  "request_count": 16,
+                  "cached_count": 12,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 3,
+                  "example": {
+                    "uncached": {
+                      "request_id": "32",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.05106918141245842
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "36",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 40,
+                          "logprob": -0.17897635698318481
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "phase": "quarter_active",
+                  "seconds": 1.5981358923017979,
+                  "request_count": 4,
+                  "cached_count": 3,
+                  "cached_first_token_disagreements_with_same_prompt_uncached": 3,
+                  "example": {
+                    "uncached": {
+                      "request_id": "48",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 0,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 760,
+                          "logprob": -0.04389329254627228
+                        }
+                      ]
+                    },
+                    "cached": {
+                      "request_id": "49",
+                      "prompt_ids_sha256": "34bf84a94a39bd1679087db0ee0483278782daf9755fe1acb571104626a1a29f",
+                      "prompt_tokens": 1092,
+                      "cached_tokens": 1024,
+                      "generated_tokens": 16,
+                      "first_tokens": [
+                        {
+                          "token_id": 40,
+                          "logprob": -0.19885146617889404
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "next_check": "Native enable_prefix_caching=False eliminates the reproduced first-token mismatch; finalize exact32k capacity and continuous task behavior before rollout adoption.",
+          "align_result": "Both explicit-align probes exited0 and reproduced the same defect. Actual cache config is align/block512; generic default none does not establish a missing setting.",
+          "source_provenance": {
+            "source": "receipts/rollout-major-cost/native-cache-source-provenance.json",
+            "inspected_files_matching_installed_wheel_record": 10,
+            "scope": "Only listed model/cache/runner/scheduler files; not all files or runtime monkey patches."
+          }
+        },
+        "cache_off": {
+          "scope": "No cache-hit first-token defect in this bounded native greedy fixture. Later greedy differences retained; no whole-network numerical threshold invented and no task-score claim. Timing is across two idle C550 cards, not a strict same-card ratio.",
+          "results": {
+            "vllm-eager-cache-off": {
+              "source": "receipts/rollout-major-cost/vllm-eager-cache-off.json",
+              "status": "measured",
+              "native_cache_config": {
+                "block_size": "512",
+                "gpu_memory_utilization": "0.75",
+                "swap_space": "4.0",
+                "cache_dtype": "auto",
+                "is_attention_free": "False",
+                "num_gpu_blocks_override": "None",
+                "sliding_window": "None",
+                "enable_prefix_caching": "False",
+                "prefix_caching_hash_algo": "sha256",
+                "cpu_offload_gb": "0.0",
+                "calculate_kv_scales": "False",
+                "cpu_kvcache_space_bytes": "None",
+                "mamba_page_size_padded": "2097152",
+                "mamba_block_size": "32768",
+                "mamba_cache_dtype": "auto",
+                "mamba_ssm_cache_dtype": "auto",
+                "mamba_cache_mode": "none",
+                "num_gpu_blocks": "1712",
+                "num_cpu_blocks": "0",
+                "kv_sharing_fast_prefill": "False",
+                "kv_cache_memory_bytes": "None",
+                "kv_offloading_size": "None",
+                "kv_offloading_backend": "native"
+              },
+              "calls": [
+                {
+                  "phase": "warmup",
+                  "seconds": 20.575193316675723,
+                  "same_prompt_pairs": 12,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 0
+                },
+                {
+                  "phase": "all_active",
+                  "seconds": 12.985699887387455,
+                  "same_prompt_pairs": 12,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 1
+                },
+                {
+                  "phase": "all_active_repeat",
+                  "seconds": 13.367694718763232,
+                  "same_prompt_pairs": 12,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 1
+                },
+                {
+                  "phase": "quarter_active",
+                  "seconds": 12.971923511475325,
+                  "same_prompt_pairs": 3,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 0
+                }
+              ]
+            },
+            "vllm-graph-cache-off": {
+              "source": "receipts/rollout-major-cost/vllm-graph-cache-off.json",
+              "status": "measured",
+              "native_cache_config": {
+                "block_size": "512",
+                "gpu_memory_utilization": "0.75",
+                "swap_space": "4.0",
+                "cache_dtype": "auto",
+                "is_attention_free": "False",
+                "num_gpu_blocks_override": "None",
+                "sliding_window": "None",
+                "enable_prefix_caching": "False",
+                "prefix_caching_hash_algo": "sha256",
+                "cpu_offload_gb": "0.0",
+                "calculate_kv_scales": "False",
+                "cpu_kvcache_space_bytes": "None",
+                "mamba_page_size_padded": "2097152",
+                "mamba_block_size": "32768",
+                "mamba_cache_dtype": "auto",
+                "mamba_ssm_cache_dtype": "auto",
+                "mamba_cache_mode": "none",
+                "num_gpu_blocks": "1714",
+                "num_cpu_blocks": "0",
+                "kv_sharing_fast_prefill": "False",
+                "kv_cache_memory_bytes": "None",
+                "kv_offloading_size": "None",
+                "kv_offloading_backend": "native"
+              },
+              "calls": [
+                {
+                  "phase": "warmup",
+                  "seconds": 18.545526571571827,
+                  "same_prompt_pairs": 12,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 0
+                },
+                {
+                  "phase": "all_active",
+                  "seconds": 5.030370932072401,
+                  "same_prompt_pairs": 12,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 5
+                },
+                {
+                  "phase": "all_active_repeat",
+                  "seconds": 5.0345771964639425,
+                  "same_prompt_pairs": 12,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 5
+                },
+                {
+                  "phase": "quarter_active",
+                  "seconds": 4.221168110147119,
+                  "same_prompt_pairs": 3,
+                  "first_token_mismatches": 0,
+                  "full_response_mismatches": 0
+                }
+              ]
+            }
+          },
+          "owner_seam": "One-line engine_kwargs.pop(enable_prefix_caching, True); native vLLM implementation unchanged and default retained.",
+          "exact32k_status": "running",
+          "exact32k_manifest": "receipts/rollout-major-cost/vllm-graphs-cache-off-capacity32k-job.json"
+        }
       }
     }
   },

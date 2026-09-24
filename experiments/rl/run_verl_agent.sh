@@ -264,4 +264,5 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   trainer.val_before_train="$VAL_BEFORE_TRAIN" \
   "${CHAT_TEMPLATE_ARGS[@]}" \
   "${METHOD_ARGS[@]}" \
-  "${ROLLOUT_ARGS[@]}"
+  "${ROLLOUT_ARGS[@]}" \
+  "$@"

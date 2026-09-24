@@ -391,6 +391,17 @@ VLLM_ROLLOUT_FILE = "verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py"
 VLLM_ACTIVE_MARKER = "        # Only live collector rows become vLLM requests."
 
 
+def patch_vllm_prefix_cache_option(text: str) -> str:
+    """Expose vLLM's native cache toggle through the existing engine_kwargs seam."""
+    old = '            enable_prefix_caching=True,'
+    new = '            enable_prefix_caching=engine_kwargs.pop("enable_prefix_caching", True),'
+    if new in text:
+        return text
+    if text.count(old) != 1:
+        raise RuntimeError("cannot find unique pinned vLLM prefix-cache option")
+    return text.replace(old, new, 1)
+
+
 def patch_vllm_active_rows(text: str) -> str:
     """Use the collector mask at the pinned vLLM request boundary, preserving rows."""
     if VLLM_ACTIVE_MARKER in text:
@@ -1456,7 +1467,7 @@ def main() -> None:
     actor.write_text(patch_actor_response_head(actor.read_text()))
 
     vllm = args.verl_root / VLLM_ROLLOUT_FILE
-    vllm.write_text(patch_vllm_active_rows(vllm.read_text()))
+    vllm.write_text(patch_vllm_prefix_cache_option(patch_vllm_active_rows(vllm.read_text())))
 
 
 if __name__ == "__main__":

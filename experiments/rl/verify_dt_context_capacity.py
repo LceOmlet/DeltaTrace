@@ -58,6 +58,10 @@ def main():
     parser.add_argument('--backend', choices=('hf', 'vllm'), default='hf')
     parser.add_argument('--rollout-max-num-seqs', type=int, default=4,
                         help='Use the measured vLLM concurrency while retaining actor/DT minibatch 4')
+    parser.add_argument('--rollout-enforce-eager', action=argparse.BooleanOptionalAction, default=True,
+                        help='Forward native VERL/vLLM execution mode; graph mode retains the original sleep/wake owner.')
+    parser.add_argument('--rollout-enable-prefix-caching', action=argparse.BooleanOptionalAction, default=None,
+                        help='Forward native vLLM cache toggle through the existing engine_kwargs interface.')
     parser.add_argument('--reshard-after-forward', action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument('--response-tokens', type=int, default=0,
                         help='Explicit synthetic action-span width; 0 keeps the recorded script actions')
@@ -79,6 +83,8 @@ def main():
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   rollout_max_num_seqs=args.rollout_max_num_seqs,
+                  rollout_enforce_eager=args.rollout_enforce_eager,
+                  rollout_enable_prefix_caching=args.rollout_enable_prefix_caching,
                   reshard_after_forward=args.reshard_after_forward,
                   actor_microbatch=args.actor_microbatch, activation_offload=args.activation_offload,
                   parameter_offload_policy=args.parameter_offload_policy, stages=[])
@@ -134,6 +140,11 @@ def main():
         c.rollout.micro_batch_size = 4
         if args.backend == 'vllm':
             c.actor.fsdp_config.param_offload = True
+            c.rollout.enforce_eager = args.rollout_enforce_eager
+            if not args.rollout_enforce_eager:
+                c.rollout.free_cache_engine = False
+            if args.rollout_enable_prefix_caching is not None:
+                c.rollout.engine_kwargs.vllm.enable_prefix_caching = args.rollout_enable_prefix_caching
             c.rollout.load_format = 'safetensors'
             c.rollout.max_model_len = 32768
             c.rollout.max_num_seqs = args.rollout_max_num_seqs

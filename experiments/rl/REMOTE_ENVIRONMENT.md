@@ -12,6 +12,38 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 原 vLLM 图执行有界对照已完成：相同 GPU4、16 条原始 prompt IDs、每条固定
+  128 tokens，热生成 RPC 13.309→4.477 秒；该比值不是整轮训练加速比。
+  初始 owner 加载/编译 179.125 秒，对照 eager 为 82.729 秒。没有自写图内核。
+  图执行与 eager 的已采样输出存在差异，重复且命中 prefix cache 的请求尤为
+  明显；当前不据吞吐结果切换正式训练。原 owner greedy 的 16-token 有界
+  检查 `vllm-{graph,eager}-greedy.json` 均退出 0：请求 ID/prompt 哈希对应正确，
+  1092-token 同输入在未命中时首 token=760，命中 1024-token cache 后，eager
+  变成 27775/1265/198，graph 变成 40。不是随机采样或 DT/PPO 导致。
+  显式 `engine_kwargs.vllm.mamba_cache_mode=align` 的两项原生对照也退出 0，
+  原异常完全复现；不能据通用参数默认值推断本次漏配 align。实际配置回执
+  显示 align/block512。进一步的 `vllm-{graph,eager}-cache-off-job.json` 只用
+  原生关闭 prefix cache 做隔离，尚不称为修好。固定 VERL 原构造器写死 True，
+  已做一行默认不变的参数透传：`engine_kwargs.pop("enable_prefix_caching", True)`；
+  没有复制缓存或生成实现。10 个相关模型/缓存/调度源码与安装包 RECORD 哈希
+  相符，记录 `native-cache-source-provenance.json`，不扩大成所有运行时均无补丁。
+- 原生关闭 prefix cache 的两项有界检查均完成，记录
+  `vllm-{graph,eager}-cache-off.json` / `vllm-native-cache-comparison.json`。
+  39 组同 prompt 对照每种模式的首 token 不一致均为 0；后续 greedy 序列仍有
+  差异，原始输出保留，不新建全网零容差标准。固定 16 请求×128 tokens 的热
+  RPC 为 eager/GPU5 13.368 秒、graph/GPU4 5.035 秒；不同卡，不作严格同卡比。
+  这消除了已复现的首 token 缓存异常，未证明完整任务性能已恢复。最终配置的
+  精确 32k/B4/两次 PPO 更新已启动，manifest 是
+  `vllm-graphs-cache-off-capacity32k-job.json`，另有原 mx-smi 两秒采样文件。
+  正式三任务、每小时检查及备份仍未恢复。新增配置只走原 Hydra/engine_kwargs，
+  `run_verl_agent.sh` 尾部 `"$@"` 透传原生覆盖项，不创建同功能本地配置模块。
+- 图执行驻留下的 32k 容量检查 `vllm-graphs-capacity32k.json` 已退出 0：DT
+  输入精确 32768、B4、1024 action 槽位；32769 拒绝。两次 DT 63.671/27.860
+  秒，两次原 PPO 更新梯度 0.029175/0.031128，1441105 个可训练元素变化，
+  200 层更新后 LoRA 由原 vLLM manager 同步。整个检查 398.882 秒。
+  物理 mx-smi 约两秒采样一次，观测最高 51968 MiB（50.75 GiB），无 OOM；
+  这是采样最高值，不是连续峰值。原 allocator 的虚拟 reserved 不作物理占用。
+  本项是容量夹具，不能代表自然任务长度或上述生成输出差异已通过验收。
 - WebShop `author-db53629-webshop-diverse-v2` 已退出 0，原完成标记为 checkpoint1。
   16 条真实轨迹成功 2 条，14 个奖励事件对照经 4 次 DT 得到 6746 个非零 token
   优势；原 PPO 梯度范数 0.003。检查点中 1426944 个 LoRA-B 元素非零且有限，
@@ -25,7 +57,7 @@
   profiler 会影响绝对时间；这些数字不能冒充未插桩的 decode 速度。
   `vllm-native-graphs-v2-job.json` 是 GPU4 图执行隔离对照，沿用原 VERL 参数
   `enforce_eager=False, free_cache_engine=False`。首次漏配后者被原断言拒绝，
-  保留失败回执；没有删除断言、重写内核或调整正式训练。当前图执行尚待结果。
+  保留失败回执；没有删除断言、重写内核或调整正式训练。最新结果见上方记录。
 - 原生算子定位已完成：`author-native-operators.json` 中第一处叶算子差异是
   第 0 层 `in_proj_a.base_layer`，输入成对完全相同，输出差 7.6294e-6；该层
   最终输出仍成对相同。首次传播到层输出的差异位于第 2 层，其 `in_proj_a`
