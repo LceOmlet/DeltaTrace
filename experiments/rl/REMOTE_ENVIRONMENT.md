@@ -12,6 +12,24 @@
 
 ## 2026-09-24 rollout 修复与复用
 
+- 最新候选验证（15:03:53 +08 启动）：发布 `releases/db53629`，97 个源码文件
+  哈希核对通过；复用下述完整作者候选。只运行 WebShop/Sokoban 各 4 条真实
+  轨迹、最多 15 次交互及随后原 PPO 更新，非正式规模重启。实际 PID、参数、
+  日志与退出文件在 `runs/author-db53629-training-check/jobs.json`。
+  prompt 上限分别为 4096/1024，response 1024，总容量上限 32768，actor/DT
+  minibatch4。AppWorld 历史策略仍待确认，未启动；定时检查和备份仍暂停。
+- `db53629` 删除了旧 full-chat collector 才需要的 decoded-action 副本。
+  此前重复应用补丁会因锚点已被上下文分支改变而在模型初始化前退出；失败
+  保留在 `runs/author-3e9b1c7-training-check`。修复后在干净作者源码和已接入
+  候选上均可重复应用，第二次无文件变化；18 项接口复查通过（19.67 秒）。
+  证据为 `receipts/rollout-major-cost/author-patcher-fresh.json` 和
+  `author-runtime-recheck.log`。PPO core 与三个任务 projection 文件仍与作者
+  源码逐字节相同，记录在 `author-core-and-parser-identity.json`。
+- 当前候选需显式设置 `VERL_ROOT=$DT_RUNTIME_ROOT/candidates/official-verl-20bd331`
+  及其 `WEBSHOP_ROOT`；源文件 manifest、环境 JSON 和 jobs.json 必须对应同一
+  次运行。不要把停止的正式 manifest 或旧默认 fork 误作本次验证来源。
+  已有栈采样工具是 `/opt/conda/bin/py-spy`，不需要安装。生成阶段实测栈进入
+  原 VERL `generate_sequences`、`vllm.LLM.generate` 和 `vllm_metax` Qwen3.5。
 - 官方源码隔离候选：`$DT_RUNTIME_ROOT/candidates/official-verl-20bd331`，
   来源 `langfengQ/verl-agent@20bd331bdbc9026a5668e11362178e10ab7400c8`。
   包含整套 `agent_system`、`verl`、`examples`，复用现有 Python/模型/任务资产。

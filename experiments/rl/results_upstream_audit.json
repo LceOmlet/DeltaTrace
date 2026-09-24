@@ -351,6 +351,16 @@
         "observed_defect": "Training launch stopped before model initialization: repeated patch expected obsolete full-chat decoded-action copy adjacent to envs.step. Removed that unused copy; author collector does not reuse decoded actions after envs.step.",
         "method_change": false,
         "boundary_recheck": "18 actual owner/tokenizer/config interface cases passed in19.67s after the removal; no model-quality claim."
+      },
+      "core_and_parsers": {
+        "author_bytes_equal": true,
+        "files": [
+          "verl/trainer/ppo/core_algos.py",
+          "agent_system/environments/env_package/sokoban/projection.py",
+          "agent_system/environments/env_package/webshop/projection.py",
+          "agent_system/environments/env_package/appworld/projection.py"
+        ],
+        "source": "receipts/rollout-major-cost/author-core-and-parser-identity.json"
       }
     },
     "modified_file_count": 21,
@@ -358,6 +368,21 @@
       "author_bytes_equal": true,
       "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
       "normalized_lf_sha256": "5043f97b87b00ab5c5d907022ea6cf148b935fdb71c37222a3f9c33ccfaf1dc6"
+    },
+    "training_check": {
+      "status": "running_not_validated",
+      "source_commit": "db536291114561436c83bfe36afed4c2dc620ca5",
+      "manifest": "runs/author-db53629-training-check/jobs.json",
+      "scope": "Each of Webshop/Sokoban:4 factual episodes, original15-step horizon, followed by original PPO actor updates/checkpoint. Not formal scale. AppWorld not launched while context decision is pending.",
+      "generation_stack": "Original VERL generate_sequences -> vllm.LLM.generate -> installed vllm_metax Qwen3.5; sampled without modifying the worker.",
+      "context": {
+        "total_cap": 32768,
+        "response": 1024,
+        "actor_and_dt_minibatch": 4,
+        "Webshop_prompt": 4096,
+        "Sokoban_prompt": 1024
+      },
+      "results": "Await actual DT/PPO completion, rewards, gradients and owner checkpoint marker; source parity is not a task-quality guarantee."
     }
   },
   "appworld_pending_decision": {

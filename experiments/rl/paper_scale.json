@@ -37,9 +37,10 @@
         "VAL_DATA_SIZE": "256",
         "DT_RAY_NUM_CPUS": "32",
         "ENV_SEED": "0",
-        "MAX_RESPONSE": "1024"
+        "MAX_RESPONSE": "1024",
+        "MAX_PROMPT": "4096"
       },
-      "differences": "Author script uses webshop.use_small=True (1k products), human_goals=False, history length 2 and response cap512; candidate restores author history rendering; response remains1024 pending the model-specific truncation comparison. Qwen3.5-9B, configured total cap32768, minibatch4, gamma1, DT advantage and selected LoRA settings are required experiment adaptations, not the paper original4096 prompt/model/minibatch64/gamma.95. One run, not three-seed aggregate."
+      "differences": "Author script uses webshop.use_small=True (1k products), human_goals=False, history length2, prompt cap4096 and response cap512. Candidate restores author history rendering and prompt cap4096; prior response cap1024 is retained. Qwen3.5-9B, total cap32768, minibatch4, gamma1, DT advantages and selected LoRA settings are required adaptations; the original model, minibatch64 and gamma.95 are not claimed. One run, not three-seed aggregate. Task-performance non-regression remains to be measured."
     },
     "Sokoban": {
       "source": "https://arxiv.org/html/2505.10978v3#A5.SS3",
@@ -58,10 +59,11 @@
         "DT_RAY_NUM_CPUS": "48",
         "ENV_SEED": "0",
         "SOKOBAN_MODE": "tiny_rgb_array",
-        "MAX_RESPONSE": "1024"
+        "MAX_RESPONSE": "1024",
+        "MAX_PROMPT": "1024"
       },
       "author_script": "https://github.com/langfengQ/verl-agent/blob/20bd331bdbc9026a5668e11362178e10ab7400c8/examples/gigpo_trainer/run_sokoban.sh",
-      "differences": "Budget independently confirmed in author script20bd331. Original uses visual Qwen2.5-VL-3B,1024 prompt/512 response,15 steps. Candidate uses existing text Qwen3.5-9B and author text renderer, history2, response1024, total configured cap32768. The text modality/model and DT training settings remain explicit adaptations; no visual-paper score reproduction claim. Official one-box process rewards stay fixed."
+      "differences": "Budget independently confirmed in author script20bd331. Original uses visual Qwen2.5-VL-3B,1024 prompt/512 response,15 steps. Candidate uses existing text Qwen3.5-9B and author text renderer, history2, prompt cap1024, response1024, total configured cap32768. The text modality/model and DT training settings remain explicit adaptations; no visual-paper score reproduction claim. Official one-box process rewards stay fixed."
     },
     "AppWorld": {
       "source": "https://arxiv.org/html/2502.01600v3#A4",
