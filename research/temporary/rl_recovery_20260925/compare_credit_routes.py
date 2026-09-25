@@ -86,14 +86,23 @@ def main():
                 save(precision+'_native_paired_done')
                 schedule = [('joint', pair, True), ('joint_repeat', pair, True), ('single', single, True)]
                 if precision == 'native_fla_fp16':
+                    if os.environ.get('CREDIT_ROUTE_AUDIT') == '1':
+                        schedule.append(('single_repeat', single, True))
                     schedule.append(('joint_full', pair, False))
                 for name, inputs, reuse in schedule:
                     runner.reuse_native_prefix = reuse
                     label = precision+'_'+name
                     save(label+'_start')
                     tick = time.perf_counter()
-                    signed, roots, detail = trace_token_attribution(runner, inputs[0::2], inputs[1::2],
-                        cases, [[0]]*4, packed_answer_targets=PackedAnswerTargets, outcome_token_ids=labels)
+                    audits = []
+                    audit = nullcontext()
+                    if os.environ.get('CREDIT_ROUTE_AUDIT') == '1' and precision == 'native_fla_fp16' and name == 'single':
+                        from audit_finite_residuals import boundary_audit
+                        selected_layers = range(32) if os.environ.get('CREDIT_ROUTE_AUDIT_ALL') == '1' else (13, 7, 8)
+                        audit = boundary_audit(runner, audits, selected=selected_layers)
+                    with audit:
+                        signed, roots, detail = trace_token_attribution(runner, inputs[0::2], inputs[1::2],
+                            cases, [[0]]*4, packed_answer_targets=PackedAnswerTargets, outcome_token_ids=labels)
                     # The public runner returns CPU attribution. Persist its
                     # result before doing optional diagnostic post-processing.
                     signed = signed.cpu()
@@ -110,6 +119,8 @@ def main():
                             max_implied_probability=float((lp-values).exp().max())))
                     run = dict(precision=precision, name=name, native_prefix=reuse,
                                seconds=time.perf_counter()-tick, rows=rows)
+                    if audits:
+                        run['boundary_audit'] = audits
                     report['runs'].append(run)
                     save(label+'_done')
         save('completed')

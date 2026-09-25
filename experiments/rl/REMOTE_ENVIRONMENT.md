@@ -12,6 +12,24 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 13:59独立验证作业启动：`runs/head-task-continuous-20260925/jobs.json`记录
+  AppWorld GPU4/shell3203516、Webshop GPU5/shell3203519；分别每轮4/8轨迹、
+  两轮、原40/15交互上限，均用已验证head发布`f0429ee`。14:02尚在原vLLM
+  初始化，不能当作完成；先核验这些实际PID再继续，不因观察超时重复启动。
+  此前数值探针全部退出0。32层原操作数分解显示选定事件的净偏差0.130401中，
+  原BF16残差加法贡献0.114583；记录器开/关的完整signed和root逐值一致。
+  结果为`credit-residual-all-summary.json`；没有新增校正、门槛或改动Q/V/PPO。
+- 13:46最新状态：旧head正式作业保持停止；`releases/f0429ee`的独立Sokoban
+  小规模运行完成两次非零PPO更新、checkpoint2且退出0。Webshop完成两轮但
+  实际奖励全0，没有覆盖非零DT更新。新head+DT内native FLA FP16的组合
+  容量检查完成：DT输入32768、actor输入32597、B4、原vLLM驻留与两次更新。
+  这些回执位于`receipts/rollout-major-cost/head-fp32-scoped-fla-capacity.json`及
+  `head-sokoban-two-iterations.json`，不当作三任务正式训练均已验收。
+  AppWorld旧TaskRunner 3661258的退出已由内核确认是12:54:06主机global OOM，
+  见`appworld-kernel-oom-summary.json`；不能据历史cgroup峰值断言本次是memcg限额。
+  同进程同形状探针`credit-route-comparison-v2.json`区分了原模型缓存数值差异、
+  有限传播偏差与联合EOS分解差异，未设新的整网通过阈值。下面此前目录、
+  开关与进程状态均须按各自时间阅读，不能覆盖以上当前事实。
 - 信用尖峰定向检查：`receipts/rollout-major-cost/credit-amplification-v3.json`
   已逐值重现旧 head 的全部操作数及 `d=-3.21144`，同一 actor/input 的
   FP32 head 修复使同 token 变为+0.187565。v4补完原生单 token 删除读出，
