@@ -3,7 +3,7 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**当前状态（2026-09-25 15:15 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证，原文预算作业已启动，WebShop正式首轮DT已完成，正式首个更新尚未完成。**
+**当前状态（2026-09-25 15:56 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证。正式作业中 Sokoban/AppWorld 继续运行；WebShop 在原 PPO 更新期间退出，保留失败现场后通过原 owner 重新启动，尚未完成正式首个更新。**
 同一异常样本的旧 head 操作数逐值重现：首 token 的 `d=-3.21144` 隐含
 反事实概率1.28169；只替换为既有 FP32 head 修复后，该 token `d=+0.187565`，
 概率0.0407164，−0.1步罚的优势从+2.38148变为−0.0171025。
@@ -15,6 +15,18 @@
 完整证据、失败的诊断尾部及尚未解决的逐 token 估计偏差见
 [信用放大定位](../../research/temporary/rl_recovery_20260925/CREDIT_AMPLIFICATION.md)。
 历史最大 `d=-13.016` 尚未逐值重现，不能声称 head 是所有极端值的唯一来源。
+
+15:44:52 WebShop Worker 3642631 在 native mcTracer 脱离约十秒后断开，
+原 Ray 报 SYSTEM_ERROR/EOF，未完成检查点。未发现该时段内核 OOM/崩溃
+记录，cgroup OOM 计数仍34；因果尚未确认。独立小矩阵进程在相同工具正常
+脱离后继续运行并退出0，不能据此排除真实 PPO 路径上的观察器问题。
+已停止在正式作业附加该工具，保留177 MB原trace与全部失败日志。
+WebShop 新目录为 `runs/author-9785786-webshop/Webshop`，shell PID 4185212；
+111项源码SHA和原环境、原PPO core均核验。训练计算与5a3cda0一致，仅提前
+写出已有最负归因的原始重放数据；42项既有接口/QVA测试通过。Sokoban与
+AppWorld仍使用5a3cda0，未重启或热替换。启动不代表恢复健康，下一次完整
+更新仍待确认。见[退出现场](../../research/temporary/rl_recovery_20260925/receipts/formal-webshop-observer-incident.json)
+和[原入口重启](../../research/temporary/rl_recovery_20260925/receipts/webshop-native-restart-9785786.json)。
 
 同形状 B8/1479 对照已完成，包含单 token 原模型删除、单 token DT 与联合
 EOS 分解。原前向缓存路径差异和有限传播偏差已分开记录；未把整网守恒阈值

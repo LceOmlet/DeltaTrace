@@ -12,6 +12,18 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 15:56当前是混合固定发布：Sokoban/AppWorld仍为5a3cda0、原PID不变；
+  WebShop改为`releases/9785786`、`runs/author-9785786-webshop/Webshop`、
+  shell PID4185212。此前Worker3642631于15:44:52在原actor更新中退出，
+  时间紧邻native mcTracer脱离；原Ray只有SYSTEM_ERROR/EOF，未发现新OOM
+  或内核崩溃证据。原因尚未确认，不据独立小矩阵脱离成功否定真实故障。
+  禁止继续在正式作业附加该采样器；失败日志和原trace保留。
+  新发布111项SHA、原环境及原PPO core核验通过，只启用已通过42项CPU
+  接口测试的提前极值日志，不改变数值公式。formal/active-training保留
+  previous_attempt，active-source的per_task_sources记录实际独立路径。
+  未完成正式首个更新，不称三任务恢复健康；自动检查和备份仍未开启。
+  证据在`formal-webshop-observer-incident.json`、`deployment-9785786.json`
+  和`webshop-native-restart-9785786.json`。下方较早记录按时间阅读。
 - 当前三任务原PID和`5a3cda0`训练代码未重启/热替换。已用每个任务driver中的
   TaskRunner PID匹配唯一原Ray日志，把实际`ray_session`写回formal/active manifest：
   Sokoban `session_2026-09-25_14-45-07_626695_3563546`，WebShop
