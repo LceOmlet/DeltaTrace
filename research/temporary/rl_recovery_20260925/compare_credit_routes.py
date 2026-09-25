@@ -25,9 +25,11 @@ def main():
     torch.set_num_threads(8)
     torch.manual_seed(2026)
     root = Path(os.environ['DT_RUNTIME_ROOT'])
-    source = root/'receipts/dt-extremes-side-20260925-1027/fixed-input-trace-0.pt'
+    source = Path(os.environ.get('CREDIT_ROUTE_SOURCE', str(
+        root/'receipts/dt-extremes-side-20260925-1027/fixed-input-trace-0.pt')))
     output = Path(os.environ['CREDIT_ROUTE_OUTPUT'])
-    saved = torch.load(source, map_location='cpu', weights_only=True)
+    payload = json.loads(source.read_text()) if source.suffix == '.json' else None
+    saved = None if payload is not None else torch.load(source, map_location='cpu', weights_only=True)
     report = dict(scope=__doc__, source=str(source), runs=[], method_changed=False)
     started = time.perf_counter()
     def save(phase):
@@ -44,13 +46,34 @@ def main():
     text_model = runner.model.model.language_model
     attention = text_model.config._attn_implementation
     text_model.set_attn_implementation('flash_attention_2')
-    pair = saved['pair'].cuda()
     labels = producer.readout.alphabet.label_ids(worker.tokenizer)
-    cases = [dict(target_ids=row[-1:].cpu(), prompt_length=len(row)-1) for row in pair[1::2]]
+    if payload is None:
+        pair = saved['pair'].cuda()
+        cases = [dict(target_ids=row[-1:].cpu(), prompt_length=len(row)-1) for row in pair[1::2]]
+    else:
+        samples = payload['samples']
+        assert len(samples) == 4 and labels == payload['outcome_token_ids']
+        assert payload['eos_token_id'] == worker.tokenizer.eos_token_id
+        length = max(sample['trace']['compute_tokens'] for sample in samples)
+        pair = torch.full((8, length), payload['eos_token_id'], dtype=torch.long, device='cuda')
+        cases = []
+        for b, sample in enumerate(samples):
+            ids = torch.tensor(sample['selected_input_ids'], dtype=torch.long)
+            assert len(ids) == sample['trace']['context_tokens']
+            pair[2*b:2*b+2, :len(ids)] = ids.to(pair.device)
+            pair[2*b, sample['source_start']:sample['source_end']] = payload['eos_token_id']
+            cases.append(dict(target_ids=ids[-1:], prompt_length=len(ids)-1))
+        report['replay_scope'] = ('Original saved token IDs, event labels and batch padding; '
+            'fresh initial actor, not restoration of the former worker process.')
     selection = PackedAnswerTargets(cases, [[0]]*4, pair.shape[1], pair.device, outcome_token_ids=labels)
+    from native_target_logit_rows import NativeTargetLogitRows
+    selector = NativeTargetLogitRows(selection)
     categories = (selection.labels[:, None] == selection.outcome_token_ids[None]).long().argmax(1)
     changed = pair[0::2] != pair[1::2]
     first = changed.int().argmax(1).tolist()
+    if payload is not None:
+        first = [sample['source_start'] + sample['trace']['source_log_ratio_min_index']
+                 for sample in payload['samples']]
     single = pair.clone()
     single[0::2] = single[1::2]
     for b, position in enumerate(first):
@@ -61,12 +84,14 @@ def main():
     def native(paired):
         values = []
         def capture(module, args):
-            packed = args[0].reshape(-1, args[0].shape[-1])
-            values.append(categorical_head_logits(module, packed, selection.outcome_token_ids).detach())
+            # Use the existing target-row owner for distinct predictor positions.
+            # Projection stays inside the gathered FSDP head lifetime.
+            logits = categorical_head_logits(module, args[0], selection.outcome_token_ids)
+            values.append(selector.pack_logits(logits).detach())
         handle = runner.model.lm_head.register_forward_pre_hook(capture)
         try:
             runner.model(input_ids=paired, attention_mask=torch.ones_like(paired),
-                         use_cache=False, logits_to_keep=selection.positions.unique())
+                         use_cache=False, logits_to_keep=selector.rows)
         finally:
             handle.remove()
             runner.model.release_owner_params()
@@ -77,7 +102,7 @@ def main():
                     root=(logp[1::2]-logp[0::2]).cpu().tolist())
 
     try:
-        for precision in ('native_bf16', 'native_fla_fp16'):
+        for precision in (('native_fla_fp16',) if payload is not None else ('native_bf16', 'native_fla_fp16')):
             context = nullcontext() if precision == 'native_bf16' else native_fla_fp16(producer.actor)
             with context:
                 save(precision+'_native_paired_start')
@@ -85,6 +110,8 @@ def main():
                 report.setdefault('native', {})[precision] = refs
                 save(precision+'_native_paired_done')
                 schedule = [('joint', pair, True), ('joint_repeat', pair, True), ('single', single, True)]
+                if payload is not None:
+                    schedule = [('joint', pair, True), ('single', single, True)]
                 if precision == 'native_fla_fp16':
                     if os.environ.get('CREDIT_ROUTE_AUDIT') == '1':
                         schedule.append(('single_repeat', single, True))
@@ -113,10 +140,19 @@ def main():
                     for b in range(4):
                         values = signed[b, active[b]].double()
                         lp = detail['target_logp1'][b]
-                        rows.append(dict(event=10+b, root=float(roots[b]), factual_logp=lp,
-                            reference_logp=detail['target_logp0'][b], first_signed=float(signed[b, first[b]]),
+                        rows.append(dict(event=payload['samples'][b]['trace']['event_step'] if payload else 10+b,
+                            root=float(roots[b]), factual_logp=lp,
+                            reference_logp=detail['target_logp0'][b], selected_position=first[b],
+                            selected_signed=float(signed[b, first[b]]),
                             d_min=float(values.min()), d_max=float(values.max()), signed_sum=float(values.sum()),
                             max_implied_probability=float((lp-values).exp().max())))
+                        if payload is not None:
+                            sample = payload['samples'][b]
+                            recorded = torch.tensor(sample['source_signed'], dtype=torch.float64)
+                            replayed = signed[b, sample['source_start']:sample['source_end']].double()
+                            rows[-1]['saved_joint_d_min'] = float(recorded.min())
+                            if name == 'joint':
+                                rows[-1]['saved_joint_max_abs_difference'] = float((recorded-replayed).abs().max())
                     run = dict(precision=precision, name=name, native_prefix=reuse,
                                seconds=time.perf_counter()-tick, rows=rows)
                     if audits:

@@ -1,0 +1,76 @@
+{
+  "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/formal-webshop-ppo-mctrace-20260925-1543/ppo-update-3642631.json",
+  "trace_sha256": "7beed92d3254410bd5dd580dfcd9c098b481fa4cf93e1ca9682800e7baa2411c",
+  "scope": "Partial PPO update before unexplained worker exit. Measured under native tracer; not unprofiled throughput or complete-iteration timing.",
+  "units": "native ns; cat is queue/stream identity, not operation type",
+  "kernel_filter": "ph=X, pid=2 (metadata process C500), args.block present",
+  "kernel_count": 35079,
+  "kernel_duration_sum_seconds": 14.062298880000002,
+  "kernel_union_seconds": 13.677000192,
+  "kernel_time_window_seconds": 14.721801472,
+  "kernel_recompiled_count": 3,
+  "top_gpu_kernels": [
+    {
+      "name": "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+      "summed_seconds": 3.988361472000001,
+      "count": 1178
+    },
+    {
+      "name": "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+      "summed_seconds": 1.971004416000001,
+      "count": 722
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3> >(int, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3>)",
+      "summed_seconds": 0.8436851199999943,
+      "count": 3251
+    },
+    {
+      "name": "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64",
+      "summed_seconds": 0.586503168,
+      "count": 69
+    },
+    {
+      "name": "prepare_wy_repr_bwd_kernel",
+      "summed_seconds": 0.509778944,
+      "count": 69
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 2> >(int, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 2>)",
+      "summed_seconds": 0.431938816,
+      "count": 2178
+    },
+    {
+      "name": "mcblas__Mck_bf16gemm_full_1m1n1k_256t_bf16_bf16_fp32_sb_nn_0_256_256x64_0",
+      "summed_seconds": 0.41518438399999813,
+      "count": 2176
+    },
+    {
+      "name": "chunk_bwd_kernel_dqkwg",
+      "summed_seconds": 0.41396684800000005,
+      "count": 69
+    },
+    {
+      "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::BFloat16, 2, 1, 1>, at::native::Copy<c10::BFloat16, c10::BFloat16> >(at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::BFloat16, 2, 1, 1>, at::native::Copy<c10::BFloat16, c10::BFloat16>)",
+      "summed_seconds": 0.38720460799999945,
+      "count": 2520
+    },
+    {
+      "name": "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+      "summed_seconds": 0.27114828799999985,
+      "count": 209
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 3> >(int, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 3>)",
+      "summed_seconds": 0.2560212479999998,
+      "count": 470
+    },
+    {
+      "name": "void causal_conv1d_channellast_bwd_kernel<Causal_conv1d_channellast_bwd_kernel_traits<128, 4, 128, true, true, c10::BFloat16, c10::BFloat16>, false, false>(ConvParamsBwd)",
+      "summed_seconds": 0.23676518400000002,
+      "count": 69
+    }
+  ],
+  "mcblas_duration_sum_seconds": 6.4127633920000005,
+  "limitation": "Memory-copy events appear on pid2 and pid3. Do not sum all queues or CPU sync wait as independent elapsed cost; no removable-overhead conclusion from CPU stacks."
+}
