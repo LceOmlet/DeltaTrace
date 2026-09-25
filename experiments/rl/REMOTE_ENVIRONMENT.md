@@ -12,6 +12,21 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 19:14 AppWorld `linear-return-pilot`已退出0、checkpoint marker2；第二轮
+  原PPO336.69秒、梯度约0.009，整轮1230.49秒。CPU mmap原检查点确认
+  1,436,548个LoRA元素变化，参数有限、optimizer步数31→58，未初始化GPU。
+  回执`linear-return-appworld-{completed,saved-updates}.json`。WebShop第二轮
+  DT已结束（29请求/8次调用，最后B1单次73.63秒），19:17原PPO batch_idx7。
+  B1慢调用不被归为已证实的重复编译；仍需区分首次小batch准备与稳定成本。
+  顶层manifest已将旧formal标为stopped，当前pilot身份以bounded_validation引用为准。
+- 19:12前后：WebShop `linear-return-diverse`首轮原checkpoint1完成，原PPO
+  466.96秒、梯度约0.002，整轮1180.42秒；第二轮已经进入DT。AppWorld
+  第二轮32请求/8次DT/81.17秒，当前原PPO反向，尚未完成checkpoint2。
+  `runs/author-64e5876-paper/prepared.json`已生成并核对原预算、原入口、
+  111项发布源码SHA、当前32k容量回执及未改PPO core。**prepared不是启动**；
+  当前仍等两轮验证完成。复用`receipts/rollout-major-cost/prepare_author_formal.py`
+  的`--release 64e5876 --launch`入口；该入口先检查pilot退出及设备空闲，
+  不会停止pilot或触及其他用户进程。
 - 18:52 GPU7 `linear-return-cost32k`退出0并释放：相同保存的32768/B4输入，
   原vLLM graph32休眠驻留、CPUOffloadPolicy/activation offload/checkpointing，
   完整DT冷/热58.56/27.31秒，原生纯反向82.27/57.58秒（前向另32.60/15.18秒）。
