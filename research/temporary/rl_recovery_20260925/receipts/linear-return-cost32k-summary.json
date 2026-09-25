@@ -1,0 +1,80 @@
+{
+  "scope": "Exact synthetic capacity fixture32768, B4, actual native worker sleeping graph vLLM32, CPUOffloadPolicy and activation offload/checkpointing. One cold and one warm observation each; not natural task lengths or model-quality test.",
+  "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/linear-return-cost32k.json",
+  "source_sha256": "bc2d1c87c0add454664b4e89254808450becc3fce4f0664d4920595eefa8930a",
+  "input_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/linear-return-capacity-input.json",
+  "input_source_sha256": "0a2450111ee1466cb757feeb0f83b632f72722e7f28b086fbc9a0cd69e36a876",
+  "factual_ids_sha256": "33cd3ab253a4d8f3f4b8267e603261af163c31d94e4a660501c4124e7a4d1c42",
+  "configuration": {
+    "context_cap": 32768,
+    "batch": 4,
+    "tokens": 32768,
+    "activation_offload": true,
+    "native_gradient_checkpointing": true,
+    "parameter_offload_policy": true,
+    "vllm_max_num_seqs": 32
+  },
+  "runs": [
+    {
+      "kind": "complete_dt",
+      "repeat": 0,
+      "seconds": 58.56112122070044,
+      "phase_stream_seconds": {
+        "native_shared_prefix": 31.51334375,
+        "fork_native_prefix_cache": 0.01383091163635254,
+        "native_root_with_CPU_checkpoints": 3.7941767578125,
+        "pack_actual_target_logits": 0.00011673600226640701,
+        "categorical_head_FP32": 0.0011916799545288086,
+        "actual_root_FP32_logprob_diagnostic": 0.00030131199955940244,
+        "finite_seed": 0.008706815719604492,
+        "finite_final_norm": 0.3818716125488281,
+        "native_replay": 2.4589527168273926,
+        "public_FA_LSE": 0.4647728652954102,
+        "finite_decoder": 19.318746788024896
+      },
+      "d_min": -0.07592854255946964,
+      "d_max": 0.06085678166401334
+    },
+    {
+      "kind": "complete_dt",
+      "repeat": 1,
+      "seconds": 27.307107254862785,
+      "phase_stream_seconds": {
+        "native_shared_prefix": 14.3406572265625,
+        "fork_native_prefix_cache": 0.013592320442199707,
+        "native_root_with_CPU_checkpoints": 2.404042236328125,
+        "pack_actual_target_logits": 0.00012544000148773194,
+        "categorical_head_FP32": 0.000347135990858078,
+        "actual_root_FP32_logprob_diagnostic": 0.00020889599621295928,
+        "finite_seed": 0.001408768057823181,
+        "finite_final_norm": 0.0007403519749641419,
+        "native_replay": 2.4847019577026366,
+        "public_FA_LSE": 0.46513792800903314,
+        "finite_decoder": 6.990805976867676
+      },
+      "d_min": -0.07592854255946964,
+      "d_max": 0.06085678166401334
+    },
+    {
+      "kind": "native_backward",
+      "repeat": 0,
+      "forward_seconds": 32.59526106156409,
+      "backward_seconds": 82.27272551041096,
+      "finite_gradients": true,
+      "loss": 6.7804412841796875
+    },
+    {
+      "kind": "native_backward",
+      "repeat": 1,
+      "forward_seconds": 15.184695020318031,
+      "backward_seconds": 57.57549361512065,
+      "finite_gradients": true,
+      "loss": 6.7804412841796875
+    }
+  ],
+  "complete_dt_over_backward": 0.4742835109222808,
+  "phase": "completed",
+  "elapsed": 372.9063431248069,
+  "exit_code": 0,
+  "physical_gpu_snapshot": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Fri Sep 25 18:51:25 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.3.12           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.29.1.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 116W / 450W      | 47C          P9 | 60204/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 866/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 866/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 46C          P0 | 866/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 98W / 450W       | 48C          P0 | 866/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 65%         Disabled |\n| 258W / 450W      | 51C          P9 | 53035/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 99%         Disabled |\n| 372W / 450W      | 59C          P9 | 34646/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 82%         Disabled |\n| 324W / 450W      | 49C          P9 | 50712/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  0                  3116230         VLLM::EngineCor              59338          |\n|  5                  1337831         ray::WorkerDict              52088          |\n|  6                  1158696         ray::WorkerDict              33576          |\n|  7                  1353325         python                       49694          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+}

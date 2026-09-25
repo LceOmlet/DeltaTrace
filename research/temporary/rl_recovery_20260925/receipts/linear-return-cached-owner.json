@@ -1,0 +1,629 @@
+{
+  "scope": "Check the current native FLA cache path against the pinned forward assertion.\n\nUses saved real first-rollout IDs, native Qwen/cache, existing passive captures,\nand the original FLA FP32 reference/assert_close. No DT rule or PPO is changed.\nThis diagnoses layer-zero cache arithmetic, not whole-network credit accuracy.\n",
+  "checks": [
+    {
+      "name": "native_full",
+      "threshold": 0.005,
+      "rms_ratio": 0.0017158912698566904,
+      "max_abs": 0.01842355728149414,
+      "status": "passed"
+    },
+    {
+      "name": "native_cached_vs_full_reference",
+      "threshold": 0.005,
+      "rms_ratio": 0.001825572200991538,
+      "max_abs": 0.02322673797607422,
+      "status": "passed"
+    },
+    {
+      "name": "native_cached_given_native_state",
+      "threshold": 0.005,
+      "rms_ratio": 0.0017076054733431048,
+      "max_abs": 0.01981830596923828,
+      "status": "passed"
+    }
+  ],
+  "phase": "completed",
+  "seconds": 95.20856736693531,
+  "native_hidden_boundaries": {
+    "scope": "Original HF full forward versus official cache prefix/reorder/suffix, same trained actor and exact IDs; no finite DT, no alternate attention.",
+    "cut": 640,
+    "length": 2110,
+    "observations": [
+      {
+        "name": "layer.0.input_norm",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": true,
+        "max_abs": 0.0,
+        "relative_l2": 0.0
+      },
+      {
+        "name": "layer.0.in_proj_qkv",
+        "shape": [
+          8,
+          1470,
+          8192
+        ],
+        "equal": true,
+        "max_abs": 0.0,
+        "relative_l2": 0.0,
+        "input_equal": true,
+        "input_max_abs": 0.0
+      },
+      {
+        "name": "layer.0.in_proj_z",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": true,
+        "max_abs": 0.0,
+        "relative_l2": 0.0,
+        "input_equal": true,
+        "input_max_abs": 0.0
+      },
+      {
+        "name": "layer.0.in_proj_b",
+        "shape": [
+          8,
+          1470,
+          32
+        ],
+        "equal": true,
+        "max_abs": 0.0,
+        "relative_l2": 0.0,
+        "input_equal": true,
+        "input_max_abs": 0.0
+      },
+      {
+        "name": "layer.0.in_proj_a",
+        "shape": [
+          8,
+          1470,
+          32
+        ],
+        "equal": true,
+        "max_abs": 0.0,
+        "relative_l2": 0.0,
+        "input_equal": true,
+        "input_max_abs": 0.0
+      },
+      {
+        "name": "layer.0.out_proj",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.03125,
+        "relative_l2": 0.0004748591163661331,
+        "input_equal": false,
+        "input_max_abs": 0.015625
+      },
+      {
+        "name": "layer.0",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.0625,
+        "relative_l2": 0.0008511220221407712
+      },
+      {
+        "name": "layer.1.input_norm",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.125,
+        "relative_l2": 0.001370687852613628
+      },
+      {
+        "name": "layer.1.in_proj_qkv",
+        "shape": [
+          8,
+          1470,
+          8192
+        ],
+        "equal": false,
+        "max_abs": 0.0625,
+        "relative_l2": 0.002775956643745303,
+        "input_equal": false,
+        "input_max_abs": 0.125
+      },
+      {
+        "name": "layer.1.in_proj_z",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.046875,
+        "relative_l2": 0.002510222839191556,
+        "input_equal": false,
+        "input_max_abs": 0.125
+      },
+      {
+        "name": "layer.1.in_proj_b",
+        "shape": [
+          8,
+          1470,
+          32
+        ],
+        "equal": false,
+        "max_abs": 0.046875,
+        "relative_l2": 0.0019430330721661448,
+        "input_equal": false,
+        "input_max_abs": 0.125
+      },
+      {
+        "name": "layer.1.in_proj_a",
+        "shape": [
+          8,
+          1470,
+          32
+        ],
+        "equal": false,
+        "max_abs": 0.0625,
+        "relative_l2": 0.0022871140390634537,
+        "input_equal": false,
+        "input_max_abs": 0.125
+      },
+      {
+        "name": "layer.1.out_proj",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.046875,
+        "relative_l2": 0.004044483415782452,
+        "input_equal": false,
+        "input_max_abs": 0.015625
+      },
+      {
+        "name": "layer.1",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.125,
+        "relative_l2": 0.0016238075913861394
+      },
+      {
+        "name": "layer.2.input_norm",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.25,
+        "relative_l2": 0.002416596980765462
+      },
+      {
+        "name": "layer.2.in_proj_qkv",
+        "shape": [
+          8,
+          1470,
+          8192
+        ],
+        "equal": false,
+        "max_abs": 0.125,
+        "relative_l2": 0.004354109056293964,
+        "input_equal": false,
+        "input_max_abs": 0.25
+      },
+      {
+        "name": "layer.2.in_proj_z",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.0625,
+        "relative_l2": 0.0033747637644410133,
+        "input_equal": false,
+        "input_max_abs": 0.25
+      },
+      {
+        "name": "layer.2.in_proj_b",
+        "shape": [
+          8,
+          1470,
+          32
+        ],
+        "equal": false,
+        "max_abs": 0.0625,
+        "relative_l2": 0.002855822443962097,
+        "input_equal": false,
+        "input_max_abs": 0.25
+      },
+      {
+        "name": "layer.2.in_proj_a",
+        "shape": [
+          8,
+          1470,
+          32
+        ],
+        "equal": false,
+        "max_abs": 0.078125,
+        "relative_l2": 0.003791858907788992,
+        "input_equal": false,
+        "input_max_abs": 0.25
+      },
+      {
+        "name": "layer.2.out_proj",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.0634765625,
+        "relative_l2": 0.007162713911384344,
+        "input_equal": false,
+        "input_max_abs": 0.03125
+      },
+      {
+        "name": "layer.2",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.1875,
+        "relative_l2": 0.003736664541065693
+      },
+      {
+        "name": "layer.3",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.1875,
+        "relative_l2": 0.0035221977159380913
+      },
+      {
+        "name": "layer.4",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.125,
+        "relative_l2": 0.004212317056953907
+      },
+      {
+        "name": "layer.5",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.25,
+        "relative_l2": 0.0047691273503005505
+      },
+      {
+        "name": "layer.6",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.25,
+        "relative_l2": 0.006191462278366089
+      },
+      {
+        "name": "layer.7",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.25,
+        "relative_l2": 0.006831730715930462
+      },
+      {
+        "name": "layer.8",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.375,
+        "relative_l2": 0.00832305010408163
+      },
+      {
+        "name": "layer.9",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 0.6171875,
+        "relative_l2": 0.010336940176784992
+      },
+      {
+        "name": "layer.10",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 3.625,
+        "relative_l2": 0.01610555313527584
+      },
+      {
+        "name": "layer.11",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 3.625,
+        "relative_l2": 0.018368864431977272
+      },
+      {
+        "name": "layer.12",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 3.3125,
+        "relative_l2": 0.022884376347064972
+      },
+      {
+        "name": "layer.13",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 3.375,
+        "relative_l2": 0.025297019630670547
+      },
+      {
+        "name": "layer.14",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 4.75,
+        "relative_l2": 0.031551044434309006
+      },
+      {
+        "name": "layer.15",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 4.0,
+        "relative_l2": 0.034012600779533386
+      },
+      {
+        "name": "layer.16",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 4.75,
+        "relative_l2": 0.03554839268326759
+      },
+      {
+        "name": "layer.17",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 4.5,
+        "relative_l2": 0.035266268998384476
+      },
+      {
+        "name": "layer.18",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 5.3125,
+        "relative_l2": 0.038718368858098984
+      },
+      {
+        "name": "layer.19",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 6.25,
+        "relative_l2": 0.04020310193300247
+      },
+      {
+        "name": "layer.20",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 8.25,
+        "relative_l2": 0.04159194231033325
+      },
+      {
+        "name": "layer.21",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 7.0,
+        "relative_l2": 0.04441767930984497
+      },
+      {
+        "name": "layer.22",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 23.75,
+        "relative_l2": 0.0499429851770401
+      },
+      {
+        "name": "layer.23",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 12.625,
+        "relative_l2": 0.04898662120103836
+      },
+      {
+        "name": "layer.24",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 22.125,
+        "relative_l2": 0.0502929650247097
+      },
+      {
+        "name": "layer.25",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 34.375,
+        "relative_l2": 0.05113503709435463
+      },
+      {
+        "name": "layer.26",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 73.5,
+        "relative_l2": 0.05646577849984169
+      },
+      {
+        "name": "layer.27",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 46.0,
+        "relative_l2": 0.05274401977658272
+      },
+      {
+        "name": "layer.28",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 56.5,
+        "relative_l2": 0.053560689091682434
+      },
+      {
+        "name": "layer.29",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 50.75,
+        "relative_l2": 0.052735719829797745
+      },
+      {
+        "name": "layer.30",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 54.25,
+        "relative_l2": 0.05785699561238289
+      },
+      {
+        "name": "layer.31",
+        "shape": [
+          8,
+          1470,
+          4096
+        ],
+        "equal": false,
+        "max_abs": 105.5,
+        "relative_l2": 0.05294087156653404
+      }
+    ],
+    "first_leaf_operands": null
+  },
+  "native_operand_dtypes": {
+    "raw_g": "torch.float32",
+    "q": "torch.float16",
+    "k": "torch.float16",
+    "v": "torch.float16",
+    "g": "torch.float32",
+    "beta": "torch.float16",
+    "A": "torch.float16",
+    "w": "torch.float16",
+    "v_new": "torch.float16",
+    "h": "torch.float16",
+    "o": "torch.bfloat16"
+  }
+}

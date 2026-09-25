@@ -12,6 +12,29 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 18:52 GPU7 `linear-return-cost32k`退出0并释放：相同保存的32768/B4输入，
+  原vLLM graph32休眠驻留、CPUOffloadPolicy/activation offload/checkpointing，
+  完整DT冷/热58.56/27.31秒，原生纯反向82.27/57.58秒（前向另32.60/15.18秒）。
+  未执行PPO更新或环境采样；原生梯度有限。原始结果、输入SHA、脚本在
+  `receipts/rollout-major-cost/linear-return-cost32k*`。不能把这一容量夹具的
+  单次热观测当作全部任务/长度的速度。核心PPO源码SHA与原容量回执一致。
+- GPU7当前缓存核验`linear-return-cached-owner`已于此前退出0，95.21秒。
+  复用实际首轮IDs、原HF缓存、原被动GDN捕获与固定FLA FP32参考/断言；
+  完整/缓存/给定缓存状态三项误差比0.001716/0.001826/0.001708，均小于
+  原0.005阈值。没有替换缓存或添加强迫守恒的缩放，不新设整网逐位一致门槛。
+- WebShop原`linear-return-pilot`两轮已退出0、marker2，两轮均零reward，
+  不能据此验收非零DT更新。18:40启动原采样器4任务组×group8、两轮验证：
+  `runs/linear-return-diverse/Webshop`，shell1314667、Worker1337831、GPU5；
+  Ray session `session_2026-09-25_18-41-51_884250_1314669`。仍用64e5876，
+  32768、actor/DT B4及原15步/1024 response；未按奖励筛选任务。首轮3个
+  官方成功，30请求/8次DT/81.93秒，16695个非零优势，当前原PPO阶段。
+  `active-*` bounded_validation已指向新job.json，旧零奖励pilot与检查点保留。
+- AppWorld原pilot Worker1158696继续，首轮1个官方成功、21请求/6次DT，
+  157.99秒，d范围[-0.119521,0.488195]，无非有限值。首轮原PPO梯度约0.005，
+  124个有效response经31次B4更新耗时560.77秒，整轮1851.05秒，checkpoint1
+  完成，第二轮已经运行。原字段tool_call_count=0不代表未调用工具。
+  尚未启动新正式预算作业、自动检查或备份。
+
 - 18:17确认`runs/linear-return-pilot/Sokoban`正常退出0、原checkpoint marker为2；
   第二轮60行/60请求/15次DT为114.67秒，原PPO46.18秒，整轮545.86秒。
   原两个检查点的LoRA元素变化1,433,186，参数有限、optimizer步数12→27。

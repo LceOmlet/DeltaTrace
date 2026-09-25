@@ -4,6 +4,25 @@
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
 **当前修订（2026-09-25）：按用户要求移除平方归因展开。**
+18:52完成当前发布的同输入精确32768/B4直接耗时对照：完整DT冷/热为
+58.56/27.31秒，原生纯反向冷/热为82.27/57.58秒，原生前向另为32.60/15.18秒。
+热DT为热纯反向的0.474倍；双方均含原CPUOffloadPolicy、activation offload、
+checkpointing和驻留休眠的vLLM graph32。梯度有限、退出0；一次冷/热观测，
+不是自然任务平均耗时或所有长度的普遍结论。见[同输入原生反向对照](../../research/temporary/rl_recovery_20260925/receipts/linear-return-cost32k-summary.json)。
+当前真实训练：Sokoban两轮完成；AppWorld首轮有1/4官方成功、21请求/6次DT，
+产生9241个非零优势，原PPO梯度约0.005、checkpoint1完成，第二轮运行。
+WebShop最初两轮8轨迹均为零奖励，未将其当作非零路径通过；原采样器扩大到
+4个任务组×8轨迹后，首轮有3个官方成功、30请求/8次DT/81.93秒，产生16695个
+非零优势，目前进入原PPO。未按奖励挑选任务，actor/DT minibatch仍为4。
+新正式预算作业尚未启动，不把这些pilot计入原文预算。见
+[AppWorld首轮更新](../../research/temporary/rl_recovery_20260925/receipts/linear-appworld-first-update.json)、
+[WebShop非零路径](../../research/temporary/rl_recovery_20260925/receipts/linear-webshop-diverse-first-dt.json)。
+当前同输入缓存诊断确认：原GDN完整/缓存前向相对原FLA FP32参考的误差比为
+0.001716/0.001826（固定原断言0.005），条件于实际缓存状态的误差为0.001708。
+三个检查均通过。没有根据整网守恒残差另设零误差门槛或修改原缓存；联合有限
+分解与单token删除的差别仍属于单独记录的估计近似，不冒充精确反事实验证。
+见[当前原生缓存核验](../../research/temporary/rl_recovery_20260925/receipts/linear-return-cached-owner.json)。
+
 每个 response 只读出完整未来回报，所有官方过程 reward 进入累计值，再复用
 原 DT/QVA/PPO 接口。81项 CPU 组合与接口/输出层测试通过（1项GPU专用测试跳过）；15步的成功/失败夹具均为
 15请求、4次batch4调用。真实 tokenizer 的 Sokoban 31类均为单token，
@@ -39,7 +58,7 @@ Sokoban新鲜四轨迹的首轮已完成：轨迹长度9/15/15/9，48个response
 未修改有限规则、FA/FLA或PPO来强迫守恒。见[原始边界诊断](../../research/temporary/rl_recovery_20260925/receipts/linear-return-boundary-summary.json)。
 下方按日期记录历史状态。
 
-**当前状态（2026-09-25 15:56 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证。正式作业中 Sokoban/AppWorld 继续运行；WebShop 在原 PPO 更新期间退出，保留失败现场后通过原 owner 重新启动，尚未完成正式首个更新。**
+**历史状态（2026-09-25 15:56 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证。正式作业中 Sokoban/AppWorld 继续运行；WebShop 在原 PPO 更新期间退出，保留失败现场后通过原 owner 重新启动，尚未完成正式首个更新。**
 同一异常样本的旧 head 操作数逐值重现：首 token 的 `d=-3.21144` 隐含
 反事实概率1.28169；只替换为既有 FP32 head 修复后，该 token `d=+0.187565`，
 概率0.0407164，−0.1步罚的优势从+2.38148变为−0.0171025。
