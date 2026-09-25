@@ -48,6 +48,12 @@ d范围[-0.108941,+0.275745]；51条trace的最大隐含删除概率0.893370，�
 VERL compute_log_prob；Sokoban/AppWorld仍在第11/8轮交互。见
 [正式首轮DT回执](../../research/temporary/rl_recovery_20260925/receipts/formal-webshop-first-dt-summary.json)。
 
+绘图来源修复：缺少实际Ray session时，旧工具读取共享session_latest，导致
+三任务状态串台。已补全原session身份并改为只读各自driver的缺省路径，两个
+回归测试和三个现场日志来源核验通过；错误图隔离，正确图重新发布。
+另有逐批极值日志候选：42项CPU接口测试通过，保留发生后续失败前的原始重放
+输入；该候选尚未热替换进当前训练。当前实际作业与诊断候选须分开阅读。
+
 以下为此前有时间戳的训练状态：
 截至 10:33 +08，`runs/author-2ee7ab4-paper` 的 WebShop 已完成 checkpoint9/150，
 Sokoban 完成 checkpoint1/150、第二轮正在 DT；AppWorld 本次重启完成第六轮

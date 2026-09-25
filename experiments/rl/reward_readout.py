@@ -7,6 +7,7 @@ declared reward categories; the official DT runner owns endpoint evaluation.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import math
 import time
 from typing import Any
@@ -230,14 +231,27 @@ class EventRatioReadout:
             batch_minimum = min(trace['source_log_ratio_min'] for trace in batch_traces)
             if batch_minimum < minimum_log_ratio:
                 minimum_log_ratio = batch_minimum
-                # Keep only one complete owner minibatch per rollout. Exact
-                # original IDs and batching are required to reproduce the
-                # observed head amplification; decoded text was insufficient.
+                # Persist a new minimum through the existing owner stdout now:
+                # a later failure must not lose the only exact replay input.
+                # The final report still retains just the most-negative batch.
                 # No thresholds, extra model calls, clipping or credit changes.
-                minimum_batch = (batch, batch_traces, batch_values)
+                minimum_batch = dict(
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    outcome_token_ids=labels,
+                    samples=[dict(
+                        trace=trace, traj_uid=request['traj_uid'], event_reward=request['event_reward'],
+                        source_start=request['start'], source_end=request['end'],
+                        selected_input_ids=torch.cat(tuple(request[name] for name in
+                            ('prompt', 'actions', 'query', 'target'))).tolist(),
+                        source_signed=value.tolist(),
+                    ) for request, trace, value in zip(batch, batch_traces, batch_values)],
+                )
+                print('[DT EOS minimum] ' + json.dumps(minimum_batch), flush=True)
             print(f"[DT EOS minibatch] contrasts={len(batch)} length={length} "
                   f"seconds={detail.get('complete_attribution_seconds_with_diagnostics')} "
-                  f"batch={report['finite_trace_calls']}/{planned_batches}", flush=True)
+                  f"batch={report['finite_trace_calls']}/{planned_batches} "
+                  f"d_min={batch_minimum} "
+                  f"d_max={max(trace['source_log_ratio_max'] for trace in batch_traces)}", flush=True)
         result = [reward_event_credit_for_episode(rows, values)
                   for rows, values in zip(episodes, matrices)]
         report['seconds'] = time.perf_counter() - started
@@ -245,18 +259,7 @@ class EventRatioReadout:
                                           for episode in result for row in episode)
         report['conservation_failures'] = sum(not trace['conservation_verified'] for trace in report['traces'])
         if minimum_batch is not None:
-            batch, traces, values = minimum_batch
-            report['minimum_log_ratio_batch'] = dict(
-                eos_token_id=self.tokenizer.eos_token_id,
-                outcome_token_ids=labels,
-                samples=[dict(
-                    trace=trace, traj_uid=request['traj_uid'], event_reward=request['event_reward'],
-                    source_start=request['start'], source_end=request['end'],
-                    selected_input_ids=torch.cat(tuple(request[name] for name in
-                        ('prompt', 'actions', 'query', 'target'))).tolist(),
-                    source_signed=value.tolist(),
-                ) for request, trace, value in zip(batch, traces, values)],
-            )
+            report['minimum_log_ratio_batch'] = minimum_batch
         self.last_report = report
         return result
 

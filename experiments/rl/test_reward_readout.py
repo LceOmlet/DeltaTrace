@@ -1,5 +1,6 @@
 """EOS event adapter contracts with an explicitly labelled owner test double."""
 from copy import deepcopy
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -271,6 +272,27 @@ def test_owner_parameters_released_on_failure():
     with pytest.raises(RuntimeError, match='owner failure'):
         readout(runner).episode([row(0, -.1)])
     assert runner.releases == 1
+
+
+def test_minimum_replay_is_logged_before_a_later_batch_failure(capsys):
+    class FailsOnSecondBatch(Runner):
+        def attribute(self, *args, **kwargs):
+            if self.calls:
+                raise RuntimeError('later owner failure')
+            return super().attribute(*args, **kwargs)
+    runner = FailsOnSecondBatch()
+    with pytest.raises(RuntimeError, match='later owner failure'):
+        readout(runner).episode([row(0, -.1), row(1, 10.9)])
+    lines = capsys.readouterr().out.splitlines()
+    records = [json.loads(line.removeprefix('[DT EOS minimum] '))
+               for line in lines if line.startswith('[DT EOS minimum] ')]
+    assert len(records) == 1
+    sample = records[0]['samples'][0]
+    assert sample['selected_input_ids'] == runner.calls[0][0][1].tolist()
+    assert sample['trace']['owner_batch_index'] == 0
+    assert sample['source_signed'] == pytest.approx([.1, -.2])
+    assert any('batch=1/3 d_min=' in line and 'd_max=' in line for line in lines)
+    assert runner.releases == 2
 
 
 @pytest.mark.parametrize('fails', [False, True])

@@ -12,6 +12,20 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 当前三任务原PID和`5a3cda0`训练代码未重启/热替换。已用每个任务driver中的
+  TaskRunner PID匹配唯一原Ray日志，把实际`ray_session`写回formal/active manifest：
+  Sokoban `session_2026-09-25_14-45-07_626695_3563546`，WebShop
+  `session_2026-09-25_14-45-47_790690_3563551`，AppWorld
+  `session_2026-09-25_14-45-09_003017_3563556`（均在原短IPC根下）。
+  绘图此前缺失该字段时错误读取共享`session_latest`，15:21快照及图已在本机/
+  远端移到`invalid-mixed-ray-session-20260925-152134`，不进入图表历史。
+  工具改为缺失session时只读该任务的原driver日志，两个回归用例通过，三个
+  真实数据源分别核验；15:25正确图已发布。证据为`plot-source-fix.json`及
+  `formal-ray-session-identities.json`。不修改训练数据或算法。
+- `candidates/credit-progress-20260925`是日志候选，尚未用于上述运行。已有极值
+  payload提前写入原stdout，每批显示已有d_min/d_max；末尾汇总不变。
+  42项CPU接口/QVA测试通过，覆盖后续batch失败前原始IDs已保存，不加新模型调用。
+  不为这项诊断改动中断当前采集/更新；不能称当前作业已经具备逐批极值日志。
 - 15:15延续同一批正式PID，无重启/热替换。WebShop完成128轨迹的15轮采集，
   7个非零事件/51个对照/13次DT（含B3尾批）完成，d范围[-0.108941,+0.275745]；
   现场Worker3642631栈在原VERL compute_log_prob。Sokoban/AppWorld交互11/8，

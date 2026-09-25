@@ -1,0 +1,103 @@
+{
+  "recorded_at": "2026-09-25T15:20:42.313197+08:00",
+  "pid": 3642631,
+  "phase": "original VERL compute_log_prob",
+  "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/formal-webshop-logprob-profile.json",
+  "sampler": "py-spy record --duration 20 --rate 25 --idle --format speedscope",
+  "main_thread_samples": 499,
+  "main_thread_sample_seconds": 19.959999999999752,
+  "scope": "Python wall-stack samples including GPU synchronization waits; not GPU kernel durations or independently removable overhead. Other idle threads excluded from denominator.",
+  "top_main_thread_leaves": [
+    {
+      "function": "_get_unpad_data",
+      "file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py",
+      "line": 367,
+      "sample_fraction": 0.7274549098196416
+    },
+    {
+      "function": "_forward_micro_batch",
+      "file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331/verl/workers/actor/dp_actor.py",
+      "line": 215,
+      "sample_fraction": 0.07815631262525151
+    },
+    {
+      "function": "flash_attention_mask",
+      "file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/masking_utils.py",
+      "line": 678,
+      "sample_fraction": 0.07414829659318732
+    },
+    {
+      "function": "forward",
+      "file": "/opt/conda/lib/python3.12/site-packages/peft/tuners/lora/layer.py",
+      "line": 807,
+      "sample_fraction": 0.010020040080160445
+    },
+    {
+      "function": "_norm",
+      "file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "line": 747,
+      "sample_fraction": 0.006012024048096267
+    },
+    {
+      "function": "split_with_sizes_copy",
+      "file": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+      "line": 137,
+      "sample_fraction": 0.006012024048096267
+    },
+    {
+      "function": "apply",
+      "file": "/opt/conda/lib/python3.12/site-packages/torch/autograd/function.py",
+      "line": 576,
+      "sample_fraction": 0.006012024048096267
+    },
+    {
+      "function": "forward",
+      "file": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/linear.py",
+      "line": 125,
+      "sample_fraction": 0.006012024048096267
+    },
+    {
+      "function": "alloc_storage",
+      "file": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+      "line": 868,
+      "sample_fraction": 0.004008016032064178
+    },
+    {
+      "function": "forward",
+      "file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "line": 1672,
+      "sample_fraction": 0.004008016032064178
+    },
+    {
+      "function": "_wrapped_call_impl",
+      "file": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+      "line": 1773,
+      "sample_fraction": 0.004008016032064178
+    },
+    {
+      "function": "forward",
+      "file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "line": 755,
+      "sample_fraction": 0.004008016032064178
+    },
+    {
+      "function": "_flash_attn_varlen_forward",
+      "file": "/opt/conda/lib/python3.12/site-packages/flash_attn/flash_attn_interface.py",
+      "line": 231,
+      "sample_fraction": 0.004008016032064178
+    },
+    {
+      "function": "run",
+      "file": "/opt/conda/lib/python3.12/site-packages/triton/runtime/jit.py",
+      "line": 621,
+      "sample_fraction": 0.002004008016032089
+    },
+    {
+      "function": "_fn",
+      "file": "/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py",
+      "line": 929,
+      "sample_fraction": 0.002004008016032089
+    }
+  ],
+  "interpretation": "72.7% at original torch.nonzero padding metadata, 7.8% at existing shared-padding trim item(), 7.4% at original mask all(). These synchronization boundaries can wait for previously queued model work. No evidence here of active compilation, deadlock or 72.7% independently removable padding overhead; no runtime change justified from this CPU profile alone."
+}

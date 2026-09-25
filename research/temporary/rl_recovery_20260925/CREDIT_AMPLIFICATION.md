@@ -242,3 +242,24 @@ d范围[-0.108940883,+0.275744724]。使用正式端点log-prob和每条trace最
 15:14原Worker的现场栈确认已退出DT、进入VERL compute_log_prob。Sokoban/
 AppWorld仍在真实rollout；三个正式作业尚无完成的首个checkpoint。
 见[现场阶段、栈和资源](receipts/formal-head-fixed-after-webshop-dt.json)。
+
+## 长阶段中的极值可追溯性
+
+Sokoban新旧正式首轮的15次生成token数量逐项相同，都是2284个奖励事件、
+15385个对照、3847个B4批次。匹配前111批的batch大小和长度也相同；排除首批
+后的耗时中位数旧3.0566秒、新3.0416秒。这是相同工作量级的现场参照，
+不是输入IDs逐位相同的证明或受控加速比。历史最极端trace是episode16、
+source_step2、event_step12、owner_batch_index450；新整轮报告尚未完成。
+见[工作量核对](receipts/sokoban-old-current-workload.json)和
+[已完成前缀耗时](receipts/sokoban-matched-prefix-cost.json)。
+
+原始极值payload此前只在整段DT返回后输出，若后续批次失败仍可能丢失早期
+重放输入。日志候选复用原stdout：每批追加已有d_min/d_max；出现新的最负d时，
+立即输出原先末尾才构造的同一个完整minibatch payload。最后报告仍保留最终
+最负批次。无额外模型调用、参考采样、剪裁或Q/V修改，不新增日志后端。
+42项CPU接口/组合测试通过，并注入后续批次失败验证早期原始IDs仍在日志中。
+实际WebShop最负批次payload为63036字节，CPU JSON编码中位数0.916毫秒；
+不将它当作Ray/磁盘写入的完整开销。见[测试](receipts/credit-progress-tests.json)
+与[序列化测量](receipts/credit-progress-serialization.json)。
+该候选尚未热替换进正式PID；当前训练仍使用5a3cda0。不能把已提交的诊断
+改善声称为正在运行的作业已具备，亦不因此丢弃当前真实轨迹重启。

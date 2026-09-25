@@ -1,7 +1,7 @@
 """Read existing owner logs and render hourly plots; never import/change training.
 
 The current owner uses VERL LocalLogger (three decimal places), not TensorBoard.
-Read only the active manifest's Ray logs, retaining file/line provenance. Missing
+Read only the active manifest's task-owned logs, retaining file/line provenance. Missing
 metrics stay missing; pilot runs, formatted-action flags and tool_call_count are
 not substituted for task performance. Remote collection uses only the stdlib.
 """
@@ -39,28 +39,37 @@ def parse_logs(records):
     return [metrics[k] for k in sorted(metrics)], phases
 
 
+def read_job_logs(job):
+    # Several native Ray instances share the short IPC root. A not-yet-recorded
+    # session is not permission to read session_latest from a different task.
+    if job.get('ray_session'):
+        log_root = Path(job['ray_session']) / 'logs'
+        output_paths = sorted(log_root.glob('worker-*.out'), key=lambda p: p.stat().st_mtime)
+        error_paths = list(log_root.glob('worker-*.err'))
+    else:
+        output_paths = error_paths = [Path(job['log'])]
+    records, errors = [], []
+    # Read either direct worker output or its task-owned driver echo, never both.
+    for path in output_paths:
+        with path.open(errors='replace') as stream:
+            for number, line in enumerate(stream, 1):
+                if '[DT rollout] phase=' in line or re.search(r'\bstep:\d+ - ', line):
+                    records.append({'path': str(path), 'line': number, 'text': line.rstrip()})
+    for path in error_paths:
+        with path.open(errors='replace') as stream:
+            for number, line in enumerate(stream, 1):
+                if re.search(r'OutOfMemoryError|CUDA out of memory|Traceback \(most recent|non.finite', line, re.I):
+                    errors.append({'path': str(path), 'line': number, 'text': line.strip()[:600]})
+    return records, errors
+
+
 def collect(root):
     root = Path(root)
     manifest = json.loads((root / 'formal-training.json').read_text())
     out = {'collected_at': time.time(), 'started': manifest['started'],
            'source_commit': manifest['source_commit'], 'root': str(root), 'jobs': []}
     for job in manifest['jobs']:
-        # Several native Ray instances can share the short IPC root. Read the
-        # recorded instance, since session_latest would mix the three tasks.
-        log_root = (Path(job['ray_session']) / 'logs' if job.get('ray_session')
-                    else Path(job['ray_tmpdir']) / 'ray/session_latest/logs')
-        records, errors = [], []
-        # Direct worker output is authoritative; do not count its driver echo twice.
-        for path in sorted(log_root.glob('worker-*.out'), key=lambda p: p.stat().st_mtime):
-            with path.open(errors='replace') as stream:
-                for number, line in enumerate(stream, 1):
-                    if '[DT rollout] phase=' in line or re.search(r'\bstep:\d+ - ', line):
-                        records.append({'path': str(path), 'line': number, 'text': line.rstrip()})
-        for path in log_root.glob('worker-*.err'):
-            with path.open(errors='replace') as stream:
-                for number, line in enumerate(stream, 1):
-                    if re.search(r'OutOfMemoryError|CUDA out of memory|Traceback \(most recent|non.finite', line, re.I):
-                        errors.append({'path': str(path), 'line': number, 'text': line.strip()[:600]})
+        records, errors = read_job_logs(job)
         metrics, phases = parse_logs(records)
         checkpoint = Path(job['checkpoint_dir']) / 'latest_checkpointed_iteration.txt'
         exit_file = Path(job['exit_file'])
@@ -163,7 +172,7 @@ def render(snapshot, history, output):
              [completed(j) for _, j in pairs], job['task'], colors[job['task']])
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_ylim(-.05, max(1, max(completed(j) for j in jobs) * 1.08)); finish(ax)
-    setup(axes[0, 1], '生成吞吐', '已完成的生成批次序号', '实际输出 token/s')
+    setup(axes[0, 1], '生成调用吞吐', '已完成的生成批次序号', '实际输出 token/s')
     setup(axes[1, 0], '阶段耗时（各阶段独立编号）', '已完成的阶段调用 / 更新序号', '分钟')
     setup(axes[1, 1], '生成开始时的活跃轨迹', '生成批次序号', '轨迹数')
     for job in jobs:
