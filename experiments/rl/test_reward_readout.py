@@ -1,6 +1,7 @@
 """EOS event adapter contracts with an explicitly labelled owner test double."""
 from copy import deepcopy
 import json
+import string
 from types import SimpleNamespace
 
 import pytest
@@ -17,8 +18,9 @@ class Tokenizer:
         self.queries = []
 
     def encode(self, text, add_special_tokens=False):
-        if text in ('0', '1', '2'):
-            return [int(text)]
+        labels = string.digits + string.ascii_uppercase + string.ascii_lowercase
+        if len(text) == 1 and text in labels:
+            return [labels.index(text)]
         self.queries.append(text)
         return [8, 9]
 
@@ -51,7 +53,7 @@ class Runner:
         assert pair[0, changed].eq(99).all()
         # Deliberately nonuniform signed contributions, different per event.
         signed = torch.zeros(1, pair.shape[1], dtype=torch.float64)
-        scale = .1 * (int(selection.cases[0]['target_ids'][0]) + 1)
+        scale = .01 * (int(selection.cases[0]['target_ids'][0]) + 1)
         signed[0, changed] = scale * torch.arange(1, len(changed) + 1, dtype=torch.float64) * (-1.)**torch.arange(len(changed))
         return signed, dict(root_effect=float(signed.sum()),
                             compiled_seed_logprob_effect=float(signed.sum()),
@@ -82,32 +84,32 @@ def readout(runner=None, tokenizer=None, **kwargs):
 def test_queries_encode_reward_events_without_revealing_sampled_future():
     tokenizer = Tokenizer()
     alphabet = RewardAlphabet.for_task('Sokoban')
-    alphabet.query_ids(tokenizer, current_step=1, event_step=4, max_steps=15)
+    alphabet.query_ids(tokenizer, current_step=1, max_steps=15)
     text = tokenizer.queries[0]
-    assert 'interaction is 2' in text and 'interaction 5' in text and '15 interactions' in text
-    assert 'never occurs' in text and '10.9' in text and '-0.1' in text
-    assert alphabet.observed_index(10.8999999) == 2
+    assert 'interaction is 2' in text and '15 interactions' in text
+    assert 'SUM of all official rewards' in text and 'Exclude earlier rewards' in text
+    assert 'never occur' in text and '10.9' in text and '-0.1' in text
+    assert alphabet.observed_index(10.8999999) == 16
     with pytest.raises(ValueError, match='outside'):
         alphabet.observed_index(0.9)
 
 
-def test_official_finite_vector_per_event_and_original_token_alignment(monkeypatch):
+def test_official_finite_vector_per_return_and_original_token_alignment(monkeypatch):
     monkeypatch.setattr(torch, 'multinomial', lambda *a, **kw: pytest.fail('No reference sampling'))
     runner, tokenizer = Runner(), Tokenizer()
     rows = [row(0, -.1), row(1, 10.9), row(2, 0, active=False)]
     original = deepcopy(rows)
     dt = readout(runner, tokenizer)
     output = dt.episode(rows)
-    assert len(runner.calls) == 3  # response/event pairs, independent of token count.
-    assert runner.releases == 3
-    assert runner.calls[0][0].tolist() == [[4, 5, 99, 99, 8, 9, 0], [4, 5, 6, 7, 8, 9, 0]]
-    assert runner.calls[1][0].tolist() == [[4, 5, 99, 99, 8, 9, 2], [4, 5, 6, 7, 8, 9, 2]]
-    assert runner.calls[0][2].outcomes == [0, 1, 2]
-    d0, d1 = torch.tensor([.1, -.2]), torch.tensor([.3, -.6])
-    expected = -.1 * (-torch.expm1(-d0)) + 10.9 * (-torch.expm1(-d1))
+    assert len(runner.calls) == 2  # One whole-return target per response.
+    assert runner.releases == 2
+    assert runner.calls[0][0].tolist() == [[4, 5, 99, 99, 8, 9, 17], [4, 5, 6, 7, 8, 9, 17]]
+    assert runner.calls[1][0].tolist() == [[4, 5, 99, 99, 8, 9, 16], [4, 5, 6, 7, 8, 9, 16]]
+    assert runner.calls[0][2].outcomes == list(range(31))
+    d0, d1 = torch.tensor([.18, -.36]), torch.tensor([.17, -.34])
+    expected = 10.8 * (-torch.expm1(-d0))
     torch.testing.assert_close(output[0]['dt_token_advantages'][:2], expected)
     torch.testing.assert_close(output[1]['dt_token_advantages'][:2], 10.9 * (-torch.expm1(-d1)))
-    assert not torch.allclose(expected, 10.8 * (-torch.expm1(-(d0+d1))))
     assert not output[-1]['dt_token_advantages'].any()
     for before, after, values in zip(original, rows, output):
         torch.testing.assert_close(before['input_ids'], after['input_ids'])
@@ -118,11 +120,11 @@ def test_official_finite_vector_per_event_and_original_token_alignment(monkeypat
     replay = dt.last_report['minimum_log_ratio_batch']
     assert len(replay['samples']) == 1
     sample = replay['samples'][0]
-    assert sample['selected_input_ids'] == runner.calls[1][0][1].tolist()
+    assert sample['selected_input_ids'] == runner.calls[0][0][1].tolist()
     assert sample['trace']['source_log_ratio_min_index'] == 1
     assert sample['trace']['reference_target_logp'] == -2.
-    assert sample['trace']['factual_target_logp'] == pytest.approx(-2.3)
-    assert sample['event_reward'] == 10.9
+    assert sample['trace']['factual_target_logp'] == pytest.approx(-2.18)
+    assert sample['observed_return'] == pytest.approx(10.8)
 
 
 def test_zero_observed_rewards_do_not_invent_a_signal():
@@ -133,24 +135,26 @@ def test_zero_observed_rewards_do_not_invent_a_signal():
     assert not output[0]['dt_token_advantages'].any()
 
 
+class BatchedRunner(Runner):
+    def attribute(self, pair, mask, selection, **kwargs):
+        self.calls.append((pair.clone(), mask.clone(), selection))
+        outputs, roots = [], []
+        for index, case in enumerate(selection.cases):
+            end = case['prompt_length'] + 1
+            assert pair[2*index:2*index+2, end:].eq(99).all()
+            original = Runner()
+            selected = Targets([case], [[0]], end, pair.device, outcome_token_ids=selection.outcomes)
+            signed, detail = original.attribute(pair[2*index:2*index+2, :end],
+                                                mask[2*index:2*index+2, :end], selected)
+            outputs.append(torch.nn.functional.pad(signed, (0, pair.shape[1]-end)))
+            roots.append(detail['root_effect'])
+        return torch.cat(outputs), dict(root_effect=sum(roots),
+            compiled_seed_logprob_effect=sum(roots), target_logp0=[-2.]*len(roots),
+            target_logp1=[-2.+v for v in roots], complete_attribution_seconds_with_diagnostics=0.)
+
+
 def test_minibatch_preserves_each_episode_event_and_expm1():
-    class BatchedRunner(Runner):
-        def attribute(self, pair, mask, selection, **kwargs):
-            self.calls.append((pair.clone(), mask.clone(), selection))
-            outputs, roots = [], []
-            for index, case in enumerate(selection.cases):
-                end = case['prompt_length'] + 1
-                assert pair[2*index:2*index+2, end:].eq(99).all()
-                original = Runner()
-                selected = Targets([case], [[0]], end, pair.device, outcome_token_ids=selection.outcomes)
-                signed, detail = original.attribute(pair[2*index:2*index+2, :end],
-                                                    mask[2*index:2*index+2, :end], selected)
-                outputs.append(torch.nn.functional.pad(signed, (0, pair.shape[1]-end)))
-                roots.append(detail['root_effect'])
-            return torch.cat(outputs), dict(root_effect=sum(roots),
-                compiled_seed_logprob_effect=sum(roots), target_logp0=[-2.]*len(roots),
-                target_logp1=[-2.+v for v in roots], complete_attribution_seconds_with_diagnostics=0.)
-    episodes = [[row(0, -.1), row(1, 10.9)], [row(0, -.1)]]
+    episodes = [[row(0, -.1), row(1, 10.9)], [row(0, -.1)], [row(0, -.1)]]
     # Different true prefix lengths exercise compute padding after the target.
     episodes[1][0]['input_ids'] = torch.cat((torch.tensor([4, 4, 4]), episodes[1][0]['input_ids']))
     episodes[1][0]['attention_mask'] = torch.cat((torch.ones(3, dtype=torch.long), episodes[1][0]['attention_mask']))
@@ -223,7 +227,38 @@ def test_total_context_includes_readout_and_target_no_silent_truncation():
 def test_readout_budget_reuses_actual_query_encoding():
     tokenizer = Tokenizer()
     assert RewardAlphabet.for_task('Sokoban').readout_token_budget(tokenizer, 15) == 3
-    assert len(tokenizer.queries) == 15 * 16 // 2
+    assert len(tokenizer.queries) == 15
+
+
+@pytest.mark.parametrize('horizon', [1, 5, 15])
+@pytest.mark.parametrize('solves', [False, True])
+def test_process_rewards_require_only_linear_attribution_requests(horizon, solves):
+    rows = [row(i, 10.9 if solves and i == horizon - 1 else -.1) for i in range(horizon)]
+    runner = BatchedRunner()
+    dt = readout(runner, minibatch_size=4)
+    output = dt.episode(rows)
+    assert dt.last_report['event_contrasts'] == horizon
+    assert len(runner.calls) == (horizon + 3) // 4
+    assert sum(len(call[2].cases) for call in runner.calls) == horizon
+    for i, result in enumerate(output):
+        expected_return = (11 if solves else 0) - .1 * (horizon - i)
+        assert result['dt_q_estimates'][0] == pytest.approx(expected_return)
+        assert result['dt_token_advantages'][0] != result['dt_token_advantages'][1]
+        assert result['dt_token_advantages'][-1] == 0
+
+
+def test_longer_action_span_does_not_add_dt_requests():
+    short = readout(BatchedRunner(), minibatch_size=4)
+    long = readout(BatchedRunner(), minibatch_size=4)
+    short.episode([row(i, -.1) for i in range(15)])
+    rows = [row(i, -.1) for i in range(15)]
+    for r in rows:
+        r['responses'] = torch.tensor([6, 7, 6, 7, 0])
+        r['input_ids'] = torch.cat((torch.tensor([4, 5]), r['responses']))
+        r['attention_mask'] = torch.tensor([1, 1, 1, 1, 1, 1, 0])
+    long.episode(rows)
+    assert short.last_report['finite_trace_calls'] == long.last_report['finite_trace_calls'] == 4
+    assert long.last_report['policy_tokens'] == 2 * short.last_report['policy_tokens']
 
 
 def test_full_32768_adapter_endpoint_preserves_ids():
@@ -290,8 +325,8 @@ def test_minimum_replay_is_logged_before_a_later_batch_failure(capsys):
     sample = records[0]['samples'][0]
     assert sample['selected_input_ids'] == runner.calls[0][0][1].tolist()
     assert sample['trace']['owner_batch_index'] == 0
-    assert sample['source_signed'] == pytest.approx([.1, -.2])
-    assert any('batch=1/3 d_min=' in line and 'd_max=' in line for line in lines)
+    assert sample['source_signed'] == pytest.approx([.18, -.36])
+    assert any('batch=1/2 d_min=' in line and 'd_max=' in line for line in lines)
     assert runner.releases == 2
 
 
@@ -346,7 +381,7 @@ def test_actor_attention_and_training_mode_restored_after_finite_trace(fails, na
 
 
 def test_reward_label_or_horizon_mismatch_is_not_silently_repaired():
-    with pytest.raises(ValueError, match='future event'):
-        RewardAlphabet.for_task('Sokoban').query_ids(Tokenizer(), current_step=2, event_step=1, max_steps=15)
+    with pytest.raises(ValueError, match='current step'):
+        RewardAlphabet.for_task('Sokoban').query_ids(Tokenizer(), current_step=15, max_steps=15)
     with pytest.raises(ValueError, match='No approved'):
         RewardAlphabet.for_task('invented')

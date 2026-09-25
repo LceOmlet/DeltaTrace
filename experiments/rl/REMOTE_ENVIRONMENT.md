@@ -12,6 +12,26 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 17:40按用户禁止平方归因调用的指令，定向停止Sokoban旧正式进程组3563544，
+  GPU4 Worker3615368已退出，未触及其他任务。停止时1118/3847个DT批次，
+  无本轮完成检查点；原日志/文件全部保留。此前排队的Sokoban驻留RPC也已终止，
+  不得重提交或把queued当applied。WebShop原Worker26677在17:24、AppWorld
+  原Worker3615395在17:43分别通过原VERL序列RPC应用已有mixer驻留开关；
+  两者代码和旧逐事件方法未热替换。回执在各run_dir/mixer-residency-rpc.json。
+- 线性回报候选为`candidates/linear-return-20260925`，复用9785786运行时代码，
+  只覆盖本次PLAN/读出/组合/接口测试，不重装。51项CPU测试通过（18.15秒）。
+  17:46独立GPU7启动`linear-return-capacity`，PID884045，原生vLLM并发32、
+  actor/DT B4、CPUOffloadPolicy/activation offload；先原始三任务奖励夹具，
+  再新目标恰好32768、原PPO两次更新。17:57退出0：DT第二次27.41秒，两次
+  原PPO非零梯度、1,441,283个参数元素改变、200层LoRA原生同步完成；原PPO
+  core SHA与此前容量验证一致。真实夹具5/6/1行分别为5/6/1请求、2/2/1次DT。
+  这不代表逐token反事实准确性：原守恒诊断仍有5项超阈值，失败原样保留。
+- 新鲜Sokoban小规模训练目录`runs/linear-return-pilot/Sokoban`，shell918063、
+  TaskRunner926737、Worker931296、GPU4；两次迭代×四轨迹，原15步上限、
+  1024 response和32768总上限，actor/DT B4。17:50启动，当前仍在首轮采集，
+  属于独立验证，不计入原正式150×256预算。其job.json由active manifest的
+  bounded_validation字段引用，未覆盖仍在运行的WebShop/AppWorld实际入口。
+
 - 17:11独立GPU7驻留对照及容量验证退出0，PID546374已释放。正式GPU4/5/6
   未重启/热改。复用runner已有`offload_replay_mixer`开关，同一actor/B4/1648
   输入的预热后原路径9.7886秒，GPU驻留7.2190/7.2783秒；signed、端点、Q/V/A

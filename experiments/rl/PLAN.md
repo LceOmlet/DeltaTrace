@@ -1,8 +1,9 @@
 # DeltaTrace token 信用：唯一固定计划
 
-更新：2026-09-22。依据用户最新确认，直接使用 EOS DT 的 log-prob 变化归因，
-按奖励事件转换为 token 信用。取消逐 token 的生成前后奖励询问，以及额外参考
- token 采样。本文件是唯一方法规范；README 只记录实现状态，环境记录只规定复用。
+更新：2026-09-25。依据用户新增约束，禁止 O(n²) 的归因调用。直接使用 EOS DT
+对完整未来累计回报结果的 log-prob 变化归因，每个当前 response 至多一个请求，
+不再展开 response × 未来奖励事件。不逐 token 询问，不额外采样参考 token。
+本文件是唯一方法规范；README 只记录实现状态，环境记录只规定复用。
 
 ## 前提与固定接口
 
@@ -16,45 +17,46 @@
 O 的 token 链当作工具的自回归生成过程，不给调用 span 广播一个数，不做
 O credit 路由，不引入 value model/value loss 或第二套 PPO。
 
-## 奖励事件到 token 的计算
+## 完整未来回报到 token 的计算
 
-对生成 token i 和其后的奖励事件 k，y_k 表示足以确定该事件奖励的结果。
-真实 reward r_k(y_k) 只由现有官方环境提供。DT 估计：
+官方环境给出原始每步 reward；当前配置 gamma=1。对第 t 个 response，使用
+从本次 action 执行到实际结束的所有官方 reward 之和 G_t。历史 reward 不计入，
+终止后没有新 reward，预算终止不补造终局 reward。整段 response 的 token 在
+同一次环境结算前，观察到同一个 G_t，但各有独立的反事实比值。DT 估计：
 
 \[
-d_{ik}(y_k)=\log p_{ik}(y_k)-\log p_{ik}^{\setminus i}(y_k),
+d_i(g)=\log p_i(G_t=g)-\log p_i^{\setminus i}(G_t=g),
 \]
 
-其中第二项是 EOS 删除 token i 的反事实事件概率。精确假设作用于这个
-逐 token、逐事件的量；不会把一条轨迹归因向量的总和守恒当作逐 token
+其中第二项是 EOS 删除 token i 后完整未来回报的反事实概率。精确假设作用于
+这个逐 token 的量；不会把一条轨迹归因向量的总和守恒当作逐 token
 反事实准确性的证明。
 
-实际观察到的 y_k 来自事实 rollout。令 w_ik 是与回报时钟一致的折扣，计算：
+实际观察到的 g=G_t 来自事实 rollout，计算：
 
 \[
-\widehat Q_i=\sum_{k\in\mathcal F_i}w_{ik}r_k(y_k),\qquad
-\widehat V_i=\sum_{k\in\mathcal F_i}w_{ik}r_k(y_k)e^{-d_{ik}(y_k)},
+\widehat Q_i=g,\qquad \widehat V_i=g e^{-d_i(g)},
 \]
 \[
-\boxed{\widehat A_i=\sum_{k\in\mathcal F_i}
- w_{ik}r_k(y_k)\bigl[-\operatorname{expm1}(-d_{ik}(y_k))\bigr]}.
+\boxed{\widehat A_i=g\bigl[-\operatorname{expm1}(-d_i(g))\bigr]}.
 \]
 
-F_i 只含该 token 之后结算的事件；过去奖励不会分给后来的 token。
-终局奖励是只有一个事件的特例。**先对各个事件做 expm1，再相加**；不能先
-合并不同事件的 log-prob 归因再做指数，不能用 r*d 替代，也不能乘第二次
-终局奖励、取绝对值、归一化全轨迹 credit 或悄悄裁剪指数。
+这里读取的是累计回报的分布，**不是把旧的各步 log-prob 归因相加后取指数**。
+同一回报可以来自不同未来轨迹，其概率包含这些轨迹的总概率；不假设各步奖励
+独立。不能用 g*d 替代，不能再次乘 reward、取绝对值、归一化或裁剪指数。
 
-在参考事件分布被事实事件分布覆盖时，精确 d 满足：
+在参考回报分布被事实回报分布覆盖时，精确 d 满足：
 
 \[
-\mathbb E_{y\sim p_{ik}}\left[r_k(y)(1-e^{-d_{ik}(y)})\right]
-=\sum_y r_k(y)\left[p_{ik}(y)-p_{ik}^{\setminus i}(y)\right].
+\mathbb E_{g\sim p_i}\left[g(1-e^{-d_i(g)})\right]
+=\sum_g g\left[p_i(g)-p_i^{\setminus i}(g)\right].
 \]
 
-外部 reward 是数值系数，无需对环境求导。零实际 reward 的样本项为零，
-可省去该项 DT 计算；零类别仍保留在事件概率分布中。过程奖励和停止后的
-事件缺席必须都在事件定义中，不能只条件化到“这一步一定会发生”。
+外部累计 reward 是数值系数，无需对环境求导。实际 G_t=0 的样本项为零，
+可省去 DT；零类别仍保留在回报分布中。过程奖励、提前停止和预算终止均影响
+G_t，不能只预测成功奖励或丢弃步罚。该组合与 return-conditional HCA 的
+采样形式对应（[原文定理2、式6](https://papers.neurips.cc/paper/9413-hindsight-credit-assignment.pdf)）。
+全回报读出与逐事件读出在精确分布下有相同的期望差，不宣称单样本结果或方差相同。
 
 ## 与 PPO 的对应及等价范围
 
@@ -98,7 +100,7 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
 不能固定由实际 token 导致的事实后缀，再把该删除参照宣称为动作无关。
 实际 DT 分解对这个理想干预的近似质量仍单独核验。
 
-## 已批准的奖励事件目标与正式 DT 接入
+## 回报结果目标与正式 DT 接入
 
 用户此前批准的同模型事件读出继续作为目标编码：使用当前 Qwen 原 head 的
 类别 logits，不新增参数或训练头。取消的只是每写一个 token 都重新询问
@@ -106,11 +108,11 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
 
 1. 复用官方 rollout 的原始 prompt、response IDs、attention mask、traj_uid、
    env_step 和实际每步 reward。原始 action 不经过 decode/encode 重建。
-2. 每个当前 response 行、每个非零未来奖励事件，附加一次固定事件询问，
-   指明任务、当前交互、目标交互、固定最大步数及类别定义。询问不能透露
+2. 每个当前 response 行至多附加一次完整未来回报询问，
+   指明任务、当前交互、固定最大步数及回报类别定义。询问不能透露
    事实未来 O、未来 action、实际 reward 或实际停止时间。
-3. 目标为实际观察到的奖励类别的单 token 标签；其概率由原 head 在完整
-   事件类别上的 log-softmax 定义。实际类别只作为被评分目标，不放进它的
+3. 目标为实际观察到的累计回报类别的单 token 标签；其概率由原 head 在完整
+   回报类别上的 log-softmax 定义。实际类别只作为被评分目标，不放进它的
    因果前缀。目标编码是明确的事件概率估计，不将任意工具文本概率冒充 reward。
 4. 事实端点为原 prompt + 当前完整 response + 相同询问/目标；参考端点仅
    将当前 response 的源 token 换成 EOS。prompt（含已发生的 O）、询问、
@@ -119,8 +121,8 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
    一次有限归因返回当前 response 每个 token 各自的 signed log-prob 贡献。
    该向量是 DT 对理想逐 token 删除效应的实际估计，不是已经逐 token
    穷举测量的删除差。保留 signed 值，按原 action 索引接入前述采样公式。
-6. 不同奖励事件的 signed 向量保持分离，直到完成各自的 expm1 变换。
-   没有将多目标 seed 先合并后再非线性变换的捷径。
+6. 每行只有一个回报目标、一个 signed token 向量，调用既有 Q/V/A 稳定组合
+   接口的单事件维度。没有逐未来事件矩阵，没有多目标 seed 合并。
 
 对调用之前/之内的 token，未来工具返回不作为固定事实输入读出；其影响由
 该 token 对未来奖励事件的 DT 估计承载。对下一轮 token，已经收到的 O
@@ -128,9 +130,10 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
 当前同 response 内固定后缀和联合 EOS 有限分解的近似质量需要单独测量；
 其输出守恒、接口形状正确，均不能代替单 token 反事实精度检查。
 
-一条轨迹的正式 DT 次数是“当前 response 行 × 非零未来事件”的有效组合数，
-不是“生成 token 数 × 未来事件数”。这是当前实际调用边界；不能把多事件
-情况提前报告为恰好一次 DT。后续优化必须保持逐事件与逐 token 语义。
+一条 n 步轨迹至多 n 个归因请求，全局按 minibatch4 打包；15步至多15个请求，
+单独打包为4次 runner 调用，禁止平方展开。回报通过一次反向累计求和取得，
+不在每行扫描整个未来。每次调用仍产生各 token 独立的 signed 值，不能广播
+一个 span advantage。调用数线性不代表总 FLOPs 线性：单次上下文变长仍增加成本。
 
 ## 三个任务的真实奖励
 
@@ -139,14 +142,17 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
 - WebShop：固定 VERL worker 将购买成功（原 task_score=1）映射为 10，其他为 0。
 - AppWorld：固定 worker 在终止时用官方 `evaluate().success` 返回 10 或 0。
 - Sokoban：当前 6×6、单箱、成功即终止。有效期内每次交互奖励 −0.1，
-  解出时为 −0.1+1+10=10.9；未发生的未来交互记 0。当前类别是
-  `{-0.1,0,10.9}`。不能把这个值域用于未经支持的多箱配置。
+  解出时为 −0.1+1+10=10.9；未发生的未来交互记 0。官方每步值域是
+  `{-0.1,0,10.9}`。15步内的累计回报类别为0、`-0.1*N`、`11-0.1*N`
+  （N=1..15），共31类；使用互异的单token标签，复用原Qwen head。
+  不能把这个值域用于未经支持的多箱配置。
 
 Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局成功值。
-在 gamma=1 下，当前单箱配置的完整未来回报可写作 11*S-B_i-0.1*N；
-这只是核对逐事件总和的恒等式，不新增成功概率/剩余步数预测器。
-配置中固定 gamma=1；若以后更改折扣，须把同一回报时钟的折扣传入已有
-组合接口，不能只改 trainer 参数而保留不折扣的 DT 回报。
+在 gamma=1 下，当前单箱配置的完整未来回报可写作 11*S-0.1*N（尚未终止的
+源response之后只可能解出一次）。实际 G_t 始终取官方 rewards 的累计值，
+公式仅用于完整类别编码，不新增成功概率/剩余步数预测器。
+配置固定 gamma=1；若以后更改折扣，须同时更新回报时钟与类别编码，
+不能只改 trainer 参数而保留不折扣的 DT 回报。
 
 ## 实现与验收约束
 

@@ -170,7 +170,7 @@ class _Qwen35CausalOwnerView:
 
 
 class DeltaTraceRolloutProducer:
-    """Read individual token/event contrasts; compose the PLAN sampled Q/V."""
+    """Read individual token/return contrasts; compose the PLAN sampled Q/V."""
 
     def __init__(self, model: Any, *, eos_token_id: int | None = None, pad_token_id: int | None = None):
         # ``DT_ROOT`` is the checkout that contains the ``deltatrace`` Python

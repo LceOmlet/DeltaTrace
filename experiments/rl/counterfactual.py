@@ -98,59 +98,52 @@ def reward_event_token_credit(
     return DTTokenCredit(advantages, q_estimates, v_estimates)
 
 
-@torch.no_grad()
-def reward_event_credit_for_episode(
-    rows: Sequence[dict[str, Any]],
-    event_log_ratios: Sequence[torch.Tensor],
-    *,
-    discounts: Sequence[torch.Tensor] | None = None,
-) -> list[dict[str, torch.Tensor]]:
-    """Compose owner ratios on the *original* VERL response rows.
+def episode_returns(rows: Sequence[dict[str, Any]]) -> list[float]:
+    """One reverse cumsum of original active rewards, gamma=1 as in PLAN.md.
 
-    Each input ratio is [active reward events, padded response tokens]. Event
-    order is the order of active env.step rows, including zero-reward steps.
-    A row's reward is settled after that response; its tokens can receive that
-    event and later events. Inactive rows contribute neither actions nor events.
-    The attention mask emitted by rollout identifies response padding. No text
-    matching, retokenization, observation routing, or task scorer is involved.
-
-    This consumes ratios; it does not produce or validate their DT semantics.
-    Optional discounts use the same row/event/token layout as the ratios.
+    This is the representation boundary from environment rows to the sampled
+    return outcome. No environment scoring, GAE, normalization or value model.
     """
-    if not rows or len(rows) != len(event_log_ratios):
-        raise ValueError("one event log-ratio matrix is required per original rollout row")
-    if discounts is not None and len(discounts) != len(rows):
-        raise ValueError("one discount matrix is required per original rollout row")
-    active_rows = [row for row in rows if bool(row["active_masks"])]
-    event_steps = [int(row["env_step"]) for row in active_rows]
-    if event_steps != sorted(set(event_steps)):
-        raise ValueError("reward events must retain unique increasing environment step identities")
-    if any(row["traj_uid"] != rows[0]["traj_uid"] for row in rows):
-        raise ValueError("rows from different trajectories cannot share reward events")
+    if not rows:
+        raise ValueError('an episode requires original rollout rows')
+    steps = [int(row['env_step']) for row in rows if bool(row['active_masks'])]
+    if any(b <= a for a, b in zip(steps, steps[1:])):
+        raise ValueError('reward events must retain unique increasing environment step identities')
+    if any(row['traj_uid'] != rows[0]['traj_uid'] for row in rows):
+        raise ValueError('rows from different trajectories cannot share returns')
+    rewards = torch.tensor([float(row['rewards']) if bool(row['active_masks']) else 0.0
+                            for row in rows], dtype=torch.float64)
+    if not bool(torch.isfinite(rewards).all()):
+        raise ValueError('official active rewards must be finite')
+    return rewards.flip(0).cumsum(0).flip(0).tolist()
+
+
+@torch.no_grad()
+def return_credit_for_episode(
+    rows: Sequence[dict[str, Any]],
+    return_log_ratios: Sequence[torch.Tensor],
+) -> list[dict[str, torch.Tensor]]:
+    """One return-event vector per original response; reuse the Q/V primitive."""
+    if not rows or len(rows) != len(return_log_ratios):
+        raise ValueError('one return log-ratio vector is required per original rollout row')
+    returns = episode_returns(rows)
     output = []
-    for index, (row, ratios) in enumerate(zip(rows, event_log_ratios)):
+    for row, ratios, value in zip(rows, return_log_ratios, returns):
         response = row["responses"]
         if response.ndim != 1 or response.numel() == 0:
             raise ValueError("an original rollout response must be a nonempty 1-D tensor")
         width = response.numel()
-        if ratios.shape != (len(active_rows), width):
-            raise ValueError("event log ratios must align with active events and original response tokens")
+        if ratios.shape != (width,):
+            raise ValueError('return log ratios must align with original response tokens')
         attention = row["attention_mask"]
         if attention.ndim != 1 or attention.numel() < width:
             raise ValueError("rollout attention mask must include the complete response")
         policy = attention[-width:].to(device=ratios.device, dtype=torch.bool)
         policy = policy & bool(row["active_masks"])
-        future = torch.tensor(
-            [step >= int(row["env_step"]) for step in event_steps],
-            device=ratios.device, dtype=torch.bool,
-        )[:, None].expand(-1, width)
-        rewards = torch.tensor(
-            [[float(event["rewards"]) for event in active_rows]],
-            device=ratios.device, dtype=torch.float32,
-        )
+        future = torch.ones((1, 1, width), device=ratios.device, dtype=torch.bool)
+        rewards = torch.tensor([[value]], device=ratios.device, dtype=torch.float32)
         credit = reward_event_token_credit(
-            ratios.unsqueeze(0), rewards, future.unsqueeze(0), policy.unsqueeze(0),
-            discounts=None if discounts is None else discounts[index].unsqueeze(0),
+            ratios[None, None, :], rewards, future, policy.unsqueeze(0),
         )
         output.append({
             "dt_token_advantages": credit.advantages[0],

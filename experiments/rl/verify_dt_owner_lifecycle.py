@@ -63,7 +63,7 @@ def main():
             width = row['responses'].numel()
             count = int(row['attention_mask'][-width:].sum())
             query = RewardAlphabet.for_task('Sokoban').query_ids(worker.tokenizer,
-                current_step=int(row['env_step']), event_step=int(row['env_step']), max_steps=15)
+                current_step=int(row['env_step']), max_steps=15)
             fill = args.context_length-len(query)-1-int(row['attention_mask'].sum())
             assert fill >= 0
             filler_id = worker.tokenizer.encode(' context', add_special_tokens=False)[0]

@@ -33,7 +33,7 @@ def capacity_fixture(original, tokenizer, alphabet, response_tokens=1024):
         assert response_tokens >= count
         actions = torch.cat((torch.full((response_tokens-count,), filler_id), actions))
     step = int(original['env_step'])
-    query = alphabet.query_ids(tokenizer, current_step=step, event_step=step, max_steps=15)
+    query = alphabet.query_ids(tokenizer, current_step=step, max_steps=15)
     fill = 32768-len(query)-1-prompt.numel()-actions.numel()
     assert fill > 0
     row = {**original, 'responses': actions,
@@ -72,6 +72,8 @@ def main():
                         help='Repeat identical B4 DT calls before any update to measure warm execution')
     parser.add_argument('--parameter-offload-policy', action='store_true',
                         help='Use the installed VERL FSDP2 CPUOffloadPolicy for layer parameters')
+    parser.add_argument('--verify-task-return-readouts', action='store_true',
+                        help='Before capacity, trace saved official task fixtures through the current return readout; no task-performance claim.')
     parser.add_argument('--tail-batch-probe', action='store_true',
                         help='After B4 warmup, measure B2/B2/B4 compiler and phase costs; skip already-tested PPO updates.')
     parser.add_argument('--phase-profile-lengths', type=int, nargs='+',
@@ -202,6 +204,40 @@ def main():
             worker._deltatrace_producer = producer
         stage('producer_init')
         fixture = json.loads((Path(os.environ['DT_RUNTIME_ROOT'])/'receipts/rollout-fixtures.json').read_text())
+        if args.verify_task_return_readouts:
+            from reward_readout import EventRatioReadout
+            from counterfactual import episode_returns
+            original_readout = producer.readout
+            result['task_return_readouts'] = {}
+            try:
+                for task, horizon in [('Sokoban', 15), ('Webshop', 15), ('AppWorld', 40)]:
+                    rows = [{k: torch.tensor(v) if k in ('input_ids', 'attention_mask', 'responses') else v
+                             for k, v in r.items()} for r in fixture['tasks'][task]['rows']]
+                    producer.readout = EventRatioReadout(producer.runner, worker.tokenizer,
+                        task=task, max_steps=horizon, packed_answer_targets=producer.packed_answer_targets,
+                        max_length=32768, minibatch_size=4)
+                    expected = episode_returns(rows)
+                    values = worker.compute_dt_token_advantages([rows], [expected[0]],
+                        eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id)[0]
+                    for row_value, value, target in zip(rows, values, expected):
+                        mask = row_value['attention_mask'][-row_value['responses'].numel():].bool()
+                        mask &= bool(row_value['active_masks'])
+                        for key in ('dt_q_estimates', 'dt_v_estimates', 'dt_token_advantages'):
+                            assert torch.isfinite(value[key]).all()
+                            assert value[key][~mask].eq(0).all()
+                        torch.testing.assert_close(value['dt_q_estimates'][mask],
+                            torch.full_like(value['dt_q_estimates'][mask], target))
+                    report = producer.readout.last_report
+                    eligible = sum(bool(r['active_masks']) and g != 0 for r, g in zip(rows, expected))
+                    assert report['event_contrasts'] == eligible
+                    assert report['finite_trace_calls'] == (eligible + 3) // 4
+                    result['task_return_readouts'][task] = dict(
+                        scope='Saved official scripted/oracle task artifacts; actual model DT, not new policy rollout or task performance',
+                        official_rewards=[float(r['rewards']) for r in rows], future_returns=expected,
+                        active_rows=sum(bool(r['active_masks']) for r in rows), report=report)
+                    stage('task_return_readout_' + task)
+            finally:
+                producer.readout = original_readout
         original = fixture['tasks']['Sokoban']['rows'][-1]
         row, _, fixture_detail, filler_id = capacity_fixture(
             original, worker.tokenizer, producer.readout.alphabet, args.response_tokens)

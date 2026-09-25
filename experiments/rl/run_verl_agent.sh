@@ -139,7 +139,7 @@ import sys
 from transformers import AutoTokenizer
 from reward_readout import RewardAlphabet
 tokenizer = AutoTokenizer.from_pretrained(sys.argv[1], local_files_only=True)
-print(RewardAlphabet.for_task(sys.argv[2]).readout_token_budget(tokenizer, int(sys.argv[3])))
+print(RewardAlphabet.for_task(sys.argv[2], int(sys.argv[3])).readout_token_budget(tokenizer, int(sys.argv[3])))
 PY
 )
   DT_PROMPT_LIMIT=$((MAX_TOTAL_TOKENS - MAX_RESPONSE - DT_READOUT_TOKENS))

@@ -15,7 +15,7 @@ from pathlib import Path
 import torch
 from transformers import AutoTokenizer
 
-from counterfactual import reward_event_credit_for_episode
+from counterfactual import return_credit_for_episode
 
 
 def task_rows(name, transitions, tokenizer):
@@ -51,8 +51,8 @@ def task_rows(name, transitions, tokenizer):
 def check_events(name, transitions, tokenizer):
     rows, lengths = task_rows(name, transitions, tokenizer)
     # Nonuniform values exercise transport without claiming a model estimate.
-    ratios = [torch.linspace(-0.2, 0.3, 512).expand(len(rows), -1).clone() for _ in rows]
-    credit = reward_event_credit_for_episode(rows, ratios)
+    ratios = [torch.linspace(-0.2, 0.3, 512) for _ in rows]
+    credit = return_credit_for_episode(rows, ratios)
     for index, result in enumerate(credit):
         future_return = sum(float(row["rewards"]) for row in rows[index:])
         assert abs(result["dt_q_estimates"][0].item() - future_return) < 1e-5

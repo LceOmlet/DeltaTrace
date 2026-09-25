@@ -10,23 +10,24 @@ from qwen35_answer_finite import (FiniteAnswerOps, PackedAnswerTargets,
     categorical_head_logits, selected_target_log_probs, _answer_seed_rule)
 
 
-def operands(step=3.0, target=0, device='cpu'):
-    head = torch.nn.Linear(3, 3, bias=False, dtype=torch.bfloat16,device=device)
+def operands(step=3.0, target=0, device='cpu', classes=3):
+    head = torch.nn.Linear(3, classes, bias=False, dtype=torch.bfloat16,device=device)
     with torch.no_grad():
-        head.weight.copy_(torch.tensor([[.2, .04, 0.], [.2, -.04, 0.], [.2, 0., .04]]))
+        weights = torch.tensor([[.2, .04, 0.], [.2, -.04, 0.], [.2, 0., .04]])
+        head.weight.copy_(weights.repeat((classes + 2) // 3, 1)[:classes])
     hidden = torch.tensor([[100., 0., 0.], [100., step, 0.]], dtype=torch.bfloat16,device=device)
     logits = head(hidden).detach()
     targets = PackedAnswerTargets(
         [{'target_ids': torch.tensor([target]), 'prompt_length': 1}], [[0]], 2, device,
-        outcome_token_ids=[0, 1, 2],
+        outcome_token_ids=list(range(classes)),
     )
     return head, hidden, logits, targets
 
 
 @pytest.mark.parametrize('step', [1., 3., -3.])
-@pytest.mark.parametrize('target', [0, 1, 2])
-def test_categorical_readout_and_seed_use_same_fp32_head(step, target):
-    head, hidden, logits, targets = operands(step, target)
+@pytest.mark.parametrize('classes,target', [(3,0),(3,1),(3,2),(2,0),(2,1),(31,0),(31,16),(31,30)])
+def test_categorical_readout_and_seed_use_same_fp32_head(step, classes, target):
+    head, hidden, logits, targets = operands(step, target, classes=classes)
     original_logits, original_hidden, original_weight = logits.clone(), hidden.clone(), head.weight.clone()
     with torch.no_grad(), torch.autocast('cpu',dtype=torch.bfloat16):
         event_logits=categorical_head_logits(head,hidden,targets.outcome_token_ids)

@@ -3,6 +3,23 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+**当前修订（2026-09-25）：按用户要求移除平方归因展开。**
+每个 response 只读出完整未来回报，所有官方过程 reward 进入累计值，再复用
+原 DT/QVA/PPO 接口。81项 CPU 组合与接口/输出层测试通过（1项GPU专用测试跳过）；15步的成功/失败夹具均为
+15请求、4次batch4调用。真实 tokenizer 的 Sokoban 31类均为单token，
+询问加目标最多412tokens；WebShop/AppWorld为193tokens。新目标的真实模型
+接入与精确32k容量已通过：三任务官方奖励夹具产生有限非零token优势，DT B4
+连续两次为37.12/27.41秒，原PPO两次非零更新和原生LoRA同步完成；1,441,283个
+参数元素改变。阶段物理显存快照最高约51.19GiB，不是连续峰值；旧虚拟allocator
+统计不代表物理用量。完整用时634.23秒，含253.87秒原owner初始化及首次编译。
+原DT守恒诊断仍有5条超原阈值，最大绝对残差0.04443，保留失败标记，没有缩放
+或裁剪信用；接口/容量通过不能扩大为逐token反事实精度通过。
+回执见[线性目标与32k](../../research/temporary/rl_recovery_20260925/receipts/linear-return-capacity-compact.json)
+和[组合/输出层测试](../../research/temporary/rl_recovery_20260925/receipts/linear-return-cpu-tests.json)。
+Sokoban新鲜四轨迹、完整15步上限、两次迭代的小规模训练正在运行，尚未完成。
+旧Sokoban正式作业已在1118/3847个DT批次时定向停止，未完成迭代不保留作训练
+结果，原日志保留；WebShop已完成旧方法正式step1。下方按日期记录历史状态。
+
 **当前状态（2026-09-25 15:56 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证。正式作业中 Sokoban/AppWorld 继续运行；WebShop 在原 PPO 更新期间退出，保留失败现场后通过原 owner 重新启动，尚未完成正式首个更新。**
 同一异常样本的旧 head 操作数逐值重现：首 token 的 `d=-3.21144` 隐含
 反事实概率1.28169；只替换为既有 FP32 head 修复后，该 token `d=+0.187565`，
@@ -485,22 +502,22 @@ IDs、精度、生成配置和缓存条件，分别报告首轮与预热耗时�
 继续凭感觉调参。整轮耗时还须分别核算环境、生成、逐事件 DT、PPO 和传输。
 原生生成的调度、缓存和内核由 vLLM 拥有，既定 DT/QVA 和原 PPO 保持不变。
 
-## 当前实现：EOS DT → 奖励事件 → token PPO
+## 当前实现：EOS DT → 完整未来回报 → token PPO
 
 2026-09-22 已移除额外参考 token 采样和逐 token 前后奖励询问。
-`reward_readout.py` 现在调用正式 DT `attribute`，对每个 response / 非零未来
-奖励事件返回各 token 的 signed 归因，再由 `counterfactual.py` 分事件完成
-`r * (-expm1(-d))` 和 Q/V 组合。没有复制有限传播、环境评分或 PPO。
+2026-09-25 按用户要求，`reward_readout.py` 对每个 response 至多调用一次正式
+DT归因请求，目标是其后完整累计回报G；`counterfactual.py` 复用已有稳定计算
+`G * (-expm1(-d))` 和 Q/V 组合。没有复制有限传播、环境评分或 PPO。
 
 原始 token IDs、奖励事件身份及 mask 由固定 VERL collector 提供。
 O/padding 不参与 actor loss；实际 EOS action 保留 action 身份，其 EOS 替换
-对比可以为零。各事件分别变换后相加，不广播 span，不归一化 credit。
+对比可以为零。每个token仍有自己的d和advantage，不广播span，不归一化credit。
 
 归因阶段通过 HF 公共接口临时切换到 FA；正常和异常退出都恢复原 actor
 后端。当前按用户指令只使用 MetaX，复用其已记录的动态 shape 执行配置和持久缓存。启动脚本按实际
 tokenizer 为事件询问及 target 预留空间，总上限仍为 32768，不截断已生成 action。
 
-## 当前验证范围
+## 历史验证范围（不自动覆盖2026-09-25完整回报目标）
 
 - 此前 HF 后端三任务完成过连续迭代，且各有真实非零奖励、DT token 优势与原 PPO
   非零更新。Sokoban 两轮成功率 100%/75%；WebShop 两轮 0%/25%；AppWorld

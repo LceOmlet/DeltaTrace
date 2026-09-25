@@ -15,7 +15,7 @@ from verl import DataProto
 from verl.trainer.ppo.ray_trainer import AdvantageEstimator, compute_advantage
 from verl.trainer.ppo.core_algos import compute_policy_loss
 
-from counterfactual import reward_event_credit_for_episode
+from counterfactual import return_credit_for_episode
 
 
 def episode_rows():
@@ -36,18 +36,16 @@ def episode_rows():
 
 def ratio_fixture():
     return [
-        torch.tensor([[0.0, 0.0, 0.0, float("nan")],
-                      [0.2, -0.3, 0.7, float("nan")]]),
-        torch.tensor([[float("nan")] * 4,
-                      [0.1, -0.5, 0.9, float("nan")]]),
-        torch.full((2, 4), float("nan")),
+        torch.tensor([0.2, -0.3, 0.7, float("nan")]),
+        torch.tensor([0.1, -0.5, 0.9, float("nan")]),
+        torch.full((4,), float("nan")),
     ]
 
 
 def test_original_rows_keep_future_events_and_individual_tokens():
     rows = episode_rows()
     original = deepcopy(rows)
-    credit = reward_event_credit_for_episode(rows, ratio_fixture())
+    credit = return_credit_for_episode(rows, ratio_fixture())
     torch.testing.assert_close(credit[0]["dt_q_estimates"], torch.tensor([10.8, 10.8, 10.8, 0.0]))
     torch.testing.assert_close(credit[1]["dt_q_estimates"], torch.tensor([10.9, 10.9, 10.9, 0.0]))
     for name, value in credit[2].items():
@@ -68,7 +66,7 @@ def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient(monkeypatch)
         pytest.fail('DT already sums future reward events; it must not enter GAE again')
     monkeypatch.setattr(core_algos, 'compute_gae_advantage_return', reject_second_gae)
     rows = episode_rows()
-    for row, values in zip(rows, reward_event_credit_for_episode(rows, ratio_fixture())):
+    for row, values in zip(rows, return_credit_for_episode(rows, ratio_fixture())):
         row.update(values)
     config = SimpleNamespace(algorithm=SimpleNamespace(adv_estimator="deltatrace"))
     collector = TrajectoryCollector(config, tokenizer=None)
@@ -96,13 +94,15 @@ def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient(monkeypatch)
     torch.testing.assert_close(log_prob.grad, expected)
 
 
-def test_episode_discount_input_and_terminal_event():
+def test_terminal_reward_included_once_and_past_reward_excluded():
     rows = episode_rows()[:2]
     rows[0]["rewards"] = 0.0
-    d = ratio_fixture()[:2]
-    discounts = [torch.full((2, 4), 0.5), torch.ones(2, 4)]
-    result = reward_event_credit_for_episode(rows, d, discounts=discounts)
-    assert result[0]["dt_q_estimates"][0] == pytest.approx(10.9 * 0.5)
+    result = return_credit_for_episode(rows, ratio_fixture()[:2])
+    assert result[0]["dt_q_estimates"][0] == pytest.approx(10.9)
+    assert result[1]["dt_q_estimates"][0] == pytest.approx(10.9)
+    rows[0]["rewards"] = -0.1
+    result = return_credit_for_episode(rows, ratio_fixture()[:2])
+    assert result[0]["dt_q_estimates"][0] == pytest.approx(10.8)
     assert result[1]["dt_q_estimates"][0] == pytest.approx(10.9)
 
 
@@ -116,7 +116,7 @@ def test_rejects_actual_event_identity_and_shape_mismatches(change):
     else:
         d[0] = torch.ones(1, 4)
     with pytest.raises(ValueError):
-        reward_event_credit_for_episode(rows, d)
+        return_credit_for_episode(rows, d)
 
 
 @pytest.mark.parametrize("estimator", ["deltatrace", "grpo"])

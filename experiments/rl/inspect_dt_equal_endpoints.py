@@ -58,7 +58,7 @@ def main():
             for mixed in (False, True):
                 rows, cases = [], []
                 for event in range(1, 5):
-                    query = alphabet.query_ids(tokenizer, current_step=1, event_step=event, max_steps=15)
+                    query = alphabet.query_ids(tokenizer, current_step=1, max_steps=15)
                     ids = prompt + [tokenizer.eos_token_id] + query + [labels[0]]
                     rows.append(ids)
                     cases.append(dict(target_ids=torch.tensor([labels[0]]), prompt_length=len(ids)-1))

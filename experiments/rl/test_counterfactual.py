@@ -25,7 +25,7 @@ def test_sample_correction_is_not_raw_probability_difference():
     torch.testing.assert_close(result.v_estimates, torch.tensor([[1.0]], dtype=torch.float64))
 
 
-def test_reward_event_expectation_equals_full_q_minus_v():
+def test_return_expectation_equals_full_q_minus_v():
     # Four outcome trajectories of a one-box finite-horizon reward fixture.
     # Rewards are fixtures, not a local implementation of gym_sokoban.
     rewards = torch.tensor([
@@ -46,16 +46,14 @@ def test_reward_event_expectation_equals_full_q_minus_v():
     v_exact = p_policy @ returns
     sampled_means = []
     for a in range(3):
-        # Event outcome is its reward class. Sum mass over outcomes giving
-        # that class; do not condition only on episodes where an event occurs.
-        d = torch.empty((4, 3, 1), dtype=torch.float64)
+        # The event is total future return, including every process penalty.
+        d = torch.empty((4, 1, 1), dtype=torch.float64)
         for outcome in range(4):
-            for event in range(3):
-                same_class = rewards[:, event] == rewards[outcome, event]
-                pa = p_action[a, same_class].sum()
-                pp = p_policy[same_class].sum()
-                d[outcome, event, 0] = (pa / pp).log()
-        result = compose(d, rewards)
+            same_class = returns == returns[outcome]
+            pa = p_action[a, same_class].sum()
+            pp = p_policy[same_class].sum()
+            d[outcome, 0, 0] = (pa / pp).log()
+        result = compose(d, returns[:, None])
         mean_a = p_action[a] @ result.advantages[:, 0]
         mean_q = p_action[a] @ result.q_estimates[:, 0]
         mean_v = p_action[a] @ result.v_estimates[:, 0]
@@ -71,6 +69,30 @@ def test_terminal_is_one_reward_event():
     result = compose(d, torch.tensor([[10.0]], dtype=torch.float64))
     torch.testing.assert_close(result.advantages, torch.tensor([[5.0, 0.0, -10.0]], dtype=torch.float64))
     assert result.advantages.sum().item() != 10.0
+
+
+def test_whole_return_likelihood_ratio_matches_exact_values_with_correlated_rewards():
+    # Distinct future trajectories may have the same total return. Their mass
+    # must be summed, not treated as independent reward marginals or log ratios.
+    reward_paths = torch.tensor([[-1., 3.], [0., 2.], [-1., -1.], [0., 0.]], dtype=torch.float64)
+    returns = reward_paths.sum(-1)
+    pa = torch.tensor([.4, .1, .3, .2], dtype=torch.float64)
+    pr = torch.tensor([.1, .2, .2, .5], dtype=torch.float64)
+    d = torch.stack([(pa[returns == g].sum() / pr[returns == g].sum()).log()
+                     for g in returns])[:, None, None]
+    result = compose(d, returns[:, None])
+    torch.testing.assert_close(pa @ result.q_estimates[:, 0], pa @ returns)
+    torch.testing.assert_close(pa @ result.v_estimates[:, 0], pr @ returns)
+    torch.testing.assert_close(pa @ result.advantages[:, 0], (pa-pr) @ returns)
+    assert d[0] == d[1]  # Same event G=2 contains both reward trajectories.
+
+
+def test_constant_total_return_has_zero_exact_return_credit():
+    # Rewards can differ internally while the total value is constant.
+    result = compose(torch.zeros(3, 1, 2, dtype=torch.float64),
+                     torch.full((3, 1), 2., dtype=torch.float64))
+    assert result.advantages.eq(0).all()
+    assert result.q_estimates.eq(2).all() and result.v_estimates.eq(2).all()
 
 
 def test_observations_and_past_rewards_are_not_routed():
@@ -144,10 +166,10 @@ def test_no_token_broadcast_from_scalar_credit():
 
 def test_32k_minibatch_four_tensor_boundary():
     # CPU adapter capacity check only: no claim of 32k model training.
-    d = torch.full((4, 15, 32768), math.log(2))
+    d = torch.full((4, 1, 32768), math.log(2))
     policy = torch.ones(4, 32768, dtype=torch.bool)
     policy[:, 1::3] = False
-    result = compose(d, torch.full((4, 15), -0.1), policy=policy)
+    result = compose(d, torch.full((4, 1), -1.5), policy=policy)
     assert result.advantages.shape == (4, 32768)
     assert_token_advantage_contract(result.advantages, policy)
     torch.testing.assert_close(result.advantages[policy], torch.full_like(result.advantages[policy], -0.75))
