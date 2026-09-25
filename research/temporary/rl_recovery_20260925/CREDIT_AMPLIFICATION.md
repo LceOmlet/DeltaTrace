@@ -309,3 +309,58 @@ DT都是正值，而联合归因为负；不能把这个差别仅归因于重复
 没有新增训练拒绝门槛、信用裁剪或另一套奖励/优势定义。
 
 见[原始结果来源、SHA和逐项摘要](receipts/formal-webshop-credit-route-summary.json)。
+
+## 异常绝对值的完整放大链与新运行核验
+
+继续分析已经保存的v3全层数据，没有再启动模型：同一事件13的旧head系数
+范数4.04170，修复后0.71722。旧head在类别维度破坏了log-softmax seed的
+零和性质，使本应抵消的共同权重分量进入后续传播。到输入端，旧归因的
+绝对值总和21.14499，但带符号总和只有−0.10910；修复后绝对值总和5.61515、
+带符号总和−0.17067。这说明只看总和会掩盖大幅正负抵消。
+
+传播系数沿层增大本身不是缺陷证据；真正的因果证据仍是同一actor、同一
+输入，仅替换这个head数值处理后，选定token的d从−3.21144变为+0.187565。
+历史−13.01597经既定`−0.1*(1-exp(-d))`得到+44953.58，是指数对已异常d的
+进一步放大，不是PPO更新、跨事件相加或第二次乘奖励才产生的问题。
+历史最大值缺少原始操作数的限制不变，不能据此声称全部尖峰原因唯一。
+见[已有原始记录的CPU分析](receipts/credit-amplification-chain-summary.json)。
+
+16:31核对新WebShop正式readout：7个非零事件、51个对照、13个DT批次完成，
+d范围[−0.108934,+0.277831]。每条成功轨迹只有一个非零终局事件，按原公式
+推得token优势范围[−1.150883,+2.425752]；这是已记录极值的计算，不是读取
+PPO张量所得的逐位对照。最大隐含删除概率0.893327，没有超过1的trace。
+19项原守恒诊断失败仍保留，最大残差0.074534，不把它改写成FA/FLA验收。
+随后被动栈确认Worker26677在原VERL compute_log_prob，正式首个checkpoint
+尚未完成。见[实际readout摘要及SHA](receipts/formal-webshop-restarted-credit-summary.json)。
+
+16:28同一Sokoban原PID的既有局部变量已记录639个完成批次、2556个对照，
+累计最负d仍是−0.765355。只读取原py-spy frame，没有注入运行时修改或为了
+诊断重启训练；不能把这一前缀观察扩大成整轮通过。
+16:44再次读取同一原PID：736个完成批次、累计最负d仍为−0.765355，原始frame
+及SHA已追加到`formal-sokoban-live-credit-observations.json`。
+
+## 修复路径的有界耗时对照
+
+16:42独立GPU7对照完成，两进程均正常结束。复用同一份WebShop原始IDs，
+B4、1571 tokens、驻留并休眠的原vLLM（graph、max_num_seqs=32），原actor
+activation offload/checkpoint保持开启。`benchmark_saved_credit.py`只调用
+原worker、正式DT及原actor的`backward()`，没有环境rollout或optimizer更新。
+初始化、首次调用和预热后的调用分开；每项只有一次预热后样本，不宣称稳定
+吞吐区间或重做了32k容量验收。
+
+| 原owner参数卸载策略 | 完整DT预热后 | 原生forward | 原生backward |
+| --- | ---: | ---: | ---: |
+| 默认offload_policy=False | 3.7100秒 | 0.6787秒 | 1.6979秒 |
+| 当前训练offload_policy=True | 4.4814秒 | 0.7777秒 | 1.7402秒 |
+
+原版可行反向1.6979秒仍为主参照；不能用较慢配置替换它后声称DT达标。
+两种DT分别为该主参照的2.19、2.64倍。这个短输入上完整DT尚未接近一次纯
+反向；不否定也不扩大此前32k测试。FP32类别读出本身分别0.000217、0.000238秒，
+不是本例运行大头。DT差异主要在原端点/重放和有限传播阶段，当前没有依据
+为这0.77秒直接修改正式卸载策略。数值归因仍分别记录，不把耗时测试冒充
+逐token反事实精度测试。见[完整回执来源、SHA及阶段耗时](receipts/saved-credit-cost-v2-summary.json)。
+
+首个诊断启动曾漏继承训练launcher已有的vLLM allocator初始化设置，原CuMem
+在计时前拒绝`expandable_segments=True`；失败记录保留。重试使用现有
+`run_verl_agent.sh:121-124`的设置，运行时切换仍由原sharding manager完成，
+没有重装或改写allocator。两个正式训练来源均未因此重启或更改配置。

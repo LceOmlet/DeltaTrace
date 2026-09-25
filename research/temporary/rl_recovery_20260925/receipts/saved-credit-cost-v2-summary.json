@@ -1,0 +1,63 @@
+{
+  "scope": "Bounded B4 exact saved Webshop IDs (1571 tokens), vLLM graph/max_num_seqs32 resident and sleeping, original actor forward/backward with activation offload and checkpointing. One cold plus one warm call per operation per configuration. Cost diagnostic, not a new 32k capacity check or numerical equivalence claim; native default-policy backward remains the primary baseline.",
+  "records": [
+    {
+      "configuration": "native-policy",
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/saved-credit-cost-v2-native-policy.json",
+      "source_sha256": "ca2ba16f10c41055984e4d3c6daeaa4ff663c936b918338cde076197701f7ff8",
+      "input_sha256": "cf61c10c68d921de58b380b615593615569771bf2a3f0e355b75a666be2e1f6a",
+      "parameter_offload_policy": false,
+      "seconds": 171.28064708411694,
+      "complete_dt_cold": 32.74410177115351,
+      "complete_dt_warm": 3.710025852546096,
+      "forward_warm": 0.6787112485617399,
+      "backward_warm": 1.6979254567995667,
+      "complete_dt_over_backward": 2.1850345889384055,
+      "phase_stream_seconds": {
+        "native_shared_prefix": 0.48612045288085937,
+        "fork_native_prefix_cache": 0.0025914878845214842,
+        "native_root_with_CPU_checkpoints": 0.6098928833007813,
+        "pack_actual_target_logits": 0.00012262400239706038,
+        "categorical_head_FP32": 0.0002170879989862442,
+        "actual_root_FP32_logprob_diagnostic": 0.00020070399343967437,
+        "finite_seed": 0.0013396480083465575,
+        "finite_final_norm": 0.00032281601428985594,
+        "native_replay": 0.8337044429779052,
+        "restore_mixer_captures": 0.04952371168136596,
+        "public_FA_LSE": 0.008447232127189636,
+        "finite_decoder": 1.5542484397888179
+      },
+      "finite_gradients": true
+    },
+    {
+      "configuration": "cpu-policy",
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/rollout-major-cost/saved-credit-cost-v2-cpu-policy.json",
+      "source_sha256": "5234dd806cb3ad5878752ff281782dd7ea9bf546a3127dbc415cdd9bb318525c",
+      "input_sha256": "cf61c10c68d921de58b380b615593615569771bf2a3f0e355b75a666be2e1f6a",
+      "parameter_offload_policy": true,
+      "seconds": 303.6127122975886,
+      "complete_dt_cold": 37.337294394150376,
+      "complete_dt_warm": 4.481412094086409,
+      "forward_warm": 0.7777499668300152,
+      "backward_warm": 1.7401881059631705,
+      "complete_dt_over_backward": 2.575245790227952,
+      "phase_stream_seconds": {
+        "native_shared_prefix": 0.5864140625,
+        "fork_native_prefix_cache": 0.0026849279403686525,
+        "native_root_with_CPU_checkpoints": 0.7688302001953125,
+        "pack_actual_target_logits": 0.00013491199910640715,
+        "categorical_head_FP32": 0.0002378239929676056,
+        "actual_root_FP32_logprob_diagnostic": 0.0002176000028848648,
+        "finite_seed": 0.0013870079517364503,
+        "finite_final_norm": 0.00027904000878334047,
+        "native_replay": 1.1548736114501952,
+        "restore_mixer_captures": 0.06884505653381347,
+        "public_FA_LSE": 0.008465659856796266,
+        "finite_decoder": 1.7429801025390625
+      },
+      "finite_gradients": true
+    }
+  ],
+  "prior_failure": "saved-credit-cost-native-policy.json: diagnostic launch missed existing run_verl_agent.sh allocator initialization setting; no performance runs collected.",
+  "method_changed": false
+}

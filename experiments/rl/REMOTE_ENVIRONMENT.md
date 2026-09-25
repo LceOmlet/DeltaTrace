@@ -12,6 +12,21 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 16:44两项独立短输入耗时对照均退出0，GPU7已释放；正式GPU4/5/6的PID
+  不变。Sokoban已完成736个DT批次，最负d仍−0.765355。保存的实际WebShop
+  B4/1571输入在原默认参数卸载策略下完整DT/原生反向为3.7100/1.6979秒，
+  在当前CPUOffloadPolicy下为4.4814/1.7402秒；均为一次预热后测量，不能据此
+  声称所有长度效率达标或改变正式卸载策略。FP32类别读出约0.22–0.24毫秒。
+  回执`receipts/rollout-major-cost/saved-credit-cost-v2-summary.json`；首个诊断
+  allocator初始化失败保留，重试继承原launcher设置，没有重装或修改训练。
+- 16:31数值核查：WebShop的9785786首轮DT完成51个对照/13次调用，d范围
+  [−0.108934,+0.277831]，原公式推得终局事件优势范围[−1.150883,+2.425752]；
+  19项原守恒诊断失败仍保留，未扩大为逐token精度通过。原Worker26677随后
+  在compute_log_prob。补齐formal/active manifest的WebShop实际session为
+  `session_2026-09-25_15-56-48_133720_4185214`，由唯一原Worker PID日志匹配，
+  不读共享session_latest。Sokoban16:28完成639/3847个DT批次，累计最负d
+  仍−0.765355；三任务尚无本次正式新checkpoint。无训练重启/热替换。
+  证据见`formal-webshop-restarted-credit-summary.json`及同目录原py-spy frame。
 - 16:12实际状态：Sokoban原PID完成530/3847个DT批次，既有py-spy只读局部
   变量确认累计最负d仍为−0.765355；WebShop新PID采集9/15，AppWorld原PID
   采集22/40。尚无本批正式完成检查点，OOM计数34未增加，cgroup约575.55GiB。
