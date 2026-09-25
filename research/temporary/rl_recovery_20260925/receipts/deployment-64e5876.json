@@ -1,0 +1,46 @@
+{
+  "source_commit": "64e58762ce0af9faa58aac333b43db45e9e15762",
+  "files_verified": 111,
+  "root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/64e5876",
+  "created": 1790330535.6167922,
+  "environment_sha256": "2467f6555282c52b4dc646c2242dc700eb5adff46c3c83701d54dfbf1bbf3ad7",
+  "differences_from_gpu_tested_candidate": {
+    "reward_readout.py": [
+      "--- \n",
+      "+++ \n",
+      "@@ -1,2 +1,2 @@\n",
+      "-\"\"\"Approved reward-event targets traced by the official EOS DeltaTrace runner.",
+      "+\"\"\"Complete-return targets traced by the official EOS DeltaTrace runner.",
+      " ",
+      "@@ -4,3 +4,3 @@\n",
+      " critic, or implement model/cache transitions. Qwen's original head estimates",
+      "-declared reward categories; the official DT runner owns endpoint evaluation.",
+      "+declared return categories; the official DT runner owns endpoint evaluation.",
+      " \"\"\"",
+      "@@ -172,6 +172,6 @@\n",
+      "                       reference_token_samples=0, per_token_probability_queries=0)",
+      "-        matrices, requests = [], []",
+      "+        vectors, requests = [], []",
+      "         for episode_index, rows in enumerate(episodes):",
+      "             values, pending = self._prepare_episode(rows, report)",
+      "-            matrices.append(values)",
+      "+            vectors.append(values)",
+      "             for request in pending:",
+      "@@ -258,3 +258,3 @@\n",
+      "         result = [return_credit_for_episode(rows, values)",
+      "-                  for rows, values in zip(episodes, matrices)]",
+      "+                  for rows, values in zip(episodes, vectors)]",
+      "         report['seconds'] = time.perf_counter() - started"
+    ],
+    "deltatrace_rollout.py": [
+      "--- \n",
+      "+++ \n",
+      "@@ -172,3 +172,3 @@\n",
+      " class DeltaTraceRolloutProducer:",
+      "-    \"\"\"Read individual token/event contrasts; compose the PLAN sampled Q/V.\"\"\"",
+      "+    \"\"\"Read individual token/return contrasts; compose the PLAN sampled Q/V.\"\"\"",
+      " "
+    ]
+  },
+  "scope": "Published source for the linear-return implementation; existing live processes not hot-replaced"
+}

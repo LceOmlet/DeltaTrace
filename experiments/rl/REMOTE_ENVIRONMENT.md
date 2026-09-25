@@ -28,9 +28,16 @@
   这不代表逐token反事实准确性：原守恒诊断仍有5项超阈值，失败原样保留。
 - 新鲜Sokoban小规模训练目录`runs/linear-return-pilot/Sokoban`，shell918063、
   TaskRunner926737、Worker931296、GPU4；两次迭代×四轨迹，原15步上限、
-  1024 response和32768总上限，actor/DT B4。17:50启动，当前仍在首轮采集，
-  属于独立验证，不计入原正式150×256预算。其job.json由active manifest的
+  1024 response和32768总上限，actor/DT B4。17:50启动，18:05确认checkpoint1
+  完成，首轮48请求/12次DT/119.80秒、原PPO47.54秒/grad约0.041，整轮564.53秒。
+  当前第二轮采集。属于独立验证，不计入原正式150×256预算。其job.json由active manifest的
   bounded_validation字段引用，未覆盖仍在运行的WebShop/AppWorld实际入口。
+- `64e5876`已推送，部署`releases/64e5876`的111项源码SHA核验通过，原环境
+  配置复用且mixer驻留为false。验收候选与发布的运行代码仅docstring和局部
+  变量matrices→vectors命名不同；逐项diff在`deployment-64e5876.json`。
+  `active-source.json.available_linear_return_release`记录此发布，不能把它当作
+  当前所有正式进程已迁移。Sokoban旧正式作业停止，其新小规模验证继续；
+  WebShop/AppWorld旧正式作业入口仍以per_task_sources及job实际PID为准。
 
 - 17:11独立GPU7驻留对照及容量验证退出0，PID546374已释放。正式GPU4/5/6
   未重启/热改。复用runner已有`offload_replay_mixer`开关，同一actor/B4/1648

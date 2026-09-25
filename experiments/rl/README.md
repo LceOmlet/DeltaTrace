@@ -16,7 +16,13 @@
 或裁剪信用；接口/容量通过不能扩大为逐token反事实精度通过。
 回执见[线性目标与32k](../../research/temporary/rl_recovery_20260925/receipts/linear-return-capacity-compact.json)
 和[组合/输出层测试](../../research/temporary/rl_recovery_20260925/receipts/linear-return-cpu-tests.json)。
-Sokoban新鲜四轨迹、完整15步上限、两次迭代的小规模训练正在运行，尚未完成。
+Sokoban新鲜四轨迹的首轮已完成：轨迹长度9/15/15/9，48个response只产生48个
+请求、12次DT，共119.80秒；旧展开对相同步数需330请求，这个旧数是解析计数，
+不是另一条实际耗时测试。原PPO更新47.54秒，非零梯度约0.041，完成checkpoint1；
+整轮564.53秒，第二轮仍在运行。首轮30项原守恒诊断超阈值也保留，不能称数值
+误差全面解决。见[首轮真实训练](../../research/temporary/rl_recovery_20260925/receipts/linear-return-sokoban-first-update.json)。
+实现提交`64e5876`已推送，远端`releases/64e5876`的111项源码SHA已核验；
+当前小规模进程继续使用已记录的候选目录，没有运行中热替换。
 旧Sokoban正式作业已在1118/3847个DT批次时定向停止，未完成迭代不保留作训练
 结果，原日志保留；WebShop已完成旧方法正式step1。下方按日期记录历史状态。
 
