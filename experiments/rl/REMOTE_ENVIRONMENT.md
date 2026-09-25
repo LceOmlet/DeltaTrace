@@ -12,6 +12,18 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 信用尖峰定向检查：`receipts/rollout-major-cost/credit-amplification-v3.json`
+  已逐值重现旧 head 的全部操作数及 `d=-3.21144`，同一 actor/input 的
+  FP32 head 修复使同 token 变为+0.187565。v4补完原生单 token 删除读出，
+  仍有联合分解及原生低精度路径差异，不能称全部归因精度通过。
+  `candidates/credit-amplification-20260925` 只追加 `read_outcomes` 在原 head
+  forward hook 持有 FSDP 权重时进行同一类别投影的生命周期修复。
+  CPU边界15项通过、1项GPU用例跳过；真实FSDP删除读出及B4 DT已完成。
+  三次诊断尾部失败均保留，v4复用已有完整DT结果，未覆盖掉失败记录。
+  旧正式Sokoban/Webshop已向其核验过的driver发出SIGINT，并确认driver和
+  对应WorkerDict退出；证据为`credit-head-stop-old-formal.json`，不将其当成OOM。
+  AppWorld在40轮rollout完成后出现TaskRunner SYSTEM_ERROR并退出，未重启。
+  本轮优先排查信用极值，未恢复自动检查、备份或重启正式预算。
 - 12:30 新候选 `candidates/categorical-head-fp32-20260925` 只用于已保存
   异常样本的 head 精度修复验证，原任务仍使用下述发布目录。其类别投影、
   端点读出与有限 seed 统一 FP32，保留原 h/W、原 log-softmax seed，移除

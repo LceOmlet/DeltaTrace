@@ -147,14 +147,19 @@ class Qwen35DenseFiniteRunner:
     @torch.no_grad()
     def read_outcomes(self,input_ids,outcome_token_ids,*,past_key_values=None):
         captured=[]
-        def capture(_module,args):captured.append(args[0][:,-1].detach())
+        def capture(module,args):
+            # FSDP owns the head weights' gathered lifetime. Read the original
+            # selected rows while its forward hook still holds those weights;
+            # forward_root may reshard/offload them before it returns.
+            labels=torch.as_tensor(outcome_token_ids,device=args[0].device,dtype=torch.long)
+            captured.append(categorical_head_logits(module,args[0][:,-1].detach(),labels))
         handle=self.model.lm_head.register_forward_pre_hook(capture)
         try:
             self.forward_prefix(input_ids,past_key_values=past_key_values)
         finally:
             handle.remove()
-        (hidden,)=captured
-        return categorical_head_logits(self.model.lm_head,hidden,outcome_token_ids).log_softmax(-1)
+        (logits,)=captured
+        return logits.log_softmax(-1)
 
     def attribute(self,paired_ids,mask,selection,select_output_rows=True,observer=None):
         if paired_ids.shape!=mask.shape or paired_ids.shape!=(2*selection.batch,selection.length):

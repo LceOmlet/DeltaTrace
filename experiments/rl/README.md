@@ -3,7 +3,19 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**当前状态（2026-09-25）：三任务正式预算已启动，AppWorld 已修复传输超时并恢复；DT 数值复核尚未全部通过。**
+**当前状态（2026-09-25）：优先定位 DT 信用尖峰；已重现并修复一处完整链路的 head 放大，正式训练尚未验收。**
+同一异常样本的旧 head 操作数逐值重现：首 token 的 `d=-3.21144` 隐含
+反事实概率1.28169；只替换为既有 FP32 head 修复后，该 token `d=+0.187565`，
+概率0.0407164，−0.1步罚的优势从+2.38148变为−0.0171025。
+原因是逐类别舍入倍率破坏 log-softmax seed 的零和结构，并放大随后相互抵消
+的贡献；不是 PPO 重复乘奖励。两条仍使用旧 head 的正式作业已定向停止，
+保留已完成检查点及日志；AppWorld 此前已在完整40轮 rollout之后因 TaskRunner
+退出而停止，原因尚未据该日志确定。未以这些运行记录宣称训练健康。
+完整证据、失败的诊断尾部及尚未解决的逐 token 估计偏差见
+[信用放大定位](../../research/temporary/rl_recovery_20260925/CREDIT_AMPLIFICATION.md)。
+历史最大 `d=-13.016` 尚未逐值重现，不能声称 head 是所有极端值的唯一来源。
+
+以下为此前有时间戳的训练状态：
 截至 10:33 +08，`runs/author-2ee7ab4-paper` 的 WebShop 已完成 checkpoint9/150，
 Sokoban 完成 checkpoint1/150、第二轮正在 DT；AppWorld 本次重启完成第六轮
 交互生成，尚无新检查点。AppWorld 使用已推送的 `c88a749`，其余沿用 `2ee7ab4`。

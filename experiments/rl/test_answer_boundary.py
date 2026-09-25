@@ -108,3 +108,40 @@ def test_cached_suffix_preserves_target_identity_and_endpoint_packing():
     assert torch.equal(targets.scatter_hidden(packed)[:,8:],suffix.scatter_hidden(packed))
     with pytest.raises(ValueError,match='predictor'):
         targets.suffix(9)
+
+
+def test_outcome_readout_uses_head_during_its_forward_lifetime():
+    # A small lifecycle regression, not a substitute for the real FSDP probe.
+    # Make weights unavailable after the original Linear forward returns.
+    from types import SimpleNamespace
+    from qwen35_dense_finite_runner import Qwen35DenseFiniteRunner
+    head, hidden, _, _ = operands()
+    hidden = hidden[:, None, :]
+    expected = torch.nn.functional.linear(hidden[:, -1].float(), head.weight.float()).log_softmax(-1)
+    runner = object.__new__(Qwen35DenseFiniteRunner)
+    runner.model = SimpleNamespace(lm_head=head)
+
+    def forward(input_ids, **kwargs):
+        logits = head(hidden)
+        head.weight = torch.nn.Parameter(torch.empty(head.weight.shape, device='meta'))
+        return SimpleNamespace(logits=logits)
+
+    runner.forward_prefix = forward
+    actual = runner.read_outcomes(torch.zeros(2, 1, dtype=torch.long), [0, 1, 2])
+    torch.testing.assert_close(actual, expected)
+    assert head.weight.device.type == 'meta'
+    assert not head._forward_pre_hooks
+
+
+def test_outcome_readout_removes_hook_when_native_forward_fails():
+    from types import SimpleNamespace
+    from qwen35_dense_finite_runner import Qwen35DenseFiniteRunner
+    head, _, _, _ = operands()
+    runner = object.__new__(Qwen35DenseFiniteRunner)
+    runner.model = SimpleNamespace(lm_head=head)
+    def forward(*args, **kwargs):
+        raise RuntimeError('native failure')
+    runner.forward_prefix = forward
+    with pytest.raises(RuntimeError, match='native failure'):
+        runner.read_outcomes(torch.zeros(1, 1, dtype=torch.long), [0, 1, 2])
+    assert not head._forward_pre_hooks
