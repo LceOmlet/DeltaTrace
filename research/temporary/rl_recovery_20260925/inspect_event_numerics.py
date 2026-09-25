@@ -113,6 +113,7 @@ def main(stack):
     p.add_argument('--checkpoint', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--native-prefix-only', action='store_true')
+    p.add_argument('--causal-prefix-only', action='store_true')
     p.add_argument('--native-fla-fp16', action='store_true',
                    help='Diagnostic native FLA dtype boundary; keep Qwen weights and output BF16')
     args = p.parse_args()
@@ -137,7 +138,7 @@ def main(stack):
     from qwen35_answer_finite import selected_target_log_probs
     runtime = producer.runner
     if args.native_fla_fp16:
-        from native_fla_precision import native_fla_fp16
+        from accelerated.qwen35.native_fla_precision import native_fla_fp16
         precision = native_fla_fp16(worker.actor_module_fsdp)
         stack.enter_context(precision)
         result['fla_compute_dtype'] = 'float16 (diagnostic boundary; native operator)'
@@ -160,13 +161,17 @@ def main(stack):
     for i,seq in enumerate(endpoints): selected[i,:len(seq)] = torch.tensor(seq,device='cuda')
     reference = selected.clone()
     for i,(left,right) in enumerate(spans): reference[i,left:right] = worker.tokenizer.eos_token_id
-    if args.native_prefix_only:
+    if args.native_prefix_only or args.causal_prefix_only:
         text_model = runtime.model.model.language_model
         original_attention = text_model.config._attn_implementation
         text_model.set_attn_implementation('flash_attention_2')
         try:
-            result['native_prefix'] = native_prefix_diagnostic(runtime, selected, reference, cases,
-                labels, producer, args.output)
+            if args.causal_prefix_only:
+                from inspect_prefix_causality import inspect
+                result['causal_prefix'] = inspect(runtime, selected, reference, cases, labels, producer)
+            else:
+                result['native_prefix'] = native_prefix_diagnostic(runtime, selected, reference, cases,
+                    labels, producer, args.output)
             save('completed_native_prefix_diagnostic')
         finally:
             text_model.set_attn_implementation(original_attention)
@@ -202,11 +207,22 @@ def main(stack):
     pair=torch.stack((reference,selected),1).flatten(0,1)
     sel=producer.packed_answer_targets(cases,[[0]]*4,pair.shape[1],pair.device,outcome_token_ids=labels)
     positions=sel.positions.unique(sorted=True)
-    with torch.no_grad():
-        native=runtime.model.forward_root(input_ids=pair, attention_mask=torch.ones_like(pair),
-                                         use_cache=False, logits_to_keep=positions)
-        logits=native.logits[sel.paired_samples,torch.searchsorted(positions,sel.paired_positions)]
-        lp=selected_target_log_probs(logits,sel)
+    from qwen35_answer_finite import categorical_head_logits
+    packed_rows=(sel.paired_samples,torch.searchsorted(positions,sel.paired_positions))
+    captured=[]
+    handle=runtime.model.lm_head.register_forward_pre_hook(
+        lambda _m,args:captured.append(args[0][packed_rows].detach()))
+    try:
+        with torch.no_grad():
+            native=runtime.model.forward_root(input_ids=pair, attention_mask=torch.ones_like(pair),
+                                             use_cache=False, logits_to_keep=positions)
+            logits=native.logits[packed_rows]
+            (hidden,)=captured
+            event_logits=categorical_head_logits(runtime.model.lm_head,hidden,sel.outcome_token_ids)
+            lp=selected_target_log_probs(logits,sel,outcome_logits=event_logits)
+    finally:
+        handle.remove()
+    result['single_token_readout']='original captured head input and weight; categorical FP32, same as DT'
     del native
     effects=(lp[1::2]-lp[0::2]).tolist()
     for case,effect in zip(result['cases'],effects):case['native_single_token_effect']=effect

@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import types
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
@@ -179,6 +180,7 @@ class DeltaTraceRolloutProducer:
         root = Path(os.environ["DT_ROOT"]).resolve()
         env_path = Path(os.environ.get("DT_ENVIRONMENT_JSON", root / "environment.json"))
         env = json.loads(env_path.read_text())["qwen35"]
+        self.native_fla_fp16 = env.get('dt_native_fla_fp16', False)
         from transformers import AutoConfig, AutoTokenizer
 
         # VERL's text-only loader exposes Qwen3_5TextConfig; the official
@@ -388,7 +390,16 @@ class DeltaTraceRolloutProducer:
             # hosts have a forward-only FA wheel, while MetaX's installed FA2
             # backward is separately verified in its environment receipt.
             text_model.set_attn_implementation('flash_attention_2')
-            result = self.readout.episodes(episodes)
+            # The pinned MetaX BF16 cached GDN dK exceeded FLA's original
+            # tolerance. The tested opt-in only casts native FLA operands;
+            # restore the original binding before VERL log-prob/PPO resumes.
+            if self.native_fla_fp16:
+                from accelerated.qwen35.native_fla_precision import native_fla_fp16
+                precision = native_fla_fp16(self.actor)
+            else:
+                precision = nullcontext()
+            with precision:
+                result = self.readout.episodes(episodes)
             print('[DeltaTrace readout] ' + json.dumps(self.readout.last_report), flush=True)
             return result
         finally:

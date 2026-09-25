@@ -12,6 +12,27 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 12:30 新候选 `candidates/categorical-head-fp32-20260925` 只用于已保存
+  异常样本的 head 精度修复验证，原任务仍使用下述发布目录。其类别投影、
+  端点读出与有限 seed 统一 FP32，保留原 h/W、原 log-softmax seed，移除
+  把 BF16 输出舍入倍率乘回隐藏态的校正。40项边界/接口测试通过；完整
+  B4 对照已完成，结果在 `categorical-head-fp32-full-v2.json`；同模型两路
+  head 输入逐值相同，但这次旧路径也未再现历史尖峰。不能沿用旧32k结果
+  宣称新 head 已全部验收。首个对照的记录器 CPU/GPU mask 索引失败日志保留，
+  只修记录器，未把它判为 DT 算法错误。
+- FLA FP16 helper 已移到 `accelerated/qwen35/native_fla_precision.py`，
+  producer 的 `dt_native_fla_fp16` 默认 False。仅原 FP16 候选的环境显式
+  设为 True；新 head 候选为 False，分开测量两个边界。scope 覆盖 DT，
+  离开后恢复24个原 FLA 绑定，PPO 保持原 BF16；成功与异常路径均已核验。
+  `native-scoped-fp16-capacity.json` 的32768/B4、两次 PPO 与 LoRA 同步
+  通过，DT65.771/28.539秒，第二次 PPO72.305秒，阶段结束物理占用最高
+  约51.41GiB。此结果早于新 head 修复，不覆盖新 head。
+- 原文本恢复120例已完成，结果见 `native-fp16-recovery-v3/results.json`
+  与 `native-fp16-recovery-summary.json`。该测试是 full-vocabulary text，
+  不经过 categorical rounding 分支，不能拿它否定 head 异常。前两次失败
+  原因是脚本目录中的旧 `qwen35_gdn_finite.py` 抢先导入；两个旧源码草稿
+  已按 SHA 保留到 `staged-source-not-importable/*.txt`，没有清编译缓存。
+  三个正式 worker 的 PYTHONPATH 均不包含该 receipt 目录；正式进程未受影响。
 - 当前正式目录是 `$DT_RUNTIME_ROOT/runs/author-2ee7ab4-paper`。WebShop、
   Sokoban 使用 `releases/2ee7ab4`；AppWorld 已切换 `releases/c88a749`，
   2026-09-25 10:08:09 +08 启动，shell PID 3646994、driver 3646996。

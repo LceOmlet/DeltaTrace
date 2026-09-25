@@ -108,8 +108,12 @@ def main():
                            'sleeping vLLM. Does not rerun or claim PPO-update verification.')
     artifacts = {}
     precision_stack = ExitStack()
+    fla_bindings = []
 
     def stage(name):
+        if fla_bindings:
+            assert all(module.chunk_gated_delta_rule is original for module, original in fla_bindings)
+            result['native_fla_bindings_restored_at_stage_boundaries'] = len(fla_bindings)
         torch.cuda.synchronize()
         free, total = torch.cuda.mem_get_info()
         result['stages'].append(dict(name=name, seconds=time.perf_counter()-started,
@@ -170,7 +174,7 @@ def main():
         worker = ActorRolloutRefWorker(c, 'actor_rollout')
         worker.init_model()
         if args.native_fla_fp16:
-            from native_fla_precision import native_fla_fp16
+            from accelerated.qwen35.native_fla_precision import native_fla_fp16
             precision_stack.enter_context(native_fla_fp16(worker.actor_module_fsdp))
             result['fla_compute_dtype'] = 'float16 (diagnostic boundary; native operator)'
         if args.backend == 'vllm':
@@ -184,6 +188,11 @@ def main():
         from deltatrace_rollout import DeltaTraceRolloutProducer
         producer = DeltaTraceRolloutProducer(worker.actor_module_fsdp,
             eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id)
+        fla_bindings = [(module, module.chunk_gated_delta_rule)
+                        for module in worker.actor_module_fsdp.modules()
+                        if hasattr(module, 'chunk_gated_delta_rule')]
+        result['dt_native_fla_fp16'] = producer.native_fla_fp16
+        result['actor_native_fla_unchanged'] = not args.native_fla_fp16
         if args.backend == 'vllm':
             worker._deltatrace_producer = producer
         stage('producer_init')

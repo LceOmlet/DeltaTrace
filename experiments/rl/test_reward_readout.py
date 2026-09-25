@@ -253,7 +253,8 @@ def test_owner_parameters_released_on_failure():
 
 
 @pytest.mark.parametrize('fails', [False, True])
-def test_actor_attention_and_training_mode_restored_after_finite_trace(fails):
+@pytest.mark.parametrize('native_fp16', [False, True])
+def test_actor_attention_and_training_mode_restored_after_finite_trace(fails, native_fp16):
     class Model:
         def __init__(self):
             self.config = SimpleNamespace(_attn_implementation='sdpa')
@@ -264,12 +265,29 @@ def test_actor_attention_and_training_mode_restored_after_finite_trace(fails):
             self.training = mode
         def eval(self):
             self.training = False
+        def modules(self):
+            return iter([self])
     actor = Model()
+    calls = []
+    g = torch.ones(2, dtype=torch.float32)
+    state = object()
+    def original_fla(q, k, v, *, g, beta, **kwargs):
+        calls.append((q.dtype, k.dtype, v.dtype, beta.dtype, g, kwargs['initial_state']))
+        return v, kwargs['initial_state']
+    actor.chunk_gated_delta_rule = original_fla
     producer = object.__new__(DeltaTraceRolloutProducer)
     producer.actor = actor
+    producer.native_fla_fp16 = native_fp16
     producer.runner = SimpleNamespace(model=SimpleNamespace(model=SimpleNamespace(language_model=actor)))
     def episode(rows):
         assert not actor.training and actor.config._attn_implementation == 'flash_attention_2'
+        operand = torch.ones(2, dtype=torch.bfloat16)
+        output, returned_state = actor.chunk_gated_delta_rule(
+            operand, operand, operand, g=g, beta=operand, initial_state=state)
+        expected_dtype = torch.float16 if native_fp16 else torch.bfloat16
+        assert calls[-1][:4] == (expected_dtype,) * 4
+        assert calls[-1][4] is g and calls[-1][5] is state
+        assert output.dtype == operand.dtype and returned_state is state
         if fails:
             raise RuntimeError('trace error')
         return []
@@ -280,6 +298,8 @@ def test_actor_attention_and_training_mode_restored_after_finite_trace(fails):
     else:
         producer.attribute_episode([], 123)
     assert actor.training and actor.config._attn_implementation == 'sdpa'
+    assert actor.chunk_gated_delta_rule is original_fla
+    assert len(calls) == 1  # The representation boundary must not repeat the operator.
 
 
 def test_reward_label_or_horizon_mismatch_is_not_silently_repaired():

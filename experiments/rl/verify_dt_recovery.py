@@ -6,6 +6,7 @@ they are reported separately from the unchanged paper-reference protocol.
 This is a recovery test, not an RL reward/advantage implementation.
 """
 import argparse
+from contextlib import nullcontext
 import hashlib
 import json
 import os
@@ -22,7 +23,11 @@ def main():
     p.add_argument('--benchmark-root', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--cases-per-task', type=int, default=8)
+    p.add_argument('--candidate-fla-fp16', action='store_true',
+                   help='Compare the existing BF16 official default to the isolated native-FLA FP16 RL candidate')
     args = p.parse_args()
+    if args.candidate_fla_fp16:
+        from accelerated.qwen35.native_fla_precision import native_fla_fp16
     benchmark = args.benchmark_root
     sys.path.insert(0, str(benchmark/'repo_dynamic/experiments/qwen35_comparison'))
     from paper_recovery_common import score_recovery, load_protocol, ids_sha, save_json
@@ -34,6 +39,18 @@ def main():
     from finite_fla_gpu import make_compiled_finite_pullback, verify_native_sources
     from qwen35_answer_finite import PackedAnswerTargets
     from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256
+    import qwen35_dense_finite_runner as dense_owner
+    import qwen35_gdn_finite as gdn_owner
+
+    # A staged source draft once shadowed the candidate through the script
+    # directory. Record the actual imported owner, not only the intended root.
+    import marshal
+    imported_capture = dense_owner.NativeGDNCapture.event
+    capture_provenance = dict(
+        module_file=gdn_owner.__file__,
+        event_code_file=imported_capture.__code__.co_filename,
+        event_code_sha256=hashlib.sha256(marshal.dumps(imported_capture.__code__)).hexdigest())
+    print(json.dumps(dict(phase='capture_owner', **capture_provenance)), flush=True)
 
     env_path = Path(os.environ['DT_ENVIRONMENT_JSON'])
     env = json.loads(env_path.read_text())['qwen35']
@@ -78,6 +95,8 @@ def main():
                   prepared_sha256=hashlib.sha256(prepared_path.read_bytes()).hexdigest(),
                   driver_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                   profile='gdn-symmetric-v1', generation_calls=0)
+    result['capture_provenance'] = capture_provenance
+    result['candidate_fla_compute_dtype'] = 'float16' if args.candidate_fla_fp16 else 'bfloat16'
     save_json(args.output/'results.json', result)
     torch.set_num_threads(4)
     torch.manual_seed(2026)
@@ -116,8 +135,11 @@ def main():
             for name, runner in runners.items():
                 print(json.dumps(dict(phase='attribution_start', method=name, group=group,
                                       indices=[r['index'] for r in batch], length=length)), flush=True)
-                signed, detail = runner.attribute(pair, torch.ones_like(pair), selection,
-                                                  select_output_rows=True, observer=None)
+                boundary = (native_fla_fp16(model) if args.candidate_fla_fp16 and name == 'rl_accelerated'
+                            else nullcontext())
+                with boundary:
+                    signed, detail = runner.attribute(pair, torch.ones_like(pair), selection,
+                                                      select_output_rows=True, observer=None)
                 assert bool(torch.isfinite(signed).all())
                 output[name] = signed.cpu().numpy()
                 details[name] = dict(seconds=detail['complete_attribution_seconds_with_diagnostics'],

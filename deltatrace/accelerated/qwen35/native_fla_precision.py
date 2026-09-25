@@ -1,8 +1,10 @@
-"""Diagnostic-only dtype boundary around the original FLA public operator.
+"""Scoped FP16 operands for the original FLA public operator.
 
 No recurrence, cache update, normalization, or backward is implemented here.
 Qwen's existing operator attribute supplies the native call. Model weights and
-the Qwen input/output dtype stay unchanged. The context restores every binding.
+the Qwen input/output dtype stay unchanged. The context restores every binding,
+including on error. Callers opt in only where native BF16 failed the original
+FLA tolerance; this module changes no default model or runner configuration.
 """
 from contextlib import contextmanager
 from functools import wraps

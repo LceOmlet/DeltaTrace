@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 import torch
+from omegaconf import OmegaConf
 
 from agent_system.multi_turn_rollout.rollout_loop import TrajectoryCollector
 from verl import DataProto
@@ -123,10 +124,10 @@ def test_native_collection_captures_outcomes_without_replacing_response_ids(esti
     # Test doubles supply environment transitions and generated artifacts;
     # the actual upstream rollout loop owns all sequencing and row collection.
     batch_size, prompt_width, response_width = 4, 32256, 512
-    config = SimpleNamespace(
-        algorithm=SimpleNamespace(adv_estimator=estimator),
-        env=SimpleNamespace(max_steps=15, rollout=SimpleNamespace(n=4)),
-    )
+    config = OmegaConf.create({
+        'algorithm': {'adv_estimator': estimator},
+        'env': {'max_steps': 15, 'rollout': {'n': 4}},
+    })
     tokenizer = SimpleNamespace(batch_decode=lambda responses, **_: ["raw action"] * len(responses))
     collector = TrajectoryCollector(config, tokenizer)
 

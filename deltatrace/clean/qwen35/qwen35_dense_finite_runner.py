@@ -11,7 +11,7 @@ from collections.abc import Mapping
 import torch
 from flash_attn import flash_attn_func,flash_attn_varlen_func
 from transformers.integrations.flash_attention import flash_attention_forward
-from qwen35_answer_finite import FiniteAnswerOps,outcome_log_probs,selected_target_log_probs
+from qwen35_answer_finite import FiniteAnswerOps,categorical_head_logits,selected_target_log_probs
 from qwen35_decoder_finite import NativeDecoderCapture,FiniteBoundaryOps,attention_finite_pullback,decoder_finite_pullback
 from qwen35_gdn_finite import NativeGDNCapture,gdn_finite_pullback
 from native_dense_attention_capture import NativeDenseAttentionCapture
@@ -146,8 +146,15 @@ class Qwen35DenseFiniteRunner:
 
     @torch.no_grad()
     def read_outcomes(self,input_ids,outcome_token_ids,*,past_key_values=None):
-        out=self.forward_prefix(input_ids,past_key_values=past_key_values)
-        return outcome_log_probs(out.logits[:,-1],outcome_token_ids)
+        captured=[]
+        def capture(_module,args):captured.append(args[0][:,-1].detach())
+        handle=self.model.lm_head.register_forward_pre_hook(capture)
+        try:
+            self.forward_prefix(input_ids,past_key_values=past_key_values)
+        finally:
+            handle.remove()
+        (hidden,)=captured
+        return categorical_head_logits(self.model.lm_head,hidden,outcome_token_ids).log_softmax(-1)
 
     def attribute(self,paired_ids,mask,selection,select_output_rows=True,observer=None):
         if paired_ids.shape!=mask.shape or paired_ids.shape!=(2*selection.batch,selection.length):
@@ -230,17 +237,22 @@ class Qwen35DenseFiniteRunner:
         if out.logits.shape!=(2*selection.batch,expected_rows,model.lm_head.out_features):raise ValueError('Native vocabulary/output shape changed.')
         output_bytes=out.logits.numel()*out.logits.element_size();root_peak=torch.cuda.max_memory_allocated()
         z=timed('pack_actual_target_logits',lambda:selector.pack_logits(out.logits) if selector is not None else selection.pack_hidden(out.logits));del out
-        # Match the established root-G diagnostic independently of the compiled
-        # seed's internal log-softmax fusion. Neither result replaces model logits.
-        with torch.no_grad():
-            root_logp=timed('actual_root_FP32_logprob_diagnostic',lambda:selected_target_log_probs(z,selection))
-        root_lp0=root_logp[0::2].detach().cpu();root_lp1=root_logp[1::2].detach().cpu();del root_logp
-        # Consume only actual original logits, with the unchanged full-vocabulary seed.
         packed_head=root.pop('packed_head_input',None)
-        if packed_head is not None:packed_head=packed_head.to(z.device)
+        outcome_logits=None
+        if packed_head is not None:
+            packed_head=packed_head.to(z.device)
+            with torch.no_grad():
+                outcome_logits=timed('categorical_head_FP32',lambda:categorical_head_logits(
+                    model.lm_head,packed_head,selection.outcome_token_ids))
+        # Independently evaluate log-softmax on the same event readout used by
+        # the finite seed. Full-vocabulary text targets retain native logits.
+        with torch.no_grad():
+            root_logp=timed('actual_root_FP32_logprob_diagnostic',lambda:selected_target_log_probs(
+                z,selection,outcome_logits=outcome_logits))
+        root_lp0=root_logp[0::2].detach().cpu();root_lp1=root_logp[1::2].detach().cpu();del root_logp
         with torch.no_grad():mnorm,seed=timed('finite_seed',lambda:self.answer(z,model.lm_head,selection,
-            original_packed_hidden=packed_head))
-        del packed_head
+            original_packed_hidden=packed_head,outcome_logits=outcome_logits))
+        del packed_head,outcome_logits
         if observer is not None:observer.boundary('norm',mnorm.detach(),root['final_norm_output'])
         lp0=seed['logp0'].detach().cpu();lp1=seed['logp1'].detach().cpu()
         effect_G=float((root_lp1.double()-root_lp0.double()).sum())
@@ -288,7 +300,7 @@ class Qwen35DenseFiniteRunner:
             prepare_layer=getattr(model,'prepare_finite_layer',None)
             if callable(prepare_layer):prepare_layer(layer)
             if dc.calls!={k:1 for k in ('input_norm','post_norm','gate','up','silu','down','mlp','decoder')}:raise ValueError('Missing actual decoder captures.')
-            if mc.calls!=({'module':1,'interface':1,'native_varlen':0,'native_dense':1} if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError('Missing actual native mixer captures.')
+            if mc.calls!=({'module':1,'interface':1,'native_varlen':0,'native_dense':1} if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError(f'Missing actual native mixer captures at layer {i} ({layer.block_type}): {mc.calls!r}')
             d,c,e=dc.values,mc.values,getattr(mc,'endpoints',{});scale=getattr(mc,'scale',0.0625)
             mixer_input_shape=getattr(mc,'input_shape',None)
             gdn_capture_start=getattr(mc,'coefficient_start',0)

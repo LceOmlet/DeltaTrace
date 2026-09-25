@@ -1,4 +1,4 @@
-"""Numerical regressions for the native categorical head's rounding boundary.
+"""Numerical regressions for the categorical head's FP32 readout boundary.
 
 Import the formal DT owner via the recorded runtime PYTHONPATH. These use
 actual torch Linear outputs, never an invented attribution vector.
@@ -6,17 +6,18 @@ actual torch Linear outputs, never an invented attribution vector.
 import pytest
 import torch
 
-from qwen35_answer_finite import FiniteAnswerOps, PackedAnswerTargets
+from qwen35_answer_finite import (FiniteAnswerOps, PackedAnswerTargets,
+    categorical_head_logits, selected_target_log_probs, _answer_seed_rule)
 
 
-def operands(step=3.0, target=0):
-    head = torch.nn.Linear(3, 3, bias=False, dtype=torch.bfloat16)
+def operands(step=3.0, target=0, device='cpu'):
+    head = torch.nn.Linear(3, 3, bias=False, dtype=torch.bfloat16,device=device)
     with torch.no_grad():
         head.weight.copy_(torch.tensor([[.2, .04, 0.], [.2, -.04, 0.], [.2, 0., .04]]))
-    hidden = torch.tensor([[100., 0., 0.], [100., step, 0.]], dtype=torch.bfloat16)
+    hidden = torch.tensor([[100., 0., 0.], [100., step, 0.]], dtype=torch.bfloat16,device=device)
     logits = head(hidden).detach()
     targets = PackedAnswerTargets(
-        [{'target_ids': torch.tensor([target]), 'prompt_length': 1}], [[0]], 2, 'cpu',
+        [{'target_ids': torch.tensor([target]), 'prompt_length': 1}], [[0]], 2, device,
         outcome_token_ids=[0, 1, 2],
     )
     return head, hidden, logits, targets
@@ -24,26 +25,33 @@ def operands(step=3.0, target=0):
 
 @pytest.mark.parametrize('step', [1., 3., -3.])
 @pytest.mark.parametrize('target', [0, 1, 2])
-def test_native_bf16_head_rounding_finite_identity(step, target):
+def test_categorical_readout_and_seed_use_same_fp32_head(step, target):
     head, hidden, logits, targets = operands(step, target)
     original_logits, original_hidden, original_weight = logits.clone(), hidden.clone(), head.weight.clone()
-    with torch.no_grad():
+    with torch.no_grad(), torch.autocast('cpu',dtype=torch.bfloat16):
+        event_logits=categorical_head_logits(head,hidden,targets.outcome_token_ids)
         _, detail = FiniteAnswerOps(compiled=False)(
-            logits, head, targets, original_packed_hidden=hidden,
+            logits, head, targets, original_packed_hidden=hidden,outcome_logits=event_logits,
         )
+    assert event_logits.dtype == torch.float32
+    assert detail['packed_hidden'].dtype == torch.float32
     contribution = (detail['packed_hidden'].double() * (hidden[1:].double()-hidden[:1].double())).sum()
-    native = logits.float().log_softmax(-1)
-    effect = (native[1, target]-native[0, target]).double()
+    reference = torch.nn.functional.linear(hidden.double(),head.weight.double()).log_softmax(-1)
+    effect = reference[1,target]-reference[0,target]
     torch.testing.assert_close(contribution, effect, atol=2e-5, rtol=1e-5)
+    root=selected_target_log_probs(logits,targets,outcome_logits=event_logits)
+    assert torch.equal(root[0::2],detail['logp0'])
+    assert torch.equal(root[1::2],detail['logp1'])
+    torch.testing.assert_close((root[1]-root[0]).double(),effect,atol=2e-5,rtol=1e-5)
     assert torch.equal(logits, original_logits)
     assert torch.equal(hidden, original_hidden)
     assert torch.equal(head.weight, original_weight)
     if step == 1:
-        # W delta(h) is nonzero, but the native BF16 head rounds both
-        # endpoints to the same logits. The former linear rule missed this.
+        # Native BF16 erases a real input effect. The event readout retains it,
+        # without changing or pretending to reproduce the stored BF16 logits.
         assert (torch.nn.functional.linear(hidden[1:].float()-hidden[:1].float(), head.weight.float()) != 0).any()
         assert torch.equal(logits[0], logits[1])
-        assert effect == 0
+        assert effect != 0
 
 
 def test_equal_head_endpoints_have_zero_finite_effect():
@@ -52,7 +60,8 @@ def test_equal_head_endpoints_have_zero_finite_effect():
         dense, detail = FiniteAnswerOps(compiled=False)(
             logits, head, targets, equal_endpoint=True, original_packed_hidden=hidden,
         )
-    assert not dense.any()
+    assert torch.isfinite(dense).all()
+    assert not (detail['packed_hidden']*(hidden[1:]-hidden[1:])).any()
     assert torch.equal(detail['logp0'], detail['logp1'])
 
 
@@ -62,11 +71,27 @@ def test_categorical_head_requires_captured_native_input():
         FiniteAnswerOps(compiled=False)(logits, head, targets)
 
 
-def test_zero_linear_displacement_cannot_hide_changed_native_output():
+def test_identical_inputs_do_not_attribute_bf16_output_discrepancy():
     head, hidden, logits, targets = operands()
     hidden[1] = hidden[0]
-    with pytest.raises(ValueError, match='Finite answer seed invalid'):
-        FiniteAnswerOps(compiled=False)(logits, head, targets, original_packed_hidden=hidden)
+    with torch.no_grad():
+        dense,detail=FiniteAnswerOps(compiled=False)(logits,head,targets,original_packed_hidden=hidden)
+    assert torch.isfinite(dense).all()
+    assert not (detail['packed_hidden']*(hidden[1:]-hidden[:1])).any()
+    assert torch.equal(detail['logp0'],detail['logp1'])
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(),reason='Original finite linear transpose is a GPU owner.')
+def test_default_text_target_keeps_original_finite_seed():
+    head,hidden,logits,targets=operands(device='cuda')
+    targets.outcome_token_ids=None
+    with torch.no_grad():
+        expected=_answer_seed_rule(logits[0::2],logits[1::2],targets.labels,head.weight)
+        _,detail=FiniteAnswerOps(compiled=False)(logits,head,targets)
+    for actual,reference in zip((detail['packed_hidden'],detail['logp0'],detail['logp1'],
+                                detail['allocated_logit_effect']),
+                               (expected[0],expected[2],expected[3],expected[4])):
+        assert torch.equal(actual,reference)
 
 
 def test_cached_suffix_preserves_target_identity_and_endpoint_packing():

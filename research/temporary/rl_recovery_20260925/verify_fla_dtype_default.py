@@ -18,7 +18,7 @@ torch.manual_seed(42)
 upstream=torch.randn_like(endpoints['v'][1::2])
 results=[]
 for name,path in [('baseline',root/'releases/c88a749/clean/qwen35/finite_fla_gpu.py'),
-                  ('candidate',rec/'finite_fla_gpu.py')]:
+                  ('candidate',root/'candidates/native-fla-fp16-20260925/clean/qwen35/finite_fla_gpu.py')]:
     spec=importlib.util.spec_from_file_location(name+'_finite_fla',path)
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
