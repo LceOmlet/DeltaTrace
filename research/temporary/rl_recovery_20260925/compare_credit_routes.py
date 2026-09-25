@@ -123,9 +123,11 @@ def main():
                     tick = time.perf_counter()
                     audits = []
                     audit = nullcontext()
-                    if os.environ.get('CREDIT_ROUTE_AUDIT') == '1' and precision == 'native_fla_fp16' and name == 'single':
+                    if os.environ.get('CREDIT_ROUTE_AUDIT') == '1' and precision == 'native_fla_fp16' and name in ('joint', 'single'):
                         from audit_finite_residuals import boundary_audit
-                        selected_layers = range(32) if os.environ.get('CREDIT_ROUTE_AUDIT_ALL') == '1' else (13, 7, 8)
+                        selected_layers = (tuple(map(int, os.environ['CREDIT_ROUTE_AUDIT_LAYERS'].split(',')))
+                            if 'CREDIT_ROUTE_AUDIT_LAYERS' in os.environ else
+                            range(32) if os.environ.get('CREDIT_ROUTE_AUDIT_ALL') == '1' else (13, 7, 8))
                         audit = boundary_audit(runner, audits, selected=selected_layers)
                     with audit:
                         signed, roots, detail = trace_token_attribution(runner, inputs[0::2], inputs[1::2],
@@ -140,7 +142,7 @@ def main():
                     for b in range(4):
                         values = signed[b, active[b]].double()
                         lp = detail['target_logp1'][b]
-                        rows.append(dict(event=payload['samples'][b]['trace']['event_step'] if payload else 10+b,
+                        rows.append(dict(source_step=payload['samples'][b]['trace']['source_step'] if payload else 10+b,
                             root=float(roots[b]), factual_logp=lp,
                             reference_logp=detail['target_logp0'][b], selected_position=first[b],
                             selected_signed=float(signed[b, first[b]]),

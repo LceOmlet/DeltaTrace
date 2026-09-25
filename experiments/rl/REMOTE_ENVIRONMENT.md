@@ -12,6 +12,26 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 18:17确认`runs/linear-return-pilot/Sokoban`正常退出0、原checkpoint marker为2；
+  第二轮60行/60请求/15次DT为114.67秒，原PPO46.18秒，整轮545.86秒。
+  原两个检查点的LoRA元素变化1,433,186，参数有限、optimizer步数12→27。
+  `job.json`已更新完成状态，GPU4空闲。该验证不计入正式150×256预算。
+- 18:19旧WebShop进程组4185212、旧AppWorld进程组3563554已定向停止，
+  保留前者完成的checkpoint1和全部日志；AppWorld同组Worker在SIGTERM后
+  仍存活，核验PID/PGID后停止同一个组，再启动新作业，没有并占设备。
+  现行两项验证使用`releases/64e5876`：GPU5 Webshop shell1139115、
+  Worker1161861；GPU6 AppWorld shell1139123、Worker1158696。目录分别
+  `runs/linear-return-pilot/{Webshop,AppWorld}`，各两轮×四轨迹，仍为原
+  15/40交互上限、1024 response、32768总上限、actor/DT B4，原vLLM并发32。
+  两项均已进入交互，尚未完成；`active-*`的bounded_validation引用原job.json。
+  旧formal manifest保留停止事实，不将pilot PID冒充原预算作业。
+- GPU7只读重放`linear-return-boundary-audit`已完成（145.61秒），没有训练修改。
+  实际首轮B4输入通过原完整前向及正式DT，单token重复归因逐值相同；被选层
+  2–5的被动边界账目记录了残差加法、norm、mixer各项差异。完整DT端点与原
+  完整前向最大差3.82e-6；启用原缓存时端点差仍达0.16990。没有替换原缓存、
+  重写内核或添加总和缩放；该记录不是整网官方容差通过。源JSON、原始操作数
+  和阶段记录保存在`receipts/rollout-major-cost/linear-return-boundary-*`。
+
 - 17:40按用户禁止平方归因调用的指令，定向停止Sokoban旧正式进程组3563544，
   GPU4 Worker3615368已退出，未触及其他任务。停止时1118/3847个DT批次，
   无本轮完成检查点；原日志/文件全部保留。此前排队的Sokoban驻留RPC也已终止，

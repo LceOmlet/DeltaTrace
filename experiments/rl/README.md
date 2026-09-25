@@ -19,12 +19,25 @@
 Sokoban新鲜四轨迹的首轮已完成：轨迹长度9/15/15/9，48个response只产生48个
 请求、12次DT，共119.80秒；旧展开对相同步数需330请求，这个旧数是解析计数，
 不是另一条实际耗时测试。原PPO更新47.54秒，非零梯度约0.041，完成checkpoint1；
-整轮564.53秒，第二轮仍在运行。首轮30项原守恒诊断超阈值也保留，不能称数值
+整轮564.53秒。第二轮也已完成：60请求/15次DT/114.67秒，原PPO46.18秒，
+整轮545.86秒；退出0、checkpoint2完整。直接读取两个原生检查点确认
+1,433,186个LoRA元素改变、参数有限、optimizer步数12→27、学习率1e-6。
+第二轮四轨迹均未成功，不能把小规模运行当作任务性能提升。首轮30项、第二轮
+40项原守恒诊断超阈值也保留，不能称数值
 误差全面解决。见[首轮真实训练](../../research/temporary/rl_recovery_20260925/receipts/linear-return-sokoban-first-update.json)。
 实现提交`64e5876`已推送，远端`releases/64e5876`的111项源码SHA已核验；
-当前小规模进程继续使用已记录的候选目录，没有运行中热替换。
+已完成的Sokoban小规模验证使用已记录的候选目录，没有运行中热替换。
 旧Sokoban正式作业已在1118/3847个DT批次时定向停止，未完成迭代不保留作训练
-结果，原日志保留；WebShop已完成旧方法正式step1。下方按日期记录历史状态。
+结果，原日志保留；WebShop已完成旧方法正式step1。
+18:19停止WebShop/AppWorld旧未完成迭代，保留检查点及原始日志，使用发布
+`64e5876`启动各四轨迹、两次迭代的原入口验证。两者已进入真实交互，仍需
+完成新版本更新；未据启动就宣称通过。见[两轮Sokoban](../../research/temporary/rl_recovery_20260925/receipts/linear-return-sokoban-completed.json)、
+[已保存参数](../../research/temporary/rl_recovery_20260925/receipts/linear-return-sokoban-saved-updates.json)。
+短数值诊断已将残差拆到原加法/norm/mixer边界；完整DT端点与原生完整前向差
+最大3.82e-6，缓存与完整端点差最大0.16990，单token重放两次逐值一致。
+这四条实际输入也仍有联合分解与单token删除异号，不能称逐token精度通过；
+未修改有限规则、FA/FLA或PPO来强迫守恒。见[原始边界诊断](../../research/temporary/rl_recovery_20260925/receipts/linear-return-boundary-summary.json)。
+下方按日期记录历史状态。
 
 **当前状态（2026-09-25 15:56 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证。正式作业中 Sokoban/AppWorld 继续运行；WebShop 在原 PPO 更新期间退出，保留失败现场后通过原 owner 重新启动，尚未完成正式首个更新。**
 同一异常样本的旧 head 操作数逐值重现：首 token 的 `d=-3.21144` 隐含
