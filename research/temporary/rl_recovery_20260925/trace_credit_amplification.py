@@ -5,6 +5,7 @@ Old and repaired heads share one actor and all body settings. Single-token
 native interventions below are diagnostics only, never the production method.
 """
 import copy
+from contextlib import nullcontext
 import importlib.util
 import json
 import os
@@ -88,7 +89,7 @@ def main():
     oldcontroller = load('amplification_old_controller', oldpath/'qwen35_dense_finite_runner.py')
     baseline = copy.copy(runner)
     baseline.answer = oldanswer.FiniteAnswerOps(compiled=False)
-    pair = saved['pair'].to('cuda')
+    pair = saved[os.environ.get('CREDIT_TRACE_PAIR_KEY', 'pair')].to('cuda')
     labels = producer.readout.alphabet.label_ids(worker.tokenizer)
     label_tensor = torch.tensor(labels, device=pair.device)
     categories = torch.tensor([labels.index(int(row[-1])) for row in pair[1::2]], device=pair.device)
@@ -102,6 +103,8 @@ def main():
         artifacts = torch.load(Path(resume).with_suffix('.pt'), map_location='cpu', weights_only=True)
     try:
         schedule = [] if resume else [('old_head', baseline, oldcontroller), ('fp32_head', runner, controller)]
+        if os.environ.get('CREDIT_TRACE_ONLY_NEW') == '1':
+            schedule = [('fp32_head', runner, controller)]
         for name, owner, module in schedule:
             entry = dict(name=name, boundaries=[], layers=[])
             report['runs'].append(entry)
@@ -151,8 +154,13 @@ def main():
             save(name+'_start')
             tick = time.perf_counter()
             try:
-                signed, detail = module.Qwen35DenseFiniteRunner.attribute(
-                    owner, pair, torch.ones_like(pair), targets, select_output_rows=True)
+                precision = nullcontext()
+                if os.environ.get('CREDIT_TRACE_NATIVE_FP16') == '1':
+                    from accelerated.qwen35.native_fla_precision import native_fla_fp16
+                    precision = native_fla_fp16(producer.actor)
+                with precision:
+                    signed, detail = module.Qwen35DenseFiniteRunner.attribute(
+                        owner, pair, torch.ones_like(pair), targets, select_output_rows=True)
             finally:
                 module.decoder_finite_pullback = original_decoder
                 setattr(owner.answer, head_name, original_head)
@@ -174,6 +182,9 @@ def main():
                 entry['head_operand_maxdiff'] = [float((a.double()-b.double()).abs().max())
                     for a, b in zip(heads[0], saved['head'])]
             save(name+'_done')
+        if os.environ.get('CREDIT_TRACE_BOUNDARIES_ONLY') == '1':
+            save('completed')
+            return
         # Actual model measurement of the most negative source token only.
         factual = pair[1::2, :-1].clone()
         deleted = factual.clone()

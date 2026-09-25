@@ -10,10 +10,17 @@
 原因是逐类别舍入倍率破坏 log-softmax seed 的零和结构，并放大随后相互抵消
 的贡献；不是 PPO 重复乘奖励。两条仍使用旧 head 的正式作业已定向停止，
 保留已完成检查点及日志；AppWorld 此前已在完整40轮 rollout之后因 TaskRunner
-退出而停止，原因尚未据该日志确定。未以这些运行记录宣称训练健康。
+退出而停止；内核日志现已确认12:54:06由主机global OOM杀掉该TaskRunner，
+不能仅根据历史cgroup峰值就称为本次触发了容器限额。未以这些记录宣称训练健康。
 完整证据、失败的诊断尾部及尚未解决的逐 token 估计偏差见
 [信用放大定位](../../research/temporary/rl_recovery_20260925/CREDIT_AMPLIFICATION.md)。
 历史最大 `d=-13.016` 尚未逐值重现，不能声称 head 是所有极端值的唯一来源。
+
+同形状 B8/1479 对照已完成，包含单 token 原模型删除、单 token DT 与联合
+EOS 分解。原前向缓存路径差异和有限传播偏差已分开记录；未把整网守恒阈值
+当成FA/FLA容差。新FP32 head与DT内native FLA FP16组合的精确32768/B4、
+原vLLM驻留、两次原PPO更新与LoRA同步容量检查通过。小规模WebShop两轮
+实际奖励均为0，因此其零梯度、零DT调用不能证明非零信用更新已经跑通。
 
 以下为此前有时间戳的训练状态：
 截至 10:33 +08，`runs/author-2ee7ab4-paper` 的 WebShop 已完成 checkpoint9/150，
