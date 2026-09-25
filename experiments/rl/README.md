@@ -3,7 +3,7 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**当前状态（2026-09-25 14:57 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证，原文预算作业已启动，正式首个更新尚未完成。**
+**当前状态（2026-09-25 15:15 +08）：已重现并修复一处完整链路的 head 放大；三个任务均完成实际非零 DT/PPO 小规模验证，原文预算作业已启动，WebShop正式首轮DT已完成，正式首个更新尚未完成。**
 同一异常样本的旧 head 操作数逐值重现：首 token 的 `d=-3.21144` 隐含
 反事实概率1.28169；只替换为既有 FP32 head 修复后，该 token `d=+0.187565`，
 概率0.0407164，−0.1步罚的优势从+2.38148变为−0.0171025。
@@ -40,6 +40,13 @@ AppWorld 200×240；模型与DT等明确适配仍见`paper_scale.json`，不称�
 236.081/197.475秒、226477/205808个token；这次较长调用有实际工作量对应，
 不是纯decode内核计时。内存约671.2GiB，主机OOM计数未增加；物理GPU约49–52GiB。
 事实与来源见[启动后回执](../../research/temporary/rl_recovery_20260925/receipts/formal-head-fixed-initial-rollout.json)。
+
+15:14更新：WebShop正式首轮15次生成调用完成，894098个token共1236.87秒；
+7个非零奖励事件经过51个对照、13次DT调用（含B3尾批），DT共116.553秒。
+d范围[-0.108941,+0.275745]；51条trace的最大隐含删除概率0.893370，没有越过1。
+原守恒诊断17项未通过仍保留，不扩大成全部归因精度通过。现场栈已转入原
+VERL compute_log_prob；Sokoban/AppWorld仍在第11/8轮交互。见
+[正式首轮DT回执](../../research/temporary/rl_recovery_20260925/receipts/formal-webshop-first-dt-summary.json)。
 
 以下为此前有时间戳的训练状态：
 截至 10:33 +08，`runs/author-2ee7ab4-paper` 的 WebShop 已完成 checkpoint9/150，

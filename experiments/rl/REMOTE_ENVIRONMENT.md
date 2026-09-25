@@ -12,6 +12,14 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 15:15延续同一批正式PID，无重启/热替换。WebShop完成128轨迹的15轮采集，
+  7个非零事件/51个对照/13次DT（含B3尾批）完成，d范围[-0.108941,+0.275745]；
+  现场Worker3642631栈在原VERL compute_log_prob。Sokoban/AppWorld交互11/8，
+  三者尚无正式新checkpoint。内存约579.6GiB，OOM计数34未增加。
+  事实见`formal-head-fixed-after-webshop-dt.json`和`formal-webshop-first-dt-summary.json`；
+  formal/active-training状态已改为`running_formal_updates_pending`。
+  只读原pilot检查点的LoRA核验也完成，见`head-pilot-saved-lora-updates.json`：
+  三任务参数实际更新且有限，lr均1e-6；CPU mmap读取，未初始化GPU。
 - 14:57当前入口：`releases/5a3cda0`，正式目录`runs/author-5a3cda0-paper`。
   14:44从原权重启动，Sokoban GPU4/shell3563544、Webshop GPU5/shell3563549、
   AppWorld GPU6/shell3563554；预算150×256、150×128、200×240。启动前核实

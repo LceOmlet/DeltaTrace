@@ -227,3 +227,18 @@ head产生的检查点不自动混入这次运行。见[发布回执](receipts/d
 精度所致，保存的原optimizer状态没有把学习率关掉。这证明实际参数更新，
 不把“更新发生”扩大成“估计准确”或“任务质量提高”。
 见[摘要及完整远端回执SHA](receipts/head-pilot-saved-lora-updates.json)。
+
+## 正式预算首批信用核验
+
+15:13 WebShop的128轨迹首轮完成DT：7个真实非零事件、51个对照、13次调用，
+包括原B3尾批，总116.553秒。第一批37.047秒，随后B4调用4.330–11.475秒，
+B3为9.456秒；未把这些不同长度的耗时当成严格加速比。
+d范围[-0.108940883,+0.275744724]。使用正式端点log-prob和每条trace最小d，
+核算隐含删除概率的最大值为0.893370261，51条trace均未越过1。没有复现旧尖峰。
+这只是现有联合DT估计的诊断，没有加入概率上限、信用裁剪或训练拒绝门槛。
+17项原守恒诊断失败如实保留，不能据此宣布全部token反事实精度通过。
+见[正式DT摘要](receipts/formal-webshop-first-dt-summary.json)。
+
+15:14原Worker的现场栈确认已退出DT、进入VERL compute_log_prob。Sokoban/
+AppWorld仍在真实rollout；三个正式作业尚无完成的首个checkpoint。
+见[现场阶段、栈和资源](receipts/formal-head-fixed-after-webshop-dt.json)。
