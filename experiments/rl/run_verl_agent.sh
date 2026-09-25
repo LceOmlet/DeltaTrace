@@ -166,6 +166,10 @@ fi
 # patcher rather than allowing simultaneous writes to installed Python files.
 flock "$VERL_ROOT/.deltatrace-patch.lock" \
   "$VENV_PYTHON" "$DT_ROOT/experiments/rl/patch_verl_agent2.py" "$VERL_ROOT"
+if [[ "$ENV_NAME" == "AppWorld" ]]; then
+  flock "$APPWORLD_ROOT/.deltatrace-patch.lock" \
+    "$VENV_PYTHON" "$DT_ROOT/experiments/rl/patch_appworld_transport.py" "$APPWORLD_ROOT"
+fi
 if [[ "$ENV_NAME" == "Webshop" && -d "$VERL_ROOT/agent_system/environments/env_package/webshop/webshop/search_engine/indexes_1k" ]]; then
   # The upstream manager passes num_products=None, which selects `indexes`.
   # The A6000 smoke uses the official 1k index; replace this link with the
