@@ -12,6 +12,19 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 17:11独立GPU7驻留对照及容量验证退出0，PID546374已释放。正式GPU4/5/6
+  未重启/热改。复用runner已有`offload_replay_mixer`开关，同一actor/B4/1648
+  输入的预热后原路径9.7886秒，GPU驻留7.2190/7.2783秒；signed、端点、Q/V/A
+  逐值相同。驻留路径随后DT恰好32768、两次原PPO更新及原生LoRA同步通过，
+  第二次DT26.04秒、第二次PPO72.57秒；阶段物理显存快照最高51.405GiB，
+  不是连续峰值。不据短对照宣布DT已达到一次反向，也不改变正式设置。
+  回执`receipts/rollout-major-cost/mixer-residency-capacity-compact.json`保存
+  实际脚本/结果SHA；本地容量脚本后续仅修正中间状态名称。已安装Torch确认
+  pinned非连续切片仍经pageable打包，原注释已纠正，没有另写复制内核。
+  同时AppWorld正式完成40轮采集、DT为60/232，cgroup610.26GiB、OOM计数34；
+  其driver/worker PSS分别约28.87/33.49GiB，记录在
+  `formal-appworld-dt-memory-followup.json`。正式首轮更新仍待完成，不恢复定时
+  检查或备份。方法PLAN、原FA/FLA/PPO不变。
 - 16:44两项独立短输入耗时对照均退出0，GPU7已释放；正式GPU4/5/6的PID
   不变。Sokoban已完成736个DT批次，最负d仍−0.765355。保存的实际WebShop
   B4/1571输入在原默认参数卸载策略下完整DT/原生反向为3.7100/1.6979秒，

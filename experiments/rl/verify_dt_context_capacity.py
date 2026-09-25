@@ -80,6 +80,8 @@ def main():
                         help='Within the phase probe, compare current capture residency with these existing owner capture names; no finite rule changes.')
     parser.add_argument('--compare-replay-weight-lifetime', action='store_true',
                         help='Compare the replay/finite gather boundary, then run the existing 32k/two-update capacity check; exact same-actor outputs and original FSDP gather counts.')
+    parser.add_argument('--compare-replay-mixer-offload', action='store_true',
+                        help='Compare the existing mixer CPU offload with GPU residency, then check the resident route at exact32k with two original PPO updates.')
     parser.add_argument('--compare-native-prefix-reuse', action='store_true',
                         help='Measure the existing native-prefix option on/off/on in the same actor; record numerical differences without inventing a whole-network tolerance.')
     parser.add_argument('--native-fla-fp16', action='store_true',
@@ -95,6 +97,8 @@ def main():
         parser.error('--compare-replay-weight-lifetime requires a separate --phase-profile-lengths probe')
     if args.compare_native_prefix_reuse and (not args.phase_profile_lengths or args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime):
         parser.error('--compare-native-prefix-reuse requires a separate --phase-profile-lengths probe')
+    if args.compare_replay_mixer_offload and (not args.phase_profile_lengths or args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime or args.compare_native_prefix_reuse):
+        parser.error('--compare-replay-mixer-offload requires a separate --phase-profile-lengths probe')
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   rollout_max_num_seqs=args.rollout_max_num_seqs,
@@ -102,7 +106,8 @@ def main():
                   rollout_enable_prefix_caching=args.rollout_enable_prefix_caching,
                   reshard_after_forward=args.reshard_after_forward,
                   actor_microbatch=args.actor_microbatch, activation_offload=args.activation_offload,
-                  parameter_offload_policy=args.parameter_offload_policy, stages=[])
+                  parameter_offload_policy=args.parameter_offload_policy,
+                  torch_cpu_threads=torch.get_num_threads(), stages=[])
     if args.tail_batch_probe:
         result['scope'] = ('Tail-batch compile/phase diagnosis at exact 32768 with the original actor and '
                            'sleeping vLLM. Does not rerun or claim PPO-update verification.')
@@ -211,7 +216,7 @@ def main():
             native_attribute = producer.runner.attribute
             ledgers = []
             signed_results = []
-            compare_outputs = args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime or args.compare_native_prefix_reuse
+            compare_outputs = args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime or args.compare_native_prefix_reuse or args.compare_replay_mixer_offload
             owner_view = producer.runner.model
             native_replay = getattr(owner_view, 'replay_finite_layer', None)
             gather_counts = {}
@@ -258,6 +263,7 @@ def main():
             result['phase_probes'] = []
             original_captures = tuple(producer.runner.gdn_gpu_capture_names)
             original_prefix_reuse = producer.runner.reuse_native_prefix
+            original_mixer_offload = producer.runner.offload_replay_mixer
             for length in args.phase_profile_lengths:
                 remove = 32768 - length
                 if not 0 <= remove <= fixture_detail['synthetic_filler_tokens']:
@@ -275,11 +281,16 @@ def main():
                 if args.compare_native_prefix_reuse:
                     configurations = [(name, original_captures) for name in
                                       ('prefix_on', 'prefix_off', 'prefix_off', 'prefix_on')]
+                if args.compare_replay_mixer_offload:
+                    configurations = [(name, original_captures) for name in
+                                      ('offload', 'resident', 'resident', 'offload')]
                 reference = None
                 for repeat, (name, captures) in enumerate(configurations):
                     producer.runner.gdn_gpu_capture_names = captures
                     if args.compare_native_prefix_reuse:
                         producer.runner.reuse_native_prefix = name == 'prefix_on'
+                    if args.compare_replay_mixer_offload:
+                        producer.runner.offload_replay_mixer = name == 'offload'
                     if args.compare_replay_weight_lifetime:
                         owner_view.replay_finite_layer = native_replay if name == 'candidate' else None
                         gather_counts.clear()
@@ -298,6 +309,7 @@ def main():
                              for group, values in counters.items()}
                     observation = dict(length=length, repeat=repeat, capture_config=name,
                         gdn_gpu_capture_names=list(captures),
+                        offload_replay_mixer=producer.runner.offload_replay_mixer,
                         seconds=elapsed, owner_ledger=ledgers[-1],
                         compiler_counter_delta={k: v for k, v in delta.items() if v})
                     if args.compare_replay_weight_lifetime:
@@ -325,14 +337,20 @@ def main():
                     stage(f'phase_probe_{length}_{repeat}')
             producer.runner.gdn_gpu_capture_names = original_captures
             producer.runner.reuse_native_prefix = original_prefix_reuse
+            producer.runner.offload_replay_mixer = original_mixer_offload
             producer.runner.attribute = native_attribute
             if args.compare_replay_weight_lifetime:
                 owner_view.replay_finite_layer = native_replay
                 _fsdp_param_group.foreach_all_gather = original_gather
             result['status'] = 'completed_bounded_phase_probe'
-            if not args.compare_replay_weight_lifetime:
+            if not (args.compare_replay_weight_lifetime or args.compare_replay_mixer_offload):
                 return
             result['scope'] = 'Same-actor replay/finite weight-lifetime comparison followed by the existing exact32k B4/two-original-PPO-update/native-LoRA-sync capacity check; no task quality claim.'
+            if args.compare_replay_mixer_offload:
+                producer.runner.offload_replay_mixer = False
+                result['scope'] = 'Same-actor CPU/GPU mixer capture comparison followed by exact32k B4/two-original-PPO-update/native-LoRA-sync capacity of the resident route; no task quality claim.'
+                result['capacity_offload_replay_mixer'] = False
+            result['status'] = 'running_capacity_checks'
         # Exercise the actual readout's guard. It must fail before the runner.
         oversized = copy.copy(row)
         oversized['input_ids'] = torch.cat((torch.tensor([filler_id]), row['input_ids']))

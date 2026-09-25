@@ -364,3 +364,44 @@ activation offload/checkpoint保持开启。`benchmark_saved_credit.py`只调用
 在计时前拒绝`expandable_segments=True`；失败记录保留。重试使用现有
 `run_verl_agent.sh:121-124`的设置，运行时切换仍由原sharding manager完成，
 没有重装或改写allocator。两个正式训练来源均未因此重启或更改配置。
+
+## 17:08：搬运定位与现有驻留开关对照
+
+这部分是新的性能证据，不再次把此前head修复或累计检查批次数当作新修复。
+Sokoban实际worker的20秒被动Python栈采样中，主线程582个样本有255个在
+native replay、172个在finite decoder、102个在root同步。同步也包含等待
+GPU计算，不能全算成可消除的拷贝。见[采样摘要和原记录SHA](receipts/formal-sokoban-python-phase-summary.json)。
+
+已安装MetaX Torch的实测确认：非连续pinned head切片复制到连续GPU张量时，
+仍会产生CPU contiguous/clone临时量，临时量不是pinned。这与
+[PyTorch 2.8 Copy.cu](https://github.com/pytorch/pytorch/blob/v2.8.0/aten/src/ATen/native/cuda/Copy.cu#L283-L349)
+的非连续CPU/GPU复制路径一致。原代码注释“直接复制、不打包”不成立，已更正
+注释；没有自写复制内核。见[安装版本实测](receipts/pinned-strided-copy-owner.json)。
+
+先复用已有`gdn_gpu_capture_names`保留q/k/v/g/beta：同一actor、B4、1648
+tokens（1024 response）的原路径预热后9.3237秒，候选8.2611/8.3029秒；
+四次调用的signed、端点及Q/V/A逐值相同，后续没有新编译。只省约11%，不是
+完整瓶颈解决。见[有界对照](receipts/gdn-endpoint-retention-short-compact.json)。
+
+随后直接比较runner已有的`offload_replay_mixer=True/False`，保持参数卸载、
+activation offload/checkpoint和原vLLM驻留条件：同一actor原路径预热后
+9.7886秒，GPU驻留7.2190/7.2783秒，四次调用的signed、端点、Q/V/A逐值相同。
+这是约26%的局部节省，不与另一个长度/线程配置的原生反向相除，不宣称
+“已接近一次反向”。独立probe使用96个Torch CPU线程，不能假定正式Ray
+worker也相同。测试只切换已有配置，没有修改有限传播公式或PPO。
+
+GPU驻留路径继续使用原容量脚本验证DT恰好32768、B4、原PPO两次更新及
+原生LoRA同步，17:11全部完成并退出0，总计460.02秒（包括122.69秒初始化）。
+第二次完整DT26.04秒；两次原PPO更新约102.13/72.57秒，梯度0.02954/0.03589，
+1,441,400个训练参数元素实际改变，原生LoRA加载200层、没有未使用层。
+阶段结束的物理显存最高51.405GiB，是快照不是连续峰值；虚拟allocator
+数字含睡眠vLLM池，不作物理显存读数。测试无OOM，32769越界明确拒绝。
+见[完整范围、原始SHA和容量摘要](receipts/mixer-residency-capacity-compact.json)。
+本地脚本此后仅补充`running_capacity_checks`中间状态，避免容量尚在跑时
+沿用短对照的completed状态；执行版本SHA保存在回执中。
+
+正式训练未热改/重启使用该设置；长长度数值与任务质量不能由这项短输入
+逐值相等扩大得出。AppWorld同一正式PID已进入DT：17:11完成60/232批次，
+cgroup610.26GiB、OOM计数仍34；driver/worker PSS约28.87/33.49GiB，区别于
+17:00 rollout前基线。阶段内存增长已记录，不称正式更新完成。
+见[实际phase内存快照](receipts/formal-appworld-dt-memory-followup.json)。

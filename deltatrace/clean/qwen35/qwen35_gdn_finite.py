@@ -206,8 +206,9 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         if part.is_cuda:
             return part.contiguous()
         if part.device.type=='cpu' and part.is_pinned():
-            # Torch copies the strided pinned source directly into the same
-            # contiguous GPU layout. Do not repack into pageable host memory.
+            # Preserve the expected contiguous GPU layout. Pinned source
+            # storage alone does not make this strided transfer direct:
+            # Torch may create a pageable contiguous CPU temporary here.
             return torch.empty(part.shape,device='cuda',dtype=part.dtype).copy_(part,non_blocking=True)
         return copy_capture_tensor(part.contiguous(),'cuda',preserve_strides=True)
     restore(e,'o');restore(c,'z')
