@@ -51,7 +51,8 @@ class NativeGDNCapture:
         chunk=importlib.import_module('fla.ops.gated_delta_rule.chunk')
         self.codes={inspect.unwrap(f).__code__:label for label,f in [
             ('module',resolve_native_gdn_forward(type(module))),('conv',module.causal_conv1d_fn),
-            ('FLA',module.chunk_gated_delta_rule),('stage',chunk.chunk_gated_delta_rule_fwd)]}
+            ('FLA',module.chunk_gated_delta_rule),('stage',chunk.chunk_gated_delta_rule_fwd),
+            ('norm',type(module.norm).forward)]}
 
     def copy(self,x,*,device=None):
         return None if x is None else copy_capture_tensor(x,self.device if device is None else device,copy=self.copy_tensors,
@@ -81,7 +82,9 @@ class NativeGDNCapture:
             mask=f.get('attention_mask')
             self.values['mask']=self.copy(self.select_time(mask) if mask is not None and mask.shape[1]>1 else mask)
         if not self.active:return
-        if kind=='call' and label:self.calls[label]=self.calls.get(label,0)+1
+        # The runner counts executed mixer operators; observing the existing
+        # norm input is not an additional mixer invocation.
+        if kind=='call' and label and label!='norm':self.calls[label]=self.calls.get(label,0)+1
         if kind=='call' and label=='conv':
             # Native cached multi-token forward prepends the actual conv state.
             # Keep its left window; finite coefficients are needed only for
@@ -96,9 +99,15 @@ class NativeGDNCapture:
         if kind=='return' and label=='stage' and value is not None:
             assert f['cu_seqlens'] is None
             self.scale=float(f['scale'])
-            for name in ['q','k','v','g','beta','A','w','v_new','o','h']:
+            for name in ['q','k','v','g','beta','A','w','v_new','h']:
                 selected=self.select_time(f[name],start=self.coefficient_start//64 if name=='h' else self.coefficient_start)
                 self.endpoints[name]=self.copy(selected,device=f[name].device if name in self.gpu_capture_names else None)
+        if kind=='call' and label=='norm' and f['self'] is self.module.norm:
+            # Consume the exact tensor seen by the native norm, including any
+            # output cast at the FLA boundary. Do not substitute its internal o.
+            b,t,_=self.input_shape
+            o=f['x'].reshape(b,t,self.module.num_v_heads,self.module.head_v_dim)
+            self.endpoints['o']=self.copy(self.select_time(o),device=o.device if 'o' in self.gpu_capture_names else None)
         if kind=='return' and label=='module' and f['self'] is self.module:
             assert value is not None
             b,t,_=f['hidden_states'].shape
@@ -206,9 +215,9 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
     m=mnorm.reshape(batch,length,module.num_v_heads,module.head_v_dim)
     norm_gate=_norm_gate_finite_rule if norm_gate_pullback is None else norm_gate_pullback
     mo,mz=norm_gate(e['o'],c['z'],m,module.norm.weight,module.norm.eps,norm_gate_rule)
-    # Native FLA's BF16 dot path is explicit here; retain the rounding boundary
-    # in diagnostics rather than pretending FP32 upstreams remained unchanged.
-    native_mo=mo.to(e['o'].dtype)
+    # Follow the norm input and then FLA operand dtype at their actual boundary.
+    # The default BF16 path is unchanged; a native FP16 kernel receives FP16 do.
+    native_mo=mo.to(e['o'].dtype).to(e['q'].dtype)
     if offload_endpoints:
         del e['o'],c['z'],mnorm,m,mo
     # Keep the boundary chunk containing the first changed token. Native h

@@ -1,7 +1,7 @@
 """GPU mixed finite FLA pullback on actual native endpoint intermediates.
 
 Native FLA supplies reverse chunk-state propagation; existing torch.bmm supplies
-BF16 operand / FP32 output GEMMs. The only new Triton operation is the finite
+native low-precision operand / FP32 output GEMMs. The only new Triton operation is the finite
 decay contraction's affine prefix scan. No model forward, attention probability
 or substitute ordinary backward is implemented here. This initial GPU version
 is not yet a fused production backend or complete model attribution method.
@@ -87,10 +87,10 @@ def slice_native_fla_endpoints(endpoints, start):
     return {name:value[:,start//64 if name=='h' else start:] for name,value in endpoints.items()}
 
 
-def _mm(a, b):
-    # Reuse the installed vendor GEMM, including its normal BF16 accumulation
-    # path. No custom matrix multiplication kernel or elevated input precision.
-    return torch.bmm(a.to(torch.bfloat16), b.to(torch.bfloat16), out_dtype=torch.float32)
+def _mm(a, b, dtype=torch.bfloat16):
+    # Match the captured native FLA operands, including their rounding boundary.
+    # Both supported dtypes use the installed vendor GEMM and FP32 accumulation.
+    return torch.bmm(a.to(dtype), b.to(dtype), out_dtype=torch.float32)
 
 
 def _T(x):
@@ -110,7 +110,10 @@ def mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products=False, 
     """
     E, T, H, K = endpoints['q'].shape
     assert E % 2 == 0 and K == 128 and endpoints['v'].shape == endpoints['q'].shape
-    assert endpoints['q'].is_cuda and endpoints['q'].dtype == torch.bfloat16
+    assert endpoints['q'].is_cuda and endpoints['q'].dtype in (torch.bfloat16, torch.float16)
+    dtype = endpoints['q'].dtype
+    def mm(a, b):
+        return _mm(a, b, dtype)
     B, N, C = E//2, triton.cdiv(T,64), 64
     count = B*H*N
     def pack_tensor(x, cumulative=False):
@@ -134,7 +137,7 @@ def mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products=False, 
     g0,G0,G1,beta1=[token(name,ep).float() for name,ep in [('raw_g',0),('g',0),('g',1),('beta',1)]]
     A1=token('A',1)
     Z=pack_tensor(adjoints['do'])
-    L=_mm(_T(A1),pack_tensor(adjoints['dU_WY']))
+    L=mm(_T(A1),pack_tensor(adjoints['dU_WY']))
     W=beta1[...,None]*L
     H0=endpoints['h'][0::2].permute(0,2,1,3,4).reshape(count,K,K).contiguous()
     D=adjoints['dh_end'].permute(0,2,1,3,4).reshape(count,K,K).contiguous()
@@ -145,25 +148,25 @@ def mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products=False, 
     eend=torch.exp(G1[:,-1:]-G1)
     eg0=torch.exp(G0)
     # Share transposed pair products rather than recomputing them.
-    UZ=_mm(u0,_T(Z)); UW=_mm(u0,_T(W))
-    K0Q=_mm(k0,_T(q1)); K0K1=_mm(k0,_T(k1))
-    K0H=_mm(k0,H0)
-    ZHt=_mm(Z,_T(H0)); WHt=_mm(W,_T(H0)); UDt=_mm(u0,_T(D))
-    dq=scale*(eg0[...,None]*ZHt+_mm(_T(UZ)*E0,k0))
-    dk=(eend[...,None]*UDt + scale*_mm(UZ*E1,q1) - _mm(UW*E1,k1)
+    UZ=mm(u0,_T(Z)); UW=mm(u0,_T(W))
+    K0Q=mm(k0,_T(q1)); K0K1=mm(k0,_T(k1))
+    K0H=mm(k0,H0)
+    ZHt=mm(Z,_T(H0)); WHt=mm(W,_T(H0)); UDt=mm(u0,_T(D))
+    dq=scale*(eg0[...,None]*ZHt+mm(_T(UZ)*E0,k0))
+    dk=(eend[...,None]*UDt + scale*mm(UZ*E1,q1) - mm(UW*E1,k1)
         + beta1[...,None]*k1.float()*_dot(u0.float(),L)[...,None]
-        - eg0[...,None]*WHt - _mm(_T(UW)*(E0*lower),k0))
-    r0=eg0[...,None]*K0H+_mm(_mm(k0,_T(k0))*(E0*lower),u0)
+        - eg0[...,None]*WHt - mm(_T(UW)*(E0*lower),k0))
+    r0=eg0[...,None]*K0H+mm(mm(k0,_T(k0))*(E0*lower),u0)
     dbeta=_dot(v0.float()-r0,L)
     S=(H0.float()*D.float()).sum((-1,-2))
     if reuse_scalar_products:
-        # Inner-product duality removes three GEMMs. W is rounded to BF16 in
+        # Inner-product duality removes three GEMMs. W is rounded to native dtype in
         # WHt, so this is not a promise of bitwise equality to the direct b term.
         b=scale*_dot(q1.float(),ZHt)-_dot(k1.float(),WHt)
         d=_dot(k0.float(),UDt)
     else:
-        b=scale*_dot(Z.float(),_mm(q1,H0))-_dot(W,_mm(k1,H0))
-        d=_dot(u0.float(),_mm(k0,D))
+        b=scale*_dot(Z.float(),mm(q1,H0))-_dot(W,mm(k1,H0))
+        d=_dot(u0.float(),mm(k0,D))
     M=scale*K0Q*UZ-K0K1*UW
     dalpha=torch.empty_like(g0)
     _finite_decay_scan[(count,)](M,g0,G0,G1,b,d,S,dalpha,C=C,num_warps=4,num_stages=1)

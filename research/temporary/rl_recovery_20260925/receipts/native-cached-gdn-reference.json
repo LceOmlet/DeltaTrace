@@ -1,0 +1,89 @@
+{
+  "scope": "Apply the pinned FLA forward assertion to actual full/cached GDN operands.\n\nThis isolates original forward/cache arithmetic; no finite DT or training code\nis replaced. Full-reference comparison includes the native prefix-state error;\nlocal comparison conditions on the native cached initial state explicitly.\n",
+  "cut": 448,
+  "operand_differences": {
+    "raw_q": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "raw_k": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "a": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "b": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "conv_output": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "q": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "k": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "v": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "beta": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    "raw_g": {
+      "equal": true,
+      "max_abs": 0.0,
+      "dtype": "torch.float32"
+    },
+    "o": {
+      "equal": false,
+      "max_abs": 0.03125,
+      "dtype": "torch.bfloat16"
+    },
+    "h": {
+      "equal": false,
+      "max_abs": 0.25,
+      "dtype": "torch.bfloat16"
+    }
+  },
+  "checks": [
+    {
+      "name": "full_native",
+      "threshold": 0.005,
+      "rms_ratio": 0.002895233191370105,
+      "max_abs": 0.03904151916503906,
+      "status": "passed"
+    },
+    {
+      "name": "cached_vs_full_reference",
+      "threshold": 0.005,
+      "rms_ratio": 0.003012541145873247,
+      "max_abs": 0.03904151916503906,
+      "status": "passed"
+    },
+    {
+      "name": "cached_given_native_initial_state",
+      "threshold": 0.005,
+      "rms_ratio": 0.0029322976531817955,
+      "max_abs": 0.036124229431152344,
+      "status": "passed"
+    }
+  ]
+}

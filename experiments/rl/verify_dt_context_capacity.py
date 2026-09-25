@@ -5,6 +5,7 @@ This is neither a generated task trajectory nor a task success-rate evaluation.
 No model, finite rule, advantage formula, or PPO implementation is replaced.
 """
 import argparse
+from contextlib import ExitStack
 import copy
 import hashlib
 import json
@@ -81,6 +82,8 @@ def main():
                         help='Compare the replay/finite gather boundary, then run the existing 32k/two-update capacity check; exact same-actor outputs and original FSDP gather counts.')
     parser.add_argument('--compare-native-prefix-reuse', action='store_true',
                         help='Measure the existing native-prefix option on/off/on in the same actor; record numerical differences without inventing a whole-network tolerance.')
+    parser.add_argument('--native-fla-fp16', action='store_true',
+                        help='Diagnostic native FLA dtype boundary from the numerical-recovery probe; no production default change.')
     args = parser.parse_args()
     if args.tail_batch_probe and args.backend != 'vllm':
         parser.error('--tail-batch-probe requires the real vllm worker lifecycle')
@@ -104,6 +107,7 @@ def main():
         result['scope'] = ('Tail-batch compile/phase diagnosis at exact 32768 with the original actor and '
                            'sleeping vLLM. Does not rerun or claim PPO-update verification.')
     artifacts = {}
+    precision_stack = ExitStack()
 
     def stage(name):
         torch.cuda.synchronize()
@@ -165,6 +169,10 @@ def main():
             c.rollout.engine_kwargs.vllm.limit_mm_per_prompt = {'image': 0, 'video': 0}
         worker = ActorRolloutRefWorker(c, 'actor_rollout')
         worker.init_model()
+        if args.native_fla_fp16:
+            from native_fla_precision import native_fla_fp16
+            precision_stack.enter_context(native_fla_fp16(worker.actor_module_fsdp))
+            result['fla_compute_dtype'] = 'float16 (diagnostic boundary; native operator)'
         if args.backend == 'vllm':
             # Exercise the real sync and sleep before entering the DT phase.
             with worker.rollout_sharding_manager:
@@ -436,6 +444,7 @@ def main():
         result.update(status='failed', error_type=type(exc).__name__, error=str(exc), traceback=traceback.format_exc())
         traceback.print_exc()
     finally:
+        precision_stack.close()
         result['seconds'] = time.perf_counter()-started
         args.output.write_text(json.dumps(result, indent=2, default=str)+'\n')
         torch.save(artifacts, args.artifacts)

@@ -1,6 +1,6 @@
 {
   "status": "recovered_appworld_rollout_running_dt_numerical_audit_open",
-  "recorded_at": "2026-09-25T10:42:00+08:00",
+  "recorded_at": "2026-09-25T11:27:30.776711+08:00",
   "method_specification": "experiments/rl/PLAN.md",
   "method_changed": false,
   "production_commit": "c88a749f47448362d5d684e8364319c0af009449",
@@ -43,11 +43,11 @@
     "release": "releases/c88a749",
     "run": "runs/author-2ee7ab4-paper/AppWorld",
     "ray_session": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-25_10-09-21_999618_3646996",
-    "last_observed_generation_step": 7,
+    "last_observed_generation_step": 17,
     "completed_updates_this_restart": 0,
     "claim": "Generation resumed; full rollout and update not yet validated.",
-    "current_interaction": 8,
-    "current_active_trajectories": 233
+    "current_interaction": 18,
+    "current_active_trajectories": 189
   },
   "official_ownership": {
     "source": "https://github.com/langfengQ/verl-agent/tree/20bd331bdbc9026a5668e11362178e10ab7400c8",
@@ -545,8 +545,8 @@
     "negative_step_reward_advantage_from_extreme": 44953.5846932639
   },
   "open_items": [
-    "Native-prefix reuse changes endpoints and DT vectors in matched inputs. Disabling it improves short agreement with the official default, but the bounded32k test exposes large root/replay cost and memory growth; no production switch was made. Numerical source still under investigation.",
-    "Two randomized BF16 extensions fail the pinned FLA dQ threshold. Original FP16 parameter case and saved Qwen BF16 operands pass; neither erases the failures.",
+    "Native-prefix layout changes first affect native GDN recurrence and satisfy the checked forward threshold. Cached real-data native/finite dK exceeds the backward threshold; investigate original FLA FP16 compute without changing Q/V/A or PPO semantics.",
+    "Two randomized BF16 fused-normalization extensions still fail the pinned FLA dQ threshold; the original external-normalization option passes the same two cases. This isolation is not a production fix or a changed tolerance.",
     "Large signed estimates and conservation discrepancies remain visible in formal training. Formula agreement alone is not estimation quality.",
     "AppWorld recovered full rollout/update and matched task-quality validation remain pending."
   ],
@@ -603,6 +603,34 @@
     "recovery-prefix-capacity.json": {
       "local": "research/temporary/rl_recovery_20260925/receipts/recovery-prefix-capacity.json",
       "sha256": "0d140958ec062364be6052765d2fbf977816b3c4f9926ba9f94ffae601b0b733"
+    },
+    "native-prefix-boundaries.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/native-prefix-boundaries.json",
+      "sha256": "2aa251b8477f7e05941c7498cb378cb0cb38cad92a8243465cf5a2a3731ce228"
+    },
+    "native-prefix-gdn-operands.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/native-prefix-gdn-operands.json",
+      "sha256": "75880935bdb4ba376b6d131902b49bb9e730b7f85d6b7eaea6dc26200453b7c1"
+    },
+    "native-fla-normalization-isolation.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/native-fla-normalization-isolation.json",
+      "sha256": "a303e7ee2070bb293e2365379d903c9c314095d01257e44fd162e36120b5ffcf"
+    },
+    "native-cached-gdn-reference.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/native-cached-gdn-reference.json",
+      "sha256": "71d9217b7ac369d11e4a231250689950fde37601df26981da9eba2d80f6fe615"
+    },
+    "native-cached-finite-backward.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/native-cached-finite-backward.json",
+      "sha256": "237fe4e7b538745db2c470c884a47cc058c41939e4af986b5aa3f44d34f10d54"
+    },
+    "native-fla-precision.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/native-fla-precision.json",
+      "sha256": "219580f7611ad0eac85578723237d45b443f8cc573791523aa6ea0c367781bfd"
+    },
+    "native-fla-fp16.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/native-fla-fp16.json",
+      "sha256": "c2801f8f454094e526a6f8206ca8f94df7aec0397bbcea7fd6dfd842a34d92f0"
     }
   },
   "prefix_cost_diagnostic": {
@@ -793,5 +821,1655 @@
     "status": "stopped_remaining_repetitions_after_measured_regression",
     "complete_32k_capacity_or_ppo_pass": false,
     "remarks": "The no-prefix32k first call includes one new compiled graph; it is not a fully warmed speed ratio. Native root45.49s and replay48.56s account for most of the cost. Short repeated no-prefix results are equal. Production DT prefix setting unchanged. Device-used snapshots31.52GiB prefix-on and57.76GiB prefix-off are endpoint observations, not continuous peaks."
+  },
+  "native_numerical_followup": {
+    "native-prefix-boundaries.json": {
+      "scope": "Read-only DT comparison on recorded owner IDs and a completed actor checkpoint.\n\nNo environment reward or training update is generated here. The single-token\ncheck measures a fixed-text deletion endpoint, not full environment causality.\n",
+      "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/author-2ee7ab4-paper/Sokoban/checkpoints/global_step_1/actor",
+      "cases": [],
+      "phase": "completed_native_prefix_diagnostic",
+      "seconds": 187.30304950010031,
+      "native_prefix": {
+        "scope": "Original HF full forward versus official cache prefix/reorder/suffix, same trained actor and exact IDs; no finite DT, no alternate attention.",
+        "cut": 448,
+        "length": 1648,
+        "observations": [
+          {
+            "name": "layer.0.input_norm",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_qkv",
+            "shape": [
+              8,
+              1200,
+              8192
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_z",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_b",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_a",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.out_proj",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.0005861740210093558,
+            "input_equal": false,
+            "input_max_abs": 0.015625
+          },
+          {
+            "name": "layer.0",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.000959906610660255
+          },
+          {
+            "name": "layer.1.input_norm",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.001581192365847528
+          },
+          {
+            "name": "layer.1.in_proj_qkv",
+            "shape": [
+              8,
+              1200,
+              8192
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.003078255569562316,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.in_proj_z",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.0027820614632219076,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.in_proj_b",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0023392087314277887,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.in_proj_a",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0028279367834329605,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.out_proj",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.004721546545624733,
+            "input_equal": false,
+            "input_max_abs": 0.01171875
+          },
+          {
+            "name": "layer.1",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0018141360487788916
+          },
+          {
+            "name": "layer.2.input_norm",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.25,
+            "relative_l2": 0.0027354343328624964
+          },
+          {
+            "name": "layer.2.in_proj_qkv",
+            "shape": [
+              8,
+              1200,
+              8192
+            ],
+            "equal": false,
+            "max_abs": 0.09375,
+            "relative_l2": 0.004775512497872114,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.in_proj_z",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0037245696876198053,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.in_proj_b",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.046875,
+            "relative_l2": 0.003277665004134178,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.in_proj_a",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0045303828082978725,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.out_proj",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.078125,
+            "relative_l2": 0.008657099679112434,
+            "input_equal": false,
+            "input_max_abs": 0.033203125
+          },
+          {
+            "name": "layer.2",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.0040710922330617905
+          },
+          {
+            "name": "layer.3",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.0037529587280005217
+          },
+          {
+            "name": "layer.4",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.004489379469305277
+          },
+          {
+            "name": "layer.5",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.1875,
+            "relative_l2": 0.005084841046482325
+          },
+          {
+            "name": "layer.6",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.25,
+            "relative_l2": 0.006721752695739269
+          },
+          {
+            "name": "layer.7",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.25,
+            "relative_l2": 0.007101577240973711
+          },
+          {
+            "name": "layer.8",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.3125,
+            "relative_l2": 0.008589851669967175
+          },
+          {
+            "name": "layer.9",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.375,
+            "relative_l2": 0.010782413184642792
+          },
+          {
+            "name": "layer.10",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.59375,
+            "relative_l2": 0.01780887134373188
+          },
+          {
+            "name": "layer.11",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.625,
+            "relative_l2": 0.019934091717004776
+          },
+          {
+            "name": "layer.12",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.9453125,
+            "relative_l2": 0.024769136682152748
+          },
+          {
+            "name": "layer.13",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 8.09375,
+            "relative_l2": 0.02692573145031929
+          },
+          {
+            "name": "layer.14",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 11.4921875,
+            "relative_l2": 0.033599551767110825
+          },
+          {
+            "name": "layer.15",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 10.0078125,
+            "relative_l2": 0.033855028450489044
+          },
+          {
+            "name": "layer.16",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 9.296875,
+            "relative_l2": 0.03328295424580574
+          },
+          {
+            "name": "layer.17",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 8.359375,
+            "relative_l2": 0.03077101707458496
+          },
+          {
+            "name": "layer.18",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 9.234375,
+            "relative_l2": 0.0316898375749588
+          },
+          {
+            "name": "layer.19",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 6.71875,
+            "relative_l2": 0.027722347527742386
+          },
+          {
+            "name": "layer.20",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.0,
+            "relative_l2": 0.0269263107329607
+          },
+          {
+            "name": "layer.21",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 4.95703125,
+            "relative_l2": 0.02773861773312092
+          },
+          {
+            "name": "layer.22",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 18.25,
+            "relative_l2": 0.02878841571509838
+          },
+          {
+            "name": "layer.23",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 16.5,
+            "relative_l2": 0.0286273080855608
+          },
+          {
+            "name": "layer.24",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 19.25,
+            "relative_l2": 0.02957974374294281
+          },
+          {
+            "name": "layer.25",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 21.25,
+            "relative_l2": 0.0300359558314085
+          },
+          {
+            "name": "layer.26",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 28.875,
+            "relative_l2": 0.03283364325761795
+          },
+          {
+            "name": "layer.27",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 34.5,
+            "relative_l2": 0.0308302603662014
+          },
+          {
+            "name": "layer.28",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 30.0,
+            "relative_l2": 0.030983343720436096
+          },
+          {
+            "name": "layer.29",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 36.5,
+            "relative_l2": 0.030957942828536034
+          },
+          {
+            "name": "layer.30",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 50.5,
+            "relative_l2": 0.03438540920615196
+          },
+          {
+            "name": "layer.31",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 52.0,
+            "relative_l2": 0.03256865590810776
+          }
+        ],
+        "full_logp": [
+          -0.8658559918403625,
+          -1.2953464984893799,
+          -0.6941116452217102,
+          -1.5907044410705566,
+          -0.8120768666267395,
+          -1.5806726217269897,
+          -0.7445050477981567,
+          -1.7842440605163574
+        ],
+        "cached_logp": [
+          -0.9353110194206238,
+          -1.38764488697052,
+          -0.7586236000061035,
+          -1.6019518375396729,
+          -0.7445050477981567,
+          -1.4924761056900024,
+          -0.805827260017395,
+          -1.7643152475357056
+        ],
+        "first_leaf_operands": null
+      }
+    },
+    "native-prefix-gdn-operands.json": {
+      "scope": "Read-only DT comparison on recorded owner IDs and a completed actor checkpoint.\n\nNo environment reward or training update is generated here. The single-token\ncheck measures a fixed-text deletion endpoint, not full environment causality.\n",
+      "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/author-2ee7ab4-paper/Sokoban/checkpoints/global_step_1/actor",
+      "cases": [],
+      "phase": "completed_native_prefix_diagnostic",
+      "seconds": 111.74387063086033,
+      "native_prefix": {
+        "scope": "Original HF full forward versus official cache prefix/reorder/suffix, same trained actor and exact IDs; no finite DT, no alternate attention.",
+        "cut": 448,
+        "length": 1648,
+        "observations": [
+          {
+            "name": "layer.0.input_norm",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_qkv",
+            "shape": [
+              8,
+              1200,
+              8192
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_z",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_b",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.in_proj_a",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": true,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+            "input_equal": true,
+            "input_max_abs": 0.0
+          },
+          {
+            "name": "layer.0.out_proj",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.0005861740210093558,
+            "input_equal": false,
+            "input_max_abs": 0.015625
+          },
+          {
+            "name": "layer.0",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.000959906610660255
+          },
+          {
+            "name": "layer.1.input_norm",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.001581192365847528
+          },
+          {
+            "name": "layer.1.in_proj_qkv",
+            "shape": [
+              8,
+              1200,
+              8192
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.003078255569562316,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.in_proj_z",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.0027820614632219076,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.in_proj_b",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0023392087314277887,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.in_proj_a",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0028279367834329605,
+            "input_equal": false,
+            "input_max_abs": 0.125
+          },
+          {
+            "name": "layer.1.out_proj",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.03125,
+            "relative_l2": 0.004721546545624733,
+            "input_equal": false,
+            "input_max_abs": 0.01171875
+          },
+          {
+            "name": "layer.1",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0018141360487788916
+          },
+          {
+            "name": "layer.2.input_norm",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.25,
+            "relative_l2": 0.0027354343328624964
+          },
+          {
+            "name": "layer.2.in_proj_qkv",
+            "shape": [
+              8,
+              1200,
+              8192
+            ],
+            "equal": false,
+            "max_abs": 0.09375,
+            "relative_l2": 0.004775512497872114,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.in_proj_z",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0037245696876198053,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.in_proj_b",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.046875,
+            "relative_l2": 0.003277665004134178,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.in_proj_a",
+            "shape": [
+              8,
+              1200,
+              32
+            ],
+            "equal": false,
+            "max_abs": 0.0625,
+            "relative_l2": 0.0045303828082978725,
+            "input_equal": false,
+            "input_max_abs": 0.25
+          },
+          {
+            "name": "layer.2.out_proj",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.078125,
+            "relative_l2": 0.008657099679112434,
+            "input_equal": false,
+            "input_max_abs": 0.033203125
+          },
+          {
+            "name": "layer.2",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.0040710922330617905
+          },
+          {
+            "name": "layer.3",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.0037529587280005217
+          },
+          {
+            "name": "layer.4",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.125,
+            "relative_l2": 0.004489379469305277
+          },
+          {
+            "name": "layer.5",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.1875,
+            "relative_l2": 0.005084841046482325
+          },
+          {
+            "name": "layer.6",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.25,
+            "relative_l2": 0.006721752695739269
+          },
+          {
+            "name": "layer.7",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.25,
+            "relative_l2": 0.007101577240973711
+          },
+          {
+            "name": "layer.8",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.3125,
+            "relative_l2": 0.008589851669967175
+          },
+          {
+            "name": "layer.9",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 0.375,
+            "relative_l2": 0.010782413184642792
+          },
+          {
+            "name": "layer.10",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.59375,
+            "relative_l2": 0.01780887134373188
+          },
+          {
+            "name": "layer.11",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.625,
+            "relative_l2": 0.019934091717004776
+          },
+          {
+            "name": "layer.12",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.9453125,
+            "relative_l2": 0.024769136682152748
+          },
+          {
+            "name": "layer.13",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 8.09375,
+            "relative_l2": 0.02692573145031929
+          },
+          {
+            "name": "layer.14",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 11.4921875,
+            "relative_l2": 0.033599551767110825
+          },
+          {
+            "name": "layer.15",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 10.0078125,
+            "relative_l2": 0.033855028450489044
+          },
+          {
+            "name": "layer.16",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 9.296875,
+            "relative_l2": 0.03328295424580574
+          },
+          {
+            "name": "layer.17",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 8.359375,
+            "relative_l2": 0.03077101707458496
+          },
+          {
+            "name": "layer.18",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 9.234375,
+            "relative_l2": 0.0316898375749588
+          },
+          {
+            "name": "layer.19",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 6.71875,
+            "relative_l2": 0.027722347527742386
+          },
+          {
+            "name": "layer.20",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 7.0,
+            "relative_l2": 0.0269263107329607
+          },
+          {
+            "name": "layer.21",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 4.95703125,
+            "relative_l2": 0.02773861773312092
+          },
+          {
+            "name": "layer.22",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 18.25,
+            "relative_l2": 0.02878841571509838
+          },
+          {
+            "name": "layer.23",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 16.5,
+            "relative_l2": 0.0286273080855608
+          },
+          {
+            "name": "layer.24",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 19.25,
+            "relative_l2": 0.02957974374294281
+          },
+          {
+            "name": "layer.25",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 21.25,
+            "relative_l2": 0.0300359558314085
+          },
+          {
+            "name": "layer.26",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 28.875,
+            "relative_l2": 0.03283364325761795
+          },
+          {
+            "name": "layer.27",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 34.5,
+            "relative_l2": 0.0308302603662014
+          },
+          {
+            "name": "layer.28",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 30.0,
+            "relative_l2": 0.030983343720436096
+          },
+          {
+            "name": "layer.29",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 36.5,
+            "relative_l2": 0.030957942828536034
+          },
+          {
+            "name": "layer.30",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 50.5,
+            "relative_l2": 0.03438540920615196
+          },
+          {
+            "name": "layer.31",
+            "shape": [
+              8,
+              1200,
+              4096
+            ],
+            "equal": false,
+            "max_abs": 52.0,
+            "relative_l2": 0.03256865590810776
+          }
+        ],
+        "full_logp": [
+          -0.8658559918403625,
+          -1.2953464984893799,
+          -0.6941116452217102,
+          -1.5907044410705566,
+          -0.8120768666267395,
+          -1.5806726217269897,
+          -0.7445050477981567,
+          -1.7842440605163574
+        ],
+        "cached_logp": [
+          -0.9353110194206238,
+          -1.38764488697052,
+          -0.7586236000061035,
+          -1.6019518375396729,
+          -0.7445050477981567,
+          -1.4924761056900024,
+          -0.805827260017395,
+          -1.7643152475357056
+        ],
+        "first_leaf_operands": null
+      }
+    },
+    "native-fla-normalization-isolation.json": {
+      "scope": "Isolate the failing BF16 extension through the pinned test's own option.\n\nThe original test, random inputs, FP32 reference and assertions are unchanged.\nOnly use_qk_l2norm_in_kernel is disabled for this diagnostic; production is not\nchanged. This tests whether the observed failure requires fused normalization.\n",
+      "cases": [
+        {
+          "B": 1,
+          "T": 128,
+          "H": 32,
+          "D": 128,
+          "scale": 0.08838834764831845,
+          "gate_logit_normalizer": 1.0,
+          "mask_p": 0.0,
+          "use_qk_l2norm_in_kernel": false,
+          "status": "passed",
+          "seconds": 17.616894870996475
+        },
+        {
+          "B": 1,
+          "T": 447,
+          "H": 32,
+          "D": 128,
+          "scale": 0.08838834764831845,
+          "gate_logit_normalizer": 1.0,
+          "mask_p": 0.0,
+          "use_qk_l2norm_in_kernel": false,
+          "status": "passed",
+          "seconds": 0.6964044366031885
+        }
+      ]
+    },
+    "native-cached-gdn-reference.json": {
+      "scope": "Apply the pinned FLA forward assertion to actual full/cached GDN operands.\n\nThis isolates original forward/cache arithmetic; no finite DT or training code\nis replaced. Full-reference comparison includes the native prefix-state error;\nlocal comparison conditions on the native cached initial state explicitly.\n",
+      "cut": 448,
+      "operand_differences": {
+        "raw_q": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "raw_k": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "a": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "b": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "conv_output": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "q": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "k": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "v": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "beta": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.bfloat16"
+        },
+        "raw_g": {
+          "equal": true,
+          "max_abs": 0.0,
+          "dtype": "torch.float32"
+        },
+        "o": {
+          "equal": false,
+          "max_abs": 0.03125,
+          "dtype": "torch.bfloat16"
+        },
+        "h": {
+          "equal": false,
+          "max_abs": 0.25,
+          "dtype": "torch.bfloat16"
+        }
+      },
+      "checks": [
+        {
+          "name": "full_native",
+          "threshold": 0.005,
+          "rms_ratio": 0.002895233191370105,
+          "max_abs": 0.03904151916503906,
+          "status": "passed"
+        },
+        {
+          "name": "cached_vs_full_reference",
+          "threshold": 0.005,
+          "rms_ratio": 0.003012541145873247,
+          "max_abs": 0.03904151916503906,
+          "status": "passed"
+        },
+        {
+          "name": "cached_given_native_initial_state",
+          "threshold": 0.005,
+          "rms_ratio": 0.0029322976531817955,
+          "max_abs": 0.036124229431152344,
+          "status": "passed"
+        }
+      ]
+    },
+    "native-cached-finite-backward.json": {
+      "scope": "Existing finite FLA coincident-endpoint check on recorded cached Qwen data.\n\nUses native saved stage operands, the original finite callback/profile, and the\npinned FLA FP32 recurrence/assertions. This covers local backward consistency;\nit does not declare a nonzero-intervention attribution vector exact.\n",
+      "shape": [
+        4,
+        1200,
+        32,
+        128
+      ],
+      "checks": [
+        {
+          "variant": "native",
+          "name": "q",
+          "threshold": 0.008,
+          "rms_ratio": 0.0038527395909176256,
+          "max_abs": 0.0625,
+          "status": "passed"
+        },
+        {
+          "variant": "native",
+          "name": "k",
+          "threshold": 0.008,
+          "rms_ratio": 0.011067707606837654,
+          "max_abs": 0.25,
+          "status": "failed",
+          "error": "       native dk diff: 0.250000 ratio: 0.011068"
+        },
+        {
+          "variant": "native",
+          "name": "v",
+          "threshold": 0.008,
+          "rms_ratio": 0.006432288153779696,
+          "max_abs": 0.0068359375,
+          "status": "passed"
+        },
+        {
+          "variant": "native",
+          "name": "beta",
+          "threshold": 0.02,
+          "rms_ratio": 0.008422850888671929,
+          "max_abs": 0.03125,
+          "status": "passed"
+        },
+        {
+          "variant": "native",
+          "name": "g",
+          "threshold": 0.02,
+          "rms_ratio": 0.0020985524528417585,
+          "max_abs": 0.60821533203125,
+          "status": "passed"
+        },
+        {
+          "variant": "finite_head8",
+          "name": "q",
+          "threshold": 0.008,
+          "rms_ratio": 0.003532318095873556,
+          "max_abs": 0.06386566162109375,
+          "status": "passed"
+        },
+        {
+          "variant": "finite_head8",
+          "name": "k",
+          "threshold": 0.008,
+          "rms_ratio": 0.010683678726568425,
+          "max_abs": 0.24878017604351044,
+          "status": "failed",
+          "error": " finite_head8 dk diff: 0.248780 ratio: 0.010684"
+        },
+        {
+          "variant": "finite_head8",
+          "name": "v",
+          "threshold": 0.008,
+          "rms_ratio": 0.006225083845579587,
+          "max_abs": 0.00677490234375,
+          "status": "passed"
+        },
+        {
+          "variant": "finite_head8",
+          "name": "beta",
+          "threshold": 0.02,
+          "rms_ratio": 0.008294796838874349,
+          "max_abs": 0.028411865234375,
+          "status": "passed"
+        },
+        {
+          "variant": "finite_head8",
+          "name": "g",
+          "threshold": 0.02,
+          "rms_ratio": 0.001947225948835898,
+          "max_abs": 0.4367523193359375,
+          "status": "passed"
+        }
+      ]
+    },
+    "native-fla-precision.json": {
+      "scope": "Compare supported native FLA input dtypes on the same saved operands.\n\nNo model or DT code changes. FP16/FP32 casts are reversible for these recorded\nBF16 values, checked explicitly. Gradients return to the original BF16 inputs.\nThe existing FLA reference and thresholds are kept unchanged.\n",
+      "shape": [
+        4,
+        1200,
+        32,
+        128
+      ],
+      "cases": [
+        {
+          "dtype": "torch.bfloat16",
+          "seconds": [
+            13.792351850308478,
+            0.010480999946594238
+          ],
+          "checks": [
+            {
+              "name": "q",
+              "threshold": 0.008,
+              "rms_ratio": 0.0038527395909176256,
+              "status": "passed"
+            },
+            {
+              "name": "k",
+              "threshold": 0.008,
+              "rms_ratio": 0.011067707606837654,
+              "status": "failed",
+              "error": "torch.bfloat16 dk diff: 0.250000 ratio: 0.011068"
+            },
+            {
+              "name": "v",
+              "threshold": 0.008,
+              "rms_ratio": 0.006432288153779696,
+              "status": "passed"
+            },
+            {
+              "name": "beta",
+              "threshold": 0.02,
+              "rms_ratio": 0.008422850888671929,
+              "status": "passed"
+            },
+            {
+              "name": "g",
+              "threshold": 0.02,
+              "rms_ratio": 0.0020985524528417585,
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "dtype": "torch.float16",
+          "seconds": [],
+          "checks": [],
+          "error": "AssertionError()"
+        },
+        {
+          "dtype": "torch.float32",
+          "seconds": [],
+          "checks": [],
+          "error": "OutOfResources(90624, 65536, 'shared memory')"
+        }
+      ]
+    },
+    "native-fla-fp16.json": {
+      "scope": "Compare supported native FLA input dtypes on the same saved operands.\n\nNo model or DT code changes. Record cast error rather than requiring a change\nof dtype to be lossless. Gradients return to the original BF16 inputs.\nThe existing FLA reference and thresholds are kept unchanged.\n",
+      "shape": [
+        4,
+        1200,
+        32,
+        128
+      ],
+      "cases": [
+        {
+          "dtype": "torch.float16",
+          "seconds": [
+            73.11846307851374,
+            0.010150289162993431
+          ],
+          "checks": [
+            {
+              "name": "q",
+              "threshold": 0.008,
+              "rms_ratio": 0.001545109106774256,
+              "status": "passed"
+            },
+            {
+              "name": "k",
+              "threshold": 0.008,
+              "rms_ratio": 0.0024038459960552374,
+              "status": "passed"
+            },
+            {
+              "name": "v",
+              "threshold": 0.008,
+              "rms_ratio": 0.0019010406284450112,
+              "status": "passed"
+            },
+            {
+              "name": "beta",
+              "threshold": 0.02,
+              "rms_ratio": 0.001945495449829114,
+              "status": "passed"
+            },
+            {
+              "name": "g",
+              "threshold": 0.02,
+              "rms_ratio": 0.0006510575676791384,
+              "status": "passed"
+            }
+          ],
+          "input_cast_max_abs": [
+            2.9802322387695312e-08,
+            2.9802322387695312e-08,
+            2.9802322387695312e-08,
+            0.0
+          ]
+        }
+      ]
+    },
+    "decision": "Local native/finite dK regression is removed by the tested FP16 boundary. Keep production BF16 bindings unchanged until whole-path/prefix and remaining numerical checks are assessed; do not treat an operator pass as an exact token-counterfactual or task-score guarantee. Do not disable prefix reuse solely to make a short comparison close while materially worsening32k memory/time.",
+    "dtype_candidate": {
+      "production_enabled": false,
+      "implementation": "Original FLA public operator with a diagnostic FP16 representation boundary; Qwen weights/output remain BF16. DT GEMMs follow captured operand dtype; capture consumes the actual native norm input.",
+      "default_path": "Six finite BF16 coefficient fields exactly match the previous module on recorded unequal endpoints.",
+      "local_acceptance": "Original FLA reference/assert_close: native dK 0.002403846, finite dK 0.002170995, both below0.008; all five derivatives pass. Original fused-normalization test function also passes FP16 atT128/447.",
+      "short_chain": "Real trained checkpoint, recorded IDs, B4; all three DT paths complete with finite values. Prefix-on versus official full-path signed relativeL2=0.6363166, prefix-off=0.00741349. These are diagnostics, not a newly invented tolerance. Local improvement has not resolved whole-prefix composition difference.",
+      "first_integration_failure": "Additional passive norm observation initially changed mixer call counter; corrected observation accounting. First failed diagnostic preserved; no formal run used it.",
+      "receipts": {
+        "native-cached-finite-fp16": "research/temporary/rl_recovery_20260925/receipts/native-cached-finite-fp16.json",
+        "native-fla-fp16-fused-norm": "research/temporary/rl_recovery_20260925/receipts/native-fla-fp16-fused-norm.json",
+        "native-fla-dtype-default": "research/temporary/rl_recovery_20260925/receipts/native-fla-dtype-default.json",
+        "native-fp16-dt-short-v2": "research/temporary/rl_recovery_20260925/receipts/native-fp16-dt-short-v2.json",
+        "native-fp16-candidate-source": "research/temporary/rl_recovery_20260925/receipts/native-fp16-candidate-source.json"
+      },
+      "capacity": {
+        "receipt": "research\\temporary\\rl_recovery_20260925\\receipts\\native-fp16-capacity.json",
+        "status": "passed",
+        "context": 32768,
+        "batch": 4,
+        "vllm_concurrency": 32,
+        "actor_microbatch": 4,
+        "dt_seconds": [
+          90.80017619766295,
+          28.26323870383203
+        ],
+        "update_grad_norms": [
+          0.022705078125,
+          0.023193359375
+        ],
+        "native_lora_sync": {
+          "loaded_layers": 200,
+          "unused_layers": [],
+          "nonzero_b_elements": 1426944
+        },
+        "physical_occupancy_scope": "Maximum of reported stage-end physical mem_get_info snapshots, not a continuously sampled peak. torch virtual allocator counters include sleeping vLLM and are not physical occupancy.",
+        "largest_stage_physical_bytes": 54650687488,
+        "warm_actor_update_seconds": 72.6066903853789,
+        "historical_same_input_warm_actor_seconds": 72.42,
+        "historical_comparison_scope": "Same saved factual_input_ids SHA256 and owner offload/B4 settings, different wall-time run; not a randomized simultaneous throughput estimate."
+      }
+    }
+  },
+  "current_status_snapshot": {
+    "recorded_at": "2026-09-25T11:27:30.776711+08:00",
+    "tasks": [
+      {
+        "task": "Sokoban",
+        "pid": 305593,
+        "alive": true,
+        "checkpoint": 1,
+        "phase_lines": [
+          "[DT rollout] phase=generation_end step=15 seconds=157.111 generated_tokens=165598 tokens_per_second=1054.020 peak_rss_gib=11.571",
+          "[DT rollout] phase=dt_rpc_start episodes=256 rows=3840 peak_rss_gib=11.571",
+          "[DT EOS minibatch] contrasts=4 length=1858 seconds=9.117136020213366 batch=2121/5806",
+          "[DT EOS minibatch] contrasts=4 length=1858 seconds=9.144613476470113 batch=2122/5806"
+        ]
+      },
+      {
+        "task": "Webshop",
+        "pid": 305640,
+        "alive": true,
+        "checkpoint": 9,
+        "phase_lines": [
+          "[DT rollout] phase=generation_end step=4 seconds=13.662 generated_tokens=1675 tokens_per_second=122.601 peak_rss_gib=13.074",
+          "[DT rollout] phase=generation_start step=5/15 active=4/4 peak_rss_gib=13.074",
+          "[DT EOS plan] events=0 contrasts=0 batches=0",
+          "[DT EOS plan] events=0 contrasts=0 batches=0"
+        ]
+      },
+      {
+        "task": "AppWorld",
+        "pid": 3646994,
+        "alive": true,
+        "checkpoint": null,
+        "phase_lines": [
+          "[DT rollout] phase=generation_end step=17 seconds=293.378 generated_tokens=130558 tokens_per_second=445.016 peak_rss_gib=15.597",
+          "[DT rollout] phase=generation_start step=18/40 active=189/240 peak_rss_gib=15.597"
+        ]
+      }
+    ]
+  },
+  "memory_followup": {
+    "phase_snapshot": "research\\temporary\\rl_recovery_20260925\\receipts\\recovery-memory-phase-snapshot.json",
+    "owner_snapshot": "research\\temporary\\rl_recovery_20260925\\receipts\\recovery-memory-owners.json",
+    "scope": "Container-wide PSS groups include other workloads. No other-user processes changed. Cgroup usage609.95GiB, primarily anonymous; cannot explain it as page cache or sum fork RSS.",
+    "main_environment_groups": "300 appworld server processes178.24GiB PSS;132 Webshop workers124.43GiB;243 AppWorld workers78.34GiB;260 Sokoban workers74.35GiB. These groups dominate; actor workers themselves total24.89GiB PSS.",
+    "next": "Separate required official parallel task copies from unnecessary imports/service residency using owner lifecycle evidence; do not label all memory DT activations or invent a replacement pool."
   }
 }

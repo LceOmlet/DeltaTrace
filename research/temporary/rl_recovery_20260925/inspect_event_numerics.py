@@ -4,6 +4,7 @@ No environment reward or training update is generated here. The single-token
 check measures a fixed-text deletion endpoint, not full environment causality.
 """
 import argparse
+from contextlib import ExitStack
 import json
 from pathlib import Path
 import time
@@ -14,11 +15,106 @@ from deltatrace_rollout import DeltaTraceRolloutProducer
 from deltatrace_credit import trace_token_attribution
 
 
-def main():
+def native_prefix_diagnostic(runtime, selected, reference, cases, labels, producer, output):
+    """Observe actual HF cache composition; no DT finite propagation here."""
+    from qwen35_answer_finite import selected_target_log_probs
+    from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
+    pair = torch.stack((reference, selected), 1).flatten(0, 1)
+    selection = producer.packed_answer_targets(cases, [[0]]*4, pair.shape[1], pair.device,
+                                               outcome_token_ids=labels)
+    positions = selection.positions.unique(sorted=True)
+    changed = reference != selected
+    cut = int(torch.where(changed, torch.arange(pair.shape[1], device=pair.device),
+                          pair.shape[1]).amin())//64*64
+    assert cut > 0
+    layers = runtime.model.model.language_model.layers
+    full, leaf_inputs, leaf_weights = {}, {}, {}
+    observations = []
+    phase = 'full'
+    handles = []
+    def hook(name, save_operand=False):
+        def capture(module, args, out):
+            if phase == 'prefix':
+                return
+            value = out[0] if isinstance(out, tuple) else out
+            if phase == 'full':
+                full[name] = value[:, cut:].detach().cpu().clone()
+                if save_operand:
+                    leaf_inputs[name] = args[0][:, cut:].detach().cpu().clone()
+                    weight = module.weight
+                    if hasattr(weight, 'full_tensor'): weight = weight.full_tensor()
+                    leaf_weights[name] = weight.detach().cpu().clone()
+            else:
+                actual = value.detach().cpu()
+                original = full[name]
+                delta = actual.float()-original.float()
+                record = dict(name=name, shape=list(actual.shape), equal=torch.equal(original, actual),
+                    max_abs=float(delta.abs().max()), relative_l2=float(delta.norm()/original.float().norm().clamp_min(1e-30)))
+                if save_operand:
+                    x = args[0].detach().cpu()
+                    record['input_equal'] = torch.equal(leaf_inputs[name], x)
+                    record['input_max_abs'] = float((x.float()-leaf_inputs[name].float()).abs().max())
+                    if record['input_equal'] and not record['equal'] and 'first_leaf_operands' not in saved:
+                        saved['first_leaf_operands'] = dict(name=name, input=x, weight=leaf_weights[name],
+                            full_output=original, cached_output=actual)
+                observations.append(record)
+        return capture
+    saved = {}
+    for i, layer in enumerate(layers):
+        handles.append(layer.register_forward_hook(hook(f'layer.{i}')))
+        if i < 3:
+            handles.append(layer.input_layernorm.register_forward_hook(hook(f'layer.{i}.input_norm')))
+            for name in ('in_proj_a','in_proj_b','in_proj_qkv','in_proj_z','out_proj'):
+                module = getattr(layer.linear_attn, name)
+                # Capture native leaf outputs only; LoRA parent output still
+                # determines the real layer result above.
+                leaf = module.base_layer if hasattr(module, 'base_layer') else module
+                handles.append(leaf.register_forward_hook(hook(f'layer.{i}.{name}', True)))
+    try:
+        with torch.no_grad():
+            capture = NativeGDNCapture(layers[0].linear_attn, device='cpu')
+            with capture:
+                a = runtime.model.forward_root(input_ids=pair, attention_mask=torch.ones_like(pair),
+                    use_cache=False, logits_to_keep=positions)
+            saved['full_gdn'] = dict(values=capture.values, endpoints=capture.endpoints, scale=capture.scale)
+            del capture
+            full_logp = selected_target_log_probs(a.logits[selection.paired_samples,
+                torch.searchsorted(positions,selection.paired_positions)],selection).cpu()
+            del a
+            phase = 'prefix'
+            prefix = runtime.model.forward_root(input_ids=selected[:, :cut],use_cache=True,logits_to_keep=1)
+            cache = prefix.past_key_values
+            del prefix
+            cache.reorder_cache(torch.arange(4,device=pair.device).repeat_interleave(2))
+            phase = 'suffix'
+            capture = NativeGDNCapture(layers[0].linear_attn, device='cpu')
+            with capture:
+                a = runtime.model.forward_root(input_ids=pair[:,cut:],attention_mask=torch.ones_like(pair),
+                    use_cache=True,past_key_values=cache,logits_to_keep=positions-cut)
+            saved['cached_gdn'] = dict(values=capture.values, endpoints=capture.endpoints, scale=capture.scale)
+            saved['cut'] = cut
+            del capture
+            cached_logp = selected_target_log_probs(a.logits[selection.paired_samples,
+                torch.searchsorted(positions,selection.paired_positions)],selection).cpu()
+            del a,cache
+    finally:
+        for h in handles:h.remove()
+    if saved:
+        torch.save(saved,output.with_suffix('.pt'))
+    return dict(scope='Original HF full forward versus official cache prefix/reorder/suffix, same trained actor and exact IDs; no finite DT, no alternate attention.',
+        cut=cut, length=pair.shape[1], observations=observations,
+        full_logp=full_logp.tolist(), cached_logp=cached_logp.tolist(),
+        first_leaf_operands=saved.get('first_leaf_operands',{}).get('name'))
+
+
+def main(stack):
     p = argparse.ArgumentParser()
     p.add_argument('--input', type=Path, required=True)
     p.add_argument('--checkpoint', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
+    p.add_argument('--native-prefix-only', action='store_true')
+    p.add_argument('--native-fla-fp16', action='store_true',
+                   help='Diagnostic native FLA dtype boundary; keep Qwen weights and output BF16')
     args = p.parse_args()
     start = time.perf_counter()
     result = dict(scope=__doc__, checkpoint=str(args.checkpoint), cases=[])
@@ -40,6 +136,11 @@ def main():
     from profiles.official import make_qwen35_runner
     from qwen35_answer_finite import selected_target_log_probs
     runtime = producer.runner
+    if args.native_fla_fp16:
+        from native_fla_precision import native_fla_fp16
+        precision = native_fla_fp16(worker.actor_module_fsdp)
+        stack.enter_context(precision)
+        result['fla_compute_dtype'] = 'float16 (diagnostic boundary; native operator)'
     # Official factory and current finite callbacks; no copied propagation.
     control = make_qwen35_runner(runtime.model, runtime.finite_fa, runtime.finite_fla,
                                 answer_compiled=False, dynamic_shapes=True)
@@ -59,6 +160,18 @@ def main():
     for i,seq in enumerate(endpoints): selected[i,:len(seq)] = torch.tensor(seq,device='cuda')
     reference = selected.clone()
     for i,(left,right) in enumerate(spans): reference[i,left:right] = worker.tokenizer.eos_token_id
+    if args.native_prefix_only:
+        text_model = runtime.model.model.language_model
+        original_attention = text_model.config._attn_implementation
+        text_model.set_attn_implementation('flash_attention_2')
+        try:
+            result['native_prefix'] = native_prefix_diagnostic(runtime, selected, reference, cases,
+                labels, producer, args.output)
+            save('completed_native_prefix_diagnostic')
+        finally:
+            text_model.set_attn_implementation(original_attention)
+            if torch.distributed.is_initialized():torch.distributed.destroy_process_group()
+        return
     outputs = {}
     for name,runner in [('rl_runtime',runtime),('rl_without_prefix_reuse',runtime),('official_default',control)]:
         if name == 'rl_without_prefix_reuse':
@@ -102,4 +215,6 @@ def main():
     if torch.distributed.is_initialized():torch.distributed.destroy_process_group()
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    with ExitStack() as stack:
+        main(stack)

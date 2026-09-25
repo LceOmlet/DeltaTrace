@@ -1,0 +1,63 @@
+{
+  "scope": "Compare supported native FLA input dtypes on the same saved operands.\n\nNo model or DT code changes. FP16/FP32 casts are reversible for these recorded\nBF16 values, checked explicitly. Gradients return to the original BF16 inputs.\nThe existing FLA reference and thresholds are kept unchanged.\n",
+  "shape": [
+    4,
+    1200,
+    32,
+    128
+  ],
+  "cases": [
+    {
+      "dtype": "torch.bfloat16",
+      "seconds": [
+        13.792351850308478,
+        0.010480999946594238
+      ],
+      "checks": [
+        {
+          "name": "q",
+          "threshold": 0.008,
+          "rms_ratio": 0.0038527395909176256,
+          "status": "passed"
+        },
+        {
+          "name": "k",
+          "threshold": 0.008,
+          "rms_ratio": 0.011067707606837654,
+          "status": "failed",
+          "error": "torch.bfloat16 dk diff: 0.250000 ratio: 0.011068"
+        },
+        {
+          "name": "v",
+          "threshold": 0.008,
+          "rms_ratio": 0.006432288153779696,
+          "status": "passed"
+        },
+        {
+          "name": "beta",
+          "threshold": 0.02,
+          "rms_ratio": 0.008422850888671929,
+          "status": "passed"
+        },
+        {
+          "name": "g",
+          "threshold": 0.02,
+          "rms_ratio": 0.0020985524528417585,
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "dtype": "torch.float16",
+      "seconds": [],
+      "checks": [],
+      "error": "AssertionError()"
+    },
+    {
+      "dtype": "torch.float32",
+      "seconds": [],
+      "checks": [],
+      "error": "OutOfResources(90624, 65536, 'shared memory')"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "scope": "Existing finite FLA coincident-endpoint check on recorded cached Qwen data.\n\nUses native saved stage operands, the original finite callback/profile, and the\npinned FLA FP32 recurrence/assertions. This covers local backward consistency;\nit does not declare a nonzero-intervention attribution vector exact.\n",
+  "shape": [
+    4,
+    1200,
+    32,
+    128
+  ],
+  "checks": [
+    {
+      "variant": "native",
+      "name": "q",
+      "threshold": 0.008,
+      "rms_ratio": 0.0038527395909176256,
+      "max_abs": 0.0625,
+      "status": "passed"
+    },
+    {
+      "variant": "native",
+      "name": "k",
+      "threshold": 0.008,
+      "rms_ratio": 0.011067707606837654,
+      "max_abs": 0.25,
+      "status": "failed",
+      "error": "       native dk diff: 0.250000 ratio: 0.011068"
+    },
+    {
+      "variant": "native",
+      "name": "v",
+      "threshold": 0.008,
+      "rms_ratio": 0.006432288153779696,
+      "max_abs": 0.0068359375,
+      "status": "passed"
+    },
+    {
+      "variant": "native",
+      "name": "beta",
+      "threshold": 0.02,
+      "rms_ratio": 0.008422850888671929,
+      "max_abs": 0.03125,
+      "status": "passed"
+    },
+    {
+      "variant": "native",
+      "name": "g",
+      "threshold": 0.02,
+      "rms_ratio": 0.0020985524528417585,
+      "max_abs": 0.60821533203125,
+      "status": "passed"
+    },
+    {
+      "variant": "finite_head8",
+      "name": "q",
+      "threshold": 0.008,
+      "rms_ratio": 0.003532318095873556,
+      "max_abs": 0.06386566162109375,
+      "status": "passed"
+    },
+    {
+      "variant": "finite_head8",
+      "name": "k",
+      "threshold": 0.008,
+      "rms_ratio": 0.010683678726568425,
+      "max_abs": 0.24878017604351044,
+      "status": "failed",
+      "error": " finite_head8 dk diff: 0.248780 ratio: 0.010684"
+    },
+    {
+      "variant": "finite_head8",
+      "name": "v",
+      "threshold": 0.008,
+      "rms_ratio": 0.006225083845579587,
+      "max_abs": 0.00677490234375,
+      "status": "passed"
+    },
+    {
+      "variant": "finite_head8",
+      "name": "beta",
+      "threshold": 0.02,
+      "rms_ratio": 0.008294796838874349,
+      "max_abs": 0.028411865234375,
+      "status": "passed"
+    },
+    {
+      "variant": "finite_head8",
+      "name": "g",
+      "threshold": 0.02,
+      "rms_ratio": 0.001947225948835898,
+      "max_abs": 0.4367523193359375,
+      "status": "passed"
+    }
+  ]
+}
