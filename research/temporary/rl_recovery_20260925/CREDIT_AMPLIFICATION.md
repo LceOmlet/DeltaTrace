@@ -187,7 +187,9 @@ Q/V/A、PPO 或 DT 内核。边界测试验证记录能重建实际送入 runner
 14:20现场读取：正在运行的WebShop第二轮取得3个真实非零奖励事件，36个
 row/event对照、9次B4 DT共94.326秒，d范围[-0.0688079,+0.2216415]，未出现
 旧数量级尖峰。原守恒诊断13项未通过仍如实保留，不改写成FA/FLA失败或通过。
-PPO更新及checkpoint2还在执行。AppWorld首轮40次交互结束，实际奖励全0；
+14:24补充核实：原PPO更新完成、checkpoint2完整、进程退出0；第二轮控制台
+梯度0.013，token优势范围[-0.712,+1.988]。见
+[WebShop两轮回执](receipts/head-webshop-two-iterations.json)。AppWorld首轮40次交互结束，实际奖励全0；
 不能将其视为非零DT/PPO验证。上述运行仍为f0429ee，未热替换新诊断代码。
 
 同时核对旧AppWorld主机OOM：正式rollout已结束并进入DT（240轨迹、9600行），

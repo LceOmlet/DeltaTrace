@@ -12,10 +12,12 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
-- 14:20数值后续：WebShop两轮小规模作业的第二轮已有3个真实非零事件、
+- 14:24数值后续：WebShop两轮小规模作业已退出0、checkpoint2完整；第二轮
+  取得3个真实非零事件，原PPO控制台梯度0.013、优势范围[-0.712,+1.988]。
   36个对照/9次DT调用，d范围[-0.0688079,+0.2216415]，DT共94.326秒；
-  PPO更新与checkpoint2仍须确认。AppWorld首轮40轮交互结束但奖励全0，
-  不算非零信用路径通过。两个作业继续使用下述f0429ee，未热替换代码。
+  见`receipts/rollout-major-cost/head-webshop-two-iterations.json`。AppWorld
+  首轮40轮交互结束但奖励全0，现场栈在原actor更新，不算非零信用路径通过。
+  两个作业均使用下述f0429ee，未热替换代码。
   新诊断候选`candidates/credit-replay-audit-20260925`仅追加原端点分数与
   最负d所在一个完整minibatch的原始IDs；41项CPU接口测试通过，不改公式。
   旧AppWorld的OOM发生在rollout后DT阶段；额外服务尾部实测仅约1.87GiB，
