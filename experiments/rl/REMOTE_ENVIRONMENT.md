@@ -12,6 +12,14 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 19:42三组正式作业已完成首轮环境交互：Sokoban第一轮234.57秒/226477 tokens，
+  已到2/15、active251/256；Webshop已到4/15、active128/128，前3次生成调用
+  70.03/77.66/94.67秒；AppWorld已到3/40、active240/240，前两次120.43/98.93秒。
+  三者当前正式完成checkpoint均为无，不把小规模checkpoint2计入正式进度。
+  当前Worker分别1754269/1780654/1779842；原日志路径已写入job.json及formal manifest。
+  cgroup608.27GiB、OOM计数34未增加。原Inductor并发扫描临时缓存时出现一次
+  FileNotFound warning，随后原graph捕获及生成均继续；未清缓存/另写缓存或重启。
+  原始回执`linear-return-formal-first-interactions.json`。自动检查与备份仍保持关闭。
 - 19:30新正式预算已启动，发布`64e5876`，GPU4/5/6分别Sokoban/Webshop/AppWorld，
   shell PID1703462/1703479/1703507，driver PID1703464/1703489/1703515。
   目录`runs/author-64e5876-paper/{task}`；`formal-training.json`和`active-training.json`

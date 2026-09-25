@@ -7,7 +7,9 @@
 19:30已通过原入口启动当前发布`64e5876`的正式预算：Sokoban GPU4 150×256，
 WebShop GPU5 150×128，AppWorld GPU6 200×240。运行目录为远端
 `runs/author-64e5876-paper/{Sokoban,Webshop,AppWorld}`；启动信息和实际Ray
-session已记录在`formal-training.json`，当前初始化，不把启动当作完整迭代完成。
+session已记录在`formal-training.json`。19:42三组均已完成首轮实际环境交互并
+继续下一轮；首次生成RPC的Sokoban/WebShop/AppWorld吞吐约965/465/514 tokens/s，
+包含完整生成调用开销，不是纯decode。正式训练迭代和完整预算尚未完成。
 三任务此前均完成两轮当前方法的真实训练，原检查点1→2分别有
 1,433,186 / 1,452,754 / 1,436,548个LoRA元素改变，参数有限。
 汇总见[当前验收与启动记录](results_linear_return.json)，包含各证据的范围和原始回执。
