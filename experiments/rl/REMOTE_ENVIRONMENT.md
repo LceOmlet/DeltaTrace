@@ -12,6 +12,14 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 16:12实际状态：Sokoban原PID完成530/3847个DT批次，既有py-spy只读局部
+  变量确认累计最负d仍为−0.765355；WebShop新PID采集9/15，AppWorld原PID
+  采集22/40。尚无本批正式完成检查点，OOM计数34未增加，cgroup约575.55GiB。
+  独立WebShop原始IDs重放在GPU7运行89.12秒并退出0，卡已释放。4行联合归因
+  近似重现，但其中一处联合分解−0.018921与原生单token删除+0.027802异号；
+  不称全部token精度通过，不增加训练门槛或改Q/V/PPO。结果、SHA与各路径
+  差别见`formal-webshop-credit-route-summary.json`；当前运行事实见
+  `formal-status-after-credit-replay.json`。训练未热替换为诊断脚本。
 - 15:56当前是混合固定发布：Sokoban/AppWorld仍为5a3cda0、原PID不变；
   WebShop改为`releases/9785786`、`runs/author-9785786-webshop/Webshop`、
   shell PID4185212。此前Worker3642631于15:44:52在原actor更新中退出，
