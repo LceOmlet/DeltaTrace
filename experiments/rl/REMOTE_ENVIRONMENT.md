@@ -10,7 +10,52 @@
 本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
 本文件和历史运行记录不代表该计划已实现或 DT 多轮训练已经验收通过。
 
-## 2026-09-24 rollout 修复与复用
+## 2026-09-25 恢复与数值/上游审计
+
+- 当前正式目录是 `$DT_RUNTIME_ROOT/runs/author-2ee7ab4-paper`。WebShop、
+  Sokoban 使用 `releases/2ee7ab4`；AppWorld 已切换 `releases/c88a749`，
+  2026-09-25 10:08:09 +08 启动，shell PID 3646994、driver 3646996。
+  其确切 Ray 实例是 `/tmp/dt-rl-mx-20260922/ray/session_2026-09-25_10-09-21_999618_3646996`。
+  GPU 4/5/6 分别承载 Sokoban/WebShop/AppWorld；仍须现场核对占用。
+  `formal-training.json`、`active-training.json` 和 `active-source.json` 记录
+  AppWorld 的独立发布目录及 previous_attempt；不要用其他任务的发布目录代替它。
+- AppWorld 前次第 20 轮同时设置 100 秒服务器执行超时和 100 秒 HTTP 读取
+  超时，服务器已经产出官方超时观测，客户端却先抛 ReadTimeout，导致整批退出。
+  `patch_appworld_transport.py` 只修原 `environment.py` 的 execute 传输：
+  保留连接超时，读取由原服务器执行限时约束；不重试 action、不改奖励、不增加
+  新超时参数。1 秒有界真服务器对照中，原路径在 1.002 秒抛 ReadTimeout，
+  修复路径在 1.102 秒收到官方异常观测，只记一次交互；前后普通代码结果及
+  官方评估相同。原始文件备份在 receipts/rollout-major-cost。
+- 已重新获取固定 `langfengQ/verl-agent@20bd331` 的 26 个文件，与实际运行
+  源码逐项对照。PPO core_algos、三任务 parser 仅换行差异；三个任务 worker
+  的 step/reset AST 相同。AppWorld vector 层的 inactive mask、原 memory 的
+  inactive skip 是明确 owner 补丁；不能称为完全原版。原 vLLM 生成、LoRA
+  加载及 PPO optimizer 仍由原 owner 执行。Q/V、奖励事件、32k 预算及历史
+  边界 46 项测试通过。详细差异与测试范围见 results_recovery_audit.json。
+- 算子复核：四项 FA BF16 原断言通过，FLA 原 FP16 参数用例通过；真实 Qwen
+  记录操作数的 BF16 o/dq/dk/dv/db/dg 原断言均通过。但两个随机 BF16 扩展
+  用例的 dq 比率 0.008965/0.008983 超过原断言 0.008，失败保留。
+  这不代表原参数表中的 FP16 用例失败，也不构成整网 DT/PPO 已通过的证明。
+- 同一已完成 actor 检查点及真实记录输入，DT runtime 与正式默认路径 signed
+  相对 L2 差 0.496；只关闭已有 native-prefix 选项后差异为 0.00610，端点
+  与默认路径相同。原生缓存续算的舍入、有限传播及短链累计影响仍需分开检查。
+  未放宽 FA/FLA 标准，未据此裁剪优势，也未在训练中热替换配置。
+- 已完成同 actor、vLLM 驻留、原卸载设置的前缀开关有界成本检查：2048
+  热调用开 9.262 秒，关 10.280 秒；32768 开 28.651 秒，关 138.636 秒。
+  长输入关闭项含一个新编译图，不称严格热调用速度比。其原生根前向 45.490
+  秒、逐层重放 48.558 秒已占主要开销；调用结束时物理设备占用 31.52→
+  57.76 GiB（快照，不是峰值）。发现大头后只停止该诊断剩余重复，退出码 1
+  为主动 SIGINT，完成的六组数据和停止说明保留；不是容量/PPO 全通过。
+  当前不把简单关闭 native-prefix 作为生产修复。
+- Sokoban 首个正式迭代的 DT 共 15385 个有效 row/event 对照、3847 个 B4
+  调用、33567.24 秒。对照无重复、无过去奖励混入，数量与逐轨迹三角求和
+  相符；大头是逐事件完整调用的乘数，不能删除过程奖励或先合并再 expm1。
+  最小 signed 约 -13.016 对应约 44954 的 token 优势；公式计算一致并不
+  证明估计质量合格。当前仍未完成 DT 数值和任务质量的整体验收。
+- 未重装环境或重建缓存；恢复后完整 AppWorld rollout/更新尚待确认。
+  每小时检查和备份仍未重新开启，旧备份失败不能记成此次备份成功。
+
+## 2026-09-24 rollout 修复与复用（历史记录）
 
 - FSDP 重算后重复加载同层权重已完成有界修复验证。`replay_finite_layer`
   仅调用原 FSDP2 `set_reshard_after_forward(False)` 保留当前层，重算后立即

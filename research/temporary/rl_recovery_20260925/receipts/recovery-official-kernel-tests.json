@@ -1,0 +1,141 @@
+{
+  "scope": "Call pinned FA/FLA tests unchanged; do not implement another tolerance.\n\nThe selected BF16 shapes exercise full/variable-length FA and Qwen's GDN head\ndimension. This records operator checks, not a whole-PPO error certificate.\n",
+  "source_sha256": {
+    "test_flash_attn_v263.py": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+    "test_gated_delta_v041.py": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+    "fla_utils_v041.py": "03e3e41a62741d45913a2d2d35de630aaba13dcbb0fb1e8c1f7904446a688cf1"
+  },
+  "cases": [
+    {
+      "function": "test_flash_attn_output",
+      "parameters": {
+        "seqlen_q": 128,
+        "seqlen_k": 128,
+        "d": 256,
+        "dropout_p": 0.0,
+        "causal": true,
+        "local": false,
+        "alibi": false,
+        "deterministic": true,
+        "mha_type": "gqa",
+        "dtype": "torch.bfloat16",
+        "kvpacked": false,
+        "softcap": 0.0
+      },
+      "status": "passed",
+      "seconds": 0.7727285018190742
+    },
+    {
+      "function": "test_flash_attn_varlen_output",
+      "parameters": {
+        "seqlen_q": 128,
+        "seqlen_k": 128,
+        "d": 256,
+        "dropout_p": 0.0,
+        "causal": true,
+        "local": false,
+        "alibi": false,
+        "deterministic": true,
+        "mha_type": "gqa",
+        "dtype": "torch.bfloat16",
+        "kvpacked": false,
+        "softcap": 0.0
+      },
+      "status": "passed",
+      "seconds": 0.014690935611724854
+    },
+    {
+      "function": "test_chunk",
+      "parameters": {
+        "B": 1,
+        "T": 128,
+        "H": 32,
+        "D": 128,
+        "scale": 0.08838834764831845,
+        "gate_logit_normalizer": 1.0,
+        "mask_p": 0.0,
+        "use_qk_l2norm_in_kernel": true,
+        "dtype": "torch.bfloat16"
+      },
+      "status": "failed",
+      "error": "              dq diff: 0.000549 ratio: 0.008965",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c88a749/experiments/rl/verify_official_kernel_tolerances.py\", line 69, in main\n    fn(**params)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py\", line 260, in test_chunk\n    assert_close('dq', ref_dq, tri_dq, 0.008)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/utils.py\", line 95, in assert_close\n    assert error_rate < ratio, msg\n           ^^^^^^^^^^^^^^^^^^\nAssertionError:               dq diff: 0.000549 ratio: 0.008965\n",
+      "seconds": 27.5486441552639
+    },
+    {
+      "function": "test_flash_attn_output",
+      "parameters": {
+        "seqlen_q": 447,
+        "seqlen_k": 447,
+        "d": 256,
+        "dropout_p": 0.0,
+        "causal": true,
+        "local": false,
+        "alibi": false,
+        "deterministic": true,
+        "mha_type": "gqa",
+        "dtype": "torch.bfloat16",
+        "kvpacked": false,
+        "softcap": 0.0
+      },
+      "status": "passed",
+      "seconds": 0.02515440806746483
+    },
+    {
+      "function": "test_flash_attn_varlen_output",
+      "parameters": {
+        "seqlen_q": 447,
+        "seqlen_k": 447,
+        "d": 256,
+        "dropout_p": 0.0,
+        "causal": true,
+        "local": false,
+        "alibi": false,
+        "deterministic": true,
+        "mha_type": "gqa",
+        "dtype": "torch.bfloat16",
+        "kvpacked": false,
+        "softcap": 0.0
+      },
+      "status": "passed",
+      "seconds": 0.011929640546441078
+    },
+    {
+      "function": "test_chunk",
+      "parameters": {
+        "B": 1,
+        "T": 447,
+        "H": 32,
+        "D": 128,
+        "scale": 0.08838834764831845,
+        "gate_logit_normalizer": 1.0,
+        "mask_p": 0.0,
+        "use_qk_l2norm_in_kernel": true,
+        "dtype": "torch.bfloat16"
+      },
+      "status": "failed",
+      "error": "              dq diff: 0.000610 ratio: 0.008983",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c88a749/experiments/rl/verify_official_kernel_tolerances.py\", line 69, in main\n    fn(**params)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py\", line 260, in test_chunk\n    assert_close('dq', ref_dq, tri_dq, 0.008)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/utils.py\", line 95, in assert_close\n    assert error_rate < ratio, msg\n           ^^^^^^^^^^^^^^^^^^\nAssertionError:               dq diff: 0.000610 ratio: 0.008983\n",
+      "seconds": 0.5864618634805083
+    }
+  ],
+  "source_manifest": {
+    "test_flash_attn_v263.py": {
+      "url": "https://raw.githubusercontent.com/Dao-AILab/flash-attention/v2.6.3/tests/test_flash_attn.py",
+      "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py"
+    },
+    "test_gated_delta_v041.py": {
+      "url": "https://raw.githubusercontent.com/fla-org/flash-linear-attention/v0.4.1/tests/ops/test_gated_delta.py",
+      "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py"
+    },
+    "fla_utils_v041.py": {
+      "url": "https://raw.githubusercontent.com/fla-org/flash-linear-attention/v0.4.1/fla/utils.py",
+      "sha256": "03e3e41a62741d45913a2d2d35de630aaba13dcbb0fb1e8c1f7904446a688cf1",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/fla_utils_v041.py"
+    }
+  },
+  "fla_ci_warning_exemption": false,
+  "status": "failed"
+}

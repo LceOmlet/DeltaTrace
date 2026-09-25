@@ -79,6 +79,8 @@ def main():
                         help='Within the phase probe, compare current capture residency with these existing owner capture names; no finite rule changes.')
     parser.add_argument('--compare-replay-weight-lifetime', action='store_true',
                         help='Compare the replay/finite gather boundary, then run the existing 32k/two-update capacity check; exact same-actor outputs and original FSDP gather counts.')
+    parser.add_argument('--compare-native-prefix-reuse', action='store_true',
+                        help='Measure the existing native-prefix option on/off/on in the same actor; record numerical differences without inventing a whole-network tolerance.')
     args = parser.parse_args()
     if args.tail_batch_probe and args.backend != 'vllm':
         parser.error('--tail-batch-probe requires the real vllm worker lifecycle')
@@ -88,6 +90,8 @@ def main():
         parser.error('--compare-gdn-gpu-captures requires --phase-profile-lengths')
     if args.compare_replay_weight_lifetime and (not args.phase_profile_lengths or args.compare_gdn_gpu_captures):
         parser.error('--compare-replay-weight-lifetime requires a separate --phase-profile-lengths probe')
+    if args.compare_native_prefix_reuse and (not args.phase_profile_lengths or args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime):
+        parser.error('--compare-native-prefix-reuse requires a separate --phase-profile-lengths probe')
     result = dict(scope=__doc__, context_cap=32768, minibatch=4,
                   backend=args.backend,
                   rollout_max_num_seqs=args.rollout_max_num_seqs,
@@ -190,7 +194,7 @@ def main():
             native_attribute = producer.runner.attribute
             ledgers = []
             signed_results = []
-            compare_outputs = args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime
+            compare_outputs = args.compare_gdn_gpu_captures or args.compare_replay_weight_lifetime or args.compare_native_prefix_reuse
             owner_view = producer.runner.model
             native_replay = getattr(owner_view, 'replay_finite_layer', None)
             gather_counts = {}
@@ -236,6 +240,7 @@ def main():
             producer.runner.attribute = recorded_profile
             result['phase_probes'] = []
             original_captures = tuple(producer.runner.gdn_gpu_capture_names)
+            original_prefix_reuse = producer.runner.reuse_native_prefix
             for length in args.phase_profile_lengths:
                 remove = 32768 - length
                 if not 0 <= remove <= fixture_detail['synthetic_filler_tokens']:
@@ -250,9 +255,14 @@ def main():
                 if args.compare_replay_weight_lifetime:
                     configurations = [(name, original_captures) for name in
                                       ('original', 'candidate', 'candidate', 'original')]
+                if args.compare_native_prefix_reuse:
+                    configurations = [(name, original_captures) for name in
+                                      ('prefix_on', 'prefix_off', 'prefix_off', 'prefix_on')]
                 reference = None
                 for repeat, (name, captures) in enumerate(configurations):
                     producer.runner.gdn_gpu_capture_names = captures
+                    if args.compare_native_prefix_reuse:
+                        producer.runner.reuse_native_prefix = name == 'prefix_on'
                     if args.compare_replay_weight_lifetime:
                         owner_view.replay_finite_layer = native_replay if name == 'candidate' else None
                         gather_counts.clear()
@@ -287,10 +297,17 @@ def main():
                         artifacts[f'{length}_{repeat}_{name}'] = actual
                         if reference is None:
                             reference = actual
-                        torch.testing.assert_close(actual, reference, rtol=0, atol=0)
-                        observation['same_actor_signed_endpoints_qva_exact'] = True
+                        if args.compare_native_prefix_reuse:
+                            delta_signed = actual['signed'] - reference['signed']
+                            observation['signed_difference_from_first'] = dict(
+                                max_abs=float(delta_signed.abs().max()),
+                                relative_l2=float(delta_signed.norm()/reference['signed'].norm().clamp_min(1e-30)))
+                        else:
+                            torch.testing.assert_close(actual, reference, rtol=0, atol=0)
+                            observation['same_actor_signed_endpoints_qva_exact'] = True
                     stage(f'phase_probe_{length}_{repeat}')
             producer.runner.gdn_gpu_capture_names = original_captures
+            producer.runner.reuse_native_prefix = original_prefix_reuse
             producer.runner.attribute = native_attribute
             if args.compare_replay_weight_lifetime:
                 owner_view.replay_finite_layer = native_replay

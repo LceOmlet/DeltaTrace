@@ -3,14 +3,17 @@
 唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**当前状态（2026-09-24）：正式预算尚未重启，作者实现的连续训练检查正在收尾。**
-`author-962ae20-continuous` 中，WebShop/Sokoban 已退出 0 并完成 checkpoint2；
-AppWorld 已完成 checkpoint1，第二轮 rollout 和 DT 已完成，正在原 PPO 更新。
-原生 graph/cache-off vLLM 的 32k/B4 容量及更新验证通过。刚完成的同层权重
-保留修复也通过了逐值 Q/V/A 对照和独立 32k/两次 PPO 更新检查，物理采样
-最高 50.75 GiB；提速约短输入 4.6%、32k 2.0%，没有宣称整体训练大幅提速。
-每小时检查和备份仍待训练验证收尾后恢复。当前细节以
-[REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md) 和原始回执为准。
+**当前状态（2026-09-25）：三任务正式预算已启动，AppWorld 已修复传输超时并恢复；DT 数值复核尚未全部通过。**
+截至 10:33 +08，`runs/author-2ee7ab4-paper` 的 WebShop 已完成 checkpoint9/150，
+Sokoban 完成 checkpoint1/150、第二轮正在 DT；AppWorld 本次重启完成第六轮
+交互生成，尚无新检查点。AppWorld 使用已推送的 `c88a749`，其余沿用 `2ee7ab4`。
+固定原作者源码与活动目录的差异、接口检查及未解决数值问题见
+[本次审计](results_recovery_audit.json)。核心 PPO 和任务 worker 的奖励/状态更新
+保持原实现；活动目录包含兼容及 DT 接入补丁，并非未经修改的官方仓库。
+模型、模态、response 长度、LoRA 和 AppWorld 历史设置存在明确适配，不能
+把预算相同称为原文实验复现，也尚不能声称任务性能无下降。
+定时检查和备份未因本次恢复而重新启动。当前事实来源是远端三个 active/formal
+manifest；下方所有旧状态均须结合其日期阅读。
 
 以下为此前停止正式训练时的核查记录，不能替代上述当前状态。
 Sokoban 完成的 step 1、WebShop 完成的 step 3 检查点保留；AppWorld 因超限

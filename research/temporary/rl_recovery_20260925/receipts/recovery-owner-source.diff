@@ -1,0 +1,1555 @@
+--- author/verl/workers/fsdp_workers.py
+
++++ active/verl/workers/fsdp_workers.py
+
+@@ -185,7 +185,11 @@
+
+         from torch import optim
+         from torch.distributed.fsdp import CPUOffload, MixedPrecision
+         from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+-        from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForVision2Seq
++        from transformers import AutoConfig, AutoModelForCausalLM
++        try:
++            from transformers import AutoModelForVision2Seq
++        except ImportError:  # Transformers 5.x removed this legacy alias.
++            AutoModelForVision2Seq = None
+ 
+         from verl.utils.model import get_generation_config, print_model_size, update_model_config
+         from verl.utils.torch_dtypes import PrecisionType
+@@ -207,13 +211,20 @@
+
+             torch_dtype = PrecisionType.to_dtype(torch_dtype)
+ 
+         # override model kwargs
+-        actor_model_config = AutoConfig.from_pretrained(local_path, trust_remote_code=trust_remote_code, attn_implementation="flash_attention_2")
++        actor_model_config = AutoConfig.from_pretrained(local_path, trust_remote_code=trust_remote_code, attn_implementation=os.getenv("VERL_ATTN_IMPLEMENTATION", "sdpa"))
+                 
+         # patch for kimi-vl
+         if getattr(actor_model_config, "model_type", None) == "kimi_vl":
+             actor_model_config.text_config.topk_method = "greedy"
+ 
+         self.generation_config = get_generation_config(local_path, trust_remote_code=trust_remote_code)
++        # Qwen3.5-9B has no generation_config.json: its model fallback ends
++        # documents, but the supplied chat tokenizer ends turns with im_end.
++        # Keep explicit generation configs and other model families unchanged.
++        if getattr(actor_model_config, "model_type", None) == "qwen3_5" and getattr(self.generation_config, "_from_model_config", False):
++            model_eos = self.generation_config.eos_token_id
++            model_eos = model_eos if isinstance(model_eos, list) else ([] if model_eos is None else [model_eos])
++            self.generation_config.eos_token_id = list(dict.fromkeys([self.tokenizer.eos_token_id, *model_eos]))
+ 
+         override_config_kwargs = {
+             "bos_token_id": self.tokenizer.bos_token_id,
+@@ -230,7 +241,7 @@
+
+ 
+         with init_context(), warnings.catch_warnings():
+             warnings.simplefilter("ignore")
+-            if type(actor_model_config) in AutoModelForVision2Seq._model_mapping.keys():
++            if AutoModelForVision2Seq is not None and type(actor_model_config) in AutoModelForVision2Seq._model_mapping.keys():
+                 actor_module_class = AutoModelForVision2Seq
+             else:
+                 actor_module_class = AutoModelForCausalLM
+@@ -278,7 +289,7 @@
+
+                     'target_modules': convert_to_regular_types(self.config.model.target_modules),
+                     'bias': "none"
+                 }
+-                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config))
++                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config), autocast_adapter_dtype=False)
+         torch.distributed.barrier()
+ 
+         if self.rank == 0:
+@@ -301,8 +312,9 @@
+
+ 
+         auto_wrap_policy = get_fsdp_wrap_policy(module=actor_module, config=fsdp_config.get("wrap_policy", None), is_lora=self.config.model.get('lora_rank', 0) > 0)
+ 
+-        if self._is_rollout and self.config.rollout.name == "hf":
+-            # TODO(zhangchi.usc1992, shengguangming) fix me. Current, auto_wrap_policy causes HFRollout to hang in Gemma
++        if self._is_rollout and self.config.rollout.name == "hf" and os.getenv("VERL_ENABLE_HF_FSDP_WRAP", "0") != "1":
++            # Keep upstream HF rollout's conservative default; long-context
++            # single-GPU runs can opt into layer wrapping explicitly.
+             auto_wrap_policy = None
+ 
+         print(f"wrap_policy: {auto_wrap_policy}")
+@@ -313,14 +325,14 @@
+
+         # TODO: add transformer policy
+         # We force reference policy to use CPUOffload to save memory.
+         # We force turn off CPUOffload for actor because it causes incorrect results when using grad accumulation
+-        cpu_offload = None if role == "actor" else CPUOffload(offload_params=True)
++        cpu_offload = CPUOffload(offload_params=True) if role == "actor" and os.getenv("VERL_ACTOR_CPU_OFFLOAD", "0") == "1" else (None if role == "actor" else CPUOffload(offload_params=True))
+         fsdp_strategy = self.config.actor.strategy
+         if fsdp_strategy == "fsdp":
+             actor_module_fsdp = FSDP(
+                 actor_module,
+                 cpu_offload=cpu_offload,
+                 param_init_fn=init_fn,
+-                use_orig_params=False,
++                use_orig_params=self._is_lora and auto_wrap_policy is None,
+                 auto_wrap_policy=auto_wrap_policy,
+                 device_id=get_torch_device().current_device(),
+                 sharding_strategy=sharding_strategy,  # zero3
+@@ -648,8 +660,11 @@
+
+         assert self._is_rollout
+ 
+         meta_info = {
+-            "eos_token_id": self.generation_config.eos_token_id if self.generation_config is not None else self.tokenizer.eos_token_id,
+-            "pad_token_id": self.generation_config.pad_token_id if self.generation_config is not None else self.tokenizer.pad_token_id,
++            # A GenerationConfig may exist with unset special-token fields.
++            # Preserve explicit generation IDs, otherwise use the tokenizer
++            # that already owns the collector's prompt padding and EOS mask.
++            "eos_token_id": self.generation_config.eos_token_id if getattr(self.generation_config, "eos_token_id", None) is not None else self.tokenizer.eos_token_id,
++            "pad_token_id": self.generation_config.pad_token_id if getattr(self.generation_config, "pad_token_id", None) is not None else self.tokenizer.pad_token_id,
+         }
+         prompts.meta_info.update(meta_info)
+         with self.rollout_sharding_manager:
+@@ -668,6 +683,31 @@
+
+         get_torch_device().empty_cache()
+         return output
+ 
++
++    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
++    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):
++        """Run DT on the existing actor after the owner's rollout exit."""
++        if self.config.rollout.name == "vllm":
++            from deltatrace_rollout import DeltaTraceRolloutProducer
++
++            # FSDPVLLMShardingManager.__exit__ already sleeps the engine.
++            # Reuse the same actor and the same memory owner as compute_log_prob.
++            if self._is_offload_param:
++                load_fsdp_model_to_gpu(self.actor_module_fsdp)
++            try:
++                if not hasattr(self, "_deltatrace_producer"):
++                    self._deltatrace_producer = DeltaTraceRolloutProducer(
++                        self.actor_module_fsdp, eos_token_id=eos_token_id, pad_token_id=pad_token_id
++                    )
++                return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)
++            finally:
++                if self._is_offload_param:
++                    offload_fsdp_model_to_cpu(self.actor_module_fsdp)
++        if not hasattr(self, "rollout") or not hasattr(self.rollout, "compute_dt_token_advantages"):
++            raise RuntimeError("DeltaTrace requires the upstream HF rollout backend")
++        return self.rollout.compute_dt_token_advantages(
++            episodes, episode_returns, eos_token_id=eos_token_id, pad_token_id=pad_token_id
++        )
+ 
+     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
+     def compute_log_prob(self, data: DataProto):
+@@ -757,12 +797,12 @@
+
+         self.checkpoint_manager.save_checkpoint(local_path=local_path, hdfs_path=hdfs_path, global_step=global_step, max_ckpt_to_keep=max_ckpt_to_keep)
+         dist.barrier()
+ 
+-        if self._is_lora and isinstance(self.actor_module, PeftModel):
++        if self._is_lora and isinstance(self.actor_module_fsdp, FSDP) and isinstance(self.actor_module_fsdp._fsdp_wrapped_module, PeftModel):
+             lora_save_path = os.path.join(local_path, "lora_adapter")
+             peft_config = {}
+             if dist.get_rank() == 0:
+                 os.makedirs(lora_save_path, exist_ok=True)
+-                peft_config = asdict(self.actor_module.peft_config.get('default', {}))
++                peft_config = asdict(self.actor_module_fsdp._fsdp_wrapped_module.peft_config.get('default', {}))
+                 peft_config['task_type'] = peft_config['task_type'].value
+                 peft_config['peft_type'] = peft_config['peft_type'].value
+                 peft_config['target_modules'] = list(peft_config['target_modules'])
+@@ -876,7 +916,7 @@
+
+ 
+         from transformers import AutoConfig, AutoModelForTokenClassification
+ 
+-        critic_model_config = AutoConfig.from_pretrained(local_path, attn_implementation="flash_attention_2", trust_remote_code=config.model.get("trust_remote_code", False))
++        critic_model_config = AutoConfig.from_pretrained(local_path, attn_implementation=os.getenv("VERL_ATTN_IMPLEMENTATION", "sdpa"), trust_remote_code=config.model.get("trust_remote_code", False))
+         critic_model_config.num_labels = 1
+         # patch for kimi-vl
+         if getattr(critic_model_config, "model_type", None) == "kimi_vl":
+@@ -1200,7 +1240,7 @@
+
+                 pretrained_model_name_or_path=local_path,
+                 config=model_config,
+                 torch_dtype=torch.bfloat16,
+-                attn_implementation="flash_attention_2",
++                attn_implementation=os.getenv("VERL_ATTN_IMPLEMENTATION", "sdpa"),
+                 trust_remote_code=trust_remote_code,
+             )
+ 
+--- author/verl/workers/critic/dp_critic.py
+
++++ active/verl/workers/critic/dp_critic.py
+
+@@ -21,7 +21,6 @@
+
+ 
+ import torch
+ import torch.distributed
+-from flash_attn.bert_padding import index_first_axis, pad_input, rearrange, unpad_input
+ from torch import nn, optim
+ from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+ 
+@@ -37,10 +36,6 @@
+
+ from verl.utils.device import get_device_name, get_torch_device, is_npu_available, is_cuda_available
+ 
+ 
+-if is_cuda_available:
+-    from flash_attn.bert_padding import pad_input, unpad_input, rearrange, index_first_axis
+-elif is_npu_available:
+-    from transformers.integrations.npu_flash_attention import pad_input, unpad_input, rearrange, index_first_axis
+ 
+ logger = logging.getLogger(__file__)
+ logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
+@@ -73,13 +68,18 @@
+
+                 position_ids = position_ids.transpose(0, 1)
+ 
+             if self.use_remove_padding:
++                if is_cuda_available:
++                    from flash_attn.bert_padding import index_first_axis, pad_input, rearrange, unpad_input
++                elif is_npu_available:
++                    from transformers.integrations.npu_flash_attention import index_first_axis, pad_input, rearrange, unpad_input
++                else:
++                    raise RuntimeError("remove-padding requires flash-attn on CUDA or NPU attention utilities")
+                 input_ids_rmpad, indices, *_ = unpad_input(input_ids.unsqueeze(-1), attention_mask)  # input_ids_rmpad (total_nnz, ...)
+                 input_ids_rmpad = input_ids_rmpad.transpose(0, 1)  # (1, total_nnz)
+ 
+                 # unpad the position_ids to align the rotary
+                 if position_ids.dim() == 3:
+-                    position_ids_rmpad =
+-                    index_first_axis(rearrange(position_ids, "c b s ... -> (b s) c ..."), indices).transpose(0, 1).unsqueeze(1)  # (4, bsz, seqlen) -> (4, 1, bsz * seqlen)
++                    position_ids_rmpad = index_first_axis(rearrange(position_ids, "c b s ... -> (b s) c ..."), indices).transpose(0, 1).unsqueeze(1)  # (4, bsz, seqlen) -> (4, 1, bsz * seqlen)
+                 else:
+                     position_ids_rmpad = index_first_axis(rearrange(position_ids.unsqueeze(-1), "b s ... -> (b s) ..."), indices).transpose(0, 1)
+ 
+--- author/verl/workers/sharding_manager/fsdp_vllm.py
+
++++ active/verl/workers/sharding_manager/fsdp_vllm.py
+
+@@ -38,7 +38,7 @@
+
+ from verl.third_party.vllm import LLM, vllm_version
+ from verl.third_party.vllm import parallel_state as vllm_ps
+ from verl.utils.debug import GPUMemoryLogger, log_gpu_memory_usage
+-from verl.utils.device import get_torch_device
++from verl.utils.device import get_torch_device, set_expandable_segments
+ from verl.utils.fsdp_utils import fsdp_version, layered_summon_lora_params, load_fsdp_model_to_gpu, offload_fsdp_model_to_cpu
+ from verl.utils.torch_functional import check_cuda_is_available
+ from verl.utils.vllm_utils import TensorLoRARequest, VLLMHijack, is_version_ge, patch_vllm_moe_model_weight_loader
+@@ -112,10 +112,11 @@
+
+ 
+     @GPUMemoryLogger(role="fsdp vllm sharding_manager", logger=logger)
+     def __enter__(self):
++        peft_model = getattr(self.module, "_fsdp_wrapped_module", self.module)
+         def __collect_lora_params()->OrderedDict:
+             """
+             collect lora params or full params if base model is not ready in vllm
+-            work with if isinstance(self.module._fsdp_wrapped_module, PeftModel)
++            work with if isinstance(peft_model, PeftModel)
+             """
+             from peft.utils.save_and_load import get_peft_model_state_dict
+ 
+@@ -128,11 +129,11 @@
+
+                 else:
+                     with FSDP.summon_full_params(self.module, writeback=False):
+                         if self.base_sync_done:
+-                            lora_params = get_peft_model_state_dict(self.module._fsdp_wrapped_module)
++                            lora_params = get_peft_model_state_dict(peft_model)
+                             lora_params = {name: param.full_tensor().detach().cpu() if hasattr(param, 'full_tensor') else param.detach().cpu() 
+                                         for name, param in lora_params.items()}
+                         else:
+-                            model = self.module._fsdp_wrapped_module.base_model.model
++                            model = peft_model.base_model.model
+                             orig_dev = 'cpu' if 'cpu' in next(model.parameters()).device.type else 'cuda'
+                             model = model.to('cpu')
+                             for name, param in model.state_dict().items():
+@@ -144,9 +145,9 @@
+
+                     torch.cuda.empty_cache()
+             else:
+                 if self.base_sync_done:
+-                    lora_params = get_peft_model_state_dict(self.module._fsdp_wrapped_module)
++                    lora_params = get_peft_model_state_dict(peft_model)
+                 else:
+-                    model = self.module._fsdp_wrapped_module.base_model.model
++                    model = peft_model.base_model.model
+                     orig_dev = 'cpu' if 'cpu' in next(model.parameters()).device.type else 'cuda'
+                     model = model.to('cpu')
+                     for name, param in model.state_dict().items():
+@@ -171,11 +172,27 @@
+
+             load_fsdp_model_to_gpu(self.module)
+ 
+         peft_config = None
+-        if isinstance(self.module._fsdp_wrapped_module, PeftModel):
+-            peft_config = self.module._fsdp_wrapped_module.peft_config.get('default', None)
++        if isinstance(peft_model, PeftModel):
++            peft_config = peft_model.peft_config.get('default', None)
+             params = __collect_lora_params()
++            params = {
++                name: param.full_tensor().detach().cpu() if isinstance(param, DTensor) else param
++                for name, param in params.items()
++            }
+         else:
+             params = self.module.state_dict()
++        # Transformers' text-only Qwen3.5 actor exposes model.layers; the
++        # checkpoint and vLLM ConditionalGeneration expose model.language_model.
++        # Restore only that ABI prefix before the native vLLM weights mapper.
++        if (peft_config is not None
++                and getattr(peft_model.config, "model_type", None) == "qwen3_5_text"
++                and getattr(self.model_config, "model_type", None) == "qwen3_5"):
++            source_prefix = "base_model.model.model."
++            target_prefix = "base_model.model.model.language_model."
++            params = {
++                target_prefix + name[len(source_prefix):] if name.startswith(source_prefix) else name: value
++                for name, value in params.items()
++            }
+         log_gpu_memory_usage("After state_dict() in sharding manager memory", logger=logger)
+ 
+         # Copy, not share memory
+@@ -189,6 +206,7 @@
+
+             log_gpu_memory_usage("After sync model weights in sharding manager", logger=logger)
+             del params
+         else:
++            set_expandable_segments(False)
+             if "tags" in inspect.signature(self.inference_engine.wake_up).parameters:
+                 self.inference_engine.wake_up(tags=["weights"])
+             else:
+@@ -224,6 +242,7 @@
+
+             self.inference_engine.sleep(level=1)
+ 
+         self.module.train()
++        set_expandable_segments(True)
+ 
+         # add empty cache after each compute
+         get_torch_device().empty_cache()
+--- author/verl/workers/rollout/hf_rollout.py
+
++++ active/verl/workers/rollout/hf_rollout.py
+
+@@ -20,6 +20,7 @@
+
+ 
+ import contextlib
+ 
++import os
+ import torch
+ import torch.distributed
+ from tensordict import TensorDict
+@@ -29,7 +30,7 @@
+
+ 
+ from verl import DataProto
+ from verl.utils.torch_functional import get_response_mask
+-from verl.utils.device import get_torch_device
++from verl.utils.device import get_device_id, get_device_name, get_torch_device
+ 
+ from .base import BaseRollout
+ 
+@@ -95,34 +96,75 @@
+
+         prompt_length = idx.size(1)
+         attention_mask = prompts.batch["attention_mask"]  # left-padded attention_mask
+         position_ids = prompts.batch["position_ids"]
++        # FSDP2 CPU parameter offload can leave position_ids on CPU while
++        # Qwen3.5's rotary kernel runs on CUDA. Keep all generation inputs on
++        # the active torch device; this is an upstream device-placement fix.
++        device = torch.device(get_device_name(), get_device_id())
++        idx = idx.to(device)
++        attention_mask = attention_mask.to(device)
++        position_ids = position_ids.to(device)
+ 
+         # used to construct attention_mask
+         eos_token_id = prompts.meta_info["eos_token_id"]
+         pad_token_id = prompts.meta_info["pad_token_id"]
+ 
++        # Trim only shared left padding for native generation; restore exact
++        # DataProto width below so collector IDs/masks keep their original ABI.
++        generation_left_trim = 0
++        if os.getenv("VERL_TRIM_SHARED_PADDING", "0") == "1":
++            generation_left_trim = int(attention_mask.long().argmax(-1).min().item())
++            if getattr(getattr(self.module, "config", None), "model_type", None) in ("qwen3_5", "qwen3_5_text"):
++                # Pinned FLA uses 64-token chunks. Keep its original chunk grid;
++                # moving real tokens across chunk boundaries changes BF16 results.
++                generation_left_trim -= generation_left_trim % 64
+         self.module.eval()
+         param_ctx = contextlib.nullcontext()
+ 
+         if isinstance(self.module, FSDP):
+             # recurse need to set to False according to https://github.com/pytorch/pytorch/issues/100069
+             param_ctx = FSDP.summon_full_params(self.module, writeback=False, recurse=False)
+-        with param_ctx, torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+-            output = self.module.generate(
+-                input_ids=idx,
+-                attention_mask=attention_mask,
+-                position_ids=position_ids,
+-                do_sample=do_sample,
+-                max_new_tokens=response_length,
+-                eos_token_id=eos_token_id,
+-                pad_token_id=pad_token_id,
+-                generation_config=generation_config,
+-                output_scores=False,  # this is potentially very large
+-                return_dict_in_generate=True,
+-                use_cache=True,
+-            )
+-
+-        # TODO: filter out the seq with no answers like ds-chat
+-        seq = output.sequences
++        # Skip finished trajectories using the collector-owned mask.
++        # No mask means the unchanged owner path. Compact within (not across)
++        # original microbatches, so the configured maximum batch size stays put.
++        active_mask = prompts.non_tensor_batch.get("rollout_active_mask")
++        active_rows = None
++        generation_idx, generation_mask, generation_positions = idx, attention_mask, position_ids
++        copies = kwargs.get("num_return_sequences", 1)
++        if active_mask is not None and not all(active_mask):
++            active_rows = torch.as_tensor(active_mask, dtype=torch.bool).nonzero().flatten().to(idx.device)
++            generation_idx = idx.index_select(0, active_rows)
++            generation_mask = attention_mask.index_select(0, active_rows)
++            generation_positions = position_ids.index_select(0, active_rows)
++        if generation_idx.size(0) == 0:
++            seq = idx.repeat_interleave(copies, dim=0)
++        else:
++            with param_ctx, torch.autocast(device_type="cuda", dtype=torch.bfloat16):
++                output = self.module.generate(
++                    input_ids=generation_idx[:, generation_left_trim:],
++                    attention_mask=generation_mask[:, generation_left_trim:],
++                    position_ids=generation_positions[..., generation_left_trim:],
++                    do_sample=do_sample,
++                    max_new_tokens=response_length,
++                    eos_token_id=eos_token_id,
++                    pad_token_id=pad_token_id,
++                    generation_config=generation_config,
++                    output_scores=False,  # this is potentially very large
++                    return_dict_in_generate=True,
++                    use_cache=True,
++                )
++
++            # TODO: filter out the seq with no answers like ds-chat
++            seq = output.sequences
++            if generation_left_trim:
++                padding = generation_idx[:, :generation_left_trim]
++                padding = padding.repeat_interleave(seq.size(0) // generation_idx.size(0), dim=0)
++                seq = torch.cat((padding, seq), dim=-1)
++            if active_rows is not None:
++                full_seq = idx.new_full((idx.size(0) * copies, seq.size(1)), pad_token_id)
++                full_seq[:, :prompt_length] = idx.repeat_interleave(copies, dim=0)
++                output_rows = (active_rows[:, None] * copies + torch.arange(copies, device=idx.device)).flatten()
++                full_seq.index_copy_(0, output_rows, seq)
++                seq = full_seq
+         generated_batch_size = seq.size(0)  # bs * num_return_sequences
+ 
+         # huggingface generate will stop generating when all the batch reaches [EOS].
+@@ -153,6 +195,10 @@
+
+         position_ids = torch.cat([position_ids, response_position_ids], dim=-1)
+ 
+         response_attention_mask = get_response_mask(response_id=response, eos_token=eos_token_id, dtype=attention_mask.dtype)
++        if active_rows is not None:
++            response_attention_mask *= torch.as_tensor(
++                active_mask, dtype=response_attention_mask.dtype, device=response_attention_mask.device
++            ).repeat_interleave(copies)[:, None]
+         attention_mask = torch.cat((attention_mask, response_attention_mask), dim=-1)
+ 
+         batch = TensorDict(
+@@ -171,3 +217,13 @@
+
+ 
+         self.module.train()
+         return DataProto(batch=batch)
++
++    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):
++        """Run the owner DeltaTrace producer on completed factual episodes."""
++        from deltatrace_rollout import DeltaTraceRolloutProducer
++
++        if not hasattr(self, "_deltatrace_producer"):
++            self._deltatrace_producer = DeltaTraceRolloutProducer(
++                self.module, eos_token_id=eos_token_id, pad_token_id=pad_token_id
++            )
++        return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)
+--- author/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
+
++++ active/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
+
+@@ -198,7 +198,7 @@
+
+             disable_log_stats=config.disable_log_stats,
+             max_num_batched_tokens=max_num_batched_tokens,
+             enable_chunked_prefill=config.enable_chunked_prefill,
+-            enable_prefix_caching=True,
++            enable_prefix_caching=engine_kwargs.pop("enable_prefix_caching", True),
+             trust_remote_code=trust_remote_code,
+             seed=config.get("seed", 0),
+             **compilation_config,
+@@ -317,6 +317,16 @@
+
+                 lora_int_id=lora_int_ids[0]
+                 lora_requests = [LoRARequest(lora_name=f"{lora_int_id}",lora_int_id=lora_int_id,lora_path="/simon-stub-path")] * batch_size
+ 
++        # Only live collector rows become vLLM requests.
++        # Sampling, LoRA handling and generation remain owned by vLLM.
++        active_mask = non_tensor_batch.pop("rollout_active_mask", None)
++        active_rows = None
++        if active_mask is not None and not all(active_mask):
++            active_rows = np.flatnonzero(active_mask).tolist()
++            vllm_inputs = [vllm_inputs[row] for row in active_rows]
++            if lora_requests is not None:
++                lora_requests = [lora_requests[row] for row in active_rows]
++
+         # users can customize different sampling_params at different run
+         with self.update_sampling_params(**kwargs):
+             outputs = self.inference_engine.generate(
+@@ -324,7 +334,7 @@
+
+                 sampling_params=self.sampling_params,
+                 lora_request=lora_requests,
+                 use_tqdm=False,
+-            )
++            ) if vllm_inputs else []
+ 
+             # TODO(sgm): disable logprob when recompute_log_prob is enable
+             # if n = 1: (bs, response_length) ; if n > 1: (bs * n, response_length)
+@@ -340,6 +350,18 @@
+
+                         curr_log_prob.append(logprob[response_ids[i]].logprob)
+                     rollout_log_probs.append(curr_log_prob)
+ 
++            if active_rows is not None:
++                # Restore the owner's original row/sample order. Finished rows
++                # have no generated tokens and remain excluded by active_masks.
++                copies = self.sampling_params.n
++                output_rows = [row * copies + sample for row in active_rows for sample in range(copies)]
++                full_response = [[] for _ in range(batch_size * copies)]
++                full_log_probs = [[] for _ in range(batch_size * copies)]
++                for src, dst in enumerate(output_rows):
++                    full_response[dst] = response[src]
++                    full_log_probs[dst] = rollout_log_probs[src]
++                response, rollout_log_probs = full_response, full_log_probs
++
+             response = pad_2d_list_to_length(response, self.pad_token_id, max_length=self.config.response_length).to(idx.device)
+             rollout_log_probs = pad_2d_list_to_length(rollout_log_probs, -1, max_length=self.config.response_length).to(idx.device)
+             rollout_log_probs = rollout_log_probs.to(torch.float32)
+@@ -368,6 +390,10 @@
+
+         response_position_ids = position_ids[..., -1:] + delta_position_id
+         position_ids = torch.cat([position_ids, response_position_ids], dim=-1)
+         response_attention_mask = get_response_mask(response_id=response, eos_token=eos_token_id, dtype=attention_mask.dtype)
++        if active_rows is not None:
++            response_attention_mask *= torch.as_tensor(
++                active_mask, dtype=response_attention_mask.dtype, device=response_attention_mask.device
++            ).repeat_interleave(copies)[:, None]
+         attention_mask = torch.cat((attention_mask, response_attention_mask), dim=-1)
+ 
+         # all the tp ranks should contain the same data here. data in all ranks are valid
+--- author/verl/workers/actor/dp_actor.py
+
++++ active/verl/workers/actor/dp_actor.py
+
+@@ -39,10 +39,9 @@
+
+ from verl.utils.ulysses import gather_outpus_and_unpad, ulysses_pad_and_slice_inputs, ulysses_pad
+ from verl.workers.actor import BasePPOActor
+ 
+-if is_cuda_available:
+-    from flash_attn.bert_padding import index_first_axis, pad_input, rearrange, unpad_input
+-elif is_npu_available:
+-    from transformers.integrations.npu_flash_attention import index_first_axis, pad_input, rearrange, unpad_input
++if is_npu_available and not is_cuda_available:
++    # Imported lazily for the NPU remove-padding path below.
++    pass
+ 
+ 
+ __all__ = ["DataParallelPPOActor"]
+@@ -95,6 +94,12 @@
+
+                 position_ids = position_ids.transpose(0, 1)  # (bsz, 4, seqlen) -> (4, bsz, seqlen)
+ 
+             if self.use_remove_padding:
++                if is_cuda_available:
++                    from flash_attn.bert_padding import index_first_axis, pad_input, rearrange, unpad_input
++                elif is_npu_available:
++                    from transformers.integrations.npu_flash_attention import index_first_axis, pad_input, rearrange, unpad_input
++                else:
++                    raise RuntimeError("remove-padding requires flash-attn on CUDA or NPU attention utilities")
+                 input_ids_rmpad, indices, *_ = unpad_input(input_ids.unsqueeze(-1), attention_mask)  # input_ids_rmpad (total_nnz, ...)
+                 input_ids_rmpad = input_ids_rmpad.transpose(0, 1)  # (1, total_nnz)
+ 
+@@ -204,13 +209,36 @@
+
+                 log_probs = full_log_probs.squeeze(-1)[:, -response_length - 1 : -1]  # (bsz, response_length)
+ 
+             else:  # not using rmpad and no ulysses sp
++                # Preserve the response columns and original tensors. Only
++                # columns masked out for every example leave the model input.
++                if not multi_modal_inputs and os.getenv("VERL_TRIM_SHARED_PADDING", "0") == "1":
++                    left_trim = int(attention_mask.long().argmax(-1).min().item())
++                    if getattr(getattr(self.actor_module, "config", None), "model_type", None) in ("qwen3_5", "qwen3_5_text"):
++                        # Match the pinned FLA 64-token chunk grid in forward/backward.
++                        left_trim -= left_trim % 64
++                    input_ids = input_ids[:, left_trim:]
++                    attention_mask = attention_mask[:, left_trim:]
++                    position_ids = position_ids[..., left_trim:]
+                 extra_args = {}
+                 if self.use_fused_kernels:
+                     extra_args["temperature"] = temperature
++                # Select response head rows; decoder inputs and kernels stay unchanged.
++                head_response_length = response_length
++                head_positions = response_length + 1
++                if (not multi_modal_inputs and not self.use_fused_kernels
++                        and os.getenv("VERL_TRIM_RESPONSE_HEAD", "0") == "1"
++                        and getattr(getattr(self.actor_module, "config", None), "model_type", None)
++                        in ("qwen3_5", "qwen3_5_text")):
++                    columns = torch.arange(1, response_length + 1, device=attention_mask.device)
++                    head_response_length = max(1, int((attention_mask[:, -response_length:] * columns).max().item()))
++                    if head_response_length < response_length:
++                        start = input_ids.shape[-1] - response_length - 1
++                        head_positions = torch.arange(start, start + head_response_length + 1, device=input_ids.device)
+                 output = self.actor_module(
+                     input_ids=input_ids,
+                     attention_mask=attention_mask,
+                     position_ids=position_ids,
++                    logits_to_keep=head_positions,
+                     **multi_modal_inputs,
+                     use_cache=False,
+                     **extra_args,
+@@ -224,10 +252,15 @@
+
+                     logits = output.logits
+ 
+                     logits.div_(temperature)
+-                    logits = logits[:, -response_length - 1 : -1, :]  # (bsz, response_length, vocab_size)
+-                    log_probs = logprobs_from_logits(logits, micro_batch["responses"])
++                    logits = logits[:, -head_response_length - 1 : -1, :]
++                    log_probs = logprobs_from_logits(logits, micro_batch["responses"][:, :head_response_length])
+                     if calculate_entropy:
+-                        entropy = verl_F.entropy_from_logits(logits)  # (bsz, response_length)
++                        entropy = verl_F.entropy_from_logits(logits)
++                    if head_response_length < response_length:
++                        # The owner's PPO tensors keep their original columns/masks.
++                        log_probs = torch.nn.functional.pad(log_probs, (0, response_length - head_response_length))
++                        if calculate_entropy:
++                            entropy = torch.nn.functional.pad(entropy, (0, response_length - head_response_length))
+ 
+             return entropy, log_probs
+ 
+--- author/verl/models/transformers/monkey_patch.py
+
++++ active/verl/models/transformers/monkey_patch.py
+
+@@ -280,13 +280,16 @@
+
+     )
+ 
+     if is_trl_available():
+-        from trl import AutoModelForCausalLMWithValueHead  # type: ignore
+-
+-        def state_dict(self, *args, **kwargs):
+-            return torch.nn.Module.state_dict(self, *args, **kwargs)
+-
+-        AutoModelForCausalLMWithValueHead.state_dict = state_dict
+-        print("Monkey patch state_dict in AutoModelForCausalLMWithValueHead. ")
++        try:
++            from trl import AutoModelForCausalLMWithValueHead  # type: ignore
++        except ImportError:
++            AutoModelForCausalLMWithValueHead = None
++        if AutoModelForCausalLMWithValueHead is not None:
++            def state_dict(self, *args, **kwargs):
++                return torch.nn.Module.state_dict(self, *args, **kwargs)
++
++            AutoModelForCausalLMWithValueHead.state_dict = state_dict
++            print("Monkey patch state_dict in AutoModelForCausalLMWithValueHead. ")
+ 
+     # TODO: VLM models only, unify monkey patch to LLM models.
+     if model.config.model_type in ["qwen2_5_vl", "qwen2_vl"]:
+
+--- author/verl/trainer/ppo/ray_trainer.py
+
++++ active/verl/trainer/ppo/ray_trainer.py
+
+@@ -94,6 +94,7 @@
+
+     RLOO = "rloo"
+     GRPO_PASSK = "grpo_passk"
+     GiGPO = 'gigpo'
++    DELTATRACE = 'deltatrace'
+ 
+ 
+ @dataclass
+@@ -357,6 +358,19 @@
+
+             )
+         data.batch['advantages'] = advantages
+         data.batch['returns'] = returns
++    elif adv_estimator == AdvantageEstimator.DELTATRACE:
++        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)
++        for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):
++            if name not in data.batch:
++                raise RuntimeError(f"deltatrace estimator requires {name}")
++            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)
++            if value.shape != response_mask.shape:
++                raise RuntimeError(f"{name} must align with original response tokens")
++            if not torch.isfinite(value).all():
++                raise RuntimeError(f"{name} contains non-finite values")
++            data.batch[name] = torch.where(response_mask, value, 0.0)
++        data.batch["advantages"] = data.batch["dt_token_advantages"]
++        data.batch["returns"] = data.batch["dt_q_estimates"]
+     else:
+         raise NotImplementedError
+     return data
+@@ -451,7 +465,8 @@
+
+             AdvantageEstimator.REMAX,
+             AdvantageEstimator.RLOO,
+             AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,
+-            AdvantageEstimator.GiGPO
++            AdvantageEstimator.GiGPO,
++            AdvantageEstimator.DELTATRACE
+         ]:
+             self.use_critic = False
+         else:
+--- author/verl/utils/vllm_utils.py
+
++++ active/verl/utils/vllm_utils.py
+
+@@ -12,64 +12,14 @@
+
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-# To support different vLLM versions, we add the model into SUPPORTED_MOE_MODELS separately to avoid triggering unsupported issues.
+-SUPPORTED_MOE_MODELS = []
+-
+-try:
+-    from vllm.model_executor.models.deepseek_v2 import DeepseekV2ForCausalLM, DeepseekV3ForCausalLM
+-
+-    SUPPORTED_MOE_MODELS.append(DeepseekV2ForCausalLM)
+-    SUPPORTED_MOE_MODELS.append(DeepseekV3ForCausalLM)
+-except ImportError:
+-    pass
+-
+-try:
+-    from vllm.model_executor.models.mixtral import MixtralForCausalLM
+-
+-    SUPPORTED_MOE_MODELS.append(MixtralForCausalLM)
+-except ImportError:
+-    pass
+-
+-try:
+-    from vllm.model_executor.models.qwen2_moe import Qwen2MoeForCausalLM
+-
+-    SUPPORTED_MOE_MODELS.append(Qwen2MoeForCausalLM)
+-except ImportError:
+-    pass
+-
+-try:
+-    from vllm.model_executor.models.qwen3_moe import Qwen3MoeForCausalLM
+-
+-    SUPPORTED_MOE_MODELS.append(Qwen3MoeForCausalLM)
+-except ImportError:
+-    pass
+-
+-try:
+-    from vllm.model_executor.models.qwen3_vl_moe import Qwen3MoeLLMForCausalLM
+-
+-    SUPPORTED_MOE_MODELS.append(Qwen3MoeLLMForCausalLM)
+-except ImportError:
+-    pass
+-
+-try:
+-    from vllm.model_executor.models.qwen3_next import Qwen3NextForCausalLM
+-
+-    SUPPORTED_MOE_MODELS.append(Qwen3NextForCausalLM)
+-except ImportError:
+-    pass
+-
+-try:
+-    from vllm.model_executor.models.kimi_vl import KimiVLForConditionalGeneration
+-
+-    SUPPORTED_MOE_MODELS.append(KimiVLForConditionalGeneration)
+-except ImportError:
+-    pass
+-
+ from typing import List
+ 
+ from msgspec import field
+ from packaging import version as vs
+-from vllm.lora.models import LoRAModel
++try:
++    from vllm.lora.lora_model import LoRAModel
++except ImportError:
++    from vllm.lora.models import LoRAModel
+ from vllm.lora.request import LoRARequest
+ from vllm.lora.utils import get_adapter_absolute_path
+ from vllm.lora.worker_manager import LRUCacheWorkerLoRAManager
+@@ -78,6 +28,60 @@
+
+ 
+ 
+ def patch_vllm_moe_model_weight_loader(model):
++    # Legacy MoE imports belong to the full-weight loader only.
++    # To support different vLLM versions, we add the model into SUPPORTED_MOE_MODELS separately to avoid triggering unsupported issues.
++    SUPPORTED_MOE_MODELS = []
++
++    try:
++        from vllm.model_executor.models.deepseek_v2 import DeepseekV2ForCausalLM, DeepseekV3ForCausalLM
++
++        SUPPORTED_MOE_MODELS.append(DeepseekV2ForCausalLM)
++        SUPPORTED_MOE_MODELS.append(DeepseekV3ForCausalLM)
++    except ImportError:
++        pass
++
++    try:
++        from vllm.model_executor.models.mixtral import MixtralForCausalLM
++
++        SUPPORTED_MOE_MODELS.append(MixtralForCausalLM)
++    except ImportError:
++        pass
++
++    try:
++        from vllm.model_executor.models.qwen2_moe import Qwen2MoeForCausalLM
++
++        SUPPORTED_MOE_MODELS.append(Qwen2MoeForCausalLM)
++    except ImportError:
++        pass
++
++    try:
++        from vllm.model_executor.models.qwen3_moe import Qwen3MoeForCausalLM
++
++        SUPPORTED_MOE_MODELS.append(Qwen3MoeForCausalLM)
++    except ImportError:
++        pass
++
++    try:
++        from vllm.model_executor.models.qwen3_vl_moe import Qwen3MoeLLMForCausalLM
++
++        SUPPORTED_MOE_MODELS.append(Qwen3MoeLLMForCausalLM)
++    except ImportError:
++        pass
++
++    try:
++        from vllm.model_executor.models.qwen3_next import Qwen3NextForCausalLM
++
++        SUPPORTED_MOE_MODELS.append(Qwen3NextForCausalLM)
++    except ImportError:
++        pass
++
++    try:
++        from vllm.model_executor.models.kimi_vl import KimiVLForConditionalGeneration
++
++        SUPPORTED_MOE_MODELS.append(KimiVLForConditionalGeneration)
++    except ImportError:
++        pass
++
+     # this is a work around to load the weight of vllm fused moe model
+     # it is from a bug from vllm 0.8.2
+     # all the weights are supposed to have a weight_loader, but the moe weights
+@@ -150,7 +154,7 @@
+
+     lora_tensors:dict = field(default=None)
+ 
+ 
+-class VLLMHijack():
++class VLLMHijack:
+     @staticmethod
+     def hijack():
+         def hijack__load_adapter(self, lora_request: TensorLoRARequest) -> LoRAModel:
+@@ -159,18 +163,16 @@
+
+ 
+             Reason:
+             VLLM does not support adding LoRA from tensors directly. It only supports adding LoRA via file paths.
+-            To synchronize the LoRA tensors of the actor model, we need to find a workaround to enable VLLM to load memory-based LoRA tensors.
++            To synchronize the LoRA tensors of the actor model, we need to find a workaround to enable VLLM to
++            load memory-based LoRA tensors.
+             """
+             try:
+-                supported_lora_modules = (
+-                    self._adapter_manager.supported_lora_modules)
+-                packed_modules_mapping = (
+-                    self._adapter_manager.packed_modules_mapping)
+-                expected_lora_modules: List[str] = []
++                supported_lora_modules = self._adapter_manager.supported_lora_modules
++                packed_modules_mapping = self._adapter_manager.packed_modules_mapping
++                expected_lora_modules: list[str] = []
+                 for module in supported_lora_modules:
+                     if module in packed_modules_mapping:
+-                        expected_lora_modules.extend(
+-                            packed_modules_mapping[module])
++                        expected_lora_modules.extend(packed_modules_mapping[module])
+                     else:
+                         expected_lora_modules.append(module)
+ 
+@@ -178,6 +180,7 @@
+
+ 
+                 lora_tensors = None
+                 from vllm.lora.peft_helper import PEFTHelper
++
+                 if isinstance(lora_request, TensorLoRARequest):
+                     peft_config = lora_request.peft_config
+                     lora_tensors = lora_request.lora_tensors
+@@ -185,8 +188,7 @@
+
+                 else:
+                     lora_path = get_adapter_absolute_path(lora_request.lora_path)
+ 
+-                    peft_helper = PEFTHelper.from_local_dir(
+-                        lora_path, self.max_position_embeddings)
++                    peft_helper = PEFTHelper.from_local_dir(lora_path, self.max_position_embeddings)
+ 
+                 # Validates the LoRA configuration against requirements before
+                 # loading weights, throwing an exception if validation fails.
+@@ -196,43 +198,44 @@
+
+                 # to ensure correct loading of lora weights.
+                 model = self._adapter_manager.model
+                 hf_to_vllm_mapper = None
+-                if (hasattr(model, "hf_to_vllm_mapper")
+-                        and model.hf_to_vllm_mapper is not None):
++                if hasattr(model, "hf_to_vllm_mapper") and model.hf_to_vllm_mapper is not None:
+                     hf_to_vllm_mapper = model.hf_to_vllm_mapper
+ 
++                lora_request_kwargs = {
++                    "peft_helper": peft_helper,
++                    "lora_model_id": lora_request.lora_int_id,
++                    "device": "cpu",
++                    "dtype": self.lora_config.lora_dtype,
++                    "weights_mapper": hf_to_vllm_mapper,
++                }
++                if hasattr(self, "embedding_padding_modules"):
++                    lora_request_kwargs["embedding_modules"] = self.embedding_modules
++                    lora_request_kwargs["embedding_padding_modules"] = self.embedding_padding_modules
++                else:
++                    lora_request_kwargs["model_vocab_size"] = self.vocab_size
++                if hasattr(self.lora_config, "lora_extra_vocab_size"):
++                    lora_request_kwargs["target_embedding_padding"] = (
++                        self.vocab_size + self.lora_config.lora_extra_vocab_size
++                    )
+                 if isinstance(lora_request, TensorLoRARequest):
+                     lora = self._lora_model_cls.from_lora_tensors(
+-                        lora_model_id=lora_request.lora_int_id,
+                         tensors=lora_tensors,
+-                        peft_helper=peft_helper,
+-                        device="cpu",
+-                        dtype=self.lora_config.lora_dtype,
+-                        embeddings=None,
+-                        target_embedding_padding=self.vocab_size + self.lora_config.lora_extra_vocab_size,
+-                        embedding_modules=self.embedding_modules,
+-                        embedding_padding_modules=self.embedding_padding_modules,
+-                        weights_mapper=hf_to_vllm_mapper
++                        **lora_request_kwargs,
+                     )
+                 else:
+                     lora = self._lora_model_cls.from_local_checkpoint(
+                         lora_path,
+                         expected_lora_modules,
+-                        peft_helper=peft_helper,
+-                        lora_model_id=lora_request.lora_int_id,
+-                        device="cpu",
+-                        dtype=self.lora_config.lora_dtype,
+-                        target_embedding_padding=self.vocab_size +
+-                        self.lora_config.lora_extra_vocab_size,
+-                        embedding_modules=self.embedding_modules,
+-                        embedding_padding_modules=self.embedding_padding_modules,
+-                        weights_mapper=hf_to_vllm_mapper)
+-            except Exception as e:
+-                raise e
+-
+-            if lora.extra_vocab_size > self.lora_config.lora_extra_vocab_size:
+-                raise ValueError(f"LoRA added vocab size {lora.extra_vocab_size} "
+-                                f"is greater than lora_extra_vocab_size "
+-                                f"{self.lora_config.lora_extra_vocab_size}.")
++                        **lora_request_kwargs,
++                    )
++            except Exception:
++                raise
++
++            if getattr(lora, "extra_vocab_size", 0) > getattr(self.lora_config, "lora_extra_vocab_size", 0):
++                raise ValueError(
++                    f"LoRA added vocab size {lora.extra_vocab_size} is greater than lora_extra_vocab_size "
++                    f"{self.lora_config.lora_extra_vocab_size}."
++                )
+             return lora
+ 
+         def do_hijack(target_cls, target_method_name, hooking_method):
+--- author/verl/utils/fsdp_utils.py
+
++++ active/verl/utils/fsdp_utils.py
+
+@@ -110,9 +110,12 @@
+
+         for layer_class in fsdp_transformer_layer_cls_to_wrap:
+             transformer_cls = get_module_class_from_name(module, layer_class)
+             if transformer_cls is None:
+-                raise Exception("Could not find the transformer layer class to wrap in the model.")
+-            else:
+-                transformer_cls_to_wrap.add(transformer_cls)
++                # Some Transformers configs list vision blocks in _no_split_modules
++                # even when the loaded text-only model has no such class.
++                continue
++            transformer_cls_to_wrap.add(transformer_cls)
++        if not transformer_cls_to_wrap:
++            raise Exception("Could not find the transformer layer class to wrap in the model.")
+ 
+         transformer_policy = functools.partial(
+             transformer_auto_wrap_policy,
+@@ -128,6 +131,9 @@
+
+ 
+ @torch.no_grad()
+ def offload_fsdp_model_to_cpu(model: FSDP, empty_cache: bool = True):
++    from peft import PeftModel
++    if isinstance(model, PeftModel) and isinstance(model.get_base_model(), FSDPModule):
++        model = model.get_base_model()
+     if fsdp_version(model) == 2:
+         offload_fsdp2_model_to_cpu(model, empty_cache)
+         return
+@@ -151,14 +157,16 @@
+
+ 
+ @torch.no_grad()
+ def offload_fsdp2_model_to_cpu(model, empty_cache: bool = True):
+-    for param in model.parameters():
+-        param.data = param.data.to(torch.device("cpu"), non_blocking=True)
++    model.cpu()
+     if empty_cache:
+         get_torch_device().empty_cache()
+ 
+ 
+ @torch.no_grad()
+ def load_fsdp_model_to_gpu(model: FSDP):
++    from peft import PeftModel
++    if isinstance(model, PeftModel) and isinstance(model.get_base_model(), FSDPModule):
++        model = model.get_base_model()
+     if fsdp_version(model) == 2:
+         load_fsdp2_model_to_gpu(model)
+         return
+@@ -179,9 +187,8 @@
+
+ 
+ @torch.no_grad()
+ def load_fsdp2_model_to_gpu(model):
+-    device = torch.cuda.current_device()
+-    for param in model.parameters():
+-        param.data = param.data.to(device, non_blocking=True)
++    device = get_torch_device().current_device()
++    model.to(device)
+ 
+ 
+ @torch.no_grad()
+@@ -431,6 +438,8 @@
+
+ 
+     if isinstance(fsdp_transformer_layer_cls_to_wrap, str):
+         fsdp_transformer_layer_cls_to_wrap = [fsdp_transformer_layer_cls_to_wrap]
++    elif isinstance(fsdp_transformer_layer_cls_to_wrap, (set, tuple)):
++        fsdp_transformer_layer_cls_to_wrap = list(fsdp_transformer_layer_cls_to_wrap)
+ 
+     assert len(fsdp_transformer_layer_cls_to_wrap) > 0 and fsdp_transformer_layer_cls_to_wrap[0] is not None
+ 
+--- author/verl/utils/checkpoint/fsdp_checkpoint_manager.py
+
++++ active/verl/utils/checkpoint/fsdp_checkpoint_manager.py
+
+@@ -194,7 +194,14 @@
+
+             if unwrap_model.can_generate() and hasattr(model_config, "name_or_path") and model_config.name_or_path:
+                 # Some model's name_or_path is empty if not initialized from pretrained,
+                 # in this cases, we don't save generation config.
+-                generation_config = GenerationConfig.from_pretrained(model_config.name_or_path)
++                # Qwen3.5 has no separate generation_config.json. Reuse HF's
++                # already loaded model configuration for this local-file case.
++                if os.path.isdir(model_config.name_or_path) and not os.path.isfile(os.path.join(model_config.name_or_path, "generation_config.json")):
++                    generation_config = getattr(unwrap_model, "generation_config", None)
++                    if generation_config is None:
++                        generation_config = GenerationConfig.from_model_config(model_config)
++                else:
++                    generation_config = GenerationConfig.from_pretrained(model_config.name_or_path)
+                 generation_config.save_pretrained(local_path)
+             else:
+                 generation_config = None
+--- author/examples/data_preprocess/prepare.py
+
++++ active/examples/data_preprocess/prepare.py
+
+@@ -29,6 +29,9 @@
+
+     parser.add_argument('--train_data_size', default=256, type=int)
+     parser.add_argument('--val_data_size', default=256, type=int)
+ 
++    parser.add_argument('--metadata_only', action='store_true',
++                        help='Create text modality/count metadata without Geometry3k')
++
+     args = parser.parse_args()
+     print(f"processing data for mode: {args.mode}")
+     args.local_dir = os.path.join(args.local_dir, args.mode)
+@@ -40,7 +43,15 @@
+
+     See details: https://github.com/langfengQ/verl-agent?tab=readme-ov-file#2-data-preparation
+     """
+ 
+-    dataset = datasets.load_dataset(data_source)
++    if args.metadata_only:
++        if args.mode != 'text':
++            parser.error('--metadata_only supports only text modality')
++        dataset = datasets.DatasetDict({
++            split: datasets.Dataset.from_dict({'problem': [''] * size, 'images': [None] * size})
++            for split, size in [('train', args.train_data_size), ('test', args.val_data_size)]
++        })
++    else:
++        dataset = datasets.load_dataset(data_source)
+ 
+     train_dataset = dataset['train'].select(range(args.train_data_size))
+     test_dataset = dataset['test'].select(range(args.val_data_size))
+--- author/agent_system/environments/env_manager.py
+
++++ active/agent_system/environments/env_manager.py
+
+@@ -532,12 +532,15 @@
+
+         full_text_obs = self.build_text_obs(text_obs, init=True)
+         return {'text': full_text_obs, 'image': None, 'anchor': text_obs}, infos
+     
+-    def step(self, text_actions: List[str]):
++    def step(self, text_actions: List[str], active_masks=None):
+         actions, valids = self.projection_f(text_actions)
+ 
+-        text_obs, rewards, dones, infos = self.envs.step(actions)
+-
+-        self.memory.store({'text_obs': text_obs, 'action': actions})
++        if active_masks is None:
++            text_obs, rewards, dones, infos = self.envs.step(actions)
++        else:
++            text_obs, rewards, dones, infos = self.envs.step(actions, active_masks=active_masks)
++
++        self.memory.store({'text_obs': text_obs, 'action': actions}, active_masks=active_masks)
+         self.pre_text_obs = text_obs
+ 
+         full_text_obs = self.build_text_obs(text_obs)
+@@ -581,8 +584,9 @@
+
+                     env_obs = record["text_obs"]
+                     action_history += f"\nCode {step_number}: \n{action}\n\nResult {step_number}: \n{env_obs}\n"
+                 
+-                if len(action_history) > 10000:
+-                    action_history = "... " + action_history[-10000:]
++                history_char_limit = self.config.env.get("appworld_history_char_limit", 10000)
++                if history_char_limit is not None and len(action_history) > history_char_limit:
++                    action_history = "... " + action_history[-history_char_limit:]
+ 
+                 obs = APPWORLD_TEMPLATE.format(
+                         supervisor_first_name=self.supervisors[i]['first_name'],
+@@ -687,8 +691,8 @@
+
+         return envs, val_envs
+     elif "appworld" in config.env.env_name.lower():
+         from agent_system.environments.env_package.appworld import build_appworld_envs, appworld_projection
+-        _envs = build_appworld_envs(dataset_name='train', seed=config.env.seed, env_num=config.data.train_batch_size, group_n=group_n, start_server_id=0, resources_per_worker=resources_per_worker)
+-        _val_envs = build_appworld_envs(dataset_name='test_normal', seed=config.env.seed + 1000, env_num=config.data.val_batch_size, group_n=1, start_server_id=config.data.train_batch_size*group_n, resources_per_worker=resources_per_worker)
++        _envs = build_appworld_envs(dataset_name=config.env.get('appworld_train_dataset', 'train'), seed=config.env.seed, env_num=config.data.train_batch_size, group_n=group_n, start_server_id=0, resources_per_worker=resources_per_worker, port_file=config.env.get('appworld_port_file', 'appworld_ports.ports'), max_interactions=config.env.get('appworld_max_interactions', 50))
++        _val_envs = build_appworld_envs(dataset_name=config.env.get('appworld_val_dataset', 'test_normal'), seed=config.env.seed + 1000, env_num=config.data.val_batch_size, group_n=1, start_server_id=config.data.train_batch_size*group_n, resources_per_worker=resources_per_worker, port_file=config.env.get('appworld_port_file', 'appworld_ports.ports'), max_interactions=config.env.get('appworld_max_interactions', 50))
+         
+         projection_f = partial(appworld_projection)
+         envs = AppWorldEnvironmentManager(_envs, projection_f, config)
+--- author/agent_system/environments/env_package/sokoban/__init__.py
+
++++ active/agent_system/environments/env_package/sokoban/__init__.py
+
+@@ -1,17 +1,12 @@
+
+ # Copyright 2025 Nanyang Technological University (NTU), Singapore
+ # and the verl-agent (GiGPO) team.
+ #
+-# Licensed under the Apache License, Version 2.0 (the "License");
+-# you may not use this file except in compliance with the License.
+-# You may obtain a copy of the License at
+-#
+-#     http://www.apache.org/licenses/LICENSE-2.0
+-#
+-# Unless required by applicable law or agreed to in writing, software
+-# distributed under the License is distributed on an "AS IS" BASIS,
+-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-# See the License for the specific language governing permissions and
+-# limitations under the License.
++# Licensed under the Apache License, Version 2.0.
+ 
+ from .projection import sokoban_projection
+-from .envs import build_sokoban_envs
++
++
++def build_sokoban_envs(*args, **kwargs):
++    """Lazy import to avoid the upstream nested-package import cycle."""
++    from .envs import build_sokoban_envs as _build_sokoban_envs
++    return _build_sokoban_envs(*args, **kwargs)
+
+
+--- author/agent_system/environments/env_package/sokoban/sokoban/base.py
+
++++ active/agent_system/environments/env_package/sokoban/sokoban/base.py
+
+@@ -2,8 +2,12 @@
+
+ import re
+ from typing import Optional, List, Tuple, Any, Dict
+ from copy import deepcopy
+-from transformers import AutoTokenizer
++from typing import TYPE_CHECKING
++
+ import torch
++
++if TYPE_CHECKING:
++    from transformers import AutoTokenizer
+ 
+ class BaseEnv(ABC):
+     """
+@@ -96,7 +100,7 @@
+
+         envs: List['BaseEnv'], 
+         predictions: List[str], 
+         prediction_ids: torch.Tensor,
+-        tokenizer: AutoTokenizer,
++        tokenizer: "AutoTokenizer",
+     ) -> List[str]:
+         """
+         Execute predictions across multiple environments.
+--- author/agent_system/environments/env_package/sokoban/sokoban/env.py
+
++++ active/agent_system/environments/env_package/sokoban/sokoban/env.py
+
+@@ -5,7 +5,7 @@
+
+ from agent_system.environments.env_package.sokoban.sokoban.room_utils import generate_room
+ import copy
+ 
+-from agent_system.environments.env_package.sokoban.sokoban.base import BaseDiscreteActionEnv
++from .base import BaseDiscreteActionEnv
+ 
+ class SokobanEnv(BaseDiscreteActionEnv, GymSokobanEnv):
+ 
+--- author/agent_system/environments/env_package/appworld/envs.py
+
++++ active/agent_system/environments/env_package/appworld/envs.py
+
+@@ -156,7 +156,7 @@
+
+             )
+             self.workers.append(worker)
+ 
+-    def step(self, actions):
++    def step(self, actions, active_masks=None):
+         """
+         actions: Must be a list with length equal to self.num_processes, 
+         each sent to the corresponding worker.
+@@ -166,14 +166,19 @@
+
+         """
+         assert len(actions) == self.num_processes, "The length of actions must match the number of processes."
+ 
+-        # Send step commands to all workers
+-        futures = []
+-        for i, worker in enumerate(self.workers):
+-            future = worker.step.remote(actions[i])
+-            futures.append(future)
+-
+-        # Collect results
+-        results = ray.get(futures)
++        # Preserve the default all-worker path. With a mask, only real
++        # active actions reach AppWorld; inactive slots reuse their last actual
++        # observation/info and carry zero reward outside the collector mask.
++        indices = range(self.num_processes) if active_masks is None else np.flatnonzero(active_masks)
++        futures = [self.workers[i].step.remote(actions[i]) for i in indices]
++        received = ray.get(futures)
++        if active_masks is None:
++            results = received
++        else:
++            results = [(obs, 0.0, True, dict(info)) for obs, info in self._last_observations]
++            for i, result in zip(indices, received):
++                results[i] = result
++        self._last_observations = [(obs, dict(info)) for obs, _, _, info in results]
+         
+         obs_list = []
+         reward_list = []
+@@ -206,6 +211,7 @@
+
+ 
+         # Collect results
+         results = ray.get(futures)
++        self._last_observations = [(obs, dict(info)) for obs, info in results]
+         
+         obs_list = []
+         info_list = []
+@@ -242,6 +248,7 @@
+
+                         group_n=1,
+                         start_server_id=0,
+                         resources_per_worker={"num_cpus": 0.1},
++                        port_file="appworld_ports.ports",
+                         ):
+ 
+     return AppWorldEnvs(
+@@ -251,5 +258,6 @@
+
+         env_num=env_num,
+         group_n=group_n,
+         start_server_id=start_server_id,
+-        resources_per_worker=resources_per_worker
++        resources_per_worker=resources_per_worker,
++        port_file=port_file
+     )
+
+--- author/agent_system/environments/env_package/webshop/envs.py
+
++++ active/agent_system/environments/env_package/webshop/envs.py
+
+@@ -34,7 +34,10 @@
+
+         sys.path.append(project_root)
+         from web_agent_site.envs import WebAgentTextEnv  # noqa: WPS433 (runtime import)
+         
++        env_kwargs = dict(env_kwargs)
+         env_kwargs['seed'] = seed
++        # Princeton's legacy Gym environment has no action_space.
++        env_kwargs.setdefault('disable_env_checker', True)
+         self.env = gym.make('WebAgentTextEnv-v0', **env_kwargs)
+     
+     def step(self, action):
+
+--- author/agent_system/multi_turn_rollout/utils.py
+
++++ active/agent_system/multi_turn_rollout/utils.py
+
+@@ -21,7 +21,7 @@
+
+ from PIL import Image
+ from verl import DataProto
+ 
+-def to_list_of_dict(batch: DataProto) -> list[dict]:
++def to_list_of_dict(batch: DataProto, *, clone_tensors: bool = False) -> list[dict]:
+     tensors = batch.batch
+     non_tensor = batch.non_tensor_batch
+     batch_size = len(tensors['input_ids'])
+@@ -29,7 +29,7 @@
+
+     for bs in range(batch_size):
+         save_dict = dict()
+         for key, val in tensors.items():
+-            save_dict[key] = val[bs]
++            save_dict[key] = val[bs].clone() if clone_tensors else val[bs]
+         for key, val in non_tensor.items():
+             save_dict[key] = val[bs]
+         save_list.append(save_dict)
+--- author/agent_system/multi_turn_rollout/rollout_loop.py
+
++++ active/agent_system/multi_turn_rollout/rollout_loop.py
+
+@@ -129,7 +129,21 @@
+
+         else:
+             raw_prompt = prompt_with_chat_template
+         
+-        input_ids, attention_mask = verl_F.tokenize_and_postprocess_data(prompt=prompt_with_chat_template,
++        raw_prompt_ids = self.tokenizer.encode(raw_prompt, add_special_tokens=False)
++        context_budget_exceeded = (
++            not is_multi_modal
++            and self.config.env.get("context_budget_action", "error") == "end_episode"
++            and len(raw_prompt_ids) > self.config.data.max_prompt_length
++        )
++        if self.config.env.get("context_budget_action", "error") == "end_episode":
++            row_dict["context_budget_tokens"] = len(raw_prompt_ids) if context_budget_exceeded else 0
++        # An inert transport row, not a truncated history. The collector masks it
++        # before generation and before the environment receives any action.
++        if context_budget_exceeded:
++            raw_prompt_ids = []
++        prompt_for_model = "" if context_budget_exceeded else prompt_with_chat_template
++
++        input_ids, attention_mask = verl_F.tokenize_and_postprocess_data(prompt=prompt_for_model,
+                                                                             tokenizer=self.tokenizer,
+                                                                             max_length=self.config.data.max_prompt_length,
+                                                                             pad_token_id=self.tokenizer.pad_token_id,
+@@ -158,7 +172,6 @@
+
+         else:
+             position_ids = compute_position_id_with_mask(attention_mask)
+ 
+-        raw_prompt_ids = self.tokenizer.encode(raw_prompt, add_special_tokens=False)
+         if len(raw_prompt_ids) > self.config.data.max_prompt_length:
+             if self.config.data.truncation == "left":
+                 raw_prompt_ids = raw_prompt_ids[-self.config.data.max_prompt_length :]
+@@ -253,6 +266,18 @@
+
+             DataProto: Collected and organized trajectory data
+         """
+         batch_size = len(total_batch_list)
++
++        if str(self.config.algorithm.adv_estimator) == "deltatrace":
++            for rows in total_batch_list:
++                for row in rows:
++                    if not row["active_masks"]:
++                        continue
++                    for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):
++                        value = row.get(name)
++                        if not isinstance(value, torch.Tensor) or value.shape != row["responses"].shape:
++                            raise RuntimeError(f"{name} must align with original response tokens")
++                        if not torch.isfinite(value).all():
++                            raise RuntimeError(f"{name} contains non-finite values")
+ 
+         success_rate = {}
+         for key, value in success.items():
+@@ -334,8 +359,21 @@
+
+ 
+             batch = self.preprocess_batch(gen_batch=gen_batch, obs=obs)
+ 
++            if self.config.env.get("context_budget_action", "error") == "end_episode":
++                exceeded = batch.non_tensor_batch.pop("context_budget_tokens")
++                newly_stopped = active_masks & (exceeded > 0)
++                if newly_stopped.any():
++                    print(f"[rollout] phase=context_budget_end step={_step + 1} "
++                          f"indices={np.flatnonzero(newly_stopped).tolist()} "
++                          f"prompt_tokens={exceeded[newly_stopped].tolist()} "
++                          f"prompt_cap={self.config.data.max_prompt_length}", flush=True)
++                is_done = np.logical_or(is_done, newly_stopped)
++                active_masks = np.logical_not(is_done)
++                if is_done.all():
++                    break
++
+             batch_keys_to_pop = ["input_ids", "attention_mask", "position_ids"]
+-            non_tensor_batch_keys_to_pop = ["raw_prompt_ids"]
++            non_tensor_batch_keys_to_pop = []
+             if "multi_modal_data" in batch.non_tensor_batch:
+                 non_tensor_batch_keys_to_pop.append("multi_modal_data")
+             if "raw_prompt" in batch.non_tensor_batch:
+@@ -348,21 +386,43 @@
+
+             )
+ 
+             batch_input.meta_info = gen_batch.meta_info
++            if str(self.config.algorithm.adv_estimator) == "deltatrace":
++                batch_input.non_tensor_batch["rollout_active_mask"] = active_masks
++
+ 
+             # pad to be divisible by dp_size
+             batch_input_padded, pad_size = pad_dataproto_to_divisor(batch_input, actor_rollout_wg.world_size)
++            if str(self.config.algorithm.adv_estimator) == "deltatrace":
++                from time import perf_counter
++                from resource import getrusage, RUSAGE_SELF
++                _dt_round_started = perf_counter()
++                print(f"[DT rollout] phase=generation_start step={_step + 1}/{self.config.env.max_steps} "
++                      f"active={int(active_masks.sum())}/{batch_size} "
++                      f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
+             batch_output_padded = actor_rollout_wg.generate_sequences(batch_input_padded)
+             # # unpad
+             batch_output = unpad_dataproto(batch_output_padded, pad_size=pad_size)
++            if str(self.config.algorithm.adv_estimator) == "deltatrace":
++                _dt_generated = int(batch_output.batch["attention_mask"][
++                    :, -batch_output.batch["responses"].shape[-1]:].sum().item())
++                _dt_seconds = perf_counter() - _dt_round_started
++                print(f"[DT rollout] phase=generation_end step={_step + 1} "
++                      f"seconds={_dt_seconds:.3f} generated_tokens={_dt_generated} "
++                      f"tokens_per_second={_dt_generated / _dt_seconds:.3f} "
++                      f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
++
+ 
+             batch.non_tensor_batch['uid'] = uid_batch
+             batch.non_tensor_batch['traj_uid'] = traj_uid
++            batch.non_tensor_batch['env_step'] = np.full(batch_size, _step, dtype=np.int64)
+ 
+             batch = batch.union(batch_output)
+             
+             text_actions = self.tokenizer.batch_decode(batch.batch['responses'], skip_special_tokens=True)
+-            
+-            next_obs, rewards, dones, infos = envs.step(text_actions)
++            if self.config.env.get("context_budget_action", "error") == "end_episode":
++                next_obs, rewards, dones, infos = envs.step(text_actions, active_masks=active_masks)
++            else:
++                next_obs, rewards, dones, infos = envs.step(text_actions)
+ 
+             
+             if len(rewards.shape) == 2:
+@@ -388,7 +448,21 @@
+
+             batch.non_tensor_batch['active_masks'] = torch_to_numpy(active_masks, is_object=True)
+             
+             # Update episode lengths for active environments
+-            batch_list: list[dict] = to_list_of_dict(batch)
++            batch_list: list[dict] = to_list_of_dict(
++                batch, clone_tensors=str(self.config.algorithm.adv_estimator) == "deltatrace"
++            )
++
++            if str(self.config.algorithm.adv_estimator) == "deltatrace":
++                from copy import deepcopy
++                for event_index, row in enumerate(batch_list):
++                    row["dt_env_outcome"] = {
++                        "observation": deepcopy({
++                            key: None if value is None else value[event_index]
++                            for key, value in next_obs.items()
++                        }),
++                        "info": deepcopy(infos[event_index]),
++                        "done": bool(dones[event_index]),
++                    }
+ 
+             for i in range(batch_size):
+                 total_batch_list[i].append(batch_list[i])
+@@ -526,6 +600,34 @@
+
+         assert len(total_batch_list) == len(totoal_tool_callings)
+         
+ 
++        # Preserve each factual reward event and each generated token. The
++        # producer returns sampled Q/V and advantages, with no O-credit routing.
++        if str(self.config.algorithm.adv_estimator) == "deltatrace":
++            from time import perf_counter
++            from resource import getrusage, RUSAGE_SELF
++            _dt_rpc_started = perf_counter()
++            print(f"[DT rollout] phase=dt_rpc_start episodes={len(total_batch_list)} "
++                  f"rows={sum(map(len, total_batch_list))} "
++                  f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
++            dt_values = actor_rollout_wg.compute_dt_token_advantages(
++                total_batch_list,
++                total_episode_rewards.tolist(),
++                eos_token_id=int(self.tokenizer.eos_token_id),
++                pad_token_id=int(self.tokenizer.pad_token_id),
++            )
++            print(f"[DT rollout] phase=dt_rpc_end seconds={perf_counter() - _dt_rpc_started:.3f} "
++                  f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
++            if isinstance(dt_values, list) and len(dt_values) == 1:
++                dt_values = dt_values[0]
++            if len(dt_values) != len(total_batch_list):
++                raise RuntimeError("owner DT returned the wrong episode count")
++            for rows, values in zip(total_batch_list, dt_values):
++                if len(rows) != len(values):
++                    raise RuntimeError("owner DT returned the wrong row count")
++                for row, value in zip(rows, values):
++                    for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):
++                        row[name] = value[name]
++
+         # Create trajectory data
+         gen_batch_output: DataProto = self.gather_rollout_data(
+             total_batch_list=total_batch_list,
+--- author/agent_system/memory/memory.py
+
++++ active/agent_system/memory/memory.py
+
+@@ -38,7 +38,7 @@
+
+         self.batch_size = batch_size
+         self.keys = None
+ 
+-    def store(self, record: Dict[str, List[Any]]):
++    def store(self, record: Dict[str, List[Any]], active_masks=None):
+         """
+         Store a new record (one step of history) for each environment instance.
+ 
+@@ -53,6 +53,8 @@
+
+         assert self.keys == list(record.keys())
+ 
+         for env_idx in range(self.batch_size):
++            if active_masks is not None and not active_masks[env_idx]:
++                continue
+             self._data[env_idx].append({k: record[k][env_idx] for k in self.keys})
+ 
+     def fetch(

@@ -1,0 +1,797 @@
+{
+  "status": "recovered_appworld_rollout_running_dt_numerical_audit_open",
+  "recorded_at": "2026-09-25T10:42:00+08:00",
+  "method_specification": "experiments/rl/PLAN.md",
+  "method_changed": false,
+  "production_commit": "c88a749f47448362d5d684e8364319c0af009449",
+  "remote_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922",
+  "receipt_directory": "receipts/rollout-major-cost",
+  "appworld_transport": {
+    "owner_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5/src/appworld/environment.py",
+    "url": "http://127.0.0.1:45603",
+    "cases": [
+      {
+        "path": "original",
+        "seconds": 1.0017023459076881,
+        "normal": "42\n",
+        "observation": null,
+        "error": "ReadTimeout",
+        "client_interactions_added": 0,
+        "next_observation": "49\n",
+        "task_completed": false,
+        "official_success": false
+      },
+      {
+        "path": "candidate",
+        "seconds": 1.1022620787844062,
+        "normal": "42\n",
+        "observation": "Execution failed. Traceback:\n  File \"<python-input>\", line 2, in <module>\n    page_playlists = apis.spotify.show_playlist_library\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nException: Execution timed out after 1 seconds.",
+        "error": null,
+        "client_interactions_added": 1,
+        "next_observation": "49\n",
+        "task_completed": false,
+        "official_success": false
+      }
+    ],
+    "status": "passed"
+  },
+  "appworld_recovery": {
+    "started_unix": 1790302089.291105,
+    "shell_pid": 3646994,
+    "driver_pid": 3646996,
+    "gpu": 6,
+    "release": "releases/c88a749",
+    "run": "runs/author-2ee7ab4-paper/AppWorld",
+    "ray_session": "/tmp/dt-rl-mx-20260922/ray/session_2026-09-25_10-09-21_999618_3646996",
+    "last_observed_generation_step": 7,
+    "completed_updates_this_restart": 0,
+    "claim": "Generation resumed; full rollout and update not yet validated.",
+    "current_interaction": 8,
+    "current_active_trajectories": 233
+  },
+  "official_ownership": {
+    "source": "https://github.com/langfengQ/verl-agent/tree/20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "files_checked": 26,
+    "identical_ignoring_line_endings": [
+      "verl/trainer/ppo/core_algos.py",
+      "agent_system/environments/env_package/sokoban/envs.py",
+      "agent_system/environments/env_package/sokoban/projection.py",
+      "agent_system/environments/env_package/appworld/projection.py",
+      "agent_system/environments/env_package/webshop/projection.py"
+    ],
+    "worker_method_ast_checks": {
+      "appworld": [
+        {
+          "class": "AppWorldWorker",
+          "method": "reset",
+          "same": true
+        },
+        {
+          "class": "AppWorldWorker",
+          "method": "step",
+          "same": true
+        },
+        {
+          "class": "AppWorldEnvs",
+          "method": "step",
+          "same": false
+        },
+        {
+          "class": "AppWorldEnvs",
+          "method": "reset",
+          "same": false
+        }
+      ],
+      "webshop": [
+        {
+          "class": "WebshopWorker",
+          "method": "step",
+          "same": true
+        },
+        {
+          "class": "WebshopWorker",
+          "method": "reset",
+          "same": true
+        },
+        {
+          "class": "WebshopMultiProcessEnv",
+          "method": "step",
+          "same": true
+        },
+        {
+          "class": "WebshopMultiProcessEnv",
+          "method": "reset",
+          "same": true
+        }
+      ],
+      "sokoban": [
+        {
+          "class": "SokobanWorker",
+          "method": "step",
+          "same": true
+        },
+        {
+          "class": "SokobanWorker",
+          "method": "reset",
+          "same": true
+        },
+        {
+          "class": "SokobanMultiProcessEnv",
+          "method": "step",
+          "same": true
+        },
+        {
+          "class": "SokobanMultiProcessEnv",
+          "method": "reset",
+          "same": true
+        }
+      ]
+    },
+    "scope": "Fresh pinned upstream source compared to active files. Active tree is patched upstream, not pristine. No second PPO loss, task reward function or task action parser found in the checked active path.",
+    "active_patches": [
+      "Transformers5/Qwen3.5 imports, model ABI and chat EOS",
+      "FSDP2 CPU offload, LoRA adapter synchronization through native vLLM loader",
+      "Native response-head row selection and shared left-padding trimming",
+      "DT RPC and token-aligned Q/V/A seam into original actor objective",
+      "Collector active row filtering; AppWorld original vector/memory inactive mask",
+      "User-approved AppWorld full-history and per-episode context-budget ending",
+      "AppWorld execute HTTP deadline race repair"
+    ],
+    "inactive_paths": "HF rollout and critic compatibility changes exist in the tree, but current jobs use vLLM and no critic."
+  },
+  "settings_differences": {
+    "common": "Qwen3.5-9B, EOS DT advantages, LoRA rank1/alpha2, actor/DT minibatch4, max_total_tokens32768, gamma1; these are current experiment adaptations.",
+    "WebShop": "Author 4096 prompt/512 response/history2; current4096/1024/history2. Budget150x128 matches; score reproduction not claimed.",
+    "Sokoban": "Author visual Qwen2.5-VL-3B,1024/512; current text Qwen3.5-9B,1024/1024 using original text renderer. Budget150x256 and original one-box process rewards match. Modality/model differ.",
+    "AppWorld": "Budget200x240 follows LOOP. Environment uses pinned VERL AppWorldWorker success10/0, not LOOP test-fraction reward. User-approved full history40/no char truncation/32k episode stop differs from author VERL last2/10000char; no original-paper score claim.",
+    "quality_claim": "No claim of unchanged task performance from source/interface checks alone."
+  },
+  "contract_tests": {
+    "passed": 46,
+    "file": "recovery-contract-tests.log",
+    "scope": "Q/V composition, reward event readout, context-budget and owner AppWorld history interfaces."
+  },
+  "kernel_checks": {
+    "scope": "Call pinned FA/FLA tests unchanged; do not implement another tolerance.\n\nThe selected BF16 shapes exercise full/variable-length FA and Qwen's GDN head\ndimension. This records operator checks, not a whole-PPO error certificate.\n",
+    "source_sha256": {
+      "test_flash_attn_v263.py": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+      "test_gated_delta_v041.py": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+      "fla_utils_v041.py": "03e3e41a62741d45913a2d2d35de630aaba13dcbb0fb1e8c1f7904446a688cf1"
+    },
+    "cases": [
+      {
+        "function": "test_flash_attn_output",
+        "parameters": {
+          "seqlen_q": 128,
+          "seqlen_k": 128,
+          "d": 256,
+          "dropout_p": 0.0,
+          "causal": true,
+          "local": false,
+          "alibi": false,
+          "deterministic": true,
+          "mha_type": "gqa",
+          "dtype": "torch.bfloat16",
+          "kvpacked": false,
+          "softcap": 0.0
+        },
+        "status": "passed",
+        "seconds": 0.7727285018190742
+      },
+      {
+        "function": "test_flash_attn_varlen_output",
+        "parameters": {
+          "seqlen_q": 128,
+          "seqlen_k": 128,
+          "d": 256,
+          "dropout_p": 0.0,
+          "causal": true,
+          "local": false,
+          "alibi": false,
+          "deterministic": true,
+          "mha_type": "gqa",
+          "dtype": "torch.bfloat16",
+          "kvpacked": false,
+          "softcap": 0.0
+        },
+        "status": "passed",
+        "seconds": 0.014690935611724854
+      },
+      {
+        "function": "test_chunk",
+        "parameters": {
+          "B": 1,
+          "T": 128,
+          "H": 32,
+          "D": 128,
+          "scale": 0.08838834764831845,
+          "gate_logit_normalizer": 1.0,
+          "mask_p": 0.0,
+          "use_qk_l2norm_in_kernel": true,
+          "dtype": "torch.bfloat16"
+        },
+        "status": "failed",
+        "error": "              dq diff: 0.000549 ratio: 0.008965",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c88a749/experiments/rl/verify_official_kernel_tolerances.py\", line 69, in main\n    fn(**params)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py\", line 260, in test_chunk\n    assert_close('dq', ref_dq, tri_dq, 0.008)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/utils.py\", line 95, in assert_close\n    assert error_rate < ratio, msg\n           ^^^^^^^^^^^^^^^^^^\nAssertionError:               dq diff: 0.000549 ratio: 0.008965\n",
+        "seconds": 27.5486441552639
+      },
+      {
+        "function": "test_flash_attn_output",
+        "parameters": {
+          "seqlen_q": 447,
+          "seqlen_k": 447,
+          "d": 256,
+          "dropout_p": 0.0,
+          "causal": true,
+          "local": false,
+          "alibi": false,
+          "deterministic": true,
+          "mha_type": "gqa",
+          "dtype": "torch.bfloat16",
+          "kvpacked": false,
+          "softcap": 0.0
+        },
+        "status": "passed",
+        "seconds": 0.02515440806746483
+      },
+      {
+        "function": "test_flash_attn_varlen_output",
+        "parameters": {
+          "seqlen_q": 447,
+          "seqlen_k": 447,
+          "d": 256,
+          "dropout_p": 0.0,
+          "causal": true,
+          "local": false,
+          "alibi": false,
+          "deterministic": true,
+          "mha_type": "gqa",
+          "dtype": "torch.bfloat16",
+          "kvpacked": false,
+          "softcap": 0.0
+        },
+        "status": "passed",
+        "seconds": 0.011929640546441078
+      },
+      {
+        "function": "test_chunk",
+        "parameters": {
+          "B": 1,
+          "T": 447,
+          "H": 32,
+          "D": 128,
+          "scale": 0.08838834764831845,
+          "gate_logit_normalizer": 1.0,
+          "mask_p": 0.0,
+          "use_qk_l2norm_in_kernel": true,
+          "dtype": "torch.bfloat16"
+        },
+        "status": "failed",
+        "error": "              dq diff: 0.000610 ratio: 0.008983",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c88a749/experiments/rl/verify_official_kernel_tolerances.py\", line 69, in main\n    fn(**params)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py\", line 260, in test_chunk\n    assert_close('dq', ref_dq, tri_dq, 0.008)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/utils.py\", line 95, in assert_close\n    assert error_rate < ratio, msg\n           ^^^^^^^^^^^^^^^^^^\nAssertionError:               dq diff: 0.000610 ratio: 0.008983\n",
+        "seconds": 0.5864618634805083
+      }
+    ],
+    "source_manifest": {
+      "test_flash_attn_v263.py": {
+        "url": "https://raw.githubusercontent.com/Dao-AILab/flash-attention/v2.6.3/tests/test_flash_attn.py",
+        "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py"
+      },
+      "test_gated_delta_v041.py": {
+        "url": "https://raw.githubusercontent.com/fla-org/flash-linear-attention/v0.4.1/tests/ops/test_gated_delta.py",
+        "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py"
+      },
+      "fla_utils_v041.py": {
+        "url": "https://raw.githubusercontent.com/fla-org/flash-linear-attention/v0.4.1/fla/utils.py",
+        "sha256": "03e3e41a62741d45913a2d2d35de630aaba13dcbb0fb1e8c1f7904446a688cf1",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/fla_utils_v041.py"
+      }
+    },
+    "fla_ci_warning_exemption": false,
+    "status": "failed"
+  },
+  "native_qwen_fla_backward": {
+    "checks": [
+      {
+        "name": "o",
+        "threshold": 0.005,
+        "rms_ratio": 0.0030476923648137446,
+        "max_abs": 0.0003330335021018982,
+        "status": "passed"
+      },
+      {
+        "name": "dq",
+        "threshold": 0.008,
+        "rms_ratio": 0.005095106103160919,
+        "max_abs": 0.0078125,
+        "status": "passed"
+      },
+      {
+        "name": "dk",
+        "threshold": 0.008,
+        "rms_ratio": 0.007418587329994336,
+        "max_abs": 0.015625,
+        "status": "passed"
+      },
+      {
+        "name": "dv",
+        "threshold": 0.008,
+        "rms_ratio": 0.006121123681598928,
+        "max_abs": 0.00146484375,
+        "status": "passed"
+      },
+      {
+        "name": "db",
+        "threshold": 0.02,
+        "rms_ratio": 0.006126912618721048,
+        "max_abs": 0.0006103515625,
+        "status": "passed"
+      },
+      {
+        "name": "dg",
+        "threshold": 0.02,
+        "rms_ratio": 0.003233354186050358,
+        "max_abs": 0.0012706518173217773,
+        "status": "passed"
+      }
+    ],
+    "scope": "Original FLA assertions on saved Qwen operands; no runtime or tolerance change.",
+    "original_fp16_case": "passed",
+    "shapes": [
+      [
+        2,
+        751,
+        32,
+        128
+      ],
+      [
+        2,
+        751,
+        32,
+        128
+      ],
+      [
+        2,
+        751,
+        32,
+        128
+      ],
+      [
+        2,
+        751,
+        32
+      ],
+      [
+        2,
+        751,
+        32
+      ]
+    ]
+  },
+  "dt_prefix_isolation": {
+    "scope": "Read-only DT comparison on recorded owner IDs and a completed actor checkpoint.\n\nNo environment reward or training update is generated here. The single-token\ncheck measures a fixed-text deletion endpoint, not full environment causality.\n",
+    "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/author-2ee7ab4-paper/Sokoban/checkpoints/global_step_1/actor",
+    "cases": [
+      {
+        "token_position": 453,
+        "token_id": 332,
+        "full_eos_dt": -0.16621449801213967,
+        "reward": -0.1,
+        "native_single_token_effect": 0.0
+      },
+      {
+        "token_position": 453,
+        "token_id": 332,
+        "full_eos_dt": -0.36508931625138474,
+        "reward": -0.1,
+        "native_single_token_effect": -0.15784907341003418
+      },
+      {
+        "token_position": 453,
+        "token_id": 332,
+        "full_eos_dt": -0.07749652829198975,
+        "reward": -0.1,
+        "native_single_token_effect": -0.25652432441711426
+      },
+      {
+        "token_position": 453,
+        "token_id": 332,
+        "full_eos_dt": -0.07382113809807814,
+        "reward": -0.1,
+        "native_single_token_effect": -0.019928812980651855
+      }
+    ],
+    "phase": "completed_diagnostic_no_new_acceptance_threshold",
+    "seconds": 143.38646552618593,
+    "rl_runtime": {
+      "seconds": 45.444416139274836,
+      "roots": [
+        -0.35518670082092285,
+        -0.9497806429862976,
+        -0.7786275744438171,
+        -1.0397390127182007
+      ],
+      "signed_sums": [
+        -0.38240878585492605,
+        -0.9306930701981508,
+        -0.7594532842110404,
+        -1.0256654587841443
+      ],
+      "signed_min": [
+        -0.16621449801213967,
+        -0.36508931625138474,
+        -0.07749652829198975,
+        -0.07382113809807814
+      ],
+      "signed_max": [
+        0.029970469192704147,
+        0.05115707433274015,
+        0.03742585102374573,
+        0.019538185582628115
+      ],
+      "finite": true,
+      "residuals": [
+        0.027222085034003196,
+        -0.019087572788146767,
+        -0.019174290232776725,
+        -0.014073553934056404
+      ]
+    },
+    "rl_without_prefix_reuse": {
+      "seconds": 9.553212745115161,
+      "roots": [
+        -0.447485089302063,
+        -0.8965927958488464,
+        -0.6803992390632629,
+        -1.0397390127182007
+      ],
+      "signed_sums": [
+        -0.4759656329325427,
+        -0.9227621067456762,
+        -0.6710452665856572,
+        -1.0021149158200835
+      ],
+      "signed_min": [
+        -0.05145991106668342,
+        -0.4014244670394297,
+        -0.31192009759806694,
+        -0.02805602956772104
+      ],
+      "signed_max": [
+        0.03186709194010802,
+        0.04884536712011479,
+        0.0421713797464455,
+        0.04827450128443669
+      ],
+      "finite": true,
+      "residuals": [
+        0.028480543630479693,
+        0.026169310896829723,
+        -0.009353972477605721,
+        -0.03762409689811719
+      ]
+    },
+    "official_default": {
+      "seconds": 22.484637732617557,
+      "roots": [
+        -0.447485089302063,
+        -0.8965927958488464,
+        -0.6803992390632629,
+        -1.0397390127182007
+      ],
+      "signed_sums": [
+        -0.47122902104863346,
+        -0.9238314298242013,
+        -0.6612737705446962,
+        -1.000972289271444
+      ],
+      "signed_min": [
+        -0.05052913164621253,
+        -0.4019245873610179,
+        -0.3127261129142822,
+        -0.028476263828602744
+      ],
+      "signed_max": [
+        0.03193990284712298,
+        0.04908232175492877,
+        0.04232832227938059,
+        0.04833991354107722
+      ],
+      "finite": true,
+      "residuals": [
+        0.023743931746570468,
+        0.027238633975354865,
+        -0.01912546851856678,
+        -0.03876672344675658
+      ]
+    },
+    "difference": {
+      "max_abs": 0.23522958462229246,
+      "relative_l2": 0.4963575156228388
+    },
+    "difference_without_prefix_reuse": {
+      "max_abs": 0.001090043560959389,
+      "relative_l2": 0.006097949147597175
+    }
+  },
+  "sokoban_event_accounting": {
+    "contrasts": 15385,
+    "duplicate_event_pairs": 0,
+    "past_reward_pairs": 0,
+    "expected_triangular_pairs": 15385,
+    "episodes": 256,
+    "dt_seconds": 33567.243837262504,
+    "batch_calls": 3847,
+    "seconds_per_batch": 8.725563773658045,
+    "nonfinite_reported_values": 0,
+    "extreme_signed": {
+      "episode_index": 16,
+      "source_step": 2,
+      "event_step": 12,
+      "context_tokens": 1479,
+      "compute_tokens": 1479,
+      "query_tokens": 171,
+      "root_effect": -0.6239602565765381,
+      "signed_sum": -0.7039558518309739,
+      "conservation_residual": 0.07999559525443578,
+      "conservation_tolerance": 0.02,
+      "conservation_verified": false,
+      "owner_batch_index": 450,
+      "source_log_ratio_min": -13.01597310268801,
+      "source_log_ratio_max": 2.9491741717970203
+    },
+    "negative_step_reward_advantage_from_extreme": 44953.5846932639
+  },
+  "open_items": [
+    "Native-prefix reuse changes endpoints and DT vectors in matched inputs. Disabling it improves short agreement with the official default, but the bounded32k test exposes large root/replay cost and memory growth; no production switch was made. Numerical source still under investigation.",
+    "Two randomized BF16 extensions fail the pinned FLA dQ threshold. Original FP16 parameter case and saved Qwen BF16 operands pass; neither erases the failures.",
+    "Large signed estimates and conservation discrepancies remain visible in formal training. Formula agreement alone is not estimation quality.",
+    "AppWorld recovered full rollout/update and matched task-quality validation remain pending."
+  ],
+  "backup_and_automation": "Not restarted during repair; no new backup success claim.",
+  "receipts": {
+    "appworld-transport-recovery.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/appworld-transport-recovery.json",
+      "sha256": "c8141811ed618eb499b3011931e1b9ca9db58db50c1488fe48c9547aeb7ed67f"
+    },
+    "author-native-operands-check.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/author-native-operands-check.json",
+      "sha256": "0f84167471d2cdbc78aec4c3f53a70c206d55536ee20b8ff21ecc328e86c7a2d"
+    },
+    "formal-dt-numerical-snapshot-20260925.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/formal-dt-numerical-snapshot-20260925.json",
+      "sha256": "559401ad6416b15c9462bb65136d0bd44545451af4a3934b98cd9afffb40243a"
+    },
+    "recovery-contract-tests.log": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-contract-tests.log",
+      "sha256": "b597124ed4bc52cf7a43727c80cffe4aa553d2a37ea428da60073b6eb4d9c30c"
+    },
+    "recovery-dt-event-numerics.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-dt-event-numerics.json",
+      "sha256": "adbb6db8b51a3dffad4be035d456ba58d3ebf61fdbc03e9748b278024d70d548"
+    },
+    "recovery-dt-prefix-isolation.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-dt-prefix-isolation.json",
+      "sha256": "e11d1f9441cdf8c458c6b658c8a9e2b8d0f28327d5282c2f6efcbbd84133d28f"
+    },
+    "recovery-fla-native-backward.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-fla-native-backward.json",
+      "sha256": "bcc3a42133b77d11b62117dc3850c95d7910fdca136830995df0e088a3e5bc1e"
+    },
+    "recovery-official-kernel-tests.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-official-kernel-tests.json",
+      "sha256": "e76c887ded01710b9e53f960adffafe73b0a4da16902dd4fe81f26c81185935a"
+    },
+    "recovery-owner-source-audit.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-owner-source-audit.json",
+      "sha256": "fa8d2cfecc552fe2efff86d86d2d756b9521ec5b3f53347e415115bfbb184de9"
+    },
+    "recovery-owner-source.diff": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-owner-source.diff",
+      "sha256": "f6082a1bd0ad0339858f2f17edb1433cb14a0a85acc02e66328a01f1b8c7d801"
+    },
+    "recovery-sokoban-event-accounting.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-sokoban-event-accounting.json",
+      "sha256": "3c3fa5769dc93de3a0162951e289c70ee244bf2f7a39dd2e01cdee30cef44b0e"
+    },
+    "recovery-prefix-capacity-stop.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-prefix-capacity-stop.json",
+      "sha256": "fbf809aa4fbe820c070de4aaee4ec742fac4f04cbeef0b2d087caab42caa8012"
+    },
+    "recovery-prefix-capacity.json": {
+      "local": "research/temporary/rl_recovery_20260925/receipts/recovery-prefix-capacity.json",
+      "sha256": "0d140958ec062364be6052765d2fbf977816b3c4f9926ba9f94ffae601b0b733"
+    }
+  },
+  "prefix_cost_diagnostic": {
+    "completed_cases": [
+      {
+        "length": 2048,
+        "capture_config": "prefix_on",
+        "seconds": 44.59278472233564,
+        "compiler_counter_delta": {
+          "stats": {
+            "calls_captured": 644,
+            "unique_graphs": 7
+          },
+          "inductor": {
+            "async_compile_cache_miss": 90,
+            "pattern_matcher_count": 1,
+            "pattern_matcher_nodes": 1,
+            "extern_calls": 33,
+            "fxgraph_cache_hit": 7,
+            "async_compile_cache_hit": 6
+          },
+          "aot_autograd": {
+            "total": 7,
+            "autograd_cache_hit": 7,
+            "ok": 7
+          }
+        },
+        "signed_difference_from_first": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "stage_seconds": {
+          "native_shared_prefix": 14.236623046875,
+          "fork_native_prefix_cache": 0.002647295951843262,
+          "native_root_with_CPU_checkpoints": 7.01028369140625,
+          "pack_actual_target_logits": 0.00015078400075435637,
+          "actual_root_FP32_logprob_diagnostic": 0.00048665601015090943,
+          "finite_seed": 0.010370559692382812,
+          "finite_final_norm": 0.3725775451660156,
+          "native_replay": 3.655578903198242,
+          "restore_mixer_captures": 0.2104878101348877,
+          "public_FA_LSE": 0.09522385644912722,
+          "finite_decoder": 18.81735485839844
+        }
+      },
+      {
+        "length": 2048,
+        "capture_config": "prefix_off",
+        "seconds": 11.109697903506458,
+        "compiler_counter_delta": {},
+        "signed_difference_from_first": {
+          "max_abs": 0.025751282663388095,
+          "relative_l2": 0.5386215179045368
+        },
+        "stage_seconds": {
+          "native_root_with_CPU_checkpoints": 2.6101279296875,
+          "pack_actual_target_logits": 0.00014617599546909332,
+          "actual_root_FP32_logprob_diagnostic": 0.00033535999059677125,
+          "finite_seed": 0.0018516479730606079,
+          "finite_final_norm": 0.0010035200119018555,
+          "native_replay": 3.6631923294067383,
+          "restore_mixer_captures": 0.32111206436157225,
+          "public_FA_LSE": 0.021760000228881835,
+          "finite_decoder": 4.102837997436524
+        }
+      },
+      {
+        "length": 2048,
+        "capture_config": "prefix_off",
+        "seconds": 10.280160956084728,
+        "compiler_counter_delta": {},
+        "signed_difference_from_first": {
+          "max_abs": 0.025751282663388095,
+          "relative_l2": 0.5386215179045368
+        },
+        "stage_seconds": {
+          "native_root_with_CPU_checkpoints": 1.891303466796875,
+          "pack_actual_target_logits": 0.0001576959937810898,
+          "actual_root_FP32_logprob_diagnostic": 0.00033484798669815064,
+          "finite_seed": 0.001876479983329773,
+          "finite_final_norm": 0.0010068479776382446,
+          "native_replay": 3.6052208633422853,
+          "restore_mixer_captures": 0.3001495018005371,
+          "public_FA_LSE": 0.021709056377410885,
+          "finite_decoder": 4.055543022155762
+        }
+      },
+      {
+        "length": 2048,
+        "capture_config": "prefix_on",
+        "seconds": 9.262285064905882,
+        "compiler_counter_delta": {},
+        "signed_difference_from_first": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "stage_seconds": {
+          "native_shared_prefix": 0.5125009765625,
+          "fork_native_prefix_cache": 0.0026396160125732424,
+          "native_root_with_CPU_checkpoints": 1.9794324951171876,
+          "pack_actual_target_logits": 0.00014924800395965576,
+          "actual_root_FP32_logprob_diagnostic": 0.00035635200142860414,
+          "finite_seed": 0.0019005440473556518,
+          "finite_final_norm": 0.0005854719877243042,
+          "native_replay": 2.7440074539184565,
+          "restore_mixer_captures": 0.18581682777404784,
+          "public_FA_LSE": 0.018134737968444826,
+          "finite_decoder": 3.5571753082275395
+        }
+      },
+      {
+        "length": 32768,
+        "capture_config": "prefix_on",
+        "seconds": 28.651464617811143,
+        "compiler_counter_delta": {},
+        "signed_difference_from_first": {
+          "max_abs": 0.0,
+          "relative_l2": 0.0
+        },
+        "stage_seconds": {
+          "native_shared_prefix": 14.2734609375,
+          "fork_native_prefix_cache": 0.013885184288024903,
+          "native_root_with_CPU_checkpoints": 2.3681591796875,
+          "pack_actual_target_logits": 0.00014771200716495514,
+          "actual_root_FP32_logprob_diagnostic": 0.00036556801199913024,
+          "finite_seed": 0.0022781438827514646,
+          "finite_final_norm": 0.0005765119791030884,
+          "native_replay": 3.9503047103881834,
+          "restore_mixer_captures": 0.36533375549316405,
+          "public_FA_LSE": 0.38439424133300776,
+          "finite_decoder": 7.5497950897216795
+        }
+      },
+      {
+        "length": 32768,
+        "capture_config": "prefix_off",
+        "seconds": 138.6357655087486,
+        "compiler_counter_delta": {
+          "stats": {
+            "calls_captured": 63,
+            "unique_graphs": 1
+          },
+          "inductor": {
+            "async_compile_cache_miss": 3,
+            "pattern_matcher_count": 6,
+            "pattern_matcher_nodes": 6,
+            "extern_calls": 6,
+            "fxgraph_cache_miss": 1,
+            "triton_bundler_save_kernel": 15
+          },
+          "aot_autograd": {
+            "total": 1,
+            "ok": 1,
+            "autograd_cache_guard_miss": 1,
+            "autograd_cache_miss": 1,
+            "autograd_cache_saved": 1
+          },
+          "aten_mm_info": {
+            "aten.bmm_1_s12*s25_12288_4096": 2,
+            "aten.bmm_1_s12*s25_4096_12288": 4
+          }
+        },
+        "signed_difference_from_first": {
+          "max_abs": 0.02771856152972771,
+          "relative_l2": 0.44692929938220693
+        },
+        "stage_seconds": {
+          "native_root_with_CPU_checkpoints": 45.4896796875,
+          "pack_actual_target_logits": 0.00016307200491428374,
+          "actual_root_FP32_logprob_diagnostic": 0.00036428800225257876,
+          "finite_seed": 0.00319052791595459,
+          "finite_final_norm": 0.015340031623840332,
+          "native_replay": 48.55788055419921,
+          "restore_mixer_captures": 5.4971072998046875,
+          "public_FA_LSE": 5.411555786132812,
+          "finite_decoder": 34.02270880126953
+        }
+      }
+    ],
+    "stop": {
+      "time": 1790303985.880991,
+      "pid": 4170765,
+      "reason": "The first full no-prefix32k call costs138.636s versus28.651s; phase ledger identifies the regression. Stop redundant second long call and final on repeat. Diagnostic only; no formal worker touched.",
+      "completed_cases": 6,
+      "full_acceptance": false
+    },
+    "total_seconds": 413.1695744721219,
+    "status": "stopped_remaining_repetitions_after_measured_regression",
+    "complete_32k_capacity_or_ppo_pass": false,
+    "remarks": "The no-prefix32k first call includes one new compiled graph; it is not a fully warmed speed ratio. Native root45.49s and replay48.56s account for most of the cost. Short repeated no-prefix results are equal. Production DT prefix setting unchanged. Device-used snapshots31.52GiB prefix-on and57.76GiB prefix-off are endpoint observations, not continuous peaks."
+  }
+}
