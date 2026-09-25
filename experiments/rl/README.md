@@ -19,8 +19,13 @@
 同形状 B8/1479 对照已完成，包含单 token 原模型删除、单 token DT 与联合
 EOS 分解。原前向缓存路径差异和有限传播偏差已分开记录；未把整网守恒阈值
 当成FA/FLA容差。新FP32 head与DT内native FLA FP16组合的精确32768/B4、
-原vLLM驻留、两次原PPO更新与LoRA同步容量检查通过。小规模WebShop两轮
-实际奖励均为0，因此其零梯度、零DT调用不能证明非零信用更新已经跑通。
+原vLLM驻留、两次原PPO更新与LoRA同步容量检查通过。Sokoban已完成两次
+非零更新及checkpoint2。14:24 WebShop后续两轮验证已退出0、checkpoint2完整，
+第二轮3个真实成功事件经过36个DT对照及原PPO更新，梯度约0.013、token优势
+范围[-0.712,+1.988]；此前全零小样本不能覆盖的路径现已实际运行。
+AppWorld首轮40轮交互与checkpoint1完成，但官方奖励全0，第二轮仍在运行；
+不能将其记为非零DT/PPO通过。新诊断记录保留原端点分数及最负归因所在
+minibatch的原始IDs，41项CPU接口测试通过，无额外模型前向或信用裁剪。
 
 以下为此前有时间戳的训练状态：
 截至 10:33 +08，`runs/author-2ee7ab4-paper` 的 WebShop 已完成 checkpoint9/150，
