@@ -12,6 +12,14 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 14:20数值后续：WebShop两轮小规模作业的第二轮已有3个真实非零事件、
+  36个对照/9次DT调用，d范围[-0.0688079,+0.2216415]，DT共94.326秒；
+  PPO更新与checkpoint2仍须确认。AppWorld首轮40轮交互结束但奖励全0，
+  不算非零信用路径通过。两个作业继续使用下述f0429ee，未热替换代码。
+  新诊断候选`candidates/credit-replay-audit-20260925`仅追加原端点分数与
+  最负d所在一个完整minibatch的原始IDs；41项CPU接口测试通过，不改公式。
+  旧AppWorld的OOM发生在rollout后DT阶段；额外服务尾部实测仅约1.87GiB，
+  不据其数量断言它们是内存大头，不调整原文批量。
 - 13:59独立验证作业启动：`runs/head-task-continuous-20260925/jobs.json`记录
   AppWorld GPU4/shell3203516、Webshop GPU5/shell3203519；分别每轮4/8轨迹、
   两轮、原40/15交互上限，均用已验证head发布`f0429ee`。14:02尚在原vLLM

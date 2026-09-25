@@ -92,8 +92,19 @@ def trace_token_attribution(
             "conservation_verified": conservation_verified,
         }
     )
+    # Preserve the owner's already-computed endpoint scores for replaying
+    # extreme log-ratios. Conservation alone cannot establish that an
+    # individual token implies a valid counterfactual event probability.
+    endpoint_scores = {}
+    for owner_key, audit_key in (("target_logp0", "reference_target_logp"),
+                                 ("target_logp1", "factual_target_logp")):
+        if owner_key in detail:
+            endpoint_scores[audit_key] = selection.sample_sums(torch.as_tensor(
+                detail[owner_key], device=selected_input_ids.device,
+                dtype=torch.float64)).tolist()
     if batch == 1:
         roots = torch.tensor([root_effect], device=selected_input_ids.device)
+        detail.update({key: values[0] for key, values in endpoint_scores.items()})
     else:
         # Read native target endpoint scores through the owner's packing map.
         # Do not use the batch sum as an individual event's root difference.
@@ -112,5 +123,6 @@ def trace_token_attribution(
                 attribution_batch_size=batch,
                 owner_batch_seconds=detail.get('complete_attribution_seconds_with_diagnostics'),
                 peak_allocated=detail.get('peak_allocated'), peak_reserved=detail.get('peak_reserved'),
+                **{key: values[index] for key, values in endpoint_scores.items()},
             ))
     return signed, roots, detail

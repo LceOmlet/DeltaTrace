@@ -166,3 +166,32 @@ LoRA同步。它使用明确标注的填充容量夹具，不是自然任务轨�
 分别每轮8/4轨迹，原15/40交互上限、32768上下文、DT/actor B4。它们复用
 已配置任务服务及`releases/f0429ee`，不属于正式原文预算，也不保证样本必有
 非零奖励；没有补造奖励。进程事实来源见[启动记录](receipts/head-task-continuous-jobs.json)。
+
+## 极值重放记录与实际任务后续
+
+历史最大尖峰缺少原始 IDs，不能靠去除特殊 token 后的文本恢复来保证重放。
+为修复这一已发生的诊断缺口，RL 边界现在透传正式 runner 已计算的事实/
+参考 target log-prob，并按原 `PackedAnswerTargets.sample_sums` 映射到各样本。
+每条 trace 追加极值 token 在当前 response 中的索引；每轮只保留最负 d 所在的
+一个完整 owner minibatch，包含未经 decode/encode 的 IDs、源区间、真实事件
+reward、目标类别 IDs 和原 signed。计算 padding 可由原 compute length 与 EOS
+完整恢复，batch 顺序保留。记录不用于裁剪、重新缩放或拒绝训练。
+
+这个改动只复用已产生的分数和 CPU token 数据，不增加模型调用，不改原
+Q/V/A、PPO 或 DT 内核。边界测试验证记录能重建实际送入 runner 的两端，
+并保留逐事件 expm1 结果；原传输/奖励组合一起共41项通过。见
+[测试回执](receipts/credit-replay-audit-tests.json)。首次本机测试因无Torch不能
+收集；首次远端测试未source现有MetaX环境而在MACA路径导入失败，保留失败
+回执，随后复用原env修正启动，不安装包。此处只声明CPU接口测试范围。
+
+14:20现场读取：正在运行的WebShop第二轮取得3个真实非零奖励事件，36个
+row/event对照、9次B4 DT共94.326秒，d范围[-0.0688079,+0.2216415]，未出现
+旧数量级尖峰。原守恒诊断13项未通过仍如实保留，不改写成FA/FLA失败或通过。
+PPO更新及checkpoint2还在执行。AppWorld首轮40次交互结束，实际奖励全0；
+不能将其视为非零DT/PPO验证。上述运行仍为f0429ee，未热替换新诊断代码。
+
+同时核对旧AppWorld主机OOM：正式rollout已结束并进入DT（240轨迹、9600行），
+不是卡在生成中。原owner所需服务数为240个训练worker加3个验证worker，57个
+验证任务由原DataLoader按3批量分批执行。297端口中尾部54个不被此配置使用；
+本次能确认的50个尾部监听进程PSS合计仅1.87GiB，不能把它们说成900GiB
+OOM的大头。本次未停止服务、重写环境池或缩小正式实验批量。

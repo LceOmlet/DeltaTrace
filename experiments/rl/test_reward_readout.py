@@ -54,6 +54,7 @@ class Runner:
         signed[0, changed] = scale * torch.arange(1, len(changed) + 1, dtype=torch.float64) * (-1.)**torch.arange(len(changed))
         return signed, dict(root_effect=float(signed.sum()),
                             compiled_seed_logprob_effect=float(signed.sum()),
+                            target_logp0=[-2.], target_logp1=[-2. + float(signed.sum())],
                             complete_attribution_seconds_with_diagnostics=0.)
 
     def forward_prefix(self, *args, **kwargs):
@@ -113,6 +114,14 @@ def test_official_finite_vector_per_event_and_original_token_alignment(monkeypat
         torch.testing.assert_close(values['dt_q_estimates']-values['dt_v_estimates'], values['dt_token_advantages'])
     assert all('NEVER INCLUDE FUTURE STATE' not in q for q in tokenizer.queries)
     assert dt.last_report['per_token_probability_queries'] == 0
+    replay = dt.last_report['minimum_log_ratio_batch']
+    assert len(replay['samples']) == 1
+    sample = replay['samples'][0]
+    assert sample['selected_input_ids'] == runner.calls[1][0][1].tolist()
+    assert sample['trace']['source_log_ratio_min_index'] == 1
+    assert sample['trace']['reference_target_logp'] == -2.
+    assert sample['trace']['factual_target_logp'] == pytest.approx(-2.3)
+    assert sample['event_reward'] == 10.9
 
 
 def test_zero_observed_rewards_do_not_invent_a_signal():
@@ -138,8 +147,8 @@ def test_minibatch_preserves_each_episode_event_and_expm1():
                 outputs.append(torch.nn.functional.pad(signed, (0, pair.shape[1]-end)))
                 roots.append(detail['root_effect'])
             return torch.cat(outputs), dict(root_effect=sum(roots),
-                compiled_seed_logprob_effect=sum(roots), target_logp0=[0.]*len(roots),
-                target_logp1=roots, complete_attribution_seconds_with_diagnostics=0.)
+                compiled_seed_logprob_effect=sum(roots), target_logp0=[-2.]*len(roots),
+                target_logp1=[-2.+v for v in roots], complete_attribution_seconds_with_diagnostics=0.)
     episodes = [[row(0, -.1), row(1, 10.9)], [row(0, -.1)]]
     # Different true prefix lengths exercise compute padding after the target.
     episodes[1][0]['input_ids'] = torch.cat((torch.tensor([4, 4, 4]), episodes[1][0]['input_ids']))
@@ -156,6 +165,18 @@ def test_minibatch_preserves_each_episode_event_and_expm1():
             for name in a:
                 torch.testing.assert_close(a[name], b[name], rtol=0, atol=0)
     assert all(t['conservation_verified'] for t in dt.last_report['traces'])
+    replay = dt.last_report['minimum_log_ratio_batch']
+    assert len(replay['samples']) == 4
+    for index, sample in enumerate(replay['samples']):
+        trace = sample['trace']
+        assert trace['reference_target_logp'] == -2.
+        assert trace['factual_target_logp'] - trace['reference_target_logp'] == pytest.approx(trace['root_effect'])
+        selected = torch.full((trace['compute_tokens'],), replay['eos_token_id'])
+        selected[:len(sample['selected_input_ids'])] = torch.tensor(sample['selected_input_ids'])
+        reference = selected.clone()
+        reference[sample['source_start']:sample['source_end']] = replay['eos_token_id']
+        assert torch.equal(reference, runner.calls[0][0][2*index])
+        assert torch.equal(selected, runner.calls[0][0][2*index+1])
 
 
 def test_rounding_audit_failure_preserves_raw_token_credit_and_failed_status():
