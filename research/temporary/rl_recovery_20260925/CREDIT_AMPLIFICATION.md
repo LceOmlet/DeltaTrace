@@ -212,3 +212,18 @@ SHA与原环境文件核验后，从原权重在新正式目录启动三任务�
 head产生的检查点不自动混入这次运行。见[发布回执](receipts/deployment-5a3cda0.json)
 及[启动后现场](receipts/formal-head-fixed-initial-rollout.json)。14:56三任务仍在
 首个rollout，不能把启动或小规模成功扩大为正式全程验收。定时检查/备份未恢复。
+
+随后使用原`torch.load(mmap=True, map_location='cpu')`读取三个任务已完成的
+原检查点，只访问LoRA张量和小型optimizer状态，未创建actor或初始化GPU。
+69.42秒完成，第1→2次更新的证据如下：
+
+| 任务 | 发生变化的LoRA元素 | LoRA更新L2 | optimizer步数 | 实际lr |
+| --- | ---: | ---: | --- | ---: |
+| Sokoban | 1425978 | 0.00292509 | 12→27 | 1e-6 |
+| WebShop | 1442025 | 0.00940223 | 29→57 | 1e-6 |
+| AppWorld | 1430209 | 0.00511155 | 33→50 | 1e-6 |
+
+每项496个LoRA张量共2704896元素，前后均有限。控制台`actor/lr=0.0`是其显示
+精度所致，保存的原optimizer状态没有把学习率关掉。这证明实际参数更新，
+不把“更新发生”扩大成“估计准确”或“任务质量提高”。
+见[摘要及完整远端回执SHA](receipts/head-pilot-saved-lora-updates.json)。
