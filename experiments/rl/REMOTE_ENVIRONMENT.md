@@ -12,6 +12,22 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 14:57当前入口：`releases/5a3cda0`，正式目录`runs/author-5a3cda0-paper`。
+  14:44从原权重启动，Sokoban GPU4/shell3563544、Webshop GPU5/shell3563549、
+  AppWorld GPU6/shell3563554；预算150×256、150×128、200×240。启动前核实
+  GPU4/5/6无旧训练进程；不要再启动下列历史pilot或旧正式目录。
+  三个active/formal manifest已更新；formal/active-training状态为
+  `running_rollout_formal_updates_pending`。14:56交互轮次3/5/4，均无正式checkpoint。
+  AppWorld最新pilot第二轮取得1个官方成功，17个DT对照后原PPO非零更新，
+  checkpoint2完整且退出0；三任务pilot均已覆盖非零DT/PPO路径。
+  发布前核验111项源码SHA及原环境文件；复用缓存、原服务与Python，没有重装。
+  新发布只追加端点/极值重放诊断及独立read_outcomes的FSDP生命周期修复，
+  训练数学与f0429ee一致。证据在`receipts/rollout-major-cost/`下的
+  `deployment-5a3cda0.json`、`head-appworld-two-iterations.json`、
+  `formal-head-fixed-initial-rollout.json`和`formal-head-fixed-memory-startup.json`。
+  初始化PSS按实际进程类型归类，环境worker数量对应原预算，没有重复旧worker群；
+  14:56 cgroup约671.2GiB，OOM计数仍34。没有据GPU忙或进程存活宣称正式更新健康。
+  本轮没有重启定时检查或备份。下方均为有时间戳的历史记录。
 - 14:24数值后续：WebShop两轮小规模作业已退出0、checkpoint2完整；第二轮
   取得3个真实非零事件，原PPO控制台梯度0.013、优势范围[-0.712,+1.988]。
   36个对照/9次DT调用，d范围[-0.0688079,+0.2216415]，DT共94.326秒；
