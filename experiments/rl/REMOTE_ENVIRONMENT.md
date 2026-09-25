@@ -12,6 +12,20 @@
 
 ## 2026-09-25 恢复与数值/上游审计
 
+- 19:30新正式预算已启动，发布`64e5876`，GPU4/5/6分别Sokoban/Webshop/AppWorld，
+  shell PID1703462/1703479/1703507，driver PID1703464/1703489/1703515。
+  目录`runs/author-64e5876-paper/{task}`；`formal-training.json`和`active-training.json`
+  已替换为本次正式作业，旧记录保存在该运行根目录`previous-*.json`。
+  原Ray session分别为19:31:07、19:31:06、19:31:55创建的对应driver目录，已写入
+  job.json。Sokoban150×256、Webshop150×128、AppWorld200×240，仍32768、
+  actor/DT B4；尚在初始化，无当前正式完成检查点。不要重跑launch入口。
+  原启动记录核验曾因Sokoban job没有顶层checkpoint_dir而在启动前退出，已改为
+  读取实际settings.CHECKPOINT_DIR，未启动重复训练或修改训练代码。
+- 19:28 WebShop两轮退出0，checkpoint2完成；第二轮DT124.84秒（29请求/8批），
+  原PPO583.16秒、梯度约0.003，整轮1375.86秒。原检查点有1,452,754个LoRA
+  元素改变，参数有限、optimizer步数97→211。回执`linear-return-webshop-{completed,
+  saved-updates}.json`。当前上游26文件与此前逐源/AST审计SHA均相同，记录在
+  `linear-return-owner-provenance.json`。自动检查及备份尚未恢复。
 - 19:14 AppWorld `linear-return-pilot`已退出0、checkpoint marker2；第二轮
   原PPO336.69秒、梯度约0.009，整轮1230.49秒。CPU mmap原检查点确认
   1,436,548个LoRA元素变化，参数有限、optimizer步数31→58，未初始化GPU。

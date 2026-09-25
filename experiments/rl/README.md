@@ -4,23 +4,33 @@
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
 **当前修订（2026-09-25）：按用户要求移除平方归因展开。**
+19:30已通过原入口启动当前发布`64e5876`的正式预算：Sokoban GPU4 150×256，
+WebShop GPU5 150×128，AppWorld GPU6 200×240。运行目录为远端
+`runs/author-64e5876-paper/{Sokoban,Webshop,AppWorld}`；启动信息和实际Ray
+session已记录在`formal-training.json`，当前初始化，不把启动当作完整迭代完成。
+三任务此前均完成两轮当前方法的真实训练，原检查点1→2分别有
+1,433,186 / 1,452,754 / 1,436,548个LoRA元素改变，参数有限。
+汇总见[当前验收与启动记录](results_linear_return.json)，包含各证据的范围和原始回执。
+
 18:52完成当前发布的同输入精确32768/B4直接耗时对照：完整DT冷/热为
 58.56/27.31秒，原生纯反向冷/热为82.27/57.58秒，原生前向另为32.60/15.18秒。
 热DT为热纯反向的0.474倍；双方均含原CPUOffloadPolicy、activation offload、
 checkpointing和驻留休眠的vLLM graph32。梯度有限、退出0；一次冷/热观测，
 不是自然任务平均耗时或所有长度的普遍结论。见[同输入原生反向对照](../../research/temporary/rl_recovery_20260925/receipts/linear-return-cost32k-summary.json)。
-当前真实训练：Sokoban、AppWorld均两轮完成且退出0。AppWorld首轮有1/4官方
+当前真实训练验证：三个任务均两轮完成且退出0。AppWorld首轮有1/4官方
 成功、21请求/6次DT，产生9241个非零优势，原PPO梯度约0.005。
 WebShop最初两轮8轨迹均为零奖励，未将其当作非零路径通过；原采样器扩大到
 4个任务组×8轨迹后，首轮有3个官方成功、30请求/8次DT/81.93秒，产生16695个
 非零优势；原PPO97次B4更新为466.96秒，梯度约0.002，checkpoint1完成，
-整轮1180.42秒，第二轮已经进入原PPO。未按奖励挑选任务，actor/DT minibatch仍为4。
+整轮1180.42秒。第二轮29请求/8次DT/124.84秒，原PPO114次B4更新583.16秒，
+梯度约0.003，整轮1375.86秒；checkpoint2完整、optimizer步数97→211。
+未按奖励挑选任务，actor/DT minibatch仍为4。
 AppWorld第二轮2/4官方成功，32请求/8次DT/81.17秒，11522个非零优势，
 原PPO336.69秒、梯度约0.009，整轮1230.49秒。checkpoint1→2的1,436,548个
 LoRA元素变化，参数有限，optimizer步数31→58。见
 [AppWorld两轮](../../research/temporary/rl_recovery_20260925/receipts/linear-return-appworld-completed.json)、
 [实际参数更新](../../research/temporary/rl_recovery_20260925/receipts/linear-return-appworld-saved-updates.json)。
-新正式预算作业尚未启动，不把这些pilot计入原文预算。见
+这些pilot不计入新正式预算。见
 [AppWorld首轮更新](../../research/temporary/rl_recovery_20260925/receipts/linear-appworld-first-update.json)、
 [WebShop非零路径](../../research/temporary/rl_recovery_20260925/receipts/linear-webshop-diverse-first-dt.json)。
 当前同输入缓存诊断确认：原GDN完整/缓存前向相对原FLA FP32参考的误差比为

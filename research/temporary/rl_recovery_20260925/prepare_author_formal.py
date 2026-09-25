@@ -86,7 +86,7 @@ if not args.launch:
 # The already-running continuous checks must finish; do not restart or kill them.
 for job in pilots:
     assert (Path(job['run_dir'])/'exit-code').read_text().strip() == '0', job['task']
-    assert int((Path(job['checkpoint_dir']) / 'latest_checkpointed_iteration.txt').read_text()) == 2, job['task']
+    assert int((Path(job['settings']['CHECKPOINT_DIR']) / 'latest_checkpointed_iteration.txt').read_text()) == 2, job['task']
     assert not Path('/proc', str(job['pid'])).exists(), job['task']
     log_text = Path(job['log']).read_text(errors='replace')
     assert any(float(x)>0 for x in re.findall(r'actor/grad_norm:([0-9.]+)', log_text)), job['task']
