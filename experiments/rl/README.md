@@ -4,6 +4,11 @@
 固定官方实现/配置为准，旧 PLAN 不覆盖官方行为。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
+**2026-09-30 当前目标：只在本机单测官方训练/评估环境与 Qwen3.5-9B 模型入口。**
+默认入口不运行算法、DT、模型权重或远端服务。83项单测通过，包含官方配置、
+环境边界、原生消息/token入口和计算负载单位核对。修复、精确覆盖与资源回执见
+[LOCAL_TESTING.md](LOCAL_TESTING.md)。以下远端和训练状态均为历史记录。
+
 **2026-09-29 现状更正：新端口31091已恢复连接，三组旧训练均已不在运行。**
 原完成检查点标记为 Sokoban 10、WebShop 30、AppWorld 3。Sokoban 报 DT
 非有限系数，AppWorld 报 Ray worker 异常退出，WebShop 停止原因尚未确认。
