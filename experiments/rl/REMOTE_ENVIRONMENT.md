@@ -13,6 +13,21 @@
   （1条成功）；`sql-grpo-resume-eval-01`。SQL-DT对应`sql-dt-resume-eval-01`也已完成
   原恢复及同两条验证（1条成功）。不是完整benchmark评估。
   新任务样本不是此前短链数值对拍的替代。实际输出按原SQL格式奖励评分，首轮成功率为0。
+- TextCraft04首轮原生16条轨迹15条成功，原checkpoint marker=1；实际累计201个
+  response，原VERL调整后每卡optimizer state记录4次更新，496项动量全部有限且非零。
+  控制台梯度保留三位小数的`0.000`不能解释为零更新。首轮2301.717秒，其中生成
+  1450.579、DT343.466、actor289.572、保存124.678秒。更新后第二轮生成有限。
+  原恢复入口`textcraft-dt-resume-eval-01`已恢复step1并完成两条官方验证子集，两条成功；
+  这不是全验证集成绩。第二轮已完成并保存marker=2：14/16成功、1588.300秒，
+  其中生成975.151、DT215.864、actor224.251、保存114.274秒。两卡原optimizer state
+  累计8次更新，动量均非零且有限；两轮90428个生成token的log-prob全部有限。
+- 入口退出时未调用factory环境已有close/cleanup，已补标准ExitStack调用，8项
+  正常/异常退出及清理异常的CPU测试通过。所有当前检查结束后已应用，实际安装源码
+  再次通过这8项测试；保留应用前后SHA及来源回执。未在运行中更换TaskRunner源码，
+  未修改任何模型计算或优化器。重新核对33份DT文件、396份VERL文件及原平台文件。
+- 9月30日04:33磁盘余量约405GiB，原完整检查点17967680734字节（约16.7GiB）。
+  新正式输出应使用固定VERL已有`trainer.max_actor_ckpt_to_keep`配置控制保留数，
+  不能按四组各10份无限保留。这里没有删除任何历史检查点或另建清理模块。
 - TextCraft/AppWorld旧02模型加载失败的原因已定位：整段LOOP附加目录优先进入
   PYTHONPATH，覆盖原accelerate1.13.0为1.6.0。现不在PYTHONPATH加入附加目录，
   仅在各环境factory用原site.addsitedir追加缺失叶依赖；2项实际参数元数据/模块来源

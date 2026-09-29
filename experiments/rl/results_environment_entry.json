@@ -7,7 +7,7 @@
     "verified_dt_files": 33,
     "compared_verl_files": 396,
     "verl_environment_seam_changes": {
-      "verl/trainer/main_ppo.py": "0cd11847965f27d45e912ae36a56cea8ccf75b0523546dc25711436489620846",
+      "verl/trainer/main_ppo.py": "fc0c5480f891802b4a1c62c88d85d0c39a65b9c84e817e560dd66ef40d9811b8",
       "verl/utils/dataset/rl_dataset.py": "c2b8ee02a48baf20adb038fd413a8a52ff7446d755758f2a73a89dd552ed448e",
       "verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
       "agent_system/multi_turn_rollout/rollout_loop.py": "0723a059fb05b8181d64ce42218ef74e02f8dd1f42a1f844e362d4527ef859f5"
@@ -39,7 +39,7 @@
       "job": "sql-dt-bounded-04",
       "pid": 429887,
       "live": false,
-      "age_seconds": 3054.8243305683136,
+      "age_seconds": 6060.863835096359,
       "checkpoint_step": 2,
       "metrics": [
         {
@@ -95,7 +95,7 @@
       "job": "sql-grpo-bounded-02",
       "pid": 433068,
       "live": false,
-      "age_seconds": 3047.160412788391,
+      "age_seconds": 6053.201827764511,
       "checkpoint_step": 2,
       "metrics": [
         {
@@ -157,7 +157,163 @@
     },
     "scope": "Original restore of model/optimizer/extra state plus original evaluator on labelled two-example subsets, not full benchmark scores"
   },
-  "textcraft_status": "Bounded 2-iteration check active: first rollout and DT complete; original actor update in progress. Not yet certified healthy.",
+  "textcraft_status": "Two full bounded iterations completed: 15/16 and 14/16 native successes, checkpoint marker 2, eight cumulative optimizer updates on both ranks with finite nonzero moments; 90428 generated tokens finite. Original checkpoint 1 restore and two-example evaluation completed, both successful.",
+  "textcraft_checkpoint_restore_validation": {
+    "job": "textcraft-dt-resume-eval-01",
+    "checkpoint": 1,
+    "official_validation_examples": 2,
+    "successes": 2,
+    "scope": "Original restore and evaluation on a labelled two-example subset, not full benchmark score"
+  },
+  "textcraft_checks": [
+    {
+      "job": "textcraft-dt-bounded-04",
+      "pid": 968972,
+      "live": false,
+      "age_seconds": 4338.916572809219,
+      "checkpoint_step": 2,
+      "metrics": [
+        {
+          "step": 1.0,
+          "actor/pg_loss": -0.001,
+          "actor/grad_norm": 0.0,
+          "response_length/mean": 267.231,
+          "response_length/max": 512.0,
+          "prompt_length/max": 13456.0,
+          "episode/reward/mean": 0.938,
+          "episode/length/mean": 12.562,
+          "episode/success_rate": 0.938,
+          "timing_s/gen": 1450.579,
+          "timing_s/old_log_prob": 92.489,
+          "timing_s/adv": 343.466,
+          "timing_s/update_actor": 289.572,
+          "timing_s/save_checkpoint": 124.678,
+          "timing_s/step": 2301.717,
+          "perf/total_num_tokens": 760522.0
+        },
+        {
+          "step": 2.0,
+          "actor/pg_loss": -0.001,
+          "actor/grad_norm": 0.0,
+          "response_length/mean": 179.548,
+          "response_length/max": 512.0,
+          "prompt_length/max": 7817.0,
+          "episode/reward/mean": 0.875,
+          "episode/length/mean": 12.812,
+          "episode/success_rate": 0.875,
+          "timing_s/gen": 975.151,
+          "timing_s/old_log_prob": 57.803,
+          "timing_s/adv": 215.864,
+          "timing_s/update_actor": 224.251,
+          "timing_s/save_checkpoint": 114.274,
+          "timing_s/step": 1588.3,
+          "perf/total_num_tokens": 610577.0
+        }
+      ],
+      "last_phases": [
+        "[DT rollout] phase=generation_start step=30/30 active=2/16 peak_rss_gib=11.310",
+        "[DT rollout] phase=generation_end step=30 seconds=17.864 generated_tokens=297 tokens_per_second=16.626 peak_rss_gib=11.310"
+      ],
+      "last_dt_batches": [
+        "[DT EOS minibatch] contrasts=4 length=2040 seconds=20.596380358561873 batch=18/19 d_min=-0.05024015901179254 d_max=0.3079791727548573",
+        "[DT EOS minibatch] contrasts=4 length=2114 seconds=21.69820915721357 batch=19/19 d_min=-0.08207277834466795 d_max=0.4022763760592828"
+      ],
+      "completed_responses": 406,
+      "generated_tokens": 90428,
+      "nonfinite_logprobs": 0
+    },
+    {
+      "job": "textcraft-dt-resume-eval-01",
+      "pid": 1988865,
+      "live": false,
+      "age_seconds": 1219.4309990406036,
+      "checkpoint_step": null,
+      "metrics": [
+        {
+          "step": 1.0
+        }
+      ],
+      "last_phases": [
+        "[DT rollout] phase=generation_start step=3/30 active=1/2 peak_rss_gib=9.659",
+        "[DT rollout] phase=generation_end step=3 seconds=9.662 generated_tokens=89 tokens_per_second=9.212 peak_rss_gib=9.659"
+      ],
+      "last_dt_batches": [],
+      "completed_responses": 5,
+      "generated_tokens": 749,
+      "nonfinite_logprobs": 0
+    }
+  ],
+  "environment_exit_cleanup": {
+    "tests": 8,
+    "status": "Applied after all named checks exited; actual patched source passed the same 8 exit tests. Both pre/post source identities retained.",
+    "scope": "Environment resource lifecycle only. No math, sampling or training algorithm change."
+  },
+  "sampled_resources": {
+    "unix": 1790714375.9301317,
+    "scope": "Passive sampled resources for matching job identity; cgroup includes simultaneous jobs and file cache, not per-job RSS. Peaks are sampled, not guaranteed instantaneous maxima.",
+    "jobs": [
+      {
+        "job": "sql-dt-bounded-04",
+        "resource_samples": 119,
+        "physical_gpu_peak_mib": {
+          "0": 54338,
+          "1": 52584
+        },
+        "process_tree_peak_pss_gib": 40.86116695404053,
+        "cgroup_peak_gib": 188.20444869995117,
+        "sources": [
+          "bounded-resources-v2.jsonl",
+          "bounded-resources-v3.jsonl",
+          "bounded-resources-v4.jsonl"
+        ]
+      },
+      {
+        "job": "sql-grpo-bounded-02",
+        "resource_samples": 104,
+        "physical_gpu_peak_mib": {
+          "6": 53324,
+          "7": 52230
+        },
+        "process_tree_peak_pss_gib": 40.3447380065918,
+        "cgroup_peak_gib": 188.20444869995117,
+        "sources": [
+          "bounded-resources-v2.jsonl",
+          "bounded-resources-v3.jsonl",
+          "bounded-resources-v4.jsonl"
+        ]
+      },
+      {
+        "job": "textcraft-dt-bounded-04",
+        "resource_samples": 428,
+        "physical_gpu_peak_mib": {
+          "4": 54867,
+          "5": 53523
+        },
+        "process_tree_peak_pss_gib": 45.34168529510498,
+        "cgroup_peak_gib": 173.30407333374023,
+        "sources": [
+          "bounded-resources-v5.jsonl",
+          "bounded-resources-v6.jsonl"
+        ]
+      },
+      {
+        "job": "textcraft-dt-resume-eval-01",
+        "resource_samples": 43,
+        "physical_gpu_peak_mib": {
+          "0": 48304,
+          "1": 48304
+        },
+        "process_tree_peak_pss_gib": 62.076937675476074,
+        "cgroup_peak_gib": 145.75792694091797,
+        "sources": [
+          "bounded-resources-v6.jsonl"
+        ]
+      }
+    ],
+    "completed_checkpoint_bytes": 17967680734,
+    "disk_free_bytes": 416212320256,
+    "formal_checkpoint_retention": "Use native trainer.max_actor_ckpt_to_keep in the new formal output only; no historical files removed here."
+  },
   "appworld_status": "Prior bounded run failed at missing native optional-parameter normalization. Hook moved below original request construction; original-HTTP comparison and actual scripted train/eval service checks passed. GPU restart awaits readout length decision.",
   "appworld_context_boundary": {
     "training_tasks": 72,

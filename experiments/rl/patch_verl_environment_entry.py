@@ -23,11 +23,20 @@ def patch_main(source):
         '        if not config.env.get("factory"):\n'
         '            envs, val_envs = make_envs(config)\n')
     anchor = '        tokenizer = hf_tokenizer(local_path, trust_remote_code=trust_remote_code)\n'
-    return replace_once(source, anchor, anchor +
+    source = replace_once(source, anchor, anchor +
         '        if config.env.get("factory"):\n'
         '            from hydra.utils import instantiate\n'
         '            envs, val_envs = instantiate(config.env.factory, configuration=config,\n'
         '                                         tokenizer=tokenizer, _recursive_=False)\n')
+    return replace_once(source,
+        '        trainer.init_workers()\n        trainer.fit()\n',
+        '        from contextlib import ExitStack\n'
+        '        with ExitStack() as environment_cleanup:\n'
+        '            if config.env.get("factory"):\n'
+        '                environment_cleanup.callback(envs.close)\n'
+        '                environment_cleanup.callback(val_envs.close)\n'
+        '            trainer.init_workers()\n'
+        '            trainer.fit()\n')
 
 
 def patch_collector(source):
