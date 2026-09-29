@@ -12,6 +12,25 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 最新范围是 AppWorld **环境与配置提取、对照**：`apple-aiml-research/ml-loop@f14107a976e5793990329d3193df4742076c5a1d`。
+  原源码位于 `$DT_RUNTIME_ROOT/third_party/ml-loop-f14107a976e5793990329d3193df4742076c5a1d`，
+  来源和归档SHA见 `receipts/upstream-alignment-20260929/loop-owner-staged.json`。
+  WebShop继续VERL，Sokoban暂停。新的四组正式训练尚未启动。
+  `full-horizon-checks/unaligned-config-stop.json`记录旧配置作业均已停止，
+  `remaining_pids_after_recheck=[]`；不使用旧manifest冒充当前进度。
+- LOOP复用当前Python、权重和AppWorld资产；缺失的叶依赖仅安装到
+  `$DT_RUNTIME_ROOT/environments/loop-extras-f14107a`，只给AppWorld进程添加该PYTHONPATH。
+  不全量安装LOOP的旧版本依赖，不降级共享torch/transformers/vLLM。
+  导入前仍先设置`DT_ROOT=releases/c9cd147`、`DT_ENVIRONMENT_JSON`并source
+  `metax.env.sh`以继承MACA动态库路径；未source导致的MACA_HOME缺失不是包损坏。
+  venv的旧pip入口shebang失效，使用`$VENV_PYTHON -m pip`，不重建环境。
+- `loop_owner_recipe.py` 由原README命令和原Hydra组合只选出环境字段。
+  环境比较使用上述 `third_party` 原源码，不能使用
+  `candidates/ml-loop-f14107a-metax-dt`。该候选和已有叶依赖仅保留为历史资源，
+  不代表采用其训练路径。LOOP模型、vLLM探针已停止，PID回执为
+  `receipts/upstream-alignment-20260929/loop-training-probes-stopped.json`，随后确认
+  所列PID全部不存在。不启动LOOP训练；不改现有DT信用、PPO/GRPO和WebShop。
+
 - 20:30+08：已推送并发布修订`c9cd147`到`$DT_RUNTIME_ROOT/releases/c9cd147`。
   复用入口设`DT_ROOT`为该目录、`DT_ENVIRONMENT_JSON=$DT_ROOT/environment.json`，
   source原`metax.env.sh`后明确设

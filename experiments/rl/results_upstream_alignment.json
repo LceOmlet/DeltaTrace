@@ -1,16 +1,38 @@
 {
   "date": "2026-09-29",
-  "status": "bounded_native_two_iteration_checks_passed_formal_and_full_numerical_audit_incomplete",
+  "status": "environment_only_comparison_completed_training_alignment_incomplete",
   "latest_vllm_and_ppo_owner_assertions": "results_vllm_owner_alignment.json",
   "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
   "remote_ssh_port": 31091,
   "remote_candidate": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-distributed-dt",
   "latest_two_gpu_receipt": "results_two_gpu.json",
+  "latest_appworld_scope": {
+    "scope": "Unchanged LOOP environment extraction and comparison only; original LOOP trainer not run.",
+    "receipt": "../../research/temporary/rl_upstream_alignment_20260929/loop-project-environment-comparison.json",
+    "passed": true,
+    "seconds": 71.83906921651214,
+    "fixed_action_cases": 2,
+    "shared_code_execution_and_task_evaluation": "identical on tested actions",
+    "known_differences": [
+      "task splits",
+      "terminal reward",
+      "interaction cap",
+      "response parser",
+      "prompt and history",
+      "generation length settings"
+    ],
+    "no_model_performance_claim": true,
+    "no_training_budget_adopted": true
+  },
   "requested_next_layout": {
-    "dt_gpus_per_task": 2,
-    "grpo_gpus": 2,
-    "grpo_task": "AppWorld, selected by measured collection cost. Keep the32768 cap and native task history; do not add a natural-input-length filter or launch condition.",
-    "status": "Native distributed credit alignment, real saved-input updates and exact32768 DT capacity exercised; numerical diagnostics remain unresolved. See results_two_gpu.json; older single-GPU receipts below retain their original scope."
+    "gpus_per_group": 2,
+    "groups": [
+      "Webshop DT",
+      "Webshop GRPO",
+      "AppWorld DT",
+      "AppWorld GRPO"
+    ],
+    "status": "Future user intent only; no new formal training launched, Sokoban paused."
   },
   "changes": [
     "Inherit native entropy0.001, dual-clip3 and invalid-action reward processing.",
@@ -61,11 +83,11 @@
   },
   "outstanding": [
     "Two-GPU native DT tasks and AppWorld GRPO completed bounded two-iteration checks; full-horizon and formal performance remain unverified.",
-    "Fresh official environment rollout and task-performance comparison on all three tasks.",
+    "Fresh model-driven task-performance comparison on WebShop and AppWorld; Sokoban paused by user.",
     "Current full32k capacity/accumulation validation with native loss and minibatch64.",
     "Historical DT nonfinite failure reproduction and root-cause fix.",
     "Complete audit of remaining model/platform/memory compatibility seams.",
-    "AppWorld experiment budget alignment; legacy LOOP budget is not an official VERL-agent experiment.",
+    "AppWorld environment integration after the recorded comparison; this environment-only step selects no new training budget.",
     "Formal restart, sustained health, final experiment completion and backup."
   ]
 }

@@ -1,102 +1,58 @@
 {
-  "scope": "One DT run per task matching cited rollout budgets. This is not a reproduction of the papers' algorithms, models or reported scores.",
+  "scope": "Source index for the user-selected paired experiments. Not an independently assembled training recipe.",
+  "launch_enabled": false,
+  "settings_status": "WebShop owner config inheritance checked; AppWorld native LOOP environment extracted and compared only. No LOOP training integration or new formal launch.",
   "method_specification": "experiments/rl/PLAN.md",
-  "native_hydra_overrides": [
-    "trainer.n_gpus_per_node=2"
-  ],
-  "fixed": {
-    "METHOD": "dt",
-    "MINI_BATCH_SIZE": "64",
-    "ACTOR_MICRO_BATCH_SIZE": "4",
-    "ACTOR_ACTIVATION_OFFLOAD": "True",
-    "ACTOR_OFFLOAD_POLICY": "True",
-    "ROLLOUT_BACKEND": "vllm",
-    "MAX_TOTAL_TOKENS": "32768",
-    "LORA_RANK": "1",
-    "LORA_ALPHA": "2",
-    "ENABLE_THINKING": "False",
-    "FSDP_RESHARD_AFTER_FORWARD": "True",
-    "ROLLOUT_MICRO_BATCH_SIZE": "4",
-    "VAL_BEFORE_TRAIN": "True",
-    "TEST_FREQ": "5",
-    "SAVE_FREQ": "1",
-    "MAX_ACTOR_CKPT_TO_KEEP": "2",
-    "RESUME_MODE": "auto"
-  },
   "tasks": {
     "Webshop": {
-      "source": "https://arxiv.org/html/2505.10978v3#A5.SS1",
-      "owner_script": "examples/ppo_trainer/run_webshop.sh",
+      "owner": "langfengQ/verl-agent",
       "owner_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
-      "iterations": 150,
-      "episodes_per_iteration": 128,
-      "total_episodes": 19200,
-      "env": {
-        "TRAIN_SIZE": "128",
-        "GROUP_SIZE": "1",
-        "TOTAL_EPOCHS": "150",
-        "MAX_STEPS": "15",
-        "VAL_SIZE": "128",
-        "VAL_DATA_SIZE": "128",
-        "DT_RAY_NUM_CPUS": "32",
-        "ENV_SEED": "0",
-        "MAX_RESPONSE": "512",
-        "MAX_PROMPT": "4096"
-      },
-      "differences": "Candidate follows pinned PPO task sampling:128 task instances, group1, optimizer minibatch64, prompt4096/response512, validation128,150 epochs. Qwen3.5-9B, LoRA, two MetaX GPUs, per-GPU microbatch4, total capacity32768 and DT credit remain explicit integration settings; no model-score reproduction or performance non-regression claim."
-    },
-    "Sokoban": {
-      "source": "https://arxiv.org/html/2505.10978v3#A5.SS3",
-      "owner_script": "examples/grpo_trainer/run_sokoban.sh",
-      "owner_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
-      "iterations": 150,
-      "episodes_per_iteration": 256,
-      "total_episodes": 38400,
-      "env": {
-        "TRAIN_SIZE": "32",
-        "GROUP_SIZE": "8",
-        "TOTAL_EPOCHS": "150",
-        "MAX_STEPS": "15",
-        "VAL_SIZE": "128",
-        "VAL_DATA_SIZE": "128",
-        "DT_RAY_NUM_CPUS": "48",
-        "ENV_SEED": "0",
-        "SOKOBAN_MODE": "tiny_rgb_array",
-        "MAX_RESPONSE": "512",
-        "MAX_PROMPT": "1024"
-      },
-      "author_script": "https://github.com/langfengQ/verl-agent/blob/20bd331bdbc9026a5668e11362178e10ab7400c8/examples/gigpo_trainer/run_sokoban.sh",
-      "differences": "Pinned task script samples32 groups of8,150 epochs, prompt1024/response512, validation128, optimizer minibatch64. It uses visual Qwen2.5-VL. This text Qwen3.5-9B integration reuses the original text renderer and one-box rewards; modality, model, LoRA, microbatch4 and DT credit remain explicit differences. This is not a visual-paper score reproduction."
+      "owner_script": "examples/grpo_trainer/run_webshop.sh",
+      "source": "https://github.com/langfengQ/verl-agent/blob/20bd331bdbc9026a5668e11362178e10ab7400c8/examples/grpo_trainer/run_webshop.sh",
+      "methods": [
+        "dt",
+        "grpo"
+      ],
+      "launcher": "experiments/rl/run_official_task.sh",
+      "status": "complete_owner_config_inheritance_verified_runtime_alignment_pending"
     },
     "AppWorld": {
-      "source": "https://arxiv.org/html/2502.01600v3#A4",
-      "owner_script": "https://github.com/apple-aiml-research/ml-loop#training-loop",
-      "iterations": 200,
-      "episodes_per_iteration": 240,
-      "total_episodes": 48000,
-      "train_tasks": 72,
-      "env": {
-        "TRAIN_SIZE": "40",
-        "GROUP_SIZE": "6",
-        "TOTAL_EPOCHS": "200",
-        "MAX_STEPS": "40",
-        "VAL_SIZE": "3",
-        "VAL_DATA_SIZE": "57",
-        "DT_RAY_NUM_CPUS": "32",
-        "ENV_SEED": "0",
-        "APPWORLD_TRAIN_DATASET": "train_difficulty_1_and_train_difficulty_2",
-        "APPWORLD_VAL_DATASET": "dev",
-        "APPWORLD_MAX_INTERACTIONS": "40",
-        "MAX_RESPONSE": "512"
-      },
-      "differences": "Historical nominal rollout budget from LOOP; not an official VERL-agent training configuration and not approved as a resumed aligned experiment. Candidate launcher now inherits the pinned VERL history_length2 and10000-character window plus native reward/loss defaults. Existing32k episode-stop protection remains. Fresh task validation and budget alignment are outstanding; historical40-turn, train-difficulty/dev sampling settings below are preserved as records, not described as current official defaults.",
-      "context_sources": [
-        "https://arxiv.org/html/2502.01600v3#A4",
-        "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/README.md",
-        "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/phi_agents/rl/conf/appworld/agent/default.yaml",
-        "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/phi_agents/evals/appworld_evals.py#L234-L242"
-      ]
+      "owner": "apple-aiml-research/ml-loop",
+      "owner_commit": "f14107a976e5793990329d3193df4742076c5a1d",
+      "source": "https://github.com/apple-aiml-research/ml-loop/tree/f14107a976e5793990329d3193df4742076c5a1d",
+      "owner_recipe": "README.md: Model Training",
+      "configuration_entry": "phi_agents/rl/config.py::get_config (composition only)",
+      "experiment_overrides_source": "README.md: Model Training command",
+      "methods": [
+        "dt",
+        "grpo"
+      ],
+      "status": "native_environment_comparison_passed_behavior_differences_recorded",
+      "selected_by_user": "2026-09-29 latest clarification: only unchanged LOOP environment and configuration extraction/comparison; do not run original LOOP trainer or affect other components.",
+      "environment_extractor": "experiments/rl/loop_owner_recipe.py",
+      "comparison": "experiments/rl/APPWORLD_ENVIRONMENT_COMPARISON.md",
+      "training_configuration_status": "Not selected by the environment-only extraction; no LOOP optimizer, losses, iteration budget or model path adopted."
     }
   },
-  "settings_status": "2026-09-29 candidate: native PPO defaults and optimizer minibatch64/microbatch4 restored; response cap512. Old jobs stopped at Sokoban10/Webshop30/AppWorld3. The former 64e5876 validation does not cover this revision. AppWorld budget was borrowed from LOOP and is not an official VERL-agent experiment; all formal budgets require the ongoing upstream alignment audit before reuse. No new formal run or performance non-regression claim."
+  "device_layout_intent": {
+    "Webshop_dt": [
+      0,
+      1
+    ],
+    "Webshop_grpo": [
+      2,
+      3
+    ],
+    "AppWorld_dt": [
+      4,
+      5
+    ],
+    "AppWorld_grpo": [
+      6,
+      7
+    ]
+  },
+  "device_layout_note": "Intent only; check actual occupancy immediately before launch. No reservation implied.",
+  "Sokoban_status": "User requested no further work or training now. Native text mode tiny_rgb_array is supported; changing to rgb_array was incorrect and revoked.",
+  "configuration_contract": "For each task, DT and GRPO share the complete owner task/experiment configuration; credit estimator is the intended algorithm difference. Resource minibatch reductions must be explicit. Do not silently inherit old local rollout counts, LoRA rank, epochs, history, rewards, or optimizer overrides. Model/hardware compatibility must be separately recorded and tested."
 }

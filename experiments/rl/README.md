@@ -9,9 +9,25 @@
 非有限系数，AppWorld 报 Ray worker 异常退出，WebShop 停止原因尚未确认。
 下方9月25日“正式运行”是历史记录，不能作为当前健康状态。尚未重启正式训练。
 本次改动、验收范围和未完成项统一见 [官方接入回执](results_upstream_alignment.json)。
-用户最新资源安排为三个DT任务各两卡、剩余两卡运行较快的长上下文任务GRPO。
+**最新范围：暂停 Sokoban；WebShop DT/GRPO、AppWorld DT/GRPO 各两卡。**
+用户已选择 [LOOP 作者仓库 f14107a](https://github.com/apple-aiml-research/ml-loop/tree/f14107a976e5793990329d3193df4742076c5a1d)
+后进一步明确：**只提取原生 AppWorld 环境与配置，与项目对照，不运行 LOOP
+训练器，不接入其 loss、优化器、训练预算或模型路径。** 配置通过原 Hydra
+组合后选出环境字段；环境直接导入固定原源码，不复制 agent 或奖励逻辑。
+WebShop 继续使用固定 VERL-agent 的完整 `run_webshop.sh`，不受影响。
+此前拼接的 AppWorld VERL 配置和完整时域 pilot 已停用；四组新正式实验未启动。
+
+当前已完成 WebShop 全量配置继承对照（原脚本与 DT/GRPO 入口，仅允许信用
+选择和 actor microbatch 8→4 的差异），不是 Qwen3.5 完整任务性能验证。
+`loop_owner_recipe.py` 直接读取作者命令并调用作者配置接口，仅导出环境、
+agent 和任务 sampler。原示例环境40次交互、完整消息历史、训练终止时按
+测试通过比例给分，评估按成功与否给分；这些与当前项目需逐项对照。
+此前误展开的 LOOP 训练探针均已停止，其未采用文件移至 research 临时存档。
+环境提取与真实固定动作对照已完成，差异和验收范围见
+[AppWorld 环境对照](APPWORLD_ENVIRONMENT_COMPARISON.md)。
+
 用户已明确否定自然输入最小长度筛选：32k是上下文上限，实际长度仅记录；
-不增加8k/16k门槛，也不据此改官方历史窗口。GRPO选AppWorld。
+不增加8k/16k门槛，也不据此改官方历史窗口。
 
 20:08+08：两项vLLM allocator修复后的新检查已完成：Sokoban/WebShop/AppWorld
 DT及AppWorld GRPO，各两卡、两次迭代、每次16条轨迹×最多2次交互，均退出0，

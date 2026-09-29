@@ -1,0 +1,107 @@
+{
+  "owner": "apple-aiml-research/ml-loop",
+  "owner_commit": "f14107a976e5793990329d3193df4742076c5a1d",
+  "source": "README.md: Model Training",
+  "readme_sha256": "dab0189fb93558271265b6b9c1720063c23e3343abda924491cd0c111ed2dbfa",
+  "owner_overrides": [
+    "+global@_global_=appworld",
+    "rl/gpu_allocation=four_learn_four_infer",
+    "llm=qwen_2_5_32b_train",
+    "experiment_name=2025_appworld_Q32B",
+    "wandb.enable=True",
+    "wandb.group=2025_appworld_Q32B_v1",
+    "wandb.project=appworld_Q32B",
+    "rl.params.total_iterations=200",
+    "rl.max_ckpts=200",
+    "rl.scenario_runner.appworld_config.env.max_interactions=40",
+    "rl.eval.overrides.rl.scenario_runner.appworld_config.env.max_interactions=40",
+    "rl.num_scenario_runners=32",
+    "rl.params.scenarios_per_iteration=40",
+    "rl.params.minibatch_size=32",
+    "rl.params.rollouts_per_scenario=6",
+    "rl.scenario_sampler.dataset_name=train_difficulty_1_and_train_difficulty_2",
+    "rl.learning_max_seq_len=32000",
+    "rl.rollouts_fraction=0.9",
+    "rl.rollouts_per_scenario_fraction=0.75"
+  ],
+  "environment": {
+    "training_environment": {
+      "appworld_config": {
+        "agent": {
+          "_target_": "phi_agents.agent.minimal_vllm_react_agent.MinimalReactAgent",
+          "max_character_prompt_len": 20000,
+          "max_character_msg_len": 4000,
+          "min_truncated_block_idx": 5,
+          "max_allowed_appworld_output": 3000,
+          "max_seq_len_tokens": 32000,
+          "appworld_style_truncation": false,
+          "truncate_at_newline_or_whitespace": true,
+          "recaption": false,
+          "search_method": "none",
+          "mode": "train"
+        },
+        "experiment_name": null,
+        "env": {
+          "max_interactions": 40,
+          "raise_on_unsafe_syntax": false,
+          "sparse_reward": false,
+          "no_code_found_penalty": 0.0,
+          "execution_failed_penalty": 0.0
+        }
+      },
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioRunner"
+    },
+    "training_task_sampler": {
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioSampler",
+      "dataset_name": "train_difficulty_1_and_train_difficulty_2",
+      "seed": null,
+      "task_id": null
+    },
+    "evaluation_environment": {
+      "appworld_config": {
+        "agent": {
+          "_target_": "phi_agents.agent.minimal_vllm_react_agent.MinimalReactAgent",
+          "max_character_prompt_len": 20000,
+          "max_character_msg_len": 4000,
+          "min_truncated_block_idx": 5,
+          "max_allowed_appworld_output": 3000,
+          "max_seq_len_tokens": 32768,
+          "appworld_style_truncation": false,
+          "truncate_at_newline_or_whitespace": true,
+          "recaption": false,
+          "search_method": "none",
+          "mode": "eval"
+        },
+        "experiment_name": null,
+        "env": {
+          "max_interactions": 40,
+          "raise_on_unsafe_syntax": false,
+          "sparse_reward": true,
+          "no_code_found_penalty": 0.0,
+          "execution_failed_penalty": 0.0
+        }
+      },
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioRunner"
+    },
+    "evaluation_task_sampler": {
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioSampler",
+      "dataset_name": "dev",
+      "seed": null,
+      "task_id": null
+    },
+    "generation_boundary_reference": {
+      "max_model_len": 32768,
+      "client": {
+        "_target_": "phi_agents.rl.llm.VLLMQwen25",
+        "max_new_tokens": 1500,
+        "top_p": null,
+        "top_k": null,
+        "min_p": null,
+        "frequency_penalty": null
+      },
+      "training_temperature": 1.0,
+      "evaluation_temperature": 0.0
+    }
+  },
+  "scope": "Environment fields only, resolved by native Hydra. No trainer, optimizer, training budget, model or inference server is launched."
+}
