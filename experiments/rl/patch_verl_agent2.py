@@ -937,18 +937,18 @@ def patch_context_budget(text: str) -> str:
 ''', 1)
 
 
-def patch_appworld_history_limit(text: str) -> str:
-    """Keep the owner's renderer; expose its existing history character cap."""
+def restore_appworld_history_limit(text: str) -> str:
+    """Remove the obsolete local history override; keep the original renderer."""
     old = '''                if len(action_history) > 10000:
                     action_history = "... " + action_history[-10000:]'''
     new = '''                history_char_limit = self.config.env.get("appworld_history_char_limit", 10000)
                 if history_char_limit is not None and len(action_history) > history_char_limit:
                     action_history = "... " + action_history[-history_char_limit:]'''
-    if new in text:
+    if text.count(new) == 1:
+        return text.replace(new, old, 1)
+    if text.count(old) == 1:
         return text
-    if text.count(old) != 1:
-        raise RuntimeError("cannot find unique author AppWorld history cap")
-    return text.replace(old, new, 1)
+    raise RuntimeError("cannot find unique author AppWorld history cap")
 
 
 def patch_appworld_active_steps(text: str, *, manager: bool = False) -> str:
@@ -1126,7 +1126,7 @@ def main() -> None:
     vllm_sharding.write_text(patch_vllm_peft_owner(vllm_sharding.read_text()))
     env_manager = args.verl_root / 'agent_system/environments/env_manager.py'
     env_text = env_manager.read_text()
-    env_manager.write_text(patch_appworld_history_limit(patch_appworld_active_steps(env_text, manager=True)))
+    env_manager.write_text(restore_appworld_history_limit(patch_appworld_active_steps(env_text, manager=True)))
     memory = args.verl_root / 'agent_system/memory/memory.py'
     memory.write_text(patch_memory_active_steps(memory.read_text()))
     # The owner already accepts dataset, service ports and interaction limit.

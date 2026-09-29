@@ -1,7 +1,7 @@
 {
   "date": "2026-09-29",
   "ssh_port": 31091,
-  "status": "bounded_owner_hybrid_generation_and_sleep_checks_passed_training_recheck_pending",
+  "status": "bounded_native_two_iteration_checks_passed_batch_probability_diagnostic_retained",
   "runtime": {
     "vllm": "0.15.0",
     "metax": "0.15.0+g24fb31.d20260310.maca3.5.3.20.torch2.8",
@@ -60,9 +60,33 @@
     "Earlier text-only PEFT checkpoint fixture did not match multimodal vLLM names. Its LoRA result is invalid as evidence of production synchronization. Corrected tests use original multimodal PEFT checkpoint names."
   ],
   "not_established": [
-    "All three tasks' fresh rollout/update health after both allocator fixes.",
+    "Sustained full-horizon task health; two-iteration/two-interaction checks completed on all four jobs with original checkpoint2 and exit0, 74622 raw vLLM tokens finite.",
     "Full official task-performance non-regression and formal training completion.",
     "Updated 32k global-minibatch64 capacity and throughput after real weight-pool restoration.",
     "Resolution of historical DT nonfinite failure."
-  ]
+  ],
+  "fresh_native_training": {
+    "receipt": "../../research/temporary/rl_upstream_alignment_20260929/owner-verified-pilots-summary.json",
+    "tasks": ["DT Sokoban", "DT Webshop", "DT AppWorld", "GRPO AppWorld"],
+    "native_iterations_each": 2,
+    "max_interactions": 2,
+    "context_cap": 32768,
+    "raw_vllm_tokens": 74622,
+    "raw_vllm_nonfinite": 0,
+    "scope": "Native rollout/update/checkpoint and next-iteration generation after both allocator fixes; no formal performance or 32k-capacity claim."
+  },
+  "native_probability_diagnostic": {
+    "receipt": "../../research/temporary/rl_upstream_alignment_20260929/native-probability-gap.json",
+    "scope": "Saved exact AppWorld token IDs through native distributed VERL generation and recompute, no update/HF reference/new tolerance.",
+    "observation": "First request per rank has mean probability difference about0.005; others about0.047–0.079. Finite differences are retained; no scalar failure threshold is invented from this metric. The separate original vLLM batching comparisons pass with base and nonzero LoRA fixtures."
+  },
+  "vllm_official_batching_method": {
+    "source": "https://github.com/vllm-project/vllm/blob/v0.15.0/tests/models/language/generation/test_hybrid.py#L116",
+    "reference": "Individual vLLM generation versus batched vLLM generation, no HF.",
+    "prompts": "Four exact saved AppWorld inputs, lengths1934/1913/1797/1797;64 generated tokens/top5, original generation helpers and check_logprobs_close.",
+    "base": {"status":"passed","elapsed_seconds":111.43914587702602,"receipt":"../../research/temporary/rl_upstream_alignment_20260929/vllm-batching-owner.json"},
+    "nonzero_lora": {"status":"passed","elapsed_seconds":105.21153659559786,"receipt":"../../research/temporary/rl_upstream_alignment_20260929/vllm-batching-owner-lora.json"},
+    "scope": "Original batching method with additional actual model/platform/LoRA fixtures. Membership comparison, not scalar logprob allclose or task-score guarantee. No numerical output correction or threshold change.",
+    "test_harness_failure": "Initial standalone script missed the multiprocessing __main__ guard and failed before engine startup. Guard fixed; original failure retained as vllm-batching-owner-startup-failure.log. Production runtime was not changed for it."
+  }
 }

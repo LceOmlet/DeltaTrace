@@ -1,12 +1,16 @@
 """Read bounded pilots' original Ray logs and checkpoint markers, without polling."""
 import json
+import argparse
 from pathlib import Path
 import re
 import time
 
 audit = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929')
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--root',type=Path,default=audit/'two-gpu-pilots')
+args=parser.parse_args()
 report = {'checked_unix': time.time(), 'jobs': []}
-for job in json.loads((audit / 'two-gpu-pilots/manifest.json').read_text()):
+for job in json.loads((args.root/'manifest.json').read_text()):
     directory = Path(job['directory'])
     children = Path(f'/proc/{job["pid"]}/task/{job["pid"]}/children')
     pids = children.read_text().split() if children.exists() else []
@@ -51,10 +55,18 @@ for job in json.loads((audit / 'two-gpu-pilots/manifest.json').read_text()):
             'checkpoint_marker': marker.read_text().strip() if marker.exists() else None,
             'exit_code': exit_path.read_text().strip() if exit_path.exists() else None,
             'phase_log_entries': entries, 'errors': errors, 'completed_metrics': metrics}
+    raw_rows=[]
+    for path in directory.glob('raw-vllm-*.jsonl'):
+        for line in path.read_text().splitlines():
+            raw_rows.extend(json.loads(line)['rows'])
+    item['raw_vllm']={'responses':len(raw_rows),'tokens':sum(v['tokens'] for v in raw_rows),
+                      'nonfinite':sum(v['nonfinite'] for v in raw_rows)}
     stop_record = directory / 'dataloader-stall-stop.json'
     if stop_record.exists():
         item['intentional_stop'] = json.loads(stop_record.read_text())
     report['jobs'].append(item)
 report['cgroup_usage_bytes'] = int(Path('/sys/fs/cgroup/memory/memory.usage_in_bytes').read_text())
-(audit / 'two-gpu-pilots/latest-observation.json').write_text(json.dumps(report, indent=2)+'\n')
+memory=dict(line.split() for line in Path('/sys/fs/cgroup/memory/memory.stat').read_text().splitlines())
+report['cgroup_memory_bytes']={key:int(memory[key]) for key in ('rss','cache','mapped_file','swap')}
+(args.root/'latest-observation.json').write_text(json.dumps(report, indent=2)+'\n')
 print(json.dumps(report, indent=2))

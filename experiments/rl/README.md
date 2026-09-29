@@ -13,6 +13,22 @@
 用户已明确否定自然输入最小长度筛选：32k是上下文上限，实际长度仅记录；
 不增加8k/16k门槛，也不据此改官方历史窗口。GRPO选AppWorld。
 
+20:08+08：两项vLLM allocator修复后的新检查已完成：Sokoban/WebShop/AppWorld
+DT及AppWorld GRPO，各两卡、两次迭代、每次16条轨迹×最多2次交互，均退出0，
+原checkpoint marker均为2。原vLLM返回共256条response/74622token全部有限；
+未报OOM或DT非有限错误。仍为有界接线检查：任务成功率均为0，不能据此宣称
+任务性能不下降、历史DT异常已修复或正式预算完成。原生global minibatch64、
+perGPU actor/DT4、context cap32768保留。详见
+[新检查摘要](../../research/temporary/rl_upstream_alignment_20260929/owner-verified-pilots-summary.json)。
+原生成/actor概率差异保留，未另设验收阈值；AppWorld保存token的原生重放已复现
+首请求与其余请求差异不同。随后按vLLM v0.15 `test_batching`方法，四份实际
+AppWorld输入、64token/top5，基础及非零LoRA的逐条/批量比较分别通过原断言，
+耗时111/105秒。此项不使用HF；仍不把top-k相容说成scalar log-prob相同。
+
+20:19+08：删除旧AppWorld可选历史字符上限扩展，恢复固定官方10000字符表达式；
+实际安装的`build_text_obs` AST与固定官方一致，2项原渲染器对照通过。
+原环境动作、奖励、采样和DT Q/V/A未改。
+
 19:45+08：实际BF16 Qwen3.5-9B按vLLM v0.15混合模型测试检查，原方法明确
 使用HF、生成64token、top5比较。Sokoban/WebShop两份真实输入，基础模型与
 非零PEFT各自fresh/wake共4组通过原模型比较，2组通过原sleep文本一致性断言，

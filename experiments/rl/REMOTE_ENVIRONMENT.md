@@ -12,6 +12,23 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 20:08+08：`receipts/upstream-alignment-20260929/owner-verified-pilots/manifest.json`
+  记录的四个两卡作业均退出0、原checkpoint marker2。发布7431001，native
+  global minibatch64、每卡actor/DT4、32768上限；显式测试预算为两迭代×每次
+  16条轨迹×最多2次交互。原vLLM共74622token无非有限值；不是正式任务预算、
+  32k容量或任务成功率验收。原滚动概率差异未被抹除，也不发明新门槛。
+  原始log/Ray session/checkpoint均由该manifest定位；本地摘要
+  `research/temporary/rl_upstream_alignment_20260929/owner-verified-pilots-summary.json`。
+- 20:19+08：当前candidate的AppWorld renderer已移除旧可选字符上限，函数AST
+  与固定官方一致；`appworld-history-restored.json`含前后SHA。补丁入口改为
+  `restore_appworld_history_limit`，后续发布需使用新入口，不能用旧7431001
+  启动器中的旧patch文件把扩展重新加回。两个原renderer对照通过。
+- 20:27+08：`vllm-batching-owner.json`与`vllm-batching-owner-lora.json`
+  按vLLM v0.15 `test_hybrid.py::test_batching`方法通过原逐条/批量比较。
+  使用保存的四份AppWorld token输入1934/1913/1797/1797、原64token/top5，
+  不使用HF。基础/非零公开PEFT fixture各耗时111/105秒。保留原top-k判据，
+  不把它扩大成scalar概率或训练性能验收。`native-probability-gap.pt/.json`
+  保存原VERL同一输入生成/重算的有限差异，无额外新阈值或数值修正。
 - 索引口径复核：固定VERL-agent内WebShop的原`web_agent_site/utils.py`
   默认就是`items_shuffle_1000.json`/`items_ins_v2_1000.json`。原converter将
   同一1000份商品同时写入`resources`和`resources_1k`，原indexer据此生成
