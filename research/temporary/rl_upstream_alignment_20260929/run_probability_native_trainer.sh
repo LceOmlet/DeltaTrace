@@ -11,6 +11,10 @@ export PYTHONPATH=$A:$DT_ROOT/experiments/rl:$DT_ROOT/clean/qwen35:$DT_ROOT:$VER
 unset MACA_VISIBLE_DEVICES RAY_TMPDIR RAY_ADDRESS
 export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
+# The --cfg subprocess cannot export back to this parent. Match these existing
+# launcher environment switches before calling the original trainer directly.
+export VERL_TRIM_SHARED_PADDING=1 RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+export VERL_ACTOR_CPU_OFFLOAD=0 VERL_ENABLE_HF_FSDP_WRAP=0
 export METHOD=grpo ENV_NAME=Sokoban TRAIN_SIZE=2 GROUP_SIZE=4 VAL_SIZE=1 VAL_DATA_SIZE=1
 export MAX_TOTAL_TOKENS=32768 MAX_RESPONSE=512 MAX_STEPS=2 TOTAL_EPOCHS=2
 export MINI_BATCH_SIZE=64 ACTOR_MICRO_BATCH_SIZE=4 ACTOR_OFFLOAD_POLICY=True
