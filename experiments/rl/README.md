@@ -4,13 +4,18 @@
 固定官方实现/配置为准，旧 PLAN 不覆盖官方行为。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**2026-09-30 当前 goal：官方环境接入既有 VERL-agent/vLLM，完成实际训练检查后，
-启动 SQL、AppWorld、TextCraft 三组 DT 和 SQL GRPO，每组两卡。**
+**2026-09-30 当前指令：用官方正式参数启动 SQL、AppWorld、TextCraft 三组 DT 和
+SQL GRPO，每组两卡；不再另造预实验参数，只允许资源所需的microbatch调整。**
+用户随后固定四组模型配置为 **LoRA rank=8、alpha=16**；共享入口已更新。
+历史rank=1/alpha=2的容量记录仍只描述历史配置，不能冒充当前8/16的实测。
 只复用任务项目的官方环境、数据、奖励、评测及相关配置，不启动其训练器或推理栈。
 先前本机83项单测保留，覆盖范围见 [LOCAL_TESTING.md](LOCAL_TESTING.md)。
 数值基线按原始官方方法对照回执和源码SHA锁定于
 [verified_runtime.json](verified_runtime.json)，不按目录新旧猜测版本。
-当前没有启动新的正式训练；以下9月29日及更早运行结果属于历史记录。
+SQL-DT和SQL-GRPO已于远端Unix时间1790723216启动正式配置，两组均为LoRA8/16；
+当前在原生vLLM执行训练前验证。正式首个更新尚未完成，不能称已验收健康。
+运行事实来源为`runs/official-trajectory-20260930/{formal-training,source}.json`及各组
+`job.json`，源码已冻结，后续环境开发不热改运行中的入口。以下更早运行结果为历史记录。
 最新入口检查与两组SQL有界验证见环境记录首节。AppWorld、TextCraft的原环境/模型
 入口已有实际服务证据；脚本动作、CPU测试和进程启动不表示四组模型训练已经通过。
 任务仓库的trainer、optimizer和推理server均未启动。
@@ -19,7 +24,13 @@
 与当前固定VERL每回复一行的计算单位，不把两者的更新数混写。
 TextCraft两轮已完成累计8次原optimizer更新并保存step2；成功数15/16、14/16。
 其step1经原恢复入口完成2条官方验证子集，均成功；两组SQL也已完成两轮及原恢复评测。
-这些是有界运行和子集评测结果，正式四组尚未启动。
+这些是有界运行和子集评测结果，不代替此次正式四组的验收。
+AppWorld现已在32768内部预留DT询问/target，通过原客户端控制生成与预算终止；
+不采用33152提议。SQL现调用原SkyRLGymGenerator和原batch converter，一轨迹一训练行；
+正式256组×5条、global minibatch1280、ppo_epochs1，满批一次optimizer更新。
+DT仍按原回复计算，再按原生token位置接回完整轨迹。8项原agent loop对照与25项
+运输/信用接口检查通过；不表示新的DT数值对拍。TextCraft整轨迹入口和AppWorld
+原runner调度仍在对齐，两组正式任务尚未启动。
 
 **2026-09-29 现状更正：新端口31091已恢复连接，三组旧训练均已不在运行。**
 原完成检查点标记为 Sokoban 10、WebShop 30、AppWorld 3。Sokoban 报 DT

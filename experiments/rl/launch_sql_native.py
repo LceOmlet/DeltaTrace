@@ -38,6 +38,11 @@ def command(args):
         '+data.dataloader_num_workers': 0,
         # SQL already owns format/outcome rewards; there is no extra parser flag.
         'actor_rollout_ref.actor.use_invalid_action_penalty': False,
+        # SkyRL's mini-batch is measured in prompt groups. VERL receives one
+        # native trajectory per row and rollout.n stays 1 at the engine API.
+        'actor_rollout_ref.actor.ppo_mini_batch_size': (
+            64 if bounded else training['policy_mini_batch_size'] * gen['n_samples_per_prompt']),
+        'actor_rollout_ref.rollout.multi_turn.enable': True,
         'actor_rollout_ref.rollout.temperature': gen['sampling_params']['temperature'],
         'actor_rollout_ref.rollout.top_p': gen['sampling_params']['top_p'],
         'actor_rollout_ref.rollout.val_kwargs.temperature': gen['eval_sampling_params']['temperature'],
@@ -45,7 +50,7 @@ def command(args):
         'env.env_name': 'SkyRL-SQL',
         'env.max_steps': gen['max_turns'],
         'env.rollout.n': gen['n_samples_per_prompt'],
-        '+env.factory._target_': 'sql_environment_entry.make_sql_environments',
+        '+env.factory._target_': 'sql_owner_rollout.make_sql_owner_environments',
         '+env.sql': dict(db_path=str(data / 'db_files/data'),
             max_input_length=gen['max_input_length'], sampling=native['sampling'], eval_sampling=native['eval_sampling']),
         'trainer.logger': ['console'],
@@ -53,6 +58,8 @@ def command(args):
         'trainer.experiment_name': f'{args.method}-SkyRL-SQL',
         'trainer.default_local_dir': str(Path(args.output) / 'checkpoints'),
         'trainer.rollout_data_dir': str(Path(args.output) / 'rollouts'),
+        'trainer.validation_data_dir': str(Path(args.output) / 'validation'),
+        'trainer.max_actor_ckpt_to_keep': 2,
         'trainer.save_freq': 1 if bounded else training['ckpt_interval'],
         'trainer.test_freq': -1 if bounded else training['eval_interval'],
         'trainer.val_before_train': not bounded,
@@ -81,7 +88,7 @@ if __name__ == '__main__':
     (out / 'launch.json').write_text(json.dumps(dict(argv=argv, options=options,
         phase=args.phase, numerical_runtime='c9cd147/fc2e6c2',
         framework='VERL-agent 20bd331 distributed DT with environment seams',
-        workload_note='VERL uses active response rows. This is not the SkyRL trainer or a claim of identical optimizer-update counts.'), indent=2)+'\n')
+        workload_note='Native SkyRL complete trajectory per VERL row. Formal 256 prompt groups x 5 trajectories; global mini-batch 1280 trajectories, one native VERL optimizer update per complete batch.'), indent=2)+'\n')
     os.environ.update(DT_TASK='SkyRL-SQL', DT_MAX_STEPS='6', DT_MAX_LENGTH='32768')
     os.environ['DT_SAMPLING_JSON'] = json.dumps(options['+env.sql']['sampling'])
     if args.config_only:

@@ -212,6 +212,8 @@ Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局�
   继承官方奖励处理，包括原生无效动作惩罚；由上述信用接口读取结果。
 - 正式 DT 负责有限传播，现有 VERL 负责 rollout、PPO clipping、optimizer，
   官方 task worker 负责 reward。禁止复制这些实现。
+- 2026-09-30 用户固定四组 LoRA rank=8、alpha=16，不得更改。旧rank=1/alpha=2
+  的容量记录不代表当前配置通过；资源调整只能保留该LoRA设置后处理。
 - 2026-09-29 最新资源安排：三个 DT 任务各用两张卡，剩余两张卡运行 GRPO
   对照。Qwen3.5-9B、总长度上限32768；实际 minibatch 通过官方分布式配置安排，
   初始每卡 actor microbatch4/DT batch4。信用公式不依赖单卡假设。原单卡

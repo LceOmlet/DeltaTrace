@@ -26,6 +26,24 @@ class EpisodeResult:
     error: BaseException | None = None
 
 
+def training_readout_reserve(native, tokenizer):
+    """Reserve the existing DT query inside the native context budget."""
+    import json
+    import os
+    from pathlib import Path
+    from phi_agents.appworld.interface import load_task_ids
+    from reward_readout import RewardAlphabet
+
+    split = native['training_task_sampler']['dataset_name']
+    tasks = Path(os.environ['APPWORLD_ROOT']) / 'data/tasks'
+    counts = {len(json.loads((tasks / task / 'ground_truth/test_data.json').read_text()))
+              for task in load_task_ids(split)}
+    steps = native['training_environment']['appworld_config']['env']['max_interactions']
+    sampling = json.loads(os.environ['DT_SAMPLING_JSON'])
+    return max(RewardAlphabet.for_task('AppWorld', steps, appworld_num_tests=n)
+               .readout_token_budget(tokenizer, steps, sampling) for n in counts)
+
+
 class LoopEpisode:
     """Synchronous owner calls rendezvous with VERL's existing batched collector."""
 
@@ -102,6 +120,8 @@ def make_loop_environments(configuration, tokenizer):
 
     native = environment_configuration(Path(config.env.loop.owner_root))
     boundary = native['generation_boundary_reference']
+    reserve = (training_readout_reserve(native, tokenizer)
+               if config.get('algorithm', {}).get('adv_estimator') == 'deltatrace' else 0)
 
     class LoopManager(EnvironmentManagerBase):
         def __init__(self, phase):
@@ -110,12 +130,15 @@ def make_loop_environments(configuration, tokenizer):
             self.pool = ThreadPoolExecutor()
             client = dict(boundary['client'])
             client.pop('_target_')
+            # Configure the native client's existing length/termination logic.
+            # Evaluation has no DT readout. No history is truncated here.
+            max_length = boundary['max_model_len'] - (reserve if phase == 'training' else 0)
             # Existing, tokenizer-compatible native Qwen3 client. It owns message
             # encoding and decoding; the supplied tokenizer has identical IDs.
             self.template = VLLMQwen3(
                 host='127.0.0.1', port=0, base_model_path=Path(config.actor_rollout_ref.model.path),
                 model_id=None, temperature=boundary[f'{phase}_temperature'],
-                max_model_len=boundary['max_model_len'], **client)
+                max_model_len=max_length, **client)
             self.template._tokenizer = tokenizer
 
         def reset(self, kwargs):

@@ -11,10 +11,12 @@ export AGENTGYM_RL_ROOT=$DT_RUNTIME_ROOT/third_party/AgentGym-RL-82402a99c62a293
 export TEXTCRAFT_DATA=$DT_RUNTIME_ROOT/third_party/textcraft-data
 export LOOP_ROOT=$DT_RUNTIME_ROOT/third_party/ml-loop-f14107a976e5793990329d3193df4742076c5a1d
 export TEXTCRAFT_EXTRAS=$DT_RUNTIME_ROOT/environments/textcraft-extras-20260930
+export SKYRL_OWNER_ROOT=$DT_RUNTIME_ROOT/third_party/SkyRL-7d94cc-owner-generator
+export SKYRL_OWNER_EXTRAS=$DT_RUNTIME_ROOT/environments/skyrl-owner-leaves-7d94cc
 export LOOP_EXTRAS=$DT_RUNTIME_ROOT/environments/loop-extras-f14107a
 # Missing environment leaves are appended by their factory via site.addsitedir.
 # In particular, LOOP's archived accelerate must never precede the model runtime.
-export PYTHONPATH=$DT_ENTRY_ROOT:$DT_RUNTIME_ROOT/third_party/skyrl-gym-7d94cc:$DT_RUNTIME_ROOT/third_party/AgentGym-d014732d9fe39b975c368c03749bfd50950067f6/agentenv:$LOOP_ROOT:$VERL_ROOT:$DT_ROOT/experiments/rl:$DT_ROOT:$DT_RUNTIME_ROOT/receipts/upstream-alignment-20260929:${PYTHONPATH:-}
+export PYTHONPATH=$DT_ENTRY_ROOT:$DT_RUNTIME_ROOT/third_party/skyrl-gym-7d94cc:$DT_RUNTIME_ROOT/third_party/AgentGym-d014732d9fe39b975c368c03749bfd50950067f6/agentenv:$LOOP_ROOT:$VERL_ROOT:$DT_ROOT/experiments/rl:$DT_ROOT:$DT_RUNTIME_ROOT/receipts/upstream-alignment-20260929:$SKYRL_OWNER_ROOT:$SKYRL_OWNER_EXTRAS:${PYTHONPATH:-}
 export PATH=$(dirname "$VENV_PYTHON"):$PATH
 export VERL_ENTRY_BASELINE=$DT_RUNTIME_ROOT/candidates/official-verl-20bd331-distributed-dt/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
 export DT_TOKENIZER_PATH=$MODEL_PATH

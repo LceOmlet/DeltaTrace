@@ -10,10 +10,14 @@ from launch_owner_entry_check import options_for
 from owner_runtime_options import owner_command
 
 
-@pytest.mark.parametrize('task',['SkyRL-SQL','TextCraft','AppWorld'])
-def test_two_rank_config_satisfies_native_validator(task,tmp_path):
+@pytest.mark.parametrize('task,method,phase',[
+    ('SkyRL-SQL','dt','bounded'), ('SkyRL-SQL','grpo','bounded'),
+    ('SkyRL-SQL','dt','formal'), ('SkyRL-SQL','grpo','formal'),
+    ('TextCraft','dt','bounded'), ('AppWorld','dt','bounded'),
+])
+def test_two_rank_config_satisfies_native_validator(task,method,phase,tmp_path):
     if task=='SkyRL-SQL':
-        argv,_=command(SimpleNamespace(method='dt',phase='bounded',data=str(tmp_path),output=str(tmp_path)))
+        argv,_=command(SimpleNamespace(method=method,phase=phase,data=str(tmp_path),output=str(tmp_path)))
     else:
         options,_=options_for(task,tmp_path,tmp_path)
         argv=owner_command(options)
@@ -23,7 +27,10 @@ def test_two_rank_config_satisfies_native_validator(task,tmp_path):
     assert cfg.actor_rollout_ref.actor.entropy_coeff==.001
     assert cfg.actor_rollout_ref.actor.clip_ratio_c==3.
     assert cfg.actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu==1
-    assert cfg.actor_rollout_ref.actor.ppo_mini_batch_size==64
+    expected_mini = 1280 if task=='SkyRL-SQL' and phase=='formal' else 64
+    assert cfg.actor_rollout_ref.actor.ppo_mini_batch_size==expected_mini
+    assert cfg.actor_rollout_ref.model.lora_rank==8
+    assert cfg.actor_rollout_ref.model.lora_alpha==16
 
 
 def test_textcraft_renderer_uses_qwen_official_non_thinking_option():

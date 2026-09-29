@@ -2,6 +2,34 @@
 
 ## 2026-09-30 最新：30821恢复，任务只复用官方环境，不引入任务项目的训练/推理栈
 
+- 用户最新固定四组LoRA rank=8、alpha=16，不得改动。共享入口
+  `owner_runtime_options.py`已同步远端entry，原VERL配置解析与校验检查最终值。
+  `entry/lora8-owner-launch-tests.xml`只证明配置入口，不冒充8/16的GPU容量/数值结果。
+- SQL-DT/GRPO正式配置已于1790723216启动，分别PID803208/803209、GPU0/1与6/7。
+  新事实目录`runs/official-trajectory-20260930`含`formal-training.json`、`source.json`、
+  各组`job.json/launch.json/train.log`和`resources.jsonl`。冻结入口在该目录`entry`；
+  冻结VERL为`candidates/official-verl-20bd331-sql-formal-20260930`。不要热改冻结目录。
+  1790723858检查已进入原生vLLM训练前验证，尚无新optimizer更新。实际argv固定LoRA8/16；
+  GPU物理占用49681/50609MiB，两组进程树PSS约44.9/44.3GiB，容器RSS约83.5GiB。
+  当前验证集1034条，正式30epoch、256组×5条、global mini1280、ppo_epochs1；
+  actor micro1/GPU、DT4；checkpoint用原保留2份配置，未启用预实验预算。
+- SQL已复用原SkyRLGymGenerator.agent_loop及原convert_prompts_responses_to_batch_tensors，
+  完整轨迹一训练行，DT原回复表只留driver，token信用按原边界索引传递。原环境训练/评估
+  8项对照通过`entry/sql-native-final-tests.xml`；运输与信用接口25项通过
+  `entry/owner-trajectory-transport-tests.xml`。这些是CPU接口证据，不是数值/容量验收。
+  已删除旧自写SQLSession；未引入SkyRL trainer/inference engine。
+- 原SkyRL包源码在`third_party/SkyRL-7d94cc-owner-generator/skyrl`，仅供原环境循环及
+  数据转换调用。原转换模块缺少jaxtyping，仅按其原uv.lock补充jaxtyping0.3.11和
+  wadler-lindig0.1.7到`environments/skyrl-owner-leaves-7d94cc`，未重装训练栈。
+  `metax-entry.env.sh`已记录两个路径。当前33份DT、396份VERL核对回执为
+  `entry/candidate-source-current.json`，相对数值基线仅5个已记录环境/运输入口文件不同。
+- TextCraft完整轨迹入口和AppWorld原32runner/进程调度仍在对齐，两组正式未启动。
+  不把已有有界运行称为满足完整正式配置；也不影响已冻结启动的两组SQL。
+- 用户已选择在原32768内部预留DT空间，撤销33152提议。已在当前AppWorld入口
+  使用原Qwen客户端的max_model_len参数预留383，不复制终止逻辑。实际CPU边界：
+  prompt32010 + 原客户端允许response374 + 383 = 32767；更长输入由原
+  MaxSeqLenExceeded结束；短输入仍允许1500生成token；独立eval仍32768。
+  回执`entry/appworld-readout-reserve.json`。没有加载模型或启动预实验。
 - 当前有界作业以 `sql-dt-bounded-04`、`sql-grpo-bounded-02`、
   `textcraft-dt-bounded-04`、`appworld-dt-bounded-05` 的 job.json 为准，分别0/1、6/7、
   4/5、2/3；各两次迭代，状态以下列实测为准，不能称正式训练。启动前复核33份DT数值文件、
@@ -54,12 +82,12 @@
   原奖励0.5/0、num_tests=2，原清理正常；`loop-completion-entry/loop-entry.json`。
 - AppWorld确定性CPU上界检查：原client允许prompt32010、response757，总32767；
   两个官方tests对应DT询问/target另需347，合计33114超过DT当前32768。
-  `entry/appworld-readout-boundary.json`。已请求用户决定是否仅扩大DT辅助读出长度；
-  未批准前不截断原轨迹、不改变官方rollout预算、不扩大DT cap，不启动该项长跑。
+  `entry/appworld-readout-boundary.json`。该缺陷现按上方用户授权的内部预留修复，
+  不扩大DT cap、不截断已有历史；不是待用户确认的长度选择。
   全部72条训练任务的原test_data仅计数核验为2/4/5/6/7/8/9个tests；使用实际
   launch中的sampling字段时，DT额外长度为264–383，最坏总33150。
   `entry/appworld-readout-support.json`。33114是前述完整采样字段示例，不是全任务最大值。
-- 正式观察预算待用户确认。原SQL整轨迹训练与当前固定VERL每回复一行的计算单位
+- 下项是本次SQL完整轨迹接入前已发现并修复的问题，不是当前正式SQL行为。原SQL整轨迹训练与旧入口每回复一行的计算单位
   不同：原256组×5条、满6轮，在当前global minibatch64下最多120次更新；不能
   搬原任务数量后称原1次更新同负载。当前有界检查的每组2个任务不是论文规模。
 - SQL上一组DT和GRPO均在actor长回复反向OOM，不是DT专有问题。后续使用原VERL
