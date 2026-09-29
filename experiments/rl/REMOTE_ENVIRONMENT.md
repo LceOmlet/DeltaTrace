@@ -12,6 +12,13 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 20:30+08：已推送并发布修订`c9cd147`到`$DT_RUNTIME_ROOT/releases/c9cd147`。
+  复用入口设`DT_ROOT`为该目录、`DT_ENVIRONMENT_JSON=$DT_ROOT/environment.json`，
+  source原`metax.env.sh`后明确设
+  `VERL_ROOT=$DT_RUNTIME_ROOT/candidates/official-verl-20bd331-distributed-dt`。
+  该组合保留现有Python/模型/缓存，使用撤销旧history扩展的新补丁入口。
+  发布不是正式启动；旧formal manifest未被冒充为新进度。
+  `receipts/upstream-alignment-20260929/published-runtime-c9cd147.json`记录tar和补丁SHA。
 - 20:08+08：`receipts/upstream-alignment-20260929/owner-verified-pilots/manifest.json`
   记录的四个两卡作业均退出0、原checkpoint marker2。发布7431001，native
   global minibatch64、每卡actor/DT4、32768上限；显式测试预算为两迭代×每次
