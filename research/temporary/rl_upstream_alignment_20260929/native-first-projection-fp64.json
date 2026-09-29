@@ -1,0 +1,86 @@
+{
+  "scope": "CPU FP64 accounting for the first saved native projection differences.\n\nThe recorded actor is freshly initialized (LoRA B=0). Original checkpoint\nprojection weights suffice; no correction or production operator is installed.\n",
+  "cases": [
+    {
+      "side": "factual",
+      "module": "2.linear_attn.in_proj_a",
+      "shape": [
+        8,
+        527,
+        4096
+      ],
+      "input_dtype": "torch.bfloat16",
+      "weight_dtype": "torch.bfloat16",
+      "output_dtype": "torch.bfloat16",
+      "input_duplicate_max_abs": 0.0,
+      "output_duplicate_max_abs": 2.384185791015625e-07,
+      "fp64_duplicate_max_abs": 0.0,
+      "max_abs_native_vs_fp64": 0.015090065091499127,
+      "max_abs_native_vs_correctly_rounded_bf16": 0.0078125,
+      "mismatched_duplicate_coordinates": 1,
+      "examples": [
+        {
+          "row": 1,
+          "token": 274,
+          "channel": 16,
+          "actual": [
+            5.221366882324219e-05,
+            5.1975250244140625e-05,
+            5.221366882324219e-05
+          ],
+          "cpu_fp64": [
+            5.230528040556237e-05,
+            5.230528040556237e-05,
+            5.230528040556237e-05
+          ],
+          "cpu_fp64_rounded_bf16": [
+            5.221366882324219e-05,
+            5.221366882324219e-05,
+            5.221366882324219e-05
+          ]
+        }
+      ]
+    },
+    {
+      "side": "reference",
+      "module": "4.linear_attn.in_proj_b",
+      "shape": [
+        8,
+        527,
+        4096
+      ],
+      "input_dtype": "torch.bfloat16",
+      "weight_dtype": "torch.bfloat16",
+      "output_dtype": "torch.bfloat16",
+      "input_duplicate_max_abs": 0.0,
+      "output_duplicate_max_abs": 0.0009765625,
+      "fp64_duplicate_max_abs": 0.0,
+      "max_abs_native_vs_fp64": 0.015621581493178383,
+      "max_abs_native_vs_correctly_rounded_bf16": 0.0078125,
+      "mismatched_duplicate_coordinates": 1,
+      "examples": [
+        {
+          "row": 1,
+          "token": 217,
+          "channel": 4,
+          "actual": [
+            0.1689453125,
+            0.16796875,
+            0.1689453125
+          ],
+          "cpu_fp64": [
+            0.1684571537625743,
+            0.1684571537625743,
+            0.1684571537625743
+          ],
+          "cpu_fp64_rounded_bf16": [
+            0.1689453125,
+            0.1689453125,
+            0.1689453125
+          ]
+        }
+      ]
+    }
+  ],
+  "seconds": 0.6642646985128522
+}

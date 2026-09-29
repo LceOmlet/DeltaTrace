@@ -1,0 +1,264 @@
+{
+  "scope": "Replay recorded GDN operands in both native dtypes, with original FLA checks.\n\nThis is an operand diagnostic. It does not change production dtype, reference,\nthresholds or finite formulas. Coincident DT endpoints test the local derivative\nlimit; they do not certify an entire nonzero finite attribution.\n",
+  "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/native-duplicate-first-gdn.pt",
+  "cases": [
+    {
+      "dtype": "torch.bfloat16",
+      "operand_dtypes": {
+        "q": "torch.bfloat16",
+        "k": "torch.bfloat16",
+        "v": "torch.bfloat16",
+        "beta": "torch.bfloat16",
+        "raw_g": "torch.float32"
+      },
+      "input_cast_max_abs": {
+        "q": 0.001953125,
+        "k": 0.001953125,
+        "v": 0.0,
+        "beta": 0.0,
+        "raw_g": 0.0
+      },
+      "checks": [
+        {
+          "name": "native o",
+          "expected_dtype": "torch.float32",
+          "actual_dtype": "torch.bfloat16",
+          "threshold": 0.005,
+          "rms_ratio": 0.001977997818702839,
+          "max_abs": 0.013872385025024414,
+          "status": "passed"
+        },
+        {
+          "name": "native dq",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.bfloat16",
+          "threshold": 0.008,
+          "rms_ratio": 0.003938532891195964,
+          "max_abs": 0.0625,
+          "status": "passed"
+        },
+        {
+          "name": "finite dq",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.008,
+          "rms_ratio": 0.0036366654268044176,
+          "max_abs": 0.061534881591796875,
+          "status": "passed"
+        },
+        {
+          "name": "native dk",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.bfloat16",
+          "threshold": 0.008,
+          "rms_ratio": 0.009150256207543674,
+          "max_abs": 0.25,
+          "status": "failed",
+          "error": "       native dk diff: 0.250000 ratio: 0.009150"
+        },
+        {
+          "name": "finite dk",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.008,
+          "rms_ratio": 0.008741065450848125,
+          "max_abs": 0.2219076156616211,
+          "status": "failed",
+          "error": "       finite dk diff: 0.221908 ratio: 0.008741"
+        },
+        {
+          "name": "native dv",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.bfloat16",
+          "threshold": 0.008,
+          "rms_ratio": 0.007324214583335703,
+          "max_abs": 0.004913330078125,
+          "status": "passed"
+        },
+        {
+          "name": "finite dv",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.008,
+          "rms_ratio": 0.00714827170615816,
+          "max_abs": 0.004916300997138023,
+          "status": "passed"
+        },
+        {
+          "name": "native dbeta",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.bfloat16",
+          "threshold": 0.02,
+          "rms_ratio": 0.008634867756232739,
+          "max_abs": 0.03125,
+          "status": "passed"
+        },
+        {
+          "name": "finite dbeta",
+          "expected_dtype": "torch.bfloat16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.02,
+          "rms_ratio": 0.007868689992449943,
+          "max_abs": 0.026823997497558594,
+          "status": "passed"
+        },
+        {
+          "name": "native dg",
+          "expected_dtype": "torch.float32",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.02,
+          "rms_ratio": 0.0021754730380994895,
+          "max_abs": 0.1322929859161377,
+          "status": "passed"
+        },
+        {
+          "name": "finite dg",
+          "expected_dtype": "torch.float32",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.02,
+          "rms_ratio": 0.0018954229457118872,
+          "max_abs": 0.10641074180603027,
+          "status": "passed"
+        }
+      ],
+      "seconds": 30.97953339200467,
+      "status": "failed"
+    },
+    {
+      "dtype": "torch.float16",
+      "operand_dtypes": {
+        "q": "torch.float16",
+        "k": "torch.float16",
+        "v": "torch.float16",
+        "beta": "torch.float16",
+        "raw_g": "torch.float32"
+      },
+      "input_cast_max_abs": {
+        "q": 0.0,
+        "k": 0.0,
+        "v": 0.0,
+        "beta": 0.0,
+        "raw_g": 0.0
+      },
+      "checks": [
+        {
+          "name": "native o",
+          "expected_dtype": "torch.float32",
+          "actual_dtype": "torch.float16",
+          "threshold": 0.005,
+          "rms_ratio": 0.00024176518295163015,
+          "max_abs": 0.0014216899871826172,
+          "status": "passed"
+        },
+        {
+          "name": "native dq",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float16",
+          "threshold": 0.008,
+          "rms_ratio": 0.0,
+          "max_abs": 0.0078125,
+          "status": "passed"
+        },
+        {
+          "name": "finite dq",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.008,
+          "rms_ratio": 0.00045810207987735587,
+          "max_abs": 0.0048847198486328125,
+          "status": "passed"
+        },
+        {
+          "name": "native dk",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float16",
+          "threshold": 0.008,
+          "rms_ratio": 0.0017079418104913808,
+          "max_abs": 0.03125,
+          "status": "passed"
+        },
+        {
+          "name": "finite dk",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.008,
+          "rms_ratio": 0.0012125264638064928,
+          "max_abs": 0.028057098388671875,
+          "status": "passed"
+        },
+        {
+          "name": "native dv",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float16",
+          "threshold": 0.008,
+          "rms_ratio": 0.0,
+          "max_abs": 0.000732421875,
+          "status": "passed"
+        },
+        {
+          "name": "finite dv",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.008,
+          "rms_ratio": 0.0009578240944882977,
+          "max_abs": 0.0007187128067016602,
+          "status": "passed"
+        },
+        {
+          "name": "native dbeta",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float16",
+          "threshold": 0.02,
+          "rms_ratio": 0.0,
+          "max_abs": 0.00390625,
+          "status": "passed"
+        },
+        {
+          "name": "finite dbeta",
+          "expected_dtype": "torch.float16",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.02,
+          "rms_ratio": 0.001019870988544723,
+          "max_abs": 0.004469156265258789,
+          "status": "passed"
+        },
+        {
+          "name": "native dg",
+          "expected_dtype": "torch.float32",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.02,
+          "rms_ratio": 0.000644628828159499,
+          "max_abs": 0.033130645751953125,
+          "status": "passed"
+        },
+        {
+          "name": "finite dg",
+          "expected_dtype": "torch.float32",
+          "actual_dtype": "torch.float32",
+          "threshold": 0.02,
+          "rms_ratio": 0.0004636323264018893,
+          "max_abs": 0.029331207275390625,
+          "status": "passed"
+        }
+      ],
+      "seconds": 27.861871826462448,
+      "status": "passed"
+    }
+  ],
+  "original_operand_dtypes": {
+    "q": "torch.float16",
+    "k": "torch.float16",
+    "v": "torch.float16",
+    "beta": "torch.float16",
+    "raw_g": "torch.float32"
+  },
+  "shape": [
+    4,
+    910,
+    32,
+    128
+  ],
+  "initial_state_dtype": "torch.float32",
+  "original_assertion_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py",
+  "status": "completed_actual_operand_comparison"
+}

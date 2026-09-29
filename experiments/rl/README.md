@@ -10,6 +10,22 @@
 下方9月25日“正式运行”是历史记录，不能作为当前健康状态。尚未重启正式训练。
 本次改动、验收范围和未完成项统一见 [官方接入回执](results_upstream_alignment.json)。
 用户最新资源安排为三个DT任务各两卡、剩余两卡运行较快的长上下文任务GRPO。
+用户已明确否定自然输入最小长度筛选：32k是上下文上限，实际长度仅记录；
+不增加8k/16k门槛，也不据此改官方历史窗口。GRPO选AppWorld。
+`fc2e6c2`双卡候选已发布，正在执行每组两次迭代的小规模完整训练检查，
+不是正式预算启动。AppWorld两组因共用官方`default_<worker_id>`输出目录
+主动停止并保留旧记录；已用原`APPWORLD_ROOT`参数分别隔离输出，链接复用
+原data/src资产后重新启动，没有重写任务服务。其余两组继续原验证。
+
+DT实际dtype对照新增真实B4×910操作数：q/k/v/beta为FP16，g与缓存为FP32。
+原生/有限FLA在FP16下11项原断言通过；转换BF16后native dk=0.009150、
+finite dk=0.008741，均超过固定原阈值0.008，失败原样保留。
+完整DT相同输入的前向差异最早见于第2层BF16 in_proj_a；保存输入逐值相同，
+CPU FP64投影也相同，原生输出在一个坐标相差2.38e-7。此结果定位前向数值
+差异的一处来源，尚未解释全部有限传播残差，没有添加“纠偏”。见
+[实际操作数](../../research/temporary/rl_upstream_alignment_20260929/actual-saved-fla-dtypes.json)和
+[逐层诊断](../../research/temporary/rl_upstream_alignment_20260929/native-duplicate-boundary-diagnostic.json)。
+
 双卡候选已改用原生 `DP_COMPUTE_PROTO`：完整未来回报在分卡前计算，原
 DataProto 负责分发、补齐与收集，再按原轨迹/response身份返回信用。每卡
 actor microbatch/DT batch为4，全局optimizer minibatch64由原PPO累计。

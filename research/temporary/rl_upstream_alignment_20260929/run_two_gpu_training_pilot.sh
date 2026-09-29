@@ -19,7 +19,7 @@ export MAX_STEPS=15 MAX_RESPONSE=512 MAX_TOTAL_TOKENS=32768
 export VAL_BEFORE_TRAIN=False ENABLE_THINKING=False TOTAL_EPOCHS=2
 export SAVE_FREQ=1 TEST_FREQ=-1 RESUME_MODE=disable
 export DT_RAY_NUM_CPUS=16
-job="$A/two-gpu-pilots/$METHOD-$ENV_NAME"
+job="${PILOT_OUTPUT_ROOT:-$A/two-gpu-pilots}/$METHOD-$ENV_NAME"
 mkdir -p "$job"
 export DATA_ROOT="$job/data" CHECKPOINT_DIR="$job/checkpoints" ROLLOUT_DATA_DIR="$job/rollouts"
 service_pids=()
@@ -30,6 +30,7 @@ cleanup() {
 trap cleanup EXIT
 if [[ "$ENV_NAME" == AppWorld ]]; then
   : "${APPWORLD_SERVER_OFFSET:?Select disjoint entries of the existing official port list}"
+  appworld_source="$APPWORLD_ROOT"
   export APPWORLD_PORT_FILE="$job/appworld_ports.ports"
   "$VENV_PYTHON" - "$APPWORLD_ROOT/appworld_ports_formal.ports" "$APPWORLD_PORT_FILE" "$APPWORLD_SERVER_OFFSET" <<'PY'
 from pathlib import Path
@@ -41,6 +42,14 @@ for port in ports:
         assert sock.connect_ex(('127.0.0.1', int(port))) != 0, f'Port {port} already owned'
 Path(sys.argv[2]).write_text('\n'.join(ports)+'\n')
 PY
+  # The original worker names outputs default_<worker_id>. Separate jobs have
+  # the same IDs even with different ports. Use AppWorld's official root setting
+  # to isolate output directories while symlinking its already installed assets.
+  export APPWORLD_ROOT="$job/appworld-root"
+  mkdir -p "$APPWORLD_ROOT"
+  ln -s "$appworld_source/data" "$APPWORLD_ROOT/data"
+  ln -s "$appworld_source/src" "$APPWORLD_ROOT/src"
+  ln -s "$APPWORLD_PORT_FILE" "$APPWORLD_ROOT/appworld_ports.ports"
   cd "$APPWORLD_ROOT"
   while read -r port; do
     CUDA_VISIBLE_DEVICES='' MACA_VISIBLE_DEVICES='' "$APPWORLD_BIN" serve environment --port "$port" > "$job/service-$port.log" 2>&1 &

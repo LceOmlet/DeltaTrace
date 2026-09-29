@@ -12,6 +12,17 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 17:02+08 当前双卡验证发布为`releases/fc2e6c2`，代码已推送。启动与实际
+  PID记录在`receipts/upstream-alignment-20260929/two-gpu-pilots/manifest.json`，
+  原Ray日志会比driver汇总日志更及时，需按记录的session读取，不能只看
+  driver末尾。该manifest只表示两次迭代的bounded pilot，不覆盖旧formal状态。
+  Sokoban用0/1，Webshop用2/3；AppWorld DT用4/5、GRPO用6/7。
+  两组AppWorld原尝试因官方worker均使用`default_<worker_id>`输出目录，
+  已定向停止并保存原记录；17:01重启位于`two-gpu-pilots-isolated`。
+  使用官方`APPWORLD_ROOT`为每组独立root，只把data/src链接回既有资产，
+  experiments/outputs留在各自root。端口不同不等于输出目录独立。
+  不运行旧会停止全部服务的批量脚本；现有launcher只管理自己的服务PID。
+  三任务正式预算、定时检查及异机备份仍未恢复。
 - 16:20+08 双卡接入候选位于
   `receipts/upstream-alignment-20260929/distributed-runtime`，原生 VERL owner 为
   `candidates/official-verl-20bd331-distributed-dt`。单卡提交 `c209a6e` 已推送，

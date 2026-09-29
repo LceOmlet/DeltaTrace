@@ -17,8 +17,12 @@ from deltatrace_rollout import DeltaTraceRolloutProducer
 root = Path(os.environ['DT_RUNTIME_ROOT']) / 'receipts/upstream-alignment-20260929'
 output = root / 'native-duplicate-row-diagnostic.json'
 credit_probe = os.environ.get('DT_DUPLICATE_CREDIT_PROBE') == '1'
+boundary_probe = os.environ.get('DT_DUPLICATE_BOUNDARY_PROBE') == '1'
+credit_probe = credit_probe or boundary_probe
 if credit_probe:
     output = root / 'native-duplicate-credit-diagnostic.json'
+if boundary_probe:
+    output = root / 'native-duplicate-boundary-diagnostic.json'
 started = time.perf_counter()
 result = dict(scope=__doc__, stages=[])
 def save(phase):
@@ -51,8 +55,64 @@ if credit_probe:
     row = {k: torch.tensor(v) if k in ('input_ids', 'attention_mask', 'responses') else v for k,v in row.items()}
     episodes = [[{**row, 'traj_uid': f'duplicate-{i}'}] for i in range(4)]
     result['runs'] = []
-    for mode in ('plain', 'plain_repeat', 'synchronize_layers'):
+    for mode in (('passive_boundaries',) if boundary_probe else ('plain', 'plain_repeat', 'synchronize_layers')):
         handles = []
+        observations = []
+        if boundary_probe:
+            from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
+            original_attribute = runner.attribute
+            def record_owner_details(*args, **kwargs):
+                signed, details = original_attribute(*args, **kwargs)
+                result['owner_details'] = details
+                return signed, details
+            runner.attribute = record_owner_details
+            capture_state = {'calls': 0}
+            def start_gdn_capture(module, args):
+                capture_state['calls'] += 1
+                if capture_state['calls'] == 2:
+                    capture_state['capture'] = NativeGDNCapture(module, device='cpu')
+                    capture_state['capture'].__enter__()
+            def finish_gdn_capture(module, args, out):
+                capture = capture_state.pop('capture', None)
+                if capture is not None:
+                    capture.__exit__(None,None,None)
+                    torch.save(dict(values=capture.values,endpoints=capture.endpoints,scale=capture.scale),
+                               root/'actual-dt-cached-layer2-gdn.pt')
+            handles.append(layers[2].linear_attn.register_forward_pre_hook(start_gdn_capture))
+            handles.append(layers[2].linear_attn.register_forward_hook(finish_gdn_capture))
+            visits = {}
+            saved_first = set()
+            def observe(name):
+                def capture(module, args, out):
+                    value = out[0] if isinstance(out, tuple) else out
+                    if not isinstance(value, torch.Tensor) or value.ndim != 3 or value.shape[0] not in (4, 8):
+                        return
+                    visits[name] = visits.get(name, 0) + 1
+                    # Pair0 has a different scored return label. Compare only
+                    # pairs1..3, whose complete IDs/labels are identical.
+                    for side, rows in ([('prefix', value[1:])] if value.shape[0] == 4 else
+                                       [('reference', value[2::2]), ('factual', value[3::2])]):
+                        delta = rows.float() - rows[:1].float()
+                        maximum = float(delta.abs().max())
+                        observations.append(dict(module=name, call=visits[name], side=side,
+                            shape=list(value.shape), dtype=str(value.dtype), duplicate_max_abs=maximum))
+                        key = (visits[name], side)
+                        if maximum and key not in saved_first:
+                            saved_first.add(key)
+                            torch.save(dict(name=name, call=visits[name], side=side,
+                                input=args[0].detach().cpu() if args and isinstance(args[0],torch.Tensor) else None,
+                                output=value.detach().cpu(),
+                                weight=module.weight.detach().cpu() if isinstance(getattr(module,'weight',None),torch.Tensor)
+                                    and not hasattr(module.weight,'placements') else None),
+                                root/f'duplicate-first-difference-{visits[name]}-{side}.pt')
+                return capture
+            for index, layer in enumerate(layers):
+                handles.append(layer.register_forward_hook(observe(f'{index}.output')))
+                for name, module in layer.named_modules():
+                    if name in ('input_layernorm', 'post_attention_layernorm', 'linear_attn',
+                                'linear_attn.in_proj_qkv', 'linear_attn.in_proj_a', 'linear_attn.in_proj_b',
+                                'linear_attn.in_proj_z', 'linear_attn.norm', 'linear_attn.out_proj', 'mlp'):
+                        handles.append(module.register_forward_hook(observe(f'{index}.{name}')))
         if mode == 'synchronize_layers':
             def synchronize(module, args, out):
                 torch.cuda.synchronize()
@@ -63,9 +123,16 @@ if credit_probe:
             report = producer.readout.last_report
             result['runs'].append(dict(mode=mode, seconds=report['seconds'], traces=report['traces'],
                 source_vectors=[x['source_signed'] for x in report['minimum_log_ratio_batch']['samples']]))
+            if boundary_probe:
+                result['observations'] = observations
+                result['first_differences'] = [next(item for item in observations
+                    if item['call'] == call and item['side'] == side and item['duplicate_max_abs'] > 0)
+                    for call, side in sorted(saved_first)]
             save(mode)
         finally:
             for handle in handles: handle.remove()
+            if boundary_probe:
+                runner.attribute = original_attribute
     save('complete')
     torch.distributed.destroy_process_group()
     sys.exit(0)

@@ -1,7 +1,12 @@
 {
   "date": "2026-09-29",
   "status": "distributed_connection_and_capacity_exercised_numerical_acceptance_pending",
-  "layout": {"DT_Sokoban": 2, "DT_Webshop": 2, "DT_AppWorld": 2, "GRPO_control": 2},
+  "layout": {
+    "DT_Sokoban": 2,
+    "DT_Webshop": 2,
+    "DT_AppWorld": 2,
+    "GRPO_control": 2
+  },
   "batching": {
     "actor_microbatch_per_gpu": 4,
     "dt_batch_per_gpu": 4,
@@ -21,16 +26,28 @@
     "native_lora_gather": "All LoRA full_tensor SHA256 values identical across the two ranks",
     "saved_task_updates": {
       "scope": "8 saved fixture identities, repeated with native DataProto to global64; not independent sampled episodes or task performance",
-      "Sokoban": {"dt_seconds": 38.0401, "update_seconds": 25.8629, "grad_norm": 8.8789758682},
-      "Webshop": {"dt_seconds": 2.8328, "update_seconds": 26.1543, "grad_norm": 3.4456844330},
-      "AppWorld": {"dt_seconds": 3.8395, "update_seconds": 11.4206, "grad_norm": 0.0248841755}
+      "Sokoban": {
+        "dt_seconds": 38.0401,
+        "update_seconds": 25.8629,
+        "grad_norm": 8.8789758682
+      },
+      "Webshop": {
+        "dt_seconds": 2.8328,
+        "update_seconds": 26.1543,
+        "grad_norm": 3.445684433
+      },
+      "AppWorld": {
+        "dt_seconds": 3.8395,
+        "update_seconds": 11.4206,
+        "grad_norm": 0.0248841755
+      }
     },
     "native_grpo": {
       "scope": "WebShop bounded2-turn connection test,32 sampled trajectories, original trainer and vLLM DP2/TP1; zero task success does not validate nonzero success learning",
       "completed_iterations": 1,
       "original_checkpoint_marker": 1,
       "generate_seconds": 93.026,
-      "old_logprob_seconds": 21.060,
+      "old_logprob_seconds": 21.06,
       "update_seconds": 33.888,
       "save_seconds": 63.393,
       "whole_step_seconds": 211.602
@@ -46,16 +63,31 @@
       "update_seconds": 84.1864,
       "grad_norm": 0.1313547641,
       "oom": false,
-      "physical_used_after_update_bytes_per_gpu": [68219912192, 68219887616],
+      "physical_used_after_update_bytes_per_gpu": [
+        68219912192,
+        68219887616
+      ],
       "device_usable_bytes_per_gpu": 68283269120,
       "memory_note": "Near physical capacity. torch virtual allocator peak with sleeping vLLM is not physical peak; end-stage usage is not a sampled whole-run peak."
     }
   },
   "task_selection_measurement": {
     "scope": "One shared base-model single-GPU worker;4 greedy trajectories per task,15 interaction limit, official history_length2,response512. Not double-GPU throughput or score non-regression.",
-    "Webshop": {"seconds": 521.0661, "max_prompt_tokens": 2446, "successful_episodes": 1},
-    "AppWorld": {"seconds": 294.4737, "max_prompt_tokens": 4812, "successful_episodes": 0},
-    "Sokoban": {"seconds": 567.1162, "max_prompt_tokens": 674, "successful_episodes": 0},
+    "Webshop": {
+      "seconds": 521.0661,
+      "max_prompt_tokens": 2446,
+      "successful_episodes": 1
+    },
+    "AppWorld": {
+      "seconds": 294.4737,
+      "max_prompt_tokens": 4812,
+      "successful_episodes": 0
+    },
+    "Sokoban": {
+      "seconds": 567.1162,
+      "max_prompt_tokens": 674,
+      "successful_episodes": 0
+    },
     "selected_grpo_task": "AppWorld, selected for lower measured collection cost. Keep official task history and32768 cap. Actual input lengths are recorded only, never a task/trajectory eligibility or launch condition. User explicitly rejected adding a minimum natural-input-length requirement."
   },
   "not_accepted_as_complete": [
@@ -64,5 +96,39 @@
     "Historical DT nonfinite failure, full PPO numerical parity and official AppWorld experiment-budget alignment remain open.",
     "No new formal2+2+2+2 training fleet has been launched; no formal completion, task-score non-regression or final backup claim."
   ],
-  "receipts": "research/temporary/rl_upstream_alignment_20260929; remote receipts/upstream-alignment-20260929"
+  "receipts": "research/temporary/rl_upstream_alignment_20260929; remote receipts/upstream-alignment-20260929",
+  "bounded_pilots": {
+    "release": "fc2e6c2",
+    "scope": "2 iterations x16 trajectories; not formal budgets",
+    "launch_manifest": "research/temporary/rl_upstream_alignment_20260929/two-gpu-pilot-launches.json",
+    "appworld_restart": "Original default_<worker_id> outputs collided across independent jobs; stopped both before an accepted update and restarted with official per-job APPWORLD_ROOT plus symlinked existing data/src. No task service implementation changed.",
+    "completed_iteration_at_1706": {
+      "Sokoban": 1
+    },
+    "input_length_selection": false
+  },
+  "actual_dtype_diagnostic": {
+    "source": "research/temporary/rl_upstream_alignment_20260929/actual-saved-fla-dtypes.json",
+    "shape": [
+      4,
+      910,
+      32,
+      128
+    ],
+    "saved_qkv_beta_dtype": "float16",
+    "gate_cache_dtype": "float32",
+    "fp16_original_assertions_passed": 11,
+    "bf16_native_dk_ratio": 0.009150256207543674,
+    "bf16_finite_dk_ratio": 0.008741065450848125,
+    "original_dk_threshold": 0.008,
+    "scope": "Saved real first-GDN operands, coincident finite endpoints; not all cached DT layers or whole-network residual acceptance"
+  },
+  "first_native_projection_difference": {
+    "module": "2.linear_attn.in_proj_a",
+    "input_dtype": "bfloat16",
+    "max_duplicate_difference": 2.384185791015625e-07,
+    "saved_duplicate_input_exact": true,
+    "cpu_fp64_duplicate_output_exact": true,
+    "scope": "A first forward rounding source located; full finite residual accounting remains open. No correction, rescaling or tolerance change."
+  }
 }
