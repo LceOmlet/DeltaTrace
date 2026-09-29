@@ -31,7 +31,7 @@ trap cleanup EXIT
 if [[ "$ENV_NAME" == AppWorld ]]; then
   : "${APPWORLD_SERVER_OFFSET:?Select disjoint entries of the existing official port list}"
   export APPWORLD_PORT_FILE="$job/appworld_ports.ports"
-  "$VENV_PYTHON" - "$APPWORLD_ROOT/appworld_ports.ports" "$APPWORLD_PORT_FILE" "$APPWORLD_SERVER_OFFSET" <<'PY'
+  "$VENV_PYTHON" - "$APPWORLD_ROOT/appworld_ports_formal.ports" "$APPWORLD_PORT_FILE" "$APPWORLD_SERVER_OFFSET" <<'PY'
 from pathlib import Path
 import socket, sys
 ports = Path(sys.argv[1]).read_text().splitlines()[int(sys.argv[3]):int(sys.argv[3])+17]
