@@ -181,13 +181,6 @@ if [[ "$ENV_NAME" == "AppWorld" ]]; then
   flock "$APPWORLD_ROOT/.deltatrace-patch.lock" \
     "$VENV_PYTHON" "$DT_ROOT/experiments/rl/patch_appworld_transport.py" "$APPWORLD_ROOT"
 fi
-if [[ "$ENV_NAME" == "Webshop" && -d "$VERL_ROOT/agent_system/environments/env_package/webshop/webshop/search_engine/indexes_1k" ]]; then
-  # The upstream manager passes num_products=None, which selects `indexes`.
-  # The A6000 smoke uses the official 1k index; replace this link with the
-  # official full index for a full WebShop run.
-  ln -sfn indexes_1k "$VERL_ROOT/agent_system/environments/env_package/webshop/webshop/search_engine/indexes"
-fi
-
 DATA_ROOT="${DATA_ROOT:-$HOME/data/verl-agent/delta-agent}"
 mkdir -p "$DATA_ROOT"
 "$VENV_PYTHON" "$VERL_ROOT/examples/data_preprocess/prepare.py" \

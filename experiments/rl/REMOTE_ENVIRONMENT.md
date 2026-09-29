@@ -12,6 +12,12 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 索引口径复核：固定VERL-agent内WebShop的原`web_agent_site/utils.py`
+  默认就是`items_shuffle_1000.json`/`items_ins_v2_1000.json`。原converter将
+  同一1000份商品同时写入`resources`和`resources_1k`，原indexer据此生成
+  `indexes`/`indexes_1k`。不能仅凭manager的`num_products=None`断言加载了
+  全量百万商品。删除启动器每次强制`indexes -> indexes_1k`的旧动作；已配置
+  的资产链接可复用，不重新下载/建索引，不称为全量商品库实验。
 - 19:45+08：vLLM v0.15 `test_hybrid.py::test_models`明确以HF为参考，
   64token/top5使用原`check_logprobs_close`；其规则为生成token/top-k而非scalar
   allclose。实际BF16 Qwen3.5-9B基础/非零PEFT、fresh/wake共4组模型比较通过，
