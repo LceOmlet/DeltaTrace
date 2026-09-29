@@ -62,6 +62,7 @@ APPWORLD_PORT_FILE="${APPWORLD_PORT_FILE:-appworld_ports.ports}"
 APPWORLD_MAX_INTERACTIONS="${APPWORLD_MAX_INTERACTIONS:-50}"
 CHAT_TEMPLATE_ARGS=()
 ROLLOUT_ARGS=()
+DATA_LOADER_ARGS=()
 if [[ "$ROLLOUT_BACKEND" == "vllm" ]]; then
   # Native VERL hybrid rollout, tensor LoRA sync, and vLLM sleep/wake.
   ROLLOUT_ARGS+=("actor_rollout_ref.rollout.load_format=safetensors"
@@ -102,6 +103,11 @@ if [[ -n "${MACA_PATH:-}" ]]; then
   # disagrees with that one-card view and mcTorch fails during initialization
   # (device=1, num_gpus=1). Let Ray be the sole owner of actor GPU assignment.
   unset MACA_VISIBLE_DEVICES
+  # The real AppWorld pilot stalled on the next epoch: a forked torchdata
+  # worker stopped in torch.set_num_threads(1), with both policy GPUs idle.
+  # These files contain task metadata; use the owner's existing zero-worker
+  # setting rather than copying/replacing its loader, sampler or checkpointing.
+  DATA_LOADER_ARGS+=("+data.dataloader_num_workers=0")
 fi
 export DT_ROOT
 export VERL_ROOT
@@ -210,6 +216,7 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   data.filter_overlong_prompts=True \
   data.truncation=error \
   data.return_raw_chat=True \
+  "${DATA_LOADER_ARGS[@]}" \
   actor_rollout_ref.model.path="$MODEL_PATH" \
   actor_rollout_ref.model.trust_remote_code=True \
   actor_rollout_ref.model.lora_rank="$LORA_RANK" \

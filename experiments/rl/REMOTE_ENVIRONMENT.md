@@ -12,6 +12,16 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 18:00+08 AppWorld DT有界pilot在step1之后的DataLoader fork初始化停滞约半小时，
+  TaskRunner等待worker返回；worker406057停于原torchdata `torch.set_num_threads(1)`，
+  GPU actor空闲。已保存`two-gpu-pilots-isolated/dt-AppWorld/dataloader-stall-stop.json`
+  并只停止该记录进程树；step1检查点保留，没有完成第二次更新。其余三个pilot均2/2。
+  后续MetaX新启动使用VERL已有`+data.dataloader_num_workers=0`；loader/sampler不重写。
+  此设置处理metadata读取，不影响vLLM/任务服务并发。原八worker的`data.pt`不能直接
+  当零worker状态恢复；不删除、转换或静默跳过旧状态。零worker跨三epoch已运行，
+  原生恢复的`extra_info`顺序比较未通过，原记录保留，不能声称完全复现采样顺序。
+  另见`rollout-nan-checkpoint-probe.json`：基础模型及真实step1加载后两次原生成，
+  11,461个有效token的原vLLM/actor log-prob均有限；不能据此宣布训练NaN已修复。
 - 17:35+08 DT实际数值诊断已复用原环境完成，生产runtime仍为`fc2e6c2`，
   没有数值补偿或阈值改动。新测试与张量位于`receipts/upstream-alignment-20260929`：
   `actual-dt-layer2-finite-consumer.pt`保存真实FP16 FLA输入/上游与FP32非零缓存；

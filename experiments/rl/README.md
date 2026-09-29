@@ -16,10 +16,18 @@
 不是正式预算启动。AppWorld两组因共用官方`default_<worker_id>`输出目录
 主动停止并保留旧记录；已用原`APPWORLD_ROOT`参数分别隔离输出，链接复用
 原data/src资产后重新启动，没有重写任务服务。其余两组继续原验证。
-17:35+08 Sokoban/WebShop已完成2/2及原checkpoint marker2；AppWorld DT/GRPO
-各完成1/2。Sokoban第二批采样成功率0.25，不能当独立评估；其他已报批次成功率0。
-第二轮Sokoban/WebShop原rollout概率差指标为NaN，actor loss/梯度有限，仍需
-核查原生成概率记录。Sokoban退出阶段还记录DataLoader worker信号错误。
+18:00+08 Sokoban/WebShop及AppWorld GRPO已完成2/2及原checkpoint marker2；
+AppWorld DT仅完成1/2。其父进程等待下一epoch的DataLoader初始化，一个fork子进程
+停在原torchdata的`torch.set_num_threads(1)`，两个policy worker空闲。已保存调用栈并
+定向停止该作业，保留step1；不能把它的首轮末尾DT日志报告成第二轮进展。
+MetaX启动器改用VERL已有`data.dataloader_num_workers=0`，不改loader实现。
+原metadata loader跨三epoch耗时约34/3/3毫秒；零worker原生状态恢复的行顺序检查
+在`extra_info`上有差异，未称精确恢复。旧八worker checkpoint不做格式转换或静默重置。
+Sokoban第二批采样成功率0.25，不能当独立评估；其他已报批次成功率0。
+第二轮Sokoban/WebShop/AppWorld GRPO原rollout概率差指标为NaN，actor loss/梯度有限。
+真实Sokoban step1检查点的短重放共检查11,461个有效token，vLLM原始概率与actor重算
+均有限；没有复现该NaN，也没有据此改生成算法。正在单独检查原更新后的生成边界。
+Sokoban退出阶段还记录DataLoader worker信号错误。
 不把这些有界验证称为三任务已全面健康，也未恢复正式预算或备份。
 
 DT实际dtype对照已保存正式调用边界的张量：FLA的q/k/v/beta及进入内核的

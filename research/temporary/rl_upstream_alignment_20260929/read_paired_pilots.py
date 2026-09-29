@@ -41,7 +41,8 @@ for job in json.loads((audit / 'two-gpu-pilots/manifest.json').read_text()):
             if 'actor/grad_norm' in line and 'step:' in line:
                 metrics.append({'source': str(log), 'line': line})
         if selected:
-            entries.append({'source': str(log), 'tail': selected[-4:]})
+            entries.append({'source': str(log), 'last_write_unix': log.stat().st_mtime,
+                            'tail': selected[-4:]})
     marker = directory / 'checkpoints/latest_checkpointed_iteration.txt'
     exit_path = directory / 'exit-code'
     item = {'task': job['task'], 'method': job['method'], 'devices': job['devices'],
@@ -50,6 +51,9 @@ for job in json.loads((audit / 'two-gpu-pilots/manifest.json').read_text()):
             'checkpoint_marker': marker.read_text().strip() if marker.exists() else None,
             'exit_code': exit_path.read_text().strip() if exit_path.exists() else None,
             'phase_log_entries': entries, 'errors': errors, 'completed_metrics': metrics}
+    stop_record = directory / 'dataloader-stall-stop.json'
+    if stop_record.exists():
+        item['intentional_stop'] = json.loads(stop_record.read_text())
     report['jobs'].append(item)
 report['cgroup_usage_bytes'] = int(Path('/sys/fs/cgroup/memory/memory.usage_in_bytes').read_text())
 (audit / 'two-gpu-pilots/latest-observation.json').write_text(json.dumps(report, indent=2)+'\n')

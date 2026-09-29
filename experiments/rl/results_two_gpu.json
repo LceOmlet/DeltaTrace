@@ -102,14 +102,23 @@
     "scope": "2 iterations x16 trajectories; not formal budgets",
     "launch_manifest": "research/temporary/rl_upstream_alignment_20260929/two-gpu-pilot-launches.json",
     "appworld_restart": "Original default_<worker_id> outputs collided across independent jobs; stopped both before an accepted update and restarted with official per-job APPWORLD_ROOT plus symlinked existing data/src. No task service implementation changed.",
-    "completed_iterations_at_1735": {
+    "completed_iterations_at_1800": {
       "dt_Sokoban": 2,
       "dt_Webshop": 2,
       "dt_AppWorld": 1,
-      "grpo_AppWorld": 1
+      "grpo_AppWorld": 2
     },
-    "current_observation": "../../research/temporary/rl_upstream_alignment_20260929/two-gpu-pilot-observation-1735.json",
-    "unresolved_observations": ["Native rollout probability difference metrics are NaN in second Sokoban/WebShop iterations despite finite actor loss/gradients; not declared healthy.", "Sokoban logged a killed DataLoader worker in Ray main_loop after reaching2/2 and marker2/exit0. This is an exit-phase observation, not a failed in-progress PPO update; cause not yet established.", "Current score samples do not establish task-performance non-regression."],
+    "current_observation": "../../research/temporary/rl_upstream_alignment_20260929/two-gpu-pilot-observation-current.json",
+    "appworld_stall": {
+      "completed_iterations": 1,
+      "actual_phase": "Next epoch original DataLoader initialization; not second DT or actor update",
+      "captured_stack": "torchdata/stateful_dataloader/worker.py:99 torch.set_num_threads(1) after fork; TaskRunner waits for this worker and both policy actors are idle",
+      "action": "Recorded stacks, stopped only this job's verified process tree, preserved original step1 checkpoint. New MetaX launches use existing native data.dataloader_num_workers=0.",
+      "three_epoch_metadata_seconds": [0.0339253703, 0.0032541808, 0.0030914964],
+      "checkpoint_note": "Old eight-worker state is not silently reset or converted. Original zero-worker resume comparison differed in extra_info ordering; not claimed exact.",
+      "receipt": "../../research/temporary/rl_upstream_alignment_20260929/dataloader-stall-stop.json"
+    },
+    "unresolved_observations": ["Native rollout probability difference metrics are NaN in second Sokoban/WebShop/AppWorld GRPO iterations despite finite actor loss/gradients; not declared healthy. Both real-step1 reload and saved-input native-update probes returned finite raw vLLM and actor log-probs; full original collector boundary is under investigation.", "Sokoban logged a killed DataLoader worker in Ray main_loop after reaching2/2 and marker2/exit0. This is an exit-phase observation, not a failed in-progress PPO update; cause not yet established.", "Current score samples do not establish task-performance non-regression."],
     "input_length_selection": false
   },
   "actual_dtype_diagnostic": {
