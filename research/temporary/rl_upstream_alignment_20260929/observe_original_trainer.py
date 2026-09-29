@@ -1,6 +1,6 @@
 """Passive probability capture around the original trainer's real two-step loop.
 
-Test-only subclasses call the owning methods unchanged. No generation, reward,
+The test-only TaskRunner calls the owning method unchanged. No generation, reward,
 advantage, sampler, optimizer or parameter synchronization is implemented here.
 """
 import inspect
@@ -14,7 +14,6 @@ import torch
 from omegaconf import OmegaConf
 from verl.trainer import main_ppo
 from verl.trainer.ppo.ray_trainer import RayPPOTrainer
-from verl.workers import fsdp_workers
 
 audit = Path(os.environ['DT_RUNTIME_ROOT'])/'receipts/upstream-alignment-20260929'
 directory = audit/'probability-native-trainer'
@@ -41,41 +40,11 @@ def observe(label, data, rank=None, step=None):
         stream.write(json.dumps(record)+'\n')
     print('PROBABILITY_OBSERVATION '+json.dumps(record), flush=True)
 
-class ObservedWorker(fsdp_workers.ActorRolloutRefWorker):
-    def init_model(self):
-        result = super().init_model()
-        original = self.rollout.inference_engine.generate
-        def traced(*args, **kwargs):
-            outputs = original(*args, **kwargs)
-            import math
-            values = [item.logprobs[i][token].logprob
-                      for request in outputs for item in request.outputs
-                      for i, token in enumerate(item.token_ids)]
-            record = dict(time_unix=time.time(), phase='native_vllm', rank=self.rank,
-                          count=len(values), nonfinite=sum(not math.isfinite(x) for x in values))
-            with (directory/f'native-vllm-rank{self.rank}.jsonl').open('a') as stream:
-                stream.write(json.dumps(record)+'\n')
-            print('PROBABILITY_NATIVE '+json.dumps(record), flush=True)
-            return outputs
-        self.rollout.inference_engine.generate = traced
-        return result
-
-    def generate_sequences(self, prompts):
-        result = super().generate_sequences(prompts)
-        observe('worker_return', result, rank=self.rank)
-        return result
-
-# The native Ray dispatcher uses registration metadata from these methods.
-# Preserve it on the observing wrappers; the original decorated call is kept.
-ObservedWorker.init_model.__dict__.update(fsdp_workers.ActorRolloutRefWorker.init_model.__dict__)
-ObservedWorker.generate_sequences.__dict__.update(fsdp_workers.ActorRolloutRefWorker.generate_sequences.__dict__)
-
 OriginalTaskRunner = main_ppo.TaskRunner.__ray_metadata__.modified_class
 
 @ray.remote(num_cpus=1)
 class ObservedTaskRunner(OriginalTaskRunner):
     def run(self, config):
-        fsdp_workers.ActorRolloutRefWorker = ObservedWorker
         code = RayPPOTrainer.fit.__code__
         lines, first = inspect.getsourcelines(RayPPOTrainer.fit)
         stops = {}
