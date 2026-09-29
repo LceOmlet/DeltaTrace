@@ -1,0 +1,52 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________________________ test_lr_scheduler _______________________________
+
+    def test_lr_scheduler():
+        from torch import nn
+    
+        model = nn.Linear(10, 10)
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    
+        from verl.utils.torch_functional import get_constant_schedule_with_warmup
+    
+        constant_lr = get_constant_schedule_with_warmup(optimizer=optimizer, num_warmup_steps=2)
+    
+        lr_lst = []
+    
+        for _ in range(5):
+            lr_lst.append(constant_lr.get_last_lr()[0])
+            constant_lr.step()
+    
+        torch.testing.assert_close(lr_lst, [0.0, 0.0005, 0.001, 0.001, 0.001])
+    
+        from verl.utils.torch_functional import get_cosine_schedule_with_warmup
+    
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+        cosine_lr = get_cosine_schedule_with_warmup(optimizer=optimizer, num_warmup_steps=2, num_training_steps=5, min_lr_ratio=0.1)
+    
+        lr_lst = []
+    
+        for _ in range(5):
+            lr_lst.append(cosine_lr.get_last_lr()[0])
+            cosine_lr.step()
+    
+>       torch.testing.assert_close(lr_lst, [0.0, 0.0005, 0.001, 0.0007750000000000002, 0.0003250000000000002])
+E       AssertionError: Scalars are not close!
+E       
+E       Expected 0.0 but got 0.0001.
+E       Absolute difference: 0.0001 (up to 1e-07 allowed)
+E       Relative difference: inf (up to 1e-07 allowed)
+E       
+E       The failure occurred for item [0]
+
+tests/gpu_utility/test_torch_functional.py:96: AssertionError
+=============================== warnings summary ===============================
+tests/gpu_utility/test_torch_functional.py::test_lr_scheduler
+  /opt/conda/lib/python3.12/site-packages/torch/optim/lr_scheduler.py:192: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/gpu_utility/test_torch_functional.py::test_lr_scheduler - Assert...
+1 failed, 1 warning in 14.02s

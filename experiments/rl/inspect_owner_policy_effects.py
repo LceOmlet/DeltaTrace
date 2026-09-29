@@ -48,7 +48,7 @@ def policy_observables(state, values, clip):
                 old_log_prob=values['old_log_probs'], log_prob=log_probs,
                 advantages=state['dt_token_advantages'], response_mask=mask,
                 cliprange=clip['clip_ratio'], cliprange_low=clip['clip_ratio_low'],
-                cliprange_high=clip['clip_ratio_high'], clip_ratio_c=float('inf'),
+                cliprange_high=clip['clip_ratio_high'], clip_ratio_c=float(clip['clip_ratio_c']),
                 loss_agg_mode=clip['loss_agg_mode'])
         finally:
             sys.setprofile(previous)
@@ -74,7 +74,6 @@ def main():
     # New runs also record those values directly from their composed config.
     clip = receipt.get('policy_loss_config', dict(clip_ratio=0.2, clip_ratio_low=0.2,
         clip_ratio_high=0.2, clip_ratio_c='inf', loss_agg_mode='token-mean'))
-    assert str(clip['clip_ratio_c']) == 'inf'
     source = Path(inspect.getfile(compute_policy_loss))
     assert hashlib.sha256(source.read_bytes()).hexdigest() == receipt['ppo_core_sha256']
     result = dict(scope=__doc__, artifact=str(args.artifact),

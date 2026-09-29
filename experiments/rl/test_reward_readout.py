@@ -135,6 +135,22 @@ def test_zero_observed_rewards_do_not_invent_a_signal():
     assert not output[0]['dt_token_advantages'].any()
 
 
+def test_native_nonfinite_failure_retains_replay_and_propagates(capsys):
+    import json
+    class FailedRunner(Runner):
+        def attribute(self, *args, **kwargs):
+            raise ValueError('Nonfinite DT coefficients; deferred check failed before return.')
+    dt = readout(FailedRunner(), task='Webshop')
+    with pytest.raises(ValueError, match='Nonfinite DT coefficients'):
+        dt.episode([row(0, 10)])
+    line = next(line for line in capsys.readouterr().out.splitlines()
+                if line.startswith('[DT EOS failed minibatch] '))
+    replay = json.loads(line.split('] ', 1)[1])
+    assert replay['selected_input_ids'][0][2:4] == [6, 7]
+    assert replay['reference_input_ids'][0][2:4] == [99, 99]
+    assert replay['samples'][0]['observed_return'] == 10
+
+
 class BatchedRunner(Runner):
     def attribute(self, pair, mask, selection, **kwargs):
         self.calls.append((pair.clone(), mask.clone(), selection))

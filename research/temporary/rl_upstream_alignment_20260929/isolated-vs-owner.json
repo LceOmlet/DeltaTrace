@@ -1,0 +1,333 @@
+{
+  "scope": "Short-chain numerical artifacts from the actual pinned PPO actor.\n\nThe reference case imports an archived owner source file for comparison\nonly. Both cases use the same real Qwen, DT advantages, worker and optimizer.\nThis is a numerical interface test, not task evaluation or a timing benchmark.\n",
+  "attention": "flash_attention_2",
+  "reshard_after_forward": true,
+  "actor_source": "installed",
+  "context_cap": 32768,
+  "reference_scope": "Previous installed pinned actor including existing compatibility patches; only the indexed response head is new.",
+  "verifier_sha256": "34de3a7dc653c68cc783a8bb407b4cb39b50ab3e62075e2e44cd9538aaed93e5",
+  "comparison_performed": true,
+  "trim_shared_padding": true,
+  "trim_response_head": true,
+  "actor_microbatch": 4,
+  "runtime_numerics": {
+    "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+    "FLASH_ATTENTION_DETERMINISTIC": "1"
+  },
+  "reference_save_on_cpu": false,
+  "math_bf16_reduction": false,
+  "saved_run_replay": {
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/short-parity-paired-reshard.pt",
+    "sha256": "e7f1ed783562425d6927bd9da75a1011dcf5f4c5bbabc428fb84a57a9a5caeb1",
+    "scope": "Exact saved input IDs, initial LoRA weights and fixed DT values; no DT recomputation"
+  },
+  "policy_loss_config": {
+    "clip_ratio": 0.2,
+    "clip_ratio_low": 0.2,
+    "clip_ratio_high": 0.2,
+    "loss_agg_mode": "token-mean",
+    "clip_ratio_c": "inf"
+  },
+  "transformers_model_source_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+  "actor_source_sha256": "25e6321008efb68253f06424b656ec0dac96c4b9c20af8361e286c1ac27e582b",
+  "ppo_core_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+  "input_tokens": 1001,
+  "effective_input_tokens": 447,
+  "explicit_left_padding": 165,
+  "run_timings": [
+    {
+      "update_seconds": [
+        12.729402540251613,
+        1.9857260826975107
+      ],
+      "model_logit_shapes": [
+        [
+          4,
+          15,
+          248320
+        ],
+        [
+          4,
+          15,
+          248320
+        ],
+        [
+          4,
+          15,
+          248320
+        ]
+      ],
+      "old_log_prob_seconds": 15.017082805745304
+    },
+    {
+      "update_seconds": [
+        1.9408512050285935,
+        1.9794315062463284
+      ],
+      "model_logit_shapes": [
+        [
+          4,
+          15,
+          248320
+        ],
+        [
+          4,
+          15,
+          248320
+        ],
+        [
+          4,
+          15,
+          248320
+        ]
+      ],
+      "old_log_prob_seconds": 0.5284482128918171
+    },
+    {
+      "update_seconds": [
+        2.03879795409739,
+        2.325588040985167
+      ],
+      "model_logit_shapes": [
+        [
+          4,
+          1001,
+          248320
+        ],
+        [
+          4,
+          1001,
+          248320
+        ],
+        [
+          4,
+          1001,
+          248320
+        ]
+      ],
+      "old_log_prob_seconds": 0.5921267839148641
+    },
+    {
+      "update_seconds": [
+        1.940625062212348,
+        1.974875203333795
+      ],
+      "model_logit_shapes": [
+        [
+          4,
+          15,
+          248320
+        ],
+        [
+          4,
+          15,
+          248320
+        ],
+        [
+          4,
+          15,
+          248320
+        ]
+      ],
+      "old_log_prob_seconds": 0.5281006768345833
+    }
+  ],
+  "updates": [
+    {
+      "actor/pg_loss": [
+        0.08816776424646378
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        0.0
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.515625
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.292426109313965,
+      "perf/max_memory_reserved_gb": 25.138671875,
+      "perf/cpu_memory_used_gb": 70.63980484008789,
+      "actor/lr": 1e-06
+    },
+    {
+      "actor/pg_loss": [
+        0.08906086534261703
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        -0.004609107971191406
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.546875
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.33402919769287,
+      "perf/max_memory_reserved_gb": 25.140625,
+      "perf/cpu_memory_used_gb": 70.77699279785156,
+      "actor/lr": 1e-06
+    }
+  ],
+  "status": "artifacts_ready",
+  "repeat_installed_updates": [
+    {
+      "actor/pg_loss": [
+        0.08816776424646378
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        0.0
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.515625
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.33402919769287,
+      "perf/max_memory_reserved_gb": 25.140625,
+      "perf/cpu_memory_used_gb": 70.80167007446289,
+      "actor/lr": 1e-06
+    },
+    {
+      "actor/pg_loss": [
+        0.08906086534261703
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        -0.004609107971191406
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.546875
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.33402919769287,
+      "perf/max_memory_reserved_gb": 25.140625,
+      "perf/cpu_memory_used_gb": 70.82495880126953,
+      "actor/lr": 1e-06
+    }
+  ],
+  "paired_updates": [
+    {
+      "actor/pg_loss": [
+        0.08816776424646378
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        0.0
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.5
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.492040634155273,
+      "perf/max_memory_reserved_gb": 31.03515625,
+      "perf/cpu_memory_used_gb": 70.41707229614258,
+      "actor/lr": 1e-06
+    },
+    {
+      "actor/pg_loss": [
+        0.10116524249315262
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        -0.02592972293496132
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.859375
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.492040634155273,
+      "perf/max_memory_reserved_gb": 31.03515625,
+      "perf/cpu_memory_used_gb": 70.37636184692383,
+      "actor/lr": 1e-06
+    }
+  ],
+  "paired_owner_sha256": "5f3f9b09a1a0d497bf1e45fd97590bf80c63c08bb768ddf6967415f96fc8a928",
+  "response_head_comparison": {
+    "exact_active_values_and_updates": false,
+    "scope": "Diagnostic exact comparison, not an additional required tolerance beyond official FA/FLA operator checks.",
+    "policy_forward_log_probs": "Tensor-likes are not equal!\n\nMismatched elements: 52 / 112 (46.4%)\nGreatest absolute difference: 0.4146404266357422 at index (57,)\nGreatest relative difference: 0.1405460089445114 at index (68,)",
+    "raw_gradients": "Tensor-likes are not equal!\n\nMismatched elements: 30 / 32 (93.8%)\nGreatest absolute difference: 0.00048828125 at index (19, 0)\nGreatest relative difference: 6.375 at index (20, 0)\n\nThe failure occurred for item [0]['base_model.model.model.layers.0.linear_attn.in_proj_a.lora_B.default.weight']",
+    "after_0": "Tensor-likes are not equal!\n\nMismatched elements: 11 / 32 (34.4%)\nGreatest absolute difference: 1.996755599975586e-06 at index (20, 0)\nGreatest relative difference: 2.015625 at index (20, 0)\n\nThe failure occurred for item ['base_model.model.model.layers.0.linear_attn.in_proj_a.lora_B.default.weight']",
+    "after_1": "Tensor-likes are not equal!\n\nMismatched elements: 6 / 4096 (0.1%)\nGreatest absolute difference: 9.5367431640625e-07 at index (0, 2694)\nGreatest relative difference: 0.01348876953125 at index (0, 1270)\n\nThe failure occurred for item ['base_model.model.model.layers.0.linear_attn.in_proj_a.lora_A.default.weight']"
+  },
+  "head_only_updates": [
+    {
+      "actor/pg_loss": [
+        0.08816776424646378
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        0.0
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.515625
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.492040634155273,
+      "perf/max_memory_reserved_gb": 31.03515625,
+      "perf/cpu_memory_used_gb": 70.8265495300293,
+      "actor/lr": 1e-06
+    },
+    {
+      "actor/pg_loss": [
+        0.08906086534261703
+      ],
+      "actor/pg_clipfrac": [
+        0.0
+      ],
+      "actor/ppo_kl": [
+        -0.004609107971191406
+      ],
+      "actor/pg_clipfrac_lower": [
+        0.0
+      ],
+      "actor/grad_norm": [
+        2.546875
+      ],
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 24.492040634155273,
+      "perf/max_memory_reserved_gb": 31.03515625,
+      "perf/cpu_memory_used_gb": 72.68387603759766,
+      "actor/lr": 1e-06
+    }
+  ],
+  "comparison_tolerance": "Direct paired owner measurements only; no borrowed FP32 error bound",
+  "seconds": 61.468970969319344,
+  "peak_allocated": 26298128384,
+  "peak_reserved": 33323745280
+}

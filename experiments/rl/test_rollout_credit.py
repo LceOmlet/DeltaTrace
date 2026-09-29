@@ -87,7 +87,7 @@ def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient(monkeypatch)
     log_prob = old_log_prob.clone().requires_grad_()
     loss, *_ = compute_policy_loss(
         old_log_prob, log_prob, data.batch["advantages"], data.batch["response_mask"],
-        cliprange=0.2, clip_ratio_c=float("inf"),
+        cliprange=0.2,
     )
     loss.backward()
     expected = -data.batch["advantages"] / data.batch["response_mask"].sum()
@@ -188,9 +188,6 @@ def test_native_collection_captures_outcomes_without_replacing_response_ids(esti
             assert row["env_step"] == step
             assert row["input_ids"].numel() == 32768
             assert row["responses"][:4].tolist() == [7, 7, 8, 9]
-            if estimator == "deltatrace":
-                # Later in-place environment changes did not corrupt history.
-                assert row["dt_env_outcome"]["info"]["step"] == step + 1
-                assert row["dt_env_outcome"]["observation"]["anchor"]["step"] == step + 1
-            else:
-                assert "dt_env_outcome" not in row
+            # Credit now consumes the trainer's native reward artifact; an
+            # unused second observation history must not be retained here.
+            assert 'dt_env_outcome' not in row

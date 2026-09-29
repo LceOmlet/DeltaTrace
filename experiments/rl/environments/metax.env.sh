@@ -19,9 +19,8 @@ export APPWORLD_ROOT="${APPWORLD_ROOT:-$DT_RUNTIME_ROOT/third_party/appworld-42b
 export APPWORLD_BIN="${APPWORLD_BIN:-$(dirname "$VENV_PYTHON")/appworld}"
 export WEBSHOP_ROOT="${WEBSHOP_ROOT:-$VERL_ROOT/agent_system/environments/env_package/webshop/webshop}"
 export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
-# Ray adds a session directory and Unix socket filename; the mounted runtime
-# prefix exceeds Linux's 107-byte socket-path limit. Keep only IPC in /tmp.
-export RAY_TMPDIR="${RAY_TMPDIR:-/tmp/dt-rl-mx-20260922}"
+# Ray owns its default short /tmp IPC path. Do not replace it with a mounted
+# experiment directory or invent a second task-specific temporary-directory rule.
 # Installed MetaX FA2 backward was checked against FP32 math SDPA at the
 # checkpoint's GQA/head layout. The local SDPA build lacks memory-efficient
 # attention; reuse the verified installed FA2 kernel for the actor as well.
@@ -29,15 +28,16 @@ export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-flash_attention_2}"
 # Match the training launcher's allocator in standalone capacity/owner probes.
 # The default allocator fragmented at 32k even with several GiB unallocated.
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
-# Reuse upstream batching and Ray resource settings. The actor minibatch is
-# independently fixed at 4 by run_verl_agent.sh.
+# Reuse upstream batching and Ray resource settings. The actor microbatch is
+# independently 4; the official optimizer minibatch is 64.
 export ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-4}"
 # Same-card task-text replay: 32 concurrent requests improved generation RPC
 # from 92.713s (4) to 29.948s. Exact-32k DT/PPO capacity also passed at 32.
 # This is independent of the actor and DT minibatch sizes.
 export ROLLOUT_MAX_NUM_SEQS="${ROLLOUT_MAX_NUM_SEQS:-32}"
 # Qwen's existing indexed logits_to_keep skips common response-tail head work.
-# Real B4 comparison preserved active logprobs, gradients and two updates exactly.
+# Earlier equality was against the previous patched actor, not the pristine
+# full-vocabulary owner. The latter comparison is recorded separately.
 export VERL_TRIM_RESPONSE_HEAD="${VERL_TRIM_RESPONSE_HEAD:-1}"
 export DT_RAY_NUM_CPUS="${DT_RAY_NUM_CPUS:-8}"
 # Set CUDA_VISIBLE_DEVICES and MACA_VISIBLE_DEVICES after checking mx-smi.

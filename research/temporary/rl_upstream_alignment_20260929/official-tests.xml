@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="19" time="19.597" timestamp="2026-09-29T13:52:25.022843+08:00" hostname="224b01802.cloud.c02.sm132"><testcase classname="tests.trainer.ppo.test_metric_utils.TestReduceMetrics" name="test_reduce_metrics_basic" time="0.942" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestReduceMetrics" name="test_reduce_metrics_empty" time="0.002" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestReduceMetrics" name="test_reduce_metrics_single_value" time="0.002" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestComputeDataMetrics" name="test_compute_data_metrics_with_critic" time="0.005" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestComputeDataMetrics" name="test_compute_data_metrics_without_critic" time="0.004" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestComputeTimingMetrics" name="test_compute_timing_metrics" time="0.002" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestComputeThroughputMetrics" name="test_compute_throughout_metrics" time="0.002" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestBootstrapMetric" name="test_bootstrap_metric_basic" time="0.004" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestBootstrapMetric" name="test_bootstrap_metric_empty" time="0.002" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestCalcMajVal" name="test_calc_maj_val_basic" time="0.002" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestCalcMajVal" name="test_calc_maj_val_tie" time="0.002" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestProcessValidationMetrics" name="test_process_validation_metrics_basic" time="0.018" /><testcase classname="tests.trainer.ppo.test_metric_utils.TestProcessValidationMetrics" name="test_process_validation_metrics_with_pred" time="0.057" /><testcase classname="tests.gpu_utility.test_torch_functional" name="test_log_probs_from_logits_response_rmpad" time="1.424" /><testcase classname="tests.gpu_utility.test_torch_functional" name="test_logprobs_from_logits_v2[dtype0]" time="0.015" /><testcase classname="tests.gpu_utility.test_torch_functional" name="test_logprobs_from_logits_v2[dtype1]" time="0.003" /><testcase classname="tests.gpu_utility.test_torch_functional" name="test_logprobs_from_logits_v2[dtype2]" time="0.003" /><testcase classname="tests.gpu_utility.test_torch_functional" name="test_logprobs_from_logits_v2[dtype3]" time="0.003" /><testcase classname="tests.gpu_utility.test_torch_functional" name="test_lr_scheduler" time="0.003"><failure message="AssertionError: Scalars are not close!&#10;&#10;Expected 0.0 but got 0.0001.&#10;Absolute difference: 0.0001 (up to 1e-07 allowed)&#10;Relative difference: inf (up to 1e-07 allowed)&#10;&#10;The failure occurred for item [0]">def test_lr_scheduler():
+        from torch import nn
+    
+        model = nn.Linear(10, 10)
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    
+        from verl.utils.torch_functional import get_constant_schedule_with_warmup
+    
+        constant_lr = get_constant_schedule_with_warmup(optimizer=optimizer, num_warmup_steps=2)
+    
+        lr_lst = []
+    
+        for _ in range(5):
+            lr_lst.append(constant_lr.get_last_lr()[0])
+            constant_lr.step()
+    
+        torch.testing.assert_close(lr_lst, [0.0, 0.0005, 0.001, 0.001, 0.001])
+    
+        from verl.utils.torch_functional import get_cosine_schedule_with_warmup
+    
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+        cosine_lr = get_cosine_schedule_with_warmup(optimizer=optimizer, num_warmup_steps=2, num_training_steps=5, min_lr_ratio=0.1)
+    
+        lr_lst = []
+    
+        for _ in range(5):
+            lr_lst.append(cosine_lr.get_last_lr()[0])
+            cosine_lr.step()
+    
+&gt;       torch.testing.assert_close(lr_lst, [0.0, 0.0005, 0.001, 0.0007750000000000002, 0.0003250000000000002])
+E       AssertionError: Scalars are not close!
+E       
+E       Expected 0.0 but got 0.0001.
+E       Absolute difference: 0.0001 (up to 1e-07 allowed)
+E       Relative difference: inf (up to 1e-07 allowed)
+E       
+E       The failure occurred for item [0]
+
+../../receipts/upstream-alignment-20260929/official/tests/gpu_utility/test_torch_functional.py:96: AssertionError</failure></testcase></testsuite></testsuites>

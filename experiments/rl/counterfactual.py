@@ -115,7 +115,14 @@ def episode_returns(rows: Sequence[dict[str, Any]]) -> list[float]:
                             for row in rows], dtype=torch.float64)
     if not bool(torch.isfinite(rewards).all()):
         raise ValueError('official active rewards must be finite')
-    return rewards.flip(0).cumsum(0).flip(0).tolist()
+    future = rewards.flip(0).cumsum(0).flip(0).tolist()
+    # VERL's reward manager assigns the episode score to each response, then
+    # applies its own current-response penalty. The trainer supplies that
+    # exact difference; do not rescore invalid actions or sum their penalties
+    # again over future rows. Past environment rewards remain excluded.
+    return [value + float(row.get('dt_reward_adjustment', 0.0))
+            if bool(row['active_masks']) else value
+            for row, value in zip(rows, future)]
 
 
 @torch.no_grad()

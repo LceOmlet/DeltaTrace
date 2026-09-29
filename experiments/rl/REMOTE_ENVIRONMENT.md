@@ -10,7 +10,42 @@
 本文件记录环境、路径和已知问题。RL 方法只以 [PLAN.md](PLAN.md) 为准；
 本文件和历史运行记录不代表该计划已实现或 DT 多轮训练已经验收通过。
 
-## 2026-09-25 恢复与数值/上游审计
+## 2026-09-29 连接恢复与现状更正
+
+- 用户更新 MetaX SSH 端口为 **31091**，主机与 root 用户不变。原 32036
+  入口的已保存 ED25519 主机密钥验证通过；原生 BatchMode 连接成功，无需密码
+  或重新配置环境。现有 known_hosts 尚按旧端口记录时，可使用
+  `ssh -oBatchMode=yes -oStrictHostKeyChecking=yes -oHostKeyAlias='[ssh.v5000-prod-gw.nhss.zhejianglab.com]:32036' -p31091 root@ssh.v5000-prod-gw.nhss.zhejianglab.com`。
+- 13:44+08 实查没有训练进程，八张 C550 均无计算进程。旧 formal manifest 的
+  `formal_running_first_rollout` 是 9月25日的历史状态，不能继续作为当前进度。
+- 原完成检查点标记：Sokoban 10、WebShop 30、AppWorld 3。Sokoban 退出码1，
+  原 DT runner 报非有限系数；AppWorld 退出码1，Ray worker 异常退出；WebShop
+  没有退出码文件且进程已不存在，不能据此推断停止原因。未重启正式训练。
+- 当前核对固定 `verl-agent@20bd331` 的完整行为和该版本原测试。保留已有 Python、
+  权重、资产及缓存；不把其他框架的预算或 FA/FLA 算子容差称为 VERL PPO 验收。
+- 9月29日候选代码隔离在 `receipts/upstream-alignment-20260929/dt-candidate/experiments/rl`，
+  对应 owner 为 `candidates/official-verl-20bd331-native-reward`；旧发布64e5876与其
+  active-source身份未替换。该候选在官方奖励处理后调用DT，恢复默认损失、
+  官方history2及optimizer minibatch64/microbatch4。实际测试脚本/原始回执均在
+  `receipts/upstream-alignment-20260929`；不要重新安装任何环境。
+  三任务保存夹具的9B原生累计更新完成，但尚无此候选的新鲜rollout、32k完整
+  累计更新和正式实验健康验收。Sokoban历史非有限故障仍未重现修复。
+- 15:09+08 发现新容器确实缺少原记录的 Java：`/usr/lib/jvm` 和
+  `/usr/bin/java` 均不存在，dpkg 未安装 OpenJDK；WebShop 在原 Pyserini
+  导入时找不到 `libjvm.so`。已通过 Ubuntu apt 仅补回
+  `openjdk-17-jre-headless` 及其系统依赖，版本 `17.0.20.1+1-1~22.04`，
+  原 `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` 恢复可用。
+  旧 apt 索引的404与刷新后成功安装日志均保存在上述回执目录；这次没有
+  重装 Python/训练库/模型。恢复时先检查该文件及包状态，不重复安装。
+- 原 `en_core_web_sm` 在当前 venv 与新容器系统包中均缺失，WebShop 的官方
+  `spacy.load` 报 E050。只恢复官方3.8.0模型包（现有spaCy3.8.7），`--no-deps`
+  安装并通过实际分词；wheel 留在 `repair-assets/en_core_web_sm-3.8.0-py3-none-any.whl`。
+  SHA256 与官方发布一致：`1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85`。
+  回执为 `receipts/upstream-alignment-20260929/spacy-model-restored.json`，
+  以后先复用这个文件与安装，不重复下载。两轮Sokoban官方collector/manager
+  对照已逐token/奖励一致；WebShop/AppWorld的CPU reset和短对照仍在补测。
+
+## 2026-09-25 恢复与数值/上游审计（历史记录）
 
 - 19:42三组正式作业已完成首轮环境交互：Sokoban第一轮234.57秒/226477 tokens，
   已到2/15、active251/256；Webshop已到4/15、active128/128，前3次生成调用

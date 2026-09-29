@@ -8,7 +8,7 @@ set -euo pipefail
 METHOD="${METHOD:-grpo}"             # grpo, ppo, or dt
 ENV_NAME="${ENV_NAME:-Webshop}"      # Webshop, Sokoban, or AppWorld
 CONTEXT_BUDGET_ACTION=error
-if [[ "$METHOD" == "dt" && "$ENV_NAME" == "AppWorld" ]]; then
+if [[ "$ENV_NAME" == "AppWorld" ]]; then
   CONTEXT_BUDGET_ACTION=end_episode
 fi
 ENV_SEED="${ENV_SEED:-0}"            # Existing upstream environment seed
@@ -22,16 +22,16 @@ TRAIN_SIZE="${TRAIN_SIZE:-4}"
 VAL_SIZE="${VAL_SIZE:-4}"
 VAL_DATA_SIZE="${VAL_DATA_SIZE:-$VAL_SIZE}"
 GROUP_SIZE="${GROUP_SIZE:-4}"           # environment rollouts per prompt (GRPO group)
-MINI_BATCH_SIZE="${MINI_BATCH_SIZE:-4}"
+MINI_BATCH_SIZE="${MINI_BATCH_SIZE:-64}" # Pinned author task scripts; native accumulation
 ACTOR_MICRO_BATCH_SIZE="${ACTOR_MICRO_BATCH_SIZE:-4}"
 ACTOR_ACTIVATION_OFFLOAD="${ACTOR_ACTIVATION_OFFLOAD:-True}"
 MAX_PROMPT="${MAX_PROMPT:-32256}"
-MAX_RESPONSE="${MAX_RESPONSE:-1024}"
+MAX_RESPONSE="${MAX_RESPONSE:-512}" # Pinned PPO/GRPO task scripts
 MAX_TOTAL_TOKENS="${MAX_TOTAL_TOKENS:-32768}"
 LORA_RANK="${LORA_RANK:-1}"
 LORA_ALPHA="${LORA_ALPHA:-2}"
 ACTOR_STRATEGY="${ACTOR_STRATEGY:-fsdp2}"
-ROLLOUT_BACKEND="${ROLLOUT_BACKEND:-hf}"
+ROLLOUT_BACKEND="${ROLLOUT_BACKEND:-vllm}"
 if [[ "$ROLLOUT_BACKEND" == "vllm" ]]; then
   PARAM_OFFLOAD="${PARAM_OFFLOAD:-True}"
 else
@@ -44,7 +44,7 @@ FSDP_RESHARD_AFTER_FORWARD="${FSDP_RESHARD_AFTER_FORWARD:-True}"
 HF_FSDP_WRAP="${HF_FSDP_WRAP:-False}"
 ROLLOUT_MICRO_BATCH_SIZE="${ROLLOUT_MICRO_BATCH_SIZE:-1}"
 SOKOBAN_MODE="${SOKOBAN_MODE:-tiny_rgb_array}"
-VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-False}"
+VAL_BEFORE_TRAIN="${VAL_BEFORE_TRAIN:-True}"
 TEST_FREQ="${TEST_FREQ:--1}"
 TOTAL_EPOCHS="${TOTAL_EPOCHS:-1}"
 MAX_STEPS="${MAX_STEPS:-15}"
@@ -61,7 +61,6 @@ APPWORLD_VAL_DATASET="${APPWORLD_VAL_DATASET:-test_normal}"
 APPWORLD_PORT_FILE="${APPWORLD_PORT_FILE:-appworld_ports.ports}"
 APPWORLD_MAX_INTERACTIONS="${APPWORLD_MAX_INTERACTIONS:-50}"
 CHAT_TEMPLATE_ARGS=()
-METHOD_ARGS=()
 ROLLOUT_ARGS=()
 if [[ "$ROLLOUT_BACKEND" == "vllm" ]]; then
   # Native VERL hybrid rollout, tensor LoRA sync, and vLLM sleep/wake.
@@ -80,13 +79,7 @@ fi
 case "$METHOD" in
   grpo) ADV_ESTIMATOR=grpo ;;
   ppo) ADV_ESTIMATOR=gae ;;
-  dt)
-    ADV_ESTIMATOR=deltatrace
-    # PLAN uses official event rewards and the token clipped objective alone.
-    # Otherwise entropy-only updates could be mistaken for DT learning.
-    METHOD_ARGS+=("actor_rollout_ref.actor.entropy_coeff=0.0"
-                 "actor_rollout_ref.actor.use_invalid_action_penalty=False")
-    ;;
+  dt) ADV_ESTIMATOR=deltatrace ;;
   *) echo "METHOD must be grpo, ppo, or dt" >&2; exit 2 ;;
 esac
 case "$ENV_NAME" in
@@ -105,6 +98,7 @@ fi
 
 export CUDA_VISIBLE_DEVICES
 export DT_ROOT
+export VERL_ROOT
 if [[ -z "${DT_ENVIRONMENT_JSON:-}" ]]; then
   if [[ -f "$DT_ROOT/environment.json" ]]; then
     export DT_ENVIRONMENT_JSON="$DT_ROOT/environment.json"
@@ -128,18 +122,25 @@ export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
 # optional CUDA extension may be unavailable on older-glibc hosts.  Hugging
 # Face SDPA is the portable upstream attention backend; set this to
 # flash_attention_2 on a host with a compatible flash-attn build.
-if [[ "$METHOD" == "dt" ]]; then
-  export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
-  export DT_TASK="$ENV_NAME" DT_MAX_STEPS="$MAX_STEPS" DT_MAX_LENGTH="$MAX_TOTAL_TOKENS"
+export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
+export DT_TASK="$ENV_NAME" DT_MAX_STEPS="$MAX_STEPS" DT_MAX_LENGTH="$MAX_TOTAL_TOKENS"
+{
   # Keep attribution inside the same 32k cap, including its event query and
   # target. Reserve this space at the upstream prompt-length boundary rather
   # than truncating an already-generated action or exceeding the cap later.
+  # PPO/GRPO controls reserve the same space so changing the advantage source
+  # does not also change their available history or episode stopping point.
   DT_READOUT_TOKENS=$("$VENV_PYTHON" - "$MODEL_PATH" "$ENV_NAME" "$MAX_STEPS" <<'PY'
 import sys
 from transformers import AutoTokenizer
+from omegaconf import OmegaConf
 from reward_readout import RewardAlphabet
+import os
 tokenizer = AutoTokenizer.from_pretrained(sys.argv[1], local_files_only=True)
-print(RewardAlphabet.for_task(sys.argv[2], int(sys.argv[3])).readout_token_budget(tokenizer, int(sys.argv[3])))
+cfg = OmegaConf.load(os.path.join(os.environ['VERL_ROOT'], 'verl/trainer/config/ppo_trainer.yaml'))
+actor = cfg.actor_rollout_ref.actor
+penalty = actor.invalid_action_penalty_coef if actor.get('use_invalid_action_penalty', True) else 0.0
+print(RewardAlphabet.for_task(sys.argv[2], int(sys.argv[3]), penalty).readout_token_budget(tokenizer, int(sys.argv[3])))
 PY
 )
   DT_PROMPT_LIMIT=$((MAX_TOTAL_TOKENS - MAX_RESPONSE - DT_READOUT_TOKENS))
@@ -148,9 +149,7 @@ PY
   fi
   if (( MAX_PROMPT > DT_PROMPT_LIMIT )); then MAX_PROMPT="$DT_PROMPT_LIMIT"; fi
   echo "DT context budget: prompt=$MAX_PROMPT response=$MAX_RESPONSE readout=$DT_READOUT_TOKENS cap=$MAX_TOTAL_TOKENS"
-else
-  export VERL_ATTN_IMPLEMENTATION="${VERL_ATTN_IMPLEMENTATION:-sdpa}"
-fi
+}
 if [[ "$ACTOR_CPU_OFFLOAD" == "True" ]]; then
   export VERL_ACTOR_CPU_OFFLOAD=1
 else
@@ -191,18 +190,11 @@ if [[ "$ENV_NAME" == "AppWorld" && ! -f "$VERL_ROOT/appworld_ports.ports" ]]; th
   echo "AppWorld needs appworld_ports.ports; start the official service first" >&2
   exit 2
 fi
-# Use the original PPO clipped objective, without the optional dual clipping.
-APPWORLD_HISTORY_ARGS=()
-if [[ "$METHOD" == "dt" && "$ENV_NAME" == "AppWorld" ]]; then
-  # Preserve the user's approved history until the original budget boundary
-  # ends that episode. Rendering and storage stay in the author manager.
-  APPWORLD_HISTORY_ARGS=("env.history_length=$MAX_STEPS" "+env.appworld_history_char_limit=null")
-fi
+# Keep the pinned owner's PPO loss defaults (including entropy and dual-clip).
 exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   ray_init.num_cpus="${DT_RAY_NUM_CPUS:-null}" \
   algorithm.adv_estimator="$ADV_ESTIMATOR" \
   algorithm.gamma=1.0 \
-  actor_rollout_ref.actor.clip_ratio_c=inf \
   data.train_files="$DATA_ROOT/text/train.parquet" \
   data.val_files="$DATA_ROOT/text/test.parquet" \
   data.train_batch_size="$TRAIN_SIZE" \
@@ -220,8 +212,6 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.actor.ppo_mini_batch_size="$MINI_BATCH_SIZE" \
   actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu="$ACTOR_MICRO_BATCH_SIZE" \
   actor_rollout_ref.actor.ppo_max_token_len_per_gpu="$MAX_TOTAL_TOKENS" \
-  actor_rollout_ref.actor.use_kl_loss=False \
-  actor_rollout_ref.actor.kl_loss_coef=0.01 \
   actor_rollout_ref.model.enable_gradient_checkpointing=True \
   actor_rollout_ref.model.enable_activation_offload="$ACTOR_ACTIVATION_OFFLOAD" \
   actor_rollout_ref.actor.strategy="$ACTOR_STRATEGY" \
@@ -236,21 +226,15 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   +actor_rollout_ref.rollout.micro_batch_size="$ROLLOUT_MICRO_BATCH_SIZE" \
   actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
   actor_rollout_ref.rollout.name="$ROLLOUT_BACKEND" \
-  actor_rollout_ref.rollout.temperature=1.0 \
-  actor_rollout_ref.rollout.top_p=1.0 \
-  actor_rollout_ref.rollout.top_k=-1 \
   actor_rollout_ref.rollout.gpu_memory_utilization=0.75 \
   actor_rollout_ref.rollout.val_kwargs.temperature=0.4 \
   actor_rollout_ref.rollout.val_kwargs.do_sample=True \
-  algorithm.use_kl_in_reward=False \
   env.env_name="$ENV_NAME" \
   env.seed="$ENV_SEED" \
   env.max_steps="$MAX_STEPS" \
   +env.context_budget_action="$CONTEXT_BUDGET_ACTION" \
   env.rollout.n="$GROUP_SIZE" \
   env.sokoban.mode="$SOKOBAN_MODE" \
-  env.sokoban.num_boxes=1 \
-  env.sokoban.search_depth=30 \
   +env.appworld_train_dataset="$APPWORLD_TRAIN_DATASET" \
   +env.appworld_val_dataset="$APPWORLD_VAL_DATASET" \
   +env.appworld_port_file="$APPWORLD_PORT_FILE" \
@@ -258,7 +242,6 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   env.resources_per_worker.num_cpus="$ENV_CPUS_PER_WORKER" \
   '+env.resources_per_worker.runtime_env.env_vars.CUDA_VISIBLE_DEVICES=""' \
   '+env.resources_per_worker.runtime_env.env_vars.MACA_VISIBLE_DEVICES=""' \
-  trainer.critic_warmup=0 \
   trainer.logger="['console']" \
   trainer.rollout_data_dir="${ROLLOUT_DATA_DIR:-null}" \
   trainer.project_name=delta_trace_agent \
@@ -273,7 +256,5 @@ exec "$VENV_PYTHON" -m verl.trainer.main_ppo \
   trainer.total_epochs="$TOTAL_EPOCHS" \
   trainer.val_before_train="$VAL_BEFORE_TRAIN" \
   "${CHAT_TEMPLATE_ARGS[@]}" \
-  "${METHOD_ARGS[@]}" \
   "${ROLLOUT_ARGS[@]}" \
-  "${APPWORLD_HISTORY_ARGS[@]}" \
   "$@"

@@ -24,9 +24,17 @@ class RewardAlphabet:
     task: str
     values: tuple[float, ...]
     meanings: tuple[str, ...]
+    invalid_action_penalty_coef: float = 0.0
 
     @classmethod
-    def for_task(cls, task: str, max_steps: int = 15) -> 'RewardAlphabet':
+    def for_task(cls, task: str, max_steps: int = 15,
+                 invalid_action_penalty_coef: float = 0.0) -> 'RewardAlphabet':
+        if invalid_action_penalty_coef:
+            original = cls.for_task(task, max_steps)
+            values = tuple(sorted({round(v - penalty, 10) for v in original.values
+                                   for penalty in (0.0, invalid_action_penalty_coef)}))
+            return cls(task, values, tuple(f'{value:g}' for value in values),
+                       invalid_action_penalty_coef)
         if task in ('Webshop', 'AppWorld'):
             return cls(task, (0.0, 10.0), (
                 '0 (no subsequent successful completion)',
@@ -66,6 +74,13 @@ class RewardAlphabet:
         reward_rule = ('Each executed interaction costs -0.1; solving the single-box puzzle adds 11 '
                        'on that interaction and ends the episode. ' if self.task == 'Sokoban' else
                        'Successful completion gives 10 once; all other interactions give 0. ')
+        if self.invalid_action_penalty_coef:
+            reward_rule += (
+                f'The trainer additionally subtracts {self.invalid_action_penalty_coef:g} '
+                'if this CURRENT response is an invalid action under the task parser. '
+                'Subtract that current-response penalty once. Do not subtract penalties '
+                'for past or future responses. '
+            )
         # Deliberately contains no sampled future observation, action, reward or
         # stopping time. The same query is appended at both token endpoints.
         query = (
@@ -100,7 +115,8 @@ class EventRatioReadout:
     """
 
     def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,
-                 packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4):
+                 packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4,
+                 invalid_action_penalty_coef: float = 0.0):
         if max_steps < 1:
             raise ValueError('Horizon must be positive')
         if tokenizer.eos_token_id is None:
@@ -109,7 +125,7 @@ class EventRatioReadout:
             raise ValueError('DT minibatch_size must be positive')
         self.minibatch_size = minibatch_size
         self.runner, self.tokenizer = runner, tokenizer
-        self.alphabet = RewardAlphabet.for_task(task, max_steps)
+        self.alphabet = RewardAlphabet.for_task(task, max_steps, invalid_action_penalty_coef)
         self.max_steps, self.max_length = max_steps, max_length
         self.packed_answer_targets = packed_answer_targets
         self.last_report: dict[str, Any] = {}
@@ -200,11 +216,28 @@ class EventRatioReadout:
                     ('prompt', 'actions', 'query', 'target'))).to(device)
                 reference[index, :end] = selected[index, :end]
                 reference[index, request['start']:request['end']] = self.tokenizer.eos_token_id
-            signed, _, detail = trace_token_attribution(
-                self.runner, reference, selected, [request['case'] for request in batch],
-                [[0] for _ in batch], packed_answer_targets=self.packed_answer_targets,
-                outcome_token_ids=labels,
-            )
+            try:
+                signed, _, detail = trace_token_attribution(
+                    self.runner, reference, selected, [request['case'] for request in batch],
+                    [[0] for _ in batch], packed_answer_targets=self.packed_answer_targets,
+                    outcome_token_ids=labels,
+                )
+            except ValueError as exc:
+                if 'Nonfinite DT coefficients' in str(exc):
+                    # The former deferred failure discarded the offending
+                    # batch. Retain exact replay inputs only on this observed
+                    # failure; never clip, retry or substitute token credit.
+                    print('[DT EOS failed minibatch] ' + json.dumps(dict(
+                        error=str(exc), batch=offset // self.minibatch_size + 1,
+                        eos_token_id=self.tokenizer.eos_token_id, outcome_token_ids=labels,
+                        selected_input_ids=selected.cpu().tolist(),
+                        reference_input_ids=reference.cpu().tolist(),
+                        samples=[dict(traj_uid=r['traj_uid'], source_step=r['source_step'],
+                            source_start=r['start'], source_end=r['end'],
+                            context_tokens=r['context_tokens'], observed_return=r['observed_return'])
+                            for r in batch],
+                    )), flush=True)
+                raise
             report['finite_trace_calls'] += 1
             report['event_contrasts'] += len(batch)
             report['max_readout_length'] = max(report['max_readout_length'], length)

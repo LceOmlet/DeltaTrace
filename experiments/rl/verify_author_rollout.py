@@ -77,11 +77,13 @@ def trace_rows(episodes):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--author-collector', type=Path, required=True)
+    p.add_argument('--author-manager', type=Path,
+                   help='Also use the unmodified author environment manager on the reference side.')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--rounds', type=int, default=2,
                    help='Bound the measured prefix; environment task horizon stays 15.')
     p.add_argument('--response-cap', type=int, default=512)
-    p.add_argument('--tasks', nargs='+', choices=['Sokoban', 'Webshop'], default=['Sokoban', 'Webshop'])
+    p.add_argument('--tasks', nargs='+', choices=['Sokoban', 'Webshop', 'AppWorld'], default=['Sokoban', 'Webshop'])
     p.add_argument('--implementations', nargs='+', choices=['author', 'candidate'],
                    default=['author', 'candidate'],
                    help='Use one owner path for a bounded configuration observation, or both for parity.')
@@ -89,12 +91,18 @@ def main():
     spec = importlib.util.spec_from_file_location('pinned_author_collector', args.author_collector)
     original = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(original)
+    original_manager = env_manager
+    if args.author_manager:
+        spec = importlib.util.spec_from_file_location('pinned_author_manager', args.author_manager)
+        original_manager = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(original_manager)
     started = time.perf_counter()
     result = dict(scope=__doc__, status='running', context_cap=32768, episodes_per_task=4,
                   response_cap=args.response_cap, task_horizon=15, measured_rounds=args.rounds,
                   implementations=args.implementations, runs=[], imports={
         'candidate_collector': rollout_loop.__file__, 'manager': env_manager.__file__,
         'author_collector': str(args.author_collector),
+        'author_manager': original_manager.__file__,
         'author_sha256': hashlib.sha256(args.author_collector.read_bytes()).hexdigest()})
 
     def record(phase, **fields):
@@ -139,7 +147,8 @@ def main():
                 if name not in args.implementations:
                     continue
                 cfg.env.max_steps = 15
-                train_env, val_env = env_manager.make_envs(cfg)
+                manager = original_manager if name == 'author' else env_manager
+                train_env, val_env = manager.make_envs(cfg)
                 val_env.envs.close()
                 # This bounds only collection for the fixture. No fake terminal
                 # reward is introduced, and task dynamics retain their horizon.

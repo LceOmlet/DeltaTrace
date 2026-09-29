@@ -49,8 +49,6 @@ def main():
         c.actor.ppo_max_token_len_per_gpu = 32768
         c.actor.use_torch_compile = False
         c.actor.use_dynamic_bsz = False
-        c.actor.entropy_coeff = 0.0
-        c.actor.clip_ratio_c = float('inf')
         c.actor.fsdp_config.model_dtype = 'bfloat16'
         c.actor.fsdp_config.reshard_after_forward = True
         c.actor.fsdp_config.offload_policy = args.parameter_offload_policy

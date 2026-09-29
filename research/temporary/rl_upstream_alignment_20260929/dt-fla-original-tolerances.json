@@ -1,0 +1,569 @@
+{
+  "scope": "Check the existing finite FLA at coincident endpoints using owner tolerances.\n\nNative FLA supplies the actual saved intermediates. The unchanged pinned FLA\nFP32 recurrence supplies the reference. No initial/final-state adjoints are\nrequested: the DT interface holds the unchanged native prefix state fixed\nand only consumes output adjoints. Head partitioning calls the same finite owner; it is not another\nrecurrence. This does not certify nonzero finite interventions or whole PPO.\n",
+  "dtype": "float16",
+  "cases": [
+    {
+      "length": 128,
+      "batch": 4,
+      "heads": 32,
+      "variant": "native",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.0,
+          "max_abs": 0.001953125,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.0,
+          "max_abs": 0.001953125,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.0,
+          "max_abs": 0.000244140625,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.0004623669237771515,
+          "max_abs": 0.0011099576950073242,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.0005819869316990807,
+          "max_abs": 0.0005977749824523926,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 128,
+      "batch": 4,
+      "heads": 32,
+      "variant": "finite_full",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.0003132909911724308,
+          "max_abs": 0.001009821891784668,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.0005797766411374787,
+          "max_abs": 0.0011559724807739258,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.00046625427024799785,
+          "max_abs": 0.0002184361219406128,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.0004455140166125041,
+          "max_abs": 0.00093841552734375,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.0004833751300241136,
+          "max_abs": 0.0006382465362548828,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 128,
+      "batch": 4,
+      "heads": 32,
+      "variant": "finite_head8",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.0003132909911724308,
+          "max_abs": 0.001009821891784668,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.0005797890587688837,
+          "max_abs": 0.0011559724807739258,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.0004662542288846174,
+          "max_abs": 0.0002184361219406128,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.0004455129704572582,
+          "max_abs": 0.00093841552734375,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.000483378858285614,
+          "max_abs": 0.0006383657455444336,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 128,
+      "batch": 4,
+      "heads": 32,
+      "variant": "finite_suffix_head8",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.00036040260276497905,
+          "max_abs": 0.0001337677240371704,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.0006612252457810863,
+          "max_abs": 0.00011962652206420898,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.00045707794850606266,
+          "max_abs": 0.00019878149032592773,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.00043228066551910733,
+          "max_abs": 0.0006299018859863281,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.00048036541166757916,
+          "max_abs": 0.00028187036514282227,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "coefficient_start": 64,
+      "saved_incoming_state_nonzero": true,
+      "exact_full_owner_suffix": {
+        "q": true,
+        "k": false,
+        "v": true,
+        "beta": false,
+        "alpha": false,
+        "g": false
+      },
+      "full_owner_suffix_differences": {
+        "q": {
+          "max_abs": 0.0,
+          "rms_ratio": 0.0
+        },
+        "k": {
+          "max_abs": 2.9802322387695312e-08,
+          "rms_ratio": 8.336207811365023e-08
+        },
+        "v": {
+          "max_abs": 0.0,
+          "rms_ratio": 0.0
+        },
+        "beta": {
+          "max_abs": 1.7881393432617188e-07,
+          "rms_ratio": 1.0533549602318198e-07
+        },
+        "alpha": {
+          "max_abs": 2.086162567138672e-07,
+          "rms_ratio": 4.8109972259198616e-08
+        },
+        "g": {
+          "max_abs": 1.1175870895385742e-07,
+          "rms_ratio": 5.027135685814241e-08
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 447,
+      "batch": 4,
+      "heads": 32,
+      "variant": "native",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.0,
+          "max_abs": 0.0009765625,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.0,
+          "max_abs": 0.001953125,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.0,
+          "max_abs": 0.000244140625,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.00046662017448394373,
+          "max_abs": 0.0009671449661254883,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.0005874288601333142,
+          "max_abs": 0.0005708038806915283,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 447,
+      "batch": 4,
+      "heads": 32,
+      "variant": "finite_full",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.00033135593584932206,
+          "max_abs": 0.0009560585021972656,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.000620077946006832,
+          "max_abs": 0.0008608102798461914,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.0004720301431494804,
+          "max_abs": 0.0002514272928237915,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.00045102869305642976,
+          "max_abs": 0.0009440183639526367,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.0004936259173445453,
+          "max_abs": 0.00042003393173217773,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 447,
+      "batch": 4,
+      "heads": 32,
+      "variant": "finite_head8",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.00033135590320713476,
+          "max_abs": 0.0009560585021972656,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.0006200601686672185,
+          "max_abs": 0.0008608102798461914,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.00047203018454158543,
+          "max_abs": 0.0002514272928237915,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.00045103018018386555,
+          "max_abs": 0.0009438991546630859,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.0004936567540030366,
+          "max_abs": 0.0004201531410217285,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 447,
+      "batch": 4,
+      "heads": 32,
+      "variant": "finite_suffix_head8",
+      "nonzero_initial_state": true,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.0003600770806087114,
+          "max_abs": 0.00016611814498901367,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "k": {
+          "rms_ratio": 0.0006683832026536841,
+          "max_abs": 0.00016985833644866943,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "v": {
+          "rms_ratio": 0.00047118487497310485,
+          "max_abs": 0.0002514272928237915,
+          "threshold": 0.008,
+          "status": "passed"
+        },
+        "beta": {
+          "rms_ratio": 0.0004498834474793957,
+          "max_abs": 0.0009438991546630859,
+          "threshold": 0.02,
+          "status": "passed"
+        },
+        "g": {
+          "rms_ratio": 0.0004988643364207703,
+          "max_abs": 0.00037263333797454834,
+          "threshold": 0.02,
+          "status": "passed"
+        }
+      },
+      "coefficient_start": 64,
+      "saved_incoming_state_nonzero": true,
+      "exact_full_owner_suffix": {
+        "q": false,
+        "k": false,
+        "v": true,
+        "beta": false,
+        "alpha": false,
+        "g": false
+      },
+      "full_owner_suffix_differences": {
+        "q": {
+          "max_abs": 2.9802322387695312e-08,
+          "rms_ratio": 4.031887520623517e-08
+        },
+        "k": {
+          "max_abs": 5.960464477539063e-08,
+          "rms_ratio": 1.1074405401703452e-07
+        },
+        "v": {
+          "max_abs": 0.0,
+          "rms_ratio": 0.0
+        },
+        "beta": {
+          "max_abs": 1.7881393432617188e-07,
+          "rms_ratio": 6.551112715969384e-08
+        },
+        "alpha": {
+          "max_abs": 2.384185791015625e-07,
+          "rms_ratio": 5.70414940232649e-08
+        },
+        "g": {
+          "max_abs": 1.7881393432617188e-07,
+          "rms_ratio": 5.76588991085303e-08
+        }
+      },
+      "status": "passed"
+    }
+  ],
+  "native_cached_composition": [
+    {
+      "length": 128,
+      "split": 64,
+      "output_rms_ratio": 0.0003296900399428587,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.0,
+          "threshold": 0.008
+        },
+        "k": {
+          "rms_ratio": 0.0,
+          "threshold": 0.008
+        },
+        "v": {
+          "rms_ratio": 0.0,
+          "threshold": 0.008
+        },
+        "beta": {
+          "rms_ratio": 0.00044786509205333087,
+          "threshold": 0.02
+        },
+        "g": {
+          "rms_ratio": 0.0005787570641713314,
+          "threshold": 0.02
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "length": 447,
+      "split": 64,
+      "output_rms_ratio": 0.00033011177633646377,
+      "quantities": {
+        "q": {
+          "rms_ratio": 0.0,
+          "threshold": 0.008
+        },
+        "k": {
+          "rms_ratio": 0.0,
+          "threshold": 0.008
+        },
+        "v": {
+          "rms_ratio": 0.0,
+          "threshold": 0.008
+        },
+        "beta": {
+          "rms_ratio": 0.00046521854197178856,
+          "threshold": 0.02
+        },
+        "g": {
+          "rms_ratio": 0.0005933579423783119,
+          "threshold": 0.02
+        }
+      },
+      "status": "passed"
+    }
+  ],
+  "slice_arithmetic_diagnostics": [
+    {
+      "length": 128,
+      "eager_full_vs_suffix": {
+        "q": {
+          "exact": true,
+          "max_abs": 0.0
+        },
+        "k": {
+          "exact": false,
+          "max_abs": 2.9802322387695312e-08
+        },
+        "v": {
+          "exact": true,
+          "max_abs": 0.0
+        },
+        "beta": {
+          "exact": false,
+          "max_abs": 1.1920928955078125e-07
+        },
+        "alpha": {
+          "exact": false,
+          "max_abs": 2.2351741790771484e-07
+        },
+        "g": {
+          "exact": false,
+          "max_abs": 1.3783574104309082e-07
+        }
+      },
+      "compiled_vs_eager_suffix": {
+        "q": {
+          "max_abs": 8.642673492431641e-07,
+          "rms_ratio": 1.9939486170352893e-07
+        },
+        "k": {
+          "max_abs": 8.493661880493164e-07,
+          "rms_ratio": 3.7271071085529887e-07
+        },
+        "v": {
+          "max_abs": 0.0,
+          "rms_ratio": 0.0
+        },
+        "beta": {
+          "max_abs": 6.3478946685791016e-06,
+          "rms_ratio": 2.462983520826444e-07
+        },
+        "alpha": {
+          "max_abs": 1.4156103134155273e-07,
+          "rms_ratio": 9.613458373386935e-08
+        },
+        "g": {
+          "max_abs": 9.685754776000977e-08,
+          "rms_ratio": 9.88538480311641e-08
+        }
+      }
+    },
+    {
+      "length": 447,
+      "eager_full_vs_suffix": {
+        "q": {
+          "exact": true,
+          "max_abs": 0.0
+        },
+        "k": {
+          "exact": false,
+          "max_abs": 5.960464477539063e-08
+        },
+        "v": {
+          "exact": true,
+          "max_abs": 0.0
+        },
+        "beta": {
+          "exact": false,
+          "max_abs": 1.4901161193847656e-07
+        },
+        "alpha": {
+          "exact": false,
+          "max_abs": 2.980232238769531e-07
+        },
+        "g": {
+          "exact": false,
+          "max_abs": 1.7881393432617188e-07
+        }
+      },
+      "compiled_vs_eager_suffix": {
+        "q": {
+          "max_abs": 1.3299286365509033e-05,
+          "rms_ratio": 1.1716166793008504e-06
+        },
+        "k": {
+          "max_abs": 1.3519078493118286e-05,
+          "rms_ratio": 2.2753317873359916e-06
+        },
+        "v": {
+          "max_abs": 0.0,
+          "rms_ratio": 0.0
+        },
+        "beta": {
+          "max_abs": 2.7552247047424316e-05,
+          "rms_ratio": 5.2665865610642e-07
+        },
+        "alpha": {
+          "max_abs": 2.384185791015625e-07,
+          "rms_ratio": 9.924771549468237e-08
+        },
+        "g": {
+          "max_abs": 1.4901161193847656e-07,
+          "rms_ratio": 1.0249991654362462e-07
+        }
+      }
+    }
+  ],
+  "status": "passed"
+}

@@ -1,9 +1,16 @@
 # DeltaTrace token 信用：唯一固定计划
 
-更新：2026-09-25。依据用户新增约束，禁止 O(n²) 的归因调用。直接使用 EOS DT
+更新：2026-09-29。用户明确恢复固定 VERL 官方损失默认设置（entropy=0.001、
+dual-clip=3），DT Q/V/A 不变。依据用户既定约束，禁止 O(n²) 的归因调用。直接使用 EOS DT
 对完整未来累计回报结果的 log-prob 变化归因，每个当前 response 至多一个请求，
 不再展开 response × 未来奖励事件。不逐 token 询问，不额外采样参考 token。
 本文件是唯一方法规范；README 只记录实现状态，环境记录只规定复用。
+
+**同日最新用户指令优先：本文件只固定信用分配；信用以外使用官方实现与配置，
+不得用旧 PLAN 阻止恢复官方行为。** 原 PPO loss、无效动作惩罚、任务历史窗口、
+采样与更新由固定 VERL-agent 的原代码负责。训练所需的机型、模型、内存兼容
+改动须逐项记录，不能称为原论文同配置。DT 容差复用对应 FA/FLA 原参考和断言，
+不把整网守恒、短链逐值一致或自己设置的倍率变成官方验收标准。
 
 ## 前提与固定接口
 
@@ -19,8 +26,13 @@ O credit 路由，不引入 value model/value loss 或第二套 PPO。
 
 ## 完整未来回报到 token 的计算
 
-官方环境给出原始每步 reward；当前配置 gamma=1。对第 t 个 response，使用
-从本次 action 执行到实际结束的所有官方 reward 之和 G_t。历史 reward 不计入，
+官方环境给出原始每步 reward；当前官方 PPO 配置 gamma=1。对第 t 个 response，
+先取从本次 action 执行到实际结束的环境 reward 之和。DT 在原 trainer 奖励处理后
+读取其 `token_level_rewards`，加上该 response 的原生训练分数与原 episode score
+之差，得到 G_t。这使官方当前无效动作惩罚计入一次；不复制惩罚公式，也不额外
+累计过去或未来 response 的惩罚。原 EpisodeRewardManager 将 episode score
+放在每条 response 的最后一个有效 token，原 `apply_invalid_action_penalty`
+负责调整它。历史环境 reward 不计入 G_t，
 终止后没有新 reward，预算终止不补造终局 reward。整段 response 的 token 在
 同一次环境结算前，观察到同一个 G_t，但各有独立的反事实比值。DT 估计：
 
@@ -68,7 +80,7 @@ G_t，不能只预测成功奖励或丢弃步罚。该组合与 return-condition
 | Advantage | Q-V 或其采样估计 | A_hat=Q_hat-V_hat，稳定实现用 expm1 |
 | 工具调用 | 价值含调用结果对后续奖励的影响 | 同一事件反事实定义包含该链路 |
 | O | 状态，不参与 actor loss | 相同 |
-| Actor loss | 原 token PPO ratio/clipping | 完全复用固定 VERL 的原实现 |
+| Actor loss | 原 token PPO ratio/clipping、原熵项 | 完全复用固定 VERL 的原实现与默认设置 |
 
 这里的 A_hat（也记作 C_i^{DT}）已经汇总该 token 之后的奖励事件，直接进入
 它自己的 PPO ratio 和逐 token clipping。**不再对 A_hat 做 GAE、第二次
@@ -107,7 +119,10 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
 事件概率的路径。当前选择：
 
 1. 复用官方 rollout 的原始 prompt、response IDs、attention mask、traj_uid、
-   env_step 和实际每步 reward。原始 action 不经过 decode/encode 重建。
+   env_step 和实际每步 reward；在官方 reward/penalty 之后读取训练奖励。
+   原始 action 不经过 decode/encode 重建。原 `adjust_batch` 可能复制行，
+   balance 可能改变顺序；以原 traj_uid/env_step 对齐，每个实际 response
+   归因一次，再按原训练行顺序返回，不把复制行当成新环境奖励。
 2. 每个当前 response 行至多附加一次完整未来回报询问，
    指明任务、当前交互、固定最大步数及回报类别定义。询问不能透露
    事实未来 O、未来 action、实际 reward 或实际停止时间。
@@ -137,7 +152,7 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
 
 ## 三个任务的真实奖励
 
-以下来自已安装固定上游 worker，不在适配层重新计算评分：
+以下环境奖励来自固定上游 worker，不在适配层重新计算评分：
 
 - WebShop：固定 VERL worker 将购买成功（原 task_score=1）映射为 10，其他为 0。
 - AppWorld：固定 worker 在终止时用官方 `evaluate().success` 返回 10 或 0。
@@ -146,6 +161,12 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
   `{-0.1,0,10.9}`。15步内的累计回报类别为0、`-0.1*N`、`11-0.1*N`
   （N=1..15），共31类；使用互异的单token标签，复用原Qwen head。
   不能把这个值域用于未经支持的多箱配置。
+
+固定 VERL 默认额外对**当前 response**的无效动作扣 0.1。训练目标类别由上述
+累计环境回报集合与其减去 0.1 的集合取并集；WebShop/AppWorld 为4类，
+15步 Sokoban 为33类。惩罚数值直接读取官方处理结果，类别编码只说明目标
+分布的支持集，不自行判定 action 有效性。未启用官方惩罚的独立旧夹具仍使用
+原2/31类，不能拿该夹具声称新接口已经通过。
 
 Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局成功值。
 在 gamma=1 下，当前单箱配置的完整未来回报可写作 11*S-0.1*N（尚未终止的
@@ -156,9 +177,27 @@ Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局�
 
 ## 实现与验收约束
 
+- 2026-09-29 用户要求：PPO 除信用来源外，须对齐同一个强化学习框架的官方
+  行为，并采用该框架对应测试原有的容差。此处 owner 仍为固定 VERL-agent，
+  不用 LOOP 的轨迹单位、预算解释或测试冒充 VERL 行为。对照传入完全相同的
+  token IDs、mask、advantages、初始模型/optimizer 状态及配置，只检查信用
+  接口之后的原 PPO 路径。原测试未覆盖的量须明确说明，不能自创或放宽容差，
+  也不能把 FA/FLA 算子阈值扩大成整条 PPO 阈值。以下 FA/FLA 要求继续只用于
+  各自对应的算子；本条不改变上面的 EOS DT Q/V/A、reward 或 token mask。
+- 同日用户明确选择“恢复 VERL 官方默认损失设置”：删除启动器对
+  `entropy_coeff=0`、`clip_ratio_c=inf` 的覆盖，继承固定 owner 的
+  `entropy_coeff=0.001`、`clip_ratio_c=3.0`。PPO 对照与 DT 使用相同设置。
+  熵项不是 DT 信用；报告更新时分别保留原 actor 的 policy/entropy 指标，
+  不能将仅由熵项造成的参数变化称为非零 DT 更新。环境 reward 与 Q/V/A
+  继承官方奖励处理，包括原生无效动作惩罚；由上述信用接口读取结果。
 - 正式 DT 负责有限传播，现有 VERL 负责 rollout、PPO clipping、optimizer，
   官方 task worker 负责 reward。禁止复制这些实现。
-- 保持单卡、Qwen3.5-9B、minibatch 4、总长度上限 32768；GRPO 对照
+- 2026-09-29 最新资源安排：三个 DT 任务各用两张卡，剩余两张卡运行 GRPO
+  对照。Qwen3.5-9B、总长度上限32768；实际 minibatch 通过官方分布式配置安排，
+  初始每卡 actor microbatch4/DT batch4。信用公式不依赖单卡假设。原单卡
+  验收不能冒充双卡请求分发、FSDP collective、奖励/优势对齐已通过。
+  PPO optimizer minibatch 恢复固定作者任务脚本的64，由原更新循环累计梯度，
+  撤销旧 PLAN 对 optimizer minibatch4 的覆盖；GRPO 对照
   group size 4。smoke 同样保持 32768 上限，实际长度另报，不能用 padding
   冒充原始任务上下文。读出询问和 target 占用也计入上限。
 - 2026-09-23 用户明确要求 DT 本身使用 minibatch，效率应接近一次反向或更快。
@@ -172,7 +211,7 @@ Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局�
   为统一内部卸载方式而削弱官方路径；确需不同策略时记录实际成本与原因。
 - 2026-09-22 用户指定后续全部改用 MetaX，不再使用 A6000。先读环境记录并
   复用 Python/权重/持久缓存；先确认空闲显卡。平台变更不改变上述 Q/V、
-  minibatch 或上下文约束。2026-09-22 用户进一步明确：MetaX 按物理 64 GB
+  信用或上下文约束。2026-09-22 用户进一步明确：MetaX 按物理 64 GB
   显存、不 OOM 验收，不再要求 48 GB；物理容量与实测占用仍分别报告。
   32k 容量须用已知长度的输入主动测试：DT 输入连同事件询问和目标恰好
   32768 tokens，并验证原始 PPO 更新；不能等待真实任务偶然接近上限。
@@ -180,19 +219,18 @@ Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局�
   2026-09-24 用户批准 AppWorld 的轨迹预算处理：下一轮 prompt 无法在预留
   response 和 DT 读出后放入上限时，结束该条轨迹，保留已经执行的 action
   和官方 reward，不再生成或执行工具，不补造终局 reward。其他轨迹继续。
-  不以删除历史或截短工具观测替代该规则；容量接口的越界拒绝继续保留。
+  2026-09-29 最新指令恢复官方 AppWorld history_length=2、10000字符历史窗口；
+  撤销旧全历史覆盖。预算终止保护只在官方渲染后的输入仍超限时生效，保留
+  已执行动作及官方奖励，不补造奖励；该32k边界适配不冒充作者默认配置。
   显存修复必须同时对比相同输入的预热后耗时，不能以严重拖慢训练换取通过。
   归因阶段使用正式 runner 要求的 FA，结束后恢复原 actor attention 后端，
   包括异常路径；不能让前向专用 FA wheel 接管 PPO backward。
 - 复用已有动态 shape 执行配置，记录首轮/后续耗时和编译；不能清缓存假装恢复。
 - 测试必须分清：数学组合、正式 DT 调用及单 token 对照、真实任务 reward、
   上游 actor 更新、32k 容量、完整训练/评估。历史结果不自动覆盖当前实现。
-- 修复后还须在短链、相同权重/输入/随机种子下对拍正式 DT 和固定上游 PPO。
-  比较归因、log-prob、梯度及参数更新；容差以同机 FA 加速的基准误差为依据，
-  不因新实现出现偏差而放宽，不用 shape、总和或 loss 单项替代数值对照。
-  短链可借鉴 FA 测试的独立 FP32 参考与低精度基线误差比较；不能把两条
-  BF16 路径之间的差值当成 FP32 参考误差，也不能称为 FA 官方为 PPO 训练
-  背书。高精度配置仅用于校验，不改变训练算法。
+- 相同权重/输入/随机种子下的 PPO 短链保留为对照诊断；不再用 FA/FLA
+  算子误差替整网梯度或多步更新设阈值。信用以外调用同一框架原代码与原测试，
+  原测试未覆盖的量如实记录；既不据差值自动判错，也不据差值小就宣称通过。
   用户进一步确认：数值容差直接采用固定版本 FA/FLA 官方测试的计算方式，
   比较同一初值下单步前向/反向；允许与这些低精度实现相同的多步累计误差，
   不另设多步逐位相同、更新方向或 clipping 分支完全一致的验收门槛。

@@ -1,0 +1,69 @@
+{
+  "date": "2026-09-29",
+  "status": "candidate_interface_verified_formal_training_not_restarted",
+  "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "remote_ssh_port": 31091,
+  "remote_candidate": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-native-reward",
+  "requested_next_layout": {
+    "dt_gpus_per_task": 2,
+    "grpo_gpus": 2,
+    "grpo_task": "Pending real-context and elapsed-time evidence;32k capacity alone is not a long-context task.",
+    "status": "Requested;distributed DT request/reward alignment is not verified by the single-GPU receipts below."
+  },
+  "changes": [
+    "Inherit native entropy0.001, dual-clip3 and invalid-action reward processing.",
+    "Move DT computation from collector to the original trainer's post-reward advantage boundary.",
+    "Read exact native reward adjustments; retain existing token Q/V/A composition and observation mask.",
+    "Preserve original row identities across native duplication and balancing; attribute each factual response once.",
+    "Restore history_length2 and original AppWorld history cap; remove unused extra observation copies.",
+    "Restore author optimizer minibatch64; retain actor microbatch4 and DT batch4.",
+    "Restore response512 default and native Ray temporary-directory selection.",
+    "Retain exact failed DT batch inputs without clipping, retrying or replacing credit.",
+    "Remove obsolete entropy/dual-clip overrides from standalone verification entries; saved-policy diagnostics consume their recorded clip configuration.",
+    "Restore the demonstrated missing Java17 runtime for the official WebShop/Pyserini path; no Python dependency stack reinstall."
+  ],
+  "verification": {
+    "cpu_credit_and_owner_interfaces": {
+      "passed": 61,
+      "receipt": "../../research/temporary/rl_upstream_alignment_20260929/native-reward-tests.xml"
+    },
+    "native_config_resolution": {
+      "tasks": ["Sokoban", "Webshop", "AppWorld"],
+      "ppo_dt_differences": ["algorithm.adv_estimator", "trainer.experiment_name"],
+      "scope": "Full Hydra configuration including data; not identical to every original experiment parameter.",
+      "receipt": "../../research/temporary/rl_upstream_alignment_20260929/native-reward-config-parity.json"
+    },
+    "real_model": {
+      "model": "Qwen3.5-9B",
+      "scope": "Saved task-token fixtures, explicit validity fixtures, real DT and one native minibatch64 update per task; no fresh task rollout or performance claim.",
+      "microbatches_per_update": 16,
+      "all_reported_gradient_norms_finite": true,
+      "receipt": "../../research/temporary/rl_upstream_alignment_20260929/native-minibatch64-real-model.json"
+    },
+    "dt_operators": {
+      "scope": "Coincident-endpoint finite coefficients and native cached composition; original FP32 references and FA/FLA assertions, no invented whole-network tolerance.",
+      "finite_fla_fp16_cases_passed": 8,
+      "finite_fa_cases_passed": 4,
+      "receipts": [
+        "../../research/temporary/rl_upstream_alignment_20260929/dt-fla-original-tolerances.json",
+        "../../research/temporary/rl_upstream_alignment_20260929/dt-fa-original-tolerances.json"
+      ]
+    },
+    "preserved_failures": [
+      "Native MetaX BF16 FLA dQ: RMS ratios0.008965/0.008983 exceed original0.008 at T128/447; actual DT uses separately tested FP16 native operands.",
+      "Fixed VERL official suite:18 passed,1 cosine warmup test failed identically on pristine source. Configured scheduler is constant.",
+      "Pristine full-head actor and memory-reduced head have measured BF16 gradient differences; no official whole-PPO gradient tolerance is asserted.",
+      "Historical Sokoban nonfinite DT failure remains unreproduced/unfixed; current short fixtures do not establish its removal.",
+      "Whole-DT conservation diagnostics remain failures for some current fixtures; operator passing is not full attribution accuracy."
+    ]
+  },
+  "outstanding": [
+    "Two-GPU native execution and DT request/complete-return alignment; select and launch the two-GPU GRPO control from measured task evidence.",
+    "Fresh official environment rollout and task-performance comparison on all three tasks.",
+    "Current full32k capacity/accumulation validation with native loss and minibatch64.",
+    "Historical DT nonfinite failure reproduction and root-cause fix.",
+    "Complete audit of remaining model/platform/memory compatibility seams.",
+    "AppWorld experiment budget alignment; legacy LOOP budget is not an official VERL-agent experiment.",
+    "Formal restart, sustained health, final experiment completion and backup."
+  ]
+}

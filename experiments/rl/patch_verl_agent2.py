@@ -15,6 +15,7 @@ rollout, optimizer, or environment dynamics.
 from __future__ import annotations
 
 import argparse
+import ast
 import importlib
 import subprocess
 from pathlib import Path
@@ -236,8 +237,7 @@ def patch_rollout_phase_logs(text: str) -> str:
         return text
     start = '            batch_output_padded = actor_rollout_wg.generate_sequences(batch_input_padded)'
     end = '            batch_output = unpad_dataproto(batch_output_padded, pad_size=pad_size)'
-    rpc = '            dt_values = actor_rollout_wg.compute_dt_token_advantages('
-    if any(text.count(anchor) != 1 for anchor in (start, end, rpc)):
+    if any(text.count(anchor) != 1 for anchor in (start, end)):
         raise RuntimeError('cannot find pinned rollout phase log boundaries')
     text = text.replace(start, '''            if str(self.config.algorithm.adv_estimator) == "deltatrace":
                 from time import perf_counter
@@ -257,17 +257,6 @@ def patch_rollout_phase_logs(text: str) -> str:
                       f"tokens_per_second={_dt_generated / _dt_seconds:.3f} "
                       f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
 ''', 1)
-    text = text.replace(rpc, '''            from time import perf_counter
-            from resource import getrusage, RUSAGE_SELF
-            _dt_rpc_started = perf_counter()
-            print(f"[DT rollout] phase=dt_rpc_start episodes={len(total_batch_list)} "
-                  f"rows={sum(map(len, total_batch_list))} "
-                  f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
-''' + rpc, 1)
-    end_rpc = '            if isinstance(dt_values, list) and len(dt_values) == 1:'
-    text = text.replace(end_rpc, '''            print(f"[DT rollout] phase=dt_rpc_end seconds={perf_counter() - _dt_rpc_started:.3f} "
-                  f"peak_rss_gib={getrusage(RUSAGE_SELF).ru_maxrss / 2**20:.3f}", flush=True)
-''' + end_rpc, 1)
     return text
 
 
@@ -527,7 +516,7 @@ HF_DT_METHOD = '''        return DataProto(batch=batch)
         return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)
 '''
 
-FSDP_DT_METHOD_MARKER = "    def compute_dt_token_advantages(self, episodes, episode_returns, eos_token_id=None, pad_token_id=None):\n"
+FSDP_DT_METHOD_MARKER = "    def compute_dt_token_advantages(self, episodes, episode_returns=None, eos_token_id=None, pad_token_id=None):\n"
 FSDP_DT_METHOD_OLD = "    def compute_dt_token_advantages(self, episodes, episode_returns):\n"
 FSDP_DT_METHOD_ANCHOR = "    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)\n    def compute_log_prob(self, data: DataProto):\n"
 FSDP_DT_METHOD = '''    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
@@ -564,6 +553,65 @@ FSDP_DT_METHOD = FSDP_DT_METHOD.replace(
                     offload_fsdp_model_to_cpu(self.actor_module_fsdp)
 ''',
 )
+FSDP_DT_METHOD_LEGACY_REWARD = FSDP_DT_METHOD
+FSDP_DT_METHOD = FSDP_DT_METHOD.replace(
+    'episodes, episode_returns, eos_token_id=None',
+    'episodes, episode_returns=None, eos_token_id=None',
+).replace(
+    'if self.config.rollout.name == "vllm":',
+    'if self.config.rollout.name == "vllm" or isinstance(episodes, DataProto):',
+).replace(
+    'self.actor_module_fsdp, eos_token_id=eos_token_id, pad_token_id=pad_token_id\n',
+    'self.actor_module_fsdp, eos_token_id=eos_token_id, pad_token_id=pad_token_id,\n'
+    '                        invalid_action_penalty_coef=(self.config.actor.invalid_action_penalty_coef\n'
+    '                            if self.config.actor.get("use_invalid_action_penalty", True) else 0.0),\n',
+).replace(
+    '                return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)',
+    '                if isinstance(episodes, DataProto):\n'
+    '                    return self._deltatrace_producer.attribute_training_batch(episodes)\n'
+    '                return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)',
+)
+
+
+def patch_dt_reward_boundary(rollout_text: str, trainer_text: str) -> tuple[str, str]:
+    """Move the existing DT call after the owner's reward processing.
+
+    Do not copy apply_invalid_action_penalty, the reward manager, adjust_batch
+    or PPO. Remove only the old DT producer/check at the collector boundary.
+    """
+    lines = rollout_text.splitlines(keepends=True)
+    remove = []
+    for node in ast.walk(ast.parse(rollout_text)):
+        if isinstance(node, ast.If) and any(
+            isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+            and call.func.attr == 'compute_dt_token_advantages' for call in ast.walk(node)
+        ) and 'adv_estimator' in ast.unparse(node.test):
+            remove.append((node.lineno - 1, node.end_lineno))
+    for start, end in sorted(remove, reverse=True):
+        del lines[start:end]
+    rollout_text = ''.join(lines).replace(GATHER_INSERT, GATHER_ANCHOR, 1)
+    # The readout consumes native token IDs and trainer rewards. These legacy
+    # observation copies/raw-prompt retention are not inputs to that interface.
+    for event_block in (ROLLOUT_EVENT_INSERT, ROLLOUT_EVENT_INSERT.replace(ROW_CALL, COMPACT_ROW_CALL)):
+        if event_block in rollout_text:
+            rollout_text = rollout_text.replace(event_block, COMPACT_ROW_CALL, 1)
+    rollout_text = rollout_text.replace(RAW_PROMPT_KEEP_NEW, RAW_PROMPT_KEEP_OLD, 1)
+    marker = '                        # DT consumes native rewards after all owner adjustments.\n'
+    anchor = '                        batch = compute_advantage(\n'
+    if marker not in trainer_text:
+        if trainer_text.count(anchor) != 1:
+            raise RuntimeError('cannot locate native post-reward advantage boundary')
+        trainer_text = trainer_text.replace(anchor, marker + '''                        if self.config.algorithm.adv_estimator == AdvantageEstimator.DELTATRACE:
+                            dt_values = self.actor_rollout_wg.compute_dt_token_advantages(
+                                batch, eos_token_id=int(self.tokenizer.eos_token_id),
+                                pad_token_id=int(self.tokenizer.pad_token_id),
+                            )
+                            if isinstance(dt_values, list) and len(dt_values) == 1:
+                                dt_values = dt_values[0]
+                            batch = batch.union(dt_values)
+
+''' + anchor, 1)
+    return rollout_text, trainer_text
 
 # The trainer remains the semantic owner of policy optimization. This patch
 # only adds the DT token-advantage estimator at its existing advantage
@@ -937,13 +985,7 @@ def patch_rollout_owner(verl_root: Path) -> None:
     # Remove the obsolete copy from the former full-chat fork integration.
     text = text.replace('            env_actions = list(text_actions)\n', '')
     text = text.replace('envs.step(env_actions', 'envs.step(text_actions')
-    if RAW_PROMPT_KEEP_NEW not in text:
-        if RAW_PROMPT_KEEP_OLD not in text:
-            raise RuntimeError(f"cannot find raw prompt retention anchor in {rollout}")
-        text = text.replace(RAW_PROMPT_KEEP_OLD, RAW_PROMPT_KEEP_NEW, 1)
-        print(f"patched {rollout} raw prompt retention")
-    else:
-        print(f"already patched {rollout} raw prompt retention")
+    text = text.replace(RAW_PROMPT_KEEP_NEW, RAW_PROMPT_KEEP_OLD, 1)
     if GATHER_OLD_MARKER in text:
         start = text.index(GATHER_OLD_MARKER)
         end = text.index("        success_rate = {}", start)
@@ -953,40 +995,15 @@ def patch_rollout_owner(verl_root: Path) -> None:
         text = text.replace(GATHER_INSERT_PREVIOUS, GATHER_INSERT, 1)
     if ROLLOUT_DT_CALL_PREVIOUS in text:
         text = text.replace(ROLLOUT_DT_CALL_PREVIOUS, ROLLOUT_DT_CALL, 1)
-    if ROLLOUT_EVENT_INSERT not in text and ROLLOUT_EVENT_INSERT.replace(ROW_CALL, COMPACT_ROW_CALL) not in text:
-        if ROLLOUT_EVENT_ANCHOR not in text:
-            raise RuntimeError(f"cannot find reward event capture anchor in {rollout}")
-        text = text.replace(ROLLOUT_EVENT_ANCHOR, ROLLOUT_EVENT_INSERT, 1)
-    gather_inserted = False
     if ROLLOUT_STEP_INSERT not in text:
         if ROLLOUT_STEP_ANCHOR not in text:
             raise RuntimeError(f"cannot find rollout step anchor in {rollout}")
         text = text.replace(ROLLOUT_STEP_ANCHOR, ROLLOUT_STEP_INSERT, 1)
-    if GATHER_INSERT not in text:
-        if GATHER_ANCHOR not in text:
-            raise RuntimeError(f"cannot find rollout gather anchor in {rollout}")
-        text = text.replace(GATHER_ANCHOR, GATHER_INSERT, 1)
-        gather_inserted = True
 
     if ROLLOUT_DT_CALL_STALE in text:
         text = text.replace(ROLLOUT_DT_CALL_STALE, "", 1)
         print(f"removed stale {rollout} DeltaTrace producer call")
 
-    if ROLLOUT_DT_CALL not in text and 'print(f"[DT rollout] phase=dt_rpc_start' not in text:
-        if ROLLOUT_DT_CALL_ANCHOR not in text:
-            raise RuntimeError(f"cannot find rollout DeltaTrace call anchor in {rollout}")
-        text = text.replace(ROLLOUT_DT_CALL_ANCHOR, ROLLOUT_DT_CALL, 1)
-        print(f"patched {rollout} owner DeltaTrace producer call")
-    # Ray workers may expose the adapter directory directly rather than the
-    # repository namespace; keep the import at the same thin boundary. Only
-    # rewrite the import on the same pass that inserted the fresh block;
-    # otherwise a second idempotent patch could nest another try statement.
-    if gather_inserted:
-        text = text.replace(
-            "            from experiments.rl.deltatrace_credit import averaged_traced_credit\n",
-            GATHER_GOOD_IMPORT,
-            1,
-        )
     row_call, compact_row_call = ROW_CALL, COMPACT_ROW_CALL
     if compact_row_call not in text:
         if text.count(row_call) != 1:
@@ -1348,6 +1365,9 @@ def main() -> None:
 
     fsdp_workers = args.verl_root / FSDP_FILE
     text = fsdp_workers.read_text()
+    if FSDP_DT_METHOD_LEGACY_REWARD in text:
+        text = text.replace(FSDP_DT_METHOD_LEGACY_REWARD, FSDP_DT_METHOD, 1)
+        fsdp_workers.write_text(text)
     if FSDP_DT_METHOD_PREVIOUS in text:
         text = text.replace(FSDP_DT_METHOD_PREVIOUS, FSDP_DT_METHOD, 1)
         fsdp_workers.write_text(text)
@@ -1482,6 +1502,11 @@ def main() -> None:
 
     vllm = args.verl_root / VLLM_ROLLOUT_FILE
     vllm.write_text(patch_vllm_prefix_cache_option(patch_vllm_active_rows(vllm.read_text())))
+
+    rollout_path = args.verl_root / RAY_ROLLOUT_FILE
+    rollout_text, trainer_text = patch_dt_reward_boundary(rollout_path.read_text(), ray_trainer.read_text())
+    rollout_path.write_text(rollout_text)
+    ray_trainer.write_text(trainer_text)
 
 
 if __name__ == "__main__":

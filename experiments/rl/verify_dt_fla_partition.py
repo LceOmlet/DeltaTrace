@@ -29,6 +29,8 @@ def main():
     p.add_argument('--coefficient-start',type=int,default=0)
     p.add_argument('--initial-state',action='store_true',help='Use an actual nonzero native recurrent cache state.')
     p.add_argument('--native-cache-split',action='store_true',help='Check native prefix/state/suffix composition with the same official FP32 reference.')
+    p.add_argument('--dtype', choices=('bfloat16', 'float16'), default='bfloat16',
+                   help='Actual native operand dtype; references and original FLA assertions are unchanged.')
     args=p.parse_args()
     source=args.sources/'test_gated_delta_v041.py'
     assert hashlib.sha256(source.read_bytes()).hexdigest()=='35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813'
@@ -36,13 +38,13 @@ def main():
     assert not fla.utils.FLA_CI_ENV
     owner=average_memory_endpoint_orders(make_compiled_finite_pullback(dynamic_shapes=True))
     eager_owner=average_memory_endpoint_orders(finite_fla_pullback)
-    result=dict(scope=__doc__,cases=[])
+    result=dict(scope=__doc__, dtype=args.dtype, cases=[])
     stage=importlib.import_module('fla.ops.gated_delta_rule.chunk').chunk_gated_delta_rule_fwd
     for length in (128,447):
         torch.manual_seed(42)
         shape=(4,length,32,128)
-        q,k=[F.normalize(torch.rand(shape,device='cuda',dtype=torch.bfloat16),p=2,dim=-1).requires_grad_() for _ in range(2)]
-        v=torch.rand(shape,device='cuda',dtype=torch.bfloat16).requires_grad_()
+        q,k=[F.normalize(torch.rand(shape,device='cuda',dtype=getattr(torch, args.dtype)),p=2,dim=-1).requires_grad_() for _ in range(2)]
+        v=torch.rand(shape,device='cuda',dtype=getattr(torch, args.dtype)).requires_grad_()
         beta=torch.rand(shape[:-1],device='cuda').sigmoid().requires_grad_()
         g=F.logsigmoid(torch.rand(shape[:-1],device='cuda')).requires_grad_()
         inputs=(q,k,v,beta,g)

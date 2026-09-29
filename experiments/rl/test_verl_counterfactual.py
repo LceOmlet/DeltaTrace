@@ -31,12 +31,12 @@ def test_exact_eos_credit_has_same_expected_actor_gradient_for_common_deletion_b
             loss, *_ = compute_policy_loss(
                 logp[action].detach().reshape(1, 1), logp[action].reshape(1, 1),
                 credit.advantages[outcome:outcome+1], mask,
-                cliprange=.2, clip_ratio_c=float('inf'),
+                cliprange=.2,
             )
             dt_loss = dt_loss + policy[action] * laws[action, outcome] * loss
         loss, *_ = compute_policy_loss(
             logp[action].detach().reshape(1, 1), logp[action].reshape(1, 1),
-            (q[action]-v).reshape(1, 1), mask, cliprange=.2, clip_ratio_c=float('inf'),
+            (q[action]-v).reshape(1, 1), mask, cliprange=.2,
         )
         exact_loss = exact_loss + policy[action] * loss
     dt_gradient = torch.autograd.grad(dt_loss, logits, retain_graph=True)[0]
@@ -47,7 +47,7 @@ def test_exact_eos_credit_has_same_expected_actor_gradient_for_common_deletion_b
 @pytest.mark.parametrize("ratios,expected_loss,expected_gradient", [
     ([1.0, 1.0, 1.0, 1.0], 0.0, [-1/3, 2/3, 0.0, -1/3]),
     ([1.5, 0.5, 5.0, 1.0], -0.2, [0.0, 0.0, 0.0, -1/3]),
-    ([1.0, 4.0, 5.0, 1.0], 2.0, [-1/3, 8/3, 0.0, -1/3]),
+    ([1.0, 4.0, 5.0, 1.0], 4/3, [-1/3, 0.0, 0.0, -1/3]),
 ])
 def test_sampled_advantages_enter_upstream_ppo(ratios, expected_loss, expected_gradient):
     policy = torch.tensor([[True, True, False, True]])
@@ -55,12 +55,12 @@ def test_sampled_advantages_enter_upstream_ppo(ratios, expected_loss, expected_g
     d = torch.tensor([[[math.log(2), math.log(0.5), float("nan"), math.log(2)]]])
     credit = reward_event_token_credit(d, torch.tensor([[2.0]]), future, policy)
     # The observation has no actor gradient. Clipped positions use the
-    # upstream implementation, with dual clipping explicitly disabled.
+    # upstream implementation and its native dual-clip default of 3.
     old_log_prob = torch.full((1, 4), -3.0)
     log_prob = (old_log_prob + torch.tensor([ratios]).log()).requires_grad_()
     loss, *_ = compute_policy_loss(
         old_log_prob, log_prob, credit.advantages, policy,
-        cliprange=0.2, clip_ratio_c=float("inf"),
+        cliprange=0.2,
     )
     loss.backward()
     assert loss.item() == pytest.approx(expected_loss, abs=1e-6)

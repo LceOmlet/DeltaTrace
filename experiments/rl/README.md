@@ -1,9 +1,60 @@
 # DeltaTrace RL
 
-唯一方法规范是 [PLAN.md](PLAN.md)。环境复用见
+信用分配规范是 [PLAN.md](PLAN.md)；2026-09-29 用户最新要求信用以外以
+固定官方实现/配置为准，旧 PLAN 不覆盖官方行为。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**当前修订（2026-09-25）：按用户要求移除平方归因展开。**
+**2026-09-29 现状更正：新端口31091已恢复连接，三组旧训练均已不在运行。**
+原完成检查点标记为 Sokoban 10、WebShop 30、AppWorld 3。Sokoban 报 DT
+非有限系数，AppWorld 报 Ray worker 异常退出，WebShop 停止原因尚未确认。
+下方9月25日“正式运行”是历史记录，不能作为当前健康状态。尚未重启正式训练。
+本次改动、验收范围和未完成项统一见 [官方接入回执](results_upstream_alignment.json)。
+用户最新资源安排为三个DT任务各两卡、剩余两卡运行较快的长上下文任务GRPO。
+双卡接入尚待验证；下面9B更新结果仍是单卡。现有DT广播RPC不能直接作为
+双卡并行归因使用，需保持完整未来回报、原行身份及FSDP调用对齐。
+当前按用户要求核对固定 VERL-agent 的完整行为及该版本官方测试；既有局部
+对照不等于整条 PPO 已获官方容差验收。`paper_scale.json` 仅记录引用的采样
+预算，不能证明与 LOOP 的完整轨迹更新次数或任务性能一致。
+
+旧配置对照仅覆盖从 actor 配置开始的 YAML，未含前面的 data 配置；该解析
+问题已修正，后续回执包含完整 data 字段。旧记录仅作诊断，不能作为当前
+全配置验收，见[旧对照](../../research/temporary/rl_upstream_alignment_20260929/launcher-config-parity.json)。
+
+**2026-09-29 后续候选修复（尚未恢复正式训练）：** 原生 entropy=0.001、dual-clip=3、
+无效动作惩罚均继承固定 VERL；撤销 AppWorld 全历史覆盖，继承 history_length=2
+和原10000字符窗口；response 默认512。optimizer minibatch 恢复作者任务脚本的
+64，actor microbatch/DT batch保留4，由原PPO循环累计梯度。旧启动预算文件的
+AppWorld规模来自LOOP，仍不能称为固定VERL官方实验；不以这个文件自动验收。
+
+DT 调用已移到原 trainer 完成 reward/penalty 之后，直接读取官方结果；原 Q/V/A
+组合不变。原 adjust_batch 的复制行只归因一次，结果再对齐原训练顺序。
+删除了 rollout 中无读者的工具观测副本，未复制奖励函数、PPO loss 或 optimizer。
+61项组合/原接口检查通过，原奖励函数、policy loss、梯度裁剪和optimizer step
+与固定官方源码逐函数一致。真实9B三任务保存夹具均已完成新信用接线与原更新，
+其中恢复minibatch64后，三个任务各执行16个microbatch4并完成一次原生更新，
+梯度均有限。该夹具通过原DataProto重复保存的4条输入来检查累计梯度，
+不是64条独立采样，也不是新鲜环境采样或性能不下降的证明。见
+[真实9B与原生累计更新](../../research/temporary/rl_upstream_alignment_20260929/native-minibatch64-real-model.json)。
+
+DT 算子复测：FP16 FLA完整/分头/后缀路径8项、有限FA重合端点4项通过固定
+官方参考与原断言；MetaX原生BF16 FLA的两种长度仍失败，失败记录保留。
+这些算子结果不覆盖任意有限干预、整网归因或历史Sokoban非有限失败。
+历史失败尚未重现修复；已增加失败当批精确输入回显，原错误继续抛出，不裁剪
+或填造信用。结果见[FLA](../../research/temporary/rl_upstream_alignment_20260929/dt-fla-original-tolerances.json)、
+[FA](../../research/temporary/rl_upstream_alignment_20260929/dt-fa-original-tolerances.json)、
+[保留的BF16失败](../../research/temporary/rl_upstream_alignment_20260929/official-kernel-tests.json)。
+
+固定 `20bd331` 原测试18项通过、1项cosine调度失败；同一失败在未修改原源码
+中复现，生产采用constant调度，未修改测试或调度函数。真实9B/B4同输入、
+同已保存优势的对拍发现输出头裁剪路径与完整原actor存在梯度和更新差异；
+生产路径重复执行逐值一致，关闭左侧padding裁剪后差异仍在。
+**未将其判为符合整条PPO官方容差**：原版本没有为整网梯度/参数更新提供
+统一阈值，不能搬用FA/FLA阈值或仅用masked log-prob均值作替代。
+原对拍与失败范围见
+[隔离结果](../../research/temporary/rl_upstream_alignment_20260929/isolated-vs-owner.summary.json)、
+[官方测试结果](../../research/temporary/rl_upstream_alignment_20260929/official-tests.log)。
+
+**历史修订（2026-09-25）：按用户要求移除平方归因展开。**
 19:30已通过原入口启动当前发布`64e5876`的正式预算：Sokoban GPU4 150×256，
 WebShop GPU5 150×128，AppWorld GPU6 200×240。运行目录为远端
 `runs/author-64e5876-paper/{Sokoban,Webshop,AppWorld}`；启动信息和实际Ray

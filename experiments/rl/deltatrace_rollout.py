@@ -172,7 +172,8 @@ class _Qwen35CausalOwnerView:
 class DeltaTraceRolloutProducer:
     """Read individual token/return contrasts; compose the PLAN sampled Q/V."""
 
-    def __init__(self, model: Any, *, eos_token_id: int | None = None, pad_token_id: int | None = None):
+    def __init__(self, model: Any, *, eos_token_id: int | None = None, pad_token_id: int | None = None,
+                 invalid_action_penalty_coef: float = 0.0):
         # ``DT_ROOT`` is the checkout that contains the ``deltatrace`` Python
         # package (the launcher sets it to .../repo/deltatrace).  Keep this
         # import boundary explicit for Ray actors, whose inherited PYTHONPATH
@@ -370,7 +371,43 @@ class DeltaTraceRolloutProducer:
             max_steps=int(os.environ['DT_MAX_STEPS']),
             max_length=int(os.environ.get('DT_MAX_LENGTH', '32768')),
             packed_answer_targets=self.packed_answer_targets,
+            invalid_action_penalty_coef=invalid_action_penalty_coef,
         )
+
+    def attribute_training_batch(self, data):
+        """Consume original trainer rewards after native reward processing.
+
+        Native adjust_batch can duplicate rows, and balancing changes their
+        order. Reuse identities to attribute each factual action once, then
+        return values in the owner's actual training order.
+        """
+        from agent_system.multi_turn_rollout.utils import to_list_of_dict
+        from verl import DataProto
+
+        keys = ('input_ids', 'attention_mask', 'responses', 'token_level_rewards',
+                'rewards', 'episode_rewards', 'traj_uid', 'env_step', 'active_masks')
+        source = data.select(
+            batch_keys=[key for key in keys if key in data.batch],
+            non_tensor_batch_keys=[key for key in keys if key in data.non_tensor_batch],
+        )
+        rows = to_list_of_dict(source)
+        grouped = {}
+        identities = []
+        for row in rows:
+            identity = (str(row['traj_uid']), int(row['env_step']))
+            identities.append(identity)
+            # This is the original trainer's result, including its native
+            # invalid-action adjustment. No copied parser/penalty formula.
+            row['dt_reward_adjustment'] = (
+                float(row['token_level_rewards'].double().sum()) - float(row['episode_rewards'])
+            )
+            grouped.setdefault(identity[0], {}).setdefault(identity[1], row)
+        episodes = [[steps[index] for index in sorted(steps)] for steps in grouped.values()]
+        values = self.attribute_episodes(episodes, [float(rows[0]['episode_rewards']) for rows in episodes])
+        by_identity = {(str(row['traj_uid']), int(row['env_step'])): value
+                       for rows, output in zip(episodes, values) for row, value in zip(rows, output)}
+        return DataProto.from_dict(tensors={name: torch.stack([by_identity[key][name] for key in identities])
+            for name in ('dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates')})
 
     def attribute_episode(self, rows: list[dict[str, Any]], episode_return: float) -> list[dict[str, torch.Tensor]]:
         return self.attribute_episodes([rows], [episode_return])[0]
