@@ -4,17 +4,26 @@
 固定官方实现/配置为准，旧 PLAN 不覆盖官方行为。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**2026-09-30 当前目标：只在本机单测官方训练/评估环境与 Qwen3.5-9B 模型入口。**
-默认入口不运行算法、DT、模型权重或远端服务。83项单测通过，包含官方配置、
-环境边界、原生消息/token入口和计算负载单位核对。修复、精确覆盖与资源回执见
-[LOCAL_TESTING.md](LOCAL_TESTING.md)。以下远端和训练状态均为历史记录。
+**2026-09-30 当前 goal：官方环境接入既有 VERL-agent/vLLM，完成实际训练检查后，
+启动 SQL、AppWorld、TextCraft 三组 DT 和 SQL GRPO，每组两卡。**
+只复用任务项目的官方环境、数据、奖励、评测及相关配置，不启动其训练器或推理栈。
+先前本机83项单测保留，覆盖范围见 [LOCAL_TESTING.md](LOCAL_TESTING.md)。
+数值基线按原始官方方法对照回执和源码SHA锁定于
+[verified_runtime.json](verified_runtime.json)，不按目录新旧猜测版本。
+当前没有启动新的正式训练；以下9月29日及更早运行结果属于历史记录。
+最新入口检查与两组SQL有界验证见环境记录首节。AppWorld、TextCraft的原环境/模型
+入口已有实际服务证据；脚本动作、CPU测试和进程启动不表示四组模型训练已经通过。
+任务仓库的trainer、optimizer和推理server均未启动。
+本次版本、接口对照、SQL保存/恢复结果及尚待处理的长度/预算问题见
+[当前接入回执](results_environment_entry.json)。其中明确区分任务作者整轨迹训练
+与当前固定VERL每回复一行的计算单位，不把两者的更新数混写。
 
 **2026-09-29 现状更正：新端口31091已恢复连接，三组旧训练均已不在运行。**
 原完成检查点标记为 Sokoban 10、WebShop 30、AppWorld 3。Sokoban 报 DT
 非有限系数，AppWorld 报 Ray worker 异常退出，WebShop 停止原因尚未确认。
 下方9月25日“正式运行”是历史记录，不能作为当前健康状态。尚未重启正式训练。
 本次改动、验收范围和未完成项统一见 [官方接入回执](results_upstream_alignment.json)。
-**最新范围：暂停 Sokoban；WebShop DT/GRPO、AppWorld DT/GRPO 各两卡。**
+**9月29日当时范围（已被上方当前目标替代）：暂停 Sokoban；WebShop DT/GRPO、AppWorld DT/GRPO 各两卡。**
 用户已选择 [LOOP 作者仓库 f14107a](https://github.com/apple-aiml-research/ml-loop/tree/f14107a976e5793990329d3193df4742076c5a1d)
 后进一步明确：**只提取原生 AppWorld 环境与配置，与项目对照，不运行 LOOP
 训练器，不接入其 loss、优化器、训练预算或模型路径。** 配置通过原 Hydra

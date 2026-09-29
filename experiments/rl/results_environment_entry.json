@@ -1,0 +1,205 @@
+{
+  "scope": "Official environment and model-entry integration into verified VERL/vLLM. Bounded checks only; formal training not started.",
+  "numerical_runtime": {
+    "lock": "verified_runtime.json",
+    "dt_reference": "fc2e6c2",
+    "dt_release": "c9cd147",
+    "verified_dt_files": 33,
+    "compared_verl_files": 396,
+    "verl_environment_seam_changes": {
+      "verl/trainer/main_ppo.py": "0cd11847965f27d45e912ae36a56cea8ccf75b0523546dc25711436489620846",
+      "verl/utils/dataset/rl_dataset.py": "c2b8ee02a48baf20adb038fd413a8a52ff7446d755758f2a73a89dd552ed448e",
+      "verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
+      "agent_system/multi_turn_rollout/rollout_loop.py": "0723a059fb05b8181d64ce42218ef74e02f8dd1f42a1f844e362d4527ef859f5"
+    },
+    "official_tolerance_receipts": [
+      "results_dt_actual_numerics.json",
+      "results_vllm_owner_alignment.json"
+    ],
+    "new_numerical_correction": false
+  },
+  "environment_owners": {
+    "SkyRL-SQL": "NovaSky-AI/SkyRL@7d94ccf0eac3439c1731ce32018bf043dd639806 standalone skyrl-gym",
+    "TextCraft": "WooooDyy/AgentGym-RL@82402a99c62a293735a3f412fb8ac9a600673bc0 renderer/client leaves and AgentGym original service",
+    "AppWorld": "apple-aiml-research/ml-loop@f14107a976e5793990329d3193df4742076c5a1d native runner/agent/client, environment only"
+  },
+  "runtime_boundary": "Only the current VERL-agent actor/trainer and official vLLM run model computation. No task-project trainer or inference server is started.",
+  "checks": {
+    "sql_owner_tests": 26,
+    "sql_transport_dataset_and_collector_tests": 24,
+    "credit_composition_tests": 39,
+    "dependency_origin_tests": 2,
+    "loop_native_readiness_tests": 2,
+    "loop_completion_request_tests": 6,
+    "native_config_and_textcraft_template_tests": 4,
+    "counts_note": "Separate suites overlap in scope. CPU assertions are not model numerical or performance evidence."
+  },
+  "sql_completed_checks": [
+    {
+      "job": "sql-dt-bounded-04",
+      "pid": 429887,
+      "live": false,
+      "age_seconds": 3054.8243305683136,
+      "checkpoint_step": 2,
+      "metrics": [
+        {
+          "step": 1.0,
+          "actor/pg_loss": -0.0,
+          "actor/grad_norm": 0.004,
+          "response_length/mean": 202.675,
+          "response_length/max": 1374.0,
+          "prompt_length/max": 4076.0,
+          "episode/reward/mean": -0.9,
+          "episode/length/mean": 3.7,
+          "episode/success_rate": 0.0,
+          "timing_s/gen": 238.272,
+          "timing_s/old_log_prob": 29.491,
+          "timing_s/adv": 155.431,
+          "timing_s/update_actor": 117.416,
+          "timing_s/save_checkpoint": 127.679,
+          "timing_s/step": 668.495,
+          "perf/total_num_tokens": 99158.0
+        },
+        {
+          "step": 2.0,
+          "actor/pg_loss": 0.008,
+          "actor/grad_norm": 0.005,
+          "response_length/mean": 381.5,
+          "response_length/max": 3000.0,
+          "prompt_length/max": 7728.0,
+          "episode/reward/mean": -1.0,
+          "episode/length/mean": 5.4,
+          "episode/success_rate": 0.0,
+          "timing_s/gen": 553.061,
+          "timing_s/old_log_prob": 28.136,
+          "timing_s/adv": 100.357,
+          "timing_s/update_actor": 105.104,
+          "timing_s/save_checkpoint": 123.198,
+          "timing_s/step": 910.177,
+          "perf/total_num_tokens": 291285.0
+        }
+      ],
+      "last_phases": [
+        "[DT rollout] phase=generation_start step=6/6 active=8/10 peak_rss_gib=9.937",
+        "[DT rollout] phase=generation_end step=6 seconds=22.672 generated_tokens=887 tokens_per_second=39.124 peak_rss_gib=9.937"
+      ],
+      "last_dt_batches": [
+        "[DT EOS minibatch] contrasts=4 length=7300 seconds=19.334101362153888 batch=6/7 d_min=-0.03193040015030874 d_max=0.2483822263246425",
+        "[DT EOS minibatch] contrasts=4 length=8072 seconds=15.819116655737162 batch=7/7 d_min=-0.006510788558647765 d_max=0.06666388427152871"
+      ],
+      "completed_responses": 91,
+      "generated_tokens": 27581,
+      "nonfinite_logprobs": 0
+    },
+    {
+      "job": "sql-grpo-bounded-02",
+      "pid": 433068,
+      "live": false,
+      "age_seconds": 3047.160412788391,
+      "checkpoint_step": 2,
+      "metrics": [
+        {
+          "step": 1.0,
+          "actor/pg_loss": -0.121,
+          "actor/grad_norm": 0.048,
+          "response_length/mean": 194.275,
+          "response_length/max": 1374.0,
+          "prompt_length/max": 4340.0,
+          "episode/reward/mean": -0.9,
+          "episode/length/mean": 4.0,
+          "episode/success_rate": 0.0,
+          "timing_s/gen": 244.355,
+          "timing_s/old_log_prob": 29.62,
+          "timing_s/adv": 0.002,
+          "timing_s/update_actor": 69.631,
+          "timing_s/save_checkpoint": 124.031,
+          "timing_s/step": 467.854,
+          "perf/total_num_tokens": 103569.0
+        },
+        {
+          "step": 2.0,
+          "actor/pg_loss": 0.0,
+          "actor/grad_norm": 0.0,
+          "response_length/mean": 371.929,
+          "response_length/max": 2569.0,
+          "prompt_length/max": 7318.0,
+          "episode/reward/mean": -1.0,
+          "episode/length/mean": 5.2,
+          "episode/success_rate": 0.0,
+          "timing_s/gen": 665.467,
+          "timing_s/old_log_prob": 27.87,
+          "timing_s/adv": 0.002,
+          "timing_s/update_actor": 108.254,
+          "timing_s/save_checkpoint": 122.603,
+          "timing_s/step": 924.465,
+          "perf/total_num_tokens": 291957.0
+        }
+      ],
+      "last_phases": [],
+      "last_dt_batches": [],
+      "completed_responses": 92,
+      "generated_tokens": 28291,
+      "nonfinite_logprobs": 0
+    }
+  ],
+  "sql_checkpoint_restore_validation": {
+    "dt": {
+      "job": "sql-dt-resume-eval-01",
+      "checkpoint": 2,
+      "official_validation_examples": 2,
+      "successes": 1
+    },
+    "grpo": {
+      "job": "sql-grpo-resume-eval-01",
+      "checkpoint": 2,
+      "official_validation_examples": 2,
+      "successes": 1
+    },
+    "scope": "Original restore of model/optimizer/extra state plus original evaluator on labelled two-example subsets, not full benchmark scores"
+  },
+  "textcraft_status": "Bounded 2-iteration check active: first rollout and DT complete; original actor update in progress. Not yet certified healthy.",
+  "appworld_status": "Prior bounded run failed at missing native optional-parameter normalization. Hook moved below original request construction; original-HTTP comparison and actual scripted train/eval service checks passed. GPU restart awaits readout length decision.",
+  "appworld_context_boundary": {
+    "training_tasks": 72,
+    "evaluation_tasks": 57,
+    "train_test_counts": [
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "sampling": {
+      "temperature": 1.0,
+      "max_tokens": 1500
+    },
+    "readout_budgets": {
+      "2": 264,
+      "4": 298,
+      "5": 315,
+      "6": 332,
+      "7": 349,
+      "8": 366,
+      "9": 383
+    },
+    "owner_max_policy_tokens": 32767,
+    "maximum_dt_total": 33150,
+    "dt_cap": 32768,
+    "scope": "Actual launch sampling and original metadata counts only; task answer contents not used"
+  },
+  "formal_budget_status": "Pending user selection of small stability experiment. Do not silently treat per-response VERL updates as full-trajectory source-trainer updates.",
+  "resource_overrides": {
+    "gpus_per_job": 2,
+    "model": "Qwen3.5-9B",
+    "actor_microbatch_per_gpu": 1,
+    "actor_global_minibatch": 64,
+    "dt_minibatch_per_gpu": 4,
+    "rollout_model_cap": 32768,
+    "dt_current_cap": 32768,
+    "note": "Microbatch1 selected using original accumulation after reproduced B4 long-response OOM; explicit 32768/3000-response two-update capacity check passed. It is not numerical parity or task quality evidence."
+  },
+  "remote_receipts": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930",
+  "local_identity_receipt": "../../research/temporary/rl_upstream_alignment_20260929/candidate-source-current.json"
+}

@@ -1,11 +1,139 @@
 # 远端环境记录与复用入口
 
-## 2026-09-30 当前：服务器停机，仅本机环境/模型入口单测
+## 2026-09-30 最新：30821恢复，任务只复用官方环境，不引入任务项目的训练/推理栈
 
-当前目标只验证官方训练/评估环境和Qwen3.5-9B模型接入入口，不连接或启动远端任务。
+- 当前有界作业以 `sql-dt-bounded-04`、`sql-grpo-bounded-02`、
+  `textcraft-dt-bounded-04`、`appworld-dt-bounded-05` 的 job.json 为准，分别0/1、6/7、
+  4/5、2/3；各两次迭代，状态以下列实测为准，不能称正式训练。启动前复核33份DT数值文件、
+  原FLA与两份已恢复平台文件。候选相对基线恰好四处环境接口改动，见
+  `entry/candidate-source-current.json`。训练loss/optimizer/数值内核没有新修改。
+- 两组SQL均已完成两轮原更新与checkpoint marker=2。DT两轮668.5/910.2秒，GRPO
+  467.9/924.5秒；每轮保存约123–128秒。两组原vLLM共55872个生成token全部有限。
+  SQL-GRPO原恢复入口已读回模型/优化器/额外状态，并完成2条原验证集子集的生成与评测
+  （1条成功）；`sql-grpo-resume-eval-01`。SQL-DT对应`sql-dt-resume-eval-01`也已完成
+  原恢复及同两条验证（1条成功）。不是完整benchmark评估。
+  新任务样本不是此前短链数值对拍的替代。实际输出按原SQL格式奖励评分，首轮成功率为0。
+- TextCraft/AppWorld旧02模型加载失败的原因已定位：整段LOOP附加目录优先进入
+  PYTHONPATH，覆盖原accelerate1.13.0为1.6.0。现不在PYTHONPATH加入附加目录，
+  仅在各环境factory用原site.addsitedir追加缺失叶依赖；2项实际参数元数据/模块来源
+  回归通过。不要再次把这些目录放在训练包之前。AppWorld03随后暴露boto3与原
+  botocore1.42.84不匹配，仅将LOOP叶依赖修复为boto3=1.42.84、s3transfer=0.16.0；
+  共享botocore、accelerate及整个模型栈不变。旧叶包保存于`loop-dependency-before`。
+  新路径下原LOOP完整训练/评估脚本动作检查通过（0.5/0，num_tests=2），见
+  `loop-entry-dependency-fixed/loop-entry.json`；不把脚本动作当模型任务成功率。
+- TextCraft03实际64个回复中57个耗尽512上限，原解析器收到空/残缺动作。已停止此有界
+  检查，保留`stopped-model-entry.json`。TextCraft04仅通过Qwen原模板参数
+  `enable_thinking=False`保留任务的Thought/Action格式，4项原配置/renderer对照及真实
+  train/eval回调通过，任务交互已出现原生成功奖励。没有改原parser、512上限或采样参数。
+- AppWorld04的候选端口30497实际返回空HTTP404，而非AppWorld服务（未经过HTTP代理）。
+  在原`interface.py`的readiness处仅令非200返回进入已有端口重试；没有新增retry loop。
+  修复脚本`patch_loop_readiness.py`，2项原readiness测试通过。原8并发runner的脚本
+  train/eval、num_tests和清理检查通过（12.69/10.69秒，不含模型），见`loop-entry-eight`。
+  AppWorld05才是该修复后的模型检查；04失败不是本次05状态。
+- AppWorld05在首次生成前退出：旧回调绕过原VLLMClient的可选参数归一化，
+  `top_k=None`直接进入vLLM而报错。已将回调下移到原客户端构建完整请求之后，
+  使用`patch_loop_completion_boundary.py`；不复制None默认值处理或SSE解析。
+  默认HTTP路径、原请求与回调请求、实际SamplingParams、原Qwen历史/ID与取消行为
+  共6项CPU对照通过，见`entry/loop-completion-boundary-tests.xml`。修复后尚未重启GPU。
+  下移回调后又以原train/eval各2条脚本轨迹验证完整环境及实际SamplingParams；
+  原奖励0.5/0、num_tests=2，原清理正常；`loop-completion-entry/loop-entry.json`。
+- AppWorld确定性CPU上界检查：原client允许prompt32010、response757，总32767；
+  两个官方tests对应DT询问/target另需347，合计33114超过DT当前32768。
+  `entry/appworld-readout-boundary.json`。已请求用户决定是否仅扩大DT辅助读出长度；
+  未批准前不截断原轨迹、不改变官方rollout预算、不扩大DT cap，不启动该项长跑。
+  全部72条训练任务的原test_data仅计数核验为2/4/5/6/7/8/9个tests；使用实际
+  launch中的sampling字段时，DT额外长度为264–383，最坏总33150。
+  `entry/appworld-readout-support.json`。33114是前述完整采样字段示例，不是全任务最大值。
+- 正式观察预算待用户确认。原SQL整轨迹训练与当前固定VERL每回复一行的计算单位
+  不同：原256组×5条、满6轮，在当前global minibatch64下最多120次更新；不能
+  搬原任务数量后称原1次更新同负载。当前有界检查的每组2个任务不是论文规模。
+- SQL上一组DT和GRPO均在actor长回复反向OOM，不是DT专有问题。后续使用原VERL
+  per-GPU microbatch=1累积，global minibatch64、DT4不变。独立明确构造32768总长度、
+  3000 response的两卡容量检查已完成两次原更新（76.75/62.20秒）及原生LoRA同步；
+  `actor-32k-response3000-micro1/result.json`。它是固定测试优势的容量检查，不是新
+  数值对拍或任务效果。Torch虚拟allocator峰值不能当物理显存。实际四组资源从
+  `bounded-resources-v5.jsonl`读取物理mx-smi、cgroup与各自进程树PSS。
+- SQL实际生成证实Qwen3.5默认prompt已含开头think标签，但原SQL格式奖励只检查生成
+  文本。已配置固定SkyRL原`qwen3_acc_thinking.jinja2`，让标签属于实际action；不改
+  parser或reward。模型入口/完整collector/SQLite/默认路径与未加接口基线对照共24项
+  通过，`entry/sql-entry-v3-tests.xml`。模板是本次明确的模型入口适配。
+- TextCraft/AppWorld的首个有界配置在加载GPU前被原VERL拒绝（单组不能被2卡整除）；
+  现用2组并通过原`RayPPOTrainer._validate_config`。TextCraft仍每组8条、30轮、512
+  输出；AppWorld测试每组4条，原40轮、1500输出。不是正式预算。原TextCraft训练/
+  评估配置声明HTTP timeout分别600/500，原init_env_client实际写入2400；直接调用
+  原函数保留此行为，不将声明值误报成实际timeout，不共用训练/评估任务配置。
+- 重用 `entry/metax-entry.env.sh`（本地源为 `environments/metax-entry.env.sh`）启动入口
+  检查，避免漏传fixture路径。它只source已有环境并设置已核对路径，不安装/启动服务。
+  测试所需`DT_TOKENIZER_PATH`、`DT_LOOP_ENVIRONMENT_RECEIPT`与独立基线
+  `VERL_ENTRY_BASELINE`都在该入口记录。先前漏传fixture变量导致的测试错误不属于
+  环境/算法失败；对应重跑及原配置校验见`entry/owner-launch-tests.xml`。
+
+- 当前环境入口候选为 `$DT_RUNTIME_ROOT/candidates/official-verl-20bd331-env-entry-20260930`，
+  从已验证 candidate 单独复制；增加工厂、原始token/停止长度/元数据边界，未改actor
+  loss、optimizer、FA/FLA或DT有限传播。入口模块在 `receipts/environment-only-20260930/entry`；
+  DT数值代码仍从 `releases/c9cd147` 导入。21项运输接口、39项信用组合测试通过；
+  SQL原数据/工厂及完整collector+SQLite终局测试通过，XML同目录。这些CPU接口测试
+  不替代模型数值验收。
+- SQL数据在 `datasets/skyrl-sql-7e5e665`：原653训练、1034验证，611份原SQLite共
+  175390720字节，逐文件SHA见 `db_files/selected-databases.json`。不要重下载22GB归档。
+  TextCraft原服务/客户端在 `third_party/AgentGym-d014732d9fe39b975c368c03749bfd50950067f6`，
+  只载入AgentGym-RL `82402a9`原schema/client叶模块。原数据在`third_party/textcraft-data`，
+  Hub revision `99d0b7923bf126d9c6cdea5f362d2d41ccb5d493`，train374/eval100。
+  已确认缺失的gymnasium0.29.1和Farama-Notifications0.0.4仅装到
+  `environments/textcraft-extras-20260930`，仅由该任务factory追加sys.path，不重装共享栈。
+  原服务127.0.0.1:36005，PID以 `entry/textcraft-service.json` 为准；真实训练/评估
+  reset、inventory和renderer检查见 `entry/textcraft-entry.json`。
+- LOOP原完整episode经completion回调检查通过：原工具执行、终止、训练回报0.5、
+  评估回报0和num_tests传递。是脚本动作接口检查，不是模型性能；回执
+  `loop-entry/loop-entry.json`。独立APPWORLD_ROOT、原服务已关闭。Runner构造继承
+  原 `_recursive_=False`，不提前实例化agent。
+- 已结束的历史有界GPU验证：同一receipt目录下 `sql-dt-bounded-03`（0/1）、
+  `sql-grpo-bounded-01`（6/7），PID以各自job.json为准。各2次迭代、2组×5条、
+  原6轮/3000输出限制；尚不是正式训练或通过。早两次SQL失败已退出：Hydra参数重名、
+  ListConfig停止词未转换。CPU完整collector复现后已修，不使用旧失败PID判断当前状态。
+
+- 用户已明确要求先锁定最后一次官方容差对照的运行版本，再继续环境接入。
+  [verified_runtime.json](verified_runtime.json)记录基线及源码SHA：DT数值参考
+  `fc2e6c2`，实际复用发布`c9cd147`，VERL为`20bd331`的既有
+  `official-verl-20bd331-distributed-dt`候选。核对33份DT文件、5份信用接口文件、
+  396份VERL/agent文件均与对应记录一致；三份FLA原阶段文件、有限FA动态库、
+  DT runtime开关也一致。不能仅凭当前Git HEAD选择生产数值代码。
+- **本次容器恢复确实丢失两处已验证平台修复。** 已复用原补丁恢复MetaX
+  `cumem.py`（修复前`c5581b1…`，修复后`7e557a8…`）和vLLM
+  `gpu_worker.py`权重池上下文（修复前`9f9d0db…`，修复后`37db383…`）。
+  修复后文件与上次验证版本SHA256一致，没有改算法、加数值纠偏或改容差。
+  恢复前文件保存在远端`receipts/environment-only-20260930/`，回执为
+  `restored-verified-platform-files.json`。这不是新的生成验收；新任务实际
+  采样/更新/稳定性仍须继续验证。下方旧进度不能当成本次已启动。
+- 用户重新提供MetaX端口`30821`，指定三组DT和一组GRPO、每组两卡；
+  GRPO已选SkyRL-SQL。拟分配SQL-DT 0/1、AppWorld-DT 2/3、TextCraft-DT 4/5、
+  SQL-GRPO 6/7。这是正式布局意向；当前只有上方明确记录的有界验证，启动前仍检查占用。
+- 原生连接为`ssh -oBatchMode=yes -oStrictHostKeyChecking=yes
+  -oHostKeyAlias='[ssh.v5000-prod-gw.nhss.zhejianglab.com]:32036'
+  -p 30821 root@ssh.v5000-prod-gw.nhss.zhejianglab.com`，复用已验证的旧主机密钥。
+  初检8张C550均0%利用率、858MiB物理占用，无GPU进程；cgroup内存上限900GiB。
+  原Python、模型和持久目录仍在。没有重装包、重下载权重或启动训练服务。
+- **接入边界更正：只复用官方任务环境、数据、奖励和评测行为及相应实验配置；
+  不启动SkyRL、AgentGym-RL或LOOP自带的LLM推理/训练栈。** 训练和推理由项目
+  已有官方框架承接。此前SkyRL主包需要vLLM 0.30新接口，是误检查其推理服务
+  路径造成的范围错误，不是SQL环境的要求。停止为此查找旧SkyRL或升级vLLM；
+  环境继续固定`7d94ccf0eac3439c1731ce32018bf043dd639806`。
+- 独立`skyrl-gym`已按原字节部署至
+  `$DT_RUNTIME_ROOT/third_party/skyrl-gym-7d94cc`，通过PYTHONPATH使用；原依赖
+  `func_timeout/pandas/requests/omegaconf`已齐全，不安装根项目依赖。
+  远端原`tests/test_sql.py`为26 passed；另用真实SQLite检查查询、成功奖励及
+  六轮终止。在测试进程禁止导入vLLM、Torch、Transformers、Ray、SkyRL训练器，
+  禁止导入尝试及已加载模块均为空。全程2.414秒、进程峰值RSS139.801MiB。
+  这是环境验证，不是模型生成或训练测试。
+  回执：`receipts/environment-only-20260930/sql-owner.json`和`.xml`；本地副本
+  `research/temporary/rl_upstream_alignment_20260929/skyrl-compatibility/`。
+
+## 2026-09-30 较早范围：服务器停机，仅本机环境/模型入口单测
+
+当时目标只验证官方训练/评估环境和Qwen3.5-9B模型接入入口，不连接或启动远端任务。
 两套现有Python、本机隔离依赖、源码版本、83项单测和资源保护方式统一记录在
 [LOCAL_TESTING.md](LOCAL_TESTING.md)。重跑使用 `test_local_owner_suite.ps1`，
-不重新安装或下载现有资源。下方远端记录仅供日后复用，不是当前运行指令。
+不重新安装或下载现有资源。该本机测试结论保留；当前远端范围以上方最新记录为准。
 
 **当前执行平台（2026-09-22 用户最新指令）：只用 MetaX，不再使用 A6000。**
 **最新显存约束：MetaX 使用物理 64 GB 上限、不 OOM；不再要求 48 GB。

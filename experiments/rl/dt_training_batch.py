@@ -16,7 +16,8 @@ def prepare_training_credit(data):
     from agent_system.multi_turn_rollout.utils import to_list_of_dict
 
     keys = ('input_ids', 'attention_mask', 'responses', 'token_level_rewards',
-            'rewards', 'episode_rewards', 'traj_uid', 'env_step', 'active_masks')
+            'rewards', 'episode_rewards', 'traj_uid', 'env_step', 'active_masks',
+            'appworld_num_tests')
     source = data.select(
         batch_keys=[key for key in keys if key in data.batch],
         non_tensor_batch_keys=[key for key in keys if key in data.non_tensor_batch],
@@ -59,10 +60,17 @@ def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id):
         # The owner's native padding duplicates at most world_size*4-1 rows.
         lengths = source.batch['attention_mask'].sum(-1).cpu()
         indices = indices[torch.argsort(lengths[indices], stable=True)]
-        requests = source.select_idxs(indices)
-        requests.meta_info.update(eos_token_id=int(eos_token_id), pad_token_id=int(pad_token_id))
-        requests, padding = pad_dataproto_to_divisor(requests, worker_group.world_size * 4)
-        values = unpad_dataproto(worker_group.compute_dt_token_advantages(requests), padding)
-        for key in CREDIT_KEYS:
-            result[key][indices] = values.batch[key].cpu()
+        groups = [indices]
+        if 'appworld_num_tests' in source.non_tensor_batch:
+            counts = torch.tensor([int(n) for n in source.non_tensor_batch['appworld_num_tests']])
+            groups = [indices[counts[indices] == count] for count in counts[indices].unique(sorted=True)]
+        for group in groups:
+            # A collective batch uses one native reward alphabet on all ranks.
+            # This changes packaging only; every actual response is traced once.
+            requests = source.select_idxs(group)
+            requests.meta_info.update(eos_token_id=int(eos_token_id), pad_token_id=int(pad_token_id))
+            requests, padding = pad_dataproto_to_divisor(requests, worker_group.world_size * 4)
+            values = unpad_dataproto(worker_group.compute_dt_token_advantages(requests), padding)
+            for key in CREDIT_KEYS:
+                result[key][group] = values.batch[key].cpu()
     return DataProto.from_dict(tensors={key: value[inverse] for key, value in result.items()})

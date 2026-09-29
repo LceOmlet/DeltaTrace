@@ -81,6 +81,19 @@ def readout(runner=None, tokenizer=None, **kwargs):
                             packed_answer_targets=Targets, **kwargs)
 
 
+@pytest.mark.parametrize('task,values', [('SkyRL-SQL', (-1., 0., 1.)), ('TextCraft', (0., 1.))])
+def test_environment_reward_alphabets_and_actual_sampling(task, values):
+    tokenizer = Tokenizer()
+    alphabet = RewardAlphabet.for_task(task)
+    assert alphabet.values == values
+    sampling = dict(temperature=.6, top_p=.95, max_tokens=3000, stop=['</sql>', '</solution>'])
+    dt = readout(tokenizer=tokenizer, task=task, sampling=sampling)
+    result = dt.episode([row(0, values[-1])])[0]
+    assert '"temperature":0.6' in tokenizer.queries[0]
+    assert 'temperature 1 with no' not in tokenizer.queries[0]
+    torch.testing.assert_close(result['dt_token_advantages'], result['dt_q_estimates'] - result['dt_v_estimates'])
+
+
 def test_queries_encode_reward_events_without_revealing_sampled_future():
     tokenizer = Tokenizer()
     alphabet = RewardAlphabet.for_task('Sokoban')
@@ -371,6 +384,7 @@ def test_actor_attention_and_training_mode_restored_after_finite_trace(fails, na
     actor.chunk_gated_delta_rule = original_fla
     producer = object.__new__(DeltaTraceRolloutProducer)
     producer.actor = actor
+    producer.readout_options = {'task': 'Sokoban'}
     producer.native_fla_fp16 = native_fp16
     producer.runner = SimpleNamespace(model=SimpleNamespace(model=SimpleNamespace(language_model=actor)))
     def episode(rows):

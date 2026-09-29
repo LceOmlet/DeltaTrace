@@ -28,17 +28,40 @@ class RewardAlphabet:
 
     @classmethod
     def for_task(cls, task: str, max_steps: int = 15,
-                 invalid_action_penalty_coef: float = 0.0) -> 'RewardAlphabet':
+                 invalid_action_penalty_coef: float = 0.0, *,
+                 appworld_num_tests: int | None = None) -> 'RewardAlphabet':
+        if task == 'AppWorld':
+            # The selected LOOP training benchmark returns a test-pass fraction.
+            # Read the denominator from its native eval_result.num_tests; never
+            # turn its return into the retired VERL success-only 0/10 reward.
+            if appworld_num_tests is None or appworld_num_tests < 1:
+                raise ValueError('LOOP AppWorld credit requires native eval_result.num_tests')
+            if invalid_action_penalty_coef:
+                raise ValueError('LOOP training benchmark has no VERL invalid-action penalty')
+            return cls(task, tuple(k / appworld_num_tests for k in range(appworld_num_tests + 1)),
+                       tuple(f'{k}/{appworld_num_tests} (fraction of official tests passed at episode end)'
+                             for k in range(appworld_num_tests + 1)))
         if invalid_action_penalty_coef:
             original = cls.for_task(task, max_steps)
             values = tuple(sorted({round(v - penalty, 10) for v in original.values
                                    for penalty in (0.0, invalid_action_penalty_coef)}))
             return cls(task, values, tuple(f'{value:g}' for value in values),
                        invalid_action_penalty_coef)
-        if task in ('Webshop', 'AppWorld'):
+        if task == 'Webshop':
             return cls(task, (0.0, 10.0), (
                 '0 (no subsequent successful completion)',
                 '10 (subsequent successful task completion)',
+            ))
+        if task == 'SkyRL-SQL':
+            return cls(task, (-1.0, 0.0, 1.0), (
+                '-1 (official SQL final format check fails)',
+                '0 (incorrect SQL result or budget ends before scored submission)',
+                '1 (official SQL result matches the ground truth)',
+            ))
+        if task == 'TextCraft':
+            return cls(task, (0.0, 1.0), (
+                '0 (goal not achieved before the episode ends)',
+                '1 (official crafting environment reports goal achieved)',
             ))
         if task == 'Sokoban':
             values = (0.0,) + tuple(-n / 10 for n in range(1, max_steps + 1)) + tuple(
@@ -67,13 +90,32 @@ class RewardAlphabet:
         return [value[0] for value in ids]
 
     def query_ids(self, tokenizer: Any, *, current_step: int,
-                  max_steps: int) -> list[int]:
+                  max_steps: int, sampling: dict | None = None) -> list[int]:
         if not 0 <= current_step < max_steps:
             raise ValueError('Return query must refer to a current step inside the rollout horizon')
         legend = '; '.join(f'{label}: {meaning}' for label, meaning in zip(self.labels(), self.meanings))
         reward_rule = ('Each executed interaction costs -0.1; solving the single-box puzzle adds 11 '
                        'on that interaction and ends the episode. ' if self.task == 'Sokoban' else
                        'Successful completion gives 10 once; all other interactions give 0. ')
+        if self.task == 'AppWorld':
+            reward_rule = (
+                'At the actual episode end, the native LOOP task evaluator returns the fraction '
+                'of official tests that pass, including when the interaction or context budget '
+                'ends the episode. Earlier interactions give no intermediate reward. '
+                'The training benchmark has no missing-code or execution-error reward penalty. '
+            )
+        elif self.task == 'SkyRL-SQL':
+            reward_rule = (
+                'The native SQL environment gives no intermediate reward. At its final '
+                'submission or interaction limit it gives -1 for invalid answer format, '
+                '0 for an incorrect query result, or 1 for a query result matching the ground truth. '
+                'Exhausting the input budget before that scored step adds no reward. '
+            )
+        elif self.task == 'TextCraft':
+            reward_rule = (
+                'The native crafting environment gives 1 when the requested goal is achieved '
+                'and ends the episode; all earlier interactions give 0. '
+            )
         if self.invalid_action_penalty_coef:
             reward_rule += (
                 f'The trainer additionally subtracts {self.invalid_action_penalty_coef:g} '
@@ -83,12 +125,16 @@ class RewardAlphabet:
             )
         # Deliberately contains no sampled future observation, action, reward or
         # stopping time. The same query is appended at both token endpoints.
+        policy = 'sampling tokens at temperature 1 with no top-k or top-p truncation. '
+        if sampling is not None:
+            policy = ('using these actual vLLM sampling parameters: '
+                      + json.dumps(sampling, sort_keys=True, separators=(',', ':')) + '. ')
         query = (
             '<|im_end|>\n<|im_start|>user\n'
             f'Future cumulative return forecast for {self.task}. The preceding text is the exact agent prefix, '
             'possibly ending inside an unfinished response. Do not treat this forecast request '
             'as an environment action. Imagine completing that response and continuing with '
-            'this same policy, sampling tokens at temperature 1 with no top-k or top-p truncation. '
+            'this same policy, ' + policy +
             f'The current interaction is {current_step + 1}; the episode allows {max_steps} interactions. '
             'Predict the SUM of all official rewards from the current interaction through the end '
             'of this episode, with discount 1. Exclude earlier rewards. '
@@ -99,10 +145,11 @@ class RewardAlphabet:
         )
         return tokenizer.encode(query, add_special_tokens=False)
 
-    def readout_token_budget(self, tokenizer: Any, max_steps: int) -> int:
+    def readout_token_budget(self, tokenizer: Any, max_steps: int,
+                             sampling: dict | None = None) -> int:
         """Exact worst-case query plus target length, without a model call."""
         return 1 + max(len(self.query_ids(tokenizer, current_step=i,
-                                          max_steps=max_steps))
+                                          max_steps=max_steps, sampling=sampling))
                        for i in range(max_steps))
 
 
@@ -116,7 +163,8 @@ class EventRatioReadout:
 
     def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,
                  packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4,
-                 invalid_action_penalty_coef: float = 0.0):
+                 invalid_action_penalty_coef: float = 0.0,
+                 appworld_num_tests: int | None = None, sampling: dict | None = None):
         if max_steps < 1:
             raise ValueError('Horizon must be positive')
         if tokenizer.eos_token_id is None:
@@ -125,7 +173,9 @@ class EventRatioReadout:
             raise ValueError('DT minibatch_size must be positive')
         self.minibatch_size = minibatch_size
         self.runner, self.tokenizer = runner, tokenizer
-        self.alphabet = RewardAlphabet.for_task(task, max_steps, invalid_action_penalty_coef)
+        self.sampling = sampling
+        self.alphabet = RewardAlphabet.for_task(task, max_steps, invalid_action_penalty_coef,
+                                              appworld_num_tests=appworld_num_tests)
         self.max_steps, self.max_length = max_steps, max_length
         self.packed_answer_targets = packed_answer_targets
         self.last_report: dict[str, Any] = {}
@@ -159,6 +209,7 @@ class EventRatioReadout:
                 continue
             query = torch.tensor(self.alphabet.query_ids(
                 self.tokenizer, current_step=int(row['env_step']), max_steps=self.max_steps,
+                sampling=self.sampling,
             ), device='cpu', dtype=torch.long)
             target = torch.tensor([labels[observed]], device='cpu', dtype=torch.long)
             length = prompt.numel() + actions.numel() + query.numel() + target.numel()

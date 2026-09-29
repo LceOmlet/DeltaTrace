@@ -80,6 +80,17 @@ def test_zero_batch_does_not_enter_fsdp_collectives():
     assert all(not output.batch[key].any() for key in CREDIT_KEYS)
 
 
+def test_native_denominators_stay_collectively_aligned_without_changing_credit():
+    data = training_data([0., 0., 1.], [2, 0, 1, 2])
+    data.non_tensor_batch['appworld_num_tests'] = np.array([2, 3, 4, 2])
+    group = NativeDispatchFixture(2)
+    actual = compute_training_credit(data, group, eos_token_id=99, pad_token_id=0)
+    assert len(group.calls) == 3
+    for chunks in group.calls:
+        assert len(set(int(n) for chunk in chunks for n in chunk.non_tensor_batch['appworld_num_tests'])) == 1
+    torch.testing.assert_close(actual.batch['dt_q_estimates'][:, 0], torch.ones(4))
+
+
 def test_prepared_readout_does_not_recompute_return_on_a_partial_episode():
     # These rows are independent current responses; their later rewards live
     # on other ranks. The explicit complete return must select the target and

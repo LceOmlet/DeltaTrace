@@ -6,10 +6,13 @@ dual-clip=3），DT Q/V/A 不变。依据用户既定约束，禁止 O(n²) 的�
 不再展开 response × 未来奖励事件。不逐 token 询问，不额外采样参考 token。
 本文件是唯一方法规范；README 只记录实现状态，环境记录只规定复用。
 
-**同日最新范围：Sokoban 暂停；WebShop 使用固定 VERL-agent 完整任务脚本。
-AppWorld 只提取并直接调用 LOOP 作者仓库 f14107a 的原生环境和配置，与现有
-项目对照；不运行 LOOP 训练器，不接入其优化器、loss、训练预算或模型路径。
-以下 DT Q/V/A 和现有 PPO/GRPO 不变。环境比较记录不代表训练接入或性能验收。**
+**2026-09-30 当前范围：SkyRL-SQL、TextCraft、AppWorld 三组 DT，另加 SQL GRPO，
+每组两卡。只复用任务作者的环境、数据、采样/评测接口；不引入 SkyRL、
+AgentGym-RL 或 LOOP 的训练器及推理服务。AppWorld 调用 LOOP f14107a 的训练基准
+环境，不混入历史 VERL AppWorld 奖励。训练由已验证的 VERL-agent / vLLM 承接；
+数值版本以 verified_runtime.json 的官方对照回执、哈希及运行开关为准。
+以下 DT Q/V/A 不变。环境比较、启动、容量检查分别报告，不能代替训练验收。
+Sokoban、WebShop 不属于当前四组。**
 
 **同日最新用户指令优先：本文件只固定信用分配；信用以外使用官方实现与配置，
 不得用旧 PLAN 阻止恢复官方行为。** 原 PPO loss、无效动作惩罚、任务历史窗口、
@@ -160,7 +163,10 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
 以下环境奖励来自固定上游 worker，不在适配层重新计算评分：
 
 - WebShop：固定 VERL worker 将购买成功（原 task_score=1）映射为 10，其他为 0。
-- AppWorld：固定 worker 在终止时用官方 `evaluate().success` 返回 10 或 0。
+- AppWorld：按用户后来选定的 LOOP 训练基准，直接读取原生 rollout 的 `ret`，
+  即终止时的官方测试通过比例；类别分母读取原 `eval_result.num_tests`。
+  不再使用已退役 VERL AppWorld worker 的 0/10。独立评估仍保留 LOOP 的
+  原生稀疏成功评分，不能用评估分数覆盖训练回报。
 - Sokoban：当前 6×6、单箱、成功即终止。有效期内每次交互奖励 −0.1，
   解出时为 −0.1+1+10=10.9；未发生的未来交互记 0。官方每步值域是
   `{-0.1,0,10.9}`。15步内的累计回报类别为0、`-0.1*N`、`11-0.1*N`
@@ -168,10 +174,12 @@ Q(h_i,a_i)-B(h_i)。因为 E_pi[grad log pi(a|h_i) B(h_i)]=0，它与减去
   不能把这个值域用于未经支持的多箱配置。
 
 固定 VERL 默认额外对**当前 response**的无效动作扣 0.1。训练目标类别由上述
-累计环境回报集合与其减去 0.1 的集合取并集；WebShop/AppWorld 为4类，
+累计环境回报集合与其减去 0.1 的集合取并集；WebShop 为4类，
 15步 Sokoban 为33类。惩罚数值直接读取官方处理结果，类别编码只说明目标
 分布的支持集，不自行判定 action 有效性。未启用官方惩罚的独立旧夹具仍使用
-原2/31类，不能拿该夹具声称新接口已经通过。
+原2/31类，不能拿该夹具声称新接口已经通过。LOOP AppWorld 原生配置的
+两项动作/执行失败惩罚均为0，不混入 VERL 的无效动作惩罚；其训练目标类别为
+`k/num_tests`（k=0..num_tests）。这只是官方结果编码，Q/V/A 组合不变。
 
 Sokoban 使用每个实际过程 reward，不遗漏步罚。不重复加终局成功值。
 在 gamma=1 下，当前单箱配置的完整未来回报可写作 11*S-0.1*N（尚未终止的

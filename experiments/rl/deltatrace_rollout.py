@@ -379,15 +379,18 @@ class DeltaTraceRolloutProducer:
         from reward_readout import EventRatioReadout
 
         self.actor = model
-        self.readout = EventRatioReadout(
-            self.runner,
-            AutoTokenizer.from_pretrained(env['checkpoint'], local_files_only=True),
+        self.readout_tokenizer = AutoTokenizer.from_pretrained(env['checkpoint'], local_files_only=True)
+        self.readout_options = dict(
             task=os.environ['DT_TASK'],
             max_steps=int(os.environ['DT_MAX_STEPS']),
             max_length=int(os.environ.get('DT_MAX_LENGTH', '32768')),
             packed_answer_targets=self.packed_answer_targets,
             invalid_action_penalty_coef=invalid_action_penalty_coef,
+            sampling=json.loads(os.environ.get('DT_SAMPLING_JSON', 'null')),
         )
+        self.readout = None if self.readout_options['task'] == 'AppWorld' else EventRatioReadout(
+            self.runner, self.readout_tokenizer, **self.readout_options)
+        self.appworld_readouts = {}
 
     def attribute_prepared_batch(self, data):
         """Consume native DP rows whose complete returns were prepared globally."""
@@ -405,6 +408,17 @@ class DeltaTraceRolloutProducer:
     def attribute_episodes(self, episodes: list[list[dict[str, Any]]], returns: list[float], *, complete_returns=None) -> list[list[dict[str, torch.Tensor]]]:
         if len(episodes) != len(returns):
             raise ValueError("episode and return counts differ")
+        if self.readout_options['task'] == 'AppWorld':
+            from reward_readout import EventRatioReadout
+            counts = {int(row['appworld_num_tests']) for rows in episodes for row in rows}
+            if len(counts) != 1:
+                raise ValueError('AppWorld DT batch must carry one native test denominator')
+            count = counts.pop()
+            if count not in self.appworld_readouts:
+                self.appworld_readouts[count] = EventRatioReadout(
+                    self.runner, self.readout_tokenizer, **self.readout_options,
+                    appworld_num_tests=count)
+            self.readout = self.appworld_readouts[count]
         # Per-event official rewards in rows are authoritative; never multiply
         # by episode_return again. RPC retains that upstream summary argument.
         training = self.actor.training

@@ -19,7 +19,7 @@ from reward_readout import RewardAlphabet
 @pytest.mark.parametrize('task,rewards,expected', [
     ('Sokoban', [-.1, 10.9], [10.7, 10.9]),
     ('Webshop', [0., 10.], [9.9, 10.]),
-    ('AppWorld', [0., 10.], [9.9, 10.]),
+    ('AppWorld', [0., .5], [.5, .5]),
     ('Webshop', [0., 0.], [-.1, 0.]),
 ])
 def test_native_penalty_then_dt_keeps_training_order(task, rewards, expected):
@@ -44,7 +44,9 @@ def test_native_penalty_then_dt_keeps_training_order(task, rewards, expected):
     data = adjust_batch(cfg, data).select_idxs([3, 0, 2, 1])
     tokenizer = SimpleNamespace(decode=lambda *a, **kw: '')
     data.batch['token_level_scores'] = EpisodeRewardManager(tokenizer, num_examine=0)(data)
-    data, _ = apply_invalid_action_penalty(data, invalid_action_penalty_coef=.1)
+    # LOOP's selected training benchmark has no invalid-action reward penalty.
+    penalty = 0. if task == 'AppWorld' else .1
+    data, _ = apply_invalid_action_penalty(data, invalid_action_penalty_coef=penalty)
     data.batch['token_level_rewards'] = data.batch['token_level_scores']
     producer = DeltaTraceRolloutProducer.__new__(DeltaTraceRolloutProducer)
     calls = []
@@ -60,7 +62,8 @@ def test_native_penalty_then_dt_keeps_training_order(task, rewards, expected):
     # Native B4 padding repeats requests for equal rank call counts; the
     # training-row duplicates are still removed before this transport padding.
     assert len(calls) == 1 and len(calls[0]) == 1 and len(calls[0][0]) == 4
-    alphabet = RewardAlphabet.for_task(task, 15, .1)
+    alphabet = RewardAlphabet.for_task(task, 15, penalty,
+                                      appworld_num_tests=2 if task == 'AppWorld' else None)
     for i, step in enumerate(data.non_tensor_batch['env_step']):
         q = output.batch['dt_q_estimates'][i]
         torch.testing.assert_close(q, torch.tensor([expected[step], expected[step], 0.]))
