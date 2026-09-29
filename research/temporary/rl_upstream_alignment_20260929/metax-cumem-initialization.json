@@ -1,0 +1,10 @@
+{
+  "source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/device_allocator/cumem.py",
+  "backup": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/metax-cumem-initialization.before.py",
+  "upstream": "https://github.com/vllm-project/vllm/commit/0033211c0bcf3d42d3b1f27059922c30e664b8e7",
+  "adaptation": "Backport vLLM's merged fresh-page initialization to the MetaX owner boundary.\n\nUpstream: vllm-project/vllm#44972, merge\n0033211c0bcf3d42d3b1f27059922c30e664b8e7, csrc/cumem_allocator.cpp.\nThat implementation is ROCm-only. MetaX's installed binary is not rebuilt:\nits existing Python create_and_map boundary calls the existing checked\nCudaRTLibrary.cudaMemset (mapped by the plugin to mcMemset), on the handle's\ndevice, after the native mapping. Sleep/wake, tags, weight backup and restoration\nare unchanged. This is a platform adaptation, not an unchanged upstream binary.\nApply explicitly only after reproducing stale-state generation on this runtime.\n",
+  "before_sha256": "c5581b1ea7e0fec3246b82a9317a5adc216e4b37a3cbe1825d87ffb910387365",
+  "after_sha256": "7e557a8f5005112b37f64fef9ab95705749a45064943c251d51e11955a7bd528",
+  "changed": true,
+  "validation": "pending real generation replay"
+}

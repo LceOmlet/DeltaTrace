@@ -1,0 +1,62 @@
+{
+  "scope": "Summarize passive native outputs; finite outputs alone are not numerical parity.",
+  "cases": [
+    {
+      "name": "before",
+      "sources": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/probability-native-trainer/raw-vllm-900920.jsonl",
+          "sha256": "43b519ddd40d1f9cc434eab80ad192f03cd863c89936c12e37a00cda6305518d",
+          "generate_calls": 4
+        },
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/probability-native-trainer/raw-vllm-903472.jsonl",
+          "sha256": "e287d5c1f304cde6cf68978694952a30a2708b6ce9d5a22a1f044c459a3be0b4",
+          "generate_calls": 4
+        }
+      ],
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/probability-native-raw-boundary.log",
+      "rows": 32,
+      "tokens": 16285,
+      "nonfinite": 3072,
+      "nonfinite_rows": 6,
+      "original_trainer_completed_2_iterations": true
+    },
+    {
+      "name": "initialized_pages",
+      "sources": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/probability-native-trainer/raw-vllm-987675.jsonl",
+          "sha256": "9ca15b1a1ced797fffb4a307783dd830075e0cd7aede9ab18dfae2509d3b9fc7",
+          "generate_calls": 4
+        },
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/probability-native-trainer/raw-vllm-990400.jsonl",
+          "sha256": "210a16a35b4f247338424c92c858a2b8ac68d72c38fb1cba56d574570f28fb91",
+          "generate_calls": 4
+        }
+      ],
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/probability-native-initialized-pages.log",
+      "rows": 32,
+      "tokens": 16285,
+      "nonfinite": 0,
+      "nonfinite_rows": 0,
+      "original_trainer_completed_2_iterations": true
+    }
+  ],
+  "mapping_fix": {
+    "source": "/opt/conda/lib/python3.12/site-packages/vllm_metax/device_allocator/cumem.py",
+    "backup": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/metax-cumem-initialization.before.py",
+    "upstream": "https://github.com/vllm-project/vllm/commit/0033211c0bcf3d42d3b1f27059922c30e664b8e7",
+    "adaptation": "Backport vLLM's merged fresh-page initialization to the MetaX owner boundary.\n\nUpstream: vllm-project/vllm#44972, merge\n0033211c0bcf3d42d3b1f27059922c30e664b8e7, csrc/cumem_allocator.cpp.\nThat implementation is ROCm-only. MetaX's installed binary is not rebuilt:\nits existing Python create_and_map boundary calls the existing checked\nCudaRTLibrary.cudaMemset (mapped by the plugin to mcMemset), on the handle's\ndevice, after the native mapping. Sleep/wake, tags, weight backup and restoration\nare unchanged. This is a platform adaptation, not an unchanged upstream binary.\nApply explicitly only after reproducing stale-state generation on this runtime.\n",
+    "before_sha256": "c5581b1ea7e0fec3246b82a9317a5adc216e4b37a3cbe1825d87ffb910387365",
+    "after_sha256": "7e557a8f5005112b37f64fef9ab95705749a45064943c251d51e11955a7bd528",
+    "changed": true,
+    "validation": "pending real generation replay"
+  },
+  "limitations": [
+    "Numerical inference parity is separate: see vllm-owner-logprobs.json.",
+    "The standalone allocator probe passed its three mapping/restore cycles but aborted at process teardown; it is not a fully passing test.",
+    "This bounded GRPO reproduction does not validate DT or formal task training."
+  ]
+}

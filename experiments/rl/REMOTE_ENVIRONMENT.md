@@ -12,6 +12,45 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 19:45+08：vLLM v0.15 `test_hybrid.py::test_models`明确以HF为参考，
+  64token/top5使用原`check_logprobs_close`；其规则为生成token/top-k而非scalar
+  allclose。实际BF16 Qwen3.5-9B基础/非零PEFT、fresh/wake共4组模型比较通过，
+  2组原`test_cumem.py`文本一致性断言通过。两份原collector输入为Sokoban453、
+  WebShop211token，耗时142秒。回执`results_vllm_owner_alignment.json`及远端
+  `receipts/upstream-alignment-20260929/vllm-hybrid-owner.json`。此前FP16采样器
+  1e-2断言追加到BF16的失败不删除，但不冒充官方BF16整模型判据。
+- 权重池修复后真实sleep备份16.85GiB权重，卡上保留从19.10降到2.29GiB；
+  热sleep及两次tagged wake共约0.75秒。这是独立实际引擎测量，非训练峰值。
+  640份LoRA张量sleep前后SHA256一致。只读首层hook检查的首prompt prefill
+  计算边界也一致；输入参数`output`的不同是尚未写入的目的buffer，不是计算错误。
+  诊断回调仅在单次本地测试进程设置`VLLM_ALLOW_INSECURE_SERIALIZATION=1`，
+  正式入口未添加该环境变量，也未开放服务端口。
+- 19:17+08 实际安装的 vLLM 0.15 `gpu_worker.py::load_model` 仍含 `with A and B`，
+  并没有应用旧环境记录中的权重池修复；实际 sleep 日志也显示权重备份0GiB、
+  卡上仍占约19.10GiB。已经调用仓库现有 `patch_vllm_sleep.py`，仅回补 vLLM
+  v0.17.0 的双上下文写法。旧文件保存在 `receipts/upstream-alignment-20260929/
+  gpu-worker-before-weight-pool.py`。不能仅凭仓库有补丁就认定当前安装已修复；
+  当前真实权重休眠/唤醒与数值回归在 `vllm-owner-logprobs-bfloat16-pool.*`。
+- 19:01+08 原 trainer 两迭代的确定复现已退出0：修复前32条response中6条的
+  3072个原始vLLM log-prob为NaN；修复后同样16285个生成token均有限。修复在
+  MetaX owner `device_allocator/cumem.py::create_and_map` 调既有checked mcMemset，
+  对应上游已合并vLLM #44972的新映射页初始化；ROCm C++修复移植到MetaX Python
+  边界，不能称原封不动的上游二进制。原备份与SHA在 `metax-cumem-initialization.json`。
+  小内存池探针三次数据检查通过，但进程析构abort，未称整个探针通过。
+  `vllm-native-nan-reproduction.json`保存两组原始PID/日志/摘要；有限性不代替数值验收。
+- 当前数值对照来源固定为vLLM v0.15.0原测试。`tests/models/utils.py`
+  的 `check_logprobs_close` 是生成token/top-k相容性检查，并不检查log-prob数值差；
+  `tests/v1/sample/test_logprobs.py` 才有sample `atol=rtol=1e-2`，原fixture为FP16
+  Llama。追加BF16 Qwen9B有该数值断言失败，保留原阈值及失败，不能说已有官方
+  BF16 Qwen容差，也不能把token一致冒充标量log-prob通过。相同FP16条件在当前
+  MetaX Qwen/LoRA warmup因float/half输入不一致退出，未改变训练dtype或修其旁路。
+  最早text-only PEFT文件名的独立LoRA对照不适用于multimodal vLLM owner；已改用
+  原HF multimodal类及其原生文本层PEFT命名。该测试不是VERL分布式同步验收。
+- 相同权重首步的三个已保存actor对照，调用固定VERL原masked-mean log-prob断言
+  均通过；原梯度断言应用于496个LoRA梯度也均通过（最大绝对差0.002930、0.004883、
+  0.003418）。梯度断言原用于sequence-parallel q_proj，这是明确追加的actor边界
+  样本，不是整个PPO官方认证。后续独立更新权重不同，不用同权重前向阈值强判。
+  详见 `saved-actor-official-assertions.json`。正式训练、定时检查和备份尚未恢复。
 - 18:00+08 AppWorld DT有界pilot在step1之后的DataLoader fork初始化停滞约半小时，
   TaskRunner等待worker返回；worker406057停于原torchdata `torch.set_num_threads(1)`，
   GPU actor空闲。已保存`two-gpu-pilots-isolated/dt-AppWorld/dataloader-stall-stop.json`

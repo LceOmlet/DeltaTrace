@@ -1,0 +1,68 @@
+{
+  "date": "2026-09-29",
+  "ssh_port": 31091,
+  "status": "bounded_owner_hybrid_generation_and_sleep_checks_passed_training_recheck_pending",
+  "runtime": {
+    "vllm": "0.15.0",
+    "metax": "0.15.0+g24fb31.d20260310.maca3.5.3.20.torch2.8",
+    "model": "Qwen3.5-9B",
+    "dtype": "bfloat16"
+  },
+  "method": {
+    "ppo": "Pinned VERL-agent 20bd331bdbc9026a5668e11362178e10ab7400c8; original core_algos, update_policy, optimizer and loss. Only DT credit supplies advantages. Model/platform/memory seams remain explicitly patched upstream.",
+    "vllm_model": "https://github.com/vllm-project/vllm/blob/v0.15.0/tests/models/language/generation/test_hybrid.py",
+    "vllm_comparison": "https://github.com/vllm-project/vllm/blob/v0.15.0/tests/models/utils.py",
+    "vllm_sleep": "https://github.com/vllm-project/vllm/blob/v0.15.0/tests/basic_correctness/test_cumem.py",
+    "scope": "Hybrid model test explicitly uses HF and 64 generated tokens/top5. Its original check tests token/top-k membership, not scalar logprob allclose. Sleep test asserts equal generated text. Qwen3.5/MetaX and nonzero PEFT are added real-runtime cases, not claims of upstream CI coverage. Do not invent a new numerical threshold."
+  },
+  "fixes": [
+    {
+      "owner": "vllm_metax/device_allocator/cumem.py::create_and_map",
+      "source": "https://github.com/vllm-project/vllm/commit/0033211c0bcf3d42d3b1f27059922c30e664b8e7",
+      "change": "Adapt merged ROCm fresh-page initialization to MetaX using its existing checked mcMemset wrapper after native mapping. No sleep/weight-backup/scheduler/math replacement.",
+      "before": {"responses":32,"generated_tokens":16285,"nan_tokens":3072,"bad_responses":6},
+      "after": {"responses":32,"generated_tokens":16285,"nan_tokens":0,"bad_responses":0,"native_iterations":2,"process_exit_code":0},
+      "receipt": "../../research/temporary/rl_upstream_alignment_20260929/vllm-native-nan-reproduction.json"
+    },
+    {
+      "owner": "vllm/v1/worker/gpu_worker.py::load_model",
+      "source": "https://github.com/vllm-project/vllm/blob/v0.17.0/vllm/v1/worker/gpu_worker.py",
+      "change": "Apply existing official tuple-context backport to the current installation; the old environment receipt did not describe the current file.",
+      "before_sleep_retained_gib":19.10,
+      "after_sleep_retained_gib":2.29,
+      "actual_weight_backup_gib":16.85,
+      "steady_sleep_and_tagged_wake_seconds":0.75,
+      "scope":"Standalone actual 9B engine measurement; not full training peak or throughput."
+    }
+  ],
+  "ppo_original_assertions": {
+    "receipt":"../../research/temporary/rl_upstream_alignment_20260929/saved-actor-official-assertions.json",
+    "forward":"Three same-initial-weight cases pass original masked-mean logprob assertion, atol0.01/rtol1e-5.",
+    "gradient":"Original VERL sequence-parallel gradient assertion, atol0.01/rtol1e-5, applied unchanged to 496 real LoRA gradients per case: all three pass. Additional actor-seam cases, not a published whole-PPO optimizer tolerance.",
+    "later_updates":"Different independently updated weights are diagnostic only; do not apply same-weight forward assertions to them."
+  },
+  "vllm_official_method_results": {
+    "receipt":"../../research/temporary/rl_upstream_alignment_20260929/vllm-hybrid-owner.json",
+    "prompts":2,
+    "tasks":["Sokoban","Webshop"],
+    "tokens_per_response":64,
+    "model_comparisons_passed":4,
+    "sleep_output_comparisons_passed":2,
+    "elapsed_seconds":142.08956876397133,
+    "scope":"Actual BF16 Qwen3.5-9B; base and nonzero public PEFT adapter, fresh and tagged wake. Original model and sleep assertions unchanged. Does not establish official task success-rate or native VERL adapter synchronization."
+  },
+  "preserved_diagnostics": [
+    "Original vLLM FP16 Llama sampler scalar assertion (1e-2/1e-2) fails when additionally applied to BF16 Qwen. It is not the official BF16 hybrid model criterion; no thresholds or outputs were corrected.",
+    "FP16 Qwen diagnostic fails in installed GDN/LoRA warmup with float versus Half mismatch. Actual BF16 production dtype was not changed.",
+    "640 native LoRA tensors are byte-identical before and after sleep/wake. Five generated tokens remain equal; logprobs vary also on cache reset without sleep. This does not establish a restore defect.",
+    "First-layer captured computed boundaries agree on the first prompt prefill. The differing input named output is the owner-provided unwritten output buffer, not evidence that computed input or GDN output differs.",
+    "Standalone allocation probe passes three mapping/restore cycles but aborts at teardown; do not label the whole standalone process passed.",
+    "Earlier text-only PEFT checkpoint fixture did not match multimodal vLLM names. Its LoRA result is invalid as evidence of production synchronization. Corrected tests use original multimodal PEFT checkpoint names."
+  ],
+  "not_established": [
+    "All three tasks' fresh rollout/update health after both allocator fixes.",
+    "Full official task-performance non-regression and formal training completion.",
+    "Updated 32k global-minibatch64 capacity and throughput after real weight-pool restoration.",
+    "Resolution of historical DT nonfinite failure."
+  ]
+}

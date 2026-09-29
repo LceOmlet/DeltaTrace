@@ -34,7 +34,10 @@ def observe(label, data, rank=None, step=None):
             max=float(value[finite].max()) if finite.any() else None)
         if not finite.all():
             path = directory/f'{label}-rank{rank}-step{step}-{time.time_ns()}.pt'
-            torch.save(data, path)
+            # DataProto serialization makes its TensorDict contiguous/locked.
+            # Capture a detached clone; never serialize the live trainer object.
+            torch.save(dict(batch=data.batch.clone(), non_tensor_batch=data.non_tensor_batch,
+                            meta_info=data.meta_info), path)
             record['artifact'] = str(path)
     with (directory/f'observations-rank{rank}.jsonl').open('a') as stream:
         stream.write(json.dumps(record)+'\n')
@@ -71,6 +74,8 @@ class ObservedTaskRunner(OriginalTaskRunner):
 if __name__ == '__main__':
     raw = (directory/'resolved-config.log').read_text()
     config = OmegaConf.create(raw[raw.index('data:\n'):])
+    OmegaConf.update(config, 'ray_init.runtime_env.worker_process_setup_hook',
+                     'observe_vllm_boundary.install', force_add=True)
     main_ppo.TaskRunner = ObservedTaskRunner
     try:
         main_ppo.run_ppo(config)

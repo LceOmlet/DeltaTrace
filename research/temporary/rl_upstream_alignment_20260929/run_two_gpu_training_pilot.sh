@@ -15,7 +15,7 @@ unset MACA_VISIBLE_DEVICES RAY_TMPDIR RAY_ADDRESS
 export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
 export TRAIN_SIZE=4 GROUP_SIZE=4 VAL_SIZE=1 VAL_DATA_SIZE=1
 export MINI_BATCH_SIZE=64 ACTOR_MICRO_BATCH_SIZE=4 ACTOR_OFFLOAD_POLICY=True
-export MAX_STEPS=15 MAX_RESPONSE=512 MAX_TOTAL_TOKENS=32768
+export MAX_STEPS="${MAX_STEPS:-15}" MAX_RESPONSE=512 MAX_TOTAL_TOKENS=32768
 export VAL_BEFORE_TRAIN=False ENABLE_THINKING=False TOTAL_EPOCHS=2
 export SAVE_FREQ=1 TEST_FREQ=-1 RESUME_MODE=disable
 export DT_RAY_NUM_CPUS=16
@@ -70,7 +70,7 @@ if pending: raise RuntimeError(f'Official services did not start: {pending}')
 PY
 fi
 set +e
-bash "$DT_ROOT/experiments/rl/run_verl_agent.sh" trainer.n_gpus_per_node=2
+bash "$DT_ROOT/experiments/rl/run_verl_agent.sh" trainer.n_gpus_per_node=2 "$@"
 rc=$?
 printf '%s\n' "$rc" > "$job/exit-code"
 exit "$rc"

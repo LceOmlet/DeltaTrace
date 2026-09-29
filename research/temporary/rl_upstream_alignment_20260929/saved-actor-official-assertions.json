@@ -1,0 +1,106 @@
+{
+  "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/official/tests/models/test_transformer.py",
+  "sha256": "552e0360cf41b044080a78035c756ed7543611ea526e3525b9d4713f1d398859",
+  "assertion": "torch.testing.assert_close(masked_mean(log_probs, attention_mask[:, -response_length - 1:-1]), masked_mean(origin_log_probs, attention_mask[:, -response_length - 1:-1]), atol=0.01, rtol=1e-05)",
+  "scope": "Original VERL masked-mean logprob assertion applied only before the first update, at identical weights. Later independent updates have different weights and are diagnostics, not this official same-weight test. No individual-token, gradient or whole-PPO threshold is inferred.",
+  "cases": [
+    {
+      "artifact": "isolated-vs-owner",
+      "step": 0,
+      "shape": [
+        4,
+        531
+      ],
+      "mean_actual": -5.7595930099487305,
+      "mean_reference": -5.7595930099487305,
+      "passed": true
+    },
+    {
+      "artifact": "isolated-vs-owner",
+      "step": 1,
+      "shape": [
+        4,
+        531
+      ],
+      "mean_actual": -5.754983425140381,
+      "mean_reference": -5.7336626052856445,
+      "scope": "Different weights after independently accumulated updates; no owner assertion applied."
+    },
+    {
+      "artifact": "response-span-vs-owner",
+      "step": 0,
+      "shape": [
+        4,
+        531
+      ],
+      "mean_actual": -5.760542869567871,
+      "mean_reference": -5.760542869567871,
+      "passed": true
+    },
+    {
+      "artifact": "response-span-vs-owner",
+      "step": 1,
+      "shape": [
+        4,
+        531
+      ],
+      "mean_actual": -5.761051177978516,
+      "mean_reference": -5.727985382080078,
+      "scope": "Different weights after independently accumulated updates; no owner assertion applied."
+    },
+    {
+      "artifact": "native-loss-fp32-reduction",
+      "step": 0,
+      "shape": [
+        4,
+        531
+      ],
+      "mean_actual": -5.760543346405029,
+      "mean_reference": -5.760542869567871,
+      "passed": true
+    },
+    {
+      "artifact": "native-loss-fp32-reduction",
+      "step": 1,
+      "shape": [
+        4,
+        531
+      ],
+      "mean_actual": -5.7262468338012695,
+      "mean_reference": -5.721940517425537,
+      "scope": "Different weights after independently accumulated updates; no owner assertion applied."
+    }
+  ],
+  "gradient_comparison": {
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/official/tests/models/test_transformers_ulysses.py",
+    "sha256": "499211b31bcf1a01e6461ca2e5b7aa7c1300862bb00a6eb5df600b8cbb053686",
+    "assertion": "torch.testing.assert_close(grad, grad_full, atol=0.01, rtol=1e-05)",
+    "scope": "The pinned VERL gradient assertion, unchanged, applied to first-update LoRA gradients at matched initial weights/inputs/advantages. Upstream tests a q_proj gradient under sequence parallelism; these are additional actor-seam cases, not an unchanged upstream test or a general optimizer-update tolerance.",
+    "cases": [
+      {
+        "artifact": "isolated-vs-owner",
+        "step": 0,
+        "tensors": 496,
+        "max_absolute_difference": 0.0029296875,
+        "passed": true,
+        "failures": []
+      },
+      {
+        "artifact": "response-span-vs-owner",
+        "step": 0,
+        "tensors": 496,
+        "max_absolute_difference": 0.0048828125,
+        "passed": true,
+        "failures": []
+      },
+      {
+        "artifact": "native-loss-fp32-reduction",
+        "step": 0,
+        "tensors": 496,
+        "max_absolute_difference": 0.00341796875,
+        "passed": true,
+        "failures": []
+      }
+    ]
+  }
+}

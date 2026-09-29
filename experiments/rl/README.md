@@ -12,6 +12,26 @@
 用户最新资源安排为三个DT任务各两卡、剩余两卡运行较快的长上下文任务GRPO。
 用户已明确否定自然输入最小长度筛选：32k是上下文上限，实际长度仅记录；
 不增加8k/16k门槛，也不据此改官方历史窗口。GRPO选AppWorld。
+
+19:45+08：实际BF16 Qwen3.5-9B按vLLM v0.15混合模型测试检查，原方法明确
+使用HF、生成64token、top5比较。Sokoban/WebShop两份真实输入，基础模型与
+非零PEFT各自fresh/wake共4组通过原模型比较，2组通过原sleep文本一致性断言，
+耗时142秒。没有自行设定scalar容差：该官方比较是token/top-k规则，不是逐值
+log-prob allclose。此前把FP16 Llama采样器断言追加到BF16的失败单独保留，
+不当成BF16整模型官方门槛，也不修改输出去“纠偏”。见
+[vLLM/VERL官方方法回执](results_vllm_owner_alignment.json)。尚未据此宣称三任务
+完整训练通过。LoRA的640份权重张量在sleep/wake前后逐字节一致。
+
+19:17+08 排查：原生trainer的第二次迭代NaN已经在原vLLM返回边界复现，
+用上游已合并 #44972 的新映射页初始化方式移植到MetaX owner后，同一路径
+16285个生成token全部有限、两迭代正常退出。另发现当前安装漏用了已有的
+vLLM权重池上下文修复，已补回原v0.17.0写法，正测真实权重sleep/wake。
+vLLM数值对照尚未全部通过：原FP16 scalar log-prob断言追加到BF16 Qwen时失败；
+不能用“不再NaN”或生成token相同盖过该差异。相同权重首步PPO对照通过固定VERL
+原log-prob均值断言，以及将其原梯度断言应用到LoRA梯度的追加检查。
+详细范围、失败和环境复用见 [环境记录](REMOTE_ENVIRONMENT.md)。下面18:00的
+pilot记录是此前状态，正式实验仍未重启。
+
 `fc2e6c2`双卡候选已发布，正在执行每组两次迭代的小规模完整训练检查，
 不是正式预算启动。AppWorld两组因共用官方`default_<worker_id>`输出目录
 主动停止并保留旧记录；已用原`APPWORLD_ROOT`参数分别隔离输出，链接复用

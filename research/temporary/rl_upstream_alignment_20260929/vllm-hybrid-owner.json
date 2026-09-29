@@ -1,0 +1,70 @@
+{
+  "scope": "Apply pinned vLLM hybrid model/sleep tests to the real Qwen3.5 runtime.\n\nThe official hybrid test explicitly uses HF. Original HF readout, generation\nhelpers and model/sleep comparisons execute from pinned test source. Only model\nloading, native saved token inputs, PEFT fixture and result transport are local.\nThis adds a Qwen3.5/MetaX case, not a claim that upstream CI tested this machine.\n",
+  "status": "passed",
+  "sources": {
+    "vllm015-test-utils.py": "e4a2ab8e182234b13c89feac6aab4541eea732f46d12cffc4e7c7f9b04ec2e6d",
+    "vllm015-cumem.py": "6c9c7be938c649a147419c049250a468aa18a6ef2c25ac5419463fc089fd0894",
+    "vllm015-hybrid.py": "5d19fe9ba7d28901bd244d557886aa1603b0da55a00ded645c53c7de0d0c9962",
+    "vllm015-conftest.py": "3deb489d56cf1ce04a9ce075f440e557c0d4341d999e07f31fc0df3994e5697e"
+  },
+  "cases": [
+    {
+      "phase": "base_fresh",
+      "tokens": [
+        64,
+        64
+      ],
+      "official_model_check_passed": true
+    },
+    {
+      "phase": "base_wake",
+      "tokens": [
+        64,
+        64
+      ],
+      "official_model_check_passed": true
+    },
+    {
+      "phase": "base_sleep_output",
+      "official_sleep_assertion_passed": true
+    },
+    {
+      "phase": "lora_fresh",
+      "tokens": [
+        64,
+        64
+      ],
+      "official_model_check_passed": true
+    },
+    {
+      "phase": "lora_wake",
+      "tokens": [
+        64,
+        64
+      ],
+      "official_model_check_passed": true
+    },
+    {
+      "phase": "lora_sleep_output",
+      "official_sleep_assertion_passed": true
+    }
+  ],
+  "max_tokens": 64,
+  "num_logprobs": 5,
+  "dtype": "bfloat16",
+  "context_cap": 32768,
+  "owner_test": "v0.15.0/tests/models/language/generation/test_hybrid.py::test_models",
+  "numerical_scope": "Original model comparison tests token/top-k membership, not scalar logprob allclose. The earlier additional FP16-sampler assertion on BF16 remains a separate failed diagnostic.",
+  "prompts": [
+    {
+      "source": "native-fresh-rollout-parity-request-1.json",
+      "tokens": 453
+    },
+    {
+      "source": "native-fresh-rollout-parity-Webshop-request-1.json",
+      "tokens": 211
+    }
+  ],
+  "phase": "finished",
+  "elapsed": 142.08956876397133
+}
