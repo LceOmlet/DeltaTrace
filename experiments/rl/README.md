@@ -16,13 +16,28 @@
 不是正式预算启动。AppWorld两组因共用官方`default_<worker_id>`输出目录
 主动停止并保留旧记录；已用原`APPWORLD_ROOT`参数分别隔离输出，链接复用
 原data/src资产后重新启动，没有重写任务服务。其余两组继续原验证。
+17:35+08 Sokoban/WebShop已完成2/2及原checkpoint marker2；AppWorld DT/GRPO
+各完成1/2。Sokoban第二批采样成功率0.25，不能当独立评估；其他已报批次成功率0。
+第二轮Sokoban/WebShop原rollout概率差指标为NaN，actor loss/梯度有限，仍需
+核查原生成概率记录。Sokoban退出阶段还记录DataLoader worker信号错误。
+不把这些有界验证称为三任务已全面健康，也未恢复正式预算或备份。
 
-DT实际dtype对照新增真实B4×910操作数：q/k/v/beta为FP16，g与缓存为FP32。
-原生/有限FLA在FP16下11项原断言通过；转换BF16后native dk=0.009150、
-finite dk=0.008741，均超过固定原阈值0.008，失败原样保留。
+DT实际dtype对照已保存正式调用边界的张量：FLA的q/k/v/beta及进入内核的
+上游系数为FP16，g/非零缓存为FP32；不能把转换之前的FP32系数称为内核输入。
+该B4×527×8的原生/有限FLA共11项通过，显式BF16转换对照也通过。
+第3层实际BF16 FA的Q长527/K长911，FP32上游进入owner后转BF16；
+原前向和重合端点有限系数在实际计算后缀上通过7项原断言。直接读取固定
+FA测试的断言，保留其前向2倍、梯度3倍，未另设容差。详见
+[实际调用与残差回执](results_dt_actual_numerics.json)。重合端点检查只覆盖梯度极限。
+用户已明确：看对应官方容差是否超差，不要求数值残差归零；以下整网残差
+分解仅用于定位，不是新增失败门槛，不据此修改已通过的算子。
+此前B4×910第一层操作数配种子上游的BF16 native dk=0.009150、finite
+dk=0.008741，均超过原0.008，失败保留；本次其他样本通过不覆盖它。
 完整DT相同输入的前向差异最早见于第2层BF16 in_proj_a；保存输入逐值相同，
 CPU FP64投影也相同，原生输出在一个坐标相差2.38e-7。此结果定位前向数值
-差异的一处来源，尚未解释全部有限传播残差，没有添加“纠偏”。见
+差异的一处来源。另一批完整DT的原生root/replay逐层一致，总残差−0.22875；
+已分解至head/final-norm及32层。最大第3层为−0.17299，其中两次原生
+BF16残差相加贡献−0.09750，MLP/FA等边界仍有其余误差；没有添加“纠偏”。见
 [实际操作数](../../research/temporary/rl_upstream_alignment_20260929/actual-saved-fla-dtypes.json)和
 [逐层诊断](../../research/temporary/rl_upstream_alignment_20260929/native-duplicate-boundary-diagnostic.json)。
 

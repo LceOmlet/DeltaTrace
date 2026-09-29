@@ -18,11 +18,14 @@ root = Path(os.environ['DT_RUNTIME_ROOT']) / 'receipts/upstream-alignment-202609
 output = root / 'native-duplicate-row-diagnostic.json'
 credit_probe = os.environ.get('DT_DUPLICATE_CREDIT_PROBE') == '1'
 boundary_probe = os.environ.get('DT_DUPLICATE_BOUNDARY_PROBE') == '1'
-credit_probe = credit_probe or boundary_probe
+operator_probe = os.environ.get('DT_DUPLICATE_OPERATOR_PROBE') == '1'
+credit_probe = credit_probe or boundary_probe or operator_probe
 if credit_probe:
     output = root / 'native-duplicate-credit-diagnostic.json'
 if boundary_probe:
-    output = root / 'native-duplicate-boundary-diagnostic.json'
+    output = root / 'native-duplicate-boundary-consumer-diagnostic.json'
+if operator_probe:
+    output = root / 'native-layer3-operator-diagnostic.json'
 started = time.perf_counter()
 result = dict(scope=__doc__, stages=[])
 def save(phase):
@@ -55,9 +58,13 @@ if credit_probe:
     row = {k: torch.tensor(v) if k in ('input_ids', 'attention_mask', 'responses') else v for k,v in row.items()}
     episodes = [[{**row, 'traj_uid': f'duplicate-{i}'}] for i in range(4)]
     result['runs'] = []
-    for mode in (('passive_boundaries',) if boundary_probe else ('plain', 'plain_repeat', 'synchronize_layers')):
+    for mode in (('passive_boundaries',) if boundary_probe or operator_probe else ('plain', 'plain_repeat', 'synchronize_layers')):
         handles = []
         observations = []
+        if operator_probe:
+            from capture_dt_layer_boundaries import LayerBoundaryCapture
+            focused_capture = LayerBoundaryCapture(runner, 3, root/'actual-dt-layer3-boundaries.pt')
+            focused_capture.__enter__()
         if boundary_probe:
             from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
             original_attribute = runner.attribute
@@ -66,6 +73,19 @@ if credit_probe:
                 result['owner_details'] = details
                 return signed, details
             runner.attribute = record_owner_details
+            original_fla = runner.finite_fla_by_layer.get(2, runner.finite_fla)
+            had_fla_override = 2 in runner.finite_fla_by_layer
+            finite_captured = []
+            def record_finite_inputs(endpoints, upstream, scale):
+                value = original_fla(endpoints, upstream, scale)
+                if not finite_captured:
+                    torch.save(dict(endpoints={k:v.detach().cpu() for k,v in endpoints.items()},
+                        upstream=upstream.detach().cpu(),scale=scale,
+                        coefficients={k:v.detach().cpu() for k,v in value.items()}),
+                        root/'actual-dt-layer2-finite-consumer.pt')
+                    finite_captured.append(True)
+                return value
+            runner.finite_fla_by_layer[2] = record_finite_inputs
             capture_state = {'calls': 0}
             def start_gdn_capture(module, args):
                 capture_state['calls'] += 1
@@ -130,9 +150,15 @@ if credit_probe:
                     for call, side in sorted(saved_first)]
             save(mode)
         finally:
+            if operator_probe:
+                focused_capture.__exit__(*sys.exc_info())
             for handle in handles: handle.remove()
             if boundary_probe:
                 runner.attribute = original_attribute
+                if had_fla_override:
+                    runner.finite_fla_by_layer[2] = original_fla
+                else:
+                    del runner.finite_fla_by_layer[2]
     save('complete')
     torch.distributed.destroy_process_group()
     sys.exit(0)

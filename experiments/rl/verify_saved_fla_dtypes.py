@@ -39,11 +39,15 @@ def main():
     original = [endpoints[name][1::2].cuda().detach() for name in names]
     initial = endpoints['h'][1::2, 0].cuda().float()
     scale = saved['scale']
-    upstream = torch.randn_like(original[2]).float()
+    upstream = (saved['upstream'].cuda() if 'upstream' in saved
+                else torch.randn_like(original[2]))
     result = dict(scope=__doc__, source=str(args.operands), cases=[],
                   original_operand_dtypes={name:str(value.dtype) for name,value in zip(names, original)},
                   shape=list(original[0].shape), initial_state_dtype=str(initial.dtype),
-                  original_assertion_source=str(source))
+                  recorded_initial_state_dtype=str(endpoints['h'].dtype),
+                  recorded_upstream_dtype=str(upstream.dtype),
+                  original_assertion_source=str(source),
+                  upstream_source='recorded finite consumer' if 'upstream' in saved else 'seeded diagnostic')
     finite_owner = average_memory_endpoint_orders(make_compiled_finite_pullback(dynamic_shapes=True))
     stage = importlib.import_module('fla.ops.gated_delta_rule.chunk').chunk_gated_delta_rule_fwd
 
@@ -76,6 +80,9 @@ def main():
         finally:
             sys.setprofile(None)
         captured['raw_g'] = g.detach().repeat_interleave(2,0)
+        # Production passes native_mo, after the norm-input and q dtype casts.
+        # Preserve its captured values/dtype on the actual FP16 case. BF16 is
+        # an explicit same-operands cast comparison, not the deployed path.
         do = upstream.to(dtype)
         native_grad = torch.autograd.grad(out, inputs, do)
         ref,_ = reference_owner.recurrent_gated_delta_rule_ref(q=q,k=k,v=v,beta=beta,g=g,

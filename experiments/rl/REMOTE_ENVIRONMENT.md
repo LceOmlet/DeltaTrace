@@ -12,6 +12,15 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 17:35+08 DT实际数值诊断已复用原环境完成，生产runtime仍为`fc2e6c2`，
+  没有数值补偿或阈值改动。新测试与张量位于`receipts/upstream-alignment-20260929`：
+  `actual-dt-layer2-finite-consumer.pt`保存真实FP16 FLA输入/上游与FP32非零缓存；
+  `actual-dt-layer3-boundaries.pt`保存真实BF16 FA、FP32上游及该层其他边界。
+  `actual-finite-consumer-{fla,fa}-dtypes.json`分别记录原参考/断言结果；
+  `actual-dt-layer-residuals.json`和`actual-dt-layer3-residuals.json`记录残差分解，
+  本地索引为`results_dt_actual_numerics.json`。原失败记录保留。
+  独立诊断用`run_saved_numerical_checks.sh`，须显式设置已核实空闲的
+  `DIAGNOSTIC_GPU`；不能沿用历史卡号。新增捕获是test-only，不写进生产runner。
 - 17:02+08 当前双卡验证发布为`releases/fc2e6c2`，代码已推送。启动与实际
   PID记录在`receipts/upstream-alignment-20260929/two-gpu-pilots/manifest.json`，
   原Ray日志会比driver汇总日志更及时，需按记录的session读取，不能只看

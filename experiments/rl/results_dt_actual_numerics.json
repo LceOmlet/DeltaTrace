@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-29",
+  "production_release": "fc2e6c2",
+  "status": "actual_consumer_operator_tolerances_passed_residual_accounting_diagnostic_only",
+  "acceptance_rule": "Use the corresponding original FA/FLA tolerances. Residual existence or a whole-model conservation percentage is not an additional failure criterion.",
+  "production_numerical_changes": [],
+  "tolerance_changes": [],
+  "fla": {
+    "shape": [4, 527, 8, 128],
+    "source": "actual finite consumer, recorded upstream and nonzero cache",
+    "actual_qkv_beta_and_kernel_upstream_dtype": "float16",
+    "raw_g_and_cache_dtype": "float32",
+    "fp16_checks_passed": 11,
+    "explicit_bf16_cast_comparison_checks_passed": 11,
+    "scope": "Coincident factual endpoints, original recurrent reference and unchanged FLA assertions; not finite endpoint attribution accuracy.",
+    "receipt": "../../research/temporary/rl_upstream_alignment_20260929/actual-finite-consumer-fla-dtypes.json"
+  },
+  "fa": {
+    "query_shape": [4, 527, 16, 256],
+    "key_shape": [4, 911, 4, 256],
+    "qkv_dtype": "bfloat16",
+    "supplied_upstream_dtype": "float32",
+    "kernel_upstream_dtype": "bfloat16",
+    "checks_passed": 7,
+    "scope": "Native forward and coincident finite derivatives on the owner's computed suffix, using pinned attention_ref and original assertion AST, including original gradient multiplier3.",
+    "receipt": "../../research/temporary/rl_upstream_alignment_20260929/actual-finite-consumer-fa-dtypes.json"
+  },
+  "residual": {
+    "root_effect": -2.117558002471924,
+    "signed_sum": -1.8888103848083893,
+    "root_minus_signed_sum": -0.22874761766353457,
+    "head_and_final_norm": -0.015760237214601958,
+    "native_root_minus_replay": 0.0,
+    "finite_layers": -0.21298738044893262,
+    "largest_layer_index": 3,
+    "largest_layer_residual": -0.17298874376872764,
+    "layer3_two_native_residual_additions": -0.09749506358533644,
+    "diagnostic_capture_token_vectors_exactly_equal": true,
+    "scope": "One recorded B4 DT batch. This is signed residual accounting, not an invented whole-network tolerance or per-token causal-accuracy test.",
+    "receipts": [
+      "../../research/temporary/rl_upstream_alignment_20260929/actual-dt-layer-residuals.json",
+      "../../research/temporary/rl_upstream_alignment_20260929/actual-dt-layer3-residuals.json"
+    ]
+  },
+  "preserved_failure": "Earlier B4x910 first-layer operands with seeded upstream exceed unchanged BF16 dk threshold0.008: native0.0091502562, finite0.00874106545. Different operands passing do not supersede this failure.",
+  "remaining": [
+    "Nonzero-endpoint layer residuals are localization diagnostics, not failures under an invented zero-residual or percentage tolerance.",
+    "Historical nonfinite failure and rollout probability NaNs remain separate investigations; operator checks do not establish task performance non-regression."
+  ]
+}

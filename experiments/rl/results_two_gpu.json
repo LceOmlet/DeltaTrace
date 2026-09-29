@@ -91,8 +91,8 @@
     "selected_grpo_task": "AppWorld, selected for lower measured collection cost. Keep official task history and32768 cap. Actual input lengths are recorded only, never a task/trajectory eligibility or launch condition. User explicitly rejected adding a minimum natural-input-length requirement."
   },
   "not_accepted_as_complete": [
-    "DT signed credit/root conservation diagnostics still exceed the existing diagnostic threshold on some saved and32k fixtures; not overridden, rescaled or clipped.",
-    "Original-forward duplicate rows are exactly equal. The single-GPU DT path reproduces the two-GPU rank0 root/credit vectors exactly, including the existing residuals; repeating and synchronizing every layer does not change them. This bounds the observed Sokoban discrepancy to the existing DT/native-prefix path rather than new distributed transport. No whole-network acceptance threshold has been invented.",
+    "DT signed credit/root conservation has nonzero residuals on saved and32k fixtures. Per user clarification this is diagnostic only, not an additional acceptance failure. Current actual FA/FLA operands pass their corresponding official tolerances; no correction or rescaling was added.",
+    "Uncached original-forward duplicate rows were equal in the initial probe; cached DT later located duplicate-row differences in native BF16 projections. Single-GPU DT reproduces two-GPU rank0 root/credit vectors exactly, including existing residuals; layer synchronization does not change them. Full root/replay tensors within the same B4 DT are equal. See results_dt_actual_numerics.json for actual dtype checks and finite residual accounting; no whole-network acceptance threshold is invented.",
     "Historical DT nonfinite failure, full PPO numerical parity and official AppWorld experiment-budget alignment remain open.",
     "No new formal2+2+2+2 training fleet has been launched; no formal completion, task-score non-regression or final backup claim."
   ],
@@ -102,9 +102,14 @@
     "scope": "2 iterations x16 trajectories; not formal budgets",
     "launch_manifest": "research/temporary/rl_upstream_alignment_20260929/two-gpu-pilot-launches.json",
     "appworld_restart": "Original default_<worker_id> outputs collided across independent jobs; stopped both before an accepted update and restarted with official per-job APPWORLD_ROOT plus symlinked existing data/src. No task service implementation changed.",
-    "completed_iteration_at_1706": {
-      "Sokoban": 1
+    "completed_iterations_at_1735": {
+      "dt_Sokoban": 2,
+      "dt_Webshop": 2,
+      "dt_AppWorld": 1,
+      "grpo_AppWorld": 1
     },
+    "current_observation": "../../research/temporary/rl_upstream_alignment_20260929/two-gpu-pilot-observation-1735.json",
+    "unresolved_observations": ["Native rollout probability difference metrics are NaN in second Sokoban/WebShop iterations despite finite actor loss/gradients; not declared healthy.", "Sokoban logged a killed DataLoader worker in Ray main_loop after reaching2/2 and marker2/exit0. This is an exit-phase observation, not a failed in-progress PPO update; cause not yet established.", "Current score samples do not establish task-performance non-regression."],
     "input_length_selection": false
   },
   "actual_dtype_diagnostic": {
@@ -129,6 +134,7 @@
     "max_duplicate_difference": 2.384185791015625e-07,
     "saved_duplicate_input_exact": true,
     "cpu_fp64_duplicate_output_exact": true,
-    "scope": "A first forward rounding source located; full finite residual accounting remains open. No correction, rescaling or tolerance change."
-  }
+    "scope": "A first forward rounding source located; full finite residual was subsequently accounted by actual layers and layer3 boundaries. See results_dt_actual_numerics.json. No correction, rescaling or tolerance change."
+  },
+  "actual_consumer_numerics": "results_dt_actual_numerics.json"
 }
