@@ -97,6 +97,12 @@ if [[ ! -d "$VERL_ROOT" ]]; then
 fi
 
 export CUDA_VISIBLE_DEVICES
+if [[ -n "${MACA_PATH:-}" ]]; then
+  # Ray gives each actor its own CUDA mask. An inherited two-card MACA mask
+  # disagrees with that one-card view and mcTorch fails during initialization
+  # (device=1, num_gpus=1). Let Ray be the sole owner of actor GPU assignment.
+  unset MACA_VISIBLE_DEVICES
+fi
 export DT_ROOT
 export VERL_ROOT
 if [[ -z "${DT_ENVIRONMENT_JSON:-}" ]]; then

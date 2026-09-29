@@ -1,0 +1,594 @@
+{
+  "scope": "Observe bounded interaction prefixes through the actual author collector.\n\nWhen comparing both paths, they use the same initialized official VERL/vLLM\nworker and official task services. Greedy decoding isolates collector changes.\nA single path only observes the selected configuration. Neither mode is a\ntrained success-rate estimate, DT/PPO update test or replacement collector.\n",
+  "status": "passed_fixed_policy_regression",
+  "context_cap": 32768,
+  "episodes_per_task": 4,
+  "response_cap": 512,
+  "task_horizon": 15,
+  "measured_rounds": 2,
+  "implementations": [
+    "author",
+    "candidate"
+  ],
+  "runs": [
+    {
+      "task": "Webshop",
+      "implementation": "author",
+      "seconds": 72.0103331208229,
+      "rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lengths": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "success": {
+        "success_rate": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "webshop_task_score (not success_rate)": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/native-fresh-rollout-parity-Webshop-Webshop-author.json",
+      "calls": [
+        {
+          "seconds": 33.18976288381964,
+          "requests": 4,
+          "prompt_tokens": 818,
+          "cached_tokens": 0,
+          "generated_tokens": 731
+        },
+        {
+          "seconds": 38.02170874364674,
+          "requests": 4,
+          "prompt_tokens": 3981,
+          "cached_tokens": 0,
+          "generated_tokens": 1414
+        }
+      ],
+      "active_prompt_tokens": 4799,
+      "max_prompt_tokens": 1092
+    },
+    {
+      "task": "Webshop",
+      "implementation": "candidate",
+      "seconds": 55.378283373080194,
+      "rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lengths": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "success": {
+        "success_rate": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "webshop_task_score (not success_rate)": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/native-fresh-rollout-parity-Webshop-Webshop-candidate.json",
+      "calls": [
+        {
+          "seconds": 17.463853107765317,
+          "requests": 4,
+          "prompt_tokens": 818,
+          "cached_tokens": 0,
+          "generated_tokens": 731
+        },
+        {
+          "seconds": 37.29638229403645,
+          "requests": 4,
+          "prompt_tokens": 3981,
+          "cached_tokens": 0,
+          "generated_tokens": 1414
+        }
+      ],
+      "active_prompt_tokens": 4799,
+      "max_prompt_tokens": 1092
+    },
+    {
+      "task": "AppWorld",
+      "implementation": "author",
+      "seconds": 40.16707123816013,
+      "rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lengths": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "success": {
+        "success_rate": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/native-fresh-rollout-parity-Webshop-AppWorld-author.json",
+      "calls": [
+        {
+          "seconds": 18.95019635092467,
+          "requests": 4,
+          "prompt_tokens": 7203,
+          "cached_tokens": 4608,
+          "generated_tokens": 736
+        },
+        {
+          "seconds": 15.890737223438919,
+          "requests": 4,
+          "prompt_tokens": 9031,
+          "cached_tokens": 0,
+          "generated_tokens": 558
+        }
+      ],
+      "active_prompt_tokens": 16234,
+      "max_prompt_tokens": 2268
+    },
+    {
+      "task": "AppWorld",
+      "implementation": "candidate",
+      "seconds": 40.07050599809736,
+      "rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lengths": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "success": {
+        "success_rate": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/native-fresh-rollout-parity-Webshop-AppWorld-candidate.json",
+      "calls": [
+        {
+          "seconds": 19.52542646136135,
+          "requests": 4,
+          "prompt_tokens": 7203,
+          "cached_tokens": 4608,
+          "generated_tokens": 736
+        },
+        {
+          "seconds": 16.05036727245897,
+          "requests": 4,
+          "prompt_tokens": 9031,
+          "cached_tokens": 0,
+          "generated_tokens": 558
+        }
+      ],
+      "active_prompt_tokens": 16234,
+      "max_prompt_tokens": 2268
+    }
+  ],
+  "imports": {
+    "candidate_collector": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-native-reward/agent_system/multi_turn_rollout/rollout_loop.py",
+    "manager": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-native-reward/agent_system/environments/env_manager.py",
+    "author_collector": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/official/agent_system/multi_turn_rollout/rollout_loop.py",
+    "author_manager": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/official/agent_system/environments/env_manager.py",
+    "author_sha256": "56570cd12f79d4ec38f91b828c0d2577cca5b90bd64a5adc0be2c5931a187ab6"
+  },
+  "configuration": {
+    "data": {
+      "tokenizer": null,
+      "use_shm": false,
+      "train_files": "~/data/rlhf/gsm8k/train.parquet",
+      "val_files": "~/data/rlhf/gsm8k/test.parquet",
+      "prompt_key": "prompt",
+      "reward_fn_key": "data_source",
+      "max_prompt_length": 32000,
+      "max_response_length": 512,
+      "train_batch_size": 4,
+      "val_batch_size": 1,
+      "return_raw_input_ids": false,
+      "return_raw_chat": true,
+      "return_full_prompt": false,
+      "shuffle": true,
+      "filter_overlong_prompts": false,
+      "filter_overlong_prompts_workers": 1,
+      "truncation": "error",
+      "image_key": "images",
+      "video_key": "videos",
+      "trust_remote_code": false,
+      "apply_chat_template_kwargs": {
+        "enable_thinking": false
+      },
+      "custom_cls": {
+        "path": null,
+        "name": null
+      }
+    },
+    "actor_rollout_ref": {
+      "hybrid_engine": true,
+      "model": {
+        "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "use_shm": false,
+        "external_lib": null,
+        "override_config": {},
+        "enable_gradient_checkpointing": true,
+        "enable_activation_offload": true,
+        "use_remove_padding": false,
+        "lora_rank": 1,
+        "lora_alpha": 2,
+        "target_modules": "all-linear",
+        "use_liger": false,
+        "use_fused_kernels": false,
+        "trust_remote_code": true
+      },
+      "actor": {
+        "strategy": "fsdp2",
+        "ppo_mini_batch_size": 4,
+        "ppo_micro_batch_size": null,
+        "ppo_micro_batch_size_per_gpu": 4,
+        "use_dynamic_bsz": false,
+        "ppo_max_token_len_per_gpu": 32768,
+        "grad_clip": 1.0,
+        "clip_ratio": 0.2,
+        "clip_ratio_low": 0.2,
+        "clip_ratio_high": 0.2,
+        "clip_ratio_c": 3.0,
+        "loss_agg_mode": "token-mean",
+        "entropy_coeff": 0.001,
+        "use_invalid_action_penalty": true,
+        "invalid_action_penalty_coef": 0.1,
+        "use_kl_loss": false,
+        "use_torch_compile": false,
+        "kl_loss_coef": 0.001,
+        "kl_loss_type": "low_var_kl",
+        "ppo_epochs": 1,
+        "shuffle": false,
+        "ulysses_sequence_parallel_size": 1,
+        "policy_loss": {
+          "loss_mode": "vanilla"
+        },
+        "checkpoint": {
+          "contents": [
+            "model",
+            "optimizer",
+            "extra"
+          ]
+        },
+        "optim": {
+          "lr": 1e-06,
+          "lr_warmup_steps": -1,
+          "lr_warmup_steps_ratio": 0.0,
+          "min_lr_ratio": 0.0,
+          "num_cycles": 0.5,
+          "warmup_style": "constant",
+          "total_training_steps": 3,
+          "weight_decay": 0.01
+        },
+        "fsdp_config": {
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "param_offload": true,
+          "optimizer_offload": true,
+          "offload_policy": true,
+          "reshard_after_forward": true,
+          "fsdp_size": -1,
+          "model_dtype": "bfloat16"
+        }
+      },
+      "ref": {
+        "strategy": "fsdp",
+        "fsdp_config": {
+          "param_offload": false,
+          "reshard_after_forward": true,
+          "wrap_policy": {
+            "min_num_params": 0
+          }
+        },
+        "use_torch_compile": false,
+        "log_prob_micro_batch_size": null,
+        "log_prob_micro_batch_size_per_gpu": null,
+        "log_prob_use_dynamic_bsz": false,
+        "log_prob_max_token_len_per_gpu": 32768,
+        "ulysses_sequence_parallel_size": 1
+      },
+      "rollout": {
+        "name": "vllm",
+        "mode": "sync",
+        "chat_scheduler": null,
+        "temperature": 1.0,
+        "top_k": -1,
+        "top_p": 1,
+        "use_fire_sampling": false,
+        "prompt_length": 32000,
+        "response_length": 512,
+        "dtype": "bfloat16",
+        "gpu_memory_utilization": 0.75,
+        "ignore_eos": false,
+        "enforce_eager": true,
+        "free_cache_engine": true,
+        "load_format": "safetensors",
+        "layered_summon": false,
+        "tensor_model_parallel_size": 1,
+        "max_num_batched_tokens": 32768,
+        "max_model_len": 32768,
+        "max_num_seqs": 32,
+        "log_prob_micro_batch_size": null,
+        "log_prob_micro_batch_size_per_gpu": 4,
+        "log_prob_use_dynamic_bsz": false,
+        "log_prob_max_token_len_per_gpu": 32768,
+        "disable_log_stats": true,
+        "enable_chunked_prefill": true,
+        "do_sample": true,
+        "n": 1,
+        "engine_kwargs": {
+          "vllm": {
+            "swap_space": null,
+            "limit_mm_per_prompt": {
+              "image": 0,
+              "video": 0
+            }
+          },
+          "sglang": {
+            "attention_backend": null
+          }
+        },
+        "val_kwargs": {
+          "top_k": -1,
+          "top_p": 1.0,
+          "temperature": 0,
+          "n": 1,
+          "do_sample": false
+        },
+        "multi_turn": {
+          "enable": false,
+          "max_turns": null,
+          "tool_config_path": null,
+          "format": "chatml"
+        },
+        "micro_batch_size": 4
+      }
+    },
+    "critic": {
+      "rollout_n": 1,
+      "strategy": "fsdp",
+      "optim": {
+        "lr": 1e-05,
+        "lr_warmup_steps_ratio": 0.0,
+        "min_lr_ratio": null,
+        "warmup_style": "constant",
+        "total_training_steps": -1,
+        "weight_decay": 0.01
+      },
+      "model": {
+        "path": "~/models/deepseek-llm-7b-chat",
+        "use_shm": false,
+        "tokenizer_path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "override_config": {},
+        "external_lib": null,
+        "enable_gradient_checkpointing": true,
+        "enable_activation_offload": false,
+        "use_remove_padding": false,
+        "trust_remote_code": true,
+        "fsdp_config": {
+          "param_offload": false,
+          "optimizer_offload": false,
+          "offload_policy": false,
+          "reshard_after_forward": true,
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "fsdp_size": -1
+        },
+        "lora_rank": 0,
+        "lora_alpha": 16,
+        "target_modules": "all-linear"
+      },
+      "ppo_mini_batch_size": 4,
+      "ppo_micro_batch_size": null,
+      "ppo_micro_batch_size_per_gpu": null,
+      "forward_micro_batch_size": null,
+      "forward_micro_batch_size_per_gpu": null,
+      "use_dynamic_bsz": false,
+      "ppo_max_token_len_per_gpu": 32768,
+      "forward_max_token_len_per_gpu": 32768,
+      "ulysses_sequence_parallel_size": 1,
+      "ppo_epochs": 1,
+      "shuffle": false,
+      "grad_clip": 1.0,
+      "cliprange_value": 0.5,
+      "loss_agg_mode": "token-mean",
+      "checkpoint": {
+        "contents": [
+          "model",
+          "optimizer",
+          "extra"
+        ]
+      }
+    },
+    "reward_model": {
+      "enable": false,
+      "strategy": "fsdp",
+      "model": {
+        "input_tokenizer": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "path": "~/models/FsfairX-LLaMA3-RM-v0.1",
+        "use_shm": false,
+        "external_lib": null,
+        "use_remove_padding": false,
+        "use_fused_kernels": false,
+        "trust_remote_code": false,
+        "fsdp_config": {
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "param_offload": false,
+          "reshard_after_forward": true,
+          "fsdp_size": -1
+        }
+      },
+      "micro_batch_size": null,
+      "micro_batch_size_per_gpu": null,
+      "max_length": null,
+      "ulysses_sequence_parallel_size": 1,
+      "use_dynamic_bsz": false,
+      "forward_max_token_len_per_gpu": 32768,
+      "reward_manager": "episode",
+      "launch_reward_fn_async": false,
+      "sandbox_fusion": {
+        "url": null,
+        "max_concurrent": 64
+      }
+    },
+    "custom_reward_function": {
+      "path": null,
+      "name": "compute_score"
+    },
+    "algorithm": {
+      "gamma": 1.0,
+      "lam": 1.0,
+      "adv_estimator": "deltatrace",
+      "norm_adv_by_std_in_grpo": true,
+      "use_kl_in_reward": false,
+      "kl_penalty": "kl",
+      "kl_ctrl": {
+        "type": "fixed",
+        "kl_coef": 0.001,
+        "horizon": 10000,
+        "target_kl": 0.1
+      },
+      "use_pf_ppo": false,
+      "pf_ppo": {
+        "reweight_method": "pow",
+        "weight_pow": 2.0
+      },
+      "gigpo": {
+        "step_advantage_w": 1.0,
+        "mode": "mean_norm",
+        "enable_similarity": false,
+        "similarity_thresh": 0.95
+      },
+      "filter_groups": {
+        "enable": false,
+        "max_num_gen_batches": 10
+      }
+    },
+    "trainer": {
+      "balance_batch": true,
+      "total_epochs": 30,
+      "total_training_steps": null,
+      "project_name": "verl_examples",
+      "experiment_name": "gsm8k",
+      "logger": [
+        "console",
+        "wandb"
+      ],
+      "log_val_generations": 0,
+      "rollout_data_dir": null,
+      "validation_data_dir": null,
+      "nnodes": 1,
+      "n_gpus_per_node": 8,
+      "save_freq": -1,
+      "resume_mode": "auto",
+      "resume_from_path": null,
+      "val_before_train": true,
+      "val_only": false,
+      "test_freq": -1,
+      "critic_warmup": 0,
+      "default_hdfs_dir": null,
+      "del_local_ckpt_after_load": false,
+      "default_local_dir": "checkpoints/verl_examples/gsm8k",
+      "max_actor_ckpt_to_keep": null,
+      "max_critic_ckpt_to_keep": null,
+      "ray_wait_register_center_timeout": 300,
+      "device": "cuda"
+    },
+    "ray_init": {
+      "num_cpus": null
+    },
+    "env": {
+      "env_name": "alfworld/AlfredTWEnv",
+      "seed": 0,
+      "max_steps": 15,
+      "history_length": 2,
+      "resources_per_worker": {
+        "num_cpus": 0.1,
+        "num_gpus": 0,
+        "runtime_env": {
+          "env_vars": {
+            "CUDA_VISIBLE_DEVICES": "",
+            "MACA_VISIBLE_DEVICES": ""
+          }
+        }
+      },
+      "rollout": {
+        "n": 1
+      },
+      "alfworld": {
+        "eval_dataset": "eval_in_distribution"
+      },
+      "search": {
+        "log_requests": false,
+        "search_url": "http://127.0.0.1:8000/retrieve",
+        "topk": 3,
+        "timeout": 60
+      },
+      "sokoban": {
+        "dim_room": [
+          6,
+          6
+        ],
+        "num_boxes": 1,
+        "search_depth": 30,
+        "mode": "tiny_rgb_array"
+      },
+      "webshop": {
+        "use_small": true,
+        "human_goals": false
+      }
+    }
+  },
+  "comparisons": {
+    "Webshop": {
+      "exact_active_prompt_response_reward_match": true,
+      "exact_return_length_success_match": true
+    },
+    "AppWorld": {
+      "exact_active_prompt_response_reward_match": true,
+      "exact_return_length_success_match": true
+    }
+  },
+  "elapsed": 355.8534062989056
+}

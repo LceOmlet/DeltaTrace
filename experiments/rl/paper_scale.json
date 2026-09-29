@@ -2,6 +2,7 @@
   "scope": "One DT run per task matching cited rollout budgets. This is not a reproduction of the papers' algorithms, models or reported scores.",
   "method_specification": "experiments/rl/PLAN.md",
   "native_hydra_overrides": [
+    "trainer.n_gpus_per_node=2",
     "actor_rollout_ref.rollout.enforce_eager=False",
     "actor_rollout_ref.rollout.free_cache_engine=False",
     "+actor_rollout_ref.rollout.engine_kwargs.vllm.enable_prefix_caching=False"
@@ -45,7 +46,7 @@
         "MAX_RESPONSE": "512",
         "MAX_PROMPT": "4096"
       },
-      "differences": "Candidate now follows pinned PPO task sampling:128 task instances, group1, optimizer minibatch64, prompt4096/response512, validation128,150 epochs. Qwen3.5-9B, LoRA, single MetaX, microbatch4, total capacity32768 and DT credit remain explicit integration settings; no model-score reproduction or performance non-regression claim."
+      "differences": "Candidate follows pinned PPO task sampling:128 task instances, group1, optimizer minibatch64, prompt4096/response512, validation128,150 epochs. Qwen3.5-9B, LoRA, two MetaX GPUs, per-GPU microbatch4, total capacity32768 and DT credit remain explicit integration settings; no model-score reproduction or performance non-regression claim."
     },
     "Sokoban": {
       "source": "https://arxiv.org/html/2505.10978v3#A5.SS3",

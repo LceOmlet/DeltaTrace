@@ -53,8 +53,14 @@ PY
 cd "$VERL_ROOT"
 CUDA_VISIBLE_DEVICES='' MACA_VISIBLE_DEVICES='' "$VENV_PYTHON" -u "$A/verify_native_environment_reset.py"
 if (( $# == 0 )); then set -- Sokoban Webshop AppWorld; fi
+extra=()
+output="$A/native-fresh-rollout-parity-$1.json"
+if [[ "${PROFILE_ONLY:-0}" == 1 ]]; then
+  extra=(--implementations candidate)
+  output="$A/native-task-length-cost-$1.json"
+fi
 "$VENV_PYTHON" -u "$A/dt-candidate/experiments/rl/verify_author_rollout.py" \
   --author-collector "$A/official/agent_system/multi_turn_rollout/rollout_loop.py" \
   --author-manager "$A/official/agent_system/environments/env_manager.py" \
-  --tasks "$@" --rounds 2 \
-  --output "$A/native-fresh-rollout-parity-$1.json"
+  --tasks "$@" --rounds "${ROUNDS:-2}" "${extra[@]}" \
+  --output "$output"

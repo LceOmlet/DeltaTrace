@@ -133,7 +133,14 @@ def return_credit_for_episode(
     """One return-event vector per original response; reuse the Q/V primitive."""
     if not rows or len(rows) != len(return_log_ratios):
         raise ValueError('one return log-ratio vector is required per original rollout row')
-    returns = episode_returns(rows)
+    return return_credit_for_rows(rows, return_log_ratios, episode_returns(rows))
+
+
+@torch.no_grad()
+def return_credit_for_rows(rows, return_log_ratios, returns):
+    """Compose rows with complete returns prepared before distributed splitting."""
+    if not (len(rows) == len(return_log_ratios) == len(returns)):
+        raise ValueError('one complete return and log-ratio vector are required per row')
     output = []
     for row, ratios, value in zip(rows, return_log_ratios, returns):
         response = row["responses"]

@@ -1,5 +1,6 @@
 """Exercise native task construction/reset without loading the policy model."""
 import json
+import importlib.util
 import os
 from pathlib import Path
 import time
@@ -19,20 +20,26 @@ result = dict(scope=__doc__, tasks={}, status='running')
 started = time.perf_counter()
 ray.init(num_cpus=8, num_gpus=0, include_dashboard=False)
 try:
-    for task in ('Webshop', 'AppWorld'):
-        cfg.env.env_name = task
-        np.random.seed(2026)
-        train, val = make_envs(cfg)
-        try:
-            observations, info = train.reset(kwargs=None)
-            result['tasks'][task] = dict(observations=len(observations['text']),
-                observation_chars=[len(text) for text in observations['text']],
-                infos=len(info), history_length=cfg.env.history_length)
-            print(task, result['tasks'][task], flush=True)
-        finally:
-            train.envs.close()
-            val.envs.close()
-            del train, val
+    spec = importlib.util.spec_from_file_location('pinned_author_manager',
+        audit / 'official/agent_system/environments/env_manager.py')
+    original = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(original)
+    for name, make in (('author', original.make_envs), ('candidate', make_envs)):
+        for task in ('Webshop', 'AppWorld'):
+            cfg.env.env_name = task
+            np.random.seed(2026)
+            train, val = make(cfg)
+            try:
+                observations, info = train.reset(kwargs=None)
+                key = name + '/' + task
+                result['tasks'][key] = dict(observations=len(observations['text']),
+                    observation_chars=[len(text) for text in observations['text']],
+                    infos=len(info), history_length=cfg.env.history_length)
+                print(key, result['tasks'][key], flush=True)
+            finally:
+                train.envs.close()
+                val.envs.close()
+                del train, val
     result['status'] = 'passed_native_reset_only'
 except Exception as exc:
     result.update(status='failed', error=repr(exc))

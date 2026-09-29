@@ -122,7 +122,7 @@ VISION_IMPORT_NEW = """        from transformers import AutoConfig, AutoModelFor
 VISION_CHECK_OLD = "            if type(actor_model_config) in AutoModelForVision2Seq._model_mapping.keys():"
 VISION_CHECK_NEW = "            if AutoModelForVision2Seq is not None and type(actor_model_config) in AutoModelForVision2Seq._model_mapping.keys():"
 LORA_CALL_OLD = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config))"
-LORA_CALL_NEW = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config), autocast_adapter_dtype=False)"
+LORA_CALL_BF16_OVERRIDE = "                actor_module = get_peft_model(actor_module, LoraConfig(**lora_config), autocast_adapter_dtype=False)"
 FSDP_ORIG_PARAMS_OLD = "                use_orig_params=False,"
 FSDP_ORIG_PARAMS_PREVIOUS = "                use_orig_params=self._is_lora,"
 # The owner's LoRA auto-wrap policy separates frozen/trainable parameters and
@@ -572,6 +572,48 @@ FSDP_DT_METHOD = FSDP_DT_METHOD.replace(
     '                return self._deltatrace_producer.attribute_episodes(episodes, episode_returns)',
 )
 
+FSDP_DT_METHOD_SINGLE_RANK = FSDP_DT_METHOD
+FSDP_DT_METHOD_MARKER = '    def compute_dt_token_advantages(self, data: DataProto):\n'
+FSDP_DT_METHOD = '''    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
+    def compute_dt_token_advantages(self, data: DataProto):
+        """Attribute prepared response rows using native DP dispatch/collection."""
+        from deltatrace_rollout import DeltaTraceRolloutProducer
+
+        if self._is_offload_param:
+            load_fsdp_model_to_gpu(self.actor_module_fsdp)
+        try:
+            if not hasattr(self, "_deltatrace_producer"):
+                self._deltatrace_producer = DeltaTraceRolloutProducer(
+                    self.actor_module_fsdp,
+                    eos_token_id=data.meta_info['eos_token_id'],
+                    pad_token_id=data.meta_info['pad_token_id'],
+                    invalid_action_penalty_coef=(self.config.actor.invalid_action_penalty_coef
+                        if self.config.actor.get("use_invalid_action_penalty", True) else 0.0),
+                )
+            return self._deltatrace_producer.attribute_prepared_batch(data)
+        finally:
+            if self._is_offload_param:
+                offload_fsdp_model_to_cpu(self.actor_module_fsdp)
+
+    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
+    def compute_log_prob(self, data: DataProto):
+'''
+
+DT_TRAINER_SINGLE_RANK = '''                            dt_values = self.actor_rollout_wg.compute_dt_token_advantages(
+                                batch, eos_token_id=int(self.tokenizer.eos_token_id),
+                                pad_token_id=int(self.tokenizer.pad_token_id),
+                            )
+                            if isinstance(dt_values, list) and len(dt_values) == 1:
+                                dt_values = dt_values[0]
+'''
+DT_TRAINER_DISTRIBUTED = '''                            from dt_training_batch import compute_training_credit
+                            dt_values = compute_training_credit(
+                                batch, self.actor_rollout_wg,
+                                eos_token_id=int(self.tokenizer.eos_token_id),
+                                pad_token_id=int(self.tokenizer.pad_token_id),
+                            )
+'''
+
 
 def patch_dt_reward_boundary(rollout_text: str, trainer_text: str) -> tuple[str, str]:
     """Move the existing DT call after the owner's reward processing.
@@ -611,6 +653,7 @@ def patch_dt_reward_boundary(rollout_text: str, trainer_text: str) -> tuple[str,
                             batch = batch.union(dt_values)
 
 ''' + anchor, 1)
+    trainer_text = trainer_text.replace(DT_TRAINER_SINGLE_RANK, DT_TRAINER_DISTRIBUTED)
     return rollout_text, trainer_text
 
 # The trainer remains the semantic owner of policy optimization. This patch
@@ -1238,10 +1281,13 @@ def main() -> None:
             raise RuntimeError(f"cannot find Transformers vision import anchor in {fsdp}")
         text = text.replace(VISION_IMPORT_OLD, VISION_IMPORT_NEW, 1)
     text = text.replace(VISION_CHECK_OLD, VISION_CHECK_NEW, 1)
-    if LORA_CALL_NEW not in text:
-        if LORA_CALL_OLD not in text:
-            raise RuntimeError(f"cannot find PEFT LoRA dtype anchor in {fsdp}")
-        text = text.replace(LORA_CALL_OLD, LORA_CALL_NEW, 1)
+    if LORA_CALL_BF16_OVERRIDE in text:
+        # Restore PEFT's default adapter casting. Disabling it left rank 0's
+        # loaded LoRA BF16 and the meta-initialized rank's LoRA FP32, causing
+        # a real two-rank Gloo size mismatch during native vLLM weight sync.
+        text = text.replace(LORA_CALL_BF16_OVERRIDE, LORA_CALL_OLD, 1)
+    if LORA_CALL_OLD not in text:
+        raise RuntimeError(f"cannot find original PEFT LoRA call in {fsdp}")
     if FSDP_ORIG_PARAMS_PREVIOUS in text:
         text = text.replace(FSDP_ORIG_PARAMS_PREVIOUS, FSDP_ORIG_PARAMS_NEW, 1)
     if FSDP_ORIG_PARAMS_NEW not in text:
@@ -1365,6 +1411,9 @@ def main() -> None:
 
     fsdp_workers = args.verl_root / FSDP_FILE
     text = fsdp_workers.read_text()
+    if FSDP_DT_METHOD_SINGLE_RANK in text:
+        text = text.replace(FSDP_DT_METHOD_SINGLE_RANK, FSDP_DT_METHOD, 1)
+        fsdp_workers.write_text(text)
     if FSDP_DT_METHOD_LEGACY_REWARD in text:
         text = text.replace(FSDP_DT_METHOD_LEGACY_REWARD, FSDP_DT_METHOD, 1)
         fsdp_workers.write_text(text)

@@ -10,8 +10,9 @@ from agent_system.multi_turn_rollout.rollout_loop import TrajectoryCollector
 from agent_system.multi_turn_rollout.utils import adjust_batch
 from agent_system.reward_manager.episode import EpisodeRewardManager
 from verl.trainer.ppo.ray_trainer import apply_invalid_action_penalty
-from counterfactual import return_credit_for_episode
+from counterfactual import return_credit_for_rows
 from deltatrace_rollout import DeltaTraceRolloutProducer
+from dt_training_batch import compute_training_credit
 from reward_readout import RewardAlphabet
 
 
@@ -48,14 +49,17 @@ def test_native_penalty_then_dt_keeps_training_order(task, rewards, expected):
     producer = DeltaTraceRolloutProducer.__new__(DeltaTraceRolloutProducer)
     calls = []
 
-    def trace_fixture(self, episodes, returns):
+    def trace_fixture(self, episodes, returns, *, complete_returns):
         calls.append(episodes)
-        return [return_credit_for_episode(episode, [torch.tensor([.2, -.3, 0.]) for _ in episode])
-                for episode in episodes]
+        return [return_credit_for_rows(episode, [torch.tensor([.2, -.3, 0.]) for _ in episode], values)
+                for episode, values in zip(episodes, complete_returns)]
 
     producer.attribute_episodes = MethodType(trace_fixture, producer)
-    output = producer.attribute_training_batch(data)
-    assert len(calls) == 1 and len(calls[0]) == 1 and len(calls[0][0]) == 2
+    group = SimpleNamespace(world_size=1, compute_dt_token_advantages=producer.attribute_prepared_batch)
+    output = compute_training_credit(data, group, eos_token_id=99, pad_token_id=0)
+    # Native B4 padding repeats requests for equal rank call counts; the
+    # training-row duplicates are still removed before this transport padding.
+    assert len(calls) == 1 and len(calls[0]) == 1 and len(calls[0][0]) == 4
     alphabet = RewardAlphabet.for_task(task, 15, .1)
     for i, step in enumerate(data.non_tensor_batch['env_step']):
         q = output.batch['dt_q_estimates'][i]

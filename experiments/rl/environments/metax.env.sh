@@ -40,6 +40,9 @@ export ROLLOUT_MAX_NUM_SEQS="${ROLLOUT_MAX_NUM_SEQS:-32}"
 # full-vocabulary owner. The latter comparison is recorded separately.
 export VERL_TRIM_RESPONSE_HEAD="${VERL_TRIM_RESPONSE_HEAD:-1}"
 export DT_RAY_NUM_CPUS="${DT_RAY_NUM_CPUS:-8}"
-# Set CUDA_VISIBLE_DEVICES and MACA_VISIBLE_DEVICES after checking mx-smi.
+# Check mx-smi before selecting GPUs. The Ray training launcher uses only
+# CUDA_VISIBLE_DEVICES and clears inherited MACA_VISIBLE_DEVICES: retaining a
+# two-card MACA mask after Ray narrows CUDA to one card breaks mcTorch init.
+# Standalone torchrun (which does not remask each process) was checked separately.
 # Pinned sources and Python installs exist; task assets/services still require
 # their separate verification receipts. This file never installs or starts them.

@@ -12,6 +12,35 @@
 
 ## 2026-09-29 连接恢复与现状更正
 
+- 16:20+08 双卡接入候选位于
+  `receipts/upstream-alignment-20260929/distributed-runtime`，原生 VERL owner 为
+  `candidates/official-verl-20bd331-distributed-dt`。单卡提交 `c209a6e` 已推送，
+  当前双卡候选尚不能称为正式训练发布。原完整未来回报在 DP 分发前保留；
+  使用原 `DP_COMPUTE_PROTO`/DataProto 分发收集，每卡DT/actor microbatch4。
+  三任务保存输入完成global64原生累计更新，GRPO完成真实短采样、更新及原
+  checkpoint marker1；合成DT32768/actor32304双卡容量夹具也完成一次更新。
+  DT数值差异仍在查，正式训练、备份和定时检查均未恢复。
+  旧 `receipts/rollout-major-cost/prepare_author_formal.py` 绑定单卡和旧回执，
+  不能用于当前双卡候选。当前已测试的入口是原 `run_verl_agent.sh`，外层设置
+  两卡 `CUDA_VISIBLE_DEVICES` 并传原 `trainer.n_gpus_per_node=2`，不要把旧
+  单卡pilot标记作为新发布的自动启动依据。
+- 双卡不要同时继承全局 `MACA_VISIBLE_DEVICES` 和 Ray 的每进程 CUDA mask。
+  当前 mcTorch 会因此报 `device=1,num_gpus=1`。启动器在 MetaX 下只保留
+  外层 `CUDA_VISIBLE_DEVICES=卡1,卡2`，由 Ray 赋予每个 actor 单卡视图；
+  CPU任务worker仍使用原runtime_env隐藏GPU。原Ray两卡绑定与原collective已实测。
+- 已撤销旧 `autocast_adapter_dtype=False` 补丁，恢复原 `get_peft_model` 默认。
+  旧补丁在真实9B上造成rank0的LoRA为BF16、rank1的meta初始化LoRA为FP32，
+  原vLLM同步报Gloo8192/4096字节不一致。恢复后各rank原生full_tensor汇总的
+  参数SHA256全部一致，原vLLM同步/生成/保存完成。此修复未复制同步实现。
+  原VERL CPU/Accelerate meta上下文的3项最小复现通过；不能用直接
+  `Linear(device='meta')` 冒充官方meta上下文（该早期测试的失败记录保留）。
+- WebShop原资产已接回候选与pristine对照目录：`webshop/data` 和
+  `search_engine/indexes_1k` 指向 `candidates/official-verl-20bd331` 的已有资产，
+  `indexes` 指向原1k索引；未重新下载或建索引，仍不是完整商品库实验。
+  三任务原collector/manager的两轮、每任务4条贪心轨迹对照已经逐token/奖励一致；
+  不代表成功率非劣。15轮单卡长度/成本测量为WebShop521.07秒/max prompt2446、
+  AppWorld294.47秒/4812、Sokoban567.12秒/674；这是每任务4条的基础模型测量，
+  不是32k自然任务证据、正式训练耗时或双卡提速比。
 - 用户更新 MetaX SSH 端口为 **31091**，主机与 root 用户不变。原 32036
   入口的已保存 ED25519 主机密钥验证通过；原生 BatchMode 连接成功，无需密码
   或重新配置环境。现有 known_hosts 尚按旧端口记录时，可使用

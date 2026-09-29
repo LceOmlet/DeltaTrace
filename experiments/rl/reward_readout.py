@@ -15,7 +15,7 @@ from typing import Any
 
 import torch
 
-from counterfactual import episode_returns, return_credit_for_episode
+from counterfactual import episode_returns, return_credit_for_rows
 from deltatrace_credit import trace_token_attribution
 
 
@@ -130,10 +130,9 @@ class EventRatioReadout:
         self.packed_answer_targets = packed_answer_targets
         self.last_report: dict[str, Any] = {}
 
-    def _prepare_episode(self, rows, report):
+    def _prepare_episode(self, rows, report, returns):
         events = [row for row in rows if bool(row['active_masks'])]
         labels = self.alphabet.label_ids(self.tokenizer)
-        returns = episode_returns(rows)
         log_ratios = []
         requests = []
         report['nonzero_reward_events'] += sum(float(r['rewards']) != 0 for r in events)
@@ -177,7 +176,13 @@ class EventRatioReadout:
         return log_ratios, requests
 
     @torch.no_grad()
-    def episodes(self, episodes: list[list[dict[str, Any]]]) -> list[list[dict[str, torch.Tensor]]]:
+    def episodes(self, episodes: list[list[dict[str, Any]]], *, complete_returns=None) -> list[list[dict[str, torch.Tensor]]]:
+        if complete_returns is None:
+            complete_returns = [episode_returns(rows) for rows in episodes]
+        if len(complete_returns) != len(episodes) or any(
+            len(rows) != len(values) for rows, values in zip(episodes, complete_returns)
+        ):
+            raise ValueError('complete returns must align with every input row')
         started = time.perf_counter()
         device = getattr(self.runner.model, 'execution_device', self.runner.model.lm_head.weight.device)
         report = dict(task=self.alphabet.task, policy_tokens=0, nonzero_reward_events=0,
@@ -188,7 +193,7 @@ class EventRatioReadout:
                       reference_token_samples=0, per_token_probability_queries=0)
         vectors, requests = [], []
         for episode_index, rows in enumerate(episodes):
-            values, pending = self._prepare_episode(rows, report)
+            values, pending = self._prepare_episode(rows, report, complete_returns[episode_index])
             vectors.append(values)
             for request in pending:
                 request['episode_index'] = episode_index
@@ -288,8 +293,8 @@ class EventRatioReadout:
                   f"batch={report['finite_trace_calls']}/{planned_batches} "
                   f"d_min={batch_minimum} "
                   f"d_max={max(trace['source_log_ratio_max'] for trace in batch_traces)}", flush=True)
-        result = [return_credit_for_episode(rows, values)
-                  for rows, values in zip(episodes, vectors)]
+        result = [return_credit_for_rows(rows, values, returns)
+                  for rows, values, returns in zip(episodes, vectors, complete_returns)]
         report['seconds'] = time.perf_counter() - started
         report['nonzero_advantages'] = sum(int(row['dt_token_advantages'].count_nonzero())
                                           for episode in result for row in episode)

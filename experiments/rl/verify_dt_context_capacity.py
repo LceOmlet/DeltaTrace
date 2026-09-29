@@ -15,11 +15,33 @@ import traceback
 from pathlib import Path
 
 import torch
+import numpy as np
 from omegaconf import OmegaConf
 from tensordict import TensorDict
 from verl import DataProto
 from verl.trainer.ppo.ray_trainer import compute_advantage
 from verl.workers.fsdp_workers import ActorRolloutRefWorker
+
+
+def attribute_saved_episodes(worker, episodes):
+    """Pack this standalone fixture into the current native worker interface."""
+    from counterfactual import episode_returns
+    rows = [row for episode in episodes for row in episode]
+    tensors = {key: torch.stack([torch.as_tensor(row[key]) for row in rows])
+               for key in ('input_ids', 'attention_mask', 'responses')}
+    tensors['dt_complete_return'] = torch.tensor(
+        [value for episode in episodes for value in episode_returns(episode)], dtype=torch.float64)
+    data = DataProto.from_dict(tensors=tensors,
+        non_tensors={key: np.array([row[key] for row in rows])
+                     for key in ('rewards', 'active_masks', 'env_step', 'traj_uid')},
+        meta_info=dict(eos_token_id=worker.tokenizer.eos_token_id,
+                       pad_token_id=worker.tokenizer.pad_token_id))
+    values = [item.to_dict() for item in worker.compute_dt_token_advantages(data).batch.unbind(0)]
+    output, offset = [], 0
+    for episode in episodes:
+        output.append(values[offset:offset+len(episode)])
+        offset += len(episode)
+    return output
 
 
 def capacity_fixture(original, tokenizer, alphabet, response_tokens=1024):
@@ -215,8 +237,7 @@ def main():
                         task=task, max_steps=horizon, packed_answer_targets=producer.packed_answer_targets,
                         max_length=32768, minibatch_size=4)
                     expected = episode_returns(rows)
-                    values = worker.compute_dt_token_advantages([rows], [expected[0]],
-                        eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id)[0]
+                    values = attribute_saved_episodes(worker, [rows])[0]
                     for row_value, value, target in zip(rows, values, expected):
                         mask = row_value['attention_mask'][-row_value['responses'].numel():].bool()
                         mask &= bool(row_value['active_masks'])
@@ -330,10 +351,7 @@ def main():
                         gather_counts.clear()
                     before = {key: dict(value) for key, value in counters.items()}
                     tick = time.perf_counter()
-                    credit = worker.compute_dt_token_advantages(
-                        [[probe] for _ in range(4)], [float(original['rewards'])]*4,
-                        eos_token_id=worker.tokenizer.eos_token_id,
-                        pad_token_id=worker.tokenizer.pad_token_id)
+                    credit = attribute_saved_episodes(worker, [[probe] for _ in range(4)])
                     torch.cuda.synchronize()
                     elapsed = time.perf_counter()-tick
                     assert producer.readout.last_report['max_readout_length'] == length
@@ -408,10 +426,7 @@ def main():
         values = []
         if args.backend == 'vllm':
             for repeat in range(args.dt_repeats):
-                episodes = worker.compute_dt_token_advantages(
-                    [[row] for _ in range(4)], [float(original['rewards'])]*4,
-                    eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id,
-                )
+                episodes = attribute_saved_episodes(worker, [[row] for _ in range(4)])
                 values = [episode[0] for episode in episodes]
                 assert producer.readout.last_report['max_readout_length'] == 32768
                 result.setdefault('readouts', []).append(producer.readout.last_report)
@@ -429,10 +444,7 @@ def main():
                 before = {group: dict(values) for group, values in counters.items()}
                 first_ledger = len(ledgers)
                 tick = time.perf_counter()
-                probe = worker.compute_dt_token_advantages(
-                    [[row] for _ in range(size)], [float(original['rewards'])]*size,
-                    eos_token_id=worker.tokenizer.eos_token_id, pad_token_id=worker.tokenizer.pad_token_id,
-                )
+                probe = attribute_saved_episodes(worker, [[row] for _ in range(size)])
                 torch.cuda.synchronize()
                 assert len(probe) == size
                 assert all(torch.isfinite(ep[0]['dt_token_advantages']).all() for ep in probe)

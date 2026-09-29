@@ -1,0 +1,121 @@
+{
+  "scope": "Synthetic exact32768 DT capacity with native sleeping vLLM on two GPUs; B4 per GPU. Not natural task lengths or a formal optimizer minibatch64 timing.",
+  "world_size": 2,
+  "dt_local_batch": 4,
+  "actor_local_microbatch": 4,
+  "actor_global_minibatch": 8,
+  "context_cap": 32768,
+  "tasks": {
+    "Sokoban": {
+      "dt_seconds": 57.81057683005929,
+      "ranks": [
+        {
+          "rank": 0,
+          "contrasts": 4,
+          "calls": 1,
+          "seconds": 56.96363406069577,
+          "conservation_failures": 4
+        },
+        {
+          "rank": 1,
+          "contrasts": 4,
+          "calls": 1,
+          "seconds": 56.967959460802376,
+          "conservation_failures": 4
+        }
+      ],
+      "input_shape": [
+        8,
+        32304
+      ],
+      "nonzero_advantages": 4088,
+      "resources_after_dt": [
+        {
+          "rank": 0,
+          "physical_used_bytes": 53973749760,
+          "total_bytes": 68283269120,
+          "peak_allocated_bytes": 74124343296,
+          "peak_reserved_bytes": 78878081024
+        },
+        {
+          "rank": 1,
+          "physical_used_bytes": 53973733376,
+          "total_bytes": 68283269120,
+          "peak_allocated_bytes": 74124343296,
+          "peak_reserved_bytes": 78878081024
+        }
+      ],
+      "update_seconds": 84.18637469876558,
+      "metrics": {
+        "actor/pg_loss": [
+          0.009249214082956314
+        ],
+        "actor/pg_clipfrac": [
+          0.0
+        ],
+        "actor/ppo_kl": [
+          0.0
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.13135476410388947
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 84.17792654037476,
+        "perf/max_memory_reserved_gb": 86.6171875,
+        "perf/cpu_memory_used_gb": 222.63145065307617,
+        "actor/lr": 1e-06
+      },
+      "resources_after_update": [
+        {
+          "rank": 0,
+          "physical_used_bytes": 68219912192,
+          "total_bytes": 68283269120,
+          "peak_allocated_bytes": 90385360384,
+          "peak_reserved_bytes": 93004496896
+        },
+        {
+          "rank": 1,
+          "physical_used_bytes": 68219887616,
+          "total_bytes": 68283269120,
+          "peak_allocated_bytes": 90385360384,
+          "peak_reserved_bytes": 93004496896
+        }
+      ]
+    }
+  },
+  "status": "completed_saved_token_credit_and_native_updates",
+  "phase": "finished",
+  "seconds": 274.6678022053093,
+  "native_rollout_sync": [
+    {
+      "rank": 0,
+      "physical_used_bytes": 22002388992,
+      "total_bytes": 68283269120,
+      "peak_allocated_bytes": 47455071744,
+      "peak_reserved_bytes": 47475326976
+    },
+    {
+      "rank": 1,
+      "physical_used_bytes": 22002376704,
+      "total_bytes": 68283269120,
+      "peak_allocated_bytes": 47455071744,
+      "peak_reserved_bytes": 47475326976
+    }
+  ],
+  "capacity_fixture": {
+    "capacity_response_tokens": 512,
+    "synthetic_response_tokens": 498,
+    "synthetic_filler_tokens": 31359,
+    "original_response_tokens": 14,
+    "actor_input_tokens": 32304,
+    "query_tokens": 463,
+    "dt_input_tokens": 32768,
+    "official_fixture_reward": 10.9,
+    "reward_scope": "Recorded official reward used as a numerical capacity coefficient; not a reward claim for the synthetic trajectory",
+    "factual_input_ids_sha256": "6f69f079faf1450b496673cff2cd8c6deebfcfc0300559889cd80384a0c70b62",
+    "actor_input_ids_sha256": "b97c54e26ef00d46ccb031ea77868f2552e4bcd0bdcd5931e963dc12f0363ea0"
+  }
+}

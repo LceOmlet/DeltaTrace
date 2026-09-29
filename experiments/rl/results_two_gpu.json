@@ -1,0 +1,68 @@
+{
+  "date": "2026-09-29",
+  "status": "distributed_connection_and_capacity_exercised_numerical_acceptance_pending",
+  "layout": {"DT_Sokoban": 2, "DT_Webshop": 2, "DT_AppWorld": 2, "GRPO_control": 2},
+  "batching": {
+    "actor_microbatch_per_gpu": 4,
+    "dt_batch_per_gpu": 4,
+    "optimizer_minibatch": 64,
+    "accumulation_owner": "Pinned VERL dp_actor; 32 rows and 8 microbatches per rank for a global64 update",
+    "credit_dispatch_owner": "Pinned VERL DP_COMPUTE_PROTO and DataProto padding/collection",
+    "credit_boundary": "Complete factual future returns prepared before dispatch; exact row identity restored after collection; token Q/V/A unchanged"
+  },
+  "repairs": [
+    "Restore original PEFT adapter casting; remove old autocast_adapter_dtype=False override that caused BF16/FP32 rank mismatch.",
+    "Let Ray own per-worker GPU visibility; remove inherited global MACA mask on the MetaX launcher.",
+    "Synchronize DT cached-prefix branch across the original FSDP mesh; no finite formula or optimizer replacement."
+  ],
+  "verification": {
+    "credit_and_native_interface_tests_passed": 55,
+    "native_peft_initialization_tests_passed": 3,
+    "native_lora_gather": "All LoRA full_tensor SHA256 values identical across the two ranks",
+    "saved_task_updates": {
+      "scope": "8 saved fixture identities, repeated with native DataProto to global64; not independent sampled episodes or task performance",
+      "Sokoban": {"dt_seconds": 38.0401, "update_seconds": 25.8629, "grad_norm": 8.8789758682},
+      "Webshop": {"dt_seconds": 2.8328, "update_seconds": 26.1543, "grad_norm": 3.4456844330},
+      "AppWorld": {"dt_seconds": 3.8395, "update_seconds": 11.4206, "grad_norm": 0.0248841755}
+    },
+    "native_grpo": {
+      "scope": "WebShop bounded2-turn connection test,32 sampled trajectories, original trainer and vLLM DP2/TP1; zero task success does not validate nonzero success learning",
+      "completed_iterations": 1,
+      "original_checkpoint_marker": 1,
+      "generate_seconds": 93.026,
+      "old_logprob_seconds": 21.060,
+      "update_seconds": 33.888,
+      "save_seconds": 63.393,
+      "whole_step_seconds": 211.602
+    },
+    "capacity": {
+      "scope": "Synthetic filler fixture, original sleeping vLLM resident, one native update; no warm throughput or global64 accumulation claim",
+      "dt_tokens": 32768,
+      "actor_tokens": 32304,
+      "response_tokens": 512,
+      "global_rows": 8,
+      "rows_per_gpu": 4,
+      "dt_seconds": 57.8106,
+      "update_seconds": 84.1864,
+      "grad_norm": 0.1313547641,
+      "oom": false,
+      "physical_used_after_update_bytes_per_gpu": [68219912192, 68219887616],
+      "device_usable_bytes_per_gpu": 68283269120,
+      "memory_note": "Near physical capacity. torch virtual allocator peak with sleeping vLLM is not physical peak; end-stage usage is not a sampled whole-run peak."
+    }
+  },
+  "task_selection_measurement": {
+    "scope": "One shared base-model single-GPU worker;4 greedy trajectories per task,15 interaction limit, official history_length2,response512. Not double-GPU throughput or score non-regression.",
+    "Webshop": {"seconds": 521.0661, "max_prompt_tokens": 2446, "successful_episodes": 1},
+    "AppWorld": {"seconds": 294.4737, "max_prompt_tokens": 4812, "successful_episodes": 0},
+    "Sokoban": {"seconds": 567.1162, "max_prompt_tokens": 674, "successful_episodes": 0},
+    "selected_grpo_task": "AppWorld, selected for lower measured collection cost. Keep official task history and32768 cap. Actual input lengths are recorded only, never a task/trajectory eligibility or launch condition. User explicitly rejected adding a minimum natural-input-length requirement."
+  },
+  "not_accepted_as_complete": [
+    "DT signed credit/root conservation diagnostics still exceed the existing diagnostic threshold on some saved and32k fixtures; not overridden, rescaled or clipped.",
+    "Original-forward duplicate rows are exactly equal. The single-GPU DT path reproduces the two-GPU rank0 root/credit vectors exactly, including the existing residuals; repeating and synchronizing every layer does not change them. This bounds the observed Sokoban discrepancy to the existing DT/native-prefix path rather than new distributed transport. No whole-network acceptance threshold has been invented.",
+    "Historical DT nonfinite failure, full PPO numerical parity and official AppWorld experiment-budget alignment remain open.",
+    "No new formal2+2+2+2 training fleet has been launched; no formal completion, task-score non-regression or final backup claim."
+  ],
+  "receipts": "research/temporary/rl_upstream_alignment_20260929; remote receipts/upstream-alignment-20260929"
+}

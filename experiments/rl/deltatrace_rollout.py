@@ -161,6 +161,21 @@ class _Qwen35CausalOwnerView:
         # needs no layer replay, hence no extra all-layer unshard afterwards.
         return getattr(self._forward_model, self._owner_forward_name)(*args, **kwargs)
 
+    def synchronize_prefix_start(self, prefix_start: int) -> int:
+        # A native cached-prefix forward gathers FSDP parameters. All ranks
+        # must take that branch together, including a rank with a short prompt.
+        # Use the actor's own sharding group, without changing finite rules.
+        from torch.distributed.tensor import DTensor
+        weight = self.lm_head.weight
+        if isinstance(weight, DTensor) and weight.device_mesh.size() > 1:
+            mesh = weight.device_mesh
+            if mesh.ndim > 1:
+                mesh = mesh['fsdp']
+            value = torch.tensor(prefix_start, device=self.execution_device, dtype=torch.long)
+            torch.distributed.all_reduce(value, op=torch.distributed.ReduceOp.MIN, group=mesh.get_group())
+            return int(value.item())
+        return prefix_start
+
     def release_owner_params(self) -> None:
         if getattr(self, "_owner_params_unsharded", False):
             for module in reversed(self._owner_fsdp_modules):
@@ -374,45 +389,20 @@ class DeltaTraceRolloutProducer:
             invalid_action_penalty_coef=invalid_action_penalty_coef,
         )
 
-    def attribute_training_batch(self, data):
-        """Consume original trainer rewards after native reward processing.
-
-        Native adjust_batch can duplicate rows, and balancing changes their
-        order. Reuse identities to attribute each factual action once, then
-        return values in the owner's actual training order.
-        """
+    def attribute_prepared_batch(self, data):
+        """Consume native DP rows whose complete returns were prepared globally."""
         from agent_system.multi_turn_rollout.utils import to_list_of_dict
         from verl import DataProto
-
-        keys = ('input_ids', 'attention_mask', 'responses', 'token_level_rewards',
-                'rewards', 'episode_rewards', 'traj_uid', 'env_step', 'active_masks')
-        source = data.select(
-            batch_keys=[key for key in keys if key in data.batch],
-            non_tensor_batch_keys=[key for key in keys if key in data.non_tensor_batch],
-        )
-        rows = to_list_of_dict(source)
-        grouped = {}
-        identities = []
-        for row in rows:
-            identity = (str(row['traj_uid']), int(row['env_step']))
-            identities.append(identity)
-            # This is the original trainer's result, including its native
-            # invalid-action adjustment. No copied parser/penalty formula.
-            row['dt_reward_adjustment'] = (
-                float(row['token_level_rewards'].double().sum()) - float(row['episode_rewards'])
-            )
-            grouped.setdefault(identity[0], {}).setdefault(identity[1], row)
-        episodes = [[steps[index] for index in sorted(steps)] for steps in grouped.values()]
-        values = self.attribute_episodes(episodes, [float(rows[0]['episode_rewards']) for rows in episodes])
-        by_identity = {(str(row['traj_uid']), int(row['env_step'])): value
-                       for rows, output in zip(episodes, values) for row, value in zip(rows, output)}
-        return DataProto.from_dict(tensors={name: torch.stack([by_identity[key][name] for key in identities])
+        rows = to_list_of_dict(data)
+        complete_returns = data.batch['dt_complete_return'].cpu().tolist()
+        values = self.attribute_episodes([rows], [0.0], complete_returns=[complete_returns])[0]
+        return DataProto.from_dict(tensors={name: torch.stack([value[name] for value in values])
             for name in ('dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates')})
 
     def attribute_episode(self, rows: list[dict[str, Any]], episode_return: float) -> list[dict[str, torch.Tensor]]:
         return self.attribute_episodes([rows], [episode_return])[0]
 
-    def attribute_episodes(self, episodes: list[list[dict[str, Any]]], returns: list[float]) -> list[list[dict[str, torch.Tensor]]]:
+    def attribute_episodes(self, episodes: list[list[dict[str, Any]]], returns: list[float], *, complete_returns=None) -> list[list[dict[str, torch.Tensor]]]:
         if len(episodes) != len(returns):
             raise ValueError("episode and return counts differ")
         # Per-event official rewards in rows are authoritative; never multiply
@@ -436,7 +426,7 @@ class DeltaTraceRolloutProducer:
             else:
                 precision = nullcontext()
             with precision:
-                result = self.readout.episodes(episodes)
+                result = self.readout.episodes(episodes, complete_returns=complete_returns)
             print('[DeltaTrace readout] ' + json.dumps(self.readout.last_report), flush=True)
             return result
         finally:

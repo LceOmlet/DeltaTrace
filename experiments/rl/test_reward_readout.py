@@ -385,7 +385,7 @@ def test_actor_attention_and_training_mode_restored_after_finite_trace(fails, na
         if fails:
             raise RuntimeError('trace error')
         return []
-    producer.readout = SimpleNamespace(episodes=lambda episodes: [episode(episodes[0])], last_report={})
+    producer.readout = SimpleNamespace(episodes=lambda episodes, **kwargs: [episode(episodes[0])], last_report={})
     if fails:
         with pytest.raises(RuntimeError, match='trace error'):
             producer.attribute_episode([], 123)

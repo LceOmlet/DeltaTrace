@@ -200,6 +200,8 @@ class Qwen35DenseFiniteRunner:
             # common prefix once per sample, then let the owner duplicate it
             # into the interleaved endpoints. No model layer is reimplemented.
             prefix_start=min(min(coefficient_starts),int(selection.positions.min()))//64*64
+            synchronize_prefix=getattr(model,'synchronize_prefix_start',None)
+            if callable(synchronize_prefix):prefix_start=synchronize_prefix(prefix_start)
             if prefix_start:
                 forward=getattr(model,'forward_root',model)
                 with torch.no_grad():
