@@ -26,11 +26,15 @@ def test_two_rank_config_satisfies_native_validator(task,method,phase,tmp_path):
     RayPPOTrainer._validate_config(SimpleNamespace(config=cfg,use_reference_policy=False,use_critic=False))
     assert cfg.actor_rollout_ref.actor.entropy_coeff==.001
     assert cfg.actor_rollout_ref.actor.clip_ratio_c==3.
-    assert cfg.actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu==1
+    assert cfg.actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu==4
+    assert cfg.actor_rollout_ref.actor.use_torch_compile is True
     expected_mini = 1280 if task=='SkyRL-SQL' and phase=='formal' else 64
     assert cfg.actor_rollout_ref.actor.ppo_mini_batch_size==expected_mini
     assert cfg.actor_rollout_ref.model.lora_rank==8
     assert cfg.actor_rollout_ref.model.lora_alpha==16
+    assert cfg.actor_rollout_ref.model.use_fused_kernels is True
+    assert cfg.actor_rollout_ref.model.fused_kernel_options.impl_backend == 'torch'
+    assert cfg.actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu == 4
 
 
 def test_textcraft_renderer_uses_author_task_template():
@@ -62,7 +66,11 @@ def test_textcraft_formal_owner_workload_and_native_validator(tmp_path):
     assert cfg.actor_rollout_ref.actor.ppo_epochs == 1
     assert cfg.trainer.total_epochs == 30 and cfg.env.max_steps == 30
     assert cfg.actor_rollout_ref.actor.use_kl_loss and cfg.actor_rollout_ref.actor.kl_loss_coef == .001
+    assert cfg.actor_rollout_ref.actor.use_torch_compile is True
     assert cfg.actor_rollout_ref.model.lora_rank == 8 and cfg.actor_rollout_ref.model.lora_alpha == 16
+    assert cfg.actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu == 4
+    assert cfg.actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu == 4
+    assert cfg.actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu == 4
 
 
 def test_appworld_formal_workload_and_native_validator(tmp_path):
@@ -79,7 +87,10 @@ def test_appworld_formal_workload_and_native_validator(tmp_path):
     assert cfg.env.max_steps == 40 and cfg.trainer.test_freq == 5
     assert cfg.actor_rollout_ref.actor.entropy_coeff == .001
     assert cfg.actor_rollout_ref.actor.clip_ratio_c == 3.
+    assert cfg.actor_rollout_ref.actor.use_torch_compile is True
     assert cfg.actor_rollout_ref.model.lora_rank == 8 and cfg.actor_rollout_ref.model.lora_alpha == 16
+    assert cfg.actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu == 4
+    assert cfg.actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu == 4
     tokenizer = SimpleNamespace(eos_token_id=1)
     assert len(LoopIterationDataset('loop-training', tokenizer, cfg.data)) == 40
     assert len(LoopIterationDataset('loop-evaluation', tokenizer, cfg.data)) == 57

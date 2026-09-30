@@ -30,9 +30,8 @@ def options_for(output):
         'actor_rollout_ref.actor.use_invalid_action_penalty': False,
         'actor_rollout_ref.actor.ppo_mini_batch_size': cfg.rl.params.minibatch_size,
         'actor_rollout_ref.actor.ppo_epochs': cfg.rl.params.epochs_per_iteration,
-        # A native row contains all policy turns, so the vocabulary head can
-        # cover 32k positions. B4 BF16 logits alone exceed 60 GiB at 248k vocab.
-        'actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu': 1,
+        # Full-trajectory B4 uses the original VERL chunked vocabulary head.
+        'actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu': 4,
         'actor_rollout_ref.rollout.multi_turn.enable': True,
         'actor_rollout_ref.rollout.prompt_length': cfg.llm.vllm_server.max_model_len-cfg.llm.vllm_class.max_new_tokens,
         'actor_rollout_ref.rollout.temperature': cfg.llm.temperature,

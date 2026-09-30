@@ -43,7 +43,7 @@ def command(args):
         'actor_rollout_ref.actor.ppo_mini_batch_size': (
             64 if bounded else training['policy_mini_batch_size'] * gen['n_samples_per_prompt']),
         'actor_rollout_ref.rollout.multi_turn.enable': True,
-        'actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu': 1,
+        'actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu': 4,
         'actor_rollout_ref.rollout.temperature': gen['sampling_params']['temperature'],
         'actor_rollout_ref.rollout.top_p': gen['sampling_params']['top_p'],
         'actor_rollout_ref.rollout.val_kwargs.temperature': gen['eval_sampling_params']['temperature'],

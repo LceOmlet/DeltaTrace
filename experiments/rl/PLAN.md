@@ -15,6 +15,12 @@ AgentGym-RL 或 LOOP 的训练器及推理服务。AppWorld 调用 LOOP f14107a 
 以下 DT Q/V/A 不变。环境比较、启动、容量检查分别报告，不能代替训练验收。
 Sokoban、WebShop、SQL GRPO 不属于当前三组。**
 
+**同日最新资源约束：实际 actor microbatch=4、DT minibatch=4、LoRA rank=8、
+alpha=16 固定，不用梯度累积或更小批量代替。总上下文32768的更新容量、对应
+官方容差与效率分别核实。此前microbatch1的容量回执不满足此约束。**
+双卡容量按最新要求实际提交B8，由原VERL分发为每卡B4；不把原任务的
+全局PPO minibatch或更新次数改为8。
+
 **同日最新用户指令优先：本文件只固定信用分配；信用以外使用官方实现与配置，
 不得用旧 PLAN 阻止恢复官方行为。** 原 PPO loss、无效动作惩罚、任务历史窗口、
 采样与更新由固定 VERL-agent 的原代码负责。训练所需的机型、模型、内存兼容

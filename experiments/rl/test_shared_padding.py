@@ -73,7 +73,7 @@ def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monk
     model = HeadOnlyModel()
     model.config = SimpleNamespace(model_type=model_type)
     actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
-                            use_fused_kernels=False)
+                            use_fused_kernels=False, compute_entropy_from_logits=functional.entropy_from_logits)
     gradients, probabilities = [], []
     for flag in ['0', '1']:
         monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', flag)
@@ -101,7 +101,7 @@ def test_response_head_selection_preserves_decoder_and_active_outputs(monkeypatc
     model = HeadOnlyModel()
     model.config = SimpleNamespace(model_type='qwen3_5')
     actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
-                            use_fused_kernels=False)
+                            use_fused_kernels=False, compute_entropy_from_logits=functional.entropy_from_logits)
     mask = attention[:, -64:].bool()
     values, grads, selected_rows = [], [], []
     hook = model.register_forward_hook(lambda _m, _a, out: selected_rows.append(out.logits.shape[1]))
@@ -135,7 +135,7 @@ def test_left_padded_native_response_keeps_all_columns(monkeypatch, model_type, 
     model = HeadOnlyModel()
     model.config = SimpleNamespace(model_type=model_type)
     actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
-                            use_fused_kernels=False)
+                            use_fused_kernels=False, compute_entropy_from_logits=functional.entropy_from_logits)
     values, grads = [], []
     for flag in ['0', '1']:
         monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', flag)

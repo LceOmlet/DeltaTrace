@@ -1,8 +1,9 @@
 """Resource overrides for the already verified VERL/vLLM model runtime.
 
 This is configuration only. Loss, optimizer, accumulation, scheduling and
-checkpointing remain owned by the installed VERL. The long-response capacity
-check selects microbatch 1 after a reproduced B4 vocabulary-head OOM; DT stays 4.
+checkpointing remain owned by the installed VERL.
+Actor microbatch and DT minibatch are fixed at 4 by the user. Resolve memory
+failures in the owning execution path; do not reduce these batch sizes.
 """
 import os
 
@@ -16,11 +17,13 @@ def runtime_options():
         'actor_rollout_ref.model.lora_alpha': 16,
         'actor_rollout_ref.model.enable_gradient_checkpointing': True,
         'actor_rollout_ref.model.enable_activation_offload': True,
+        'actor_rollout_ref.model.use_fused_kernels': True,
+        '+actor_rollout_ref.model.fused_kernel_options.impl_backend': 'torch',
         'actor_rollout_ref.actor.strategy': 'fsdp2',
         'actor_rollout_ref.actor.ppo_mini_batch_size': 64,
-        'actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu': 1,
+        'actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu': 4,
         'actor_rollout_ref.actor.ppo_max_token_len_per_gpu': 32768,
-        'actor_rollout_ref.actor.use_torch_compile': False,
+        'actor_rollout_ref.actor.use_torch_compile': True,
         'actor_rollout_ref.actor.fsdp_config.offload_policy': True,
         '+actor_rollout_ref.actor.fsdp_config.model_dtype': 'bfloat16',
         'actor_rollout_ref.actor.fsdp_config.param_offload': True,

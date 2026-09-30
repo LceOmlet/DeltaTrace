@@ -1,0 +1,241 @@
+{
+  "date": "2026-09-30",
+  "scope": "Dense entropy dispatch OOM repair; no whole-network or multi-update official tolerance claim",
+  "owner": {
+    "commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "function": "verl.utils.torch_functional.entropy_from_logits",
+    "implementation_changed": false,
+    "dispatch_change": "Dense actor uses its existing self.compute_entropy_from_logits; use_torch_compile=True",
+    "tolerance_source": "research/temporary/rl_upstream_alignment_20260929/recipe-sources/verl-agent-20bd331/tests/kernels/test_linear_cross_entropy.py",
+    "tolerance_source_sha256": "2748279e66dc23678d4d9aeac81f4b0cde342f2c6f15a46679f3fed600136f1c",
+    "official_test_scope": "Output-head logprobs/entropy and hidden/weight gradients; not PPO updates",
+    "local_comparison_scope": "Same-logit entropy/logprob outputs and logit-input gradients, FP32 and BF16 autocast; uses the pinned head thresholds, not an execution of the whole official test suite",
+    "forward_atol": 0.0001,
+    "forward_rtol": 0.0001,
+    "backward_atol": 0.01,
+    "backward_rtol": 0.0001
+  },
+  "same_operand_comparison": {
+    "mode": "numerical",
+    "tokens": 10240,
+    "torch": "2.8.0+metax3.5.3.9",
+    "owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v4/verl/utils/torch_functional.py",
+    "owner_sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+    "phase": "numerical_pass",
+    "outcomes": [
+      {
+        "dtype": "torch.float32",
+        "output_dtypes": [
+          "torch.float32",
+          "torch.float32",
+          "torch.float32"
+        ],
+        "max_abs": [
+          0.0,
+          9.5367431640625e-07,
+          4.656612873077393e-10
+        ]
+      },
+      {
+        "dtype": "torch.bfloat16",
+        "output_dtypes": [
+          "torch.float32",
+          "torch.float32",
+          "torch.bfloat16"
+        ],
+        "max_abs": [
+          0.0,
+          9.5367431640625e-07,
+          2.9802322387695312e-08
+        ]
+      }
+    ]
+  },
+  "isolated_vocabulary_allocation": {
+    "shape": [
+      1,
+      10240,
+      248320
+    ],
+    "eager": {
+      "mode": "eager",
+      "tokens": 10240,
+      "torch": "2.8.0+metax3.5.3.9",
+      "owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v4/verl/utils/torch_functional.py",
+      "owner_sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+      "phase": "oom",
+      "seconds": 0.6612816583365202,
+      "lp_dtype": "torch.float32",
+      "entropy_dtype": "torch.float32",
+      "allocated_gib": 23.681869506835938,
+      "peak_gib": 56.836243629455566,
+      "error": "CUDA out of memory. Tried to allocate 9.47 GiB. GPU 0 has a total capacity of 63.59 GiB of which 5.10 GiB is free. Of the allocated memory 56.84 GiB is allocated by PyTorch, and 1.69 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)"
+    },
+    "compiled": {
+      "mode": "compiled",
+      "tokens": 10240,
+      "torch": "2.8.0+metax3.5.3.9",
+      "owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v4/verl/utils/torch_functional.py",
+      "owner_sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+      "phase": "backward_pass",
+      "seconds": 2.2639056630432606,
+      "lp_dtype": "torch.float32",
+      "entropy_dtype": "torch.float32",
+      "allocated_gib": 4.73663330078125,
+      "peak_gib": 9.473038673400879,
+      "finite": true
+    },
+    "scope": "Entropy plus logprob on a leaf logits tensor; not full-model throughput"
+  },
+  "existing_capacity_evidence": {
+    "scope": "Synthetic capacity fixture only; original two-rank VERL worker update with original vLLM sync/sleep, Qwen3.5-9B LoRA8/16, micro1/GPU. No numerical parity assertion.",
+    "input_tokens": 32768,
+    "response_tokens": 32256,
+    "ranks": [
+      {
+        "rank": 0,
+        "phase": "long_update_pass",
+        "elapsed_including_old_logprob_s": 63.0137888006866,
+        "grad_norm": [
+          0.02253304421901703
+        ],
+        "physical_used_after_gib": 57.97443771362305
+      },
+      {
+        "rank": 1,
+        "phase": "long_update_pass",
+        "elapsed_including_old_logprob_s": 63.0100945495069,
+        "grad_norm": [
+          0.024333300068974495
+        ],
+        "physical_used_after_gib": 57.97444534301758
+      }
+    ],
+    "physical_samples": {
+      "count": 21,
+      "interval_s": 5,
+      "gpu4_5_observed_max_mib": [
+        58713,
+        58713
+      ],
+      "job_pss_observed_max_gib": 48.785950660705566,
+      "note": "Sampled maxima, not guaranteed instantaneous peaks. torch allocator counters include virtual vLLM pools and are not physical VRAM."
+    }
+  },
+  "cpu_tests": {
+    "dispatch-tests.xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "30",
+      "time": "13.627",
+      "timestamp": "2026-09-30T21:10:16.496437+08:00",
+      "hostname": "224a01103.cloud.a02.sm132"
+    },
+    "launch-config-tests.xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "7",
+      "time": "21.872",
+      "timestamp": "2026-09-30T21:22:35.121834+08:00",
+      "hostname": "224a01103.cloud.a02.sm132"
+    }
+  },
+  "withdrawn_test": {
+    "description": "Whole-Qwen two-update comparisons are not an official PPO acceptance test. Added local runner and relaunch entries removed; raw prior diagnostic results retained, not acceptance evidence."
+  },
+  "receipts": {
+    "alias.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/alias.json",
+      "sha256": "b62eaa26e751451f0689c4178afbb20467b41c6d5b403aaa45b34493fdcb38cc"
+    },
+    "compiled.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/compiled.json",
+      "sha256": "fcd594b6993ce249db7256979d34ce8c31cd41198bbbb0f659adc6a86a70e521"
+    },
+    "dispatch-tests.xml": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/dispatch-tests.xml",
+      "sha256": "4ab8beaab4cb971c754d1d8640b5d59a4cf33d591bdae16a0d467a148c9d3b08"
+    },
+    "eager.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/eager.json",
+      "sha256": "3c35f0c18f3f4bb695bfa73482338b26d5e4f478d68022c2d6fc5ba7b0f5ceda"
+    },
+    "launch-config-tests.xml": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/launch-config-tests.xml",
+      "sha256": "3b3b9b97c773942a4a90ddfc49cfe31689b9e6915da485318c829d0f021305bd"
+    },
+    "live-AppWorld-complete.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/live-AppWorld-complete.json",
+      "sha256": "59ec76ab4b936daf9a35bfaca612c1bae9e5431addaef00fef3ea1cecfdbe6c2"
+    },
+    "numerical.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/numerical.json",
+      "sha256": "7d4fc6cd693d7a1f7b32862b228a48e44c8b7a693ff2253625b834a81e21ddaa"
+    },
+    "physical-resources-169738.jsonl": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/physical-resources-169738.jsonl",
+      "sha256": "e995527fe8006676e10a409912da62529b2dcf3439589eafc0845a82a91a84ab"
+    },
+    "qwen-rank0.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/qwen-rank0.json",
+      "sha256": "ed9769a0f7646dcfa167da6d0ef64ff8cf6e7f9408cf55a443fdc395c9637502"
+    },
+    "qwen-rank1.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/qwen-rank1.json",
+      "sha256": "bf39a5130a325674e3773799a0a97cac0c6d374cc42a4f67e5b7c036b43b1ebf"
+    }
+  },
+  "historical_scope": "Earlier microbatch1 entropy repair; superseded for live status and B4 capacity by results_actor_b8.json",
+  "historical_formal_status": {
+    "TextCraft": {
+      "pid": 212110,
+      "release": "official-trajectory-20260930-v7",
+      "status": "formal rollout running; first update not yet verified"
+    },
+    "AppWorld": {
+      "pid": 2027456,
+      "entropy_dispatch": "applied to both original workers without restart",
+      "receipt": [
+        {
+          "task": "AppWorld",
+          "role": "actor_rollout",
+          "rank": 1,
+          "pid": 2037115,
+          "unix": 1790775707.9092011,
+          "original_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-appworld-formal-20260930-v6/verl/workers/actor/dp_actor.py",
+          "original_sha256": "ad1067dfc310ce11cb42d870aa88b17046b90cad1b2c6f6d4f61a292df88bc34",
+          "effective_forward_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/actor/dp_actor.py",
+          "effective_source_sha256": "2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3",
+          "use_torch_compile": true,
+          "boundary": "original Worker.execute_with_func_generator RPC",
+          "preserved": "model parameters, optimizer, scheduler, current rollout and token advantages"
+        },
+        {
+          "task": "AppWorld",
+          "role": "actor_rollout",
+          "rank": 0,
+          "pid": 2035458,
+          "unix": 1790775653.6245415,
+          "original_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-appworld-formal-20260930-v6/verl/workers/actor/dp_actor.py",
+          "original_sha256": "ad1067dfc310ce11cb42d870aa88b17046b90cad1b2c6f6d4f61a292df88bc34",
+          "effective_forward_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/actor/dp_actor.py",
+          "effective_source_sha256": "2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3",
+          "use_torch_compile": true,
+          "boundary": "original Worker.execute_with_func_generator RPC",
+          "preserved": "model parameters, optimizer, scheduler, current rollout and token advantages"
+        }
+      ],
+      "status": "formal rollout running; first update not yet verified"
+    },
+    "SkyRL-SQL": {
+      "pid": 1374630,
+      "entropy_dispatch": "queued after active DT RPC, not yet applied",
+      "status": "DT in progress; first update not yet verified"
+    }
+  },
+  "current_results": "results_actor_b8.json"
+}

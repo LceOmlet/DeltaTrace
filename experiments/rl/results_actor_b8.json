@@ -1,0 +1,328 @@
+{
+  "scope": "Original VERL output-head comparisons and global B8 x 32768 update capacity; not a new whole-network tolerance or a task training-success claim",
+  "owner": {
+    "commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "test": "tests/kernels/test_linear_cross_entropy.py",
+    "unmodified_test": "TestLinearCrossEntropy(2).verify_correctness(): five repetitions passed",
+    "forward_atol": 0.0001,
+    "forward_rtol": 0.0001,
+    "backward_atol": 0.01,
+    "backward_rtol": 0.0001,
+    "production_path": "Original RayWorkerGroup DP dispatch -> original dp_actor update/loss -> original Qwen torch wrapper -> patched owner FusedLinearForPPO",
+    "changed": "Qwen3.5 text dispatch; FP32 head output storage; preserve BF16 gradient branches and nonunit-temperature storage boundary; compile original chunks",
+    "unchanged": "DT Q/V/A, PPO loss/optimizer/update, FA/FLA, vLLM, task budgets, LoRA rank8 alpha16"
+  },
+  "dtype_comparisons": [
+    {
+      "owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/utils/torch_functional.py",
+      "batch": 4,
+      "tokens": 64,
+      "hidden": 4096,
+      "vocab": 248320,
+      "temperature": 1.0,
+      "cases": [
+        {
+          "dtype": "torch.float32",
+          "output_dtypes": [
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.float32"
+            ],
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.float32"
+            ]
+          ],
+          "max_abs": [
+            3.814697265625e-06,
+            7.62939453125e-06,
+            4.470348358154297e-06
+          ],
+          "assertions": [
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            }
+          ]
+        },
+        {
+          "dtype": "torch.bfloat16",
+          "output_dtypes": [
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.bfloat16"
+            ]
+          ],
+          "max_abs": [
+            3.814697265625e-06,
+            5.7220458984375e-06,
+            0.00390625
+          ],
+          "assertions": [
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/utils/torch_functional.py",
+      "batch": 4,
+      "tokens": 64,
+      "hidden": 4096,
+      "vocab": 248320,
+      "temperature": 0.9,
+      "cases": [
+        {
+          "dtype": "torch.float32",
+          "output_dtypes": [
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.float32"
+            ],
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.float32"
+            ]
+          ],
+          "max_abs": [
+            3.814697265625e-06,
+            0.0,
+            6.377696990966797e-06
+          ],
+          "assertions": [
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            }
+          ]
+        },
+        {
+          "dtype": "torch.bfloat16",
+          "output_dtypes": [
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.bfloat16"
+            ],
+            [
+              "torch.float32",
+              "torch.float32",
+              "torch.bfloat16"
+            ]
+          ],
+          "max_abs": [
+            3.814697265625e-06,
+            0.0,
+            0.001953125
+          ],
+          "assertions": [
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            },
+            {
+              "passed": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "capacity": {
+    "submitted_shape": [
+      8,
+      32768
+    ],
+    "microbatch_per_gpu": 4,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "prompt_tokens": 512,
+    "response_tokens": 32256,
+    "synthetic_advantages": true,
+    "scope": "One shared B8 DataProto; original dispatcher splits to two actual B4 workers; full context for every row",
+    "old_logprob_seconds": 40.411731557920575,
+    "update_seconds": 98.03942023031414,
+    "grad_norm": [
+      0.0012922240421175957
+    ],
+    "workers": [
+      {
+        "rank": 0,
+        "calls": [
+          {
+            "shape": [
+              4,
+              32768
+            ],
+            "seconds": 40.37184499576688,
+            "calculate_entropy": true
+          },
+          {
+            "shape": [
+              4,
+              32768
+            ],
+            "seconds": 19.87904865667224,
+            "calculate_entropy": true
+          }
+        ],
+        "changed_parameter_tensors": 248,
+        "post_update_sync_sleep_seconds": 1.5996431950479746
+      },
+      {
+        "rank": 1,
+        "calls": [
+          {
+            "shape": [
+              4,
+              32768
+            ],
+            "seconds": 40.34918989986181,
+            "calculate_entropy": true
+          },
+          {
+            "shape": [
+              4,
+              32768
+            ],
+            "seconds": 19.853417677804828,
+            "calculate_entropy": true
+          }
+        ],
+        "changed_parameter_tensors": 248,
+        "post_update_sync_sleep_seconds": 1.5962105318903923
+      }
+    ],
+    "physical_gpu_sample_max_mib": {
+      "6": 51057,
+      "7": 51057
+    },
+    "process_tree_pss_sample_max_gib": 48.15427589416504,
+    "resource_note": "5-second physical samples, not guaranteed instantaneous peaks; virtual torch allocator and whole-machine RAM are not job physical usage"
+  },
+  "head_performance": [
+    {
+      "shape": [
+        4,
+        512,
+        4096
+      ],
+      "vocab": 248320,
+      "temperature": 1.0,
+      "warm_mean_seconds": {
+        "dense": 0.05672932292024294,
+        "fused": 0.09028443818291028
+      }
+    },
+    {
+      "shape": [
+        4,
+        512,
+        4096
+      ],
+      "vocab": 248320,
+      "temperature": 0.9,
+      "warm_mean_seconds": {
+        "dense": 0.06001707663138708,
+        "fused": 0.09079919631282489
+      }
+    }
+  ],
+  "performance_scope": "Same operands, warm vocabulary-head forward/backward only; not a whole-model slowdown ratio. Full B8 update above includes original offload, checkpoint and synchronization.",
+  "formal_status": {
+    "unix": 1790780705.4123492,
+    "jobs": [
+      {
+        "task": "SkyRL-SQL",
+        "pid": 1876409,
+        "process_status": "sleeping",
+        "last_lines": [
+          "(pid=gcs_server) [2026-09-30 23:04:29,315 E 1878434 1878434] (gcs_server) gcs_server.cc:303: Failed to establish connection to the event+metrics exporter agent. Events and metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14",
+          "(raylet) [2026-09-30 23:04:30,822 E 1879126 1879126] (raylet) main.cc:1032: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14",
+          "(pid=1879250) [2026-09-30 23:04:31,366 E 1879250 1879474] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14",
+          "[2026-09-30 23:04:31,814 E 1876409 1879247] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14",
+          "(TaskRunner pid=1880429) [2026-09-30 23:04:32,584 E 1880429 1880708] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14 [repeated 15x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)"
+        ],
+        "latest_checkpoint": []
+      },
+      {
+        "task": "AppWorld",
+        "pid": 2027456,
+        "process_status": "sleeping",
+        "last_lines": [
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 22:59:08,653 - 2156037 - ThreadPoolExecutor-1_5 - INFO - Episode completed (elapsed=5849.65 seconds, ret=1.000, n_policy_messages=14)",
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 23:01:34,427 - 2156037 - ThreadPoolExecutor-1_17 - INFO - Episode completed (elapsed=7113.90 seconds, ret=0.500, n_policy_messages=21)",
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 23:03:04,994 - 2156037 - ThreadPoolExecutor-1_22 - INFO - Episode completed (elapsed=7077.76 seconds, ret=1.000, n_policy_messages=21)",
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 23:03:04,995 - 2156037 - ThreadPoolExecutor-1_15 - INFO - Episode completed (elapsed=7991.94 seconds, ret=1.000, n_policy_messages=26)",
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 23:04:31,753 - 2156037 - ThreadPoolExecutor-1_31 - INFO - Episode completed (elapsed=6296.27 seconds, ret=0.875, n_policy_messages=17)",
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 23:04:32,218 - 2156038 - ThreadPoolExecutor-1_7 - INFO - Episode completed (elapsed=5243.58 seconds, ret=0.833, n_policy_messages=11)",
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 23:04:32,244 - 2156038 - ThreadPoolExecutor-1_19 - INFO - Episode completed (elapsed=6547.51 seconds, ret=0.750, n_policy_messages=18)",
+          "(TaskRunner pid=2033046) PHI: 2026-09-30 23:04:32,247 - 2156038 - ThreadPoolExecutor-1_18 - INFO - Episode completed (elapsed=5538.33 seconds, ret=0.375, n_policy_messages=13)"
+        ],
+        "latest_checkpoint": []
+      },
+      {
+        "task": "TextCraft",
+        "pid": 212110,
+        "process_status": "sleeping",
+        "last_lines": [
+          "Rounds 15/30 | Active agents per gpu: 109:  50%|█████     | 15/30 [1:17:10<59:22, 237.49s/it]  \u001b[A",
+          "Rounds 16/30 | Active agents per gpu: 105:  50%|█████     | 15/30 [1:17:11<59:22, 237.49s/it]\u001b[A",
+          "Rounds 16/30 | Active agents per gpu: 105:  53%|█████▎    | 16/30 [1:18:21<43:42, 187.32s/it]\u001b[A",
+          "Rounds 17/30 | Active agents per gpu: 102:  53%|█████▎    | 16/30 [1:18:22<43:42, 187.32s/it]\u001b[A",
+          "Rounds 17/30 | Active agents per gpu: 102:  57%|█████▋    | 17/30 [1:19:30<32:51, 151.66s/it]\u001b[A",
+          "Rounds 18/30 | Active agents per gpu: 101:  57%|█████▋    | 17/30 [1:19:31<32:51, 151.66s/it]\u001b[A",
+          "Rounds 18/30 | Active agents per gpu: 101:  60%|██████    | 18/30 [1:20:41<25:28, 127.40s/it]\u001b[A",
+          "Rounds 19/30 | Active agents per gpu: 97:  60%|██████    | 18/30 [1:20:42<25:28, 127.40s/it] \u001b[A"
+        ],
+        "latest_checkpoint": []
+      }
+    ]
+  },
+  "receipts": {
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/result.json": "3d53b85182d865e4367aff3b84a4f4dbee6cbf4a8bfcaab475c464ef32b289ff",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/physical-resources.jsonl": "02942c88de3868e5d8178567370018d6cbe3c177929576d8e79e41df6cc7dcd9",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/launch-config.yaml": "92bfe358abbd7fb4a5cd3f2ca827b04deb701bd1eb7229dbfc0bdaa75cd001d5",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/job.json": "6bff3b521c6719caed50e90bce5ecdd5662be1084d673c393c9989a71b74ffca",
+    "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/final-fused-temperature1.json": "1d1ab8621e90ad04601aab0afb9159622702a6e0e4f159a78ab78e6d0db0c72f",
+    "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/materialized-temperature09.json": "bc2301092db287120cf655b653ef89dcd3d2e25cca0e9bf6f6ea6732835fd17e",
+    "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/fused-head-performance.json": "1b2ccb20193c65ac6c85c8c91f4eed8ca0734ea6bda08bf7127afb7c8239d784",
+    "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/fused-head-performance09.json": "1ed03426e87fb2cc1c3cbb46f13a1df383e4946dfded7de291e6fe6950dc3d37",
+    "research/temporary/rl_upstream_alignment_20260929/owner-entropy-20260930/final-official-head-case2.log": "ff9ae5f8eddf2bf33e4e48ffebdec1f311773c3a54b7b028094a64b59bff607c",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/final-cpu-tests.xml": "79b2147b827d6ca591ee4168e571c09d6183b4254642656d0df1d2381a5884ed",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/formal-status.json": "9d01d5c37f7b4b282e868461d3c6790b6e080cdb92bb8f97f9769c2149692dd7",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/live-TextCraft-complete.json": "dbc689b157a7c0126fc57a1861635c33cfb22b7781749b935003e235512c9108",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/live-AppWorld-complete.json": "736a2149c8a244d2ef713c9c318cc1a167d2b53760be2d7b670df7c02acce0f7",
+    "research/temporary/rl_upstream_alignment_20260929/owner-b8-dispatch-20260930/sql-pause-timeout.json": "4a4e5af2a8b748db2359ed00f1ec77eeea42819e43c8feb5548fec7cb894d2a2"
+  }
+}

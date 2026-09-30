@@ -1,0 +1,387 @@
+{
+  "scope": "Submit one B8 x 32768 batch through original VERL DP dispatch (B4/rank).",
+  "submitted_shape": [
+    8,
+    32768
+  ],
+  "rank": 8,
+  "alpha": 16,
+  "microbatch_per_gpu": 4,
+  "phase": "passed",
+  "old_logprob_seconds": 40.411731557920575,
+  "update_seconds": 98.03942023031414,
+  "metrics": {
+    "actor/kl_loss": 5.0187110900878906e-05,
+    "actor/kl_coef": 0.001,
+    "actor/pg_loss": [
+      -0.05000000074505806
+    ],
+    "actor/pg_clipfrac": [
+      0.0
+    ],
+    "actor/ppo_kl": [
+      0.0
+    ],
+    "actor/pg_clipfrac_lower": [
+      0.0
+    ],
+    "actor/grad_norm": [
+      0.0012922240421175957
+    ],
+    "perf/mfu/actor": 0.0,
+    "perf/max_memory_allocated_gb": 84.72467994689941,
+    "perf/max_memory_reserved_gb": 90.439453125,
+    "perf/cpu_memory_used_gb": 624.2463798522949,
+    "actor/lr": 1e-06
+  },
+  "workers": [
+    {
+      "rank": 0,
+      "config": {
+        "hybrid_engine": true,
+        "model": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "use_shm": false,
+          "external_lib": null,
+          "override_config": {},
+          "enable_gradient_checkpointing": true,
+          "enable_activation_offload": true,
+          "use_remove_padding": false,
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "target_modules": "all-linear",
+          "use_liger": false,
+          "use_fused_kernels": true,
+          "trust_remote_code": true,
+          "fused_kernel_options": {
+            "impl_backend": "torch"
+          }
+        },
+        "actor": {
+          "strategy": "fsdp2",
+          "ppo_mini_batch_size": 32,
+          "ppo_micro_batch_size": null,
+          "ppo_micro_batch_size_per_gpu": 4,
+          "use_dynamic_bsz": false,
+          "ppo_max_token_len_per_gpu": 32768,
+          "grad_clip": 1.0,
+          "clip_ratio": 0.2,
+          "clip_ratio_low": 0.2,
+          "clip_ratio_high": 0.2,
+          "clip_ratio_c": 3.0,
+          "loss_agg_mode": "token-mean",
+          "entropy_coeff": 0.001,
+          "use_invalid_action_penalty": false,
+          "invalid_action_penalty_coef": 0.1,
+          "use_kl_loss": true,
+          "use_torch_compile": true,
+          "kl_loss_coef": 0.001,
+          "kl_loss_type": "low_var_kl",
+          "ppo_epochs": 1,
+          "shuffle": false,
+          "ulysses_sequence_parallel_size": 1,
+          "policy_loss": {
+            "loss_mode": "vanilla"
+          },
+          "checkpoint": {
+            "contents": [
+              "model",
+              "optimizer",
+              "extra"
+            ]
+          },
+          "optim": {
+            "lr": 1e-06,
+            "lr_warmup_steps": -1,
+            "lr_warmup_steps_ratio": 0.0,
+            "min_lr_ratio": 0.0,
+            "num_cycles": 0.5,
+            "warmup_style": "constant",
+            "total_training_steps": 330,
+            "weight_decay": 0.01
+          },
+          "fsdp_config": {
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "param_offload": true,
+            "optimizer_offload": true,
+            "offload_policy": true,
+            "reshard_after_forward": true,
+            "fsdp_size": -1,
+            "model_dtype": "bfloat16"
+          },
+          "use_remove_padding": false,
+          "use_fused_kernels": true
+        },
+        "ref": {
+          "strategy": "fsdp",
+          "fsdp_config": {
+            "param_offload": false,
+            "reshard_after_forward": true,
+            "wrap_policy": {
+              "min_num_params": 0
+            }
+          },
+          "use_torch_compile": true,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "ulysses_sequence_parallel_size": 1
+        },
+        "rollout": {
+          "name": "vllm",
+          "mode": "sync",
+          "chat_scheduler": null,
+          "temperature": 1.0,
+          "top_k": -1,
+          "top_p": 1,
+          "use_fire_sampling": false,
+          "prompt_length": 32256,
+          "response_length": 512,
+          "dtype": "bfloat16",
+          "gpu_memory_utilization": 0.75,
+          "ignore_eos": false,
+          "enforce_eager": true,
+          "free_cache_engine": true,
+          "load_format": "safetensors",
+          "layered_summon": false,
+          "tensor_model_parallel_size": 1,
+          "max_num_batched_tokens": 32768,
+          "max_model_len": 32768,
+          "max_num_seqs": 32,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "disable_log_stats": true,
+          "enable_chunked_prefill": true,
+          "do_sample": true,
+          "n": 1,
+          "engine_kwargs": {
+            "vllm": {
+              "swap_space": null,
+              "limit_mm_per_prompt": {
+                "image": 0,
+                "video": 0
+              }
+            },
+            "sglang": {
+              "attention_backend": null
+            }
+          },
+          "val_kwargs": {
+            "top_k": -1,
+            "top_p": 1,
+            "temperature": 1,
+            "n": 1,
+            "do_sample": true
+          },
+          "multi_turn": {
+            "enable": true,
+            "max_turns": null,
+            "tool_config_path": null,
+            "format": "chatml"
+          }
+        }
+      },
+      "calls": [
+        {
+          "shape": [
+            4,
+            32768
+          ],
+          "seconds": 40.37184499576688,
+          "calculate_entropy": true
+        },
+        {
+          "shape": [
+            4,
+            32768
+          ],
+          "seconds": 19.87904865667224,
+          "calculate_entropy": true
+        }
+      ],
+      "changed_parameter_tensors": 248,
+      "phase": "updated",
+      "allocator_peak_gib": 84.72467994689941,
+      "post_update_sync_sleep_seconds": 1.5996431950479746
+    },
+    {
+      "rank": 1,
+      "config": {
+        "hybrid_engine": true,
+        "model": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "use_shm": false,
+          "external_lib": null,
+          "override_config": {},
+          "enable_gradient_checkpointing": true,
+          "enable_activation_offload": true,
+          "use_remove_padding": false,
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "target_modules": "all-linear",
+          "use_liger": false,
+          "use_fused_kernels": true,
+          "trust_remote_code": true,
+          "fused_kernel_options": {
+            "impl_backend": "torch"
+          }
+        },
+        "actor": {
+          "strategy": "fsdp2",
+          "ppo_mini_batch_size": 32,
+          "ppo_micro_batch_size": null,
+          "ppo_micro_batch_size_per_gpu": 4,
+          "use_dynamic_bsz": false,
+          "ppo_max_token_len_per_gpu": 32768,
+          "grad_clip": 1.0,
+          "clip_ratio": 0.2,
+          "clip_ratio_low": 0.2,
+          "clip_ratio_high": 0.2,
+          "clip_ratio_c": 3.0,
+          "loss_agg_mode": "token-mean",
+          "entropy_coeff": 0.001,
+          "use_invalid_action_penalty": false,
+          "invalid_action_penalty_coef": 0.1,
+          "use_kl_loss": true,
+          "use_torch_compile": true,
+          "kl_loss_coef": 0.001,
+          "kl_loss_type": "low_var_kl",
+          "ppo_epochs": 1,
+          "shuffle": false,
+          "ulysses_sequence_parallel_size": 1,
+          "policy_loss": {
+            "loss_mode": "vanilla"
+          },
+          "checkpoint": {
+            "contents": [
+              "model",
+              "optimizer",
+              "extra"
+            ]
+          },
+          "optim": {
+            "lr": 1e-06,
+            "lr_warmup_steps": -1,
+            "lr_warmup_steps_ratio": 0.0,
+            "min_lr_ratio": 0.0,
+            "num_cycles": 0.5,
+            "warmup_style": "constant",
+            "total_training_steps": 330,
+            "weight_decay": 0.01
+          },
+          "fsdp_config": {
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "param_offload": true,
+            "optimizer_offload": true,
+            "offload_policy": true,
+            "reshard_after_forward": true,
+            "fsdp_size": -1,
+            "model_dtype": "bfloat16"
+          },
+          "use_remove_padding": false,
+          "use_fused_kernels": true
+        },
+        "ref": {
+          "strategy": "fsdp",
+          "fsdp_config": {
+            "param_offload": false,
+            "reshard_after_forward": true,
+            "wrap_policy": {
+              "min_num_params": 0
+            }
+          },
+          "use_torch_compile": true,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "ulysses_sequence_parallel_size": 1
+        },
+        "rollout": {
+          "name": "vllm",
+          "mode": "sync",
+          "chat_scheduler": null,
+          "temperature": 1.0,
+          "top_k": -1,
+          "top_p": 1,
+          "use_fire_sampling": false,
+          "prompt_length": 32256,
+          "response_length": 512,
+          "dtype": "bfloat16",
+          "gpu_memory_utilization": 0.75,
+          "ignore_eos": false,
+          "enforce_eager": true,
+          "free_cache_engine": true,
+          "load_format": "safetensors",
+          "layered_summon": false,
+          "tensor_model_parallel_size": 1,
+          "max_num_batched_tokens": 32768,
+          "max_model_len": 32768,
+          "max_num_seqs": 32,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "disable_log_stats": true,
+          "enable_chunked_prefill": true,
+          "do_sample": true,
+          "n": 1,
+          "engine_kwargs": {
+            "vllm": {
+              "swap_space": null,
+              "limit_mm_per_prompt": {
+                "image": 0,
+                "video": 0
+              }
+            },
+            "sglang": {
+              "attention_backend": null
+            }
+          },
+          "val_kwargs": {
+            "top_k": -1,
+            "top_p": 1,
+            "temperature": 1,
+            "n": 1,
+            "do_sample": true
+          },
+          "multi_turn": {
+            "enable": true,
+            "max_turns": null,
+            "tool_config_path": null,
+            "format": "chatml"
+          }
+        }
+      },
+      "calls": [
+        {
+          "shape": [
+            4,
+            32768
+          ],
+          "seconds": 40.34918989986181,
+          "calculate_entropy": true
+        },
+        {
+          "shape": [
+            4,
+            32768
+          ],
+          "seconds": 19.853417677804828,
+          "calculate_entropy": true
+        }
+      ],
+      "changed_parameter_tensors": 248,
+      "phase": "updated",
+      "allocator_peak_gib": 84.72467994689941,
+      "post_update_sync_sleep_seconds": 1.5962105318903923
+    }
+  ]
+}

@@ -2,10 +2,57 @@
 
 ## 2026-09-30 最新：仅使用前六张卡训练 DTPO
 
+**最新状态：实际提交全局B8×32768，经原VERL双卡分发，每卡实际B4×32768，
+LoRA8/16，原更新98.039秒并完成更新后的原vLLM LoRA同步。输出头复用原VERL
+分块实现，修正其输出/梯度dtype边界并编译原chunk；对应VERL原测试和实际
+BF16/FP32对照通过，没有修改容差或添加纠偏。详见
+[results_actor_b8.json](results_actor_b8.json)。**
+
+- 5秒物理采样：两卡最大各51057MiB（49.86GiB），作业进程树PSS最大48.15GiB。
+  虚拟allocator和整机内存不当作该作业物理用量。该测试是容量夹具，不是任务收益验证。
+- TextCraft PID212110、AppWorld PID2027456已在原worker RPC边界应用验证过的
+  输出头和microbatch4，模型/优化器/已采轨迹保留。原冻结目录不覆盖，运行时
+  来源为`candidates/official-verl-20bd331-fused-head-b4-20260930`；两rank回执在
+  `receipts/owner-b8-dispatch-20260930/live-<task>-complete.json`。
+- SQL旧worker在SIGSTOP恢复时因暂停中的all-gather超过30分钟墙钟超时而退出。
+  这是暂停操作导致的故障，不是新输出头失败；不要再次SIGSTOP通信中的任务。
+  无完成检查点，故按原正式入口重启SQL（PID1876409、GPU0/1），保留官方初始
+  验证和预算，不跳过验证、不改变通信超时。旧失败回执为`sql-pause-timeout.json`。
+- 最新manifest为`runs/official-trajectory-20260930-v8/formal-training.json`，
+  根目录`active-training.json`及`active-source.json`记录实际源码与运行时覆盖。
+  三组首个正式更新尚待实际日志确认。下列microbatch1和暂停记录仅为历史。
+
 用户取消 GPU 6/7 的 SQL GRPO 对照组，不再重提。仅保留 SQL-DT GPU0/1、
 AppWorld-DT GPU2/3、TextCraft-DT GPU4/5。当前 manifest / 根目录
 `active-training.json` 的 `jobs` 只含这三组；取消作业和停止回执保留在 `retired_jobs` / `stop_receipt`。
 以下四组提交记录为取消前事实，不再定义当前目标。
+
+## 2026-09-30 21:55 熵计算 OOM 修复与当前事实源
+
+- TextCraft v4 完成首批 rollout 和两 rank 各158批 DT 后，在原 PPO 首次反向
+  申请9.47GiB失败。原 dense actor 绕过了自身已有的编译熵函数；仅把该调用
+  改为 `self.compute_entropy_from_logits`，恢复原 `use_torch_compile=True`。
+  没有复制熵/PPO算法、改变信用或增加数值校正。记录见
+  [results_actor_entropy.json](results_actor_entropy.json)。
+- 同一组logits的FP32/BF16对照使用固定VERL
+  `tests/kernels/test_linear_cross_entropy.py`的输出头阈值，只涉及熵/logprob边界。
+  新增的整网两次更新容差验收已撤销，测试与重跑入口已删除；旧诊断原始文件保留，
+  不作为官方PPO验收或新训练启动门槛。30项dispatch/padding与7项原配置检查通过。
+- 已完成的合成容量夹具：Qwen3.5-9B、LoRA8/16、micro1/GPU、两卡、原vLLM
+  同步/休眠、总长32768且response32256，原更新完成且梯度有限。
+  5秒物理采样中GPU4/5最大各58713MiB，进程树PSS最大48.79GiB；这不是
+  瞬时峰值保证，也不是任务训练成功。Torch虚拟allocator计数不当作物理显存。
+- TextCraft v7于1790775612提交，PID212110、GPU4/5，实际入口与VERL均冻结在
+  v7对应目录，预算不变；当前正在正式采样，尚无首个完成更新。
+- AppWorld v6 PID2027456已通过原worker RPC边界应用同一处熵dispatch，两个rank
+  回执为 `receipts/owner-entropy-20260930/live-AppWorld-complete.json`。原模型、
+  优化器和已采轨迹保留；原冻结目录不改，实际绑定方法来源/哈希在该回执。
+  SQL v4 PID1374630的同一修复仍由PID214658排在当前DT调用后；没有完成回执前
+  不称已应用。两者仍未完成本次正式首个更新。
+- 当前manifest为 `runs/official-trajectory-20260930-v7/formal-training.json`。
+  根目录 `active-training.json` 已更新实际观察时间，`active-source.json`现索引
+  三组各自的source回执及运行时覆盖；原过期active-source保留在上述修复receipt目录。
+  原任务预算、LoRA8/16、DT数值发布c9cd147/fc2e6c2、FA/FLA、vLLM均未改变。
 
 ## 2026-09-30 19:35 AppWorld v6
 

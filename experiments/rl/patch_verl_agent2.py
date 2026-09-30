@@ -1548,6 +1548,14 @@ def main() -> None:
     hf.write_text(patch_hf_active_rows(hf.read_text()))
 
     actor.write_text(patch_actor_response_head(actor.read_text()))
+    from patch_actor_entropy_dispatch import patch as patch_entropy_dispatch
+    actor.write_text(patch_entropy_dispatch(actor.read_text()))
+
+    from patch_actor_fused_head import patch_precision, patch_dispatch
+    head = args.verl_root / 'verl/utils/experimental/torch_functional.py'
+    head.write_text(patch_precision(head.read_text()))
+    dispatch = args.verl_root / 'verl/models/transformers/monkey_patch.py'
+    dispatch.write_text(patch_dispatch(dispatch.read_text()))
 
     vllm = args.verl_root / VLLM_ROLLOUT_FILE
     vllm.write_text(patch_vllm_prefix_cache_option(patch_vllm_active_rows(vllm.read_text())))
