@@ -164,6 +164,14 @@ LOOP环境目录；它只供AppWorld使用，不能拿其中历史SQL/TextCraft�
 回执保留在远端`appworld-balanced-resume/launch-cpu-tests-unscoped.xml`，不把它们
 描述为已修复其他任务，也不把本候选当作通用三任务部署。
 
+候选后续提交使用
+[submit_prepared_appworld_resume.py](../../research/temporary/rl_upstream_alignment_20260929/submit_prepared_appworld_resume.py)
+并显式传入原完成检查点路径。它不停止任务、不加载或改写模型；原进程未退出时直接拒绝，
+随后核对原完成标记、原状态文件、候选SHA及GPU2/3占用，再调用上述冻结入口。
+新source回执保存旧PID、恢复步数、候选SHA、提交脚本SHA和提交号；旧事实源归档保留，
+SQL/TextCraft的作业条目不改。已通过本机与内嵌远端Python语法检查，尚未执行提交，
+不能把该检查或脚本存在称为检查点恢复成功。
+
 ### SQL padding 调查（未修改实现）
 
 首批正式采样为1280条轨迹、4850条response、1,385,232个policy token、
