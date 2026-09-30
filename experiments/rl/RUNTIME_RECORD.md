@@ -198,6 +198,11 @@ SQL首批原训练分数为1269条−1、8条0、3条1；−1来自原SQL格式�
 尚未测量真实生成提速，不将请求数变化宣称为两倍速度；保留当前轨迹，
 后续在原检查点边界恢复时另记部署回执，不能把本机修复提交当成已生效。
 
+05:16对当前两worker的30秒只读采样进一步定位到批次尾部等待：rank0无活跃
+Python采样，随后栈为Ray空闲主循环；rank1仍在原vLLM解码，原提交batch=16，
+随后栈中只剩3个请求、各调度1个token。这支持上述分发修复，不能推断整轮空闲
+比例或候选提速。原采样与调用栈的路径、SHA及覆盖范围已归入同一候选回执。
+
 该修复现已冻结为`candidates/appworld-request-dispatch-20261001/entry`，复用当前
 `appworld-balanced-padding-resume-20261001/verl`。与当前entry逐文件比较，只有
 上述`loop_owner_rollout.py`变化；DT、actor和任务作者目录均沿用原版本。

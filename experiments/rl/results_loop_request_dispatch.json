@@ -73,5 +73,55 @@
     "DT Q/V/A and official PPO objective"
   ],
   "performance_measurement": "Not yet measured on real generation; eliminating the transport limit does not imply a 2x wall-clock improvement.",
-  "candidate_code_commit": "64e63770ed6e699debe2432b14972cf653d80473"
+  "candidate_code_commit": "64e63770ed6e699debe2432b14972cf653d80473",
+  "formal_tail_profile": {
+    "driver_pid": 2680224,
+    "started_unix": 1790803002,
+    "duration_seconds": 30,
+    "sample_rate_hz": 20,
+    "deployed_transport_sha256": "cb00a657de71af5afcf386f0ab520377746172152a61a328af9068d4147da537",
+    "rank0": {
+      "pid": 2688126,
+      "active_python_samples": 0,
+      "sample_errors": 0,
+      "post_sample_stack": "idle Ray worker main_loop"
+    },
+    "rank1": {
+      "pid": 2689798,
+      "active_python_samples": 606,
+      "sample_errors": 0,
+      "submitted_batch_size": 16,
+      "post_sample_active_requests": 3,
+      "scheduled_tokens_per_request": 1,
+      "post_sample_stack": "native vLLM GPUModelRunner._prepare_inputs inside original VERL generate_sequences"
+    },
+    "finding": "A completed worker was idle while the other worker decoded the last three requests of its batch. The already-tested transport cap removal lets the same native engines receive the already-queued requests without the extra global cap.",
+    "limits": "A single CPU-stack sampling window, not GPU kernel duration, whole-iteration idle fraction, prefill/decode timing, a numerical test or measured candidate speedup.",
+    "artifacts": [
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/appworld-request-dispatch-20261001/formal-profile/1790803002-AppWorld-profile.json",
+        "sha256": "ba0fb3f774aff071f84ea75787df874f0796f176133c4e6fe9b8830d4d09afb7"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/appworld-request-dispatch-20261001/formal-profile/1790803002-AppWorld-2688126-after-sample.txt",
+        "sha256": "b02d85f11862385bfda44d5f81f4ceb17b76635085387dd55099d19b067390c0"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/appworld-request-dispatch-20261001/formal-profile/1790803002-AppWorld-2689798-after-sample.txt",
+        "sha256": "a2ad846b18ac5332cdfd0997161cd9b29535bd45601a359a59549e42a860ff7a"
+      }
+    ],
+    "raw_sampling_artifacts": [
+      {
+        "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/phase-observations/1790803002-AppWorld-2688126-sampling.raw",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/phase-observations/1790803002-AppWorld-2689798-sampling.raw",
+        "sha256": "3ace772efa73f25a7566544c92791311f74f5ec710969f53f57dc1c71f24a8eb",
+        "bytes": 834761
+      }
+    ]
+  }
 }

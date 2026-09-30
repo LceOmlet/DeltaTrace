@@ -1,0 +1,291 @@
+Process 2689798: ray::WorkerDict.actor_rollout_generate_sequences
+Python v3.12.11 (/opt/conda/bin/python3.12)
+
+Thread 2689798 (active): "MainThread"
+    _prepare_inputs (vllm/v1/worker/gpu_model_runner.py:1565)
+        Arguments:
+            self: <GPUModelRunner at 0x7ecbedd2b260>
+            scheduler_output: <SchedulerOutput at 0x7ecafad26300>
+            num_scheduled_tokens: <numpy.ndarray at 0x7ecafb12cbd0>
+        Locals:
+            total_num_scheduled_tokens: 3
+            num_reqs: 3
+            req_indices: <numpy.ndarray at 0x7ecafb12f630>
+            cu_num_tokens: <numpy.ndarray at 0x7ecafb12e4f0>
+            arange: <numpy.ndarray at 0x7ecafb12fb10>
+            positions_np: <numpy.ndarray at 0x7ecafb12f0f0>
+            token_indices: <numpy.ndarray at 0x7ecafb12f8d0>
+            token_indices_tensor: <Tensor at 0x7ecafb17d400>
+            query_start_loc: <Tensor at 0x7ecb04e9bca0>
+            num_tokens: [3188, 3163, 3163]
+            num_tokens_np: <numpy.ndarray at 0x7ecafcb2f990>
+    execute_model (vllm/v1/worker/gpu_model_runner.py:3333)
+        Arguments:
+            self: <cell at 0x7ecb04f45630>
+            scheduler_output: <SchedulerOutput at 0x7ecafad26300>
+            intermediate_tensors: None
+        Locals:
+            num_scheduled_tokens: 3
+            num_reqs: 3
+            req_ids: ["686-9d5c3239", "688-a25d4e6d", "681-85d71123"]
+            tokens: [1, 1, 1]
+            num_scheduled_tokens_np: <numpy.ndarray at 0x7ecafb12cbd0>
+            max_num_scheduled_tokens: 1
+            num_tokens_unpadded: 3
+    decorate_context (torch/utils/_contextlib.py:120)
+        Locals:
+            args: (<GPUModelRunner at 0x7ecbedd2b260>, <SchedulerOutput at 0x7ecafad26300>, None)
+            kwargs: {}
+    execute_model (vllm/v1/worker/gpu_worker.py:631)
+        Arguments:
+            self: <Worker at 0x7ecb1a891910>
+            scheduler_output: <SchedulerOutput at 0x7ecafad26300>
+        Locals:
+            intermediate_tensors: None
+            forward_pass: True
+            num_scheduled_tokens: 3
+            all_gather_tensors: {}
+            compilation_config: <CompilationConfig at 0x7ecc317c8380>
+            parallel_config: <ParallelConfig at 0x7ecbecbcd190>
+    decorate_context (torch/utils/_contextlib.py:120)
+        Locals:
+            args: (<Worker at 0x7ecb1a891910>, <SchedulerOutput at 0x7ecafad26300>)
+            kwargs: {}
+    execute_model (vllm/v1/worker/worker_base.py:365)
+        Arguments:
+            self: <WorkerWrapperBase at 0x7ecc3196c350>
+            scheduler_output: <SchedulerOutput at 0x7ecafad26300>
+    run_method (vllm/v1/serial_utils.py:461)
+        Arguments:
+            obj: <WorkerWrapperBase at 0x7ecc3196c350>
+            method: "execute_model"
+            args: (<SchedulerOutput at 0x7ecafad26300>)
+            kwargs: {}
+        Locals:
+            func: <method at 0x7ecafcb4a880>
+    collective_rpc (vllm/v1/executor/uniproc_executor.py:79)
+        Arguments:
+            self: <ExecutorWithExternalLauncher at 0x7ecb1a8917c0>
+            method: "execute_model"
+            timeout: None
+            args: (<SchedulerOutput at 0x7ecafad26300>)
+            kwargs: {}
+            non_block: True
+            single_value: True
+    execute_model (vllm/v1/executor/uniproc_executor.py:100)
+        Arguments:
+            self: <ExecutorWithExternalLauncher at 0x7ecb1a8917c0>
+            scheduler_output: <SchedulerOutput at 0x7ecafad26300>
+            non_block: True
+    step_with_batch_queue (vllm/v1/engine/core.py:438)
+        Arguments:
+            self: <EngineCore at 0x7ecb1a891790>
+        Locals:
+            batch_queue: <collections.deque at 0x7ecc6e3f4a90>
+            model_executed: False
+            deferred_scheduler_output: None
+            scheduler_output: <SchedulerOutput at 0x7ecafad26300>
+    get_output (vllm/v1/engine/core_client.py:272)
+        Arguments:
+            self: <InprocClient at 0x7ecb1a891640>
+    step (vllm/v1/engine/llm_engine.py:290)
+        Arguments:
+            self: <LLMEngine at 0x7ecbeca94770>
+    _run_engine (vllm/entrypoints/llm.py:1672)
+        Arguments:
+            self: <LLM at 0x7ecc5960f7d0>
+        Locals:
+            use_tqdm: False
+            outputs: [<RequestOutput at 0x7ecb00cad310>, <RequestOutput at 0x7ecb00c16720>, <RequestOutput at 0x7ecb00c16ba0>, ...]
+            total_in_toks: 0
+            total_out_toks: 0
+            step_outputs: []
+            output: <RequestOutput at 0x7ecb04f9b770>
+    generate (vllm/entrypoints/llm.py:435)
+        Arguments:
+            self: <LLM at 0x7ecc5960f7d0>
+            prompts: [{...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}]
+            sampling_params: [<SamplingParams at 0x7ecb13627ed0>, <SamplingParams at 0x7ecb136279d0>, <SamplingParams at 0x7ecb13627750>, ...]
+        Locals:
+            use_tqdm: False
+            lora_request: [<LoRARequest at 0x7ecb0b33c4f0>, <LoRARequest at 0x7ecb0b33c4f0>, <LoRARequest at 0x7ecb0b33c4f0>, ...]
+            priority: None
+            model_config: <ModelConfig at 0x7ecc3196c740>
+            runner_type: "generate"
+    generate_sequences (verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py:337)
+        Arguments:
+            self: <vLLMRollout at 0x7ecc577c6090>
+            prompts: <DataProto at 0x7ecb00c5c230>
+        Locals:
+            kwargs: {}
+            idx: <Tensor at 0x7ecc9a8e9360>
+            attention_mask: <Tensor at 0x7ecc6e2bc230>
+            position_ids: <Tensor at 0x7ecb0b39bfc0>
+            eos_token_id: [248046, 248044]
+            batch_size: 16
+            non_tensor_batch: {"anchor_obs": <numpy.ndarray at 0x7ecb0b2f9fb0>, "index": <numpy.ndarray at 0x7ecafcbd3f90>, ...}
+            vllm_inputs: [{...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}]
+            input_data: {...}
+            do_sample: True
+            is_validate: False
+            lora_requests: [<LoRARequest at 0x7ecb0b33c4f0>, <LoRARequest at 0x7ecb0b33c4f0>, <LoRARequest at 0x7ecb0b33c4f0>, ...]
+            lora_int_ids: [1108411445]
+            lora_int_id: 1108411445
+            owner_overrides: <numpy.ndarray at 0x7ecafcbd3cf0>
+            active_mask: None
+            active_rows: None
+            request_sampling: [<SamplingParams at 0x7ecb13627ed0>, <SamplingParams at 0x7ecb136279d0>, <SamplingParams at 0x7ecb13627750>, ...]
+            owner_sampling_params: <function at 0x7ecb09177060>
+    decorate_context (torch/utils/_contextlib.py:120)
+        Locals:
+            args: (<vLLMRollout at 0x7ecc577c6090>)
+            kwargs: {"prompts": <DataProto at 0x7ecb00c5c230>}
+    log (verl/utils/debug/performance.py:90)
+        Arguments:
+            self: <GPUMemoryLogger at 0x7ecc5960f920>
+            func: <function at 0x7ecc5963c5e0>
+        Locals:
+            args: (<vLLMRollout at 0x7ecc577c6090>)
+            kwargs: {"prompts": <DataProto at 0x7ecb00c5c230>}
+            name: "generate_sequences"
+            mem_allocated: "43.83"
+            mem_reserved: "43.86"
+            mem_used: "47.30"
+            mem_total: "63.59"
+            message: "Before generate_sequences, memory allocated (GB): 43.83, memory reserved (GB): 43.86, device memory used/total (GB): 47.30/..."
+    f (verl/utils/debug/performance.py:80)
+        Locals:
+            args: (<vLLMRollout at 0x7ecc577c6090>)
+            kwargs: {"prompts": <DataProto at 0x7ecb00c5c230>}
+    generate_sequences (verl/workers/fsdp_workers.py:674)
+        Arguments:
+            self: <ActorRolloutRefWorker at 0x7eccfa989790>
+            prompts: <DataProto at 0x7ecb00c5c230>
+        Locals:
+            meta_info: {"eos_token_id": [248046, 248044], "pad_token_id": 248044}
+    inner (verl/single_controller/base/decorator.py:534)
+        Locals:
+            args: (<ActorRolloutRefWorker at 0x7eccfa989790>, <DataProto at 0x7ecb00c5c230>)
+            kwargs: {}
+    func (verl/single_controller/ray/base.py:645)
+        Arguments:
+            self: <WorkerDict at 0x7eccf95a9af0>
+        Locals:
+            args: (<DataProto at 0x7ecb00c5c230>)
+            kwargs: {}
+    _resume_span (ray/util/tracing/tracing_helper.py:461)
+        Arguments:
+            self: <WorkerDict at 0x7eccf95a9af0>
+        Locals:
+            _ray_trace_ctx: None
+            _args: (<DataProto at 0x7ecb00c5c230>)
+            _kwargs: {}
+    actor_method_executor (ray/_private/function_manager.py:693)
+        Arguments:
+            _FunctionActorManager__ray_actor: <WorkerDict at 0x7eccf95a9af0>
+        Locals:
+            args: (<DataProto at 0x7ecb00c5c230>)
+            kwargs: {}
+            is_bound: False
+    main_loop (ray/_private/worker.py:1031)
+        Arguments:
+            self: <Worker at 0x7f00033e86e0>
+        Locals:
+            sigterm_handler: <function at 0x7f00031e4220>
+    <module> (ray/_private/workers/default_worker.py:322)
+Thread 2689917 (idle): "PythonGCThread"
+    wait (threading.py:355)
+        Arguments:
+            self: <Condition at 0x7f00031e26c0>
+            timeout: None
+        Locals:
+            waiter: <_thread.lock at 0x7f00032023c0>
+            saved_state: None
+            gotit: False
+    wait (threading.py:655)
+        Arguments:
+            self: <Event at 0x7f00031e2750>
+            timeout: None
+        Locals:
+            signaled: False
+    run (ray/_private/gc_collect_manager.py:29)
+        Arguments:
+            self: <PythonGCThread at 0x7f000411af60>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <PythonGCThread at 0x7f000411af60>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <PythonGCThread at 0x7f000411af60>
+Thread 2691650 (idle): "Thread-1 (_read_thread)"
+    _recv_msg (torch/_inductor/compile_worker/subproc_pool.py:61)
+        Arguments:
+            read_pipe: <_io.BufferedReader at 0x7ecccad73a00>
+    _read_thread (torch/_inductor/compile_worker/subproc_pool.py:195)
+        Arguments:
+            self: <SubprocPool at 0x7ecccac66de0>
+        Locals:
+            data: <bytes at 0x55da495ce508>
+            job_id: 0
+            result: "ready"
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7ecccb000ef0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7ecccb000ef0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7ecccb000ef0>
+Thread 2692267 (idle): "Thread-2"
+    wait (threading.py:359)
+        Arguments:
+            self: <Condition at 0x7eccc807c830>
+            timeout: 10
+        Locals:
+            waiter: <_thread.lock at 0x7ecafad04b00>
+            saved_state: None
+            gotit: False
+    wait (threading.py:655)
+        Arguments:
+            self: <Event at 0x7eccc827cf50>
+            timeout: 10
+        Locals:
+            signaled: False
+    run (tqdm/_monitor.py:60)
+        Arguments:
+            self: <TMonitor at 0x7eccc9f6e180>
+        Locals:
+            cur_t: 1790803079.7450826
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <TMonitor at 0x7eccc9f6e180>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <TMonitor at 0x7eccc9f6e180>
+Thread 2810584 (active): "WorkerAsyncOutput_0"
+    get_output (vllm/v1/worker/gpu_model_runner.py:239)
+        Arguments:
+            self: <AsyncGPUModelRunnerOutput at 0x7ecb04f46900>
+        Locals:
+            max_gen_len: 1
+    run (concurrent/futures/thread.py:59)
+        Arguments:
+            self: <_WorkItem at 0x7ecb04e944d0>
+    _worker (concurrent/futures/thread.py:93)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7ecc6e23f970>
+            work_queue: <_queue.SimpleQueue at 0x7ecb1a897a10>
+            initializer: None
+            initargs: ()
+        Locals:
+            work_item: <_WorkItem at 0x7ecb04e944d0>
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7ecb0b3482f0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7ecb0b3482f0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7ecb0b3482f0>
