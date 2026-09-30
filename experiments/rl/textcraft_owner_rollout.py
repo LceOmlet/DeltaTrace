@@ -93,7 +93,10 @@ class TextCraftOwner:
                 super().add_assistant_message(*args, **kwargs)
                 # Read the owner's newly emitted mask, not a second ChatML parser.
                 positions = [i for i in range(before, len(self.input_ids)) if self.loss_mask[i]]
-                records[self.transport_index][-1].update(start=positions[0], end=positions[-1]+1)
+                start, end = positions[0], positions[-1]+1
+                records[self.transport_index][-1].update(start=start, end=end,
+                    native_prompt_ids=self.input_ids[:start].copy(),
+                    native_response_ids=self.input_ids[start:end].copy())
 
         class EngineTransport:
             # VERL's existing RPC manages wake/sync/sleep for each generation.
@@ -152,25 +155,23 @@ class TextCraftOwner:
         for index, (h, turns) in enumerate(zip(handlers, records)):
             mapping = []
             for step, turn in enumerate(turns):
-                row = turn['data']
-                row.non_tensor_batch.update(traj_uid=np.array([ids[index]], dtype=object),
-                    env_step=np.array([step]), active_masks=np.array([True]),
-                    episode_rewards=np.array([scores[index]]),
-                    episode_lengths=np.array([len(turns)]),
-                    rewards=np.array([scores[index] if step == len(turns)-1 else 0.]))
-                row.batch['token_level_rewards'] = EpisodeRewardManager(owner.tokenizer, 0)(row)
                 source_index = len(sources)
-                sources.append(row)
                 start = turn['start']-len(h.prompt_ids)
-                length = min(len(turn['output_ids']), len(h.response_ids)-start)
+                length = min(len(turn['native_response_ids']), len(h.response_ids)-start)
+                sources.append(dict(prompt_ids=turn['native_prompt_ids'], response_ids=turn['native_response_ids'],
+                    traj_uid=ids[index], data_source='textcraft', env_step=step, active_masks=length>0,
+                    episode_rewards=scores[index], episode_lengths=len(turns),
+                    rewards=scores[index] if step == len(turns)-1 else 0.))
                 if length > 0:
-                    assert h.input_ids[:turn['start']] == turn['prompt_ids'], 'Owner generation/training prefix mismatch'
-                    assert h.response_ids[start:start+length] == turn['output_ids'][:length], 'Owner generated/training IDs mismatch'
+                    assert h.input_ids[:turn['start']] == turn['native_prompt_ids']
+                    assert h.response_ids[start:start+length] == turn['native_response_ids'][:length]
                     mapping.append((source_index, start, length))
             maps.append(mapping)
-        # Response arrays use the transport's common width, never native
-        # trajectory re-encoding. compute_training_credit remains unchanged.
-        self.credit_responses = DataProto.concat(sources) if sources else None
+        # AgentGym itself decodes/re-encodes model output and appends EOS. DT
+        # must target those exact official training tokens; generated IDs may
+        # differ (e.g. stripped special tokens). Do not alter the owner's arrays.
+        from owner_trajectory_batch import native_credit_response_batch
+        self.credit_responses = native_credit_response_batch(owner.tokenizer, sources)
         array = np.empty(len(maps), dtype=object)
         array[:] = maps
         output.non_tensor_batch['dt_response_slices'] = array

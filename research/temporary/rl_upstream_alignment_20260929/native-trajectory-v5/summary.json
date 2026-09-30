@@ -1,0 +1,25 @@
+{
+  "scope": "CPU official-method/environment and transport checks; not a new GPU numerical test or formal-update acceptance",
+  "tests": {
+    "loop_native_scheduler_train_eval_and_two_rank_gloo": 5,
+    "appworld_original_verl_config_and_carrier": 2,
+    "actor_response_padding_boundaries": 28,
+    "textcraft_native_training_tokens_train_eval_and_errors": 10
+  },
+  "numerical_runtime": "Existing DT c9cd147/fc2e6c2 receipt and hash lock; original PPO loss and numerical tolerances unchanged",
+  "device_initialization": {
+    "cause": "Composing LOOP config loads a MetaX library that sets MACA_VISIBLE_DEVICES in C without updating os.environ; execv inherited the stale two-device mask into Ray workers.",
+    "reproduced": {
+      "before_c_value": null,
+      "after_python_value": null,
+      "after_c_value": "2,3"
+    },
+    "fix": "execve with explicit Python environment and no MACA_VISIBLE_DEVICES; native Ray owns CUDA assignment",
+    "formal_evidence": "v5 rank0 and rank1 passed the previously failing initialization and loaded model weights; read-only worker receipts have no MACA_VISIBLE_DEVICES"
+  },
+  "lora": {
+    "rank": 8,
+    "alpha": 16
+  },
+  "formal_update_verified": false
+}

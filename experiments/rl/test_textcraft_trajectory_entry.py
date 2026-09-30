@@ -55,7 +55,7 @@ def test_default_handler_is_unchanged(tokenizer):
 
 
 @pytest.mark.parametrize('is_train', [True, False])
-@pytest.mark.parametrize('failure', [None, 'step', 'reset'])
+@pytest.mark.parametrize('failure', [None, 'step', 'reset', 'special_tokens'])
 def test_real_service_native_trajectory_and_exact_generated_prefix(tokenizer, tmp_path, monkeypatch, is_train, failure):
     from verl.utils.debug import performance
     monkeypatch.setattr(performance, '_get_current_mem_info', lambda: (0., 0., 0., 0.))
@@ -67,7 +67,7 @@ def test_real_service_native_trajectory_and_exact_generated_prefix(tokenizer, tm
     config.env.max_steps = 2
     train, evaluation = instantiate(config.env.factory, configuration=config, tokenizer=tokenizer, _recursive_=False)
     manager = train if is_train else evaluation
-    if failure:
+    if failure in ('step', 'reset'):
         original_client = manager.module.init_env_client
         def failing_client(*args, **kwargs):
             client = original_client(*args, **kwargs)
@@ -83,6 +83,8 @@ def test_real_service_native_trajectory_and_exact_generated_prefix(tokenizer, tm
             self.calls.append(deepcopy(prompts))
             text = 'Thought: inspect.\nAction: inventory'
             ids = tokenizer.encode(text, add_special_tokens=False)+[tokenizer.eos_token_id]
+            if failure == 'special_tokens':
+                ids = tokenizer.encode('<|im_start|>', add_special_tokens=False)+ids
             return [SimpleNamespace(outputs=[SimpleNamespace(token_ids=ids.copy(),text=text,
                 finish_reason='stop',logprobs=[{t:SimpleNamespace(logprob=-.2)} for t in ids])]) for _ in prompts]
     rollout = make_rollout(vLLMRollout)
@@ -105,7 +107,11 @@ def test_real_service_native_trajectory_and_exact_generated_prefix(tokenizer, tm
             for step, record in enumerate(manager.records[row]):
                 prompt = rollout.inference_engine.calls[step][row]['prompt_token_ids']
                 assert h.input_ids[:record['start']] == prompt
-                assert h.input_ids[record['start']:record['end']] == record['output_ids']
+                assert h.input_ids[record['start']:record['end']] == record['native_response_ids']
+                if failure == 'special_tokens':
+                    assert record['native_response_ids'] != record['output_ids']
+                else:
+                    assert record['native_response_ids'] == record['output_ids']
             torch.testing.assert_close(output.batch['response_mask'][row,:len(h.response_loss_mask)],
                 torch.tensor(h.response_loss_mask,dtype=output.batch['response_mask'].dtype),rtol=0,atol=0)
             assert output.batch['rm_scores'][row].sum().item() == h.score
@@ -126,7 +132,7 @@ def test_real_service_native_trajectory_and_exact_generated_prefix(tokenizer, tm
             for row, slices in enumerate(output.non_tensor_batch['dt_response_slices']):
                 for source, start, length in slices:
                     assert (credit.batch[key][row, start:start+length] == source+1).all()
-        if failure:
+        if failure in ('step', 'reset'):
             assert not output.batch['rm_scores'].any()
             assert all(h.done for h in manager.handlers)
     finally:

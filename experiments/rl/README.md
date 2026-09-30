@@ -12,32 +12,37 @@ SQL GRPO，每组两卡；不再另造预实验参数，只允许资源所需的
 先前本机83项单测保留，覆盖范围见 [LOCAL_TESTING.md](LOCAL_TESTING.md)。
 数值基线按原始官方方法对照回执和源码SHA锁定于
 [verified_runtime.json](verified_runtime.json)，不按目录新旧猜测版本。
-SQL首批正式作业在初始验证的不同宽度奖励拼接处退出，未进入训练更新。现仅将原
-逐行求和移到跨批拼接前，原验证方法两项对照通过。两组于1790725379重新正式启动，
-PID1462106/1462108。TextCraft于1790726161正式启动，PID1758974；三组均LoRA8/16。
-正式首个更新尚未确认，不能称已验收健康。
-运行事实来源为`runs/official-trajectory-20260930-v2/formal-training.json`及各组
-`job.json`，源码已冻结，后续环境开发不热改运行中的入口。以下更早运行结果为历史记录。
-最新入口检查与两组SQL有界验证见环境记录首节。AppWorld、TextCraft的原环境/模型
-入口已有实际服务证据；脚本动作、CPU测试和进程启动不表示四组模型训练已经通过。
-任务仓库的trainer、optimizer和推理server均未启动。
-本次版本、接口对照、SQL保存/恢复结果及尚待处理的长度/预算问题见
-[当前接入回执](results_environment_entry.json)。其中明确区分任务作者整轨迹训练
-与当前固定VERL每回复一行的计算单位，不把两者的更新数混写。
-TextCraft两轮已完成累计8次原optimizer更新并保存step2；成功数15/16、14/16。
-其step1经原恢复入口完成2条官方验证子集，均成功；两组SQL也已完成两轮及原恢复评测。
-这些是有界运行和子集评测结果，不代替此次正式四组的验收。
-AppWorld现已在32768内部预留DT询问/target，通过原客户端控制生成与预算终止；
-不采用33152提议。SQL现调用原SkyRLGymGenerator和原batch converter，一轨迹一训练行；
-正式256组×5条、global minibatch1280、ppo_epochs1，满批一次optimizer更新。
-DT仍按原回复计算，再按原生token位置接回完整轨迹。8项原agent loop对照与25项
-运输/信用接口检查通过；不表示新的DT数值对拍。TextCraft已撤掉自写会话循环，
-直接调用AgentGym-RL原完整generate_sequences、原dataset和RolloutHandler；仅注入
-现有VERL生成接口并记录DT边界。未启动AgentGym训练器/推理服务。原方法AST对照、
-真实服务train/eval、reset/step异常、token前缀/mask/奖励共8项通过，原配置入口8项通过。
-模板使用作者示例的原Qwen2.5模板，模型/词表仍是用户指定Qwen3.5-9B；不混称原Qwen3.5模板。
-正式32组×8条、global mini64、每满批4次更新、30epoch；作者actor实际不循环ppo_epochs。
-AppWorld尚未启动：旧逐轨迹建runner入口须替换为LOOP原固定runner池、收集及取消行为。
+
+## 2026-09-30 19:08 当前接入修复与提交
+
+- AppWorld 已删除逐轨迹创建 runner 的 manager，复用 LOOP 原
+  `ParallelScenarioSampler`、`VLLMRolloutWorker` 的任务队列、线程池、
+  `get_rollouts` 完成阈值和取消流程。两 CPU 环境进程各32 runner；评估原单进程64。
+  新增的可选 completion-client 注入仅连接既有 VERL/vLLM；LOOP trainer/推理服务器不启动。
+- 正式采样200迭代、40组×6请求，完成比例0.9、每组比例0.75；
+  训练轨迹32000、客户端32768内预留DT空间。原VERL global mini32、ppo_epochs2，
+  loss/entropy/dual-clip不改，LoRA8/16。完整轨迹head按资源使用logprob micro1/GPU。
+- AppWorld v3/v4的采样前设备初始化失败已定位：组合LOOP配置时，MetaX原生库
+  在C层写入MACA_VISIBLE_DEVICES=2,3，Python os.environ仍无该键；execv继承了
+  隐藏的两卡掩码，与Ray单卡worker冲突。现在用execve传入显式环境，设备分配仍由Ray负责。
+  v5于1790766209提交，PID1401188、GPU2/3；双worker已通过原失败点、加载模型，
+  两个原LOOP runner池已开始首轮任务。**首个完整DT/PPO更新尚未验收。**
+- SQL-DT PID1374630、SQL-GRPO PID1374677、TextCraft-DT PID1377051于
+  1790766044–1790766062提交，分别GPU0/1、6/7、4/5。源码冻结在v4各任务目录；
+  AppWorld冻结在v5。合并事实来源为
+  `runs/official-trajectory-20260930-v5/formal-training.json`和各作业`job/source/launch.json`。
+  旧v2三组及AppWorld v3/v4的失败日志保留，不把它们当成本次新异常或健康证据。
+- SQL共有左padding裁剪越过response边界的问题已修：保留全部response列和前驱logit，
+  28项CPU索引/输出/梯度对照通过。TextCraft原作者会decode/re-encode再附加EOS，
+  DT现读原作者实际训练token，不再错误要求它与原始生成IDs相等；
+  原状态机、轨迹、mask和奖励不改，10项真实服务train/eval/异常及特殊token检查通过。
+- AppWorld原方法AST、原尾部取消、实际train/eval服务、两进程Gloo采样5项通过，
+  原VERL配置/载体字段2项通过。45项接口测试回执与冻结源散列在
+  `research/temporary/rl_upstream_alignment_20260929/native-trajectory-v5/`。
+  DT数值核心仍锁定c9cd147/fc2e6c2；没有改FA/FLA/PPO公式、容差或增加数值纠偏。
+  这些接口测试不冒充新的GPU数值对拍或正式训练成功。
+
+以下条目是历史记录，不作为当前作业健康证据。
 
 **2026-09-29 现状更正：新端口31091已恢复连接，三组旧训练均已不在运行。**
 原完成检查点标记为 Sokoban 10、WebShop 30、AppWorld 3。Sokoban 报 DT

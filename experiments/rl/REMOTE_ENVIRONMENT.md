@@ -1,5 +1,34 @@
 # 远端环境记录与复用入口
 
+## 2026-09-30 19:08 当前接入修复与提交
+
+- AppWorld 已删除逐轨迹创建 runner 的 manager，复用 LOOP 原
+  `ParallelScenarioSampler`、`VLLMRolloutWorker` 的任务队列、线程池、
+  `get_rollouts` 完成阈值和取消流程。两 CPU 环境进程各32 runner；评估原单进程64。
+  新增的可选 completion-client 注入仅连接既有 VERL/vLLM；LOOP trainer/推理服务器不启动。
+- 正式采样200迭代、40组×6请求，完成比例0.9、每组比例0.75；
+  训练轨迹32000、客户端32768内预留DT空间。原VERL global mini32、ppo_epochs2，
+  loss/entropy/dual-clip不改，LoRA8/16。完整轨迹head按资源使用logprob micro1/GPU。
+- AppWorld v3/v4的采样前设备初始化失败已定位：组合LOOP配置时，MetaX原生库
+  在C层写入MACA_VISIBLE_DEVICES=2,3，Python os.environ仍无该键；execv继承了
+  隐藏的两卡掩码，与Ray单卡worker冲突。现在用execve传入显式环境，设备分配仍由Ray负责。
+  v5于1790766209提交，PID1401188、GPU2/3；双worker已通过原失败点、加载模型，
+  两个原LOOP runner池已开始首轮任务。**首个完整DT/PPO更新尚未验收。**
+- SQL-DT PID1374630、SQL-GRPO PID1374677、TextCraft-DT PID1377051于
+  1790766044–1790766062提交，分别GPU0/1、6/7、4/5。源码冻结在v4各任务目录；
+  AppWorld冻结在v5。合并事实来源为
+  `runs/official-trajectory-20260930-v5/formal-training.json`和各作业`job/source/launch.json`。
+  旧v2三组及AppWorld v3/v4的失败日志保留，不把它们当成本次新异常或健康证据。
+- SQL共有左padding裁剪越过response边界的问题已修：保留全部response列和前驱logit，
+  28项CPU索引/输出/梯度对照通过。TextCraft原作者会decode/re-encode再附加EOS，
+  DT现读原作者实际训练token，不再错误要求它与原始生成IDs相等；
+  原状态机、轨迹、mask和奖励不改，10项真实服务train/eval/异常及特殊token检查通过。
+- AppWorld原方法AST、原尾部取消、实际train/eval服务、两进程Gloo采样5项通过，
+  原VERL配置/载体字段2项通过。45项接口测试回执与冻结源散列在
+  `research/temporary/rl_upstream_alignment_20260929/native-trajectory-v5/`。
+  DT数值核心仍锁定c9cd147/fc2e6c2；没有改FA/FLA/PPO公式、容差或增加数值纠偏。
+  这些接口测试不冒充新的GPU数值对拍或正式训练成功。
+
 ## 2026-09-30 最新：30821恢复，任务只复用官方环境，不引入任务项目的训练/推理栈
 
 - 当前事实更新：旧SQL PID803208/803209均在验证聚合失败退出，不能再视为运行中。

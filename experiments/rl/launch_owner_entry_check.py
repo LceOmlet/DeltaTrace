@@ -13,6 +13,8 @@ from owner_runtime_options import runtime_options, owner_command
 
 
 def options_for(task, data, output):
+    if task == 'AppWorld':
+        raise ValueError('Use launch_appworld_native.py; LOOP owns its full iteration workload')
     root=Path(__file__).resolve().parent
     native=json.loads((root/'owner_environment_configs.json').read_text())[task]
     options={**runtime_options(),
@@ -46,19 +48,6 @@ def options_for(task, data, output):
             '+env.factory._target_':'textcraft_environment_entry.make_textcraft_environments',
             '+env.textcraft':dict(owner_root=os.environ['AGENTGYM_RL_ROOT'],client=a['agentgym'],
                 eval_client=ev['agentgym'],sampling=sampling,eval_sampling=eval_sampling)})
-    else:
-        b=native['generation_boundary_reference']
-        sampling=dict(temperature=b['training_temperature'],max_tokens=b['client']['max_new_tokens'])
-        options.update({
-            # Native LOOP supplies per-request max_tokens against its own cap.
-            # The dataset's ID carrier is never used as an LLM prompt.
-            'data.max_prompt_length':b['max_model_len'],
-            'data.max_response_length':b['client']['max_new_tokens'],
-            'actor_rollout_ref.rollout.prompt_length':b['max_model_len']-b['client']['max_new_tokens'],
-            'env.max_steps':native['training_environment']['appworld_config']['env']['max_interactions'],
-            'env.rollout.n':4,
-            '+env.factory._target_':'loop_environment_entry.make_loop_environments',
-            '+env.loop':dict(owner_root=os.environ['LOOP_ROOT'])})
     options.update({'actor_rollout_ref.rollout.temperature':sampling['temperature'],
         'actor_rollout_ref.rollout.top_p':sampling.get('top_p',1.0)})
     return options,sampling
@@ -66,7 +55,7 @@ def options_for(task, data, output):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--task',choices=['TextCraft','AppWorld'],required=True)
+    p.add_argument('--task',choices=['TextCraft'],required=True)
     p.add_argument('--data',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--config-only',action='store_true')

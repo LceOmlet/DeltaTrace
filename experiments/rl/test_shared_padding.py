@@ -120,6 +120,36 @@ def test_response_head_selection_preserves_decoder_and_active_outputs(monkeypatc
     torch.testing.assert_close(*grads, rtol=0, atol=0)
 
 
+@pytest.mark.parametrize('model_type', [None, 'qwen3_5_text'])
+@pytest.mark.parametrize('head_trim', ['0', '1'])
+def test_left_padded_native_response_keeps_all_columns(monkeypatch, model_type, head_trim):
+    import verl.utils.torch_functional as functional
+    monkeypatch.setattr(functional, 'FLAH_ATTN_CROSS_ENTROPY_LOSS_AVAILABLE', False)
+    monkeypatch.setenv('VERL_TRIM_RESPONSE_HEAD', head_trim)
+    ids = torch.zeros((2, 256), dtype=torch.long)
+    ids[:, -9:] = torch.arange(9) % 8
+    attention = torch.zeros_like(ids)
+    attention[:, -9:] = 1
+    data = dict(input_ids=ids, responses=ids[:, -192:], attention_mask=attention,
+                position_ids=(attention.cumsum(-1)-1).clamp_min(0))
+    model = HeadOnlyModel()
+    model.config = SimpleNamespace(model_type=model_type)
+    actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
+                            use_fused_kernels=False)
+    values, grads = [], []
+    for flag in ['0', '1']:
+        monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', flag)
+        entropy, lp = DataParallelPPOActor._forward_micro_batch(actor, data, 1., True)
+        assert lp.shape == entropy.shape == (2, 192)
+        loss = ((lp+entropy)*attention[:, -192:]).sum()
+        loss.backward()
+        values.append(torch.stack([lp, entropy]))
+        grads.append(model.weight.grad.clone())
+        model.weight.grad = None
+    torch.testing.assert_close(*values, rtol=0, atol=0)
+    torch.testing.assert_close(*grads, rtol=0, atol=0)
+
+
 class GenerationModel(torch.nn.Module):
     def __init__(self):
         super().__init__()

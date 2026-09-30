@@ -8,6 +8,32 @@ import numpy as np
 import torch
 
 
+def native_credit_response_batch(tokenizer, rows):
+    """Pack an owner's exact training-token artifacts for the existing DT API."""
+    from verl import DataProto
+    from verl.utils.torch_functional import postprocess_data, pad_2d_list_to_length
+    from verl.utils.model import compute_position_id_with_mask
+    from agent_system.reward_manager.episode import EpisodeRewardManager
+    if not rows:
+        return None
+    width = max(len(row['prompt_ids']) for row in rows)
+    prompts, masks = zip(*(postprocess_data(torch.tensor([row['prompt_ids']]),
+        torch.ones(1, len(row['prompt_ids']), dtype=torch.long), width,
+        tokenizer.pad_token_id, left_pad=True, truncation='error') for row in rows))
+    prompts, prompt_mask = torch.cat(prompts), torch.cat(masks)
+    responses = pad_2d_list_to_length([row['response_ids'] for row in rows], tokenizer.pad_token_id)
+    response_mask = torch.arange(responses.shape[1])[None, :] < torch.tensor(
+        [len(row['response_ids']) for row in rows])[:, None]
+    attention = torch.cat((prompt_mask, response_mask.long()), -1)
+    metadata = {key: np.array([row[key] for row in rows], dtype=object if key in ('traj_uid', 'data_source') else None)
+                for key in rows[0] if key not in ('prompt_ids', 'response_ids')}
+    result = DataProto.from_dict(tensors=dict(input_ids=torch.cat((prompts, responses), -1),
+        prompts=prompts, responses=responses, attention_mask=attention,
+        position_ids=compute_position_id_with_mask(attention)), non_tensors=metadata)
+    result.batch['token_level_rewards'] = EpisodeRewardManager(tokenizer, 0)(result)
+    return result
+
+
 def sql_trajectory_batch(manager, collector, **collected):
     from verl import DataProto
     from verl.utils.model import compute_position_id_with_mask

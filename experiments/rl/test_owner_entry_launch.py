@@ -13,7 +13,7 @@ from owner_runtime_options import owner_command
 @pytest.mark.parametrize('task,method,phase',[
     ('SkyRL-SQL','dt','bounded'), ('SkyRL-SQL','grpo','bounded'),
     ('SkyRL-SQL','dt','formal'), ('SkyRL-SQL','grpo','formal'),
-    ('TextCraft','dt','bounded'), ('AppWorld','dt','bounded'),
+    ('TextCraft','dt','bounded'),
 ])
 def test_two_rank_config_satisfies_native_validator(task,method,phase,tmp_path):
     if task=='SkyRL-SQL':
@@ -63,3 +63,35 @@ def test_textcraft_formal_owner_workload_and_native_validator(tmp_path):
     assert cfg.trainer.total_epochs == 30 and cfg.env.max_steps == 30
     assert cfg.actor_rollout_ref.actor.use_kl_loss and cfg.actor_rollout_ref.actor.kl_loss_coef == .001
     assert cfg.actor_rollout_ref.model.lora_rank == 8 and cfg.actor_rollout_ref.model.lora_alpha == 16
+
+
+def test_appworld_formal_workload_and_native_validator(tmp_path):
+    from launch_appworld_native import options_for
+    from loop_iteration_dataset import LoopIterationDataset
+    options, _ = options_for(tmp_path)
+    with initialize_config_dir(config_dir=str(Path(os.environ['VERL_ROOT'])/'verl/trainer/config'), version_base=None):
+        cfg = compose(config_name='ppo_trainer', overrides=owner_command(options)[3:])
+    RayPPOTrainer._validate_config(SimpleNamespace(config=cfg, use_reference_policy=False, use_critic=False))
+    assert cfg.data.train_batch_size == 40 and cfg.env.rollout.n == 6
+    assert cfg.actor_rollout_ref.actor.ppo_mini_batch_size == 32
+    assert cfg.actor_rollout_ref.actor.ppo_epochs == 2
+    assert cfg.trainer.total_training_steps == cfg.trainer.total_epochs == 200
+    assert cfg.env.max_steps == 40 and cfg.trainer.test_freq == 5
+    assert cfg.actor_rollout_ref.actor.entropy_coeff == .001
+    assert cfg.actor_rollout_ref.actor.clip_ratio_c == 3.
+    assert cfg.actor_rollout_ref.model.lora_rank == 8 and cfg.actor_rollout_ref.model.lora_alpha == 16
+    tokenizer = SimpleNamespace(eos_token_id=1)
+    assert len(LoopIterationDataset('loop-training', tokenizer, cfg.data)) == 40
+    assert len(LoopIterationDataset('loop-evaluation', tokenizer, cfg.data)) == 57
+
+
+def test_appworld_iteration_carrier_accepts_original_trainer_pop():
+    from loop_iteration_dataset import LoopIterationDataset
+    from verl.utils.dataset.rl_dataset import collate_fn
+    from verl import DataProto
+    cfg = SimpleNamespace(loop_train_groups=40, loop_eval_groups=57)
+    rows = LoopIterationDataset('loop-training', SimpleNamespace(eos_token_id=2), cfg)
+    batch = DataProto.from_single_dict(collate_fn([rows[0], rows[1]]))
+    generated = batch.pop(batch_keys=['input_ids','attention_mask','position_ids'],
+        non_tensor_batch_keys=['raw_prompt_ids','data_source','raw_prompt','env_kwargs'])
+    assert len(generated) == 2
