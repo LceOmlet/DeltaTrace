@@ -1,5 +1,6 @@
 """Read-only deployment snapshot; never imports or launches training code."""
 import json,subprocess
+from pathlib import Path
 from stage_environment_entry import remote, ROOT, ENTRY, AUDIT, REPO, SSH, SCP
 
 remote(r'''set -e
@@ -85,7 +86,34 @@ subprocess.run(SCP+[f'{SSH[-1]}:{ROOT}/receipts/owner-b8-dispatch-20260930/curre
 result=json.loads(target.read_text())
 result['code_repository_commit_at_collection']=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
 result['recording_command']='C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_upstream_alignment_20260929/record_current_runtime.py'
+revision=lambda short:subprocess.check_output(['git','rev-parse',short],cwd=REPO,text=True).strip()
+baseline=json.loads((REPO/'experiments/rl/verified_runtime.json').read_text())
+result['version_mapping']=dict(
+    dt_runtime_release=revision(baseline['runtime_release']),
+    dt_numerical_reference=revision(baseline['dt_reference_revision']),
+    verl_upstream_commit=baseline['verl_owner_commit'],
+    latest_actor_head_resource_fix_commit=revision('dc4e4d7'),
+    version_record_introduced_commit=revision('071b751'),
+    meaning='Deployment directory IDs, upstream commits, DT numerical reference, actor patch commit and documentation commit are distinct identifiers; none substitutes for another',
+    packages=baseline['packages'])
 for job in result['jobs']:
+    # Only label the head with this fix when the actual recorded file digest
+    # agrees. A later runtime change must remain explicit, never be relabeled.
+    expected_files={
+        'verl/utils/experimental/torch_functional.py':'e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de',
+        'verl/models/transformers/monkey_patch.py':'3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693',
+        'verl/models/transformers/qwen3_vl.py':'ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7'}
+    effective={n:job['owner_files'][n]['sha256'] for n in expected_files}
+    for overlay in job['runtime_overrides']:
+        for name,record in overlay['effective_files'].items():
+            for n in expected_files:
+                if name.endswith('/'+n):effective[n]=record['sha256']
+    matches=effective==expected_files
+    job['version_mapping']=dict(startup_deployment_directory=Path(job['entry']).parent.name,
+        actor_head_fix_commit=revision('dc4e4d7') if matches else None,
+        actor_fix_identification='matched actual head, dispatch and original wrapper SHA' if matches else 'unidentified: inspect source, do not assume this patch is active',
+        actor_head_effective_sha256=effective,
+        runtime_overrides_present=bool(job['runtime_overrides']))
     for name,record in job['entry_files'].items():
         p=REPO/'experiments/rl'/name
         if p.is_file():
