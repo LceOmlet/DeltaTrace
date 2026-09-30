@@ -1,12 +1,16 @@
 """Read original live optimizer state at an existing worker RPC boundary."""
+import argparse
 from stage_environment_entry import remote,ROOT,ENTRY
 
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--task',choices=['SkyRL-SQL','AppWorld','TextCraft'],default='TextCraft')
+args=parser.parse_args()
 remote(r'''source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
 from pathlib import Path
 import json,psutil,time,ray
 root=Path('@ROOT@')
-job=next(j for j in json.loads((root/'active-training.json').read_text())['jobs'] if j['task']=='TextCraft')
+job=next(j for j in json.loads((root/'active-training.json').read_text())['jobs'] if j['task']=='@TASK@')
 driver=psutil.Process(job['pid'])
 gcs=next(p for p in driver.children(recursive=True) if p.name()=='gcs_server')
 port=next(a.split('=',1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))
@@ -44,9 +48,10 @@ try:
  result=dict(task=job['task'],driver_pid=driver.pid,driver_created_unix=driver.create_time(),
   scope='Original optimizer state observation only; no weight mutation, numerical threshold, checkpoint or new update',
   workers=ray.get(refs))
- out=root/'receipts/owner-b8-dispatch-20260930/textcraft-formal-optimizer.json'
+ out=root/'receipts/owner-b8-dispatch-20260930'/f"{job['task'].lower()}-optimizer-observed-{int(time.time())}.json"
+ result['receipt_path']=str(out)
  out.write_text(json.dumps(result,indent=2)+'\n')
  print(json.dumps(result,indent=2),flush=True)
 finally:ray.shutdown()
 PY
-'''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY))
+'''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY).replace('@TASK@',args.task))

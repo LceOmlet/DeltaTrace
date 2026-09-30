@@ -144,6 +144,26 @@ CPU测试或负载估算报告为实际提速；后续部署必须另留新启�
 代码SHA、原分区函数SHA、日志路径与测试回执见
 [results_dt_owner_balance.json](results_dt_owner_balance.json)。
 
+### AppWorld 恢复候选：`2036246`（尚未启动）
+
+已冻结`candidates/appworld-balanced-resume-20261001/{entry,verl}`，复用原v6的
+LOOP环境目录；它只供AppWorld使用，不能拿其中历史SQL/TextCraft启动文件启动其他任务。
+新的AppWorld入口已包含每卡B4、LoRA8/16、`dc4e4d7`输出头及`4c0cbdd`原生分区调用。
+原head三个文件与actor文件均与已验证B8候选逐字节相同，DT数值文件匹配固定基线。
+
+`--resume-from`仅转交原VERL的`resume_mode=resume_path`和`resume_from_path`；
+原加载器负责模型、优化器、global step及dataloader，未复制恢复算法。
+指定恢复路径前后的其他配置、采样参数完全相同。原配置/载体/恢复参数3项及
+分发9项CPU测试通过；尚无该候选的实际恢复或提速结果。准备过程没有修改原任务，
+也未改变任何原训练预算、存档频率或运行中的文件。
+源码SHA、原目录和未启动状态见
+[prepared.json](../../research/temporary/rl_upstream_alignment_20260929/appworld-balanced-resume-20261001/prepared.json)。
+
+准备时的第一次`-k appworld`误匹配了父目录名，从而执行了其他任务的历史启动器；
+其中SQL/TextCraft旧micro1断言失败，AppWorld通过。已改为三个明确node ID；原失败
+回执保留在远端`appworld-balanced-resume/launch-cpu-tests-unscoped.xml`，不把它们
+描述为已修复其他任务，也不把本候选当作通用三任务部署。
+
 ### SQL padding 调查（未修改实现）
 
 首批正式采样为1280条轨迹、4850条response、1,385,232个policy token、
@@ -151,7 +171,13 @@ CPU测试或负载估算报告为实际提速；后续部署必须另留新启�
 原`compute_log_prob`，每卡B4；一次采样的`seqlen=20937`、
 `response_length=head_response_length=18220`。这说明输出头仍保留完整response列，
 但该单次栈不能给出整批padding比例或可节省的墙钟时间，不据此承诺提速。
-栈原件在远端`receipts/owner-b8-dispatch-20260930/SkyRL-SQL-1884758-counts.txt`。
+这些单批数值来自当时的工具观察输出；旧`SkyRL-SQL-1884758-counts.txt`是滚动
+计数文件，后来被覆盖，不能再把它当作该时刻的原始栈。现有检查脚本改为按时间保存
+到`receipts/owner-b8-dispatch-20260930/phase-observations/`，优化器观察也使用独立
+时间戳文件，保留首轮原回执。没有修改训练路径。
+
+该阶段后来完成，原trainer记录`old_log_prob=1310.273639176041`秒，已进入DT；
+当前固定栈回执为`phase-observations/1790787928-SkyRL-SQL-1880429-counts.txt`。
 
 已检查原VERL remove-padding路径和当前Transformers Qwen3.5源码。后者的原
 causal-conv接口读取`seq_idx`，原GDN接口读取`cu_seq_lens_q`；不能仅切开关就
