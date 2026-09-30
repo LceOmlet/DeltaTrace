@@ -6,13 +6,14 @@ dual-clip=3），DT Q/V/A 不变。依据用户既定约束，禁止 O(n²) 的�
 不再展开 response × 未来奖励事件。不逐 token 询问，不额外采样参考 token。
 本文件是唯一方法规范；README 只记录实现状态，环境记录只规定复用。
 
-**2026-09-30 当前范围：SkyRL-SQL、TextCraft、AppWorld 三组 DT，另加 SQL GRPO，
-每组两卡。只复用任务作者的环境、数据、采样/评测接口；不引入 SkyRL、
+**2026-09-30 当前范围：按用户最新指令，仅 SkyRL-SQL、TextCraft、AppWorld 三组 DTPO，
+每组两卡，只使用 GPU 0–5；GPU 6/7 的 SQL GRPO 对照组停止，不再提交。
+只复用任务作者的环境、数据、采样/评测接口；不引入 SkyRL、
 AgentGym-RL 或 LOOP 的训练器及推理服务。AppWorld 调用 LOOP f14107a 的训练基准
 环境，不混入历史 VERL AppWorld 奖励。训练由已验证的 VERL-agent / vLLM 承接；
 数值版本以 verified_runtime.json 的官方对照回执、哈希及运行开关为准。
 以下 DT Q/V/A 不变。环境比较、启动、容量检查分别报告，不能代替训练验收。
-Sokoban、WebShop 不属于当前四组。**
+Sokoban、WebShop、SQL GRPO 不属于当前三组。**
 
 **同日最新用户指令优先：本文件只固定信用分配；信用以外使用官方实现与配置，
 不得用旧 PLAN 阻止恢复官方行为。** 原 PPO loss、无效动作惩罚、任务历史窗口、

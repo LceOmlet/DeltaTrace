@@ -4,9 +4,10 @@
 固定官方实现/配置为准，旧 PLAN 不覆盖官方行为。环境复用见
 [REMOTE_ENVIRONMENT.md](REMOTE_ENVIRONMENT.md)；本页只记录实现与测试状态。
 
-**2026-09-30 当前指令：用官方正式参数启动 SQL、AppWorld、TextCraft 三组 DT 和
-SQL GRPO，每组两卡；不再另造预实验参数，只允许资源所需的microbatch调整。**
-用户随后固定四组模型配置为 **LoRA rank=8、alpha=16**；共享入口已更新。
+**2026-09-30 最新指令：仅保留 SQL、AppWorld、TextCraft 三组 DTPO，每组两卡，
+只使用 GPU 0–5。GPU 6/7 的 SQL GRPO 对照组停止，不再提交。
+官方正式参数保持，只允许资源所需的microbatch调整。**
+模型配置固定为 **LoRA rank=8、alpha=16**；共享入口已更新。
 历史rank=1/alpha=2的容量记录仍只描述历史配置，不能冒充当前8/16的实测。
 只复用任务项目的官方环境、数据、奖励、评测及相关配置，不启动其训练器或推理栈。
 先前本机83项单测保留，覆盖范围见 [LOCAL_TESTING.md](LOCAL_TESTING.md)。
@@ -14,6 +15,9 @@ SQL GRPO，每组两卡；不再另造预实验参数，只允许资源所需的
 [verified_runtime.json](verified_runtime.json)，不按目录新旧猜测版本。
 
 ## 2026-09-30 19:08 当前接入修复与提交
+
+以下提交记录中的 SQL GRPO 随后被用户取消；远端 v5 manifest 的 `jobs` 仅列三组
+DTPO，已取消的对照组保存在 `retired_jobs`，不计入当前训练目标。
 
 - AppWorld 已删除逐轨迹创建 runner 的 manager，复用 LOOP 原
   `ParallelScenarioSampler`、`VLLMRolloutWorker` 的任务队列、线程池、

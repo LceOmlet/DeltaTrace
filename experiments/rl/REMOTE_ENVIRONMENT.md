@@ -1,5 +1,12 @@
 # 远端环境记录与复用入口
 
+## 2026-09-30 最新：仅使用前六张卡训练 DTPO
+
+用户取消 GPU 6/7 的 SQL GRPO 对照组，不再重提。仅保留 SQL-DT GPU0/1、
+AppWorld-DT GPU2/3、TextCraft-DT GPU4/5。v5 `formal-training.json` / 根目录
+`active-training.json` 的 `jobs` 只含这三组；取消作业和停止回执保留在 `retired_jobs` / `stop_receipt`。
+以下四组提交记录为取消前事实，不再定义当前目标。
+
 ## 2026-09-30 19:08 当前接入修复与提交
 
 - AppWorld 已删除逐轨迹创建 runner 的 manager，复用 LOOP 原
