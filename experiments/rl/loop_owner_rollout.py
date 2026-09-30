@@ -57,7 +57,7 @@ class LoopOwner:
                 if len(pending) >= maximum:
                     break
                 try:
-                    event = pool.event(block=False)
+                    event = pool.queued_event()
                 except Empty:
                     break
             # The owner cancellation event is authoritative. Do not submit an
@@ -87,7 +87,8 @@ class LoopOwner:
                 pool.replies[rank].put((key, reply))
                 tokens += len(reply.token_ids)
             calls += 1
-            print(f'[loop_transport] calls={calls} requests={len(records)} generated_tokens={tokens} '
+            print(f'[loop_transport] calls={calls} batch_requests={len(requests)} '
+                  f'queued_requests={pool.output.qsize()} requests={len(records)} generated_tokens={tokens} '
                   f'elapsed={time.monotonic()-started:.1f}s completed_ranks={len(results)}', flush=True)
         self.records = records
         rows = []

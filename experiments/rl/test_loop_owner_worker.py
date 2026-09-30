@@ -10,6 +10,39 @@ import pytest
 from omegaconf import OmegaConf
 
 
+def test_transport_receives_already_queued_item_before_feeder_finishes():
+    """Real Queue contract: a counted put need not be available to get_nowait."""
+    import multiprocessing as mp
+    from queue import Empty
+    from threading import Thread, Event
+    from loop_owner_worker import OwnerProcesses
+    serializing, release = Event(), Event()
+    class DelayedItem:
+        def __reduce__(self):
+            serializing.set()
+            assert release.wait(5)
+            return tuple, (('completion', 0, 'request', {'prompt': [1, 2, 3]}),)
+    queue = mp.get_context('spawn').Queue()
+    pool = OwnerProcesses.__new__(OwnerProcesses)
+    pool.output, pool.processes = queue, []
+    try:
+        queue.put(DelayedItem())
+        assert serializing.wait(5)
+        assert queue.qsize() == 1
+        with pytest.raises(Empty):
+            queue.get_nowait()
+        releaser = Thread(target=lambda: (time.sleep(.05), release.set()))
+        releaser.start()
+        assert pool.queued_event() == ('completion', 0, 'request', {'prompt': [1, 2, 3]})
+        releaser.join()
+        with pytest.raises(Empty):
+            pool.queued_event()
+    finally:
+        release.set()
+        queue.close()
+        queue.join_thread()
+
+
 def test_original_scheduler_collection_and_cleanup_are_unchanged():
     from phi_agents.rl import vllm_rollout_worker as owner
     old = ast.parse(Path(os.environ['LOOP_ROLLOUT_BASELINE']).read_text())

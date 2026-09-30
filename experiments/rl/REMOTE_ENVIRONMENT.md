@@ -3,9 +3,20 @@
 ## 2026-09-30 最新：仅使用前六张卡训练 DTPO
 
 用户取消 GPU 6/7 的 SQL GRPO 对照组，不再重提。仅保留 SQL-DT GPU0/1、
-AppWorld-DT GPU2/3、TextCraft-DT GPU4/5。v5 `formal-training.json` / 根目录
+AppWorld-DT GPU2/3、TextCraft-DT GPU4/5。当前 manifest / 根目录
 `active-training.json` 的 `jobs` 只含这三组；取消作业和停止回执保留在 `retired_jobs` / `stop_receipt`。
 以下四组提交记录为取消前事实，不再定义当前目标。
+
+## 2026-09-30 19:35 AppWorld v6
+
+v5 completion队列有60项待接收，而生成批量仅4–7；`get_nowait()`把feeder尚未
+写到管道的已入队对象视为暂时空。现按Queue计数接收已有对象；真实延迟序列化
+回归与官方方法AST检查2项通过。只修改IPC批处理，不改环境/奖励/信用/训练/数值容差。
+v5 AppWorld PID1401188已停止，日志和只读计数证据保留。v6 PID2027456于
+1790768103提交，GPU2/3；SQL和TextCraft原PID继续。当前事实源为根目录
+`active-training.json`及`runs/official-trajectory-20260930-v6/formal-training.json`。
+实际生成批量/吞吐和完整更新仍需新日志确认；冻结源和两项回执见本地
+`research/temporary/rl_upstream_alignment_20260929/native-trajectory-v6/`。
 
 ## 2026-09-30 19:08 当前接入修复与提交
 

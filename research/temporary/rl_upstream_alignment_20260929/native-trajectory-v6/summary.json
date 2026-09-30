@@ -1,0 +1,9 @@
+{
+  "cause": "The shared output Queue counted 60 pending messages while generation requests were delivered in batches of 4-7. get_nowait checks pipe visibility, which need not match counted puts.",
+  "fix": "Receive already-counted output queue messages with the existing blocking Queue.get. No wait for new task requests is introduced.",
+  "tests": "Delayed serialization in a real multiprocessing.Queue: qsize=1, get_nowait raises Empty, repaired receive gets exactly the queued event; original LOOP method AST unchanged. 2 passed.",
+  "scope": "Only CPU completion transport changed. No changes to LOOP sampler/collector/parser/reward/cancellation, DT math, PPO, vLLM kernels or numerical tolerance.",
+  "formal": "Only AppWorld replaced with v6; SQL/TextCraft v4 continue; GRPO cancelled by user. LoRA rank8 alpha16.",
+  "throughput_improvement_verified": false,
+  "formal_update_verified": false
+}

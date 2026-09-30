@@ -14,6 +14,20 @@
 数值基线按原始官方方法对照回执和源码SHA锁定于
 [verified_runtime.json](verified_runtime.json)，不按目录新旧猜测版本。
 
+## 2026-09-30 19:35 AppWorld 请求队列修复
+
+原 v5 生成批量降到4–7，同时父进程与两环境子进程共享的队列计数仍有60项。
+`multiprocessing.Queue.put`先计数、再由feeder写管道，`get_nowait()`可能过早报告空。
+现只改变 completion 传输：有已计数项时调用现成阻塞get收齐，最多仍32项；
+不等待新的任务请求，不改官方采样/环境/取消、DT公式、PPO、vLLM或容差。
+真实Queue延迟序列化回归及官方方法AST检查2项通过。
+
+仅AppWorld重提到v6，PID2027456、GPU2/3，原正式参数和LoRA8/16不变。
+SQL-DT和TextCraft-DT保持v4；GPU6/7已按用户要求释放，不再运行GRPO。
+当前事实入口是根目录`active-training.json`指向的v6 manifest。
+回执位于`research/temporary/rl_upstream_alignment_20260929/native-trajectory-v6/`。
+实际提速与首个完整DT/PPO更新尚未验收，不能把CPU回归当作正式训练成功。
+
 ## 2026-09-30 19:08 当前接入修复与提交
 
 以下提交记录中的 SQL GRPO 随后被用户取消；远端 v5 manifest 的 `jobs` 仅列三组

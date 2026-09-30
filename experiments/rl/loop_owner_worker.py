@@ -167,6 +167,15 @@ class OwnerProcesses:
                 if not block:
                     raise
 
+    def queued_event(self):
+        # multiprocessing.Queue counts a put before its feeder has written the
+        # object to the pipe. get_nowait can therefore report Empty while many
+        # accepted requests are queued. There is one consumer: wait for an
+        # already-counted item, without waiting for a new environment request.
+        if self.output.qsize() == 0:
+            raise Empty
+        return self.event()
+
     def start(self):
         if not self.ready:
             for _ in self.processes:
