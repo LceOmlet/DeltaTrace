@@ -65,27 +65,55 @@
       "scope": "Prior SQL iteration/optimizer/timing evidence belongs to retired PID1876409; not completion evidence for this new process.",
       "native_initial_evaluation_completed": true,
       "current_phase": "first training rollout, interaction 1/6, 1280 trajectories; no new update completed at this observation",
-      "phase_receipt": "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/formal-phase-20261001-0615.json"
+      "phase_receipt": "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/formal-phase-20261001-0615.json",
+      "initial_validation_metric_scope": {
+        "val/spider/test_score": -0.917,
+        "val/success_rate": 0.118,
+        "meaning": "Original VERL success_rate is the unweighted mean of per-loader-batch success rates, not the per-example success fraction over the whole validation set. Do not report 0.118 as aggregate task accuracy. Original behavior retained.",
+        "owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/trainer/ppo/ray_trainer.py",
+        "owner_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+        "owner_lines": [
+          795,
+          806
+        ],
+        "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+        "upstream_lines": [
+          780,
+          791
+        ]
+      }
     }
   },
   "textcraft": {
     "driver_pid": 212110,
-    "completed_formal_iterations": 5,
-    "current_iteration": 6,
+    "completed_formal_iterations": 6,
+    "current_iteration": 7,
     "prior_evidence": "results_textcraft_fourth_update.json",
-    "phase_at_observation": "Both original workers in actor_rollout_update_actor after sixth DT; step6 completion not yet observed",
+    "phase_at_observation": "Sixth native step completed; both original workers have entered generation for the next iteration",
     "latest_completed_metrics": {
-      "critic/score/mean": 0.535,
+      "critic/score/mean": 0.609,
       "actor/grad_norm": 0.0,
-      "timing_s/gen": 2666.679,
-      "timing_s/old_log_prob": 159.294,
-      "timing_s/adv": 1177.208,
-      "timing_s/update_actor": 575.956,
-      "timing_s/step": 4718.347
+      "timing_s/gen": 2490.68,
+      "timing_s/old_log_prob": 159.092,
+      "timing_s/ref": 138.518,
+      "timing_s/adv": 1114.739,
+      "timing_s/update_actor": 574.871,
+      "timing_s/step": 4478.326
     },
-    "latest_step_receipt": "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/textcraft-step5.json",
-    "latest_step_receipt_sha256": "78b9d30fcb3b00c466660fe461d33ce83bb9430d1838cfd828e67e5ffd18eb78",
-    "phase_receipt": "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/formal-phase-20261001-0615.json"
+    "latest_step_receipt": "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/textcraft-step6.json",
+    "latest_step_receipt_sha256": "c8fbcd8ed317ab844e55a17d71b8df596c6b31b885536a3b49941f51f4a98116",
+    "phase_receipt": "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/textcraft-step6.json",
+    "original_adamw_steps_per_rank": [
+      24,
+      24
+    ],
+    "optimizer_moments_finite": true,
+    "nonzero_moment_elements_per_rank": [
+      21639168,
+      21639168
+    ],
+    "optimizer_receipt": "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/textcraft-step6-optimizer.json",
+    "metric_scope": "Console metrics retain original rounding. grad_norm=0.000 is not evidence of zero gradient; optimizer moments were inspected directly. Training score is not held-out evaluation."
   },
   "resources": {
     "observed_unix": 1790799573.9713619,
@@ -117,7 +145,10 @@
     "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/progress-observed.json": "896be4505e0d7d2771e502ac00d20fa112956da81589f6d144f27aa961455492",
     "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/sql-step1-rewards.json": "05dbdbd9d70a8d3973f93ade16700f53e7c931a98941785007cdf689b18d82b7",
     "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/post-update-generation.json": "2c664867f317d63714163acb51cd15c6ee5f20fbc67329d5dbb4895d0ffd52f7",
-    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/formal-phase-20261001-0615.json": "b27e4e3aa9c1aa4eaf51843e0f9854f9ce188018279338229696965624de2ec1"
+    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/formal-phase-20261001-0615.json": "b27e4e3aa9c1aa4eaf51843e0f9854f9ce188018279338229696965624de2ec1",
+    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/textcraft-step6.json": "c8fbcd8ed317ab844e55a17d71b8df596c6b31b885536a3b49941f51f4a98116",
+    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/textcraft-step6-optimizer.json": "75d83915ad8030c714aaa0e6ed46e6a1f111ec4455203e1f81f5d6d718fc9efa"
   },
-  "latest_phase_observed_unix": 1790806468.612554
+  "latest_phase_observed_unix": 1790806468.612554,
+  "latest_textcraft_observed_unix": 1790807001.170958
 }
