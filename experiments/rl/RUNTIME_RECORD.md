@@ -174,6 +174,11 @@ SQL首批原训练分数为1269条−1、8条0、3条1；−1来自原SQL格式�
 实际证据，不能代替本轮尚未完成的actor更新测量。
 来源、完整actor SHA与原计时见[SQL正式padding观察](results_sql_padding_formal.json)。
 
+随后TextCraft原日志确认第5轮完成：整轮4718.347秒，生成2666.679秒、DT1177.208秒、
+原actor更新575.956秒，训练批奖励均值0.535。参数和执行版本未变，没有追加优化器
+状态读取或数值测试；不从批间奖励差异推断效果趋势。原行保存在
+[连续性记录](results_formal_continuity_20261001.json)的最新TextCraft回执中。
+
 ### 新候选 `64e6377`：移除AppWorld运输层的重复限流（未部署）
 
 正式日志反复出现`batch_requests=32 queued_requests=32`。运输层误把每个vLLM
