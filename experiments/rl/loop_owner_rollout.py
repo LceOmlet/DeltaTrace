@@ -41,7 +41,6 @@ class LoopOwner:
         pool = self.processes
         pool.start()
         results, records, pending = {}, {}, []
-        maximum = self.config.actor_rollout_ref.rollout.max_num_seqs
         calls = tokens = 0
         started = time.monotonic()
         while len(results) < len(pool.processes):
@@ -54,8 +53,6 @@ class LoopOwner:
                         pending.append(event)
                     else:
                         raise RuntimeError(f'Unexpected LOOP transport event: {event[0]}')
-                if len(pending) >= maximum:
-                    break
                 try:
                     event = pool.queued_event()
                 except Empty:
@@ -63,7 +60,10 @@ class LoopOwner:
             # The owner cancellation event is authoritative. Do not submit an
             # already-cancelled HTTP-equivalent request to the GPU engine.
             pending = [e for e in pending if not pool.cancellations[e[1]].is_set()]
-            requests, pending = pending[:maximum], pending[maximum:]
+            # max_num_seqs belongs to each vLLM engine, after original VERL
+            # DP dispatch. Submit all already queued owner requests; limiting
+            # the global RPC to one engine's cap halves two-engine occupancy.
+            requests, pending = pending, []
             if not requests:
                 continue
             prompts, options = [], []

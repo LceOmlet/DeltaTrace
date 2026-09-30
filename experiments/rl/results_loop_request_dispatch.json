@@ -1,0 +1,76 @@
+{
+  "status": "tested_candidate_not_deployed",
+  "cause": "Local transport treated the per-engine vLLM max_num_seqs=32 as a global two-worker submission limit. 64 already queued owner requests became two RPCs of 16 per worker.",
+  "change": "Remove only the extra global submission cap. Original LOOP runners/cancellation and native VERL DP split/collect and vLLM scheduling unchanged.",
+  "runtime_base_commit": "f58d8d6c8c072c149497b56908a5d2ed6f407cd8",
+  "changed_source": {
+    "path": "experiments/rl/loop_owner_rollout.py",
+    "sha256": "22ff649007bf6d98584e6ebb1d19f72cd6010d68e6f40ac082418ee50ee0dce5"
+  },
+  "test_source": {
+    "path": "experiments/rl/test_loop_transport_dispatch.py",
+    "sha256": "bbf499afd1b4f922b1c7204e37f729f249081e680156862a3f1a09c15002cd27"
+  },
+  "before_native_dispatch": [
+    [
+      16,
+      16
+    ],
+    [
+      16,
+      16
+    ]
+  ],
+  "after_native_dispatch": [
+    [
+      32,
+      32
+    ]
+  ],
+  "validated_cases": [
+    "64 queued requests",
+    "63 requests with original pad/unpad",
+    "owner rank cancellation",
+    "existing multiprocessing Queue feeder race",
+    "unchanged LOOP sampler/collector/cleanup AST"
+  ],
+  "test_scope": "5 CPU interface tests; no LLM numerical, task reward or speed claim",
+  "formal_before_observation": [
+    {
+      "path": "/tmp/ray/session_2026-10-01_04-02-15_287868_2680224/logs/worker-249c5316748d7b19052d975cc9ac5c8cb95e9c7de91decf93f0744a3-01000000-2685440.out",
+      "line": "[loop_transport] calls=25 batch_requests=32 queued_requests=32 requests=769 generated_tokens=178459 elapsed=2193.6s completed_ranks=0"
+    },
+    {
+      "path": "/tmp/ray/session_2026-10-01_04-02-15_287868_2680224/logs/worker-249c5316748d7b19052d975cc9ac5c8cb95e9c7de91decf93f0744a3-01000000-2685440.out",
+      "line": "[loop_transport] calls=26 batch_requests=32 queued_requests=32 requests=801 generated_tokens=184760 elapsed=2319.5s completed_ranks=0"
+    },
+    {
+      "path": "/tmp/ray/session_2026-10-01_04-02-15_287868_2680224/logs/worker-249c5316748d7b19052d975cc9ac5c8cb95e9c7de91decf93f0744a3-01000000-2685440.out",
+      "line": "[loop_transport] calls=27 batch_requests=32 queued_requests=32 requests=833 generated_tokens=189274 elapsed=2368.0s completed_ranks=0"
+    },
+    {
+      "path": "/tmp/ray/session_2026-10-01_04-02-15_287868_2680224/logs/worker-249c5316748d7b19052d975cc9ac5c8cb95e9c7de91decf93f0744a3-01000000-2685440.out",
+      "line": "[loop_transport] calls=28 batch_requests=32 queued_requests=32 requests=865 generated_tokens=196117 elapsed=2460.6s completed_ranks=0"
+    },
+    {
+      "path": "/tmp/ray/session_2026-10-01_04-02-15_287868_2680224/logs/worker-249c5316748d7b19052d975cc9ac5c8cb95e9c7de91decf93f0744a3-01000000-2685440.out",
+      "line": "[loop_transport] calls=29 batch_requests=32 queued_requests=32 requests=897 generated_tokens=200538 elapsed=2504.4s completed_ranks=0"
+    },
+    {
+      "path": "/tmp/ray/session_2026-10-01_04-02-15_287868_2680224/logs/worker-249c5316748d7b19052d975cc9ac5c8cb95e9c7de91decf93f0744a3-01000000-2685440.out",
+      "line": "[loop_transport] calls=30 batch_requests=32 queued_requests=32 requests=929 generated_tokens=206579 elapsed=2593.6s completed_ranks=0"
+    }
+  ],
+  "receipt": "research/temporary/rl_upstream_alignment_20260929/appworld-request-dispatch-20261001/verified-candidate.json",
+  "receipt_sha256": "731cf2e52d1bfd59f4461fbc7a00067a489f29bec311c3d3870826f61c048316",
+  "deployment": "Current PID2680224 remains on cb00a657de71af5afcf386f0ab520377746172152a61a328af9068d4147da537. Preserve ongoing native trajectories; apply through a separately recorded checkpoint resume, not in-place mutation.",
+  "parameters_unchanged": [
+    "rank=8",
+    "alpha=16",
+    "actor/DT microbatch=4 per GPU",
+    "vLLM max_num_seqs=32 per engine",
+    "original LOOP task budget and completion fractions",
+    "DT Q/V/A and official PPO objective"
+  ],
+  "performance_measurement": "Not yet measured on real generation; eliminating the transport limit does not imply a 2x wall-clock improvement."
+}

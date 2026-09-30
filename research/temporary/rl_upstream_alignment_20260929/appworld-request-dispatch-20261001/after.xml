@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="5" time="10.568" timestamp="2026-10-01T04:52:04.430654+08:00" hostname="224a01103.cloud.a02.sm132"><testcase classname="receipts.owner-b8-dispatch-20260930.appworld-request-dispatch.test_loop_transport_dispatch" name="test_all_queued_owner_requests_reach_original_dp_dispatch[64-None]" time="0.755"><failure message="assert [[16, 16], [16, 16]] == [[32, 32]]&#10;  &#10;  At index 0 diff: [16, 16] != [32, 32]&#10;  Left contains one more item: [16, 16]&#10;  Use -v to get more diff">count = 64, cancel_rank = None
+
+    @pytest.mark.parametrize('count,cancel_rank', [(64, None), (63, None), (64, 0)])
+    def test_all_queued_owner_requests_reach_original_dp_dispatch(count, cancel_rank):
+        class Pool:
+            def __init__(self):
+                self.processes = [object(), object()]
+                self.output = Queue()
+                self.replies = [Queue(), Queue()]
+                self.cancellations = [Event(), Event()]
+                if cancel_rank is not None:
+                    self.cancellations[cancel_rank].set()
+                for i in range(count):
+                    self.output.put(('completion', i % 2, str(i), dict(
+                        prompt=[i+1], model='fixture', stream=False, max_tokens=1500)))
+                for rank in range(2):
+                    self.output.put(('result', rank, ([], [])))
+    
+            def start(self):
+                pass
+    
+            def event(self):
+                return self.output.get(timeout=2)
+    
+            def queued_event(self):
+                return self.output.get_nowait()
+    
+        pool = Pool()
+        observed_options = []
+        def preprocess(carrier, obs):
+            observed_options.extend(obs['sampling_kwargs'])
+            return DataProto.from_dict(tensors=dict(input_ids=torch.tensor(obs['raw_prompt_ids'])))
+    
+        manager = LoopOwner.__new__(LoopOwner)
+        manager.processes = pool
+        manager.config = SimpleNamespace(actor_rollout_ref=SimpleNamespace(
+            rollout=SimpleNamespace(max_num_seqs=32)))
+        manager.tokenizer = SimpleNamespace(eos_token_id=99, pad_token_id=0)
+        manager.to_batch = lambda rows, records: records
+        group = NativeDispatch()
+        records = manager.collect_native_trajectories(
+            SimpleNamespace(preprocess_batch=preprocess), SimpleNamespace(meta_info={}), group, True)
+    
+        active = [i for i in range(count) if i % 2 != cancel_rank]
+        expected_per_rank = (len(active)+1)//2
+&gt;       assert group.calls == [[expected_per_rank, expected_per_rank]]
+E       assert [[16, 16], [16, 16]] == [[32, 32]]
+E         
+E         At index 0 diff: [16, 16] != [32, 32]
+E         Left contains one more item: [16, 16]
+E         Use -v to get more diff
+
+test_loop_transport_dispatch.py:85: AssertionError</failure></testcase><testcase classname="receipts.owner-b8-dispatch-20260930.appworld-request-dispatch.test_loop_transport_dispatch" name="test_all_queued_owner_requests_reach_original_dp_dispatch[63-None]" time="0.005"><failure message="assert [[16, 16], [16, 16]] == [[32, 32]]&#10;  &#10;  At index 0 diff: [16, 16] != [32, 32]&#10;  Left contains one more item: [16, 16]&#10;  Use -v to get more diff">count = 63, cancel_rank = None
+
+    @pytest.mark.parametrize('count,cancel_rank', [(64, None), (63, None), (64, 0)])
+    def test_all_queued_owner_requests_reach_original_dp_dispatch(count, cancel_rank):
+        class Pool:
+            def __init__(self):
+                self.processes = [object(), object()]
+                self.output = Queue()
+                self.replies = [Queue(), Queue()]
+                self.cancellations = [Event(), Event()]
+                if cancel_rank is not None:
+                    self.cancellations[cancel_rank].set()
+                for i in range(count):
+                    self.output.put(('completion', i % 2, str(i), dict(
+                        prompt=[i+1], model='fixture', stream=False, max_tokens=1500)))
+                for rank in range(2):
+                    self.output.put(('result', rank, ([], [])))
+    
+            def start(self):
+                pass
+    
+            def event(self):
+                return self.output.get(timeout=2)
+    
+            def queued_event(self):
+                return self.output.get_nowait()
+    
+        pool = Pool()
+        observed_options = []
+        def preprocess(carrier, obs):
+            observed_options.extend(obs['sampling_kwargs'])
+            return DataProto.from_dict(tensors=dict(input_ids=torch.tensor(obs['raw_prompt_ids'])))
+    
+        manager = LoopOwner.__new__(LoopOwner)
+        manager.processes = pool
+        manager.config = SimpleNamespace(actor_rollout_ref=SimpleNamespace(
+            rollout=SimpleNamespace(max_num_seqs=32)))
+        manager.tokenizer = SimpleNamespace(eos_token_id=99, pad_token_id=0)
+        manager.to_batch = lambda rows, records: records
+        group = NativeDispatch()
+        records = manager.collect_native_trajectories(
+            SimpleNamespace(preprocess_batch=preprocess), SimpleNamespace(meta_info={}), group, True)
+    
+        active = [i for i in range(count) if i % 2 != cancel_rank]
+        expected_per_rank = (len(active)+1)//2
+&gt;       assert group.calls == [[expected_per_rank, expected_per_rank]]
+E       assert [[16, 16], [16, 16]] == [[32, 32]]
+E         
+E         At index 0 diff: [16, 16] != [32, 32]
+E         Left contains one more item: [16, 16]
+E         Use -v to get more diff
+
+test_loop_transport_dispatch.py:85: AssertionError</failure></testcase><testcase classname="receipts.owner-b8-dispatch-20260930.appworld-request-dispatch.test_loop_transport_dispatch" name="test_all_queued_owner_requests_reach_original_dp_dispatch[64-0]" time="0.003"><failure message="assert [[8, 8], [8, 8]] == [[16, 16]]&#10;  &#10;  At index 0 diff: [8, 8] != [16, 16]&#10;  Left contains one more item: [8, 8]&#10;  Use -v to get more diff">count = 64, cancel_rank = 0
+
+    @pytest.mark.parametrize('count,cancel_rank', [(64, None), (63, None), (64, 0)])
+    def test_all_queued_owner_requests_reach_original_dp_dispatch(count, cancel_rank):
+        class Pool:
+            def __init__(self):
+                self.processes = [object(), object()]
+                self.output = Queue()
+                self.replies = [Queue(), Queue()]
+                self.cancellations = [Event(), Event()]
+                if cancel_rank is not None:
+                    self.cancellations[cancel_rank].set()
+                for i in range(count):
+                    self.output.put(('completion', i % 2, str(i), dict(
+                        prompt=[i+1], model='fixture', stream=False, max_tokens=1500)))
+                for rank in range(2):
+                    self.output.put(('result', rank, ([], [])))
+    
+            def start(self):
+                pass
+    
+            def event(self):
+                return self.output.get(timeout=2)
+    
+            def queued_event(self):
+                return self.output.get_nowait()
+    
+        pool = Pool()
+        observed_options = []
+        def preprocess(carrier, obs):
+            observed_options.extend(obs['sampling_kwargs'])
+            return DataProto.from_dict(tensors=dict(input_ids=torch.tensor(obs['raw_prompt_ids'])))
+    
+        manager = LoopOwner.__new__(LoopOwner)
+        manager.processes = pool
+        manager.config = SimpleNamespace(actor_rollout_ref=SimpleNamespace(
+            rollout=SimpleNamespace(max_num_seqs=32)))
+        manager.tokenizer = SimpleNamespace(eos_token_id=99, pad_token_id=0)
+        manager.to_batch = lambda rows, records: records
+        group = NativeDispatch()
+        records = manager.collect_native_trajectories(
+            SimpleNamespace(preprocess_batch=preprocess), SimpleNamespace(meta_info={}), group, True)
+    
+        active = [i for i in range(count) if i % 2 != cancel_rank]
+        expected_per_rank = (len(active)+1)//2
+&gt;       assert group.calls == [[expected_per_rank, expected_per_rank]]
+E       assert [[8, 8], [8, 8]] == [[16, 16]]
+E         
+E         At index 0 diff: [8, 8] != [16, 16]
+E         Left contains one more item: [8, 8]
+E         Use -v to get more diff
+
+test_loop_transport_dispatch.py:85: AssertionError</failure></testcase><testcase classname="candidates.appworld-balanced-padding-resume-20261001.entry.test_loop_owner_worker" name="test_transport_receives_already_queued_item_before_feeder_finishes" time="0.054" /><testcase classname="candidates.appworld-balanced-padding-resume-20261001.entry.test_loop_owner_worker" name="test_original_scheduler_collection_and_cleanup_are_unchanged" time="0.026"><failure message="ModuleNotFoundError: No module named 'cattrs'">def test_original_scheduler_collection_and_cleanup_are_unchanged():
+&gt;       from phi_agents.rl import vllm_rollout_worker as owner
+
+../../../candidates/appworld-balanced-padding-resume-20261001/entry/test_loop_owner_worker.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/vllm_rollout_worker.py:25: in &lt;module&gt;
+    from phi_agents.rl.type_defs import Scenario, ScenarioRunner, TrainingRollout
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #
+    # For licensing see accompanying LICENSE file.
+    # Copyright (C) 2025 Apple Inc. All Rights Reserved.
+    #
+    
+    from __future__ import annotations
+    
+    import datetime
+    import importlib
+    import json
+    from abc import ABC, abstractmethod
+    from dataclasses import asdict, dataclass, field
+    from itertools import chain
+    from typing import TYPE_CHECKING, Any, cast
+    
+&gt;   import cattrs
+E   ModuleNotFoundError: No module named 'cattrs'
+
+../../../runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/type_defs.py:16: ModuleNotFoundError</failure></testcase></testsuite></testsuites>
