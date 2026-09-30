@@ -275,11 +275,15 @@ actor换成已对照的padding版本，并保存其对应补丁和测试；不�
 共46项通过：3项AppWorld配置/载体/恢复参数、9项DT运输、34项padding接口。
 这是组成和接口验证；未声称该候选已恢复检查点或已测得正式训练提速。
 
-SQL另有`apply_sql_padding_at_update_boundary.py`准备脚本，当前未执行、未排队。
-它存在不等于已应用。后续若执行，以原worker完成回执
+SQL的`apply_sql_padding_at_update_boundary.py`已于北京时间2026-10-01 03:17提交，
+排在首轮原`update_actor`后；提交时两rank仍在该调用内。
+[原提交回执](../../research/temporary/rl_upstream_alignment_20260929/sql-padding-live-20261001/submitted.json)
+记录提交代码`a01c43c`、脚本SHA、原worker PID和候选SHA。
+当前尚未收到完成回执，不能称已应用。生效仍以原worker完成回执
 `actor-response-padding/sql-live/complete.json`中两个rank的实际PID、源路径、SHA及
 应用时原优化器步数为准，不能把`submitted.json`或本机提交号当成完成证明。
-本次只读记录已能收集该完成回执；不存在时不会将候选标成当前运行代码。
+只读记录分别收集待完成提交和完成回执；只有提交时不会将候选标成当前运行代码。
+提交记录也不代替进程健康检查。当前提交进程及其原RPC等待已用实际调用栈确认。
 
 ## 尚未被证明的结论
 
@@ -302,7 +306,9 @@ actor574.862、old_log_prob159.042、reference138.419秒，训练批奖励均值
 
 SQL已完成首轮DT并进入原`update_actor`反向，来源为
 `phase-observations/1790794409-SkyRL-SQL-1884758-counts.txt`；更新尚未完成。
-AppWorld首个正式更新、当前正式检查点与更长连续性仍待实际日志确认。
+2026-10-01 03:17：AppWorld六个DT回报类别组均已完成并进入原`update_actor`；
+TextCraft进入第四轮DT。SQL和AppWorld首个完整更新、当前正式检查点与更长连续性
+仍待实际日志确认。已在原AppWorld worker队列提交只读优化器观察，未重跑训练测试。
 B8夹具证明固定参数下的原更新容量，head原容差证明对应算子范围；两者都不能代替
 正式任务收益或整条DT训练数值准确性。暂停期间计入的历史elapsed不用于估算当前吞吐。
 

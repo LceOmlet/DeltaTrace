@@ -40,6 +40,17 @@ for j in active['jobs']:
         'verl/utils/experimental/torch_functional.py','verl/models/transformers/monkey_patch.py',
         'verl/models/transformers/qwen3_vl.py','verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py']}
     rec['runtime_overrides']=[]
+    rec['pending_runtime_operations']=[]
+    if j['task']=='SkyRL-SQL':
+        submitted=out/'actor-response-padding/sql-live/submitted.json'
+        completed=submitted.with_name('complete.json')
+        if submitted.is_file() and not completed.is_file():
+            operation=read(submitted)
+            if (operation['driver_pid']==j['pid'] and
+                    operation['driver_created_unix']==rec['process'].get('created_unix')):
+                rec['pending_runtime_operations'].append(dict(receipt=artifact(submitted),
+                    operation=operation,
+                    meaning='Submission exists without completion receipt; not an effective code override or proof the submitting process is still alive'))
     # These are completed original worker RPC receipts, not new live imports.
     override_paths=[root/'receipts/owner-entropy-20260930'/f"live-{j['task']}-complete.json",
                     out/f"live-{j['task']}-complete.json"]
