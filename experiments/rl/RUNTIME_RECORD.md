@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-部署核对于北京时间2026-10-01 05:05；精确采集时间见
+部署核对于北京时间2026-10-01 05:25；精确采集时间见
 [current_runtime.json](current_runtime.json)。阶段会继续推进；本文件记录该次核对结果。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -16,8 +16,8 @@
 替代的旧版本”对应记录。已验证、已准备、已部署和已退役分别标明；未提交完成回执
 的运行时修改不计入生效版本。原回执和冻结源码保留，不靠目录名或日期推断。
 
-04:39只读复核：三组PID及创建时间、冻结entry、启动owner文件、已完成覆盖的
-文件SHA，以及固定DT/FLA/平台补丁均与各自回执相符。SQL两rank的actor为
+05:25只读复核：三组PID及创建时间、每组68个冻结entry文件、启动owner文件、
+已完成覆盖的文件SHA，以及固定DT/FLA/平台补丁均与各自回执相符。SQL两rank的actor为
 `1f862e8bbdaa…`，AppWorld启动actor相同，TextCraft仍为`2b80b938fee4…`。
 本次只刷新版本记录，没有更换训练代码或重跑数值测试；版本吻合不扩大原测试覆盖。
 
@@ -148,8 +148,8 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
   `global_step_1`检查点及完成标记存在。旧作业已在该边界停止。新PID2680224原日志
   明确记载恢复路径、global_step=1及后续生成；尚未完成新版本的一整轮更新，
   不把成功恢复说成已测得完整提速。旧首轮29969.050秒属于此前运行过程。
-- TextCraft已完成4个正式迭代并进入第5轮生成；第4轮4753.725秒、训练奖励均值0.633，
-  见[原记录](results_textcraft_fourth_update.json)。它仍使用上表旧actor和旧DT分发。
+- TextCraft已完成5个正式迭代并进入第6轮生成；第5轮4718.347秒、训练奖励均值0.535，
+  见[连续性记录](results_formal_continuity_20261001.json)。它仍使用上表旧actor和旧DT分发。
 
 原训练日志的`rollout_probs_diff_*`使用response attention mask，会包含观测位置；
 运输接口在这些非action位置的rollout_log_probs填0。这些原指标不能当作仅policy token
