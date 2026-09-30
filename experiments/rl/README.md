@@ -6,13 +6,28 @@
 
 **2026-09-30 最新指令：仅保留 SQL、AppWorld、TextCraft 三组 DTPO，每组两卡，
 只使用 GPU 0–5。GPU 6/7 的 SQL GRPO 对照组停止，不再提交。
-官方正式参数保持，只允许资源所需的microbatch调整。**
+官方正式参数保持；实际actor/DT每卡microbatch=4、双卡容量B8已固定。**
 模型配置固定为 **LoRA rank=8、alpha=16**；共享入口已更新。
 历史rank=1/alpha=2的容量记录仍只描述历史配置，不能冒充当前8/16的实测。
 只复用任务项目的官方环境、数据、奖励、评测及相关配置，不启动其训练器或推理栈。
 先前本机83项单测保留，覆盖范围见 [LOCAL_TESTING.md](LOCAL_TESTING.md)。
 数值基线按原始官方方法对照回执和源码SHA锁定于
 [verified_runtime.json](verified_runtime.json)，不按目录新旧猜测版本。
+
+## 当前版本与修复入口
+
+当前运行代码的组成、各次修复及证据统一看 [RUNTIME_RECORD.md](RUNTIME_RECORD.md)。
+可核对的部署快照为 [current_runtime.json](current_runtime.json)；它记录采集时间，
+后续实时PID和版本仍以远端根目录的 `active-training.json` / `active-source.json` 为准。
+`verified_runtime.json` 是数值基线，不能单独代表当前全部接入代码。
+
+当前代码修复提交为 `dc4e4d7`：SQL v8；AppWorld v6、TextCraft v7加已完成的
+原worker RPC修复。后两组的冻结启动命令仍记录旧microbatch1，**禁止直接按旧命令重启**。
+运行中实际每卡4、LoRA8/16，B8×32768原更新已通过；三组首个正式更新仍待确认。
+这里只记录状态，不新增信用方案。
+
+<details>
+<summary>历史记录（其中“当前”“最新”、旧PID和旧microbatch均指当时，不作为启动依据）</summary>
 
 ## 2026-09-30 19:35 AppWorld 请求队列修复
 
@@ -875,3 +890,5 @@ restore --verify；检查点还逐文件核对源端/恢复端 SHA256。只选�
 
 实际累计长度、DT 调用次数、首轮/后续时间及显存必须来自新日志；不将配置上限
 当作真实任务长度，不将所有非零 reward 项的多个 DT 调用报告为一次。
+
+</details>
