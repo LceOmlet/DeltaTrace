@@ -30,7 +30,9 @@ for j in active['jobs']:
         'submission_repository_commit','submission_script_sha256','prepared_receipt',
         'prepared_receipt_sha256','prior_driver_pid','resume_from','completed_checkpoint_marker',
         'actor_fix_commit','dt_dispatch_commit','resume_entry_commit','actor_padding_sha256',
-        'padding_comparison_receipt','padding_comparison_receipt_sha256'] if k in source}
+        'padding_comparison_receipt','padding_comparison_receipt_sha256',
+        'completed_overlay_receipt','completed_overlay_sha256',
+        'prior_source_receipt','prior_source_sha256','inherited_field_correction'] if k in source}
     rec['native_training_workload']=[]
     if psutil.pid_exists(j['pid']):
         proc=psutil.Process(j['pid']);rec['process']=dict(alive=proc.is_running(),created_unix=proc.create_time(),

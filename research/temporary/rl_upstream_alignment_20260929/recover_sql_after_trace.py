@@ -55,6 +55,7 @@ changed=[n for n,h in owner_hash.items() if h!=sha(old_verl/n)]
 assert changed==['verl/workers/actor/dp_actor.py'],changed
 output=base/'sql-dt';output.mkdir()
 source=dict(prior_source,unix=time.time(),entry_sha256=entry_hash,verl_root=str(verl),verl_sha256=owner_hash,
+    numerical_override={name:sha(verl/name) for name in prior_source.get('numerical_override',{})},
     submission_repository_commit=@REVISION@,submission_script_sha256=@SCRIPT_SHA@,
     prior_driver_pid=old['pid'],prior_source_receipt=old['source_receipt'],prior_source_sha256=sha(Path(old['source_receipt'])),
     completed_overlay_receipt=str(overlay_path),completed_overlay_sha256=sha(overlay_path),

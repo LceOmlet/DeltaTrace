@@ -1,25 +1,24 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-部署核对于北京时间2026-10-01 05:25；精确采集时间见
+部署核对于北京时间2026-10-01 05:48；精确采集时间见
 [current_runtime.json](current_runtime.json)。阶段会继续推进；本文件记录该次核对结果。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
 输出头/B4修复`dc4e4d7`。完整40位提交号和文件SHA保存在快照；记录文档的Git提交
 不是新的算法版本，也不表示远端执行了该提交的全部文件。
 
-本次三组冻结entry、固定DT/FLA和平台补丁均匹配原SHA。SQL已收到两rank的padding
-应用完成回执；AppWorld已从旧作业step1恢复到新冻结入口；TextCraft仍为原入口加
+SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际生效的padding版本
+冻结重启；没有可恢复的正式检查点。AppWorld已从旧作业step1恢复到新冻结入口；TextCraft仍为原入口加
 已完成的B4 head覆盖。**三个任务的实际代码组合并不相同**，具体见下表。
 
 每项修复按“代码提交 → 实际文件SHA → 原测试及适用范围 → 部署路径/PID/时间 →
 替代的旧版本”对应记录。已验证、已准备、已部署和已退役分别标明；未提交完成回执
 的运行时修改不计入生效版本。原回执和冻结源码保留，不靠目录名或日期推断。
 
-05:25只读复核：三组PID及创建时间、每组68个冻结entry文件、启动owner文件、
-已完成覆盖的文件SHA，以及固定DT/FLA/平台补丁均与各自回执相符。SQL两rank的actor为
-`1f862e8bbdaa…`，AppWorld启动actor相同，TextCraft仍为`2b80b938fee4…`。
-本次只刷新版本记录，没有更换训练代码或重跑数值测试；版本吻合不扩大原测试覆盖。
+05:25的原只读复核没有发现源码漂移。05:39发生的SQL采样事故与随后重启单独记录：
+SQL新冻结actor仍为`1f862e8bbdaa…`，AppWorld启动actor相同，TextCraft仍为
+`2b80b938fee4…`。不能把旧SQL的完成步数带到新进程；没有重跑数值测试。
 
 ## 哪份记录回答哪个问题
 
@@ -56,7 +55,7 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 | 作业 | 当前PID / GPU | 实际执行的版本 | 生效边界与旧版本 |
 | --- | --- | --- | --- |
-| SQL-DT | 1876409 / 0,1 | 启动entry=`runs/official-trajectory-20260930-v8/sql-entry`；VERL为SQL v8；当前actor forward为`candidates/official-verl-20bd331-response-padding-20261001/verl/workers/actor/dp_actor.py`，SHA `1f862e8bbdaa…` | 首轮使用SHA `2b80b938fee4…`完成；04:02两rank在原update_actor结束后应用新forward，原AdamW步数均1。模型/优化器保留。旧冻结启动目录没有包含此覆盖，不能直接重放它当作最新版本 |
+| SQL-DT | 552842 / 0,1 | entry=`runs/sql-padding-restart-20261001/sql-entry`；VERL=`candidates/official-verl-20bd331-sql-padding-20261001`；actor SHA `1f862e8bbdaa…` | 05:44以`bc68687`恢复脚本启动。旧PID1876409在mcTracer退出附加采样后终止，无正式检查点；原第1轮内存更新丢失。新目录冻结旧进程已生效的padding覆盖，任务参数与初始评估未改，尚无新完成更新 |
 | AppWorld-DT | 2680224 / 2,3 | `candidates/appworld-balanced-padding-resume-20261001/{entry,verl}`；head `dc4e4d7`、分发 `4c0cbdd`、恢复入口 `2036246`、actor SHA `1f862e8bbdaa…` | 04:01以提交助手`1ac9323`启动；提交时本机HEAD `6a076ec`。旧PID2027456在完成step1检查点后停止；原VERL已确认恢复global_step1并开始生成 |
 | TextCraft-DT | 212110 / 4,5 | entry/VERL仍为v7；actor SHA `2b80b938fee4…`；head来自`candidates/official-verl-20bd331-fused-head-b4-20260930`的已完成PID绑定回执 | 尚未部署padding和DT分发候选。冻结v7启动命令仍是旧microbatch1，不能直接按旧命令重启 |
 
@@ -73,7 +72,7 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 本次原回执内容、远端文件SHA及实际日志统一保存在
 [部署转换记录](../../research/temporary/rl_upstream_alignment_20260929/deployment-transitions-20261001/observed.json)。
 
-当前没有待完成的SQL padding操作；不重复提交该RPC。旧AppWorld仅分发修复候选
+当前SQL padding已写入新冻结owner，不再依靠旧PID的RPC覆盖；不重复提交该RPC。旧AppWorld仅分发修复候选
 `appworld-balanced-resume-20261001`从未启动，已被当前组合候选替代，不能误用。
 
 ### 原trainer实际计算的训练规模
@@ -101,6 +100,24 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 ## 修复账本
 
+### 2026-10-01 05:39 SQL采样事故
+
+对SQL rank1使用MetaX `mcTracer --attach`，05:39:18发送其官方停止指令Ctrl+T，
+05:39:33工具完成输出后该worker退出，Ray随后结束整个SQL作业。没有捕获到DT
+非有限值异常；容器`oom_kill=0`、`memory.failcnt=0`。具体底层退出原因未确定，
+按与本次采样相关的事故处理，不归咎于DT数值或PPO。**不再向正式worker附加mcTracer。**
+
+旧SQL已完成1轮，但原`save_freq=60`尚未产生检查点；第2轮DT到219/572批。
+首轮内存中的模型/优化器更新无法恢复。05:44使用原正式入口重新启动，保留初始
+验证、预算、LoRA8/16、每卡4及全部原训练选项；只将已在旧worker生效的actor
+`1f862e8bbdaa…`写入新冻结owner。原68个entry文件未变；原生launch选项逐项比较，
+除部署/输出路径迁移外一致。AppWorld、TextCraft没有重启或改动。
+
+原日志片段、工具/trace SHA、退出与新PID对应关系见
+[事故回执](../../research/temporary/rl_upstream_alignment_20260929/sql-native-trace-incident-20261001/sql-native-trace-incident.json)。
+该记录不是训练通过回执。新source中继承的旧`numerical_override`重复字段已按实际
+新owner同步，修正前文件及SHA另存，执行代码和参数没有因此改变。
+
 每条区分“修复代码”“部署位置”和“证据覆盖”；没有部署回执不能从提交推断已生效。
 下表保留三任务接入及其依赖的历史修复链；行中的部署位置描述修复当时，当前适用范围以上方三组表和快照为准。
 
@@ -124,7 +141,7 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 1. 先读远端当前manifest，并用PID创建时间确认身份。终止/超时/旧日志不能混作新作业状态。
 2. 不覆盖冻结运行目录。AppWorld使用当前balanced-padding冻结入口及原恢复参数；
-   SQL/TextCraft启动后有PID绑定覆盖，不能直接重放旧冻结命令遗漏它们。确需重启时
+   SQL使用新冻结padding入口；TextCraft启动后有PID绑定覆盖，不能直接重放旧冻结命令遗漏它们。确需重启时
    将已验证的实际组成冻结到新目录，沿用原入口、预算、检查点，并另留部署回执。
 3. 保持每卡actor/DT4、LoRA8/16；任务global minibatch及PPO epochs按原配置。
    B8是双卡实际microbatch总数，不是把SQL1280、TextCraft64或AppWorld32的global minibatch改成8。
@@ -141,9 +158,10 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 ## 本次训练证据与版本边界
 
-- SQL首轮原更新完成，两rank原AdamW步数均1、状态有限且非零；随后的padding
+- 旧SQL首轮原更新完成，两rank原AdamW步数均1、状态有限且非零；随后的padding
   覆盖完成，原TaskRunner已进入下一轮采样。首轮日志16142.743秒（4.48小时），
   其中actor4758.024秒；**这些耗时属于旧actor，不能用来判断新padding版本的速度**。
+  该作业已因下述采样事故退出，无正式检查点；新PID552842从原模型重启，不继承此步数。
 - AppWorld旧作业首轮完成，两rank各14次原AdamW更新，状态有限且非零，原
   `global_step_1`检查点及完成标记存在。旧作业已在该边界停止。新PID2680224原日志
   明确记载恢复路径、global_step=1及后续生成；尚未完成新版本的一整轮更新，

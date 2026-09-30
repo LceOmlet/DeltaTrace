@@ -1,0 +1,96 @@
+{
+  "observed_unix": 1790804826.7977831,
+  "event": "SQL worker exit immediately after live native mcTracer detach",
+  "classification": "Profiler-related runtime incident suspected from timing. Lower-level exit cause not established; do not label DT numerical failure or OOM.",
+  "old_driver_pid": 1876409,
+  "exited_worker_pid": 1886413,
+  "old_completed_formal_iterations": 1,
+  "unfinished_iteration": 2,
+  "last_completed_dt_batch_per_rank": 219,
+  "dt_planned_batches_per_rank": 572,
+  "completed_formal_checkpoint_exists": false,
+  "lost_in_memory_formal_updates": 1,
+  "tracer": {
+    "path": "/opt/maca/bin/mcTracer",
+    "version": "3.5.3.26-ef9e10e",
+    "sha256": "aef5aa158533a3e6ff2bf66cb09a5c3196d7e9212aa4f3b40451745ccfc99f50",
+    "first_attempt": "Absolute --odname was treated as relative and failed to create its output directory; no training code change.",
+    "attach_started_local": "2026-10-01 05:38:47",
+    "ctrl_t_received_local": "2026-10-01 05:39:18",
+    "trace_flushed_local": "2026-10-01 05:39:33",
+    "target_pid": 1886413,
+    "trace_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/phase-observations/sql-dt-native-trace-1790804010/rank1-1886413.json",
+    "trace_sha256": "bd5a96d9a608b28dc84117893d197df52a1782060476630fc506d2f691bd189d",
+    "trace_bytes": 661432668,
+    "restriction": "Do not attach mcTracer to production training workers again. Keep this failed-run evidence, not a success or tolerance receipt."
+  },
+  "cgroup_oom_control": "oom_kill_disable 0\nunder_oom 0\noom_kill 0\n",
+  "cgroup_memory_failcnt": "0\n",
+  "original_log_excerpts": {
+    "/tmp/ray/session_2026-09-30_23-03-56_866178_1876409/logs/gcs_server.out": [
+      "[2026-10-01 05:39:33,605 W 1878434 1878434] (gcs_server) gcs_worker_manager.cc:58: Reporting worker exit, worker id = eeb745afe9e40fa46a2ca8786b71c55a0b2c783e8e2389d3ca3891d3, node id = 64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee, address = 10.200.111.35, exit_type = SYSTEM_ERROR, exit_detail = Worker unexpectedly exits with a connection error code 2. End of file. Some common causes include: (1) the process was killed by the OOM killer due to high memory usage, (2) ray stop --force was called, or (3) the worker crashed unexpectedly due to SIGSEGV or another unexpected error.. Unintentional worker failures have been reported. If there are lots of this logs, that might indicate there are unexpected failures in the cluster.",
+      "[2026-10-01 05:39:33,605 W 1878434 1878434] (gcs_server) gcs_actor_manager.cc:1211: Worker eeb745afe9e40fa46a2ca8786b71c55a0b2c783e8e2389d3ca3891d3 on node 64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee exits, type=SYSTEM_ERROR, has creation_task_exception = 0 worker_id=eeb745afe9e40fa46a2ca8786b71c55a0b2c783e8e2389d3ca3891d3",
+      "[2026-10-01 05:39:33,605 I 1878434 1878434] (gcs_server) gcs_actor_manager.cc:1491: Actor is failed on worker eeb745afe9e40fa46a2ca8786b71c55a0b2c783e8e2389d3ca3891d3 at node 64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee, need_reschedule = 1, death context type = ActorDiedErrorContext, remaining_restarts = 0, num_restarts = 0, num_restarts_due_to_node_preemption = 0, preempted = 0 job_id=01000000 actor_id=080ea1a2853b3dd625be1a2001000000",
+      "[2026-10-01 05:39:35,365 I 1878434 1878434] (gcs_server) gcs_actor_manager.cc:1491: Actor is failed on worker e36b334fcf8d9992ef11fb7794e8ef520c7a6e8f82edf22741541a68 at node 64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee, need_reschedule = 1, death context type = ActorDiedErrorContext, remaining_restarts = 0, num_restarts = 0, num_restarts_due_to_node_preemption = 0, preempted = 0 job_id=01000000 actor_id=5f374e74fa038f4902d65ada01000000",
+      "[2026-10-01 05:39:35,404 I 1878434 1878434] (gcs_server) gcs_actor_manager.cc:1845: Node with actor is already dead, return status: Invalid: KillActor RPC failed for actor ac97d987f4a8ae9d35ccc42601000000: RpcError: RPC error: Socket closed rpc_code: 14 actor_id=ac97d987f4a8ae9d35ccc42601000000 node_id=64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee",
+      "[2026-10-01 05:39:35,464 I 1878434 1878434] (gcs_server) gcs_placement_group_manager.cc:684: Node is dead, rescheduling the placement groups on the dead node. node_id=64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee",
+      "[2026-10-01 05:39:35,464 I 1878434 1878434] (gcs_server) gcs_job_manager.cc:489: Node is dead, marking all jobs with drivers on this node as finished. node_id=64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee",
+      "[2026-10-01 05:39:35,698 I 1878434 1878434] (gcs_server) gcs_actor_manager.cc:1845: Node with actor is already dead, return status: RpcError: RPC error: Cancelling all calls rpc_code: 14 actor_id=85576a7c64d0e1323d31eded01000000 node_id=64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee",
+      "[2026-10-01 05:39:35,722 I 1878434 1878459] (gcs_server) ray_syncer.cc:253: Connection is broken. node_id=64c7984475ef3981e59cad16f6c294aa61cf526a123de6a58ca3feee"
+    ],
+    "/tmp/ray/session_2026-09-30_23-03-56_866178_1876409/logs/raylet.out": [
+      "[2026-10-01 05:39:33,604 W 1879126 1879149] (raylet) store.cc:365: Disconnecting client due to connection error with code 2: End of file",
+      "[2026-10-01 05:39:33,604 I 1879126 1879126] (raylet) node_manager.cc:1409: Disconnecting worker, graceful=false, disconnect_type=0, has_creation_task_exception=false worker_id=eeb745afe9e40fa46a2ca8786b71c55a0b2c783e8e2389d3ca3891d3 job_id=01000000",
+      "[2026-10-01 05:39:35,363 I 1879126 1879126] (raylet) node_manager.cc:1416: Disconnecting driver, graceful=true, disconnect_type=3 worker_id=01000000ffffffffffffffffffffffffffffffffffffffffffffffff job_id=01000000",
+      "[2026-10-01 05:39:35,363 I 1879126 1879126] (raylet) node_manager.cc:1545: Driver (pid=1876409) is disconnected. worker_id=01000000ffffffffffffffffffffffffffffffffffffffffffffffff job_id=01000000",
+      "[2026-10-01 05:39:35,364 I 1879126 1879126] (raylet) node_manager.cc:979: Killing leased worker because its owner died. worker_id=ad5f604b533c07666ab5feb8a2df59bbc2b6d056a8755925f0ec8020 owner_worker_id=01000000ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "[2026-10-01 05:39:35,364 I 1879126 1879126] (raylet) node_manager.cc:1409: Disconnecting worker, graceful=false, disconnect_type=1, has_creation_task_exception=false worker_id=e36b334fcf8d9992ef11fb7794e8ef520c7a6e8f82edf22741541a68 job_id=01000000",
+      "[2026-10-01 05:39:35,365 I 1879126 1879126] (raylet) node_manager.cc:1420: Got disconnect message from an unregistered client, ignoring.",
+      "[2026-10-01 05:39:35,366 I 1879126 1879126] (raylet) node_manager.cc:979: Killing leased worker because its owner died. worker_id=df7d762e6cd05b315a0738545253719ddb8d1fa9660809c543a22bce owner_worker_id=e36b334fcf8d9992ef11fb7794e8ef520c7a6e8f82edf22741541a68",
+      "[2026-10-01 05:39:35,395 I 1879126 1879126] (raylet) node_manager.cc:1409: Disconnecting worker, graceful=true, disconnect_type=1, has_creation_task_exception=false worker_id=ad5f604b533c07666ab5feb8a2df59bbc2b6d056a8755925f0ec8020 job_id=01000000",
+      "[2026-10-01 05:39:35,395 I 1879126 1879126] (raylet) node_manager.cc:1409: Disconnecting worker, graceful=true, disconnect_type=1, has_creation_task_exception=false worker_id=df7d762e6cd05b315a0738545253719ddb8d1fa9660809c543a22bce job_id=01000000",
+      "[2026-10-01 05:39:35,404 W 1879126 1879149] (raylet) store.cc:365: Disconnecting client due to connection error with code 2: End of file",
+      "[2026-10-01 05:39:35,404 W 1879126 1879126] (raylet) node_manager.cc:563: Failed to send exit request to worker : RpcError: RPC error: Socket closed rpc_code: 14. Killing it using SIGKILL instead. worker_id=df7d762e6cd05b315a0738545253719ddb8d1fa9660809c543a22bce",
+      "[2026-10-01 05:39:35,445 I 1879126 1879126] (raylet) worker_pool.cc:1232: Force exiting worker whose job has exited a894e4efd56a64e048b0dca7123df95388a5e73cbff41522f23bc87d",
+      "[2026-10-01 05:39:35,463 W 1879126 1879149] (raylet) store.cc:365: Disconnecting client due to connection error with code 2: End of file",
+      "[2026-10-01 05:39:35,464 W 1879126 1879149] (raylet) store.cc:365: Disconnecting client due to connection error with code 2: End of file",
+      "[2026-10-01 05:39:35,475 I 1879126 1879183] (raylet) agent_manager.cc:83: Agent process with name dashboard_agent exited, exit code 0.",
+      "[2026-10-01 05:39:35,481 I 1879126 1879185] (raylet) agent_manager.cc:83: Agent process with name runtime_env_agent exited, exit code 0."
+    ],
+    "/tmp/ray/session_2026-09-30_23-03-56_866178_1876409/logs/worker-e36b334fcf8d9992ef11fb7794e8ef520c7a6e8f82edf22741541a68-01000000-1884758.out": [
+      "[DT EOS minibatch] contrasts=4 length=2433 seconds=7.628701804205775 batch=217/572 d_min=-0.11020742957591456 d_max=0.1882482066685522",
+      "[DT EOS minibatch] contrasts=4 length=2435 seconds=9.490900330245495 batch=218/572 d_min=-0.08197470650058629 d_max=0.1970618162086996",
+      "[DT EOS minibatch] contrasts=4 length=2438 seconds=9.492416692897677 batch=219/572 d_min=-0.5721014659146306 d_max=0.37313020299747973"
+    ],
+    "/tmp/ray/session_2026-09-30_23-03-56_866178_1876409/logs/worker-eeb745afe9e40fa46a2ca8786b71c55a0b2c783e8e2389d3ca3891d3-01000000-1886413.out": [
+      "[DT EOS minibatch] contrasts=4 length=3689 seconds=7.661010278388858 batch=217/572 d_min=-0.10163277671169355 d_max=0.15146084585442635",
+      "[DT EOS minibatch] contrasts=4 length=3696 seconds=9.560301760211587 batch=218/572 d_min=-0.21912600856594355 d_max=0.21974806798434432",
+      "[DT EOS minibatch] contrasts=4 length=3698 seconds=9.436782294884324 batch=219/572 d_min=-0.13068854730720106 d_max=0.25022914827529835"
+    ]
+  },
+  "restart": {
+    "pid": 552842,
+    "created_unix": 1790804649.87,
+    "status": "sleeping",
+    "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry",
+    "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001",
+    "source_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/source.json",
+    "source_sha256": "fe54f11730b1d9d06da6364edc7a09a6524fb7f8f02510c59e8e7ca4c99b04ff",
+    "native_launch_options_equal_after_path_relocation": true,
+    "checkpoint_resumed": null,
+    "actor_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+    "scope": "Same effective pre-exit source, original initial evaluation and budget; no new training configuration or numerical test. Original first update cannot be restored."
+  },
+  "other_jobs": [
+    {
+      "task": "AppWorld",
+      "pid": 2680224,
+      "alive": true
+    },
+    {
+      "task": "TextCraft",
+      "pid": 212110,
+      "alive": true
+    }
+  ]
+}

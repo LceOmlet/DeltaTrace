@@ -6,11 +6,13 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-01 当前运行入口
 
-当前正式清单为`runs/appworld-balanced-padding-resume-20261001/formal-training.json`，
-根目录`active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID1876409
+当前正式清单为`runs/sql-padding-restart-20261001/formal-training.json`，
+根目录`active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842
 使用GPU0/1，AppWorld PID2680224使用GPU2/3，TextCraft PID212110使用GPU4/5。
 具体冻结目录、完整SHA、测试回执和运行时覆盖统一见[RUNTIME_RECORD.md](RUNTIME_RECORD.md)
-及其带时间快照。AppWorld已从原step1恢复；SQL首轮完成后应用padding候选；
+及其带时间快照。AppWorld已从原step1恢复；SQL在原生mcTracer附加采样结束后退出，
+无正式检查点，现按退出前padding版本冻结重启；旧首轮更新无法恢复。禁止再向正式
+worker附加mcTracer。具体事故和版本对应见版本账本；
 TextCraft仍为原actor加B4 head。不要按下面历史命令重新创建环境或遗漏已有修复。
 
 <details>
