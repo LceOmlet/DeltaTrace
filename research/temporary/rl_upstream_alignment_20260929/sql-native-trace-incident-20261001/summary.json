@@ -106,5 +106,30 @@
       "count": 5
     }
   ],
-  "scope": "Native MetaX attach trace ending in a worker exit; NOT a passing training or numerical test. Durations are raw trace units; overlapping streams/categories must not be added as wall time."
+  "scope": "Native MetaX attach trace ending in a worker exit; NOT a passing training or numerical test. Durations are raw trace units; overlapping streams/categories must not be added as wall time.",
+  "query_return_interpretation": {
+    "code": 600,
+    "owner_symbol": "mcErrorNotReady",
+    "definition": {
+      "path": "/opt/maca/include/mcr/mc_runtime_types.h",
+      "line": 247,
+      "sha256": "8e2d6ab8fd165bc62d14b56c11ee470261fee5ad2b253bd939e5d9b26131fad3"
+    },
+    "query_documentation": [
+      {
+        "path": "/opt/maca/include/mcr/mc_runtime_api.h",
+        "sha256": "ebd60d2c68f9c5b436f9ef9aaa44114573a6b9b58d315ff8487e8b7a7537d5b3",
+        "line": 1101,
+        "excerpt": "1067:  * Queries attribute attr from hStream and stores it in corresponding member of value_out.\n1068:  *\n1069:  * @see mcAccessPolicyWindow\n1070:  */\n1071: mcError_t mcStreamGetAttribute(mcStream_t hStream, mcStreamAttrID attr,\n1072:                                mcStreamAttrValue *value_out);\n1073: \n1074: /**\n1075:  * @brief Copies attributes from source stream to destination stream.\n1076:  *\n1077:  * @param[in] dst Destination stream\n1078:  * @param[in] src Source stream For attributes see mcStreamAttrID\n1079:  * @return #mcSuccess #mcErrorNotSupported\n1080:  *\n1081:  * Copies attributes from source stream src to destination stream dst. Both streams must have the\n1082:  * same context.\n1083:  *\n1084:  * @see mcAccessPolicyWindow\n1085:  */\n1086: mcError_t mcStreamCopyAttributes(mcStream_t dst, mcStream_t src);\n1087: \n1088: /**\n1089:  * @brief Queries an asynchronous stream for completion status.\n1090:  *\n1091:  * @param[in] stream Stream identifier\n1092:  * @return #mcSuccess #mcErrorInvalidValue #mcErrorInvalidResourceHandle\n1093:  *\n1094:  * Returns mcSuccess if all operations in stream have completed, or mcErrorNotReady if not.\n1095:  * For the purposes of Unified Memory, a return value of mcSuccess is equivalent to having called\n1096:  * mcStreamSynchronize().\n1097:  *\n1098:  * @see mcStreamCreate, mcStreamCreateWithFlags, mcStreamWaitEvent, mcStreamSynchronize,\n1099:  * mcStreamAddCallback, mcStreamDestroy\n1100:  */\n1101: mcError_t mcStreamQuery(mcStream_t stream);"
+      },
+      {
+        "path": "/opt/maca/include/mcr/mc_runtime_api.h",
+        "sha256": "ebd60d2c68f9c5b436f9ef9aaa44114573a6b9b58d315ff8487e8b7a7537d5b3",
+        "line": 2067,
+        "excerpt": "2033:  * Events which are recorded in a non-NULL stream will record their timestamp\n2034:  * when they reach the head of the specified stream, after all previous\n2035:  * commands in that stream have completed executing.  Thus the time that\n2036:  * the event recorded may be significantly after the host calls mcEventRecord().\n2037:  *\n2038:  * If mcEventRecord() has not been called on either event, then #mcErrorInvalidHandle is\n2039:  * returned. If mcEventRecord() has been called on both events, but the timestamp has not yet been\n2040:  * recorded on one or both events (that is, mcEventQuery() would return #mcErrorNotReady on at\n2041:  * least one of the events), then #mcErrorNotReady is returned.\n2042:  *\n2043:  *\n2044:  * @see mcEventCreate, mcEventCreateWithFlags, mcEventQuery, mcEventDestroy, mcEventRecord,\n2045:  * mcEventSynchronize\n2046:  */\n2047: \n2048: mcError_t mcEventElapsedTimeWithFlags(float *ms, mcEvent_t start, mcEvent_t stop,\n2049:                                       unsigned int flag);\n2050: \n2051: /**\n2052:  * @brief Query event status\n2053:  *\n2054:  * @param[in] event Event to query.\n2055:  * @return #mcSuccess, #mcErrorNotReady, #mcErrorInvalidHandle, #mcErrorInvalidValue,\n2056:  * #mcErrorNotInitialized, #mcErrorLaunchFailure\n2057:  *\n2058:  * Query the status of the specified event.  This function will return #mcErrorNotReady if all\n2059:  * commands in the appropriate stream (specified to mcEventRecord()) have completed.  If that work\n2060:  * has not completed, or if mcEventRecord() was not called on the event, then #mcSuccess is\n2061:  * returned.\n2062:  *\n2063:  * @see mcEventCreate, mcEventCreateWithFlags, mcEventRecord, mcEventDestroy,\n2064:  * mcEventSynchronize, mcEventElapsedTime\n2065:  */\n2066: \n2067: mcError_t mcEventQuery(mcEvent_t event);"
+      }
+    ],
+    "scope": "These nonzero query returns mean unfinished asynchronous work; they are not evidence of an illegal address, numerical failure, or the reason the worker exited.",
+    "documentation_caveat": "The installed mcEventQuery comment reverses ready/not-ready prose; preserve that contradiction. The enum maps 600 to mcErrorNotReady, mcStreamQuery and mcEventElapsedTime comments describe unfinished work. This record does not use the code as a crash diagnosis or add a runtime check."
+  }
 }
