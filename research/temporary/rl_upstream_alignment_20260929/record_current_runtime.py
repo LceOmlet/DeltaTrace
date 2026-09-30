@@ -26,6 +26,11 @@ for j in active['jobs']:
         entry=str(entry),verl_root=str(vr),dt_root=j['dt_root'],source=artifact(src),output=j['output'],log=j['log'],
         checkpoints=j['checkpoints'],budget=j['budget'],launch=artifact(Path(j['output'])/'launch.json'),
         declared_resource_config={k:j.get(k) for k in ['lora_rank','lora_alpha','actor_microbatch','log_prob_micro_batch_size_per_gpu']})
+    rec['startup_provenance']={k:source[k] for k in [
+        'submission_repository_commit','submission_script_sha256','prepared_receipt',
+        'prepared_receipt_sha256','prior_driver_pid','resume_from','completed_checkpoint_marker',
+        'actor_fix_commit','dt_dispatch_commit','resume_entry_commit','actor_padding_sha256',
+        'padding_comparison_receipt','padding_comparison_receipt_sha256'] if k in source}
     rec['native_training_workload']=[]
     if psutil.pid_exists(j['pid']):
         proc=psutil.Process(j['pid']);rec['process']=dict(alive=proc.is_running(),created_unix=proc.create_time(),
@@ -49,6 +54,10 @@ for j in active['jobs']:
         'verl/workers/actor/dp_actor.py','verl/workers/fsdp_workers.py','verl/trainer/ppo/core_algos.py',
         'verl/utils/experimental/torch_functional.py','verl/models/transformers/monkey_patch.py',
         'verl/models/transformers/qwen3_vl.py','verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py']}
+    for name,record in rec['owner_files'].items():
+        expected=source.get('verl_sha256',{}).get(name)
+        record['startup_recorded_sha256']=expected
+        record['matches_startup_source']=record['sha256']==expected if expected is not None else None
     rec['runtime_overrides']=[]
     rec['pending_runtime_operations']=[]
     if j['task']=='SkyRL-SQL':
@@ -84,8 +93,10 @@ for j in active['jobs']:
     rec['environment_roots']={k:v for k,v in source.items() if k.endswith('_root') and k not in ['dt_root','verl_root']}
     with Path(j['log']).open('rb') as f:
         f.seek(0,2);f.seek(max(0,f.tell()-200000));tail=f.read().decode(errors='replace')
-    rec['recent_progress']=[re.sub(r'\x1b\[[0-9;]*[mA]','',s) for s in tail.splitlines()
-        if re.search(r'Rounds \d|n_rollouts_collected=|actor/grad_norm|step:|Traceback|OutOfMemory',s)][-3:]
+    lines=[re.sub(r'^\([^\n)]* pid=\d+\)\s*','',re.sub(r'\x1b\[[0-9;]*[mA]','',s))
+           for s in tail.splitlines()]
+    rec['recent_progress']=[s for s in lines if re.match(
+        r'Rounds \d|n_rollouts_collected=|step:\d+\b|\[loop_transport\]|\[owner_trajectory\]|Traceback \(most recent call last\)|(?:torch\.)?(?:cuda\.)?OutOfMemoryError:',s)][-3:]
     rec['completed_checkpoints']=[dict(path=str(p),value=p.read_text()) for p in Path(j['checkpoints']).rglob('latest_checkpointed_iteration.txt')]
     result['jobs'].append(rec)
 result['prepared_versions']=[]

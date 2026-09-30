@@ -21,9 +21,11 @@
 后续实时PID和版本仍以远端根目录的 `active-training.json` / `active-source.json` 为准。
 `verified_runtime.json` 是数值基线，不能单独代表当前全部接入代码。
 
-当前代码修复提交为 `dc4e4d7`：SQL v8；AppWorld v6、TextCraft v7加已完成的
-原worker RPC修复。后两组的冻结启动命令仍记录旧microbatch1，**禁止直接按旧命令重启**。
-运行中实际每卡4、LoRA8/16，B8×32768原更新已通过。TextCraft首个正式迭代已完成，两个rank均完成4次原AdamW更新且进入下一轮采样；原状态和日志见[正式更新回执](results_first_formal_update.json)。SQL与AppWorld首个正式更新仍待确认。
+2026-10-01：AppWorld已以新的balanced-padding冻结入口从原step1检查点恢复；
+SQL在首轮更新完成后应用已验证的padding forward；TextCraft已完成4轮，仍使用原actor
+加B4 head覆盖。三个任务的版本组合分别记录在上述账本中，不能统称为一个“最新版本”。
+固定DT `c9cd147` / 数值参考 `fc2e6c2`、VERL `20bd331`、head `dc4e4d7`；
+LoRA8/16、每卡actor/DT4不变。SQL/TextCraft旧冻结启动命令不能替代已记录的运行时覆盖。
 这里只记录状态，不新增信用方案。
 
 <details>

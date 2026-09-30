@@ -4,6 +4,18 @@
 [带采集时间的源码快照](current_runtime.json)。数值基线、冻结启动源码和已完成的
 worker运行时覆盖分别记录；不能用下面历史段落中的“当前”或旧launch命令代替。
 
+## 2026-10-01 当前运行入口
+
+当前正式清单为`runs/appworld-balanced-padding-resume-20261001/formal-training.json`，
+根目录`active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID1876409
+使用GPU0/1，AppWorld PID2680224使用GPU2/3，TextCraft PID212110使用GPU4/5。
+具体冻结目录、完整SHA、测试回执和运行时覆盖统一见[RUNTIME_RECORD.md](RUNTIME_RECORD.md)
+及其带时间快照。AppWorld已从原step1恢复；SQL首轮完成后应用padding候选；
+TextCraft仍为原actor加B4 head。不要按下面历史命令重新创建环境或遗漏已有修复。
+
+<details>
+<summary>历史环境与部署记录：其中“最新、当前”、PID、端口和启动命令仅描述记录当时，不作当前启动依据</summary>
+
 ## 2026-09-30 最新：仅使用前六张卡训练 DTPO
 
 **最新状态：实际提交全局B8×32768，经原VERL双卡分发，每卡实际B4×32768，
@@ -2032,3 +2044,5 @@ pgrep -a -u "$USER" -f 'verl.trainer.main_ppo|appworld'
   `/tmp/dt-mx-{soko,shop,app}-v2`。这是启动记录，不是完成声明或卡号预留。
   旧作业结果保存在 `superseded-*-reports.json` 与 `superseded-*-worker.log`；
   只停止已核对 RAY_TMPDIR 的本任务进程，其他用户的 GPU 0–2 作业未操作。
+
+</details>
