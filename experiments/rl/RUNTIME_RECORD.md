@@ -103,7 +103,7 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ## 尚未被证明的结论
 
-三组首个正式DT/PPO更新、原检查点与后续rollout连续健康仍由实际任务日志确认。
+2026-10-01：TextCraft首个正式迭代及更新后下一轮采样已确认；两个rank各4次原AdamW更新、每卡microbatch4、LoRA8/16，优化器状态有限且非零。DT共203986个非零token优势，DT阶段1365.601秒、actor更新591.767秒；见[原状态/日志回执](results_first_formal_update.json)。采样总耗时包含此前主动暂停，不用作稳定吞吐。SQL和AppWorld首个正式更新、当前正式检查点与更长连续性仍待实际日志确认。
 B8夹具证明固定参数下的原更新容量，head原容差证明对应算子范围；两者都不能代替
 正式任务收益或整条DT训练数值准确性。暂停期间计入的历史elapsed不用于估算当前吞吐。
 

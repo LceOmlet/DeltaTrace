@@ -23,7 +23,7 @@
 
 当前代码修复提交为 `dc4e4d7`：SQL v8；AppWorld v6、TextCraft v7加已完成的
 原worker RPC修复。后两组的冻结启动命令仍记录旧microbatch1，**禁止直接按旧命令重启**。
-运行中实际每卡4、LoRA8/16，B8×32768原更新已通过；三组首个正式更新仍待确认。
+运行中实际每卡4、LoRA8/16，B8×32768原更新已通过。TextCraft首个正式迭代已完成，两个rank均完成4次原AdamW更新且进入下一轮采样；原状态和日志见[正式更新回执](results_first_formal_update.json)。SQL与AppWorld首个正式更新仍待确认。
 这里只记录状态，不新增信用方案。
 
 <details>

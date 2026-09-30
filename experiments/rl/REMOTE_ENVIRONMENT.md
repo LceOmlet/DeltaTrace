@@ -24,7 +24,7 @@ BF16/FP32对照通过，没有修改容差或添加纠偏。详见
   验证和预算，不跳过验证、不改变通信超时。旧失败回执为`sql-pause-timeout.json`。
 - 最新manifest为`runs/official-trajectory-20260930-v8/formal-training.json`，
   根目录`active-training.json`及`active-source.json`记录实际源码与运行时覆盖。
-  三组首个正式更新尚待实际日志确认。下列microbatch1和暂停记录仅为历史。
+  TextCraft首个正式迭代已完成，两个rank各4次原AdamW更新，状态有限且非零，并进入下一轮采样；见[正式回执](results_first_formal_update.json)。SQL与AppWorld首个正式更新尚待确认。下列microbatch1和暂停记录仅为历史。
 
 用户取消 GPU 6/7 的 SQL GRPO 对照组，不再重提。仅保留 SQL-DT GPU0/1、
 AppWorld-DT GPU2/3、TextCraft-DT GPU4/5。当前 manifest / 根目录
