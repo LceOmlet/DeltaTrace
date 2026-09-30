@@ -8,7 +8,7 @@ import sys
 from owner_runtime_options import runtime_options, owner_command
 
 
-def options_for(output):
+def options_for(output, resume_from=None):
     if os.environ.get('LOOP_EXTRAS'):
         site.addsitedir(os.environ['LOOP_EXTRAS'])
     from loop_owner_recipe import compose
@@ -53,6 +53,9 @@ def options_for(output):
         'trainer.val_before_train': False, 'trainer.resume_mode': 'auto'}
     options.update({'+ray_init.runtime_env.worker_process_setup_hook': 'observe_worker_visibility.install',
         '+ray_init.runtime_env.env_vars.DT_WORKER_VISIBILITY_DIR': str(output/'worker-visibility')})
+    if resume_from is not None:
+        options.update({'trainer.resume_mode': 'resume_path',
+                        'trainer.resume_from_path': str(resume_from)})
     sampling = dict(temperature=cfg.llm.temperature, max_tokens=cfg.llm.vllm_class.max_new_tokens)
     return options, sampling
 
@@ -61,8 +64,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--config-only', action='store_true')
+    parser.add_argument('--resume-from', type=Path,
+                        help='Pass a completed global_step directory to the original VERL checkpoint loader.')
     args = parser.parse_args()
-    options, sampling = options_for(args.output)
+    options, sampling = options_for(args.output, resume_from=args.resume_from)
     argv = owner_command(options)
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output/'launch.json').write_text(json.dumps(dict(argv=argv, options=options,

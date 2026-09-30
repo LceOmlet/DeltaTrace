@@ -106,3 +106,19 @@ def test_appworld_iteration_carrier_accepts_original_trainer_pop():
     generated = batch.pop(batch_keys=['input_ids','attention_mask','position_ids'],
         non_tensor_batch_keys=['raw_prompt_ids','data_source','raw_prompt','env_kwargs'])
     assert len(generated) == 2
+
+
+def test_appworld_resume_forwards_only_original_checkpoint_options(tmp_path):
+    from launch_appworld_native import options_for
+    original, original_sampling = options_for(tmp_path)
+    checkpoint = tmp_path/'prior-run'/'global_step_1'
+    resumed, resumed_sampling = options_for(tmp_path, resume_from=checkpoint)
+    assert resumed_sampling == original_sampling
+    assert {key for key in original.keys() | resumed.keys()
+            if original.get(key) != resumed.get(key)} == {
+                'trainer.resume_mode', 'trainer.resume_from_path'}
+    with initialize_config_dir(config_dir=str(Path(os.environ['VERL_ROOT'])/'verl/trainer/config'), version_base=None):
+        cfg = compose(config_name='ppo_trainer', overrides=owner_command(resumed)[3:])
+    RayPPOTrainer._validate_config(SimpleNamespace(config=cfg, use_reference_policy=False, use_critic=False))
+    assert cfg.trainer.resume_mode == 'resume_path'
+    assert cfg.trainer.resume_from_path == str(checkpoint)
