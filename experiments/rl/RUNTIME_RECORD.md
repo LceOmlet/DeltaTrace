@@ -320,6 +320,11 @@ actor574.862、old_log_prob159.042、reference138.419秒，训练批奖励均值
 优势范围−0.282到0.237。它是正式训练连续性证据，不是新的多步数值阈值。
 详见[第三轮原日志及优化器回执](results_textcraft_third_update.json)。
 
+TextCraft第四轮也已完成并进入第五轮生成，原日志耗时4753.725秒：gen2447.970、
+DT1433.381、actor574.521、old_log_prob159.013、reference138.382秒，训练批奖励
+均值0.633。见[第四轮原日志与后续生成阶段](results_textcraft_fourth_update.json)。
+本次没有增加优化器状态读取或数值测试；不从四个训练批次推断奖励提升。
+
 SQL已完成首轮DT并进入原`update_actor`反向，来源为
 `phase-observations/1790794409-SkyRL-SQL-1884758-counts.txt`；更新尚未完成。
 2026-10-01 03:17：AppWorld六个DT回报类别组均已完成并进入原`update_actor`；
