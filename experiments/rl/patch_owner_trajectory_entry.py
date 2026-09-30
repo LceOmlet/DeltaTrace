@@ -4,6 +4,10 @@ from patch_verl_environment_entry import replace_once
 
 
 def patch_collector(source):
+    anchor = '        if is_train:\n            gen_batch = gen_batch.repeat(repeat_times=self.config.env.rollout.n, interleave=True)\n'
+    source = replace_once(source, anchor,
+        '        if hasattr(envs, "collect_native_trajectories"):\n'
+        '            return envs.collect_native_trajectories(self, gen_batch, actor_rollout_wg, is_train)\n' + anchor)
     old = '        gen_batch_output: DataProto = self.gather_rollout_data(\n'
     new = ('        gather = self.gather_rollout_data\n'
            '        if hasattr(envs, "gather_rollout_data"):\n'
@@ -14,6 +18,11 @@ def patch_collector(source):
 
 
 def patch_trainer(source):
+    # Native trajectory batches have different token widths. Sum each row
+    # before concatenating batches; this is the same existing score reduction.
+    source = replace_once(source,
+        'torch.cat(reward_tensor_lst, dim=0).sum(-1).cpu()',
+        'torch.cat([reward.sum(-1) for reward in reward_tensor_lst], dim=0).cpu()')
     source = replace_once(source,
         '    attention_mask = data.batch["attention_mask"]\n    return attention_mask[:, -response_length:]\n',
         '    attention_mask = data.batch.get("loss_mask", data.batch["attention_mask"])\n'

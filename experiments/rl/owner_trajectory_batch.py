@@ -77,9 +77,13 @@ def trajectory_credit(data, response_data, worker_group, *, eos_token_id, pad_to
     from verl import DataProto
     from dt_training_batch import CREDIT_KEYS, compute_training_credit
 
+    result = {key: torch.zeros_like(data.batch['responses'], dtype=torch.float32) for key in CREDIT_KEYS}
+    if response_data is None:
+        # Native reset failures can return no actions at all.
+        assert not any(data.non_tensor_batch['dt_response_slices'])
+        return DataProto.from_dict(tensors=result)
     values = compute_training_credit(response_data, worker_group,
         eos_token_id=eos_token_id, pad_token_id=pad_token_id)
-    result = {key: torch.zeros_like(data.batch['responses'], dtype=torch.float32) for key in CREDIT_KEYS}
     for row, slices in enumerate(data.non_tensor_batch['dt_response_slices']):
         for source, start, length in slices:
             for key in CREDIT_KEYS:

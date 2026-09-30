@@ -12,9 +12,11 @@ SQL GRPO，每组两卡；不再另造预实验参数，只允许资源所需的
 先前本机83项单测保留，覆盖范围见 [LOCAL_TESTING.md](LOCAL_TESTING.md)。
 数值基线按原始官方方法对照回执和源码SHA锁定于
 [verified_runtime.json](verified_runtime.json)，不按目录新旧猜测版本。
-SQL-DT和SQL-GRPO已于远端Unix时间1790723216启动正式配置，两组均为LoRA8/16；
-当前在原生vLLM执行训练前验证。正式首个更新尚未完成，不能称已验收健康。
-运行事实来源为`runs/official-trajectory-20260930/{formal-training,source}.json`及各组
+SQL首批正式作业在初始验证的不同宽度奖励拼接处退出，未进入训练更新。现仅将原
+逐行求和移到跨批拼接前，原验证方法两项对照通过。两组于1790725379重新正式启动，
+PID1462106/1462108。TextCraft于1790726161正式启动，PID1758974；三组均LoRA8/16。
+正式首个更新尚未确认，不能称已验收健康。
+运行事实来源为`runs/official-trajectory-20260930-v2/formal-training.json`及各组
 `job.json`，源码已冻结，后续环境开发不热改运行中的入口。以下更早运行结果为历史记录。
 最新入口检查与两组SQL有界验证见环境记录首节。AppWorld、TextCraft的原环境/模型
 入口已有实际服务证据；脚本动作、CPU测试和进程启动不表示四组模型训练已经通过。
@@ -29,8 +31,13 @@ AppWorld现已在32768内部预留DT询问/target，通过原客户端控制生�
 不采用33152提议。SQL现调用原SkyRLGymGenerator和原batch converter，一轨迹一训练行；
 正式256组×5条、global minibatch1280、ppo_epochs1，满批一次optimizer更新。
 DT仍按原回复计算，再按原生token位置接回完整轨迹。8项原agent loop对照与25项
-运输/信用接口检查通过；不表示新的DT数值对拍。TextCraft整轨迹入口和AppWorld
-原runner调度仍在对齐，两组正式任务尚未启动。
+运输/信用接口检查通过；不表示新的DT数值对拍。TextCraft已撤掉自写会话循环，
+直接调用AgentGym-RL原完整generate_sequences、原dataset和RolloutHandler；仅注入
+现有VERL生成接口并记录DT边界。未启动AgentGym训练器/推理服务。原方法AST对照、
+真实服务train/eval、reset/step异常、token前缀/mask/奖励共8项通过，原配置入口8项通过。
+模板使用作者示例的原Qwen2.5模板，模型/词表仍是用户指定Qwen3.5-9B；不混称原Qwen3.5模板。
+正式32组×8条、global mini64、每满批4次更新、30epoch；作者actor实际不循环ppo_epochs。
+AppWorld尚未启动：旧逐轨迹建runner入口须替换为LOOP原固定runner池、收集及取消行为。
 
 **2026-09-29 现状更正：新端口31091已恢复连接，三组旧训练均已不在运行。**
 原完成检查点标记为 Sokoban 10、WebShop 30、AppWorld 3。Sokoban 报 DT

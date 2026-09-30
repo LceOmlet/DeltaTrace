@@ -33,7 +33,7 @@ def test_two_rank_config_satisfies_native_validator(task,method,phase,tmp_path):
     assert cfg.actor_rollout_ref.model.lora_alpha==16
 
 
-def test_textcraft_renderer_uses_qwen_official_non_thinking_option():
+def test_textcraft_renderer_uses_author_task_template():
     from transformers import AutoTokenizer
     from textcraft_environment_entry import configure_textcraft_tokenizer, owner_module
     tokenizer=AutoTokenizer.from_pretrained(os.environ['DT_TOKENIZER_PATH'],local_files_only=True)
@@ -42,8 +42,24 @@ def test_textcraft_renderer_uses_qwen_official_non_thinking_option():
     messages=[schemas.Message('user','Craft one blue dye.'),
               schemas.Message('assistant','Thought: get the ingredient.\nAction: get 1 lapis lazuli'),
               schemas.Message('user','Got 1 lapis lazuli.')]
-    expected=tokenizer.apply_chat_template([m.to_dict() for m in messages],
-        add_generation_prompt=True,tokenize=True,return_dict=False,enable_thinking=False)
+    import json
+    template=json.loads(Path(__file__).with_name('textcraft_qwen_template.json').read_text())
+    expected=tokenizer.apply_chat_template([m.to_dict() for m in messages],chat_template=template['chat_template'],
+        add_generation_prompt=True,tokenize=True,return_dict=False)
     configure_textcraft_tokenizer(tokenizer)
     actual=schemas.RolloutHandler.get_generation_prompt(SimpleNamespace(messages=messages),tokenizer)
     assert actual==expected
+
+
+def test_textcraft_formal_owner_workload_and_native_validator(tmp_path):
+    from launch_textcraft_native import options_for
+    options, _ = options_for(tmp_path, tmp_path)
+    with initialize_config_dir(config_dir=str(Path(os.environ['VERL_ROOT'])/'verl/trainer/config'), version_base=None):
+        cfg = compose(config_name='ppo_trainer', overrides=owner_command(options)[3:])
+    RayPPOTrainer._validate_config(SimpleNamespace(config=cfg, use_reference_policy=True, use_critic=False))
+    assert cfg.data.train_batch_size == 32 and cfg.env.rollout.n == 8
+    assert cfg.actor_rollout_ref.actor.ppo_mini_batch_size == 64
+    assert cfg.actor_rollout_ref.actor.ppo_epochs == 1
+    assert cfg.trainer.total_epochs == 30 and cfg.env.max_steps == 30
+    assert cfg.actor_rollout_ref.actor.use_kl_loss and cfg.actor_rollout_ref.actor.kl_loss_coef == .001
+    assert cfg.actor_rollout_ref.model.lora_rank == 8 and cfg.actor_rollout_ref.model.lora_alpha == 16

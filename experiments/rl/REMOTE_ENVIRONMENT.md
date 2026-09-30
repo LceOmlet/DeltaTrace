@@ -2,6 +2,29 @@
 
 ## 2026-09-30 最新：30821恢复，任务只复用官方环境，不引入任务项目的训练/推理栈
 
+- 当前事实更新：旧SQL PID803208/803209均在验证聚合失败退出，不能再视为运行中。
+  原因是原`_validate`对不同宽度rm_scores直接cat。当前补丁只把原sum(-1)前移到各批，
+  不改分数或统计口径；实际原方法等宽精确对照与异宽回归2项通过，回执
+  `entry/native-validation-batches.xml`。两组于1790725379重新正式启动，PID1462106/1462108，
+  GPU0/1与6/7；冻结源在`runs/official-trajectory-20260930-v2/entry`和
+  `candidates/official-verl-20bd331-sql-formal-20260930-v2`。
+- TextCraft于1790726161正式启动，PID1758974、GPU4/5。冻结入口为上述v2目录的
+  `textcraft-entry`，冻结作者环境为`textcraft-owner`，冻结VERL为
+  `candidates/official-verl-20bd331-textcraft-formal-20260930`。各组job/source/launch/train.log
+  及v2/formal-training.json为事实来源。启动不表示首个正式更新已成功。
+- TextCraft已删除自写TextCraftSession，撤回并移除preserve_token_artifacts扩展。
+  原AgentGym完整generate_sequences通过引擎依赖注入调用现有VERL/vLLM；原异常处理、
+  循环、结束、轨迹组装、mask、截断和奖励计算未重写。原方法AST、真实服务train/eval、
+  reset/step异常及token对齐8项通过`entry/textcraft-original-loop-tests.xml`；原配置入口8项
+  通过`entry/formal-owner-launch-tests.xml`。依赖补丁另含相对schema导入、移除未用旧符号、
+  非分布式driver日志rank和Transformers5显式return_dict=False，不能称未经修改的整个仓库。
+  使用作者示例原Qwen2.5模板与Qwen3.5词表/权重；旧enable_thinking=False记录是历史路径。
+  正式32组×8、global mini64、4次更新/满批、30epoch、30轮、512输出；原KL loss配置恢复。
+  原训练10752、独立eval14848；DT/RL总上限仍32768。LoRA仍8/16，未开额外GPU预实验。
+- AppWorld尚未启动，旧入口逐轨迹创建runner的调度未对齐，需复用LOOP原32runner/进程
+  和原get_rollouts完成比例/取消逻辑。不可从原runner.run已通过推出全采样行为已对齐。
+- 以下1790723216的SQL状态及更早有界运行均是历史记录，以以上v2事实覆盖当前状态。
+
 - 用户最新固定四组LoRA rank=8、alpha=16，不得改动。共享入口
   `owner_runtime_options.py`已同步远端entry，原VERL配置解析与校验检查最终值。
   `entry/lora8-owner-launch-tests.xml`只证明配置入口，不冒充8/16的GPU容量/数值结果。

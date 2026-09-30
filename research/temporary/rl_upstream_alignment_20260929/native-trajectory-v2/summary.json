@@ -1,0 +1,58 @@
+{
+  "scope": "CPU owner environment/trajectory interfaces and config only; no new numerical tolerance claims",
+  "checks": [
+    {
+      "file": "formal-owner-launch-tests.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "native-validation-batches.xml",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "sql-trajectory-after-native-dispatch.xml",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "textcraft-original-loop-tests.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "removed": [
+    "custom TextCraft session loop",
+    "custom preserve_token_artifacts prefix behavior",
+    "manual TextCraft final trajectory assembler"
+  ],
+  "owners": {
+    "textcraft": "Original AgentGym-RL 82402a9 generate_sequences/preprocess handler and dataset",
+    "sql": "Original SkyRLGymGenerator 7d94cc and batch converter",
+    "ppo": "Verified VERL-agent 20bd331 runtime; no new loss/optimizer changes"
+  },
+  "patches": [
+    "AgentGym engine dependency and module/version compatibility seams",
+    "VERL native trajectory dispatch",
+    "VERL validation row-sum before cross-batch concatenate"
+  ],
+  "textcraft_template": "Official Qwen2.5-7B-Instruct a09a354 (author task example); Qwen3.5-9B weights/tokenizer; not model-native Qwen3.5 template",
+  "lora": {
+    "rank": 8,
+    "alpha": 16
+  },
+  "formal_jobs": [
+    "sql-dt",
+    "sql-grpo",
+    "textcraft-dt"
+  ],
+  "pending": [
+    "AppWorld native worker pool and completion/cancellation collection"
+  ],
+  "healthy_formal_update_confirmed": false
+}
