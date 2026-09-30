@@ -144,6 +144,20 @@ CPU测试或负载估算报告为实际提速；后续部署必须另留新启�
 代码SHA、原分区函数SHA、日志路径与测试回执见
 [results_dt_owner_balance.json](results_dt_owner_balance.json)。
 
+### SQL padding 调查（未修改实现）
+
+首批正式采样为1280条轨迹、4850条response、1,385,232个policy token、
+4,157,129个有效上下文token；原trainer记录采样3505.147秒。随后实际栈位于
+原`compute_log_prob`，每卡B4；一次采样的`seqlen=20937`、
+`response_length=head_response_length=18220`。这说明输出头仍保留完整response列，
+但该单次栈不能给出整批padding比例或可节省的墙钟时间，不据此承诺提速。
+栈原件在远端`receipts/owner-b8-dispatch-20260930/SkyRL-SQL-1884758-counts.txt`。
+
+已检查原VERL remove-padding路径和当前Transformers Qwen3.5源码。后者的原
+causal-conv接口读取`seq_idx`，原GDN接口读取`cu_seq_lens_q`；不能仅切开关就
+假定跨轨迹边界正确。当前没有改这些参数、接口或数值路径，也没有撤回`cf145b2`
+的response边界修复。后续若处理此处，先核实原owner如何传递这些边界及实际padding工作量。
+
 ## 尚未被证明的结论
 
 2026-10-01：TextCraft首个正式迭代及更新后下一轮采样已确认；两个rank各4次原AdamW更新、每卡microbatch4、LoRA8/16，优化器状态有限且非零。DT共203986个非零token优势，DT阶段1365.601秒、actor更新591.767秒；见[原状态/日志回执](results_first_formal_update.json)。采样总耗时包含此前主动暂停，不用作稳定吞吐。SQL和AppWorld首个正式更新、当前正式检查点与更长连续性仍待实际日志确认。
