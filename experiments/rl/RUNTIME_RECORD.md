@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-代码修复基准为 `dc4e4d7`。以下部署快照最近核对于北京时间2026-10-01 02:15，具体时间见
+当前输出头/B4修复基准为 `dc4e4d7`。以下部署快照最近核对于北京时间2026-10-01 03:11，具体时间见
 [current_runtime.json](current_runtime.json)。任务会继续运行，快照中的阶段不是实时状态。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -11,6 +11,8 @@
 
 本次核对：三组冻结entry文件、固定DT/FLA及平台补丁文件均匹配原SHA；
 AppWorld两份、TextCraft一份运行时完成回执仍对应当前worker PID，生效文件SHA匹配。
+两个AppWorld恢复候选的冻结entry和owner文件也均匹配准备回执；它们都不在当前
+active-training清单中。已通过对照、已准备文件与已部署是三种不同事实。
 这是版本身份核对，不是重新运行数值测试。正式TextCraft更新证据来自`a97bb15`，
 观察口径修正来自`a9ca81c`；两者均未改变训练算法，不能当作新的DT数值版本。
 
@@ -21,6 +23,7 @@ AppWorld两份、TextCraft一份运行时完成回执仍对应当前worker PID�
 | 当前三组PID、创建时间、卡号、预算、日志和检查点 | 远端根目录 `active-training.json`，其中 `manifest` 指向当前正式清单 | `current_runtime.json` 的 `jobs`；重新采集后才称当前 |
 | 启动时到底用了什么文件 | 各作业 `source.json`、`launch.json`，冻结entry/VERL目录 | 快照中的路径、SHA256、`entry_files` 和 `owner_files` |
 | 启动后在原worker上应用了什么 | 对应PID/rank的原RPC完成回执 | `runtime_overrides`，包括生效代码路径和再次核对的文件SHA |
+| 已准备的哪个版本将用于后续恢复 | 冻结候选的 `prepared.json` 与对应测试回执 | `prepared_versions`；含替代关系、逐文件SHA及当前清单中是否存在该entry |
 | 哪些数值对照曾经通过 | [verified_runtime.json](verified_runtime.json) 中的固定数值基线与原回执；后续改动另见下表 | 基线不能冒充整个当前部署；最新输出头对照见 [results_actor_b8.json](results_actor_b8.json) |
 | 哪次提交解决了哪个问题 | 下方修复表及对应代码/测试 | Git提交是修复来源，不能代替远端已部署证明 |
 
@@ -144,7 +147,7 @@ CPU测试或负载估算报告为实际提速；后续部署必须另留新启�
 代码SHA、原分区函数SHA、日志路径与测试回执见
 [results_dt_owner_balance.json](results_dt_owner_balance.json)。
 
-### AppWorld 恢复候选：`2036246`（尚未启动）
+### 历史AppWorld恢复候选：`2036246`（未启动；已被下面组合候选替代）
 
 已冻结`candidates/appworld-balanced-resume-20261001/{entry,verl}`，复用原v6的
 LOOP环境目录；它只供AppWorld使用，不能拿其中历史SQL/TextCraft启动文件启动其他任务。
@@ -164,10 +167,11 @@ LOOP环境目录；它只供AppWorld使用，不能拿其中历史SQL/TextCraft�
 回执保留在远端`appworld-balanced-resume/launch-cpu-tests-unscoped.xml`，不把它们
 描述为已修复其他任务，也不把本候选当作通用三任务部署。
 
-候选后续提交使用
+后续提交助手为
 [submit_prepared_appworld_resume.py](../../research/temporary/rl_upstream_alignment_20260929/submit_prepared_appworld_resume.py)
 并显式传入原完成检查点路径。它不停止任务、不加载或改写模型；原进程未退出时直接拒绝，
 随后核对原完成标记、原状态文件、候选SHA及GPU2/3占用，再调用上述冻结入口。
+它现在明确选择下面的balanced-padding组合候选，不再选择本节旧候选。
 新source回执保存旧PID、恢复步数、候选SHA、提交脚本SHA和提交号；旧事实源归档保留，
 SQL/TextCraft的作业条目不改。已通过本机与内嵌远端Python语法检查，尚未执行提交，
 不能把该检查或脚本存在称为检查点恢复成功。
@@ -206,20 +210,23 @@ token log-prob曾出现待定位差异（最大绝对差17.750082），当时未
 后续结论以同目录`status.json`和`result.json`为准；旧回执未覆盖。
 默认`experiments/rl/patch_actor_response_boundary.py`及其测试已恢复为`bf5f4ab`
 提交中的原内容，避免后续发布误带候选。远端正式目录、worker、训练参数没有改动。
-上面的AppWorld恢复候选仍使用原actor哈希，不包含这个padding候选。
+上面的历史AppWorld恢复候选使用原actor哈希；下面的新组合候选已包含该padding候选。
 
-### 版本状态速查（2026-10-01 02:15部署核对）
+### 版本状态速查（2026-10-01 03:11部署核对）
 
 | 标识 | 状态 | 能证明什么 / 不能混成什么 |
 | --- | --- | --- |
 | DT `c9cd147` / 数值参考 `fc2e6c2` | 三组正在复用 | 固定DT文件身份与既有对应算子回执，不是新候选的验收 |
 | VERL `20bd331` + 输出头修复 `dc4e4d7` | 三组已生效；AppWorld/TextCraft含PID绑定的覆盖回执 | 原head容差与B8×32768容量，不是未经修改的官方整个仓库 |
 | 分发修复 `4c0cbdd` | CPU测试通过，正式任务未部署 | 原分区接口及顺序恢复，不是实测墙钟提速 |
-| AppWorld恢复入口 `2036246` + 提交助手 `bf5f4ab` | 已准备，未启动 | 冻结源码与恢复参数；没有实际恢复成功记录 |
+| AppWorld恢复入口 `2036246` + 旧提交助手 `bf5f4ab` | 历史准备候选，未启动；被下方组合候选替代 | 不再重放旧提交助手选择该候选 |
 | padding actor SHA `1f862e8bbdaa…` | 原VERL padding比较已通过，未部署 | 完整调查及适用范围见下节；默认补丁仍保持现有正式版本 |
+| `appworld-balanced-padding-resume-20261001` | 组合候选已冻结，46项CPU检查通过，未启动 | 复用 `2036246` 恢复入口、`4c0cbdd` 分发及 `1f862e8bbdaa…` actor；不是新DT数值版本 |
 
-提交前后的文档版本、实际部署版本和数值参考版本分别记录。此次快照采集时本机
-HEAD为`bf5f4ab`，不表示远端三组运行了该提交的全部文件。每次继续工作先读本表，
+提交前后的文档版本、实际部署版本和数值参考版本分别记录。快照的
+`code_repository_commit_at_collection`记录采集时本机HEAD，`recorder_source`记录
+采集脚本的确切SHA、最后修改提交和是否存在未提交差异；它们不表示远端三组运行了
+该提交的全部文件。每次继续工作先读本表，
 再根据快照中的原manifest、实际路径、SHA、PID创建时间和运行时覆盖确认适用关系。
 
 ### padding 后续定位与原框架容差（2026-10-01）
@@ -244,6 +251,33 @@ HEAD为`bf5f4ab`，不表示远端三组运行了该提交的全部文件。每�
 - 后续应用候选须使用明确版本及原worker/恢复边界，保持同一训练迭代的旧概率
   重算和actor更新使用同一实现。不能在已经算完旧概率、尚未完成更新时切换。
   单层与投影参考只作定位；未新增整网容差要求，也不以定位耗时代替正式吞吐。
+
+### 已冻结的新AppWorld组合候选（未部署）
+
+远端目录为`candidates/appworld-balanced-padding-resume-20261001/{entry,verl}`。
+旧候选、当前v6任务、原LOOP目录和DT发布均保留原样。新候选只将旧恢复候选的
+actor换成已对照的padding版本，并保存其对应补丁和测试；不是重新实现训练或恢复。
+
+| 对应对象 | 精确来源 |
+| --- | --- |
+| DT分发 | `4c0cbdd`；`dt_training_batch.py` SHA `da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2` |
+| 原恢复入口 | `2036246`；`launch_appworld_native.py` SHA `53ddbb5fcb834fd8d700649fbfc734588757dcbc2095718e93429d6ea1778ac3` |
+| 新actor | `dp_actor.py` SHA `1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd`；源码封存在 `0c80b41`，后续原框架对照证据记录于 `44e1149` |
+| 原actor | SHA `2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3`；当前三任务仍用此版本 |
+| 数值核心与head | DT `c9cd147` / 参考 `fc2e6c2`，head `dc4e4d7` 三文件SHA不变 |
+| 参数 | 原任务配置、LoRA rank8/alpha16、每卡actor/DT4不变；未新增训练组合 |
+
+[准备回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-balanced-padding-resume-20261001/prepared.json)
+记录全部文件SHA、旧候选回执SHA和原padding对照回执SHA。
+[CPU原始结果](../../research/temporary/rl_upstream_alignment_20260929/appworld-balanced-padding-resume-20261001/cpu-tests.xml)
+共46项通过：3项AppWorld配置/载体/恢复参数、9项DT运输、34项padding接口。
+这是组成和接口验证；未声称该候选已恢复检查点或已测得正式训练提速。
+
+SQL另有`apply_sql_padding_at_update_boundary.py`准备脚本，当前未执行、未排队。
+它存在不等于已应用。后续若执行，以原worker完成回执
+`actor-response-padding/sql-live/complete.json`中两个rank的实际PID、源路径、SHA及
+应用时原优化器步数为准，不能把`submitted.json`或本机提交号当成完成证明。
+本次只读记录已能收集该完成回执；不存在时不会将候选标成当前运行代码。
 
 ## 尚未被证明的结论
 

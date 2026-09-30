@@ -41,8 +41,11 @@ for j in active['jobs']:
         'verl/models/transformers/qwen3_vl.py','verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py']}
     rec['runtime_overrides']=[]
     # These are completed original worker RPC receipts, not new live imports.
-    for path in [root/'receipts/owner-entropy-20260930'/f"live-{j['task']}-complete.json",
-                 out/f"live-{j['task']}-complete.json"]:
+    override_paths=[root/'receipts/owner-entropy-20260930'/f"live-{j['task']}-complete.json",
+                    out/f"live-{j['task']}-complete.json"]
+    if j['task']=='SkyRL-SQL':
+        override_paths.append(out/'actor-response-padding/sql-live/complete.json')
+    for path in override_paths:
         if not path.is_file():continue
         value=read(path);workers=value if isinstance(value,list) else value.get('workers',[])
         belongs=workers and all(w['pid'] in rec['process'].get('workers',[]) for w in workers)
@@ -64,6 +67,33 @@ for j in active['jobs']:
         if re.search(r'Rounds \d|n_rollouts_collected=|actor/grad_norm|step:|Traceback|OutOfMemory',s)][-3:]
     rec['completed_checkpoints']=[dict(path=str(p),value=p.read_text()) for p in Path(j['checkpoints']).rglob('latest_checkpointed_iteration.txt')]
     result['jobs'].append(rec)
+result['prepared_versions']=[]
+for label,receipt_dir,supersedes in [
+    ('appworld-balanced-resume-20261001','appworld-balanced-resume',None),
+    ('appworld-balanced-padding-resume-20261001','appworld-balanced-padding-resume',
+     'appworld-balanced-resume-20261001')]:
+    path=out/receipt_dir/'prepared.json'
+    if not path.is_file():continue
+    value=read(path)
+    prepared=dict(id=label,receipt=artifact(path),prepared_unix=value['prepared_unix'],
+        entry=value['entry'],verl_root=value['verl_root'],dt_root=value['dt_root'],
+        supersedes_for_future_appworld_resume=supersedes,
+        active_jobs_with_this_entry=[j['task'] for j in result['jobs'] if j['entry']==value['entry']],
+        entry_files={},owner_files={},tests=artifact(path.parent/'cpu-tests.xml'))
+    for name,expected in value['entry_sha256'].items():
+        p=Path(value['entry'])/name
+        prepared['entry_files'][name]=dict(**artifact(p),expected_sha256=expected,
+                                         matches=p.is_file() and sha(p)==expected)
+    for name,expected in value['owner_head_sha256'].items():
+        p=Path(value['verl_root'])/name
+        prepared['owner_files'][name]=dict(**artifact(p),expected_sha256=expected,
+                                         matches=p.is_file() and sha(p)==expected)
+    if value.get('padding_comparison_receipt'):
+        p=Path(value['padding_comparison_receipt'])
+        prepared['padding_comparison']=dict(**artifact(p),
+            expected_sha256=value['padding_comparison_receipt_sha256'],
+            matches=p.is_file() and sha(p)==value['padding_comparison_receipt_sha256'])
+    result['prepared_versions'].append(prepared)
 result['unchanged_numerical_files']={}
 for n,h in lock['dt_source_sha256'].items():
     p=Path(lock['paths']['dt'])/n
@@ -85,6 +115,12 @@ target=REPO/'experiments/rl/current_runtime.json'
 subprocess.run(SCP+[f'{SSH[-1]}:{ROOT}/receipts/owner-b8-dispatch-20260930/current-runtime-snapshot.json',str(target)],check=True)
 result=json.loads(target.read_text())
 result['code_repository_commit_at_collection']=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
+import hashlib
+recorder=Path(__file__).resolve()
+result['recorder_source']=dict(path=str(recorder.relative_to(REPO)).replace('\\','/'),
+    sha256=hashlib.sha256(recorder.read_bytes()).hexdigest(),
+    last_committed_change=subprocess.check_output(['git','log','-1','--format=%H','--',str(recorder)],cwd=REPO,text=True).strip(),
+    differs_from_head=bool(subprocess.check_output(['git','diff','HEAD','--',str(recorder)],cwd=REPO,text=True)))
 result['recording_command']='C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_upstream_alignment_20260929/record_current_runtime.py'
 revision=lambda short:subprocess.check_output(['git','rev-parse',short],cwd=REPO,text=True).strip()
 baseline=json.loads((REPO/'experiments/rl/verified_runtime.json').read_text())
@@ -96,6 +132,19 @@ result['version_mapping']=dict(
     version_record_introduced_commit=revision('071b751'),
     meaning='Deployment directory IDs, upstream commits, DT numerical reference, actor patch commit and documentation commit are distinct identifiers; none substitutes for another',
     packages=baseline['packages'])
+for prepared in result['prepared_versions']:
+    prepared['source_commits']=dict(dt_dispatch=revision('4c0cbdd'),
+        native_resume_entry=revision('2036246'),actor_head=revision('dc4e4d7'))
+    if prepared['id']=='appworld-balanced-padding-resume-20261001':
+        prepared['source_commits'].update(padding_source_archive=revision('0c80b41'),
+                                         padding_owner_comparison=revision('44e1149'))
+        prepared['local_helpers']={}
+        for name in ['prepare_appworld_padding_resume.py','submit_prepared_appworld_resume.py']:
+            p=recorder.parent/name;relative=p.relative_to(REPO).as_posix()
+            prepared['local_helpers'][name]=dict(path=relative,
+                sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+                last_committed_change=subprocess.check_output(['git','log','-1','--format=%H','--',relative],cwd=REPO,text=True).strip(),
+                matches_head_bytes=p.read_bytes()==subprocess.check_output(['git','show','HEAD:'+relative],cwd=REPO))
 for job in result['jobs']:
     # Only label the head with this fix when the actual recorded file digest
     # agrees. A later runtime change must remain explicit, never be relabeled.
@@ -114,6 +163,18 @@ for job in result['jobs']:
         actor_fix_identification='matched actual head, dispatch and original wrapper SHA' if matches else 'unidentified: inspect source, do not assume this patch is active',
         actor_head_effective_sha256=effective,
         runtime_overrides_present=bool(job['runtime_overrides']))
+    actor_name='verl/workers/actor/dp_actor.py'
+    sources={None:job['owner_files'][actor_name]}
+    for overlay in job['runtime_overrides']:
+        for worker in overlay['workers']:
+            path=worker.get('effective_forward_source')
+            if not path and worker.get('source_sha256',{}).get(actor_name):
+                path=worker['source']+'/'+actor_name
+            if path and path in overlay['effective_files']:
+                sources[worker['rank']]=overlay['effective_files'][path]
+    if len(sources)>1:sources.pop(None)
+    job['version_mapping']['actor_forward_sources']=[dict(rank=rank,**source) for rank,source in sources.items()]
+    job['version_mapping']['actor_forward_evidence']='Frozen startup source plus completed PID-bound overrides; no live method introspection'
     for name,record in job['entry_files'].items():
         p=REPO/'experiments/rl'/name
         if p.is_file():

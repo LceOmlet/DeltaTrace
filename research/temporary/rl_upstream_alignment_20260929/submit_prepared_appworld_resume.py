@@ -26,7 +26,7 @@ import hashlib,json,os,psutil,re,subprocess,time
 root=Path('@ROOT@');read=lambda p:json.loads(p.read_text())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 active=read(root/'active-training.json');old=next(j for j in active['jobs'] if j['task']=='AppWorld')
-prepared_path=root/'receipts/owner-b8-dispatch-20260930/appworld-balanced-resume/prepared.json'
+prepared_path=root/'receipts/owner-b8-dispatch-20260930/appworld-balanced-padding-resume/prepared.json'
 prepared=read(prepared_path)
 assert old['pid']==prepared['prior_driver_pid'] and old['devices']==[2,3]
 assert old['entry']==prepared['prior_entry'] and old['verl_root']==prepared['prior_verl_root']
@@ -52,7 +52,7 @@ state=subprocess.check_output(['mx-smi'],text=True)
 for device in old['devices']:
     assert not re.search(r'\|\s*'+str(device)+r'\s+\d+\s+\S',state),state
 
-base=root/'runs/appworld-balanced-resume-20261001'
+base=root/'runs/appworld-balanced-padding-resume-20261001'
 output=base/'appworld-dt'
 assert not base.exists(), 'Keep submissions immutable; inspect any existing attempt'
 output.mkdir(parents=True)
@@ -67,7 +67,10 @@ source=dict(unix=time.time(),dt_root=prepared['dt_root'],verl_root=str(verl),loo
     submission_repository_commit=@REVISION@,submission_script_sha256=@SCRIPT_SHA@,
     prior_driver_pid=old['pid'],resume_from=str(checkpoint),
     completed_checkpoint_marker=dict(path=str(marker),value=step,sha256=sha(marker)),
-    actor_fix_commit='dc4e4d7',dt_dispatch_commit='4c0cbdd',resume_entry_commit='2036246')
+    actor_fix_commit='dc4e4d7',dt_dispatch_commit='4c0cbdd',resume_entry_commit='2036246',
+    actor_padding_sha256=prepared['owner_head_sha256']['verl/workers/actor/dp_actor.py'],
+    padding_comparison_receipt=prepared['padding_comparison_receipt'],
+    padding_comparison_receipt_sha256=prepared['padding_comparison_receipt_sha256'])
 (output/'source.json').write_text(json.dumps(source,indent=2)+'\n')
 env=os.environ.copy()
 env.update(VERL_ROOT=str(verl),LOOP_ROOT=prepared['loop_root'],DT_ROOT=prepared['dt_root'],
