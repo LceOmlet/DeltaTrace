@@ -103,7 +103,9 @@ result['prepared_versions']=[]
 for label,receipt_dir,supersedes in [
     ('appworld-balanced-resume-20261001','appworld-balanced-resume',None),
     ('appworld-balanced-padding-resume-20261001','appworld-balanced-padding-resume',
-     'appworld-balanced-resume-20261001')]:
+     'appworld-balanced-resume-20261001'),
+    ('appworld-request-dispatch-20261001','appworld-request-dispatch',
+     'appworld-balanced-padding-resume-20261001')]:
     path=out/receipt_dir/'prepared.json'
     if not path.is_file():continue
     value=read(path)
@@ -125,6 +127,12 @@ for label,receipt_dir,supersedes in [
         prepared['padding_comparison']=dict(**artifact(p),
             expected_sha256=value['padding_comparison_receipt_sha256'],
             matches=p.is_file() and sha(p)==value['padding_comparison_receipt_sha256'])
+    if value.get('request_dispatch_receipt'):
+        p=Path(value['request_dispatch_receipt'])
+        prepared['request_dispatch']=dict(**artifact(p),
+            code_commit=value['request_dispatch_commit'],
+            expected_sha256=value['request_dispatch_receipt_sha256'],
+            matches=p.is_file() and sha(p)==value['request_dispatch_receipt_sha256'])
     result['prepared_versions'].append(prepared)
 result['unchanged_numerical_files']={}
 for n,h in lock['dt_source_sha256'].items():
@@ -167,16 +175,20 @@ result['version_mapping']=dict(
 for prepared in result['prepared_versions']:
     prepared['source_commits']=dict(dt_dispatch=revision('4c0cbdd'),
         native_resume_entry=revision('2036246'),actor_head=revision('dc4e4d7'))
-    if prepared['id']=='appworld-balanced-padding-resume-20261001':
+    if prepared['id'] in ('appworld-balanced-padding-resume-20261001','appworld-request-dispatch-20261001'):
         prepared['source_commits'].update(padding_source_archive=revision('0c80b41'),
                                          padding_owner_comparison=revision('44e1149'))
         prepared['local_helpers']={}
-        for name in ['prepare_appworld_padding_resume.py','submit_prepared_appworld_resume.py']:
+        prepare_script=('prepare_appworld_request_resume.py' if prepared['id']=='appworld-request-dispatch-20261001'
+                        else 'prepare_appworld_padding_resume.py')
+        for name in [prepare_script,'submit_prepared_appworld_resume.py']:
             p=recorder.parent/name;relative=p.relative_to(REPO).as_posix()
             prepared['local_helpers'][name]=dict(path=relative,
                 sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
                 last_committed_change=subprocess.check_output(['git','log','-1','--format=%H','--',relative],cwd=REPO,text=True).strip(),
                 matches_head_bytes=p.read_bytes()==subprocess.check_output(['git','show','HEAD:'+relative],cwd=REPO))
+        if prepared['id']=='appworld-request-dispatch-20261001':
+            prepared['source_commits']['request_dispatch']=prepared['request_dispatch']['code_commit']
 for job in result['jobs']:
     # Only label the head with this fix when the actual recorded file digest
     # agrees. A later runtime change must remain explicit, never be relabeled.

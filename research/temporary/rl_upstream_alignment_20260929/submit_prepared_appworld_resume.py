@@ -15,6 +15,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checkpoint', required=True,
                         help='Original completed AppWorld global_step directory.')
+    parser.add_argument('--prepared', default=ROOT+'/receipts/owner-b8-dispatch-20260930/appworld-balanced-padding-resume/prepared.json',
+                        help='Remote immutable preparation receipt for this exact prior job.')
+    parser.add_argument('--run-dir', default=ROOT+'/runs/appworld-balanced-padding-resume-20261001',
+                        help='Remote output directory for this submission; must not already exist.')
     args = parser.parse_args()
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     script_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -26,7 +30,7 @@ import hashlib,json,os,psutil,re,subprocess,time
 root=Path('@ROOT@');read=lambda p:json.loads(p.read_text())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 active=read(root/'active-training.json');old=next(j for j in active['jobs'] if j['task']=='AppWorld')
-prepared_path=root/'receipts/owner-b8-dispatch-20260930/appworld-balanced-padding-resume/prepared.json'
+prepared_path=Path(@PREPARED@)
 prepared=read(prepared_path)
 assert old['pid']==prepared['prior_driver_pid'] and old['devices']==[2,3]
 assert old['entry']==prepared['prior_entry'] and old['verl_root']==prepared['prior_verl_root']
@@ -52,7 +56,7 @@ state=subprocess.check_output(['mx-smi'],text=True)
 for device in old['devices']:
     assert not re.search(r'\|\s*'+str(device)+r'\s+\d+\s+\S',state),state
 
-base=root/'runs/appworld-balanced-padding-resume-20261001'
+base=Path(@RUN_DIR@)
 output=base/'appworld-dt'
 assert not base.exists(), 'Keep submissions immutable; inspect any existing attempt'
 output.mkdir(parents=True)
@@ -71,6 +75,8 @@ source=dict(unix=time.time(),dt_root=prepared['dt_root'],verl_root=str(verl),loo
     actor_padding_sha256=prepared['owner_head_sha256']['verl/workers/actor/dp_actor.py'],
     padding_comparison_receipt=prepared['padding_comparison_receipt'],
     padding_comparison_receipt_sha256=prepared['padding_comparison_receipt_sha256'])
+for name in ('request_dispatch_commit','request_dispatch_receipt','request_dispatch_receipt_sha256'):
+    if name in prepared:source[name]=prepared[name]
 (output/'source.json').write_text(json.dumps(source,indent=2)+'\n')
 env=os.environ.copy()
 env.update(VERL_ROOT=str(verl),LOOP_ROOT=prepared['loop_root'],DT_ROOT=prepared['dt_root'],
@@ -104,7 +110,8 @@ print(json.dumps(job,indent=2),flush=True)
 PY
 '''.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY)
        .replace('@CHECKPOINT@', repr(args.checkpoint)).replace('@REVISION@', repr(revision))
-       .replace('@SCRIPT_SHA@', repr(script_sha)))
+       .replace('@SCRIPT_SHA@', repr(script_sha)).replace('@PREPARED@',repr(args.prepared))
+       .replace('@RUN_DIR@',repr(args.run_dir)))
 
 
 if __name__ == '__main__':

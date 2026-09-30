@@ -186,6 +186,17 @@ SQL首批原训练分数为1269条−1、8条0、3条1；−1来自原SQL格式�
 尚未测量真实生成提速，不将请求数变化宣称为两倍速度；保留当前轨迹，
 后续在原检查点边界恢复时另记部署回执，不能把本机修复提交当成已生效。
 
+该修复现已冻结为`candidates/appworld-request-dispatch-20261001/entry`，复用当前
+`appworld-balanced-padding-resume-20261001/verl`。与当前entry逐文件比较，只有
+上述`loop_owner_rollout.py`变化；DT、actor和任务作者目录均沿用原版本。
+[准备回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-request-dispatch-20261001/prepared.json)
+绑定当前PID2680224、原检查点目录、修复完整提交号、来源和逐文件SHA。
+新冻结入口的原训练配置、数据载体和原恢复选项3项CPU检查通过。
+已有提交助手增加可选`--prepared`和`--run-dir`来选择这份回执和独立输出目录，
+原模型/优化器加载仍由VERL负责；助手不会停止作业，并拒绝向仍运行的旧作业重提交。
+默认参数保留旧提交的可复查行为，**不能不带候选参数直接运行旧命令恢复当前作业**。
+准备完成没有改变`active-training.json`，没有提交新训练进程。
+
 ### SQL首批格式失败定位（只读，未改任务行为）
 
 对原保存的1280条轨迹，1279条能精确匹配唯一的官方模板提示。去除这个明确
