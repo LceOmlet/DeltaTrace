@@ -1,0 +1,94 @@
+{
+  "scope": "Original formal training observations and native checkpoint restore, not a new numerical tolerance test or a completed training benchmark",
+  "version_record": "current_runtime.json",
+  "goal_scope": "Three DTPO tasks only, GPU0-5; latest user cancelled GRPO",
+  "appworld": {
+    "driver_pid": 2680224,
+    "prior_driver_pid": 2027456,
+    "restored_global_step": 1,
+    "original_adamw_steps_per_rank": [
+      14,
+      14
+    ],
+    "optimizer_moments_finite": true,
+    "nonzero_moment_elements_per_rank": [
+      21639168,
+      21639168
+    ],
+    "microbatch_per_gpu": 4,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "native_post_restore_generation_observed": true,
+    "new_entry_full_iteration_completed": false
+  },
+  "sql": {
+    "driver_pid": 1876409,
+    "formal_iteration_completed": 1,
+    "original_adamw_steps_per_rank": [
+      1,
+      1
+    ],
+    "padding_applied_after_update1": true,
+    "second_iteration_first_interaction": {
+      "active_trajectories": 1280,
+      "seconds": 1428.793,
+      "generated_tokens": 947554,
+      "aggregate_tokens_per_second": 663.185
+    },
+    "first_iteration_same_interaction": {
+      "seconds": 1550.218,
+      "generated_tokens": 972237,
+      "aggregate_tokens_per_second": 627.161
+    },
+    "throughput_scope": "Whole original generate_sequences RPC across two GPUs, includes prefill/sync and decode; different sampled work, not pure decode or a controlled speedup ratio",
+    "scores": {
+      "-1.0": 1269,
+      "0.0": 8,
+      "1.0": 3
+    },
+    "reward_scope": "Official formal training trajectory scores, not validation; 3/1280 success. -1 is emitted by the original SQL format check; no scoring/prompt/stop/length changes made.",
+    "format_owner": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/recipe-sources/SkyRL-7d94ccf0eac3439c1731ce32018bf043dd639806/skyrl-gym/skyrl_gym/envs/sql/utils.py",
+      "sha256": "cbf0592df884e66d30678051582856bba36ef94c04c50b822709a6cd2e720940",
+      "function": "calculate_reward_single -> verify_format_and_extract"
+    },
+    "new_padding_formal_update_completed": false
+  },
+  "textcraft": {
+    "driver_pid": 212110,
+    "completed_formal_iterations": 4,
+    "current_iteration": 5,
+    "prior_evidence": "results_textcraft_fourth_update.json"
+  },
+  "resources": {
+    "observed_unix": 1790799573.9713619,
+    "cgroup_gib": 219.7583236694336,
+    "job_pss_gib": {
+      "SkyRL-SQL": 54.04,
+      "AppWorld": 72.81,
+      "TextCraft": 53.78
+    },
+    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Thu Oct  1 04:19:33 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.3.12           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.29.1.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 32%         Disabled |\n| 178W / 450W      | 49C          P9 | 51893/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 32%         Disabled |\n| 179W / 450W      | 49C          P9 | 52910/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 19%         Disabled |\n| 153W / 450W      | 48C          P9 | 54868/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 119W / 450W      | 47C          P9 | 3228/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 140W / 450W      | 47C          P9 | 3581/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 121W / 450W      | 47C          P9 | 3670/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 97W / 450W       | 50C          P0 | 862/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 862/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  0                  1884758         ray::WorkerDict              50890          |\n|  1                  1886413         ray::WorkerDict              51722          |\n|  2                  2688126         ray::WorkerDict              53942          |\n|  3                  2689798         ray::WorkerDict              2302           |\n|  4                   319769         ray::WorkerDict              2618           |\n|  5                   321497         ray::WorkerDict              2616           |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "scope": "Point sample, not per-phase or instantaneous peak; original whole-host and virtual allocator metrics are separate"
+  },
+  "unchanged": [
+    "training parameters",
+    "LoRA rank8/alpha16",
+    "per-GPU actor/DT4",
+    "DT Q/V/A",
+    "PPO objective",
+    "official numerical tolerances",
+    "environment reward/termination",
+    "vLLM sampling"
+  ],
+  "remaining": [
+    "Measure first formal actor update with deployed padding and first AppWorld DT group with balanced dispatch from the running jobs; do not restart or invent new test configurations.",
+    "SQL task performance is low. Check actual owner outputs and format handling without silently changing the official task or declaring training success from finite optimizer state."
+  ],
+  "receipts": {
+    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/appworld-restored-optimizer.json": "2d5d9922c28da323ad347944018a20417bbbbc8d1373aae3b4cb1355e2c8ff19",
+    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/progress-observed.json": "896be4505e0d7d2771e502ac00d20fa112956da81589f6d144f27aa961455492",
+    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/sql-step1-rewards.json": "05dbdbd9d70a8d3973f93ade16700f53e7c931a98941785007cdf689b18d82b7",
+    "research/temporary/rl_upstream_alignment_20260929/formal-continuity-20261001/post-update-generation.json": "2c664867f317d63714163acb51cd15c6ee5f20fbc67329d5dbb4895d0ffd52f7"
+  }
+}
