@@ -61,6 +61,21 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 其中两rank记录实际microbatch4、rank8/alpha16、原loss配置及生效源码位置。
 回执只适用于记录的原worker PID；重启后的新worker必须由新的启动文件或实际回执证明。
 
+### 原trainer实际计算的训练规模
+
+2026-10-01核对当前TaskRunner原日志，原配置均未调整。下列是原trainer打印的
+`Size of train dataloader`和`Total training steps`，快照的`native_training_workload`
+保存具体日志路径。这里的step是一轮采样加训练，不是一次B4反向或一次优化器更新。
+
+| 任务 | 原dataloader批数/epoch | 正式采样/训练迭代总数 | 原优化器更新单位 |
+| --- | --- | --- | --- |
+| SkyRL-SQL | 2 | 30 epochs × 2 = 60 | 满批1280条轨迹，global mini1280，PPO epoch1：1次更新/迭代 |
+| AppWorld | 1 | 200 | 按实际完成轨迹数、global mini32、PPO epochs2计算；首批224条对应14次更新 |
+| TextCraft | 11 | 30 epochs × 11 = 330 | 满批256条轨迹，global mini64，PPO epoch1：4次更新/迭代 |
+
+每卡实际microbatch4仅规定原更新内部的处理批量；不能据此把global mini改成4或8，
+也不能把TextCraft的30个epoch写成只有30次正式采样迭代。
+
 已核对的head文件SHA前12位（完整值见快照）：
 
 | 文件 | SHA前缀 |

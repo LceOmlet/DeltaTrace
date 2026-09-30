@@ -26,10 +26,20 @@ for j in active['jobs']:
         entry=str(entry),verl_root=str(vr),dt_root=j['dt_root'],source=artifact(src),output=j['output'],log=j['log'],
         checkpoints=j['checkpoints'],budget=j['budget'],launch=artifact(Path(j['output'])/'launch.json'),
         declared_resource_config={k:j.get(k) for k in ['lora_rank','lora_alpha','actor_microbatch','log_prob_micro_batch_size_per_gpu']})
+    rec['native_training_workload']=[]
     if psutil.pid_exists(j['pid']):
         proc=psutil.Process(j['pid']);rec['process']=dict(alive=proc.is_running(),created_unix=proc.create_time(),
             pid_identity_matches=abs(proc.create_time()-j['observed_process_created_unix'])<.02,status=proc.status(),
             workers=[p.pid for p in proc.children(recursive=True) if 'WorkerDict' in p.name()])
+        for child in proc.children(recursive=True):
+            if 'TaskRunner' not in child.name():continue
+            paths={f.path for f in child.open_files() if '/worker-' in f.path and f.path.endswith('.out')}
+            for path in paths:
+                with Path(path).open(errors='replace') as stream:
+                    lines=[line.strip() for line in stream if line.startswith(
+                        ('Size of train dataloader:', 'Total training steps:'))]
+                if lines:rec['native_training_workload'].append(dict(pid=child.pid,path=path,lines=lines,
+                    meaning='Original trainer log; epochs, rollout iterations and optimizer updates are distinct units'))
     else:rec['process']=dict(alive=False)
     rec['entry_files']={}
     for n,h in source.get('entry_sha256',{}).items():
