@@ -1,0 +1,58 @@
+{
+  "scope": "Locate dtype/shape effects using the original Qwen norm and nn.Linear only.",
+  "script_sha256": "4572710b00cc133363fbb526d7425518bb78e73e93730312e8eede0f94e4ac2b",
+  "parameter_dtype": "torch.bfloat16",
+  "input_dtype": "torch.bfloat16",
+  "reference_dtype": "torch.float32",
+  "fp32_reference_tf32": false,
+  "operation": "original Qwen3_5RMSNorm then original torch.nn.Linear",
+  "between_layouts": {
+    "input": {
+      "exact": true,
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.12697285413742065
+    },
+    "normalized": {
+      "exact": true,
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 1.2358241081237793
+    },
+    "projected": {
+      "exact": false,
+      "max_abs": 0.00390625,
+      "rms": 1.0840870345418807e-05,
+      "reference_rms": 0.6633507013320923
+    }
+  },
+  "error_vs_fp32": {
+    "reference": {
+      "exact": false,
+      "max_abs": 0.02071857452392578,
+      "rms": 0.0010987714631482959,
+      "reference_rms": 0.6633578538894653
+    },
+    "candidate": {
+      "exact": false,
+      "max_abs": 0.02071857452392578,
+      "rms": 0.0010987714631482959,
+      "reference_rms": 0.6633578538894653
+    }
+  },
+  "matches_previous_attention_v": {
+    "reference": {
+      "exact": true,
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.6633507013320923
+    },
+    "candidate": {
+      "exact": true,
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.6633507013320923
+    }
+  },
+  "scope_limit": "Diagnostic only, no invented pass threshold. Same saved first512-token causal prefixes; no full-model reload or update."
+}

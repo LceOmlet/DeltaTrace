@@ -1,0 +1,191 @@
+{
+  "status": "owner_padding_assertion_passed_not_deployed",
+  "owner_assertion": {
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-formal-20260930-v8/tests/models/test_transformer.py",
+    "source_sha256": "552e0360cf41b044080a78035c756ed7543611ea526e3525b9d4713f1d398859",
+    "original_function": "test_hf_casual_models",
+    "original_assertion": "torch.testing.assert_close(\n            masked_mean(log_probs, attention_mask[:, -response_length - 1 : -1]),\n            masked_mean(origin_log_probs, attention_mask[:, -response_length - 1 : -1]),\n            atol=1e-2,\n            rtol=1e-5,\n        )",
+    "reference_masked_mean": -0.27791428565979004,
+    "candidate_masked_mean": -0.2829209268093109,
+    "mask_tokens": 15352,
+    "scope": "Reuses pinned VERL padding-comparison assertion on saved Qwen3.5 output; not an end-to-end PPO or per-token maximum tolerance",
+    "passed": true
+  },
+  "first_layer_differences": [
+    {
+      "name": "input",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        4,
+        512,
+        4096
+      ],
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.012528848834335804,
+      "exact_elements": 8388608,
+      "elements": 8388608
+    },
+    {
+      "name": "base_model.model.model.layers.0",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        4,
+        512,
+        4096
+      ],
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.11403565108776093,
+      "exact_elements": 8388608,
+      "elements": 8388608
+    },
+    {
+      "name": "base_model.model.model.layers.1",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        4,
+        512,
+        4096
+      ],
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.13719041645526886,
+      "exact_elements": 8388608,
+      "elements": 8388608
+    },
+    {
+      "name": "base_model.model.model.layers.2",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        4,
+        512,
+        4096
+      ],
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.12697285413742065,
+      "exact_elements": 8388608,
+      "elements": 8388608
+    },
+    {
+      "name": "base_model.model.model.layers.3",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        4,
+        512,
+        4096
+      ],
+      "max_abs": 0.00390625,
+      "rms": 0.00010003111674450338,
+      "reference_rms": 0.19830024242401123,
+      "exact_elements": 6873475,
+      "elements": 8388608
+    }
+  ],
+  "projection_diagnostic": {
+    "scope": "Locate dtype/shape effects using the original Qwen norm and nn.Linear only.",
+    "script_sha256": "4572710b00cc133363fbb526d7425518bb78e73e93730312e8eede0f94e4ac2b",
+    "parameter_dtype": "torch.bfloat16",
+    "input_dtype": "torch.bfloat16",
+    "reference_dtype": "torch.float32",
+    "fp32_reference_tf32": false,
+    "operation": "original Qwen3_5RMSNorm then original torch.nn.Linear",
+    "between_layouts": {
+      "input": {
+        "exact": true,
+        "max_abs": 0.0,
+        "rms": 0.0,
+        "reference_rms": 0.12697285413742065
+      },
+      "normalized": {
+        "exact": true,
+        "max_abs": 0.0,
+        "rms": 0.0,
+        "reference_rms": 1.2358241081237793
+      },
+      "projected": {
+        "exact": false,
+        "max_abs": 0.00390625,
+        "rms": 1.0840870345418807e-05,
+        "reference_rms": 0.6633507013320923
+      }
+    },
+    "error_vs_fp32": {
+      "reference": {
+        "exact": false,
+        "max_abs": 0.02071857452392578,
+        "rms": 0.0010987714631482959,
+        "reference_rms": 0.6633578538894653
+      },
+      "candidate": {
+        "exact": false,
+        "max_abs": 0.02071857452392578,
+        "rms": 0.0010987714631482959,
+        "reference_rms": 0.6633578538894653
+      }
+    },
+    "matches_previous_attention_v": {
+      "reference": {
+        "exact": true,
+        "max_abs": 0.0,
+        "rms": 0.0,
+        "reference_rms": 0.6633507013320923
+      },
+      "candidate": {
+        "exact": true,
+        "max_abs": 0.0,
+        "rms": 0.0,
+        "reference_rms": 0.6633507013320923
+      }
+    },
+    "scope_limit": "Diagnostic only, no invented pass threshold. Same saved first512-token causal prefixes; no full-model reload or update."
+  },
+  "unchanged": "Formal jobs, default patch, PPO/DT formulas, training configuration and numerical tolerances",
+  "pending": "Deploy only with explicit source receipt at a boundary that keeps old-logprob and actor-update code consistent within the iteration; do not change an in-progress update",
+  "evidence_root": "research/temporary/rl_upstream_alignment_20260929/actor-response-padding-20261001",
+  "evidence_sha256": {
+    "candidate.json": "a1c98ec8dde36dc365a25de207b7cb9350005a83c7e46c05e4654b4a160718c6",
+    "difference-localization.json": "f012d550c7a27e65ac454ee9d6f698089f4b3a6e72a9b63557847489da18c6fd",
+    "owner-padding-assertion.json": "30f34f4cddbb0aa6531a1ad3db7f1aca9aaf3ba060920fe30102e7b85dc7311b",
+    "result.json": "d2899aa14ebf141d7b7cd278b8120163c20492dd73cca2782455c2bd57426048",
+    "source.json": "6a0d2ed662903093362a56747b22c8b5f261e0e43bdba03aa2ac82cfb6b96a7b",
+    "attention-replay/job.json": "917137e2f38073d67f424b9a12c83ba4a556ab6c7bd963a5ecdb8af7bae870bf",
+    "attention-replay/result.json": "2764511ee617081f932cddfe566c1c370bef9f04ba7f889658fde5a889937944",
+    "layer-localization-v2/candidate-rank0.json": "f6bd4c5f966a17c1df13c69b25aac92eb181d05dd2dca827ae6d9a302c099c4b",
+    "layer-localization-v2/candidate-rank1.json": "1d9accf825b57def6548739561282b8682f7728951419233a4335c22b6ec3c16",
+    "layer-localization-v2/layer-inventory-rank0.json": "0c9bef41272f7736ebee6c1a5dd0352250083d06c59e9090cbc882eda20779b5",
+    "layer-localization-v2/reference-rank0.json": "37178ee4d53a7c1ecb84c2beda506e34935dd9e215d08d184a9275d42ebd22b7",
+    "layer-localization-v2/result.json": "73565669d6a38fcaef58e9cb67c81f207932c5be507a67c175240f4677d06dee",
+    "layer-localization-v2/source.json": "3abc86b47ee65bffcd674cdea72e3488128cdd9258313bdbc53f41ae9c632816",
+    "value-projection/job.json": "396e163072605b311c1a608563f80c1bab0f162ec50ebfa70ca6deabae31312d",
+    "value-projection/result.json": "9288443a821c704c70c450836bc29f4409fa139bbbe853765c2157fae0e4b233"
+  },
+  "diagnostic_resources": {
+    "layer-localization-v2": {
+      "samples": 25,
+      "sampled_physical_gpu_peak_mib": {
+        "6": 40760,
+        "7": 40760
+      },
+      "peak_process_tree_pss_gib": 51.339783668518066,
+      "driver_and_observer_exited": true
+    },
+    "attention-replay": {
+      "samples": 12,
+      "sampled_physical_gpu_peak_mib": {
+        "6": 52595
+      },
+      "peak_process_tree_pss_gib": 11.341383934020996,
+      "driver_and_observer_exited": true
+    },
+    "value-projection": {
+      "samples": 8,
+      "sampled_physical_gpu_peak_mib": {
+        "6": 6182
+      },
+      "peak_process_tree_pss_gib": 12.615434646606445,
+      "driver_and_observer_exited": true
+    }
+  }
+}

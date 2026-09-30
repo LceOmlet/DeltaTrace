@@ -1,0 +1,105 @@
+{
+  "scope": "Replay the first differing official Qwen layer on saved valid-token prefixes.\n\nAll computations use installed Qwen and PyTorch operators; this is diagnostics,\nnot a new model path, training configuration, or numerical acceptance threshold.\n",
+  "script_sha256": "466ed25a5a7d9456e8353102273085078e3e76bf5e71d4cabf9e0ea50b904cae",
+  "model_path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+  "owner_layer": "Qwen3_5DecoderLayer",
+  "owner_attention": "<function sdpa_attention_forward at 0x7f99ae54fa60>",
+  "parameter_dtypes": [
+    "torch.bfloat16"
+  ],
+  "qkv_comparison": {
+    "q": {
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 1.2538762092590332,
+      "exact": true
+    },
+    "k": {
+      "max_abs": 0.015625,
+      "rms": 3.085182834183797e-05,
+      "reference_rms": 1.3836268186569214,
+      "exact": false
+    },
+    "v": {
+      "max_abs": 0.00390625,
+      "rms": 1.0840871254913509e-05,
+      "reference_rms": 0.6633507013320923,
+      "exact": false
+    }
+  },
+  "attention_output_difference": {
+    "max_abs": 0.015625,
+    "rms": 8.176001574611291e-05,
+    "reference_rms": 0.5028273463249207,
+    "exact": false
+  },
+  "error_vs_fp32_math": {
+    "reference": {
+      "max_abs": 0.01922130584716797,
+      "rms": 0.0008590416982769966,
+      "reference_rms": 0.5028300881385803,
+      "exact": false
+    },
+    "candidate": {
+      "max_abs": 0.01922130584716797,
+      "rms": 0.0008590499637648463,
+      "reference_rms": 0.5028300881385803,
+      "exact": false
+    },
+    "bf16_math": {
+      "max_abs": 0.01447916030883789,
+      "rms": 0.0008345912792719901,
+      "reference_rms": 0.5028300881385803,
+      "exact": false
+    }
+  },
+  "full_layer_difference": {
+    "max_abs": 0.00390625,
+    "rms": 9.96986054815352e-05,
+    "reference_rms": 0.19830448925495148,
+    "exact": false
+  },
+  "replay_vs_original_valid_prefix": {
+    "max_abs": 0.0625,
+    "rms": 0.00033355483901686966,
+    "reference_rms": 0.19830024242401123,
+    "exact": false
+  },
+  "timing_seconds": {
+    "reference": 1.3287352751940489,
+    "candidate": 0.07111657783389091
+  },
+  "shapes": {
+    "reference": {
+      "q_shape": [
+        4,
+        16,
+        32320,
+        256
+      ],
+      "mask_shape": [
+        4,
+        1,
+        32320,
+        32320
+      ],
+      "mask_dtype": "torch.bool"
+    },
+    "candidate": {
+      "q_shape": [
+        4,
+        16,
+        4160,
+        256
+      ],
+      "mask_shape": [
+        4,
+        1,
+        4160,
+        4160
+      ],
+      "mask_dtype": "torch.bool"
+    }
+  },
+  "limits": "Only first 512 valid tokens per row; remaining hidden positions zero-filled, future positions cannot influence this causal prefix. No tolerance pass/fail inferred from these diagnostics."
+}
