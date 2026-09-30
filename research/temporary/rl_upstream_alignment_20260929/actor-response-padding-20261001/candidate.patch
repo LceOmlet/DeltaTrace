@@ -1,0 +1,120 @@
+diff --git a/experiments/rl/patch_actor_response_boundary.py b/experiments/rl/patch_actor_response_boundary.py
+index 055a542..16cb870 100644
+--- a/experiments/rl/patch_actor_response_boundary.py
++++ b/experiments/rl/patch_actor_response_boundary.py
+@@ -1,14 +1,40 @@
+-"""Keep native response columns when trimming shared prompt padding."""
++"""Restore native response columns after trimming shared model-input padding."""
+ from pathlib import Path
+ from patch_verl_environment_entry import replace_once
+ 
+ 
+ def patch(source):
++    # Replace the previous shape-preserving bound: it kept the whole global
++    # response width even when most of those columns were shared padding.
++    previous = ('                    # A native trajectory may left-pad the response too.\n'
++                '                    # Retain every response column and its preceding logit.\n'
++                '                    left_trim = min(left_trim, input_ids.shape[-1] - response_length - 1)\n')
++    source = source.replace(previous, '')
++    source = replace_once(source,
++        '        response_length = micro_batch["responses"].size(-1)\n',
++        '        response_length = micro_batch["responses"].size(-1)\n'
++        '        response_labels = micro_batch["responses"]\n'
++        '        response_left_pad = 0\n')
+     anchor = '                    left_trim = int(attention_mask.long().argmax(-1).min().item())\n'
+-    return replace_once(source, anchor, anchor +
+-        '                    # A native trajectory may left-pad the response too.\n'
+-        '                    # Retain every response column and its preceding logit.\n'
+-        '                    left_trim = min(left_trim, input_ids.shape[-1] - response_length - 1)\n')
++    source = replace_once(source, anchor, anchor +
++        '                    # Keep the predecessor of the first real token.\n'
++        '                    left_trim = max(0, left_trim - 1)\n')
++    source = replace_once(source,
++        '                    input_ids = input_ids[:, left_trim:]\n',
++        '                    # Preserve the caller\'s response layout on return.\n'
++        '                    response_left_pad = max(0, left_trim - (input_ids.shape[-1] - response_length - 1))\n'
++        '                    response_length -= response_left_pad\n'
++        '                    response_labels = response_labels[:, response_left_pad:]\n'
++        '                    input_ids = input_ids[:, left_trim:]\n')
++    source = replace_once(source,
++        'logprobs_from_logits(logits, micro_batch["responses"][:, :head_response_length])',
++        'logprobs_from_logits(logits, response_labels[:, :head_response_length])')
++    return replace_once(source, '            return entropy, log_probs\n',
++        '            if response_left_pad:\n'
++        '                log_probs = torch.nn.functional.pad(log_probs, (response_left_pad, 0))\n'
++        '                if entropy is not None:\n'
++        '                    entropy = torch.nn.functional.pad(entropy, (response_left_pad, 0))\n'
++        '            return entropy, log_probs\n')
+ 
+ 
+ if __name__ == '__main__':
+diff --git a/experiments/rl/test_shared_padding.py b/experiments/rl/test_shared_padding.py
+index 51d2b50..271df6a 100644
+--- a/experiments/rl/test_shared_padding.py
++++ b/experiments/rl/test_shared_padding.py
+@@ -58,7 +58,7 @@ class HeadOnlyModel(torch.nn.Module):
+         return SimpleNamespace(logits=logits)
+ 
+ 
+-@pytest.mark.parametrize('model_type, trimmed_length', [(None, 9), ('qwen3_5', 64), ('qwen3_5_text', 64)])
++@pytest.mark.parametrize('model_type, trimmed_length', [(None, 10), ('qwen3_5', 64), ('qwen3_5_text', 64)])
+ def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monkeypatch, model_type, trimmed_length):
+     import verl.utils.torch_functional as functional
+     # Exercise the owner's existing CPU logprob branch in this CPU-only test;
+@@ -143,13 +143,55 @@ def test_left_padded_native_response_keeps_all_columns(monkeypatch, model_type,
+         assert lp.shape == entropy.shape == (2, 192)
+         loss = ((lp+entropy)*attention[:, -192:]).sum()
+         loss.backward()
+-        values.append(torch.stack([lp, entropy]))
++        values.append(torch.stack([lp, entropy])[:, attention[:, -192:].bool()])
+         grads.append(model.weight.grad.clone())
+         model.weight.grad = None
+     torch.testing.assert_close(*values, rtol=0, atol=0)
+     torch.testing.assert_close(*grads, rtol=0, atol=0)
+ 
+ 
++class FusedOutputModel(HeadOnlyModel):
++    """Interface double for the original fused actor's full-sequence outputs."""
++    def forward(self, input_ids, **kwargs):
++        import verl.utils.torch_functional as functional
++        self.lengths.append(input_ids.shape[-1])
++        logits = self.weight[input_ids]
++        return SimpleNamespace(
++            log_probs=functional.logprobs_from_logits(logits, input_ids.roll(-1, -1)),
++            entropy=functional.entropy_from_logits(logits))
++
++
++@pytest.mark.parametrize('fused', [False, True])
++@pytest.mark.parametrize('response_width', [4, 192, 32704])
++def test_native_response_padding_restores_masked_actor_interface(monkeypatch, fused, response_width):
++    import verl.utils.torch_functional as functional
++    monkeypatch.setattr(functional, 'FLAH_ATTN_CROSS_ENTROPY_LOSS_AVAILABLE', False)
++    monkeypatch.setenv('VERL_TRIM_RESPONSE_HEAD', '1')
++    ids = torch.arange(4*32768).reshape(4, 32768) % 8
++    attention = torch.zeros_like(ids)
++    for row, length in enumerate([5, 9, 17, 27]):
++        attention[row, -length:] = 1
++    batch = dict(input_ids=ids, responses=ids[:, -response_width:], attention_mask=attention,
++                 position_ids=(attention.cumsum(-1)-1).clamp_min(0))
++    model = FusedOutputModel() if fused else HeadOnlyModel()
++    model.config = SimpleNamespace(model_type='qwen3_5_text')
++    actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
++        use_fused_kernels=fused, compute_entropy_from_logits=functional.entropy_from_logits)
++    mask = attention[:, -response_width:].bool()
++    values, grads = [], []
++    for flag in ['0', '1']:
++        monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', flag)
++        entropy, lp = DataParallelPPOActor._forward_micro_batch(actor, batch, 1., True)
++        assert lp.shape == entropy.shape == (4, response_width)
++        values.append(torch.stack([lp, entropy])[:, mask])
++        (lp+entropy)[mask].sum().backward()
++        grads.append(model.weight.grad.clone());model.weight.grad = None
++    assert model.lengths == [32768, 64]
++    torch.testing.assert_close(*values, rtol=0, atol=0)
++    torch.testing.assert_close(*grads, rtol=0, atol=0)
++    assert batch['responses'].shape == (4, response_width)
++
++
+ class GenerationModel(torch.nn.Module):
+     def __init__(self):
+         super().__init__()

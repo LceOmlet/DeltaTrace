@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-代码修复基准为 `dc4e4d7`。以下部署快照最近核对于北京时间2026-10-01 00:44，具体时间见
+代码修复基准为 `dc4e4d7`。以下部署快照最近核对于北京时间2026-10-01 02:15，具体时间见
 [current_runtime.json](current_runtime.json)。任务会继续运行，快照中的阶段不是实时状态。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -172,7 +172,7 @@ LOOP环境目录；它只供AppWorld使用，不能拿其中历史SQL/TextCraft�
 SQL/TextCraft的作业条目不改。已通过本机与内嵌远端Python语法检查，尚未执行提交，
 不能把该检查或脚本存在称为检查点恢复成功。
 
-### SQL padding 调查（未修改实现）
+### SQL padding 调查（正式训练路径未改；候选单独封存）
 
 首批正式采样为1280条轨迹、4850条response、1,385,232个policy token、
 4,157,129个有效上下文token；原trainer记录采样3505.147秒。随后实际栈位于
@@ -191,6 +191,35 @@ SQL/TextCraft的作业条目不改。已通过本机与内嵌远端Python语法�
 causal-conv接口读取`seq_idx`，原GDN接口读取`cu_seq_lens_q`；不能仅切开关就
 假定跨轨迹边界正确。当前没有改这些参数、接口或数值路径，也没有撤回`cf145b2`
 的response边界修复。后续若处理此处，先核实原owner如何传递这些边界及实际padding工作量。
+
+2026-10-01 进一步完成一个独立候选的同权重诊断。原actor文件SHA为
+`2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3`，
+候选为`1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd`。
+它只修改共有左padding的运输边界；34项CPU接口测试通过，但真实Qwen有效
+token log-prob出现尚未解释的差异（最大绝对差17.750082）。该候选**未通过、未部署**；
+不能把其运行速度、一次更新完成或CPU测试通过写成数值验收通过。
+
+候选源码、精确diff、测试与真实模型诊断统一封存在
+[actor-response-padding-20261001](../../research/temporary/rl_upstream_alignment_20260929/actor-response-padding-20261001/README.md)。
+`candidate.json`中的`CPU_only_candidate_not_deployed`是较早的阶段回执，
+后续结论以同目录`status.json`和`result.json`为准；旧回执未覆盖。
+默认`experiments/rl/patch_actor_response_boundary.py`及其测试已恢复为`bf5f4ab`
+提交中的原内容，避免后续发布误带候选。远端正式目录、worker、训练参数没有改动。
+上面的AppWorld恢复候选仍使用原actor哈希，不包含这个padding候选。
+
+### 版本状态速查（2026-10-01 02:15部署核对）
+
+| 标识 | 状态 | 能证明什么 / 不能混成什么 |
+| --- | --- | --- |
+| DT `c9cd147` / 数值参考 `fc2e6c2` | 三组正在复用 | 固定DT文件身份与既有对应算子回执，不是新候选的验收 |
+| VERL `20bd331` + 输出头修复 `dc4e4d7` | 三组已生效；AppWorld/TextCraft含PID绑定的覆盖回执 | 原head容差与B8×32768容量，不是未经修改的官方整个仓库 |
+| 分发修复 `4c0cbdd` | CPU测试通过，正式任务未部署 | 原分区接口及顺序恢复，不是实测墙钟提速 |
+| AppWorld恢复入口 `2036246` + 提交助手 `bf5f4ab` | 已准备，未启动 | 冻结源码与恢复参数；没有实际恢复成功记录 |
+| padding actor SHA `1f862e8bbdaa…` | 真实对照差异待定位，未通过、未部署 | 保留诊断材料；禁止从默认补丁入口使用 |
+
+提交前后的文档版本、实际部署版本和数值参考版本分别记录。此次快照采集时本机
+HEAD为`bf5f4ab`，不表示远端三组运行了该提交的全部文件。每次继续工作先读本表，
+再根据快照中的原manifest、实际路径、SHA、PID创建时间和运行时覆盖确认适用关系。
 
 ## 尚未被证明的结论
 

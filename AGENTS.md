@@ -30,6 +30,16 @@ are not evidence that the accepted Q/V construction has been implemented.
 
 # Remote environment reuse
 
+Before continuing, restarting, or deploying RL work, read
+`experiments/rl/RUNTIME_RECORD.md` and the dated `current_runtime.json` snapshot.
+Record the upstream commit, local patch commit, actual imported file paths and
+SHA256, effective configuration, and applicable verification receipts together.
+For running jobs, include PID creation time and any completed runtime overrides.
+Distinguish deployed, verified, prepared-only, and unaccepted candidate versions;
+a newer Git commit or directory name is not evidence of deployment or validation.
+Keep unaccepted candidates outside the default launch/patch path. Preserve their
+source and diagnostic receipts rather than replacing the verified baseline.
+
 Before any A6000/RL setup or run, read `experiments/rl/REMOTE_ENVIRONMENT.md`.
 The existing runtime is already provisioned. Source
 `experiments/rl/environments/a6000.env.sh` on that host and use its
