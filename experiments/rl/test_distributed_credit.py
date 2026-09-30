@@ -80,6 +80,43 @@ def test_zero_batch_does_not_enter_fsdp_collectives():
     assert all(not output.batch[key].any() for key in CREDIT_KEYS)
 
 
+@pytest.mark.parametrize('count', [17, 22])
+def test_owner_balance_restores_credit_after_padding_and_duplicate_rows(count, monkeypatch):
+    from verl.utils import seqlen_balancing
+
+    calls = []
+    original = seqlen_balancing.get_seqlen_balanced_partitions
+    def observe(lengths, *, k_partitions, equal_size):
+        partitions = original(lengths, k_partitions, equal_size)
+        calls.append((lengths, partitions))
+        return partitions
+    monkeypatch.setattr(seqlen_balancing, 'get_seqlen_balanced_partitions', observe)
+    order = list(reversed(range(count))) + [0, count - 1, 3]
+    data = training_data([.1] * count, order)
+    lengths = torch.tensor([8 + step * 4 for step in order])
+    width = int(lengths.max()) + 3
+    mask = torch.arange(width - 3)[None, :] >= (width - lengths[:, None])
+    data.batch['attention_mask'] = torch.cat((mask.long(), data.batch['attention_mask'][:, -3:]), -1)
+    data.batch['input_ids'] = torch.cat((torch.full_like(mask, 40, dtype=torch.long), data.batch['responses']), -1)
+    expected = compute_training_credit(data, NativeDispatchFixture(1), eos_token_id=99, pad_token_id=0)
+    group = NativeDispatchFixture(2)
+    actual = compute_training_credit(data, group, eos_token_id=99, pad_token_id=0)
+    for key in CREDIT_KEYS:
+        torch.testing.assert_close(actual.batch[key], expected.batch[key], rtol=0, atol=0)
+    original_lengths, partitions = calls[-1]
+    assert len(original_lengths) % 8 == 0
+    chunks = group.calls[0]
+    assert [chunk.batch['attention_mask'].sum(-1).tolist() for chunk in chunks] == [
+        [original_lengths[index] for index in partition] for partition in partitions]
+    assert all(len(chunk) % 4 == 0 for chunk in chunks)
+    # The old contiguous split reproduced the observed short-rank/long-rank skew.
+    midpoint = len(original_lengths) // 2
+    old_spread = abs(sum(original_lengths[:midpoint]) - sum(original_lengths[midpoint:]))
+    new_spread = abs(sum(original_lengths[i] for i in partitions[0]) -
+                     sum(original_lengths[i] for i in partitions[1]))
+    assert new_spread < old_spread
+
+
 def test_native_denominators_stay_collectively_aligned_without_changing_credit():
     data = training_data([0., 0., 1.], [2, 0, 1, 2])
     data.non_tensor_batch['appworld_num_tests'] = np.array([2, 3, 4, 2])

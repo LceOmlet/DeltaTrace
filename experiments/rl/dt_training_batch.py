@@ -46,6 +46,7 @@ def prepare_training_credit(data):
 def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id):
     from verl import DataProto
     from verl.protocol import pad_dataproto_to_divisor, unpad_dataproto
+    from verl.utils.seqlen_balancing import get_seqlen_balanced_partitions
 
     source, inverse = prepare_training_credit(data)
     shape = source.batch['responses'].shape
@@ -70,7 +71,19 @@ def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id):
             requests = source.select_idxs(group)
             requests.meta_info.update(eos_token_id=int(eos_token_id), pad_token_id=int(pad_token_id))
             requests, padding = pad_dataproto_to_divisor(requests, worker_group.world_size * 4)
-            values = unpad_dataproto(worker_group.compute_dt_token_advantages(requests), padding)
+            # Use the trainer owner's partitioner before its contiguous DP split.
+            # Splitting globally sorted rows directly puts all long contexts on
+            # one rank, while every FSDP microbatch waits for that rank.
+            partitions = get_seqlen_balanced_partitions(
+                requests.batch['attention_mask'].sum(-1).tolist(),
+                k_partitions=worker_group.world_size, equal_size=True)
+            order = torch.tensor([index for partition in partitions for index in partition])
+            requests.reorder(order)
+            values = worker_group.compute_dt_token_advantages(requests)
+            # Restore the original padding positions before native unpadding,
+            # then scatter to the unchanged factual response identities.
+            values.reorder(torch.argsort(order))
+            values = unpad_dataproto(values, padding)
             for key in CREDIT_KEYS:
                 result[key][group] = values.batch[key].cpu()
     return DataProto.from_dict(tensors={key: value[inverse] for key, value in result.items()})
