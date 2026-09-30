@@ -1,0 +1,1318 @@
+Process 1880429: ray::TaskRunner.run
+Python v3.12.11 (/opt/conda/bin/python3.12)
+
+Thread 1880429 (idle): "MainThread"
+    get_objects (ray/_private/worker.py:978)
+        Arguments:
+            self: <Worker at 0x7f7d2cf73f50>
+            object_refs: [<ray.ObjectRef at 0x7f4998400750>, <ray.ObjectRef at 0x7f4998402670>]
+            timeout: None
+            return_exceptions: False
+            skip_deserialization: False
+            _tensor_transport: None
+        Locals:
+            object_ref: <ray.ObjectRef at 0x7f4998402670>
+            timeout_ms: -1
+    get (ray/_private/worker.py:2967)
+        Arguments:
+            object_refs: [<ray.ObjectRef at 0x7f4998400750>, <ray.ObjectRef at 0x7f4998402670>]
+        Locals:
+            timeout: None
+            _tensor_transport: None
+            worker: <Worker at 0x7f7d2cf73f50>
+            all_compiled_dag_refs: False
+            any_compiled_dag_refs: False
+            object_ref: <ray.ObjectRef at 0x7f4998402670>
+            is_dag_ref: False
+            is_individual_id: False
+    wrapper (ray/_private/client_mode_hook.py:104)
+        Locals:
+            args: ([<ray.ObjectRef at 0x7f4998400750>, <ray.ObjectRef at 0x7f4998402670>])
+            kwargs: {}
+    auto_init_wrapper (ray/_private/auto_init_hook.py:22)
+        Locals:
+            args: ([<ray.ObjectRef at 0x7f4998400750>, <ray.ObjectRef at 0x7f4998402670>])
+            kwargs: {}
+    __call__ (verl/single_controller/ray/base.py:51)
+        Arguments:
+            this: <actor_rollout_compute_dt_token_advantages at 0x7f49909391c0>
+        Locals:
+            args: [[<DataProto at 0x7f491c2bab10>, <DataProto at 0x7f499bcd8260>]]
+            kwargs: {}
+            padding_count: 0
+            output: [<ray.ObjectRef at 0x7f4998400750>, <ray.ObjectRef at 0x7f4998402670>]
+    compute_training_credit (dt_training_batch.py:73)
+        Arguments:
+            data: <DataProto at 0x7f4991361400>
+            worker_group: <RayWorkerGroup at 0x7f499bf44980>
+        Locals:
+            eos_token_id: 248046
+            pad_token_id: 248044
+            DataProto: 0
+            pad_dataproto_to_divisor: <function at 0x7f7d2cead620>
+            unpad_dataproto: <function at 0x7f4a439b0860>
+            source: <DataProto at 0x7f499bcf4f50>
+            inverse: <Tensor at 0x7f49703d29e0>
+            shape: (4582, 3000)
+            result: {"dt_token_advantages": <Tensor at 0x7f4999c268a0>, "dt_q_estimates": <Tensor at 0x7f4999c26c60>, ...}
+            active: <Tensor at 0x7f4999c275c0>
+            policy_lengths: <Tensor at 0x7f4999c25d60>
+            nonzero: <Tensor at 0x7f4999c26120>
+            indices: <Tensor at 0x7f4999c264e0>
+            lengths: <Tensor at 0x7f4999c26300>
+            groups: [<Tensor at 0x7f4999c264e0>]
+            group: <Tensor at 0x7f4999c264e0>
+            requests: <DataProto at 0x7f499be1f8f0>
+            padding: 2
+    trajectory_credit (owner_trajectory_batch.py:111)
+        Arguments:
+            data: <DataProto at 0x7f48b0b653d0>
+            response_data: <DataProto at 0x7f4991361400>
+            worker_group: <RayWorkerGroup at 0x7f499bf44980>
+        Locals:
+            eos_token_id: 248046
+            pad_token_id: 248044
+            DataProto: 0
+            CREDIT_KEYS: ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates")
+            compute_training_credit: <function at 0x7f4993e365c0>
+            result: {"dt_token_advantages": <Tensor at 0x7f49990d9310>, "dt_q_estimates": <Tensor at 0x7f49990d82d0>, ...}
+    fit (verl/trainer/ppo/ray_trainer.py:1241)
+        Arguments:
+            self: <RayPPOTrainer at 0x7f499be94440>
+        Locals:
+            OmegaConf: 0
+            Tracking: 0
+            logger: <Tracking at 0x7f499c123620>
+            val_metrics: {"val/spider/test_score": -0.9332688588007737, "val/spider/tool_call_count/mean": 0, "val/success_rate": 0.01416015625}
+            progress_bar: <tqdm at 0x7f499310f8c0>
+            last_val_metrics: None
+            epoch: 0
+            batch_dict: {"input_ids": <Tensor at 0x7f48f84e95e0>, "attention_mask": <Tensor at 0x7f48f84eb7f0>, ...}
+            metrics: {"global_seqlen/min": 1984742, "global_seqlen/max": 2080093, "global_seqlen/minmax_diff": 95351, ...}
+            timing_raw: {"gen": 3327.3852565400302, "reward": 0.00017946027219295502, "old_log_prob": 374.7883407473564}
+            batch: <DataProto at 0x7f48b0b653d0>
+            batch_keys_to_pop: ["input_ids", "attention_mask", "position_ids"]
+            non_tensor_batch_keys_to_pop: ["raw_prompt_ids", "data_source", "multi_modal_data", "raw_prompt", "tools_kwargs", "env_kwargs"]
+            gen_batch: <DataProto at 0x7f4993422cc0>
+            is_last_step: False
+            gen_batch_output: <DataProto at 0x7f48b0b653d0>
+            reward_tensor: <Tensor at 0x7f4993ee5a40>
+            reward_extra_infos_dict: {}
+            old_log_prob: <DataProto at 0x7f4990d325a0>
+            entropys: <Tensor at 0x7f4974d82850>
+            response_masks: <Tensor at 0x7f4993ee59f0>
+            loss_agg_mode: "token-mean"
+            entropy_loss: <Tensor at 0x7f49750befd0>
+            old_log_prob_metrics: {"actor/entropy_loss": 0.14795148372650146}
+            rollout_old_log_probs: <Tensor at 0x7f4993ee58b0>
+            actor_old_log_probs: <Tensor at 0x7f4974aed7c0>
+            attention_mask: <Tensor at 0x7f4993ee55e0>
+            responses: <Tensor at 0x7f4993ee5770>
+            response_length: 15809
+            response_mask: <Tensor at 0x7f48b10b72a0>
+            rollout_probs: <Tensor at 0x7f48f8306760>
+            actor_probs: <Tensor at 0x7f48d8701cc0>
+            rollout_probs_diff: <Tensor at 0x7f49990dbf70>
+            rollout_probs_diff_max: <Tensor at 0x7f49990d8be0>
+            rollout_probs_diff_mean: <Tensor at 0x7f49990d8cd0>
+            rollout_probs_diff_std: <Tensor at 0x7f49990d9cc0>
+            norm_adv_by_std_in_grpo: True
+            compute_training_credit: <function at 0x7f4993e365c0>
+            trajectory_credit: <function at 0x7f4990de65c0>
+            dt_values: <DataProto at 0x7f4998ced400>
+            actor_output: <DataProto at 0x7f49906c7140>
+            actor_output_metrics: {"actor/pg_loss": 0.0006807366399243619, "actor/pg_clipfrac": 0, "actor/ppo_kl": 0, "actor/pg_clipfrac_lower": 0, ...}
+            rollout_data_dir: "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v8/sql-dt/rollouts"
+            inputs: ?
+            outputs: ?
+            scores: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, ...]
+            n_gpus: 2
+    run (verl/trainer/main_ppo.py:198)
+        Arguments:
+            self: <TaskRunner at 0x7f7d2ce7a480>
+            config: <DictConfig at 0x7f49d59d0dd0>
+        Locals:
+            pprint: <function at 0x7f7d2d6caca0>
+            OmegaConf: 0
+            copy_to_local: <function at 0x7f4a17d020c0>
+            local_path: "/mnt/si0021787ci2/default/models/Qwen3.5-9B"
+            make_envs: <function at 0x7f49d59a7920>
+            envs: <Manager at 0x7f49d6927bc0>
+            val_envs: <Manager at 0x7f49cdb965d0>
+            hf_processor: <function at 0x7f4b45bb4e00>
+            hf_tokenizer: <function at 0x7f4b45bb4720>
+            trust_remote_code: False
+            tokenizer: <Qwen2Tokenizer at 0x7f49d5b311f0>
+            instantiate: <function at 0x7f49c70bed40>
+            processor: <Qwen3VLProcessor at 0x7f49cdd99c70>
+            is_version_ge: <function at 0x7f49c4351120>
+            RayWorkerGroup: 0
+            ActorRolloutRefWorker: 0
+            AsyncActorRolloutRefWorker: 0
+            CriticWorker: 0
+            actor_rollout_cls: 0
+            ray_worker_group_cls: 0
+            ResourcePoolManager: 0
+            Role: 0
+            role_worker_mapping: {<Role at 0x7f49d59b32c0>: <ActorClass(ActorRolloutRefWorker) at 0x7f499be1c5c0>, ...}
+            global_pool_id: "global_pool"
+            resource_pool_spec: {"global_pool": [2]}
+            mapping: {<Role at 0x7f49d59b32c0>: "global_pool", <Role at 0x7f49d60e95b0>: "global_pool"}
+            reward_manager_name: "episode"
+            EpisodeRewardManager: 0
+            reward_manager_cls: 0
+            reward_fn: <EpisodeRewardManager at 0x7f499bd3e0c0>
+            val_reward_fn: <EpisodeRewardManager at 0x7f499be60200>
+            resource_pool_manager: <ResourcePoolManager at 0x7f499c0f2c30>
+            TrajectoryCollector: 0
+            traj_collector: <TrajectoryCollector at 0x7f499bd94b00>
+            collate_fn: <function at 0x7f4a17d03880>
+            train_dataset: <SQLDataset at 0x7f499be604d0>
+            val_dataset: <SQLDataset at 0x7f499bcd9a00>
+            train_sampler: <RandomSampler at 0x7f499bca5fd0>
+            trainer: <RayPPOTrainer at 0x7f499be94440>
+            ExitStack: 0
+            environment_cleanup: <ExitStack at 0x7f499bd240e0>
+    _resume_span (ray/util/tracing/tracing_helper.py:461)
+        Arguments:
+            self: <TaskRunner at 0x7f7d2ce7a480>
+        Locals:
+            _ray_trace_ctx: None
+            _args: (<DictConfig at 0x7f49d59d0dd0>)
+            _kwargs: {}
+    actor_method_executor (ray/_private/function_manager.py:693)
+        Arguments:
+            _FunctionActorManager__ray_actor: <TaskRunner at 0x7f7d2ce7a480>
+        Locals:
+            args: (<DictConfig at 0x7f49d59d0dd0>)
+            kwargs: {}
+            is_bound: False
+    main_loop (ray/_private/worker.py:1031)
+        Arguments:
+            self: <Worker at 0x7f7d2cf73f50>
+        Locals:
+            sigterm_handler: <function at 0x7f7d2ceacae0>
+    <module> (ray/_private/workers/default_worker.py:322)
+Thread 1880730 (idle): "PythonGCThread"
+    wait (threading.py:355)
+        Arguments:
+            self: <Condition at 0x7f7d2ce7a780>
+            timeout: None
+        Locals:
+            waiter: <_thread.lock at 0x7f499bc31f80>
+            saved_state: None
+            gotit: False
+    wait (threading.py:655)
+        Arguments:
+            self: <Event at 0x7f7d2d00e180>
+            timeout: None
+        Locals:
+            signaled: False
+    run (ray/_private/gc_collect_manager.py:29)
+        Arguments:
+            self: <PythonGCThread at 0x7f7d2d6d2cf0>
+        Locals:
+            start: 16557102.422498727
+            num_freed: 3713
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <PythonGCThread at 0x7f7d2d6d2cf0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <PythonGCThread at 0x7f7d2d6d2cf0>
+Thread 1882944 (idle): "sql-owner-loop"
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49cdb96540>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49cdb96540>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49cdb96540>
+Thread 1882945 (idle): "sql-owner-loop"
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49cdeae810>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49cdeae810>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49cdeae810>
+Thread 1883363 (idle): "Thread-1"
+    wait (threading.py:359)
+        Arguments:
+            self: <Condition at 0x7f499be1ecf0>
+            timeout: 10
+        Locals:
+            waiter: <_thread.lock at 0x7f499bce3c40>
+            saved_state: None
+            gotit: False
+    wait (threading.py:655)
+        Arguments:
+            self: <Event at 0x7f499be1f0b0>
+            timeout: 10
+        Locals:
+            signaled: False
+    run (tqdm/_monitor.py:60)
+        Arguments:
+            self: <TMonitor at 0x7f499be1eff0>
+        Locals:
+            cur_t: 1790802369.0804043
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <TMonitor at 0x7f499be1eff0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <TMonitor at 0x7f499be1eff0>
+Thread 1951052 (idle): "skyrl-gym-env-_0"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499380c8b0>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49938a6210>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49938a6210>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49938a6210>
+Thread 1951053 (idle): "skyrl-gym-env-_1"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499380de90>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49938a7b00>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49938a7b00>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49938a7b00>
+Thread 1951054 (idle): "skyrl-gym-env-_2"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499380e980>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993848650>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993848650>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993848650>
+Thread 1951055 (idle): "skyrl-gym-env-_3"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499380f470>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993849130>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993849130>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993849130>
+Thread 1951056 (idle): "skyrl-gym-env-_4"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49938f0040>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993849c10>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993849c10>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993849c10>
+Thread 1951057 (idle): "skyrl-gym-env-_5"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49938f0e50>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499384ab10>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499384ab10>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499384ab10>
+Thread 1951058 (idle): "skyrl-gym-env-_6"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49938f19e0>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499384b6b0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499384b6b0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499384b6b0>
+Thread 1951059 (idle): "skyrl-gym-env-_7"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49938f2520>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49938702c0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49938702c0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49938702c0>
+Thread 1951060 (idle): "skyrl-gym-env-_8"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49938f3010>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993870dd0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993870dd0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993870dd0>
+Thread 1951061 (idle): "skyrl-gym-env-_9"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49938f3b00>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993871970>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993871970>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993871970>
+Thread 1951062 (idle): "skyrl-gym-env-_10"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499386c630>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993872510>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993872510>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993872510>
+Thread 1951063 (idle): "skyrl-gym-env-_11"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499386d120>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993873080>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993873080>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993873080>
+Thread 1951064 (idle): "skyrl-gym-env-_12"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499386dc10>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993873bc0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993873bc0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993873bc0>
+Thread 1951065 (idle): "skyrl-gym-env-_13"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499386e700>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4991298770>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4991298770>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4991298770>
+Thread 1951066 (idle): "skyrl-gym-env-_14"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499386f790>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4991299940>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4991299940>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4991299940>
+Thread 1951067 (idle): "skyrl-gym-env-_15"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991210590>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499129a7b0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499129a7b0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499129a7b0>
+Thread 1951068 (idle): "skyrl-gym-env-_16"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991211080>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499129b320>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499129b320>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499129b320>
+Thread 1951069 (idle): "skyrl-gym-env-_17"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991211b70>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499129be60>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499129be60>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499129be60>
+Thread 1951070 (idle): "skyrl-gym-env-_18"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991212930>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912c0d70>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912c0d70>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912c0d70>
+Thread 1951071 (idle): "skyrl-gym-env-_19"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991213420>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912c18b0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912c18b0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912c18b0>
+Thread 1951072 (idle): "skyrl-gym-env-_20"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991213f10>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912c2420>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912c2420>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912c2420>
+Thread 1951073 (idle): "skyrl-gym-env-_21"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912b8d10>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912c32f0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912c32f0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912c32f0>
+Thread 1951074 (idle): "skyrl-gym-env-_22"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912b9a80>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499129c1d0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499129c1d0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499129c1d0>
+Thread 1951075 (idle): "skyrl-gym-env-_23"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912ba570>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499129cd40>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499129cd40>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499129cd40>
+Thread 1951076 (idle): "skyrl-gym-env-_24"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912bb330>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499129dc10>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499129dc10>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499129dc10>
+Thread 1951077 (idle): "skyrl-gym-env-_25"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912ccf40>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499129fb00>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499129fb00>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499129fb00>
+Thread 1951078 (idle): "skyrl-gym-env-_26"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912cdd00>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912fca70>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912fca70>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912fca70>
+Thread 1951079 (idle): "skyrl-gym-env-_27"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912ce7f0>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912fd5e0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912fd5e0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912fd5e0>
+Thread 1951080 (idle): "skyrl-gym-env-_28"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912cf2e0>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912fe120>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912fe120>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912fe120>
+Thread 1951081 (idle): "skyrl-gym-env-_29"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49912cfdd0>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912fec90>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912fec90>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912fec90>
+Thread 1951082 (idle): "skyrl-gym-env-_30"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499124c900>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912ff800>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912ff800>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912ff800>
+Thread 1951083 (idle): "skyrl-gym-env-_31"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499124d3f0>
+            work_queue: <_queue.SimpleQueue at 0x7f49cdef0b30>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4991224320>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4991224320>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4991224320>
+Thread 2416054 (idle): "Thread-2020"
+    wait (threading.py:359)
+        Arguments:
+            self: <Condition at 0x7f4992f94350>
+            timeout: 10
+        Locals:
+            waiter: <_thread.lock at 0x7f499bce3ac0>
+            saved_state: None
+            gotit: False
+    wait (threading.py:655)
+        Arguments:
+            self: <Event at 0x7f4992f94830>
+            timeout: 10
+        Locals:
+            signaled: False
+    run (tqdm/_monitor.py:60)
+        Arguments:
+            self: <TMonitor at 0x7f499310d040>
+        Locals:
+            cur_t: 1790802368.0835128
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <TMonitor at 0x7f499310d040>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <TMonitor at 0x7f499310d040>
+Thread 2416802 (idle): "skyrl-gym-env-_0"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4998ca3470>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f48f845f6b0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f48f845f6b0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f48f845f6b0>
+Thread 2416803 (idle): "skyrl-gym-env-_1"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4998ca1e90>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990d314f0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990d314f0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990d314f0>
+Thread 2416804 (idle): "skyrl-gym-env-_2"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4998fe44f0>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990d33a10>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990d33a10>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990d33a10>
+Thread 2416805 (idle): "skyrl-gym-env-_3"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4998fe5260>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990d30740>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990d30740>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990d30740>
+Thread 2416806 (idle): "skyrl-gym-env-_4"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4998fe4310>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499142f890>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499142f890>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499142f890>
+Thread 2416807 (idle): "skyrl-gym-env-_5"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4998fe4b30>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499142d370>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499142d370>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499142d370>
+Thread 2416808 (idle): "skyrl-gym-env-_6"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49901a1f80>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499142c260>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499142c260>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499142c260>
+Thread 2416809 (idle): "skyrl-gym-env-_7"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49901a2d40>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499142d040>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499142d040>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499142d040>
+Thread 2416833 (idle): "skyrl-gym-env-_8"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d8458040>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4993e87b30>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4993e87b30>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4993e87b30>
+Thread 2416835 (idle): "skyrl-gym-env-_9"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49901a2660>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49990e7b00>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49990e7b00>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49990e7b00>
+Thread 2416838 (idle): "skyrl-gym-env-_10"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f49901a1260>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f491c20c860>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f491c20c860>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f491c20c860>
+Thread 2416839 (idle): "skyrl-gym-env-_11"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499140b420>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f491c20ed20>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f491c20ed20>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f491c20ed20>
+Thread 2416840 (idle): "skyrl-gym-env-_12"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991409c60>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990dfc7a0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990dfc7a0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990dfc7a0>
+Thread 2416841 (idle): "skyrl-gym-env-_13"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4991408950>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49990c7d40>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49990c7d40>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49990c7d40>
+Thread 2416843 (idle): "skyrl-gym-env-_14"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4999033560>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4999087fb0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4999087fb0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4999087fb0>
+Thread 2416846 (idle): "skyrl-gym-env-_15"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4999032340>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499905c560>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499905c560>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499905c560>
+Thread 2416850 (idle): "skyrl-gym-env-_16"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4999033a60>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49913ae7b0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49913ae7b0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49913ae7b0>
+Thread 2416860 (idle): "skyrl-gym-env-_17"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d87b2520>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49913c74d0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49913c74d0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49913c74d0>
+Thread 2416870 (idle): "skyrl-gym-env-_18"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d87b27a0>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4991431580>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4991431580>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4991431580>
+Thread 2416871 (idle): "skyrl-gym-env-_19"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d87b0860>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4991433860>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4991433860>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4991433860>
+Thread 2416872 (idle): "skyrl-gym-env-_20"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d87b1990>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49914450d0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49914450d0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49914450d0>
+Thread 2416875 (idle): "skyrl-gym-env-_21"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499149cb80>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912b0320>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912b0320>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912b0320>
+Thread 2416877 (idle): "skyrl-gym-env-_22"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499149f290>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f49912c3ce0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f49912c3ce0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f49912c3ce0>
+Thread 2416879 (idle): "skyrl-gym-env-_23"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499149da80>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f499142f410>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f499142f410>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f499142f410>
+Thread 2416882 (idle): "skyrl-gym-env-_24"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f499149f330>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990dc5100>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990dc5100>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990dc5100>
+Thread 2416883 (idle): "skyrl-gym-env-_25"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d871f5b0>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990dc4b60>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990dc4b60>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990dc4b60>
+Thread 2416884 (idle): "skyrl-gym-env-_26"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d871dfd0>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990dc7950>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990dc7950>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990dc7950>
+Thread 2416885 (idle): "skyrl-gym-env-_27"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d871c950>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990dc4590>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990dc4590>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990dc4590>
+Thread 2416887 (idle): "skyrl-gym-env-_28"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d871f9c0>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4990dc6c60>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4990dc6c60>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4990dc6c60>
+Thread 2416890 (idle): "skyrl-gym-env-_29"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f48d871eb60>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4998c88260>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4998c88260>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4998c88260>
+Thread 2416892 (idle): "skyrl-gym-env-_30"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4990d69f80>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4998c89ca0>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4998c89ca0>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4998c89ca0>
+Thread 2416893 (idle): "skyrl-gym-env-_31"
+    _worker (concurrent/futures/thread.py:90)
+        Arguments:
+            executor_reference: <weakref.ReferenceType at 0x7f4990d6a610>
+            work_queue: <_queue.SimpleQueue at 0x7f49c70ccef0>
+            initializer: None
+            initargs: ()
+    run (threading.py:1012)
+        Arguments:
+            self: <Thread at 0x7f4998c89580>
+    _bootstrap_inner (threading.py:1075)
+        Arguments:
+            self: <Thread at 0x7f4998c89580>
+    _bootstrap (threading.py:1032)
+        Arguments:
+            self: <Thread at 0x7f4998c89580>
