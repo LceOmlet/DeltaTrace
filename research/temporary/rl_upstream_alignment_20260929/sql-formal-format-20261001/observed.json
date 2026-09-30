@@ -1,0 +1,67 @@
+{
+  "observed_unix": 1790801160.0137126,
+  "driver_pid": 1876409,
+  "source_dump": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v8/sql-dt/rollouts/1.jsonl",
+  "source_dump_sha256": "2d113d1f3eb8a581e19a1ceb29725c55db4001838b7b869f108e79f3e3720299",
+  "owner_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/skyrl-gym-7d94cc/skyrl_gym/envs/sql/utils.py",
+  "owner_sha256": "cbf0592df884e66d30678051582856bba36ef94c04c50b822709a6cd2e720940",
+  "template_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v8/sql-entry/qwen3_acc_thinking.jinja2",
+  "template_sha256": "8e57badee37b289c395806b7a73927b4afbaf85bb0b1700e2bcfa1acad0430a9",
+  "dataset_sha256": "00f7b58934b9b6b1dbb8002119cff3b196b2164027a515ca13312004755f28ea",
+  "rows": 1280,
+  "exact_unique_prompt_matches": 1279,
+  "unmatched": [
+    {
+      "index": 11,
+      "prefix_matches": 0,
+      "score": -1.0
+    }
+  ],
+  "format_agreement_with_stored_score": 1279,
+  "disagreements": [],
+  "owner_return_counts": {
+    "36: if not thoughts:": 1,
+    "41: if not rest.lower().startswith(THINK_START):": 903,
+    "23: if output.count(SOLUTION_START) != 1:": 364,
+    "43: ": 11
+  },
+  "examples": {
+    "36: if not thoughts:": {
+      "index": 0,
+      "stored_score": -1.0,
+      "return_line": 36,
+      "prompt_sha256": "8de0e79e1445a6b9e025434698051774dd14fbd1036e39ed1c1cc3a6ad37c71a",
+      "suffix_sha256": "75a48189df0e6ced0eaf310672771ef74661a0d4eda1025d72d2d3d8a4dd9f2f",
+      "start": "<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   **Task:** Generate a valid SQL query based on the provided database schema and a natural language question.\n    *   ",
+      "end": "\n    *   Does it cover all invoices? Yes (JOIN with `Orders` ensures we get details, assuming every invoice has an order). If an invoice exists without an order, an INNER JOIN would exclude it. Usually, in this context, \"for all invoices\" implies joining to get the details. An INNER JOIN is appropriate because `order_details` are requested. If there were invoices without orders, `order_details` would be NULL anyway.\n    *   The prompt asks to output the SQL query inside `<solution>...</solution>"
+    },
+    "41: if not rest.lower().startswith(THINK_START):": {
+      "index": 1,
+      "stored_score": -1.0,
+      "return_line": 41,
+      "prompt_sha256": "8de0e79e1445a6b9e025434698051774dd14fbd1036e39ed1c1cc3a6ad37c71a",
+      "suffix_sha256": "ea69027d1f213218e33f2ab614366caf11070d1039dab97e9c831c80615f2e04",
+      "start": "<think>\nThe user is asking for invoice dates, order ids, and order details for all invoices.\n\nLooking at the schema:\n1. `Invoices` table has: invoice_number, order_id, invoice_date",
+      "end": "03-07 02:04:32 13 None\n2018-03-15 21:24:13  3 None\n2018-03-03 20:44:06  3 None\n2018-03-16 21:57:43  8 None\n2018-03-16 11:01:06 12 None\n2018-03-19 17:06:30 10 None\n<reminder>You have 5 turns left to complete the task.</reminder></observation>\n\nThe query successfully returns invoice dates, order IDs, and order details. The results show the joined data from both tables.\n\n<solution>SELECT i.invoice_date, i.order_id, o.order_details FROM Invoices i JOIN Orders o ON i.order_id = o.order_id;</solution>"
+    },
+    "23: if output.count(SOLUTION_START) != 1:": {
+      "index": 4,
+      "stored_score": -1.0,
+      "return_line": 23,
+      "prompt_sha256": "3de2f729b5a3079c4b12a43d7f2a618717ddab32bcea3adc1120ce46e355c8ac",
+      "suffix_sha256": "d2578a42e9e3ad6d319274b4165e0fe7fd55a5af43537c96dcd573499dd7508f",
+      "start": "<think>\nLet me analyze this question step by step.\n\nThe question asks for:\n1. For each region, return:\n   - Region ID\n   - Region name\n   - Number of active nationalities\n   - Numb",
+      "end": " the active value.\n\n<sql>SELECT DISTINCT flag FROM nationalities;</sql>\n\n<observation> 0\n 0\n<reminder>You have 1 turns left to complete the task.</reminder></observation>\n\nI see all flags are 0, which means there are no active nationalities. Let me check if there's any data at all and verify the relationship between tables.\n\n<sql>SELECT r.id, r.name, n.id, n.name as nationality_name, n.flag, n.language_id, n.region_id FROM regions r LEFT JOIN nationalities n ON r.id = n.region_id LIMIT 20;</sql>"
+    },
+    "43: ": {
+      "index": 203,
+      "stored_score": 0.0,
+      "return_line": 43,
+      "prompt_sha256": "1177f9174abf2675c1a793cc2630b278efae18db16412ca2fc8773f598d2cb1d",
+      "suffix_sha256": "90e79feaba4dd39c44e021c75b6a9f99d2eb118c3786488aa299d8b8c9a8eec0",
+      "start": "<think>\n\n</think>\n\nLet's break down the question:\n\n1. We need to find the average response time for Bob Smith.\n2. Bob Smith is associated with a specific user_id in the `users` tab",
+      "end": "_description = 'Low Condition'`.\n\nThis query should correctly calculate the average response time for Bob Smith in a calm and quiet environment.\n\n<solution>SELECT AVG(r.response_time) AS average_response_time\nFROM responses r\nJOIN trials t ON r.trial_id = t.trial_id\nJOIN user_sessions us ON r.trial_id = us.trial_id\nJOIN users u ON us.user_id = u.user_id\nJOIN conditions c ON t.condition_id = c.condition_id\nWHERE u.user_name = 'Bob Smith'\n  AND c.condition_description = 'Low Condition';</solution>"
+    }
+  },
+  "scope": "Pinned owner checker on saved decoded trajectory suffix, after unique exact owner-rendered prompt removal. No generation, parser rewrite, reward change, or DB execution. Return lines identify the first failed official condition, not all possible failures."
+}
