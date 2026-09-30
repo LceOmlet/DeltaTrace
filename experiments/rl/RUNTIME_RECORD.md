@@ -101,6 +101,21 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 & C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_upstream_alignment_20260929/record_current_runtime.py
 ```
 
+## 2026-10-01 观察口径修正
+
+- AppWorld 的 DT 按官方 `num_tests` 所决定的回报类别分组；`batch=N/M` 是当前
+  worker RPC 组的进度，不是整轮总进度。已在实际 TaskRunner 栈确认存在后续组。
+  只读 `collect_native_progress_snapshot.py` 现保留每个已观察组的 plan、最近批次、
+  累计批次耗时和最终 report；尚未提交的组不猜成已知总数。没有改变训练代码。
+- 固定 VERL `_validate`（`ray_trainer.py:795,806`）先收集每个验证批次的
+  `success_rate`，再平均各批次；这不是逐例加权成功率。SQL 初始日志的
+  `val/success_rate=0.01416015625` 保留原名与原口径，不能直接当作 SkyRL 的
+  `eval/all/pass_at_1`。固定 SkyRL `generators/utils.py:get_metrics_from_generator_output`
+  按原 trajectory rewards/UID 聚合；当前没有重写任何评估公式或改训练配置。
+- 当前固定 VERL 验证函数没有写出 `validation_data_dir` 的逐例文件，不能声称已经
+  从该目录检查过 SQL 的具体失败文本。后续使用实际保存的轨迹再判断失败原因，
+  不因缺少该材料重新生成整套初始验证。
+
 ## 尚未被证明的结论
 
 2026-10-01：TextCraft首个正式迭代及更新后下一轮采样已确认；两个rank各4次原AdamW更新、每卡microbatch4、LoRA8/16，优化器状态有限且非零。DT共203986个非零token优势，DT阶段1365.601秒、actor更新591.767秒；见[原状态/日志回执](results_first_formal_update.json)。采样总耗时包含此前主动暂停，不用作稳定吞吐。SQL和AppWorld首个正式更新、当前正式检查点与更长连续性仍待实际日志确认。
