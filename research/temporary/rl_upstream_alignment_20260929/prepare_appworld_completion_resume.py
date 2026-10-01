@@ -3,12 +3,17 @@
 Preparation only. The existing submission helper and original VERL loader own
 launch/restore; no live process, manifest, task setting or numerical code changes.
 """
+import argparse
 import hashlib
 from pathlib import Path
 import subprocess
 
 from stage_environment_entry import AUDIT, ENTRY, REPO, ROOT, SCP, SSH, remote
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--receipt-name', default='appworld-rank-completion')
+parser.add_argument('--candidate-id', default='appworld-rank-completion-20261002')
+args = parser.parse_args()
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
 script_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 remote(r'''set -e
@@ -18,14 +23,14 @@ from pathlib import Path
 import ast,hashlib,json,psutil,shutil,time,xml.etree.ElementTree as ET
 root=Path('@ROOT@');read=lambda p:json.loads(p.read_text())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
-tested=root/'receipts/owner-b8-dispatch-20260930/appworld-rank-completion'
+tested=root/'receipts/owner-b8-dispatch-20260930/@RECEIPT_NAME@'
 proof=read(tested/'final-cpu-tests.json')
 assert proof['exit_code']==0 and proof['ray_resources']['num_gpus']==0
 xml=ET.parse(tested/'final-cpu-tests.xml').getroot()
 assert sum(int(s.get('failures',0))+int(s.get('errors',0)) for s in xml.iter('testsuite'))==0
 for name in ('final-cpu-tests.log','final-cpu-tests.xml'):
     assert sha(tested/name)==proof['receipts'][name]['sha256'],name
-candidate=tested/'appworld-rank-completion-20261002/loop_owner_rollout.py'
+candidate=tested/proof['sources']['candidate']['path']
 assert sha(candidate)==proof['sources']['candidate']['sha256']
 job=next(j for j in read(root/'active-training.json')['jobs'] if j['task']=='AppWorld')
 process=psutil.Process(job['pid'])
@@ -38,7 +43,7 @@ for name,expected in source['verl_sha256'].items():assert sha(owner/name)==expec
 for name,expected in prior['owner_head_sha256'].items():assert sha(owner/name)==expected,name
 for name,expected in prior['dt_source_sha256'].items():assert sha(Path(job['dt_root'])/name)==expected,name
 assert sha(old_entry/'loop_owner_rollout.py')==proof['sources']['original']['sha256']
-base=root/'candidates/appworld-rank-completion-20261002'
+base=root/'candidates/@CANDIDATE_ID@'
 receipt=tested/'release'
 assert not base.exists() and not receipt.exists(), 'Inspect immutable existing preparation'
 entry=base/'entry';receipt.mkdir(parents=True)
@@ -61,7 +66,8 @@ record=dict(prior,prepared_unix=time.time(),status='prepared_not_launched',
 print(json.dumps({k:record[k] for k in ['status','entry','verl_root','prior_driver_pid','future_checkpoint_root']},indent=2))
 PY
 '''.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY)
+   .replace('@RECEIPT_NAME@', args.receipt_name).replace('@CANDIDATE_ID@', args.candidate_id)
    .replace('@REVISION@', repr(revision)).replace('@SCRIPT_SHA@', repr(script_sha)))
-target=AUDIT/'appworld-rank-completion-20261002'
-subprocess.run(SCP+[f'{SSH[-1]}:{ROOT}/receipts/owner-b8-dispatch-20260930/appworld-rank-completion/release/prepared.json',
+target=AUDIT/args.candidate_id
+subprocess.run(SCP+[f'{SSH[-1]}:{ROOT}/receipts/owner-b8-dispatch-20260930/{args.receipt_name}/release/prepared.json',
                    str(target/'prepared.json')],check=True)
