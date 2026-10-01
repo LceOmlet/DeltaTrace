@@ -122,6 +122,7 @@ for j in active['jobs']:
                 p=Path(w['source'])/n
                 effective_files[str(p)]=dict(**artifact(p),expected_sha256=expected,matches=sha(p)==expected)
         provenance={k:value[k] for k in ['submission_repository_commit','submission_script_sha256',
+            'completion_repository_commit','completion_script_sha256',
             'submitted_unix','completed_unix','driver_pid','driver_created_unix',
             'owner_comparison_receipt','owner_comparison_sha256','expected_optimizer_step']
             if isinstance(value,dict) and k in value}

@@ -12,10 +12,12 @@ AppWorld PID2479539使用GPU2/3，TextCraft PID212110使用GPU4/5。
 AppWorld原PID285580完成step4后，18:30通过原VERL完整检查点恢复入口提交生成上下文修复；
 新进程恢复和训练状态看带时间的实际日志，不把提交当作已完成新迭代。
 
-SQL/TextCraft均已准备含已有修复的完整恢复候选，尚未部署。具体冻结目录、完整SHA、
+SQL/TextCraft均已准备含已有修复的完整恢复候选，尚未整体部署。TextCraft于19:28已在
+原RPC边界应用与SQL/AppWorld相同的padding文件；双rank原优化器各64步，保留模型和配置。
+具体冻结目录、完整SHA、
 原数值/配置测试、运行时覆盖、未部署项统一见[RUNTIME_RECORD.md](RUNTIME_RECORD.md)
 和[current_runtime.json](current_runtime.json)。TextCraft旧启动文件micro1已被PID绑定B4覆盖
-替代，禁止原样重启；SQL无完整检查点的恢复行为变更仍待用户裁定。
+替代，且新增padding覆盖，禁止原样重启；SQL无完整检查点的恢复行为变更仍待用户裁定。
 
 复用现有环境和缓存。禁止向正式worker附加mcTracer或SIGSTOP。DT数值核心、LoRA8/16、
 actor/DT4不变；新目录号不代表新的数值版本。
