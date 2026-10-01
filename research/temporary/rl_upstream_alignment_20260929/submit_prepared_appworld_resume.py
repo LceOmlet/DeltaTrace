@@ -20,6 +20,8 @@ def main():
                         help='Remote immutable preparation receipt for this exact prior job.')
     parser.add_argument('--run-dir', required=True,
                         help='Remote output directory for this submission; must not already exist.')
+    parser.add_argument('--completed-stop-receipt',
+                        help='Original loaded checkpoint reuse after a recorded stop during the unfinished next rollout.')
     args = parser.parse_args()
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     script_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -44,9 +46,19 @@ if psutil.pid_exists(old['pid']):
     assert p.status()==psutil.STATUS_ZOMBIE, 'Original job still running; no stop or mutation performed'
 
 checkpoint=Path(@CHECKPOINT@).resolve()
-marker=Path(old['checkpoints'])/'latest_checkpointed_iteration.txt'
+stop_receipt=@COMPLETED_STOP@
+stop_record=None
+if stop_receipt:
+    stop_record=read(Path(stop_receipt))
+    assert stop_record['reused_loaded_checkpoint'] and stop_record['unfinished_rollout_phase']
+    assert stop_record['prior_driver_pid']==old['pid'] and stop_record['prior_created_unix']==old['observed_process_created_unix']
+    assert not stop_record['remaining_non_zombie']
+    assert checkpoint==Path(old['resume_from']).resolve()==Path(stop_record['checkpoint']).resolve()
+    marker=checkpoint.parent/'latest_checkpointed_iteration.txt'
+else:
+    marker=Path(old['checkpoints'])/'latest_checkpointed_iteration.txt'
 step=int(marker.read_text().strip())
-assert checkpoint==(Path(old['checkpoints'])/f'global_step_{step}').resolve()
+assert checkpoint==(marker.parent/f'global_step_{step}').resolve()
 assert (checkpoint/'data.pt').is_file()
 for rank in range(2):
     for kind in ('model','optim','extra_state'):
@@ -79,6 +91,10 @@ source=dict(unix=time.time(),dt_root=prepared['dt_root'],verl_root=str(verl),
     actor_padding_sha256=owner_files['verl/workers/actor/dp_actor.py'],
     padding_comparison_receipt=prepared['padding_comparison_receipt'],
     padding_comparison_receipt_sha256=prepared['padding_comparison_receipt_sha256'])
+if stop_receipt:
+    source['unfinished_rollout_restart']=dict(receipt=stop_receipt,sha256=sha(Path(stop_receipt)),
+        loaded_original_checkpoint=str(checkpoint),completed_step=step,
+        scope='No newly completed iteration is discarded; original model/optimizer/RNG/reader loader used again, with unchanged workload.')
 for name in ('request_dispatch_commit','request_dispatch_receipt','request_dispatch_receipt_sha256',
              'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
              'completion_transport_code_commit','completion_transport_receipt',
@@ -123,7 +139,9 @@ job=dict(task=task,method='dt',pid=proc.pid,devices=devices,started_unix=time.ti
 (output/'job.json').write_text(json.dumps(job,indent=2)+'\n')
 manifest_path=base/'formal-training.json'
 manifest=dict(active,manifest=str(manifest_path),jobs=[job if j['task']==task else j for j in active['jobs']])
-manifest.setdefault('retired_jobs',[]).append(dict(old,status='replaced_after_completed_checkpoint',replacement_pid=proc.pid))
+manifest.setdefault('retired_jobs',[]).append(dict(old,
+    status='replaced_during_unfinished_rollout_from_loaded_checkpoint' if stop_receipt else 'replaced_after_completed_checkpoint',
+    replacement_pid=proc.pid))
 manifest_path.write_text(json.dumps(manifest,indent=2)+'\n')
 (root/'active-training.json').write_text(json.dumps(manifest,indent=2)+'\n')
 sources=read(root/'active-source.json');sources.update(unix=time.time(),manifest=str(manifest_path))
@@ -136,7 +154,8 @@ PY
 '''.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY)
        .replace('@CHECKPOINT@', repr(args.checkpoint)).replace('@REVISION@', repr(revision))
        .replace('@SCRIPT_SHA@', repr(script_sha)).replace('@PREPARED@',repr(args.prepared))
-       .replace('@RUN_DIR@',repr(args.run_dir)).replace('@TASK@',repr(args.task)))
+       .replace('@RUN_DIR@',repr(args.run_dir)).replace('@TASK@',repr(args.task))
+       .replace('@COMPLETED_STOP@',repr(args.completed_stop_receipt)))
 
 
 if __name__ == '__main__':

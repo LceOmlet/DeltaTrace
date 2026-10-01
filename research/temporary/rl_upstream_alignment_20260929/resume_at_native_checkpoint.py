@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--prepared',required=True)
     parser.add_argument('--run-dir',required=True)
     parser.add_argument('--receipt',required=True)
+    parser.add_argument('--reuse-loaded-checkpoint',action='store_true',
+                        help='Use the originally loaded complete checkpoint only while its next training rollout is still unfinished.')
     args=parser.parse_args()
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
     script_sha=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -27,7 +29,7 @@ def main():
 source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
 from pathlib import Path
-import hashlib,json,psutil,signal,time
+import ast,hashlib,json,psutil,signal,subprocess,time
 root=Path('@ROOT@');read=lambda p:json.loads(p.read_text())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 task=@TASK@;prepared_path=Path(@PREPARED@);prepared=read(prepared_path)
@@ -49,20 +51,45 @@ identity=dict(task=task,prior_driver_pid=parent.pid,prior_created_unix=parent.cr
     minimum_checkpoint_step=@STEP@,started_unix=time.time())
 (receipt/'waiting.json').write_text(json.dumps(dict(identity,status='waiting_original_checkpoint',
     observer_pid=psutil.Process().pid,observer_created_unix=psutil.Process().create_time()),indent=2)+'\n')
-marker=Path(old['checkpoints'])/'latest_checkpointed_iteration.txt'
-while True:
-    assert parent.is_running() and parent.status()!=psutil.STATUS_ZOMBIE, 'Original job exited before the required checkpoint'
-    current=next(j for j in read(root/'active-training.json')['jobs'] if j['task']==task)
-    assert current['pid']==parent.pid and current['observed_process_created_unix']==old['observed_process_created_unix']
-    try:step=int(marker.read_text().strip())
-    except (FileNotFoundError,ValueError):step=-1
-    if step>=@STEP@:break
-    time.sleep(1)
+phase=None
+if @REUSE_LOADED@:
+    loaded=Path(old['resume_from'])
+    marker=loaded.parent/'latest_checkpointed_iteration.txt'
+    step=int(marker.read_text().strip())
+    assert step==old['resume_completed_step'] and step>=@STEP@
+    assert loaded==marker.parent/f'global_step_{step}'
+    runner=next(p for p in parent.children(recursive=True) if 'TaskRunner' in p.name())
+    trainer=Path(old['verl_root'])/'verl/trainer/ppo/ray_trainer.py'
+    tree=ast.parse(trainer.read_text())
+    call=next(n for n in ast.walk(tree) if isinstance(n,ast.Call)
+              and ast.unparse(n.func)=='self.train_traj_manager.collect_native_trajectories')
+    observed=subprocess.run(['/opt/conda/bin/py-spy','dump','--nonblocking','--json',
+        '--full-filenames','-p',str(runner.pid)],capture_output=True,text=True,timeout=12)
+    assert observed.returncode==0,observed.stderr
+    stack=json.loads(observed.stdout)
+    frames=[f for t in stack if t['thread_name']=='MainThread' for f in t['frames']]
+    assert any(f['name']=='fit' and f['filename']==str(trainer) and f['line']==call.lineno
+               for f in frames), 'New rollout already advanced; wait for the next native checkpoint instead'
+    assert any(f['name']=='collect_native_trajectories' for f in frames)
+    phase=dict(task_runner_pid=runner.pid,trainer=str(trainer),trainer_sha256=sha(trainer),
+        original_training_rollout_call_line=call.lineno,observed_unix=time.time(),stack=stack,
+        meaning='Original fit is still collecting its next training rollout before any new update; restore the originally loaded native state.')
+else:
+    marker=Path(old['checkpoints'])/'latest_checkpointed_iteration.txt'
+    while True:
+        assert parent.is_running() and parent.status()!=psutil.STATUS_ZOMBIE, 'Original job exited before the required checkpoint'
+        current=next(j for j in read(root/'active-training.json')['jobs'] if j['task']==task)
+        assert current['pid']==parent.pid and current['observed_process_created_unix']==old['observed_process_created_unix']
+        try:step=int(marker.read_text().strip())
+        except (FileNotFoundError,ValueError):step=-1
+        if step>=@STEP@:break
+        time.sleep(1)
 checkpoint=marker.parent/f'global_step_{step}'
 files=[checkpoint/'data.pt']+[checkpoint/'actor'/f'{kind}_world_size_2_rank_{rank}.pt'
     for rank in range(2) for kind in ('model','optim','extra_state')]
 assert all(p.is_file() and p.stat().st_size for p in files), 'Incomplete native checkpoint; job not stopped'
 record=dict(identity,checkpoint=str(checkpoint),marker_step=step,marker_sha256=sha(marker),
+    reused_loaded_checkpoint=@REUSE_LOADED@,unfinished_rollout_phase=phase,
     checkpoint_files={str(p.relative_to(checkpoint)):p.stat().st_size for p in files},
     checkpoint_observed_unix=time.time())
 processes=[parent]+parent.children(recursive=True)
@@ -98,15 +125,20 @@ PY
 '''.replace('@ENTRY@',ENTRY).replace('@ROOT@',ROOT).replace('@TASK@',repr(args.task))
        .replace('@PREPARED@',repr(args.prepared)).replace('@RECEIPT@',repr(args.receipt))
        .replace('@REVISION@',repr(revision)).replace('@SCRIPT_SHA@',repr(script_sha))
+       .replace('@REUSE_LOADED@',repr(args.reuse_loaded_checkpoint))
        .replace('@STEP@',str(args.minimum_step)))
     target=AUDIT/'checkpoint-boundary-20261002';target.mkdir(exist_ok=True)
-    stop_file=target/(args.task.lower()+'-completed-stop.json')
+    stop_file=target/(args.task.lower()+'-'+Path(args.receipt).name+'-completed-stop.json')
+    assert not stop_file.exists(), 'Preserve each original transition receipt'
     subprocess.run(SCP+[f'{SSH[-1]}:{args.receipt}/completed-stop.json',str(stop_file)],check=True)
     import json
     stopped=json.loads(stop_file.read_text())
-    subprocess.run([sys.executable,str(AUDIT/'submit_prepared_appworld_resume.py'),
+    submit_args=[sys.executable,str(AUDIT/'submit_prepared_appworld_resume.py'),
         '--task',args.task,'--checkpoint',stopped['checkpoint'],
-        '--prepared',args.prepared,'--run-dir',args.run_dir],cwd=REPO,check=True)
+        '--prepared',args.prepared,'--run-dir',args.run_dir]
+    if args.reuse_loaded_checkpoint:
+        submit_args.extend(['--completed-stop-receipt',args.receipt+'/completed-stop.json'])
+    subprocess.run(submit_args,cwd=REPO,check=True)
 
 
 if __name__=='__main__':

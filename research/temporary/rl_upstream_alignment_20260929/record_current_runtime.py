@@ -43,7 +43,7 @@ for j in active['jobs']:
         'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
         'completion_transport_code_commit','completion_transport_receipt',
         'completion_transport_receipt_sha256','completion_transport_sources',
-        'resume_launcher'] if k in source}
+        'resume_launcher','unfinished_rollout_restart'] if k in source}
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')
@@ -188,6 +188,8 @@ for label,receipt_dir,supersedes in [
      'appworld-request-dispatch-20261001'),
     ('appworld-rank-completion-20261002','appworld-rank-completion/release',
      'appworld-rollout-scope-20261001'),
+    ('appworld-batch-coalescing-20261002','appworld-batch-coalescing/release',
+     'appworld-rank-completion-20261002'),
     ('sql-rollout-scope-20261001','sql-rollout-scope','sql-padding-restart-20261001'),
     ('textcraft-rollout-scope-20261001','textcraft-rollout-scope','official-trajectory-20260930-v7')]:
     path=out/receipt_dir/'prepared.json'
@@ -298,13 +300,15 @@ for prepared in result['prepared_versions']:
     prepared['source_commits']=dict(dt_dispatch=revision('4c0cbdd'),
         native_resume_entry=revision('2036246'),actor_head=revision('dc4e4d7'))
     if prepared['id'] in ('appworld-balanced-padding-resume-20261001','appworld-request-dispatch-20261001',
-                           'appworld-rollout-scope-20261001','appworld-rank-completion-20261002'):
+                           'appworld-rollout-scope-20261001','appworld-rank-completion-20261002',
+                           'appworld-batch-coalescing-20261002'):
         prepared['source_commits'].update(padding_source_archive=revision('0c80b41'),
                                          padding_owner_comparison=revision('44e1149'))
         prepared['local_helpers']={}
         prepare_script={'appworld-request-dispatch-20261001':'prepare_appworld_request_resume.py',
                         'appworld-rollout-scope-20261001':'prepare_appworld_scope_resume.py',
                         'appworld-rank-completion-20261002':'prepare_appworld_completion_resume.py',
+                        'appworld-batch-coalescing-20261002':'prepare_appworld_completion_resume.py',
                         'appworld-balanced-padding-resume-20261001':'prepare_appworld_padding_resume.py'}[prepared['id']]
         for name in [prepare_script,'submit_prepared_appworld_resume.py']:
             p=recorder.parent/name;relative=p.relative_to(REPO).as_posix()
