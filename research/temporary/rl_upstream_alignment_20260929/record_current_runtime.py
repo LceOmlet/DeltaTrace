@@ -267,7 +267,9 @@ for item in lock['installed_restored_files']:
 (out/'current-runtime-snapshot.json').write_text(json.dumps(result,indent=2))
 print(json.dumps(dict(observed_utc=result['observed_utc'],jobs=[dict(task=j['task'],pid=j['pid'],
     alive=j['process']['alive'],entry_hash_mismatches=[n for n,v in j['entry_files'].items() if not v['matches']],
-    runtime_receipts=len(j['runtime_overrides']),progress=j['recent_progress']) for j in result['jobs']],
+    runtime_receipts=len(j['runtime_overrides']),progress=j['recent_progress'],
+    original_completed_iteration=[p['last_completed_iteration_metrics'].split(' - ',1)[0]
+        for p in j['native_training_progress'] if p['last_completed_iteration_metrics']]) for j in result['jobs']],
     numerical_hash_mismatches=[n for n,v in result['unchanged_numerical_files'].items() if not v['matches']]),indent=2))
 PY
 '''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY))
