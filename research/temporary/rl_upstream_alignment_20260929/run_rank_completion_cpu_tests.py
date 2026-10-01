@@ -10,6 +10,8 @@ receipt = ROOT+'/receipts/owner-b8-dispatch-20260930/appworld-rank-completion'
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
 runner_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 subprocess.run(SCP+[str(AUDIT/'test_rank_completion_candidate.py'), f'{SSH[-1]}:{receipt}/'], check=True)
+subprocess.run(SCP+[str(AUDIT/'appworld-rank-completion-20261002'/'loop_owner_rollout.py'),
+                   f'{SSH[-1]}:{receipt}/appworld-rank-completion-20261002/'], check=True)
 script = r'''set -e
 source @ENTRY@/metax-entry.env.sh
 export CUDA_VISIBLE_DEVICES=""
