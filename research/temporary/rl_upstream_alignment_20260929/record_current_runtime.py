@@ -45,12 +45,17 @@ for j in active['jobs']:
         or 'log_prob_micro_batch_size' in k}
     rec['native_training_workload']=[]
     if psutil.pid_exists(j['pid']):
-        proc=psutil.Process(j['pid']);rec['process']=dict(alive=proc.is_running(),created_unix=proc.create_time(),
-            pid_identity_matches=abs(proc.create_time()-j['observed_process_created_unix'])<.02,status=proc.status(),
-            workers=[p.pid for p in proc.children(recursive=True) if 'WorkerDict' in p.name()])
+        proc=psutil.Process(j['pid']);children=[]
         for child in proc.children(recursive=True):
-            if 'TaskRunner' not in child.name():continue
-            paths={f.path for f in child.open_files() if '/worker-' in f.path and f.path.endswith('.out')}
+            try:children.append((child,child.name()))
+            except psutil.NoSuchProcess:continue
+        rec['process']=dict(alive=proc.is_running(),created_unix=proc.create_time(),
+            pid_identity_matches=abs(proc.create_time()-j['observed_process_created_unix'])<.02,status=proc.status(),
+            workers=[child.pid for child,name in children if 'WorkerDict' in name])
+        for child,name in children:
+            if 'TaskRunner' not in name:continue
+            try:paths={f.path for f in child.open_files() if '/worker-' in f.path and f.path.endswith('.out')}
+            except psutil.NoSuchProcess:continue
             for path in paths:
                 with Path(path).open(errors='replace') as stream:
                     lines=[line.strip() for line in stream if line.startswith(

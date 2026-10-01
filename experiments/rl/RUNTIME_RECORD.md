@@ -111,6 +111,9 @@ TextCraft PID212110及创建时间均未改变。停止回执为
 `6e8fbe90ac1dd27f4f880598d3fe3b19b0d5b319`。新manifest为
 `runs/appworld-rollout-scope-20261001/formal-training.json`。只增加已测的整段采样上下文；
 原任务预算、采样/评估、LoRA8/16、micro4、PPO与DT数值版本保持。
+18:37原TaskRunner已记录`Setting global step to 4`及原恢复路径，两个rank加载各自的
+model/optim/extra_state后进入原`actor_rollout_generate_sequences`。观测回执为
+`appworld-rollout-scope-20261001/restore-observation.json`；尚未完成新完整迭代。
 旧step4用时18129.757秒，gen9737.716、DT4908.032、actor3028.621、保存52.922秒；
 这是旧版本基线，不能当作新修复的耗时。新的完整迭代尚未结束，不预报整轮提速倍数。
 
