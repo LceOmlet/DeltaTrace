@@ -103,6 +103,53 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 ## 修复账本
 
+### 2026-10-01 20时：AppWorld正式生成的原生profile与整批等待
+
+本次只观察当前PID2479539已经在跑的请求，没有新增轨迹、引擎、模型或GPU任务。
+`3e8d6f7`经原`collective_rpc`注入vLLM原`ProfilerConfig/TorchProfilerWrapper`，
+由原worker的`max_iterations=16`自动停止；每rank仅一个现有29请求批次。
+原GPU annotation给出3个包含context的步骤、13个只有generation的步骤。
+两个rank均已清理profiler并恢复原generate绑定。原trace保留在远端，路径与完整SHA见
+[原生profile汇总](../../research/temporary/rl_upstream_alignment_20260929/appworld-rollout-scope-20261001/native-profiler/summary.json)。
+
+| 16步局部profile，秒 | rank0 | rank1 |
+| --- | ---: | ---: |
+| GPU kernel区间并集 | 5.065 | 5.575 |
+| GPU memcpy区间并集 | 0.058 | 0.061 |
+| CPU `aten::copy_`各线程时间直接求和 | 8.734 | 9.737 |
+| 同一CPU copy事件跨线程合并后的区间 | 4.408 | 4.914 |
+
+这些行存在重叠，不能相加。CPU copy包含等待，并且多个线程会等待同一段GPU计算；
+不能把8–10秒解释成实际搬运时间。此处真正的GPU memcpy约0.06秒，FA/FLA和矩阵乘法
+均出现在原trace中，本次没有依据去改这些数值内核或删掉原同步。
+
+随后用`45ba936`读取两次**未启用profiler**的原`engine.step`与
+`get_num_unfinished_requests()`，只记原返回和时间；step及generate绑定均已恢复。
+其中每卡29请求的同一个批次为：
+
+| 原生成调用，秒 | rank0 | rank1 |
+| --- | ---: | ---: |
+| 完整`generate`调用 | 48.266 | 87.567 |
+| 尚未完成请求数≤4时的原step时间 | 28.039 | 64.484 |
+| 占原step时间比例 | 58.1% | 73.7% |
+| 只剩1个请求时的原step时间 | 9.150 | 47.361 |
+
+两卡开始时间相差0.030秒，快卡约提前39.301秒完成；外层原VERL同步RPC仍等整批返回，
+LOOP只能在之后收到回复并推进这些轨迹。另一个每卡3请求批次用时7.786/16.825秒。
+这里的计数属于原output processor，不冒充GPU利用率或纯decode时间；
+也不把两次调用外推成整个训练的提速倍数。原记录见
+[等待计数](../../research/temporary/rl_upstream_alignment_20260929/appworld-rollout-scope-20261001/formal-inflight/summary.json)，
+简表见[阶段报告](results_formal_generation_profile.json)。
+
+当前vLLM内部`async_scheduling=True`，剩余大项是外层批次返回边界；仅再打开这个
+开关不会解决它。后续应接原逐请求异步completion及原LoRA同步，不能自行复制调度器、
+减少任务步数或缩短生成来宣称修复。已对实际冻结owner做只读检查：其两个async模块
+与本地参考文件SHA相同，而当前sync模块有已验证补丁，不能整体换回临时checkout。
+实际async模块的独立导入在现有vLLM0.15报`vllm.entrypoints.openai.protocol`不存在；
+这证明旧async入口还不能直接切换，不表示正在运行的sync入口失败。
+[源文件与导入回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-rollout-scope-20261001/native-profiler/async-owner-interface-audit.json)
+保留精确路径、SHA及错误；本次没有换依赖或部署未对照的异步路径。
+
 ### 2026-10-01 19:28：TextCraft部署同一份padding修复
 
 复用已由原VERL padding断言验证的`1f862e8bbdaa…`文件，不重写forward，不再跑一套

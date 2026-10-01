@@ -15,6 +15,13 @@ out=root/'receipts/owner-b8-dispatch-20260930';now=time.time()
 def artifact(path):
     p=Path(path)
     return dict(path=str(p),exists=p.is_file(),sha256=sha(p) if p.is_file() else None)
+def observation_record(path):
+    value=read(path)
+    for call in value.get('calls',[]):
+        if 'steps' in call:
+            call['observed_engine_steps']=len(call.pop('steps'))
+            call['engine_step_details']='Original per-step rows remain in the hashed receipt; omitted from this index'
+    return value
 result=dict(observed_unix=now,observed_utc=datetime.datetime.fromtimestamp(now,datetime.timezone.utc).isoformat(),
     role='Read-only snapshot, not a launcher or a replacement for remote active-training.json; never infer current execution from old receipts alone',
     authoritative_remote={n:artifact(root/n) for n in ['active-training.json','active-source.json']},
@@ -80,17 +87,21 @@ for j in active['jobs']:
     rec['runtime_overrides']=[]
     rec['temporary_observations']=[]
     if j['task']=='AppWorld':
-        observation=out/'appworld-rollout-scope/formal-cache'
-        installed=observation/'installed.json'
-        if installed.is_file():
-            meta=read(installed)
-            if (meta['driver_pid']==j['pid'] and
-                    meta['driver_created_unix']==rec['process'].get('created_unix')):
-                rec['temporary_observations'].append(dict(
-                    receipt=artifact(installed),source_commit=meta['source_commit'],
-                    script_sha256=meta['script_sha256'],
-                    ranks=[dict(receipt=artifact(p),record=read(p)) for p in sorted(observation.glob('rank*.json'))],
-                    scope='Bounded wrapper reading original generate outputs/timing; eight calls/rank then restores the original binding. No new generation, numerical or sampling behavior.'))
+        for name,scope_description in [
+            ('formal-cache','Bounded wrapper reading original generate outputs/timing; eight calls/rank then restores the original binding. No new generation, numerical or sampling behavior.'),
+            ('formal-inflight','Two existing generate calls/rank through original engine.step and get_num_unfinished_requests. Step and generate bindings restored separately; elapsed values include waiting, not pure decode or GPU occupancy.'),
+            ('native-profiler','Original vLLM TorchProfilerWrapper, 16 worker iterations on one existing batch/rank. Rank receipts separately record profiler cleanup and generate binding restoration; no extra generation or numerical change.')]:
+            observation=out/'appworld-rollout-scope'/name
+            installed=observation/'installed.json'
+            if installed.is_file():
+                meta=read(installed)
+                if (meta['driver_pid']==j['pid'] and
+                        meta['driver_created_unix']==rec['process'].get('created_unix')):
+                    rec['temporary_observations'].append(dict(
+                        receipt=artifact(installed),source_commit=meta['source_commit'],
+                        script_sha256=meta['script_sha256'],
+                        ranks=[dict(receipt=artifact(p),record=observation_record(p)) for p in sorted(observation.glob('rank*.json'))],
+                        scope=scope_description))
     rec['pending_runtime_operations']=[]
     padding_live={'SkyRL-SQL':'sql-live','TextCraft':'textcraft-live'}.get(j['task'])
     if padding_live:
