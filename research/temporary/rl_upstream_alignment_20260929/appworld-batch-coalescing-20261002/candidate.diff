@@ -1,0 +1,16 @@
+--- deployed/loop_owner_rollout.py
++++ candidate/loop_owner_rollout.py
+@@ -73,2 +73,2 @@
+-        while len(results) < len(pool.processes) or engines.has_next():
+-            event = pool.event() if not pending else None
++        while len(results) < len(pool.processes) or engines.has_next() or pending:
++            event = None if pending and engines.has_free() else pool.event()
+@@ -95 +95,7 @@
+-            requests, pending = pending, []
++            # ActorPool owns availability. While both actors are busy,
++            # retain exact requests here rather than freezing each new
++            # arrival into its own queued RPC. No timer or batch cap.
++            if engines.has_free():
++                requests, pending = pending, []
++            else:
++                requests = []
