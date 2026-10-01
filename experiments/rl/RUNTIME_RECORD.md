@@ -137,6 +137,24 @@ AppWorld已新增只处理跨卡返回顺序的候选，原接口CPU测试9项�
 
 ### 2026-10-02：跨卡返回候选与版本封存
 
+02:16已将AppWorld候选安排在**原作业完整检查点6**切换：一次性助手
+`e87c593`，本机PID17944，远端等待进程PID2374706/创建时间1790878602.62。
+02:17实际复核两进程存活，原训练PID2479539仍在运行，marker仍为5，尚未停止或部署。
+助手只等原marker及data/model/optim/extra_state文件，然后停止已绑定创建时间的该作业
+进程树，调用现有提交助手及原VERL loader；不修改保存频率、任务预算或模型参数。
+原等待回执在 `receipts/owner-b8-dispatch-20260930/checkpoint-boundary/appworld-completion/waiting.json`。
+快照单独保存等待PID、创建时间和实际存活状态，不能把“已安排”写成“已部署”。
+
+同一提交助手已支持TextCraft原检查点恢复，显式传 `--task TextCraft`；正式数据路径和
+AgentGym owner从当前原launch/argv继承，B4/head/padding来自冻结候选；没有复制loader。
+`--prepared`与`--run-dir`现在必须显式指定，撤销旧AppWorld候选的默认值。
+两任务实际生成的提交/切换脚本已在CPU解析核对；这项检查不是保存/恢复运行验收。
+TextCraft尚未到原保存点25，当前没有安排其自动停止或新训练提交。
+
+进度记录同时修复了原先仅看driver日志尾部的缺陷：该尾部可能被生成文本占满。
+现保留原TaskRunner最近的完整 `step:` 指标行及运输行，并绑定原PID/文件路径；
+不把正在采样的下一轮当已完成更新。02:00的原日志确认SQL6、AppWorld5、TextCraft21完成。
+
 此前负载单位修复没有同时消除执行路径的额外等待，而且冻结启动文件、PID绑定覆盖、
 未部署候选容易被当成同一个版本。当前记录将这三种来源分别保存；新的恢复准备从
 实际作业及完成回执继承，不从旧目录名、最新Git提交或历史launch推断。

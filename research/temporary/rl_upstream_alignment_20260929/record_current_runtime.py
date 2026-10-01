@@ -163,6 +163,20 @@ for j in active['jobs']:
         r'Rounds \d|n_rollouts_collected=|step:\d+\b|\[loop_transport\]|\[owner_trajectory\]|Traceback \(most recent call last\)|(?:torch\.)?(?:cuda\.)?OutOfMemoryError:',s)][-3:]
     rec['completed_checkpoints']=[dict(path=str(p),value=p.read_text()) for p in Path(j['checkpoints']).rglob('latest_checkpointed_iteration.txt')]
     result['jobs'].append(rec)
+result['pending_checkpoint_deployments']=[]
+boundary=out/'checkpoint-boundary'
+if boundary.is_dir():
+    for path in boundary.glob('*/waiting.json'):
+        value=read(path);pid=value['observer_pid']
+        observer=dict(alive=False,pid_identity_matches=False)
+        if psutil.pid_exists(pid):
+            process=psutil.Process(pid)
+            observer=dict(alive=process.is_running() and process.status()!=psutil.STATUS_ZOMBIE,
+                created_unix=process.create_time(),status=process.status(),
+                pid_identity_matches=abs(process.create_time()-value['observer_created_unix'])<.02)
+        result['pending_checkpoint_deployments'].append(dict(receipt=artifact(path),
+            recorded=value,observer=observer,completed_stop=artifact(path.parent/'completed-stop.json'),
+            scope='One-time checkpoint transition; a live observer is not evidence of a new training deployment.'))
 result['prepared_versions']=[]
 for label,receipt_dir,supersedes in [
     ('appworld-balanced-resume-20261001','appworld-balanced-resume',None),
