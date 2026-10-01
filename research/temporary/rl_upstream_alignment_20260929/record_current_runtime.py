@@ -92,8 +92,9 @@ for j in active['jobs']:
                     ranks=[dict(receipt=artifact(p),record=read(p)) for p in sorted(observation.glob('rank*.json'))],
                     scope='Bounded wrapper reading original generate outputs/timing; eight calls/rank then restores the original binding. No new generation, numerical or sampling behavior.'))
     rec['pending_runtime_operations']=[]
-    if j['task']=='SkyRL-SQL':
-        submitted=out/'actor-response-padding/sql-live/submitted.json'
+    padding_live={'SkyRL-SQL':'sql-live','TextCraft':'textcraft-live'}.get(j['task'])
+    if padding_live:
+        submitted=out/'actor-response-padding'/padding_live/'submitted.json'
         completed=submitted.with_name('complete.json')
         if submitted.is_file() and not completed.is_file():
             operation=read(submitted)
@@ -105,8 +106,8 @@ for j in active['jobs']:
     # These are completed original worker RPC receipts, not new live imports.
     override_paths=[root/'receipts/owner-entropy-20260930'/f"live-{j['task']}-complete.json",
                     out/f"live-{j['task']}-complete.json"]
-    if j['task']=='SkyRL-SQL':
-        override_paths.append(out/'actor-response-padding/sql-live/complete.json')
+    if padding_live:
+        override_paths.append(out/'actor-response-padding'/padding_live/'complete.json')
     for path in override_paths:
         if not path.is_file():continue
         value=read(path);workers=value if isinstance(value,list) else value.get('workers',[])
@@ -120,7 +121,12 @@ for j in active['jobs']:
             for n,expected in w.get('source_sha256',{}).items():
                 p=Path(w['source'])/n
                 effective_files[str(p)]=dict(**artifact(p),expected_sha256=expected,matches=sha(p)==expected)
+        provenance={k:value[k] for k in ['submission_repository_commit','submission_script_sha256',
+            'submitted_unix','completed_unix','driver_pid','driver_created_unix',
+            'owner_comparison_receipt','owner_comparison_sha256','expected_optimizer_step']
+            if isinstance(value,dict) and k in value}
         rec['runtime_overrides'].append(dict(receipt=artifact(path),workers=workers,effective_files=effective_files,
+            submission_provenance=provenance,
             applicability='Completed RPC receipt for these currently alive worker PIDs; does not claim a fresh method introspection'))
     rec['environment_roots']={k:v for k,v in source.items() if k.endswith('_root') and k not in ['dt_root','verl_root']}
     with Path(j['log']).open('rb') as f:
