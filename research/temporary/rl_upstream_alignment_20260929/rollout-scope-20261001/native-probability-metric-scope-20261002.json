@@ -1,0 +1,85 @@
+{
+  "observed_unix": 1790890579.4790237,
+  "task": "SkyRL-SQL",
+  "driver_pid": 552842,
+  "driver_created_unix": 1790804649.87,
+  "metric_observation": "Completed step7 rollout_probs_diff mean0.283, max1.000",
+  "original_sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/trainer/ppo/ray_trainer.py",
+      "sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+      "start_line": 1169,
+      "lines": [
+        "                            # TODO: we may want to add diff of probs too.",
+        "                            rollout_old_log_probs = batch.batch[\"rollout_log_probs\"]",
+        "                            actor_old_log_probs = batch.batch[\"old_log_probs\"]",
+        "                            attention_mask = batch.batch[\"attention_mask\"]",
+        "                            responses = batch.batch[\"responses\"]",
+        "                            response_length = responses.size(1)",
+        "                            response_mask = attention_mask[:, -response_length:]",
+        "",
+        "                            rollout_probs = torch.exp(rollout_old_log_probs)",
+        "                            actor_probs = torch.exp(actor_old_log_probs)",
+        "                            rollout_probs_diff = torch.abs(rollout_probs - actor_probs)",
+        "                            rollout_probs_diff = torch.masked_select(rollout_probs_diff, response_mask.bool())",
+        "                            rollout_probs_diff_max = torch.max(rollout_probs_diff)",
+        "                            rollout_probs_diff_mean = torch.mean(rollout_probs_diff)",
+        "                            rollout_probs_diff_std = torch.std(rollout_probs_diff)",
+        "                            metrics.update(",
+        "                                {",
+        "                                    \"training/rollout_probs_diff_max\": rollout_probs_diff_max.detach().item(),",
+        "                                    \"training/rollout_probs_diff_mean\": rollout_probs_diff_mean.detach().item(),",
+        "                                    \"training/rollout_probs_diff_std\": rollout_probs_diff_std.detach().item(),",
+        "                                }",
+        "                            )"
+      ]
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/workers/actor/dp_actor.py",
+      "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+      "start_line": 367,
+      "lines": [
+        "        multi_turn = data.meta_info.get(\"multi_turn\", False)",
+        "",
+        "        select_keys = [\"responses\", \"input_ids\", \"attention_mask\", \"position_ids\", \"old_log_probs\", \"advantages\"]",
+        "        if multi_turn:",
+        "            select_keys.append(\"loss_mask\")",
+        "        if self.config.use_kl_loss:",
+        "            select_keys.append(\"ref_log_prob\")",
+        "        batch = data.select(batch_keys=select_keys).batch",
+        "        has_multi_modal_inputs = \"multi_modal_inputs\" in data.non_tensor_batch.keys()",
+        "",
+        "        # Split to make minibatch iterator for updating the actor",
+        "        # See PPO paper for details. https://arxiv.org/abs/1707.06347",
+        "        if has_multi_modal_inputs:"
+      ]
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/SkyRL-7d94cc-owner-generator/skyrl/train/generators/skyrl_gym_generator.py",
+      "sha256": "1e7272045223fbb4ec550d0fe22434bc6f29637c0f75941c80ea80c6fd11ee94",
+      "start_line": 152,
+      "lines": [
+        "        Returns:",
+        "            Optional[List[float]]: Logprobs for output tokens followed by dummy values (0.0) for",
+        "                observation tokens. Returns None if output_logprobs is None.",
+        "        \"\"\"",
+        "        if not self.output_logprobs:",
+        "            return None",
+        "        return self.output_logprobs + [0.0] * len(self.obs_ids)",
+        "",
+        "",
+        "def _split_lists(time_splits: List[Optional[Dict[str, float]]]) -> Optional[Dict[str, List[float]]]:",
+        "    \"\"\"Per-component lists from per-trajectory time splits, or None if any trajectory lacks them.\"\"\"",
+        "    if not time_splits or any(s is None for s in time_splits):",
+        "        return None",
+        "    return {name: [s[name] for s in time_splits] for name in time_splits[0]}",
+        ""
+      ]
+    }
+  ],
+  "transport_source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/owner_trajectory_batch.py",
+    "sha256": "2d3a93f03ba13b49056209c5be5488da6bea0fb9ba1f58d8549b358194b6aca3"
+  },
+  "scope": "Owner metric uses attention_mask across full trajectory, including observations and prompt in the response zone; multi-turn PPO policy/entropy/KL losses use loss_mask. This metric is not a policy-token-only vLLM tolerance comparison. No owner metric or mask changed; action-only numerical results not inferred."
+}

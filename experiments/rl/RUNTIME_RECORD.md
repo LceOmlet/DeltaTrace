@@ -1,8 +1,8 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-最近三组只读快照为北京时间2026-10-02 05:12；AppWorld部署和原加载记录另外核对至
-05:23，见下方定向回执。[current_runtime.json](current_runtime.json)保留精确采集时间，
+最近三组只读源码快照为北京时间2026-10-02 05:30；原阶段观察见下方定向回执。
+[current_runtime.json](current_runtime.json)保留精确采集时间，
 不能把文档更新时间当作三组阶段都已重新采集。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -136,6 +136,30 @@ AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单�
 | 原 `verl/models/transformers/qwen3_vl.py` | `ebc52fb35812` |
 
 ## 修复账本
+
+### 2026-10-02 05:32：真实阶段核对，避免把观测统计误作推理容差失败
+
+三组原TaskRunner的非阻塞栈已确认：SQL第8轮生成、AppWorld恢复6后的第7轮
+生成、TextCraft第24轮actor更新。源码与原数值文件没有漂移。
+[原日志与栈回执](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/phase-observation-1790890330.json)
+同时核对TextCraft原保存点25助手452582存活、创建时间匹配且尚无completed-stop。
+后续05:40原日志已显示TextCraft完成24（奖励0.516、迭代4731.084秒），进入25采样；
+这个完成值晚于05:30源码快照，不能把快照里的23当作新的停滞。效率候选尚未部署。
+AppWorld继续合批，05:40已返回1011个请求、221064生成token，采集墙钟1807.5秒；
+没有新完成迭代，这些请求数不是完成的轨迹数。
+
+SQL完成step7的`training/rollout_probs_diff_mean=0.283`不能直接当作vLLM动作概率
+容差失败。实际固定VERL的原指标使用整段response的attention_mask；官方SkyRL
+给观测位置填0.0 rollout logprob，这些位置指数后为1，原指标会包含其与模型概率
+的差。初始prompt若落入完整轨迹response区域也被该指标纳入。
+当前原多轮actor的策略、熵和KL损失使用loss_mask，排除这些非动作位置；既有
+原环境/轨迹对照也覆盖该mask。没有改变原统计代码、容差或训练信号，也没有由
+这个统计口径推断动作token的数值误差为零或推理完全无误。
+
+[实际owner源码与统计口径回执](../../research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-probability-metric-scope-20261002.json)
+SHA=`6da73bbeb3dde7c708a671c425a37b2143bfba2b8cff03335439b403f4db259f`。
+trainer仍`8816ea4e…`，actor仍`1f862e8b…`，generator仍`1e727204…`；这次调查
+没有新的生产代码版本或GPU测试，也没有改动已通过的官方数值验收范围。
 
 ### 2026-10-02 05:23：修复忙卡时过早拆分RPC，保留原学习负载
 
