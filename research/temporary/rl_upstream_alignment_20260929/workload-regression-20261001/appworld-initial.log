@@ -1,0 +1,100 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+____________ test_formal_appworld_launcher_matches_native_workload ____________
+
+tmp_path = WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-676/test_formal_appworld_launcher_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002DD0426E240>
+
+    def test_formal_appworld_launcher_matches_native_workload(tmp_path, monkeypatch):
+        from launch_appworld_native import options_for
+        from loop_owner_recipe import compose
+        from test_loop_environment_local import OWNER
+        from test_official_workload_local import project_config, assert_project_trajectory_units
+        monkeypatch.setenv('MODEL_PATH', str(ASSETS))
+        monkeypatch.setenv('LOOP_ROOT', str(OWNER))
+        native = compose(OWNER, [])  # README command and native Hydra defaults.
+>       options, _ = options_for(tmp_path)
+                     ^^^^^^^^^^^^^^^^^^^^^
+
+experiments\rl\test_loop_model_entry_local.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+experiments\rl\launch_appworld_native.py:24: in options_for
+    '+data.loop_eval_groups': evaluation.rl.params.scenarios_per_iteration,
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\dictconfig.py:359: in __getattr__
+    self._format_and_raise(key=key, value=None, cause=e)
+research\temporary\rl_local_test_deps312\omegaconf\base.py:231: in _format_and_raise
+    format_and_raise(
+research\temporary\rl_local_test_deps312\omegaconf\_utils.py:899: in format_and_raise
+    _raise(ex, cause)
+research\temporary\rl_local_test_deps312\omegaconf\_utils.py:797: in _raise
+    raise ex.with_traceback(sys.exc_info()[2])  # set env var OC_CAUSE=1 for full trace
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\dictconfig.py:351: in __getattr__
+    return self._get_impl(
+research\temporary\rl_local_test_deps312\omegaconf\dictconfig.py:451: in _get_impl
+    return self._resolve_with_default(
+research\temporary\rl_local_test_deps312\omegaconf\basecontainer.py:98: in _resolve_with_default
+    resolved_node = self._maybe_resolve_interpolation(
+research\temporary\rl_local_test_deps312\omegaconf\base.py:719: in _maybe_resolve_interpolation
+    return self._resolve_interpolation_from_parse_tree(
+research\temporary\rl_local_test_deps312\omegaconf\base.py:584: in _resolve_interpolation_from_parse_tree
+    resolved = self.resolve_parse_tree(
+research\temporary\rl_local_test_deps312\omegaconf\base.py:769: in resolve_parse_tree
+    raise InterpolationResolutionError(
+research\temporary\rl_local_test_deps312\omegaconf\base.py:764: in resolve_parse_tree
+    return visitor.visit(parse_tree)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\antlr4\tree\Tree.py:34: in visit
+    return tree.accept(self)
+           ^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\grammar\gen\OmegaConfGrammarParser.py:206: in accept
+    return visitor.visitConfigValue(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\grammar_visitor.py:101: in visitConfigValue
+    return self.visit(ctx.getChild(0))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\antlr4\tree\Tree.py:34: in visit
+    return tree.accept(self)
+           ^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\grammar\gen\OmegaConfGrammarParser.py:342: in accept
+    return visitor.visitText(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\grammar_visitor.py:298: in visitText
+    return self.visitInterpolation(c)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\grammar_visitor.py:125: in visitInterpolation
+    return self.visit(ctx.getChild(0))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\antlr4\tree\Tree.py:34: in visit
+    return tree.accept(self)
+           ^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\grammar\gen\OmegaConfGrammarParser.py:1041: in accept
+    return visitor.visitInterpolationResolver(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_local_test_deps312\omegaconf\grammar_visitor.py:179: in visitInterpolationResolver
+    return self.resolver_interpolation_callback(
+research\temporary\rl_local_test_deps312\omegaconf\base.py:750: in resolver_interpolation_callback
+    return self._evaluate_custom_resolver(
+research\temporary\rl_local_test_deps312\omegaconf\base.py:694: in _evaluate_custom_resolver
+    return resolver(
+research\temporary\rl_local_test_deps312\omegaconf\omegaconf.py:445: in resolver_wrapper
+    ret = resolver(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+research\temporary\rl_upstream_alignment_20260929\recipe-sources\ml-loop\phi_agents\rl\config.py:53: in appworld_split_to_num_scenarios
+    with open(os.environ["APPWORLD_ROOT"] + f"/data/datasets/{split_name}.txt") as fh:
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = environ({'ALLUSERSPROFILE': 'C:\\ProgramData', 'APPDATA': 'C:\\Users\\Administrator\\AppData\\Roaming', 'BROWSER_USE_A...trator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop'})
+key = 'APPWORLD_ROOT'
+
+>   ???
+E   omegaconf.errors.InterpolationResolutionError: KeyError raised while resolving interpolation: 'APPWORLD_ROOT'
+E       full_key: rl.params.scenarios_per_iteration
+E       object_type=dict
+
+<frozen os>:714: InterpolationResolutionError
+=========================== short test summary info ===========================
+FAILED experiments/rl/test_loop_model_entry_local.py::test_formal_appworld_launcher_matches_native_workload
+1 failed in 16.65s

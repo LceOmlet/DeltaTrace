@@ -17,9 +17,9 @@ SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际
 替代的旧版本”对应记录。已验证、已准备、已部署和已退役分别标明；未提交完成回执
 的运行时修改不计入生效版本。原回执和冻结源码保留，不靠目录名或日期推断。
 
-05:25的原只读复核没有发现源码漂移。05:39发生的SQL采样事故与随后重启单独记录：
-SQL新冻结actor仍为`1f862e8bbdaa…`，AppWorld启动actor相同，TextCraft仍为
-`2b80b938fee4…`。不能把旧SQL的完成步数带到新进程；没有重跑数值测试。
+05:25的原只读复核没有发现源码漂移。05:39的SQL采样事故及随后重启保留在历史账本。
+当前三组有效actor均为`1f862e8bbdaa…`；TextCraft旧冻结文件`2b80b938fee4…`已由
+19:28完成的worker覆盖替代。不能把旧SQL完成步数带到新进程，也不能按TextCraft旧launch重启。
 
 ## 哪份记录回答哪个问题
 
@@ -92,6 +92,36 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 每卡实际microbatch4仅规定原更新内部的处理批量；不能据此把global mini改成4或8，
 也不能把TextCraft的30个epoch写成只有30次正式采样迭代。
+
+### 官方负载到实际入口的回归对应（2026-10-01）
+
+此前配方、launcher、轨迹运输和部署记录分别通过，容易漏掉它们之间的单位换算。
+已将这条链补成CPU回归：执行作者原脚本/README配置，调用项目实际正式launcher，
+再执行固定VERL原worker的两条minibatch归一化语句。环境重复由`env.rollout.n`负责；
+engine的`rollout.n=1`，不能再次把完整轨迹重复扩增。
+
+| 已修复的不一致 | 代码来源 | 当前验证与部署 |
+| --- | --- | --- |
+| 每轮response误作PPO训练行，放大更新数 | SQL `37938d0`，TextCraft `cb8e569`，AppWorld `cf145b2` | 三组走作者完整轨迹；DT response只作归因运输，通过索引回到同一轨迹token |
+| prompt单位的mini未换算为trajectory单位 | SQL `37938d0` / `launch_sql_native.py` | 官方256组×5与global mini1280对应；VERL单卡mini640，满批1次联合更新 |
+| TextCraft按未使用的配置值多跑一遍PPO | `cb8e569` / `launch_textcraft_native.py` | 作者实际update_policy不读取ppo_epochs；保留单遍，global mini64，满批4次联合更新 |
+| AppWorld的采样/完成/取消与作者不同 | `cf145b2`，请求运输 `64e6377` | 复用LOOP原sampler/runner池；40×6请求、原完成规则、mini32、2遍、200迭代 |
+| 已部署micro4/head/padding未写进旧launch | `dc4e4d7`，padding源`0c80b41`，原比较`44e1149`，部署`3a46cec` | 三组实际B4与LoRA8/16有完成回执；TextCraft完整恢复候选固化这些设置，旧launch保持历史原貌 |
+
+新增测试是[SQL/TextCraft负载对照](test_official_workload_local.py)及
+[AppWorld负载对照](test_loop_model_entry_local.py)。负载文件7项（新增SQL/TextCraft各1项，
+其余为已有单位回归）、新增AppWorld 1项通过；
+测试代码固定为`1a1e945`；最终独立回执中，两组进程分别7.359/11.250秒，
+采样RSS峰值146.7/254.3MiB，物理显存前后均0MiB。
+这是配置与原单位换算检查，不替代DT、PPO或vLLM的数值验收。
+AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单补全临时布局后通过，
+初始失败与最终结果均保存在
+[workload-regression-20261001](../../research/temporary/rl_upstream_alignment_20260929/workload-regression-20261001/summary.json)。
+
+**尚未全部对齐的是执行效率路径。** SQL/TextCraft的整段rollout上下文与DT跨卡均衡
+候选已验证、尚未部署；AppWorld的整批同步返回仍导致已完成请求等待尾部。
+当前证据不足以称三组整体耗时已达到官方同等计算负载的水平。不能缩小任务预算、
+改minibatch或部署未对照的异步实现来消去这些待完成项。
 
 已核对的head文件SHA前12位（完整值见快照）：
 
@@ -287,6 +317,9 @@ AppWorld已在原step4检查点完成后提交恢复，TextCraft原保存周期�
 范围是原forward/backward与有限传播重合端点极限，不是整网归因验收，也不覆盖其他历史
 BF16失败样本。没有新增纠偏、放宽容差或修改数值核。原始输入路径、逐项结果和脚本SHA见
 [DT分发诊断及原容差回执](results_dt_dispatch_profile_20261001.json)。
+
+<details>
+<summary>历史检查与候选记录：其中“当前、未部署”等状态只描述记录时刻，继续工作以本页顶部和带时间的current_runtime.json为准</summary>
 
 ### 2026-10-01 17:44：实测分发成本与恢复候选
 
@@ -544,9 +577,6 @@ Python采样，随后栈为Ray空闲主循环；rank1仍在原vLLM解码，原�
 [原诊断回执](../../research/temporary/rl_upstream_alignment_20260929/sql-formal-format-20261001/observed.json)。
 检查脚本复用原评分函数，没有另写解析器、执行数据库、生成新轨迹、补造标签或修改奖励。
 当前证据定位了低分的主要触发条件，不将原训练接口测试扩大成模型能遵守格式的证明。
-
-<details>
-<summary>历史调查与阶段记录：以下“当前、未部署、未完成”仅指各记录当时；当前版本以上方表及带时间快照为准</summary>
 
 ## 2026-10-01 观察口径修正
 
