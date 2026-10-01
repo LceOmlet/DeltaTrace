@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="9" time="63.045" timestamp="2026-10-02T01:33:24.959198+08:00" hostname="224a01103.cloud.a02.sm132"><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[64-None]" time="10.466" /><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[63-None]" time="6.032" /><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[64-0]" time="6.005" /><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[1-None]" time="6.121" /><testcase classname="test_rank_completion_candidate" name="test_fast_rank_can_advance_again_before_slow_rank_returns" time="6.235" /><testcase classname="test_rank_completion_candidate" name="test_original_engine_error_is_not_hidden" time="6.134" /><testcase classname="test_rank_completion_candidate" name="test_native_cancellation_is_rechecked_after_owner_pool_queueing" time="7.958" /><testcase classname="test_rank_completion_candidate" name="test_actual_verl_vllm_owner_handles_empty_transport_without_generation" time="5.896"><failure message="AttributeError: module 'torch.cpu' has no attribute 'memory_allocated'">def test_actual_verl_vllm_owner_handles_empty_transport_without_generation():
+        from omegaconf import OmegaConf
+        from vllm import SamplingParams
+        from verl.workers.rollout.vllm_rollout.vllm_rollout_spmd import vLLMRollout
+        owner = vLLMRollout.__new__(vLLMRollout)
+        owner.config = OmegaConf.create(dict(free_cache_engine=False, response_length=32767))
+        owner.pad_token_id = 0
+        owner.lora_kwargs = {}
+        owner.sampling_params = SamplingParams(n=1, logprobs=0)
+        owner.inference_engine = Mock()
+        owner.inference_engine.generate.side_effect = AssertionError('Empty transport must not generate')
+        batch = DataProto.from_dict(tensors=dict(
+            input_ids=torch.empty((0, 1), dtype=torch.long),
+            attention_mask=torch.empty((0, 1), dtype=torch.long),
+            position_ids=torch.empty((0, 1), dtype=torch.long)),
+            non_tensors=dict(raw_prompt_ids=np.array([], dtype=object),
+                owner_sampling_kwargs=np.array([], dtype=object),
+                loop_reply_key=np.array([], dtype=object), loop_reply_rank=np.array([], dtype=int)),
+            meta_info=dict(eos_token_id=248044, pad_token_id=0))
+&gt;       output = owner.generate_sequences(batch)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_rank_completion_candidate.py:260: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/utils/debug/performance.py:80: in f
+    return self.log(decorated_function, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/utils/debug/performance.py:86: in log
+    mem_allocated, mem_reserved, mem_used, mem_total = _get_current_mem_info()
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+unit = 'GB', precision = 2
+
+    def _get_current_mem_info(unit: str = "GB", precision: int = 2) -&gt; Tuple[str]:
+        """Get current memory usage."""
+        assert unit in ["GB", "MB", "KB"]
+        divisor = 1024**3 if unit == "GB" else 1024**2 if unit == "MB" else 1024
+&gt;       mem_allocated = get_torch_device().memory_allocated()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'torch.cpu' has no attribute 'memory_allocated'
+
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/utils/debug/performance.py:35: AttributeError</failure></testcase><testcase classname="test_rank_completion_candidate" name="test_candidate_only_changes_completion_transport" time="1.393" /></testsuite></testsuites>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="9" time="63.936" timestamp="2026-10-02T01:46:18.646359+08:00" hostname="224a01103.cloud.a02.sm132"><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[64-None]" time="10.455" /><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[63-None]" time="8.983" /><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[64-0]" time="6.105" /><testcase classname="test_rank_completion_candidate" name="test_actual_owner_pool_preserves_exact_requests_and_replies[1-None]" time="6.027" /><testcase classname="test_rank_completion_candidate" name="test_fast_rank_can_advance_again_before_slow_rank_returns" time="6.033" /><testcase classname="test_rank_completion_candidate" name="test_original_engine_error_is_not_hidden" time="6.021" /><testcase classname="test_rank_completion_candidate" name="test_native_cancellation_is_rechecked_after_owner_pool_queueing" time="7.898" /><testcase classname="test_rank_completion_candidate" name="test_actual_verl_vllm_owner_handles_empty_transport_without_generation" time="4.235"><failure message="ValueError: max() iterable argument is empty">def test_actual_verl_vllm_owner_handles_empty_transport_without_generation():
+        from omegaconf import OmegaConf
+        from vllm import SamplingParams
+        from verl.workers.rollout.vllm_rollout.vllm_rollout_spmd import vLLMRollout
+        owner = vLLMRollout.__new__(vLLMRollout)
+        owner.config = OmegaConf.create(dict(free_cache_engine=False, response_length=32767))
+        owner.pad_token_id = 0
+        owner.lora_kwargs = {}
+        owner.sampling_params = SamplingParams(n=1, logprobs=0)
+        owner.inference_engine = Mock()
+        owner.inference_engine.generate.side_effect = AssertionError('Empty transport must not generate')
+        batch = DataProto.from_dict(tensors=dict(
+            input_ids=torch.empty((0, 1), dtype=torch.long),
+            attention_mask=torch.empty((0, 1), dtype=torch.long),
+            position_ids=torch.empty((0, 1), dtype=torch.long)),
+            non_tensors=dict(raw_prompt_ids=np.array([], dtype=object),
+                owner_sampling_kwargs=np.array([], dtype=object),
+                loop_reply_key=np.array([], dtype=object), loop_reply_rank=np.array([], dtype=int)),
+            meta_info=dict(eos_token_id=248044, pad_token_id=0))
+        # Only the GPU memory logger is removed for this CPU-only body test.
+        # The original generation implementation, helpers and result are unchanged.
+        from verl.utils.debug.performance import GPUMemoryLogger
+        wrapper = inspect.getclosurevars(vLLMRollout.generate_sequences).nonlocals
+        assert isinstance(wrapper['self'], GPUMemoryLogger)
+&gt;       output = wrapper['decorated_function'](owner, batch)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_rank_completion_candidate.py:266: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py:120: in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py:381: in generate_sequences
+    response = pad_2d_list_to_length(response, self.pad_token_id, max_length=self.config.response_length).to(idx.device)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = [], pad_token_id = 0, max_length = 32767
+
+    def pad_2d_list_to_length(response, pad_token_id, max_length=None):
+        """
+        pad a 2D list (e.g. responses, logprobs) to a 2D tensor.
+        """
+&gt;       response_length = max(len(sub_list) for sub_list in response)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: max() iterable argument is empty
+
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/utils/torch_functional.py:273: ValueError</failure></testcase><testcase classname="test_rank_completion_candidate" name="test_candidate_only_changes_completion_transport" time="1.335" /></testsuite></testsuites>

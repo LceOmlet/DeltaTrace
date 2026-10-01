@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-部署核对于北京时间2026-10-01 19:28之后；精确采集时间见
+最近部署核对于北京时间2026-10-02 01:53；精确采集时间见
 [current_runtime.json](current_runtime.json)。阶段会继续推进；本文件记录该次核对结果。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -120,6 +120,8 @@ AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单�
 
 **尚未全部对齐的是执行效率路径。** SQL/TextCraft的整段rollout上下文与DT跨卡均衡
 候选已验证、尚未部署；AppWorld的整批同步返回仍导致已完成请求等待尾部。
+AppWorld已新增只处理跨卡返回顺序的候选，原接口CPU测试9项通过，已冻结但未部署；
+其版本与初始失败见下方2026-10-02记录。不能将候选测试通过写成正式训练已提速。
 当前证据不足以称三组整体耗时已达到官方同等计算负载的水平。不能缩小任务预算、
 改minibatch或部署未对照的异步实现来消去这些待完成项。
 
@@ -132,6 +134,41 @@ AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单�
 | 原 `verl/models/transformers/qwen3_vl.py` | `ebc52fb35812` |
 
 ## 修复账本
+
+### 2026-10-02：跨卡返回候选与版本封存
+
+此前负载单位修复没有同时消除执行路径的额外等待，而且冻结启动文件、PID绑定覆盖、
+未部署候选容易被当成同一个版本。当前记录将这三种来源分别保存；新的恢复准备从
+实际作业及完成回执继承，不从旧目录名、最新Git提交或历史launch推断。
+
+AppWorld候选仅改 `LoopOwner.collect_native_trajectories` 的回复运输：由原Ray
+`ActorPool`负责排队与完成顺序，调用同一VERL的
+`RayWorkerGroup._execute_remote_single_worker`，原 `ObjectRef.future` 唤醒现有队列。
+官方LOOP sampler、runner、完成阈值、取消事件、token artifact、环境reward、原PPO和
+数值代码不变。原先测到快卡完成后还等待另一卡39.301秒；候选针对这个跨卡边界，
+**不声称已消除一张卡内部的批次尾部，也没有正式迭代提速结果。**
+
+| 对应版本 | 文件/验证事实 | 部署状态 |
+| --- | --- | --- |
+| 原AppWorld bridge | SHA `22ff649007bf6d98584e6ebb1d19f72cd6010d68e6f40ac082418ee50ee0dce5` | PID2479539仍在执行，检查点5已由原loader保存 |
+| 初始候选 `17dc9ef` | 原Ray/VERL RPC的7项CPU运输检查通过；尚未覆盖排队后取消与原生成器B0 | 未部署，不能替代完整9项结果 |
+| 空批修复 `ff28f35` | 候选SHA `8e93ec140303a88e35d8ff2a9a50aa1fc8012215e979bb9d8d5967da2a95b030`；仅在运输为空时以原Ray对象完成，不调用不支持B0的原VERL生成器 | 不进入默认入口 |
+| 完整CPU回执 `33b074e` | 9项通过，原Ray2.53.0 ActorPool、原VERL RPC；73.800秒进程墙钟、采样进程树PSS峰值2.510GiB、Ray GPU资源0 | 接口验证，不是模型数值或正式速度验收 |
+| 冻结准备 `7140cc4` | 实际entry只替换上述bridge；原VERL目录及全部其他entry、DT、输出头SHA保持；原恢复助手增加对应回执字段 | `candidates/appworld-rank-completion-20261002/entry`，prepared-only；尚未切换PID |
+
+完整测试与准备记录见
+[appworld-rank-completion-20261002](../../research/temporary/rl_upstream_alignment_20260929/appworld-rank-completion-20261002/prepared.json)
+和[最终CPU回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-rank-completion-20261002/final-cpu-tests.json)。
+原始日志/XML及失败尝试一起保存：`367cb7f`的 `inspect.unwrap` 未去掉原日志器，
+CPU检查仍调用GPU显存API；`25319d1`绕过该日志器后实际复现原B0的
+`max() iterable argument is empty`，由 `ff28f35`修复运输边界。没有改生成器、隐藏失败、
+放宽数值容差或修改官方空批约束。初始7项文件是历史证据，只有最后9项回执对应最终候选。
+
+现有原恢复提交助手逐项核对准备回执的entry/owner/DT SHA、旧PID创建时间和原
+`latest_checkpointed_iteration.txt`及data/model/optim/extra_state文件，才交给VERL loader。
+新的完成运输版本也记录到 `source.json` 和带采集时间的快照。原checkpoint之外不补造
+reader状态，不把历史回执当新PID完成证明。SQL仍无完整检查点；TextCraft原保存边界25
+尚未到达，这两组的效率候选仍未部署。
 
 ### 2026-10-01 20时：AppWorld正式生成的原生profile与整批等待
 

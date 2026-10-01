@@ -1,0 +1,75 @@
+.......F.                                                                [100%]
+=================================== FAILURES ===================================
+____ test_actual_verl_vllm_owner_handles_empty_transport_without_generation ____
+
+    def test_actual_verl_vllm_owner_handles_empty_transport_without_generation():
+        from omegaconf import OmegaConf
+        from vllm import SamplingParams
+        from verl.workers.rollout.vllm_rollout.vllm_rollout_spmd import vLLMRollout
+        owner = vLLMRollout.__new__(vLLMRollout)
+        owner.config = OmegaConf.create(dict(free_cache_engine=False, response_length=32767))
+        owner.pad_token_id = 0
+        owner.lora_kwargs = {}
+        owner.sampling_params = SamplingParams(n=1, logprobs=0)
+        owner.inference_engine = Mock()
+        owner.inference_engine.generate.side_effect = AssertionError('Empty transport must not generate')
+        batch = DataProto.from_dict(tensors=dict(
+            input_ids=torch.empty((0, 1), dtype=torch.long),
+            attention_mask=torch.empty((0, 1), dtype=torch.long),
+            position_ids=torch.empty((0, 1), dtype=torch.long)),
+            non_tensors=dict(raw_prompt_ids=np.array([], dtype=object),
+                owner_sampling_kwargs=np.array([], dtype=object),
+                loop_reply_key=np.array([], dtype=object), loop_reply_rank=np.array([], dtype=int)),
+            meta_info=dict(eos_token_id=248044, pad_token_id=0))
+        # Only the GPU memory logger is removed for this CPU-only body test.
+        # The original generation implementation, helpers and result are unchanged.
+>       output = inspect.unwrap(vLLMRollout.generate_sequences)(owner, batch)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_rank_completion_candidate.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/utils/debug/performance.py:80: in f
+    return self.log(decorated_function, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/utils/debug/performance.py:86: in log
+    mem_allocated, mem_reserved, mem_used, mem_total = _get_current_mem_info()
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+unit = 'GB', precision = 2
+
+    def _get_current_mem_info(unit: str = "GB", precision: int = 2) -> Tuple[str]:
+        """Get current memory usage."""
+        assert unit in ["GB", "MB", "KB"]
+        divisor = 1024**3 if unit == "GB" else 1024**2 if unit == "MB" else 1024
+>       mem_allocated = get_torch_device().memory_allocated()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'torch.cpu' has no attribute 'memory_allocated'
+
+../../../candidates/appworld-rollout-scope-20261001/verl/verl/utils/debug/performance.py:35: AttributeError
+----------------------------- Captured stdout call -----------------------------
+INFO 10-02 01:38:36 [__init__.py:43] Available plugins for group vllm.platform_plugins:
+INFO 10-02 01:38:36 [__init__.py:45] - metax -> vllm_metax:register
+INFO 10-02 01:38:36 [__init__.py:48] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 10-02 01:38:36 [__init__.py:217] Platform plugin metax is activated
+INFO 10-02 01:38:36 [envs.py:83] Plugin sets VLLM_USE_FLASHINFER_SAMPLER to False. Reason: flashinfer sampler are not supported on maca
+INFO 10-02 01:38:36 [envs.py:83] Plugin sets VLLM_ENGINE_READY_TIMEOUT_S to 3600. Reason: set timeout to 3600s for model loading
+----------------------------- Captured stderr call -----------------------------
+W1002 01:38:38.721000 1675376 site-packages/torch/utils/cpp_extension.py:166] No CUDA runtime is found, using CUDA_HOME='/opt/maca/tools/cu-bridge'
+=============================== warnings summary ===============================
+../../../../../../../../../opt/conda/lib/python3.12/site-packages/ray/util/state/util.py:55
+  /opt/conda/lib/python3.12/site-packages/ray/util/state/util.py:55: DeprecationWarning: Ray state API is no longer experimental. Please import from `ray.util.state`. instead. Importing from `ray.experimental` will be deprecated in future releases. 
+    warnings.warn(
+
+test_rank_completion_candidate.py::test_actual_verl_vllm_owner_handles_empty_transport_without_generation
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute
+
+test_rank_completion_candidate.py::test_actual_verl_vllm_owner_handles_empty_transport_without_generation
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/appworld-rank-completion/final-cpu-tests.xml -
+=========================== short test summary info ============================
+FAILED test_rank_completion_candidate.py::test_actual_verl_vllm_owner_handles_empty_transport_without_generation
+1 failed, 8 passed, 3 warnings in 66.69s (0:01:06)
+sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
