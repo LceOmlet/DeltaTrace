@@ -260,7 +260,10 @@ def test_actual_verl_vllm_owner_handles_empty_transport_without_generation():
         meta_info=dict(eos_token_id=248044, pad_token_id=0))
     # Only the GPU memory logger is removed for this CPU-only body test.
     # The original generation implementation, helpers and result are unchanged.
-    output = inspect.unwrap(vLLMRollout.generate_sequences)(owner, batch)
+    from verl.utils.debug.performance import GPUMemoryLogger
+    wrapper = inspect.getclosurevars(vLLMRollout.generate_sequences).nonlocals
+    assert isinstance(wrapper['self'], GPUMemoryLogger)
+    output = wrapper['decorated_function'](owner, batch)
     owner.inference_engine.generate.assert_not_called()
     assert len(output) == 0
     assert output.batch['input_ids'].shape == (0, 32768)
