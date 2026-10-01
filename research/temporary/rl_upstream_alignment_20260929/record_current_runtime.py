@@ -296,6 +296,25 @@ for prepared in result['prepared_versions']:
         prepared['source_commits']['native_resume_entry']=subprocess.check_output(
             ['git','log','-1','--format=%H','--',path],cwd=REPO,text=True).strip()
 for job in result['jobs']:
+    # A frozen launch can retain superseded resource settings. Report exactly
+    # which completed, PID-bound owner receipt changes each rank's settings;
+    # don't rewrite the historical launch or treat a prepared patch as active.
+    options=job['startup_workload_options']
+    resources={
+        'actor_microbatch':options.get('actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu'),
+        'logprob_microbatch':options.get('actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu'),
+        'lora_rank':options.get('actor_rollout_ref.model.lora_rank'),
+        'lora_alpha':options.get('actor_rollout_ref.model.lora_alpha')}
+    rank_resources={rank:dict(values=resources.copy(),source_receipts=[job['launch']]) for rank in range(len(job['devices']))}
+    for overlay in job['runtime_overrides']:
+        for worker in overlay['workers']:
+            rank=worker['rank'];record=rank_resources[rank]
+            changes={key:worker[key] for key in resources if key in worker}
+            record['values'].update(changes)
+            record['source_receipts'].append(dict(**overlay['receipt'],recorded_fields=changes))
+    job['effective_resource_config']={
+        'scope':'Frozen launch plus completed current-PID worker overrides; not a fresh live config read',
+        'ranks':[dict(rank=rank,**value) for rank,value in rank_resources.items()]}
     # Only label the head with this fix when the actual recorded file digest
     # agrees. A later runtime change must remain explicit, never be relabeled.
     expected_files={

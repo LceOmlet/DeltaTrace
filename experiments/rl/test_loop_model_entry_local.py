@@ -75,3 +75,28 @@ def test_native_context_budget_avoids_an_extra_generation_request():
     with pytest.raises(MaxSeqLenExceeded):
         llm.generate(history)
     llm._vllm.get_completion.assert_not_called()
+
+
+def test_formal_appworld_launcher_matches_native_workload(tmp_path, monkeypatch):
+    import shutil
+    from launch_appworld_native import options_for
+    from loop_owner_recipe import compose
+    from test_loop_environment_local import OWNER
+    from test_official_workload_local import project_config, assert_project_trajectory_units
+    monkeypatch.setenv('MODEL_PATH', str(ASSETS))
+    monkeypatch.setenv('LOOP_ROOT', str(OWNER))
+    # The native Hydra resolver reads the installed dev split to set the
+    # evaluation batch. Use the author's exact asset in a temporary layout.
+    datasets = tmp_path/'data/datasets'
+    datasets.mkdir(parents=True)
+    shutil.copyfile(OWNER/'data/appworld_splits/dev.txt', datasets/'dev.txt')
+    monkeypatch.setenv('APPWORLD_ROOT', str(tmp_path))
+    native = compose(OWNER, [])  # README command and native Hydra defaults.
+    options, _ = options_for(tmp_path)
+    cfg = project_config(options)
+    assert_project_trajectory_units(cfg, groups=native.rl.params.scenarios_per_iteration,
+        samples=native.rl.params.rollouts_per_scenario,
+        global_mini=native.rl.params.minibatch_size, epochs=native.rl.params.epochs_per_iteration)
+    assert cfg['trainer']['total_training_steps'] == native.rl.params.total_iterations
+    assert cfg['trainer']['test_freq'] == native.rl.eval.eval_every_n_iterations
+    assert cfg['env']['max_steps'] == native.rl.scenario_runner.appworld_config.env.max_interactions
