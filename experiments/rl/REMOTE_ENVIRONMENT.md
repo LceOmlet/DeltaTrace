@@ -6,17 +6,19 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
-当前正式清单为`runs/appworld-rank-completion-20261002/formal-training.json`，根目录
+当前正式清单为`runs/appworld-batch-coalescing-20261002/formal-training.json`，根目录
 `active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842使用GPU0/1，
-AppWorld PID150275使用GPU2/3，TextCraft PID212110使用GPU4/5。
-AppWorld原PID2479539完成step6后，04:08通过原VERL完整检查点恢复入口提交跨卡
-回复运输修复；原loader设置step6、两rank原model/optim/extra_state加载与后续采样
-已核对。其余entry/VERL源码和训练options未变，路径/恢复来源差异见运行账本；
-恢复的step6不作为本次新迭代或完整提速证明。
+AppWorld PID1199302使用GPU2/3，TextCraft PID212110使用GPU4/5。
+AppWorld跨卡完成顺序修复后，旧PID150275暴露忙卡时请求被提前拆成单条RPC的问题；
+05:06确认仍在未完成第7轮训练采样后，05:07通过原VERL再次恢复同一完整检查点6。
+新bridge为`036977b4eb1f…`，只用原ActorPool.has_free恢复合批；10项实际owner接口
+对照通过，05:22正式已见B31。原loader设置step6、双rank原加载路径已核对；
+其余entry/VERL及采样/训练options未变，仅记录路径不同。恢复的step6和批量变大
+不作为本次新迭代或完整提速证明，完整负载、失败回执和部署链见运行账本。
 
 AppWorld一次性助手`ddc3a57`已完成检查点6转换，本机16024/远端4044066已退出，
 完成回执保留，不重复启动。TextCraft已安排在**原保存点25**切换完整已验证候选；
-04:28核对本机助手18596/远端452582存活，创建时间、源码SHA和实际状态见快照
+05:15核对本机助手18596/远端452582存活，创建时间、已加载源码SHA和实际状态见快照
 `pending_checkpoint_deployments`。当次无completed-stop；等待助手不是新训练，
 恢复入口继续由原VERL负责。原保存频率、任务预算、LoRA8/16和实际B4保持。
 
