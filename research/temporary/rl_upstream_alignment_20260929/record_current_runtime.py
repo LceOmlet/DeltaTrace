@@ -160,6 +160,8 @@ for label,receipt_dir,supersedes in [
      'appworld-balanced-padding-resume-20261001'),
     ('appworld-rollout-scope-20261001','appworld-rollout-scope',
      'appworld-request-dispatch-20261001'),
+    ('appworld-rank-completion-20261002','appworld-rank-completion/release',
+     'appworld-rollout-scope-20261001'),
     ('sql-rollout-scope-20261001','sql-rollout-scope','sql-padding-restart-20261001'),
     ('textcraft-rollout-scope-20261001','textcraft-rollout-scope','official-trajectory-20260930-v7')]:
     path=out/receipt_dir/'prepared.json'
@@ -199,6 +201,13 @@ for label,receipt_dir,supersedes in [
             code_commit=value['rollout_scope_commit'],
             expected_sha256=value['rollout_scope_comparison_sha256'],
             matches=p.is_file() and sha(p)==value['rollout_scope_comparison_sha256'])
+    if value.get('completion_transport_receipt'):
+        p=Path(value['completion_transport_receipt'])
+        prepared['completion_transport']=dict(**artifact(p),
+            code_commit=value['completion_transport_code_commit'],
+            expected_sha256=value['completion_transport_receipt_sha256'],
+            matches=p.is_file() and sha(p)==value['completion_transport_receipt_sha256'])
+        prepared['tests']=artifact(p.parent/'final-cpu-tests.xml')
     result['prepared_versions'].append(prepared)
 result['unchanged_numerical_files']={}
 result['tested_candidates']=[]
@@ -261,12 +270,13 @@ for prepared in result['prepared_versions']:
     prepared['source_commits']=dict(dt_dispatch=revision('4c0cbdd'),
         native_resume_entry=revision('2036246'),actor_head=revision('dc4e4d7'))
     if prepared['id'] in ('appworld-balanced-padding-resume-20261001','appworld-request-dispatch-20261001',
-                          'appworld-rollout-scope-20261001'):
+                           'appworld-rollout-scope-20261001','appworld-rank-completion-20261002'):
         prepared['source_commits'].update(padding_source_archive=revision('0c80b41'),
                                          padding_owner_comparison=revision('44e1149'))
         prepared['local_helpers']={}
         prepare_script={'appworld-request-dispatch-20261001':'prepare_appworld_request_resume.py',
                         'appworld-rollout-scope-20261001':'prepare_appworld_scope_resume.py',
+                        'appworld-rank-completion-20261002':'prepare_appworld_completion_resume.py',
                         'appworld-balanced-padding-resume-20261001':'prepare_appworld_padding_resume.py'}[prepared['id']]
         for name in [prepare_script,'submit_prepared_appworld_resume.py']:
             p=recorder.parent/name;relative=p.relative_to(REPO).as_posix()
@@ -278,6 +288,8 @@ for prepared in result['prepared_versions']:
             prepared['source_commits']['request_dispatch']=prepared['request_dispatch']['code_commit']
         if 'rollout_scope_comparison' in prepared:
             prepared['source_commits']['rollout_scope']=prepared['rollout_scope_comparison']['code_commit']
+        if 'completion_transport' in prepared:
+            prepared['source_commits']['completion_transport']=prepared['completion_transport']['code_commit']
     if prepared['id'] in ('sql-rollout-scope-20261001','textcraft-rollout-scope-20261001'):
         task='sql' if prepared['id'].startswith('sql-') else 'textcraft'
         names=[f'prepare_{task}_scope_resume.py']
