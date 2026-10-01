@@ -12,7 +12,7 @@ AppWorld PID2479539使用GPU2/3，TextCraft PID212110使用GPU4/5。
 AppWorld原PID285580完成step4后，18:30通过原VERL完整检查点恢复入口提交生成上下文修复；
 新进程恢复和训练状态看带时间的实际日志，不把提交当作已完成新迭代。
 
-AppWorld跨卡回复候选已安排在原完整检查点6切换；02:23核对时marker仍为5、原PID未变。
+AppWorld跨卡回复候选已安排在原完整检查点6切换；02:58核对时marker仍为5、原PID未变。
 一次性本机助手PID17944/远端等待PID2374706的创建时间、代码SHA与实际存活状态
 见快照 `pending_checkpoint_deployments`。等待助手不是新训练；恢复入口继续由原VERL负责。
 
