@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-最近只读核对于北京时间2026-10-02 03:51；精确采集时间见
+最近只读核对于北京时间2026-10-02 04:30；精确采集时间见
 [current_runtime.json](current_runtime.json)。阶段会继续推进；本文件记录该次核对结果。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -57,7 +57,7 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 | 作业 | 当前PID / GPU | 实际执行的版本 | 生效边界与旧版本 |
 | --- | --- | --- | --- |
 | SQL-DT | 552842 / 0,1 | entry=`runs/sql-padding-restart-20261001/sql-entry`；VERL=`candidates/official-verl-20bd331-sql-padding-20261001`；actor SHA `1f862e8bbdaa…` | 05:44以`bc68687`恢复脚本启动；完成步数见带采集时间的快照。旧PID1876409在mcTracer附加采样后终止，无正式检查点；旧更新不计入新进程。新目录冻结旧进程已生效的padding覆盖，任务参数与初始评估未改 |
-| AppWorld-DT | 2479539 / 2,3 | entry/VERL=`candidates/appworld-rollout-scope-20261001/{entry,verl}`；保留head `dc4e4d7`、DT分发 `4c0cbdd`、请求分发 `64e6377`、padding `1f862e8bbdaa…`，新增scope `2a32d00` | 18:30由原提交助手从PID285580的完整step4恢复；启动源码`6e8fbe9`。原loader与双rank加载记录已确认，已进入正式采样；旧step4不是新更新 |
+| AppWorld-DT | 150275 / 2,3 | entry=`candidates/appworld-rank-completion-20261002/entry`；VERL仍为`candidates/appworld-rollout-scope-20261001/verl`；新增跨卡回复bridge SHA `8e93ec140303…`，其余entry、VERL和数值源未变 | 04:08从PID2479539的原完整step6恢复；原loader设置global step6，两rank原model/optim/extra_state加载行及后续采样已确认。恢复的6不计作新更新；候选尚无完整新迭代提速结果 |
 | TextCraft-DT | 212110 / 4,5 | entry/VERL仍为v7；有效actor已由原RPC绑定为`1f862e8bbdaa…`；head继续使用`dc4e4d7`的PID绑定覆盖 | 19:28双rank完成padding接入，原优化器各64步、模型/配置不变；DT分发与生成上下文尚未部署。冻结v7启动命令仍是旧microbatch1，不能直接按旧命令重启 |
 
 两种actor完整SHA：
@@ -119,9 +119,9 @@ AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单�
 [workload-regression-20261001](../../research/temporary/rl_upstream_alignment_20260929/workload-regression-20261001/summary.json)。
 
 **尚未全部对齐的是执行效率路径。** SQL/TextCraft的整段rollout上下文与DT跨卡均衡
-候选已验证、尚未部署；AppWorld的整批同步返回仍导致已完成请求等待尾部。
-AppWorld已新增只处理跨卡返回顺序的候选，原接口CPU测试9项通过，已冻结但未部署；
-其版本与初始失败见下方2026-10-02记录。不能将候选测试通过写成正式训练已提速。
+候选已验证、尚未部署；TextCraft已安排原检查点25切换。AppWorld只处理跨卡返回顺序的
+候选已在原检查点6恢复生效，原接口CPU测试9项、实际恢复证据和版本分别记录；
+还没有该版本完整新迭代的提速结果。不能将候选测试或成功恢复写成正式训练已提速。
 当前证据不足以称三组整体耗时已达到官方同等计算负载的水平。不能缩小任务预算、
 改minibatch或部署未对照的异步实现来消去这些待完成项。
 
@@ -134,6 +134,39 @@ AppWorld已新增只处理跨卡返回顺序的候选，原接口CPU测试9项�
 | 原 `verl/models/transformers/qwen3_vl.py` | `ebc52fb35812` |
 
 ## 修复账本
+
+### 2026-10-02 04:28：原检查点6恢复与训练参数逐项核对
+
+原检查点6保存完成后，`ddc3a57`助手停止已绑定身份的AppWorld旧PID2479539；
+现有提交助手调用同一VERL的原loader，04:08提交PID150275，创建时间1790885285.16。
+实际entry的`loop_owner_rollout.py`由`22ff6490…`替换为`8e93ec14…`，其余entry及
+VERL文件SHA与旧source逐项相同；候选仅复用原Ray ActorPool/VERL RPC改变返回运输。
+不复制原checkpoint loader，也不改变DT、Q/V/A、PPO、LoRA8/16或每卡B4。
+
+新旧实际`launch.json`的完整options逐项比较，差异仅为输出/日志目录、内容相同的
+dataset入口路径、worker观察目录与恢复检查点路径。采样组数、完成/取消规则、训练
+mini/epochs、任务/生成限制、loss和优化器设置没有变化。原TaskRunner明确打印
+`Setting global step to 6`；worker169930/173822分别打印原rank0/1的model、optim、
+extra_state加载路径，随后进入原生成方法。恢复的6不是本次完成的新更新。
+
+本次原始来源、逐项配置差异和双rank加载行保存在
+[恢复与负载核对回执](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/observed-transition-20261002-0428.json)，
+SHA256=`8c1d253c42f7cee0b7d35bd3262396a9a78f97e674805e4553db697acb5e30bd`。
+旧等待进程4044066已在完成转换后退出，原等待回执和`completed-stop.json`保留；
+不再把它的退出报告为训练故障，也不重复提交同一转换。
+
+TextCraft原PID212110继续运行，最近完成23。其完整候选的entry/owner/DT SHA再次与
+prepared回执核对一致，复用原49项CPU结果，没有重跑GPU测试。04:24启动同一经过4项
+真实OS进程检查的助手：本机18596、远端452582/创建时间1790886289.58；只等待
+**原保存点25**，不改保存频率。等待回执SHA为`c043bd0641e67ba03dd810311eba65df621e205566e202e95e3e06ee34818dbd`；
+当次核对无completed-stop，不能称TextCraft效率候选已部署。
+助手源码仍为`ddc3a57`/`b3210b11…`；其运行时仓库记录`d640835`是文档提交，
+不是新的助手或数值实现。
+
+SQL仍为PID552842，最近完成6；它的上下文/分区候选尚未部署。当前原保存点60之前
+无完整reader检查点，不能用自己补造的data.pt或静默重置reader来恢复。
+三组官方学习负载的8项单位/launcher回归仍对应`1a1e945`；本次只读恢复核对没有
+扩大原数值验收范围。全局学习负载已修复与效率修复全部生效是两个不同结论。
 
 ### 2026-10-02 03:51：删除部署助手对其他作业的额外停止条件
 
