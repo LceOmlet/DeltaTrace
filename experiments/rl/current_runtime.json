@@ -1,6 +1,6 @@
 {
-  "observed_unix": 1790817118.5184815,
-  "observed_utc": "2026-10-01T01:11:58.518481+00:00",
+  "observed_unix": 1790845815.8448868,
+  "observed_utc": "2026-10-01T09:10:15.844887+00:00",
   "role": "Read-only snapshot, not a launcher or a replacement for remote active-training.json; never infer current execution from old receipts alone",
   "authoritative_remote": {
     "active-training.json": {
@@ -81,6 +81,22 @@
           "prior_sha256": "ab2194f1ce929e8abed96bc5792684628f978c04efb9e2ae2516e83490ff9516",
           "reason": "Legacy numerical_override inherited from pre-padding startup; synchronize this duplicate field with the already-correct frozen verl_sha256. No runtime file or command changed."
         }
+      },
+      "startup_workload_options": {
+        "actor_rollout_ref.model.lora_rank": 8,
+        "actor_rollout_ref.model.lora_alpha": 16,
+        "actor_rollout_ref.actor.ppo_mini_batch_size": 1280,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+        "algorithm.adv_estimator": "deltatrace",
+        "data.train_batch_size": 256,
+        "env.max_steps": 6,
+        "env.rollout.n": 5,
+        "trainer.save_freq": 60,
+        "trainer.test_freq": 5,
+        "trainer.total_epochs": 30,
+        "trainer.total_training_steps": null
       },
       "native_training_workload": [
         {
@@ -612,6 +628,27 @@
           "sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "startup_recorded_sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "matches_startup_source": true
+        },
+        "verl/workers/sharding_manager/fsdp_vllm.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/workers/sharding_manager/fsdp_vllm.py",
+          "exists": true,
+          "sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+          "startup_recorded_sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+          "matches_startup_source": true
+        },
+        "agent_system/multi_turn_rollout/rollout_loop.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/agent_system/multi_turn_rollout/rollout_loop.py",
+          "exists": true,
+          "sha256": "90c525ace13c9a3a33d829168925d31c95541a9e35bc840a19eb6bf2569f2742",
+          "startup_recorded_sha256": null,
+          "matches_startup_source": null
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/trainer/ppo/ray_trainer.py",
+          "exists": true,
+          "sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+          "startup_recorded_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+          "matches_startup_source": true
         }
       },
       "runtime_overrides": [],
@@ -710,6 +747,23 @@
         "actor_padding_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
         "padding_comparison_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-response-padding/real-model/owner-padding-assertion.json",
         "padding_comparison_receipt_sha256": "30f34f4cddbb0aa6531a1ad3db7f1aca9aaf3ba060920fe30102e7b85dc7311b"
+      },
+      "startup_workload_options": {
+        "actor_rollout_ref.model.lora_rank": 8,
+        "actor_rollout_ref.model.lora_alpha": 16,
+        "actor_rollout_ref.actor.ppo_mini_batch_size": 32,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+        "algorithm.adv_estimator": "deltatrace",
+        "data.train_batch_size": 40,
+        "actor_rollout_ref.actor.ppo_epochs": 2,
+        "env.rollout.n": 6,
+        "env.max_steps": 40,
+        "trainer.total_epochs": 200,
+        "trainer.total_training_steps": 200,
+        "trainer.save_freq": 1,
+        "trainer.test_freq": 5
       },
       "native_training_workload": [
         {
@@ -1241,6 +1295,27 @@
           "sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "startup_recorded_sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "matches_startup_source": true
+        },
+        "verl/workers/sharding_manager/fsdp_vllm.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-balanced-padding-resume-20261001/verl/verl/workers/sharding_manager/fsdp_vllm.py",
+          "exists": true,
+          "sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+          "startup_recorded_sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+          "matches_startup_source": true
+        },
+        "agent_system/multi_turn_rollout/rollout_loop.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-balanced-padding-resume-20261001/verl/agent_system/multi_turn_rollout/rollout_loop.py",
+          "exists": true,
+          "sha256": "90c525ace13c9a3a33d829168925d31c95541a9e35bc840a19eb6bf2569f2742",
+          "startup_recorded_sha256": "90c525ace13c9a3a33d829168925d31c95541a9e35bc840a19eb6bf2569f2742",
+          "matches_startup_source": true
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-balanced-padding-resume-20261001/verl/verl/trainer/ppo/ray_trainer.py",
+          "exists": true,
+          "sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+          "startup_recorded_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+          "matches_startup_source": true
         }
       },
       "runtime_overrides": [],
@@ -1249,7 +1324,12 @@
         "loop_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner"
       },
       "recent_progress": [],
-      "completed_checkpoints": [],
+      "completed_checkpoints": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-request-dispatch-20261001/appworld-dt/checkpoints/latest_checkpointed_iteration.txt",
+          "value": "3"
+        }
+      ],
       "version_mapping": {
         "startup_deployment_directory": "appworld-request-dispatch-20261001",
         "actor_head_fix_commit": "dc4e4d7349c26d08eaceaac6d00a57c0e1fbfda7",
@@ -1317,6 +1397,24 @@
         "log_prob_micro_batch_size_per_gpu": 4
       },
       "startup_provenance": {},
+      "startup_workload_options": {
+        "actor_rollout_ref.model.lora_rank": 8,
+        "actor_rollout_ref.model.lora_alpha": 16,
+        "actor_rollout_ref.actor.ppo_mini_batch_size": 64,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 1,
+        "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 1,
+        "algorithm.adv_estimator": "deltatrace",
+        "data.train_batch_size": 32,
+        "actor_rollout_ref.actor.ppo_epochs": 1,
+        "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 1,
+        "env.rollout.n": 8,
+        "env.max_steps": 30,
+        "trainer.total_epochs": 30,
+        "trainer.total_training_steps": null,
+        "trainer.save_freq": 25,
+        "trainer.test_freq": -1
+      },
       "native_training_workload": [
         {
           "pid": 317069,
@@ -1847,6 +1945,27 @@
           "sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "startup_recorded_sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "matches_startup_source": true
+        },
+        "verl/workers/sharding_manager/fsdp_vllm.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/sharding_manager/fsdp_vllm.py",
+          "exists": true,
+          "sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+          "startup_recorded_sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+          "matches_startup_source": true
+        },
+        "agent_system/multi_turn_rollout/rollout_loop.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/agent_system/multi_turn_rollout/rollout_loop.py",
+          "exists": true,
+          "sha256": "90c525ace13c9a3a33d829168925d31c95541a9e35bc840a19eb6bf2569f2742",
+          "startup_recorded_sha256": "90c525ace13c9a3a33d829168925d31c95541a9e35bc840a19eb6bf2569f2742",
+          "matches_startup_source": true
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/trainer/ppo/ray_trainer.py",
+          "exists": true,
+          "sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+          "startup_recorded_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+          "matches_startup_source": true
         }
       },
       "runtime_overrides": [
@@ -1947,9 +2066,9 @@
       "pending_runtime_operations": [],
       "environment_roots": {},
       "recent_progress": [
-        "Rounds 5/30 | Active agents per gpu: 198:  13%|█▎        | 4/30 [08:08<50:54, 117.47s/it]",
-        "Rounds 5/30 | Active agents per gpu: 198:  17%|█▋        | 5/30 [09:41<45:15, 108.62s/it]",
-        "Rounds 6/30 | Active agents per gpu: 185:  17%|█▋        | 5/30 [09:41<45:15, 108.62s/it]"
+        "Rounds 14/30 | Active agents per gpu: 110:  43%|████▎     | 13/30 [21:47<26:05, 92.09s/it]",
+        "Rounds 14/30 | Active agents per gpu: 110:  47%|████▋     | 14/30 [23:06<23:33, 88.34s/it]",
+        "Rounds 15/30 | Active agents per gpu: 109:  47%|████▋     | 14/30 [23:07<23:33, 88.34s/it]"
       ],
       "completed_checkpoints": [],
       "version_mapping": {
@@ -3861,12 +3980,62 @@
       "matches": true
     }
   },
-  "code_repository_commit_at_collection": "e3968ecc73b347d92516b088a2630a80bea10699",
+  "tested_not_deployed_candidates": [
+    {
+      "id": "whole-rollout-owner-context",
+      "status": "candidate_only_not_deployed",
+      "preparation": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/prepared.json",
+        "exists": true,
+        "sha256": "02dbb78aa4bc2f133a0dc7bcc0ca1e345194f0be310f5282411338f55f1bf103"
+      },
+      "committed_source_identity": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/source-version.json",
+        "exists": true,
+        "sha256": "afb280771cfe808311472797447ce8a41ec02b8f6686b469acabda0375c2bbbd"
+      },
+      "original_vllm_comparison": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/replay-complete.json",
+        "exists": true,
+        "sha256": "1717504ef0837e8bc6db66c3554beddb6982ccf60b405c359c3c0d90df4540db"
+      },
+      "cpu_tests": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/cpu-tests.xml",
+        "exists": true,
+        "sha256": "5c97f170af27305bcae213b01ed3d3c886ecbcd442ba7e3ddce86b603f43309e"
+      },
+      "files": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/fsdp_workers.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/fsdp_workers.py",
+          "exists": true,
+          "sha256": "807e51856f9990d408fb2c33998fdcf9b0cbf3f230178677d6a5d2ecc0b7cc0d",
+          "expected_sha256": "807e51856f9990d408fb2c33998fdcf9b0cbf3f230178677d6a5d2ecc0b7cc0d",
+          "matches": true
+        },
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/rollout_loop.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/rollout_loop.py",
+          "exists": true,
+          "sha256": "8e4e3372f790bff1245e7ef1c3388982786e500a375a19a6e340cc44ec0535ed",
+          "expected_sha256": "8e4e3372f790bff1245e7ef1c3388982786e500a375a19a6e340cc44ec0535ed",
+          "matches": true
+        },
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/owner_rollout_scope.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/owner_rollout_scope.py",
+          "exists": true,
+          "sha256": "98bc4d3dd89904e07666633353fa10d2cb494441a559dff41078bc797907942d",
+          "expected_sha256": "98bc4d3dd89904e07666633353fa10d2cb494441a559dff41078bc797907942d",
+          "matches": true
+        }
+      },
+      "scope": "Bounded original-worker replay, not an active job release or full-iteration speedup"
+    }
+  ],
+  "code_repository_commit_at_collection": "2a32d002cffb6a16a1be89e835c3f43ba70b471c",
   "recorder_source": {
     "path": "research/temporary/rl_upstream_alignment_20260929/record_current_runtime.py",
-    "sha256": "fef7a5805bb7606198737cebe1df4a51e1ed07582bb71ccaaff0bf25594c1be3",
+    "sha256": "f61901b5f26df03d0419d663198f56c6ab0817166ede980afee3a0e1ce46e3e6",
     "last_committed_change": "4b7c9e9ef3c9a3cefba04405eedbbbc0b9aaf194",
-    "differs_from_head": false
+    "differs_from_head": true
   },
   "recording_command": "C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_upstream_alignment_20260929/record_current_runtime.py",
   "version_mapping": {

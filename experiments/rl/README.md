@@ -21,9 +21,8 @@
 后续实时PID和版本仍以远端根目录的 `active-training.json` / `active-source.json` 为准。
 `verified_runtime.json` 是数值基线，不能单独代表当前全部接入代码。
 
-2026-10-01：AppWorld已以新的balanced-padding冻结入口从原step1检查点恢复；
-SQL在首轮更新完成后应用已验证的padding forward；TextCraft已完成4轮，仍使用原actor
-加B4 head覆盖。三个任务的版本组合分别记录在上述账本中，不能统称为一个“最新版本”。
+本页不再重复维护当前PID、完成步数和候选部署状态；只读上面的版本账本及带采集时间的
+源码快照。三组版本组合不同，测试通过、准备完成和正式生效必须分别核对。
 固定DT `c9cd147` / 数值参考 `fc2e6c2`、VERL `20bd331`、head `dc4e4d7`；
 LoRA8/16、每卡actor/DT4不变。SQL/TextCraft旧冻结启动命令不能替代已记录的运行时覆盖。
 这里只记录状态，不新增信用方案。

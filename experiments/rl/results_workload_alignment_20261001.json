@@ -1,0 +1,601 @@
+{
+  "observed_unix": 1790845267.198042,
+  "observed_time": "2026-10-01T17:01:07.198042+08:00",
+  "scope": "Native complete-trajectory training workload, current deployment distinctions and measured stage costs. This is an observation record, not another method specification or an alternative launcher.",
+  "source": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/formal-workload-observed.json",
+    "sha256": "e634f6f59901ab671a0f68965b7a27740fcb822fb5d1b5de8b575839dab8de52"
+  },
+  "jobs": [
+    {
+      "task": "SkyRL-SQL",
+      "pid": 552842,
+      "created_unix": 1790804649.87,
+      "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry",
+      "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001",
+      "native_budget_lines": [
+        [
+          "Size of train dataloader: 2, Size of val dataloader: 2",
+          "Total training steps: 60"
+        ]
+      ],
+      "completed_step_numbers": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "latest_completed": {
+        "step": 3,
+        "phase_seconds": {
+          "gen": 3334.12,
+          "reward": 0.0,
+          "old_log_prob": 374.214,
+          "adv": 6371.4,
+          "update_actor": 1327.002,
+          "dump_rollout_generations": 3.193,
+          "step": 11410.006
+        }
+      },
+      "launch": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/launch.json",
+        "sha256": "b936dffc842821243f569a0e9747c0b96544da63cbea7401bf2f736bf21a429f",
+        "options": {
+          "ray_init.num_cpus": 16,
+          "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "actor_rollout_ref.model.trust_remote_code": true,
+          "actor_rollout_ref.model.lora_rank": 8,
+          "actor_rollout_ref.model.lora_alpha": 16,
+          "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+          "actor_rollout_ref.model.enable_activation_offload": true,
+          "actor_rollout_ref.model.use_fused_kernels": true,
+          "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+          "actor_rollout_ref.actor.strategy": "fsdp2",
+          "actor_rollout_ref.actor.ppo_mini_batch_size": 1280,
+          "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+          "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+          "actor_rollout_ref.actor.use_torch_compile": true,
+          "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+          "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+          "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+          "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+          "actor_rollout_ref.rollout.name": "vllm",
+          "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+          "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+          "actor_rollout_ref.rollout.load_format": "safetensors",
+          "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+          "actor_rollout_ref.rollout.max_model_len": 32768,
+          "actor_rollout_ref.rollout.max_num_seqs": 32,
+          "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+          "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+            "image": 0,
+            "video": 0
+          },
+          "trainer.n_gpus_per_node": 2,
+          "trainer.nnodes": 1,
+          "algorithm.adv_estimator": "deltatrace",
+          "data.train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/skyrl-sql-7e5e665/train.parquet",
+          "data.val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/skyrl-sql-7e5e665/validation.parquet",
+          "data.train_batch_size": 256,
+          "data.val_batch_size": 1024,
+          "data.max_prompt_length": 29000,
+          "data.max_response_length": 3000,
+          "data.filter_overlong_prompts": true,
+          "data.truncation": "error",
+          "data.return_raw_chat": true,
+          "data.custom_cls.path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/owner_task_dataset.py",
+          "data.custom_cls.name": "SQLDataset",
+          "+data.initial_max_prompt_length": 6000,
+          "+data.sql_chat_template": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/qwen3_acc_thinking.jinja2",
+          "+data.dataloader_num_workers": 0,
+          "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+          "actor_rollout_ref.rollout.multi_turn.enable": true,
+          "actor_rollout_ref.rollout.temperature": 0.6,
+          "actor_rollout_ref.rollout.top_p": 0.95,
+          "actor_rollout_ref.rollout.val_kwargs.temperature": 1.0,
+          "actor_rollout_ref.rollout.val_kwargs.do_sample": true,
+          "env.env_name": "SkyRL-SQL",
+          "env.max_steps": 6,
+          "env.rollout.n": 5,
+          "+env.factory._target_": "sql_owner_rollout.make_sql_owner_environments",
+          "+env.sql": {
+            "db_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/skyrl-sql-7e5e665/db_files/data",
+            "max_input_length": 29000,
+            "sampling": {
+              "min_tokens": 1,
+              "skip_special_tokens": true,
+              "include_stop_str_in_output": true,
+              "max_tokens": 3000,
+              "temperature": 0.6,
+              "top_p": 0.95,
+              "top_k": -1,
+              "min_p": 0.0,
+              "logprobs": 1,
+              "stop": [
+                "</sql>",
+                "</solution>"
+              ]
+            },
+            "eval_sampling": {
+              "min_tokens": 1,
+              "skip_special_tokens": true,
+              "include_stop_str_in_output": true,
+              "max_tokens": 3000,
+              "temperature": 1.0,
+              "top_p": 1.0,
+              "top_k": -1,
+              "min_p": 0.0,
+              "logprobs": 1,
+              "stop": [
+                "</sql>",
+                "</solution>"
+              ]
+            }
+          },
+          "trainer.logger": [
+            "console"
+          ],
+          "trainer.project_name": "deltatrace_official_environments",
+          "trainer.experiment_name": "dt-SkyRL-SQL",
+          "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/checkpoints",
+          "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/rollouts",
+          "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/validation",
+          "trainer.max_actor_ckpt_to_keep": 2,
+          "trainer.save_freq": 60,
+          "trainer.test_freq": 5,
+          "trainer.val_before_train": true,
+          "trainer.total_epochs": 30,
+          "trainer.total_training_steps": null,
+          "trainer.resume_mode": "auto"
+        }
+      },
+      "note": "TextCraft startup microbatch1 is historical; actor/logprob4 and head overlay are established by PID-bound completed receipts in current_runtime.json. Reference microbatch is recorded separately, not assumed from actor."
+    },
+    {
+      "task": "AppWorld",
+      "pid": 285580,
+      "created_unix": 1790816855.53,
+      "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-request-dispatch-20261001/entry",
+      "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-balanced-padding-resume-20261001/verl",
+      "native_budget_lines": [
+        [
+          "Size of train dataloader: 1, Size of val dataloader: 1",
+          "Total training steps: 200"
+        ]
+      ],
+      "completed_step_numbers": [
+        3
+      ],
+      "latest_completed": {
+        "step": 3,
+        "phase_seconds": {
+          "gen": 8119.757,
+          "reward": 0.0,
+          "old_log_prob": 354.545,
+          "adv": 4029.451,
+          "update_actor": 2504.077,
+          "dump_rollout_generations": 0.897,
+          "save_checkpoint": 107.894,
+          "step": 15116.7
+        }
+      },
+      "launch": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-request-dispatch-20261001/appworld-dt/launch.json",
+        "sha256": "1243b317e821a2c8b1d15714f386b3f32552c55bbc97b158502b0c4b33d25489",
+        "options": {
+          "ray_init.num_cpus": 16,
+          "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "actor_rollout_ref.model.trust_remote_code": true,
+          "actor_rollout_ref.model.lora_rank": 8,
+          "actor_rollout_ref.model.lora_alpha": 16,
+          "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+          "actor_rollout_ref.model.enable_activation_offload": true,
+          "actor_rollout_ref.model.use_fused_kernels": true,
+          "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+          "actor_rollout_ref.actor.strategy": "fsdp2",
+          "actor_rollout_ref.actor.ppo_mini_batch_size": 32,
+          "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+          "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+          "actor_rollout_ref.actor.use_torch_compile": true,
+          "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+          "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+          "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+          "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+          "actor_rollout_ref.rollout.name": "vllm",
+          "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+          "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+          "actor_rollout_ref.rollout.load_format": "safetensors",
+          "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+          "actor_rollout_ref.rollout.max_model_len": 32768,
+          "actor_rollout_ref.rollout.max_num_seqs": 32,
+          "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+          "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+            "image": 0,
+            "video": 0
+          },
+          "trainer.n_gpus_per_node": 2,
+          "trainer.nnodes": 1,
+          "algorithm.adv_estimator": "deltatrace",
+          "data.train_files": "loop-training",
+          "data.val_files": "loop-evaluation",
+          "data.custom_cls.path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-request-dispatch-20261001/entry/loop_iteration_dataset.py",
+          "data.custom_cls.name": "LoopIterationDataset",
+          "+data.loop_train_groups": 40,
+          "+data.loop_eval_groups": 57,
+          "data.train_batch_size": 40,
+          "data.val_batch_size": 57,
+          "data.max_prompt_length": 32768,
+          "data.max_response_length": 1500,
+          "data.return_raw_chat": true,
+          "data.truncation": "error",
+          "+data.dataloader_num_workers": 0,
+          "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+          "actor_rollout_ref.actor.ppo_epochs": 2,
+          "actor_rollout_ref.rollout.multi_turn.enable": true,
+          "actor_rollout_ref.rollout.prompt_length": 31268,
+          "actor_rollout_ref.rollout.temperature": 1.0,
+          "actor_rollout_ref.rollout.val_kwargs.temperature": 0.0,
+          "actor_rollout_ref.rollout.val_kwargs.do_sample": false,
+          "env.env_name": "AppWorld",
+          "env.rollout.n": 6,
+          "env.max_steps": 40,
+          "+env.factory._target_": "loop_environment_entry.make_loop_environments",
+          "+env.loop": {
+            "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner"
+          },
+          "trainer.logger": [
+            "console"
+          ],
+          "trainer.project_name": "deltatrace_official_environments",
+          "trainer.experiment_name": "dt-AppWorld",
+          "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-request-dispatch-20261001/appworld-dt/checkpoints",
+          "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-request-dispatch-20261001/appworld-dt/rollouts",
+          "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-request-dispatch-20261001/appworld-dt/validation",
+          "trainer.max_actor_ckpt_to_keep": 2,
+          "trainer.total_epochs": 200,
+          "trainer.total_training_steps": 200,
+          "trainer.save_freq": 1,
+          "trainer.test_freq": 5,
+          "trainer.val_before_train": false,
+          "trainer.resume_mode": "resume_path",
+          "+ray_init.runtime_env.worker_process_setup_hook": "observe_worker_visibility.install",
+          "+ray_init.runtime_env.env_vars.DT_WORKER_VISIBILITY_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-request-dispatch-20261001/appworld-dt/worker-visibility",
+          "trainer.resume_from_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-balanced-padding-resume-20261001/appworld-dt/checkpoints/global_step_2"
+        }
+      },
+      "note": "TextCraft startup microbatch1 is historical; actor/logprob4 and head overlay are established by PID-bound completed receipts in current_runtime.json. Reference microbatch is recorded separately, not assumed from actor."
+    },
+    {
+      "task": "TextCraft",
+      "pid": 212110,
+      "created_unix": 1790775611.7,
+      "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-entry",
+      "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7",
+      "native_budget_lines": [
+        [
+          "Size of train dataloader: 11, Size of val dataloader: 4",
+          "Total training steps: 330"
+        ]
+      ],
+      "completed_step_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "latest_completed": {
+        "step": 14,
+        "phase_seconds": {
+          "gen": 2467.134,
+          "reward": 0.0,
+          "old_log_prob": 159.551,
+          "ref": 138.661,
+          "adv": 1428.317,
+          "update_actor": 575.996,
+          "dump_rollout_generations": 0.47,
+          "step": 4770.137
+        }
+      },
+      "launch": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/launch.json",
+        "sha256": "2ccd64ab777b753b77be90bc779e5e6d4aab4c4d8f54b84797759b491ed540af",
+        "options": {
+          "ray_init.num_cpus": 16,
+          "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "actor_rollout_ref.model.trust_remote_code": true,
+          "actor_rollout_ref.model.lora_rank": 8,
+          "actor_rollout_ref.model.lora_alpha": 16,
+          "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+          "actor_rollout_ref.model.enable_activation_offload": true,
+          "actor_rollout_ref.actor.strategy": "fsdp2",
+          "actor_rollout_ref.actor.ppo_mini_batch_size": 64,
+          "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 1,
+          "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+          "actor_rollout_ref.actor.use_torch_compile": true,
+          "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+          "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+          "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+          "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+          "actor_rollout_ref.rollout.name": "vllm",
+          "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 1,
+          "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+          "actor_rollout_ref.rollout.load_format": "safetensors",
+          "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+          "actor_rollout_ref.rollout.max_model_len": 32768,
+          "actor_rollout_ref.rollout.max_num_seqs": 32,
+          "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+          "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+            "image": 0,
+            "video": 0
+          },
+          "trainer.n_gpus_per_node": 2,
+          "trainer.nnodes": 1,
+          "algorithm.adv_estimator": "deltatrace",
+          "data.train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/train.parquet",
+          "data.val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/validation.parquet",
+          "data.train_batch_size": 32,
+          "data.val_batch_size": 32,
+          "data.max_prompt_length": 32256,
+          "data.max_response_length": 512,
+          "data.return_raw_chat": true,
+          "data.truncation": "error",
+          "+data.dataloader_num_workers": 0,
+          "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+          "actor_rollout_ref.actor.ppo_epochs": 1,
+          "actor_rollout_ref.actor.optim.lr": 1e-06,
+          "actor_rollout_ref.actor.use_kl_loss": true,
+          "actor_rollout_ref.actor.kl_loss_coef": 0.001,
+          "actor_rollout_ref.actor.kl_loss_type": "low_var_kl",
+          "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 1,
+          "actor_rollout_ref.rollout.multi_turn.enable": true,
+          "actor_rollout_ref.rollout.temperature": 1.0,
+          "actor_rollout_ref.rollout.top_p": 1,
+          "actor_rollout_ref.rollout.val_kwargs.do_sample": true,
+          "actor_rollout_ref.rollout.val_kwargs.temperature": 1,
+          "actor_rollout_ref.rollout.val_kwargs.top_p": 1,
+          "env.env_name": "TextCraft",
+          "env.rollout.n": 8,
+          "env.max_steps": 30,
+          "+env.factory._target_": "textcraft_environment_entry.make_textcraft_environments",
+          "+env.textcraft": {
+            "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner",
+            "client": {
+              "task_name": "textcraft",
+              "env_addr": "http://127.0.0.1:36005",
+              "max_retries": 10,
+              "max_rounds": 10,
+              "timeout": 600
+            },
+            "eval_client": {
+              "task_name": "textcraft",
+              "env_addr": "http://127.0.0.1:36005",
+              "max_retries": 10,
+              "max_rounds": 30,
+              "timeout": 500
+            }
+          },
+          "trainer.logger": [
+            "console"
+          ],
+          "trainer.project_name": "deltatrace_official_environments",
+          "trainer.experiment_name": "dt-TextCraft",
+          "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints",
+          "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/rollouts",
+          "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/validation",
+          "trainer.max_actor_ckpt_to_keep": 2,
+          "trainer.total_epochs": 30,
+          "trainer.total_training_steps": null,
+          "trainer.save_freq": 25,
+          "trainer.test_freq": -1,
+          "trainer.val_before_train": false,
+          "trainer.resume_mode": "auto"
+        }
+      },
+      "note": "TextCraft startup microbatch1 is historical; actor/logprob4 and head overlay are established by PID-bound completed receipts in current_runtime.json. Reference microbatch is recorded separately, not assumed from actor."
+    }
+  ],
+  "dt_native_stage_observations": [
+    {
+      "source": "research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-dt-times/319769-1.json",
+      "sha256": "3ab0926a8cd6604bfb3e2feefdda0617bd50a96f539e8ceb61f2978dcba35ba5",
+      "pid": 319769,
+      "unix": 1790819501.0965936,
+      "paired_input_shape": [
+        8,
+        643
+      ],
+      "remaining": 2,
+      "observation_restored": false,
+      "wall_seconds": 7.739725690335035,
+      "stream_elapsed_seconds": {
+        "native_shared_prefix": 0.41756314086914065,
+        "fork_native_prefix_cache": 0.0026106879711151124,
+        "native_root_with_CPU_checkpoints": 2.141819580078125,
+        "pack_actual_target_logits": 0.00015795199573040008,
+        "categorical_head_FP32": 0.00020710399746894835,
+        "actual_root_FP32_logprob_diagnostic": 0.000208639994263649,
+        "finite_seed": 0.0015063040256500244,
+        "finite_final_norm": 0.00022195200622081757,
+        "native_replay": 4.0595456390380855,
+        "public_FA_LSE": 0.003387647956609726,
+        "finite_decoder": 0.6694837770462037
+      }
+    },
+    {
+      "source": "research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-dt-times/319769-2.json",
+      "sha256": "56340185e42f52e83ac23acca97ffd0fda9cb38838886b64ede6cec28c4f8122",
+      "pid": 319769,
+      "unix": 1790819507.3024518,
+      "paired_input_shape": [
+        8,
+        652
+      ],
+      "remaining": 1,
+      "observation_restored": false,
+      "wall_seconds": 6.187283223494887,
+      "stream_elapsed_seconds": {
+        "native_shared_prefix": 0.410308349609375,
+        "fork_native_prefix_cache": 0.004121344089508056,
+        "native_root_with_CPU_checkpoints": 1.85053369140625,
+        "pack_actual_target_logits": 0.00021324799954891205,
+        "categorical_head_FP32": 0.00019916799664497376,
+        "actual_root_FP32_logprob_diagnostic": 0.00019276799261569978,
+        "finite_seed": 0.0012262400388717652,
+        "finite_final_norm": 0.000208639994263649,
+        "native_replay": 2.957598220825195,
+        "public_FA_LSE": 0.003150591999292374,
+        "finite_decoder": 0.6720486412048341
+      }
+    },
+    {
+      "source": "research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-dt-times/319769-3.json",
+      "sha256": "ee33e143e61a437c77525419f6b8699b4a6b8ce25dd86927e8317f31f3e029a2",
+      "pid": 319769,
+      "unix": 1790819513.742462,
+      "paired_input_shape": [
+        8,
+        665
+      ],
+      "remaining": 0,
+      "observation_restored": true,
+      "wall_seconds": 6.428103355690837,
+      "stream_elapsed_seconds": {
+        "native_shared_prefix": 0.42093185424804686,
+        "fork_native_prefix_cache": 0.0038287360668182373,
+        "native_root_with_CPU_checkpoints": 1.914919921875,
+        "pack_actual_target_logits": 0.00012364800274372101,
+        "categorical_head_FP32": 0.00024038399755954744,
+        "actual_root_FP32_logprob_diagnostic": 0.00020761600136756897,
+        "finite_seed": 0.0015377919673919677,
+        "finite_final_norm": 0.00018611200153827666,
+        "native_replay": 3.1362785453796387,
+        "public_FA_LSE": 0.0034375679492950444,
+        "finite_decoder": 0.6802623987197876
+      }
+    },
+    {
+      "source": "research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-dt-times/321497-1.json",
+      "sha256": "17b6f705cc6da71b053de8474396f2abb1dc4abdebfa3c2dc5dc1855ca5dc2af",
+      "pid": 321497,
+      "unix": 1790819501.2319152,
+      "paired_input_shape": [
+        8,
+        1668
+      ],
+      "remaining": 2,
+      "observation_restored": false,
+      "wall_seconds": 7.601458463817835,
+      "stream_elapsed_seconds": {
+        "native_shared_prefix": 0.4182161865234375,
+        "fork_native_prefix_cache": 0.0024675838947296144,
+        "native_root_with_CPU_checkpoints": 2.142428466796875,
+        "pack_actual_target_logits": 0.00012083200365304947,
+        "categorical_head_FP32": 0.00021324799954891205,
+        "actual_root_FP32_logprob_diagnostic": 0.00021171200275421143,
+        "finite_seed": 0.0013153280019760133,
+        "finite_final_norm": 0.0006873599886894226,
+        "native_replay": 2.14272127532959,
+        "public_FA_LSE": 0.01691033577919006,
+        "finite_decoder": 2.352760578155517
+      }
+    },
+    {
+      "source": "research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-dt-times/321497-2.json",
+      "sha256": "f3552f3a5307dd8aba9c05e74d4032cac59246b6def1447793355baf6aef16ac",
+      "pid": 321497,
+      "unix": 1790819507.3963497,
+      "paired_input_shape": [
+        8,
+        1675
+      ],
+      "remaining": 1,
+      "observation_restored": false,
+      "wall_seconds": 6.155746487900615,
+      "stream_elapsed_seconds": {
+        "native_shared_prefix": 0.41030886840820313,
+        "fork_native_prefix_cache": 0.002391551971435547,
+        "native_root_with_CPU_checkpoints": 1.8516630859375,
+        "pack_actual_target_logits": 0.00021119999885559082,
+        "categorical_head_FP32": 0.00021196800470352174,
+        "actual_root_FP32_logprob_diagnostic": 0.00021964800357818603,
+        "finite_seed": 0.0012833280563354491,
+        "finite_final_norm": 0.0006824960112571716,
+        "native_replay": 1.8695252761840824,
+        "public_FA_LSE": 0.017068544149398804,
+        "finite_decoder": 1.4761930236816407
+      }
+    },
+    {
+      "source": "research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-dt-times/321497-3.json",
+      "sha256": "2adb41ccc2be9b2bd01beec93227e2b8dd9a1cac41a74bdfdc2c5e6c23adc2e0",
+      "pid": 321497,
+      "unix": 1790819513.8403645,
+      "paired_input_shape": [
+        8,
+        1690
+      ],
+      "remaining": 0,
+      "observation_restored": true,
+      "wall_seconds": 6.435568992048502,
+      "stream_elapsed_seconds": {
+        "native_shared_prefix": 0.4211550598144531,
+        "fork_native_prefix_cache": 0.0024038400650024413,
+        "native_root_with_CPU_checkpoints": 1.91458740234375,
+        "pack_actual_target_logits": 0.00019840000569820403,
+        "categorical_head_FP32": 0.00024934400618076323,
+        "actual_root_FP32_logprob_diagnostic": 0.00021964800357818603,
+        "finite_seed": 0.0013496320247650146,
+        "finite_final_norm": 0.0006492159962654114,
+        "native_replay": 1.9396467247009277,
+        "public_FA_LSE": 0.01754854393005371,
+        "finite_decoder": 1.6043696556091307
+      }
+    }
+  ],
+  "dt_timing_scope": "B4 contrasts use paired tensor batch8. Existing stream events include waits/work on that stream; root/replay elapsed does not isolate transfer, collectives or kernel time. Do not label it pure copy or pure GPU compute. Six saved formal calls; no added model calls or stage barriers.",
+  "open_items": [
+    {
+      "issue": "Whole-rollout engine context",
+      "status": "bounded_vllm_comparison_passed_not_deployed",
+      "tasks": [
+        "SkyRL-SQL",
+        "AppWorld",
+        "TextCraft"
+      ],
+      "evidence": "results_rollout_scope.json"
+    },
+    {
+      "issue": "Actor common-padding repair",
+      "status": "not_deployed_to_TextCraft",
+      "deployed_to": [
+        "SkyRL-SQL",
+        "AppWorld"
+      ],
+      "evidence": "results_actor_response_padding.json"
+    },
+    {
+      "issue": "DT length-balanced two-rank packing",
+      "status": "deployed_only_to_AppWorld",
+      "pending": [
+        "SkyRL-SQL",
+        "TextCraft"
+      ],
+      "source_commit": "4c0cbdd"
+    },
+    {
+      "issue": "DT root/replay cost",
+      "status": "native_stream_stage_cost_observed_cause_not_yet_fully_separated",
+      "evidence": "dt_native_stage_observations"
+    }
+  ]
+}

@@ -11,10 +11,14 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 使用GPU0/1，AppWorld PID285580使用GPU2/3，TextCraft PID212110使用GPU4/5。
 具体冻结目录、完整SHA、测试回执和运行时覆盖统一见[RUNTIME_RECORD.md](RUNTIME_RECORD.md)
 及其带时间快照。AppWorld旧PID2680224完成step2后停止；09:07提交请求分发修复，
-通过原VERL从step2恢复，新进程的恢复/生成状态需读实际日志确认。SQL在原生mcTracer附加采样结束后退出，
+通过原VERL从step2恢复，原日志已确认恢复且完成新step3。SQL旧进程在原生mcTracer附加采样结束后退出，
 无正式检查点，现按退出前padding版本冻结重启；旧首轮更新无法恢复。禁止再向正式
 worker附加mcTracer。具体事故和版本对应见版本账本；
 TextCraft仍为原actor加B4 head。不要按下面历史命令重新创建环境或遗漏已有修复。
+
+2026-10-01 17时新增的整段rollout上下文候选`2a32d00`已通过有界原vLLM对照，
+**未部署到三组正式作业**。候选、已生效padding/DT分发以及剩余差异统一见版本账本；
+不能因为本机HEAD包含新补丁，就认为远端已经执行。数值核心、LoRA8/16、actor/DT4未改。
 
 <details>
 <summary>历史环境与部署记录：其中“最新、当前”、PID、端口和启动命令仅描述记录当时，不作当前启动依据</summary>

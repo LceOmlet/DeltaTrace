@@ -33,6 +33,15 @@ for j in active['jobs']:
         'padding_comparison_receipt','padding_comparison_receipt_sha256',
         'completed_overlay_receipt','completed_overlay_sha256',
         'prior_source_receipt','prior_source_sha256','inherited_field_correction'] if k in source}
+    # The frozen launch is not the effective config after a PID-bound overlay.
+    # Keep both sources visible; never relabel its historical microbatch=1 as 4.
+    launch=read(Path(j['output'])/'launch.json')
+    rec['startup_workload_options']={k:v for k,v in launch.get('options',{}).items()
+        if k.startswith(('algorithm.', 'data.train_batch_size', 'env.rollout.',
+                         'env.max_steps', 'trainer.total_', 'trainer.save_freq',
+                         'trainer.test_freq', 'actor_rollout_ref.actor.ppo_',
+                         'actor_rollout_ref.model.lora_'))
+        or 'log_prob_micro_batch_size' in k}
     rec['native_training_workload']=[]
     if psutil.pid_exists(j['pid']):
         proc=psutil.Process(j['pid']);rec['process']=dict(alive=proc.is_running(),created_unix=proc.create_time(),
@@ -55,7 +64,9 @@ for j in active['jobs']:
     rec['owner_files']={n:artifact(vr/n) for n in [
         'verl/workers/actor/dp_actor.py','verl/workers/fsdp_workers.py','verl/trainer/ppo/core_algos.py',
         'verl/utils/experimental/torch_functional.py','verl/models/transformers/monkey_patch.py',
-        'verl/models/transformers/qwen3_vl.py','verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py']}
+        'verl/models/transformers/qwen3_vl.py','verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py',
+        'verl/workers/sharding_manager/fsdp_vllm.py',
+        'agent_system/multi_turn_rollout/rollout_loop.py','verl/trainer/ppo/ray_trainer.py']}
     for name,record in rec['owner_files'].items():
         expected=source.get('verl_sha256',{}).get(name)
         record['startup_recorded_sha256']=expected
@@ -137,6 +148,20 @@ for label,receipt_dir,supersedes in [
             matches=p.is_file() and sha(p)==value['request_dispatch_receipt_sha256'])
     result['prepared_versions'].append(prepared)
 result['unchanged_numerical_files']={}
+result['tested_not_deployed_candidates']=[]
+scope=out/'rollout-scope'
+if (scope/'prepared.json').is_file():
+    candidate=read(scope/'prepared.json')
+    result['tested_not_deployed_candidates'].append(dict(
+        id='whole-rollout-owner-context',status='candidate_only_not_deployed',
+        preparation=artifact(scope/'prepared.json'),
+        committed_source_identity=artifact(scope/'source-version.json'),
+        original_vllm_comparison=artifact(scope/'replay-complete.json'),
+        cpu_tests=artifact(scope/'cpu-tests.xml'),
+        files={name:dict(**artifact(name),expected_sha256=expected,
+                       matches=Path(name).is_file() and sha(Path(name))==expected)
+               for name,expected in candidate['candidate_sources'].items()},
+        scope='Bounded original-worker replay, not an active job release or full-iteration speedup'))
 for n,h in lock['dt_source_sha256'].items():
     p=Path(lock['paths']['dt'])/n
     result['unchanged_numerical_files']['DT/'+n]=dict(path=str(p),sha256=sha(p),expected_sha256=h,matches=sha(p)==h)
