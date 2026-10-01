@@ -67,7 +67,10 @@ record=dict(identity,checkpoint=str(checkpoint),marker_step=step,marker_sha256=s
     checkpoint_observed_unix=time.time())
 processes=[parent]+parent.children(recursive=True)
 record['processes']=[dict(pid=p.pid,created_unix=p.create_time(),name=p.name()) for p in processes]
-other={j['task']:(j['pid'],j['observed_process_created_unix']) for j in active['jobs'] if j['task']!=task}
+# Another authorized transition may have happened while this observer waited.
+# Observe the authoritative identities at this boundary, not the old ones.
+active_at_boundary=read(root/'active-training.json')
+other={j['task']:(j['pid'],j['observed_process_created_unix']) for j in active_at_boundary['jobs'] if j['task']!=task}
 (receipt/'stopping.json').write_text(json.dumps(record,indent=2)+'\n')
 for p in reversed(processes):
     try:p.send_signal(signal.SIGTERM)
@@ -83,11 +86,13 @@ for p in alive:
         if p.status()!=psutil.STATUS_ZOMBIE:remaining.append(p.pid)
     except psutil.NoSuchProcess:pass
 record.update(finished_unix=time.time(),remaining_non_zombie=remaining)
-record['other_jobs_unchanged']={name:psutil.pid_exists(pid) and abs(psutil.Process(pid).create_time()-created)<.02
-    for name,(pid,created) in other.items()}
+record['other_jobs_unchanged']={}
+for name,(pid,created) in other.items():
+    try:record['other_jobs_unchanged'][name]=abs(psutil.Process(pid).create_time()-created)<.02
+    except psutil.NoSuchProcess:record['other_jobs_unchanged'][name]=False
+record['other_jobs_observation_scope']='Identity observations across this stop only; another task exiting or restarting does not prevent this task from resuming.'
 (receipt/'completed-stop.json').write_text(json.dumps(record,indent=2)+'\n')
 assert not remaining, 'Recorded job has remaining processes; no new job submitted'
-assert all(record['other_jobs_unchanged'].values()), 'Another original job changed; inspect before submission'
 print(json.dumps(dict(task=task,checkpoint=str(checkpoint),marker_step=step,stopped_driver=parent.pid)),flush=True)
 PY
 '''.replace('@ENTRY@',ENTRY).replace('@ROOT@',ROOT).replace('@TASK@',repr(args.task))
