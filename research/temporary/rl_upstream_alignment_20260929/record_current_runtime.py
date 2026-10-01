@@ -32,7 +32,8 @@ for j in active['jobs']:
         'actor_fix_commit','dt_dispatch_commit','resume_entry_commit','actor_padding_sha256',
         'padding_comparison_receipt','padding_comparison_receipt_sha256',
         'completed_overlay_receipt','completed_overlay_sha256',
-        'prior_source_receipt','prior_source_sha256','inherited_field_correction'] if k in source}
+        'prior_source_receipt','prior_source_sha256','inherited_field_correction',
+        'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256'] if k in source}
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')
@@ -118,7 +119,9 @@ for label,receipt_dir,supersedes in [
     ('appworld-balanced-padding-resume-20261001','appworld-balanced-padding-resume',
      'appworld-balanced-resume-20261001'),
     ('appworld-request-dispatch-20261001','appworld-request-dispatch',
-     'appworld-balanced-padding-resume-20261001')]:
+     'appworld-balanced-padding-resume-20261001'),
+    ('appworld-rollout-scope-20261001','appworld-rollout-scope',
+     'appworld-request-dispatch-20261001')]:
     path=out/receipt_dir/'prepared.json'
     if not path.is_file():continue
     value=read(path)
@@ -146,6 +149,12 @@ for label,receipt_dir,supersedes in [
             code_commit=value['request_dispatch_commit'],
             expected_sha256=value['request_dispatch_receipt_sha256'],
             matches=p.is_file() and sha(p)==value['request_dispatch_receipt_sha256'])
+    if value.get('rollout_scope_comparison'):
+        p=Path(value['rollout_scope_comparison'])
+        prepared['rollout_scope_comparison']=dict(**artifact(p),
+            code_commit=value['rollout_scope_commit'],
+            expected_sha256=value['rollout_scope_comparison_sha256'],
+            matches=p.is_file() and sha(p)==value['rollout_scope_comparison_sha256'])
     result['prepared_versions'].append(prepared)
 result['unchanged_numerical_files']={}
 result['tested_not_deployed_candidates']=[]
@@ -202,20 +211,24 @@ result['version_mapping']=dict(
 for prepared in result['prepared_versions']:
     prepared['source_commits']=dict(dt_dispatch=revision('4c0cbdd'),
         native_resume_entry=revision('2036246'),actor_head=revision('dc4e4d7'))
-    if prepared['id'] in ('appworld-balanced-padding-resume-20261001','appworld-request-dispatch-20261001'):
+    if prepared['id'] in ('appworld-balanced-padding-resume-20261001','appworld-request-dispatch-20261001',
+                          'appworld-rollout-scope-20261001'):
         prepared['source_commits'].update(padding_source_archive=revision('0c80b41'),
                                          padding_owner_comparison=revision('44e1149'))
         prepared['local_helpers']={}
-        prepare_script=('prepare_appworld_request_resume.py' if prepared['id']=='appworld-request-dispatch-20261001'
-                        else 'prepare_appworld_padding_resume.py')
+        prepare_script={'appworld-request-dispatch-20261001':'prepare_appworld_request_resume.py',
+                        'appworld-rollout-scope-20261001':'prepare_appworld_scope_resume.py',
+                        'appworld-balanced-padding-resume-20261001':'prepare_appworld_padding_resume.py'}[prepared['id']]
         for name in [prepare_script,'submit_prepared_appworld_resume.py']:
             p=recorder.parent/name;relative=p.relative_to(REPO).as_posix()
             prepared['local_helpers'][name]=dict(path=relative,
                 sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
                 last_committed_change=subprocess.check_output(['git','log','-1','--format=%H','--',relative],cwd=REPO,text=True).strip(),
                 matches_head_bytes=p.read_bytes()==subprocess.check_output(['git','show','HEAD:'+relative],cwd=REPO))
-        if prepared['id']=='appworld-request-dispatch-20261001':
+        if 'request_dispatch' in prepared:
             prepared['source_commits']['request_dispatch']=prepared['request_dispatch']['code_commit']
+        if 'rollout_scope_comparison' in prepared:
+            prepared['source_commits']['rollout_scope']=prepared['rollout_scope_comparison']['code_commit']
 for job in result['jobs']:
     # Only label the head with this fix when the actual recorded file digest
     # agrees. A later runtime change must remain explicit, never be relabeled.
