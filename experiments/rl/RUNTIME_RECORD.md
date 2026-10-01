@@ -100,6 +100,44 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 ## 修复账本
 
+### 2026-10-01 19时：正式采样缓存与剩余等待的实测
+
+在AppWorld当前PID2479539的原worker RPC边界读取随后8次正式`engine.generate`返回的
+RequestOutput元数据，没有增加生成请求、环境轨迹、模型或GPU，也没有改采样参数。
+观测源码`89455a9`，运行脚本SHA与登记回执一致。两个rank均已记录8次并自动恢复原
+generate绑定；原始回执和汇总见
+[正式缓存观测](../../research/temporary/rl_upstream_alignment_20260929/appworld-rollout-scope-20261001/formal-cache/summary.json)。
+另调用原`LLM.get_metrics()`读取原生分阶段指标，两rank均明确返回
+`Stat logging disabled`。未改运行参数或把缺失指标填0；这次只能报告原生成调用耗时，
+不能进一步称为纯prefill或纯decode时间。原返回保存在同目录`native-metrics.json`。
+
+| 项目 | rank0 | rank1 |
+| --- | --- | --- |
+| 原生成调用数 | 8 | 8 |
+| prompt tokens | 1,076,702 | 1,098,078 |
+| cached tokens | 825,856 | 843,264 |
+| 缓存命中比例 | 76.70% | 76.79% |
+| 生成tokens（含原DP padding计算） | 25,213 | 35,102 |
+| 引擎调用累计秒数 | 407.04 | 519.24 |
+
+每次观测的原上下文均开启，同一rank的LoRA ID保持一致；这证明生成上下文修复已在正式
+工具交互中产生实际缓存复用，不代表全轮已提速某个倍数。计时仍含prefill和decode。
+
+**新的实测大项是同步批次等待。** 两卡请求数都为`32,1,32,1,32,1,32,1`；
+按对齐调用的最大rank耗时计算，4次单请求批次共125.48秒，占8次的540.49秒的23.22%。
+这是引擎关键路径占比，不是完整RPC或整轮占比。第一次32请求调用的两卡耗时为
+59.85/100.88秒，相差41.04秒。同步接口必须等整批结果，不能因缓存已修复就认为剩余
+等待消失；也不能把这段等待与DT跨卡分区问题混成同一阶段。
+
+已只读检查固定VERL `20bd331` 的异步路径：trainer中manager生成调用被注释，实际仍进
+`traj_collector.multi_turn_loop`；`AsyncActorRolloutRefWorker.generate_sequences`明确
+抛出NotImplementedError。因此仅设置`mode=async`不构成可用接入。本次没有切换后端、
+升级依赖、添加凑批延时或自行复制异步调度器；后续改动须针对这笔已测成本复用原接口。
+
+观察登记最初两次被Ray客户端参数签名拒绝，均发生在RPC提交前。读取当前actor元数据后，
+确认其句柄只接收`**kwargs`，改为原方法的`func=`调用后成功。两份失败回执保留；
+没有训练中断、GPU试跑或在worker中留下失败包装。
+
 ### 2026-10-01 18:30：AppWorld部署生成上下文修复
 
 原PID285580已完整保存step4，原marker=4；`data.pt`与双rank的model/optim/extra_state
