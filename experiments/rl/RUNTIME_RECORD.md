@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-最近只读核对于北京时间2026-10-02 02:58；精确采集时间见
+最近只读核对于北京时间2026-10-02 03:51；精确采集时间见
 [current_runtime.json](current_runtime.json)。阶段会继续推进；本文件记录该次核对结果。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -134,6 +134,35 @@ AppWorld已新增只处理跨卡返回顺序的候选，原接口CPU测试9项�
 | 原 `verl/models/transformers/qwen3_vl.py` | `ebc52fb35812` |
 
 ## 修复账本
+
+### 2026-10-02 03:51：删除部署助手对其他作业的额外停止条件
+
+原助手`e87c593`在等待开始时记录其他作业PID，停止本组之后又要求那些PID仍相同。
+另一组合法恢复或独立退出就会让本组已经停止、却无法继续提交。这不是VERL的恢复
+条件，也不是用户要求。`ddc3a57`改为在本次停止边界读取权威清单的其他作业身份，
+仅作观察记录；删除这项提交前断言。当前目标作业的PID创建时间、准备源码SHA、
+原完整checkpoint文件和剩余进程检查保持不变，仍调用原VERL保存/加载行为。
+
+本机复用Python3.11和已有`rl_local_test_deps`，实际执行助手生成的Python体，
+用隔离的真实OS进程验证4种情形：其他作业不变、等待中正常替换、独立退出、
+准备源码SHA错误。4项通过，原JUnit进程时间5.595秒；其中合法替换一项先执行
+旧助手，确实复现“本组已停止但因其他旧PID变化而拒绝提交”。这是进程生命周期
+检查，**夹具checkpoint只是占位文件，不能当成VERL恢复、训练或数值验收**。
+测试源码、SHA、原失败及最终回执见
+[checkpoint-observer-local-20261002](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-observer-local-20261002/summary.json)。
+
+03:46只退役旧远端等待进程2374706，原AppWorld PID2479539及两个worker均保留，
+原marker仍为5、两个worker正在原`update_actor`中。旧等待回执及停止助手的记录
+保留在
+[退役回执](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/retired-e87c593-observer.json)。
+旧本机控制句柄17944及其SSH子进程随后关闭；这不是训练停止或训练失败。
+
+03:51新本机助手PID16024启动，同一AppWorld候选、同一原检查点6；远端等待进程
+4044066，创建时间1790884266.51。快照核对其源码SHA
+`b3210b11fd8f0235c92ca521bba316e5d63625512c85729493d83d475127e318`
+与`ddc3a57`一致，实际存活；尚无`completed-stop.json`。三组训练PID、数值源SHA、
+LoRA8/16和实际B4均未变。原TaskRunner最近完成迭代为SQL6、AppWorld5、TextCraft22。
+这次只更换一次性部署助手；AppWorld跨卡回复候选仍未部署，TextCraft候选也未部署。
 
 ### 2026-10-02 02:42：正式DT批次等待与版本复核
 
