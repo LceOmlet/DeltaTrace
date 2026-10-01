@@ -163,12 +163,17 @@ for label,receipt_dir,supersedes in [
             matches=p.is_file() and sha(p)==value['rollout_scope_comparison_sha256'])
     result['prepared_versions'].append(prepared)
 result['unchanged_numerical_files']={}
-result['tested_not_deployed_candidates']=[]
+result['tested_candidates']=[]
 scope=out/'rollout-scope'
 if (scope/'prepared.json').is_file():
     candidate=read(scope/'prepared.json')
-    result['tested_not_deployed_candidates'].append(dict(
-        id='whole-rollout-owner-context',status='candidate_only_not_deployed',
+    matches=[j['task'] for j in result['jobs'] if all(
+        j['owner_files'][relative]['sha256']==candidate['candidate_sources'][str(scope/name)]
+        for relative,name in [('verl/workers/fsdp_workers.py','fsdp_workers.py'),
+            ('agent_system/multi_turn_rollout/rollout_loop.py','rollout_loop.py')])]
+    result['tested_candidates'].append(dict(
+        id='whole-rollout-owner-context',status='deployed_to_listed_jobs' if matches else 'candidate_only_not_deployed',
+        active_jobs_with_matching_owner_files=matches,
         preparation=artifact(scope/'prepared.json'),
         committed_source_identity=artifact(scope/'source-version.json'),
         original_vllm_comparison=artifact(scope/'replay-complete.json'),
@@ -176,7 +181,7 @@ if (scope/'prepared.json').is_file():
         files={name:dict(**artifact(name),expected_sha256=expected,
                        matches=Path(name).is_file() and sha(Path(name))==expected)
                for name,expected in candidate['candidate_sources'].items()},
-        scope='Bounded original-worker replay, not an active job release or full-iteration speedup'))
+        scope='Bounded original-worker replay; deployment status comes from matching current owner files, not this test. No full-iteration speedup claim.'))
 for n,h in lock['dt_source_sha256'].items():
     p=Path(lock['paths']['dt'])/n
     result['unchanged_numerical_files']['DT/'+n]=dict(path=str(p),sha256=sha(p),expected_sha256=h,matches=sha(p)==h)

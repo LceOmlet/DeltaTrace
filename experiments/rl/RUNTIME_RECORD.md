@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-部署核对于北京时间2026-10-01 17:45；精确采集时间见
+部署核对于北京时间2026-10-01 18:31之后；精确采集时间见
 [current_runtime.json](current_runtime.json)。阶段会继续推进；本文件记录该次核对结果。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -9,7 +9,7 @@
 不是新的算法版本，也不表示远端执行了该提交的全部文件。
 
 SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际生效的padding版本
-冻结重启；没有可恢复的正式检查点。AppWorld已从step2恢复并完成新step3；TextCraft仍为原入口加
+冻结重启；没有可恢复的正式检查点。AppWorld旧作业完成step4后，已提交原生恢复及生成上下文修复；TextCraft仍为原入口加
 已完成的B4 head覆盖。**三个任务的实际代码组合并不相同**，具体见下表。
 
 每项修复按“代码提交 → 实际文件SHA → 原测试及适用范围 → 部署路径/PID/时间 →
@@ -56,7 +56,7 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 | 作业 | 当前PID / GPU | 实际执行的版本 | 生效边界与旧版本 |
 | --- | --- | --- | --- |
 | SQL-DT | 552842 / 0,1 | entry=`runs/sql-padding-restart-20261001/sql-entry`；VERL=`candidates/official-verl-20bd331-sql-padding-20261001`；actor SHA `1f862e8bbdaa…` | 05:44以`bc68687`恢复脚本启动；本进程已完成step1–3。旧PID1876409在mcTracer附加采样后终止，无正式检查点；旧更新不计入新进程。新目录冻结旧进程已生效的padding覆盖，任务参数与初始评估未改 |
-| AppWorld-DT | 285580 / 2,3 | entry=`candidates/appworld-request-dispatch-20261001/entry`；VERL仍为`candidates/appworld-balanced-padding-resume-20261001/verl`；head `dc4e4d7`、DT分发 `4c0cbdd`、请求分发 `64e6377`、actor SHA `1f862e8bbdaa…` | 09:07由原提交助手从PID2680224完成的step2检查点恢复；本进程已完成新step3。启动时本机HEAD `e3968ec`；启动、恢复、完整更新分别有原回执 |
+| AppWorld-DT | 2479539 / 2,3 | entry/VERL=`candidates/appworld-rollout-scope-20261001/{entry,verl}`；保留head `dc4e4d7`、DT分发 `4c0cbdd`、请求分发 `64e6377`、padding `1f862e8bbdaa…`，新增scope `2a32d00` | 18:30由原提交助手从PID285580的完整step4提交恢复；启动源码`6e8fbe9`。新进程的恢复及采样证据另行核对，不能把旧step4称为新更新 |
 | TextCraft-DT | 212110 / 4,5 | entry/VERL仍为v7；actor SHA `2b80b938fee4…`；head来自`candidates/official-verl-20bd331-fused-head-b4-20260930`的已完成PID绑定回执 | 尚未部署padding和DT分发候选。冻结v7启动命令仍是旧microbatch1，不能直接按旧命令重启 |
 
 两种actor完整SHA：
@@ -100,6 +100,20 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 ## 修复账本
 
+### 2026-10-01 18:30：AppWorld部署生成上下文修复
+
+原PID285580已完整保存step4，原marker=4；`data.pt`与双rank的model/optim/extra_state
+均存在且非空。核对准备回执及所有候选SHA后，仅终止该AppWorld进程树，SQL PID552842、
+TextCraft PID212110及创建时间均未改变。停止回执为
+`receipts/owner-b8-dispatch-20260930/appworld-rollout-scope/completed-checkpoint-stop.json`。
+
+用既有`submit_prepared_appworld_resume.py`及原VERL loader提交PID2479539，启动源码
+`6e8fbe90ac1dd27f4f880598d3fe3b19b0d5b319`。新manifest为
+`runs/appworld-rollout-scope-20261001/formal-training.json`。只增加已测的整段采样上下文；
+原任务预算、采样/评估、LoRA8/16、micro4、PPO与DT数值版本保持。
+旧step4用时18129.757秒，gen9737.716、DT4908.032、actor3028.621、保存52.922秒；
+这是旧版本基线，不能当作新修复的耗时。新的完整迭代尚未结束，不预报整轮提速倍数。
+
 ### 2026-10-01：把未部署修复组成完整恢复版本
 
 反复返工有两个已证实的来源：旧接入把response数当成轨迹数，放大原PPO学习负载；
@@ -112,7 +126,7 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 | response粒度误作PPO轨迹单位 | SQL `37938d0`、TextCraft `cb8e569`、AppWorld `cf145b2`；原trainer负载核对 | 三组已修复。SQL满批1次、TextCraft满批4次optimizer更新；不是每个DT请求一次更新 |
 | TextCraft启动文件仍是micro1，运行中已B4，重启会漏掉head覆盖 | `dc4e4d7`及两个实际worker PID的完成回执；恢复候选固化这些相同文件SHA和micro4 | `textcraft-rollout-scope-20261001`已准备，未部署；旧启动文件保留为历史证据，禁止直接重用 |
 | TextCraft无效padding计算，SQL/TextCraft DT双卡分发不均 | padding `0c80b41`，原对照`44e1149`；分发`4c0cbdd`调用原VERL分区 | 全部组合进对应恢复候选；实际部署仍按上方三组表，不能提前记为生效 |
-| 工具轮次之间重复退出原生成上下文 | `2a32d00`，原vLLM实际prompt比较及原collector默认路径测试 | AppWorld/SQL/TextCraft三个完整候选均已准备，均未部署 |
+| 工具轮次之间重复退出原生成上下文 | `2a32d00`，原vLLM实际prompt比较及原collector默认路径测试 | AppWorld已从完整step4提交部署；SQL/TextCraft候选已准备、未部署 |
 | 恢复入口另造训练设置的风险 | SQL/TextCraft仅转交原`trainer.resume_mode/resume_from_path`；AppWorld沿用原入口 | 原验证器和逐配置比较通过；没有另写保存/恢复算法 |
 
 恢复候选均以**当前作业的实际entry/owner**为底，加上已有通过对照的文件；不从旧
@@ -136,7 +150,7 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 SQL当前没有作者保存周期内的完整检查点；关于使用原VERL保存/恢复模型、优化器、RNG，
 但在缺少`data.pt`时按原行为重置数据读取顺序的选择，仍待用户答复。未擅自执行。
-AppWorld等待原下一完整检查点，TextCraft原保存周期为25。未停止未保存的更新，
+AppWorld已在原step4检查点完成后提交恢复，TextCraft原保存周期为25。未停止SQL/TextCraft未保存的更新，
 未使用SIGSTOP、mcTracer、伪造`data.pt`或自建checkpoint逻辑。
 
 **数值残差补查已结束，不再把非零残差当新门槛。** 同一事实B4、同一原RPC内比较
