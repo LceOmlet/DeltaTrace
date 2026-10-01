@@ -40,7 +40,9 @@ for j in active['jobs']:
         'padding_comparison_receipt','padding_comparison_receipt_sha256',
         'completed_overlay_receipt','completed_overlay_sha256',
         'prior_source_receipt','prior_source_sha256','inherited_field_correction',
-        'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256'] if k in source}
+        'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
+        'completion_transport_code_commit','completion_transport_receipt',
+        'completion_transport_receipt_sha256','completion_transport_sources'] if k in source}
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')

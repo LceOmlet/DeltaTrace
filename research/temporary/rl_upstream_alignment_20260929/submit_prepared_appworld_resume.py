@@ -76,7 +76,9 @@ source=dict(unix=time.time(),dt_root=prepared['dt_root'],verl_root=str(verl),loo
     padding_comparison_receipt=prepared['padding_comparison_receipt'],
     padding_comparison_receipt_sha256=prepared['padding_comparison_receipt_sha256'])
 for name in ('request_dispatch_commit','request_dispatch_receipt','request_dispatch_receipt_sha256',
-             'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256'):
+             'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
+             'completion_transport_code_commit','completion_transport_receipt',
+             'completion_transport_receipt_sha256','completion_transport_sources'):
     if name in prepared:source[name]=prepared[name]
 (output/'source.json').write_text(json.dumps(source,indent=2)+'\n')
 env=os.environ.copy()
