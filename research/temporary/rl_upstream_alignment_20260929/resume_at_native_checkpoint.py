@@ -62,7 +62,9 @@ if @REUSE_LOADED@:
     trainer=Path(old['verl_root'])/'verl/trainer/ppo/ray_trainer.py'
     tree=ast.parse(trainer.read_text())
     call=next(n for n in ast.walk(tree) if isinstance(n,ast.Call)
-              and ast.unparse(n.func)=='self.train_traj_manager.collect_native_trajectories')
+              and ast.unparse(n.func)=='self.traj_collector.multi_turn_loop'
+              and any(k.arg=='is_train' and isinstance(k.value,ast.Constant)
+                      and k.value.value is True for k in n.keywords))
     observed=subprocess.run(['/opt/conda/bin/py-spy','dump','--nonblocking','--json',
         '--full-filenames','-p',str(runner.pid)],capture_output=True,text=True,timeout=12)
     assert observed.returncode==0,observed.stderr
