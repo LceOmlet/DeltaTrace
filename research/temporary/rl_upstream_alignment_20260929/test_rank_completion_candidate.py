@@ -44,6 +44,7 @@ class ReplyActor:
         await self.started.wait()
 
     async def actor_rollout_generate_sequences(self, batch):
+        assert len(batch), 'The original VERL generator does not support B0'
         self.calls.append(batch.batch['input_ids'][:, 0].tolist())
         self.started.set()
         if self.blocked:
@@ -239,7 +240,7 @@ def test_native_cancellation_is_rechecked_after_owner_pool_queueing():
                 ray.kill(actor)
 
 
-def test_actual_verl_vllm_owner_handles_empty_transport_without_generation():
+def test_original_verl_empty_input_is_not_a_supported_rpc_contract():
     from omegaconf import OmegaConf
     from vllm import SamplingParams
     from verl.workers.rollout.vllm_rollout.vllm_rollout_spmd import vLLMRollout
@@ -263,11 +264,9 @@ def test_actual_verl_vllm_owner_handles_empty_transport_without_generation():
     from verl.utils.debug.performance import GPUMemoryLogger
     wrapper = inspect.getclosurevars(vLLMRollout.generate_sequences).nonlocals
     assert isinstance(wrapper['self'], GPUMemoryLogger)
-    output = wrapper['decorated_function'](owner, batch)
+    with pytest.raises(ValueError, match='max\\(\\) iterable argument is empty'):
+        wrapper['decorated_function'](owner, batch)
     owner.inference_engine.generate.assert_not_called()
-    assert len(output) == 0
-    assert output.batch['input_ids'].shape == (0, 32768)
-    assert len(output.non_tensor_batch['owner_response_length']) == 0
 
 
 def test_candidate_only_changes_completion_transport():

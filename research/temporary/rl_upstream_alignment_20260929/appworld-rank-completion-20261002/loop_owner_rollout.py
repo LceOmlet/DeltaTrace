@@ -57,7 +57,13 @@ class LoopOwner:
             keep = [i for i, rank in enumerate(ranks)
                     if valid[i] and not pool.cancellations[int(rank)].is_set()]
             item = item.select_idxs(torch.tensor(keep, dtype=torch.long))
-            ref = actor_rollout_wg._execute_remote_single_worker(actor, wire_method, item)
+            if keep:
+                ref = actor_rollout_wg._execute_remote_single_worker(actor, wire_method, item)
+            else:
+                # VERL's generator requires a nonempty batch. Preserve the
+                # empty transport artifact without invoking that generator.
+                import ray
+                ref = ray.put(item)
             # A native Ray future wakes the same existing queue reader. It
             # carries no result payload; ActorPool owns collection/order.
             ref.future().add_done_callback(lambda _: pool.output.put(('engine_ready',)))
