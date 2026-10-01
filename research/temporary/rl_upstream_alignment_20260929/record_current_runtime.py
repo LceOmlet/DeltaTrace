@@ -78,6 +78,19 @@ for j in active['jobs']:
         record['startup_recorded_sha256']=expected
         record['matches_startup_source']=record['sha256']==expected if expected is not None else None
     rec['runtime_overrides']=[]
+    rec['temporary_observations']=[]
+    if j['task']=='AppWorld':
+        observation=out/'appworld-rollout-scope/formal-cache'
+        installed=observation/'installed.json'
+        if installed.is_file():
+            meta=read(installed)
+            if (meta['driver_pid']==j['pid'] and
+                    meta['driver_created_unix']==rec['process'].get('created_unix')):
+                rec['temporary_observations'].append(dict(
+                    receipt=artifact(installed),source_commit=meta['source_commit'],
+                    script_sha256=meta['script_sha256'],
+                    ranks=[dict(receipt=artifact(p),record=read(p)) for p in sorted(observation.glob('rank*.json'))],
+                    scope='Bounded wrapper reading original generate outputs/timing; eight calls/rank then restores the original binding. No new generation, numerical or sampling behavior.'))
     rec['pending_runtime_operations']=[]
     if j['task']=='SkyRL-SQL':
         submitted=out/'actor-response-padding/sql-live/submitted.json'
