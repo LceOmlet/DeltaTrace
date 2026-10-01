@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-最近三组只读源码快照为北京时间2026-10-02 05:30；原阶段观察见下方定向回执。
+最近三组只读源码快照为北京时间2026-10-02 06:13；原阶段观察见下方定向回执。
 [current_runtime.json](current_runtime.json)保留精确采集时间，
 不能把文档更新时间当作三组阶段都已重新采集。
 
@@ -108,6 +108,7 @@ engine的`rollout.n=1`，不能再次把完整轨迹重复扩增。
 | TextCraft按未使用的配置值多跑一遍PPO | `cb8e569` / `launch_textcraft_native.py` | 作者实际update_policy不读取ppo_epochs；保留单遍，global mini64，满批4次联合更新 |
 | AppWorld的采样/完成/取消与作者不同 | `cf145b2`，请求运输 `64e6377` | 复用LOOP原sampler/runner池；40×6请求、原完成规则、mini32、2遍、200迭代 |
 | 已部署micro4/head/padding未写进旧launch | `dc4e4d7`，padding源`0c80b41`，原比较`44e1149`，部署`3a46cec` | 三组实际B4与LoRA8/16有完成回执；TextCraft完整恢复候选固化这些设置，旧launch保持历史原貌 |
+| AppWorld合批修复已部署，但仓库默认入口仍是旧同步文件 | 源码`4fa72d6`，SHA `036977b4eb1f…` | 06:12默认`loop_owner_rollout.py`同步为同一已通过10项接口对照、已部署到PID1199302的文件；逐字节一致，不引入第三份实现或重启作业 |
 
 新增测试是[SQL/TextCraft负载对照](test_official_workload_local.py)及
 [AppWorld负载对照](test_loop_model_entry_local.py)。负载文件7项（新增SQL/TextCraft各1项，
@@ -136,6 +137,36 @@ AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单�
 | 原 `verl/models/transformers/qwen3_vl.py` | `ebc52fb35812` |
 
 ## 修复账本
+
+### 2026-10-02 06:13：同步默认源码，保留真实验证及部署边界
+
+发现默认`experiments/rl/loop_owner_rollout.py`仍为旧SHA `22ff649007bf…`，而正式
+AppWorld已运行`4fa72d6`中的SHA `036977b4eb1f…`。06:12将默认文件直接同步为
+那份已测试、已部署的相同字节，避免以后从默认入口重新带回旧RPC行为。
+`__init__`、`close`、`to_batch`的AST与旧默认文件相同；只有请求运输方法不同。
+原Ray/VERL接口10项通过的回执继续对应相同完整SHA，没有重跑模型、扩展原数值
+容差或把运输测试称为整条训练验收。运行中的冻结entry没有修改。
+[默认源码晋升对应记录](../../research/temporary/rl_upstream_alignment_20260929/appworld-batch-coalescing-20261002/canonical-promotion.json)
+保留旧SHA、原代码提交、测试回执SHA、部署PID/创建时间及不变方法。
+
+本次06:08非阻塞原栈显示：SQL第8轮已经进入DT，AppWorld恢复6后的第7轮仍在
+生成，TextCraft第25轮仍在生成；06:13原TextCraft日志推进到28/30轮。原保存点25
+助手452582仍存活、创建时间匹配，尚无completed-stop，候选未部署。SQL也尚无
+完整reader检查点；不补造data.pt或静默改变恢复行为。三组实际entry与原数值源
+SHA仍匹配，当前snapshot没有新数值版本。
+[原阶段回执](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/phase-observation-1790892519.json)
+SHA=`3279489c73c68c89aad635a2a4dc583aa76cc6c2c089d5ec9817969fb5a85726`。
+
+另核对SQL真实step7的原生奖励：1280条中1264条为-1、9条为0、7条为1，均值
+-0.98203125。原SkyRL评分器的-1是格式未通过，0是格式有效但SQL结果未通过；
+额外VERL无效动作惩罚关闭。实际Qwen tokenizer的think标签不是special token，
+skip_special_tokens不会删除它们；实际官方qwen3_acc_thinking模板的assistant
+前缀也没有注入空think。这个结果排除了两项接入假设，没有修改原奖励、模板、
+采样参数或训练信号；低任务得分也不被宣称为数值容差故障或训练健康证明。
+[原奖励来源回执](../../research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-score-cause-20261002.json)
+SHA=`c038a84b3523a1a0dee8a61c0ae198baf74134ce5c0840e07cbf6fd1f461dd2d`；
+[CPU tokenizer边界回执](../../research/temporary/rl_upstream_alignment_20260929/rollout-scope-20261001/native-tokenizer-boundary-20261002.json)
+SHA=`692acb34ce0db3fe31f83ab35a605c273cd0bacdb73236d8cd9dc7e8718894f7`。
 
 ### 2026-10-02 05:32：真实阶段核对，避免把观测统计误作推理容差失败
 
