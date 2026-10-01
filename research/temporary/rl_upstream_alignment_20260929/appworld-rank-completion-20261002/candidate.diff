@@ -1,0 +1,122 @@
+--- verified/loop_owner_rollout.py
++++ candidate/loop_owner_rollout.py
+@@ -33,7 +33,8 @@
+     def collect_native_trajectories(self, collector, gen_batch, actor_rollout_wg, is_train):
+         from loop_owner_worker import OwnerProcesses
+         from owner_environment_transport import policy_reply
+-        from verl.protocol import pad_dataproto_to_divisor, unpad_dataproto
++        from verl.protocol import pad_dataproto_to_divisor
++        from ray.util.actor_pool import ActorPool
+         if self.processes is None:
+             world = 1 if self.evaluation else self.config.trainer.n_gpus_per_node*self.config.trainer.nnodes
+             self.processes = OwnerProcesses(OmegaConf.to_container(self.native, resolve=True),
+@@ -42,8 +43,28 @@
+         pool.start()
+         results, records, pending = {}, {}, []
+         calls = tokens = 0
++        ready = 0
++        # The original Functor's name is the original wire method. VERL's
++        # single-worker helper retains its fused/non-fused routing.
++        wire_method = type(actor_rollout_wg.generate_sequences).__name__
++        engines = ActorPool(actor_rollout_wg.workers)
++
++        def submit(actor, item):
++            # Cancellation comes from LOOP. Recheck when Ray allocates an
++            # actor, because requests can wait in ActorPool's native queue.
++            ranks = item.non_tensor_batch['loop_reply_rank']
++            valid = item.non_tensor_batch['loop_reply_valid']
++            keep = [i for i, rank in enumerate(ranks)
++                    if valid[i] and not pool.cancellations[int(rank)].is_set()]
++            item = item.select_idxs(torch.tensor(keep, dtype=torch.long))
++            ref = actor_rollout_wg._execute_remote_single_worker(actor, wire_method, item)
++            # A native Ray future wakes the same existing queue reader. It
++            # carries no result payload; ActorPool owns collection/order.
++            ref.future().add_done_callback(lambda _: pool.output.put(('engine_ready',)))
++            return ref
++
+         started = time.monotonic()
+-        while len(results) < len(pool.processes):
++        while len(results) < len(pool.processes) or engines.has_next():
+             event = pool.event() if not pending else None
+             while True:
+                 if event is not None:
+@@ -51,6 +72,8 @@
+                         results[event[1]] = event[2]
+                     elif event[0] == 'completion':
+                         pending.append(event)
++                    elif event[0] == 'engine_ready':
++                        ready += 1
+                     else:
+                         raise RuntimeError(f'Unexpected LOOP transport event: {event[0]}')
+                 try:
+@@ -64,32 +87,44 @@
+             # DP dispatch. Submit all already queued owner requests; limiting
+             # the global RPC to one engine's cap halves two-engine occupancy.
+             requests, pending = pending, []
+-            if not requests:
+-                continue
+-            prompts, options = [], []
+-            for _, rank, key, raw in requests:
+-                request = dict(raw)
+-                prompts.append(list(request.pop('prompt')))
+-                request.pop('model')
+-                request.pop('stream')
+-                request['detokenize'] = True
+-                options.append(request)
+-            carrier = DataProto.from_dict(tensors=dict(input_ids=torch.zeros(len(requests), 1, dtype=torch.long)),
+-                non_tensors=dict(data_source=np.array(['appworld']*len(requests), dtype=object)),
+-                meta_info=gen_batch.meta_info)
+-            batch = collector.preprocess_batch(carrier, dict(raw_prompt_ids=prompts, sampling_kwargs=options))
+-            batch.meta_info.update(eos_token_id=self.tokenizer.eos_token_id, pad_token_id=self.tokenizer.pad_token_id)
+-            batch, padding = pad_dataproto_to_divisor(batch, actor_rollout_wg.world_size)
+-            output = unpad_dataproto(actor_rollout_wg.generate_sequences(batch), padding)
+-            for index, (_, rank, key, _) in enumerate(requests):
+-                reply = policy_reply(output, index)
+-                records[key] = output.select_idxs([index])
+-                pool.replies[rank].put((key, reply))
+-                tokens += len(reply.token_ids)
+-            calls += 1
+-            print(f'[loop_transport] calls={calls} batch_requests={len(requests)} '
+-                  f'queued_requests={pool.output.qsize()} requests={len(records)} generated_tokens={tokens} '
+-                  f'elapsed={time.monotonic()-started:.1f}s completed_ranks={len(results)}', flush=True)
++            if requests:
++                prompts, options = [], []
++                for _, rank, key, raw in requests:
++                    request = dict(raw)
++                    prompts.append(list(request.pop('prompt')))
++                    request.pop('model')
++                    request.pop('stream')
++                    request['detokenize'] = True
++                    options.append(request)
++                carrier = DataProto.from_dict(tensors=dict(input_ids=torch.zeros(len(requests), 1, dtype=torch.long)),
++                    non_tensors=dict(data_source=np.array(['appworld']*len(requests), dtype=object)),
++                    meta_info=gen_batch.meta_info)
++                batch = collector.preprocess_batch(carrier, dict(raw_prompt_ids=prompts, sampling_kwargs=options))
++                batch.meta_info.update(eos_token_id=self.tokenizer.eos_token_id, pad_token_id=self.tokenizer.pad_token_id)
++                batch.non_tensor_batch.update(
++                    loop_reply_rank=np.array([r for _, r, _, _ in requests]),
++                    loop_reply_key=np.array([k for _, _, k, _ in requests], dtype=object))
++                batch, padding = pad_dataproto_to_divisor(batch, actor_rollout_wg.world_size)
++                batch.non_tensor_batch['loop_reply_valid'] = np.arange(len(batch)) < len(requests)
++                for item in batch.chunk(actor_rollout_wg.world_size):
++                    engines.submit(submit, item)
++                calls += 1
++            while ready:
++                # The owner callback says a native ref is ready, so there
++                # is no polling interval and no wait for the other rank.
++                output = engines.get_next_unordered(timeout=0)
++                ready -= 1
++                for index in range(len(output)):
++                    rank = int(output.non_tensor_batch['loop_reply_rank'][index])
++                    key = output.non_tensor_batch['loop_reply_key'][index]
++                    reply = policy_reply(output, index)
++                    records[key] = output.select_idxs([index])
++                    pool.replies[rank].put((key, reply))
++                    tokens += len(reply.token_ids)
++                print(f'[loop_transport] calls={calls} rpc_mode=actor_pool '
++                      f'batch_requests={len(output)} queued_requests={pool.output.qsize()} '
++                      f'requests={len(records)} generated_tokens={tokens} '
++                      f'elapsed={time.monotonic()-started:.1f}s completed_ranks={len(results)}', flush=True)
+         self.records = records
+         rows = []
+         for rank in sorted(results):
