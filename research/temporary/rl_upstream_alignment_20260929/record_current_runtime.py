@@ -42,7 +42,8 @@ for j in active['jobs']:
         'prior_source_receipt','prior_source_sha256','inherited_field_correction',
         'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
         'completion_transport_code_commit','completion_transport_receipt',
-        'completion_transport_receipt_sha256','completion_transport_sources'] if k in source}
+        'completion_transport_receipt_sha256','completion_transport_sources',
+        'resume_launcher'] if k in source}
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')
@@ -53,6 +54,7 @@ for j in active['jobs']:
                          'actor_rollout_ref.model.lora_'))
         or 'log_prob_micro_batch_size' in k}
     rec['native_training_workload']=[]
+    rec['native_training_progress']=[]
     if psutil.pid_exists(j['pid']):
         proc=psutil.Process(j['pid']);children=[]
         for child in proc.children(recursive=True):
@@ -67,10 +69,20 @@ for j in active['jobs']:
             except psutil.NoSuchProcess:continue
             for path in paths:
                 with Path(path).open(errors='replace') as stream:
-                    lines=[line.strip() for line in stream if line.startswith(
-                        ('Size of train dataloader:', 'Total training steps:'))]
+                    lines=[];last_metrics=None;last_transport=None
+                    for line in stream:
+                        if line.startswith(('Size of train dataloader:', 'Total training steps:')):
+                            lines.append(line.strip())
+                        elif line.startswith('step:'):
+                            last_metrics=line.strip()
+                        elif line.startswith(('[loop_transport]', '[owner_trajectory]')):
+                            last_transport=line.strip()
                 if lines:rec['native_training_workload'].append(dict(pid=child.pid,path=path,lines=lines,
                     meaning='Original trainer log; epochs, rollout iterations and optimizer updates are distinct units'))
+                if last_metrics or last_transport:
+                    rec['native_training_progress'].append(dict(pid=child.pid,path=path,
+                        last_completed_iteration_metrics=last_metrics,last_transport=last_transport,
+                        meaning='Original TaskRunner lines; a newer in-progress rollout is not a completed iteration. No progress is inferred from process liveness.'))
     else:rec['process']=dict(alive=False)
     rec['entry_files']={}
     for n,h in source.get('entry_sha256',{}).items():
@@ -293,6 +305,7 @@ for prepared in result['prepared_versions']:
     if prepared['id'] in ('sql-rollout-scope-20261001','textcraft-rollout-scope-20261001'):
         task='sql' if prepared['id'].startswith('sql-') else 'textcraft'
         names=[f'prepare_{task}_scope_resume.py']
+        if task=='textcraft':names.append('submit_prepared_appworld_resume.py')
         prepared['local_helpers']={}
         for name in names:
             p=recorder.parent/name;relative=p.relative_to(REPO).as_posix()
