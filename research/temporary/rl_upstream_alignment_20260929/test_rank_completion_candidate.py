@@ -7,6 +7,7 @@ import ast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import importlib.util
+import inspect
 import os
 from pathlib import Path
 from queue import Queue
@@ -257,7 +258,9 @@ def test_actual_verl_vllm_owner_handles_empty_transport_without_generation():
             owner_sampling_kwargs=np.array([], dtype=object),
             loop_reply_key=np.array([], dtype=object), loop_reply_rank=np.array([], dtype=int)),
         meta_info=dict(eos_token_id=248044, pad_token_id=0))
-    output = owner.generate_sequences(batch)
+    # Only the GPU memory logger is removed for this CPU-only body test.
+    # The original generation implementation, helpers and result are unchanged.
+    output = inspect.unwrap(vLLMRollout.generate_sequences)(owner, batch)
     owner.inference_engine.generate.assert_not_called()
     assert len(output) == 0
     assert output.batch['input_ids'].shape == (0, 32768)
