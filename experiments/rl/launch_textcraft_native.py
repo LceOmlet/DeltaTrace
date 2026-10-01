@@ -7,7 +7,7 @@ import sys
 from owner_runtime_options import runtime_options, owner_command
 
 
-def options_for(data, output):
+def options_for(data, output, *, resume_from=None):
     root = Path(__file__).resolve().parent
     native = json.loads((root/'owner_environment_configs.json').read_text())['TextCraft']
     train, evaluation = native['train'], native['eval']
@@ -54,6 +54,9 @@ def options_for(data, output):
         'trainer.save_freq': train['trainer']['save_freq'], 'trainer.test_freq': train['trainer']['test_freq'],
         # The author's training script does not run its separate eval program.
         'trainer.val_before_train': False, 'trainer.resume_mode': 'auto'}
+    if resume_from is not None:
+        options.update({'trainer.resume_mode': 'resume_path',
+                        'trainer.resume_from_path': str(resume_from)})
     return options, sampling
 
 
@@ -62,8 +65,10 @@ if __name__ == '__main__':
     parser.add_argument('--data', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--config-only', action='store_true')
+    parser.add_argument('--resume-from', type=Path,
+                        help='Pass a completed global_step directory to the original VERL loader.')
     args = parser.parse_args()
-    options, sampling = options_for(args.data, args.output)
+    options, sampling = options_for(args.data, args.output, resume_from=args.resume_from)
     argv = owner_command(options)
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output/'launch.json').write_text(json.dumps(dict(argv=argv, options=options,

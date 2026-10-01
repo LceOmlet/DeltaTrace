@@ -10,7 +10,10 @@ from stage_environment_entry import remote, ROOT, ENTRY
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--compare-partitions',action='store_true',
     help='Two B4 calls/rank using duplicated real cases, comparing native partitioning with the deployed contiguous split.')
+parser.add_argument('--prefix-diagnostic',action='store_true',
+    help='Same saved B4 on both ranks: native prefix, previously observed cut320, native repeat. Observe root/finite operands; no production change.')
 args=parser.parse_args()
+assert not (args.compare_partitions and args.prefix_diagnostic)
 
 remote(r'''source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
@@ -25,6 +28,8 @@ out=root/'receipts/owner-b8-dispatch-20260930'/f'native-dt-gathers-{int(time.tim
 out.mkdir()
 
 def profile(worker, prepared=None):
+ if prepared is not None and 'sequence' in prepared:
+  return [profile(worker,item) for item in prepared['sequence']]
  import functools,hashlib,inspect,json,os,time,torch
  import torch.distributed as dist
  from pathlib import Path
@@ -36,6 +41,9 @@ def profile(worker, prepared=None):
   if not hasattr(w,'_deltatrace_producer'):continue
   producer=w._deltatrace_producer;readout=producer.readout;old_report=readout.last_report
   saved=(old_report['minimum_log_ratio_batch'] if prepared is None else prepared['saved'])
+  if @PREFIX@ and prepared is None:
+   saved=json.loads((root/'receipts/owner-b8-dispatch-20260930/native-dt-gathers-1790847076/inputs-contiguous-319769.json').read_text())
+   saved=dict(saved,samples=saved['samples'][:4])
   samples=saved['samples'];assert len(samples) in (4,8)
   rows=[]
   for s in samples:
@@ -73,9 +81,35 @@ def profile(worker, prepared=None):
   model=producer.runner.model
   original_replay=model.replay_finite_layer;original_prefix=model.forward_root
   original_attribute=producer.runner.attribute
+  original_sync=model.synchronize_prefix_start
+  had_sync_override='synchronize_prefix_start' in model.__dict__
+  original_finite=dict(producer.runner.finite_fla_by_layer)
+  handles=[];root_rows={};finite_saved=False
   record['sources']={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in
    {Path(inspect.getsourcefile(fn)) for fn in [*originals.values(),original_replay,original_attribute]}}
   context=dict(stage='worker_boundary',group=None);events=[];gathers=[];dt_info=[]
+  def sync_prefix(value):
+   value=original_sync(value)
+   cap=prepared.get('prefix_cap')
+   actual=value if cap is None else min(value,cap)
+   record['prefix_length']=actual
+   return actual
+  def root_output(module,args,kwargs,result,*,index):
+   if context['stage']!='root_or_finite_boundary':return
+   hidden=result[0] if isinstance(result,tuple) else result
+   if index==-1:hidden=args[0] if args else kwargs['hidden_states']
+   positions=list(range(samples[0]['source_start'],samples[0]['source_start']+8))+[len(samples[0]['selected_input_ids'])-2]
+   local=torch.tensor([p-record['prefix_length'] for p in positions],device=hidden.device)
+   root_rows[str(index)]=hidden[:2].index_select(1,local).detach().cpu()
+  def finite_observe(endpoints,upstream,scale):
+   nonlocal finite_saved
+   if not finite_saved:
+    path=out/f"finite-{record['label']}-rank{w.rank}.pt"
+    torch.save(dict(endpoints={k:v.detach().cpu() for k,v in endpoints.items()},
+     upstream=upstream.detach().cpu(),scale=scale),path)
+    record['finite_consumer']=str(path);finite_saved=True
+   owner=original_finite.get(0,producer.runner.finite_fla)
+   return owner(endpoints,upstream,scale)
   def event_call(label,fn,*args,**kwargs):
    begin=torch.cuda.Event(enable_timing=True);end=torch.cuda.Event(enable_timing=True)
    begin.record();tick=time.perf_counter();result=fn(*args,**kwargs);end.record()
@@ -112,9 +146,18 @@ def profile(worker, prepared=None):
   def attribute(*args,**kwargs):
    context['stage']='root_or_finite_boundary'
    result=original_attribute(*args,**kwargs)
-   dt_info.append({k:result[1][k] for k in ('calls','complete_attribution_seconds_with_diagnostics') if k in result[1]})
+   fields=('calls','complete_attribution_seconds_with_diagnostics')
+   if @PREFIX@:fields+=('native_shared_prefix_length','layers','target_logp0','target_logp1','root_effect','seed_effect','signed_sum')
+   dt_info.append({k:result[1][k] for k in fields if k in result[1]})
    return result
   try:
+   if @PREFIX@:
+    model.synchronize_prefix_start=sync_prefix
+    producer.runner.finite_fla_by_layer[0]=finite_observe
+    from functools import partial
+    for index,layer in enumerate(model.model.language_model.layers):
+     handles.append(layer.register_forward_hook(partial(root_output,index=index),with_kwargs=True))
+    handles.append(model.model.language_model.layers[0].register_forward_hook(partial(root_output,index=-1),with_kwargs=True))
    ops._get_param_all_gather_inputs=inputs;dist.all_gather_into_tensor=collective
    pg.foreach_all_gather_copy_out=copy_out;pg.FSDPParamGroup.unshard=unshard
    model.replay_finite_layer=replay;model.forward_root=prefix;producer.runner.attribute=attribute
@@ -125,11 +168,20 @@ def profile(worker, prepared=None):
    output_path=out/f"outputs-{record['label']}-rank{w.rank}.pt"
    torch.save({k:v.cpu() for k,v in result.batch.items()},output_path)
    record['output_path']=str(output_path)
+   if @PREFIX@:
+    root_path=out/f"root-{record['label']}-rank{w.rank}.pt"
+    torch.save(root_rows,root_path);record['root_samples']=str(root_path)
    record.update(status='profile_completed',gathers=gathers,dt_info=dt_info,
     events=[dict(row,stream_seconds=begin.elapsed_time(end)/1000) for row,begin,end in events])
   except Exception as error:
    record.update(status='profile_failed',error=repr(error))
   finally:
+   for handle in handles:handle.remove()
+   if @PREFIX@:
+    if had_sync_override:model.synchronize_prefix_start=original_sync
+    else:del model.synchronize_prefix_start
+    producer.runner.finite_fla_by_layer.clear()
+    producer.runner.finite_fla_by_layer.update(original_finite)
    ops._get_param_all_gather_inputs=originals['inputs'];dist.all_gather_into_tensor=originals['collective']
    pg.foreach_all_gather_copy_out=originals['copy_out'];pg.FSDPParamGroup.unshard=originals['unshard']
    model.replay_finite_layer=original_replay;model.forward_root=original_prefix
@@ -146,6 +198,9 @@ try:
  prepared=ray.get([actor.execute_with_func_generator.remote(profile) for actor in handles])
  assert all(p['prepared'] for p in prepared)
  modes={'profile':prepared}
+ if @PREFIX@:
+  modes={'prefix_diagnostic':[dict(sequence=[dict(p,label=label,prefix_cap=cut,row_indices=list(range(4)))
+     for label,cut in [('native_first',None),('observed_cut_320',320),('native_repeat',None)]]) for p in prepared]}
  if @COMPARE@:
   import sys
   sys.path.insert(0,job['verl_root'])
@@ -161,11 +216,13 @@ try:
  for label,fixtures in modes.items():
   refs=[actor.execute_with_func_generator.remote(profile,fixture) for actor,fixture in zip(handles,fixtures)]
   print(json.dumps(dict(receipt=str(out),mode=label,status='saved B4 calls queued at original RPC boundary',driver_pid=driver.pid)),flush=True)
-  records=ray.get(refs);all_records[label]=records
+  records=ray.get(refs)
+  if @PREFIX@:records=[record for worker_records in records for record in worker_records]
+  all_records[label]=records
   (out/f'completed-{label}.json').write_text(json.dumps(dict(driver_pid=driver.pid,workers=records),indent=2)+'\n')
   for r in records:print(json.dumps({k:r[k] for k in ['pid','rank','status','restored','lengths','worker_seconds','error'] if k in r}),flush=True)
   assert all(r['status']=='profile_completed' and r['restored'] for r in records),records
  (out/'completed.json').write_text(json.dumps(dict(driver_pid=driver.pid,modes=all_records),indent=2)+'\n')
 finally:ray.shutdown()
 PY
-'''.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY).replace('@COMPARE@',repr(args.compare_partitions)))
+'''.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY).replace('@COMPARE@',repr(args.compare_partitions)).replace('@PREFIX@',repr(args.prefix_diagnostic)))

@@ -121,20 +121,26 @@ for label,receipt_dir,supersedes in [
     ('appworld-request-dispatch-20261001','appworld-request-dispatch',
      'appworld-balanced-padding-resume-20261001'),
     ('appworld-rollout-scope-20261001','appworld-rollout-scope',
-     'appworld-request-dispatch-20261001')]:
+     'appworld-request-dispatch-20261001'),
+    ('sql-rollout-scope-20261001','sql-rollout-scope','sql-padding-restart-20261001'),
+    ('textcraft-rollout-scope-20261001','textcraft-rollout-scope','official-trajectory-20260930-v7')]:
     path=out/receipt_dir/'prepared.json'
     if not path.is_file():continue
     value=read(path)
     prepared=dict(id=label,receipt=artifact(path),prepared_unix=value['prepared_unix'],
         entry=value['entry'],verl_root=value['verl_root'],dt_root=value['dt_root'],
-        supersedes_for_future_appworld_resume=supersedes,
+        supersedes_for_future_resume=supersedes,
+        prior_driver_pid=value.get('prior_driver_pid'),
+        configuration_changes=value.get('configuration_changes',{}),
+        preparation_repository_commit=value.get('preparation_repository_commit'),
+        preparation_script_sha256=value.get('preparation_script_sha256'),
         active_jobs_with_this_entry=[j['task'] for j in result['jobs'] if j['entry']==value['entry']],
         entry_files={},owner_files={},tests=artifact(path.parent/'cpu-tests.xml'))
     for name,expected in value['entry_sha256'].items():
         p=Path(value['entry'])/name
         prepared['entry_files'][name]=dict(**artifact(p),expected_sha256=expected,
                                          matches=p.is_file() and sha(p)==expected)
-    for name,expected in value['owner_head_sha256'].items():
+    for name,expected in value.get('owner_sha256',value.get('owner_head_sha256',{})).items():
         p=Path(value['verl_root'])/name
         prepared['owner_files'][name]=dict(**artifact(p),expected_sha256=expected,
                                          matches=p.is_file() and sha(p)==expected)
@@ -229,6 +235,25 @@ for prepared in result['prepared_versions']:
             prepared['source_commits']['request_dispatch']=prepared['request_dispatch']['code_commit']
         if 'rollout_scope_comparison' in prepared:
             prepared['source_commits']['rollout_scope']=prepared['rollout_scope_comparison']['code_commit']
+    if prepared['id'] in ('sql-rollout-scope-20261001','textcraft-rollout-scope-20261001'):
+        task='sql' if prepared['id'].startswith('sql-') else 'textcraft'
+        names=[f'prepare_{task}_scope_resume.py']
+        prepared['local_helpers']={}
+        for name in names:
+            p=recorder.parent/name;relative=p.relative_to(REPO).as_posix()
+            head=subprocess.run(['git','show','HEAD:'+relative],cwd=REPO,capture_output=True)
+            prepared['local_helpers'][name]=dict(path=relative,
+                sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+                last_committed_change=subprocess.check_output(['git','log','-1','--format=%H','--',relative],cwd=REPO,text=True).strip() or None,
+                matches_head_bytes=head.returncode==0 and p.read_bytes()==head.stdout)
+        prepared['source_commits'].update(padding_source_archive=revision('0c80b41'),
+            padding_owner_comparison=revision('44e1149'),
+            rollout_scope=prepared['rollout_scope_comparison']['code_commit'])
+        # AppWorld's historical resume commit must not identify the new SQL
+        # and TextCraft entry changes. Record the actual file revision.
+        path=f'experiments/rl/launch_{task}_native.py'
+        prepared['source_commits']['native_resume_entry']=subprocess.check_output(
+            ['git','log','-1','--format=%H','--',path],cwd=REPO,text=True).strip()
 for job in result['jobs']:
     # Only label the head with this fix when the actual recorded file digest
     # agrees. A later runtime change must remain explicit, never be relabeled.

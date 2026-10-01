@@ -100,6 +100,53 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 
 ## 修复账本
 
+### 2026-10-01：把未部署修复组成完整恢复版本
+
+反复返工有两个已证实的来源：旧接入把response数当成轨迹数，放大原PPO学习负载；
+后续修复又分布在启动目录、worker运行时覆盖和未部署候选中。只记录“测试通过”或
+本机HEAD，没有同时记录实际生效PID和完整恢复组合，就可能重启回旧行为。
+本节不把代码准备完成当成部署完成。
+
+| 不一致/恢复风险 | 修好的代码与证据 | 当前状态 |
+| --- | --- | --- |
+| response粒度误作PPO轨迹单位 | SQL `37938d0`、TextCraft `cb8e569`、AppWorld `cf145b2`；原trainer负载核对 | 三组已修复。SQL满批1次、TextCraft满批4次optimizer更新；不是每个DT请求一次更新 |
+| TextCraft启动文件仍是micro1，运行中已B4，重启会漏掉head覆盖 | `dc4e4d7`及两个实际worker PID的完成回执；恢复候选固化这些相同文件SHA和micro4 | `textcraft-rollout-scope-20261001`已准备，未部署；旧启动文件保留为历史证据，禁止直接重用 |
+| TextCraft无效padding计算，SQL/TextCraft DT双卡分发不均 | padding `0c80b41`，原对照`44e1149`；分发`4c0cbdd`调用原VERL分区 | 全部组合进对应恢复候选；实际部署仍按上方三组表，不能提前记为生效 |
+| 工具轮次之间重复退出原生成上下文 | `2a32d00`，原vLLM实际prompt比较及原collector默认路径测试 | AppWorld/SQL/TextCraft三个完整候选均已准备，均未部署 |
+| 恢复入口另造训练设置的风险 | SQL/TextCraft仅转交原`trainer.resume_mode/resume_from_path`；AppWorld沿用原入口 | 原验证器和逐配置比较通过；没有另写保存/恢复算法 |
+
+恢复候选均以**当前作业的实际entry/owner**为底，加上已有通过对照的文件；不从旧
+通用部署目录重新拼装。准备回执位于远端
+`receipts/owner-b8-dispatch-20260930/{appworld,sql,textcraft}-rollout-scope/prepared.json`，
+包含被替代PID、来源回执SHA、候选逐文件SHA、验证回执与配置差异。
+`current_runtime.json`同时列出这三个候选和实际作业，明确区分。
+
+- AppWorld：7项CPU检查，原任务/模型参数不变，仅新增已测生成上下文边界。
+- SQL：16项CPU检查；相同正式参数构造后，仅数据类文件和模板所在目录变动，
+  两份文件内容SHA一致。原完整检查点恢复不改变任务负载。
+- TextCraft：49项CPU检查，耗时16.19秒；相对旧launch仅固化已经在原worker上生效的
+  actor/logprob/reference micro4、原fused head及torch后端。其他任务、采样、损失、预算
+  参数逐项相同。LoRA reference走原`compute_ref_log_prob -> compute_log_prob`，
+  不新建reference model，不走非LoRA分支的独立ref microbatch。
+
+准备中的两次检查错误也保留：SQL首次pytest从运输目录导入，缺少旁边的配置资产，
+修正为从冻结entry运行后16项通过；TextCraft首次已通过49项，随后记录比较误把旧launch
+中省略的fused选项当作显式false。修正记录比较后复用相同候选及原测试回执，未修改模型
+或再跑GPU验证。它们不是正式训练故障，也不隐藏为“首次全部通过”。
+
+SQL当前没有作者保存周期内的完整检查点；关于使用原VERL保存/恢复模型、优化器、RNG，
+但在缺少`data.pt`时按原行为重置数据读取顺序的选择，仍待用户答复。未擅自执行。
+AppWorld等待原下一完整检查点，TextCraft原保存周期为25。未停止未保存的更新，
+未使用SIGSTOP、mcTracer、伪造`data.pt`或自建checkpoint逻辑。
+
+**数值残差补查已结束，不再把非零残差当新门槛。** 同一事实B4、同一原RPC内比较
+前缀704/320/704，首个观测差异位于GDN层0；Q/K/V/beta等相同，缓存状态和其派生量
+随分块变化。对记录的两份实际FLA输入，实际FP16与显式BF16对照共44项原FLA断言通过，
+参考与阈值未改；共73.04秒，独立算子进程最大allocated 2.584GiB、RSS 9.525GiB。
+范围是原forward/backward与有限传播重合端点极限，不是整网归因验收，也不覆盖其他历史
+BF16失败样本。没有新增纠偏、放宽容差或修改数值核。原始输入路径、逐项结果和脚本SHA见
+[DT分发诊断及原容差回执](results_dt_dispatch_profile_20261001.json)。
+
 ### 2026-10-01 17:44：实测分发成本与恢复候选
 
 观测、准备助手和原始回执封存于提交`8e07dd3`；17:45只读快照再次核对当前三组
@@ -133,8 +180,8 @@ Q逐值相同；A最大绝对差0.049801、均值差0.000772。恢复样本身�
 `episode_lengths`，在任何模型调用前失败；随后补传原配置不使用的`None`元数据，
 没有伪造轨迹长度或奖励。此失败属于诊断夹具，不能写成正式训练故障。
 
-仍未闭合的是：SQL/TextCraft的均衡分发与整段rollout上下文尚未部署，TextCraft的
-padding尚未部署；分批变化的数值差异仍需按实际计算路径解释。这些状态与已通过的
+当时未闭合的是：SQL/TextCraft的均衡分发与整段rollout上下文尚未部署，TextCraft的
+padding尚未部署；分批变化的数值差异尚待按实际计算路径解释（后续原容差补查见上节）。这些状态与已通过的
 测试、已完成的正式更新分开记录，不能因本机提交变新就把远端标成“全部对齐”。
 
 ### 2026-10-01 17时：负载、版本与未闭合项

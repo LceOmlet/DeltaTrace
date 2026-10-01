@@ -500,5 +500,100 @@
     "phase": "CPU preflight before model calls or instrumentation",
     "repair": "Supply None for metadata unused by original normalize_by_length=False; retain saved exact token IDs and observed return"
   },
-  "qualification": "No new numerical tolerance or correction. Full-chain differences are diagnostic observations, not an FA/FLA or PPO acceptance test. Prefix/batch layout changes remain under investigation; measured speed is not a full-iteration guarantee."
+  "qualification": "No new numerical tolerance or correction. Full-chain differences are diagnostic observations, not an FA/FLA or PPO acceptance test. Prefix/batch layout changes remain under investigation; measured speed is not a full-iteration guarantee.",
+  "prefix_followup_20261001": {
+    "scope": "Same actual B4, native prefix 704, diagnostic observed cut 320, native repeat; one original RPC per rank, no optimizer interleave; hooks restored.",
+    "sources": [
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/native-dt-gathers-1790848462/completed.json",
+        "sha256": "7053f1a59ab17fe208850241e026c1ed990bf8ff7ebd6e6460fdea94021f7271"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/native-dt-gathers-1790848462/original-fla-checks.json",
+        "sha256": "0dbef22a23a9b09f0e4ce54747c2804a60de731d68fe9aa7e22ed817b8b9ea63"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/native-dt-gathers-1790848462/original-fla-native_first.json",
+        "sha256": "30fcc8535eab60f3b4a6981219eed660b9af97978179c78e2585f5b072fbbff4"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/native-dt-gathers-1790848462/original-fla-observed_cut_320.json",
+        "sha256": "d8f220996899469021585079f3d04cafd12968d707cd2ef32dedeb4ea953c4d6"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/native-dt-gathers-1790848462/prefix-operand-differences.json",
+        "sha256": "10d03e375316b872d4cfa8948fd5b151619be78774111461ec4fcea7e3ad7dc8"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/native-dt-gathers-1790848462/prefix-summary.json",
+        "sha256": "3dd8824e145e207ffbd369e29d68f78233f5a582e11a167774cdfb3586a98192"
+      }
+    ],
+    "scripts": [
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/profile_native_dt_gathers.py",
+        "sha256": "d5086e93983e8391e15b7d653999dc83d9a32290bc0b09207869cac78705867b"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/summarize_prefix_diagnostic.py",
+        "sha256": "52564c6cfcdfdd7f6f9be60792a1a42cf4d480d1511ff6d3ecaedc1cb8854f0f"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/check_prefix_fla_operands.py",
+        "sha256": "0f7da70a8e52016b48588d76842c11d95c5875d461a2986be12668612f300222"
+      }
+    ],
+    "observation": "Recorded embedding samples agree. First root-forward difference appears at GDN layer 0. Cropped Q/K/V/beta/A/w agree; cached/recurrent state and derived values differ with prefix partition. This is localization, not a new tolerance.",
+    "original_fla_checks": [
+      {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-dt-gathers-1790848462/finite-native_first-rank0.pt",
+        "dtype": "torch.bfloat16",
+        "status": "passed",
+        "assertions": 11,
+        "largest_fraction_of_original_threshold": 0.45639318969199916
+      },
+      {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-dt-gathers-1790848462/finite-native_first-rank0.pt",
+        "dtype": "torch.float16",
+        "status": "passed",
+        "assertions": 11,
+        "largest_fraction_of_original_threshold": 0.053177282232994845
+      },
+      {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-dt-gathers-1790848462/finite-observed_cut_320-rank0.pt",
+        "dtype": "torch.bfloat16",
+        "status": "passed",
+        "assertions": 11,
+        "largest_fraction_of_original_threshold": 0.6781679618609568
+      },
+      {
+        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-dt-gathers-1790848462/finite-observed_cut_320-rank0.pt",
+        "dtype": "torch.float16",
+        "status": "passed",
+        "assertions": 11,
+        "largest_fraction_of_original_threshold": 0.051662038074714915
+      }
+    ],
+    "assertions_total": 44,
+    "conclusion": "44 original FLA assertions passed for two actual operand sets in actual FP16 and explicit BF16 replay. Original reference, assertion and thresholds unchanged. No numerical core repair or correction introduced.",
+    "limits": "Native forward/backward and coincident-endpoint finite derivative limit on recorded first-head operands. Not a whole-network finite-attribution tolerance or a new production BF16 qualification.",
+    "operator_check_resources": [
+      {
+        "label": "native_first",
+        "seconds": 69.45545411109924,
+        "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-dt-gathers-1790848462/original-fla-native_first.json",
+        "max_allocated_bytes": 2773480448,
+        "process_max_rss_kib": 9987648,
+        "passed": true
+      },
+      {
+        "label": "observed_cut_320",
+        "seconds": 3.5659918785095215,
+        "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-dt-gathers-1790848462/original-fla-observed_cut_320.json",
+        "max_allocated_bytes": 2774381568,
+        "process_max_rss_kib": 9987648,
+        "passed": true
+      }
+    ]
+  }
 }

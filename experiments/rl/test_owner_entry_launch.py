@@ -122,3 +122,25 @@ def test_appworld_resume_forwards_only_original_checkpoint_options(tmp_path):
     RayPPOTrainer._validate_config(SimpleNamespace(config=cfg, use_reference_policy=False, use_critic=False))
     assert cfg.trainer.resume_mode == 'resume_path'
     assert cfg.trainer.resume_from_path == str(checkpoint)
+
+
+@pytest.mark.parametrize('task', ['SkyRL-SQL', 'TextCraft'])
+def test_native_resume_keeps_original_workload(task, tmp_path):
+    checkpoint = tmp_path/'prior-run'/'global_step_4'
+    if task == 'SkyRL-SQL':
+        args = SimpleNamespace(method='dt', phase='formal', data=str(tmp_path), output=str(tmp_path))
+        _, original = command(args)
+        _, resumed = command(SimpleNamespace(**vars(args), resume_from=checkpoint))
+    else:
+        from launch_textcraft_native import options_for
+        original, sampling = options_for(tmp_path, tmp_path)
+        resumed, resumed_sampling = options_for(tmp_path, tmp_path, resume_from=checkpoint)
+        assert sampling == resumed_sampling
+    assert {key for key in original.keys() | resumed.keys()
+            if original.get(key) != resumed.get(key)} == {
+                'trainer.resume_mode', 'trainer.resume_from_path'}
+    with initialize_config_dir(config_dir=str(Path(os.environ['VERL_ROOT'])/'verl/trainer/config'), version_base=None):
+        cfg = compose(config_name='ppo_trainer', overrides=owner_command(resumed)[3:])
+    RayPPOTrainer._validate_config(SimpleNamespace(config=cfg, use_reference_policy=task=='TextCraft', use_critic=False))
+    assert cfg.trainer.resume_mode == 'resume_path'
+    assert cfg.trainer.resume_from_path == str(checkpoint)

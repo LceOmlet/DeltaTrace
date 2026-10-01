@@ -71,6 +71,9 @@ def command(args):
     if bounded:
         options['+ray_init.runtime_env.worker_process_setup_hook'] = 'observe_vllm_boundary.install'
         options['+ray_init.runtime_env.env_vars.DT_VLLM_OBSERVE_DIR'] = str(Path(args.output))
+    if getattr(args, 'resume_from', None) is not None:
+        options.update({'trainer.resume_mode': 'resume_path',
+                        'trainer.resume_from_path': str(args.resume_from)})
     argv = owner_command(options)
     return argv, options
 
@@ -82,6 +85,8 @@ if __name__ == '__main__':
     parser.add_argument('--data', required=True)
     parser.add_argument('--output', required=True)
     parser.add_argument('--config-only', action='store_true')
+    parser.add_argument('--resume-from', type=Path,
+                        help='Pass a completed global_step directory to the original VERL loader.')
     args = parser.parse_args()
     argv, options = command(args)
     out = Path(args.output)
