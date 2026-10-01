@@ -4,13 +4,17 @@
 [带采集时间的源码快照](current_runtime.json)。数值基线、冻结启动源码和已完成的
 worker运行时覆盖分别记录；不能用下面历史段落中的“当前”或旧launch命令代替。
 
-## 2026-10-01 当前运行入口
+## 2026-10-02 当前运行入口
 
 当前正式清单为`runs/appworld-rollout-scope-20261001/formal-training.json`，根目录
 `active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842使用GPU0/1，
 AppWorld PID2479539使用GPU2/3，TextCraft PID212110使用GPU4/5。
 AppWorld原PID285580完成step4后，18:30通过原VERL完整检查点恢复入口提交生成上下文修复；
 新进程恢复和训练状态看带时间的实际日志，不把提交当作已完成新迭代。
+
+AppWorld跨卡回复候选已安排在原完整检查点6切换；02:23核对时marker仍为5、原PID未变。
+一次性本机助手PID17944/远端等待PID2374706的创建时间、代码SHA与实际存活状态
+见快照 `pending_checkpoint_deployments`。等待助手不是新训练；恢复入口继续由原VERL负责。
 
 SQL/TextCraft均已准备含已有修复的完整恢复候选，尚未整体部署。TextCraft于19:28已在
 原RPC边界应用与SQL/AppWorld相同的padding文件；双rank原优化器各64步，保留模型和配置。
