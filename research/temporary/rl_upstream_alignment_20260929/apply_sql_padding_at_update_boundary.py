@@ -13,6 +13,8 @@ from stage_environment_entry import remote, ROOT, ENTRY, REPO
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--task',required=True,choices=['SkyRL-SQL','TextCraft'])
 parser.add_argument('--expected-optimizer-step',required=True,type=int)
+parser.add_argument('--complete-preflight',action='store_true',
+    help='Finish the recorded two-rank preflight during the next rollout; no second update is required')
 args=parser.parse_args()
 assert args.expected_optimizer_step>0
 revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
@@ -23,9 +25,13 @@ source @ENTRY@/metax-entry.env.sh
 from pathlib import Path
 import hashlib,json,psutil,ray,subprocess,time
 root=Path('@ROOT@');base=root/'receipts/owner-b8-dispatch-20260930/actor-response-padding'
-task=@TASK@;expected_step=@EXPECTED_STEP@
+task=@TASK@;expected_step=@EXPECTED_STEP@;complete_preflight=@COMPLETE_PREFLIGHT@
 out=base/({'SkyRL-SQL':'sql-live','TextCraft':'textcraft-live'}[task]);out.mkdir(exist_ok=True)
-assert not (out/'submitted.json').exists(), 'Inspect the existing submission instead of queuing twice'
+if complete_preflight:
+    assert (out/'preflight.json').is_file() and not list(out.glob('rank*.json'))
+    assert not (out/'complete.json').exists()
+else:
+    assert not (out/'submitted.json').exists(), 'Inspect the existing submission instead of queuing twice'
 read=lambda p:json.loads(p.read_text())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 proof=read(base/'candidate.json');assert proof['test_returncode']==0
@@ -37,10 +43,12 @@ assert job['devices']==({'SkyRL-SQL':[0,1],'TextCraft':[4,5]}[task])
 driver=psutil.Process(job['pid']);assert driver.create_time()==job['observed_process_created_unix']
 children=driver.children(recursive=True)
 workers=[p for p in children if 'WorkerDict' in p.name()]
-assert len(workers)==2 and all('actor_rollout_update_actor' in p.name() for p in workers), 'Only queue behind the observed original update'
+assert len(workers)==2
+if not complete_preflight:
+    assert all('actor_rollout_update_actor' in p.name() for p in workers), 'Only queue behind the observed original update'
 task_runner=next(p for p in children if 'TaskRunner' in p.name())
 stack=subprocess.run(['/opt/conda/bin/py-spy','dump','--pid',str(task_runner.pid)],capture_output=True,text=True,timeout=15)
-(out/'before-taskrunner.txt').write_text(stack.stdout)
+if not complete_preflight:(out/'before-taskrunner.txt').write_text(stack.stdout)
 gcs=next(p for p in children if p.name()=='gcs_server')
 port=next(s.split('=',1)[1] for s in gcs.cmdline() if s.startswith('--gcs_server_port='))
 
@@ -115,26 +123,36 @@ try:
         owner_comparison_sha256=sha(base/'real-model/owner-padding-assertion.json'),
         submission_repository_commit=@REVISION@,submission_script_sha256=@SCRIPT_SHA@,
         status='queued_after_update_not_yet_applied')
-    (out/'submitted.json').write_text(json.dumps(submission,indent=2)+'\n')
     handles=[ray.get_actor(n['name'],namespace=n['namespace']) for n in actors]
     submission['actual_rpc_signatures']=[repr(h._ray_method_signatures['execute_with_func_generator']) for h in handles]
     submission['expected_optimizer_step']=expected_step
-    (out/'submitted.json').write_text(json.dumps(submission,indent=2)+'\n')
-    refs=[h.execute_with_func_generator.remote(func=inspect_boundary) for h in handles]
-    print(json.dumps(submission),flush=True)
-    preflight=ray.get(refs)
+    if complete_preflight:
+        submission=read(out/'submitted.json');preflight=read(out/'preflight.json')
+        assert submission['driver_pid']==job['pid'] and submission['driver_created_unix']==driver.create_time()
+        assert submission['source_sha256']==proof['after_sha256']
+        assert submission['expected_optimizer_step']==expected_step
+        (out/'preflight-boundary-observation.json').write_text(json.dumps(dict(
+            reason='First preflight completed at post-update batch_decode, before the next rollout; phase assertion stopped before any forward binding changed',
+            source=str(out/'pre-apply-taskrunner.txt'),source_sha256=sha(out/'pre-apply-taskrunner.txt'),
+            completing_repository_commit=@REVISION@,completing_script_sha256=@SCRIPT_SHA@),indent=2)+'\n')
+    else:
+        (out/'submitted.json').write_text(json.dumps(submission,indent=2)+'\n')
+        refs=[h.execute_with_func_generator.remote(func=inspect_boundary) for h in handles]
+        print(json.dumps(submission),flush=True)
+        preflight=ray.get(refs)
     assert {r['pid'] for r in preflight}==expected_pids and {r['rank'] for r in preflight}=={0,1}
-    (out/'preflight.json').write_text(json.dumps(preflight,indent=2)+'\n')
+    if not complete_preflight:(out/'preflight.json').write_text(json.dumps(preflight,indent=2)+'\n')
     # A different Ray client can interleave at RPC boundaries. Ensure the next
     # rollout is still collecting, so its old probabilities use this same
     # forward. Never switch it between old_log_prob and the matching PPO update.
     stack=subprocess.run(['/opt/conda/bin/py-spy','dump','--pid',str(task_runner.pid)],capture_output=True,text=True,timeout=15)
-    (out/'pre-apply-taskrunner.txt').write_text(stack.stdout)
+    (out/('completion-taskrunner.txt' if complete_preflight else 'pre-apply-taskrunner.txt')).write_text(stack.stdout)
     assert 'multi_turn_loop' in stack.stdout, 'Expected next rollout, before old_log_prob; no binding changed'
     records=ray.get([h.execute_with_func_generator.remote(func=apply) for h in handles])
     stack=subprocess.run(['/opt/conda/bin/py-spy','dump','--pid',str(task_runner.pid)],capture_output=True,text=True,timeout=15)
     (out/'after-taskrunner.txt').write_text(stack.stdout)
     result=dict(submission,status='applied_after_original_update',completed_unix=time.time(),workers=records,
+        completion_repository_commit=@REVISION@,completion_script_sha256=@SCRIPT_SHA@,
         after_taskrunner_stack=str(out/'after-taskrunner.txt'))
     (out/'complete.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2),flush=True)
@@ -143,4 +161,5 @@ finally:
 PY
 '''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY)
    .replace('@TASK@',repr(args.task)).replace('@EXPECTED_STEP@',str(args.expected_optimizer_step))
+   .replace('@COMPLETE_PREFLIGHT@',repr(args.complete_preflight))
    .replace('@REVISION@',repr(revision)).replace('@SCRIPT_SHA@',repr(script_sha)))
