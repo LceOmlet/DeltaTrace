@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-部署核对于北京时间2026-10-01 05:48；精确采集时间见
+部署核对于北京时间2026-10-01 09:11；精确采集时间见
 [current_runtime.json](current_runtime.json)。阶段会继续推进；本文件记录该次核对结果。
 
 固定编号对应：DT发布`c9cd147`、DT数值参考`fc2e6c2`、VERL官方提交`20bd331`、
@@ -9,7 +9,7 @@
 不是新的算法版本，也不表示远端执行了该提交的全部文件。
 
 SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际生效的padding版本
-冻结重启；没有可恢复的正式检查点。AppWorld已从旧作业step1恢复到新冻结入口；TextCraft仍为原入口加
+冻结重启；没有可恢复的正式检查点。AppWorld的step1恢复作业已完成step2，现已提交从step2恢复的请求分发修复；TextCraft仍为原入口加
 已完成的B4 head覆盖。**三个任务的实际代码组合并不相同**，具体见下表。
 
 每项修复按“代码提交 → 实际文件SHA → 原测试及适用范围 → 部署路径/PID/时间 →
@@ -56,7 +56,7 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 | 作业 | 当前PID / GPU | 实际执行的版本 | 生效边界与旧版本 |
 | --- | --- | --- | --- |
 | SQL-DT | 552842 / 0,1 | entry=`runs/sql-padding-restart-20261001/sql-entry`；VERL=`candidates/official-verl-20bd331-sql-padding-20261001`；actor SHA `1f862e8bbdaa…` | 05:44以`bc68687`恢复脚本启动。旧PID1876409在mcTracer退出附加采样后终止，无正式检查点；原第1轮内存更新丢失。新目录冻结旧进程已生效的padding覆盖，任务参数与初始评估未改，尚无新完成更新 |
-| AppWorld-DT | 2680224 / 2,3 | `candidates/appworld-balanced-padding-resume-20261001/{entry,verl}`；head `dc4e4d7`、分发 `4c0cbdd`、恢复入口 `2036246`、actor SHA `1f862e8bbdaa…` | 04:01以提交助手`1ac9323`启动；提交时本机HEAD `6a076ec`。旧PID2027456在完成step1检查点后停止；原VERL已确认恢复global_step1并开始生成 |
+| AppWorld-DT | 285580 / 2,3 | entry=`candidates/appworld-request-dispatch-20261001/entry`；VERL仍为`candidates/appworld-balanced-padding-resume-20261001/verl`；head `dc4e4d7`、DT分发 `4c0cbdd`、请求分发 `64e6377`、actor SHA `1f862e8bbdaa…` | 09:07由原提交助手从PID2680224完成的step2检查点恢复。启动时本机HEAD `e3968ec`；09:11快照为初始化，不能把已提交当作完成恢复或提速验证 |
 | TextCraft-DT | 212110 / 4,5 | entry/VERL仍为v7；actor SHA `2b80b938fee4…`；head来自`candidates/official-verl-20bd331-fused-head-b4-20260930`的已完成PID绑定回执 | 尚未部署padding和DT分发候选。冻结v7启动命令仍是旧microbatch1，不能直接按旧命令重启 |
 
 两种actor完整SHA：
@@ -99,6 +99,42 @@ AppWorld启动`source.json`记录原检查点、旧PID、提交代码及脚本SH
 | 原 `verl/models/transformers/qwen3_vl.py` | `ebc52fb35812` |
 
 ## 修复账本
+
+### 2026-10-01 09:07 AppWorld请求分发修复上线
+
+旧PID2680224的原trainer完成step2，`latest_checkpointed_iteration.txt=2`，
+两rank的model/optim/extra_state和data.pt已存在且非空。原完整迭代17709.505秒，
+生成10345.341秒、DT4244.875秒、actor2619.001秒；它是当前实现实测，非官方效率。
+核对准备回执的entry/owner/DT全部SHA后，终止该作业自己的进程树并用原VERL恢复入口
+提交PID285580。原检查点与冻结目录保留，没有SIGSTOP或修改其他作业。
+
+唯一新增生效代码是此前验证的`loop_owner_rollout.py`请求分发修复`64e6377`：
+SHA从`cb00a657de71af5afcf386f0ab520377746172152a61a328af9068d4147da537`
+变为`22ff649007bf6d98584e6ebb1d19f72cd6010d68e6f40ac082418ee50ee0dce5`。
+去掉接口在两张卡之前额外施加的总请求数32限制，保留每卡vLLM原max_num_seqs=32，
+让已排队请求由原VERL分发。采样、环境、全局预算、LoRA8/16、每卡micro4均未改变。
+测试仍仅为原接口/配置对照；未声称整轮或生成提速已经验证。
+
+原回执为`receipts/owner-b8-dispatch-20260930/appworld-request-dispatch/stop-after-step2.json`，
+新启动source/job在`runs/appworld-request-dispatch-20261001/appworld-dt/`。
+随后原TaskRunner与两rank日志均记录读取step2的模型、优化器、extra_state，
+并进入新rollout；原运输日志已产生生成结果，实际单次提交62个已排队请求，
+超过旧接口32上限，证明分发修复已经走到实际调用。尚不能据此宣称整轮加速比。回执见
+[恢复后生成记录](../../research/temporary/rl_upstream_alignment_20260929/appworld-request-dispatch-20261001/restored-generation.json)。
+09:11重新核对DT/FLA/vLLM文件未发现相对固定回执的SHA漂移。
+
+同次性能调查在TextCraft原worker RPC边界安装了三次后自移除的观测包装：
+只保存正式runner已经返回的CUDA阶段计时，以及原vLLM输出中的长度/缓存元数据；
+输入和返回对象不变，不添加模型调用、CUDA事件、同步、参数或数值校正。
+AppWorld旧worker上的DT观测包装在step2后退役前尚未产生样本，随进程退役，
+不能把它写成已取得DT逐层数据。原始CPU采样也不能把等待栈解释成GPU拷贝耗时。
+
+TextCraft三次/引擎的正式生成观测已完成并恢复原方法：482个请求，
+1347912个prompt token，仅8704个缓存命中（0.646%），生成104555个token。
+原vLLM每请求时序因log stats关闭而缺失，不能据此拆出纯prefill或decode耗时。
+实际源码核对到每轮重新同步LoRA、创建新ID，以及LLM.sleep重置前缀缓存；
+AgentGym原版在整段rollout外管理引擎。尚未修改这处生命周期，不把修复方向当提速结果。
+正式各阶段耗时、官方预算依据及观测边界见[性能记录](results_phase_cost_20261001.json)。
 
 ### 2026-10-01 05:39 SQL采样事故
 

@@ -1,0 +1,126 @@
+{
+  "scope": "Measured formal phase costs and official budget provenance. Different models/hardware and sampled work preclude an official wallclock equivalence or controlled speedup claim.",
+  "source_receipt": "research\\temporary\\rl_upstream_alignment_20260929\\phase-cost-profile-1790811322\\observed.json",
+  "source_sha256": "12178298a95213a2c86e3cbbdd125e80e592d628358f4496328c74de50dea493",
+  "official_budgets": {
+    "SkyRL-SQL": {
+      "epochs": 30,
+      "training_tasks": 653,
+      "prompt_groups": 256,
+      "loader_batches": 2,
+      "iterations": 60,
+      "rollouts_per_prompt": 5,
+      "official_gpus": 8,
+      "official_model": "Qwen2.5-Coder-7B-Instruct",
+      "source": "https://github.com/NovaSky-AI/SkyRL/blob/7d94ccf0eac3439c1731ce32018bf043dd639806/examples/train/text_to_sql/run_skyrl_sql.sh",
+      "official_wallclock_verified": false
+    },
+    "AppWorld": {
+      "iterations": 200,
+      "prompt_groups": 40,
+      "rollouts_per_prompt": 6,
+      "source": "https://github.com/apple-aiml-research/ml-loop/blob/f14107a976e5793990329d3193df4742076c5a1d/README.md",
+      "paper_source": "https://arxiv.org/html/2502.01600v3#A4",
+      "paper_full_run_hours": 42,
+      "paper_gpus": 16,
+      "paper_gpu": "H100",
+      "paper_model": "Qwen2.5-32B",
+      "note": "The paper 42-hour run and repository 200-iteration example are separately sourced; not divided into a claimed official per-iteration time."
+    },
+    "TextCraft": {
+      "epochs": 30,
+      "training_tasks": 374,
+      "prompt_groups": 32,
+      "loader_batches": 11,
+      "iterations": 330,
+      "rollouts_per_prompt": 8,
+      "source": "https://github.com/WooooDyy/AgentGym-RL/blob/82402a99c62a293735a3f412fb8ac9a600673bc0/examples/train/AgentGym-RL/textcraft_train.sh",
+      "official_wallclock_verified": false,
+      "note": "Configured ppo_epochs=2 is not an extra effective actor loop in this pinned author implementation; preserve its actual single loop."
+    }
+  },
+  "measured": {
+    "TextCraft": {
+      "driver_pid": 212110,
+      "completed_iterations": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "mean_seconds": {
+        "gen": 2535.1023999999998,
+        "old_log_prob": 159.1558,
+        "ref": 138.5512,
+        "adv": 1227.1004,
+        "update_actor": 575.2565999999999,
+        "step": 4635.6284
+      },
+      "mean_dt_b4_calls_per_rank": 141.8,
+      "actor_b4_microbatches_per_rank": 32,
+      "note": "DT traces original response prefixes; actor updates original complete trajectories. Their batch counts and sequence lengths differ; per-call ratio is not a matched DT/backward speed comparison."
+    },
+    "AppWorld": {
+      "driver_pid": 2680224,
+      "completed_iteration": 2,
+      "log": "/tmp/ray/session_2026-10-01_04-02-15_287868_2680224/logs/worker-249c5316748d7b19052d975cc9ac5c8cb95e9c7de91decf93f0744a3-01000000-2685440.out",
+      "seconds": {
+        "gen": 10345.341,
+        "reward": 0.0,
+        "old_log_prob": 370.789,
+        "adv": 4244.875,
+        "update_actor": 2619.001,
+        "dump_rollout_generations": 0.912,
+        "save_checkpoint": 128.508,
+        "step": 17709.505
+      },
+      "dt_b4_calls_per_rank": 432
+    },
+    "SQL_DT": {
+      "driver_pid": 552842,
+      "calls_per_rank": 606,
+      "seconds_per_rank": [
+        6446.081632975489,
+        6444.659169238061
+      ],
+      "scope": "DT phase of first rollout only; actor completion not yet verified at collection."
+    }
+  },
+  "changes": {
+    "AppWorld": {
+      "fix_commit": "64e63770ed6e699debe2432b14972cf653d80473",
+      "new_driver_pid": 285580,
+      "resume_from_step": 2,
+      "receipt": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-request-dispatch-20261001\\submitted.json",
+      "scope": "Remove adapter-wide 32 request ceiling; native per-engine max_num_seqs remains 32. No measured speedup asserted.",
+      "native_checkpoint_load_and_generation_observed": true,
+      "restore_receipt": "research/temporary/rl_upstream_alignment_20260929/appworld-request-dispatch-20261001/restored-generation.json",
+      "observed_request_batch_after_fix": 62
+    }
+  },
+  "unresolved": [
+    "Native DT per-stage CUDA timings are being collected from existing returns; Python sync stacks alone cannot establish GPU copy or kernel costs.",
+    "TextCraft author retains engine/cache across the entire interaction; current VERL RPC sleeps per turn. Cache hit counts can expose lost reuse but do not independently measure prefill wall time.",
+    "SQL/TextCraft still lack deployment of the already-tested DT rank-balancing candidate; historical shorter-rank waits are not evidence that the faster candidate is active."
+  ],
+  "generation_observation": {
+    "scope": "Three consecutive existing generate calls per native engine; no generated samples added and no sampling changes. Engine latency includes prefill and decode, excludes outer sharding-manager calls. Per-request metrics were unavailable because native log stats were disabled.",
+    "driver_pid": 212110,
+    "total_requests": 482,
+    "prompt_tokens": 1347912,
+    "cached_tokens": 8704,
+    "generated_tokens": 104555,
+    "both_generation_hooks_restored": true,
+    "cached_prompt_fraction": 0.006457394844767314,
+    "receipt": "research/temporary/rl_upstream_alignment_20260929/phase-cost-profile-1790811322/native-generation-completed.json",
+    "observed_cause": "Current owner path enters FSDPVLLMShardingManager per tool turn, resynchronizes unchanged LoRA with a fresh time-based ID, and invokes LLM.sleep which resets prefix cache. AgentGym original engine lifetime spans the full multi-turn rollout. Fix belongs at the outer owner context boundary, not a copied cache or sampler."
+  },
+  "dt_native_stage_observation": {
+    "status": "armed_not_yet_sampled",
+    "task": "TextCraft",
+    "driver_pid": 212110,
+    "receipt": "research/temporary/rl_upstream_alignment_20260929/phase-cost-profile-1790811322/native-dt-times-armed.json",
+    "scope": "Existing CUDA event return data; no new profiler or extra model passes. AppWorld old observer was retired before sampling, not counted."
+  }
+}
