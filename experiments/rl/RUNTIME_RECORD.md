@@ -40,6 +40,16 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ### 2026-10-02 11:00：原生异步运输候选，仅 CPU 接口验证
 
+11:32追加的原生接口检查通过（8.987秒）：原FSDP sharder经原生
+`WorkerWrapperBase`传递同一LoRA张量、rank8/alpha16和adapter ID；
+原server/rollout的sleep/wake调用同一sharder上下文。实际Ray CPU actor的
+完成future经原collector返回：同服务短请求已交付时，长请求仍未完成。
+这些载体使用记录的`RequestOutput`，不是实际模型生成或GPU LoRA同步验证。
+回执见候选的`transport-cpu-probe/probe-lifecycle/lora-delivery.json`。
+原生分布式初始化源码和SHA保存在同目录`installed-lifecycle-sources.json`；
+不根据`/proc/environ`的初始mask猜测运行时GPU分配，不改原FSDP通信组。
+检查助手PSS末值5.29GiB，不作为峰值。正式默认入口和当前PID均未改变。
+
 正式三组未切换异步路径。11:00只读阶段回执确认SQL PID552842仍为第9次迭代，
 AppWorld PID1199302仍为第8次采样（3124次完成请求、608442生成token、5457.6秒），
 TextCraft PID3218909已完成第29次迭代。这个阶段采集不刷新上方10:04的源码快照时间。

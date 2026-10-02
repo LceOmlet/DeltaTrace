@@ -1,0 +1,114 @@
+{
+  "observed_unix": 1790910841.2001543,
+  "formal_pid": 1199302,
+  "sources": [
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py",
+      "sha256": "37db3830453c3d8dc8852256c4763006e828b3e1da9f8f24d96c62135cc1d7c6",
+      "methods": [
+        {
+          "name": "init_worker_distributed_environment",
+          "source": "def init_worker_distributed_environment(\n    vllm_config: VllmConfig,\n    rank: int,\n    distributed_init_method: str | None = None,\n    local_rank: int = -1,\n    backend: str = \"nccl\",\n) -> None:\n    \"\"\"Initialize the distributed environment.\"\"\"\n    attention_config = vllm_config.attention_config\n    parallel_config = vllm_config.parallel_config\n    from vllm.model_executor.layers.batch_invariant import init_batch_invariance\n\n    init_batch_invariance(attention_config.backend)\n    set_custom_all_reduce(not parallel_config.disable_custom_all_reduce)\n\n    init_method = distributed_init_method or \"env://\"\n    init_distributed_environment(\n        parallel_config.world_size, rank, init_method, local_rank, backend\n    )\n\n    ensure_model_parallel_initialized(\n        parallel_config.tensor_parallel_size,\n        parallel_config.pipeline_parallel_size,\n        parallel_config.prefill_context_parallel_size,\n        parallel_config.decode_context_parallel_size,\n    )\n\n    # Init ec connector here before KV caches caches init\n    # NOTE: We do not init KV caches for Encoder-only instance in EPD disagg mode\n    ensure_ec_transfer_initialized(vllm_config)"
+        },
+        {
+          "name": "sleep",
+          "source": "def sleep(self, level: int = 1) -> None:\n        from vllm.device_allocator.cumem import CuMemAllocator\n\n        free_bytes_before_sleep = torch.cuda.mem_get_info()[0]\n\n        # Save the buffers before level 2 sleep\n        if level == 2:\n            model = self.model_runner.model\n            self._sleep_saved_buffers = {\n                name: buffer.cpu().clone() for name, buffer in model.named_buffers()\n            }\n\n        allocator = CuMemAllocator.get_instance()\n        allocator.sleep(offload_tags=(\"weights\",) if level == 1 else tuple())\n        free_bytes_after_sleep, total = torch.cuda.mem_get_info()\n        freed_bytes = free_bytes_after_sleep - free_bytes_before_sleep\n        used_bytes = total - free_bytes_after_sleep\n        assert freed_bytes >= 0, \"Memory usage increased after sleeping.\"\n        logger.info(\n            \"Sleep mode freed %s GiB memory, %s GiB memory is still in use.\",\n            format_gib(freed_bytes),\n            format_gib(used_bytes),\n        )"
+        },
+        {
+          "name": "wake_up",
+          "source": "def wake_up(self, tags: list[str] | None = None) -> None:\n        from vllm.device_allocator.cumem import CuMemAllocator\n\n        allocator = CuMemAllocator.get_instance()\n        allocator.wake_up(tags)\n\n        # Restore the buffers after level 2 sleep\n        if len(self._sleep_saved_buffers):\n            model = self.model_runner.model\n            for name, buffer in model.named_buffers():\n                if name in self._sleep_saved_buffers:\n                    buffer.data.copy_(self._sleep_saved_buffers[name].data)\n            self._sleep_saved_buffers = {}\n\n        # If the KV cache has just been woken up,\n        # the internal state of cache_engine must be reset,\n        # especially the FP8 scaling factor.\n        if (\n            (tags is None or \"kv_cache\" in tags)\n            and self.cache_config.cache_dtype.startswith(\"fp8\")\n            and hasattr(self.model_runner, \"init_fp8_kv_scales\")\n        ):\n            self.model_runner.init_fp8_kv_scales()"
+        },
+        {
+          "name": "init_device",
+          "source": "def init_device(self):\n        if self.device_config.device_type == \"cuda\":\n            # This env var set by Ray causes exceptions with graph building.\n            os.environ.pop(\"NCCL_ASYNC_ERROR_HANDLING\", None)\n            parallel_config = self.parallel_config\n            if (\n                parallel_config.distributed_executor_backend\n                not in (\"ray\", \"external_launcher\")\n                and parallel_config.data_parallel_backend != \"ray\"\n                and parallel_config.nnodes_within_dp == 1\n            ):\n                # Use local DP rank if available, otherwise use global DP rank.\n                dp_local_rank = self.parallel_config.data_parallel_rank_local\n                if dp_local_rank is None:\n                    dp_local_rank = self.parallel_config.data_parallel_index\n\n                tp_pp_world_size = (\n                    self.parallel_config.pipeline_parallel_size\n                    * self.parallel_config.tensor_parallel_size\n                )\n\n                # DP_LOCAL_RANK * TP_PP_WORLD_SIZE + TP_LOCAL_RANK\n                self.local_rank += dp_local_rank * tp_pp_world_size\n                assert self.local_rank < torch.cuda.device_count(), (\n                    f\"DP adjusted local rank {self.local_rank} is out of bounds. \"\n                )\n                visible_device_count = (\n                    torch.cuda.device_count() if torch.cuda.is_available() else 0\n                )\n                assert self.parallel_config.local_world_size <= visible_device_count, (\n                    f\"local_world_size ({self.parallel_config.local_world_size}) must \"\n                    f\"be less than or equal to the number of visible devices \"\n                    f\"({visible_device_count}).\"\n                )\n            self.device = torch.device(f\"cuda:{self.local_rank}\")\n            current_platform.set_device(self.device)\n\n            current_platform.check_if_supports_dtype(self.model_config.dtype)\n\n            # Initialize the distributed environment BEFORE taking\n            # memory snapshot\n            # This ensures NCCL buffers are allocated before we measure\n            # available memory\n            init_worker_distributed_environment(\n                self.vllm_config,\n                self.rank,\n                self.distributed_init_method,\n                self.local_rank,\n                current_platform.dist_backend,\n            )\n\n            # Set random seed.\n            set_random_seed(self.model_config.seed)\n\n            # Now take memory snapshot after NCCL is initialized\n            gc.collect()\n            torch.cuda.empty_cache()\n\n            # take current memory snapshot\n            self.init_snapshot = init_snapshot = MemorySnapshot(device=self.device)\n            self.requested_memory = request_memory(init_snapshot, self.cache_config)\n            logger.debug(\"worker init memory snapshot: %r\", self.init_snapshot)\n            logger.debug(\n                \"worker requested memory: %sGiB\", format_gib(self.requested_memory)\n            )\n        else:\n            raise RuntimeError(f\"Not support device type: {self.device_config.device}\")\n\n        # Initialize workspace manager\n        num_ubatches = 2 if self.vllm_config.parallel_config.enable_dbo else 1\n        init_workspace_manager(self.device, num_ubatches)\n\n        # Construct the model runner\n        if self.use_v2_model_runner:\n            from vllm.v1.worker.gpu.model_runner import (\n                GPUModelRunner as GPUModelRunnerV2,\n            )\n\n            # HACK(woosuk): This is a temporary fix to avoid type errors.\n            self.model_runner: GPUModelRunner = GPUModelRunnerV2(  # type: ignore\n                self.vllm_config, self.device\n            )\n        else:\n            from vllm.v1.worker.gpu_model_runner import (\n                GPUModelRunner as GPUModelRunnerV1,\n            )\n\n            self.model_runner = GPUModelRunnerV1(self.vllm_config, self.device)\n\n        if self.rank == 0:\n            # If usage stat is enabled, collect relevant info.\n            report_usage_stats(self.vllm_config)"
+        },
+        {
+          "name": "add_lora",
+          "source": "def add_lora(self, lora_request: LoRARequest) -> bool:\n        return self.model_runner.add_lora(lora_request)"
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/v1/worker/worker_base.py",
+      "sha256": "cdbdd65df30038f3feba56858f750e25fecafd007facc9b507bce1e8465e9772",
+      "methods": [
+        {
+          "name": "init_device",
+          "source": "def init_device(self) -> None:\n        \"\"\"Initialize device state, such as loading the model or other on-device\n        memory allocations.\n        \"\"\"\n        raise NotImplementedError"
+        },
+        {
+          "name": "add_lora",
+          "source": "def add_lora(self, lora_request: LoRARequest) -> bool:\n        raise NotImplementedError"
+        },
+        {
+          "name": "init_worker",
+          "source": "def init_worker(self, all_kwargs: list[dict[str, Any]]) -> None:\n        \"\"\"\n        Here we inject some common logic before initializing the worker.\n        Arguments are passed to the worker class constructor.\n        \"\"\"\n        kwargs = all_kwargs[self.rpc_rank]\n\n        vllm_config: VllmConfig | None = kwargs.get(\"vllm_config\")\n        assert vllm_config is not None, (\n            \"vllm_config is required to initialize the worker\"\n        )\n        self.vllm_config = vllm_config\n\n        vllm_config.enable_trace_function_call_for_thread()\n\n        from vllm.plugins import load_general_plugins\n\n        load_general_plugins()\n\n        parallel_config = vllm_config.parallel_config\n        if isinstance(parallel_config.worker_cls, str):\n            worker_class: type[WorkerBase] = resolve_obj_by_qualname(\n                parallel_config.worker_cls\n            )\n        else:\n            raise ValueError(\n                \"passing worker_cls is no longer supported. \"\n                \"Please pass keep the class in a separate module \"\n                \"and pass the qualified name of the class as a string.\"\n            )\n\n        if parallel_config.worker_extension_cls:\n            worker_extension_cls = resolve_obj_by_qualname(\n                parallel_config.worker_extension_cls\n            )\n            extended_calls = []\n            if worker_extension_cls not in worker_class.__bases__:\n                # check any conflicts between worker and worker_extension_cls\n                for attr in dir(worker_extension_cls):\n                    if attr.startswith(\"__\"):\n                        continue\n                    assert not hasattr(worker_class, attr), (\n                        f\"Worker class {worker_class} already has an attribute\"\n                        f\" {attr}, which conflicts with the worker\"\n                        f\" extension class {worker_extension_cls}.\"\n                    )\n                    if callable(getattr(worker_extension_cls, attr)):\n                        extended_calls.append(attr)\n                # dynamically inherit the worker extension class\n                worker_class.__bases__ = worker_class.__bases__ + (\n                    worker_extension_cls,\n                )\n                logger.info(\n                    \"Injected %s into %s for extended collective_rpc calls %s\",\n                    worker_extension_cls,\n                    worker_class,\n                    extended_calls,\n                )\n\n        shared_worker_lock = kwargs.pop(\"shared_worker_lock\", None)\n        if shared_worker_lock is None:\n            msg = (\n                \"Missing `shared_worker_lock` argument from executor. \"\n                \"This argument is needed for mm_processor_cache_type='shm'.\"\n            )\n\n            mm_config = vllm_config.model_config.multimodal_config\n            if mm_config and mm_config.mm_processor_cache_type == \"shm\":\n                raise ValueError(msg)\n            else:\n                logger.warning_once(msg)\n\n            self.mm_receiver_cache = None\n        else:\n            self.mm_receiver_cache = (\n                MULTIMODAL_REGISTRY.worker_receiver_cache_from_config(\n                    vllm_config,\n                    shared_worker_lock,\n                )\n            )\n\n        with set_current_vllm_config(self.vllm_config):\n            # To make vLLM config available during worker initialization\n            self.worker = worker_class(**kwargs)"
+        },
+        {
+          "name": "init_device",
+          "source": "def init_device(self):\n        assert self.vllm_config is not None\n        with set_current_vllm_config(self.vllm_config):\n            # To make vLLM config available during device initialization\n            self.worker.init_device()"
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/distributed/parallel_state.py",
+      "sha256": "db9943a9cda619170d0490c3c98a42f31774d249b792561dd57c8cd70d9f7ec8",
+      "methods": [
+        {
+          "name": "init_distributed_environment",
+          "source": "def init_distributed_environment(\n    world_size: int = -1,\n    rank: int = -1,\n    distributed_init_method: str = \"env://\",\n    local_rank: int = -1,\n    backend: str = \"nccl\",\n    timeout: timedelta | None = None,\n):\n    logger.debug(\n        \"world_size=%d rank=%d local_rank=%d distributed_init_method=%s backend=%s\",\n        world_size,\n        rank,\n        local_rank,\n        distributed_init_method,\n        backend,\n    )\n    from vllm.config import get_current_vllm_config_or_none\n\n    config = get_current_vllm_config_or_none()\n    if (\n        config is not None\n        and config.parallel_config.distributed_executor_backend != \"external_launcher\"\n        and (\n            config.parallel_config.nnodes > 1\n            or config.parallel_config.data_parallel_size > 1\n        )\n    ):\n        parallel_config = config.parallel_config\n        # adjust to take into account data parallelism\n        # offset the rank by the data parallel rank\n        rank = parallel_config.data_parallel_rank * world_size + rank\n        # adjust the world size to take into account data parallelism\n        world_size = parallel_config.world_size_across_dp\n\n        # Use appropriate IP and port based on configuration\n        if parallel_config.nnodes > 1:\n            ip = parallel_config.master_addr\n            port = parallel_config.master_port\n            distributed_init_method = get_distributed_init_method(ip, port)\n        else:\n            ip = parallel_config.data_parallel_master_ip\n            port = parallel_config.get_next_dp_init_port()\n            distributed_init_method = get_distributed_init_method(ip, port)\n            logger.debug(\n                \"Adjusting world_size=%d rank=%d distributed_init_method=%s for DP\",\n                world_size,\n                rank,\n                distributed_init_method,\n            )\n    if not torch.distributed.is_initialized():\n        logger.info(\n            \"world_size=%d rank=%d local_rank=%d distributed_init_method=%s backend=%s\",\n            world_size,\n            rank,\n            local_rank,\n            distributed_init_method,\n            backend,\n        )\n        assert distributed_init_method is not None, (\n            \"distributed_init_method must be provided when initializing \"\n            \"distributed environment\"\n        )\n        if not torch.distributed.is_backend_available(backend):\n            logger.warning(\n                \"Distributed backend %s is not available; falling back to gloo.\",\n                backend,\n            )\n            assert torch.distributed.is_gloo_available(), (\n                \"Fallback Gloo backend is not available.\"\n            )\n            backend = \"gloo\"\n        # this backend is used for WORLD\n        torch.distributed.init_process_group(\n            backend=backend,\n            init_method=distributed_init_method,\n            world_size=world_size,\n            rank=rank,\n            timeout=timeout,\n        )\n    # set the local rank\n    # local_rank is not available in torch ProcessGroup,\n    # see https://github.com/pytorch/pytorch/issues/122816\n    if local_rank == -1:\n        # local rank not set, this usually happens in single-node\n        # setting, where we can use rank as local rank\n        local_rank = envs.LOCAL_RANK if distributed_init_method == \"env://\" else rank\n    global _WORLD, _NODE_COUNT, _INNER_DP_WORLD\n    if _WORLD is None:\n        ranks = list(range(torch.distributed.get_world_size()))\n        _WORLD = init_world_group(ranks, local_rank, backend)\n        if config is not None and config.parallel_config.nnodes > 1:\n            _NODE_COUNT = config.parallel_config.nnodes\n        else:\n            _NODE_COUNT = _node_count(_WORLD.cpu_group)\n        logger.debug(\"Detected %d nodes in the distributed environment\", _NODE_COUNT)\n    else:\n        assert _WORLD.world_size == torch.distributed.get_world_size(), (\n            \"world group already initialized with a different world size\"\n        )\n    if config is not None and config.parallel_config.nnodes_within_dp > 1:\n        if parallel_config.data_parallel_size > 1:\n            world_size_inner_dp = parallel_config.world_size\n            group_ranks = [\n                [dp_rank * world_size_inner_dp + i for i in range(world_size_inner_dp)]\n                for dp_rank in range(parallel_config.data_parallel_size)\n            ]\n            _INNER_DP_WORLD = init_model_parallel_group(\n                group_ranks,\n                get_world_group().local_rank,\n                backend,\n                use_message_queue_broadcaster=True,\n                group_name=\"inner_dp_world\",\n                use_device_communicator=False,\n            )\n        else:\n            _INNER_DP_WORLD = _WORLD"
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/abstract.py",
+      "sha256": "706b38531d30b04bfcf0aa273b86c22d1af3245a4cefff33770153090f6405aa",
+      "methods": [
+        {
+          "name": "_init_executor",
+          "source": "def _init_executor(self) -> None:\n        raise NotImplementedError"
+        },
+        {
+          "name": "add_lora",
+          "source": "def add_lora(self, lora_request: LoRARequest) -> bool:\n        assert lora_request.lora_int_id > 0, \"lora_id must be greater than 0.\"\n        return all(self.collective_rpc(\"add_lora\", args=(lora_request,)))"
+        },
+        {
+          "name": "sleep",
+          "source": "def sleep(self, level: int = 1):\n        if self.is_sleeping:\n            logger.warning(\"Executor is already sleeping.\")\n            return\n        time_before_sleep = time.perf_counter()\n        self.collective_rpc(\"sleep\", kwargs=dict(level=level))\n        time_after_sleep = time.perf_counter()\n        self.sleeping_tags = {\"weights\", \"kv_cache\"}\n        self.is_sleeping = True\n        logger.info(\n            \"It took %.6f seconds to fall asleep.\", time_after_sleep - time_before_sleep\n        )"
+        },
+        {
+          "name": "wake_up",
+          "source": "def wake_up(self, tags: list[str] | None = None):\n        if not self.is_sleeping:\n            logger.warning(\"Executor is not sleeping.\")\n            return\n        if tags:\n            for tag in tags:\n                if tag not in self.sleeping_tags:\n                    logger.warning(\n                        \"Tag %s is not in sleeping tags %s\", tag, self.sleeping_tags\n                    )\n                    return\n        time_before_wakeup = time.perf_counter()\n        self.collective_rpc(\"wake_up\", kwargs=dict(tags=tags))\n        time_after_wakeup = time.perf_counter()\n        logger.info(\n            \"It took %.6f seconds to wake up tags %s.\",\n            time_after_wakeup - time_before_wakeup,\n            tags if tags is not None else self.sleeping_tags,\n        )\n        if tags:\n            for tag in tags:\n                self.sleeping_tags.remove(tag)\n        else:\n            self.sleeping_tags.clear()\n        if not self.sleeping_tags:\n            self.is_sleeping = False"
+        }
+      ]
+    }
+  ],
+  "workers": [
+    {
+      "pid": 1213516,
+      "name": "ray::WorkerDict.actor_rollout_compute_log_prob",
+      "environment": {
+        "RANK": "0",
+        "WORLD_SIZE": "2",
+        "LOCAL_RANK": null,
+        "CUDA_VISIBLE_DEVICES": "2,3",
+        "MACA_VISIBLE_DEVICES": null,
+        "MASTER_ADDR": null,
+        "MASTER_PORT": null
+      }
+    },
+    {
+      "pid": 1217549,
+      "name": "ray::WorkerDict.actor_rollout_compute_log_prob",
+      "environment": {
+        "RANK": "1",
+        "WORLD_SIZE": "2",
+        "LOCAL_RANK": null,
+        "CUDA_VISIBLE_DEVICES": "2,3",
+        "MACA_VISIBLE_DEVICES": null,
+        "MASTER_ADDR": "10.200.111.35",
+        "MASTER_PORT": "37375"
+      }
+    }
+  ]
+}

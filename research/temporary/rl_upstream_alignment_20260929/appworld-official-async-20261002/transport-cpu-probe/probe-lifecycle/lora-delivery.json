@@ -1,0 +1,21 @@
+{
+  "started_unix": 1790911924.234763,
+  "scope": "Native owner LoRA boundary and actual Ray completion delivery on CPU.\n\nRecorded outputs are fixtures, not LLM inference. No model is constructed;\nPPO, DT, tolerance, budgets and formal jobs are untouched.\n",
+  "checks": [
+    "Original update_params forwards exact CPU tensors/rank8/alpha16 through native WorkerWrapperBase; server reads the same adapter ID",
+    "Actual original server/rollout sleep-wake methods use existing sharder callbacks; no second state machine",
+    "Actual Ray futures + original collector + exact output converter return short request while same-server long request remains unfinished"
+  ],
+  "sources": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-transport-20261002/entry/loop_async_transport.py": "3d6438314908dba0076d0d1874025f321e7627d5f63193801e5b70165ea7ecc1",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-transport-20261002/verl/verl/workers/rollout/vllm_rollout/vllm_async_server.py": "0db58976f73618f221fddba748c060ef4e20b82aa4d965e49b63661d792a94ba",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-transport-20261002/verl/verl/workers/sharding_manager/fsdp_vllm.py": "992d0efab3ec11cf1e98b75cc86f09dea6a85cfce2951346e8aca19d95573ff6"
+  },
+  "passed": true,
+  "seconds": 8.98732042312622,
+  "process_pss_bytes": 5682525184,
+  "formal_driver": {
+    "pid": 1199302,
+    "created_unix": 1790888812.77
+  }
+}
