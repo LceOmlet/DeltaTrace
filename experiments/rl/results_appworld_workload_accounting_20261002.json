@@ -1,0 +1,94 @@
+{
+  "observed_unix": 1790949368.0511878,
+  "role": "Read-only original formal logs; no deployment, model replay, configuration, dtype, kernel or numerical change",
+  "task": "AppWorld",
+  "driver": {
+    "pid": 3232113,
+    "started_unix": 1790924079.2785223,
+    "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/entry",
+    "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl",
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/train.log"
+  },
+  "completed_iteration": 10,
+  "phases_seconds": {
+    "gen": 1579.803,
+    "old_log_prob": 361.004,
+    "dt": 5215.893,
+    "actor": 2706.845,
+    "evaluation": 2902.114,
+    "save": 53.289,
+    "iteration": 12819.983
+  },
+  "official_source": {
+    "url": "https://arxiv.org/html/2502.01600v1#A4",
+    "documented": "One 8-H100 node for generation and another8-H100 node for learning; Figure7 gives42h for the whole training run, without a separate generation-stage timing",
+    "comparison": "The roughly28min figure comes from42h divided by approximately90iterations visible in Figure7. It is a derived whole-run average, not an official measured rollout timing."
+  },
+  "original_call_accounting": [
+    {
+      "worker_log": "/tmp/ray/session_2026-10-02_14-55-08_312524_3232113/logs/worker-80a06abfd35b78e07e61b6713a04ca1075d1683d6631b0dd0e47c13d-01000000-3254727.out",
+      "group_indices": [
+        7,
+        14
+      ],
+      "batches": 492,
+      "contrasts": 1968,
+      "factual_context_tokens": 19327243,
+      "factual_compute_tokens": 19520452,
+      "source_policy_tokens": 403911,
+      "reported_seconds": 5208.420934755355,
+      "native_host_cleanup_events": [
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=50056027053 reserved_after=32858176416 release_s=0.988140",
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=49987484585 reserved_after=32858176416 release_s=0.484750",
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=49987484585 reserved_after=32858176416 release_s=0.595854",
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=49987484585 reserved_after=32858176416 release_s=1.377488"
+      ]
+    },
+    {
+      "worker_log": "/tmp/ray/session_2026-10-02_14-55-08_312524_3232113/logs/worker-d6c191206ed5db12dc3ed06a607a0e22cbc4358843d33a64e35a28d1-01000000-3250426.out",
+      "group_indices": [
+        7,
+        14
+      ],
+      "batches": 492,
+      "contrasts": 1968,
+      "factual_context_tokens": 19327253,
+      "factual_compute_tokens": 19533392,
+      "source_policy_tokens": 407748,
+      "reported_seconds": 5210.733344407752,
+      "native_host_cleanup_events": [
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=50055994285 reserved_after=32858176416 release_s=0.983611",
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=49987484585 reserved_after=32858176416 release_s=0.485506",
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=49987484585 reserved_after=32858176416 release_s=0.596800",
+        "[native_host_cache] phase=compute_dt_token_advantages reserved_before=49987484585 reserved_after=32858176416 release_s=1.375703"
+      ]
+    }
+  ],
+  "total_workload": {
+    "dt_factual_context_tokens": 38654496,
+    "dt_factual_compute_tokens": 39053844,
+    "added_dense_padding_tokens": 399348,
+    "padding_fraction": 0.010225574721914698,
+    "ppo_whole_trajectory_input_tokens": 3188772,
+    "repeated_context_slot_ratio_to_ppo": 12.122063289567269,
+    "limitation": "These are input token slots; native shared-prefix paths evaluate common text once per endpoint pair. They are not FLOPs, unique tokens, the executed sequence length summed over all layers, or a predicted speedup. No actualDT reuse implementation was selected or deployed."
+  },
+  "original_cache_interface": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/cache_utils.py",
+    "sha256": "16bbbba2394c0151af53009800e5a4052479417a8c7e5edfbd5ef128a46fcbc1",
+    "reorder_cache": "    def reorder_cache(self, beam_idx: torch.LongTensor):\n        \"\"\"Reorder the cache for beam search\"\"\"\n        for layer_idx in range(len(self.layers)):\n            self.layers[layer_idx].reorder_cache(beam_idx)",
+    "batch_repeat_interleave": "    def batch_repeat_interleave(self, repeats: int):\n        \"\"\"Repeat and interleave the cache\"\"\"\n        for layer_idx in range(len(self.layers)):\n            self.layers[layer_idx].batch_repeat_interleave(repeats)",
+    "batch_select_indices": "    def batch_select_indices(self, indices: torch.Tensor):\n        \"\"\"Select indices from the cache\"\"\"\n        for layer_idx in range(len(self.layers)):\n            self.layers[layer_idx].batch_select_indices(indices)"
+  },
+  "observed_phase_cleanup": "Original AppWorld DT worker RPC boundaries have executed the native unused-host-cache release. Four observedcalls per rank return to32858176416bytes; this is not completion of iteration11 or its PPOphase.",
+  "source_receipts": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-dt-native-workload-20261002.json",
+      "sha256": "d76a287f49a6965edd54836e6fdc9985ce949ad09c61e319a1688444d1d71efb"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-formal-metrics-20261002.json",
+      "sha256": "ed2b6c386429be3bbbea186c6b7c799bf0d71f62d1f5442f91624e1325f8de2a"
+    }
+  ]
+}
