@@ -8,10 +8,15 @@ args=parser.parse_args()
 remote(r'''source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
 from pathlib import Path
-import json,psutil,time,ray
+import json,os,psutil,sys,time,ray
 root=Path('@ROOT@')
 job=next(j for j in json.loads((root/'active-training.json').read_text())['jobs'] if j['task']=='@TASK@')
+# Resolve the current frozen entry/owner instead of the base environment's
+# earlier owner, as in the verified native-generation comparison.
+for path in reversed([job['entry'],job['verl_root']]):sys.path.insert(0,path)
+os.environ['PYTHONPATH']=':'.join([job['entry'],job['verl_root'],os.environ.get('PYTHONPATH','')])
 driver=psutil.Process(job['pid'])
+assert driver.create_time()==job['observed_process_created_unix']
 gcs=next(p for p in driver.children(recursive=True) if p.name()=='gcs_server')
 port=next(a.split('=',1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))
 
@@ -43,7 +48,7 @@ ray.init(address=f'127.0.0.1:{port}',log_to_driver=False)
 try:
  names=[n for n in ray.util.list_named_actors(all_namespaces=True) if 'WorkerDict' in n['name']]
  assert len(names)==2,names
- refs=[ray.get_actor(n['name'],namespace=n['namespace']).execute_with_func_generator.remote(observe) for n in names]
+ refs=[ray.get_actor(n['name'],namespace=n['namespace']).execute_with_func_generator.remote(func=observe) for n in names]
  print(json.dumps(dict(task=job['task'],driver_pid=driver.pid,submitted_unix=time.time(),status='queued read-only RPC')),flush=True)
  result=dict(task=job['task'],driver_pid=driver.pid,driver_created_unix=driver.create_time(),
   scope='Original optimizer state observation only; no weight mutation, numerical threshold, checkpoint or new update',

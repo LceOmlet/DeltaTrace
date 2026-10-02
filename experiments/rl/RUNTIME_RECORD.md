@@ -11,7 +11,7 @@
 
 SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际生效的padding版本
 冻结重启；没有可恢复的正式检查点。AppWorld原同步作业已完成step8，当前原生异步
-候选从该检查点恢复。**三个任务的实际代码组合并不相同**，具体见下表；历史段落不能代替
+版本从该检查点恢复，已完成新的step9及下一批生成。**三个任务的实际代码组合并不相同**，具体见下表；历史段落不能代替
 当前PID绑定的完成回执。
 
 每项修复按“代码提交 → 实际文件SHA → 原测试及适用范围 → 部署路径/PID/时间 →
@@ -37,6 +37,38 @@ SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际
 SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不再提交GRPO。
 
 ## 当前代码组合
+
+### 2026-10-02 17:27：AppWorld原生完整更新9、检查点9及更新后生成已完成核查
+
+正式PID3232113的新step9原日志、AdamW状态、原检查点标记及下一批生成绑定在
+[完整迭代回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/native-futures/first-complete-formal-update.json)，
+SHA256为`e6e4549582c9c4c8e828e28ca86cbe5d6d9cf46b1a7911a605fe66f94651c9de`。
+该回执观察于17:21；源码快照单独采集于17:27，三组PID身份、入口及固定数值文件哈希
+对应不变。此记录不发布新的训练代码，不更改参数、Q/V/A或任何官方容差。
+
+- 原step9：采样1264.195秒（21.07分钟），旧log-prob350.001秒，DT4014.917秒
+  （66.92分钟），actor2495.232秒（41.59分钟），保存51.996秒，整轮8177.214秒
+  （136.29分钟）。采样运输的1207.6秒不是这里完整`timing_s/gen`，两者保留原口径。
+- 官方早停保留216条轨迹、3278条response、648607个policy token，最长上下文27005。
+  原日志平均训练reward0.823是测试通过比例，不是独立评估TGC；grad_norm0.001是
+  console舍入值。advantage范围为-1.087至0.566，未以裁剪或缩放纠偏。
+- 从检查点8的原AdamW step114恢复后，两rank实际状态均为step128，新增14次
+  优化器更新。原状态496项、21639168个moment元素均有限且非零；实际microbatch4、
+  LoRA rank8/alpha16未变。只读RPC复用正式owner的`execute_with_func_generator`，
+  诊断修正仅使客户端导入同一冻结owner并用其原`func=`签名，不是新的训练模块。
+- 原`latest_checkpointed_iteration.txt`为9，global_step_9含data.pt、两rank模型/
+  优化器/RNG状态及原配置文件。检查的是原完成标记和非空文件大小，没有声称异机备份、
+  全文件SHA核验或恢复测试。随后原正式生成已交付1233次回复、259581个生成token/
+  423.3秒，证明更新后已继续下一轮，不把这些token混入step9采样工作量。
+- 同一17:21物理mx-smi显示AppWorld两卡55867/55777MiB，容器cgroup约276.45GiB；
+  console虚拟allocator78.532/87.117GiB和整机CPU872.255GiB不是该作业物理占用。
+
+作者记录为16张H100（8张采样、8张训练）、Qwen2.5-32B、42小时及图中约90次完整
+迭代，约28分钟/完整迭代；没有发布采样单独半小时。当前采样已降至21.07分钟，不能
+据此或用卡时算式宣称整轮效率等同作者。当前整轮仍以DT和actor为大头。
+SQL的已验证均衡分发/完整rollout候选尚未部署；其原save_freq60在当前step10没有
+完整driver data.pt。提前通过原worker API保存并恢复将改变数据顺序，该具体选择
+仍待用户裁定，不以候选成绩冒充当前SQL效率。
 
 ### 2026-10-02 16:45：AppWorld完成本批DT，PPO更新仍在进行
 
