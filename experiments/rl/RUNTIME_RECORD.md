@@ -38,6 +38,24 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ## 当前代码组合
 
+### 2026-10-02：已冻结原生异步恢复入口，尚未部署
+
+准备源码`b6e470b7428ff4ac4a1968d2ba247b1a7ffe4e28`从当前PID1199302的
+冻结来源继承，目录为`candidates/appworld-native-async-resume-20261002/entry`；
+owner复用已检查的`appworld-native-async-015-transport-20261002/verl`，
+未覆盖原CPU候选、默认入口或当前正式文件。逐文件SHA、实际配置组合对照和
+原测试回执见
+[恢复准备回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/resume-preparation/prepared.json)。
+
+执行两个实际launcher的`options_for`后，排除部署路径本身，唯一配置差别是原
+`rollout.mode`从继承的`sync`选择为官方`async`。采样参数、任务预算、LOOP
+完成/取消行为、LoRA8/16、actor/DT每卡4、PPO及DT数值文件均保留。
+新入口显式选择原`AsyncActorRolloutRefWorker`、原manager/server及原vLLM调度。
+原第8次采样运输已结束：3553次完成请求、681046生成token、6207.2秒；
+当前原检查点标记仍7。只有原第8次或之后的完整model/optimizer/RNG/reader
+检查点完成，才使用既有恢复助手切换；不重放第7次、不丢弃本轮更新。
+准备和CPU接口通过不作为实际引擎初始化、GPU LoRA同步、数值或提速验收。
+
 ### 2026-10-02 11:00：原生异步运输候选，仅 CPU 接口验证
 
 11:32追加的原生接口检查通过（8.987秒）：原FSDP sharder经原生
