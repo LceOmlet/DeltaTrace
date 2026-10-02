@@ -6,6 +6,13 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
+21:06资源补丁更新：AppWorld/TextCraft四worker已在原RPC边界挂载整阶段末的
+原PyTorch闲置host缓存释放，源SHA e5eb4afc42f1…、代码6781bdd、记录器e945acb，
+资源开关VERL_RELEASE_UNUSED_HOST_CACHE=1。冻结启动文件、actor forward和数值核心
+不变；恢复时须复用补丁与开关，而不是仅运行旧launch。阶段释放实效及重新分配的
+正式总开销仍待后续原日志确认；256MiB原生接口成本小测不代表训练效率。
+AppWorld最新完整step10/检查点10，TextCraft step39；SQL仍停止。详见RUNTIME_RECORD。
+
 20:19只读更新：原pinned allocator已解释大部分XTT；四worker通过PyTorch现有
 _host_emptyCache各一次释放合计239.726GiB闲置reserved，之后整机可用内存
 634.400GiB。完成回执见RUNTIME_RECORD.md及results_native_host_memory_20261002.json。

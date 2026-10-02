@@ -11,7 +11,7 @@
 
 SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60尚未形成
 可恢复检查点，没有提交重启。AppWorld PID3232113、TextCraft PID3218909在
-20:26只读源码快照仍存活并由原worker日志分别确认完成step9、step38；存活本身
+20:57只读源码快照仍存活并由原worker日志分别确认完成step10、step39；存活本身
 不是训练健康证明。三个任务代码组合不同，具体见下表与PID绑定回执；历史段落
 不能代替当前终止状态或新部署。
 
@@ -38,6 +38,42 @@ SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60�
 SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft继续；GPU6/7不再提交GRPO。
 
 ## 当前代码组合
+
+### 2026-10-02 21:06：原阶段结束处释放闲置 pinned 缓存
+
+资源修复代码`6781bdd`，记录器`e945acb`。仅在原 ActorRolloutRefWorker 的整次
+compute_dt_token_advantages finally/offload 之后、update_actor 原卸载之后，增加
+PyTorch 现有 _host_emptyCache；不在 B4 循环内清理，也没有新分配器、卸载策略或数值
+纠偏。VERL 原代码和任务设置保持，默认 VERL_RELEASE_UNUSED_HOST_CACHE 未开启
+时原路径不变。三项实际 owner 源码接口检查通过：除资源语句外整份 AST 相同，
+DT 原返回/default/异常清理顺序不变。不是新的 DT/PPO 数值对照或容量验收。
+
+[阶段释放与成本回执](results_native_host_cache_boundary_20261002.json)记录：
+
+- 20:50 AppWorld worker3250426/3254727、20:52 TextCraft worker3236008/3240133
+  在原 execute_with_func_generator 边界完成挂载；driver PID/创建时间不变。实际
+  方法源为 candidates/native-host-cache-phase-20261002/e5eb4afc42f1/fsdp_workers.py，
+  SHA e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39，
+  原源807e51856f99…；原register分发元数据、model/optimizer对象及config均保持。
+- 当前 worker 的资源环境开关为 VERL_RELEASE_UNUSED_HOST_CACHE=1。冻结启动源码
+  没有被覆盖；恢复时须同时复用此 owner 补丁和开关，不能仅设置开关就声称生效。
+  current_runtime.json 将这些完成回执记为 owner_worker_method_sources；原 actor
+  _forward_micro_batch 仍1f862e8b…，不是被该fsdp文件替换。原激活回执的legacy
+  effective_forward_source字段名保留，methods字段说明真实替换对象。
+- 空闲GPU6只作原生接口小测，最大live pinned为256MiB，不加载模型或训练。4次
+  重新分配28.35–38.69毫秒，缓存复用9.51–15.48微秒，释放1.37–1.79毫秒。
+  不据此外推整阶段开销，更不能逐minibatch清理。第一次独立probe缺少CUDA init，
+  因原host_memory_stats返回空字典而失败；按该API初始化约定补上init后完成，
+  正式worker原本已初始化，未为此改任何训练实现。
+- 21:06已部署两组四rank，但本次读取的原日志尾部还没有新的阶段释放行，不能
+  称下一次正式DT/PPO清理或长期OOM修复已验收。当前MemAvailable590.342GiB；
+  原mx-smi物理AppWorld53,638/53,114MiB、TextCraft17,111/17,111MiB。
+- 最新原完整指标AppWorld step10：采样26.33、DT86.93、actor45.11、原评估48.37、
+  整轮213.67分钟；检查点原完成标记10，训练score0.800、独立val score0.482。
+  TextCraft step39：采样31.65、DT9.51、actor9.66、整轮55.81分钟，score0.512。
+  这些计算阶段发生在新清理hook前，不能拿来宣传hook提速。
+- SQL仍因global OOM停止，没有重启；不把目录存在、记录的新Git号或两组挂载当作
+  三组训练目标完成。
 
 ### 2026-10-02 20:19：XTT来源已定位，原生闲置缓存释放已实测
 
