@@ -66,19 +66,27 @@ class NativePrefixArtifacts:
             if isinstance(owner_layer, LinearAttentionCacheLayerMixin):
                 captured = pending.pop(i)
                 boundaries = {}
+                previous_length = 0
+                previous_state = None
                 for n in lengths:
                     if n == input_ids.shape[1]:
                         state = captured['final_state']
                     else:
                         h, v_new, state = chunk_gated_delta_rule_fwd_h(
-                            k=captured['k'][:, :n].contiguous(),
-                            w=captured['w'][:, :n].contiguous(),
-                            u=captured['u'][:, :n].contiguous(),
-                            g=captured['g'][:, :n].contiguous(),
-                            initial_state=None, output_final_state=True)
+                            k=captured['k'][:, previous_length:n].contiguous(),
+                            w=captured['w'][:, previous_length:n].contiguous(),
+                            u=captured['u'][:, previous_length:n].contiguous(),
+                            g=captured['g'][:, previous_length:n].contiguous(),
+                            initial_state=previous_state, output_final_state=True,
+                            save_new_value=False)
                         del h, v_new
                     boundaries[n] = (windows[i].pop(n), state.detach().cpu())
+                    # The public owner accepts its FP32 final state as the
+                    # next segment's initial state. Consume each token once;
+                    # no restart from token zero for every requested boundary.
+                    previous_length, previous_state = n, state
                     del state
+                del previous_state, captured
                 windows.pop(i)
                 artifacts[i] = {'boundaries': boundaries}
             else:

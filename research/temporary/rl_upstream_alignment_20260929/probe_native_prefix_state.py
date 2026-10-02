@@ -6,6 +6,7 @@ another model forward. No cache, attribution, kernel or training result is
 replaced. Restore the original runner binding after the observed call.
 """
 from pathlib import Path
+import argparse
 import hashlib
 import subprocess
 
@@ -23,7 +24,8 @@ os.environ['PYTHONPATH']=':'.join([job['entry'],job['verl_root'],os.environ.get(
 driver=psutil.Process(job['pid'])
 gcs=next(p for p in driver.children(recursive=True) if p.name()=='gcs_server')
 port=next(a.split('=',1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))
-out=root/'receipts/owner-b8-dispatch-20260930'/f'formal-native-prefix-state-{int(time.time())}'
+label='streaming-state' if @STREAMING@ else 'state'
+out=root/'receipts/owner-b8-dispatch-20260930'/f'formal-native-prefix-{label}-{int(time.time())}'
 out.mkdir()
 
 def install(worker):
@@ -80,6 +82,40 @@ def install(worker):
    full=int(k.shape[1]);half=(full//128)*64
    record.update(prefix_shape=list(k.shape),native_final_state_dtype=str(reference.dtype),
     intermediate_input_dtype=str(k.dtype),physical_free_bytes=free,readouts=[])
+   if @STREAMING@:
+    previous_length=0;previous_state=None
+    lengths=sorted({(full//256)*64,half,((3*full)//256)*64,full})
+    record['scope']='One real native GDN prefix; public FP32 initial/final-state composition versus independent native reads. No extra model forward or changed DT result.'
+    record['incremental_processed_tokens']=0
+    for length in lengths:
+     if length==0:continue
+     a=torch.cuda.Event(enable_timing=True);b=torch.cuda.Event(enable_timing=True)
+     a.record();tick=time.perf_counter()
+     h,new_value,state=state_owner(k=k[:,previous_length:length].contiguous(),
+      w=w[:,previous_length:length].contiguous(),u=u[:,previous_length:length].contiguous(),
+      g=g[:,previous_length:length].contiguous(),initial_state=previous_state,
+      output_final_state=True,save_new_value=False)
+     b.record();b.synchronize()
+     row=dict(start=previous_length,tokens=length,
+      processed_tokens=length-previous_length,stream_seconds=a.elapsed_time(b)/1000,
+      host_and_wait_seconds=time.perf_counter()-tick,state_dtype=str(state.dtype))
+     del h,new_value
+     # Independent native read is diagnostic reference work only. It is not
+     # used by the shared artifact consumer or by training credit assignment.
+     rh,rv,expected=state_owner(k=k[:,:length].contiguous(),
+      w=w[:,:length].contiguous(),u=u[:,:length].contiguous(),g=g[:,:length].contiguous(),
+      initial_state=None,output_final_state=True)
+     row.update(equal_to_independent_native_read=bool(torch.equal(state,expected)),
+      max_absolute_difference=float((state-expected).abs().max()))
+     if length==full:
+      row.update(equal_to_original_final_state=bool(torch.equal(state,reference)),
+       original_max_absolute_difference=float((state-reference).abs().max()))
+     record['readouts'].append(row)
+     record['incremental_processed_tokens']+=length-previous_length
+     previous_length,previous_state=length,state
+     del rh,rv,expected
+    del previous_state,state
+    return result
    for length in (full,half):
     a=torch.cuda.Event(enable_timing=True);b=torch.cuda.Event(enable_timing=True)
     a.record();tick=time.perf_counter()
@@ -134,7 +170,12 @@ PY
 '''
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--streaming', action='store_true',
+                        help='Read ordered boundaries through the original FP32 initial/final state interface; no training substitution.')
+    options = parser.parse_args()
     remote(script.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY)
+           .replace('@STREAMING@', str(options.streaming))
            .replace('@COMMIT@', subprocess.check_output(
                ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip())
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
