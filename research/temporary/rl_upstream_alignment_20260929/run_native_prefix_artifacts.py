@@ -17,12 +17,16 @@ if __name__ == '__main__':
                         help='Consume exact native cache artifacts through the optional owner seam on saved B4 endpoints; no production deployment.')
     parser.add_argument('--dt-lease-diagnostic', action='store_true',
                         help='Compare ordered original DT rows with native prefix leases, including capture and transfers; no production deployment.')
+    parser.add_argument('--lease-component-diagnostic', action='store_true',
+                        help='Locate residuals on the actual prepared lease source versus the original B4 prefix; pinned FA/FLA assertions only.')
     parser.add_argument('--request-artifacts',
                         help='Original one-shot observer directory containing actual-requests-rank0/1.pt; used only by the lease diagnostic.')
     args = parser.parse_args()
-    assert sum((args.component_diagnostic, args.attention_diagnostic, args.dt_seam_diagnostic,args.dt_lease_diagnostic)) <= 1
-    assert bool(args.request_artifacts) == args.dt_lease_diagnostic
+    assert sum((args.component_diagnostic, args.attention_diagnostic, args.dt_seam_diagnostic,args.dt_lease_diagnostic,args.lease_component_diagnostic)) <= 1
+    lease_mode = args.dt_lease_diagnostic or args.lease_component_diagnostic
+    assert bool(args.request_artifacts) == lease_mode
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/' + (
+        'native-prefix-lease-components-20261003' if args.lease_component_diagnostic else
         'native-prefix-dt-leases-20261003-v2' if args.dt_lease_diagnostic else
         'native-prefix-dt-seam-20261003' if args.dt_seam_diagnostic else
         'native-prefix-attention-20261003' if args.attention_diagnostic else
@@ -31,22 +35,22 @@ if __name__ == '__main__':
     # Preserve the actual sources of every completed/failed attempt before SCP.
     remote(f'test ! -e {out}/job.json && test ! -e {out}/prepared.json && mkdir -p {out}\n')
     names = ('native_prefix_artifacts_candidate.py', 'verify_native_prefix_artifacts.py')
-    if args.component_diagnostic or args.attention_diagnostic:
+    if args.component_diagnostic or args.attention_diagnostic or args.lease_component_diagnostic:
         names += ('diagnose_native_prefix_components.py',)
     if args.dt_seam_diagnostic:
         names += ('diagnose_native_prefix_dt_seam.py',)
-    if args.dt_lease_diagnostic:
+    if lease_mode:
         names += ('diagnose_native_prefix_leases.py',)
     for name in names:
         subprocess.run(SCP+[str(AUDIT/name), f'{SSH[-1]}:{out}/{name}'], check=True)
     files = {REPO/'deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py':'qwen35_native_prefix_artifacts.py'}
-    if args.dt_seam_diagnostic or args.dt_lease_diagnostic:
+    if args.dt_seam_diagnostic or lease_mode:
         files.update({
             REPO/'deltatrace/clean/qwen35/qwen35_dense_finite_runner.py': 'qwen35_dense_finite_runner_candidate.py',
             REPO/'experiments/rl/deltatrace_credit.py': 'deltatrace_credit.py',
             REPO/'experiments/rl/test_native_prefix_provider.py': 'test_native_prefix_provider.py',
         })
-    if args.dt_lease_diagnostic:
+    if lease_mode:
         files.update({REPO/'experiments/rl'/name:name for name in ('reward_readout.py','native_prefix_leases.py')})
     for path, name in files.items():
         subprocess.run(SCP+[str(path), f'{SSH[-1]}:{out}/{name}'], check=True)
@@ -96,6 +100,8 @@ if @DT_SEAM@:
  run_env['DT_PREFIX_OWNER_SOURCE']=str(out/'qwen35_dense_finite_runner_candidate.py')
 if @DT_LEASE@:
  run_env['DT_PREFIX_DT_LEASE_DIAGNOSTIC']='1'
+ if @LEASE_COMPONENT@:
+  run_env['DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC']='1'
  artifacts=pathlib.Path('@REQUEST_ARTIFACTS@')
  for rank in (0,1):
   shutil.copy2(artifacts/f'actual-requests-rank{rank}.pt',out/f'actual-requests-rank{rank}.pt')
@@ -114,7 +120,7 @@ receipt=dict(role='Prepared-only native artifact/API probe, not accepted or depl
  diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',gpus=[6,7],
  source_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in
   [source,framework/'verl/workers/actor/dp_actor.py',out/'native_prefix_artifacts_candidate.py',out/'verify_native_prefix_artifacts.py']})
-if @DIAGNOSTIC@:
+if @DIAGNOSTIC@ or @LEASE_COMPONENT@:
  p=out/'diagnose_native_prefix_components.py';receipt['source_files'][str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
 if @DT_SEAM@:
  for name in ('diagnose_native_prefix_dt_seam.py','qwen35_dense_finite_runner_candidate.py','deltatrace_credit.py','test_native_prefix_provider.py'):
@@ -144,6 +150,7 @@ PY
            .replace('@DIAGNOSTIC@', str(args.component_diagnostic or args.attention_diagnostic))
            .replace('@ATTENTION@', str(args.attention_diagnostic))
            .replace('@DT_SEAM@', str(args.dt_seam_diagnostic))
-           .replace('@DT_LEASE@', str(args.dt_lease_diagnostic))
+           .replace('@DT_LEASE@', str(lease_mode))
+           .replace('@LEASE_COMPONENT@', str(args.lease_component_diagnostic))
            .replace('@REQUEST_ARTIFACTS@',args.request_artifacts or '')
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))

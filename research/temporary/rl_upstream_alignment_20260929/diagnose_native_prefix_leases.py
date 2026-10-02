@@ -18,6 +18,27 @@ def diagnose(runner, producer, out, save):
     payload=torch.load(path,map_location='cpu',weights_only=False)
     limit=int(os.environ['DT_PREFIX_DIAGNOSTIC_ROWS'])
     requests=sorted(payload['requests'],key=lambda request:request['context_tokens'])[:limit]
+    if os.environ.get('DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC') == '1':
+        # Reuse the actual adapter's capture/group/padding decisions. Do not
+        # reproduce them in a diagnostic implementation. Request 3 is the
+        # largest residual recorded in the completed same-input comparison.
+        leases, preparation = prepare_native_prefix_leases(
+            runner, requests, minibatch_size=4, eos_token_id=producer.readout_tokenizer.eos_token_id)
+        source, source_row = leases[0].sources[3]
+        prefix = leases[0].prefix_length
+        ids = source.input_ids.to(runner.model.execution_device)
+        comparison = torch.stack([request['prompt'][:prefix] for request in requests[:4]]).to(ids.device)
+        assert torch.equal(ids[source_row, :prefix], comparison[3])
+        save('actual_lease_component_inputs', original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+             request_index=3, source_step=requests[3]['source_step'],
+             source_start=requests[3]['start'], context_length=requests[3]['context_tokens'],
+             capture_input_shape=list(ids.shape), native_input_shape=list(comparison.shape),
+             prefix=prefix, matched_rows=[[source_row,3]], preparation=preparation,
+             scope='Actual prepared lease source and original B4 prefix; original model, FA/FLA reference and assertions; no production deployment')
+        del source, leases
+        from diagnose_native_prefix_components import diagnose as components
+        return components(runner, ids, prefix, save,
+                          comparison_ids=comparison, matched_rows=[(source_row,3)])
     indices=[request['row_index'] for request in requests]
     rows=[payload['rows'][i] for i in indices]
     returns=[payload['complete_returns'][i] for i in indices]

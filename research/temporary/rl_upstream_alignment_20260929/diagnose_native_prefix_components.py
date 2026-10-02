@@ -69,7 +69,7 @@ def check_first_attention(cases, prefix, official, save):
 
 
 @torch.no_grad()
-def diagnose(runner, ids, prefix, save):
+def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=None):
     from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
     from accelerated.qwen35.qwen35_code_local_capture import NativeDenseAttentionCapture
     from fla.ops.common.chunk_delta_h import chunk_gated_delta_rule_fwd_h
@@ -130,6 +130,29 @@ def diagnose(runner, ids, prefix, save):
         def output(name, _module, _args, value):
             values[name] = first(value)[:, :prefix].detach().cpu()
 
+        def projection_reference(module, args, value):
+            # Observe the owner's actual base Linear call. This FP32 read is
+            # diagnostic only, not a replacement, correction or new tolerance.
+            weight = module.weight.detach()
+            if hasattr(weight, 'to_local'):
+                weight = weight.to_local()
+            actual = first(value)[:, max(0, prefix-64):prefix].detach()
+            hidden = args[0][:, max(0, prefix-64):prefix].detach()
+            if tuple(weight.shape) != (actual.shape[-1], hidden.shape[-1]):
+                values['base_qkv_reference_unavailable'] = 'Owner weight is not gathered at this hook; no extra gather performed'
+                return
+            previous = torch.backends.cuda.matmul.allow_tf32
+            try:
+                torch.backends.cuda.matmul.allow_tf32 = False
+                bias = module.bias
+                ref = F.linear(hidden.float(), weight.float(),
+                               None if bias is None else bias.detach().float())
+            finally:
+                torch.backends.cuda.matmul.allow_tf32 = previous
+            values['base_qkv_reference_input'] = hidden.cpu()
+            values['base_qkv_reference_output'] = ref.cpu()
+            values['base_qkv_actual_output'] = actual.cpu()
+
         def begin(_module, args, kwargs):
             hidden = args[0] if args else kwargs['hidden_states']
             values['layer0.input'] = hidden[:, :prefix].detach().cpu()
@@ -149,6 +172,9 @@ def diagnose(runner, ids, prefix, save):
             attention_entered[0]=False
 
         try:
+            base_projection = layers[0].linear_attn.in_proj_qkv
+            base_projection = getattr(base_projection, 'base_layer', base_projection)
+            handles.append(base_projection.register_forward_hook(projection_reference))
             if operator is not None:
                 handles.append(layers[0].linear_attn.register_forward_pre_hook(begin, with_kwargs=True))
                 handles.append(layers[0].linear_attn.register_forward_hook(end))
@@ -189,16 +215,28 @@ def diagnose(runner, ids, prefix, save):
 
     long = capture(ids)
     save('long_native_components_captured', native_forward_seconds=long['seconds'])
-    short = capture(ids[:, :prefix])
+    short = capture(ids[:, :prefix] if comparison_ids is None else comparison_ids)
     differences = []
     for name, expected in short['values'].items():
+        if not isinstance(expected, torch.Tensor) or not isinstance(long['values'].get(name), torch.Tensor):
+            continue
         actual = long['values'][name]
+        if matched_rows is not None:
+            actual = actual[[row[0] for row in matched_rows]]
+            expected = expected[[row[1] for row in matched_rows]]
         differences.append(dict(component=name, dtype=str(actual.dtype), shape=list(actual.shape),
             equal=bool(torch.equal(expected, actual)),
             max_absolute_difference=float((expected.float()-actual.float()).abs().max()),
             owner_error_ratio=float(owner.get_err_ratio(expected, actual))))
     save('native_component_variation_observed', shorter_native_forward_seconds=short['seconds'],
-         component_variation=differences)
+         component_variation=differences, matched_rows=matched_rows,
+         base_projection_fp32_observations=[dict(case=label,
+             dtype=str(case['values']['base_qkv_actual_output'].dtype),
+             max_absolute_error=float((case['values']['base_qkv_actual_output'].float()-
+                                       case['values']['base_qkv_reference_output']).abs().max()),
+             scope='Actual base Linear on the last 64 prefix positions; diagnostic FP32 reference with TF32 disabled, no acceptance threshold')
+             for label,case in [('long_readout',long),('direct_short',short)]
+             if 'base_qkv_reference_output' in case['values']])
 
     if attention_only:
         checks=check_first_attention([('long_prefix',long),('direct_short',short)],prefix,
