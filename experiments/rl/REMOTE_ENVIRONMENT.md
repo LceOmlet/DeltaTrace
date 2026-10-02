@@ -6,6 +6,12 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
+20:19只读更新：原pinned allocator已解释大部分XTT；四worker通过PyTorch现有
+_host_emptyCache各一次释放合计239.726GiB闲置reserved，之后整机可用内存
+634.400GiB。完成回执见RUNTIME_RECORD.md及results_native_host_memory_20261002.json。
+这不是持久训练patch，也不证明下一阶段峰值或吞吐；未改已验证数值版本和训练参数。
+AppWorld原评估在进行、完整标记仍9；TextCraft已完成38；SQL仍停止，未重启。
+
 **19:25故障状态优先：SQL PID552842已因整机global OOM退出，完成step11但无
 可恢复检查点；没有提交重启。AppWorld、TextCraft继续，最新只读快照及内核/驱动
 证据在RUNTIME_RECORD.md。下文SQL启动身份属于已退出作业，不作为存活或重启依据。

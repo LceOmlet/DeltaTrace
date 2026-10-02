@@ -1,0 +1,218 @@
+{
+  "observed_unix": 1790943572.6541955,
+  "scope": "Native PyTorch pinned allocator ownership and one-shot unused-cache release only. No persistent training patch or change to DT Q/V, PPO, model, sampling, LoRA, microbatch or tolerance.",
+  "diagnostic_code_commit": "be7e4b71ebf6e8509d67f33537c51aaa22b79e51",
+  "diagnostic_source_sha256": "c387c499e1623bad32c63de93e5eab2ee51f727805dd9f231e283e65b89cbd06",
+  "recorder_code_commit": "b68c0f4f649446e881cb0fd7ff901ea4df79d457",
+  "initial_worker_pinned_reserved_bytes_sum": 345215888068.0,
+  "initial_xtt_used_bytes": 346197409792,
+  "actions": [
+    {
+      "task": "AppWorld",
+      "driver_pid": 3232113,
+      "driver_created_unix": 1790924078.76,
+      "worker_pid": 3254727,
+      "executed_unix": 1790943180.9122727,
+      "receipt_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/host-memory-20261002/native-allocator-AppWorld-1790943165/worker-3254727.json",
+      "before_reserved_bytes": 104784229933,
+      "after_reserved_bytes": 11047795616,
+      "released_reserved_bytes": 93736434317,
+      "seconds": 5.1002916395664215
+    },
+    {
+      "task": "AppWorld",
+      "driver_pid": 3232113,
+      "driver_created_unix": 1790924078.76,
+      "worker_pid": 3250426,
+      "executed_unix": 1790943181.7231894,
+      "receipt_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/host-memory-20261002/native-allocator-AppWorld-1790943165/worker-3250426.json",
+      "before_reserved_bytes": 104784426541,
+      "after_reserved_bytes": 11047795616,
+      "released_reserved_bytes": 93736630925,
+      "seconds": 5.084292372688651
+    },
+    {
+      "task": "TextCraft",
+      "driver_pid": 3218909,
+      "driver_created_unix": 1790895651.16,
+      "worker_pid": 3236008,
+      "executed_unix": 1790943536.2840915,
+      "receipt_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/host-memory-20261002/native-allocator-TextCraft-1790943363/worker-3236008.json",
+      "before_reserved_bytes": 67823566645,
+      "after_reserved_bytes": 32858176440,
+      "released_reserved_bytes": 34965390205,
+      "seconds": 2.354758471250534
+    },
+    {
+      "task": "TextCraft",
+      "driver_pid": 3218909,
+      "driver_created_unix": 1790895651.16,
+      "worker_pid": 3240133,
+      "executed_unix": 1790943536.3024538,
+      "receipt_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/host-memory-20261002/native-allocator-TextCraft-1790943363/worker-3240133.json",
+      "before_reserved_bytes": 67823664949,
+      "after_reserved_bytes": 32858176440,
+      "released_reserved_bytes": 34965488509,
+      "seconds": 2.3492996376007795
+    }
+  ],
+  "released_reserved_bytes_sum": 257403943956,
+  "post_actions_xtt_used_bytes": 122691338240,
+  "post_actions_host_memory_bytes": {
+    "MemTotal": 1081000480768,
+    "MemAvailable": 681181282304,
+    "Unevictable": 10768011264,
+    "AnonPages": 228994797568,
+    "Shmem": 1291448320
+  },
+  "measurement_caveat": "Worker release counters are collected at their individual callback times; subsequent native allocation makes the later global XTT delta different from their summed releases. XTT repeats the same driver-wide value on eight devices and must not be summed.",
+  "counter_defect": {
+    "owner_file": "/opt/conda/lib/python3.12/site-packages/torch/include/ATen/core/CachingHostAllocator.h",
+    "owner_sha256": "c9189947dd61e4c0f4771d73b332fb0e18960e89b6833749ff1ca9106e942459",
+    "observed": "9 MiB allocation, 8 MiB async-copy input freed through native API; reserved_bytes becomes 1 MiB, live host/device values preserved, but allocated_bytes.current increases by 1 and allocated_bytes.freed is -1. Active allocated_bytes counters cannot represent physical host usage.",
+    "source": "process_events calls process_events_for_specific_size(-1); the installed header decrements allocated_bytes_bucket_stats by size rather than block->size_. Same line appears in PyTorch v2.8.0 upstream.",
+    "upstream_url": "https://github.com/pytorch/pytorch/blob/v2.8.0/aten/src/ATen/core/CachingHostAllocator.h",
+    "not_changed": true
+  },
+  "native_binary_provenance": {
+    "unix": 1790943772.0575316,
+    "workers": {
+      "3250426": [
+        "7efbdd484000-7efbdd63a000 r--p 00000000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7efbdd63a000-7efbde30b000 r-xp 001b6000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7efbde30b000-7efbde70a000 r--p 00e87000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7efbde70a000-7efbde70b000 ---p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7efbde70b000-7efbde72c000 r--p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7efbde72c000-7efbde78b000 rw-p 012a7000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f2b1c002000-7f2b1c003000 r--p 00000000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f2b1c003000-7f2b1c004000 r-xp 00001000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f2b1c004000-7f2b1c005000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f2b1c005000-7f2b1c006000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f2b1c006000-7f2b1c007000 rw-p 00003000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "3254727": [
+        "7fbaca484000-7fbaca63a000 r--p 00000000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7fbaca63a000-7fbacb30b000 r-xp 001b6000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7fbacb30b000-7fbacb70a000 r--p 00e87000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7fbacb70a000-7fbacb70b000 ---p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7fbacb70b000-7fbacb72c000 r--p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7fbacb72c000-7fbacb78b000 rw-p 012a7000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7fea40002000-7fea40003000 r--p 00000000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fea40003000-7fea40004000 r-xp 00001000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fea40004000-7fea40005000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fea40005000-7fea40006000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fea40006000-7fea40007000 rw-p 00003000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "3236008": [
+        "7f8b0cc84000-7f8b0ce3a000 r--p 00000000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f8b0ce3a000-7f8b0db0b000 r-xp 001b6000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f8b0db0b000-7f8b0df0a000 r--p 00e87000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f8b0df0a000-7f8b0df0b000 ---p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f8b0df0b000-7f8b0df2c000 r--p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f8b0df2c000-7f8b0df8b000 rw-p 012a7000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7fba74694000-7fba74695000 r--p 00000000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fba74695000-7fba74696000 r-xp 00001000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fba74696000-7fba74697000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fba74697000-7fba74698000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7fba74698000-7fba74699000 rw-p 00003000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "3240133": [
+        "7f3590284000-7f359043a000 r--p 00000000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f359043a000-7f359110b000 r-xp 001b6000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f359110b000-7f359150a000 r--p 00e87000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f359150a000-7f359150b000 ---p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f359150b000-7f359152c000 r--p 01286000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f359152c000-7f359158b000 rw-p 012a7000 103:02 286525018                 /opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "7f64d4003000-7f64d4004000 r--p 00000000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f64d4004000-7f64d4005000 r-xp 00001000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f64d4005000-7f64d4006000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f64d4006000-7f64d4007000 r--p 00002000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "7f64d4007000-7f64d4008000 rw-p 00003000 103:02 286261865                 /opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so"
+      ]
+    },
+    "native_files": [
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+        "bytes": 15928,
+        "sha256": "297314ed3dbb70ec06ad622d53ec991081f986d4308b596ee02605d2e321adbc"
+      },
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/lib/libtorch_python.so",
+        "bytes": 27986600,
+        "sha256": "4317f33141e2a6328bada33bc2e906a80367f7d703066e27fe80e702602db773"
+      },
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+        "bytes": 46762,
+        "sha256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+      },
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/include/ATen/core/CachingHostAllocator.h",
+        "bytes": 27044,
+        "sha256": "c9189947dd61e4c0f4771d73b332fb0e18960e89b6833749ff1ca9106e942459"
+      }
+    ]
+  },
+  "appworld_phase_evidence": {
+    "receipt": "research/temporary/rl_upstream_alignment_20260929/native-appworld-update-stack-1790943062.json",
+    "observed": "Original TaskRunner _validate -> LOOP collect; actor stage of iteration 10 has returned, but completed iteration/checkpoint remains 9 until validation finishes."
+  },
+  "formal_state": {
+    "sql": "Terminated by global OOM; no checkpoint after step 11; no restart submitted, user recovery decision pending.",
+    "appworld": "PID3232113; original evaluation after actor update; latest fully logged iteration9.",
+    "textcraft": "PID3218909; completed iteration38; original next stage continues."
+  },
+  "next_action": "Place the verified native release at the original completed phase boundary; measure subsequent allocator cost and original phase throughput. No per-microbatch cache flush or new offload policy.",
+  "artifacts": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-host-allocator-discovery-1790942289.json",
+      "bytes": 12409,
+      "sha256": "519a65e6e8288271364a5065dd67204479a81d443546348fe14c625773f10854"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-host-memory-api-1790942332.txt",
+      "bytes": 10301,
+      "sha256": "bcf69aecbc7bedac7bd48cad65cbf1a7ad63309b478a6bb2294b81fb3d8d2447"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-host-allocator-owner-source-1790942501.txt",
+      "bytes": 19198,
+      "sha256": "2777d8ab614771403d3913be2aceb24f7e4481bcfb025307d83c536067ea7c06"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-host-allocator-results-1790942554.json",
+      "bytes": 38979,
+      "sha256": "4b2784deb33a3cd1c8e8a1894c23369eafbf4120dde47ce45255b74378b3089b"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-empty-host-cache-1790942987.txt",
+      "bytes": 3163,
+      "sha256": "fa94e3672e477b661a35ff3827cd174856666c163e6ede3e6659070f40737d22"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-appworld-update-stack-1790943062.json",
+      "bytes": 11112,
+      "sha256": "9c0c8b62b2ad2f88fab157334bbdf28bd03c231cee938ae2d58ff898005f8eeb"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-host-cache-live-release-1790943576.json",
+      "bytes": 85659,
+      "sha256": "5a0195189a4b8684246ffb288c95f90706370dabc2aaca6ea629570610333c0c"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-host-api-binary-provenance-1790943772.json",
+      "bytes": 7461,
+      "sha256": "2bb9739dae3d4ada31cf23318b38b7822924250ff348f706e8285a74a5a3fcc9"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-allocator-appworld-release-20261002-1790943194.txt",
+      "bytes": 20624,
+      "sha256": "22b56073ed401fa7555b49ddb9ecf7de4b63cae79980d4e52959d01550500f07"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-allocator-textcraft-release-20261002-1790943400.txt",
+      "bytes": 773,
+      "sha256": "306bae6e4830d568ac4ab0adbcf56c5052e36170d643340c731525f0821571f5"
+    }
+  ]
+}

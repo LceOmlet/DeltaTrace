@@ -11,7 +11,7 @@
 
 SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60尚未形成
 可恢复检查点，没有提交重启。AppWorld PID3232113、TextCraft PID3218909在
-19:25只读源码快照仍存活并由原worker日志分别确认完成step9、step37；存活本身
+20:26只读源码快照仍存活并由原worker日志分别确认完成step9、step38；存活本身
 不是训练健康证明。三个任务代码组合不同，具体见下表与PID绑定回执；历史段落
 不能代替当前终止状态或新部署。
 
@@ -38,6 +38,36 @@ SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60�
 SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft继续；GPU6/7不再提交GRPO。
 
 ## 当前代码组合
+
+### 2026-10-02 20:19：XTT来源已定位，原生闲置缓存释放已实测
+
+本次未改DT/FA/FLA、PPO、vLLM、LoRA8/16、每卡B4或任务预算。使用当前
+MetaX PyTorch 2.8.0+metax3.5.3.9原有host_memory_stats及_host_emptyCache，
+经现有VERL execute_with_func_generator接口观察并各调用一次；没有安装分配器、
+重装库、清理编译缓存或部署持久训练hook。诊断源码be7e4b7，记录器b68c0f4；
+实际四worker/PID创建时间、API共享库路径/SHA、原始回执见
+[原生主机内存结果](results_native_host_memory_20261002.json)。这两个提交不是新算法版本。
+
+- 四worker原pinned reserved合计321.507GiB（AppWorld每卡97.588、TextCraft每卡
+  63.166），与原驱动XTT322.421GiB基本吻合；各worker PSS仅约8GiB，不能用PSS
+  替代此项驱动/allocator占用。XTT八设备同值仍不得逐卡相加。
+- 9MiB有界原API测试释放8MiB闲置缓冲，保留1MiB仍被引用的张量及异步GPU拷贝
+  数值。但allocated_bytes.current增加1、freed=-1；正式counter的数TiB不是物理
+  用量。安装header的process_events_for_specific_size(-1)按size而非block->size_
+  扣统计，同一行也在PyTorch v2.8.0原源码。没有改计数器或以纠偏掩盖此缺陷。
+- 同一原API在正式worker上释放：AppWorld每卡97.588→10.289GiB，用时
+  5.084/5.100秒；TextCraft每卡63.166→30.602GiB，用时2.355/2.349秒。
+  四次原reserved减少合计239.726GiB。随后全局XTT114.265GiB、MemAvailable
+  634.400GiB；期间原任务已继续分配，不能把不同采样时间的净变化强行等同。
+- 四次完成回执均为一次性内存操作，记录在current_runtime.json的native_memory_actions，
+  不属于runtime_overrides或新部署。还没有持久阶段释放hook，不称内存问题长期修好，
+  更不将此次释放称为DT/actor提速。后续需在原阶段边界复用该API，并量化下一次分配
+  开销；不能逐minibatch清空缓存或改卸载策略。
+- 20:11原非阻塞栈显示AppWorld已退出第10次actor，当前原_validate及LOOP采样；
+  迭代末日志/检查点仍为9，不先称第10次完整迭代完成。TextCraft完成step38：
+  采样39.486、DT8.654、actor9.623、整轮62.755分钟，原平均奖励0.418。
+  SQL仍已退出、无可恢复检查点，未重启；用户恢复决策仍待答复。
+
 
 ### 2026-10-02 19:25：整机OOM与官方卸载候选结果
 
