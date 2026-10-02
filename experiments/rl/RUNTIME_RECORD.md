@@ -10,8 +10,8 @@
 不是新的算法版本，也不表示远端执行了该提交的全部文件。
 
 SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际生效的padding版本
-冻结重启；没有可恢复的正式检查点。AppWorld旧作业完成step4后，已通过原生恢复部署
-生成上下文修复。**三个任务的实际代码组合并不相同**，具体见下表；历史段落不能代替
+冻结重启；没有可恢复的正式检查点。AppWorld原同步作业已完成step8，当前原生异步
+候选从该检查点恢复。**三个任务的实际代码组合并不相同**，具体见下表；历史段落不能代替
 当前PID绑定的完成回执。
 
 每项修复按“代码提交 → 实际文件SHA → 原测试及适用范围 → 部署路径/PID/时间 →
@@ -37,6 +37,32 @@ SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际
 SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不再提交GRPO。
 
 ## 当前代码组合
+
+### 2026-10-02 14:54：原生Future调用契约修复后，从检查点8恢复
+
+PID2463700已在`fit()`加载原检查点8，但首次生成于14:17失败：
+原Ray `collective_rpc(non_block=True)`返回批量`FutureWrapper`，原抽象
+`execute_model`却执行`output[0]`。没有完成生成回复、DT或新更新。
+退出清理日志中的单消息episode不是有效采样或提速证据。14:52确认其已记录的
+driver、TaskRunner、两rank、生成服务和LOOP子进程均不存在，GPU2/3空闲；
+未为这次恢复停止任何仍运行的进程，SQL/TextCraft保持原身份。
+
+修复`a1ad7b15269d14ef2771684764c392bd7a974d7d`复用安装版本的
+`UniProcExecutor.execute_model/sample_tokens`、`RayDistributedExecutor.collective_rpc`
+和`FutureWrapper`；仅将原批量结果选为原单输出契约要求的首个结果。
+不复制调度器、Future、模型运算或Ray传输，非0.15路径不变。
+实际owner文件SHA为`8cb6c3821ac2962e84d91247f244dc4226db2c08a00ec6839f8a2cbe906ac201`。
+旧CPU调用复现同一个TypeError；新CPU调用与原UniProc执行入口比较，
+阻塞/非阻塞、execute/sample、值/None共8项逐值通过，15.517秒。
+这是接口对照，不是GPU数值容差或吞吐验收；初次夹具缺少MM缓存成员的失败也保留。
+见[原始对照与失败记录](../../research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/native-futures/probe-after/interfaces.json)。
+
+新PID3232113、创建时间1790924078.76，GPU2/3；冻结入口/owner为
+`candidates/appworld-native-async-015-native-futures-20261002`，输出为
+`runs/appworld-native-async-native-futures-20261002/appworld-dt`。
+仍由原VERL恢复完整检查点8；本次候选相对上一份配置没有参数差异，
+LoRA8/16、actor/DT每卡4、任务预算、DT和PPO数值版本保持。
+当前状态为恢复已提交；实际首次生成、官方vLLM生成对照和效率结果尚待验证。
 
 ### 2026-10-02 14:11：补齐原生manager所需的官方scheduler配置
 

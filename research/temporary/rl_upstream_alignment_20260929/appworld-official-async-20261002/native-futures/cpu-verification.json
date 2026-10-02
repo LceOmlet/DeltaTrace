@@ -1,0 +1,134 @@
+{
+  "unix": 1790924062.0412538,
+  "fix_commit": "a1ad7b15269d14ef2771684764c392bd7a974d7d",
+  "cpu_executor": {
+    "started_unix": 1790923364.3782651,
+    "helper_pid": 3017408,
+    "helper_sha256": "122f51e2c284da0f6be74ae32fc75c155b80c2b930a98b24315c15f4e10df1cb",
+    "scope": "CPU original executor dispatch and Ray transport only; uses a separate zero-GPU CPU actor in the recorded existing cluster.",
+    "sources": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl/verl/workers/rollout/vllm_rollout/vllm_async_server.py": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl/verl/workers/rollout/vllm_rollout/vllm_async_server.py",
+        "sha256": "8cb6c3821ac2962e84d91247f244dc4226db2c08a00ec6839f8a2cbe906ac201"
+      },
+      "/opt/conda/lib/python3.12/site-packages/vllm/engine/arg_utils.py": {
+        "path": "/opt/conda/lib/python3.12/site-packages/vllm/engine/arg_utils.py",
+        "sha256": "851f5c950e1c86e2612eb450608c2441e367c2ceb2af797e71aba148a4c6bbc2"
+      },
+      "/opt/conda/lib/python3.12/site-packages/vllm/v1/worker/worker_base.py": {
+        "path": "/opt/conda/lib/python3.12/site-packages/vllm/v1/worker/worker_base.py",
+        "sha256": "cdbdd65df30038f3feba56858f750e25fecafd007facc9b507bce1e8465e9772"
+      },
+      "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/ray_executor.py": {
+        "path": "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/ray_executor.py",
+        "sha256": "7576bec19a3e686c0fef8b2e3d8380d6dcbe09fe72a8d20569a5e86687206a0f"
+      },
+      "/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/openai/chat_completion/serving.py": {
+        "path": "/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/openai/chat_completion/serving.py",
+        "sha256": "b87ac35ab6cd33c09b7277344f6d8a6c6b7d44581819ca5b41c47bfad7f5a04c"
+      },
+      "/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/openai/models/serving.py": {
+        "path": "/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/openai/models/serving.py",
+        "sha256": "23aa43ba92d7e1a5d752e60f5e6be9d74c412e7624cb8f28ee5142065630a49d"
+      },
+      "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py": {
+        "path": "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py",
+        "sha256": "64e251fd7ab9579f3555626392f3d017024c1ee32a3432fb93f3bbb73a8dbd0a"
+      }
+    },
+    "checks": [
+      "Candidate imports installed native 0.15 types; native RPC and executor calls are checked below",
+      "Original init_engine constructs real native arguments with recorded model/context/resources/LoRA",
+      "Installed serving constructor bindings and native error status match",
+      "Original native Ray RPC and WorkerWrapperBase return exact artifacts, including native future",
+      "Actual execute_model/sample_tokens callers match original UniProcExecutor for eight blocking/nonblocking/value/None cases; native futures preserved"
+    ],
+    "formal_identity": {
+      "pid": 552842,
+      "created_unix": 1790804649.87
+    },
+    "ray_cluster_task": "SkyRL-SQL",
+    "native_engine_arguments": {
+      "model": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+      "dtype": "bfloat16",
+      "max_model_len": 32768,
+      "max_num_seqs": 32,
+      "max_num_batched_tokens": 32768,
+      "enable_lora": true,
+      "max_loras": 1,
+      "max_lora_rank": 8,
+      "enforce_eager": true,
+      "gpu_memory_utilization": 0.75,
+      "enable_prefix_caching": true,
+      "mm_processor_cache_gb": 0
+    },
+    "formal_launch": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-owner-scheduler-20261002/appworld-dt/launch.json",
+      "sha256": "fc726c486777d7dd24c31ced3123da64fb5588ce890fc55eb26723fc78dd1ca6"
+    },
+    "executor_dispatch": [
+      {
+        "method": "execute_model",
+        "non_block": false,
+        "none_output": false,
+        "exact": true
+      },
+      {
+        "method": "execute_model",
+        "non_block": false,
+        "none_output": true,
+        "exact": true
+      },
+      {
+        "method": "execute_model",
+        "non_block": true,
+        "none_output": false,
+        "exact": true
+      },
+      {
+        "method": "execute_model",
+        "non_block": true,
+        "none_output": true,
+        "exact": true
+      },
+      {
+        "method": "sample_tokens",
+        "non_block": false,
+        "none_output": false,
+        "exact": true
+      },
+      {
+        "method": "sample_tokens",
+        "non_block": false,
+        "none_output": true,
+        "exact": true
+      },
+      {
+        "method": "sample_tokens",
+        "non_block": true,
+        "none_output": false,
+        "exact": true
+      },
+      {
+        "method": "sample_tokens",
+        "non_block": true,
+        "none_output": true,
+        "exact": true
+      }
+    ],
+    "passed": true,
+    "finished_unix": 1790923379.8955638,
+    "seconds": 15.517298698425293,
+    "helper_pss_bytes": 5877328896
+  },
+  "scope": "Same previously checked engine/worker/official scheduler configuration. New native dispatch seam verified on CPU; real GPU sampling/numerical/throughput pending.",
+  "prior_configuration_receipt": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-owner-scheduler-20261002/cpu-verification.json",
+    "sha256": "f9c97bb4d1394abe4ead62b9da7e7df7da960235eb1f55a407f7c70190637da6"
+  },
+  "native_sources": {
+    "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/ray_utils.py": "04c2b93ef48b60f5461868f805458df5b4e3ef4b867ba6685c3073ef0d7db9cd",
+    "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py": "64e251fd7ab9579f3555626392f3d017024c1ee32a3432fb93f3bbb73a8dbd0a",
+    "/opt/conda/lib/python3.12/site-packages/vllm/v1/executor/ray_executor.py": "7576bec19a3e686c0fef8b2e3d8380d6dcbe09fe72a8d20569a5e86687206a0f"
+  }
+}

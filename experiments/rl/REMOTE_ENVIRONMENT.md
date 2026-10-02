@@ -6,14 +6,15 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
-当前正式清单为`runs/appworld-native-async-owner-scheduler-20261002/formal-training.json`，根目录
+当前正式清单为`runs/appworld-native-async-native-futures-20261002/formal-training.json`，根目录
 `active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842使用GPU0/1，
-AppWorld PID2463700使用GPU2/3，TextCraft PID3218909使用GPU4/5。
-AppWorld新进程创建时间1790921486.96，从原完整检查点8由原VERL恢复；冻结入口及
-owner为`candidates/appworld-native-async-015-owner-scheduler-20261002`。`d3b762b`选择原VERL
-提供的ChatCompletionScheduler，修复仅启用async却遗留sync默认None而卡在就绪等待的
-配置错误；原manager/scheduler代码不改，继承`3324271`与`b31b695`。实际GPU初始化、
-LoRA同步、生成数值和吞吐仍待确认，不能将CPU接口对照称为训练验收。
+AppWorld PID3232113使用GPU2/3，TextCraft PID3218909使用GPU4/5。
+AppWorld新进程创建时间1790924078.76，从原完整检查点8由原VERL恢复；冻结入口及
+owner为`candidates/appworld-native-async-015-native-futures-20261002`。原PID2463700
+首个生成在原抽象执行入口将批量Future视为单输出时失败，没有新完成更新；旧记录
+进程均已退出。`a1ad7b1`复用原vLLM单输出执行方法、Ray RPC和Future类衔接返回值；
+实际CPU接口8项对照通过，GPU生成数值和吞吐仍待验证，不能称训练验收。
+继承`d3b762b`原scheduler配置、`3324271`导入和`b31b695`参数过滤；本次配置不变。
 复用原Python、模型、环境资产和缓存。LoRA8/16、actor/DT每卡4和任务预算未变。
 
 <details>

@@ -240,7 +240,9 @@ for label,receipt_dir,supersedes in [
     ('appworld-native-async-worker-import-20261002',str(root/'candidates/appworld-native-async-015-worker-import-20261002'),
      'appworld-native-async-native-config-20261002'),
     ('appworld-native-async-owner-scheduler-20261002',str(root/'candidates/appworld-native-async-015-owner-scheduler-20261002'),
-     'appworld-native-async-worker-import-20261002')]:
+     'appworld-native-async-worker-import-20261002'),
+    ('appworld-native-async-native-futures-20261002',str(root/'candidates/appworld-native-async-015-native-futures-20261002'),
+     'appworld-native-async-owner-scheduler-20261002')]:
     receipt_base=Path(receipt_dir)
     path=(receipt_base if receipt_base.is_absolute() else out/receipt_base)/'prepared.json'
     if not path.is_file():continue
