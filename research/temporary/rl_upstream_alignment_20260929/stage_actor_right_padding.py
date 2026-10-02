@@ -7,7 +7,7 @@ from stage_environment_entry import AUDIT, ENTRY, REPO, ROOT, SCP, SSH, remote
 
 
 if __name__ == '__main__':
-    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003-v2'
+    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003-v3'
     remote(f'test ! -e {out}/prepared.json && mkdir -p {out}\n')
     files = [REPO/'experiments/rl'/name for name in ('patch_actor_shared_right_padding.py', 'test_shared_padding.py')]
     files += [AUDIT/name for name in ('verify_owner_response_padding.py', 'verify_actor_right_padding.py')]
@@ -41,15 +41,18 @@ assert hashlib.sha256(host.read_bytes()).hexdigest()=='e5eb4afc42f10fb4608b3ac43
 shutil.copy2(host,candidate/'verl/workers/fsdp_workers.py')
 env=os.environ.copy();env.update(CUDA_VISIBLE_DEVICES='',MACA_VISIBLE_DEVICES='',OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',VERL_ROOT=str(candidate))
 env['PYTHONPATH']=':'.join([str(candidate),str(out),job['entry'],env['PYTHONPATH']])
-with (out/'cpu-tests.log').open('wb') as log:
- test=subprocess.run([env['VENV_PYTHON'],'-m','pytest','-q',str(out/'test_shared_padding.py'),'--junitxml='+str(out/'cpu-tests.xml')],env=env,cwd=out,stdout=log,stderr=subprocess.STDOUT)
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 previous=json.loads((out.parent/'actor-shared-right-padding-20261003/prepared.json').read_bytes())
 assert sha(candidate/actor)==previous['after_actor_sha256'], 'Only fixture versions changed between CPU attempts'
+cpu_previous=out.parent/'actor-shared-right-padding-20261003-v2'
+previous_cpu=json.loads((cpu_previous/'prepared.json').read_bytes())
+assert previous_cpu['test_returncode']==0 and sha(candidate/actor)==previous_cpu['after_actor_sha256']
+assert sha(out/'test_shared_padding.py')==sha(cpu_previous/'test_shared_padding.py')
 receipt=dict(role='Prepared candidate; formal jobs unchanged; no model numerical or speed acceptance from CPU tests',observed_unix=time.time(),
  previous_attempt=str(out.parent/'actor-shared-right-padding-20261003'),previous_actor_implementation_unchanged=True,
  code_commit='@COMMIT@',stager_sha256='@SHA@',base=str(base),candidate=str(candidate),entry=job['entry'],formal_driver_pid=driver.pid,formal_driver_birth=driver.create_time(),
- before_actor_sha256=sha(base/actor),after_actor_sha256=sha(candidate/actor),changed_methods=['_forward_micro_batch'],test_returncode=test.returncode,
+ before_actor_sha256=sha(base/actor),after_actor_sha256=sha(candidate/actor),changed_methods=['_forward_micro_batch'],test_returncode=previous_cpu['test_returncode'],
+ reused_cpu_tests=dict(path=str(cpu_previous/'cpu-tests.xml'),sha256=sha(cpu_previous/'cpu-tests.xml'),scope='Same actor and test file hashes; 98 original CPU cases not rerun'),
  files={str(p):sha(p) for p in [out/'patch_actor_shared_right_padding.py',out/'test_shared_padding.py',out/'verify_owner_response_padding.py',out/'verify_actor_right_padding.py',candidate/'verl/workers/fsdp_workers.py']})
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 source=dict(formal_launch=str(pathlib.Path(job['output'])/'launch.json'),
@@ -59,9 +62,13 @@ source=dict(formal_launch=str(pathlib.Path(job['output'])/'launch.json'),
 options=json.loads(pathlib.Path(source['formal_launch']).read_bytes())['options']
 source['original_total_training_steps']=options['trainer.total_training_steps']
 (out/'source.json').write_text(json.dumps(source,indent=2)+'\n')
+sys.path.insert(0,str(candidate))
+from verify_owner_response_padding import _OWNER_WORKER
+from verl.workers.fsdp_workers import AsyncActorRolloutRefWorker
+assert _OWNER_WORKER is AsyncActorRolloutRefWorker
+receipt['factory_cpu_check']='Passed: same public async worker class selected by original task launch'
+(out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 print(json.dumps(receipt),flush=True)
-if test.returncode:print((out/'cpu-tests.log').read_text()[-8000:],flush=True)
-test.check_returncode()
 PY
 '''.replace('@ENTRY@', ENTRY).replace('@ROOT@', ROOT).replace('@OUT@', out)
        .replace('@COMMIT@', subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip())

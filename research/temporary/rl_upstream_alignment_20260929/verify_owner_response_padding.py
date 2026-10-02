@@ -20,13 +20,18 @@ from transformers import AutoTokenizer
 from verl import DataProto
 from verl.single_controller.base.decorator import Dispatch, register
 from verl.single_controller.ray import RayClassWithInitArgs, RayResourcePool, RayWorkerGroup
-from verl.workers.fsdp_workers import ActorRolloutRefWorker
+from verl.workers.fsdp_workers import ActorRolloutRefWorker, AsyncActorRolloutRefWorker
 
 OUT = Path(os.environ['PADDING_DIAGNOSTIC_DIR'])
+_source = json.loads((OUT/'source.json').read_text())
+_launch = json.loads(Path(_source['formal_launch']).read_text())['options']
+_rollout_mode = _launch.get('actor_rollout_ref.rollout.mode', 'sync')
+# Same public class selection as the original main_ppo TaskRunner.
+_OWNER_WORKER = AsyncActorRolloutRefWorker if _rollout_mode == 'async' else ActorRolloutRefWorker
 
 
 @ray.remote
-class ObservedWorker(ActorRolloutRefWorker):
+class ObservedWorker(_OWNER_WORKER):
     @register(dispatch_mode=Dispatch.ONE_TO_ALL)
     def select_padding_owner(self, mode):
         assert self.config.model.lora_rank == 8 and self.config.model.lora_alpha == 16
@@ -41,8 +46,9 @@ class ObservedWorker(ActorRolloutRefWorker):
             self.padding_observations = []
             self.padding_before = {n:(p.to_local() if hasattr(p,'to_local') else p).detach().cpu().clone()
                 for n,p in self.actor_module_fsdp.named_parameters() if p.requires_grad}
-            with self.rollout_sharding_manager:
-                pass
+            if self.config.rollout.mode != 'async':
+                with self.rollout_sharding_manager:
+                    pass
         original = self.padding_reference_forward if mode == 'reference' else self.padding_candidate_forward
         def observed(*args, **kwargs):
             batch = args[0] if args else kwargs['micro_batch']
@@ -80,10 +86,12 @@ class ObservedWorker(ActorRolloutRefWorker):
                 changed += int(not torch.equal(value,self.padding_before[name]))
         steps = sorted({float(s['step'].item()) for s in self.actor.actor_optimizer.state.values() if 'step' in s})
         assert changed > 0
-        with self.rollout_sharding_manager:
-            pass
+        if self.config.rollout.mode != 'async':
+            with self.rollout_sharding_manager:
+                pass
         return dict(rank=self.rank,calls=self.padding_observations,changed_parameter_tensors=changed,
-                    native_optimizer_steps=steps,post_update_native_sync_sleep=True)
+                    native_optimizer_steps=steps,
+                    post_update_native_sync_sleep=self.config.rollout.mode != 'async')
 
 
 if __name__ == '__main__':

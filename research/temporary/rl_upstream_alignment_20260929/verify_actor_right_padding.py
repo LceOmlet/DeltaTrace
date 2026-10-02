@@ -84,7 +84,16 @@ if __name__ == '__main__':
     try:
         group = RayWorkerGroup(RayResourcePool([2], use_gpu=True, max_colocate_count=1),
             RayClassWithInitArgs(ObservedWorker, cfg.actor_rollout_ref, 'actor_rollout'))
+        record('native_worker_init_start', rollout_mode=cfg.actor_rollout_ref.rollout.mode)
         group.init_model()
+        manager = None
+        if cfg.actor_rollout_ref.rollout.mode == 'async':
+            from verl.workers.rollout.async_server import AsyncLLMServerManager
+            record('native_async_server_init_start')
+            manager = AsyncLLMServerManager(config=cfg.actor_rollout_ref, worker_group=group)
+            manager.wake_up()
+            manager.sleep()
+            record('native_async_server_sleep_complete')
         scores = {}
         for mode in ('reference', 'candidate', 'reference', 'candidate'):
             state['selected_owners'] = group.select_padding_owner(mode)
@@ -124,7 +133,11 @@ if __name__ == '__main__':
             metrics = group.update_actor(batch).meta_info['metrics']
             state.setdefault('updates', []).append(dict(fixture=label, seconds=time.perf_counter()-tick, metrics=metrics))
             record(label+'_native_update_complete')
+        if manager is not None:
+            record('post_update_native_async_sync_start')
+            manager.wake_up()
+            manager.sleep()
         workers = group.finish_padding_observation()
-        record('complete', workers=workers)
+        record('complete', workers=workers, post_update_native_async_sync_sleep=manager is not None)
     finally:
         ray.shutdown()
