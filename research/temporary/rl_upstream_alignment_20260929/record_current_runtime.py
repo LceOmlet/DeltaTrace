@@ -174,6 +174,7 @@ for j in active['jobs']:
                     out/f"live-{j['task']}-complete.json"]
     if padding_live:
         override_paths.append(out/'actor-response-padding'/padding_live/'complete.json')
+    override_paths.append(root/'receipts/native-host-cache-phase-20261002'/f"{j['task']}-{j['pid']}"/'complete.json')
     for path in override_paths:
         if not path.is_file():continue
         value=read(path);workers=value if isinstance(value,list) else value.get('workers',[])
@@ -181,8 +182,9 @@ for j in active['jobs']:
         if not belongs:continue
         effective_files={}
         for w in workers:
-            if w.get('effective_forward_source'):
-                p=Path(w['effective_forward_source']);expected=w['effective_source_sha256']
+            effective_source=w.get('effective_owner_source') or w.get('effective_forward_source')
+            if effective_source:
+                p=Path(effective_source);expected=w['effective_source_sha256']
                 effective_files[str(p)]=dict(**artifact(p),expected_sha256=expected,matches=sha(p)==expected)
             for n,expected in w.get('source_sha256',{}).items():
                 p=Path(w['source'])/n
@@ -459,6 +461,11 @@ for job in result['jobs']:
     sources={None:job['owner_files'][actor_name]}
     for overlay in job['runtime_overrides']:
         for worker in overlay['workers']:
+            if worker.get('methods'):
+                # These receipts replace owner RPC cleanup methods, not the
+                # actor forward.  The original receipt used a legacy generic
+                # effective_forward_source key for the worker source file.
+                continue
             path=worker.get('effective_forward_source')
             if not path and worker.get('source_sha256',{}).get(actor_name):
                 path=worker['source']+'/'+actor_name
@@ -467,6 +474,10 @@ for job in result['jobs']:
     if len(sources)>1:sources.pop(None)
     job['version_mapping']['actor_forward_sources']=[dict(rank=rank,**source) for rank,source in sources.items()]
     job['version_mapping']['actor_forward_evidence']='Frozen startup source plus completed PID-bound overrides; no live method introspection'
+    job['version_mapping']['owner_worker_method_sources']=[
+        dict(rank=worker['rank'],methods=worker['methods'],
+             resource_environment=worker.get('resource_environment',{}),receipt=overlay['receipt'])
+        for overlay in job['runtime_overrides'] for worker in overlay['workers'] if worker.get('methods')]
     for name,record in job['entry_files'].items():
         p=REPO/'experiments/rl'/name
         if p.is_file():

@@ -82,7 +82,7 @@ def activate(worker):
   assert before==(id(w.actor.actor_module),id(w.actor.actor_optimizer),repr(w.config))
   record=dict(task=job['task'],pid=os.getpid(),rank=w.rank,role=role,unix=time.time(),
    driver_pid=job['pid'],driver_created_unix=job['observed_process_created_unix'],methods=bindings,
-   effective_forward_source=str(candidate),effective_source_sha256='@SOURCE_SHA@',
+   effective_owner_source=str(candidate),effective_source_sha256='@SOURCE_SHA@',
    resource_environment={'VERL_RELEASE_UNUSED_HOST_CACHE':'1'},
    submission_repository_commit='@REVISION@',submission_script_sha256='@SCRIPT_SHA@',
    lora_rank=8,lora_alpha=16,actor_microbatch=4,
