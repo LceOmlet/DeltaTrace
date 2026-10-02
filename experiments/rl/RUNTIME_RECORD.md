@@ -59,6 +59,16 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
   0.002404/0.002182，均保留原始向量和逐项残差。这不是新的整网FA/FLA容差，
   没有倍率、裁剪或归因纠偏，也不宣称缓存字段相同能证明全部DT数值验收。
 
+[独立增量接口回执](results_native_state_streaming_interface_20261003.json)对应f0f780f，
+只用原FLA test_chunk输入夹具、实际FP16 k/w/u及FP32 g、B4×7488。
+原FP32状态在1856/3712/5568/7488四个边界均与独立原读出逐值相同，完整边界
+也与原forward的final_state逐值相同；增量总共读取7488 token，不是多次从0读。
+这不替代正式模型样本或全层Cache验证。首段3.918秒含新形状首次编译，后续段
+约1.0毫秒；原前向13.890秒亦含首编译，不能当完整DT或正式热吞吐。
+远端目录native-state-interface-1790970639，PID2553911创建于1790970629.91，已结束；
+operator SHA e4a81e5f6999…，测试原文件SHA 35f28bf6d01f…，峰值torch3.595GiB，
+PSS6.677GiB，未创建或替换模型、内核、训练参数、容差或正式方法。
+
 6ef58eb的增量artifact SHA cb807d533d1404f2f339ef3f9b40d88a322a094da9020362666c9dd2a05364fd
 只组合原FLA FP32 initial_state/final_state接口，相邻边界只读新增区间；仍未部署，
 且不被上面的旧artifact回执覆盖。[首次提交观察回执](results_native_prefix_streaming_state_20261003.json)
