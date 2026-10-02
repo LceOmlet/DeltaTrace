@@ -68,7 +68,8 @@ class PrefixWorker(ActorRolloutRefWorker):
         save('model_prefix_start', shape=list(ids.shape), requested_prefix=prefix,
              rank_lora=8, alpha=16, local_microbatch=4,
              source_sha256=hashlib.sha256((OUT/'actual-minimum-inputs.json').read_bytes()).hexdigest())
-        load_fsdp_model_to_gpu(self.actor_module_fsdp)
+        if self._is_offload_param:
+            load_fsdp_model_to_gpu(self.actor_module_fsdp)
         training = self.actor_module_fsdp.training
         self.actor_module_fsdp.eval()
         producer = DeltaTraceRolloutProducer(self.actor_module_fsdp,
@@ -130,7 +131,8 @@ class PrefixWorker(ActorRolloutRefWorker):
             text.set_attn_implementation(previous_attention)
             self.actor_module_fsdp.train(training)
             runner.model.release_owner_params()
-            offload_fsdp_model_to_cpu(self.actor_module_fsdp)
+            if self._is_offload_param:
+                offload_fsdp_model_to_cpu(self.actor_module_fsdp)
 
 
 if __name__ == '__main__':

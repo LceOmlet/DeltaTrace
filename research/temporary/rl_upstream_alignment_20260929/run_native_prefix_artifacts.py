@@ -7,7 +7,8 @@ from stage_environment_entry import ENTRY, ROOT, REPO, AUDIT, SSH, SCP, remote
 
 
 if __name__ == '__main__':
-    out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-artifacts-20261003'
+    out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-artifacts-20261003-v2'
+    remote(f'mkdir -p {out}\n')
     names = ('native_prefix_artifacts_candidate.py', 'verify_native_prefix_artifacts.py')
     for name in names:
         subprocess.run(SCP+[str(AUDIT/name), f'{SSH[-1]}:{out}/{name}'], check=True)
@@ -24,6 +25,7 @@ process_section=physical.split('| Process:')[-1]
 assert not re.search(r'^\|\s+[67]\s+\d+\s+',process_section,re.M), 'Optional probe GPUs are occupied'
 source=root/'candidates/native-host-cache-phase-20261002/e5eb4afc42f1/fsdp_workers.py'
 assert hashlib.sha256(source.read_bytes()).hexdigest()=='e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39'
+shutil.copy2(out.parent/'native-prefix-artifacts-20261003/actual-minimum-inputs.json',out/'actual-minimum-inputs.json')
 framework=out/'verl-root'
 shutil.copytree(pathlib.Path(job['verl_root'])/'verl',framework/'verl')
 shutil.copy2(source,framework/'verl/workers/fsdp_workers.py')
