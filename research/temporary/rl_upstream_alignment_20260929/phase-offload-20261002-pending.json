@@ -1,5 +1,5 @@
 {
-  "status": "submitted and last observed in native B8 old-logprob; outcome not yet observable; unaccepted and not deployed to any formal job",
+  "status": "Native B8x32768 fixture completed; slower update in a global host OOM window; unaccepted and not deployed to a formal job",
   "receipt_remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/phase-offload-1790937616",
   "driver_pid": 3125131,
   "driver_created_unix": 1790937615.58,
@@ -47,7 +47,7 @@
     "last_three_attempts": "SSH exit255, timeout during banner exchange; same diagnostic handle queried, no restart; one attempt extended connection timeout to30s",
     "scope": "No terminal driver state, successful update, OOM, numerical result, speedup or physical peak is inferred from unavailable SSH."
   },
-  "required_next_action": "Inspect this existing job.json/PID birth and original result/log. Do not resubmit; retain current formal source/config until native capacity and DT claims are verified.",
+  "required_next_action": "Do not deploy the offload candidate or rerun a heavy test on merely free GPUs. Resolve host/XTT memory pressure and the pending SQL restart decision; preserve current AppWorld/TextCraft numerical sources and official parameters.",
   "native_task_progress_source": {
     "path": "research/temporary/rl_upstream_alignment_20260929/phase-observation-20261002/native-three-task-tail-1790936869.json",
     "sha256": "f05217b2f502b6911225127b720f129f196b038a43c38c0bbf171d1e107a7d58",
@@ -104,5 +104,429 @@
       "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/entry",
       "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl"
     }
-  ]
+  ],
+  "initial_submission_status": "submitted and last observed in native B8 old-logprob; outcome not yet observable; unaccepted and not deployed to any formal job",
+  "completion": {
+    "observed_unix": 1790938735.8321095,
+    "driver_missing": true,
+    "result": {
+      "scope": "Submit one B8 x 32768 batch through original VERL DP dispatch (B4/rank).",
+      "submitted_shape": [
+        8,
+        32768
+      ],
+      "rank": 8,
+      "alpha": 16,
+      "microbatch_per_gpu": 4,
+      "phase": "passed",
+      "old_logprob_seconds": 44.17573977634311,
+      "update_seconds": 480.7675716280937,
+      "metrics": {
+        "actor/kl_loss": 5.0187110900878906e-05,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": [
+          -0.05000000074505806
+        ],
+        "actor/pg_clipfrac": [
+          0.0
+        ],
+        "actor/ppo_kl": [
+          0.0
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.0011117414105683565
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 93.15854740142822,
+        "perf/max_memory_reserved_gb": 98.056640625,
+        "perf/cpu_memory_used_gb": 694.8575096130371,
+        "actor/lr": 1e-06
+      },
+      "workers": [
+        {
+          "rank": 0,
+          "worker_pid": 3129908,
+          "phase_offload": true,
+          "config": {
+            "hybrid_engine": true,
+            "model": {
+              "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+              "use_shm": false,
+              "external_lib": null,
+              "override_config": {},
+              "enable_gradient_checkpointing": true,
+              "enable_activation_offload": true,
+              "use_remove_padding": false,
+              "lora_rank": 8,
+              "lora_alpha": 16,
+              "target_modules": "all-linear",
+              "use_liger": false,
+              "use_fused_kernels": true,
+              "trust_remote_code": true,
+              "fused_kernel_options": {
+                "impl_backend": "torch"
+              }
+            },
+            "actor": {
+              "strategy": "fsdp2",
+              "ppo_mini_batch_size": 32,
+              "ppo_micro_batch_size": null,
+              "ppo_micro_batch_size_per_gpu": 4,
+              "use_dynamic_bsz": false,
+              "ppo_max_token_len_per_gpu": 32768,
+              "grad_clip": 1.0,
+              "clip_ratio": 0.2,
+              "clip_ratio_low": 0.2,
+              "clip_ratio_high": 0.2,
+              "clip_ratio_c": 3.0,
+              "loss_agg_mode": "token-mean",
+              "entropy_coeff": 0.001,
+              "use_invalid_action_penalty": false,
+              "invalid_action_penalty_coef": 0.1,
+              "use_kl_loss": true,
+              "use_torch_compile": true,
+              "kl_loss_coef": 0.001,
+              "kl_loss_type": "low_var_kl",
+              "ppo_epochs": 1,
+              "shuffle": false,
+              "ulysses_sequence_parallel_size": 1,
+              "policy_loss": {
+                "loss_mode": "vanilla"
+              },
+              "checkpoint": {
+                "contents": [
+                  "model",
+                  "optimizer",
+                  "extra"
+                ]
+              },
+              "optim": {
+                "lr": 1e-06,
+                "lr_warmup_steps": -1,
+                "lr_warmup_steps_ratio": 0.0,
+                "min_lr_ratio": 0.0,
+                "num_cycles": 0.5,
+                "warmup_style": "constant",
+                "total_training_steps": 330,
+                "weight_decay": 0.01
+              },
+              "fsdp_config": {
+                "wrap_policy": {
+                  "min_num_params": 0
+                },
+                "param_offload": true,
+                "optimizer_offload": true,
+                "offload_policy": false,
+                "reshard_after_forward": true,
+                "fsdp_size": -1,
+                "model_dtype": "bfloat16"
+              },
+              "use_remove_padding": false,
+              "use_fused_kernels": true
+            },
+            "ref": {
+              "strategy": "fsdp",
+              "fsdp_config": {
+                "param_offload": false,
+                "reshard_after_forward": true,
+                "wrap_policy": {
+                  "min_num_params": 0
+                }
+              },
+              "use_torch_compile": true,
+              "log_prob_micro_batch_size": null,
+              "log_prob_micro_batch_size_per_gpu": 4,
+              "log_prob_use_dynamic_bsz": false,
+              "log_prob_max_token_len_per_gpu": 32768,
+              "ulysses_sequence_parallel_size": 1
+            },
+            "rollout": {
+              "name": "vllm",
+              "mode": "sync",
+              "chat_scheduler": null,
+              "temperature": 1.0,
+              "top_k": -1,
+              "top_p": 1,
+              "use_fire_sampling": false,
+              "prompt_length": 32256,
+              "response_length": 512,
+              "dtype": "bfloat16",
+              "gpu_memory_utilization": 0.75,
+              "ignore_eos": false,
+              "enforce_eager": true,
+              "free_cache_engine": true,
+              "load_format": "safetensors",
+              "layered_summon": false,
+              "tensor_model_parallel_size": 1,
+              "max_num_batched_tokens": 32768,
+              "max_model_len": 32768,
+              "max_num_seqs": 32,
+              "log_prob_micro_batch_size": null,
+              "log_prob_micro_batch_size_per_gpu": 4,
+              "log_prob_use_dynamic_bsz": false,
+              "log_prob_max_token_len_per_gpu": 32768,
+              "disable_log_stats": true,
+              "enable_chunked_prefill": true,
+              "do_sample": true,
+              "n": 1,
+              "engine_kwargs": {
+                "vllm": {
+                  "swap_space": null,
+                  "limit_mm_per_prompt": {
+                    "image": 0,
+                    "video": 0
+                  }
+                },
+                "sglang": {
+                  "attention_backend": null
+                }
+              },
+              "val_kwargs": {
+                "top_k": -1,
+                "top_p": 1,
+                "temperature": 1,
+                "n": 1,
+                "do_sample": true
+              },
+              "multi_turn": {
+                "enable": true,
+                "max_turns": null,
+                "tool_config_path": null,
+                "format": "chatml"
+              }
+            }
+          },
+          "calls": [
+            {
+              "shape": [
+                4,
+                32768
+              ],
+              "seconds": 39.57057680375874,
+              "calculate_entropy": true
+            },
+            {
+              "shape": [
+                4,
+                32768
+              ],
+              "seconds": 400.3107993211597,
+              "calculate_entropy": true
+            }
+          ],
+          "changed_parameter_tensors": 248,
+          "phase": "updated",
+          "allocator_peak_gib": 93.15854740142822,
+          "post_update_sync_sleep_seconds": 3.6660874616354704
+        },
+        {
+          "rank": 1,
+          "worker_pid": 3131639,
+          "phase_offload": true,
+          "config": {
+            "hybrid_engine": true,
+            "model": {
+              "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+              "use_shm": false,
+              "external_lib": null,
+              "override_config": {},
+              "enable_gradient_checkpointing": true,
+              "enable_activation_offload": true,
+              "use_remove_padding": false,
+              "lora_rank": 8,
+              "lora_alpha": 16,
+              "target_modules": "all-linear",
+              "use_liger": false,
+              "use_fused_kernels": true,
+              "trust_remote_code": true,
+              "fused_kernel_options": {
+                "impl_backend": "torch"
+              }
+            },
+            "actor": {
+              "strategy": "fsdp2",
+              "ppo_mini_batch_size": 32,
+              "ppo_micro_batch_size": null,
+              "ppo_micro_batch_size_per_gpu": 4,
+              "use_dynamic_bsz": false,
+              "ppo_max_token_len_per_gpu": 32768,
+              "grad_clip": 1.0,
+              "clip_ratio": 0.2,
+              "clip_ratio_low": 0.2,
+              "clip_ratio_high": 0.2,
+              "clip_ratio_c": 3.0,
+              "loss_agg_mode": "token-mean",
+              "entropy_coeff": 0.001,
+              "use_invalid_action_penalty": false,
+              "invalid_action_penalty_coef": 0.1,
+              "use_kl_loss": true,
+              "use_torch_compile": true,
+              "kl_loss_coef": 0.001,
+              "kl_loss_type": "low_var_kl",
+              "ppo_epochs": 1,
+              "shuffle": false,
+              "ulysses_sequence_parallel_size": 1,
+              "policy_loss": {
+                "loss_mode": "vanilla"
+              },
+              "checkpoint": {
+                "contents": [
+                  "model",
+                  "optimizer",
+                  "extra"
+                ]
+              },
+              "optim": {
+                "lr": 1e-06,
+                "lr_warmup_steps": -1,
+                "lr_warmup_steps_ratio": 0.0,
+                "min_lr_ratio": 0.0,
+                "num_cycles": 0.5,
+                "warmup_style": "constant",
+                "total_training_steps": 330,
+                "weight_decay": 0.01
+              },
+              "fsdp_config": {
+                "wrap_policy": {
+                  "min_num_params": 0
+                },
+                "param_offload": true,
+                "optimizer_offload": true,
+                "offload_policy": false,
+                "reshard_after_forward": true,
+                "fsdp_size": -1,
+                "model_dtype": "bfloat16"
+              },
+              "use_remove_padding": false,
+              "use_fused_kernels": true
+            },
+            "ref": {
+              "strategy": "fsdp",
+              "fsdp_config": {
+                "param_offload": false,
+                "reshard_after_forward": true,
+                "wrap_policy": {
+                  "min_num_params": 0
+                }
+              },
+              "use_torch_compile": true,
+              "log_prob_micro_batch_size": null,
+              "log_prob_micro_batch_size_per_gpu": 4,
+              "log_prob_use_dynamic_bsz": false,
+              "log_prob_max_token_len_per_gpu": 32768,
+              "ulysses_sequence_parallel_size": 1
+            },
+            "rollout": {
+              "name": "vllm",
+              "mode": "sync",
+              "chat_scheduler": null,
+              "temperature": 1.0,
+              "top_k": -1,
+              "top_p": 1,
+              "use_fire_sampling": false,
+              "prompt_length": 32256,
+              "response_length": 512,
+              "dtype": "bfloat16",
+              "gpu_memory_utilization": 0.75,
+              "ignore_eos": false,
+              "enforce_eager": true,
+              "free_cache_engine": true,
+              "load_format": "safetensors",
+              "layered_summon": false,
+              "tensor_model_parallel_size": 1,
+              "max_num_batched_tokens": 32768,
+              "max_model_len": 32768,
+              "max_num_seqs": 32,
+              "log_prob_micro_batch_size": null,
+              "log_prob_micro_batch_size_per_gpu": 4,
+              "log_prob_use_dynamic_bsz": false,
+              "log_prob_max_token_len_per_gpu": 32768,
+              "disable_log_stats": true,
+              "enable_chunked_prefill": true,
+              "do_sample": true,
+              "n": 1,
+              "engine_kwargs": {
+                "vllm": {
+                  "swap_space": null,
+                  "limit_mm_per_prompt": {
+                    "image": 0,
+                    "video": 0
+                  }
+                },
+                "sglang": {
+                  "attention_backend": null
+                }
+              },
+              "val_kwargs": {
+                "top_k": -1,
+                "top_p": 1,
+                "temperature": 1,
+                "n": 1,
+                "do_sample": true
+              },
+              "multi_turn": {
+                "enable": true,
+                "max_turns": null,
+                "tool_config_path": null,
+                "format": "chatml"
+              }
+            }
+          },
+          "calls": [
+            {
+              "shape": [
+                4,
+                32768
+              ],
+              "seconds": 39.47400224022567,
+              "calculate_entropy": true
+            },
+            {
+              "shape": [
+                4,
+                32768
+              ],
+              "seconds": 399.8817362282425,
+              "calculate_entropy": true
+            }
+          ],
+          "changed_parameter_tensors": 248,
+          "phase": "updated",
+          "allocator_peak_gib": 93.15854740142822,
+          "post_update_sync_sleep_seconds": 3.768545316532254
+        }
+      ]
+    },
+    "receipt": "research\\temporary\\rl_upstream_alignment_20260929\\phase-offload-followup-1790938735.json",
+    "receipt_sha256": "ffb66e2c908649d0a923647c53de88896ebffe3252b9e889587ea8e951c3ed28",
+    "baseline_update_seconds": 98.03942023031414,
+    "timing_scope": "One capacity fixture, not steady-state performance; concurrent host-wide OOM and possible cold compilation prevent isolating the offload policy cost."
+  },
+  "resources_observed": {
+    "receipt": "research\\temporary\\rl_upstream_alignment_20260929\\phase-offload-resource-and-oom-1790938987.json",
+    "sha256": "3d991aab16d62623c5aef93723fdfbb1f3c088ea6301f29223ba853a8531f29a",
+    "samples": 82,
+    "physical_gpu6_7_max_mib": [
+      58877,
+      58877
+    ],
+    "job_pss_max_bytes": 58729945088,
+    "cgroup_max_bytes": 326715334656,
+    "scope": "Original passive samples did not include host MemAvailable or XTT. Their cgroup/PSS values do not prove global host headroom."
+  },
+  "sql_failure": {
+    "taskrunner_pid": 558046,
+    "driver_pid": 552842,
+    "last_completed_iteration": 11,
+    "kernel": "global_oom victim ray::TaskRunner",
+    "checkpoint_exists": false,
+    "restart_submitted": false,
+    "restart_decision": "Pending user; lost updates cannot be resumed",
+    "checkpoint_receipt": "research\\temporary\\rl_upstream_alignment_20260929\\checkpoint-and-host-memory-1790939815.json",
+    "checkpoint_receipt_sha256": "f966cdf5b095cca5d7e7511cdd318fe62ae8e40ba87cf10d2eb911ce1c788ac8",
+    "clock_scope": "Raw kernel time and Ray wall time are preserved; do not infer precise chronology from dmesg --ctime conversion."
+  }
 }

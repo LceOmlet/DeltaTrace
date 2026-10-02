@@ -6,6 +6,12 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
+**19:25故障状态优先：SQL PID552842已因整机global OOM退出，完成step11但无
+可恢复检查点；没有提交重启。AppWorld、TextCraft继续，最新只读快照及内核/驱动
+证据在RUNTIME_RECORD.md。下文SQL启动身份属于已退出作业，不作为存活或重启依据。
+分阶段卸载候选仅完成容量夹具，未部署；显存低于64GiB不代表整机内存安全。**
+
+
 当前正式清单为`runs/appworld-native-async-native-futures-20261002/formal-training.json`，根目录
 `active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842使用GPU0/1，
 AppWorld PID3232113使用GPU2/3，TextCraft PID3218909使用GPU4/5。

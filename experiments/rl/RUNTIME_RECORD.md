@@ -9,10 +9,11 @@
 输出头/B4修复`dc4e4d7`。完整40位提交号和文件SHA保存在快照；记录文档的Git提交
 不是新的算法版本，也不表示远端执行了该提交的全部文件。
 
-SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际生效的padding版本
-冻结重启；没有可恢复的正式检查点。AppWorld原同步作业已完成step8，当前原生异步
-版本从该检查点恢复，已完成新的step9及下一批生成。**三个任务的实际代码组合并不相同**，具体见下表；历史段落不能代替
-当前PID绑定的完成回执。
+SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60尚未形成
+可恢复检查点，没有提交重启。AppWorld PID3232113、TextCraft PID3218909在
+19:25只读源码快照仍存活并由原worker日志分别确认完成step9、step37；存活本身
+不是训练健康证明。三个任务代码组合不同，具体见下表与PID绑定回执；历史段落
+不能代替当前终止状态或新部署。
 
 每项修复按“代码提交 → 实际文件SHA → 原测试及适用范围 → 部署路径/PID/时间 →
 替代的旧版本”对应记录。已验证、已准备、已部署和已退役分别标明；未提交完成回执
@@ -34,35 +35,57 @@ SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际
 | 哪次提交解决了哪个问题 | 下方修复表及对应代码/测试 | Git提交是修复来源，不能代替远端已部署证明 |
 
 远端根目录：`/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922`，
-SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不再提交GRPO。
+SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft继续；GPU6/7不再提交GRPO。
 
 ## 当前代码组合
 
-### 2026-10-02：官方分阶段卸载容量检查已提交，尚未取得结果
+### 2026-10-02 19:25：整机OOM与官方卸载候选结果
 
-上一真实搬运回执显示2次B4 DT各rank从CPU提交约48.38GiB参数；8k原历史前向
-又是已量出的最大单阶段。已核对固定VERL的`fsdp_workers.py`：
-`offload_policy=True`选择原CPUOffloadPolicy并关闭阶段级卸载标记；仅将此项
-设为False则复用原`param_offload=True`/`optimizer_offload=True`，在原阶段边界
-加载/卸载。本次不自行改变FSDP状态、移植缓存、重写拷贝或调整PPO/DT公式。
+SSH恢复后只读取原诊断PID3125131及同一回执，没有重新提交。官方分阶段卸载
+候选`6ac1fdd`完成原B8x32768夹具；LoRA8/16、每卡B4、原PPO/head/FA/FLA
+不变。原old-logprob44.176秒、update480.768秒，两rank各248个可训练张量发生
+更新并完成原生LoRA同步。原98.039秒容量记录保留；本次更新明显更慢，且同一
+观察时段出现整机OOM，不能归因于单一卸载开关或称为稳定提速。未做新的DT容量
+比较，也没有部署该候选。原结果、源码SHA及失败时段见
+[候选完成记录](../../research/temporary/rl_upstream_alignment_20260929/phase-offload-20261002-pending.json)。
 
-诊断提交`6ac1fdd`复用原已验证B8容量夹具（SHA256 dd7783122843033e98455e4178f2815bc65f6fbc8fa8757dcb65052dcfebbb60），
-只改其回执目录、上述官方配置和诊断PID记录。使用当前AppWorld的固定VERL及
-TextCraft已配置入口；actor/head文件SHA与当前正式版本一致。实际数值/训练框架
-没有新代码。检查资源前GPU6/7均863MiB且无任务进程，本次只在这两张空闲卡运行
-一个有界容量夹具，没有重提第四组正式训练。LoRA8/16、每卡B4、全局B8x32768固定。
+82个原被动样本中GPU6/7最大各58877MiB，诊断进程树PSS最大54.70GiB，
+cgroup最大304.28GiB。这些数字没有覆盖驱动占用及整机可用内存，不能据此
+认定1TiB主机安全。原内核明确记录global_oom杀死SQL TaskRunner558046，
+driver552842随后退出；cgroup failcnt为0、oom_kill为1，属于整机耗尽。
+SQL完成step11后无检查点目录（原save_freq60），未重启，恢复选择待用户答复。
+[原内核与资源回执](../../research/temporary/rl_upstream_alignment_20260929/phase-offload-resource-and-oom-1790938987.json)
+保留原始时间；dmesg墙钟与Ray日志不一致，不据转换时间认定精确先后或单一原因。
 
-[待验证候选与原PID](../../research/temporary/rl_upstream_alignment_20260929/phase-offload-20261002-pending.json)
-记录远端`receipts/owner-b8-dispatch-20260930/phase-offload-1790937616`、PID3125131、
-创建时间1790937615.58及被动资源observer3125139。最后确认已进入原32k log-prob；
-样本物理GPU6/7各29786MiB、该进程树PSS33.47GiB、容器282.33GiB。
-这只是阶段样本，不是更新完成、物理峰值或效率达标。随后三次SSH30821握手超时，
-包括30秒连接等待；结果与终止状态尚不可读，没有重启测试或正式进程。
-恢复连接后只检查同一PID/创建时间与原结果，不能据超时判定测试失败或再提交。
+本次只读MetaX原sysfs及`mx-smi --show-memory`，得到相同的XTT读数
+338083408KiB（约322.42GiB），八设备显示同值，不逐卡求和。TTM原
+kernel/used_memory为341157198KiB；这些驱动计数补充了此前只看cgroup/PSS
+的缺口，尚未将其全部归入某个进程或证明具体分配调用。
+[原驱动读数](../../research/temporary/rl_upstream_alignment_20260929/native-xtt-memory-owner-1790940064.json)、
+[原TTM读数](../../research/temporary/rl_upstream_alignment_20260929/native-ttm-accounting-1790940264.json)。
+[MetaX官方指标说明](https://developer.metax-tech.com/api/client/document/preview/%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8F%82%E8%80%83%E6%89%8B%E5%86%8C/%E6%9B%A6%E4%BA%91C500%E7%B3%BB%E5%88%97/0.16.0/k8s/03_component.html)
+将xtt定义为系统内存；该定义不是本地创造的显存口径。
 
-此配置仍为未接受候选，不在默认launch/patch路径。三组正式作业源码和参数未变。
-本次只读原阶段尾日志另已确认SQL新11、TextCraft新36完整指标；AppWorld第10轮DT
-仍在推进。源码快照仍单独保留其17:27采集时间，不把阶段回执当成新数值验证。
+只读observer修复`f3d6500`、SHA256
+`b5ce0035f0332c4113760fe4c566221dcecf913839597eb1dc7cf1ce2e71c91b`，在原
+物理显存/PSS/cgroup字段之外读取/proc/meminfo、cgroup OOM计数、原XTT/VRAM
+sysfs和原worker进程名。仅在receipts独立诊断目录执行150秒，不修改默认入口、
+训练作业、kernel参数或内存策略；语法检查通过，实际采样结果单独记录。
+不创建新的资源容差、自动重启阈值或训练健康门槛。
+
+150秒观察已自行结束，14个实际样本跨134.39秒；原observer无错误日志，未留下
+长期检查进程。当前AppWorld actor/TextCraft原更新阶段中，整机MemAvailable
+452.59–452.67GiB、cgroup174.59–174.60GiB，XTT恒为322.42GiB，原OOM计数
+保持1。GPU2/3峰值46836/44350MiB，GPU4/5峰值24213/24213MiB。
+这是SQL和容量进程退出后的样本，不外推为三组并行或下一32k测试的安全预算。
+[采样摘要与原文件SHA](../../research/temporary/rl_upstream_alignment_20260929/host-memory-observer-20261002-summary.json)。
+19:37非阻塞原worker栈确认AppWorld在原FSDP反向、TextCraft已进入原生成；
+该栈不能单独拆出具体GPU内核或证明吞吐达标，没有附加mcTracer或暂停进程。
+
+19:25源码快照确认当前entry和固定DT/FA/FLA没有SHA漂移。AppWorld仍原actor
+更新，TextCraft完成新step37（采样33.10分钟、DT7.63分钟、actor9.63分钟、
+整轮55.36分钟，原平均奖励0.473）。没有把TextCraft加载的旧step25或AppWorld
+加载的旧step8算成本次新更新。当前三组尚未全部健康，不能据容量完成关闭目标。
 
 ### 2026-10-02 18:20：真实 DT 分段耗时与前缀复用接口核查
 
