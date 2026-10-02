@@ -119,5 +119,95 @@
     "path": "research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/appworld-step7-dt-workload.json",
     "sha256": "04097eee6c584227caedd119fc4c968ac0387eaf6d5f9340074f654cbdc13215"
   },
-  "interpretation": "Raw author and current wall-clock times differ; no normalized slowdown or parity claim is made. GPU count and parameter count do not justify linear speed normalization."
+  "interpretation": "Raw author and current wall-clock times differ; no normalized slowdown or parity claim is made. GPU count and parameter count do not justify linear speed normalization.",
+  "latest_observation": {
+    "observed_utc": "2026-10-02T08:45:45.841082+00:00",
+    "source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/phase-observation-20261002/formal-phase-observation-1790930745.json",
+      "sha256": "9879a765b1bf1fc801b8a7978ea67a85fd08f407f4877ee3971de87cf85910cb"
+    },
+    "appworld": {
+      "driver_pid": 3232113,
+      "restored_checkpoint_iteration": 8,
+      "new_completed_iteration": null,
+      "checkpoint_marker": null,
+      "phase": "original VERL update_actor; first new iteration not yet complete",
+      "sampling_transport_seconds": 1207.6,
+      "sampling_generated_tokens": 738406,
+      "retained_trajectories": 216,
+      "retained_responses": 3278,
+      "retained_policy_tokens": 648607,
+      "max_context": 27005,
+      "completed_dt_alphabet_groups": 7,
+      "per_rank_dt": [
+        {
+          "pid": 3250426,
+          "readout_seconds_sum": 4009.9244132637978,
+          "native_B4_calls": 412,
+          "requests_including_native_DP_padding": 1648
+        },
+        {
+          "pid": 3254727,
+          "readout_seconds_sum": 4008.5000877417624,
+          "native_B4_calls": 412,
+          "requests_including_native_DP_padding": 1648
+        }
+      ]
+    },
+    "completed_phase_metrics": [
+      {
+        "task": "SkyRL-SQL",
+        "driver_pid": 552842,
+        "step": 10.0,
+        "gen_seconds": 2721.968,
+        "dt_seconds": 6418.249,
+        "actor_seconds": 1290.156,
+        "testing_seconds": 1200.061,
+        "full_iteration_seconds": 11995.09,
+        "score_mean": -0.974,
+        "native_log": "/tmp/ray/session_2026-10-01_05-44-42_236554_552842/logs/worker-f1a71b51afbe3ac5ac73064f61cabe6ec29bc096b8e51466d49f6acd-01000000-558046.out"
+      },
+      {
+        "task": "TextCraft",
+        "driver_pid": 3218909,
+        "step": 35.0,
+        "gen_seconds": 1919.486,
+        "dt_seconds": 538.489,
+        "actor_seconds": 577.473,
+        "testing_seconds": null,
+        "full_iteration_seconds": 3334.612,
+        "score_mean": 0.488,
+        "native_log": "/tmp/ray/session_2026-10-02_07-01-21_880335_3218909/logs/worker-7085c45d2f95f3e562bccff31e8c246442ba6608753fa6f527d056ce-01000000-3230286.out"
+      }
+    ],
+    "sql_score_dumps": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/rollouts/9.jsonl",
+        "sha256": "e5329c436e1aba5645d0ea96617faf26406354f4b30502d274a9374194ac519d",
+        "rows": 1280,
+        "official_scores": {
+          "-1.0": 1257,
+          "1.0": 17,
+          "0.0": 6
+        }
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/rollouts/10.jsonl",
+        "sha256": "1137db3182c8cd73ec3738ed708283d010515f77ec2d88dfd778f8a6043b0937",
+        "rows": 1280,
+        "official_scores": {
+          "-1.0": 1262,
+          "1.0": 15,
+          "0.0": 3
+        }
+      }
+    ],
+    "limitations": [
+      "Sampling transport includes prefill, decode, environment/RPC waits; not pure decode or end-of-iteration timing_s/gen.",
+      "DT sums cover original readout groups; not a new iteration count or controlled same-input speed comparison.",
+      "Console metrics retain original rounding; sampling parity with authors cannot be inferred from card hours.",
+      "No new official author absolute sampling-only runtime or token count was retrieved. Existing author references retain their own recorded scope.",
+      "SQL scope and DT balance candidates are verified but not deployed. No numerical core, runtime option, reward or prompt was changed."
+    ]
+  }
 }
