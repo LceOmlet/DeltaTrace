@@ -68,6 +68,27 @@ def main():
         config = OmegaConf.load(args.candidate/'verl/trainer/config/ppo_trainer.yaml')
         for key, value in json.loads(launch.read_text())['options'].items():
             OmegaConf.update(config, key.lstrip('+'), value, force_add=True)
+        if args.config_only:
+            # Compose the pending launch itself. Checking only the old launch
+            # did not exercise the async manager's required scheduler config.
+            import runpy
+            source_receipt = json.loads(Path(job['source_receipt']).read_text())
+            entry = args.candidate.parent/'entry'
+            os.environ.update(LOOP_ROOT=source_receipt['loop_root'],
+                VERL_ROOT=str(args.candidate),DT_ROOT=source_receipt['dt_root'],
+                DT_ENTRY_ROOT=str(entry))
+            sys.path[:0]=[str(entry),source_receipt['loop_root']]
+            pending_launcher=entry/'launch_appworld_native.py'
+            pending=runpy.run_path(str(pending_launcher))
+            options,sampling=pending['options_for'](Path(job['output']),resume_from=Path(job['resume_from']))
+            old_options=json.loads(launch.read_text())['options']
+            comparable=dict(options)
+            comparable['data.custom_cls.path']=old_options['data.custom_cls.path']
+            result['pending_configuration_changes']={key:dict(before=old_options.get(key),after=comparable.get(key))
+                for key in old_options.keys()|comparable.keys() if old_options.get(key)!=comparable.get(key)}
+            result['pending_launcher']=source(pending_launcher)
+            for key,value in options.items():
+                OmegaConf.update(config,key.lstrip('+'),value,force_add=True)
         native_args = []
         native_configs = []
 
@@ -153,6 +174,30 @@ def main():
                         pass
                 assert result['worker_init_boundary'][-1]['rank'] == rank
             result['checks'].append('Original execute_method/init_worker reaches native WorkerWrapperBase.init_worker for both recorded ranks; no device/model initialized')
+            # Exercise the original manager's thread target with the configured
+            # original scheduler. No server request or engine is constructed.
+            import threading
+            manager_module=importlib.import_module('verl.workers.rollout.async_server')
+            manager=object.__new__(manager_module.AsyncLLMServerManager)
+            manager.config=config.actor_rollout_ref
+            manager.scheduler_kwargs={}
+            manager.server_addresses=['127.0.0.1:1']
+            manager.chat_scheduler_ready=threading.Event()
+            manager.chat_scheduler_loop=None
+            thread=threading.Thread(target=manager._init_chat_scheduler,daemon=True)
+            thread.start()
+            try:
+                assert manager.chat_scheduler_ready.wait(45), 'Original scheduler did not signal ready'
+                assert type(manager.chat_scheduler) is manager_module.ChatCompletionScheduler
+                result['sources'][manager_module.__file__]=source(manager_module.__file__)
+                result['checks'].append('Original manager _init_chat_scheduler constructed the original configured ChatCompletionScheduler and signaled ready; no inference request made')
+            finally:
+                if manager.chat_scheduler_loop is not None:
+                    manager.chat_scheduler_loop.call_soon_threadsafe(manager.chat_scheduler_loop.stop)
+                thread.join(5)
+                assert not thread.is_alive()
+                if manager.chat_scheduler_loop is not None:
+                    manager.chat_scheduler_loop.close()
             result['passed']=True
             result['checks'].append('Original create_engine_config completed; no AsyncLLM/model/Ray actor created')
             return

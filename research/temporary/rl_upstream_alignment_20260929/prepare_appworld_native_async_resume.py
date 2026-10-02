@@ -47,7 +47,8 @@ launcher=entry/'launch_appworld_native.py'
 before=launcher.read_text()
 anchor="        'algorithm.adv_estimator': 'deltatrace',\n"
 assert before.count(anchor)==1
-after=before.replace(anchor,anchor+"        'actor_rollout_ref.rollout.mode': 'async',\n")
+after=before.replace(anchor,anchor+"        'actor_rollout_ref.rollout.mode': 'async',\n"
+    "        'actor_rollout_ref.rollout.chat_scheduler': 'verl.workers.rollout.async_server.ChatCompletionScheduler',\n")
 ast.parse(after)
 (base/'launch_appworld_native.before-async.py').write_bytes(launcher.read_bytes())
 launcher.write_text(after,newline='\n')
@@ -68,7 +69,10 @@ old_options.setdefault('actor_rollout_ref.rollout.mode',inherited.actor_rollout_
 new_options['data.custom_cls.path']=old_options['data.custom_cls.path']
 changes={k:dict(before=old_options.get(k),after=new_options.get(k))
     for k in old_options.keys()|new_options.keys() if old_options.get(k)!=new_options.get(k)}
-assert changes=={'actor_rollout_ref.rollout.mode':{'before':'sync','after':'async'}},changes
+assert changes=={
+    'actor_rollout_ref.rollout.mode':{'before':'sync','after':'async'},
+    'actor_rollout_ref.rollout.chat_scheduler':{
+        'before':None,'after':'verl.workers.rollout.async_server.ChatCompletionScheduler'}},changes
 assert new_options['actor_rollout_ref.model.lora_rank']==8
 assert new_options['actor_rollout_ref.model.lora_alpha']==16
 assert new_options['actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu']==4
