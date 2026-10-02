@@ -54,20 +54,23 @@ class PrefixWorker(ActorRolloutRefWorker):
             for name, owner in [('verl_worker', ActorRolloutRefWorker),
                                 ('dt_producer', DeltaTraceRolloutProducer),
                                 ('prepared_artifact_candidate', NativePrefixArtifacts)]}
-        inputs = json.loads((OUT/'actual-minimum-inputs.json').read_bytes())
-        samples = inputs['samples']
-        assert len(samples) == 4
-        # Factual prompts only: queries, outcome labels and current actions
-        # are excluded from the shared capture in this composition probe.
-        longest = (max(s['source_start'] for s in samples)+63)//64*64
-        prefix = min(s['source_start'] for s in samples)//64*64
-        ids = torch.full((4, longest), inputs['eos_token_id'], device='cuda', dtype=torch.long)
-        for i, sample in enumerate(samples):
-            ids[i, :sample['source_start']] = torch.tensor(
-                sample['selected_input_ids'][:sample['source_start']], device='cuda')
-        save('model_prefix_start', shape=list(ids.shape), requested_prefix=prefix,
-             rank_lora=8, alpha=16, local_microbatch=4,
-             source_sha256=hashlib.sha256((OUT/'actual-minimum-inputs.json').read_bytes()).hexdigest())
+        if os.environ.get('DT_PREFIX_DT_LEASE_DIAGNOSTIC') == '1':
+            save('original_request_lease_setup', rank_lora=8,alpha=16,local_microbatch=4)
+        else:
+            inputs = json.loads((OUT/'actual-minimum-inputs.json').read_bytes())
+            samples = inputs['samples']
+            assert len(samples) == 4
+            # Factual prompts only: queries, outcome labels and current actions
+            # are excluded from the shared capture in this composition probe.
+            longest = (max(s['source_start'] for s in samples)+63)//64*64
+            prefix = min(s['source_start'] for s in samples)//64*64
+            ids = torch.full((4, longest), inputs['eos_token_id'], device='cuda', dtype=torch.long)
+            for i, sample in enumerate(samples):
+                ids[i, :sample['source_start']] = torch.tensor(
+                    sample['selected_input_ids'][:sample['source_start']], device='cuda')
+            save('model_prefix_start', shape=list(ids.shape), requested_prefix=prefix,
+                 rank_lora=8, alpha=16, local_microbatch=4,
+                 source_sha256=hashlib.sha256((OUT/'actual-minimum-inputs.json').read_bytes()).hexdigest())
         if self._is_offload_param:
             load_fsdp_model_to_gpu(self.actor_module_fsdp)
         training = self.actor_module_fsdp.training
@@ -87,6 +90,10 @@ class PrefixWorker(ActorRolloutRefWorker):
         try:
             with torch.no_grad(), precision:
                 torch.cuda.reset_peak_memory_stats()
+                if os.environ.get('DT_PREFIX_DT_LEASE_DIAGNOSTIC') == '1':
+                    from diagnose_native_prefix_leases import diagnose
+                    diagnose(runner, producer, OUT, save)
+                    return result
                 if os.environ.get('DT_PREFIX_DT_SEAM_DIAGNOSTIC') == '1':
                     from diagnose_native_prefix_dt_seam import diagnose
                     diagnose(runner, producer, inputs, OUT, save, cache_tensors=tensors)

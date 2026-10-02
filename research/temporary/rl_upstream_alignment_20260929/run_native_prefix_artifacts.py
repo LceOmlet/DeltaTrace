@@ -15,9 +15,15 @@ if __name__ == '__main__':
                         help='Observe the first native FA call and invoke its pinned original output assertion; no production deployment.')
     parser.add_argument('--dt-seam-diagnostic', action='store_true',
                         help='Consume exact native cache artifacts through the optional owner seam on saved B4 endpoints; no production deployment.')
+    parser.add_argument('--dt-lease-diagnostic', action='store_true',
+                        help='Compare ordered original DT rows with native prefix leases, including capture and transfers; no production deployment.')
+    parser.add_argument('--request-artifacts',
+                        help='Original one-shot observer directory containing actual-requests-rank0/1.pt; used only by the lease diagnostic.')
     args = parser.parse_args()
-    assert sum((args.component_diagnostic, args.attention_diagnostic, args.dt_seam_diagnostic)) <= 1
+    assert sum((args.component_diagnostic, args.attention_diagnostic, args.dt_seam_diagnostic,args.dt_lease_diagnostic)) <= 1
+    assert bool(args.request_artifacts) == args.dt_lease_diagnostic
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/' + (
+        'native-prefix-dt-leases-20261003' if args.dt_lease_diagnostic else
         'native-prefix-dt-seam-20261003' if args.dt_seam_diagnostic else
         'native-prefix-attention-20261003' if args.attention_diagnostic else
         'native-prefix-components-20261003' if args.component_diagnostic
@@ -29,16 +35,21 @@ if __name__ == '__main__':
         names += ('diagnose_native_prefix_components.py',)
     if args.dt_seam_diagnostic:
         names += ('diagnose_native_prefix_dt_seam.py',)
+    if args.dt_lease_diagnostic:
+        names += ('diagnose_native_prefix_leases.py',)
     for name in names:
         subprocess.run(SCP+[str(AUDIT/name), f'{SSH[-1]}:{out}/{name}'], check=True)
-    if args.dt_seam_diagnostic:
-        files = {
+    files = {REPO/'deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py':'qwen35_native_prefix_artifacts.py'}
+    if args.dt_seam_diagnostic or args.dt_lease_diagnostic:
+        files.update({
             REPO/'deltatrace/clean/qwen35/qwen35_dense_finite_runner.py': 'qwen35_dense_finite_runner_candidate.py',
             REPO/'experiments/rl/deltatrace_credit.py': 'deltatrace_credit.py',
             REPO/'experiments/rl/test_native_prefix_provider.py': 'test_native_prefix_provider.py',
-        }
-        for path, name in files.items():
-            subprocess.run(SCP+[str(path), f'{SSH[-1]}:{out}/{name}'], check=True)
+        })
+    if args.dt_lease_diagnostic:
+        files.update({REPO/'experiments/rl'/name:name for name in ('reward_readout.py','native_prefix_leases.py')})
+    for path, name in files.items():
+        subprocess.run(SCP+[str(path), f'{SSH[-1]}:{out}/{name}'], check=True)
     remote(r'''set -e
 source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
@@ -52,7 +63,8 @@ process_section=physical.split('| Process:')[-1]
 assert not re.search(r'^\|\s+[67]\s+\d+\s+',process_section,re.M), 'Optional probe GPUs are occupied'
 source=root/'candidates/native-host-cache-phase-20261002/e5eb4afc42f1/fsdp_workers.py'
 assert hashlib.sha256(source.read_bytes()).hexdigest()=='e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39'
-shutil.copy2(out.parent/'native-prefix-artifacts-20261003/actual-minimum-inputs.json',out/'actual-minimum-inputs.json')
+if not @DT_LEASE@:
+ shutil.copy2(out.parent/'native-prefix-artifacts-20261003/actual-minimum-inputs.json',out/'actual-minimum-inputs.json')
 framework=out/'verl-root'
 shutil.copytree(pathlib.Path(job['verl_root'])/'verl',framework/'verl')
 shutil.copy2(source,framework/'verl/workers/fsdp_workers.py')
@@ -70,6 +82,17 @@ if @ATTENTION@:
 if @DT_SEAM@:
  run_env['DT_PREFIX_DT_SEAM_DIAGNOSTIC']='1'
  run_env['DT_PREFIX_OWNER_SOURCE']=str(out/'qwen35_dense_finite_runner_candidate.py')
+if @DT_LEASE@:
+ run_env['DT_PREFIX_DT_LEASE_DIAGNOSTIC']='1'
+ artifacts=pathlib.Path('@REQUEST_ARTIFACTS@')
+ for rank in (0,1):
+  shutil.copy2(artifacts/f'actual-requests-rank{rank}.pt',out/f'actual-requests-rank{rank}.pt')
+ # Same bounded subset of the native sorted B4 stream on both sharding ranks.
+ import torch
+ counts=[len(torch.load(out/f'actual-requests-rank{rank}.pt',map_location='cpu',weights_only=False)['requests']) for rank in (0,1)]
+ rows=min(*counts,32)//4*4
+ assert rows, 'Original observation has no complete B4 consumer'
+ run_env['DT_PREFIX_DIAGNOSTIC_ROWS']=str(rows)
 run_env['PYTHONPATH']=':'.join([str(out),job['entry'],str(framework),run_env.get('PYTHONPATH','')])
 receipt=dict(role='Prepared-only native artifact/API probe, not accepted or deployed training acceleration',
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
@@ -83,6 +106,13 @@ if @DIAGNOSTIC@:
 if @DT_SEAM@:
  for name in ('diagnose_native_prefix_dt_seam.py','qwen35_dense_finite_runner_candidate.py','deltatrace_credit.py','test_native_prefix_provider.py'):
   p=out/name;receipt['source_files'][str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+for name in ('qwen35_native_prefix_artifacts.py',):
+ p=out/name;receipt['source_files'][str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+if @DT_LEASE@:
+ for name in ('diagnose_native_prefix_leases.py','qwen35_dense_finite_runner_candidate.py','deltatrace_credit.py','reward_readout.py','native_prefix_leases.py','actual-requests-rank0.pt','actual-requests-rank1.pt'):
+  p=out/name;receipt['source_files'][str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+ receipt.update(actual_request_observation=str(artifacts),rows_per_rank=rows,
+  scope='Bounded original B4 consumers, original configuration, fresh loaded actor weights, no optimizer or production deployment')
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 if @DT_SEAM@:
  with (out/'cpu-interface-tests.log').open('wb') as log:
@@ -101,4 +131,6 @@ PY
            .replace('@DIAGNOSTIC@', str(args.component_diagnostic or args.attention_diagnostic))
            .replace('@ATTENTION@', str(args.attention_diagnostic))
            .replace('@DT_SEAM@', str(args.dt_seam_diagnostic))
+           .replace('@DT_LEASE@', str(args.dt_lease_diagnostic))
+           .replace('@REQUEST_ARTIFACTS@',args.request_artifacts or '')
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
