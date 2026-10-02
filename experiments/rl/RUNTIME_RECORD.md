@@ -39,6 +39,21 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03：完成阶段最新计时与原统计口径
+
+[原阶段计时](results_formal_phase_cost_20261003.json)来自同一正式PID的原TaskRunner
+日志：AppWorld step11采样1312.603秒（21.88分钟）、DT4013.914秒（66.90分钟）、
+actor2760.685秒（46.01分钟）、整轮8513.998秒（141.90分钟），此轮没有独立评估。
+TextCraft step43采样1923.745、DT503.907、actor579.641、整轮3306.967秒。
+各轮原token数和轨迹长度不同，不能把时间下降归于新的未部署加速。LOOP的42小时/
+约90次更新只给出整轮平均，不是官方采样计时；不能与我们的两小时整轮混用。
+
+原VERL 20bd331的rollout_probs_diff使用responses区域的attention_mask，包含
+工具观测；AppWorld原观测位置rollout log-prob为0。因此该全区域统计不能作为
+模型生成action的数值对照结论。保持原统计实现，未添加纠偏或新容差。
+原FLA状态接口小测c48b8cc已提交到AppWorld原RPC队列，formal-native-prefix-state-
+1790957819；本次采集只见提交回执，不能称实际读出完成。SQL仍停止。
+
 ### 2026-10-03：原捕获存储观察完成并恢复
 
 [实际捕获回执](results_dt_native_capture_storage_20261003.json)保存原AppWorld两rank
