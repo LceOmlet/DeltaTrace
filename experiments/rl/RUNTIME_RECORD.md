@@ -39,6 +39,29 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03 04:54：原训练FP32续算已完成；真实请求记录仅修保存接口
+
+[完成的原训练状态回执](results_native_prefix_streaming_state_completed_20261003.json)
+绑定原AppWorld PID3232113、两rank worker3250426/3254727和c9cd147源码SHA。
+真实B4×7168前缀按1792-token区间续算，四个FP32边界状态在两rank均与原生
+独立读出逐值相同，末边界也与原forward的状态相同。观察已恢复原绑定；未替换
+模型或信用计算。前两段含首次shape编译，后两段约0.9毫秒，不冒充完整DT提速。
+
+43f5699的一次性原始行保存发生官方torch.save错误：不同dtype的Tensor共享
+storage。旧提交、rank错误记录和716-byte未完成文件保留，不能作为有效输入使用。
+9959b70仅用原生torch.utils._pytree.tree_map及detach/cpu/clone保存独立CPU
+Tensor，原训练行与结果原封不动返回。其源码SHA为48d154a5aa2b0f586fc9d1e7b3dd40394a50aedb41dfedda227ef73edeef0061。
+[原生CPU序列化回执](results_native_request_artifact_serialization_20261003.json)
+复现同一官方错误，修复后IDs/mask/response的value、dtype、shape逐值相同，
+原对象未改动。它是诊断记录的接口修复，不是DT数值或容量验收。
+
+修复后的观察1790974394已于1790974418提交到原worker RPC边界；截至该提交仅排队，
+没有宣称安装或新输入保存完成。有界新lease计时入口尚未启动，候选未部署。
+原任务最后定向观察为AppWorld完成13（gen26.03分钟、DT75.58分钟、actor45.70分钟，
+整轮154.40分钟），TextCraft完成48；源日志中两小时口径不是采样时间。
+LOOP附录D公开42小时是8张采样H100与另8张学习H100的完整实验，未提供采样半小时
+的阶段计时。不能仅按GPU卡时或参数量宣称对齐。
+
 ### 2026-10-03 04:30：有序请求的原生前缀复用接口已准备，尚未部署
 
 [候选源码映射](prepared_native_prefix_leases_20261003.json)绑定8e7dd71实现、7d669de
