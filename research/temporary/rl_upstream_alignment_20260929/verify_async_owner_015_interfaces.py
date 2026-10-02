@@ -24,7 +24,10 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--config-only', action='store_true',
                         help='Validate the native engine config, stop before engine creation, and do not join Ray.')
+    parser.add_argument('--rpc-only', action='store_true',
+                        help='Exercise CPU executor dispatch on an existing live task Ray cluster; no engine/model created.')
     args = parser.parse_args()
+    assert not (args.config_only and args.rpc_only)
     sys.path.insert(0, str(args.candidate))
     import psutil
     import ray
@@ -32,6 +35,7 @@ def main():
     from vllm.engine.arg_utils import AsyncEngineArgs
     from vllm.v1.worker.worker_base import WorkerWrapperBase
     from vllm.v1.executor.ray_executor import RayDistributedExecutor
+    from vllm.v1.executor.uniproc_executor import UniProcExecutor
     from vllm.entrypoints.openai.engine.protocol import ErrorInfo, ErrorResponse
     from vllm.entrypoints.openai.models.protocol import BaseModelPath
 
@@ -50,16 +54,19 @@ def main():
                     module.OpenAIServingChat, module.OpenAIServingModels]:
             path = inspect.getfile(obj)
             result['sources'][path] = source(path)
-        assert module.ExternalRayDistributedExecutor.collective_rpc is RayDistributedExecutor.collective_rpc
-        result['checks'].append('Candidate imports installed native 0.15 types and reuses original Ray RPC by identity')
+        result['checks'].append('Candidate imports installed native 0.15 types; native RPC and executor calls are checked below')
 
         active = json.loads((args.root/'active-training.json').read_text())
         job = next(j for j in active['jobs'] if j['task'] == 'AppWorld')
         driver = None
         if not args.config_only:
-            driver = psutil.Process(job['pid'])
-            assert abs(driver.create_time()-job['observed_process_created_unix']) < .02
+            driver_job=next(j for j in active['jobs'] if psutil.pid_exists(j['pid'])) if args.rpc_only else job
+            driver = psutil.Process(driver_job['pid'])
+            assert abs(driver.create_time()-driver_job['observed_process_created_unix']) < .02
             result['formal_identity'] = dict(pid=driver.pid, created_unix=driver.create_time())
+            if args.rpc_only:
+                result['scope']='CPU original executor dispatch and Ray transport only; uses a separate zero-GPU CPU actor in the recorded existing cluster.'
+                result['ray_cluster_task']=driver_job['task']
         else:
             result['scope']='Native engine configuration validation only; stops before engine/model creation and does not join Ray.'
             result['formal_identity']=dict(pid=job['pid'],created_unix=job['observed_process_created_unix'],
@@ -209,12 +216,15 @@ def main():
         class CPUValue:
             def echo(self, value):
                 return value
+            execute_model=echo
+            sample_tokens=echo
 
         @ray.remote(num_cpus=0)
         class NativeWrapperActor:
             def __init__(self):
                 self.wrapper = WorkerWrapperBase()
                 self.wrapper.worker = CPUValue()
+                self.wrapper.mm_receiver_cache = None
             def execute_method(self, *values, **options):
                 return self.wrapper.execute_method(*values, **options)
 
@@ -226,6 +236,28 @@ def main():
             assert executor.collective_rpc('echo',args=(value,),timeout=30) == [value]
             assert executor.collective_rpc('echo',args=(value,),non_block=True).result(timeout=30) == [value]
             result['checks'].append('Original native Ray RPC and WorkerWrapperBase return exact artifacts, including native future')
+            reference=object.__new__(UniProcExecutor)
+            reference.driver_worker=WorkerWrapperBase()
+            reference.driver_worker.worker=CPUValue()
+            reference.driver_worker.mm_receiver_cache=None
+            reference.async_output_thread=None
+            result['executor_dispatch']=[]
+            for method in ('execute_model','sample_tokens'):
+                for non_block in (False,True):
+                    for artifact in (value,None):
+                        actual=getattr(executor,method)(artifact,non_block=non_block)
+                        expected=getattr(reference,method)(artifact,non_block=non_block)
+                        if non_block:
+                            from concurrent.futures import Future
+                            assert isinstance(actual,Future) and isinstance(expected,Future)
+                            actual=actual.result(timeout=30)
+                            expected=expected.result(timeout=30)
+                        assert actual==expected==artifact
+                        result['executor_dispatch'].append(dict(method=method,non_block=non_block,none_output=artifact is None,exact=True))
+            assert module.ExternalRayDistributedExecutor.execute_model is UniProcExecutor.execute_model
+            assert module.ExternalRayDistributedExecutor.sample_tokens is UniProcExecutor.sample_tokens
+            result['sources'][inspect.getfile(UniProcExecutor)]=source(inspect.getfile(UniProcExecutor))
+            result['checks'].append('Actual execute_model/sample_tokens callers match original UniProcExecutor for eight blocking/nonblocking/value/None cases; native futures preserved')
         finally:
             ray.kill(actor, no_restart=True)
             ray.shutdown()

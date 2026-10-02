@@ -1,0 +1,29 @@
+--- prior/vllm_async_server.py
++++ candidate/vllm_async_server.py
+@@ -34,6 +34,8 @@
+     from vllm.entrypoints.openai.models.protocol import BaseModelPath
+     from vllm.entrypoints.openai.models.serving import OpenAIServingModels
+     from vllm.v1.executor.ray_executor import RayDistributedExecutor
++    from vllm.v1.executor.ray_utils import FutureWrapper
++    from vllm.v1.executor.uniproc_executor import UniProcExecutor
+ else:
+     from vllm.entrypoints.openai.protocol import ChatCompletionRequest, ChatCompletionResponse, ErrorResponse
+     from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
+@@ -114,7 +116,16 @@
+         return outputs
+ 
+     if _VLLM_015:
+-        collective_rpc = RayDistributedExecutor.collective_rpc
++        execute_model = UniProcExecutor.execute_model
++        sample_tokens = UniProcExecutor.sample_tokens
++
++        def collective_rpc(self, method, timeout=None, args=(), kwargs=None,
++                           non_block=False, single_value=False):
++            output = RayDistributedExecutor.collective_rpc(
++                self, method, timeout=timeout, args=args, kwargs=kwargs, non_block=non_block)
++            if single_value:
++                return (FutureWrapper(output.ref_or_refs[0]) if non_block else output[0])
++            return output
+ 
+     def check_health(self):
+         return

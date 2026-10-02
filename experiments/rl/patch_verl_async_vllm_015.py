@@ -25,6 +25,8 @@ if _VLLM_015:
     from vllm.entrypoints.openai.models.protocol import BaseModelPath
     from vllm.entrypoints.openai.models.serving import OpenAIServingModels
     from vllm.v1.executor.ray_executor import RayDistributedExecutor
+    from vllm.v1.executor.ray_utils import FutureWrapper
+    from vllm.v1.executor.uniproc_executor import UniProcExecutor
 else:
     from vllm.entrypoints.openai.protocol import ChatCompletionRequest, ChatCompletionResponse, ErrorResponse
     from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
@@ -36,12 +38,14 @@ else:
         '    from vllm.v1.worker.worker_base import WorkerWrapperBase\n'
         'else:\n'
         '    from vllm.worker.worker_base import WorkerWrapperBase\n')
-    # vLLM now passes non_block to collective_rpc. Its Ray implementation
-    # already owns serialization, futures and timeout handling; do not copy it.
+    # Native single-output execution and native Ray RPC have different return
+    # contracts. Reuse both implementations and select the same first worker
+    # output as the original owner; native FutureWrapper owns the async value.
     source = replace_once(source, '    def check_health(self):\n',
         '    if _VLLM_015:\n'
         '        collective_rpc = RayDistributedExecutor.collective_rpc\n\n'
         '    def check_health(self):\n')
+    source = patch_rpc_output_contract(source)
     source = replace_once(source,
         '            disable_mm_preprocessor_cache=True,\n',
         '            **({"mm_processor_cache_gb": 0} if _VLLM_015 else\n'
@@ -112,6 +116,23 @@ else:
         '            await self.sleep()\n\n    async def chat_completion')
     compile(source, '<patched vllm_async_server>', 'exec')
     return source
+
+
+def patch_rpc_output_contract(source):
+    """Bridge native Ray's batch result to native single-value execution."""
+    old = ('    if _VLLM_015:\n'
+           '        collective_rpc = RayDistributedExecutor.collective_rpc\n')
+    new = ('    if _VLLM_015:\n'
+           '        execute_model = UniProcExecutor.execute_model\n'
+           '        sample_tokens = UniProcExecutor.sample_tokens\n\n'
+           '        def collective_rpc(self, method, timeout=None, args=(), kwargs=None,\n'
+           '                           non_block=False, single_value=False):\n'
+           '            output = RayDistributedExecutor.collective_rpc(\n'
+           '                self, method, timeout=timeout, args=args, kwargs=kwargs, non_block=non_block)\n'
+           '            if single_value:\n'
+           '                return (FutureWrapper(output.ref_or_refs[0]) if non_block else output[0])\n'
+           '            return output\n')
+    return replace_once(source, old, new)
 
 
 def patch_worker(source):
