@@ -69,6 +69,7 @@ def main():
         for key, value in json.loads(launch.read_text())['options'].items():
             OmegaConf.update(config, key.lstrip('+'), value, force_add=True)
         native_args = []
+        native_configs = []
 
         class ArgumentsCaptured(BaseException):
             pass
@@ -78,6 +79,7 @@ def main():
                 native_args.append(self)
                 if args.config_only:
                     native_config=super().create_engine_config()
+                    native_configs.append(native_config)
                     result['native_engine_config']=dict(
                         model=native_config.model_config.model,
                         dtype=str(native_config.model_config.dtype),
@@ -120,6 +122,37 @@ def main():
         result['checks'].append('Installed serving constructor bindings and native error status match')
 
         if args.config_only:
+            # Execute the actual owner method, including its native-version
+            # branch. Stop at the native worker entry before any device/model
+            # initialization; constructing the wrapper alone missed NameError.
+            from unittest.mock import patch
+            spmd = importlib.import_module('verl.workers.rollout.vllm_rollout.vllm_rollout_spmd')
+            assert spmd.WorkerWrapperBase is WorkerWrapperBase
+            result['sources'][spmd.__file__] = source(spmd.__file__)
+            result['worker_init_boundary'] = []
+
+            class WorkerArgumentsCaptured(BaseException):
+                pass
+
+            def capture_worker_arguments(wrapper, values):
+                assert type(wrapper) is WorkerWrapperBase
+                assert values[0]['vllm_config'] is native_configs[0]
+                assert values[0]['local_rank'] == 0
+                result['worker_init_boundary'].append(dict(
+                    rank=values[0]['rank'], local_rank=values[0]['local_rank'],
+                    native_config_identity_preserved=True))
+                raise WorkerArgumentsCaptured
+
+            for rank in (0, 1):
+                rollout = spmd.vLLMAsyncRollout()
+                with patch.dict(os.environ, {'RANK': str(rank)}), \
+                     patch.object(WorkerWrapperBase, 'init_worker', capture_worker_arguments):
+                    try:
+                        rollout.execute_method('init_worker', [dict(vllm_config=native_configs[0])])
+                    except WorkerArgumentsCaptured:
+                        pass
+                assert result['worker_init_boundary'][-1]['rank'] == rank
+            result['checks'].append('Original execute_method/init_worker reaches native WorkerWrapperBase.init_worker for both recorded ranks; no device/model initialized')
             result['passed']=True
             result['checks'].append('Original create_engine_config completed; no AsyncLLM/model/Ray actor created')
             return

@@ -116,7 +116,8 @@ else:
 
 def patch_worker(source):
     old = '        self.inference_engine = WorkerWrapperBase(vllm_config=self.vllm_config)\n'
-    new = ('        self.inference_engine = (WorkerWrapperBase()\n'
+    new = ('        from verl.utils.vllm_utils import is_version_ge\n'
+           '        self.inference_engine = (WorkerWrapperBase()\n'
            '            if (is_version_ge(pkg="vllm", minver="0.15.0")\n'
            '                and not is_version_ge(pkg="vllm", minver="0.16.0"))\n'
            '            else WorkerWrapperBase(vllm_config=self.vllm_config))\n')

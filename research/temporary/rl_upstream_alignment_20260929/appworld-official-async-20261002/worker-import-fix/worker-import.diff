@@ -1,0 +1,10 @@
+--- prior/vllm_rollout_spmd.py
++++ candidate/vllm_rollout_spmd.py
+@@ -476,6 +476,7 @@
+         all_kwargs[0]["local_rank"] = 0
+ 
+         self.vllm_config = all_kwargs[0]["vllm_config"]
++        from verl.utils.vllm_utils import is_version_ge
+         self.inference_engine = (WorkerWrapperBase()
+             if (is_version_ge(pkg="vllm", minver="0.15.0")
+                 and not is_version_ge(pkg="vllm", minver="0.16.0"))
