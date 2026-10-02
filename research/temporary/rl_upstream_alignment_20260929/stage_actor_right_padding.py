@@ -7,7 +7,7 @@ from stage_environment_entry import AUDIT, ENTRY, REPO, ROOT, SCP, SSH, remote
 
 
 if __name__ == '__main__':
-    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003'
+    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003-v2'
     remote(f'test ! -e {out}/prepared.json && mkdir -p {out}\n')
     files = [REPO/'experiments/rl'/name for name in ('patch_actor_shared_right_padding.py', 'test_shared_padding.py')]
     files += [AUDIT/name for name in ('verify_owner_response_padding.py', 'verify_actor_right_padding.py')]
@@ -44,7 +44,10 @@ env['PYTHONPATH']=':'.join([str(candidate),str(out),job['entry'],env['PYTHONPATH
 with (out/'cpu-tests.log').open('wb') as log:
  test=subprocess.run([env['VENV_PYTHON'],'-m','pytest','-q',str(out/'test_shared_padding.py'),'--junitxml='+str(out/'cpu-tests.xml')],env=env,cwd=out,stdout=log,stderr=subprocess.STDOUT)
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+previous=json.loads((out.parent/'actor-shared-right-padding-20261003/prepared.json').read_bytes())
+assert sha(candidate/actor)==previous['after_actor_sha256'], 'Only fixture versions changed between CPU attempts'
 receipt=dict(role='Prepared candidate; formal jobs unchanged; no model numerical or speed acceptance from CPU tests',observed_unix=time.time(),
+ previous_attempt=str(out.parent/'actor-shared-right-padding-20261003'),previous_actor_implementation_unchanged=True,
  code_commit='@COMMIT@',stager_sha256='@SHA@',base=str(base),candidate=str(candidate),entry=job['entry'],formal_driver_pid=driver.pid,formal_driver_birth=driver.create_time(),
  before_actor_sha256=sha(base/actor),after_actor_sha256=sha(candidate/actor),changed_methods=['_forward_micro_batch'],test_returncode=test.returncode,
  files={str(p):sha(p) for p in [out/'patch_actor_shared_right_padding.py',out/'test_shared_padding.py',out/'verify_owner_response_padding.py',out/'verify_actor_right_padding.py',candidate/'verl/workers/fsdp_workers.py']})

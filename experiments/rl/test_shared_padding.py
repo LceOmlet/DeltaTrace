@@ -58,7 +58,7 @@ class HeadOnlyModel(torch.nn.Module):
         return SimpleNamespace(logits=logits)
 
 
-@pytest.mark.parametrize('model_type, trimmed_length', [(None, 9), ('qwen3_5', 64), ('qwen3_5_text', 64)])
+@pytest.mark.parametrize('model_type, trimmed_length', [(None, 10), ('qwen3_5', 64), ('qwen3_5_text', 64)])
 def test_actor_shared_padding_keeps_original_response_logprobs_and_gradient(monkeypatch, model_type, trimmed_length):
     import verl.utils.torch_functional as functional
     # Exercise the owner's existing CPU logprob branch in this CPU-only test;
@@ -143,13 +143,57 @@ def test_left_padded_native_response_keeps_all_columns(monkeypatch, model_type, 
         assert lp.shape == entropy.shape == (2, 192)
         loss = ((lp+entropy)*attention[:, -192:]).sum()
         loss.backward()
-        values.append(torch.stack([lp, entropy]))
+        values.append(torch.stack([lp, entropy])[:, attention[:, -192:].bool()])
         grads.append(model.weight.grad.clone())
         model.weight.grad = None
     torch.testing.assert_close(*values, rtol=0, atol=0)
     torch.testing.assert_close(*grads, rtol=0, atol=0)
 
 
+class FusedOutputModel(HeadOnlyModel):
+    """Previously verified interface double for native full-sequence outputs."""
+    def forward(self, input_ids, **kwargs):
+        import verl.utils.torch_functional as functional
+        self.lengths.append(input_ids.shape[-1])
+        logits = self.weight[input_ids]
+        return SimpleNamespace(
+            log_probs=functional.logprobs_from_logits(logits, input_ids.roll(-1, -1)),
+            entropy=functional.entropy_from_logits(logits))
+
+
+@pytest.mark.parametrize('fused', [False, True])
+@pytest.mark.parametrize('response_width', [4, 192, 32704])
+def test_native_response_padding_restores_masked_actor_interface(monkeypatch, fused, response_width):
+    import verl.utils.torch_functional as functional
+    monkeypatch.setattr(functional, 'FLAH_ATTN_CROSS_ENTROPY_LOSS_AVAILABLE', False)
+    monkeypatch.setenv('VERL_TRIM_RESPONSE_HEAD', '1')
+    ids = torch.arange(4 * 32768).reshape(4, 32768) % 8
+    attention = torch.zeros_like(ids)
+    for row, length in enumerate([5, 9, 17, 27]):
+        attention[row, -length:] = 1
+    batch = dict(input_ids=ids, responses=ids[:, -response_width:], attention_mask=attention,
+                 position_ids=(attention.cumsum(-1) - 1).clamp_min(0))
+    model = FusedOutputModel() if fused else HeadOnlyModel()
+    model.config = SimpleNamespace(model_type='qwen3_5_text')
+    actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
+        use_fused_kernels=fused, compute_entropy_from_logits=functional.entropy_from_logits)
+    mask = attention[:, -response_width:].bool()
+    values, gradients = [], []
+    for flag in ['0', '1']:
+        monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', flag)
+        entropy, log_probs = DataParallelPPOActor._forward_micro_batch(actor, batch, 1., True)
+        assert log_probs.shape == entropy.shape == (4, response_width)
+        values.append(torch.stack([log_probs, entropy])[:, mask])
+        (log_probs + entropy)[mask].sum().backward()
+        gradients.append(model.weight.grad.clone())
+        model.weight.grad = None
+    assert model.lengths == [32768, 64]
+    torch.testing.assert_close(*values, rtol=0, atol=0)
+    torch.testing.assert_close(*gradients, rtol=0, atol=0)
+    assert batch['responses'].shape == (4, response_width)
+
+
+@pytest.mark.parametrize('fused', [False, True])
 @pytest.mark.parametrize('model_type', [None, 'qwen3_5_text'])
 @pytest.mark.parametrize('calculate_entropy', [False, True])
 @pytest.mark.parametrize('head_trim', ['0', '1'])
@@ -160,7 +204,7 @@ def test_left_padded_native_response_keeps_all_columns(monkeypatch, model_type, 
     (0, [256, 256, 256, 256]),
 ])
 def test_shared_right_padding_restores_native_columns_and_active_gradients(
-        monkeypatch, model_type, calculate_entropy, head_trim, start, ends):
+        monkeypatch, fused, model_type, calculate_entropy, head_trim, start, ends):
     import verl.utils.torch_functional as functional
     monkeypatch.setattr(functional, 'FLAH_ATTN_CROSS_ENTROPY_LOSS_AVAILABLE', False)
     monkeypatch.setenv('VERL_TRIM_RESPONSE_HEAD', head_trim)
@@ -173,10 +217,10 @@ def test_shared_right_padding_restores_native_columns_and_active_gradients(
                  responses=ids[:, -192:])
     before = {name: value.clone() for name, value in batch.items()}
     active = mask[:, -192:].bool()
-    model = HeadOnlyModel()
+    model = FusedOutputModel() if fused else HeadOnlyModel()
     model.config = SimpleNamespace(model_type=model_type)
     actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
-                            use_fused_kernels=False,
+                            use_fused_kernels=fused,
                             compute_entropy_from_logits=functional.entropy_from_logits)
     outputs, gradients = [], []
     for flag in ['0', '1']:
@@ -193,7 +237,7 @@ def test_shared_right_padding_restores_native_columns_and_active_gradients(
         loss.backward()
         gradients.append(model.weight.grad.clone())
         model.weight.grad = None
-    pairs = 2 if calculate_entropy else 1
+    pairs = len(outputs) // 2  # Native fused output also includes entropy on the non-entropy call.
     for index in range(pairs):
         torch.testing.assert_close(outputs[index], outputs[index + pairs], rtol=0, atol=0)
     torch.testing.assert_close(*gradients, rtol=0, atol=0)

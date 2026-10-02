@@ -7,7 +7,7 @@ from stage_environment_entry import AUDIT, ENTRY, REPO, ROOT, remote
 
 
 if __name__ == '__main__':
-    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003'
+    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003-v2'
     remote(r'''set -e
 source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
