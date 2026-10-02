@@ -38,6 +38,32 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ## 当前代码组合
 
+### 2026-10-02：官方分阶段卸载容量检查已提交，尚未取得结果
+
+上一真实搬运回执显示2次B4 DT各rank从CPU提交约48.38GiB参数；8k原历史前向
+又是已量出的最大单阶段。已核对固定VERL的`fsdp_workers.py`：
+`offload_policy=True`选择原CPUOffloadPolicy并关闭阶段级卸载标记；仅将此项
+设为False则复用原`param_offload=True`/`optimizer_offload=True`，在原阶段边界
+加载/卸载。本次不自行改变FSDP状态、移植缓存、重写拷贝或调整PPO/DT公式。
+
+诊断提交`6ac1fdd`复用原已验证B8容量夹具（SHA256 dd7783122843033e98455e4178f2815bc65f6fbc8fa8757dcb65052dcfebbb60），
+只改其回执目录、上述官方配置和诊断PID记录。使用当前AppWorld的固定VERL及
+TextCraft已配置入口；actor/head文件SHA与当前正式版本一致。实际数值/训练框架
+没有新代码。检查资源前GPU6/7均863MiB且无任务进程，本次只在这两张空闲卡运行
+一个有界容量夹具，没有重提第四组正式训练。LoRA8/16、每卡B4、全局B8x32768固定。
+
+[待验证候选与原PID](../../research/temporary/rl_upstream_alignment_20260929/phase-offload-20261002-pending.json)
+记录远端`receipts/owner-b8-dispatch-20260930/phase-offload-1790937616`、PID3125131、
+创建时间1790937615.58及被动资源observer3125139。最后确认已进入原32k log-prob；
+样本物理GPU6/7各29786MiB、该进程树PSS33.47GiB、容器282.33GiB。
+这只是阶段样本，不是更新完成、物理峰值或效率达标。随后三次SSH30821握手超时，
+包括30秒连接等待；结果与终止状态尚不可读，没有重启测试或正式进程。
+恢复连接后只检查同一PID/创建时间与原结果，不能据超时判定测试失败或再提交。
+
+此配置仍为未接受候选，不在默认launch/patch路径。三组正式作业源码和参数未变。
+本次只读原阶段尾日志另已确认SQL新11、TextCraft新36完整指标；AppWorld第10轮DT
+仍在推进。源码快照仍单独保留其17:27采集时间，不把阶段回执当成新数值验证。
+
 ### 2026-10-02 18:20：真实 DT 分段耗时与前缀复用接口核查
 
 本次仅保留正式 runner 原来已经返回的计时，不增加前向重放、CUDA event、同步、
