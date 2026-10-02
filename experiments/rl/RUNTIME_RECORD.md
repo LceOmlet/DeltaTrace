@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-最近三组只读源码快照为北京时间2026-10-02 06:13；原阶段观察见下方定向回执。
+最近三组只读源码快照为北京时间2026-10-02 10:04；原阶段观察见下方定向回执。
 [current_runtime.json](current_runtime.json)保留精确采集时间，
 不能把文档更新时间当作三组阶段都已重新采集。
 
@@ -58,8 +58,8 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 | 作业 | 当前PID / GPU | 实际执行的版本 | 生效边界与旧版本 |
 | --- | --- | --- | --- |
 | SQL-DT | 552842 / 0,1 | entry=`runs/sql-padding-restart-20261001/sql-entry`；VERL=`candidates/official-verl-20bd331-sql-padding-20261001`；actor SHA `1f862e8bbdaa…` | 05:44以`bc68687`恢复脚本启动；完成步数见带采集时间的快照。旧PID1876409在mcTracer附加采样后终止，无正式检查点；旧更新不计入新进程。新目录冻结旧进程已生效的padding覆盖，任务参数与初始评估未改 |
-| AppWorld-DT | 1199302 / 2,3 | entry=`candidates/appworld-batch-coalescing-20261002/entry`；VERL仍为`candidates/appworld-rollout-scope-20261001/verl`；bridge SHA `036977b4eb1f…`，其余entry、VERL和数值源未变 | 05:06在旧PID150275未完成的第7轮采样中切换，05:07仍从PID2479539的原完整step6恢复；原loader和两rank原model/optim/extra_state路径已确认。原Ray ActorPool空闲接口恢复请求合批，正式已见B31；恢复的6不计作新更新，尚无完整新迭代提速结果 |
-| TextCraft-DT | 212110 / 4,5 | entry/VERL仍为v7；有效actor已由原RPC绑定为`1f862e8bbdaa…`；head继续使用`dc4e4d7`的PID绑定覆盖 | 19:28双rank完成padding接入，原优化器各64步、模型/配置不变；DT分发与生成上下文尚未部署。冻结v7启动命令仍是旧microbatch1，不能直接按旧命令重启 |
+| AppWorld-DT | 1199302 / 2,3 | entry=`candidates/appworld-batch-coalescing-20261002/entry`；VERL仍为`candidates/appworld-rollout-scope-20261001/verl`；bridge SHA `036977b4eb1f…`，其余entry、VERL和数值源未变 | 05:06在旧PID150275未完成的第7轮采样中切换，05:07仍从PID2479539的原完整step6恢复；原loader和两rank原model/optim/extra_state路径已确认。原Ray ActorPool空闲接口恢复请求合批；第7次完整迭代及原检查点标记7已完成，整轮259.819分钟，当前第8轮采样。恢复的6不计新更新；不同任务批次不能当固定输入加速比 |
+| TextCraft-DT | 3218909 / 4,5 | entry=`candidates/textcraft-rollout-scope-20261001/entry`；VERL为同目录`verl`；head/padding、每卡B4、整段生成上下文及原DT均衡分发均固化在启动源码 | 07:00:51从旧PID212110的原完整检查点25恢复；双rank原model/optim/extra_state加载及设置step25已确认。10:04原trainer已打印完成26–28，恢复的25不计新更新；第28次整轮56.310分钟。旧v7/运行覆盖只保留历史证据 |
 
 两种actor完整SHA：
 
@@ -120,13 +120,44 @@ AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单�
 初始失败与最终结果均保存在
 [workload-regression-20261001](../../research/temporary/rl_upstream_alignment_20260929/workload-regression-20261001/summary.json)。
 
-**尚未全部对齐的是执行效率路径。** SQL/TextCraft的整段rollout上下文与DT跨卡均衡
-候选已验证、尚未部署；TextCraft已安排原检查点25切换。AppWorld跨卡返回顺序修复
+**尚未全部对齐的是执行效率路径。** SQL的整段rollout上下文与DT跨卡均衡
+候选已验证、尚未部署；TextCraft已在原检查点25恢复部署该组合。AppWorld跨卡返回顺序修复
 之后的正式日志又暴露单条RPC累积，已用原ActorPool.has_free恢复合批；新接口CPU测试
-10项、逐文件/参数对照、原恢复证据与实际B31分别记录。尚无完整新迭代的提速结果，
-不能将候选测试、批量变大或成功恢复写成正式训练已全面提速。
+10项、逐文件/参数对照、原恢复证据与实际B31分别记录。TextCraft新组合第26次完整迭代
+实测62.005分钟（DT11.384分钟），旧第25次81.192分钟（DT22.064分钟）；批次内容不同，
+不能称为固定输入的加速比。AppWorld新完成第7次迭代为259.819分钟，采样128.555、
+DT75.869、actor47.730分钟；仍不能将成功恢复或批量变大写成正式训练已全面提速。
+效率标准是对照作者记录的实验耗时与吞吐，并明确模型、资源、实际token工作量及执行
+方式的差异；同卡原生调用profile用于定位差距，不能替代作者实验参照或另设分钟门槛。
 当前证据不足以称三组整体耗时已达到官方同等计算负载的水平。不能缩小任务预算、
 改minibatch或部署未对照的异步实现来消去这些待完成项。
+
+### 作者实验时间与当前正式采样（2026-10-02）
+
+来源、单位和实测原日志绑定在[时间口径回执](results_official_efficiency_reference.json)。
+LOOP论文附录D/图7记录Qwen2.5-32B、16张H100（8张采样、另8张训练）共42小时。
+图中约90次训练迭代，折算约28分钟/完整迭代；这是据图估算，不是作者单独公布的采样
+耗时，也不是仓库200次预算的平均。当前AppWorld Qwen3.5-9B两张MetaX C550采样
+128.555分钟、整轮259.819分钟。未经工作量与硬件吞吐对照，不能据此认定相近或把
+整轮约9.3倍的原始时间比当作相同资源下的实现慢倍数。SQL作者公开W&B报告当前
+匿名读取失败；尚未取得TextCraft固定配方的可匹配绝对耗时。这两项不填猜测值。
+
+当前AppWorld PID1199302的原vLLM一次性profile已完成并恢复两rank原调用，
+[原回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-batch-coalescing-20261002/native-profiler/installed.json)
+绑定观察脚本`3242ca1`、实际worker1213516/1217549、原ProfilerConfig/Wrapper SHA。
+每rank只观察已有16请求批次的前16个worker迭代，不新增生成、修改采样或数值。
+全调用130.779/68.163秒包含profile开销，不能当无profile吞吐；缓存命中104448/121408
+与112128/142902。原profiler完整调用计数1502/538步，生成4318/3032 token，
+平均2.875/5.636 token/worker步（包含prefill，是工作量代理，不是精确decode活跃数）。
+当前原LLM.generate整批完成才返回，同批短请求的环境推进等待长请求；当前bridge已
+避免跨rank按顺序取结果，但这不等于作者在线服务在批次内部持续接收新请求。
+仍需通过兼容的上游原生异步接口处理，未部署新scheduler、异步候选或推理版本。
+
+AppWorld第7轮DT各rank的所有返回类别共448批，而不是末类别的19批；
+[原日志汇总](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/appworld-step7-dt-workload.json)
+计时和为4543.012/4541.535秒，解释75.869分钟总DT阶段。两卡完整输入槽约35.82M，
+既有fact/ref共同前缀复用、FA/FLA后缀传播已开启，因此该槽数不能直接当全部反向FLOPs。
+信用、原PPO、LoRA8/16、每卡B4、任务预算与官方容差均未改变。
 
 已核对的head文件SHA前12位（完整值见快照）：
 
@@ -137,6 +168,35 @@ AppWorld初次缺少本机APPWORLD_ROOT；测试夹具使用作者原dev清单�
 | 原 `verl/models/transformers/qwen3_vl.py` | `ebc52fb35812` |
 
 ## 修复账本
+
+### 2026-10-02 07:00：TextCraft从原检查点25完成恢复
+
+旧PID212110已完成原保存点25；原边界助手06:54完成停止，随后SSH控制连接重置，
+导致本机助手在提交新作业前退出。此处是控制传输失败，不冒充训练、保存或模型故障；
+原stderr和completed-stop保留。确认旧进程已停止且新目标目录尚未创建后，仅调用一次
+原`submit_prepared_appworld_resume.py`提交现有完整候选，没有重新停止或重跑GPU测试。
+
+- 提交仓库commit：`7831caf8f019eec1a0f069cb5a05b1ccddc60e0b`；提交脚本SHA
+  `b64fe522bba9829e63155a23c9b0b8b4b92b9e4f33f9957d7f822f30b512d504`。
+- 新PID3218909，创建时间1790895651.16；启动时间1790895651.6807766。
+  原检查点为`runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25`。
+- 候选prepared SHA：`d6ced8cba268b9d2a055010f9d62d9a0af12c636f94c956b9b4849d8d1ae8dc9`；
+  launcher SHA：`67487af4de55233946ff80eb2d136b4afa9c46184d9cfdec791d39c3f95590e8`。
+- 修复来源仍为head/B4 `dc4e4d7`、DT分发`4c0cbdd`、原rollout上下文`2a32d00`、
+  padding源码`0c80b41`及原比较`44e1149`；DT数值发布`c9cd147`未改。
+- 实际启动LoRA8/16、actor/DT4、32组×8条、global mini64、PPO epoch1、30 epochs、
+  30次交互、原保存25及原评测设置保持。原恢复参数仅resume_path和原检查点路径。
+  已有49项接口结果不重跑；[启动前配置回执](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/textcraft-pre-resume-configuration-20261002.json)
+  仅证明配置、源码与原prepared一致，不当作新数值验收。
+- 双rank原加载路径及设置step25见
+  [07:11观察](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/speed-observation-1790896266.json)；
+  第26次完整迭代及原阶段计时见
+  [09:00观察](../../research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/current-phase-1790902771.json)。
+  新目录尚无新的原保存点；加载的25和完成的26严格区分。
+
+快照现额外保留原配置文件/model配置/tokenizer配置SHA、完整启动options及已配置环境脚本SHA。
+AppWorld记录实际LOOP README、ConfigStore及Hydra配置树；可选YAML被记录不表示全部被消费。
+这些只读指纹不增加启动门槛或算法验证标准，也不把记录脚本的commit当成训练版本。
 
 ### 2026-10-02 06:13：同步默认源码，保留真实验证及部署边界
 

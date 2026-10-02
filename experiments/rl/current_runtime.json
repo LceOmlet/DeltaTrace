@@ -1,28 +1,33 @@
 {
-  "observed_unix": 1790892818.2708046,
-  "observed_utc": "2026-10-01T22:13:38.270805+00:00",
+  "observed_unix": 1790906647.1984413,
+  "observed_utc": "2026-10-02T02:04:07.198441+00:00",
   "role": "Read-only snapshot, not a launcher or a replacement for remote active-training.json; never infer current execution from old receipts alone",
   "authoritative_remote": {
     "active-training.json": {
       "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-training.json",
       "exists": true,
-      "sha256": "ccfae6650eea1a6e12b47f797629fff1b67306dacba814bb55cfc8bbd94c10c7"
+      "sha256": "334d22fd974652ca76337acb671e1af397a0fa125b3395e02b5be414763347fa"
     },
     "active-source.json": {
       "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-source.json",
       "exists": true,
-      "sha256": "d83eb0fe3908452fc53efee90deef881d8ea402be0d47856cf4fb40bce830979"
+      "sha256": "74c08d1c1417d7e4b650102e32d111e71dc02c92424e9c1846f1bab8db5da58c"
     }
   },
   "manifest": {
-    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-batch-coalescing-20261002/formal-training.json",
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/formal-training.json",
     "exists": true,
-    "sha256": "ccfae6650eea1a6e12b47f797629fff1b67306dacba814bb55cfc8bbd94c10c7"
+    "sha256": "334d22fd974652ca76337acb671e1af397a0fa125b3395e02b5be414763347fa"
   },
   "baseline": {
     "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/verified_runtime.json",
     "exists": true,
     "sha256": "b5d5608ea76d941aca14314eb23811311b189e356cdcc0e478f3282a94c325c5"
+  },
+  "provisioned_launch_environment": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh",
+    "exists": true,
+    "sha256": "beb9c001cc57db5450ad364b294f1d6ada3f72a2fbe0869d9892507a264bd076"
   },
   "jobs": [
     {
@@ -82,6 +87,147 @@
           "reason": "Legacy numerical_override inherited from pre-padding startup; synchronize this duplicate field with the already-correct frozen verl_sha256. No runtime file or command changed."
         }
       },
+      "startup_options": {
+        "ray_init.num_cpus": 16,
+        "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "actor_rollout_ref.model.trust_remote_code": true,
+        "actor_rollout_ref.model.lora_rank": 8,
+        "actor_rollout_ref.model.lora_alpha": 16,
+        "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+        "actor_rollout_ref.model.enable_activation_offload": true,
+        "actor_rollout_ref.model.use_fused_kernels": true,
+        "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+        "actor_rollout_ref.actor.strategy": "fsdp2",
+        "actor_rollout_ref.actor.ppo_mini_batch_size": 1280,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+        "actor_rollout_ref.actor.use_torch_compile": true,
+        "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+        "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+        "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+        "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+        "actor_rollout_ref.rollout.name": "vllm",
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+        "actor_rollout_ref.rollout.load_format": "safetensors",
+        "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+        "actor_rollout_ref.rollout.max_model_len": 32768,
+        "actor_rollout_ref.rollout.max_num_seqs": 32,
+        "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+        "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+          "image": 0,
+          "video": 0
+        },
+        "trainer.n_gpus_per_node": 2,
+        "trainer.nnodes": 1,
+        "algorithm.adv_estimator": "deltatrace",
+        "data.train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/skyrl-sql-7e5e665/train.parquet",
+        "data.val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/skyrl-sql-7e5e665/validation.parquet",
+        "data.train_batch_size": 256,
+        "data.val_batch_size": 1024,
+        "data.max_prompt_length": 29000,
+        "data.max_response_length": 3000,
+        "data.filter_overlong_prompts": true,
+        "data.truncation": "error",
+        "data.return_raw_chat": true,
+        "data.custom_cls.path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/owner_task_dataset.py",
+        "data.custom_cls.name": "SQLDataset",
+        "+data.initial_max_prompt_length": 6000,
+        "+data.sql_chat_template": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/qwen3_acc_thinking.jinja2",
+        "+data.dataloader_num_workers": 0,
+        "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+        "actor_rollout_ref.rollout.multi_turn.enable": true,
+        "actor_rollout_ref.rollout.temperature": 0.6,
+        "actor_rollout_ref.rollout.top_p": 0.95,
+        "actor_rollout_ref.rollout.val_kwargs.temperature": 1.0,
+        "actor_rollout_ref.rollout.val_kwargs.do_sample": true,
+        "env.env_name": "SkyRL-SQL",
+        "env.max_steps": 6,
+        "env.rollout.n": 5,
+        "+env.factory._target_": "sql_owner_rollout.make_sql_owner_environments",
+        "+env.sql": {
+          "db_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/skyrl-sql-7e5e665/db_files/data",
+          "max_input_length": 29000,
+          "sampling": {
+            "min_tokens": 1,
+            "skip_special_tokens": true,
+            "include_stop_str_in_output": true,
+            "max_tokens": 3000,
+            "temperature": 0.6,
+            "top_p": 0.95,
+            "top_k": -1,
+            "min_p": 0.0,
+            "logprobs": 1,
+            "stop": [
+              "</sql>",
+              "</solution>"
+            ]
+          },
+          "eval_sampling": {
+            "min_tokens": 1,
+            "skip_special_tokens": true,
+            "include_stop_str_in_output": true,
+            "max_tokens": 3000,
+            "temperature": 1.0,
+            "top_p": 1.0,
+            "top_k": -1,
+            "min_p": 0.0,
+            "logprobs": 1,
+            "stop": [
+              "</sql>",
+              "</solution>"
+            ]
+          }
+        },
+        "trainer.logger": [
+          "console"
+        ],
+        "trainer.project_name": "deltatrace_official_environments",
+        "trainer.experiment_name": "dt-SkyRL-SQL",
+        "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/checkpoints",
+        "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/rollouts",
+        "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/validation",
+        "trainer.max_actor_ckpt_to_keep": 2,
+        "trainer.save_freq": 60,
+        "trainer.test_freq": 5,
+        "trainer.val_before_train": true,
+        "trainer.total_epochs": 30,
+        "trainer.total_training_steps": null,
+        "trainer.resume_mode": "auto"
+      },
+      "configuration_artifacts": {
+        "native_verl_defaults": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/trainer/config/ppo_trainer.yaml",
+          "exists": true,
+          "sha256": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb"
+        },
+        "entry_numerical_receipt": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/verified_runtime.json",
+          "exists": true,
+          "sha256": "b5d5608ea76d941aca14314eb23811311b189e356cdcc0e478f3282a94c325c5"
+        },
+        "task_recipe": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/owner_environment_configs.json",
+          "exists": true,
+          "sha256": "69af7f858cd25f2f76f8ccc4c6831d0e9eb51dc072817489257bcb84cd0faafd"
+        },
+        "model_config": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/config.json",
+          "exists": true,
+          "sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05"
+        },
+        "model_tokenizer_config": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/tokenizer_config.json",
+          "exists": true,
+          "sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8"
+        },
+        "configured_sql_template": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-entry/qwen3_acc_thinking.jinja2",
+          "exists": true,
+          "sha256": "8e57badee37b289c395806b7a73927b4afbaf85bb0b1700e2bcfa1acad0430a9"
+        }
+      },
+      "configuration_artifact_scope": "Read-only configuration/source fingerprints and full startup options. AppWorld reads the original LOOP README, ConfigStore types and Hydra conf tree; available YAML alternatives are recorded without claiming all were consumed. Not a fresh live config query, numerical proof, or validation of later unrecorded overrides.",
       "startup_workload_options": {
         "actor_rollout_ref.model.lora_rank": 8,
         "actor_rollout_ref.model.lora_alpha": 16,
@@ -113,8 +259,8 @@
         {
           "pid": 558046,
           "path": "/tmp/ray/session_2026-10-01_05-44-42_236554_552842/logs/worker-f1a71b51afbe3ac5ac73064f61cabe6ec29bc096b8e51466d49f6acd-01000000-558046.out",
-          "last_completed_iteration_metrics": "step:7 - global_seqlen/min:2114088.000 - global_seqlen/max:2147312.000 - global_seqlen/minmax_diff:33224.000 - global_seqlen/balanced_min:2129451.000 - global_seqlen/balanced_max:2131949.000 - global_seqlen/mean:2130700.000 - actor/entropy_loss:0.144 - training/rollout_probs_diff_max:1.000 - training/rollout_probs_diff_mean:0.283 - training/rollout_probs_diff_std:0.414 - actor/pg_loss:0.001 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.001 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:70.786 - perf/max_memory_reserved_gb:75.896 - perf/cpu_memory_used_gb:730.879 - actor/lr:0.000 - training/global_step:7.000 - training/epoch:3.000 - critic/score/mean:-0.982 - critic/score/max:1.000 - critic/score/min:-1.000 - critic/rewards/mean:-0.982 - critic/rewards/max:1.000 - critic/rewards/min:-1.000 - critic/advantages/mean:-0.000 - critic/advantages/max:1.232 - critic/advantages/min:-1.016 - critic/returns/mean:-0.318 - critic/returns/max:1.000 - critic/returns/min:-1.000 - response_length/mean:3325.688 - response_length/max:18220.000 - response_length/min:1149.000 - response_length/clip_ratio:0.002 - prompt_length/mean:3.531 - prompt_length/max:2351.000 - prompt_length/min:0.000 - prompt_length/clip_ratio:0.001 - episode/reward/mean:-0.982 - episode/reward/max:1.000 - episode/reward/min:-1.000 - episode/length/mean:3.778 - episode/length/max:6.000 - episode/length/min:1.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.005 - timing_s/gen:3457.634 - timing_s/reward:0.000 - timing_s/old_log_prob:398.801 - timing_s/adv:6614.425 - timing_s/update_actor:1416.935 - timing_s/dump_rollout_generations:3.222 - timing_s/step:11891.097 - timing_per_token_ms/gen:0.812 - timing_per_token_ms/update_actor:0.333 - timing_per_token_ms/adv:1.552 - perf/total_num_tokens:4261400.000 - perf/time_per_step:11891.097 - perf/throughput:179.184",
-          "last_transport": "[owner_trajectory] trajectories=1280 responses=4820 policy_tokens=1428254 context_tokens=4176757",
+          "last_completed_iteration_metrics": "step:8 - global_seqlen/min:2066839.000 - global_seqlen/max:2109918.000 - global_seqlen/minmax_diff:43079.000 - global_seqlen/balanced_min:2088378.000 - global_seqlen/balanced_max:2088379.000 - global_seqlen/mean:2088378.500 - actor/entropy_loss:0.146 - training/rollout_probs_diff_max:1.000 - training/rollout_probs_diff_mean:0.274 - training/rollout_probs_diff_std:0.409 - actor/pg_loss:0.001 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.002 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:71.175 - perf/max_memory_reserved_gb:76.539 - perf/cpu_memory_used_gb:778.912 - actor/lr:0.000 - training/global_step:8.000 - training/epoch:3.000 - critic/score/mean:-0.969 - critic/score/max:1.000 - critic/score/min:-1.000 - critic/rewards/mean:-0.969 - critic/rewards/max:1.000 - critic/rewards/min:-1.000 - critic/advantages/mean:-0.000 - critic/advantages/max:1.401 - critic/advantages/min:-0.750 - critic/returns/mean:-0.335 - critic/returns/max:1.000 - critic/returns/min:-1.000 - response_length/mean:3261.167 - response_length/max:18220.000 - response_length/min:973.000 - response_length/clip_ratio:0.002 - prompt_length/mean:1.925 - prompt_length/max:1624.000 - prompt_length/min:0.000 - prompt_length/clip_ratio:0.001 - episode/reward/mean:-0.969 - episode/reward/max:1.000 - episode/reward/min:-1.000 - episode/length/mean:3.766 - episode/length/max:6.000 - episode/length/min:1.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.013 - timing_s/gen:3609.460 - timing_s/reward:0.000 - timing_s/old_log_prob:392.536 - timing_s/adv:6593.115 - timing_s/update_actor:1397.832 - timing_s/dump_rollout_generations:3.147 - timing_s/step:11996.170 - timing_per_token_ms/gen:0.865 - timing_per_token_ms/update_actor:0.335 - timing_per_token_ms/adv:1.579 - perf/total_num_tokens:4176757.000 - perf/time_per_step:11996.170 - perf/throughput:174.087",
+          "last_transport": "[owner_trajectory] trajectories=1280 responses=4725 policy_tokens=1350862 context_tokens=4213172",
           "meaning": "Original TaskRunner lines; a newer in-progress rollout is not a completed iteration. No progress is inferred from process liveness."
         }
       ],
@@ -837,6 +983,254 @@
           "scope": "No newly completed iteration is discarded; original model/optimizer/RNG/reader loader used again, with unchanged workload."
         }
       },
+      "startup_options": {
+        "ray_init.num_cpus": 16,
+        "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "actor_rollout_ref.model.trust_remote_code": true,
+        "actor_rollout_ref.model.lora_rank": 8,
+        "actor_rollout_ref.model.lora_alpha": 16,
+        "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+        "actor_rollout_ref.model.enable_activation_offload": true,
+        "actor_rollout_ref.model.use_fused_kernels": true,
+        "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+        "actor_rollout_ref.actor.strategy": "fsdp2",
+        "actor_rollout_ref.actor.ppo_mini_batch_size": 32,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+        "actor_rollout_ref.actor.use_torch_compile": true,
+        "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+        "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+        "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+        "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+        "actor_rollout_ref.rollout.name": "vllm",
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+        "actor_rollout_ref.rollout.load_format": "safetensors",
+        "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+        "actor_rollout_ref.rollout.max_model_len": 32768,
+        "actor_rollout_ref.rollout.max_num_seqs": 32,
+        "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+        "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+          "image": 0,
+          "video": 0
+        },
+        "trainer.n_gpus_per_node": 2,
+        "trainer.nnodes": 1,
+        "algorithm.adv_estimator": "deltatrace",
+        "data.train_files": "loop-training",
+        "data.val_files": "loop-evaluation",
+        "data.custom_cls.path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-batch-coalescing-20261002/entry/loop_iteration_dataset.py",
+        "data.custom_cls.name": "LoopIterationDataset",
+        "+data.loop_train_groups": 40,
+        "+data.loop_eval_groups": 57,
+        "data.train_batch_size": 40,
+        "data.val_batch_size": 57,
+        "data.max_prompt_length": 32768,
+        "data.max_response_length": 1500,
+        "data.return_raw_chat": true,
+        "data.truncation": "error",
+        "+data.dataloader_num_workers": 0,
+        "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+        "actor_rollout_ref.actor.ppo_epochs": 2,
+        "actor_rollout_ref.rollout.multi_turn.enable": true,
+        "actor_rollout_ref.rollout.prompt_length": 31268,
+        "actor_rollout_ref.rollout.temperature": 1.0,
+        "actor_rollout_ref.rollout.val_kwargs.temperature": 0.0,
+        "actor_rollout_ref.rollout.val_kwargs.do_sample": false,
+        "env.env_name": "AppWorld",
+        "env.rollout.n": 6,
+        "env.max_steps": 40,
+        "+env.factory._target_": "loop_environment_entry.make_loop_environments",
+        "+env.loop": {
+          "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner"
+        },
+        "trainer.logger": [
+          "console"
+        ],
+        "trainer.project_name": "deltatrace_official_environments",
+        "trainer.experiment_name": "dt-AppWorld",
+        "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-batch-coalescing-20261002/appworld-dt/checkpoints",
+        "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-batch-coalescing-20261002/appworld-dt/rollouts",
+        "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-batch-coalescing-20261002/appworld-dt/validation",
+        "trainer.max_actor_ckpt_to_keep": 2,
+        "trainer.total_epochs": 200,
+        "trainer.total_training_steps": 200,
+        "trainer.save_freq": 1,
+        "trainer.test_freq": 5,
+        "trainer.val_before_train": false,
+        "trainer.resume_mode": "resume_path",
+        "+ray_init.runtime_env.worker_process_setup_hook": "observe_worker_visibility.install",
+        "+ray_init.runtime_env.env_vars.DT_WORKER_VISIBILITY_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-batch-coalescing-20261002/appworld-dt/worker-visibility",
+        "trainer.resume_from_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-rollout-scope-20261001/appworld-dt/checkpoints/global_step_6"
+      },
+      "configuration_artifacts": {
+        "native_verl_defaults": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-rollout-scope-20261001/verl/verl/trainer/config/ppo_trainer.yaml",
+          "exists": true,
+          "sha256": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb"
+        },
+        "entry_numerical_receipt": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-batch-coalescing-20261002/entry/verified_runtime.json",
+          "exists": true,
+          "sha256": "b5d5608ea76d941aca14314eb23811311b189e356cdcc0e478f3282a94c325c5"
+        },
+        "native_loop_training_command": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/README.md",
+          "exists": true,
+          "sha256": "dab0189fb93558271265b6b9c1720063c23e3343abda924491cd0c111ed2dbfa"
+        },
+        "native_loop_config_loader": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/config.py",
+          "exists": true,
+          "sha256": "7028a7586df0f4f1cc0d961de46ab9242e86b14e1799d2328f87b4d1f49e5846"
+        },
+        "native_loop_structured_config": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/inference/config.py",
+          "exists": true,
+          "sha256": "9f7fc761e5a86ebb018d512a6de97befa4676cd9fa298a81d468e6acc0ac3e28"
+        },
+        "loop_conf/accelerate_config.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/accelerate_config.yaml",
+          "exists": true,
+          "sha256": "e7ae540503417a32d105acee6558780fac9f2dc0ad0153f049d13b83bd91a67e"
+        },
+        "loop_conf/appworld/agent/default.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/appworld/agent/default.yaml",
+          "exists": true,
+          "sha256": "7f0c089015944a3e55f11e9076f3ab893ebfa2cc5f418f9020407e82a1c59c2b"
+        },
+        "loop_conf/appworld/debug.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/appworld/debug.yaml",
+          "exists": true,
+          "sha256": "0aa7306e4ad8a7a6dad2798a77720348a25d36491cca106bac1966e093359eed"
+        },
+        "loop_conf/appworld/default.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/appworld/default.yaml",
+          "exists": true,
+          "sha256": "eade02e4178282b248140ae6ee71ab1e2623491c65bf45236a72504d1bea558c"
+        },
+        "loop_conf/appworld_eval.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/appworld_eval.yaml",
+          "exists": true,
+          "sha256": "9771b545768a036216ab353c9c06b7a5ab551940185e945a1d56151c535dac29"
+        },
+        "loop_conf/config.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/config.yaml",
+          "exists": true,
+          "sha256": "1c2200d7e34b76922d097e70a578e5c6cc7bca675790a04456e499a0dc164764"
+        },
+        "loop_conf/global/appworld.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/global/appworld.yaml",
+          "exists": true,
+          "sha256": "cfbc7c427552fcd66b38e6aa1eebfe4784e04656202f85e5b85c63567eb028d5"
+        },
+        "loop_conf/llm/qwen_2_5_32b_eval.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_2_5_32b_eval.yaml",
+          "exists": true,
+          "sha256": "a469a2797ed1ce07a5d2d4ebc58bb73fddac6c6e797fdb8b61071839c89522b3"
+        },
+        "loop_conf/llm/qwen_2_5_32b_train.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_2_5_32b_train.yaml",
+          "exists": true,
+          "sha256": "9555c8d6461a15f94bcff2c99a580eaf17d6800a404ad23d8281c699e151a8bb"
+        },
+        "loop_conf/llm/qwen_2_5_7b_eval.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_2_5_7b_eval.yaml",
+          "exists": true,
+          "sha256": "975321c0470980839f05c32908d3305f04d1f82ee150adc2b1a3edaee99b1030"
+        },
+        "loop_conf/llm/qwen_2_5_7b_train.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_2_5_7b_train.yaml",
+          "exists": true,
+          "sha256": "a8efc49962ae59f40ebd97cc60fb245bafa8c04291aeb182ce6db46753fe64cb"
+        },
+        "loop_conf/llm/qwen_3_32b_eval.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_3_32b_eval.yaml",
+          "exists": true,
+          "sha256": "d35e080b1fefc46ca0af67b01da06284d0328e194dadf47395b31e68f329da49"
+        },
+        "loop_conf/llm/qwen_3_32b_train.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_3_32b_train.yaml",
+          "exists": true,
+          "sha256": "8a05c3115cbcf16dc3eba7e222ea4404fedbd598ec7b5ae3ad8fea785be44304"
+        },
+        "loop_conf/llm/qwen_3_8b_eval.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_3_8b_eval.yaml",
+          "exists": true,
+          "sha256": "978faa8f3e94a2ad274fb8d3686f2d3134fd3893a98d53cdbfeac581b607be15"
+        },
+        "loop_conf/llm/qwen_3_8b_train.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/llm/qwen_3_8b_train.yaml",
+          "exists": true,
+          "sha256": "4a053b20f876aa3e8cff7d2a42947f913e6973d99bf88cc4fdd1005d05ffe1a4"
+        },
+        "loop_conf/rl/gpu_allocation/four_learn_four_infer.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/gpu_allocation/four_learn_four_infer.yaml",
+          "exists": true,
+          "sha256": "c9cb46141c842fa94f760b0e0d0df3c9545fc09dcd2dcf9cdf8a56412ba781b8"
+        },
+        "loop_conf/rl/gpu_allocation/one_learn_one_infer.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/gpu_allocation/one_learn_one_infer.yaml",
+          "exists": true,
+          "sha256": "b8640700b9b92914f1412bef4787334fa33a1fabf26f5ece214fc0d3990948b7"
+        },
+        "loop_conf/rl/gpu_allocation/single_gpu.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/gpu_allocation/single_gpu.yaml",
+          "exists": true,
+          "sha256": "b381a7be759213fe414fc6a4f0e677d99b3430768aebdf756ee1a973018a7944"
+        },
+        "loop_conf/rl/optimization/adamw_const_lr.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/optimization/adamw_const_lr.yaml",
+          "exists": true,
+          "sha256": "de502febca5755b662f5567272de335435b53227b6de25da9b59ad9c6a775476"
+        },
+        "loop_conf/rl/params/debug.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/params/debug.yaml",
+          "exists": true,
+          "sha256": "fa8a05e62598f114e62acb5adf8278e7ba328ab10f245315eaaf93787016f3bd"
+        },
+        "loop_conf/rl/params/default.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/params/default.yaml",
+          "exists": true,
+          "sha256": "2cd803395b5300ecc9b940575a7af11c694d9b5ef75b11ee9eedd74e41f7be4b"
+        },
+        "loop_conf/rl/scenario_sampler/appworld_dev.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/scenario_sampler/appworld_dev.yaml",
+          "exists": true,
+          "sha256": "809ca412beea44255990ee8c8cabc948da8e993245a00a58c1f2894505393843"
+        },
+        "loop_conf/rl/scenario_sampler/appworld_syntheticv4.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/scenario_sampler/appworld_syntheticv4.yaml",
+          "exists": true,
+          "sha256": "d396857ba281b9f42b05f49eb8cf393132c5db39480767b9c2cc92984270ef90"
+        },
+        "loop_conf/rl/scenario_sampler/appworld_train.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/scenario_sampler/appworld_train.yaml",
+          "exists": true,
+          "sha256": "fb1b16219a2c60f63c7b98b7dd2a5af3533f0cc4c62bd1f9e98757334f0ebba0"
+        },
+        "loop_conf/rl/scenario_sampler/appworld_train12.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/scenario_sampler/appworld_train12.yaml",
+          "exists": true,
+          "sha256": "9940f16dab5a9540dc09b4fe8d9fb9a484c27a0721d5596f0c66ced66dfdb93d"
+        },
+        "loop_conf/rl/scenario_sampler/appworld_train12_syntheticv4.yaml": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner/phi_agents/rl/conf/rl/scenario_sampler/appworld_train12_syntheticv4.yaml",
+          "exists": true,
+          "sha256": "4073dd47eb823142405957f275dc08919e875a7c51b5751122d336c13222368a"
+        },
+        "model_config": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/config.json",
+          "exists": true,
+          "sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05"
+        },
+        "model_tokenizer_config": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/tokenizer_config.json",
+          "exists": true,
+          "sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8"
+        }
+      },
+      "configuration_artifact_scope": "Read-only configuration/source fingerprints and full startup options. AppWorld reads the original LOOP README, ConfigStore types and Hydra conf tree; available YAML alternatives are recorded without claiming all were consumed. Not a fresh live config query, numerical proof, or validation of later unrecorded overrides.",
       "startup_workload_options": {
         "actor_rollout_ref.model.lora_rank": 8,
         "actor_rollout_ref.model.lora_alpha": 16,
@@ -869,8 +1263,8 @@
         {
           "pid": 1207855,
           "path": "/tmp/ray/session_2026-10-02_05-07-13_859166_1199302/logs/worker-c5bcc2dc514b7ec7faee1237ae8b804593c36f77afceedac60816402-01000000-1207855.out",
-          "last_completed_iteration_metrics": null,
-          "last_transport": "[loop_transport] calls=68 rpc_mode=actor_pool batch_requests=15 queued_requests=0 requests=2066 generated_tokens=441322 elapsed=3801.3s completed_ranks=0",
+          "last_completed_iteration_metrics": "step:7 - global_seqlen/min:1400364.000 - global_seqlen/max:1538874.000 - global_seqlen/minmax_diff:138510.000 - global_seqlen/balanced_min:1469619.000 - global_seqlen/balanced_max:1469619.000 - global_seqlen/mean:1469619.000 - actor/entropy_loss:0.429 - training/rollout_probs_diff_max:1.000 - training/rollout_probs_diff_mean:0.424 - training/rollout_probs_diff_std:0.454 - actor/pg_loss:0.002 - actor/pg_clipfrac:0.001 - actor/ppo_kl:-0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.001 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:82.322 - perf/max_memory_reserved_gb:91.508 - perf/cpu_memory_used_gb:858.541 - actor/lr:0.000 - training/global_step:7.000 - training/epoch:1.000 - critic/score/mean:0.803 - critic/score/max:1.000 - critic/score/min:0.167 - critic/rewards/mean:0.803 - critic/rewards/max:1.000 - critic/rewards/min:0.167 - critic/advantages/mean:-0.001 - critic/advantages/max:0.496 - critic/advantages/min:-1.441 - critic/returns/mean:0.193 - critic/returns/max:1.000 - critic/returns/min:0.000 - response_length/mean:13606.583 - response_length/max:30381.000 - response_length/min:7809.000 - response_length/clip_ratio:0.005 - prompt_length/mean:1.000 - prompt_length/max:1.000 - prompt_length/min:1.000 - prompt_length/clip_ratio:1.000 - episode/reward/mean:0.803 - episode/reward/max:1.000 - episode/reward/min:0.167 - episode/length/mean:16.509 - episode/length/max:40.000 - episode/length/min:7.000 - episode/tool_call_count/mean:16.509 - timing_s/gen:7713.319 - timing_s/reward:0.000 - timing_s/old_log_prob:405.359 - timing_s/adv:4552.124 - timing_s/update_actor:2863.811 - timing_s/dump_rollout_generations:0.950 - timing_s/save_checkpoint:53.502 - timing_s/step:15589.113 - timing_per_token_ms/adv:1.549 - timing_per_token_ms/gen:2.624 - timing_per_token_ms/update_actor:0.974 - perf/total_num_tokens:2939238.000 - perf/time_per_step:15589.113 - perf/throughput:94.272",
+          "last_transport": "[loop_transport] calls=41 rpc_mode=actor_pool batch_requests=14 queued_requests=0 requests=1214 generated_tokens=242355 elapsed=2072.4s completed_ranks=0",
           "meaning": "Original TaskRunner lines; a newer in-progress rollout is not a completed iteration. No progress is inferred from process liveness."
         }
       ],
@@ -1438,13 +1832,151 @@
         }
       },
       "runtime_overrides": [],
-      "temporary_observations": [],
+      "temporary_observations": [
+        {
+          "receipt": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/appworld-batch-coalescing-20261002/native-profiler/installed.json",
+            "exists": true,
+            "sha256": "0d06213a058d35ee52101839e26b5985a4f9e52d6c81305ae2e904afad65145b"
+          },
+          "source_commit": "3242ca1d58bdc549a28bccfea2e48b671d285208",
+          "script_sha256": "cfde2c02dd1ef8d494ed77e9e96672526b023a884867a43172dcff3f25cb24f0",
+          "ranks": [
+            {
+              "receipt": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/appworld-batch-coalescing-20261002/native-profiler/rank0.json",
+                "exists": true,
+                "sha256": "4c66244f00972e3178e6a4ffdc7855ec11bc650dab73e98abcd11324facee52b"
+              },
+              "record": {
+                "pid": 1213516,
+                "rank": 0,
+                "installed_unix": 1790905958.5277576,
+                "restored": true,
+                "skipped_calls": 0,
+                "original_generate_source": "/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/llm.py",
+                "begin": [
+                  {
+                    "pid": 1213516,
+                    "config": "ProfilerConfig(profiler='torch', torch_profiler_dir='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/appworld-batch-coalescing-20261002/native-profiler/rank0', torch_profiler_with_stack=False, torch_profiler_with_flops=False, torch_profiler_use_gzip=True, torch_profiler_dump_cuda_time_total=True, torch_profiler_record_shapes=False, torch_profiler_with_memory=False, ignore_frontend=True, delay_iterations=0, max_iterations=16)",
+                    "running": true,
+                    "sources": {
+                      "/opt/conda/lib/python3.12/site-packages/vllm/config/profiler.py": "36b203b03d82337c6fb95c8c4fc465fe33cdc0c545e56834fab00b0ba0d11ece",
+                      "/opt/conda/lib/python3.12/site-packages/vllm/profiler/wrapper.py": "82bcae36de69bccf3c8c6d1de76dcb515fb85f7ef8e1809788594b83551fcf16",
+                      "/opt/conda/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py": "37db3830453c3d8dc8852256c4763006e828b3e1da9f8f24d96c62135cc1d7c6"
+                    }
+                  }
+                ],
+                "engine_seconds": 130.7793919481337,
+                "requests": 16,
+                "prompt_tokens": 121408,
+                "generated_tokens": 4318,
+                "cached_tokens": [
+                  6144,
+                  5632,
+                  2560,
+                  5632,
+                  6144,
+                  2560,
+                  7168,
+                  5632,
+                  11264,
+                  13312,
+                  12288,
+                  4608,
+                  12800,
+                  8704,
+                  0,
+                  0
+                ],
+                "finish": [
+                  {
+                    "running_before_cleanup": false,
+                    "worker_iterations": 1502,
+                    "profiler_iterations": 17,
+                    "original_max_iterations": 16,
+                    "restored": true,
+                    "running_after_stop": false
+                  }
+                ],
+                "restored_unix": 1790906089.3871605
+              }
+            },
+            {
+              "receipt": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/appworld-batch-coalescing-20261002/native-profiler/rank1.json",
+                "exists": true,
+                "sha256": "99f32590d82f1240c905a739d66a8a9e2255bcfbea09b6506fee220aead7eb4b"
+              },
+              "record": {
+                "pid": 1217549,
+                "rank": 1,
+                "installed_unix": 1790905948.803643,
+                "restored": true,
+                "skipped_calls": 0,
+                "original_generate_source": "/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/llm.py",
+                "begin": [
+                  {
+                    "pid": 1217549,
+                    "config": "ProfilerConfig(profiler='torch', torch_profiler_dir='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/appworld-batch-coalescing-20261002/native-profiler/rank1', torch_profiler_with_stack=False, torch_profiler_with_flops=False, torch_profiler_use_gzip=True, torch_profiler_dump_cuda_time_total=True, torch_profiler_record_shapes=False, torch_profiler_with_memory=False, ignore_frontend=True, delay_iterations=0, max_iterations=16)",
+                    "running": true,
+                    "sources": {
+                      "/opt/conda/lib/python3.12/site-packages/vllm/config/profiler.py": "36b203b03d82337c6fb95c8c4fc465fe33cdc0c545e56834fab00b0ba0d11ece",
+                      "/opt/conda/lib/python3.12/site-packages/vllm/profiler/wrapper.py": "82bcae36de69bccf3c8c6d1de76dcb515fb85f7ef8e1809788594b83551fcf16",
+                      "/opt/conda/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py": "37db3830453c3d8dc8852256c4763006e828b3e1da9f8f24d96c62135cc1d7c6"
+                    }
+                  }
+                ],
+                "engine_seconds": 68.16303874738514,
+                "requests": 16,
+                "prompt_tokens": 142902,
+                "generated_tokens": 3032,
+                "cached_tokens": [
+                  4096,
+                  2560,
+                  4608,
+                  3584,
+                  13824,
+                  7680,
+                  9728,
+                  9728,
+                  3072,
+                  0,
+                  4608,
+                  10240,
+                  15360,
+                  11776,
+                  11264,
+                  0
+                ],
+                "finish": [
+                  {
+                    "running_before_cleanup": false,
+                    "worker_iterations": 538,
+                    "profiler_iterations": 17,
+                    "original_max_iterations": 16,
+                    "restored": true,
+                    "running_after_stop": false
+                  }
+                ],
+                "restored_unix": 1790906016.9941828
+              }
+            }
+          ],
+          "scope": "Original vLLM bounded profiler on the batch-coalescing deployment; no additional generation. Rank receipts determine whether the observation and cleanup have completed."
+        }
+      ],
       "pending_runtime_operations": [],
       "environment_roots": {
         "loop_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner"
       },
       "recent_progress": [],
-      "completed_checkpoints": [],
+      "completed_checkpoints": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-batch-coalescing-20261002/appworld-dt/checkpoints/latest_checkpointed_iteration.txt",
+          "value": "7"
+        }
+      ],
       "effective_resource_config": {
         "scope": "Frozen launch plus completed current-PID worker overrides; not a fresh live config read",
         "ranks": [
@@ -1508,23 +2040,23 @@
     {
       "task": "TextCraft",
       "method": "dt",
-      "pid": 212110,
+      "pid": 3218909,
       "devices": [
         4,
         5
       ],
-      "started_unix": 1790775612.2311566,
-      "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-entry",
-      "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7",
+      "started_unix": 1790895651.6807766,
+      "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/entry",
+      "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl",
       "dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147",
       "source": {
-        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/source.json",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/source.json",
         "exists": true,
-        "sha256": "b7c371b2b226086bba12d143c622cce4235716bcb61976fce87062236f1ee04e"
+        "sha256": "6ce9aecf79305cf398ca5988ca20ce1a3aa9a571c4c32275be5d499bf48d5644"
       },
-      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt",
-      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/train.log",
-      "checkpoints": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints",
+      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt",
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/train.log",
+      "checkpoints": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/checkpoints",
       "budget": {
         "epochs": 30,
         "prompt_groups_per_batch": 32,
@@ -1538,9 +2070,9 @@
         "save_interval": 25
       },
       "launch": {
-        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/launch.json",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/launch.json",
         "exists": true,
-        "sha256": "2ccd64ab777b753b77be90bc779e5e6d4aab4c4d8f54b84797759b491ed540af"
+        "sha256": "946b224558b3104b2f97441eb7a137c32f4297eb38f6c7a547166748c36c39fa"
       },
       "declared_resource_config": {
         "lora_rank": 8,
@@ -1548,18 +2080,168 @@
         "actor_microbatch": 4,
         "log_prob_micro_batch_size_per_gpu": 4
       },
-      "startup_provenance": {},
+      "startup_provenance": {
+        "submission_repository_commit": "7831caf8f019eec1a0f069cb5a05b1ccddc60e0b",
+        "submission_script_sha256": "b64fe522bba9829e63155a23c9b0b8b4b92b9e4f33f9957d7f822f30b512d504",
+        "prepared_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/textcraft-rollout-scope/prepared.json",
+        "prepared_receipt_sha256": "d6ced8cba268b9d2a055010f9d62d9a0af12c636f94c956b9b4849d8d1ae8dc9",
+        "prior_driver_pid": 212110,
+        "resume_from": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25",
+        "completed_checkpoint_marker": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/latest_checkpointed_iteration.txt",
+          "value": 25,
+          "sha256": "b7a56873cd771f2c446d369b649430b65a756ba278ff97ec81bb6f55b2e73569"
+        },
+        "actor_fix_commit": "dc4e4d7",
+        "dt_dispatch_commit": "4c0cbdd",
+        "actor_padding_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+        "padding_comparison_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-response-padding/real-model/owner-padding-assertion.json",
+        "padding_comparison_receipt_sha256": "30f34f4cddbb0aa6531a1ad3db7f1aca9aaf3ba060920fe30102e7b85dc7311b",
+        "completed_overlay_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/live-TextCraft-complete.json",
+        "completed_overlay_sha256": "dbc689b157a7c0126fc57a1861635c33cfb22b7781749b935003e235512c9108",
+        "prior_source_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/source.json",
+        "prior_source_sha256": "b7c371b2b226086bba12d143c622cce4235716bcb61976fce87062236f1ee04e",
+        "rollout_scope_commit": "2a32d002cffb6a16a1be89e835c3f43ba70b471c",
+        "rollout_scope_comparison": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/replay-complete.json",
+        "rollout_scope_comparison_sha256": "1717504ef0837e8bc6db66c3554beddb6982ccf60b405c359c3c0d90df4540db",
+        "resume_launcher": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/entry/launch_textcraft_native.py",
+          "sha256": "67487af4de55233946ff80eb2d136b4afa9c46184d9cfdec791d39c3f95590e8"
+        }
+      },
+      "startup_options": {
+        "ray_init.num_cpus": 16,
+        "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "actor_rollout_ref.model.trust_remote_code": true,
+        "actor_rollout_ref.model.lora_rank": 8,
+        "actor_rollout_ref.model.lora_alpha": 16,
+        "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+        "actor_rollout_ref.model.enable_activation_offload": true,
+        "actor_rollout_ref.model.use_fused_kernels": true,
+        "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+        "actor_rollout_ref.actor.strategy": "fsdp2",
+        "actor_rollout_ref.actor.ppo_mini_batch_size": 64,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+        "actor_rollout_ref.actor.use_torch_compile": true,
+        "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+        "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+        "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+        "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+        "actor_rollout_ref.rollout.name": "vllm",
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+        "actor_rollout_ref.rollout.load_format": "safetensors",
+        "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+        "actor_rollout_ref.rollout.max_model_len": 32768,
+        "actor_rollout_ref.rollout.max_num_seqs": 32,
+        "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+        "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+          "image": 0,
+          "video": 0
+        },
+        "trainer.n_gpus_per_node": 2,
+        "trainer.nnodes": 1,
+        "algorithm.adv_estimator": "deltatrace",
+        "data.train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/train.parquet",
+        "data.val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/validation.parquet",
+        "data.train_batch_size": 32,
+        "data.val_batch_size": 32,
+        "data.max_prompt_length": 32256,
+        "data.max_response_length": 512,
+        "data.return_raw_chat": true,
+        "data.truncation": "error",
+        "+data.dataloader_num_workers": 0,
+        "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+        "actor_rollout_ref.actor.ppo_epochs": 1,
+        "actor_rollout_ref.actor.optim.lr": 1e-06,
+        "actor_rollout_ref.actor.use_kl_loss": true,
+        "actor_rollout_ref.actor.kl_loss_coef": 0.001,
+        "actor_rollout_ref.actor.kl_loss_type": "low_var_kl",
+        "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.rollout.multi_turn.enable": true,
+        "actor_rollout_ref.rollout.temperature": 1.0,
+        "actor_rollout_ref.rollout.top_p": 1,
+        "actor_rollout_ref.rollout.val_kwargs.do_sample": true,
+        "actor_rollout_ref.rollout.val_kwargs.temperature": 1,
+        "actor_rollout_ref.rollout.val_kwargs.top_p": 1,
+        "env.env_name": "TextCraft",
+        "env.rollout.n": 8,
+        "env.max_steps": 30,
+        "+env.factory._target_": "textcraft_environment_entry.make_textcraft_environments",
+        "+env.textcraft": {
+          "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner",
+          "client": {
+            "task_name": "textcraft",
+            "env_addr": "http://127.0.0.1:36005",
+            "max_retries": 10,
+            "max_rounds": 10,
+            "timeout": 600
+          },
+          "eval_client": {
+            "task_name": "textcraft",
+            "env_addr": "http://127.0.0.1:36005",
+            "max_retries": 10,
+            "max_rounds": 30,
+            "timeout": 500
+          }
+        },
+        "trainer.logger": [
+          "console"
+        ],
+        "trainer.project_name": "deltatrace_official_environments",
+        "trainer.experiment_name": "dt-TextCraft",
+        "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/checkpoints",
+        "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/rollouts",
+        "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/validation",
+        "trainer.max_actor_ckpt_to_keep": 2,
+        "trainer.total_epochs": 30,
+        "trainer.total_training_steps": null,
+        "trainer.save_freq": 25,
+        "trainer.test_freq": -1,
+        "trainer.val_before_train": false,
+        "trainer.resume_mode": "resume_path",
+        "trainer.resume_from_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25"
+      },
+      "configuration_artifacts": {
+        "native_verl_defaults": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/trainer/config/ppo_trainer.yaml",
+          "exists": true,
+          "sha256": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb"
+        },
+        "entry_numerical_receipt": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/entry/verified_runtime.json",
+          "exists": true,
+          "sha256": "b5d5608ea76d941aca14314eb23811311b189e356cdcc0e478f3282a94c325c5"
+        },
+        "task_recipe": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/entry/owner_environment_configs.json",
+          "exists": true,
+          "sha256": "69af7f858cd25f2f76f8ccc4c6831d0e9eb51dc072817489257bcb84cd0faafd"
+        },
+        "model_config": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/config.json",
+          "exists": true,
+          "sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05"
+        },
+        "model_tokenizer_config": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/tokenizer_config.json",
+          "exists": true,
+          "sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8"
+        }
+      },
+      "configuration_artifact_scope": "Read-only configuration/source fingerprints and full startup options. AppWorld reads the original LOOP README, ConfigStore types and Hydra conf tree; available YAML alternatives are recorded without claiming all were consumed. Not a fresh live config query, numerical proof, or validation of later unrecorded overrides.",
       "startup_workload_options": {
         "actor_rollout_ref.model.lora_rank": 8,
         "actor_rollout_ref.model.lora_alpha": 16,
         "actor_rollout_ref.actor.ppo_mini_batch_size": 64,
-        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 1,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
         "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
-        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 1,
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
         "algorithm.adv_estimator": "deltatrace",
         "data.train_batch_size": 32,
         "actor_rollout_ref.actor.ppo_epochs": 1,
-        "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 1,
+        "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 4,
         "env.rollout.n": 8,
         "env.max_steps": 30,
         "trainer.total_epochs": 30,
@@ -1569,8 +2251,8 @@
       },
       "native_training_workload": [
         {
-          "pid": 317069,
-          "path": "/tmp/ray/session_2026-09-30_21-40-42_163722_212110/logs/worker-95c58ecede4220d2a76b702d020c4dd41f1efd9653fafd09f44b1c07-01000000-317069.out",
+          "pid": 3230286,
+          "path": "/tmp/ray/session_2026-10-02_07-01-21_880335_3218909/logs/worker-7085c45d2f95f3e562bccff31e8c246442ba6608753fa6f527d056ce-01000000-3230286.out",
           "lines": [
             "Size of train dataloader: 11, Size of val dataloader: 4",
             "Total training steps: 330"
@@ -1580,21 +2262,21 @@
       ],
       "native_training_progress": [
         {
-          "pid": 317069,
-          "path": "/tmp/ray/session_2026-09-30_21-40-42_163722_212110/logs/worker-95c58ecede4220d2a76b702d020c4dd41f1efd9653fafd09f44b1c07-01000000-317069.out",
-          "last_completed_iteration_metrics": "step:24 - global_seqlen/min:469152.000 - global_seqlen/max:526424.000 - global_seqlen/minmax_diff:57272.000 - global_seqlen/balanced_min:497788.000 - global_seqlen/balanced_max:497788.000 - global_seqlen/mean:497788.000 - actor/entropy_loss:0.710 - actor/kl_loss:0.001 - actor/kl_coef:0.001 - actor/pg_loss:-0.000 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.000 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:60.003 - perf/max_memory_reserved_gb:64.102 - perf/cpu_memory_used_gb:731.565 - actor/lr:0.000 - training/global_step:24.000 - training/epoch:2.000 - critic/score/mean:0.516 - critic/score/max:1.000 - critic/score/min:0.000 - critic/rewards/mean:0.516 - critic/rewards/max:1.000 - critic/rewards/min:0.000 - critic/advantages/mean:0.000 - critic/advantages/max:0.189 - critic/advantages/min:-0.230 - critic/returns/mean:0.208 - critic/returns/max:1.000 - critic/returns/min:0.000 - response_length/mean:3573.969 - response_length/max:10240.000 - response_length/min:193.000 - response_length/clip_ratio:0.043 - prompt_length/mean:315.000 - prompt_length/max:315.000 - prompt_length/min:315.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:0.516 - episode/reward/max:1.000 - episode/reward/min:0.000 - episode/length/mean:18.688 - episode/length/max:30.000 - episode/length/min:2.000 - episode/tool_call_count/mean:18.688 - timing_s/gen:2663.964 - timing_s/reward:0.000 - timing_s/old_log_prob:159.518 - timing_s/ref:138.675 - timing_s/adv:1192.002 - timing_s/update_actor:576.418 - timing_s/dump_rollout_generations:0.500 - timing_s/step:4731.084 - timing_per_token_ms/ref:0.139 - timing_per_token_ms/gen:2.912 - timing_per_token_ms/update_actor:0.579 - timing_per_token_ms/adv:1.197 - perf/total_num_tokens:995576.000 - perf/time_per_step:4731.084 - perf/throughput:105.216",
+          "pid": 3230286,
+          "path": "/tmp/ray/session_2026-10-02_07-01-21_880335_3218909/logs/worker-7085c45d2f95f3e562bccff31e8c246442ba6608753fa6f527d056ce-01000000-3230286.out",
+          "last_completed_iteration_metrics": "step:28 - global_seqlen/min:521177.000 - global_seqlen/max:525355.000 - global_seqlen/minmax_diff:4178.000 - global_seqlen/balanced_min:523266.000 - global_seqlen/balanced_max:523266.000 - global_seqlen/mean:523266.000 - actor/entropy_loss:0.742 - actor/kl_loss:0.001 - actor/kl_coef:0.001 - actor/pg_loss:-0.000 - actor/pg_clipfrac:0.000 - actor/ppo_kl:-0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.000 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:60.001 - perf/max_memory_reserved_gb:64.143 - perf/cpu_memory_used_gb:855.620 - actor/lr:0.000 - training/global_step:28.000 - training/epoch:0.000 - critic/score/mean:0.527 - critic/score/max:1.000 - critic/score/min:0.000 - critic/rewards/mean:0.527 - critic/rewards/max:1.000 - critic/rewards/min:0.000 - critic/advantages/mean:0.000 - critic/advantages/max:0.266 - critic/advantages/min:-0.663 - critic/returns/mean:0.197 - critic/returns/max:1.000 - critic/returns/min:0.000 - response_length/mean:3773.016 - response_length/max:10240.000 - response_length/min:192.000 - response_length/clip_ratio:0.070 - prompt_length/mean:315.000 - prompt_length/max:315.000 - prompt_length/min:315.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:0.527 - episode/reward/max:1.000 - episode/reward/min:0.000 - episode/length/mean:18.266 - episode/length/max:30.000 - episode/length/min:2.000 - episode/tool_call_count/mean:18.266 - timing_s/gen:1935.995 - timing_s/reward:0.000 - timing_s/old_log_prob:160.011 - timing_s/ref:139.270 - timing_s/adv:564.210 - timing_s/update_actor:578.622 - timing_s/dump_rollout_generations:0.455 - timing_s/step:3378.571 - timing_per_token_ms/update_actor:0.553 - timing_per_token_ms/adv:0.539 - timing_per_token_ms/gen:2.004 - timing_per_token_ms/ref:0.133 - perf/total_num_tokens:1046532.000 - perf/time_per_step:3378.571 - perf/throughput:154.878",
           "last_transport": null,
           "meaning": "Original TaskRunner lines; a newer in-progress rollout is not a completed iteration. No progress is inferred from process liveness."
         }
       ],
       "process": {
         "alive": true,
-        "created_unix": 1790775611.7,
+        "created_unix": 1790895651.16,
         "pid_identity_matches": true,
         "status": "sleeping",
         "workers": [
-          319769,
-          321497
+          3236008,
+          3240133
         ]
       },
       "entry_files": {
@@ -1651,17 +2333,31 @@
           "matches_workspace_bytes": true
         },
         "launch_textcraft_native.py": {
-          "recorded_sha256": "0380306ff86563d79392509976a22d8f23050d0e9c471e824217c88260b6301c",
-          "actual_sha256": "0380306ff86563d79392509976a22d8f23050d0e9c471e824217c88260b6301c",
+          "recorded_sha256": "67487af4de55233946ff80eb2d136b4afa9c46184d9cfdec791d39c3f95590e8",
+          "actual_sha256": "67487af4de55233946ff80eb2d136b4afa9c46184d9cfdec791d39c3f95590e8",
           "matches": true,
           "workspace_sha256": "67487af4de55233946ff80eb2d136b4afa9c46184d9cfdec791d39c3f95590e8",
-          "matches_workspace_bytes": false
+          "matches_workspace_bytes": true
         },
         "patch_loop_external_completion.py": {
           "recorded_sha256": "4bc50258b6fee3d76431aee06085bb6115170fc7852a6713da2e97b0dca8b5c4",
           "actual_sha256": "4bc50258b6fee3d76431aee06085bb6115170fc7852a6713da2e97b0dca8b5c4",
           "matches": true,
           "workspace_sha256": "4bc50258b6fee3d76431aee06085bb6115170fc7852a6713da2e97b0dca8b5c4",
+          "matches_workspace_bytes": true
+        },
+        "patch_owner_rollout_scope.py": {
+          "recorded_sha256": "82a41565a1d2ff1c852504217b21c45b69d3b1483416a52711d840f6a8722f3e",
+          "actual_sha256": "82a41565a1d2ff1c852504217b21c45b69d3b1483416a52711d840f6a8722f3e",
+          "matches": true,
+          "workspace_sha256": "82a41565a1d2ff1c852504217b21c45b69d3b1483416a52711d840f6a8722f3e",
+          "matches_workspace_bytes": true
+        },
+        "test_owner_rollout_scope.py": {
+          "recorded_sha256": "ee29e287918fc323585b0c971d4b071e159b676608ab310bec84862669266ab7",
+          "actual_sha256": "ee29e287918fc323585b0c971d4b071e159b676608ab310bec84862669266ab7",
+          "matches": true,
+          "workspace_sha256": "ee29e287918fc323585b0c971d4b071e159b676608ab310bec84862669266ab7",
           "matches_workspace_bytes": true
         },
         "sql_environment_entry.py": {
@@ -1677,18 +2373,18 @@
           "matches": true
         },
         "dt_training_batch.py": {
-          "recorded_sha256": "22a47416dd291d888a516f94bda1c0381c4829a5bc314f616255af576a8b5fbb",
-          "actual_sha256": "22a47416dd291d888a516f94bda1c0381c4829a5bc314f616255af576a8b5fbb",
+          "recorded_sha256": "da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2",
+          "actual_sha256": "da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2",
           "matches": true,
           "workspace_sha256": "da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2",
-          "matches_workspace_bytes": false
+          "matches_workspace_bytes": true
         },
         "test_distributed_credit.py": {
-          "recorded_sha256": "f5e087e486fbfb0e6b5264a563b20a75446b7f1db9c0059fd1527ce2e4b31241",
-          "actual_sha256": "f5e087e486fbfb0e6b5264a563b20a75446b7f1db9c0059fd1527ce2e4b31241",
+          "recorded_sha256": "170b431f2a96e75fbab63958cf1b2b873d36f23f6c04e031fb611cbbdc62c368",
+          "actual_sha256": "170b431f2a96e75fbab63958cf1b2b873d36f23f6c04e031fb611cbbdc62c368",
           "matches": true,
           "workspace_sha256": "170b431f2a96e75fbab63958cf1b2b873d36f23f6c04e031fb611cbbdc62c368",
-          "matches_workspace_bytes": false
+          "matches_workspace_bytes": true
         },
         "verify_native_long_response.py": {
           "recorded_sha256": "813aee60c3fe32d1d6f05d6c39c30031d867b5345d21706d02cb3b3a35a01333",
@@ -1724,11 +2420,11 @@
           "matches_workspace_bytes": true
         },
         "launch_sql_native.py": {
-          "recorded_sha256": "7ca56e69218626a84735b24bbee8b1cb34c39640e47d9a4fc297037b99e71383",
-          "actual_sha256": "7ca56e69218626a84735b24bbee8b1cb34c39640e47d9a4fc297037b99e71383",
+          "recorded_sha256": "51a854aed3f0be00fa56ed4d12b0d8702b3c706b46eb337c7a979b23b7ee0980",
+          "actual_sha256": "51a854aed3f0be00fa56ed4d12b0d8702b3c706b46eb337c7a979b23b7ee0980",
           "matches": true,
           "workspace_sha256": "51a854aed3f0be00fa56ed4d12b0d8702b3c706b46eb337c7a979b23b7ee0980",
-          "matches_workspace_bytes": false
+          "matches_workspace_bytes": true
         },
         "test_sql_dataset_entry.py": {
           "recorded_sha256": "938cc1146565c7d1056f5442488bacc8f354a73c9149e95be8d4e666a4de753f",
@@ -1748,6 +2444,13 @@
           "recorded_sha256": "73826ebe4547718572891e42cb382f7a00d6d790ffbbabba1e4f2372151e9e4a",
           "actual_sha256": "73826ebe4547718572891e42cb382f7a00d6d790ffbbabba1e4f2372151e9e4a",
           "matches": true
+        },
+        "owner_rollout_scope.py": {
+          "recorded_sha256": "98bc4d3dd89904e07666633353fa10d2cb494441a559dff41078bc797907942d",
+          "actual_sha256": "98bc4d3dd89904e07666633353fa10d2cb494441a559dff41078bc797907942d",
+          "matches": true,
+          "workspace_sha256": "98bc4d3dd89904e07666633353fa10d2cb494441a559dff41078bc797907942d",
+          "matches_workspace_bytes": true
         },
         "patch_verl_environment_entry.py": {
           "recorded_sha256": "47bc7492b8afe6cdcd77e45f043b0f265ed6d254fe7ab157f24be993e6bd32bf",
@@ -1945,18 +2648,18 @@
           "matches_workspace_bytes": true
         },
         "owner_runtime_options.py": {
-          "recorded_sha256": "57e5d687455274458a96aa889eb3e23a5712eba540a600d9df2640f0fdd625dd",
-          "actual_sha256": "57e5d687455274458a96aa889eb3e23a5712eba540a600d9df2640f0fdd625dd",
+          "recorded_sha256": "205c06d77d859aa6b7e9efa29b7e56c0f25b28be4f8e3cc05a164c4737af0f42",
+          "actual_sha256": "205c06d77d859aa6b7e9efa29b7e56c0f25b28be4f8e3cc05a164c4737af0f42",
           "matches": true,
           "workspace_sha256": "205c06d77d859aa6b7e9efa29b7e56c0f25b28be4f8e3cc05a164c4737af0f42",
-          "matches_workspace_bytes": false
+          "matches_workspace_bytes": true
         },
         "test_owner_entry_launch.py": {
-          "recorded_sha256": "0cc76b05ce7539107c628b6aacd2cd2a9eb7e6b0bdf0db1004d0ee120d1a0d8b",
-          "actual_sha256": "0cc76b05ce7539107c628b6aacd2cd2a9eb7e6b0bdf0db1004d0ee120d1a0d8b",
+          "recorded_sha256": "02427613d24054e75a9392013913ac19ddfebf7d106460707fbcdc9d07751df0",
+          "actual_sha256": "02427613d24054e75a9392013913ac19ddfebf7d106460707fbcdc9d07751df0",
           "matches": true,
           "workspace_sha256": "02427613d24054e75a9392013913ac19ddfebf7d106460707fbcdc9d07751df0",
-          "matches_workspace_bytes": false
+          "matches_workspace_bytes": true
         },
         "test_loop_model_entry_local.py": {
           "recorded_sha256": "5dc21137c5bee48d2364a715b07fb8e727f378d4c9ef87937b0aa61197bc9045",
@@ -1973,11 +2676,11 @@
           "matches_workspace_bytes": true
         },
         "test_shared_padding.py": {
-          "recorded_sha256": "d31c79f04a9c233d9d7b442cbb0cc0933680cc83d7a1e47e0615b67dda401ac7",
-          "actual_sha256": "d31c79f04a9c233d9d7b442cbb0cc0933680cc83d7a1e47e0615b67dda401ac7",
+          "recorded_sha256": "99a440f4325acd7c99e9b1a02f4cc2adb8cf63835972630d0eff9558092d1d90",
+          "actual_sha256": "99a440f4325acd7c99e9b1a02f4cc2adb8cf63835972630d0eff9558092d1d90",
           "matches": true,
           "workspace_sha256": "d31c79f04a9c233d9d7b442cbb0cc0933680cc83d7a1e47e0615b67dda401ac7",
-          "matches_workspace_bytes": true
+          "matches_workspace_bytes": false
         },
         "loop_environment_entry.py": {
           "recorded_sha256": "dbcfca935d8e5145ff6520a0b6ff0cccdacaca0a24f1c5e5722eae5081bd1e59",
@@ -2043,11 +2746,11 @@
           "matches_workspace_bytes": true
         },
         "patch_actor_response_boundary.py": {
-          "recorded_sha256": "3047a8c43c84167d2946f4a74157d711c38fb03cb90f7ff5eb964580a2d1ce7e",
-          "actual_sha256": "3047a8c43c84167d2946f4a74157d711c38fb03cb90f7ff5eb964580a2d1ce7e",
+          "recorded_sha256": "192a3c28f0660688144f35d8876a65064cb7c49e0e9ead86dfdbc5a1a1f1895d",
+          "actual_sha256": "192a3c28f0660688144f35d8876a65064cb7c49e0e9ead86dfdbc5a1a1f1895d",
           "matches": true,
           "workspace_sha256": "3047a8c43c84167d2946f4a74157d711c38fb03cb90f7ff5eb964580a2d1ce7e",
-          "matches_workspace_bytes": true
+          "matches_workspace_bytes": false
         },
         "test_actor_entropy_dispatch.py": {
           "recorded_sha256": "658c71341445ab70388dc0842f60b0e257f3003d3edd645aa72a569c4560a9ba",
@@ -2059,249 +2762,86 @@
       },
       "owner_files": {
         "verl/workers/actor/dp_actor.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/actor/dp_actor.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/workers/actor/dp_actor.py",
           "exists": true,
-          "sha256": "2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3",
-          "startup_recorded_sha256": "2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3",
+          "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+          "startup_recorded_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
           "matches_startup_source": true
         },
         "verl/workers/fsdp_workers.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/fsdp_workers.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/workers/fsdp_workers.py",
           "exists": true,
-          "sha256": "9278dc651af5daa20a9ca347ed36034a877bc7342c0e40da981c2db9bf850522",
-          "startup_recorded_sha256": "9278dc651af5daa20a9ca347ed36034a877bc7342c0e40da981c2db9bf850522",
+          "sha256": "807e51856f9990d408fb2c33998fdcf9b0cbf3f230178677d6a5d2ecc0b7cc0d",
+          "startup_recorded_sha256": "807e51856f9990d408fb2c33998fdcf9b0cbf3f230178677d6a5d2ecc0b7cc0d",
           "matches_startup_source": true
         },
         "verl/trainer/ppo/core_algos.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/trainer/ppo/core_algos.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/trainer/ppo/core_algos.py",
           "exists": true,
           "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
           "startup_recorded_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
           "matches_startup_source": true
         },
         "verl/utils/experimental/torch_functional.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/utils/experimental/torch_functional.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/utils/experimental/torch_functional.py",
           "exists": true,
-          "sha256": "5855ac3bce4e12f9990ab89d3457df9b49be913776a2acb713e54be296953960",
-          "startup_recorded_sha256": "5855ac3bce4e12f9990ab89d3457df9b49be913776a2acb713e54be296953960",
+          "sha256": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+          "startup_recorded_sha256": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
           "matches_startup_source": true
         },
         "verl/models/transformers/monkey_patch.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/models/transformers/monkey_patch.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/models/transformers/monkey_patch.py",
           "exists": true,
-          "sha256": "63d722e2a32b56d3ba32d417c90a6f1c8db97906e751a6ac0f62c28d240d7bf1",
-          "startup_recorded_sha256": "63d722e2a32b56d3ba32d417c90a6f1c8db97906e751a6ac0f62c28d240d7bf1",
+          "sha256": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
+          "startup_recorded_sha256": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
           "matches_startup_source": true
         },
         "verl/models/transformers/qwen3_vl.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/models/transformers/qwen3_vl.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/models/transformers/qwen3_vl.py",
           "exists": true,
           "sha256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
           "startup_recorded_sha256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
           "matches_startup_source": true
         },
         "verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py",
           "exists": true,
           "sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "startup_recorded_sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
           "matches_startup_source": true
         },
         "verl/workers/sharding_manager/fsdp_vllm.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/sharding_manager/fsdp_vllm.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/workers/sharding_manager/fsdp_vllm.py",
           "exists": true,
           "sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
           "startup_recorded_sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
           "matches_startup_source": true
         },
         "agent_system/multi_turn_rollout/rollout_loop.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/agent_system/multi_turn_rollout/rollout_loop.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/agent_system/multi_turn_rollout/rollout_loop.py",
           "exists": true,
-          "sha256": "90c525ace13c9a3a33d829168925d31c95541a9e35bc840a19eb6bf2569f2742",
-          "startup_recorded_sha256": "90c525ace13c9a3a33d829168925d31c95541a9e35bc840a19eb6bf2569f2742",
+          "sha256": "8e4e3372f790bff1245e7ef1c3388982786e500a375a19a6e340cc44ec0535ed",
+          "startup_recorded_sha256": "8e4e3372f790bff1245e7ef1c3388982786e500a375a19a6e340cc44ec0535ed",
           "matches_startup_source": true
         },
         "verl/trainer/ppo/ray_trainer.py": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/trainer/ppo/ray_trainer.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/trainer/ppo/ray_trainer.py",
           "exists": true,
           "sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
           "startup_recorded_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
           "matches_startup_source": true
         }
       },
-      "runtime_overrides": [
-        {
-          "receipt": {
-            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/live-TextCraft-complete.json",
-            "exists": true,
-            "sha256": "dbc689b157a7c0126fc57a1861635c33cfb22b7781749b935003e235512c9108"
-          },
-          "workers": [
-            {
-              "task": "TextCraft",
-              "rank": 0,
-              "pid": 319769,
-              "unix": 1790780070.882704,
-              "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930",
-              "source_sha256": {
-                "verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
-                "verl/models/transformers/monkey_patch.py": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
-                "verl/models/transformers/qwen3_vl.py": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7"
-              },
-              "actual_head_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/utils/experimental/torch_functional.py",
-              "actor_microbatch": 4,
-              "logprob_microbatch": 4,
-              "lora_rank": 8,
-              "lora_alpha": 16,
-              "loss_config": {
-                "ppo_mini_batch_size": 32,
-                "ppo_epochs": 1,
-                "entropy_coeff": 0.001,
-                "clip_ratio": 0.2,
-                "clip_ratio_c": 3.0,
-                "kl_loss_coef": 0.001,
-                "use_kl_loss": true,
-                "loss_agg_mode": "token-mean"
-              },
-              "dt_forward_unchanged": true,
-              "boundary": "original Worker.execute_with_func_generator",
-              "preserved": "model/optimizer/scheduler/rollout/DT advantages; original PPO loss/update"
-            },
-            {
-              "task": "TextCraft",
-              "rank": 1,
-              "pid": 321497,
-              "unix": 1790780067.3689675,
-              "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930",
-              "source_sha256": {
-                "verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
-                "verl/models/transformers/monkey_patch.py": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
-                "verl/models/transformers/qwen3_vl.py": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7"
-              },
-              "actual_head_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/utils/experimental/torch_functional.py",
-              "actor_microbatch": 4,
-              "logprob_microbatch": 4,
-              "lora_rank": 8,
-              "lora_alpha": 16,
-              "loss_config": {
-                "ppo_mini_batch_size": 32,
-                "ppo_epochs": 1,
-                "entropy_coeff": 0.001,
-                "clip_ratio": 0.2,
-                "clip_ratio_c": 3.0,
-                "kl_loss_coef": 0.001,
-                "use_kl_loss": true,
-                "loss_agg_mode": "token-mean"
-              },
-              "dt_forward_unchanged": true,
-              "boundary": "original Worker.execute_with_func_generator",
-              "preserved": "model/optimizer/scheduler/rollout/DT advantages; original PPO loss/update"
-            }
-          ],
-          "effective_files": {
-            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/utils/experimental/torch_functional.py": {
-              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/utils/experimental/torch_functional.py",
-              "exists": true,
-              "sha256": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
-              "expected_sha256": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
-              "matches": true
-            },
-            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/models/transformers/monkey_patch.py": {
-              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/models/transformers/monkey_patch.py",
-              "exists": true,
-              "sha256": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
-              "expected_sha256": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
-              "matches": true
-            },
-            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/models/transformers/qwen3_vl.py": {
-              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-fused-head-b4-20260930/verl/models/transformers/qwen3_vl.py",
-              "exists": true,
-              "sha256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
-              "expected_sha256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
-              "matches": true
-            }
-          },
-          "submission_provenance": {},
-          "applicability": "Completed RPC receipt for these currently alive worker PIDs; does not claim a fresh method introspection"
-        },
-        {
-          "receipt": {
-            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-response-padding/textcraft-live/complete.json",
-            "exists": true,
-            "sha256": "97327bbf9a54809df4d03003a724384a95618c9d009f3b146a06411f3f607922"
-          },
-          "workers": [
-            {
-              "task": "TextCraft",
-              "pid": 319769,
-              "rank": 0,
-              "unix": 1790854121.1486747,
-              "role": "actor_rollout",
-              "original_optimizer_steps": [
-                64.0
-              ],
-              "effective_forward_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-response-padding-20261001/verl/workers/actor/dp_actor.py",
-              "effective_source_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-              "prior_forward_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/actor/dp_actor.py",
-              "prior_forward_sha256": "2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3",
-              "actor_microbatch": 4,
-              "lora_rank": 8,
-              "lora_alpha": 16,
-              "boundary": "Original Worker.execute_with_func_generator after completed update_actor; before next old_log_prob",
-              "scope": "Only bound original-owner forward changed; model/optimizer/config/DT/vLLM/loss unchanged"
-            },
-            {
-              "task": "TextCraft",
-              "pid": 321497,
-              "rank": 1,
-              "unix": 1790854115.5538259,
-              "role": "actor_rollout",
-              "original_optimizer_steps": [
-                64.0
-              ],
-              "effective_forward_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-response-padding-20261001/verl/workers/actor/dp_actor.py",
-              "effective_source_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-              "prior_forward_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-textcraft-formal-20260930-v7/verl/workers/actor/dp_actor.py",
-              "prior_forward_sha256": "2b80b938fee442ea5d9273523b6cce2bcc0511b7729aa6cea90333fef5de7cd3",
-              "actor_microbatch": 4,
-              "lora_rank": 8,
-              "lora_alpha": 16,
-              "boundary": "Original Worker.execute_with_func_generator after completed update_actor; before next old_log_prob",
-              "scope": "Only bound original-owner forward changed; model/optimizer/config/DT/vLLM/loss unchanged"
-            }
-          ],
-          "effective_files": {
-            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-response-padding-20261001/verl/workers/actor/dp_actor.py": {
-              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-response-padding-20261001/verl/workers/actor/dp_actor.py",
-              "exists": true,
-              "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-              "expected_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-              "matches": true
-            }
-          },
-          "submission_provenance": {
-            "submission_repository_commit": "87771e176bb048784e2e10b70329a1bb6eb75832",
-            "submission_script_sha256": "8fe4b8f9dd0366f0fd0e20333254863c694a41f7e0c396a70383c901c3b9ff33",
-            "completion_repository_commit": "3a46cec7818a71afa9a65db07c9439b12956f76e",
-            "completion_script_sha256": "0244a0c7d547e65628f3a7c3e9900ac64faec0205540dd8af688e696081eff48",
-            "submitted_unix": 1790853507.0872192,
-            "completed_unix": 1790854121.200114,
-            "driver_pid": 212110,
-            "driver_created_unix": 1790775611.7,
-            "owner_comparison_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-response-padding/real-model/owner-padding-assertion.json",
-            "owner_comparison_sha256": "30f34f4cddbb0aa6531a1ad3db7f1aca9aaf3ba060920fe30102e7b85dc7311b",
-            "expected_optimizer_step": 64
-          },
-          "applicability": "Completed RPC receipt for these currently alive worker PIDs; does not claim a fresh method introspection"
-        }
-      ],
+      "runtime_overrides": [],
       "temporary_observations": [],
       "pending_runtime_operations": [],
-      "environment_roots": {},
+      "environment_roots": {
+        "agentgym_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner"
+      },
       "recent_progress": [
-        "Rounds 27/30 | Active agents per gpu: 115:  87%|████████▋ | 26/30 [38:23<05:06, 76.60s/it]",
-        "Rounds 27/30 | Active agents per gpu: 115:  90%|█████████ | 27/30 [39:39<03:50, 76.67s/it]",
-        "Rounds 28/30 | Active agents per gpu: 115:  90%|█████████ | 27/30 [39:40<03:50, 76.67s/it]"
+        "Rounds 1/30 | Active agents per gpu: 256:   0%|          | 0/30 [00:00<?, ?it/s]",
+        "Rounds 1/30 | Active agents per gpu: 256:   3%|▎         | 1/30 [02:32<1:13:45, 152.61s/it]",
+        "Rounds 2/30 | Active agents per gpu: 256:   3%|▎         | 1/30 [02:33<1:13:45, 152.61s/it]"
       ],
       "completed_checkpoints": [],
       "effective_resource_config": {
@@ -2317,30 +2857,9 @@
             },
             "source_receipts": [
               {
-                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/launch.json",
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/launch.json",
                 "exists": true,
-                "sha256": "2ccd64ab777b753b77be90bc779e5e6d4aab4c4d8f54b84797759b491ed540af"
-              },
-              {
-                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/live-TextCraft-complete.json",
-                "exists": true,
-                "sha256": "dbc689b157a7c0126fc57a1861635c33cfb22b7781749b935003e235512c9108",
-                "recorded_fields": {
-                  "actor_microbatch": 4,
-                  "logprob_microbatch": 4,
-                  "lora_rank": 8,
-                  "lora_alpha": 16
-                }
-              },
-              {
-                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-response-padding/textcraft-live/complete.json",
-                "exists": true,
-                "sha256": "97327bbf9a54809df4d03003a724384a95618c9d009f3b146a06411f3f607922",
-                "recorded_fields": {
-                  "actor_microbatch": 4,
-                  "lora_rank": 8,
-                  "lora_alpha": 16
-                }
+                "sha256": "946b224558b3104b2f97441eb7a137c32f4297eb38f6c7a547166748c36c39fa"
               }
             ]
           },
@@ -2354,37 +2873,16 @@
             },
             "source_receipts": [
               {
-                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/launch.json",
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/launch.json",
                 "exists": true,
-                "sha256": "2ccd64ab777b753b77be90bc779e5e6d4aab4c4d8f54b84797759b491ed540af"
-              },
-              {
-                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/live-TextCraft-complete.json",
-                "exists": true,
-                "sha256": "dbc689b157a7c0126fc57a1861635c33cfb22b7781749b935003e235512c9108",
-                "recorded_fields": {
-                  "actor_microbatch": 4,
-                  "logprob_microbatch": 4,
-                  "lora_rank": 8,
-                  "lora_alpha": 16
-                }
-              },
-              {
-                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-response-padding/textcraft-live/complete.json",
-                "exists": true,
-                "sha256": "97327bbf9a54809df4d03003a724384a95618c9d009f3b146a06411f3f607922",
-                "recorded_fields": {
-                  "actor_microbatch": 4,
-                  "lora_rank": 8,
-                  "lora_alpha": 16
-                }
+                "sha256": "946b224558b3104b2f97441eb7a137c32f4297eb38f6c7a547166748c36c39fa"
               }
             ]
           }
         ]
       },
       "version_mapping": {
-        "startup_deployment_directory": "official-trajectory-20260930-v7",
+        "startup_deployment_directory": "textcraft-rollout-scope-20261001",
         "actor_head_fix_commit": "dc4e4d7349c26d08eaceaac6d00a57c0e1fbfda7",
         "actor_fix_identification": "matched actual head, dispatch and original wrapper SHA",
         "actor_head_effective_sha256": {
@@ -2392,23 +2890,15 @@
           "verl/models/transformers/monkey_patch.py": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
           "verl/models/transformers/qwen3_vl.py": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7"
         },
-        "runtime_overrides_present": true,
+        "runtime_overrides_present": false,
         "actor_forward_sources": [
           {
-            "rank": 0,
-            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-response-padding-20261001/verl/workers/actor/dp_actor.py",
+            "rank": null,
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/workers/actor/dp_actor.py",
             "exists": true,
             "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-            "expected_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-            "matches": true
-          },
-          {
-            "rank": 1,
-            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-response-padding-20261001/verl/workers/actor/dp_actor.py",
-            "exists": true,
-            "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-            "expected_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
-            "matches": true
+            "startup_recorded_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+            "matches_startup_source": true
           }
         ],
         "actor_forward_evidence": "Frozen startup source plus completed PID-bound overrides; no live method introspection"
@@ -2499,15 +2989,13 @@
         "observer_created_unix": 1790886289.58
       },
       "observer": {
-        "alive": true,
-        "created_unix": 1790886289.58,
-        "status": "sleeping",
-        "pid_identity_matches": true
+        "alive": false,
+        "pid_identity_matches": false
       },
       "completed_stop": {
         "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/checkpoint-boundary/textcraft-scope/completed-stop.json",
-        "exists": false,
-        "sha256": null
+        "exists": true,
+        "sha256": "2a992aed6d3ae081e93ffb81c3f8b0b313085858e8801fa062dd1e8d8c753f9b"
       },
       "scope": "One-time checkpoint transition; a live observer is not evidence of a new training deployment."
     }
@@ -8208,7 +8696,9 @@
       },
       "preparation_repository_commit": "928b091aa83eb60e8a8e9521472f8d9c3e0fcdad",
       "preparation_script_sha256": "b43b7fd917b43a4e54fc2d8bee59bc7fec242b7f611cd18541631e117c8258c8",
-      "active_jobs_with_this_entry": [],
+      "active_jobs_with_this_entry": [
+        "TextCraft"
+      ],
       "entry_files": {
         "owner_task_dataset.py": {
           "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/entry/owner_task_dataset.py",
@@ -11761,7 +12251,8 @@
       "id": "whole-rollout-owner-context",
       "status": "deployed_to_listed_jobs",
       "active_jobs_with_matching_owner_files": [
-        "AppWorld"
+        "AppWorld",
+        "TextCraft"
       ],
       "preparation": {
         "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/prepared.json",
@@ -11809,11 +12300,11 @@
       "scope": "Bounded original-worker replay; deployment status comes from matching current owner files, not this test. No full-iteration speedup claim."
     }
   ],
-  "code_repository_commit_at_collection": "92704778c4d34d8eaf8bc1df2c4bafe297b1e820",
+  "code_repository_commit_at_collection": "3242ca1d58bdc549a28bccfea2e48b671d285208",
   "recorder_source": {
     "path": "research/temporary/rl_upstream_alignment_20260929/record_current_runtime.py",
-    "sha256": "cb27c9054a0bcedbf0a5b9f86966785cb67b4d3e4bcf5dbbe869b2aadaeaec36",
-    "last_committed_change": "0ac2076fe49d63940d42d52592c0671f019af1d2",
+    "sha256": "459ab9d732b2de79ff47e6fd64156c42317fcb9e8f00a8d72f7a2f12f7f96338",
+    "last_committed_change": "3242ca1d58bdc549a28bccfea2e48b671d285208",
     "differs_from_head": false
   },
   "recording_command": "C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_upstream_alignment_20260929/record_current_runtime.py",

@@ -6,9 +6,9 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
-当前正式清单为`runs/appworld-batch-coalescing-20261002/formal-training.json`，根目录
+当前正式清单为`runs/textcraft-rollout-scope-20261002/formal-training.json`，根目录
 `active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842使用GPU0/1，
-AppWorld PID1199302使用GPU2/3，TextCraft PID212110使用GPU4/5。
+AppWorld PID1199302使用GPU2/3，TextCraft PID3218909使用GPU4/5。
 AppWorld跨卡完成顺序修复后，旧PID150275暴露忙卡时请求被提前拆成单条RPC的问题；
 05:06确认仍在未完成第7轮训练采样后，05:07通过原VERL再次恢复同一完整检查点6。
 新bridge为`036977b4eb1f…`，只用原ActorPool.has_free恢复合批；10项实际owner接口
@@ -17,12 +17,14 @@ AppWorld跨卡完成顺序修复后，旧PID150275暴露忙卡时请求被提前
 不作为本次新迭代或完整提速证明，完整负载、失败回执和部署链见运行账本。
 
 AppWorld一次性助手`ddc3a57`已完成检查点6转换，本机16024/远端4044066已退出，
-完成回执保留，不重复启动。TextCraft已安排在**原保存点25**切换完整已验证候选；
-05:15核对本机助手18596/远端452582存活，创建时间、已加载源码SHA和实际状态见快照
-`pending_checkpoint_deployments`。当次无completed-stop；等待助手不是新训练，
-恢复入口继续由原VERL负责。原保存频率、任务预算、LoRA8/16和实际B4保持。
+完成回执保留，不重复启动。TextCraft已在**原保存点25**切换完整已验证候选；
+07:00:51新PID3218909从原检查点25恢复，双rank原loader及设置step25已确认，
+10:04已完成第26–28次完整迭代；AppWorld新第7次迭代及原检查点标记7已完成，
+当前第8次采样。旧助手18596/452582已退出，不重复提交。
+停止完成后SSH重置导致本机助手未提交新作业的失败记录保留；确认目标目录未创建后
+仅调用一次原提交入口恢复。原保存频率、任务预算、LoRA8/16和实际B4保持。
 
-SQL/TextCraft均已准备含已有修复的完整恢复候选，尚未整体部署。TextCraft于19:28已在
+SQL已准备含已有修复的完整恢复候选，尚未整体部署；TextCraft已完成部署。TextCraft旧PID于19:28在
 原RPC边界应用与SQL/AppWorld相同的padding文件；双rank原优化器各64步，保留模型和配置。
 具体冻结目录、完整SHA、
 原数值/配置测试、运行时覆盖、未部署项统一见[RUNTIME_RECORD.md](RUNTIME_RECORD.md)

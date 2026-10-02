@@ -1,0 +1,123 @@
+{
+  "observed_utc": "2026-10-02T02:04:07.198441+00:00",
+  "scope": "Author published experiment runtime and original current-PID formal phase metrics. Evidence index only; not a new method, threshold, workload, scheduler or launch configuration.",
+  "criterion": "Compare against authors recorded experimental data with explicit hardware, model, token workload and execution differences. Native same-card profiles diagnose gaps; they do not replace the author reference.",
+  "official_references": [
+    {
+      "task": "AppWorld",
+      "url": "https://arxiv.org/pdf/2502.01600",
+      "revision": "2502.01600v3",
+      "pages": "Appendix D printed page 16; Figure 7 printed page 17",
+      "pdf_sha256": "632efe95b1d8c4ea09b66734e3fc5088ed994cbe8da021fc4d17f749f5be59dd",
+      "model": "Qwen2.5-32B-Instruct",
+      "rollout_gpus": 8,
+      "training_gpus": 8,
+      "gpu_type": "NVIDIA H100",
+      "recorded_training_hours": 42,
+      "iterations_from_plot_approximately": 90,
+      "derived_full_iteration_minutes_approximately": 28,
+      "derivation": "42*60/90; approximate visual plot count. This is the entire run average, not reported sampling-only time.",
+      "sampling_only_seconds": null,
+      "repository_recipe_total_iterations": 200,
+      "recipe_note": "Recipe budget differs from the plotted run; do not divide 42 hours by 200."
+    },
+    {
+      "task": "SkyRL-SQL",
+      "url": "https://docs.skyrl.ai/docs/recipes/skyrl-sql",
+      "public_report": "https://api.wandb.ai/links/sky-posttraining-uc-berkeley/5df7pt6p",
+      "matching_runtime_seconds": null,
+      "status": "Official public report exists, but its current public browser destination is locked or empty; no author runtime retrieved."
+    },
+    {
+      "task": "TextCraft",
+      "url": "https://github.com/WooooDyy/AgentGym-RL/blob/82402a99c62a293735a3f412fb8ac9a600673bc0/examples/train/AgentGym-RL/textcraft_train.sh",
+      "matching_runtime_seconds": null,
+      "status": "No absolute runtime matched to the fixed TextCraft training recipe has been verified; do not substitute a different ScalingInter figure.",
+      "training_pass_note": "Author update_policy does not read ppo_epochs=2; actual single pass is retained. No parameter change."
+    }
+  ],
+  "current_appworld": {
+    "driver_pid": 1199302,
+    "driver_created_unix": 1790888812.77,
+    "model": "Qwen3.5-9B",
+    "gpu_type": "MetaX C550",
+    "gpu_count": 2,
+    "completed_iteration": 7,
+    "completed_checkpoint_marker": 7,
+    "gen_seconds": 7713.319,
+    "dt_seconds": 4552.124,
+    "actor_seconds": 2863.811,
+    "old_log_prob_seconds": 405.359,
+    "full_iteration_seconds": 15589.113,
+    "requested_trajectories": 240,
+    "retained_trajectories": 216,
+    "retained_responses": 3566,
+    "retained_policy_tokens": 745950,
+    "sampling_completion_requests": 3951,
+    "sampling_generated_tokens": 824680,
+    "phase_source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/phase-1790905168.json",
+      "sha256": "cb32c1874b0d0ff2faf80b48f2ee03c8eeeaf2090e3d6a1cc51bbf4aada014c7"
+    },
+    "runtime_snapshot": {
+      "path": "experiments/rl/current_runtime.json",
+      "sha256": "e420dba150d6dfde5967af73575de6df9e3ca93201abb9bcf0f074fae9e85179"
+    }
+  },
+  "current_native_profile": {
+    "scope": "First bounded worker iterations of one existing batch per rank; full-call counters and duration recorded, duration includes profile overhead.",
+    "installed_source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-batch-coalescing-20261002/native-profiler/installed.json",
+      "sha256": "0d06213a058d35ee52101839e26b5985a4f9e52d6c81305ae2e904afad65145b"
+    },
+    "summary": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-batch-coalescing-20261002/native-profiler/summary.json",
+      "sha256": "c0ef975febe20bf8dcf1bfc89fac24896df39e6e4a55b17fff934889c94e5f68"
+    },
+    "ranks": [
+      {
+        "rank": 0,
+        "worker_pid": 1213516,
+        "requests": 16,
+        "engine_seconds_including_profile": 130.7793919481337,
+        "prompt_tokens": 121408,
+        "cached_tokens": 104448,
+        "generated_tokens": 4318,
+        "worker_iterations": 1502,
+        "generated_tokens_per_worker_iteration": 2.874833555259654,
+        "restored": true,
+        "source": {
+          "path": "research/temporary/rl_upstream_alignment_20260929/appworld-batch-coalescing-20261002/native-profiler/rank0.json",
+          "sha256": "4c66244f00972e3178e6a4ffdc7855ec11bc650dab73e98abcd11324facee52b"
+        }
+      },
+      {
+        "rank": 1,
+        "worker_pid": 1217549,
+        "requests": 16,
+        "engine_seconds_including_profile": 68.16303874738514,
+        "prompt_tokens": 142902,
+        "cached_tokens": 112128,
+        "generated_tokens": 3032,
+        "worker_iterations": 538,
+        "generated_tokens_per_worker_iteration": 5.635687732342007,
+        "restored": true,
+        "source": {
+          "path": "research/temporary/rl_upstream_alignment_20260929/appworld-batch-coalescing-20261002/native-profiler/rank1.json",
+          "sha256": "99f32590d82f1240c905a739d66a8a9e2255bcfbea09b6506fee220aead7eb4b"
+        }
+      }
+    ],
+    "findings": [
+      "Prefix cache is active in these batches; misses do not equal all prompt tokens.",
+      "Native LLM.generate returns the full batch before the bridge replies to owner requests; short requests cannot advance their environment until that batch finishes.",
+      "Average generated tokens per worker iteration is a workload proxy including prefill; not an exact active decode batch statistic.",
+      "No extra generation, new engine, sampler, numerical change or asynchronous runtime was deployed."
+    ]
+  },
+  "dt_workload": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/appworld-step7-dt-workload.json",
+    "sha256": "04097eee6c584227caedd119fc4c968ac0387eaf6d5f9340074f654cbdc13215"
+  },
+  "interpretation": "Raw author and current wall-clock times differ; no normalized slowdown or parity claim is made. GPU count and parameter count do not justify linear speed normalization."
+}
