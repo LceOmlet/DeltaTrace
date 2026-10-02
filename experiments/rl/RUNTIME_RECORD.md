@@ -38,6 +38,29 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ## 当前代码组合
 
+### 2026-10-02 14:11：补齐原生manager所需的官方scheduler配置
+
+PID2120244已经越过前两处失败，原GPU引擎完成初始化后，manager却仍等待
+`chat_scheduler_ready`。非阻塞原TaskRunner栈确认它停在
+`async_server.py:281`，尚未进入`fit()`；后台线程因原sync默认的
+`chat_scheduler=None`报错。错误在接入时启用async而没有补齐该官方配置。
+
+固定owner的`ChatCompletionScheduler`已经提供所需构造器与就绪流程；
+修复`d3b762b3ae7bd2dad2489c2d609f22c7371f1899`只选择这个原类，不复制或修改
+manager、scheduler算法。LOOP任务仍直接使用原生生成服务；不改变任务、奖励、
+采样、训练或资源参数。实际候选launcher组合对照的唯一差别为
+`rollout.chat_scheduler: None → verl.workers.rollout.async_server.ChatCompletionScheduler`。
+CPU测试实际运行原线程入口、原scheduler构造器及就绪信号，33.318秒通过；
+无推理请求或模型权重加载。见
+[官方scheduler配置回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/native-scheduler-config/interfaces.json)。
+
+只停止经创建时间确认的未完成初始化进程树，原检查点8完整保留，另两组PID未变。
+新PID2463700、创建时间1790921486.96，GPU2/3，冻结入口/owner为
+`candidates/appworld-native-async-015-owner-scheduler-20261002`，输出为
+`runs/appworld-native-async-owner-scheduler-20261002/appworld-dt`。
+仍由原VERL恢复检查点8；实际GPU LoRA同步、生成数值与吞吐须以新作业验证，
+不能由这次CPU配置校验宣布效率对齐。
+
 ### 2026-10-02 13:52：AppWorld从原检查点8提交原生异步修复版本
 
 原AppWorld PID1199302已完成第8次更新和双rank的model/optimizer/RNG/reader

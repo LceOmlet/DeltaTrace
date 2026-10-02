@@ -6,12 +6,13 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
-当前正式清单为`runs/appworld-native-async-worker-import-20261002/formal-training.json`，根目录
+当前正式清单为`runs/appworld-native-async-owner-scheduler-20261002/formal-training.json`，根目录
 `active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842使用GPU0/1，
-AppWorld PID2120244使用GPU2/3，TextCraft PID3218909使用GPU4/5。
-AppWorld新进程创建时间1790920325.04，从原完整检查点8由原VERL恢复；冻结入口及
-owner为`candidates/appworld-native-async-015-worker-import-20261002`。原生异步兼容修复
-`3324271`仅补原版本助手导入，继承`b31b695`的原None配置语义。实际GPU初始化、
+AppWorld PID2463700使用GPU2/3，TextCraft PID3218909使用GPU4/5。
+AppWorld新进程创建时间1790921486.96，从原完整检查点8由原VERL恢复；冻结入口及
+owner为`candidates/appworld-native-async-015-owner-scheduler-20261002`。`d3b762b`选择原VERL
+提供的ChatCompletionScheduler，修复仅启用async却遗留sync默认None而卡在就绪等待的
+配置错误；原manager/scheduler代码不改，继承`3324271`与`b31b695`。实际GPU初始化、
 LoRA同步、生成数值和吞吐仍待确认，不能将CPU接口对照称为训练验收。
 复用原Python、模型、环境资产和缓存。LoRA8/16、actor/DT每卡4和任务预算未变。
 
