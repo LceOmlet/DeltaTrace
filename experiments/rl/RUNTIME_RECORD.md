@@ -56,6 +56,14 @@ owner复用已检查的`appworld-native-async-015-transport-20261002/verl`，
 检查点完成，才使用既有恢复助手切换；不重放第7次、不丢弃本轮更新。
 准备和CPU接口通过不作为实际引擎初始化、GPU LoRA同步、数值或提速验收。
 
+11:57已核实一次性检查点观察助手存活：本机PID7940，远端PID61821、
+创建时间1790913374.59，代码`e699459d50a08ce95f7dcdee5732074206e11ad7`。
+原AppWorld PID1199302仍在运行、检查点标记7；助手仅等待原标记至少8后调用
+已有停止/提交入口，不立即停止当前更新。见同候选的
+`checkpoint-observer/submitted.json`及原远端`waiting.json`。
+它是排队中的一次性转换，不是已经部署；后续以`completed-stop.json`、新
+`active-training.json`、原loader日志及实际新worker回执确认。不要重复启动助手。
+
 ### 2026-10-02 11:00：原生异步运输候选，仅 CPU 接口验证
 
 11:32追加的原生接口检查通过（8.987秒）：原FSDP sharder经原生
