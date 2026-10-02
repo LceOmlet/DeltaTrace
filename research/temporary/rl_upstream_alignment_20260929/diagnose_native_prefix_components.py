@@ -8,16 +8,70 @@ import ast
 import hashlib
 import importlib.util
 import inspect
+import math
+import os
 from pathlib import Path
 import time
 
 import torch
 import torch.nn.functional as F
+from einops import rearrange, repeat
+
+
+@torch.no_grad()
+def check_first_attention(cases, prefix, official, save):
+    """Invoke exact pinned FA reference functions and output assertion."""
+    assert hashlib.sha256(official.read_bytes()).hexdigest() == 'a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9'
+    tree=ast.parse(official.read_text())
+    functions=[n for n in tree.body if isinstance(n,ast.FunctionDef)
+               and n.name in ('attention_ref','construct_local_mask')]
+    namespace=dict(torch=torch,F=F,math=math,rearrange=rearrange,repeat=repeat)
+    exec(compile(ast.fix_missing_locations(ast.Module(body=functions,type_ignores=[])),
+                 str(official),'exec'),namespace)
+    test=next(n for n in tree.body if isinstance(n,ast.FunctionDef)
+              and n.name=='test_flash_attn_output')
+    assertions=[n for n in test.body if isinstance(n,ast.Assert)
+                and 'out_ref' in ast.unparse(n)]
+    original=compile(ast.fix_missing_locations(ast.Module(body=assertions,type_ignores=[])),
+                     str(official),'exec')
+    checks=[]
+    for label,case in cases:
+        observed=case['attention']
+        arguments=observed.dense_arguments
+        assert observed.calls['native_dense']==1 and observed.calls['native_varlen']==0
+        q,k,v=[observed.values['dense_'+n][:,:prefix].to('cuda') for n in ('q','k','v')]
+        assert arguments['causal'] and arguments['dropout_p']==0
+        assert arguments['softmax_scale'] in (None,q.shape[-1]**-.5)
+        tick=time.perf_counter()
+        out_ref,_=namespace['attention_ref'](q,k,v,causal=True)
+        out_pt,_=namespace['attention_ref'](q,k,v,causal=True,upcast=False,reorder_ops=True)
+        out=observed.values['attention_output'][:,:prefix].to('cuda')
+        row=dict(case=label,query_shape=list(q.shape),key_shape=list(k.shape),
+                 dtype=str(q.dtype),native_arguments=arguments,
+                 native_max_error=float((out-out_ref).abs().max()),
+                 original_low_precision_max_error=float((out_pt-out_ref).abs().max()),
+                 native_calls=observed.calls,
+                 original_assertions=[ast.unparse(n) for n in assertions])
+        try:
+            exec(original,dict(out=out,out_ref=out_ref,out_pt=out_pt))
+            row['original_fa_output_assertion']='passed'
+        except AssertionError as error:
+            row['original_fa_output_assertion']='failed'
+            row['failure']=str(error)
+        torch.cuda.synchronize()
+        row['reference_and_check_seconds']=time.perf_counter()-tick
+        checks.append(row)
+        save('actual_first_attention_owner_checked',first_attention_checks=checks,
+             official_fa_source=dict(path=str(official),sha256=hashlib.sha256(official.read_bytes()).hexdigest()),
+             reference_tf32=torch.backends.cuda.matmul.allow_tf32)
+        del q,k,v,out,out_ref,out_pt
+    return checks
 
 
 @torch.no_grad()
 def diagnose(runner, ids, prefix, save):
     from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
+    from accelerated.qwen35.qwen35_code_local_capture import NativeDenseAttentionCapture
     from fla.ops.common.chunk_delta_h import chunk_gated_delta_rule_fwd_h
     import fla.utils as owner
 
@@ -49,6 +103,7 @@ def diagnose(runner, ids, prefix, save):
         return value[0] if isinstance(value, (tuple, list)) else value
 
     layers = runner.model.model.language_model.layers
+    attention_only=os.environ.get('DT_PREFIX_ATTENTION_DIAGNOSTIC')=='1'
     sources = [official, Path(inspect.getsourcefile(owner.assert_close)),
                Path(inspect.getsourcefile(chunk_gated_delta_rule_fwd_h)),
                Path(inspect.getsourcefile(NativeGDNCapture)), Path(__file__)]
@@ -56,13 +111,21 @@ def diagnose(runner, ids, prefix, save):
          owner_sources={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources},
          owner_fla_ci_environment=owner.FLA_CI_ENV,
          model_parameter_scope='Original actor init from unchanged model.path and native LoRA init, not a restored formal optimizer or policy checkpoint.',
-         original_forward_assertions=[ast.unparse(n) for n in assertions])
+         original_forward_assertions=[] if attention_only else [ast.unparse(n) for n in assertions])
 
     def capture(input_ids):
         values = {}
         handles = []
-        operator = FirstOperator(layers[0].linear_attn, device='cpu')
+        operator = None if attention_only else FirstOperator(layers[0].linear_attn, device='cpu')
         entered = [False]
+        attention=None
+        attention_entered=[False]
+        if attention_only:
+            from flash_attn import flash_attn_func,flash_attn_varlen_func
+            from transformers.integrations.flash_attention import flash_attention_forward
+            attention=NativeDenseAttentionCapture(layers[3].self_attn,flash_attention_forward,
+                flash_attn_varlen_func,flash_attn_func,destination='cpu',
+                retained_names=('dense_q','dense_k','dense_v','attention_output'))
 
         def output(name, _module, _args, value):
             values[name] = first(value)[:, :prefix].detach().cpu()
@@ -77,9 +140,23 @@ def diagnose(runner, ids, prefix, save):
             operator.__exit__(None, None, None)
             entered[0] = False
 
+        def begin_attention(_module,_args,_value):
+            attention.__enter__()
+            attention_entered[0]=True
+
+        def end_attention(_module,_args,_value):
+            attention.__exit__(None,None,None)
+            attention_entered[0]=False
+
         try:
-            handles.append(layers[0].linear_attn.register_forward_pre_hook(begin, with_kwargs=True))
-            handles.append(layers[0].linear_attn.register_forward_hook(end))
+            if operator is not None:
+                handles.append(layers[0].linear_attn.register_forward_pre_hook(begin, with_kwargs=True))
+                handles.append(layers[0].linear_attn.register_forward_hook(end))
+            if attention is not None:
+                # Enter before layer3 begins, so the existing observer installs
+                # its normal hooks without mutating the executing attention.
+                handles.append(layers[2].register_forward_hook(begin_attention))
+                handles.append(layers[3].register_forward_hook(end_attention))
             for i, layer in enumerate(layers[:4]):
                 points = [('input_norm', layer.input_layernorm), ('output', layer),
                           ('mlp', layer.mlp)]
@@ -100,11 +177,13 @@ def diagnose(runner, ids, prefix, save):
             stored_state = result.past_key_values.layers[0].recurrent_states.detach().cpu()
             del result
             torch.cuda.synchronize()
-            return dict(values=values, operator=operator, stored_state=stored_state,
+            return dict(values=values, operator=operator, attention=attention, stored_state=stored_state,
                         seconds=time.perf_counter()-tick)
         finally:
             if entered[0]:
                 operator.__exit__(None, None, None)
+            if attention_entered[0]:
+                attention.__exit__(None,None,None)
             for handle in handles:
                 handle.remove()
 
@@ -120,6 +199,15 @@ def diagnose(runner, ids, prefix, save):
             owner_error_ratio=float(owner.get_err_ratio(expected, actual))))
     save('native_component_variation_observed', shorter_native_forward_seconds=short['seconds'],
          component_variation=differences)
+
+    if attention_only:
+        checks=check_first_attention([('long_prefix',long),('direct_short',short)],prefix,
+            official.with_name('test_flash_attn_v263.py'),save)
+        save('first_attention_diagnostic_complete',first_attention_checks=checks,
+             peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
+             physical_free_bytes=torch.cuda.mem_get_info()[0],
+             numerical_scope='Original FA output assertion on the first actual attention call; no gradient, whole-DT or Cache numerical acceptance is claimed.')
+        return checks
 
     checks=[]
     for label, case in [('long_readout', long), ('direct_short', short)]:

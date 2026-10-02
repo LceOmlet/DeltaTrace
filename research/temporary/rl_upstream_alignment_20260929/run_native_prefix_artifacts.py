@@ -11,14 +11,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--component-diagnostic', action='store_true',
                         help='Observe actual first-layer FLA operands and invoke the pinned owner forward assertions; no production deployment.')
+    parser.add_argument('--attention-diagnostic', action='store_true',
+                        help='Observe the first native FA call and invoke its pinned original output assertion; no production deployment.')
     args = parser.parse_args()
+    assert not (args.component_diagnostic and args.attention_diagnostic)
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/' + (
+        'native-prefix-attention-20261003' if args.attention_diagnostic else
         'native-prefix-components-20261003' if args.component_diagnostic
         else 'native-prefix-artifacts-20261003-v2')
     # Preserve the actual sources of every completed/failed attempt before SCP.
     remote(f'test ! -e {out}/job.json && mkdir -p {out}\n')
     names = ('native_prefix_artifacts_candidate.py', 'verify_native_prefix_artifacts.py')
-    if args.component_diagnostic:
+    if args.component_diagnostic or args.attention_diagnostic:
         names += ('diagnose_native_prefix_components.py',)
     for name in names:
         subprocess.run(SCP+[str(AUDIT/name), f'{SSH[-1]}:{out}/{name}'], check=True)
@@ -48,6 +52,8 @@ run_env.pop('MACA_VISIBLE_DEVICES',None);run_env.pop('RAY_ADDRESS',None);run_env
 run_env.update(CUDA_VISIBLE_DEVICES='6,7',DT_PREFIX_PROBE_ROOT=str(out),VERL_ROOT=str(framework))
 if @DIAGNOSTIC@:
  run_env['DT_PREFIX_COMPONENT_DIAGNOSTIC']='1'
+if @ATTENTION@:
+ run_env['DT_PREFIX_ATTENTION_DIAGNOSTIC']='1'
 run_env['PYTHONPATH']=':'.join([str(out),job['entry'],str(framework),run_env.get('PYTHONPATH','')])
 receipt=dict(role='Prepared-only native artifact/API probe, not accepted or deployed training acceleration',
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
@@ -68,5 +74,6 @@ print(json.dumps(receipt))
 PY
 '''.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY).replace('@OUT@', out)
            .replace('@COMMIT@', subprocess.check_output(['git', 'rev-parse', 'HEAD'],cwd=REPO,text=True).strip())
-           .replace('@DIAGNOSTIC@', str(args.component_diagnostic))
+           .replace('@DIAGNOSTIC@', str(args.component_diagnostic or args.attention_diagnostic))
+           .replace('@ATTENTION@', str(args.attention_diagnostic))
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
