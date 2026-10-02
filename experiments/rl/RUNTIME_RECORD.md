@@ -39,6 +39,26 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-02 22:54：原DT前缀布局与重放存储调查
+
+[原请求布局回执](results_dt_prefix_layout_20261002.json)记录一次正式组的两个rank各52个
+请求、6条轨迹；92条相邻历史前缀均逐值相同且继续增长。诊断9598dac仅保存元数据，
+约0.96/1.00毫秒，两rank原_prepare_episode均已恢复；DT核心c9cd147/参考fc2e6c2、
+原Q/V、每卡4、LoRA8/16不变。没有部署跨调用Cache或新布局。
+
+保持四条轨迹槽位的225种只读组合均使成对后缀槽位至少从340,112增到686,904；
+部分前缀少算不能据此保证加速。这里只统计输入槽位，未另设时间/FLOP权重或验收阈值。
+原HF混合Cache未提供可直接复用的batch合并接口，GDN状态不能用普通KV裁剪代替。
+随后核对原NativeDecoder/FA/GDN捕获接口：首次前向全层保留尚未实现；完整32k成对B8
+三份MLP数组的算术上界是576GiB/rank，不能用小后缀的容量替代整条路径。
+
+存储诊断35d4c23已在原AppWorld WorkerDict RPC队列提交，回执目录
+formal-dt-capture-storage-1790953114；当前仅submitted，未称已挂载、已取得数据或已修复。
+它只读取一次实际原捕获的shape/dtype/storage bytes，随后恢复，不增加模型调用或张量拷贝。
+23:00以前只读阶段回执确认AppWorld第11次DT已结束、原actor更新在进行；完成标记仍10。
+TextCraft第41次完整迭代已结束并进入42次采样，41次gen2023.377、DT489.433、actor579.658秒；
+这是阶段事实，非本诊断提速。SQL仍停止。本项未替换21:29完整源码快照的采集时间。
+
 ### 2026-10-02 AppWorld 第10次迭代实际工作量复核
 
 [原日志工作量对照](results_appworld_workload_accounting_20261002.json)仅统计同一正式
