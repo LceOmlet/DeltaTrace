@@ -38,6 +38,29 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ## 当前代码组合
 
+### 2026-10-02 12:48：原生异步数值对照入口已准备，未执行GPU生成
+
+诊断源码`d983a94a760a577de76352e1249e12e201636422`，脚本SHA `de747e6a0757…`。它只向已唤醒的正式原生
+AsyncLLM提交原保存prompt IDs，不创建引擎、模型或唤醒/休眠上下文。
+仍执行vLLM0.15原`test_batching`的生成方法及`check_logprobs_close`，
+保留64输出token、top5和原断言；比较串行与并发提交，正式请求可以同时存在，
+不能称孤立batch1对照或吞吐验收。原默认独立测试行为保留。
+CPU检查通过实际`SamplingParams`与当前原运输构造器的所有字段；仅诊断
+阶段/失败标签变动后的carrier AST完全相同，原始回执保留。CPU结果不表示
+实际生成数值通过。源码、fixture与原测试文件哈希见候选的
+`native-batching-diagnostic/ready.json`、`sampling-payload-cpu.json`和
+`source-identity-cpu.json`。正式更新未停止、冻结候选owner/entry未修改。
+
+12:48非阻塞栈确认当前AppWorld两rank都在原`dp_actor.update_policy`的
+`loss.backward()`；原完成检查点标记7，一次性助手PID61821创建时间
+1790913374.59仍存活。第8次DT已完成：各400个B4、各1600个含原padding的
+contrast，累计归因计时3717.371/3715.487秒，输入槽位14,669,888/
+14,667,296。这些是现有日志计时，不是新性能测试，也不作为数值精度证明。
+原worker同一stdout有两个打开描述符；计数按唯一路径读取一次，避免把
+重复观察误报为DT重复计算。原错误观察与更正指针均保留，见
+`checkpoint-observer/dt-workload-step8.json`；与step7不同输入的耗时差不能
+称固定工作量提速。
+
 ### 2026-10-02：已冻结原生异步恢复入口，尚未部署
 
 准备源码`b6e470b7428ff4ac4a1968d2ba247b1a7ffe4e28`从当前PID1199302的
