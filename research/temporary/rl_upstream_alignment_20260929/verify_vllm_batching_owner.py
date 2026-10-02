@@ -62,8 +62,20 @@ class ExistingNativeAsync:
         assert driver.create_time()==job['observed_process_created_unix']
         launch=json.loads((Path(job['output'])/'launch.json').read_text())
         assert launch['options']['actor_rollout_ref.rollout.mode']=='async'
-        sys.path.insert(0,job['entry'])
+        # Ray resolves the named actor's class in this client process too.
+        # Use the same frozen owner as the formal job, not the base env owner.
+        sys.path[:0]=[job['entry'],job['verl_root']]
         from owner_environment_transport import owner_sampling_params
+        import verl.workers.rollout.vllm_rollout.vllm_async_server as server_module
+        server_source=Path(server_module.__file__).resolve()
+        expected_server=Path(job['verl_root'])/'verl/workers/rollout/vllm_rollout/vllm_async_server.py'
+        assert server_source==expected_server.resolve()
+        server_cls=server_module.AsyncvLLMServer.__ray_metadata__.modified_class
+        server_signature=inspect.signature(server_cls.generate_tokens)
+        server_signature.bind(None,[],{},'interface-binding')
+        report['native_server_api']=dict(path=str(server_source),
+            sha256=hashlib.sha256(server_source.read_bytes()).hexdigest(),
+            generate_tokens_signature=str(server_signature))
         self.owner_sampling_params=owner_sampling_params
         gcs=next(p for p in driver.children(recursive=True) if p.name()=='gcs_server')
         port=next(a.split('=',1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))
@@ -73,6 +85,8 @@ class ExistingNativeAsync:
                if n['name']=='async_llm_server_0']
         assert len(names)==1,names
         self.server=ray.get_actor(names[0]['name'],namespace=names[0]['namespace'])
+        report['native_server_api']['ray_handle_signature']=str(
+            self.server._method_signatures['generate_tokens'])
         report['formal_native_engine']=dict(driver_pid=driver.pid,driver_created_unix=driver.create_time(),
             entry=job['entry'],verl_root=job['verl_root'],server=names[0],
             max_num_seqs=launch['options']['actor_rollout_ref.rollout.max_num_seqs'],
