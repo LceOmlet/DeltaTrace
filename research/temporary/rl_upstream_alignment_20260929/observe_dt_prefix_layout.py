@@ -68,13 +68,26 @@ def install(worker):
     metadata_seconds=time.perf_counter()-tick)
    if @SAVE_REQUESTS@:
     blob=out/f'actual-requests-rank{owner.rank}.pt'
-    torch.save(dict(rows=args[0],complete_returns=args[2],requests=[{name:req[name] for name in (
+    payload=dict(rows=args[0],complete_returns=args[2],requests=[{name:req[name] for name in (
       'prompt','actions','query','target','case','start','end','source_step',
       'traj_uid','observed_return','context_tokens','query_tokens','row_index')}
       for req in requests],eos_token_id=readout.tokenizer.eos_token_id,
       outcome_token_ids=readout.alphabet.label_ids(readout.tokenizer),
       task=readout.alphabet.task,max_length=readout.max_length,
-      minibatch_size=readout.minibatch_size),blob)
+      minibatch_size=readout.minibatch_size)
+    # Ray's original rows may contain differently typed views of one storage.
+    # torch.save rejects those aliases. Native CPU clones preserve every
+    # value/dtype/shape while leaving all original training tensors untouched.
+    from torch.utils._pytree import tree_map
+    copied_bytes=0
+    def detached_artifact(value):
+     nonlocal copied_bytes
+     if not torch.is_tensor(value):return value
+     copied_bytes+=value.numel()*value.element_size()
+     return value.detach().cpu().clone()
+    payload=tree_map(detached_artifact,payload)
+    torch.save(payload,blob)
+    record['artifact_tensor_copy_bytes']=copied_bytes
     record['request_artifacts']=dict(path=str(blob),bytes=blob.stat().st_size,
       sha256=hashlib.sha256(blob.read_bytes()).hexdigest(),
       scope='Exact original prepared request tensors for an isolated same-workload comparison; no model or environment rerun')
