@@ -195,6 +195,24 @@ for j in active['jobs']:
         rec['runtime_overrides'].append(dict(receipt=artifact(path),workers=workers,effective_files=effective_files,
             submission_provenance=provenance,
             applicability='Completed RPC receipt for these currently alive worker PIDs; does not claim a fresh method introspection'))
+    # A one-shot allocator action is not a persistent code/config override.
+    # Bind the raw completion receipts to the same current driver and workers.
+    rec['native_memory_actions']=[]
+    for path in sorted((root/'receipts/host-memory-20261002').glob('native-allocator-*/submitted.json')):
+        operation=read(path)
+        if not operation.get('release_unused_cache'):continue
+        if (operation['driver_pid']!=j['pid'] or
+                operation['driver_created_unix']!=rec['process'].get('created_unix')):continue
+        workers=[]
+        for completed in sorted(path.parent.glob('worker-*.json')):
+            value=read(completed)
+            if value['pid'] not in rec['process'].get('workers',[]):continue
+            workers.append(dict(receipt=artifact(completed),record={key:value[key] for key in
+                ('pid','unix','torch_version','scope','native_memory_source','native_host_memory_bindings',
+                 'pinned_host_stats','pinned_host_stats_after_release','native_cache_release_seconds','native_stats_error')
+                if key in value}))
+        rec['native_memory_actions'].append(dict(submission=artifact(path),operation=operation,workers=workers,
+            scope='One native _host_emptyCache call per submitted worker; no persistent hook or change to loss, weights, configuration, or numerical tolerances. Raw allocated_bytes counters are not physical host usage.'))
     rec['environment_roots']={k:v for k,v in source.items() if k.endswith('_root') and k not in ['dt_root','verl_root']}
     with Path(j['log']).open('rb') as f:
         f.seek(0,2);f.seek(max(0,f.tell()-200000));tail=f.read().decode(errors='replace')
