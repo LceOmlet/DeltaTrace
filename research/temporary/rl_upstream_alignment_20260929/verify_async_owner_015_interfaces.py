@@ -1,6 +1,7 @@
 """CPU-only probe of the patched original owner against installed vLLM APIs.
 
-Stop init_engine at its native argument object, before engine/config creation.
+By default stop init_engine at its native arguments; --config-only validates
+the actual native configuration and stops before engine creation.
 Exercise the original vLLM Ray RPC and WorkerWrapperBase with a CPU actor.
 No model, inference, training, tolerance or default launch path is involved.
 """
@@ -21,6 +22,8 @@ def main():
     parser.add_argument('--candidate', type=Path, required=True)
     parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--config-only', action='store_true',
+                        help='Validate the native engine config, stop before engine creation, and do not join Ray.')
     args = parser.parse_args()
     sys.path.insert(0, str(args.candidate))
     import psutil
@@ -52,9 +55,15 @@ def main():
 
         active = json.loads((args.root/'active-training.json').read_text())
         job = next(j for j in active['jobs'] if j['task'] == 'AppWorld')
-        driver = psutil.Process(job['pid'])
-        assert abs(driver.create_time()-job['observed_process_created_unix']) < .02
-        result['formal_identity'] = dict(pid=driver.pid, created_unix=driver.create_time())
+        driver = None
+        if not args.config_only:
+            driver = psutil.Process(job['pid'])
+            assert abs(driver.create_time()-job['observed_process_created_unix']) < .02
+            result['formal_identity'] = dict(pid=driver.pid, created_unix=driver.create_time())
+        else:
+            result['scope']='Native engine configuration validation only; stops before engine/model creation and does not join Ray.'
+            result['formal_identity']=dict(pid=job['pid'],created_unix=job['observed_process_created_unix'],
+                                          identity_source='Original launch of the initialization-failed job')
         launch = Path(job['output'])/'launch.json'
         config = OmegaConf.load(args.candidate/'verl/trainer/config/ppo_trainer.yaml')
         for key, value in json.loads(launch.read_text())['options'].items():
@@ -67,6 +76,15 @@ def main():
         class RecordedNativeArgs(AsyncEngineArgs):
             def create_engine_config(self, *unused, **unused_kw):
                 native_args.append(self)
+                if args.config_only:
+                    native_config=super().create_engine_config()
+                    result['native_engine_config']=dict(
+                        model=native_config.model_config.model,
+                        dtype=str(native_config.model_config.dtype),
+                        max_model_len=native_config.model_config.max_model_len,
+                        swap_space=native_config.cache_config.swap_space,
+                        max_num_seqs=native_config.scheduler_config.max_num_seqs,
+                        max_lora_rank=native_config.lora_config.max_lora_rank)
                 raise ArgumentsCaptured
 
         original_args = module.AsyncEngineArgs
@@ -100,6 +118,11 @@ def main():
         error = ErrorResponse(error=ErrorInfo(message='interface probe',type='BadRequestError',code=400))
         assert error.error.code == 400
         result['checks'].append('Installed serving constructor bindings and native error status match')
+
+        if args.config_only:
+            result['passed']=True
+            result['checks'].append('Original create_engine_config completed; no AsyncLLM/model/Ray actor created')
+            return
 
         gcs = next(p for p in driver.children(recursive=True) if p.name() == 'gcs_server')
         port = next(a.split('=',1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))

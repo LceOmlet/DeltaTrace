@@ -22,6 +22,8 @@ def main():
                         help='Remote output directory for this submission; must not already exist.')
     parser.add_argument('--completed-stop-receipt',
                         help='Original loaded checkpoint reuse after a recorded stop during the unfinished next rollout.')
+    parser.add_argument('--initialization-failure-receipt',
+                        help='Recorded terminal init_workers failure before fit; reuse its original complete resume checkpoint.')
     args = parser.parse_args()
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     script_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -47,8 +49,20 @@ if psutil.pid_exists(old['pid']):
 
 checkpoint=Path(@CHECKPOINT@).resolve()
 stop_receipt=@COMPLETED_STOP@
+init_failure_receipt=@INIT_FAILURE@
 stop_record=None
-if stop_receipt:
+init_failure=None
+assert not (stop_receipt and init_failure_receipt)
+if init_failure_receipt:
+    init_failure=read(Path(init_failure_receipt))
+    assert init_failure['failed_driver_pid']==old['pid']
+    assert init_failure['failed_driver_created_unix']==old['observed_process_created_unix']
+    assert init_failure['driver_terminal'] and not psutil.pid_exists(old['pid'])
+    assert init_failure['failed_source_sha256']==sha(Path(old['source_receipt']))
+    assert init_failure['log_sha256']==sha(Path(old['log']))
+    assert checkpoint==Path(old['resume_from']).resolve()==Path(init_failure['resume_checkpoint']).resolve()
+    marker=checkpoint.parent/'latest_checkpointed_iteration.txt'
+elif stop_receipt:
     stop_record=read(Path(stop_receipt))
     assert stop_record['reused_loaded_checkpoint'] and stop_record['unfinished_rollout_phase']
     assert stop_record['prior_driver_pid']==old['pid'] and stop_record['prior_created_unix']==old['observed_process_created_unix']
@@ -95,6 +109,10 @@ if stop_receipt:
     source['unfinished_rollout_restart']=dict(receipt=stop_receipt,sha256=sha(Path(stop_receipt)),
         loaded_original_checkpoint=str(checkpoint),completed_step=step,
         scope='No newly completed iteration is discarded; original model/optimizer/RNG/reader loader used again, with unchanged workload.')
+if init_failure_receipt:
+    source['initialization_retry']=dict(receipt=init_failure_receipt,
+        sha256=sha(Path(init_failure_receipt)),original_checkpoint=str(checkpoint),
+        scope='Recorded init_workers failure occurred before fit/checkpoint loading/updates. Original VERL loader reuses the same complete checkpoint; no new training state discarded.')
 for name in ('request_dispatch_commit','request_dispatch_receipt','request_dispatch_receipt_sha256',
              'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
              'completion_transport_code_commit','completion_transport_receipt',
@@ -140,7 +158,8 @@ job=dict(task=task,method='dt',pid=proc.pid,devices=devices,started_unix=time.ti
 manifest_path=base/'formal-training.json'
 manifest=dict(active,manifest=str(manifest_path),jobs=[job if j['task']==task else j for j in active['jobs']])
 manifest.setdefault('retired_jobs',[]).append(dict(old,
-    status='replaced_during_unfinished_rollout_from_loaded_checkpoint' if stop_receipt else 'replaced_after_completed_checkpoint',
+    status=('replaced_after_initialization_failure' if init_failure_receipt else
+            'replaced_during_unfinished_rollout_from_loaded_checkpoint' if stop_receipt else 'replaced_after_completed_checkpoint'),
     replacement_pid=proc.pid))
 manifest_path.write_text(json.dumps(manifest,indent=2)+'\n')
 (root/'active-training.json').write_text(json.dumps(manifest,indent=2)+'\n')
@@ -155,7 +174,8 @@ PY
        .replace('@CHECKPOINT@', repr(args.checkpoint)).replace('@REVISION@', repr(revision))
        .replace('@SCRIPT_SHA@', repr(script_sha)).replace('@PREPARED@',repr(args.prepared))
        .replace('@RUN_DIR@',repr(args.run_dir)).replace('@TASK@',repr(args.task))
-       .replace('@COMPLETED_STOP@',repr(args.completed_stop_receipt)))
+       .replace('@COMPLETED_STOP@',repr(args.completed_stop_receipt))
+       .replace('@INIT_FAILURE@',repr(args.initialization_failure_receipt)))
 
 
 if __name__ == '__main__':

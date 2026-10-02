@@ -60,7 +60,8 @@ else:
         '            **({"max_num_seqs": config.max_num_seqs} if _VLLM_015 else {}),\n')
     source = replace_once(source, '            seed=self.vllm_dp_rank,\n',
         '            seed=config.get("seed", 0) if _VLLM_015 else self.vllm_dp_rank,\n'
-        '            **(dict(config.get("engine_kwargs", {}).get("vllm", {}))\n'
+        '            **({key: value for key, value in config.get("engine_kwargs", {}).get("vllm", {}).items()\n'
+        '                if value is not None}\n'
         '               if _VLLM_015 else {}),\n')
     source = replace_once(source,
         '        models = OpenAIServingModels(self.engine, model_config, BASE_MODEL_PATHS)\n',
