@@ -87,6 +87,10 @@ class PrefixWorker(ActorRolloutRefWorker):
         try:
             with torch.no_grad(), precision:
                 torch.cuda.reset_peak_memory_stats()
+                if os.environ.get('DT_PREFIX_COMPONENT_DIAGNOSTIC') == '1':
+                    from diagnose_native_prefix_components import diagnose
+                    diagnose(runner, ids, prefix, save)
+                    return result
                 full_reference = {}
                 def observe(cache):
                     full_reference.update(tensors(cache))

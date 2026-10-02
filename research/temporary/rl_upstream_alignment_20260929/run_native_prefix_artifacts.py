@@ -1,5 +1,6 @@
 """Stage an isolated artifact/API probe; do not alter formal job imports."""
 import hashlib
+import argparse
 from pathlib import Path
 import subprocess
 
@@ -7,9 +8,18 @@ from stage_environment_entry import ENTRY, ROOT, REPO, AUDIT, SSH, SCP, remote
 
 
 if __name__ == '__main__':
-    out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-artifacts-20261003-v2'
-    remote(f'mkdir -p {out}\n')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--component-diagnostic', action='store_true',
+                        help='Observe actual first-layer FLA operands and invoke the pinned owner forward assertions; no production deployment.')
+    args = parser.parse_args()
+    out = ROOT+'/receipts/owner-b8-dispatch-20260930/' + (
+        'native-prefix-components-20261003' if args.component_diagnostic
+        else 'native-prefix-artifacts-20261003-v2')
+    # Preserve the actual sources of every completed/failed attempt before SCP.
+    remote(f'test ! -e {out}/job.json && mkdir -p {out}\n')
     names = ('native_prefix_artifacts_candidate.py', 'verify_native_prefix_artifacts.py')
+    if args.component_diagnostic:
+        names += ('diagnose_native_prefix_components.py',)
     for name in names:
         subprocess.run(SCP+[str(AUDIT/name), f'{SSH[-1]}:{out}/{name}'], check=True)
     remote(r'''set -e
@@ -36,6 +46,8 @@ env=dict(x.split(b'=',1) for x in pathlib.Path('/proc',str(driver.pid),'environ'
 run_env={k.decode():v.decode() for k,v in env.items()}
 run_env.pop('MACA_VISIBLE_DEVICES',None);run_env.pop('RAY_ADDRESS',None);run_env.pop('RAY_TMPDIR',None)
 run_env.update(CUDA_VISIBLE_DEVICES='6,7',DT_PREFIX_PROBE_ROOT=str(out),VERL_ROOT=str(framework))
+if @DIAGNOSTIC@:
+ run_env['DT_PREFIX_COMPONENT_DIAGNOSTIC']='1'
 run_env['PYTHONPATH']=':'.join([str(out),job['entry'],str(framework),run_env.get('PYTHONPATH','')])
 receipt=dict(role='Prepared-only native artifact/API probe, not accepted or deployed training acceleration',
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
@@ -44,6 +56,8 @@ receipt=dict(role='Prepared-only native artifact/API probe, not accepted or depl
  diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',gpus=[6,7],
  source_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in
   [source,framework/'verl/workers/actor/dp_actor.py',out/'native_prefix_artifacts_candidate.py',out/'verify_native_prefix_artifacts.py']})
+if @DIAGNOSTIC@:
+ p=out/'diagnose_native_prefix_components.py';receipt['source_files'][str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 with (out/'probe.log').open('wb') as log:
  p=subprocess.Popen([run_env['VENV_PYTHON'],'-u',str(out/'verify_native_prefix_artifacts.py')],
@@ -54,4 +68,5 @@ print(json.dumps(receipt))
 PY
 '''.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY).replace('@OUT@', out)
            .replace('@COMMIT@', subprocess.check_output(['git', 'rev-parse', 'HEAD'],cwd=REPO,text=True).strip())
+           .replace('@DIAGNOSTIC@', str(args.component_diagnostic))
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
