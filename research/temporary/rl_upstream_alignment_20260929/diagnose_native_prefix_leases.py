@@ -10,7 +10,7 @@ import psutil
 import torch
 
 
-def diagnose(runner, producer, out, save):
+def diagnose(runner, producer, out, save, *, cache_tensors=None):
     from native_prefix_leases import prepare_native_prefix_leases
     from reward_readout import EventRatioReadout
 
@@ -29,6 +29,9 @@ def diagnose(runner, producer, out, save):
         ids = source.input_ids.to(runner.model.execution_device)
         comparison = torch.stack([request['prompt'][:prefix] for request in requests[:4]]).to(ids.device)
         assert torch.equal(ids[source_row, :prefix], comparison[3])
+        prepared_cache = leases[0](comparison)
+        prepared_fields = cache_tensors(prepared_cache)
+        del prepared_cache
         save('actual_lease_component_inputs', original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
              request_index=3, source_step=requests[3]['source_step'],
              source_start=requests[3]['start'], context_length=requests[3]['context_tokens'],
@@ -38,7 +41,8 @@ def diagnose(runner, producer, out, save):
         del source, leases
         from diagnose_native_prefix_components import diagnose as components
         return components(runner, ids, prefix, save,
-                          comparison_ids=comparison, matched_rows=[(source_row,3)])
+                          comparison_ids=comparison, matched_rows=[(source_row,3)],
+                          prepared_prefix_fields=prepared_fields, cache_tensors=cache_tensors)
     indices=[request['row_index'] for request in requests]
     rows=[payload['rows'][i] for i in indices]
     returns=[payload['complete_returns'][i] for i in indices]

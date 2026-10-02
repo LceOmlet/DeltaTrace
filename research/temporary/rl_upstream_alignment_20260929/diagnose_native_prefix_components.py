@@ -69,7 +69,8 @@ def check_first_attention(cases, prefix, official, save):
 
 
 @torch.no_grad()
-def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=None):
+def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=None,
+             prepared_prefix_fields=None, cache_tensors=None):
     from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
     from accelerated.qwen35.qwen35_code_local_capture import NativeDenseAttentionCapture
     from fla.ops.common.chunk_delta_h import chunk_gated_delta_rule_fwd_h
@@ -113,7 +114,7 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
          model_parameter_scope='Original actor init from unchanged model.path and native LoRA init, not a restored formal optimizer or policy checkpoint.',
          original_forward_assertions=[] if attention_only else [ast.unparse(n) for n in assertions])
 
-    def capture(input_ids):
+    def capture(input_ids, *, retain_cache_fields=False):
         values = {}
         handles = []
         operator = None if attention_only else FirstOperator(layers[0].linear_attn, device='cpu')
@@ -128,7 +129,11 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
                 retained_names=('dense_q','dense_k','dense_v','attention_output'))
 
         def output(name, _module, _args, value):
-            values[name] = first(value)[:, :prefix].detach().cpu()
+            # Keep complete operands for the existing first-four-layer probe;
+            # later layers need only the last 64 prefix positions to locate
+            # the earliest variation without retaining all activations.
+            begin = max(0, prefix-64) if int(name.split('.')[0][5:]) >= 4 else 0
+            values[name] = first(value)[:, begin:prefix].detach().cpu()
 
         def projection_reference(module, args, value):
             # Observe the owner's actual base Linear call. This FP32 read is
@@ -183,7 +188,8 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
                 # its normal hooks without mutating the executing attention.
                 handles.append(layers[2].register_forward_hook(begin_attention))
                 handles.append(layers[3].register_forward_hook(end_attention))
-            for i, layer in enumerate(layers[:4]):
+            observed_layers = layers if prepared_prefix_fields is not None else layers[:4]
+            for i, layer in enumerate(observed_layers):
                 points = [('input_norm', layer.input_layernorm), ('output', layer),
                           ('mlp', layer.mlp)]
                 if hasattr(layer, 'linear_attn'):
@@ -201,9 +207,11 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
             tick = time.perf_counter()
             result = runner.forward_prefix(input_ids)
             stored_state = result.past_key_values.layers[0].recurrent_states.detach().cpu()
+            cache_fields = cache_tensors(result.past_key_values) if retain_cache_fields else None
             del result
             torch.cuda.synchronize()
             return dict(values=values, operator=operator, attention=attention, stored_state=stored_state,
+                        cache_fields=cache_fields,
                         seconds=time.perf_counter()-tick)
         finally:
             if entered[0]:
@@ -215,7 +223,8 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
 
     long = capture(ids)
     save('long_native_components_captured', native_forward_seconds=long['seconds'])
-    short = capture(ids[:, :prefix] if comparison_ids is None else comparison_ids)
+    short = capture(ids[:, :prefix] if comparison_ids is None else comparison_ids,
+                    retain_cache_fields=prepared_prefix_fields is not None)
     differences = []
     for name, expected in short['values'].items():
         if not isinstance(expected, torch.Tensor) or not isinstance(long['values'].get(name), torch.Tensor):
@@ -237,6 +246,39 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
              scope='Actual base Linear on the last 64 prefix positions; diagnostic FP32 reference with TF32 disabled, no acceptance threshold')
              for label,case in [('long_readout',long),('direct_short',short)]
              if 'base_qkv_reference_output' in case['values']])
+
+    if prepared_prefix_fields is not None:
+        cache_variation=[]
+        for key,expected in short['cache_fields'].items():
+            actual=prepared_prefix_fields[key]
+            rows=[row[1] for row in matched_rows]
+            actual,expected=actual[rows],expected[rows]
+            cache_variation.append(dict(layer=key[0],field=key[1],
+                dtype=str(actual.dtype),reference_dtype=str(expected.dtype),shape=list(actual.shape),
+                equal=bool(torch.equal(actual,expected)),
+                max_absolute_difference=float((actual.float()-expected.float()).abs().max()),
+                owner_error_ratio=float(owner.get_err_ratio(expected,actual))))
+        save('actual_prefix_cache_variation_observed',cache_variation=cache_variation)
+
+    if not attention_only and matched_rows is not None:
+        operand_variation=[]
+        for name in ('raw_q','raw_k','v','beta','raw_g','k','w','g','stage_u','stage_final_state'):
+            def value(case):
+                operator=case['operator']
+                if name=='stage_u':return operator.operator_u[:, :prefix]
+                if name=='stage_final_state':return operator.final_state
+                if name in ('raw_q','raw_k'):return operator.values[name][:, :prefix]
+                return operator.endpoints[name][:, :prefix]
+            # A full final state consumes more tokens in the long case; only
+            # compare actual prefix operands, not unlike final states.
+            if name=='stage_final_state':continue
+            actual=value(long)[[row[0] for row in matched_rows]]
+            expected=value(short)[[row[1] for row in matched_rows]]
+            operand_variation.append(dict(operand=name,dtype=str(actual.dtype),shape=list(actual.shape),
+                equal=bool(torch.equal(actual,expected)),
+                max_absolute_difference=float((actual.float()-expected.float()).abs().max()),
+                owner_error_ratio=float(owner.get_err_ratio(expected,actual))))
+        save('first_fla_prefix_operand_variation_observed',first_fla_operand_variation=operand_variation)
 
     if attention_only:
         checks=check_first_attention([('long_prefix',long),('direct_short',short)],prefix,

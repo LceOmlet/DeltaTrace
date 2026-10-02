@@ -93,7 +93,7 @@ class PrefixWorker(ActorRolloutRefWorker):
                 torch.cuda.reset_peak_memory_stats()
                 if os.environ.get('DT_PREFIX_DT_LEASE_DIAGNOSTIC') == '1':
                     from diagnose_native_prefix_leases import diagnose
-                    diagnose(runner, producer, OUT, save)
+                    diagnose(runner, producer, OUT, save, cache_tensors=tensors)
                     return result
                 if os.environ.get('DT_PREFIX_DT_SEAM_DIAGNOSTIC') == '1':
                     from diagnose_native_prefix_dt_seam import diagnose
