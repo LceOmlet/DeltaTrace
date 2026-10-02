@@ -39,6 +39,35 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03 04:30：有序请求的原生前缀复用接口已准备，尚未部署
+
+[候选源码映射](prepared_native_prefix_leases_20261003.json)绑定8e7dd71实现、7d669de
+CPU检查入口和ecb0c96有界计时入口。原增量artifact类从AUDIT移到Qwen DT owner
+模块；本地AUDIT只重新导出同一实现，不保留第二套缓存。移动前后类和函数AST相同。
+owner仅新增默认关闭的provider前缀长度上限；不传provider时，完整方法与0936d34
+经AST对比一致。新接口未写入默认profile、launch或正式worker。
+
+- 按原排序的B4消费者准备前缀lease，不改变原采样、分发、请求顺序或token信用。
+  只捕获原prompt；不捕获当前动作、查询和目标。每条已选真实历史最多一次原模型
+  捕获；FLA FP32边界状态按新增区间续算，HF公共update方法构建新Cache。
+- 两卡捕获数用原FSDP mesh的原生MAX collective对齐，复制行由原VERL
+  pad_dataproto_to_divisor处理；没有rank本地miss-forward、新调度器或额外参考采样。
+  每次归因RPC的lease在调用结束释放，不跨优化器更新保留。
+- [CPU原回执](results_native_prefix_lease_interfaces_20261003.json)：现有远端Python中
+  40项通过、2项本机Git源码比较已单独通过。检查包括原端点/mask/QVA保持、原生
+  padding、跨rank捕获次数和精确事实ID拒绝；不是模型、32k容量或速度验收。
+- ecb0c96计时入口继续用原VERL双卡worker及固定配置，在原请求排序中各取至多
+  前8个B4消费者；比较原冷/热与共享冷/热，完整计算捕获、读出、搬运、模型及日志
+  成本。仅准备，尚未启动；没有新增整网数值阈值或改变FA/FLA断言。
+
+43f5699的一次性原_prepare_episode观察已在3250426/3254727安装，保存原行、完整
+return和请求张量后恢复原方法。1790973014.10仍未得到下一批请求；AppWorld
+PID3232113创建时间1790924078.76及两worker创建时间均已再次核对存活。
+原日志已完成step13，gen1562.061、DT4534.808、actor2741.896、整轮9263.866秒；
+TextCraft原日志已完成47，当前原DT；SQL仍退出，未重启。阶段原输出保存在
+[定向观察](../../research/temporary/rl_upstream_alignment_20260929/phase-observation-20261003/native-prefix-leases-current.txt)。
+这不是重新采集完整源码快照；current_runtime.json仍为21:29的原时间。
+
 ### 2026-10-03 03:47：原缓存输入接口完成，增量读出仍为待验证候选
 
 [原DT接口回执](results_native_prefix_dt_seam_20261003.json)对应76ba200，独立诊断
