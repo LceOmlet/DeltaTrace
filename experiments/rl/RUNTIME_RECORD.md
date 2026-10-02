@@ -53,7 +53,7 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 三份MLP数组的算术上界是576GiB/rank，不能用小后缀的容量替代整条路径。
 
 存储诊断35d4c23已在原AppWorld WorkerDict RPC队列提交，回执目录
-formal-dt-capture-storage-1790953114；当前仅submitted，未称已挂载、已取得数据或已修复。
+formal-dt-capture-storage-1790953114；23:09两rank原RPC均已完成挂载，尚未取得实际捕获或修复。
 它只读取一次实际原捕获的shape/dtype/storage bytes，随后恢复，不增加模型调用或张量拷贝。
 23:00以前只读阶段回执确认AppWorld第11次DT已结束、原actor更新在进行；完成标记仍10。
 TextCraft第41次完整迭代已结束并进入42次采样，41次gen2023.377、DT489.433、actor579.658秒；
