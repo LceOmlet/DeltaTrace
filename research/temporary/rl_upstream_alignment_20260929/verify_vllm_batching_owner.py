@@ -85,8 +85,6 @@ class ExistingNativeAsync:
                if n['name']=='async_llm_server_0']
         assert len(names)==1,names
         self.server=ray.get_actor(names[0]['name'],namespace=names[0]['namespace'])
-        report['native_server_api']['ray_handle_signature']=str(
-            self.server._method_signatures['generate_tokens'])
         report['formal_native_engine']=dict(driver_pid=driver.pid,driver_created_unix=driver.create_time(),
             entry=job['entry'],verl_root=job['verl_root'],server=names[0],
             max_num_seqs=launch['options']['actor_rollout_ref.rollout.max_num_seqs'],
@@ -153,11 +151,16 @@ if __name__ == "__main__":
     report['max_tokens']=max_tokens
     report['num_logprobs']=num_logprobs
     record('load_original_engine')
-    llm=(ExistingNativeAsync(args.native_async_root) if args.native_async_root else
-         LLM(model=os.environ['MODEL_PATH'],dtype='bfloat16',max_model_len=32768,max_num_seqs=4,
-             max_num_batched_tokens=32768,gpu_memory_utilization=.75,enforce_eager=True,
-             enable_prefix_caching=True,enable_lora=use_lora,max_lora_rank=8,
-             limit_mm_per_prompt={'image':0,'video':0}))
+    try:
+        llm=(ExistingNativeAsync(args.native_async_root) if args.native_async_root else
+             LLM(model=os.environ['MODEL_PATH'],dtype='bfloat16',max_model_len=32768,max_num_seqs=4,
+                 max_num_batched_tokens=32768,gpu_memory_utilization=.75,enforce_eager=True,
+                 enable_prefix_caching=True,enable_lora=use_lora,max_lora_rank=8,
+                 limit_mm_per_prompt={'image':0,'video':0}))
+    except Exception as exc:
+        report.update(status='failed_diagnostic_setup_before_generation',error=str(exc))
+        record('finished')
+        raise
     runner=SimpleNamespace(llm=llm,get_inputs=lambda inputs,**kwargs:[dict(prompt_token_ids=p) for p in inputs])
     runner._final_steps_generate_w_logprobs=owner('vllm015-conftest.py','_final_steps_generate_w_logprobs','VllmRunner')
     for name in ('generate_w_logprobs','generate_greedy_logprobs'):
