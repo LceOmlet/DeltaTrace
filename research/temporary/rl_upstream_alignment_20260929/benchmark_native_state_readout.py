@@ -63,7 +63,7 @@ torch.cuda.synchronize();record['native_forward_with_first_compile_seconds']=tim
 record['source_fixture']={'path':str(source),'sha256':hashlib.sha256(source.read_bytes()).hexdigest()}
 owner_source=pathlib.Path(inspect.getsourcefile(chunk_gated_delta_rule_fwd_h))
 record['state_owner']={'path':str(owner_source),'sha256':hashlib.sha256(owner_source.read_bytes()).hexdigest()}
-record.update(intermediate_dtype=str(captured['h'].dtype),native_cache_dtype=str(native_state.dtype))
+record.update(intermediate_dtype=str(captured['h'].dtype),native_final_state_dtype=str(native_state.dtype))
 for length in (7488,3712):
  a=torch.cuda.Event(enable_timing=True);b=torch.cuda.Event(enable_timing=True)
  a.record();tick=time.perf_counter()
@@ -76,7 +76,7 @@ for length in (7488,3712):
   stream_seconds=a.elapsed_time(b)/1000,state_dtype=str(state.dtype),
   state_bytes=state.numel()*state.element_size(),intermediate_state_bytes=h.numel()*h.element_size())
  if length==7488:
-  row.update(equal_to_original_cache_state=bool(torch.equal(state,native_state)),
+  row.update(equal_to_native_final_state=bool(torch.equal(state,native_state)),
    max_absolute_difference=float((state-native_state).abs().max()))
  else:
   # Original h holds the incoming state at each 64-token boundary in FP16.

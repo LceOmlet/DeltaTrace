@@ -39,6 +39,29 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03 00:52：原FLA状态读出完成，未部署前缀加速
+
+[正式路径回执](results_formal_native_prefix_state_20261003.json)确认c48b8cc诊断已于
+00:33在AppWorld原RPC边界挂载，00:34两rank各观察一次原B4、7488 token前缀并
+恢复原runner。FLA原`chunk_gated_delta_rule_fwd_h`源码SHA e4a81e5f6999…，完整
+前缀FP32返回状态与同次原前向final_state逐值相同。stream读出3.046/3.033毫秒；
+首次host等待3.125/3.134秒包含之前异步模型工作，不能把stream时间称正式wall时间。
+半前缀原读出2.284/1.974毫秒。原DT runner SHA c7fc969f9f52…、Q/V/A和训练配置未变。
+
+[空闲卡原算子接口回执](results_native_state_interface_20261003.json)对应b6366ab，
+复用固定FLA `test_chunk`的输入构造（原文件SHA 35f28bf6d01f…），未加载第二份模型。
+B4、7488 token热读出stream3.261毫秒、同步wall3.283毫秒，FP32 final_state逐值相同；
+3712 token读出2.133/2.171毫秒，舍入后等于原FP16 chunk边界状态。首次原前向含
+编译16.455秒，峰值torch allocated约3.60GiB、进程PSS约6.66GiB，进程已结束。
+这是接口身份与成本证据，不能称完整模型/DT精度或速度验收。原回执中的
+native_cache_dtype/equal_to_original_cache_state实际指FLA返回final_state，保留原始
+回执并另加口径说明；HF Cache的实际写入仍必须走原update_conv_state /
+update_recurrent_state，不能绕过原dtype转换直接替换缓存字段。
+
+本项只完成原接口调查；没有部署跨调用Cache、修改递推内核或加入数值纠偏。
+00:52物理卡2/3分别42189/42462MiB，4/5各17108MiB，主机MemAvailable约589.7GiB；
+AppWorld/TextCraft原进程继续，SQL仍停止。本项不更新21:29完整源码快照时间。
+
 ### 2026-10-03：完成阶段最新计时与原统计口径
 
 [原阶段计时](results_formal_phase_cost_20261003.json)来自同一正式PID的原TaskRunner
@@ -63,7 +86,7 @@ TextCraft step43采样1923.745、DT503.907、actor579.641、整轮3306.967秒。
 两rank均已恢复原方法。该累计值不代表同时存活峰值或真实CPU搬运量，也不能
 据此宣称首次前向保留全部中间量会更快。没有部署新Cache或全层保留路径。
 
-安装版FLA的中间h为FP16、最终缓存状态为FP32；不能将前者升dtype冒充后者。
+安装版FLA的中间h为FP16、返回final_state为FP32；不据此推断HF Cache存储dtype。
 继续只核对原chunk_gated_delta_rule_fwd_h的FP32状态读出接口，不复制递推公式，
 不改FA/FLA容差或增加归因纠偏。00:09原阶段快照确认AppWorld完成标记11、
 第12次DT在进行，TextCraft原日志已完成42；SQL仍停止，没有提交重启。
