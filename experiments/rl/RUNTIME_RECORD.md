@@ -39,6 +39,34 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03 06:30：实际Actor输入工作量与第9层FLA对照完成，未部署复用候选
+
+[完成的输入工作量回执](results_native_actor_workload_completed_20261003.json)绑定原AppWorld
+worker3250426/3254727和TextCraft worker3236008/3240133，actor SHA均为1f862e8bbdaa…。
+两组各rank记录8次原calculate_entropy=True、每卡B4的forward，随后恢复原绑定。
+AppWorld共同右侧padding占输入槽位27.894%/29.372%；TextCraft为39.541%/31.097%。
+这是实际mask统计，不是计时或提速比；已有输出头裁剪未去掉骨干网络的共同右侧padding。
+记录器未改模型、batch、参数或更新。早先0样本回执保持原采集时间，不再代表当前结果。
+
+[实际前缀逐层诊断](results_native_lease_components_20261003.json)和
+[第9层实际dtype对照](results_native_lease_layer9_20261003.json)保留原请求、源码SHA、
+准备记录及退出PID。诊断提交b49bf89→80c1054→fbb8f68，只改变观察范围，没有改正式DT。
+原B4短前缀2752与实际lease长输入6144/5696使用相同原token；末64位置与完整前缀
+的诊断范围分别记录，不能把末64逐值一致扩大成整层逐值一致。扩展观察后最早可见变化
+在第8层GDN输出投影，最大BF16差0.001953125；第9层缓存首次出现可见变化。
+第9层实际操作数为q/k/v/beta FP16、g FP32，原输出FP16、状态FP32、HF边界BF16。
+两端原FLA输出/状态断言均通过；原输出误差比约0.000381、状态约0.000325，
+使用固定原参考和断言，未设置整网容差、放宽门槛或加纠偏。
+这些是算子范围的证据，不是完整DT信用估计质量或速度接受。8e7dd71复用候选仍未部署；
+正式DT核心c9cd147/fc2e6c2、LoRA8/16、每卡B4、32768和任务/PPO配置保持不变。
+
+1790980223再次读取原TaskRunner日志：AppWorld最新完整仍为step13/检查点13，
+TextCraft完成step49。TextCraft step49采样30.881分钟、DT7.744分钟、Actor9.648分钟、
+旧概率及reference共4.971分钟、整轮53.253分钟；没有把缺失的当前检查点标记补成49。
+AppWorld step13仍为采样26.034分钟、DT75.580分钟、Actor45.698分钟、整轮154.398分钟。
+采样与完整迭代须分别比较。LOOP原文42小时使用8张采样H100另加8张学习H100，
+没有原文单轮采样半小时的阶段记录；同为4卡时不能证明不同机型/模型/任务负载效率对齐。
+
 ### 2026-10-03 05:28：原请求记录和有界DT计时完成；复用候选未接受
 
 [原生请求及有界比较回执](results_native_prefix_dt_leases_20261003.json)保留诊断的失败/完成源码、PID、输入哈希和原结果。
