@@ -39,6 +39,33 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03 01:37：原Cache表示对照完成，短前缀容差尚未验收
+
+[原接口回执](results_native_prefix_artifact_api_20261003.json)对应已推送42e2908，
+只在空闲GPU6/7运行原VERL双卡actor，每卡B4、LoRA8/16；没有PPO更新、vLLM实例
+或正式DT加速部署。冻结目录为receipts/owner-b8-dispatch-20260930/
+native-prefix-artifacts-20261003-v2，driver1648447创建于1790962243.69，完成结果
+已存在，01:37定向观察PID已退出。entry/VERL沿用AppWorld原路径；诊断VERL冻结副本
+fsdp_workers.py SHA e5eb4afc42f1…，actor SHA 1f862e8bbdaa…，数值DT仍c9cd147/fc2e6c2。
+候选native_prefix_artifacts_candidate.py SHA 2979851e4b55…、验证入口SHA 8a0a234d2cef…；
+完整路径与SHA均在原回执中。配置复制原launch options，actor optim总步数200。
+
+原B4×4224前向的64个Cache字段经HF原update_conv_state / update_recurrent_state /
+update重组后，两rank均64/64逐值相同；实际Cache存储BF16，原FLA返回状态FP32，
+保留HF原dtype转换。冷捕获18.776/18.702秒包含首次编译、模型前向和CPU拷贝，
+不能称热DT耗时；峰值torch allocated约7.64GiB，不是32k完整训练容量证据。
+
+2752 token短前缀与直接原短前向仅6/64字段逐值相同；最早缓存差异在FA层3，
+keys最大绝对差0.03125、values为0.0078125。这里没有自定容差，不把跨长度普通
+浮点差异直接判为bug或通过；下一步须定位实际dtype与残差来源，使用对应官方
+参考和断言。当前候选仅prepared-only，未接入原DT默认路径，不增加倍率、裁剪
+或信用纠偏。完整源码快照仍为21:29采集，本项不替换其时间。
+
+第一诊断尝试driver1597493在捕获前因无条件手动搬运参数违反原CPUOffloadPolicy
+而退出；原VERL该配置的_is_offload_param=False。42e2908仅为诊断入口恢复原guard，
+候选数学源文件未变。首尝试冻结源码、错误日志及回执保留，不能冒充数值失败。
+
+
 ### 2026-10-03 00:52：原FLA状态读出完成，未部署前缀加速
 
 [正式路径回执](results_formal_native_prefix_state_20261003.json)确认c48b8cc诊断已于
