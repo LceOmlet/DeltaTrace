@@ -26,6 +26,7 @@ def trace_token_attribution(
     *,
     packed_answer_targets: Any,
     outcome_token_ids: list[int] | None = None,
+    prefix_cache_provider: Any = None,
     # Numerical audit envelope, NOT a training gate or a 2% relative-error
     # claim when abs(root_effect) < 1. Never renormalize the attribution.
     attribution_tolerance: float = 2e-2,
@@ -52,9 +53,13 @@ def trace_token_attribution(
     selection = packed_answer_targets(
         cases, offsets, pair.shape[1], selected_input_ids.device, **options
     )
+    cache_option = {} if prefix_cache_provider is None else {
+        "prefix_cache_provider": prefix_cache_provider
+    }
     try:
         signed, detail = dt_runner.attribute(
-            pair, torch.ones_like(pair), selection, select_output_rows=True, observer=None
+            pair, torch.ones_like(pair), selection, select_output_rows=True, observer=None,
+            **cache_option,
         )
     finally:
         release = getattr(getattr(dt_runner, "model", None), "release_owner_params", None)

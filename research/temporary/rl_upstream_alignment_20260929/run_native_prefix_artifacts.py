@@ -13,19 +13,32 @@ if __name__ == '__main__':
                         help='Observe actual first-layer FLA operands and invoke the pinned owner forward assertions; no production deployment.')
     parser.add_argument('--attention-diagnostic', action='store_true',
                         help='Observe the first native FA call and invoke its pinned original output assertion; no production deployment.')
+    parser.add_argument('--dt-seam-diagnostic', action='store_true',
+                        help='Consume exact native cache artifacts through the optional owner seam on saved B4 endpoints; no production deployment.')
     args = parser.parse_args()
-    assert not (args.component_diagnostic and args.attention_diagnostic)
+    assert sum((args.component_diagnostic, args.attention_diagnostic, args.dt_seam_diagnostic)) <= 1
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/' + (
+        'native-prefix-dt-seam-20261003' if args.dt_seam_diagnostic else
         'native-prefix-attention-20261003' if args.attention_diagnostic else
         'native-prefix-components-20261003' if args.component_diagnostic
         else 'native-prefix-artifacts-20261003-v2')
     # Preserve the actual sources of every completed/failed attempt before SCP.
-    remote(f'test ! -e {out}/job.json && mkdir -p {out}\n')
+    remote(f'test ! -e {out}/job.json && test ! -e {out}/prepared.json && mkdir -p {out}\n')
     names = ('native_prefix_artifacts_candidate.py', 'verify_native_prefix_artifacts.py')
     if args.component_diagnostic or args.attention_diagnostic:
         names += ('diagnose_native_prefix_components.py',)
+    if args.dt_seam_diagnostic:
+        names += ('diagnose_native_prefix_dt_seam.py',)
     for name in names:
         subprocess.run(SCP+[str(AUDIT/name), f'{SSH[-1]}:{out}/{name}'], check=True)
+    if args.dt_seam_diagnostic:
+        files = {
+            REPO/'deltatrace/clean/qwen35/qwen35_dense_finite_runner.py': 'qwen35_dense_finite_runner_candidate.py',
+            REPO/'experiments/rl/deltatrace_credit.py': 'deltatrace_credit.py',
+            REPO/'experiments/rl/test_native_prefix_provider.py': 'test_native_prefix_provider.py',
+        }
+        for path, name in files.items():
+            subprocess.run(SCP+[str(path), f'{SSH[-1]}:{out}/{name}'], check=True)
     remote(r'''set -e
 source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
@@ -54,6 +67,9 @@ if @DIAGNOSTIC@:
  run_env['DT_PREFIX_COMPONENT_DIAGNOSTIC']='1'
 if @ATTENTION@:
  run_env['DT_PREFIX_ATTENTION_DIAGNOSTIC']='1'
+if @DT_SEAM@:
+ run_env['DT_PREFIX_DT_SEAM_DIAGNOSTIC']='1'
+ run_env['DT_PREFIX_OWNER_SOURCE']=str(out/'qwen35_dense_finite_runner_candidate.py')
 run_env['PYTHONPATH']=':'.join([str(out),job['entry'],str(framework),run_env.get('PYTHONPATH','')])
 receipt=dict(role='Prepared-only native artifact/API probe, not accepted or deployed training acceleration',
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
@@ -64,7 +80,15 @@ receipt=dict(role='Prepared-only native artifact/API probe, not accepted or depl
   [source,framework/'verl/workers/actor/dp_actor.py',out/'native_prefix_artifacts_candidate.py',out/'verify_native_prefix_artifacts.py']})
 if @DIAGNOSTIC@:
  p=out/'diagnose_native_prefix_components.py';receipt['source_files'][str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+if @DT_SEAM@:
+ for name in ('diagnose_native_prefix_dt_seam.py','qwen35_dense_finite_runner_candidate.py','deltatrace_credit.py','test_native_prefix_provider.py'):
+  p=out/name;receipt['source_files'][str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
+if @DT_SEAM@:
+ with (out/'cpu-interface-tests.log').open('wb') as log:
+  subprocess.run([run_env['VENV_PYTHON'],'-m','pytest',str(out/'test_native_prefix_provider.py'),
+   '-k','not default_body','-q','--junitxml='+str(out/'cpu-interface-tests.xml')],
+   env=run_env,cwd=out,stdout=log,stderr=subprocess.STDOUT,check=True)
 with (out/'probe.log').open('wb') as log:
  p=subprocess.Popen([run_env['VENV_PYTHON'],'-u',str(out/'verify_native_prefix_artifacts.py')],
   cwd=out,env=run_env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
@@ -76,4 +100,5 @@ PY
            .replace('@COMMIT@', subprocess.check_output(['git', 'rev-parse', 'HEAD'],cwd=REPO,text=True).strip())
            .replace('@DIAGNOSTIC@', str(args.component_diagnostic or args.attention_diagnostic))
            .replace('@ATTENTION@', str(args.attention_diagnostic))
+           .replace('@DT_SEAM@', str(args.dt_seam_diagnostic))
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))

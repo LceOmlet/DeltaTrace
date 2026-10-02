@@ -87,6 +87,10 @@ class PrefixWorker(ActorRolloutRefWorker):
         try:
             with torch.no_grad(), precision:
                 torch.cuda.reset_peak_memory_stats()
+                if os.environ.get('DT_PREFIX_DT_SEAM_DIAGNOSTIC') == '1':
+                    from diagnose_native_prefix_dt_seam import diagnose
+                    diagnose(runner, producer, inputs, OUT, save, cache_tensors=tensors)
+                    return result
                 if os.environ.get('DT_PREFIX_COMPONENT_DIAGNOSTIC') == '1':
                     from diagnose_native_prefix_components import diagnose
                     diagnose(runner, ids, prefix, save)

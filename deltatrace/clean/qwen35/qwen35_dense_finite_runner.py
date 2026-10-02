@@ -161,7 +161,15 @@ class Qwen35DenseFiniteRunner:
         (logits,)=captured
         return logits.log_softmax(-1)
 
-    def attribute(self,paired_ids,mask,selection,select_output_rows=True,observer=None):
+    def attribute(self,paired_ids,mask,selection,select_output_rows=True,observer=None,*,prefix_cache_provider=None):
+        """Trace endpoints, optionally consuming an already prepared native cache.
+
+        The provider receives the exact factual IDs at the synchronized common
+        prefix and returns a fresh HF cache. It only replaces the existing
+        prefix forward; HF still owns duplication, forks and cache transitions.
+        An unavailable artifact must raise rather than run a rank-local forward.
+        The default path and all finite propagation remain unchanged.
+        """
         if paired_ids.shape!=mask.shape or paired_ids.shape!=(2*selection.batch,selection.length):
             raise ValueError('Endpoint input/mask/target dimensions disagree.')
         if not bool(mask.eq(1).all()):raise ValueError('This validated dense runner requires unpadded equal lengths.')
@@ -203,12 +211,17 @@ class Qwen35DenseFiniteRunner:
             synchronize_prefix=getattr(model,'synchronize_prefix_start',None)
             if callable(synchronize_prefix):prefix_start=synchronize_prefix(prefix_start)
             if prefix_start:
-                forward=getattr(model,'forward_root',model)
-                with torch.no_grad():
-                    prefix=timed('native_shared_prefix',lambda:forward(
-                        input_ids=paired_ids[1::2,:prefix_start],use_cache=True,logits_to_keep=1))
-                replay_cache=prefix.past_key_values
-                del prefix
+                if prefix_cache_provider is None:
+                    forward=getattr(model,'forward_root',model)
+                    with torch.no_grad():
+                        prefix=timed('native_shared_prefix',lambda:forward(
+                            input_ids=paired_ids[1::2,:prefix_start],use_cache=True,logits_to_keep=1))
+                    replay_cache=prefix.past_key_values
+                    del prefix
+                else:
+                    with torch.no_grad():
+                        replay_cache=timed('shared_native_prefix_cache',lambda:prefix_cache_provider(
+                            paired_ids[1::2,:prefix_start]))
                 replay_cache.reorder_cache(torch.arange(selection.batch,device=paired_ids.device).repeat_interleave(2))
                 # HF GDN updates its cache in place. Keep the original state
                 # for the later native layer replay; the root owns this fork.
