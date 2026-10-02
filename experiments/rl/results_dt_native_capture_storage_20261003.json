@@ -1,0 +1,112 @@
+{
+  "scope": "One actual native DT call per rank; storage metadata only, no additional tensors, model calls or numerical change. Not a new performance implementation.",
+  "baseline_dt_commit": "c9cd147",
+  "baseline_numeric_reference": "fc2e6c2",
+  "diagnostic_commit": "35d4c2321c991ab0f1a2c6c3efab8ba9dffa356c",
+  "driver_pid": 3232113,
+  "driver_created_unix": 1790924078.76,
+  "source_receipt": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/phase-observation-20261002/formal-dt-capture-storage-1790953114/captured-1790956298.json",
+    "sha256": "326e92dbafa31d75a7626ffabac6ecb99625c48684883c90520ce6f52335b4cd",
+    "collected_unix": 1790956298.2567086,
+    "remote_rank_receipt_sha256": {
+      "rank1.json": "66c41fce1c418c7e6aa2e7ebc32ceee9a41b8b69cc1b44fe5d46a016e11454fa",
+      "rank0.json": "35aa21f0188201dcf5eafb214bdfd568752bc3988d5040415989adc5617f4bc0"
+    }
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "pid": 3250426,
+      "restored": true,
+      "restored_unix": 1790955849.9282556,
+      "original_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/clean/qwen35/qwen35_dense_finite_runner.py",
+      "original_source_sha256": "c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1",
+      "original_actor_microbatch": 4,
+      "paired_shape": [
+        8,
+        8232
+      ],
+      "native_shared_prefix_length": 7488,
+      "original_full_seconds": 7.679695647209883,
+      "captures": 64,
+      "metadata_seconds": 0.002912154421210289,
+      "sum_capture_unique_storage_bytes": 36147068928,
+      "sum_by_kind": {
+        "attention": 3815768064,
+        "decoder": 17163091968,
+        "GDN": 15168208896
+      },
+      "captured_tensor_devices": {
+        "cuda:0": 672
+      },
+      "captured_tensor_dtypes": {
+        "torch.bfloat16": 384,
+        "torch.float16": 240,
+        "torch.float32": 48
+      },
+      "original_stream_event_seconds": {
+        "native_shared_prefix": 3.237389404296875,
+        "fork_native_prefix_cache": 0.00498252820968628,
+        "native_root_with_CPU_checkpoints": 1.154177001953125,
+        "pack_actual_target_logits": 0.00010982400178909301,
+        "categorical_head_FP32": 0.00026188799738883974,
+        "actual_root_FP32_logprob_diagnostic": 0.00024345600605010987,
+        "finite_seed": 0.001523967981338501,
+        "finite_final_norm": 0.0003911679983139038,
+        "replay": 1.4223508491516113,
+        "public_FA_auxiliary": 0.06068556785583496,
+        "finite_decoder": 1.4928537788391116
+      }
+    },
+    {
+      "rank": 1,
+      "pid": 3254727,
+      "restored": true,
+      "restored_unix": 1790955849.9417284,
+      "original_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/clean/qwen35/qwen35_dense_finite_runner.py",
+      "original_source_sha256": "c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1",
+      "original_actor_microbatch": 4,
+      "paired_shape": [
+        8,
+        8237
+      ],
+      "native_shared_prefix_length": 7488,
+      "original_full_seconds": 7.701502624899149,
+      "captures": 64,
+      "metadata_seconds": 0.002777988091111183,
+      "sum_capture_unique_storage_bytes": 39503597568,
+      "sum_by_kind": {
+        "attention": 3828219904,
+        "decoder": 17278435328,
+        "GDN": 18396942336
+      },
+      "captured_tensor_devices": {
+        "cuda:0": 672
+      },
+      "captured_tensor_dtypes": {
+        "torch.bfloat16": 384,
+        "torch.float16": 240,
+        "torch.float32": 48
+      },
+      "original_stream_event_seconds": {
+        "native_shared_prefix": 3.238471923828125,
+        "fork_native_prefix_cache": 0.0049600000381469726,
+        "native_root_with_CPU_checkpoints": 1.152547607421875,
+        "pack_actual_target_logits": 0.0001013759970664978,
+        "categorical_head_FP32": 0.00022784000635147096,
+        "actual_root_FP32_logprob_diagnostic": 0.00019993600249290465,
+        "finite_seed": 0.001272320032119751,
+        "finite_final_norm": 0.0004195840060710907,
+        "replay": 1.179491584777832,
+        "public_FA_auxiliary": 0.06107520055770875,
+        "finite_decoder": 1.7425062522888184
+      }
+    }
+  ],
+  "interpretation": {
+    "storage": "Storage identities are deduplicated within each capture only. Sum over 32 sequential layers is not simultaneously live peak memory, actual transfer bytes, or proof that retaining all captures fits. Current sampled replay captures were all CUDA.",
+    "stages": "Stream-event intervals include the native execution path; they are not independent pure-kernel timings. No full root-capture reuse or cross-call prefix cache has been deployed.",
+    "precision": "Sampled native GDN k/h are FP16; native cache final states use FP32 in installed FLA. Upcasting an intermediate state does not reconstruct the native final state."
+  }
+}
