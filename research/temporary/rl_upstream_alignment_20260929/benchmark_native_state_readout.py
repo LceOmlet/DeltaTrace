@@ -5,6 +5,7 @@ Use the pinned owner's input fixture, native forward and native state readout.
 No recurrence, backward, model, cache policy or tolerance is implemented here.
 """
 from pathlib import Path
+import argparse
 import hashlib
 import subprocess
 
@@ -64,6 +65,46 @@ record['source_fixture']={'path':str(source),'sha256':hashlib.sha256(source.read
 owner_source=pathlib.Path(inspect.getsourcefile(chunk_gated_delta_rule_fwd_h))
 record['state_owner']={'path':str(owner_source),'sha256':hashlib.sha256(owner_source.read_bytes()).hexdigest()}
 record.update(intermediate_dtype=str(captured['h'].dtype),native_final_state_dtype=str(native_state.dtype))
+if @STREAMING@:
+ previous_length=0;previous_state=captured['initial_state']
+ record['incremental_processed_tokens']=0
+ record['operand_dtypes']={name:str(captured[name].dtype) for name in ('k','w','u','g')}
+ for length in (1856,3712,5568,7488):
+  a=torch.cuda.Event(enable_timing=True);b=torch.cuda.Event(enable_timing=True)
+  a.record();tick=time.perf_counter()
+  with torch.no_grad():
+   h,v_new,state=chunk_gated_delta_rule_fwd_h(
+    k=captured['k'][:,previous_length:length].contiguous(),
+    w=captured['w'][:,previous_length:length].contiguous(),
+    u=captured['u'][:,previous_length:length].contiguous(),
+    g=captured['g'][:,previous_length:length].contiguous(),
+    initial_state=previous_state,output_final_state=True,save_new_value=False)
+  b.record();b.synchronize()
+  row=dict(start=previous_length,tokens=length,processed_tokens=length-previous_length,
+   stream_seconds=a.elapsed_time(b)/1000,host_and_wait_seconds=time.perf_counter()-tick,
+   state_dtype=str(state.dtype))
+  del h,v_new
+  with torch.no_grad():
+   rh,rv,expected=chunk_gated_delta_rule_fwd_h(k=captured['k'][:,:length].contiguous(),
+    w=captured['w'][:,:length].contiguous(),u=captured['u'][:,:length].contiguous(),
+    g=captured['g'][:,:length].contiguous(),initial_state=captured['initial_state'],
+    output_final_state=True,save_new_value=False)
+  row.update(equal_to_independent_native_read=bool(torch.equal(state,expected)),
+   max_absolute_difference=float((state-expected).abs().max()))
+  if length==7488:
+   row.update(equal_to_original_final_state=bool(torch.equal(state,native_state)),
+    original_max_absolute_difference=float((state-native_state).abs().max()))
+  record['readouts'].append(row)
+  record['incremental_processed_tokens']+=length-previous_length
+  previous_length,previous_state=length,state
+  del rh,rv,expected
+ del previous_state,state
+ record['scope']='Native FLA FP32 initial/final-state composition, original test input fixture, B4 T7488. Independent full-prefix calls are diagnostic references only; not model/DT parity or production deployment.'
+ record.update(peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
+  physical_free_bytes=torch.cuda.mem_get_info()[0],rss_bytes=psutil.Process().memory_info().rss,
+  pss_bytes=psutil.Process().memory_full_info().pss,finished_unix=time.time())
+ save();print(json.dumps(record),flush=True)
+ raise SystemExit(0)
 for length in (7488,3712):
  a=torch.cuda.Event(enable_timing=True);b=torch.cuda.Event(enable_timing=True)
  a.record();tick=time.perf_counter()
@@ -93,7 +134,12 @@ PY
 '''
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--streaming', action='store_true',
+                        help='Compose the native FP32 initial/final-state interface; no training substitution.')
+    options = parser.parse_args()
     remote(script.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY)
+           .replace('@STREAMING@', str(options.streaming))
            .replace('@COMMIT@', subprocess.check_output(
                ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip())
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))

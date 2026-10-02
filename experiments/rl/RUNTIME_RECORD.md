@@ -39,6 +39,38 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03 03:47：原缓存输入接口完成，增量读出仍为待验证候选
+
+[原DT接口回执](results_native_prefix_dt_seam_20261003.json)对应76ba200，独立诊断
+目录native-prefix-dt-seam-20261003；driver2196941创建于1790967328.73，已完成并退出。
+在原VERL双卡actor上使用四条真实端点，每卡B4、LoRA8/16，总长3800–4666，
+共同前缀2752；不是正式检查点恢复、32k容量或整轮训练速度测试。
+
+- 默认不传provider时的完整owner方法经AST对比与0936d34相同；本机1项通过、
+  4项因无torch跳过，现有远端环境4项CPU接口检查通过。provider只传原生Cache，
+  原HF reorder/deepcopy和全部有限传播保持。正式作业没有部署此provider。
+- runner SHA b5a2c36630234a1067a5848136a0a94f81262882c5a3e53f2675374e4bec601b，
+  credit接口SHA 8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497；
+  冻结诊断的artifact仍为2979851e4b55…，不能拿它验证后面的增量版。
+- 两rank的64个Cache字段经原HF公共update接口重组，与同次捕获和独立原前缀
+  均64/64逐值相同。原热DT11.063/11.066秒；缓存输入的两次调用约9.88–9.92秒。
+  一次捕获另耗1.738/1.690秒，不能从排除捕获的单次降幅推算正式整轮提速。
+- 原冷/热重复的signed最大差0.003436/0.001478；provider相对热原版最大差
+  0.002404/0.002182，均保留原始向量和逐项残差。这不是新的整网FA/FLA容差，
+  没有倍率、裁剪或归因纠偏，也不宣称缓存字段相同能证明全部DT数值验收。
+
+6ef58eb的增量artifact SHA cb807d533d1404f2f339ef3f9b40d88a322a094da9020362666c9dd2a05364fd
+只组合原FLA FP32 initial_state/final_state接口，相邻边界只读新增区间；仍未部署，
+且不被上面的旧artifact回执覆盖。[首次提交观察回执](results_native_prefix_streaming_state_20261003.json)
+为原正式worker的一次性观察，03:47仍未读出，不能称验证完成。安装在3250426/3254727，
+原runner SHA c7fc969f9f52…与Q/V/A未变；观察触发后恢复原绑定。
+
+[实际阶段原输出](../../research/temporary/rl_upstream_alignment_20260929/phase-observation-20261003/native-streaming-worker-phase.txt)
+在1790970423.75确认AppWorld两worker、TextCraft两worker均处于原VERL update_actor
+的backward；未触发读出与该阶段一致，不等待整轮后猜原因。AppWorld原完整指标
+仍step12，TextCraft已完成step46：gen2026.501、DT433.084、actor579.772、整轮3339.239秒。
+SQL仍退出，未重启。上述为定向原阶段记录，不替换21:29完整源码快照时间。
+
 ### 2026-10-03：实际dtype残差定位与对应官方算子断言
 
 [FLA原始回执](results_native_prefix_components_20261003.json)对应诊断提交5836929；
