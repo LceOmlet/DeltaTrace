@@ -1,0 +1,24 @@
+{
+  "started_unix": 1790910056.1518831,
+  "scope": "Compare the async boundary with native owner conversion on CPU only.\n\nActual RequestOutput/SamplingParams and pinned owner methods are used. Engine\noutputs are recorded fixtures: this is not a model or numerical speed test.\n",
+  "checks": [
+    {
+      "name": "Original sync path and moved owner conversion",
+      "cases": 51,
+      "assert_type": "Exact transport tensor/metadata equality, not numerical tolerance"
+    },
+    "Async raw RequestOutput calls the same native conversion; custom stops/length/empty preserved",
+    "Actual native AsyncLLM signature bound; separate requests return without a batch barrier; native abort composed",
+    "Original manager owns whole-rollout wake/sleep, including original failure propagation"
+  ],
+  "sources": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-transport-20261002/verl/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py": "77029a96b7618cd54d92acee6c22ad51c463654286839e820144284bcd43cee6",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-transport-20261002/verl/verl/workers/rollout/vllm_rollout/vllm_async_server.py": "0db58976f73618f221fddba748c060ef4e20b82aa4d965e49b63661d792a94ba",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-transport-20261002/entry/loop_async_transport.py": "3d6438314908dba0076d0d1874025f321e7627d5f63193801e5b70165ea7ecc1",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-transport-20261002/entry/owner_rollout_scope.py": "8273de3578e50fcb189579dbed06df7fa4bc641faccd1fa6afb32e0f86832f97"
+  },
+  "passed": true,
+  "seconds": 0.17159557342529297,
+  "process_pss_bytes": 613446656,
+  "original_spmd_sha256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d"
+}

@@ -38,6 +38,37 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ## 当前代码组合
 
+### 2026-10-02 11:00：原生异步运输候选，仅 CPU 接口验证
+
+正式三组未切换异步路径。11:00只读阶段回执确认SQL PID552842仍为第9次迭代，
+AppWorld PID1199302仍为第8次采样（3124次完成请求、608442生成token、5457.6秒），
+TextCraft PID3218909已完成第29次迭代。这个阶段采集不刷新上方10:04的源码快照时间。
+
+候选源码提交`e3230713478a10434f30dbd06607e01df6a8d7d1`，冻结目录
+`candidates/appworld-native-async-015-transport-20261002`，状态是**未接受、未部署**。
+候选从当前AppWorld冻结owner/entry复制，原始四文件保存在`originals/`；
+只适配固定VERL原AsyncvLLMServer/WorkerWrapperBase与已安装vLLM0.15的API，
+复用原Ray RPC、原AsyncLLM生成/取消及原manager生命周期。
+输出转换从原`vLLMRollout.generate_sequences`移为同模块的共享函数，
+原同步方法调用同一组语句；没有再实现一套token、位置、mask或log-prob转换。
+现有配置的seed和engine_kwargs传入原生参数，LoRA8/16、max_model_len32768、
+max_num_seqs32及所有训练/环境参数不改。
+
+远端原生接口检查18.114秒通过；运输对照51组、实际RequestOutput的三组
+停止/长度/空回复检查、原生异步方法签名和分别完成的接口检查通过（0.172秒，
+这是记录输出的CPU测试，**不是实际LLM生成时间或数值容差**）。同步上下文
+4项本机测试通过。CPU助手未构造AsyncLLM引擎或载入模型；接口助手末端PSS
+5.34GiB、运输助手0.57GiB，不作为峰值或物理显存测量。
+
+正式默认`loop_owner_rollout.py`和`owner_rollout_scope.py`保持已部署版本。
+未接受的三个entry文件只保存在
+`research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/transport-candidate-entry/`；
+兼容补丁不在默认launcher/patch调用链中。准备和检查回执见同级
+`transport-cpu-probe/`，原始第一版接口候选及其回执仍保留。
+实际原生引擎初始化、LoRA同步、正式采样吞吐尚未在该候选上测量，
+不能把CPU运输验证称为已部署、已提速或训练验收。DT数值核心、Q/V/A、
+PPO及官方容差没有变化。
+
 | 部分 | 固定来源及实际组成 | 已验证的范围 |
 | --- | --- | --- |
 | DT数值核心 | release `c9cd147`，数值参考revision `fc2e6c2`，源文件逐项SHA在基线及快照中 | 保留既有FA/FLA实际dtype、原参考和原断言；本次输出头修复没有改DT传播、Q/V/A或容差 |
