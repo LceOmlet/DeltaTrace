@@ -4,6 +4,7 @@ Only lengths, factual identities and exact prefix-extension booleans are saved.
 No model call, cache transition, event, barrier or numerical result is added.
 """
 from pathlib import Path
+import argparse
 import hashlib
 import subprocess
 
@@ -21,7 +22,8 @@ os.environ['PYTHONPATH']=':'.join([job['entry'],job['verl_root'],os.environ.get(
 driver=psutil.Process(job['pid'])
 gcs=next(p for p in driver.children(recursive=True) if p.name()=='gcs_server')
 port=next(a.split('=',1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))
-out=root/'receipts/owner-b8-dispatch-20260930'/f'formal-dt-prefix-layout-{int(time.time())}'
+label='requests' if @SAVE_REQUESTS@ else 'layout'
+out=root/'receipts/owner-b8-dispatch-20260930'/f'formal-dt-prefix-{label}-{int(time.time())}'
 out.mkdir()
 
 def install(worker):
@@ -64,6 +66,19 @@ def install(worker):
     native_test_denominator=readout.alphabet.values,requests=metadata,
     exact_prefix_edges=edges,requests_count=len(requests),trajectory_count=len(grouped),
     metadata_seconds=time.perf_counter()-tick)
+   if @SAVE_REQUESTS@:
+    blob=out/f'actual-requests-rank{owner.rank}.pt'
+    torch.save(dict(requests=[{name:req[name] for name in (
+      'prompt','actions','query','target','case','start','end','source_step',
+      'traj_uid','observed_return','context_tokens','query_tokens','row_index')}
+      for req in requests],eos_token_id=readout.tokenizer.eos_token_id,
+      outcome_token_ids=readout.alphabet.label_ids(readout.tokenizer),
+      task=readout.alphabet.task,max_length=readout.max_length,
+      minibatch_size=readout.minibatch_size),blob)
+    record['request_artifacts']=dict(path=str(blob),bytes=blob.stat().st_size,
+      sha256=hashlib.sha256(blob.read_bytes()).hexdigest(),
+      scope='Exact original prepared request tensors for an isolated same-workload comparison; no model or environment rerun')
+    record['capture_and_save_seconds']=time.perf_counter()-tick
   except Exception as error:
    record['observation_error']=repr(error)
   finally:
@@ -93,7 +108,12 @@ PY
 '''
 
 if __name__ == '__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--save-requests',action='store_true',
+                        help='Persist exact original CPU request tensors once; do not change training results.')
+    options=parser.parse_args()
     remote(script.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY)
+           .replace('@SAVE_REQUESTS@',str(options.save_requests))
            .replace('@COMMIT@', subprocess.check_output(
                ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip())
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))

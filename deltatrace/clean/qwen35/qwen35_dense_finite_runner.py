@@ -167,6 +167,7 @@ class Qwen35DenseFiniteRunner:
         The provider receives the exact factual IDs at the synchronized common
         prefix and returns a fresh HF cache. It only replaces the existing
         prefix forward; HF still owns duplication, forks and cache transitions.
+        Its optional prefix_length limits reuse to a prepared factual boundary.
         An unavailable artifact must raise rather than run a rank-local forward.
         The default path and all finite propagation remain unchanged.
         """
@@ -208,6 +209,8 @@ class Qwen35DenseFiniteRunner:
             # common prefix once per sample, then let the owner duplicate it
             # into the interleaved endpoints. No model layer is reimplemented.
             prefix_start=min(min(coefficient_starts),int(selection.positions.min()))//64*64
+            if prefix_cache_provider is not None:
+                prefix_start=min(prefix_start,getattr(prefix_cache_provider,'prefix_length',prefix_start))
             synchronize_prefix=getattr(model,'synchronize_prefix_start',None)
             if callable(synchronize_prefix):prefix_start=synchronize_prefix(prefix_start)
             if prefix_start:

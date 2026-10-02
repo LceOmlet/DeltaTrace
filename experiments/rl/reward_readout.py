@@ -164,7 +164,8 @@ class EventRatioReadout:
     def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,
                  packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4,
                  invalid_action_penalty_coef: float = 0.0,
-                 appworld_num_tests: int | None = None, sampling: dict | None = None):
+                 appworld_num_tests: int | None = None, sampling: dict | None = None,
+                 prefix_lease_factory: Any = None):
         if max_steps < 1:
             raise ValueError('Horizon must be positive')
         if tokenizer.eos_token_id is None:
@@ -178,6 +179,7 @@ class EventRatioReadout:
                                               appworld_num_tests=appworld_num_tests)
         self.max_steps, self.max_length = max_steps, max_length
         self.packed_answer_targets = packed_answer_targets
+        self.prefix_lease_factory = prefix_lease_factory
         self.last_report: dict[str, Any] = {}
 
     def _prepare_episode(self, rows, report, returns):
@@ -258,6 +260,12 @@ class EventRatioReadout:
         planned_batches = (len(requests) + self.minibatch_size - 1) // self.minibatch_size
         print(f"[DT EOS plan] events={report['nonzero_reward_events']} "
               f"contrasts={len(requests)} batches={planned_batches}", flush=True)
+        leases = None
+        if self.prefix_lease_factory is not None:
+            leases, prefix_report = self.prefix_lease_factory(
+                self.runner, requests, minibatch_size=self.minibatch_size,
+                eos_token_id=self.tokenizer.eos_token_id)
+            report['shared_native_prefix'] = prefix_report
         minimum_log_ratio = float('inf')
         minimum_batch = None
         for offset in range(0, len(requests), self.minibatch_size):
@@ -277,6 +285,8 @@ class EventRatioReadout:
                     self.runner, reference, selected, [request['case'] for request in batch],
                     [[0] for _ in batch], packed_answer_targets=self.packed_answer_targets,
                     outcome_token_ids=labels,
+                    **({} if leases is None else {
+                        'prefix_cache_provider': leases[offset // self.minibatch_size]}),
                 )
             except ValueError as exc:
                 if 'Nonfinite DT coefficients' in str(exc):

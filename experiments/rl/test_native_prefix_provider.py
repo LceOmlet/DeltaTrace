@@ -32,7 +32,7 @@ def test_default_body_preserves_the_recorded_owner():
             if (isinstance(node.test, ast.Compare)
                     and isinstance(node.test.left, ast.Name)
                     and node.test.left.id == 'prefix_cache_provider'):
-                return node.body
+                return node.body if isinstance(node.test.ops[0], ast.Is) else node.orelse
             return self.generic_visit(node)
     candidate = Default().visit(candidate)
     candidate.body.pop(0)  # New API documentation only.
@@ -46,7 +46,8 @@ class ReachedFiniteOwner(Exception):
 
 
 @pytest.mark.parametrize('supplied', [False, True])
-def test_provider_gets_synchronized_factual_ids_and_preserves_owner_forks(monkeypatch, supplied):
+@pytest.mark.parametrize('prepared_length', [None, 64])
+def test_provider_gets_synchronized_factual_ids_and_preserves_owner_forks(monkeypatch, supplied, prepared_length):
     # Execute the real owner method up to its finite capture boundary. The
     # fixtures record calls only; they do not compute a model or a cache.
     torch = pytest.importorskip('torch')
@@ -96,11 +97,13 @@ def test_provider_gets_synchronized_factual_ids_and_preserves_owner_forks(monkey
     def provider(ids):
         calls.append(('provider', ids.clone()))
         return CacheCalls()
+    if prepared_length is not None:
+        provider.prefix_length = prepared_length
 
     with pytest.raises(ReachedFiniteOwner):
         namespace['attribute'](runner, paired, torch.ones_like(paired), selection,
                                prefix_cache_provider=provider if supplied else None)
-    assert calls[0] == ('synchronize', 128)
+    assert calls[0] == ('synchronize', prepared_length if supplied and prepared_length is not None else 128)
     assert calls[-3:] == [('owner_reorder', [0, 0, 1, 1, 2, 2, 3, 3]),
                          ('owner_fork',), ('owner_suffix', 64)]
     if supplied:
