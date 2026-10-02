@@ -6,6 +6,11 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
+21:26首次正式路径回执：TextCraft两rank原DT结束释放用时1.5746/1.6470秒，
+PPO结束释放0.3896/0.3889秒；已完整完成step40并进入下一次原生成。
+AppWorld当前step11的原DT尚在进行；SQL仍停止。此项源/参数没有再修改；
+长期峰值和整轮速度继续按实际负载与原日志记录，不能用接口小测代替。
+
 21:06资源补丁更新：AppWorld/TextCraft四worker已在原RPC边界挂载整阶段末的
 原PyTorch闲置host缓存释放，源SHA e5eb4afc42f1…、代码6781bdd、记录器e945acb，
 资源开关VERL_RELEASE_UNUSED_HOST_CACHE=1。冻结启动文件、actor forward和数值核心

@@ -1,6 +1,6 @@
 {
   "observed_utc": "2026-10-02T13:06:23.149822+00:00",
-  "status": "Activated on four original workers; first formal phase cleanup not yet present in the observed log tails",
+  "status": "TextCraft first formal DT and actor native cleanup completed on both ranks; AppWorld next DT in progress",
   "method_unchanged": "EOS DT Q/V/A, original PPO loss and optimizer, LoRA8/16, actual per-GPU microbatch4, task budgets and existing offload policy",
   "owner": "VERL-agent 20bd331 ActorRolloutRefWorker, native PyTorch 2.8.0+metax3.5.3.9 _host_emptyCache",
   "code_commits": {
@@ -294,7 +294,7 @@
   ],
   "receipt_field_note": "Original activation receipts use the legacy key effective_forward_source for fsdp_workers.py. The methods map is authoritative; actor._forward_micro_batch was not replaced. Recorder e945acb indexes these as owner_worker_method_sources and leaves actor_forward_sources intact.",
   "bounded_probe_initialization_note": "The first disposable CPU-pinned probe had no torch.cuda.init; host_memory_stats returned an empty mapping, causing KeyError. The corrected probe initializes the native CUDA context before reading counters. No formal worker or training source changed for that probe.",
-  "remaining_measurement": "Subsequent formal phase cache release and total reallocation overhead. No long-term OOM or training-speed claim from the bounded interface probe.",
+  "remaining_measurement": "Matched-workload total allocation overhead and subsequent peaks; AppWorld first phase end is still pending. No claim that all three jobs are healthy or overall speed equals H100.",
   "sql_state": "Stopped after global OOM, no restart submitted; current completed SQL step11 had no recoverable checkpoint.",
   "artifacts": [
     {
@@ -320,6 +320,10 @@
     {
       "path": "research/temporary/rl_upstream_alignment_20260929/native-host-cache-phase-followup-1790946383.json",
       "sha256": "779f8e2b7a77627eb65fe6b0e801b634357e631bae8211ffd2f99a8ed4402e1c"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/native-host-cache-first-phase-1790947613.json",
+      "sha256": "23ea1ffc845832c67f609c29188f5c4ef426315327321fa835b3c5eb8b4a3199"
     }
   ],
   "completed_iteration_before_new_cache_cleanup": [
@@ -466,5 +470,149 @@
         "perf/throughput": 144.397
       }
     }
-  ]
+  ],
+  "first_formal_cleanup_observation": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/native-host-cache-first-phase-1790947613.json",
+    "sha256": "23ea1ffc845832c67f609c29188f5c4ef426315327321fa835b3c5eb8b4a3199",
+    "record": {
+      "unix": 1790947613.7178943,
+      "jobs": [
+        {
+          "task": "SkyRL-SQL",
+          "pid": 552842,
+          "alive": false,
+          "native_cleanup": [],
+          "worker_phases": []
+        },
+        {
+          "task": "AppWorld",
+          "pid": 3232113,
+          "alive": true,
+          "native_cleanup": [],
+          "worker_phases": [
+            {
+              "pid": 3250426,
+              "name": "ray::WorkerDict.actor_rollout_compute_dt_token_advantages",
+              "created_unix": 1790924133.2
+            },
+            {
+              "pid": 3254727,
+              "name": "ray::WorkerDict.actor_rollout_compute_dt_token_advantages",
+              "created_unix": 1790924148.21
+            }
+          ]
+        },
+        {
+          "task": "TextCraft",
+          "pid": 3218909,
+          "alive": true,
+          "native_cleanup": [
+            {
+              "path": "/tmp/ray/session_2026-10-02_07-01-21_880335_3218909/logs/worker-ce220932ed763be2204b0a0d6bfb88ddf956356f52fa1285e892b3aa-01000000-3236008.out",
+              "rows": [
+                "[native_host_cache] phase=compute_dt_token_advantages reserved_before=57555905333 reserved_after=32858176440 release_s=1.574581",
+                "[native_host_cache] phase=update_actor reserved_before=49580202949 reserved_after=32858176440 release_s=0.389578"
+              ]
+            },
+            {
+              "path": "/tmp/ray/session_2026-10-02_07-01-21_880335_3218909/logs/worker-1bb18d5c7acd53804677bd004119ceeadfeba10d66f79ae474143ec6-01000000-3240133.out",
+              "rows": [
+                "[native_host_cache] phase=compute_dt_token_advantages reserved_before=66682710837 reserved_after=32858176440 release_s=1.647030",
+                "[native_host_cache] phase=update_actor reserved_before=49580202949 reserved_after=32858176440 release_s=0.388935"
+              ]
+            }
+          ],
+          "worker_phases": [
+            {
+              "pid": 3236008,
+              "name": "ray::WorkerDict.actor_rollout_generate_sequences",
+              "created_unix": 1790895706.36
+            },
+            {
+              "pid": 3240133,
+              "name": "ray::WorkerDict.actor_rollout_generate_sequences",
+              "created_unix": 1790895720.38
+            }
+          ]
+        }
+      ],
+      "host_memory": {
+        "MemTotal": 1081000480768,
+        "MemAvailable": 647654543360,
+        "AnonPages": 236145422336,
+        "Shmem": 1342803968
+      }
+    }
+  },
+  "latest_runtime_snapshot_utc": "2026-10-02T13:29:37.308687+00:00",
+  "first_post_patch_completed_iteration": {
+    "task": "TextCraft",
+    "iteration": "step:40",
+    "source": "/tmp/ray/session_2026-10-02_07-01-21_880335_3218909/logs/worker-7085c45d2f95f3e562bccff31e8c246442ba6608753fa6f527d056ce-01000000-3230286.out",
+    "metrics": {
+      "global_seqlen/min": 535520.0,
+      "global_seqlen/max": 540727.0,
+      "global_seqlen/minmax_diff": 5207.0,
+      "global_seqlen/balanced_min": 538123.0,
+      "global_seqlen/balanced_max": 538124.0,
+      "global_seqlen/mean": 538123.5,
+      "actor/entropy_loss": 0.836,
+      "actor/kl_loss": 0.002,
+      "actor/kl_coef": 0.001,
+      "actor/pg_loss": -0.0,
+      "actor/pg_clipfrac": 0.0,
+      "actor/ppo_kl": -0.0,
+      "actor/pg_clipfrac_lower": 0.0,
+      "actor/grad_norm": 0.0,
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 60.0,
+      "perf/max_memory_reserved_gb": 64.162,
+      "perf/cpu_memory_used_gb": 434.712,
+      "actor/lr": 0.0,
+      "training/global_step": 40.0,
+      "training/epoch": 1.0,
+      "critic/score/mean": 0.457,
+      "critic/score/max": 1.0,
+      "critic/score/min": 0.0,
+      "critic/rewards/mean": 0.457,
+      "critic/rewards/max": 1.0,
+      "critic/rewards/min": 0.0,
+      "critic/advantages/mean": 0.0,
+      "critic/advantages/max": 0.194,
+      "critic/advantages/min": -0.307,
+      "critic/returns/mean": 0.156,
+      "critic/returns/max": 1.0,
+      "critic/returns/min": 0.0,
+      "response_length/mean": 3889.09,
+      "response_length/max": 10240.0,
+      "response_length/min": 192.0,
+      "response_length/clip_ratio": 0.047,
+      "prompt_length/mean": 315.0,
+      "prompt_length/max": 315.0,
+      "prompt_length/min": 315.0,
+      "prompt_length/clip_ratio": 0.0,
+      "episode/reward/mean": 0.457,
+      "episode/reward/max": 1.0,
+      "episode/reward/min": 0.0,
+      "episode/length/mean": 19.223,
+      "episode/length/max": 30.0,
+      "episode/length/min": 2.0,
+      "episode/tool_call_count/mean": 19.223,
+      "timing_s/gen": 2056.662,
+      "timing_s/reward": 0.0,
+      "timing_s/old_log_prob": 159.993,
+      "timing_s/ref": 139.434,
+      "timing_s/adv": 430.034,
+      "timing_s/update_actor": 579.922,
+      "timing_s/dump_rollout_generations": 0.524,
+      "timing_s/step": 3366.577,
+      "timing_per_token_ms/update_actor": 0.539,
+      "timing_per_token_ms/adv": 0.4,
+      "timing_per_token_ms/gen": 2.066,
+      "timing_per_token_ms/ref": 0.13,
+      "perf/total_num_tokens": 1076247.0,
+      "perf/time_per_step": 3366.577,
+      "perf/throughput": 159.843
+    }
+  }
 }

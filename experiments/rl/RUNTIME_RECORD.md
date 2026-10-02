@@ -11,7 +11,7 @@
 
 SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60尚未形成
 可恢复检查点，没有提交重启。AppWorld PID3232113、TextCraft PID3218909在
-20:57只读源码快照仍存活并由原worker日志分别确认完成step10、step39；存活本身
+21:29只读源码快照仍存活并由原worker日志分别确认完成step10、step40；存活本身
 不是训练健康证明。三个任务代码组合不同，具体见下表与PID绑定回执；历史段落
 不能代替当前终止状态或新部署。
 
@@ -38,6 +38,18 @@ SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60�
 SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft继续；GPU6/7不再提交GRPO。
 
 ## 当前代码组合
+
+### 2026-10-02 21:26：TextCraft首次正式DT与PPO清理均已执行
+
+[原worker日志回执](results_native_host_cache_boundary_20261002.json)已记录两rank原阶段末
+实际调用，不再只是挂载状态：DT释放耗时1.5746/1.6470秒，PPO结束释放耗时
+0.3896/0.3889秒；释放后各rank pinned reserved回到32,858,176,440 bytes
+（30.602GiB）。这是两次不同phase的读数，不合并成某个同时存活峰值。
+原TextCraft step40已完整结束、随后进入正式step41采样；AppWorld step11原DT
+正在运行，尚未经过本次阶段末；SQL仍停止。21:29源码快照无DT/FA/FLA漂移。
+原actor forward仍1f862e8b…，原卸载/优化器/任务配置没有改。此次原接口已经
+在TextCraft连续DT→PPO→生成路径上运行，但原输入工作量各轮不同，不能据此
+宣布整轮提速或排除未来峰值；仍按原计时/实际token数比较。
 
 ### 2026-10-02 21:06：原阶段结束处释放闲置 pinned 缓存
 
