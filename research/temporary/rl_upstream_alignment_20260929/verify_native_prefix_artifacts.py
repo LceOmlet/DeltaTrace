@@ -77,7 +77,8 @@ class PrefixWorker(ActorRolloutRefWorker):
         self.actor_module_fsdp.eval()
         producer = DeltaTraceRolloutProducer(self.actor_module_fsdp,
             eos_token_id=self.tokenizer.eos_token_id, pad_token_id=self.tokenizer.pad_token_id,
-            invalid_action_penalty_coef=self.config.actor.invalid_action_penalty_coef)
+            invalid_action_penalty_coef=(self.config.actor.invalid_action_penalty_coef
+                if self.config.actor.get("use_invalid_action_penalty", True) else 0.0))
         runner = producer.runner
         text = runner.model.model.language_model
         previous_attention = text.config._attn_implementation

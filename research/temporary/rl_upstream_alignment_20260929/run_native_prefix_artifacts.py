@@ -23,7 +23,7 @@ if __name__ == '__main__':
     assert sum((args.component_diagnostic, args.attention_diagnostic, args.dt_seam_diagnostic,args.dt_lease_diagnostic)) <= 1
     assert bool(args.request_artifacts) == args.dt_lease_diagnostic
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/' + (
-        'native-prefix-dt-leases-20261003' if args.dt_lease_diagnostic else
+        'native-prefix-dt-leases-20261003-v2' if args.dt_lease_diagnostic else
         'native-prefix-dt-seam-20261003' if args.dt_seam_diagnostic else
         'native-prefix-attention-20261003' if args.attention_diagnostic else
         'native-prefix-components-20261003' if args.component_diagnostic
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     remote(r'''set -e
 source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
-import json,os,pathlib,psutil,re,shutil,subprocess,time,hashlib
+import ast,json,os,pathlib,psutil,re,shutil,subprocess,time,hashlib
 root=pathlib.Path('@ROOT@');out=pathlib.Path('@OUT@')
 assert not (out/'job.json').exists(), 'Reuse the actual recorded probe process; do not duplicate it'
 job=next(j for j in json.loads((root/'active-training.json').read_bytes())['jobs'] if j['task']=='AppWorld')
@@ -68,6 +68,18 @@ if not @DT_LEASE@:
 framework=out/'verl-root'
 shutil.copytree(pathlib.Path(job['verl_root'])/'verl',framework/'verl')
 shutil.copy2(source,framework/'verl/workers/fsdp_workers.py')
+# The first lease diagnostic omitted the original penalty-enable flag.
+# Check this exact constructor argument against the recorded running owner
+# before spending GPU time; no second reward or configuration policy.
+def penalty_argument(path):
+ calls=[node for node in ast.walk(ast.parse(path.read_text()))
+        if isinstance(node,ast.Call) and isinstance(node.func,ast.Name)
+        and node.func.id=='DeltaTraceRolloutProducer']
+ return [ast.dump(keyword.value) for call in calls for keyword in call.keywords
+         if keyword.arg=='invalid_action_penalty_coef']
+owner_penalty=penalty_argument(source)
+probe_penalty=penalty_argument(out/'verify_native_prefix_artifacts.py')
+assert owner_penalty and probe_penalty and set(owner_penalty)==set(probe_penalty)
 launch=json.loads(pathlib.Path(job['output'],'launch.json').read_bytes())
 options=launch['options']
 (out/'native-launch-options.json').write_text(json.dumps(options,indent=2)+'\n')
@@ -98,6 +110,7 @@ receipt=dict(role='Prepared-only native artifact/API probe, not accepted or depl
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
  source_formal_driver_pid=driver.pid,source_formal_driver_created_unix=driver.create_time(),
  source_formal_entry=job['entry'],source_formal_verl_root=job['verl_root'],
+ constructor_penalty_argument_matches_original_owner=True,
  diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',gpus=[6,7],
  source_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in
   [source,framework/'verl/workers/actor/dp_actor.py',out/'native_prefix_artifacts_candidate.py',out/'verify_native_prefix_artifacts.py']})
