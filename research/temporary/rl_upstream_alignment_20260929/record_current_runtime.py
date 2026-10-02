@@ -25,7 +25,8 @@ def observation_record(path):
 result=dict(observed_unix=now,observed_utc=datetime.datetime.fromtimestamp(now,datetime.timezone.utc).isoformat(),
     role='Read-only snapshot, not a launcher or a replacement for remote active-training.json; never infer current execution from old receipts alone',
     authoritative_remote={n:artifact(root/n) for n in ['active-training.json','active-source.json']},
-    manifest=artifact(active['manifest']),baseline=artifact(Path('@ENTRY@')/'verified_runtime.json'),jobs=[])
+    manifest=artifact(active['manifest']),baseline=artifact(Path('@ENTRY@')/'verified_runtime.json'),
+    provisioned_launch_environment=artifact(Path('@ENTRY@')/'metax-entry.env.sh'),jobs=[])
 for j in active['jobs']:
     entry=Path(j['entry']);vr=Path(j['verl_root']);src=Path(j.get('source_receipt',str(Path(j['output'])/'source.json')))
     source=read(src)
@@ -47,6 +48,31 @@ for j in active['jobs']:
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')
+    rec['startup_options']=launch.get('options',{})
+    # These are actual inputs read by the launcher/owner, not another config
+    # implementation or a new acceptance gate. Runtime overlays remain separate.
+    rec['configuration_artifacts']={
+        'native_verl_defaults':artifact(vr/'verl/trainer/config/ppo_trainer.yaml'),
+        'entry_numerical_receipt':artifact(entry/'verified_runtime.json')}
+    if j['task']=='AppWorld':
+        loop_root=Path(source['loop_root'])
+        rec['configuration_artifacts'].update({
+            'native_loop_training_command':artifact(loop_root/'README.md'),
+            'native_loop_config_loader':artifact(loop_root/'phi_agents/rl/config.py'),
+            'native_loop_structured_config':artifact(loop_root/'phi_agents/inference/config.py')})
+        for path in sorted((loop_root/'phi_agents/rl/conf').rglob('*.yaml')):
+            rec['configuration_artifacts']['loop_conf/'+str(path.relative_to(loop_root/'phi_agents/rl/conf'))]=artifact(path)
+    else:
+        rec['configuration_artifacts']['task_recipe']=artifact(entry/'owner_environment_configs.json')
+    model=Path(launch['options']['actor_rollout_ref.model.path'])
+    rec['configuration_artifacts'].update({
+        'model_config':artifact(model/'config.json'),
+        'model_tokenizer_config':artifact(model/'tokenizer_config.json')})
+    template=launch['options'].get('+data.sql_chat_template',
+                                 launch['options'].get('data.sql_chat_template'))
+    if template:
+        rec['configuration_artifacts']['configured_sql_template']=artifact(template)
+    rec['configuration_artifact_scope']='Read-only configuration/source fingerprints and full startup options. AppWorld reads the original LOOP README, ConfigStore types and Hydra conf tree; available YAML alternatives are recorded without claiming all were consumed. Not a fresh live config query, numerical proof, or validation of later unrecorded overrides.'
     rec['startup_workload_options']={k:v for k,v in launch.get('options',{}).items()
         if k.startswith(('algorithm.', 'data.train_batch_size', 'env.rollout.',
                          'env.max_steps', 'trainer.total_', 'trainer.save_freq',
@@ -116,6 +142,17 @@ for j in active['jobs']:
                         script_sha256=meta['script_sha256'],
                         ranks=[dict(receipt=artifact(p),record=observation_record(p)) for p in sorted(observation.glob('rank*.json'))],
                         scope=scope_description))
+        observation=out/'appworld-batch-coalescing-20261002/native-profiler'
+        installed=observation/'installed.json'
+        if installed.is_file():
+            meta=read(installed)
+            if (meta['driver_pid']==j['pid'] and
+                    meta['driver_created_unix']==rec['process'].get('created_unix')):
+                rec['temporary_observations'].append(dict(
+                    receipt=artifact(installed),source_commit=meta['source_commit'],
+                    script_sha256=meta['script_sha256'],
+                    ranks=[dict(receipt=artifact(p),record=observation_record(p)) for p in sorted(observation.glob('rank*.json'))],
+                    scope='Original vLLM bounded profiler on the batch-coalescing deployment; no additional generation. Rank receipts determine whether the observation and cleanup have completed.'))
     rec['pending_runtime_operations']=[]
     padding_live={'SkyRL-SQL':'sql-live','TextCraft':'textcraft-live'}.get(j['task'])
     if padding_live:

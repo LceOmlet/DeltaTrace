@@ -5,9 +5,15 @@ public collective_rpc injects the original ProfilerConfig/TorchProfilerWrapper
 into the existing worker's profiler slot, then removes it after that call.
 """
 from pathlib import Path
+import argparse
 import hashlib
 import subprocess
 from stage_environment_entry import ROOT, ENTRY, REPO, remote
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--receipt', default=ROOT+'/receipts/owner-b8-dispatch-20260930/appworld-rollout-scope/native-profiler',
+    help='Separate observation directory containing the current-PID preflight; never overwrite a previous probe.')
+args = parser.parse_args()
 
 revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
 script_sha=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -15,7 +21,7 @@ remote(r'''source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
 from pathlib import Path
 import hashlib,json,psutil,ray,time
-root=Path('@ROOT@');out=root/'receipts/owner-b8-dispatch-20260930/appworld-rollout-scope/native-profiler'
+root=Path('@ROOT@');out=Path(@RECEIPT@)
 read=lambda p:json.loads(p.read_text())
 preflight=read(out/'preflight.json')
 job=next(j for j in read(root/'active-training.json')['jobs'] if j['task']=='AppWorld')
@@ -127,4 +133,5 @@ try:
  print(json.dumps(record,indent=2),flush=True)
 finally:ray.shutdown()
 PY
-'''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY).replace('@REVISION@',repr(revision)).replace('@SCRIPT_SHA@',repr(script_sha)))
+'''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY).replace('@RECEIPT@',repr(args.receipt))
+   .replace('@REVISION@',repr(revision)).replace('@SCRIPT_SHA@',repr(script_sha)))

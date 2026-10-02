@@ -1,13 +1,19 @@
 """Summarize the original vLLM trace without adding nested timings together."""
 from stage_environment_entry import ROOT, ENTRY, AUDIT, SSH, SCP, remote
+import argparse
 import subprocess
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--receipt', default=ROOT+'/receipts/owner-b8-dispatch-20260930/appworld-rollout-scope/native-profiler')
+parser.add_argument('--local-dir', default=str(AUDIT/'appworld-rollout-scope-20261001'/'native-profiler'))
+args = parser.parse_args()
 
 remote(r'''source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
 from pathlib import Path
 from collections import Counter,defaultdict
 import gzip,hashlib,json,re
-root=Path('@ROOT@');out=root/'receipts/owner-b8-dispatch-20260930/appworld-rollout-scope/native-profiler'
+root=Path('@ROOT@');out=Path(@RECEIPT@)
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 def union_seconds(rows):
     intervals=sorted((e['ts'],e['ts']+e['dur']) for e in rows)
@@ -56,9 +62,10 @@ for rank in (0,1):
 (out/'summary.json').write_text(json.dumps(result,indent=2)+'\n')
 print(json.dumps(result,indent=2))
 PY
-'''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY))
-local=AUDIT/'appworld-rollout-scope-20261001'/'native-profiler';local.mkdir(exist_ok=True)
-base=ROOT+'/receipts/owner-b8-dispatch-20260930/appworld-rollout-scope/native-profiler'
+'''.replace('@ROOT@',ROOT).replace('@ENTRY@',ENTRY).replace('@RECEIPT@',repr(args.receipt)))
+from pathlib import Path
+local=Path(args.local_dir);local.mkdir(parents=True,exist_ok=True)
+base=args.receipt
 for name in ['preflight.json','submitted.json','installed.json','rank0.json','rank1.json','summary.json',
              'rank0/profiler_out_0.txt','rank1/profiler_out_0.txt']:
     target=local/name;target.parent.mkdir(exist_ok=True)
