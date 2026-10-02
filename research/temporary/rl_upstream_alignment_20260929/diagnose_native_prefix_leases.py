@@ -42,7 +42,8 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         from diagnose_native_prefix_components import diagnose as components
         return components(runner, ids, prefix, save,
                           comparison_ids=comparison, matched_rows=[(source_row,3)],
-                          prepared_prefix_fields=prepared_fields, cache_tensors=cache_tensors)
+                          prepared_prefix_fields=prepared_fields, cache_tensors=cache_tensors,
+                          gdn_layer_index=9)
     indices=[request['row_index'] for request in requests]
     rows=[payload['rows'][i] for i in indices]
     returns=[payload['complete_returns'][i] for i in indices]

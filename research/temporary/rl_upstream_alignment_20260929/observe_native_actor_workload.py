@@ -4,6 +4,7 @@ Only the original mask is copied to CPU for input-slot accounting. Do not call
 another model, reconstruct tokens, change batching or impose a numerical gate.
 """
 from pathlib import Path
+import argparse
 import hashlib
 import subprocess
 
@@ -15,13 +16,13 @@ source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
 import json,os,pathlib,psutil,sys,time,ray
 root=pathlib.Path('@ROOT@')
-job=next(j for j in json.loads((root/'active-training.json').read_bytes())['jobs'] if j['task']=='AppWorld')
+job=next(j for j in json.loads((root/'active-training.json').read_bytes())['jobs'] if j['task']=='@TASK@')
 for path in reversed([job['entry'],job['verl_root']]):sys.path.insert(0,path)
 os.environ['PYTHONPATH']=':'.join([job['entry'],job['verl_root'],os.environ.get('PYTHONPATH','')])
 driver=psutil.Process(job['pid'])
 gcs=next(p for p in driver.children(recursive=True) if p.name()=='gcs_server')
 port=next(a.split('=',1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))
-out=root/'receipts/owner-b8-dispatch-20260930'/f'formal-native-actor-workload-{int(time.time())}'
+out=root/'receipts/owner-b8-dispatch-20260930'/f'formal-native-actor-workload-@TASK@-{int(time.time())}'
 out.mkdir()
 
 def install(worker):
@@ -88,7 +89,11 @@ PY
 '''
 
 if __name__ == '__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--task',choices=('AppWorld','TextCraft'),default='AppWorld')
+    args=parser.parse_args()
     remote(script.replace('@ROOT@', ROOT).replace('@ENTRY@', ENTRY)
+           .replace('@TASK@',args.task)
            .replace('@COMMIT@', subprocess.check_output(
                ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip())
            .replace('@SHA@', hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))

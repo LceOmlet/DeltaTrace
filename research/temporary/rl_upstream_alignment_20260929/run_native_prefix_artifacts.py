@@ -26,7 +26,7 @@ if __name__ == '__main__':
     lease_mode = args.dt_lease_diagnostic or args.lease_component_diagnostic
     assert bool(args.request_artifacts) == lease_mode
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/' + (
-        'native-prefix-lease-components-20261003-v2' if args.lease_component_diagnostic else
+        'native-prefix-lease-components-20261003-layer9' if args.lease_component_diagnostic else
         'native-prefix-dt-leases-20261003-v2' if args.dt_lease_diagnostic else
         'native-prefix-dt-seam-20261003' if args.dt_seam_diagnostic else
         'native-prefix-attention-20261003' if args.attention_diagnostic else

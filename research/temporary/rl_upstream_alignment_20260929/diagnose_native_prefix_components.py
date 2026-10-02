@@ -70,7 +70,7 @@ def check_first_attention(cases, prefix, official, save):
 
 @torch.no_grad()
 def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=None,
-             prepared_prefix_fields=None, cache_tensors=None):
+             prepared_prefix_fields=None, cache_tensors=None, gdn_layer_index=0):
     from accelerated.qwen35.qwen35_code_local_capture import NativeGDNCapture
     from accelerated.qwen35.qwen35_code_local_capture import NativeDenseAttentionCapture
     from fla.ops.common.chunk_delta_h import chunk_gated_delta_rule_fwd_h
@@ -109,6 +109,7 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
                Path(inspect.getsourcefile(chunk_gated_delta_rule_fwd_h)),
                Path(inspect.getsourcefile(NativeGDNCapture)), Path(__file__)]
     save('component_diagnostic_start', scope=__doc__,
+         gdn_layer_index=gdn_layer_index,
          owner_sources={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources},
          owner_fla_ci_environment=owner.FLA_CI_ENV,
          model_parameter_scope='Original actor init from unchanged model.path and native LoRA init, not a restored formal optimizer or policy checkpoint.',
@@ -117,7 +118,7 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
     def capture(input_ids, *, retain_cache_fields=False):
         values = {}
         handles = []
-        operator = None if attention_only else FirstOperator(layers[0].linear_attn, device='cpu')
+        operator = None if attention_only else FirstOperator(layers[gdn_layer_index].linear_attn, device='cpu')
         entered = [False]
         attention=None
         attention_entered=[False]
@@ -132,7 +133,9 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
             # Keep complete operands for the existing first-four-layer probe;
             # later layers need only the last 64 prefix positions to locate
             # the earliest variation without retaining all activations.
-            begin = max(0, prefix-64) if int(name.split('.')[0][5:]) >= 4 else 0
+            layer_index = int(name.split('.')[0][5:])
+            begin = (max(0, prefix-64) if layer_index >= 4 and
+                     not gdn_layer_index-2 <= layer_index <= gdn_layer_index else 0)
             values[name] = first(value)[:, begin:prefix].detach().cpu()
 
         def projection_reference(module, args, value):
@@ -160,7 +163,7 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
 
         def begin(_module, args, kwargs):
             hidden = args[0] if args else kwargs['hidden_states']
-            values['layer0.input'] = hidden[:, :prefix].detach().cpu()
+            values[f'layer{gdn_layer_index}.input'] = hidden[:, :prefix].detach().cpu()
             operator.__enter__()
             entered[0] = True
 
@@ -177,12 +180,12 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
             attention_entered[0]=False
 
         try:
-            base_projection = layers[0].linear_attn.in_proj_qkv
+            base_projection = layers[gdn_layer_index].linear_attn.in_proj_qkv
             base_projection = getattr(base_projection, 'base_layer', base_projection)
             handles.append(base_projection.register_forward_hook(projection_reference))
             if operator is not None:
-                handles.append(layers[0].linear_attn.register_forward_pre_hook(begin, with_kwargs=True))
-                handles.append(layers[0].linear_attn.register_forward_hook(end))
+                handles.append(layers[gdn_layer_index].linear_attn.register_forward_pre_hook(begin, with_kwargs=True))
+                handles.append(layers[gdn_layer_index].linear_attn.register_forward_hook(end))
             if attention is not None:
                 # Enter before layer3 begins, so the existing observer installs
                 # its normal hooks without mutating the executing attention.
@@ -206,7 +209,7 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
                         lambda m, a, o, name=f'layer{i}.{label}': output(name, m, a, o)))
             tick = time.perf_counter()
             result = runner.forward_prefix(input_ids)
-            stored_state = result.past_key_values.layers[0].recurrent_states.detach().cpu()
+            stored_state = result.past_key_values.layers[gdn_layer_index].recurrent_states.detach().cpu()
             cache_fields = cache_tensors(result.past_key_values) if retain_cache_fields else None
             del result
             torch.cuda.synchronize()
