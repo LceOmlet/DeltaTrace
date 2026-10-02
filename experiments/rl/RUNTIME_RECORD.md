@@ -38,6 +38,32 @@ SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不
 
 ## 当前代码组合
 
+### 2026-10-02 15:32：首批原生生成完成，官方生成比较通过，当前DT
+
+同一PID3232113的正式采样已由原LOOP规则保留216条轨迹、3278条response、
+648607个policy token，最长上下文27005。原采样运输循环交付3590次完成回复、
+738406个生成token，最后计时1207.6秒（20.13分钟）。它包含prefill、decode、
+环境等待及RPC；不是纯decode或迭代末才公布的`timing_s/gen`。原计划、任务、
+采样和资源参数未改。只读观察时已进入DT，两rank最近均为B4，未完成新的PPO迭代。
+见[正式生成阶段回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/native-futures/first-formal-native-generation.json)。
+
+诊断源码`88b5723`只连接本次已唤醒的原引擎和实际同步的LoRA，4个原保存prompt
+分别串行及并发生成64 token。原vLLM0.15 `test_batching`的生成助手和
+`check_logprobs_close`不改，27.169秒通过，8个输出均使用同一非零正式LoRA ID。
+原检查产生一处Test0的top-k分歧告警；通过意味着满足该原检查，不能称逐值相同、
+所有log-prob的allclose、PPO更新验收或固定负载吞吐验收。没有HF比较或新容差。
+见[原生成比较回执](../../research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/native-futures/native-batching-deployed-owner-final.json)。
+
+先前诊断继承基础环境的旧VERL路径，发送请求前因签名绑定失败；`81d5617`让诊断
+解析同一个冻结owner。随后一次额外的Ray内部属性读取也在生成前失败；`88b5723`
+删掉这项非必要读取并记录初始化失败。两次都没有发出生成请求或修改训练作业，
+旧回执保留，不能作为引擎数值失败或有效速度数据。
+
+对照旧正式step8：原`gen`6217.597秒、运输6207.2秒、681046生成token；
+本批运输1207.6秒、738406生成token。两批模型状态/轨迹不同，不能声称严格固定输入
+加速比。作者论文42小时/约90次完整迭代也不是采样单独耗时；资源换算不能代替
+实际工作量对照。
+
 ### 2026-10-02 14:54：原生Future调用契约修复后，从检查点8恢复
 
 PID2463700已在`fit()`加载原检查点8，但首次生成于14:17失败：

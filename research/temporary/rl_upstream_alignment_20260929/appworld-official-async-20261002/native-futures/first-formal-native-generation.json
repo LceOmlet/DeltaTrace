@@ -1,0 +1,85 @@
+{
+  "observed_unix": 1790926798.7106404,
+  "driver_pid": 3232113,
+  "driver_created_unix": 1790924078.76,
+  "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/entry",
+  "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl",
+  "source_receipt": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/source.json",
+    "sha256": "f8618f27cee1ae2ea4c2fbc48fc697439c5acaaae15548338ce2fab94b53859c"
+  },
+  "original_rollout_output": {
+    "path": "/tmp/ray/session_2026-10-02_14-55-08_312524_3232113/logs/worker-3bbe26743c5be1f60f8c464e1919038dd963bb78ec5b1c4d93a56d7d-01000000-3243382.out",
+    "sha256_at_observation": "856682be76d4ba68afa3b81b14f7fcd7adc6a96ce5903e45cfd157d9a9f21885"
+  },
+  "transport": {
+    "raw_line": "[loop_transport] calls=3613 rpc_mode=native_async batch_requests=1 requests=3590 generated_tokens=738406 elapsed=1207.6s completed_ranks=0",
+    "calls": 3613,
+    "batch_requests": 1,
+    "requests": 3590,
+    "generated_tokens": 738406,
+    "elapsed": 1207.6,
+    "completed_ranks": 0
+  },
+  "trajectory": {
+    "raw_line": "[loop_trajectory] trajectories=216 responses=3278 policy_tokens=648607 max_context=27005",
+    "trajectories": 216,
+    "responses": 3278,
+    "policy_tokens": 648607,
+    "max_context": 27005
+  },
+  "workers": [
+    {
+      "pid": 3250426,
+      "created_unix": 1790924133.2,
+      "phase": "ray::WorkerDict.actor_rollout_compute_dt_token_advantages",
+      "log": "/tmp/ray/session_2026-10-02_14-55-08_312524_3232113/logs/worker-d6c191206ed5db12dc3ed06a607a0e22cbc4358843d33a64e35a28d1-01000000-3250426.out",
+      "last_dt_line": "[DT EOS minibatch] contrasts=4 length=19325 seconds=19.297060806304216 batch=93/94 d_min=-0.14502227746978993 d_max=0.10603095297428124"
+    },
+    {
+      "pid": 3254727,
+      "created_unix": 1790924148.21,
+      "phase": "ray::WorkerDict.actor_rollout_compute_dt_token_advantages",
+      "log": "/tmp/ray/session_2026-10-02_14-55-08_312524_3232113/logs/worker-80a06abfd35b78e07e61b6713a04ca1075d1683d6631b0dd0e47c13d-01000000-3254727.out",
+      "last_dt_line": "[DT EOS minibatch] contrasts=4 length=19407 seconds=19.265236930921674 batch=93/94 d_min=-0.1770672230925266 d_max=0.12777942607010018"
+    }
+  ],
+  "generation_comparison": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/native-batching-deployed-owner-final.json",
+    "sha256": "e8194672d1272a90d408d441974cb43fb90f96687d181bab496d6d8796c1ba4f",
+    "status": "passed_original_batching_comparison",
+    "seconds": 27.169211111962795,
+    "scope": "Pinned vLLM hybrid test_batching on captured AppWorld inputs, without HF.\n\nOriginal generation helpers and comparison execute unchanged. The real model,\nsaved token prompts and MetaX engine configuration are additional test fixtures.\n Existing formal AsyncLLM transport; original sampling/helpers/assertion; serial versus concurrent submission under live load, not isolated batch-one or throughput.",
+    "expected_current_lora_ids": [
+      1314918871
+    ],
+    "warning": "Original checker emitted Test0 top-k divergence warning and passed its unchanged criterion; no allclose or full PPO claim."
+  },
+  "scope": "Actual resumed formal sampling: transport timing includes prefill/decode/environment waiting/RPC. Native whole-iteration gen timer not yet published. DT/PPO iteration9 is not marked complete.",
+  "resource_snapshot": {
+    "mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Fri Oct  2 15:39:58 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.3.12           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.29.1.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 19%         Disabled |\n| 159W / 450W      | 49C          P9 | 55676/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 125W / 450W      | 48C          P9 | 4149/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 69%         Disabled |\n| 210W / 450W      | 52C          P9 | 33505/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 42%         Disabled |\n| 205W / 450W      | 56C          P9 | 33579/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 95%         Disabled |\n| 325W / 450W      | 52C          P9 | 24236/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 96%         Disabled |\n| 343W / 450W      | 53C          P9 | 24236/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 97W / 450W       | 50C          P0 | 863/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 95W / 450W       | 46C          P0 | 863/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  0                   562595         ray::WorkerDict              54626          |\n|  1                   564368         ray::WorkerDict              2956           |\n|  2                  3250426         ray::WorkerDict              32522          |\n|  3                  3254727         ray::WorkerDict              32598          |\n|  4                  3236008         ray::WorkerDict              23246          |\n|  5                  3240133         ray::WorkerDict              23246          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "cgroup_memory_usage_bytes": 294770778112
+  },
+  "budget": {
+    "iterations": 200,
+    "prompt_groups_per_iteration": 40,
+    "requested_trajectories_per_group": 6,
+    "global_completion_fraction": 0.9,
+    "per_group_completion_fraction": 0.75,
+    "global_mini_trajectories": 32,
+    "ppo_epochs": 2,
+    "train_runners_per_rank": 32,
+    "train_environment_ranks": 2,
+    "eval_runners": 64,
+    "eval_groups": 57,
+    "eval_trajectories_per_group": 2,
+    "max_turns": 40,
+    "training_context": 32000,
+    "agent_context_upper_bound": 32768,
+    "eval_interval": 5,
+    "save_interval": 1
+  },
+  "configuration_changes": {},
+  "dt_algorithm_changed": false,
+  "ppo_changed": false
+}
