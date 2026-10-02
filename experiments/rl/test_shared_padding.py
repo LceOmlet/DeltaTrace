@@ -150,6 +150,61 @@ def test_left_padded_native_response_keeps_all_columns(monkeypatch, model_type, 
     torch.testing.assert_close(*grads, rtol=0, atol=0)
 
 
+@pytest.mark.parametrize('model_type', [None, 'qwen3_5_text'])
+@pytest.mark.parametrize('calculate_entropy', [False, True])
+@pytest.mark.parametrize('head_trim', ['0', '1'])
+@pytest.mark.parametrize('start,ends', [
+    (0, [100, 119, 128, 101]),
+    (96, [145, 169, 181, 158]),
+    (0, [64, 64, 64, 64]),
+    (0, [256, 256, 256, 256]),
+])
+def test_shared_right_padding_restores_native_columns_and_active_gradients(
+        monkeypatch, model_type, calculate_entropy, head_trim, start, ends):
+    import verl.utils.torch_functional as functional
+    monkeypatch.setattr(functional, 'FLAH_ATTN_CROSS_ENTROPY_LOSS_AVAILABLE', False)
+    monkeypatch.setenv('VERL_TRIM_RESPONSE_HEAD', head_trim)
+    ids = torch.arange(4 * 256).reshape(4, 256) % 8
+    mask = torch.zeros_like(ids)
+    for row, end in enumerate(ends):
+        mask[row, start:end] = 1
+    batch = dict(input_ids=ids, attention_mask=mask,
+                 position_ids=(mask.cumsum(-1) - 1).clamp_min(0),
+                 responses=ids[:, -192:])
+    before = {name: value.clone() for name, value in batch.items()}
+    active = mask[:, -192:].bool()
+    model = HeadOnlyModel()
+    model.config = SimpleNamespace(model_type=model_type)
+    actor = SimpleNamespace(actor_module=model, device_name='cpu', use_remove_padding=False,
+                            use_fused_kernels=False,
+                            compute_entropy_from_logits=functional.entropy_from_logits)
+    outputs, gradients = [], []
+    for flag in ['0', '1']:
+        monkeypatch.setenv('VERL_TRIM_SHARED_PADDING', flag)
+        entropy, log_probs = DataParallelPPOActor._forward_micro_batch(
+            actor, batch, 1., calculate_entropy)
+        assert log_probs.shape == (4, 192)
+        outputs.append(log_probs.detach()[active])
+        loss = (log_probs * active).sum()
+        if entropy is not None:
+            assert entropy.shape == (4, 192)
+            outputs.append(entropy.detach()[active])
+            loss = loss + (entropy * active).sum()
+        loss.backward()
+        gradients.append(model.weight.grad.clone())
+        model.weight.grad = None
+    pairs = 2 if calculate_entropy else 1
+    for index in range(pairs):
+        torch.testing.assert_close(outputs[index], outputs[index + pairs], rtol=0, atol=0)
+    torch.testing.assert_close(*gradients, rtol=0, atol=0)
+    if max(ends) < 256:
+        assert model.lengths[-1] < model.lengths[0]
+    else:
+        assert model.lengths == [256, 256]
+    for name, value in batch.items():
+        torch.testing.assert_close(value, before[name], rtol=0, atol=0)
+
+
 class GenerationModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
