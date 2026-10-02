@@ -39,6 +39,40 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-03：实际dtype残差定位与对应官方算子断言
+
+[FLA原始回执](results_native_prefix_components_20261003.json)对应诊断提交5836929；
+[FA原始回执](results_native_prefix_attention_20261003.json)对应c2d216d。两次均为
+空闲GPU6/7上原VERL双卡actor、每卡B4、LoRA8/16的独立诊断，实际输入4224、
+取2752 token前缀；不是32k容量、完整DT、梯度或部署提速验收。未更改正式训练。
+冻结目录分别为receipts/owner-b8-dispatch-20260930/native-prefix-components-20261003
+和native-prefix-attention-20261003；driver1914366/2005721创建时间分别
+1790964712.9/1790965560.08，原rank结果均已完成，后续收集时driver已退出。
+每个原JSON的路径、SHA、实际import、配置、dtype及断言保留在回执中。
+
+- 首3层长/短前缀输出逐值相同；首个差异在层3的原BF16 K/V投影、进入FA之前，
+  最大绝对差0.0078125。它是原生形状相关低精度差异的定位，不是DT缓存算法错误。
+- 首个FLA的长前缀读出/直接短前向、两rank共8个原forward断言均通过：输出误差比
+  约0.000346、FP32状态约0.000435，直接执行固定FLA原assert_close阈值0.005；
+  FLA_CI_ENV实际为false。实际q/k/v/beta为FP16、g为FP32、返回state为FP32，
+  HF原Cache存储BF16。跨dtype描述性残差没有被当作新Cache容差或纠偏依据。
+- 首个FA的两个布局、两rank共4个原输出断言均通过：actual BF16 q/k/v，
+  相对原FP32参考最大误差0.03125；原低精度基线0.09375，原2倍界限0.1875。
+  精确提取并执行固定FA的原attention_ref与原assert，没有定义梯度/整网阈值。
+- 原DT c9cd147/参考fc2e6c2、runner SHA c7fc969f9f52…与Q/V/A未改；候选仍
+  prepared-only，没有强制守恒、倍率补偿或数值裁剪。通过首个算子不能扩大为
+  全模型短缓存或正式DT前缀复用已验收。完整源码快照仍为21:29原采集时间。
+
+[完成阶段计时](results_formal_phase_cost_step12_20261003.json)保存原正式TaskRunner
+step12/45的完整行与来源SHA。AppWorld step12：采样1335.606秒（22.26分钟）、
+DT4563.260（76.05分钟）、actor2712.531（45.21分钟）、旧概率359.767，
+整轮9025.486秒（150.42分钟）；没有本轮独立评估。DT/actor/采样约占51%/30%/15%。
+TextCraft step45整轮3132.276秒，gen1794.662、DT460.999、actor577.717。
+不同轮次的实际token/奖励/长度不同；这些计时不证明未部署候选提速。
+LOOP原论文的42小时是两台各8张H100的完整训练；约28分钟是整轮平均估算，
+没有官方“8张H100采样半小时”的分项计时。不能与我们的整轮2.5小时混用，
+也不能只按参数量、卡数就宣布与官方效率相当。SQL仍停止，未提交重启。
+
 ### 2026-10-03 01:37：原Cache表示对照完成，短前缀容差尚未验收
 
 [原接口回执](results_native_prefix_artifact_api_20261003.json)对应已推送42e2908，
