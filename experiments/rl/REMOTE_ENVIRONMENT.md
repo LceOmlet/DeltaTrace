@@ -6,9 +6,20 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-02 当前运行入口
 
-当前正式清单为`runs/textcraft-rollout-scope-20261002/formal-training.json`，根目录
+当前正式清单为`runs/appworld-native-async-worker-import-20261002/formal-training.json`，根目录
 `active-training.json` / `active-source.json`保持权威。仅三组DTPO：SQL PID552842使用GPU0/1，
-AppWorld PID1199302使用GPU2/3，TextCraft PID3218909使用GPU4/5。
+AppWorld PID2120244使用GPU2/3，TextCraft PID3218909使用GPU4/5。
+AppWorld新进程创建时间1790920325.04，从原完整检查点8由原VERL恢复；冻结入口及
+owner为`candidates/appworld-native-async-015-worker-import-20261002`。原生异步兼容修复
+`3324271`仅补原版本助手导入，继承`b31b695`的原None配置语义。实际GPU初始化、
+LoRA同步、生成数值和吞吐仍待确认，不能将CPU接口对照称为训练验收。
+复用原Python、模型、环境资产和缓存。LoRA8/16、actor/DT每卡4和任务预算未变。
+
+<details>
+<summary>历史环境与部署记录：其中“最新、当前”、PID、端口和启动命令仅描述记录当时，不作当前启动依据</summary>
+
+### 2026-10-02 10:04的入口状态（AppWorld已被上方版本替代）
+
 AppWorld跨卡完成顺序修复后，旧PID150275暴露忙卡时请求被提前拆成单条RPC的问题；
 05:06确认仍在未完成第7轮训练采样后，05:07通过原VERL再次恢复同一完整检查点6。
 新bridge为`036977b4eb1f…`，只用原ActorPool.has_free恢复合批；10项实际owner接口
@@ -33,9 +44,6 @@ SQL已准备含已有修复的完整恢复候选，尚未整体部署；TextCraf
 
 复用现有环境和缓存。禁止向正式worker附加mcTracer或SIGSTOP。DT数值核心、LoRA8/16、
 actor/DT4不变；新目录号不代表新的数值版本。
-
-<details>
-<summary>历史环境与部署记录：其中“最新、当前”、PID、端口和启动命令仅描述记录当时，不作当前启动依据</summary>
 
 ## 2026-09-30 最新：仅使用前六张卡训练 DTPO
 

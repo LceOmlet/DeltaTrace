@@ -3,6 +3,9 @@ import json,subprocess
 from pathlib import Path
 from stage_environment_entry import remote, ROOT, ENTRY, AUDIT, REPO, SSH, SCP
 
+snapshot_path=REPO/'experiments/rl/current_runtime.json'
+previous_snapshot=json.loads(snapshot_path.read_text()) if snapshot_path.exists() else {}
+
 remote(r'''set -e
 source @ENTRY@/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PY'
@@ -44,7 +47,7 @@ for j in active['jobs']:
         'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
         'completion_transport_code_commit','completion_transport_receipt',
         'completion_transport_receipt_sha256','completion_transport_sources',
-        'resume_launcher','unfinished_rollout_restart'] if k in source}
+        'resume_launcher','unfinished_rollout_restart','initialization_retry'] if k in source}
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')
@@ -118,10 +121,11 @@ for j in active['jobs']:
         'verl/workers/actor/dp_actor.py','verl/workers/fsdp_workers.py','verl/trainer/ppo/core_algos.py',
         'verl/utils/experimental/torch_functional.py','verl/models/transformers/monkey_patch.py',
         'verl/models/transformers/qwen3_vl.py','verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py',
+        'verl/workers/rollout/vllm_rollout/vllm_async_server.py',
         'verl/workers/sharding_manager/fsdp_vllm.py',
         'agent_system/multi_turn_rollout/rollout_loop.py','verl/trainer/ppo/ray_trainer.py']}
     for name,record in rec['owner_files'].items():
-        expected=source.get('verl_sha256',{}).get(name)
+        expected=source.get('owner_head_sha256',{}).get(name,source.get('verl_sha256',{}).get(name))
         record['startup_recorded_sha256']=expected
         record['matches_startup_source']=record['sha256']==expected if expected is not None else None
     rec['runtime_overrides']=[]
@@ -228,8 +232,15 @@ for label,receipt_dir,supersedes in [
     ('appworld-batch-coalescing-20261002','appworld-batch-coalescing/release',
      'appworld-rank-completion-20261002'),
     ('sql-rollout-scope-20261001','sql-rollout-scope','sql-padding-restart-20261001'),
-    ('textcraft-rollout-scope-20261001','textcraft-rollout-scope','official-trajectory-20260930-v7')]:
-    path=out/receipt_dir/'prepared.json'
+    ('textcraft-rollout-scope-20261001','textcraft-rollout-scope','official-trajectory-20260930-v7'),
+    ('appworld-native-async-resume-20261002',str(root/'candidates/appworld-native-async-resume-20261002'),
+     'appworld-batch-coalescing-20261002'),
+    ('appworld-native-async-native-config-20261002',str(root/'candidates/appworld-native-async-015-native-config-20261002'),
+     'appworld-native-async-resume-20261002'),
+    ('appworld-native-async-worker-import-20261002',str(root/'candidates/appworld-native-async-015-worker-import-20261002'),
+     'appworld-native-async-native-config-20261002')]:
+    receipt_base=Path(receipt_dir)
+    path=(receipt_base if receipt_base.is_absolute() else out/receipt_base)/'prepared.json'
     if not path.is_file():continue
     value=read(path)
     prepared=dict(id=label,receipt=artifact(path),prepared_unix=value['prepared_unix'],
@@ -315,6 +326,12 @@ PY
 target=REPO/'experiments/rl/current_runtime.json'
 subprocess.run(SCP+[f'{SSH[-1]}:{ROOT}/receipts/owner-b8-dispatch-20260930/current-runtime-snapshot.json',str(target)],check=True)
 result=json.loads(target.read_text())
+current_ids={p['id'] for p in result['prepared_versions']}
+for prior in previous_snapshot.get('prepared_versions',[]):
+    if prior['id'] not in current_ids:
+        prior['active_jobs_with_this_entry']=[j['task'] for j in result['jobs']
+            if prior.get('entry')==j['entry']]
+        result['prepared_versions'].append(prior)
 result['code_repository_commit_at_collection']=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
 import hashlib
 recorder=Path(__file__).resolve()

@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
-最近三组只读源码快照为北京时间2026-10-02 10:04；原阶段观察见下方定向回执。
+最近三组只读源码快照与原阶段观察分别记录，见下方定向回执。
 [current_runtime.json](current_runtime.json)保留精确采集时间，
 不能把文档更新时间当作三组阶段都已重新采集。
 
@@ -37,6 +37,33 @@ SQL旧作业在原生mcTracer结束附加采样后退出，已按退出前实际
 SSH端口30821。当前只运行SQL、AppWorld、TextCraft三组DTPO；GPU6/7不再提交GRPO。
 
 ## 当前代码组合
+
+### 2026-10-02 13:52：AppWorld从原检查点8提交原生异步修复版本
+
+原AppWorld PID1199302已完成第8次更新和双rank的model/optimizer/RNG/reader
+检查点，原标记8确认后于13:05停止。一次性观察助手已退出，不重复启动。
+本机SSH通道在远端助手退出后未返回；按实际进程创建时间终止了仅该通道及其
+助手，修复`6dbf281`使用OpenSSH原生keepalive，不添加重试实现。
+
+随后两次原生异步启动均在原`trainer.init_workers()`失败，尚未进入`fit()`，
+未加载检查点或产生新更新。PID1414890将`swap_space=None`传给原生配置；
+`b31b695`恢复原同步owner已使用的None表示未覆盖规则，默认值由vLLM负责。
+PID1800022暴露兼容分支遗漏`is_version_ge`导入；`332427104fa7e88b6c16dda612a9a3b61faf4288`
+只增加原VERL版本助手的局部导入。旧候选、失败日志及哈希均保留。
+
+扩展现有CPU接口测试，实际执行原`execute_method → init_worker`，在原生
+`WorkerWrapperBase.init_worker`设备初始化入口停止。旧源码复现NameError，
+只增加该导入后rank0/1通过，32.916秒；未创建GPU引擎或加载模型。
+实际原生配置仍为BF16、32768、max_num_seqs32、LoRA rank8，训练alpha16和
+actor/DT每卡4保持。对照回执见
+[导入修复记录](../../research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/worker-import-fix/draft.json)。
+
+新PID2120244，创建时间1790920325.04，GPU2/3，冻结入口与owner位于
+`candidates/appworld-native-async-015-worker-import-20261002`；输出为
+`runs/appworld-native-async-worker-import-20261002/appworld-dt`。
+只由原VERL恢复完整检查点8；SQL PID552842、TextCraft PID3218909未改变。
+当前只是正式恢复已提交，实际引擎初始化、GPU LoRA同步、生成数值和吞吐尚待
+原作业证据。CPU通过、目录或进程存活不作为效率对齐或训练健康证明。
 
 ### 2026-10-02 12:48：原生异步数值对照入口已准备，未执行GPU生成
 
