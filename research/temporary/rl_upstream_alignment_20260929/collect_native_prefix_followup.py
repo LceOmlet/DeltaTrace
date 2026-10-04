@@ -17,7 +17,8 @@ out=pathlib.Path(@OUT@)
 def read(name):
  p=out/name
  return dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),value=json.loads(p.read_bytes()))
-records={n:read(n) for n in ('prepared.json','job.json','result.json','rank0.json','rank1.json') if (out/n).is_file()}
+records={n:read(n) for n in ('prepared.json','job.json','result.json','rank0.json','rank1.json',
+ 'projection-inputs-rank0.json','projection-inputs-rank1.json') if (out/n).is_file()}
 job=records['job.json']['value']
 try:
  p=psutil.Process(job['pid']);status=p.status();birth=p.create_time()
@@ -48,6 +49,9 @@ for rank in (0,1):
   item['operator_checks']=[{k:x[k] for k in ('case','layer','tokens','actual_operand_dtypes','output_error_ratio','state_error_ratio','original_fla_forward_assertions') if k in x} for x in v['first_operator_checks']]
  for k in ('request_index','source_row','prefix','capture_input_shape','native_input_shape','first_observed_unequal_layer','shared_observation_layer'):
   if k in v:item[k]=v[k]
+ projection=records.get(f'projection-inputs-rank{rank}.json',{}).get('value')
+ if projection is not None:
+  item['projection_input_summary']={k:x for k,x in projection.items() if k!='projections'}
  summary.append(item)
 completed='result.json' in records
 # Full arrays remain in their SHA-bound remote owner receipts. This local

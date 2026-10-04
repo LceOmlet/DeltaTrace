@@ -28,6 +28,8 @@ if __name__ == '__main__':
         help='With --phase-only --warm-phases, instrument the existing original/shared warm B4 calls; no extra forward.')
     parser.add_argument('--local-prefix-branch',action='store_true',
         help='With --phase-only --warm-phases, patch only the frozen owner prefix-branch method; no formal deployment.')
+    parser.add_argument('--projection-inputs',action='store_true',
+        help='Observe root/replay inputs of actual base MLP projections in the existing shared warm B4; no replacement computation.')
     args=parser.parse_args()
     if args.components_only and args.phase_only:
         parser.error('Select either the native operator diagnosis or the DT phase replay')
@@ -39,12 +41,16 @@ if __name__ == '__main__':
         parser.error('--hot-profile requires --phase-only --warm-phases')
     if args.local_prefix_branch and not (args.phase_only and args.warm_phases):
         parser.error('--local-prefix-branch requires --phase-only --warm-phases')
+    if args.projection_inputs and not (args.phase_only and args.warm_phases):
+        parser.error('--projection-inputs requires --phase-only --warm-phases')
+    if args.projection_inputs and args.hot_profile:
+        parser.error('Keep copying input observations separate from device-time profiling')
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     parent = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-dt-leases-20261003-v2'
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
         'local-prefix-' if args.local_prefix_branch else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
-        'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
+        'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
         'phase' if args.phase_only else 'workload')+'-20261004-'+commit[:7]
     files = {
         REPO/'experiments/rl/native_prefix_leases.py': 'native_prefix_leases.py',
@@ -53,6 +59,8 @@ if __name__ == '__main__':
         AUDIT/'diagnose_native_prefix_components.py': 'diagnose_native_prefix_components.py',
         Path(__file__): 'run_native_prefix_reuse_workload.py',
     }
+    if args.projection_inputs:
+        files[AUDIT/'diagnose_native_projection_inputs.py'] = 'diagnose_native_projection_inputs.py'
     branch_reference = None
     branch_commit = branch_baseline_commit = old_method_ast = new_method_ast = None
     if args.local_prefix_branch:
@@ -162,6 +170,7 @@ selected_observation=None
 component_layer=@COMPONENT_LAYER@
 run_env.pop('DT_PREFIX_COMPONENT_LAYER',None)
 run_env.pop('DT_PREFIX_HOT_PROFILE',None)
+run_env.pop('DT_PREFIX_PROJECTION_INPUTS',None)
 if @BOUNDED_ONLY@:
  import torch
  completed=root/'receipts/owner-b8-dispatch-20260930/native-prefix-reuse-workload-20261004-712795d'
@@ -184,11 +193,14 @@ if @BOUNDED_ONLY@:
   run_env['DT_PREFIX_PHASE_WARM']='1'
  if @HOT_PROFILE@:
   run_env['DT_PREFIX_HOT_PROFILE']='1'
+ if @PROJECTION_INPUTS@:
+  run_env['DT_PREFIX_PROJECTION_INPUTS']='1'
  selected_observation=dict(peak=peak,all_ranks=maxima,offset=offset,component_layer=component_layer,
   scope='Same original B4 stream and full 88-row capture bank; bounded operator/phase instrumentation, not a repeat of the workload benchmark')
 receipt=dict(role='Isolated original B4 DT replay; no formal deployment or acceptance of a new numerical core',
  diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',devices=[2,3],rows_per_rank=int(run_env['DT_PREFIX_DIAGNOSTIC_ROWS']),
  instrumented_hot_profile=@HOT_PROFILE@,
+ projection_input_observation=@PROJECTION_INPUTS@,
  prefix_branch_patch=prefix_branch_patch,
  selected_observation=selected_observation,
  parent_prepared=dict(path=str(parent/'prepared.json'),sha256=hashlib.sha256((parent/'prepared.json').read_bytes()).hexdigest()),
@@ -227,6 +239,7 @@ PY
         .replace('@COMPONENTS_ONLY@',str(args.components_only)).replace('@WARM_PHASES@',str(args.warm_phases))
         .replace('@COMPONENT_LAYER@',repr(args.component_layer))
         .replace('@HOT_PROFILE@',str(args.hot_profile))
+        .replace('@PROJECTION_INPUTS@',str(args.projection_inputs))
         .replace('@LOCAL_PREFIX_BRANCH@',str(args.local_prefix_branch))
         .replace('@BRANCH_REFERENCE_SHA@',repr(hashlib.sha256(branch_reference).hexdigest()) if branch_reference is not None else 'None')
         .replace('@BRANCH_COMMIT@',repr(branch_commit)).replace('@BRANCH_BASELINE_COMMIT@',repr(branch_baseline_commit))

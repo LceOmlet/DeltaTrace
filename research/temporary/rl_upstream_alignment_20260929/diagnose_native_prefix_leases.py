@@ -124,11 +124,16 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         def observe_attribute(*args,**kwargs):
             profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
                                and label.endswith('_warm'))
+            projection_audit=None
+            if os.environ.get('DT_PREFIX_PROJECTION_INPUTS')=='1' and label=='shared_warm':
+                from diagnose_native_projection_inputs import NativeProjectionInputAudit
+                projection_audit=NativeProjectionInputAudit(runner.model.model.language_model.layers)
+            projection_context=projection_audit if projection_audit is not None else nullcontext()
             context=(torch.profiler.profile(
                 activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
                 record_shapes=False,with_stack=False,profile_memory=False)
                 if profile_this_call else nullcontext())
-            with context as profile:
+            with context as profile, projection_context:
                 handles=[];ranges={};passes={}
                 if profile_this_call:
                     # Native layer hooks add profiler ranges only. Prefix,
@@ -149,6 +154,18 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 finally:
                     for handle in handles:handle.remove()
                     for value in reversed(list(ranges.values())):value.__exit__(None,None,None)
+            if projection_audit is not None:
+                import json
+                observation=projection_audit.report()
+                observation.update(
+                    variant=label,rank=torch.distributed.get_rank(),
+                    scope='Inputs observed during one existing paired root and reverse layer replay; original forward unchanged; CPU copies are diagnostic overhead',
+                    source=dict(path=__file__,sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
+                path=Path(out)/f'projection-inputs-rank{torch.distributed.get_rank()}.json'
+                path.write_text(json.dumps(observation,indent=2)+'\n')
+                save('native_projection_input_comparison',
+                     receipt=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest()),
+                     report=observation)
             if profile_this_call:
                 # Original PyTorch profiler observes one already-scheduled
                 # warm B4. Preparation is outside attribute; these instrumented
