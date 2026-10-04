@@ -40,6 +40,33 @@ SSH端口30821。当前清单仅三组DTPO，SQL与AppWorld已退出，TextCraft
 
 ## 当前代码组合
 
+### 2026-10-04：跨轮复用的实际大头与窄接口修复
+
+[热B4阶段回执](results_native_prefix_warm_phase_20261004.json)绑定78bc272，
+原88行bank仅观察最大残差所在原B4第40–43行。rank0原热前缀3.002秒，
+复用缓存载入0.100秒；后缀root0.894、原layer重放1.124、有限decoder1.261秒。
+这三项仍未缩短，不能把完整88行19.29%的改善称为主要浪费已经处理完。
+完整原始结果与token向量留在远端并保留SHA；本机索引去掉重复的完整结果和
+minimum_log_ratio_batch token数组，不改变原证据。
+
+[最大残差实际操作数回执](results_native_prefix_peak_components_20261004.json)
+绑定ea2d32a、PID819771/创建1791110343.81，已完成退出。真实GDN1两端q/k/v/beta
+FP16、g/state FP32，原FLA o/ht断言通过且CI豁免关闭；rank0最早变化实际在FA3，
+仍需该层原FA参考对照。它不是整条DT或跨轮复用的数值接受，候选未部署。
+此前e881105诊断漏传原cache观察callback的失败回执保留，未改数值核心。
+
+已修的另一薄接口是`_Qwen35CausalOwnerView.synchronize_prefix_start`：保留原
+FSDP mesh和MIN collective，只同步是否进入非零前缀分支，保留各rank本地长度。
+旧接线同步了长度本身；保存的真实88行使消费者额外处理28672个paired后缀槽位。
+13项CPU owner-helper接口对照通过；尚未部署或实际双卡验收，不把槽位计数当提速。
+局部B4共同前缀/宽度仍受现有dense finite ABI约束，未另造packed实现或减小B4。
+
+AppWorld失败重试记录的9行接口修复只在原world.restart成功后清除已被作者丢弃
+episode的采样记录；原retry、执行、奖励、消息和token断言不变。原owner AST对照
+7项通过，峰RSS51.5MB、GPU0，原Qwen tokenizer入口2项结果复用。
+代码SHA6ad5a3e383d032fdc7f0dd2dab1ee027d8f0ed182f9725d07a3faedb46e54ec9；
+尚未部署/恢复。现场日志确有原retry，原失败行未保存，不声称逐token现场对拍。
+
 ### 2026-10-04：共同右侧padding V4完成；跨轮前缀复用继续隔离验证
 
 [padding完整回执](results_actor_shared_right_padding_20261004.json)绑定诊断提交

@@ -1,6 +1,7 @@
 """Same-workload DT observation; no PPO or new numerical acceptance policy."""
 import hashlib
 import importlib.util
+from contextlib import nullcontext
 import os
 from pathlib import Path
 import time
@@ -121,7 +122,30 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         phase_totals={}
         phase_counts={}
         def observe_attribute(*args,**kwargs):
-            result=selected_attribute(*args,**kwargs)
+            profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
+                               and label.endswith('_warm'))
+            context=(torch.profiler.profile(
+                activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
+                record_shapes=False,with_stack=False,profile_memory=False)
+                if profile_this_call else nullcontext())
+            with context as profile:
+                result=selected_attribute(*args,**kwargs)
+            if profile_this_call:
+                # Original PyTorch profiler observes one already-scheduled
+                # warm B4. Preparation is outside attribute; these instrumented
+                # timings are not another speed-comparison receipt.
+                trace=Path(out)/f'hot-{label}-rank{torch.distributed.get_rank()}.json'
+                profile.export_chrome_trace(str(trace))
+                records=[dict(name=event.key,count=event.count,
+                    self_cpu_microseconds=event.self_cpu_time_total,
+                    cpu_microseconds=event.cpu_time_total,
+                    self_device_microseconds=getattr(event,'self_device_time_total',0),
+                    device_microseconds=getattr(event,'device_time_total',0))
+                    for event in profile.key_averages()]
+                save('native_hot_b4_profile',variant=label,
+                     scope='One actual warm attribute B4; owner computations unchanged; excludes bank preparation; instrumented costs only',
+                     trace=dict(path=str(trace),sha256=hashlib.sha256(trace.read_bytes()).hexdigest(),bytes=trace.stat().st_size),
+                     events=records)
             for call in result[1].get('calls',[]):
                 kind=call['kind']
                 seconds=call.get('stream_elapsed_seconds',call.get('seconds'))

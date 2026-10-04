@@ -164,6 +164,8 @@ class _Qwen35CausalOwnerView:
     def synchronize_prefix_start(self, prefix_start: int) -> int:
         # A native cached-prefix forward gathers FSDP parameters. All ranks
         # must take that branch together, including a rank with a short prompt.
+        # FSDP owns parameter gathers, not local sequence widths. Synchronize
+        # the branch only: each rank retains its own valid cache boundary.
         # Use the actor's own sharding group, without changing finite rules.
         from torch.distributed.tensor import DTensor
         weight = self.lm_head.weight
@@ -171,9 +173,9 @@ class _Qwen35CausalOwnerView:
             mesh = weight.device_mesh
             if mesh.ndim > 1:
                 mesh = mesh['fsdp']
-            value = torch.tensor(prefix_start, device=self.execution_device, dtype=torch.long)
+            value = torch.tensor(int(prefix_start > 0), device=self.execution_device, dtype=torch.long)
             torch.distributed.all_reduce(value, op=torch.distributed.ReduceOp.MIN, group=mesh.get_group())
-            return int(value.item())
+            return prefix_start if value.item() else 0
         return prefix_start
 
     def release_owner_params(self) -> None:

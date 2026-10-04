@@ -18,17 +18,26 @@ if __name__ == '__main__':
         help='Two DT calls on the largest recorded residual B4, retaining the full factual capture bank.')
     parser.add_argument('--components-only',action='store_true',
         help='Locate the first changed native operator of the recorded peak B4; no full DT replay.')
+    parser.add_argument('--component-layer',type=int,
+        help='With --components-only, observe this previously recorded native layer directly; skip automatic layer discovery.')
     parser.add_argument('--warm-phases',action='store_true',
         help='For --phase-only, retain cold and warm B4 calls so phase costs use warm results.')
+    parser.add_argument('--hot-profile',action='store_true',
+        help='With --phase-only --warm-phases, instrument the existing original/shared warm B4 calls; no extra forward.')
     args=parser.parse_args()
     if args.components_only and args.phase_only:
         parser.error('Select either the native operator diagnosis or the DT phase replay')
     if args.warm_phases and not args.phase_only:
         parser.error('--warm-phases requires --phase-only')
+    if args.component_layer is not None and (not args.components_only or args.component_layer < 0):
+        parser.error('--component-layer requires --components-only and a nonnegative recorded layer index')
+    if args.hot_profile and not (args.phase_only and args.warm_phases):
+        parser.error('--hot-profile requires --phase-only --warm-phases')
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     parent = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-dt-leases-20261003-v2'
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
-        'components' if args.components_only else 'warm-phase' if args.warm_phases else
+        ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
+        'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
         'phase' if args.phase_only else 'workload')+'-20261004-'+commit[:7]
     files = {
         REPO/'experiments/rl/native_prefix_leases.py': 'native_prefix_leases.py',
@@ -88,6 +97,9 @@ run_env.update(CUDA_VISIBLE_DEVICES='2,3',DT_PREFIX_PROBE_ROOT=str(out),VERL_ROO
  DT_PREFIX_ARTIFACT_SOURCE=str(out/'qwen35_native_prefix_artifacts.py'))
 run_env['PYTHONPATH']=':'.join([str(out),previous['source_formal_entry'],str(out/'verl-root'),run_env.get('PYTHONPATH','')])
 selected_observation=None
+component_layer=@COMPONENT_LAYER@
+run_env.pop('DT_PREFIX_COMPONENT_LAYER',None)
+run_env.pop('DT_PREFIX_HOT_PROFILE',None)
 if @BOUNDED_ONLY@:
  import torch
  completed=root/'receipts/owner-b8-dispatch-20260930/native-prefix-reuse-workload-20261004-712795d'
@@ -104,12 +116,17 @@ if @BOUNDED_ONLY@:
  run_env.update(DT_PREFIX_PHASE_ONLY='1',DT_PREFIX_DIAGNOSTIC_OFFSET=str(offset),DT_PREFIX_DIAGNOSTIC_ROWS='4')
  if @COMPONENTS_ONLY@:
   run_env.update(DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC='1',DT_PREFIX_COMPONENT_REQUEST_INDEX=str(peak['row']))
+  if component_layer is not None:
+   run_env['DT_PREFIX_COMPONENT_LAYER']=str(component_layer)
  if @WARM_PHASES@:
   run_env['DT_PREFIX_PHASE_WARM']='1'
- selected_observation=dict(peak=peak,all_ranks=maxima,offset=offset,
+ if @HOT_PROFILE@:
+  run_env['DT_PREFIX_HOT_PROFILE']='1'
+ selected_observation=dict(peak=peak,all_ranks=maxima,offset=offset,component_layer=component_layer,
   scope='Same original B4 stream and full 88-row capture bank; bounded operator/phase instrumentation, not a repeat of the workload benchmark')
 receipt=dict(role='Isolated original B4 DT replay; no formal deployment or acceptance of a new numerical core',
  diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',devices=[2,3],rows_per_rank=int(run_env['DT_PREFIX_DIAGNOSTIC_ROWS']),
+ instrumented_hot_profile=@HOT_PROFILE@,
  selected_observation=selected_observation,
  parent_prepared=dict(path=str(parent/'prepared.json'),sha256=hashlib.sha256((parent/'prepared.json').read_bytes()).hexdigest()),
  live_environment_source=dict(pid=live.pid,pid_birth=live.create_time(),task='TextCraft',
@@ -143,4 +160,6 @@ PY
         .replace('@OUT@',out).replace('@COMMIT@',commit).replace('@PHASE_ONLY@',str(args.phase_only))
         .replace('@BOUNDED_ONLY@',str(args.phase_only or args.components_only))
         .replace('@COMPONENTS_ONLY@',str(args.components_only)).replace('@WARM_PHASES@',str(args.warm_phases))
+        .replace('@COMPONENT_LAYER@',repr(args.component_layer))
+        .replace('@HOT_PROFILE@',str(args.hot_profile))
         .replace('@SHA@',hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))

@@ -152,8 +152,22 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
 
     layers = runner.model.model.language_model.layers
     attention_only=os.environ.get('DT_PREFIX_ATTENTION_DIAGNOSTIC')=='1'
-    auto_layer = gdn_layer_index is None
+    requested_layer = os.environ.get('DT_PREFIX_COMPONENT_LAYER')
+    observed_layer_index = None if requested_layer is None else int(requested_layer)
+    auto_layer = gdn_layer_index is None and observed_layer_index is None
+    bounded_operator = auto_layer or observed_layer_index is not None
     attention_layer_index = 3
+    if observed_layer_index is not None:
+        if not 0 <= observed_layer_index < len(layers):
+            raise ValueError('Recorded observation layer is outside the original model')
+        # Every rank receives the same explicit diagnostic choice. Reuse the
+        # recorded first-difference evidence instead of repeating the two
+        # automatic model probes or selecting another rank's earlier layer.
+        attention_only = not hasattr(layers[observed_layer_index], 'linear_attn')
+        if attention_only:
+            attention_layer_index = observed_layer_index
+        else:
+            gdn_layer_index = observed_layer_index
     if auto_layer:
         if comparison_ids is None or not matched_rows:
             raise ValueError('Automatic layer diagnosis needs the observed source and original consumer rows')
@@ -203,6 +217,8 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
                Path(inspect.getsourcefile(chunk_gated_delta_rule_fwd_h)),
                Path(inspect.getsourcefile(NativeGDNCapture)), Path(__file__)]
     save('component_diagnostic_start', scope=__doc__,
+         explicit_observation_layer=observed_layer_index,
+         observation_window_tokens=min(64,prefix) if bounded_operator else prefix,
          gdn_layer_index=None if attention_only else gdn_layer_index,
          attention_layer_index=attention_layer_index if attention_only else None,
          owner_sources={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources},
@@ -229,8 +245,8 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
             # later layers need only the last 64 prefix positions to locate
             # the earliest variation without retaining all activations.
             layer_index = int(name.split('.')[0][5:])
-            begin = (max(0, prefix-64) if auto_layer or (layer_index >= 4 and
-                     not gdn_layer_index-2 <= layer_index <= gdn_layer_index) else 0)
+            begin = (max(0, prefix-64) if bounded_operator or (layer_index >= 4 and
+                      not gdn_layer_index-2 <= layer_index <= gdn_layer_index) else 0)
             values[name] = first(value)[:, begin:prefix].detach().cpu()
 
         def projection_reference(module, args, value):
@@ -384,12 +400,12 @@ def diagnose(runner, ids, prefix, save, *, comparison_ids=None, matched_rows=Non
         checks=check_first_attention([('long_prefix',long),('direct_short',short)],prefix,
             official.with_name('test_flash_attn_v263.py'),save,
             layer_index=attention_layer_index,
-            query_window_tokens=64 if auto_layer else None,
+            query_window_tokens=64 if bounded_operator else None,
             operand_output_dir=operand_output_dir)
         save('first_attention_diagnostic_complete',first_attention_checks=checks,
              peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
              physical_free_bytes=torch.cuda.mem_get_info()[0],
-             numerical_scope='Original FA output assertion on the first actual attention call; no gradient, whole-DT or Cache numerical acceptance is claimed.')
+             numerical_scope='Original FA output assertion on the selected actual attention call; no gradient, whole-DT or Cache numerical acceptance is claimed.')
         return checks
 
     checks=[]

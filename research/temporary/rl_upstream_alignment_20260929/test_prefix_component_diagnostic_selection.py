@@ -5,6 +5,7 @@ These tests establish diagnosis wiring/syntax only, not numerical acceptance.
 """
 import ast
 from pathlib import Path
+import re
 import subprocess
 
 import pytest
@@ -14,6 +15,7 @@ DIRECTORY = Path(__file__).resolve().parent
 REPO = DIRECTORY.parents[2]
 LEASES = DIRECTORY/'diagnose_native_prefix_leases.py'
 COMPONENTS = DIRECTORY/'diagnose_native_prefix_components.py'
+STAGER = DIRECTORY/'run_native_prefix_reuse_workload.py'
 BASELINE = '265c41a04bc70752617745846d222894641f3fe4'
 
 
@@ -53,7 +55,7 @@ def calls(module, expression):
 
 
 def test_diagnostic_files_compile_without_importing_runtime():
-    for path in (LEASES, COMPONENTS):
+    for path in (LEASES, COMPONENTS, STAGER):
         compile(tree(path), str(path), 'exec')
 
 
@@ -97,6 +99,69 @@ def test_first_unequal_layer_is_observed_and_not_hardcoded():
     select = pure_function(COMPONENTS,'first_changed_layer')
     assert select([{'layer':i,'equal':i != 7} for i in range(32)]) == 7
     assert select([{'layer':i,'equal':True} for i in range(32)]) is None
+
+
+def test_explicit_recorded_layer_skips_auto_probe_and_selects_native_family():
+    body = function(tree(COMPONENTS),'diagnose')
+    assert ast.unparse(assignment(body,'auto_layer').value) == (
+        'gdn_layer_index is None and observed_layer_index is None')
+    explicit = next(node for node in body.body if isinstance(node,ast.If)
+                    and ast.unparse(node.test) == 'observed_layer_index is not None')
+    assert ast.unparse(assignment(explicit,'attention_only').value) == (
+        "not hasattr(layers[observed_layer_index], 'linear_attn')")
+    assert not calls(explicit,'runner.forward_prefix')
+    auto = next(node for node in body.body if isinstance(node,ast.If)
+                and ast.unparse(node.test) == 'auto_layer')
+    assert len(calls(auto,'output_probe')) == 2
+    attention = next(node for node in body.body if isinstance(node,ast.If)
+                     and ast.unparse(node.test) == 'attention_only')
+    check, = calls(attention,'check_first_attention')
+    assert {item.arg:ast.unparse(item.value) for item in check.keywords}['query_window_tokens'] == (
+        '64 if bounded_operator else None')
+    assert any(isinstance(node,ast.Return) for node in attention.body)
+    fla_loop = next(node for node in body.body if isinstance(node,ast.For)
+                    and isinstance(node.target,ast.Tuple)
+                    and [ast.unparse(item) for item in node.target.elts] == ['label','case'])
+    assert body.body.index(attention) < body.body.index(fla_loop)
+
+
+def test_stager_passes_explicit_layer_without_changing_original_b4_selection():
+    source = STAGER.read_text(encoding='utf8')
+    assert "parser.add_argument('--component-layer',type=int," in source
+    assert "args.component_layer is not None and (not args.components_only" in source
+    assert 'component_layer=@COMPONENT_LAYER@' in source
+    assert "run_env['DT_PREFIX_COMPONENT_LAYER']=str(component_layer)" in source
+    assert "DT_PREFIX_COMPONENT_REQUEST_INDEX=str(peak['row'])" in source
+    assert "DT_PREFIX_DIAGNOSTIC_ROWS='4'" in source
+    assert "component_layer=component_layer" in source
+    assert ".replace('@COMPONENT_LAYER@',repr(args.component_layer))" in source
+
+
+def test_stager_profiles_only_requested_warm_b4_and_labels_instrumentation():
+    source = STAGER.read_text(encoding='utf8')
+    assert "parser.add_argument('--hot-profile',action='store_true'," in source
+    assert 'args.hot_profile and not (args.phase_only and args.warm_phases)' in source
+    assert "'hot-phase' if args.hot_profile" in source
+    assert "run_env['DT_PREFIX_HOT_PROFILE']='1'" in source
+    assert 'instrumented_hot_profile=@HOT_PROFILE@' in source
+    assert ".replace('@HOT_PROFILE@',str(args.hot_profile))" in source
+
+
+@pytest.mark.parametrize('components,layer,warm,hot',[(True,3,False,False),(False,None,True,True)])
+def test_embedded_remote_python_compiles_for_both_bounded_modes(components, layer, warm, hot):
+    module = tree(STAGER)
+    scripts = [node.value for node in ast.walk(module) if isinstance(node,ast.Constant)
+               and isinstance(node.value,str) and 'component_layer=@COMPONENT_LAYER@' in node.value]
+    script, = scripts
+    python = script.split("<<'PY'\n",1)[1].split('\nPY\n',1)[0]
+    replacements = {
+        '@COMPONENTS_ONLY@':repr(components), '@COMPONENT_LAYER@':repr(layer),
+        '@BOUNDED_ONLY@':'True', '@WARM_PHASES@':repr(warm), '@HOT_PROFILE@':repr(hot),
+    }
+    for old, new in replacements.items():
+        python = python.replace(old,new)
+    python = re.sub(r'@[A-Z_]+@','fixture',python)
+    compile(python,str(STAGER)+':remote-python','exec')
 
 
 def test_fsdP_scheduling_uses_original_min_collective_before_any_early_return():

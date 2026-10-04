@@ -50,6 +50,18 @@ for rank in (0,1):
   if k in v:item[k]=v[k]
  summary.append(item)
 completed='result.json' in records
+# Full arrays remain in their SHA-bound remote owner receipts. This local
+# index keeps phase/operand evidence, without duplicating large failure-input
+# token lists or the same rank result a second time in result.json.
+if completed:
+ records['result.json'].pop('value')
+for rank in (0,1):
+ v=records.get(f'rank{rank}.json',{}).get('value',{})
+ for r in v.get('reports',{}).values():
+  readout=r.get('original_readout_report')
+  if readout is not None:
+   r['original_readout_report']={k:x for k,x in readout.items()
+     if k not in ('minimum_log_ratio_batch','traces')}
 log=out/'probe.log'
 print(json.dumps(dict(observed_unix=time.time(),remote_root=str(out),formal_deployment=False,
  completed=completed,

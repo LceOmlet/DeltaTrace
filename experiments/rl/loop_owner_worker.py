@@ -27,6 +27,15 @@ def recorded_runner(**kwargs):
                 _recording.executions += 1
                 return execute(*args, **kwargs)
             self.world.execute = recorded_execute
+            restart = self.world.restart
+            def recorded_restart(*args, **kwargs):
+                result = restart(*args, **kwargs)
+                # The author discards the failed episode after a successful
+                # restart. Its completion records must follow the same scope.
+                _recording.requests = []
+                _recording.executions = 0
+                return result
+            self.world.restart = recorded_restart
 
         def run(self, scenario, llm):
             _recording.requests = []
