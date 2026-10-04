@@ -42,6 +42,11 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         row, factual, detail, _ = capacity_fixture(synthetic_source,
             readout.tokenizer, readout.alphabet, response_tokens=512,
             max_steps=readout.max_steps, sampling=readout.sampling)
+        # The original helper accepts tensor-backed recorded masks, so its
+        # count metadata may be scalar tensors. Serialize metadata only;
+        # leave the original fixture tensors and helper mathematics intact.
+        detail={key:value.item() if isinstance(value,torch.Tensor) and value.ndim==0 else value
+                for key,value in detail.items()}
         episodes.append([row]); returns.append([value]); details.append(detail)
         factual_inputs.append(factual)
     assert len({episode[0]['traj_uid'] for episode in episodes}) == 4
