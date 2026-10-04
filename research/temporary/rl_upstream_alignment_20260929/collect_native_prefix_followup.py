@@ -19,7 +19,8 @@ def read(name):
  return dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),value=json.loads(p.read_bytes()))
 records={n:read(n) for n in ('prepared.json','job.json','result.json','rank0.json','rank1.json',
  'projection-inputs-rank0.json','projection-inputs-rank1.json',
- 'reverse-prefetch-rank0.json','reverse-prefetch-rank1.json') if (out/n).is_file()}
+ 'reverse-prefetch-rank0.json','reverse-prefetch-rank1.json',
+ 'root-capture-inventory-rank0.json','root-capture-inventory-rank1.json') if (out/n).is_file()}
 job=records['job.json']['value']
 try:
  p=psutil.Process(job['pid']);status=p.status();birth=p.create_time()
@@ -54,6 +55,9 @@ for rank in (0,1):
  projection=records.get(f'projection-inputs-rank{rank}.json',{}).get('value')
  if projection is not None:
   item['projection_input_summary']={k:x for k,x in projection.items() if k!='projections'}
+ inventory=records.get(f'root-capture-inventory-rank{rank}.json',{}).get('value')
+ if inventory is not None:
+  item['root_capture_inventory']={k:x for k,x in inventory.items() if k!='rows'}
  prefetch=records.get(f'reverse-prefetch-rank{rank}.json',{}).get('value')
  if prefetch is not None:
   item['reverse_prefetch_summary']={k:x for k,x in prefetch.items() if k not in ('layers','calls','topology')}

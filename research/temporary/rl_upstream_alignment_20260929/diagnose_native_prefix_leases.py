@@ -105,15 +105,23 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
         labels=(*labels,'prefetch_warm')
     reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
+    shared_bank=None
     def shared_factory(*args,**kwargs):
-        if not phase_only:
-            return prepare_native_prefix_leases(*args,**kwargs)
-        # Preserve the full actual bank/capture geometry while tracing only
-        # the affected original B4. Do not repeat all 22 DT consumers just to
-        # repair a diagnostic field-name error.
-        leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)
-        selected=leases[offset//4:(offset+limit)//4]
-        return selected,{**preparation,'diagnostic_selected_consumer_batches':len(selected)}
+        nonlocal shared_bank
+        reused=shared_bank is not None
+        if not reused:
+            if not phase_only:
+                shared_bank=prepare_native_prefix_leases(*args,**kwargs)
+            else:
+                # Preserve the full capture geometry and original B4 selection.
+                leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)
+                selected=leases[offset//4:(offset+limit)//4]
+                shared_bank=(selected,{**preparation,'diagnostic_selected_consumer_batches':len(selected)})
+        # The owner lease creates a fresh DynamicCache on every consumption.
+        # Reuse only its immutable source artifacts during this diagnosis;
+        # capture_and_preparation_seconds remains the initial bank cost.
+        leases,preparation=shared_bank
+        return leases,{**preparation,'diagnostic_bank_reused':reused}
     for label in labels:
         if label.startswith(('shared','prefetch')):
             runner.attribute=types.MethodType(module.Qwen35DenseFiniteRunner.attribute,runner)
@@ -137,11 +145,22 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 from native_reverse_prefetch_candidate import NativeReversePrefetch
                 prefetch_candidate=NativeReversePrefetch(runner.model)
             prefetch_context=prefetch_candidate if prefetch_candidate is not None else nullcontext()
+            root_inventory = None
+            inventory_factory = None
+            if os.environ.get('DT_PREFIX_ROOT_CAPTURE_INVENTORY')=='1' and label=='shared_warm':
+                from diagnose_qwen35_root_capture_inventory import NativeRootCaptureInventory
+                from native_root_capture_inventory_factory import OriginalRootCaptureFactory
+                owner_globals = selected_attribute.__func__.__globals__
+                inventory_factory = OriginalRootCaptureFactory(
+                    runner, owner_globals, cache_tensors=cache_tensors)
+                root_inventory = NativeRootCaptureInventory(
+                    runner.model.model.language_model.layers, inventory_factory)
+            inventory_context = root_inventory if root_inventory is not None else nullcontext()
             context=(torch.profiler.profile(
                 activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
                 record_shapes=False,with_stack=False,profile_memory=False)
                 if profile_this_call else nullcontext())
-            with context as profile, projection_context, prefetch_context:
+            with context as profile, projection_context, prefetch_context, inventory_context:
                 handles=[];ranges={};passes={}
                 if profile_this_call:
                     # Native layer hooks add profiler ranges only. Prefix,
@@ -188,6 +207,19 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 save('native_reverse_prefetch_observation',
                      receipt=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest()),
                      report=observation)
+            if root_inventory is not None:
+                import json
+                observation = root_inventory.report()
+                observation.update(variant=label, rank=torch.distributed.get_rank(),
+                    original_runner_gdn_coefficient_start=result[1].get('gdn_fla_coefficient_start'),
+                    original_runner_native_prefix_length=result[1].get('native_shared_prefix_length'),
+                    original_capture_api=inventory_factory.provenance(),
+                    source=dict(path=__file__,sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
+                path=Path(out)/f'root-capture-inventory-rank{torch.distributed.get_rank()}.json'
+                path.write_text(json.dumps(observation,indent=2)+'\n')
+                save('native_root_capture_inventory',
+                     receipt=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest()),
+                     summary={k:v for k,v in observation.items() if k!='rows'})
             if profile_this_call:
                 # Original PyTorch profiler observes one already-scheduled
                 # warm B4. Preparation is outside attribute; these instrumented

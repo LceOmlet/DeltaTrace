@@ -41,6 +41,49 @@ def test_lease_preserves_identity_and_rejects_a_different_factual_prefix(monkeyp
     assert len(seen)==1  # Mismatch is rejected before the owning Cache call.
 
 
+def test_same_lease_uses_fresh_real_hf_cache_without_mutating_artifact_bank(monkeypatch):
+    """Consume the same owner artifacts repeatedly through real HF Cache APIs."""
+    torch=pytest.importorskip('torch')
+    transformers=pytest.importorskip('transformers')
+    from transformers.cache_utils import DynamicCache
+    monkeypatch.syspath_prepend(str(OWNER_PATH.parent))
+    import qwen35_native_prefix_artifacts as owner
+    config=transformers.Qwen3_5TextConfig(num_hidden_layers=2,
+        layer_types=['linear_attention','full_attention'])
+    ids=torch.arange(3*128).reshape(3,128)
+    conv=torch.arange(3*8*4,dtype=torch.float32).reshape(3,8,4)
+    recurrent=torch.arange(3*2*2*2,dtype=torch.float32).reshape(3,2,2,2)
+    keys=torch.arange(3*1*128*4,dtype=torch.float32).reshape(3,1,128,4)
+    values=keys+1000
+    source=owner.NativePrefixArtifacts(config,ids,[
+        {'boundaries':{64:(conv,recurrent)}},{'keys':keys,'values':values}])
+    lease=owner.NativePrefixLease([(source,2),(source,0)],64)
+    factual_ids=ids[[2,0],:64].clone()
+    first=lease(factual_ids)
+    assert isinstance(first,DynamicCache)
+    # Native consumers mutate cache state; the immutable bank must survive.
+    first.layers[0].conv_states.add_(100)
+    first.layers[0].recurrent_states.add_(200)
+    first.layers[1].keys.add_(300)
+    first.layers[1].values.add_(400)
+    second=lease(factual_ids)
+    assert isinstance(second,DynamicCache) and second is not first
+    assert second.layers[0] is not first.layers[0]
+    assert second.layers[1] is not first.layers[1]
+    expected=(conv[[2,0]],recurrent[[2,0]],keys[[2,0],:,:64],values[[2,0],:,:64])
+    actual=(second.layers[0].conv_states,second.layers[0].recurrent_states,
+            second.layers[1].keys,second.layers[1].values)
+    for received,wanted in zip(actual,expected):
+        torch.testing.assert_close(received,wanted,rtol=0,atol=0)
+    for received,original in zip(actual,(conv,recurrent,keys,values)):
+        assert received.untyped_storage().data_ptr()!=original.untyped_storage().data_ptr()
+    assert torch.equal(source.input_ids,ids)
+    assert torch.equal(conv,torch.arange(3*8*4,dtype=torch.float32).reshape(3,8,4))
+    assert torch.equal(recurrent,torch.arange(3*2*2*2,dtype=torch.float32).reshape(3,2,2,2))
+    assert torch.equal(keys,torch.arange(3*1*128*4,dtype=torch.float32).reshape(3,1,128,4))
+    assert torch.equal(values,keys+1000)
+
+
 def test_explicit_factory_preserves_all_owner_endpoints_and_token_qva():
     torch = pytest.importorskip('torch')
     from test_reward_readout import BatchedRunner,readout,row

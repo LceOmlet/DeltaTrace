@@ -68,6 +68,52 @@ def test_current_peak_is_local_row_two_of_original_b4():
     assert len(records) == 88
 
 
+@pytest.mark.parametrize('phase_only',[False,True])
+def test_shared_diagnostic_prepares_same_bank_once_for_multiple_consumers(phase_only):
+    """Execute the real diagnostic closure without importing model/runtime."""
+    body=function(tree(LEASES),'diagnose')
+    initializer=next(node for node in body.body if isinstance(node,ast.Assign)
+                     and any(isinstance(target,ast.Name) and target.id=='shared_bank'
+                             for target in node.targets))
+    factory=function(body,'shared_factory')
+    wrapper=ast.FunctionDef(name='make_factory',
+        args=ast.arguments(posonlyargs=[],args=[ast.arg(arg=name) for name in
+            ('phase_only','all_requests','offset','limit','prepare_native_prefix_leases')],
+            kwonlyargs=[],kw_defaults=[],defaults=[]),
+        body=[initializer,factory,ast.Return(value=ast.Name(id='shared_factory',ctx=ast.Load()))],
+        decorator_list=[])
+    namespace={}
+    exec(compile(ast.fix_missing_locations(ast.Module(body=[wrapper],type_ignores=[])),
+         str(LEASES)+':shared_factory','exec'),namespace)
+    requests=[object() for _ in range(88)]
+    selected_requests=requests[40:44]
+    leases=[object() for _ in range(22)]
+    preparation=dict(capture_and_preparation_seconds=23.96,capture_rounds=5)
+    calls=[]
+    def owner_prepare(*args,**kwargs):
+        calls.append((args,kwargs))
+        return leases,preparation
+    shared=namespace['make_factory'](phase_only,requests,40,4,owner_prepare)
+    runner=object()
+    first,first_report=shared(runner,selected_requests,minibatch_size=4,eos_token_id=99)
+    second,second_report=shared(runner,selected_requests,minibatch_size=4,eos_token_id=99)
+    third,third_report=shared(runner,selected_requests,minibatch_size=4,eos_token_id=99)
+    assert len(calls)==1
+    assert calls[0]==((runner,requests if phase_only else selected_requests),
+                      dict(minibatch_size=4,eos_token_id=99))
+    assert first is second is third
+    if phase_only:
+        assert first==leases[10:11]
+    else:
+        assert first is leases
+    assert first_report['diagnostic_bank_reused'] is False
+    assert second_report['diagnostic_bank_reused'] is third_report['diagnostic_bank_reused'] is True
+    assert first_report['capture_and_preparation_seconds']==second_report['capture_and_preparation_seconds']==23.96
+    assert preparation==dict(capture_and_preparation_seconds=23.96,capture_rounds=5)
+    if phase_only:
+        assert first_report['diagnostic_selected_consumer_batches']==1
+
+
 @pytest.mark.parametrize('offset,limit,index',[(41,4,42),(40,1,42),(0,4,42),(88,4,88)])
 def test_selection_rejects_another_geometry(offset, limit, index):
     with pytest.raises(ValueError):
