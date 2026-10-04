@@ -129,7 +129,26 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 record_shapes=False,with_stack=False,profile_memory=False)
                 if profile_this_call else nullcontext())
             with context as profile:
-                result=selected_attribute(*args,**kwargs)
+                handles=[];ranges={};passes={}
+                if profile_this_call:
+                    # Native layer hooks add profiler ranges only. Prefix,
+                    # root, and replay still call the exact original forward.
+                    for index,layer in enumerate(runner.model.model.language_model.layers):
+                        def enter(_module,_args,index=index):
+                            passes[index]=passes.get(index,0)+1
+                            value=torch.profiler.record_function(
+                                f'DT_native_layer_{index}_pass_{passes[index]}')
+                            value.__enter__();ranges[index]=value
+                        def leave(_module,_args,_output,index=index):
+                            value=ranges.pop(index,None)
+                            if value is not None:value.__exit__(None,None,None)
+                        handles.append(layer.register_forward_pre_hook(enter))
+                        handles.append(layer.register_forward_hook(leave,always_call=True))
+                try:
+                    result=selected_attribute(*args,**kwargs)
+                finally:
+                    for handle in handles:handle.remove()
+                    for value in reversed(list(ranges.values())):value.__exit__(None,None,None)
             if profile_this_call:
                 # Original PyTorch profiler observes one already-scheduled
                 # warm B4. Preparation is outside attribute; these instrumented

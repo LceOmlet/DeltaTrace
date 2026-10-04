@@ -55,6 +55,13 @@ FP16、g/state FP32，原FLA o/ht断言通过且CI豁免关闭；rank0最早变�
 仍需该层原FA参考对照。它不是整条DT或跨轮复用的数值接受，候选未部署。
 此前e881105诊断漏传原cache观察callback的失败回执保留，未改数值核心。
 
+[FA3实际BF16原容差回执](results_native_prefix_peak_fa3_20261004.json)绑定206fece，
+PID962286/创建1791111636.14，已完成退出释放2/3。仅执行两次原native forward，
+选中已观察到的FA3；实际Q为B4×64×16×256，K/V为B4×6976×4×256。
+两rank长/短两端最大输出误差均0.015625，原普通低精度基线误差0.0625或0.140625；
+原FA `max_error <= 2*baseline_max_error`断言通过，参考、断言、dtype及原操作数
+SHA均保留。不是对整条DT定义额外容差，也未加入缩放或裁剪。
+
 已修的另一薄接口是`_Qwen35CausalOwnerView.synchronize_prefix_start`：保留原
 FSDP mesh和MIN collective，只同步是否进入非零前缀分支，保留各rank本地长度。
 旧接线同步了长度本身；保存的真实88行使消费者额外处理28672个paired后缀槽位。

@@ -4,7 +4,9 @@ No training restart, model/task download, optimizer, or formal import change.
 Only GPUs 2/3 are used; physical GPUs 0/1 stay free as requested.
 """
 import argparse
+import ast
 import hashlib
+import io
 from pathlib import Path
 import subprocess
 import tarfile
@@ -24,6 +26,8 @@ if __name__ == '__main__':
         help='For --phase-only, retain cold and warm B4 calls so phase costs use warm results.')
     parser.add_argument('--hot-profile',action='store_true',
         help='With --phase-only --warm-phases, instrument the existing original/shared warm B4 calls; no extra forward.')
+    parser.add_argument('--local-prefix-branch',action='store_true',
+        help='With --phase-only --warm-phases, patch only the frozen owner prefix-branch method; no formal deployment.')
     args=parser.parse_args()
     if args.components_only and args.phase_only:
         parser.error('Select either the native operator diagnosis or the DT phase replay')
@@ -33,9 +37,12 @@ if __name__ == '__main__':
         parser.error('--component-layer requires --components-only and a nonnegative recorded layer index')
     if args.hot_profile and not (args.phase_only and args.warm_phases):
         parser.error('--hot-profile requires --phase-only --warm-phases')
+    if args.local_prefix_branch and not (args.phase_only and args.warm_phases):
+        parser.error('--local-prefix-branch requires --phase-only --warm-phases')
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     parent = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-dt-leases-20261003-v2'
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
+        'local-prefix-' if args.local_prefix_branch else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
         'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
         'phase' if args.phase_only else 'workload')+'-20261004-'+commit[:7]
@@ -46,10 +53,34 @@ if __name__ == '__main__':
         AUDIT/'diagnose_native_prefix_components.py': 'diagnose_native_prefix_components.py',
         Path(__file__): 'run_native_prefix_reuse_workload.py',
     }
+    branch_reference = None
+    branch_commit = branch_baseline_commit = old_method_ast = new_method_ast = None
+    if args.local_prefix_branch:
+        owner_path = 'experiments/rl/deltatrace_rollout.py'
+        branch_commit = subprocess.check_output(
+            ['git', 'log', '-1', '--format=%H', '--', owner_path], cwd=REPO, text=True).strip()
+        branch_baseline_commit = subprocess.check_output(
+            ['git', 'rev-parse', branch_commit+'^'], cwd=REPO, text=True).strip()
+        branch_reference = subprocess.check_output(
+            ['git', 'show', branch_commit+':'+owner_path], cwd=REPO)
+        baseline_reference = subprocess.check_output(
+            ['git', 'show', branch_baseline_commit+':'+owner_path], cwd=REPO)
+        def method_ast(source):
+            owner = next(node for node in ast.parse(source).body
+                         if isinstance(node, ast.ClassDef) and node.name == '_Qwen35CausalOwnerView')
+            return ast.dump(next(node for node in owner.body
+                                if isinstance(node, ast.FunctionDef) and node.name == 'synchronize_prefix_start'))
+        old_method_ast, new_method_ast = method_ast(baseline_reference), method_ast(branch_reference)
+        assert old_method_ast != new_method_ast, 'Expected the recorded prefix-branch-only change'
+        files[REPO/'experiments/rl/test_prefix_branch_owner.py'] = 'test_prefix_branch_owner.py'
     bundle = AUDIT/('native-prefix-reuse-workload-'+commit[:7]+'.tar')
     with tarfile.open(bundle, 'w') as archive:
         for path, name in files.items():
             archive.add(path, arcname=name)
+        if branch_reference is not None:
+            info = tarfile.TarInfo('prefix_branch_owner_candidate.py')
+            info.size = len(branch_reference)
+            archive.addfile(info, io.BytesIO(branch_reference))
     remote(f'test ! -e {out}/prepared.json && test ! -e {out}/job.json && mkdir -p {out}\n')
     subprocess.run(SCP+[str(bundle), f'{SSH[-1]}:{out}/overlay.tar'], check=True)
     remote(r'''set -e
@@ -80,6 +111,37 @@ for source,expected in previous['source_files'].items():
   destination=out/pathlib.Path(source).relative_to(parent)
   assert hashlib.sha256(destination.read_bytes()).hexdigest()==expected, destination
 subprocess.run(['tar','-xf',str(out/'overlay.tar'),'-C',str(out)],check=True)
+prefix_branch_patch=None
+if @LOCAL_PREFIX_BRANCH@:
+ # Keep every other byte of the actual frozen original entry. The candidate
+ # reference is provenance only; the original module remains the import owner.
+ p=pathlib.Path(previous['source_formal_entry'])/'deltatrace_rollout.py'
+ before=p.read_bytes()
+ reference=(out/'prefix_branch_owner_candidate.py').read_bytes()
+ assert hashlib.sha256(reference).hexdigest()==@BRANCH_REFERENCE_SHA@
+ def owner_method(source):
+  owner=next(node for node in ast.parse(source).body
+   if isinstance(node,ast.ClassDef) and node.name=='_Qwen35CausalOwnerView')
+  return next(node for node in owner.body
+   if isinstance(node,ast.FunctionDef) and node.name=='synchronize_prefix_start')
+ original_method=owner_method(before);candidate_method=owner_method(reference)
+ assert ast.dump(original_method)==@OLD_METHOD_AST@, 'Frozen owner is not the recorded full-value MIN method'
+ assert ast.dump(candidate_method)==@NEW_METHOD_AST@, 'Candidate is not the committed branch-only method'
+ original_lines=before.splitlines(keepends=True);candidate_lines=reference.splitlines(keepends=True)
+ prefix=b''.join(original_lines[:original_method.lineno-1])
+ suffix=b''.join(original_lines[original_method.end_lineno:])
+ replacement=b''.join(candidate_lines[candidate_method.lineno-1:candidate_method.end_lineno])
+ after=prefix+replacement+suffix
+ assert after[:len(prefix)]==prefix and after[-len(suffix):]==suffix
+ assert ast.dump(owner_method(after))==ast.dump(candidate_method)
+ destination=out/'deltatrace_rollout.py';destination.write_bytes(after)
+ prefix_branch_patch=dict(original_path=str(p),original_sha256=hashlib.sha256(before).hexdigest(),
+  patched_path=str(destination),patched_sha256=hashlib.sha256(after).hexdigest(),
+  reference_path=str(out/'prefix_branch_owner_candidate.py'),reference_sha256=hashlib.sha256(reference).hexdigest(),
+  method_source_commit=@BRANCH_COMMIT@,baseline_source_commit=@BRANCH_BASELINE_COMMIT@,
+  original_method_ast_sha256=hashlib.sha256(ast.dump(original_method).encode()).hexdigest(),
+  patched_method_ast_sha256=hashlib.sha256(ast.dump(candidate_method).encode()).hexdigest(),
+  all_other_source_bytes_preserved=True,formal_deployment=False)
 if @COMPONENTS_ONLY@:
  # The completed frozen diagnostic predates the cache-field callback. Keep
  # that owner/initialization and pass its existing tensors observer only.
@@ -127,6 +189,7 @@ if @BOUNDED_ONLY@:
 receipt=dict(role='Isolated original B4 DT replay; no formal deployment or acceptance of a new numerical core',
  diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',devices=[2,3],rows_per_rank=int(run_env['DT_PREFIX_DIAGNOSTIC_ROWS']),
  instrumented_hot_profile=@HOT_PROFILE@,
+ prefix_branch_patch=prefix_branch_patch,
  selected_observation=selected_observation,
  parent_prepared=dict(path=str(parent/'prepared.json'),sha256=hashlib.sha256((parent/'prepared.json').read_bytes()).hexdigest()),
  live_environment_source=dict(pid=live.pid,pid_birth=live.create_time(),task='TextCraft',
@@ -143,7 +206,9 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 test_env=dict(run_env,CUDA_VISIBLE_DEVICES='')
 with (out/'cpu-tests.log').open('wb') as log:
- p=subprocess.run([run_env['VENV_PYTHON'],'-m','pytest',str(out/'test_native_prefix_leases.py'),
+ test_paths=[str(out/'test_native_prefix_leases.py')]
+ if @LOCAL_PREFIX_BRANCH@:test_paths.append(str(out/'test_prefix_branch_owner.py'))
+ p=subprocess.run([run_env['VENV_PYTHON'],'-m','pytest',*test_paths,
   '-k','not moved_artifact','-q','--junitxml='+str(out/'cpu-tests.xml')],env=test_env,cwd=out,
   stdout=log,stderr=subprocess.STDOUT)
 receipt['cpu_tests_returncode']=p.returncode
@@ -162,4 +227,8 @@ PY
         .replace('@COMPONENTS_ONLY@',str(args.components_only)).replace('@WARM_PHASES@',str(args.warm_phases))
         .replace('@COMPONENT_LAYER@',repr(args.component_layer))
         .replace('@HOT_PROFILE@',str(args.hot_profile))
+        .replace('@LOCAL_PREFIX_BRANCH@',str(args.local_prefix_branch))
+        .replace('@BRANCH_REFERENCE_SHA@',repr(hashlib.sha256(branch_reference).hexdigest()) if branch_reference is not None else 'None')
+        .replace('@BRANCH_COMMIT@',repr(branch_commit)).replace('@BRANCH_BASELINE_COMMIT@',repr(branch_baseline_commit))
+        .replace('@OLD_METHOD_AST@',repr(old_method_ast)).replace('@NEW_METHOD_AST@',repr(new_method_ast))
         .replace('@SHA@',hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
