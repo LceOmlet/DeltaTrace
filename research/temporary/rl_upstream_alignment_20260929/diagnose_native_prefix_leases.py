@@ -10,6 +10,20 @@ import psutil
 import torch
 
 
+def select_component_request(all_requests, *, offset, limit, request_index):
+    """Select an observed row inside its original complete B4 consumer.
+
+    The absolute index is into the saved, context-length-sorted requests. The
+    caller still passes the complete bank to the existing lease producer.
+    """
+    if offset < 0 or offset % 4 or limit != 4:
+        raise ValueError('Component diagnosis must select one original complete B4')
+    requests = all_requests[offset:offset+limit]
+    if len(requests) != 4 or not offset <= request_index < offset+limit:
+        raise ValueError('Observed request index is outside the selected original B4')
+    return requests, request_index-offset, offset//4
+
+
 def diagnose(runner, producer, out, save, *, cache_tensors=None):
     from native_prefix_leases import prepare_native_prefix_leases
     from reward_readout import EventRatioReadout
@@ -23,30 +37,38 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     requests=all_requests[offset:offset+limit]
     if os.environ.get('DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC') == '1':
         # Reuse the actual adapter's capture/group/padding decisions. Do not
-        # reproduce them in a diagnostic implementation. Request 3 is the
-        # largest residual recorded in the completed same-input comparison.
+        # reconstruct a smaller bank, which would change native B4 geometry.
+        # The recorded residual selects an explicit absolute sorted row; no
+        # request or GDN layer from a historical comparison is guessed here.
+        request_index = int(os.environ['DT_PREFIX_COMPONENT_REQUEST_INDEX'])
+        requests, local_row, batch_index = select_component_request(
+            all_requests, offset=offset, limit=limit, request_index=request_index)
         leases, preparation = prepare_native_prefix_leases(
-            runner, requests, minibatch_size=4, eos_token_id=producer.readout_tokenizer.eos_token_id)
-        source, source_row = leases[0].sources[3]
-        prefix = leases[0].prefix_length
+            runner, all_requests, minibatch_size=4, eos_token_id=producer.readout_tokenizer.eos_token_id)
+        lease = leases[batch_index]
+        source, source_row = lease.sources[local_row]
+        prefix = lease.prefix_length
         ids = source.input_ids.to(runner.model.execution_device)
-        comparison = torch.stack([request['prompt'][:prefix] for request in requests[:4]]).to(ids.device)
-        assert torch.equal(ids[source_row, :prefix], comparison[3])
-        prepared_cache = leases[0](comparison)
+        comparison = torch.stack([request['prompt'][:prefix] for request in requests]).to(ids.device)
+        assert torch.equal(ids[source_row, :prefix], comparison[local_row])
+        prepared_cache = lease(comparison)
         prepared_fields = cache_tensors(prepared_cache)
         del prepared_cache
         save('actual_lease_component_inputs', original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-             request_index=3, source_step=requests[3]['source_step'],
-             source_start=requests[3]['start'], context_length=requests[3]['context_tokens'],
+             request_index=request_index, local_row=local_row, consumer_batch_index=batch_index,
+             complete_capture_bank_rows=len(all_requests),
+             source_row=source_row, source_step=requests[local_row]['source_step'],
+             traj_uid=requests[local_row]['traj_uid'],
+             source_start=requests[local_row]['start'], context_length=requests[local_row]['context_tokens'],
              capture_input_shape=list(ids.shape), native_input_shape=list(comparison.shape),
-             prefix=prefix, matched_rows=[[source_row,3]], preparation=preparation,
+             prefix=prefix, matched_rows=[[source_row,local_row]], preparation=preparation,
              scope='Actual prepared lease source and original B4 prefix; original model, FA/FLA reference and assertions; no production deployment')
-        del source, leases
+        del source, lease, leases
         from diagnose_native_prefix_components import diagnose as components
         return components(runner, ids, prefix, save,
-                          comparison_ids=comparison, matched_rows=[(source_row,3)],
+                          comparison_ids=comparison, matched_rows=[(source_row,local_row)],
                           prepared_prefix_fields=prepared_fields, cache_tensors=cache_tensors,
-                          gdn_layer_index=9)
+                          gdn_layer_index=None, operand_output_dir=Path(out))
     indices=[request['row_index'] for request in requests]
     rows=[payload['rows'][i] for i in indices]
     returns=[payload['complete_returns'][i] for i in indices]
@@ -76,9 +98,10 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
          context_lengths=[r['context_tokens'] for r in requests],
          original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
          diagnostic_scope='Original readout/QVA consumers; raw residuals have no invented full-network tolerance. Loaded actor is not a restored formal checkpoint.')
-    labels=('original_phase','shared_phase') if phase_only else (
+    warm_phase=os.environ.get('DT_PREFIX_PHASE_WARM')=='1'
+    labels=('original_phase','shared_phase') if phase_only and not warm_phase else (
         'original_cold','original_warm','shared_cold','shared_warm')
-    reference_label='original_phase' if phase_only else 'original_warm'
+    reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
     def shared_factory(*args,**kwargs):
         if not phase_only:
             return prepare_native_prefix_leases(*args,**kwargs)
