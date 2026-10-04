@@ -102,6 +102,8 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     warm_phase=os.environ.get('DT_PREFIX_PHASE_WARM')=='1'
     labels=('original_phase','shared_phase') if phase_only and not warm_phase else (
         'original_cold','original_warm','shared_cold','shared_warm')
+    if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
+        labels=(*labels,'prefetch_warm')
     reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
     def shared_factory(*args,**kwargs):
         if not phase_only:
@@ -113,7 +115,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         selected=leases[offset//4:(offset+limit)//4]
         return selected,{**preparation,'diagnostic_selected_consumer_batches':len(selected)}
     for label in labels:
-        if label.startswith('shared'):
+        if label.startswith(('shared','prefetch')):
             runner.attribute=types.MethodType(module.Qwen35DenseFiniteRunner.attribute,runner)
             readout.prefix_lease_factory=shared_factory
         else:
@@ -121,6 +123,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         selected_attribute=runner.attribute
         phase_totals={}
         phase_counts={}
+        attribute_walls=[]
         def observe_attribute(*args,**kwargs):
             profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
                                and label.endswith('_warm'))
@@ -129,11 +132,16 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 from diagnose_native_projection_inputs import NativeProjectionInputAudit
                 projection_audit=NativeProjectionInputAudit(runner.model.model.language_model.layers)
             projection_context=projection_audit if projection_audit is not None else nullcontext()
+            prefetch_candidate=None
+            if label=='prefetch_warm':
+                from native_reverse_prefetch_candidate import NativeReversePrefetch
+                prefetch_candidate=NativeReversePrefetch(runner.model)
+            prefetch_context=prefetch_candidate if prefetch_candidate is not None else nullcontext()
             context=(torch.profiler.profile(
                 activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
                 record_shapes=False,with_stack=False,profile_memory=False)
                 if profile_this_call else nullcontext())
-            with context as profile, projection_context:
+            with context as profile, projection_context, prefetch_context:
                 handles=[];ranges={};passes={}
                 if profile_this_call:
                     # Native layer hooks add profiler ranges only. Prefix,
@@ -150,7 +158,11 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                         handles.append(layer.register_forward_pre_hook(enter))
                         handles.append(layer.register_forward_hook(leave,always_call=True))
                 try:
+                    attribute_started=time.perf_counter()
                     result=selected_attribute(*args,**kwargs)
+                    # The original runner owns its completion synchronization.
+                    # Excludes bank preparation and later JSON/trace export.
+                    attribute_walls.append(time.perf_counter()-attribute_started)
                 finally:
                     for handle in handles:handle.remove()
                     for value in reversed(list(ranges.values())):value.__exit__(None,None,None)
@@ -164,6 +176,16 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 path=Path(out)/f'projection-inputs-rank{torch.distributed.get_rank()}.json'
                 path.write_text(json.dumps(observation,indent=2)+'\n')
                 save('native_projection_input_comparison',
+                     receipt=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest()),
+                     report=observation)
+            if prefetch_candidate is not None:
+                import json
+                observation=prefetch_candidate.report()
+                observation.update(variant=label,rank=torch.distributed.get_rank(),
+                    scope='One original shared warm paired endpoint and reverse replay; only original FSDP forward prefetch setting changed during replay')
+                path=Path(out)/f'reverse-prefetch-rank{torch.distributed.get_rank()}.json'
+                path.write_text(json.dumps(observation,indent=2)+'\n')
+                save('native_reverse_prefetch_observation',
                      receipt=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest()),
                      report=observation)
             if profile_this_call:
@@ -201,6 +223,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         vectors[label]={key:torch.stack([r[key] for r in result])
                         for key in ('dt_token_advantages','dt_q_estimates','dt_v_estimates')}
         reports[label]=dict(total_wall_seconds=time.perf_counter()-start,
+            original_attribute_wall_seconds=attribute_walls,
             original_readout_report=readout.last_report,
             original_runner_phase_seconds=phase_totals,
             original_runner_phase_counts=phase_counts,
@@ -218,6 +241,13 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             equal=bool(torch.equal(vectors[label][key],vectors[reference_label][key])),
             maximum_absolute_difference=float((vectors[label][key].double()-vectors[reference_label][key].double()).abs().max()))
             for key in vectors[label]]))
+    if 'prefetch_warm' in vectors:
+        observations.append(dict(variant='prefetch_warm',comparison_reference='shared_warm',
+            scope='Same prefix reuse and original input geometry; changes scheduling only',
+            values=[dict(key=key,
+                equal=bool(torch.equal(vectors['prefetch_warm'][key],vectors['shared_warm'][key])),
+                maximum_absolute_difference=float((vectors['prefetch_warm'][key].double()-vectors['shared_warm'][key].double()).abs().max()))
+                for key in vectors['prefetch_warm']]))
     tensor_path=Path(out)/f'prefix-lease-vectors-rank{torch.distributed.get_rank()}.pt'
     torch.save(vectors,tensor_path)
     save('native_prefix_lease_diagnostic_complete',reports=reports,raw_value_observations=observations,

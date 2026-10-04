@@ -93,6 +93,15 @@ root矩阵投影0.338/0.308、replay矩阵投影0.280/0.304秒。多stream设备
 重算时间是现有profile支持的可节省上限之一，不能把全部1.12秒replay都算成可省。
 批内共同宽度、通信和有限传播的主要成本仍未全部解决。
 
+[同次原root/replay投影输入](results_native_projection_inputs_20261004.json)绑定34ef103、
+PID1296311/创建1791114730.04，已完成退出。原实际B4/完整88行bank/官方模型与配置不变，
+两rank各96个原MLP base Linear输入逐值相同，shape/stride/dtype/device及权重元信息
+也相同。观察hook不替换输出、不添加forward，异常/结束移除hook和CPU快照；本次
+拷贝比较的约5.4秒开销不作为DT速度。它证明该样本中重复投影的操作数一致，
+不是已接入SAC，也不扩大为所有训练轨迹保证。原SAC存储在GPU且不受参数CPU
+卸载自动管理；现有32k夹具实际suffix1024时全32层三项base输出驻留14GiB/卡。
+更大项的原FSDP前向预取接口正在独立候选中核对，尚未部署或称提速通过。
+
 AppWorld失败重试记录的9行接口修复只在原world.restart成功后清除已被作者丢弃
 episode的采样记录；原retry、执行、奖励、消息和token断言不变。原owner AST对照
 7项通过，峰RSS51.5MB、GPU0，原Qwen tokenizer入口2项结果复用。

@@ -18,7 +18,8 @@ def read(name):
  p=out/name
  return dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),value=json.loads(p.read_bytes()))
 records={n:read(n) for n in ('prepared.json','job.json','result.json','rank0.json','rank1.json',
- 'projection-inputs-rank0.json','projection-inputs-rank1.json') if (out/n).is_file()}
+ 'projection-inputs-rank0.json','projection-inputs-rank1.json',
+ 'reverse-prefetch-rank0.json','reverse-prefetch-rank1.json') if (out/n).is_file()}
 job=records['job.json']['value']
 try:
  p=psutil.Process(job['pid']);status=p.status();birth=p.create_time()
@@ -38,6 +39,7 @@ for rank in (0,1):
    if not variant.endswith('_warm'):continue
    phases=r['original_runner_phase_seconds']
    item['warm_phases'].append(dict(variant=variant,total_wall_seconds=r['total_wall_seconds'],
+    original_attribute_wall_seconds=r.get('original_attribute_wall_seconds'),
     phase_seconds_sum=sum(phases.values()),
     repeated_prefix_seconds=phases.get('native_shared_prefix'),
     cache_materialization_seconds=phases.get('shared_native_prefix_cache'),
@@ -52,6 +54,12 @@ for rank in (0,1):
  projection=records.get(f'projection-inputs-rank{rank}.json',{}).get('value')
  if projection is not None:
   item['projection_input_summary']={k:x for k,x in projection.items() if k!='projections'}
+ prefetch=records.get(f'reverse-prefetch-rank{rank}.json',{}).get('value')
+ if prefetch is not None:
+  item['reverse_prefetch_summary']={k:x for k,x in prefetch.items() if k not in ('layers','calls')}
+  if 'shared_warm' in v.get('reports',{}) and 'prefetch_warm' in v['reports']:
+   item['prefetch_only_value_comparison']=[x for x in v.get('raw_value_observations',[])
+    if x.get('variant')=='prefetch_warm' and x.get('comparison_reference')=='shared_warm']
  summary.append(item)
 completed='result.json' in records
 # Full arrays remain in their SHA-bound remote owner receipts. This local
