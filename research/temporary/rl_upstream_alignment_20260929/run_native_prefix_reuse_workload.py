@@ -38,6 +38,8 @@ if __name__ == '__main__':
         help='Compare the isolated default-off owner root-capture reuse seam on the same B4 and immutable prefix bank.')
     parser.add_argument('--root-tape-capacity',action='store_true',
         help='With --root-tape, substitute the original exact32768 fixture for the saved real B4; no actor update.')
+    parser.add_argument('--root-tape-gdn0',action='store_true',
+        help='With --root-tape, save actual cached-suffix GDN0 operands and execute the original FLA assertions; copies invalidate speed timing.')
     args=parser.parse_args()
     if args.components_only and args.phase_only:
         parser.error('Select either the native operator diagnosis or the DT phase replay')
@@ -67,12 +69,14 @@ if __name__ == '__main__':
         parser.error('Compare root tape without separate observers or scheduling candidates')
     if args.root_tape_capacity and not args.root_tape:
         parser.error('--root-tape-capacity requires --root-tape')
+    if args.root_tape_gdn0 and (not args.root_tape or args.root_tape_capacity):
+        parser.error('--root-tape-gdn0 requires the separate real-input --root-tape probe')
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     parent = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-dt-leases-20261003-v2'
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
         'local-prefix-' if args.local_prefix_branch else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
-        'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
+        'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
         'phase' if args.phase_only else 'workload')+'-20261004-'+commit[:7]
     files = {
         REPO/'experiments/rl/native_prefix_leases.py': 'native_prefix_leases.py',
@@ -101,6 +105,9 @@ if __name__ == '__main__':
         files[AUDIT/'diagnose_native_root_tape_capacity.py']='diagnose_native_root_tape_capacity.py'
         files[REPO/'experiments/rl/verify_dt_context_capacity.py']='verify_dt_context_capacity.py'
         files[AUDIT/'test_capacity_fixture_readout_interface.py']='test_capacity_fixture_readout_interface.py'
+    if args.root_tape_gdn0:
+        for name in ('observe_native_gdn0_operands.py','test_observe_native_gdn0_operands.py'):
+            files[AUDIT/name]=name
     branch_reference = None
     branch_commit = branch_baseline_commit = old_method_ast = new_method_ast = None
     if args.local_prefix_branch:
@@ -233,6 +240,7 @@ run_env.pop('DT_PREFIX_PROJECTION_INPUTS',None)
 run_env.pop('DT_PREFIX_REVERSE_PREFETCH',None)
 run_env.pop('DT_PREFIX_ROOT_CAPTURE_INVENTORY',None)
 run_env.pop('DT_PREFIX_ROOT_TAPE',None)
+run_env.pop('DT_PREFIX_ROOT_TAPE_GDN0',None)
 if @BOUNDED_ONLY@:
  import torch
  completed=root/'receipts/owner-b8-dispatch-20260930/native-prefix-reuse-workload-20261004-712795d'
@@ -263,6 +271,8 @@ if @BOUNDED_ONLY@:
   run_env['DT_PREFIX_ROOT_CAPTURE_INVENTORY']='1'
  if @ROOT_TAPE@:
   run_env['DT_PREFIX_ROOT_TAPE']='1'
+ if @ROOT_TAPE_GDN0@:
+  run_env['DT_PREFIX_ROOT_TAPE_GDN0']='1'
  selected_observation=dict(peak=peak,all_ranks=maxima,offset=offset,component_layer=component_layer,
   scope='Same original B4 stream and full 88-row capture bank; bounded operator/phase instrumentation, not a repeat of the workload benchmark')
 receipt=dict(role='Isolated original B4 DT replay; no formal deployment or acceptance of a new numerical core',
@@ -273,6 +283,7 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  root_capture_inventory=@ROOT_CAPTURE_INVENTORY@,
  native_root_tape_candidate=root_tape_patch,
  root_tape_exact32768_fixture=@ROOT_TAPE_CAPACITY@,
+ root_tape_actual_gdn0_operand_check=@ROOT_TAPE_GDN0@,
  prefix_branch_patch=prefix_branch_patch,
  selected_observation=selected_observation,
  parent_prepared=dict(path=str(parent/'prepared.json'),sha256=hashlib.sha256((parent/'prepared.json').read_bytes()).hexdigest()),
@@ -297,6 +308,7 @@ with (out/'cpu-tests.log').open('wb') as log:
    'test_native_root_inventory_decoder_owner.py','test_prefix_component_diagnostic_selection.py'))
  if @ROOT_TAPE@:test_paths.append(str(out/'test_native_root_tape_owner.py'))
  if @ROOT_TAPE_CAPACITY@:test_paths.append(str(out/'test_capacity_fixture_readout_interface.py'))
+ if @ROOT_TAPE_GDN0@:test_paths.append(str(out/'test_observe_native_gdn0_operands.py'))
  selection='not moved_artifact'
  if @ROOT_CAPTURE_INVENTORY@:
   # The original Git-byte assertion ran locally; the frozen remote receipt is
@@ -326,6 +338,7 @@ PY
         .replace('@ROOT_CAPTURE_INVENTORY@',str(args.root_capture_inventory))
         .replace('@ROOT_TAPE@',str(args.root_tape))
         .replace('@ROOT_TAPE_CAPACITY@',str(args.root_tape_capacity))
+        .replace('@ROOT_TAPE_GDN0@',str(args.root_tape_gdn0))
         .replace('@LOCAL_PREFIX_BRANCH@',str(args.local_prefix_branch))
         .replace('@BRANCH_REFERENCE_SHA@',repr(hashlib.sha256(branch_reference).hexdigest()) if branch_reference is not None else 'None')
         .replace('@BRANCH_COMMIT@',repr(branch_commit)).replace('@BRANCH_BASELINE_COMMIT@',repr(branch_baseline_commit))

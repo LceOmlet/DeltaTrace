@@ -150,6 +150,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         phase_counts={}
         attribute_walls=[]
         root_tape_reports=[]
+        gdn0_observations=[]
         def observe_attribute(*args,**kwargs):
             profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
                                and label.endswith('_warm'))
@@ -173,6 +174,20 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 root_inventory = NativeRootCaptureInventory(
                     runner.model.model.language_model.layers, inventory_factory)
             inventory_context = root_inventory if root_inventory is not None else nullcontext()
+            gdn0_audit=None
+            saved_capture_backend=runner.capture_backend
+            if os.environ.get('DT_PREFIX_ROOT_TAPE_GDN0')=='1' and label in (
+                    'shared_warm','root_tape_disabled_warm','root_tape_warm'):
+                from observe_native_gdn0_operands import NativeGDN0Operands
+                globals_=selected_attribute.__func__.__globals__
+                def capture_class(name):
+                    return globals_[name] if saved_capture_backend is None else getattr(saved_capture_backend,name)
+                gdn0_audit=NativeGDN0Operands(runner.model.model.language_model.layers[0].linear_attn,
+                    Path(out)/'actual-gdn0-operands',variant=label,rank=torch.distributed.get_rank())
+                runner.capture_backend=types.SimpleNamespace(
+                    NativeDecoderCapture=capture_class('NativeDecoderCapture'),
+                    NativeDenseAttentionCapture=capture_class('NativeDenseAttentionCapture'),
+                    NativeGDNCapture=gdn0_audit.capture_type(capture_class('NativeGDNCapture')))
             context=(torch.profiler.profile(
                 activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
                 record_shapes=False,with_stack=False,profile_memory=False)
@@ -200,8 +215,19 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                     # Excludes bank preparation and later JSON/trace export.
                     attribute_walls.append(time.perf_counter()-attribute_started)
                 finally:
+                    runner.capture_backend=saved_capture_backend
                     for handle in handles:handle.remove()
                     for value in reversed(list(ranges.values())):value.__exit__(None,None,None)
+            if gdn0_audit is not None:
+                from observe_native_gdn0_operands import check_saved_fla
+                observation=gdn0_audit.report()
+                assert observation['recorded_calls']==1
+                # Receipt nesting: .../receipts/owner-b8-dispatch/<probe>.
+                official=Path(out).parents[1]/'training-setup/official-kernel-tests/test_gated_delta_v041.py'
+                check=check_saved_fla(observation['records'][0]['path'],official)
+                observation['official_check']=check
+                gdn0_observations.append(observation)
+                save('actual_cached_suffix_gdn0_checked',variant=label,actual_gdn0_observations=gdn0_observations)
             if projection_audit is not None:
                 import json
                 observation=projection_audit.report()
@@ -283,6 +309,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             original_runner_phase_seconds=phase_totals,
             original_runner_phase_counts=phase_counts,
             root_tape_observations=root_tape_reports,
+            actual_gdn0_observations=gdn0_observations,
             peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
             physical_free_bytes=torch.cuda.mem_get_info()[0],
             pss_bytes=psutil.Process().memory_full_info().pss)
