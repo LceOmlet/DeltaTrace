@@ -68,6 +68,31 @@ FSDP mesh和MIN collective，只同步是否进入非零前缀分支，保留各
 13项CPU owner-helper接口对照通过；尚未部署或实际双卡验收，不把槽位计数当提速。
 局部B4共同前缀/宽度仍受现有dense finite ABI约束，未另造packed实现或减小B4。
 
+该薄接口随后在[原真实双卡B4热profile](results_native_prefix_hot_profile_20261004.json)
+完成，诊断a6b042a、PID1009824/创建1791112064.32，已退出。原冻结owner只替换该
+方法行区间，其余bytes保留；实际两rank导入SHA为b603a5a06245…，GPU2/3，LoRA8/16、
+每卡4、32768和原Q/V/PPO不变，未部署到正式worker。19项CPU原载体/方法测试通过。
+本次仍是原最大残差B4，完整bank捕获5个B4；不是完整88行重复测试。
+native原DT调用及有限检查完成，Q逐值相同，shared_warm A/V最大残差分别0.009997/
+0.004774；只作定位，不给整条DT自创门槛。插桩包含profiler记录和86MB trace导出，
+原25秒/shared44秒总墙钟不作训练速度比较；原runner的热阶段计时另存。
+
+[原设备事件拆分](results_native_hot_device_breakdown_20261004.json)只读两份已保存
+trace，按原External id关联原CPU launch/层范围，GPU事件逐条只计一次。shared B4
+两rank HtoD2142次，实测20.631/20.781GB，设备耗时0.575/0.589秒；root checkpoint
+DtoH约1.25/1.32GB、0.026/0.031秒。all-gather均67次、0.686/0.230秒；
+root矩阵投影0.338/0.308、replay矩阵投影0.280/0.304秒。多stream设备时间不能
+相加冒充墙钟；outside_native只表示不在层range内，仍包含FSDP prehook和DT阶段。
+大部分HtoD匹配原CPUOffloadPolicy参数搬运，未发现另一套整模型offloader。
+实际Torch2.8在显式reshard_after_forward=True时会释放root；不能照旧注释声称
+跳过手动root.reshard即可消掉第二次gather。原seed需要head/finalnorm物化。
+重复恢复checkpoint约占本例HtoD的6%，不能把它单独当成主要提速修复。
+
+后缀root与逐层replay仍重复原投影。PyTorch2.8公开SAC与PEFT0.18.1实际源码已保存
+原路径/SHA供接口审查，尚未接入SAC或更改offload策略。只有同次原MLP投影的
+重算时间是现有profile支持的可节省上限之一，不能把全部1.12秒replay都算成可省。
+批内共同宽度、通信和有限传播的主要成本仍未全部解决。
+
 AppWorld失败重试记录的9行接口修复只在原world.restart成功后清除已被作者丢弃
 episode的采样记录；原retry、执行、奖励、消息和token断言不变。原owner AST对照
 7项通过，峰RSS51.5MB、GPU0，原Qwen tokenizer入口2项结果复用。
