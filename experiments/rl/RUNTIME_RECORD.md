@@ -100,13 +100,48 @@ PID1296311/创建1791114730.04，已完成退出。原实际B4/完整88行bank/�
 拷贝比较的约5.4秒开销不作为DT速度。它证明该样本中重复投影的操作数一致，
 不是已接入SAC，也不扩大为所有训练轨迹保证。原SAC存储在GPU且不受参数CPU
 卸载自动管理；现有32k夹具实际suffix1024时全32层三项base输出驻留14GiB/卡。
-更大项的原FSDP前向预取接口正在独立候选中核对，尚未部署或称提速通过。
+原FSDP前向预取候选随后完成，见
+[原预取回执](results_native_reverse_prefetch_20261004.json)：诊断d13e67b、PID1395619/
+创建1791115628.55，已完成退出。仅原public forward-prefetch setter在reverse replay
+期间生效，两rank各32层原调用、31次next gather已消费，设置和方法恢复、无待清理
+handle。实际热B4 attribute为3.69775→3.39947、3.70218→3.46263秒（8.07%/6.47%），
+不是完整88行或训练提速。rank0 replay1.14353→0.72697，finite1.25530→1.37334秒，
+带宽争用抵消部分收益；原root不变。现有next-owner buffer最大438191488字节，
+不是物理显存峰值。两variant仍分别重新捕获prefix bank，root分数在预取启用之前
+已变化，因此A/V残差0.002050/0.001189仅作观察，不单独归因为预取、也不设置
+整条DT新容差。未部署，不改变原参数卸载、FA/FLA、Q/V/PPO或训练配置。
 
 AppWorld失败重试记录的9行接口修复只在原world.restart成功后清除已被作者丢弃
 episode的采样记录；原retry、执行、奖励、消息和token断言不变。原owner AST对照
 7项通过，峰RSS51.5MB、GPU0，原Qwen tokenizer入口2项结果复用。
 代码SHA6ad5a3e383d032fdc7f0dd2dab1ee027d8f0ed182f9725d07a3faedb46e54ec9；
 尚未部署/恢复。现场日志确有原retry，原失败行未保存，不声称逐token现场对拍。
+
+[实际有限线性工作量分解](results_native_linear_work_20261004.json)只读原热trace，
+两rank原3953个BMM已闭合：248次base、248次dense LoRA、3456次原对称FLA、
+1次首decoder之前的BMM。原对称FLA两方向不是编译重复，设备合计仅0.08938/
+0.08417秒。dense LoRA物化0.01322/0.01315、全宽应用0.13104/0.15716秒，
+确有rank8仍按full-width应用的冗余，但这些设备时间不是墙钟收益。
+原FSDP元信息明确A/B存储FP32、gathered compute BF16；不把初始化dtype当实际算子输入。
+
+隔离低秩owner候选aa008703…仅替换c9 decoder的两个线性map函数，读取原PEFT
+B/A/scaling、复用原_mm；未改默认DT或PEFT forward。实际PEFT CPU FP32合同6项
+通过，GPU可见置空，峰child RSS900030464字节，测试总40.59秒。回执在
+`research/temporary/rl_upstream_alignment_20260929/native-lora-factorization-owner-20261004/`；
+不作GPU BF16/FA/FLA通过或真实提速声明。当前候选改变adapter中间舍入位置，
+实际dtype对照尚待完成，禁止增加倍率/裁剪来通过。
+
+Qwen3历史root tape有零decoder replay，但Qwen3.5现有加速实现仍重放所有层。
+更大复用方向须在原runner每层启闭现有capture、消费其原artifact，不另造算子或
+卸载器。当前热B4仅五项decoder captures逻辑payload已12.375/13.105GiB，
+尚未加GDN/FA和prefix cache；没有证据声称32k全GPU tape可装下或CPU卸载更快。
+这一执行路径未实现/部署，方法与训练参数不变。
+
+AppWorld原step19恢复候选已在远端
+`candidates/appworld-native-async-retry-recording-resume-20261004`准备，尚未提交。
+保留原async桥、actor1f862e8bbdaa…、任务配置与检查点，唯一环境记录改动为上述
+成功restart后的9行清理；复用已接受host-cache worker e5eb4afc42f1…及原Ray env
+资源开关。新冻结副本7项原retry CPU对照通过；不把准备当恢复，不部署其他候选。
 
 ### 2026-10-04：共同右侧padding V4完成；跨轮前缀复用继续隔离验证
 

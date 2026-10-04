@@ -1,0 +1,56 @@
+--- c9cd147/clean/qwen35/qwen35_decoder_finite.py
++++ isolated/clean/qwen35/qwen35_decoder_finite.py
+@@ -44,35 +44,41 @@
+ 
+ 
+ def _linear_weights(module):
+-    """Read the active linear map through PEFT's existing delta-weight API.
+-
+-    PEFT exposes the base weight as ``.weight`` even while its unmerged
+-    forward uses adapters. Keep their weights separate: adding a small LoRA
+-    update to a BF16 base first can round the update away entirely. No actor
+-    parameter is merged, copied back or mutated by this readout.
++    """Read vanilla PEFT maps as base plus its existing low-rank factors.
++
++    No full delta matrix is materialized or merged. PEFT retains ownership
++    of active adapters, factors and scaling; disabled/merged/plain maps keep
++    the original weight path. This candidate covers the current Qwen Linear
++    adapters only, without fan-in/fan-out transposition or LoRA variants.
+     """
+     weight=module.weight
+     if not hasattr(module,'get_delta_weight'):
+         return weight
+     if module.disable_adapters or module.merged:
+         return weight
++    if not isinstance(module.get_base_layer(),torch.nn.Linear) or module.fan_in_fan_out:
++        raise ValueError('Low-rank DT candidate requires the original vanilla PEFT Linear orientation')
+     weights=[weight]
+     for adapter in module.active_adapters:
+         if adapter in module.lora_A:
+-            weights.append(module.get_delta_weight(adapter))
++            if adapter in module.lora_variant:
++                raise ValueError('Low-rank DT candidate does not support a PEFT LoRA variant')
++            weights.append((module.lora_B[adapter].weight,
++                            module.lora_A[adapter].weight,module.scaling[adapter]))
+     return tuple(weights) if len(weights)>1 else weight
+ 
+ 
+ def _linear_transpose(upstream,weight):
+     if isinstance(weight,tuple):
+-        # Base and adapter maps consume the same BF16 operand. Construct it
+-        # once: Inductor otherwise retains duplicate full-width casts for
+-        # every adapter matmul (several GiB each at batch4/32k).
++        # The base consumes the unchanged owner BF16 operand/MM. Each active
++        # vanilla adapter's transpose map is m @ B @ A times PEFT scaling.
++        # Keep the original MM backend and its rounding boundaries visible.
+         shape=upstream.shape
+         operand=upstream.reshape(1,-1,shape[-1]).to(torch.bfloat16)
+         result=_mm(operand,weight[0].unsqueeze(0))
+-        for delta in weight[1:]:
+-            result=result+_mm(operand,delta.unsqueeze(0))
++        for adapter_B,adapter_A,scaling in weight[1:]:
++            result=result+_mm(_mm(operand,adapter_B.unsqueeze(0)),
++                              adapter_A.unsqueeze(0))*scaling
+         return result.reshape(*shape[:-1],weight[0].shape[-1])
+     shape=upstream.shape
+     return _mm(upstream.reshape(1,-1,shape[-1]),weight.unsqueeze(0)).reshape(*shape[:-1],weight.shape[-1])

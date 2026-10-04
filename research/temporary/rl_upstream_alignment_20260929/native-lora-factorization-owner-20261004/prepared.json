@@ -1,0 +1,44 @@
+{
+  "status": "isolated_prepared_only_not_deployed",
+  "source_owner": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\qwen35_decoder_finite.py",
+  "baseline_dt_release": "c9cd147",
+  "baseline_dt_reference": "fc2e6c2",
+  "owner_before_sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197",
+  "candidate": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\native-lora-factorization-owner-20261004\\qwen35_decoder_finite_low_rank_candidate.py",
+  "candidate_sha256": "aa008703ca386dcbd8c638f7ecbbcd7e1ca14c3c21c345710e0048ce626b23a7",
+  "ranges": [
+    {
+      "function": "_linear_weights",
+      "original_byte_start": 2305,
+      "original_byte_end": 3092,
+      "original_method_sha256": "dccc5e5d596e89310dd90d03360736aad3160e8cd8ffdcc3a1a3b20e59002f22",
+      "candidate_method_sha256": "c8570ec9bb7dd2d3174bbd6f3562264fb796d5658094e156ab5784a38541d9f6"
+    },
+    {
+      "function": "_linear_transpose",
+      "original_byte_start": 3094,
+      "original_byte_end": 3816,
+      "original_method_sha256": "3ed1f63d22f0b9af49064deaf38783da1d4520e0a7c9bb1e35384e66ac56993a",
+      "candidate_method_sha256": "a05aece03f42fa8366f9ed60069b56c04d97c425e6355734c33282af8d49c8fe"
+    }
+  ],
+  "other_owner_bytes_preserved": true,
+  "mm_owner_sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6",
+  "supported_interface": "Existing PEFT vanilla Linear, fan_in_fan_out=False, no LoRA variant",
+  "peft_actual_source": {
+    "version": "0.18.1",
+    "path": "/opt/conda/lib/python3.12/site-packages/peft/tuners/lora/layer.py",
+    "sha256": "e8a47a49cf69f92ded68bf7ab286aeaf068f0ac809ab3465ad16f78a8f9f8b63"
+  },
+  "unchanged": [
+    "base weight/operand/_mm",
+    "plain/disabled/merged map path",
+    "PEFT forward",
+    "FA/FLA finite formulas",
+    "offload policy",
+    "PPO",
+    "LoRA8/16",
+    "B4"
+  ],
+  "numerical_scope": "Associative low-rank map preserves FP32 algebra; original BF16 MM stages change the adapter rounding path and require separate actual-dtype owner comparison. No FA/FLA acceptance claim."
+}

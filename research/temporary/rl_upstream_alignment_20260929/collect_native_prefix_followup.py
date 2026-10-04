@@ -56,7 +56,10 @@ for rank in (0,1):
   item['projection_input_summary']={k:x for k,x in projection.items() if k!='projections'}
  prefetch=records.get(f'reverse-prefetch-rank{rank}.json',{}).get('value')
  if prefetch is not None:
-  item['reverse_prefetch_summary']={k:x for k,x in prefetch.items() if k not in ('layers','calls')}
+  item['reverse_prefetch_summary']={k:x for k,x in prefetch.items() if k not in ('layers','calls','topology')}
+  item['reverse_prefetch_summary']['original_layer_count']=len(prefetch.get('topology',[]))
+  item['reverse_prefetch_summary']['original_replay_count']=len(prefetch.get('calls',[]))
+  item['reverse_prefetch_summary']['settings_restored']=all(x.get('restored') for x in prefetch.get('calls',[]))
   if 'shared_warm' in v.get('reports',{}) and 'prefetch_warm' in v['reports']:
    item['prefetch_only_value_comparison']=[x for x in v.get('raw_value_observations',[])
     if x.get('variant')=='prefetch_warm' and x.get('comparison_reference')=='shared_warm']
@@ -69,6 +72,13 @@ if completed:
  records['result.json'].pop('value')
 for rank in (0,1):
  v=records.get(f'rank{rank}.json',{}).get('value',{})
+ # Full parameter topology/buffer pointers stay in the SHA-bound raw files;
+ # the rank report duplicates that observation, so retain its receipt only.
+ if 'report' in v and 'receipt' in v:
+  v.pop('report')
+ prefetch=records.get(f'reverse-prefetch-rank{rank}.json')
+ if prefetch is not None:
+  prefetch.pop('value')
  for r in v.get('reports',{}).values():
   readout=r.get('original_readout_report')
   if readout is not None:
