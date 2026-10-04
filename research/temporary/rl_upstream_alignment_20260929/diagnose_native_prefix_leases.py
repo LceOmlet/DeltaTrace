@@ -154,7 +154,13 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         fa3_observations=[]
         def observe_attribute(*args,**kwargs):
             profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
-                               and label.endswith('_warm'))
+                               and label.endswith('_warm')) or (
+                               os.environ.get('DT_PREFIX_ROOT_TAPE_HOT')=='1'
+                               and label=='root_tape_warm')
+            parameter_context=nullcontext()
+            if os.environ.get('DT_PREFIX_ROOT_TAPE_HOT')=='1' and label=='root_tape_warm':
+                from native_finite_parameter_ranges import NativeFiniteParameterRanges
+                parameter_context=NativeFiniteParameterRanges(runner.model)
             projection_audit=None
             if os.environ.get('DT_PREFIX_PROJECTION_INPUTS')=='1' and label=='shared_warm':
                 from diagnose_native_projection_inputs import NativeProjectionInputAudit
@@ -208,7 +214,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
                 record_shapes=False,with_stack=False,profile_memory=False)
                 if profile_this_call else nullcontext())
-            with context as profile, projection_context, prefetch_context, inventory_context:
+            with context as profile, projection_context, prefetch_context, inventory_context, parameter_context:
                 handles=[];ranges={};passes={}
                 if profile_this_call:
                     # Native layer hooks add profiler ranges only. Prefix,
