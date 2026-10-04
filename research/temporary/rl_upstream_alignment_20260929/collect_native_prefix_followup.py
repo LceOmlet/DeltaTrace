@@ -47,7 +47,11 @@ for rank in (0,1):
     endpoint_root_seconds=phases['native_root_with_CPU_checkpoints'],
     native_replay_seconds=sum(s for k,s in phases.items() if k.startswith('native_replay_')),
     finite_decoder_seconds=sum(s for k,s in phases.items() if k.startswith('finite_decoder_')),
-    fa_lse_seconds=sum(s for k,s in phases.items() if k.startswith('public_FA_LSE_'))))
+    fa_lse_seconds=sum(s for k,s in phases.items() if k.startswith('public_FA_LSE_')),
+    root_capture_observations=r.get('root_tape_observations'),
+    phase_counts=r.get('original_runner_phase_counts'),
+    peak_torch_allocated_bytes=r.get('peak_torch_allocated_bytes'),
+    physical_free_bytes=r.get('physical_free_bytes')))
  if 'first_operator_checks' in v:
   item['operator_checks']=[{k:x[k] for k in ('case','layer','tokens','actual_operand_dtypes','output_error_ratio','state_error_ratio','original_fla_forward_assertions') if k in x} for x in v['first_operator_checks']]
  for k in ('request_index','source_row','prefix','capture_input_shape','native_input_shape','first_observed_unequal_layer','shared_observation_layer'):
@@ -67,6 +71,9 @@ for rank in (0,1):
   if 'shared_warm' in v.get('reports',{}) and 'prefetch_warm' in v['reports']:
    item['prefetch_only_value_comparison']=[x for x in v.get('raw_value_observations',[])
     if x.get('variant')=='prefetch_warm' and x.get('comparison_reference')=='shared_warm']
+ if any(k.startswith('root_tape') for k in v.get('reports',{})):
+  item['root_capture_value_comparison']=[x for x in v.get('raw_value_observations',[])
+   if x.get('variant','').startswith('root_tape') and x.get('comparison_reference')=='shared_warm']
  summary.append(item)
 completed='result.json' in records
 # Full arrays remain in their SHA-bound remote owner receipts. This local

@@ -44,7 +44,7 @@ def attribute_saved_episodes(worker, episodes):
     return output
 
 
-def capacity_fixture(original, tokenizer, alphabet, response_tokens=1024):
+def capacity_fixture(original, tokenizer, alphabet, response_tokens=1024, *, max_steps=15, sampling=None):
     """One shared factual input for DT, native backward and PPO capacity tests."""
     width = len(original['responses'])
     count = sum(original['attention_mask'][-width:])
@@ -55,7 +55,7 @@ def capacity_fixture(original, tokenizer, alphabet, response_tokens=1024):
         assert response_tokens >= count
         actions = torch.cat((torch.full((response_tokens-count,), filler_id), actions))
     step = int(original['env_step'])
-    query = alphabet.query_ids(tokenizer, current_step=step, max_steps=15)
+    query = alphabet.query_ids(tokenizer, current_step=step, max_steps=max_steps, sampling=sampling)
     fill = 32768-len(query)-1-prompt.numel()-actions.numel()
     assert fill > 0
     row = {**original, 'responses': actions,

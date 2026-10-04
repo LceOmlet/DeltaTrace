@@ -104,6 +104,12 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         'original_cold','original_warm','shared_cold','shared_warm')
     if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
         labels=(*labels,'prefetch_warm')
+    root_tape_module=None
+    if os.environ.get('DT_PREFIX_ROOT_TAPE')=='1':
+        source=Path(out)/'root-tape-owner'/'qwen35_dense_finite_runner_root_tape_candidate.py'
+        spec=importlib.util.spec_from_file_location('_isolated_native_root_tape_runner',source)
+        root_tape_module=importlib.util.module_from_spec(spec);spec.loader.exec_module(root_tape_module)
+        labels=(*labels,'root_tape_disabled_warm','root_tape_cold','root_tape_warm')
     reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
     shared_bank=None
     def shared_factory(*args,**kwargs):
@@ -123,8 +129,19 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         leases,preparation=shared_bank
         return leases,{**preparation,'diagnostic_bank_reused':reused}
     for label in labels:
-        if label.startswith(('shared','prefetch')):
-            runner.attribute=types.MethodType(module.Qwen35DenseFiniteRunner.attribute,runner)
+        save('native_prefix_lease_variant_start',variant=label,
+             shared_bank_already_prepared=shared_bank is not None)
+        previous_class=runner.__class__
+        had_root_flag=hasattr(runner,'reuse_root_captures')
+        previous_root_flag=getattr(runner,'reuse_root_captures',False)
+        if label.startswith('root_tape'):
+            # Same initialized owner/model/compiled finite objects. Only the
+            # isolated owner dispatch seam changes, and is restored below.
+            runner.__class__=root_tape_module.Qwen35DenseFiniteRunner
+            runner.reuse_root_captures=label!='root_tape_disabled_warm'
+        if label.startswith(('shared','prefetch','root_tape')):
+            owner=(root_tape_module if label.startswith('root_tape') else module)
+            runner.attribute=types.MethodType(owner.Qwen35DenseFiniteRunner.attribute,runner)
             readout.prefix_lease_factory=shared_factory
         else:
             runner.attribute=native_attribute;readout.prefix_lease_factory=None
@@ -132,6 +149,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         phase_totals={}
         phase_counts={}
         attribute_walls=[]
+        root_tape_reports=[]
         def observe_attribute(*args,**kwargs):
             profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
                                and label.endswith('_warm'))
@@ -241,15 +259,21 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 if seconds is not None:
                     phase_totals[kind]=phase_totals.get(kind,0.0)+seconds
                 phase_counts[kind]=phase_counts.get(kind,0)+1
+            if label.startswith('root_tape'):
+                root_tape_reports.append({k:v for k,v in result[1].items()
+                    if 'root_tape' in k or 'root_capture' in k or 'replay_calls' in k})
             return result
         # Read timings emitted by the existing owner; no extra forward,
         # synchronization, target, or altered finite computation.
         runner.attribute=observe_attribute
-        torch.cuda.synchronize();start=time.perf_counter()
+        torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats();start=time.perf_counter()
         try:
             result=readout.episodes([rows],complete_returns=[returns])[0]
         finally:
             runner.attribute=native_attribute;readout.prefix_lease_factory=None
+            runner.__class__=previous_class
+            if had_root_flag:runner.reuse_root_captures=previous_root_flag
+            elif hasattr(runner,'reuse_root_captures'):del runner.reuse_root_captures
         torch.cuda.synchronize()
         vectors[label]={key:torch.stack([r[key] for r in result])
                         for key in ('dt_token_advantages','dt_q_estimates','dt_v_estimates')}
@@ -258,6 +282,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             original_readout_report=readout.last_report,
             original_runner_phase_seconds=phase_totals,
             original_runner_phase_counts=phase_counts,
+            root_tape_observations=root_tape_reports,
             peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
             physical_free_bytes=torch.cuda.mem_get_info()[0],
             pss_bytes=psutil.Process().memory_full_info().pss)
@@ -279,6 +304,14 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 equal=bool(torch.equal(vectors['prefetch_warm'][key],vectors['shared_warm'][key])),
                 maximum_absolute_difference=float((vectors['prefetch_warm'][key].double()-vectors['shared_warm'][key].double()).abs().max()))
                 for key in vectors['prefetch_warm']]))
+    for label in ('root_tape_disabled_warm','root_tape_cold','root_tape_warm'):
+        if label in vectors:
+            observations.append(dict(variant=label,comparison_reference='shared_warm',
+                scope='Same initialized model, prefix bank, input geometry and finite operators; isolated root-capture lifetime seam only',
+                values=[dict(key=key,
+                    equal=bool(torch.equal(vectors[label][key],vectors['shared_warm'][key])),
+                    maximum_absolute_difference=float((vectors[label][key].double()-vectors['shared_warm'][key].double()).abs().max()))
+                    for key in vectors[label]]))
     tensor_path=Path(out)/f'prefix-lease-vectors-rank{torch.distributed.get_rank()}.pt'
     torch.save(vectors,tensor_path)
     save('native_prefix_lease_diagnostic_complete',reports=reports,raw_value_observations=observations,
