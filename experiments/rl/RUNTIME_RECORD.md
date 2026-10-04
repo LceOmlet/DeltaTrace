@@ -39,6 +39,27 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-04 16:23：当前作业状态复核；新padding候选未部署
+
+[原日志、PID与物理资源回执](../../research/temporary/rl_upstream_alignment_20260929/phase-observation-20261004/status.json)
+采集于1791102216附近。TextCraft原PID3218909及创建时间仍匹配，完成step93/330，
+正在下一次原生成；原完成检查点标记75。最新整轮2409.638秒，其中采样1496.832秒、
+DT45.989秒、actor570.332秒；训练批奖励均值0.031，不能据进程存活宣称效果健康。
+当时仅GPU4/5在用，物理显存50052/50482MiB，其余六卡无任务进程。
+
+AppWorld原PID3232113已退出，最新完整step19及检查点19；第20次采样后的
+`loop_owner_rollout.py::to_batch`在原PolicyTokenInfo与response位置比较处断言失败。
+原冻结入口SHA c4a46492a665…，未绕过断言、改奖励或提交重启。SQL仍是此前
+global OOM退出的PID552842，完成11且无可恢复检查点；没有重启。此前21:29源码
+快照保留原采集时间，不能作为本次存活证据。
+
+共同右侧padding候选actor SHA3a65e173300b…仍未部署。CPU98项通过只覆盖载体与
+mask接口；真实模型测例V2在旧同步sharding入口失败，V3改为原异步worker后又因
+未使用原colocated WorkerDict注册而在服务初始化失败，两次均未进入数值比较。
+V3 PID3905745已退出。原failed prepared/result/log与资源观察保留；不标成数值或
+容量通过。后续诊断复用原VERL `create_colocated_worker_cls`及`spawn`，不修改
+正式算法或异步executor。V3额外CPU工厂检查缺少诊断环境变量的失败也保持记录。
+
 ### 2026-10-03 06:30：实际Actor输入工作量与第9层FLA对照完成，未部署复用候选
 
 [完成的输入工作量回执](results_native_actor_workload_completed_20261003.json)绑定原AppWorld

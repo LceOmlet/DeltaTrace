@@ -1,0 +1,168 @@
+{
+  "observed_unix": 1791102230.3544073,
+  "observed_utc": "2026-10-04T08:23:50.354407+00:00",
+  "manifest_sha256": "a350cc6734cc4059718c9da50f6208df00c40d53e22e6038517ada23896c527e",
+  "jobs": [
+    {
+      "task": "SkyRL-SQL",
+      "pid": 552842,
+      "expected_birth": 1790804649.87,
+      "devices": [
+        0,
+        1
+      ],
+      "budget": {
+        "epochs": 30,
+        "prompt_groups_per_batch": 256,
+        "samples_per_prompt": 5,
+        "global_mini_trajectories": 1280,
+        "ppo_epochs": 1,
+        "eval_before_train": true,
+        "eval_interval": 5,
+        "save_interval": 60
+      },
+      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt",
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/sql-padding-restart-20261001/sql-dt/train.log",
+      "alive": false,
+      "process_error": "NoSuchProcess",
+      "latest_metrics": {
+        "training/global_step": 11.0,
+        "critic/score/mean": -0.969,
+        "episode/success_rate": 0.013,
+        "actor/grad_norm": 0.002,
+        "critic/advantages/max": 1.309,
+        "critic/advantages/min": -0.862,
+        "timing_s/gen": 3573.773,
+        "timing_s/adv": 6510.061,
+        "timing_s/update_actor": 1376.106,
+        "timing_s/step": 11849.028
+      },
+      "latest_metric_raw": "\u001b[36m(TaskRunner pid=558046)\u001b[0m step:11 - global_seqlen/min:1957536.000 - global_seqlen/max:2154092.000 - global_seqlen/minmax_diff:196556.000 - global_seqlen/balanced_min:2055814.000 - global_seqlen/balanced_max:2055814.000 - global_seqlen/mean:2055814.000 - actor/entropy_loss:0.146 - training/rollout_probs_diff_max:1.000 - training/rollout_probs_diff_mean:0.278 - training/rollout_probs_diff_std:0.411 - actor/pg_loss:0.001 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.002 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:71.228 - perf/max_memory_reserved_gb:76.424 - perf/cpu_memory_used_gb:885.359 - actor/lr:0.000 - training/global_step:11.000 - training/epoch:5.000 - critic/score/mean:-0.969 - critic/score/max:1.000 - critic/score/min:-1.000 - critic/rewards/mean:-0.969 - critic/rewards/max:1.000 - critic/rewards/min:-1.000 - critic/advantages/mean:-0.000 - critic/advantages/max:1.309 - critic/advantages/min:-0.862 - critic/returns/mean:-0.325 - critic/returns/max:1.000 - critic/returns/min:-1.000 - response_length/mean:3209.098 - response_length/max:18220.000 - response_length/min:997.000 - response_length/clip_ratio:0.002 - prompt_length/mean:3.112 - prompt_length/max:2174.000 - prompt_length/min:0.000 - prompt_length/clip_ratio:0.001 - episode/reward/mean:-0.969 - episode/reward/max:1.000 - episode/reward/min:-1.000 - episode/length/mean:3.808 - episode/length/max:6.000 - episode/length/min:1.000 - episode/tool_call_count/mean:0.000 - episode/success_rate:0.013 - timing_s/gen:3573.773 - timing_s/reward:0.000 - timing_s/old_log_prob:385.961 - timing_s/adv:6510.061 - timing_s/update_actor:1376.106 - timing_s/dump_rollout_generations:3.075 - timing_s/step:11849.028 - timing_per_token_ms/gen:0.870 - timing_per_token_ms/update_actor:0.335 - timing_per_token_ms/adv:1.583 - perf/total_num_tokens:4111628.000 - perf/time_per_step:11849.028 - perf/throughput:173.501",
+      "checkpoint_marker": null,
+      "log_modified_unix": 1790938415.698241,
+      "terminal_trace": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/trainer/main_ppo.py\", line 31, in main\n    run_ppo(config)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-sql-padding-20261001/verl/trainer/main_ppo.py\", line 51, in run_ppo\n    ray.get(runner.run.remote(config))\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/auto_init_hook.py\", line 22, in auto_init_wrapper\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/client_mode_hook.py\", line 104, in wrapper\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py\", line 2967, in get\n    values, debugger_breakpoint = worker.get_objects(\n                                  ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py\", line 1017, in get_objects\n    raise value\nray.exceptions.ActorDiedError: The actor died unexpectedly before finishing this task.\n\tclass_name: TaskRunner\n\tactor_id: b45578bf77b4f844c69575da01000000\n\tpid: 558046\n\tnamespace: ed041e91-ce46-4852-80f7-70cf3d040320\n\tip: 10.200.111.35\nThe actor is dead because its worker process has died. Worker exit type: SYSTEM_ERROR Worker exit detail: Worker unexpectedly exits with a connection error code 2. End of file. Some common causes include: (1) the process was killed by the OOM killer due to high memory usage, (2) ray stop --force was called, or (3) the worker crashed unexpectedly due to SIGSEGV or another unexpected error.\n\nSet the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.\n\u001b[36m(WorkerDict pid=562595)\u001b[0m WARNING 10-02 18:53:30 [block_pool.py:435] Failed to reset prefix cache because some blocks (294) are not freed yet\n\u001b[36m(WorkerDict pid=564368)\u001b[0m WARNING 10-02 18:53:30 [block_pool.py:435] Failed to reset prefix cache because some blocks (317) are not freed yet\n"
+    },
+    {
+      "task": "AppWorld",
+      "pid": 3232113,
+      "expected_birth": 1790924078.76,
+      "devices": [
+        2,
+        3
+      ],
+      "budget": {
+        "iterations": 200,
+        "prompt_groups_per_iteration": 40,
+        "requested_trajectories_per_group": 6,
+        "global_completion_fraction": 0.9,
+        "per_group_completion_fraction": 0.75,
+        "global_mini_trajectories": 32,
+        "ppo_epochs": 2,
+        "train_runners_per_rank": 32,
+        "train_environment_ranks": 2,
+        "eval_runners": 64,
+        "eval_groups": 57,
+        "eval_trajectories_per_group": 2,
+        "max_turns": 40,
+        "training_context": 32000,
+        "agent_context_upper_bound": 32768,
+        "eval_interval": 5,
+        "save_interval": 1
+      },
+      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt",
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/train.log",
+      "alive": false,
+      "process_error": "NoSuchProcess",
+      "latest_metrics": {
+        "training/global_step": 19.0,
+        "critic/score/mean": 0.763,
+        "actor/grad_norm": 0.001,
+        "critic/advantages/max": 0.458,
+        "critic/advantages/min": -0.567,
+        "timing_s/gen": 1465.065,
+        "timing_s/adv": 4523.086,
+        "timing_s/update_actor": 2673.444,
+        "timing_s/step": 9071.335
+      },
+      "latest_metric_raw": "\u001b[36m(TaskRunner pid=3243382)\u001b[0m step:19 - global_seqlen/min:1501404.000 - global_seqlen/max:1513486.000 - global_seqlen/minmax_diff:12082.000 - global_seqlen/balanced_min:1507445.000 - global_seqlen/balanced_max:1507445.000 - global_seqlen/mean:1507445.000 - actor/entropy_loss:0.492 - training/rollout_probs_diff_max:1.000 - training/rollout_probs_diff_mean:0.421 - training/rollout_probs_diff_std:0.453 - actor/pg_loss:0.002 - actor/pg_clipfrac:0.001 - actor/ppo_kl:0.000 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.001 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:80.702 - perf/max_memory_reserved_gb:89.400 - perf/cpu_memory_used_gb:450.595 - actor/lr:0.000 - training/global_step:19.000 - training/epoch:11.000 - critic/score/mean:0.763 - critic/score/max:1.000 - critic/score/min:0.125 - critic/rewards/mean:0.763 - critic/rewards/max:1.000 - critic/rewards/min:0.125 - critic/advantages/mean:-0.000 - critic/advantages/max:0.458 - critic/advantages/min:-0.567 - critic/returns/mean:0.190 - critic/returns/max:1.000 - critic/returns/min:0.000 - response_length/mean:13956.824 - response_length/max:28922.000 - response_length/min:6065.000 - response_length/clip_ratio:0.005 - prompt_length/mean:1.000 - prompt_length/max:1.000 - prompt_length/min:1.000 - prompt_length/clip_ratio:1.000 - episode/reward/mean:0.763 - episode/reward/max:1.000 - episode/reward/min:0.125 - episode/length/mean:15.838 - episode/length/max:40.000 - episode/length/min:2.000 - episode/tool_call_count/mean:15.838 - timing_s/gen:1465.065 - timing_s/reward:0.000 - timing_s/old_log_prob:353.749 - timing_s/adv:4523.086 - timing_s/update_actor:2673.444 - timing_s/dump_rollout_generations:1.070 - timing_s/save_checkpoint:54.901 - timing_s/step:9071.335 - timing_per_token_ms/adv:1.500 - timing_per_token_ms/update_actor:0.887 - timing_per_token_ms/gen:0.486 - perf/total_num_tokens:3014890.000 - perf/time_per_step:9071.335 - perf/throughput:166.177",
+      "checkpoint_marker": "19",
+      "log_modified_unix": 1791028837.539393,
+      "terminal_trace": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl/verl/trainer/main_ppo.py\", line 31, in main\n    run_ppo(config)\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl/verl/trainer/main_ppo.py\", line 51, in run_ppo\n    ray.get(runner.run.remote(config))\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/auto_init_hook.py\", line 22, in auto_init_wrapper\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/client_mode_hook.py\", line 104, in wrapper\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py\", line 2967, in get\n    values, debugger_breakpoint = worker.get_objects(\n                                  ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py\", line 1015, in get_objects\n    raise value.as_instanceof_cause()\nray.exceptions.RayTaskError(AssertionError): \u001b[36mray::TaskRunner.run()\u001b[39m (pid=3243382, ip=10.200.111.35, actor_id=4dd787156e333bed400e3a1b01000000, repr=<main_ppo.TaskRunner object at 0x7f7f77a661b0>)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl/verl/trainer/main_ppo.py\", line 198, in run\n    trainer.fit()\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl/verl/trainer/ppo/ray_trainer.py\", line 1098, in fit\n    gen_batch_output = self.traj_collector.multi_turn_loop(\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/entry/owner_rollout_scope.py\", line 17, in collect\n    return method(self, gen_batch, actor_rollout_wg, *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl/agent_system/multi_turn_rollout/rollout_loop.py\", line 571, in multi_turn_loop\n    return envs.collect_native_trajectories(self, gen_batch, actor_rollout_wg, is_train)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/entry/loop_owner_rollout.py\", line 45, in collect_native_trajectories\n    return collect(self, collector, gen_batch)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/entry/loop_async_transport.py\", line 79, in collect\n    return owner.to_batch(rows,records)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/entry/loop_owner_rollout.py\", line 207, in to_batch\n    assert ids[index, start:start+length].tolist() == row.batch['responses'][0, :length].tolist()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n\nSet the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.\n"
+    },
+    {
+      "task": "TextCraft",
+      "pid": 3218909,
+      "expected_birth": 1790895651.16,
+      "devices": [
+        4,
+        5
+      ],
+      "budget": {
+        "epochs": 30,
+        "prompt_groups_per_batch": 32,
+        "samples_per_prompt": 8,
+        "global_mini_trajectories": 64,
+        "updates_per_full_batch": 4,
+        "max_turns": 30,
+        "training_context": 10752,
+        "evaluation_context": 14848,
+        "eval_interval": -1,
+        "save_interval": 25
+      },
+      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt",
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/train.log",
+      "alive": true,
+      "birth": 1790895651.16,
+      "birth_matches": true,
+      "process_phase": "python",
+      "latest_metrics": {
+        "training/global_step": 93.0,
+        "critic/score/mean": 0.031,
+        "actor/grad_norm": 0.003,
+        "critic/advantages/max": 0.219,
+        "critic/advantages/min": -0.241,
+        "timing_s/gen": 1496.832,
+        "timing_s/adv": 45.989,
+        "timing_s/update_actor": 570.332,
+        "timing_s/step": 2409.638
+      },
+      "latest_metric_raw": "\u001b[36m(TaskRunner pid=3230286)\u001b[0m step:93 - global_seqlen/min:322602.000 - global_seqlen/max:325730.000 - global_seqlen/minmax_diff:3128.000 - global_seqlen/balanced_min:324166.000 - global_seqlen/balanced_max:324166.000 - global_seqlen/mean:324166.000 - actor/entropy_loss:5.498 - actor/kl_loss:0.183 - actor/kl_coef:0.001 - actor/pg_loss:-0.000 - actor/pg_clipfrac:0.000 - actor/ppo_kl:0.001 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:0.003 - perf/mfu/actor:0.000 - perf/max_memory_allocated_gb:60.001 - perf/max_memory_reserved_gb:64.139 - perf/cpu_memory_used_gb:214.022 - actor/lr:0.000 - training/global_step:93.000 - training/epoch:6.000 - critic/score/mean:0.031 - critic/score/max:1.000 - critic/score/min:0.000 - critic/rewards/mean:0.031 - critic/rewards/max:1.000 - critic/rewards/min:0.000 - critic/advantages/mean:0.000 - critic/advantages/max:0.219 - critic/advantages/min:-0.241 - critic/returns/mean:0.019 - critic/returns/max:1.000 - critic/returns/min:0.000 - response_length/mean:2217.547 - response_length/max:9062.000 - response_length/min:474.000 - response_length/clip_ratio:0.000 - prompt_length/mean:315.000 - prompt_length/max:315.000 - prompt_length/min:315.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:0.031 - episode/reward/max:1.000 - episode/reward/min:0.000 - episode/length/mean:29.359 - episode/length/max:30.000 - episode/length/min:2.000 - episode/tool_call_count/mean:29.359 - timing_s/gen:1496.832 - timing_s/reward:0.000 - timing_s/old_log_prob:158.319 - timing_s/ref:137.659 - timing_s/adv:45.989 - timing_s/update_actor:570.332 - timing_s/dump_rollout_generations:0.499 - timing_s/step:2409.638 - timing_per_token_ms/update_actor:0.880 - timing_per_token_ms/adv:0.071 - timing_per_token_ms/gen:2.637 - timing_per_token_ms/ref:0.212 - perf/total_num_tokens:648332.000 - perf/time_per_step:2409.638 - perf/throughput:134.529",
+      "checkpoint_marker": "75",
+      "log_modified_unix": 1791102216.866462,
+      "gpu_workers": [
+        {
+          "pid": 3236008,
+          "birth": 1790895706.36,
+          "name": "ray::WorkerDict.actor_rollout_generate_sequences"
+        },
+        {
+          "pid": 3240133,
+          "birth": 1790895720.38,
+          "name": "ray::WorkerDict.actor_rollout_generate_sequences"
+        }
+      ],
+      "last_phase_lines": [
+        "\u001b[36m(WorkerDict pid=3236008)\u001b[0m [DT EOS minibatch] contrasts=4 length=2912 seconds=5.299728292971849 batch=10/18 d_min=-0.24917215865064765 d_max=0.13169343918100068\u001b[32m [repeated 2x across cluster]\u001b[0m",
+        "\u001b[36m(WorkerDict pid=3236008)\u001b[0m [DT EOS minibatch] contrasts=4 length=3128 seconds=5.972316149622202 batch=11/18 d_min=-0.05301027726181762 d_max=0.2960690304651107\u001b[32m [repeated 2x across cluster]\u001b[0m",
+        "\u001b[36m(WorkerDict pid=3236008)\u001b[0m [DT EOS minibatch] contrasts=4 length=3344 seconds=6.079194437712431 batch=12/18 d_min=-0.13393956562462467 d_max=0.45139900239800845\u001b[32m [repeated 2x across cluster]\u001b[0m"
+      ]
+    }
+  ],
+  "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct  4 16:23:51 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.3.12           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.29.1.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 99W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 24%         Disabled |\n| 170W / 450W      | 48C          P9 | 50052/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 20%         Disabled |\n| 162W / 450W      | 47C          P9 | 50482/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 97W / 450W       | 50C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 95W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  4                  3236008         ray::WorkerDict              49130          |\n|  5                  3240133         ray::WorkerDict              49560          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+  "host_memory": {
+    "total": 1081000480768,
+    "available": 884274774016,
+    "percent": 18.2,
+    "used": 196725706752,
+    "free": 792551604224,
+    "active": 17572081664,
+    "inactive": 151785033728,
+    "buffers": 4498456576,
+    "cached": 93842927616,
+    "shared": 608366592,
+    "slab": 7275995136
+  },
+  "memory.usage_in_bytes": "151960485888\n",
+  "memory.stat": "cache 82525200384\nrss 69415997440\nrss_huge 39516635136\nshmem 555134976\nmapped_file 747479040\ndirty 0\nwriteback 1892352\nswap 0\npgpgin 3487677798\npgpgout 3464068185\npgfault 2922456075\npgmajfault 2011284\ninactive_anon 67382906880\nactive_anon 2597699584\ninactive_file 74925682688\nactive_file 7040864256\nunevictable 0\nhierarchical_memory_limit 966367641600\nhierarchical_memsw_limit 966367641600\ntotal_cache 82525200384\ntotal_rss 69415997440\ntotal_rss_huge 39516635136\ntotal_shmem 555134976\ntotal_mapped_file 747479040\ntotal_dirty 0\ntotal_writeback 1892352\ntotal_swap 0\ntotal_pgpgin 3487677798\ntotal_pgpgout 3464068185\ntotal_pgfault 2922456075\ntotal_pgmajfault 2011284\ntotal_inactive_anon 67382906880\ntotal_active_anon 2597699584\ntotal_inactive_file 74925682688\ntotal_active_file 7040864256\ntotal_unevictable 0\n",
+  "remote_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/phase-observation-20261004/1791102230-status.json"
+}

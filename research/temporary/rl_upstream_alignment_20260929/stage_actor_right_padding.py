@@ -7,7 +7,7 @@ from stage_environment_entry import AUDIT, ENTRY, REPO, ROOT, SCP, SSH, remote
 
 
 if __name__ == '__main__':
-    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003-v3'
+    out = ROOT+'/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4'
     remote(f'test ! -e {out}/prepared.json && mkdir -p {out}\n')
     files = [REPO/'experiments/rl'/name for name in ('patch_actor_shared_right_padding.py', 'test_shared_padding.py')]
     files += [AUDIT/name for name in ('verify_owner_response_padding.py', 'verify_actor_right_padding.py')]
@@ -19,8 +19,12 @@ source @ENTRY@/metax-entry.env.sh
 import ast,hashlib,json,os,pathlib,psutil,shutil,subprocess,time,sys
 root=pathlib.Path('@ROOT@');out=pathlib.Path('@OUT@')
 job=next(x for x in json.loads((root/'active-training.json').read_bytes())['jobs'] if x['task']=='AppWorld')
-driver=psutil.Process(job['pid'])
-assert driver.create_time()==job['observed_process_created_unix']
+try:
+ driver=psutil.Process(job['pid'])
+ assert driver.create_time()==job['observed_process_created_unix']
+ driver_alive=True
+except psutil.NoSuchProcess:
+ driver_alive=False
 base=pathlib.Path(job['verl_root']);candidate=out/'verl-root'
 assert not candidate.exists()
 shutil.copytree(base/'verl',candidate/'verl')
@@ -50,7 +54,7 @@ assert previous_cpu['test_returncode']==0 and sha(candidate/actor)==previous_cpu
 assert sha(out/'test_shared_padding.py')==sha(cpu_previous/'test_shared_padding.py')
 receipt=dict(role='Prepared candidate; formal jobs unchanged; no model numerical or speed acceptance from CPU tests',observed_unix=time.time(),
  previous_attempt=str(out.parent/'actor-shared-right-padding-20261003'),previous_actor_implementation_unchanged=True,
- code_commit='@COMMIT@',stager_sha256='@SHA@',base=str(base),candidate=str(candidate),entry=job['entry'],formal_driver_pid=driver.pid,formal_driver_birth=driver.create_time(),
+ code_commit='@COMMIT@',stager_sha256='@SHA@',base=str(base),candidate=str(candidate),entry=job['entry'],formal_driver_pid=job['pid'],formal_driver_birth=job['observed_process_created_unix'],formal_driver_alive_at_staging=driver_alive,
  before_actor_sha256=sha(base/actor),after_actor_sha256=sha(candidate/actor),changed_methods=['_forward_micro_batch'],test_returncode=previous_cpu['test_returncode'],
  reused_cpu_tests=dict(path=str(cpu_previous/'cpu-tests.xml'),sha256=sha(cpu_previous/'cpu-tests.xml'),scope='Same actor and test file hashes; 98 original CPU cases not rerun'),
  files={str(p):sha(p) for p in [out/'patch_actor_shared_right_padding.py',out/'test_shared_padding.py',out/'verify_owner_response_padding.py',out/'verify_actor_right_padding.py',candidate/'verl/workers/fsdp_workers.py']})
@@ -63,10 +67,17 @@ options=json.loads(pathlib.Path(source['formal_launch']).read_bytes())['options'
 source['original_total_training_steps']=options['trainer.total_training_steps']
 (out/'source.json').write_text(json.dumps(source,indent=2)+'\n')
 sys.path.insert(0,str(candidate))
-from verify_owner_response_padding import _OWNER_WORKER
+os.environ['PADDING_DIAGNOSTIC_DIR']=str(out)
+from verify_owner_response_padding import _OWNER_WORKER, ObservedWorker
 from verl.workers.fsdp_workers import AsyncActorRolloutRefWorker
 assert _OWNER_WORKER is AsyncActorRolloutRefWorker
-receipt['factory_cpu_check']='Passed: same public async worker class selected by original task launch'
+from verl.single_controller.ray import RayClassWithInitArgs
+from verl.single_controller.ray.base import create_colocated_worker_cls
+from omegaconf import OmegaConf
+factory_cfg=OmegaConf.load(candidate/'verl/trainer/config/ppo_trainer.yaml')
+colocated=create_colocated_worker_cls(class_dict={'actor_rollout':RayClassWithInitArgs(ObservedWorker,config=factory_cfg.actor_rollout_ref,role='actor_rollout')})
+assert colocated.cls.__ray_metadata__.modified_class.__name__=='WorkerDict'
+receipt['factory_cpu_check']='Passed: original async worker selection and original colocated WorkerDict factory; no model or Ray cluster initialized'
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 print(json.dumps(receipt),flush=True)
 PY

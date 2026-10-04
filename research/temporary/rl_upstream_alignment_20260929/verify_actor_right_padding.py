@@ -16,6 +16,7 @@ import torch
 from omegaconf import OmegaConf
 from verl import DataProto
 from verl.single_controller.ray import RayClassWithInitArgs, RayResourcePool, RayWorkerGroup
+from verl.single_controller.ray.base import create_colocated_worker_cls
 from verl.utils.torch_functional import masked_mean
 from verify_owner_response_padding import ObservedWorker
 
@@ -82,8 +83,13 @@ if __name__ == '__main__':
         print(json.dumps(dict(phase=phase, **values)), flush=True)
     ray.init(num_cpus=8, include_dashboard=False)
     try:
-        group = RayWorkerGroup(RayResourcePool([2], use_gpu=True, max_colocate_count=1),
-            RayClassWithInitArgs(ObservedWorker, cfg.actor_rollout_ref, 'actor_rollout'))
+        class_dict = {'actor_rollout': RayClassWithInitArgs(
+            ObservedWorker, config=cfg.actor_rollout_ref, role='actor_rollout')}
+        colocated = create_colocated_worker_cls(class_dict=class_dict)
+        owner_group = RayWorkerGroup(
+            resource_pool=RayResourcePool([2], use_gpu=True, max_colocate_count=1),
+            ray_cls_with_init=colocated)
+        group = owner_group.spawn(prefix_set=class_dict.keys())['actor_rollout']
         record('native_worker_init_start', rollout_mode=cfg.actor_rollout_ref.rollout.mode)
         group.init_model()
         manager = None
