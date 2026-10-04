@@ -11,7 +11,7 @@
 
 SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60尚未形成
 可恢复检查点，没有提交重启。AppWorld PID3232113、TextCraft PID3218909在
-21:29只读源码快照仍存活并由原worker日志分别确认完成step10、step40；存活本身
+2026-10-02 21:29只读源码快照仍存活并由原worker日志分别确认完成step10、step40；存活本身
 不是训练健康证明。三个任务代码组合不同，具体见下表与PID绑定回执；历史段落
 不能代替当前终止状态或新部署。
 
@@ -39,6 +39,61 @@ SSH端口30821。当前清单仅三组DTPO，SQL与AppWorld已退出，TextCraft
 物理GPU0/1空置，仅2–5用于当前实验，GPU6/7不提交GRPO。具体状态以带时间回执为准。
 
 ## 当前代码组合
+
+### 2026-10-04：原 root capture 复用，实际操作数与官方容差来源
+
+本次只在隔离诊断 owner 中复用原 root forward 的32层 capture，减少同一次 DT
+的逐层前向重放；正式训练尚未部署。原 owner SHA为6348ebef115ff0ea45deeee3df8b65dcfbf0d1ae86619edc67f34d16d92d69aa，
+候选SHA为ebc563e5bd07ae290574e4ca494311cc578fcac63a020f5687f4dd95fece0b20，
+helper SHA为9cbded61baca35c07c7c7e1096f17a769d45fffddbfd0ab646e42036b07f2fd7。
+默认reuse_root_captures=False，原有限算子、FA/FLA、FSDP参数准备/释放、CPU卸载、
+LoRA8/16、每卡B4和Q/V/PPO均保留；不能将候选目录当作已部署版本。
+
+[真实B4计时](results_native_root_tape_20261004.json)绑定1f2751c，
+PID2131083/创建1791122422.44，已完成退出。固定原88行捕获bank、仅消费真实
+第40–43行，长度7410–7586；复用前热调用3.698/3.702秒，复用后2.991/2.981秒，
+减少19.12%/19.48%。这是在前缀复用之上的单B4改善，不是完整88行或整轮提速。
+每rank32层capture均被消费，重放0次，无新增快照copy；Torch峰值34.54/36.20GiB。
+[32k容量](results_native_root_tape_capacity_20261004.json)绑定e326ec9，PID2225427/
+创建1791123285.99，已完成退出。仅原容量夹具，实际每行32768、每卡B4、LoRA8/16，
+热调用7.733/7.764→6.496/6.478秒，Torch峰值58.63GiB，无OOM；不能代替真实环境、
+VERL算法对照、actor更新或与vLLM共存的验收。旧raw的physical_free_bytes来自
+cuda.mem_get_info，不作为mx-smi物理峰值。dee3dac的metadata JSON失败未进入DT；
+e326ec9仅修标量Tensor日志序列化。原失败和原始结果保留。
+
+[真实GDN0](results_native_root_tape_gdn0_20261004.json)绑定a2dbbc5，PID2307695/
+创建1791124027.98，已完成退出。两rank×三variant共六次使用原FLA0.4.1的
+recurrent参考和原o/ht assert_close(...,0.005)，CI豁免关闭。原测试SHA为
+35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813。
+实际Q/K/V/beta为FP16、g为FP32，非空initial_state为BF16，native_ht为FP32；
+保留实际状态、scale与一次归一化。
+[保存操作数对照](results_native_root_tape_gdn0_operands_20261004.json)显示全部字段
+OFF/ON逐值相同。这只证明实际GDN0前向/状态范围，不是整条DT容差。
+
+[真实FA3完整操作数](results_native_root_tape_fa3_20261004.json)绑定48da1c3，
+PID2439735/创建1791125232.50，已完成退出。完整Q为B8×576/610×16×256，
+完整K/V为B8×7552/7586×4×256，全为实际BF16；没有query/KV截窗。
+原FA2.6.3参考与断言源SHA为a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9。
+六次均通过原max_error<=2*普通低精度max_error断言；实际0.03125，原基线
+0.09375/0.1015625。同rank三variant的完整操作数快照SHA相同，没有额外模型前向。
+插桩复制与参考计算不能当成性能计时；19139d5的远端Python路径引号错误发生在
+初始化前，48da1c3仅修日志诊断启动命令。没有数值纠偏或改容差。
+
+用户要求来源：真实检查不能由夹具或接口spy替代；容差使用对应owner的原测试。
+VERL固定20bd331：tests/kernels/test_linear_cross_entropy.py原head前向atol/rtol
+1e-4/1e-4，反向1e-2/1e-4；适用head输出/梯度，最新原回执为
+[results_actor_b8](results_actor_b8.json)。实际dtype补充比较logprob、entropy和hidden
+梯度，未声称BF16 weight梯度已覆盖。tests/models/test_transformer.py的1e-2/1e-5
+仅masked-mean logprob；test_transformers_ulysses.py的同类梯度阈值仅原SP/non-SP
+q_proj测试。不得把这些局部判据、FA或FLA阈值扩为整条PPO统一容差。原core_algos
+和update_policy没有被本次候选替换；具体源SHA/适用范围见
+[需求与测量索引](results_native_root_tape_assessment_20261004.json)。
+
+最新只读现场绑定phase-observation-20261004/prefix-context-1791125306.json：SQL已退出，
+AppWorld已退出并保留完整checkpoint19；TextCraft同PID3218909/创建1790895651.16
+在GPU4/5继续，已完成step100。GPU0/1保持空置，2/3仅上述短诊断；不据进程存活
+声称训练效果或整体效率合格。既有current_runtime.json保留原采集时间，不覆盖历史。
+
 
 ### 2026-10-04：跨轮复用的实际大头与窄接口修复
 
