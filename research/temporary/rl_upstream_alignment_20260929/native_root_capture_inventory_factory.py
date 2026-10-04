@@ -11,10 +11,9 @@ from pathlib import Path
 
 
 class OriginalRootCaptureFactory:
-    def __init__(self, runner, owner_globals, *, cache_tensors=None):
+    def __init__(self, runner, owner_globals):
         self.runner = runner
         self.owner_globals = owner_globals
-        self.cache_tensors = cache_tensors
 
     def __call__(self, index, layer, args, kwargs):
         runner, source = self.runner, self.owner_globals
@@ -38,10 +37,10 @@ class OriginalRootCaptureFactory:
                      preserve_strides=False, capture_module_outputs=False,
                      pinned_host=False, capture_input=False,
                      gpu_capture_names=(), coefficient_start=0)
-        cache = kwargs.get('past_key_values')
-        external = ((lambda: self.cache_tensors(cache))
-                    if cache is not None and self.cache_tensors is not None else {})
-        return dc, mc, external
+        # The older diagnostic's tensors(cache) callback takes CPU snapshots.
+        # Do not call it here: inventory only borrows GPU operands, and leaves
+        # external cache ownership explicitly unclassified.
+        return dc, mc, {}
 
     def provenance(self):
         backend = self.runner.capture_backend
@@ -56,6 +55,7 @@ class OriginalRootCaptureFactory:
                     sha256=hashlib.sha256(Path(path).read_bytes()).hexdigest()) for path in files],
                 'root_inventory_gdn_coefficient_start': 0,
                 'inventory_destination': 'cuda', 'copy_tensors': False,
+                'external_cache_mapping': 'not_supplied_no_snapshot_callback',
                 'scope': 'One-layer borrowed original root operands; no retained multi-layer tape or speed claim',
                 'original_runner_capture_configuration': {
                     name: getattr(self.runner, name) for name in

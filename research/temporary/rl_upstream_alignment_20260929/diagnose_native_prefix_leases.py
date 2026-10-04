@@ -151,8 +151,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 from diagnose_qwen35_root_capture_inventory import NativeRootCaptureInventory
                 from native_root_capture_inventory_factory import OriginalRootCaptureFactory
                 owner_globals = selected_attribute.__func__.__globals__
-                inventory_factory = OriginalRootCaptureFactory(
-                    runner, owner_globals, cache_tensors=cache_tensors)
+                inventory_factory = OriginalRootCaptureFactory(runner, owner_globals)
                 root_inventory = NativeRootCaptureInventory(
                     runner.model.model.language_model.layers, inventory_factory)
             inventory_context = root_inventory if root_inventory is not None else nullcontext()

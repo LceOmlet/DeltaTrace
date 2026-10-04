@@ -171,7 +171,7 @@ if @LOCAL_PREFIX_BRANCH@:
   original_method_ast_sha256=hashlib.sha256(ast.dump(original_method).encode()).hexdigest(),
   patched_method_ast_sha256=hashlib.sha256(ast.dump(candidate_method).encode()).hexdigest(),
   all_other_source_bytes_preserved=True,formal_deployment=False)
-if @COMPONENTS_ONLY@ or @ROOT_CAPTURE_INVENTORY@:
+if @COMPONENTS_ONLY@:
  # The completed frozen diagnostic predates the cache-field callback. Keep
  # that owner/initialization and pass its existing tensors observer only.
  p=out/'verify_native_prefix_artifacts.py'

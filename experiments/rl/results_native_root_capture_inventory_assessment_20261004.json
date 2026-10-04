@@ -1,0 +1,73 @@
+{
+  "raw_receipt": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_native_root_capture_inventory_20261004.json",
+    "sha256": "b7a5a4d81b03b2df6857f6068cb4d7c547f58ad93a6959c8892fcba1000d07c5"
+  },
+  "executed_diagnostic_commit": "31f16be",
+  "formal_deployment": false,
+  "rows": [
+    {
+      "rank": 0,
+      "unique_storage_bytes_by_capture": {
+        "decoder": 13287555072,
+        "linear_attention": 14104657920,
+        "full_attention": 3263168512
+      },
+      "total_per_layer_unique_storage_bytes": 30655381504,
+      "complete_layers": 32,
+      "capture_metadata_errors": 0,
+      "actual_runner_gdn_cut": 0,
+      "original_forward_calls_added": 0,
+      "hooks_remaining": 0
+    },
+    {
+      "rank": 1,
+      "unique_storage_bytes_by_capture": {
+        "decoder": 14071889920,
+        "linear_attention": 15030853632,
+        "full_attention": 3347841024
+      },
+      "total_per_layer_unique_storage_bytes": 32450584576,
+      "complete_layers": 32,
+      "capture_metadata_errors": 0,
+      "actual_runner_gdn_cut": 0,
+      "original_forward_calls_added": 0,
+      "hooks_remaining": 0
+    }
+  ],
+  "measurement_scope": "Same recorded B4 rows40-43, full88-row bank, LoRA8/16, per-card4, max32768. Per-layer borrowed storage sums, not simultaneous physical peak or 32k capacity.",
+  "observed_diagnostic_defect": {
+    "affected": "Old factory external-cache callback in executed31f16be",
+    "behavior": "Original diagnostic tensors(cache) calls detach().cpu() for all cache layers; inventory invoked it at each root layer exit.",
+    "consequences": "Instrumented root3.94s is not a root-reuse speed result. No external GPU storage aliases were identified from CPU snapshots. Captured native GPU tensor shape/dtype/storage metadata remain measured.",
+    "correction": "Prepared source omits external callback/mapping entirely; no cache traversal substitute. 27 local structure/source tests pass; this corrected source was not rerun on GPU.",
+    "unchanged": "Formal workers, DT equations, FA/FLA assertions, PPO, model configuration and raw executed receipts untouched."
+  },
+  "prepared_source_files": {
+    "research\\temporary\\rl_upstream_alignment_20260929\\native_root_capture_inventory_factory.py": "5dbadd817e9c83e436f0d56a6042aca7dceb310d1e46dfddb35f29f0be47fb6d",
+    "research\\temporary\\rl_upstream_alignment_20260929\\diagnose_native_prefix_leases.py": "ccd24c3ca4471d3d8e764ce9b3a17aa1145477620d07b38668e24dd4162c2134",
+    "research\\temporary\\rl_upstream_alignment_20260929\\run_native_prefix_reuse_workload.py": "79bc8668250afca7637a0b77a5d8f98ceb9dda11475576af82db1af2c716c21d"
+  },
+  "remote": {
+    "cpu_tests": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "47",
+        "time": "17.714",
+        "timestamp": "2026-10-04T21:22:07.558342+08:00",
+        "hostname": "224a01103.cloud.a02.sm132"
+      }
+    ],
+    "cpu_log": "...............................................                          [100%]\n- generated xml file: /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-local-prefix-root-capture-inventory-20261004-31f16be/cpu-tests.xml -\n47 passed, 2 deselected in 17.80s\n",
+    "cpu_xml_sha256": "1d2ba8bbc2cea9383a006e4f7e76c3e8a99f29c41000006929d9d4c067890e56",
+    "actual_snapshot_callback_source": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-local-prefix-root-capture-inventory-20261004-31f16be/verify_native_prefix_artifacts.py",
+      "sha256": "08188eeb4d822a210f76d1df96a4e85142fceca0768ba5c4d5154ed7e5c3a7a6",
+      "function_source": "\n    from transformers.cache_utils import LinearAttentionCacheLayerMixin\n    return {(i, name): getattr(layer, name).detach().cpu()\n            for i, layer in enumerate(cache.layers)\n            for name in (('conv_states', 'recurrent_states')\n                         if isinstance(layer, LinearAttentionCacheLayerMixin)\n                         else ('keys', 'values'))}\n\n\n"
+    },
+    "physical_after": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct  4 21:32:03 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.3.12           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.29.1.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 99W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 122W / 450W      | 47C          P9 | 24145/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 121W / 450W      | 47C          P9 | 24144/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 96W / 450W       | 49C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 95W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  4                  3236008         ray::WorkerDict              23224          |\n|  5                  3240133         ray::WorkerDict              23222          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+  }
+}

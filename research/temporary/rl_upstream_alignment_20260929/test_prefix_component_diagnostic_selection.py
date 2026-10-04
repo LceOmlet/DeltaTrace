@@ -68,6 +68,21 @@ def test_current_peak_is_local_row_two_of_original_b4():
     assert len(records) == 88
 
 
+def test_root_storage_inventory_does_not_call_cpu_cache_snapshot_callback():
+    factory = tree(DIRECTORY/'native_root_capture_inventory_factory.py')
+    assert not any(isinstance(n,ast.Name) and n.id=='cache_tensors'
+                   for n in ast.walk(factory))
+    assert not any(isinstance(n,ast.Attribute) and n.attr in ('cpu','clone')
+                   for n in ast.walk(factory))
+    constructor = next(n for n in ast.walk(factory)
+                       if isinstance(n,ast.FunctionDef) and n.name=='__call__')
+    returns = [n for n in ast.walk(constructor) if isinstance(n,ast.Return)]
+    assert len(returns)==1 and ast.unparse(returns[0].value)=='(dc, mc, {})'
+    body=function(tree(LEASES),'diagnose')
+    constructor_calls=calls(body,'OriginalRootCaptureFactory')
+    assert len(constructor_calls)==1 and not constructor_calls[0].keywords
+
+
 @pytest.mark.parametrize('phase_only',[False,True])
 def test_shared_diagnostic_prepares_same_bank_once_for_multiple_consumers(phase_only):
     """Execute the real diagnostic closure without importing model/runtime."""

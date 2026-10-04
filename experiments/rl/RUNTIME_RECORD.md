@@ -137,6 +137,28 @@ Qwen3历史root tape有零decoder replay，但Qwen3.5现有加速实现仍重放
 尚未加GDN/FA和prefix cache；没有证据声称32k全GPU tape可装下或CPU卸载更快。
 这一执行路径未实现/部署，方法与训练参数不变。
 
+[首次root捕获存储回执](results_native_root_capture_inventory_20261004.json)绑定隔离诊断
+31f16be、PID1883358/创建1791120151.55，已退出释放2/3；不是正式部署。
+沿用真实B4第40–43行、完整88行bank、LoRA8/16、每卡4、32768上限。
+复用原capture APIs，每层root进入/退出后读取真实metadata并释放，两rank各32层
+完整、calls齐全、metadata错误0、无新增forward、无遗留hook；原GDN cut=0。
+实际每层unique storage求和分别28.550/30.222GiB，其中decoder12.375/13.105、
+GDN13.136/13.999、FA3.039/3.118GiB。它不是整网同时驻留峰值、新增显存量、
+32k容量或提速证明；原checkpoint/cache/参数及有限传播工作集还需考虑。
+
+[测量边界与修正](results_native_root_capture_inventory_assessment_20261004.json)明确保留
+已执行缺陷：旧factory在每层退出调用原tensors(cache)，该诊断callback会detach().cpu()，
+导致反复CPU快照；root约3.94秒因此不作速度结论，CPU快照也不能分类GPU storage alias。
+保存的原GPU字段shape/dtype/存储量仍是真实观察。准备源已移除该可选callback，
+外部cache ownership留为未分类，不另造缓存遍历或修改原callback；修正未重跑GPU。
+正式源与所有数值公式不变。原47项远端CPU测试通过，含真实Torch decoder hook顺序、
+原HF Cache多次消费隔离；最新27项本机源/结构测试通过，均不冒作FA/FLA验收。
+
+同一诊断的shared_factory已只捕获一次原bank，之后复用原immutable lease，
+每次仍由原compose接口创建fresh DynamicCache；没有第二份cache实现或正式开关。
+后续须用原artifact接入有限消费者，保留FSDP prepare/release与原FA/FLA；
+不能把全部replay耗时、诊断CPU快照耗时或这次存储总量当作可实现的提速比。
+
 AppWorld原step19恢复候选已在远端
 `candidates/appworld-native-async-retry-recording-resume-20261004`准备，尚未提交。
 保留原async桥、actor1f862e8bbdaa…、任务配置与检查点，唯一环境记录改动为上述
