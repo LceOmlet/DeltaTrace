@@ -71,6 +71,13 @@ for source,expected in previous['source_files'].items():
   destination=out/pathlib.Path(source).relative_to(parent)
   assert hashlib.sha256(destination.read_bytes()).hexdigest()==expected, destination
 subprocess.run(['tar','-xf',str(out/'overlay.tar'),'-C',str(out)],check=True)
+if @COMPONENTS_ONLY@:
+ # The completed frozen diagnostic predates the cache-field callback. Keep
+ # that owner/initialization and pass its existing tensors observer only.
+ p=out/'verify_native_prefix_artifacts.py'
+ before=p.read_text();needle='diagnose(runner, producer, OUT, save)'
+ assert before.count(needle)==1, 'Inspect the frozen diagnostic call before changing it'
+ p.write_text(before.replace(needle,'diagnose(runner, producer, OUT, save, cache_tensors=tensors)'))
 options=json.loads((out/'native-launch-options.json').read_bytes())
 run_env.update(CUDA_VISIBLE_DEVICES='2,3',DT_PREFIX_PROBE_ROOT=str(out),VERL_ROOT=str(out/'verl-root'),
  DT_PREFIX_DT_LEASE_DIAGNOSTIC='1',DT_PREFIX_DIAGNOSTIC_ROWS='88',
