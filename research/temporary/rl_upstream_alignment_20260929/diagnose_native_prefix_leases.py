@@ -151,6 +151,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         attribute_walls=[]
         root_tape_reports=[]
         gdn0_observations=[]
+        fa3_observations=[]
         def observe_attribute(*args,**kwargs):
             profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
                                and label.endswith('_warm'))
@@ -175,6 +176,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                     runner.model.model.language_model.layers, inventory_factory)
             inventory_context = root_inventory if root_inventory is not None else nullcontext()
             gdn0_audit=None
+            fa3_records=None
             saved_capture_backend=runner.capture_backend
             if os.environ.get('DT_PREFIX_ROOT_TAPE_GDN0')=='1' and label in (
                     'shared_warm','root_tape_disabled_warm','root_tape_warm'):
@@ -188,6 +190,20 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                     NativeDecoderCapture=capture_class('NativeDecoderCapture'),
                     NativeDenseAttentionCapture=capture_class('NativeDenseAttentionCapture'),
                     NativeGDNCapture=gdn0_audit.capture_type(capture_class('NativeGDNCapture')))
+            if os.environ.get('DT_PREFIX_ROOT_TAPE_FA3')=='1' and label in (
+                    'shared_warm','root_tape_disabled_warm','root_tape_warm'):
+                from observe_native_fa3_operands import make_attention_capture_observer
+                globals_=selected_attribute.__func__.__globals__
+                def capture_class(name):
+                    return globals_[name] if saved_capture_backend is None else getattr(saved_capture_backend,name)
+                fa3_records=[]
+                runner.capture_backend=types.SimpleNamespace(
+                    NativeDecoderCapture=capture_class('NativeDecoderCapture'),
+                    NativeDenseAttentionCapture=make_attention_capture_observer(
+                        capture_class('NativeDenseAttentionCapture'),
+                        target_module=runner.model.model.language_model.layers[3].self_attn,
+                        records=fa3_records),
+                    NativeGDNCapture=capture_class('NativeGDNCapture'))
             context=(torch.profiler.profile(
                 activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
                 record_shapes=False,with_stack=False,profile_memory=False)
@@ -228,6 +244,22 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 observation['official_check']=check
                 gdn0_observations.append(observation)
                 save('actual_cached_suffix_gdn0_checked',variant=label,actual_gdn0_observations=gdn0_observations)
+            if fa3_records is not None:
+                from observe_native_fa3_operands import check_saved_operands
+                import json
+                assert len(fa3_records)==1
+                record=fa3_records[0]
+                path=Path(out)/f'actual-fa3-operands-{label}-rank{torch.distributed.get_rank()}.pt'
+                with path.open('xb') as stream:torch.save(record,stream)
+                official=Path(out).parents[1]/'training-setup/official-kernel-tests/test_flash_attn_v263.py'
+                check=check_saved_operands(record,official)
+                observation={k:v for k,v in record.items() if k!='tensors'}
+                observation.update(variant=label,rank=torch.distributed.get_rank(),
+                    saved_actual_operands=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest()),
+                    official_check=check)
+                fa3_observations.append(observation)
+                save('actual_cached_suffix_fa3_checked',variant=label,actual_fa3_observations=fa3_observations)
+                del fa3_records,record
             if projection_audit is not None:
                 import json
                 observation=projection_audit.report()
@@ -310,6 +342,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             original_runner_phase_counts=phase_counts,
             root_tape_observations=root_tape_reports,
             actual_gdn0_observations=gdn0_observations,
+            actual_fa3_observations=fa3_observations,
             peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
             physical_free_bytes=torch.cuda.mem_get_info()[0],
             pss_bytes=psutil.Process().memory_full_info().pss)
