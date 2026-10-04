@@ -99,6 +99,29 @@ def test_first_unequal_layer_is_observed_and_not_hardcoded():
     assert select([{'layer':i,'equal':True} for i in range(32)]) is None
 
 
+def test_fsdP_scheduling_uses_original_min_collective_before_any_early_return():
+    module = tree(COMPONENTS)
+    synchronize = function(module,'synchronize_observation_layer')
+    collective, = calls(synchronize,'torch.distributed.all_reduce')
+    assert {item.arg:ast.unparse(item.value) for item in collective.keywords} == {
+        'op':'torch.distributed.ReduceOp.MIN', 'group':'group'}
+    assert ast.unparse(assignment(synchronize,'value').value) == 'layer_count if selected is None else selected'
+    diagnose = function(module,'diagnose')
+    auto = next(node for node in diagnose.body if isinstance(node,ast.If)
+                and ast.unparse(node.test) == 'auto_layer')
+    collective_assignment = assignment(auto,'selected')
+    early = next(node for node in auto.body if isinstance(node,ast.If)
+                 and ast.unparse(node.test) == 'selected is None')
+    assert auto.body.index(collective_assignment) < auto.body.index(early)
+    assert 'own_selected' in ast.unparse(collective_assignment.value)
+
+
+def test_original_fla_assertion_cannot_use_ci_warning_escape_hatch():
+    body = function(tree(COMPONENTS),'diagnose')
+    assert any(isinstance(node,ast.Assert) and
+               ast.unparse(node.test) == 'not owner.FLA_CI_ENV' for node in body.body)
+
+
 def test_original_reference_selection_and_assertion_execution_are_unchanged():
     previous = baseline_tree(COMPONENTS)
     current = tree(COMPONENTS)
