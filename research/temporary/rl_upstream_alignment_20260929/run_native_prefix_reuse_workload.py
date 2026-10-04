@@ -311,7 +311,7 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 test_env=dict(run_env,CUDA_VISIBLE_DEVICES='')
 if @ROOT_TAPE_FA3@:
- test_env['DT_OFFICIAL_FA_TEST_SOURCE']=str(pathlib.Path(@ROOT@)/'receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py')
+ test_env['DT_OFFICIAL_FA_TEST_SOURCE']=str(pathlib.Path('@ROOT@')/'receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py')
 with (out/'cpu-tests.log').open('wb') as log:
  test_paths=[str(out/'test_native_prefix_leases.py')]
  if @LOCAL_PREFIX_BRANCH@:test_paths.append(str(out/'test_prefix_branch_owner.py'))
