@@ -17,7 +17,10 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     path=Path(out)/f'actual-requests-rank{torch.distributed.get_rank()}.pt'
     payload=torch.load(path,map_location='cpu',weights_only=False)
     limit=int(os.environ['DT_PREFIX_DIAGNOSTIC_ROWS'])
-    requests=sorted(payload['requests'],key=lambda request:request['context_tokens'])[:limit]
+    all_requests=sorted(payload['requests'],key=lambda request:request['context_tokens'])
+    phase_only=os.environ.get('DT_PREFIX_PHASE_ONLY')=='1'
+    offset=int(os.environ.get('DT_PREFIX_DIAGNOSTIC_OFFSET','0'))
+    requests=all_requests[offset:offset+limit]
     if os.environ.get('DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC') == '1':
         # Reuse the actual adapter's capture/group/padding decisions. Do not
         # reproduce them in a diagnostic implementation. Request 3 is the
@@ -73,10 +76,22 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
          context_lengths=[r['context_tokens'] for r in requests],
          original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
          diagnostic_scope='Original readout/QVA consumers; raw residuals have no invented full-network tolerance. Loaded actor is not a restored formal checkpoint.')
-    for label in ('original_cold','original_warm','shared_cold','shared_warm'):
+    labels=('original_phase','shared_phase') if phase_only else (
+        'original_cold','original_warm','shared_cold','shared_warm')
+    reference_label='original_phase' if phase_only else 'original_warm'
+    def shared_factory(*args,**kwargs):
+        if not phase_only:
+            return prepare_native_prefix_leases(*args,**kwargs)
+        # Preserve the full actual bank/capture geometry while tracing only
+        # the affected original B4. Do not repeat all 22 DT consumers just to
+        # repair a diagnostic field-name error.
+        leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)
+        selected=leases[offset//4:(offset+limit)//4]
+        return selected,{**preparation,'diagnostic_selected_consumer_batches':len(selected)}
+    for label in labels:
         if label.startswith('shared'):
             runner.attribute=types.MethodType(module.Qwen35DenseFiniteRunner.attribute,runner)
-            readout.prefix_lease_factory=prepare_native_prefix_leases
+            readout.prefix_lease_factory=shared_factory
         else:
             runner.attribute=native_attribute;readout.prefix_lease_factory=None
         selected_attribute=runner.attribute
@@ -86,7 +101,9 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             result=selected_attribute(*args,**kwargs)
             for call in result[1].get('calls',[]):
                 kind=call['kind']
-                phase_totals[kind]=phase_totals.get(kind,0.0)+call.get('seconds',0.0)
+                seconds=call.get('stream_elapsed_seconds',call.get('seconds'))
+                if seconds is not None:
+                    phase_totals[kind]=phase_totals.get(kind,0.0)+seconds
                 phase_counts[kind]=phase_counts.get(kind,0)+1
             return result
         # Read timings emitted by the existing owner; no extra forward,
@@ -111,10 +128,12 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
              total_wall_seconds=reports[label]['total_wall_seconds'],
              shared_preparation=readout.last_report.get('shared_native_prefix'))
     observations=[]
-    for label in ('original_cold','shared_cold','shared_warm'):
+    for label in labels:
+        if label==reference_label:
+            continue
         observations.append(dict(variant=label,values=[dict(key=key,
-            equal=bool(torch.equal(vectors[label][key],vectors['original_warm'][key])),
-            maximum_absolute_difference=float((vectors[label][key].double()-vectors['original_warm'][key].double()).abs().max()))
+            equal=bool(torch.equal(vectors[label][key],vectors[reference_label][key])),
+            maximum_absolute_difference=float((vectors[label][key].double()-vectors[reference_label][key].double()).abs().max()))
             for key in vectors[label]]))
     tensor_path=Path(out)/f'prefix-lease-vectors-rank{torch.distributed.get_rank()}.pt'
     torch.save(vectors,tensor_path)
