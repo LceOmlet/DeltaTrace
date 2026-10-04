@@ -118,3 +118,30 @@ def test_factory_rejects_incompatible_history_before_capturing(monkeypatch):
               dict(traj_uid='same',start=192,prompt=torch.arange(192)+1)]
     with pytest.raises(ValueError,match='do not share'):
         prepare_native_prefix_leases(runner,requests,minibatch_size=4,eos_token_id=99)
+
+
+def test_capture_padding_order_does_not_reorder_consumers_or_source_ids(monkeypatch):
+    torch = pytest.importorskip('torch')
+    monkeypatch.syspath_prepend(str(OWNER_PATH.parent))
+    import qwen35_native_prefix_artifacts as owner
+    from native_prefix_leases import prepare_native_prefix_leases
+    captures=[]
+    def capture(model,ids,lengths,**kwargs):
+        captures.append(ids.clone())
+        return SimpleNamespace(input_ids=ids.cpu(),config=kwargs['config'])
+    monkeypatch.setattr(owner.NativePrefixArtifacts,'capture',capture)
+    monkeypatch.setattr(torch.cuda,'synchronize',lambda:None)
+    runner=SimpleNamespace(model=SimpleNamespace(lm_head=SimpleNamespace(weight=torch.empty(1)),
+        execution_device=torch.device('cpu'),_conditional=SimpleNamespace(config=object()),
+        synchronize_prefix_start=lambda n:n))
+    lengths=(1024,128,896,256,768,384,640,512)
+    requests=[dict(traj_uid=str(uid),start=length,prompt=torch.arange(length)+uid*10000)
+              for uid,length in enumerate(lengths) for _ in range(4)]
+    leases,report=prepare_native_prefix_leases(runner,requests,minibatch_size=4,eos_token_id=99)
+    assert [ids.shape[1] for ids in captures]==[512,1024]
+    assert report['capture_token_slots']==4*(512+1024)
+    assert [lease.prefix_length for lease in leases]==list(lengths)
+    for batch_index,lease in enumerate(leases):
+        for source,row in lease.sources:
+            assert torch.equal(source.input_ids[row,:lease.prefix_length],
+                               requests[batch_index*4]['prompt'])

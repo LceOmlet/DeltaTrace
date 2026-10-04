@@ -39,6 +39,31 @@ SSH端口30821。当前清单仅三组DTPO，SQL已退出，AppWorld和TextCraft
 
 ## 当前代码组合
 
+### 2026-10-04：共同右侧padding V4完成；跨轮前缀复用继续隔离验证
+
+[padding完整回执](results_actor_shared_right_padding_20261004.json)绑定诊断提交
+2b0a05b、原actor SHA1f862e8bbdaa…和候选SHA3a65e173300b…；两者使用同一份
+实际token。原VERL `test_hf_casual_models` 的masked-mean断言（atol=0.01、
+rtol=1e-5）通过，未改断言。热前向14.643→6.188秒仅是该padding测例，
+不是整轮提速。有效token最大log-prob残差0.120556单独记录，不引入自定整网容差。
+
+双卡实际B8×32768、每卡B4、LoRA8/16、原AppWorld两epoch更新已完成，
+占满32768的容量更新134.131秒；原异步vLLM LoRA同步通过。75次物理采样中
+诊断GPU2/3最大各51350MiB，作业最大PSS69344674816字节。进程PID52877
+（创建1791103305.18）已退出并释放2/3。候选尚未部署，未改变正式actor。
+V2/V3初始化失败回执继续保留，不能替代V4完成回执。
+
+本次只核查既有任务；新基准只作检索，不接入或启动。用户要求物理GPU0/1空置，
+实验仅2–5；TextCraft仍在4/5，SQL/AppWorld退出状态未因诊断而变化。
+保存的真实AppWorld请求每rank88条、18条轨迹，同UID各prompt逐值嵌套。
+此前32条测试跨轮复用热耗时比原路径慢3.7%–3.9%，不部署该结果。
+
+后续隔离诊断沿用已完成前缀测例的冻结DT/VERL、实际IDs和官方Cache/FLA，
+使用完整88条请求比较缓存准备、搬运及原归因阶段成本；不重新采样任务。
+新候选只用原DataProto.reorder按所需前缀长度安排捕获B4，保持归因消费者
+顺序、端点、query、目标与Q/V/A不变。运行前CPU接口检查与原始请求逐值核对；
+不放宽FA/FLA容差、不做信用纠偏，未完成回执不能称为提速或接受部署。
+
 ### 2026-10-04 16:23：当前作业状态复核；新padding候选未部署
 
 [原日志、PID与物理资源回执](../../research/temporary/rl_upstream_alignment_20260929/phase-observation-20261004/status.json)

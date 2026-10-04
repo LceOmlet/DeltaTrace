@@ -1,0 +1,680 @@
+{
+  "observed_unix": 1791104355.3736823,
+  "candidate_deployed": false,
+  "files": {
+    "result.json": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/result.json",
+      "sha256": "e65662bfd3378df9bc95fb23f67bc8ddb57a4e77a163b09df5c1e0e0ec8a8a61",
+      "data": {
+        "scope": "Reuse the native actor diagnostic on literal saved inputs, then full B8/32k.\n\nThis is a test driver. The existing worker, VERL update, optimizer, loss and\nvLLM synchronization own execution. Only the original owner padding assertion\nis used for the same-weight comparison; there is no whole-update tolerance.\n",
+        "source": {
+          "formal_launch": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/launch.json",
+          "original_request_artifacts": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/formal-dt-prefix-requests-1790974394",
+          "official_padding_test": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/official/tests/models/test_transformer.py",
+          "reference_owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl",
+          "candidate_owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verl-root",
+          "original_total_training_steps": 200
+        },
+        "inputs": [
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/formal-dt-prefix-requests-1790974394/actual-requests-rank0.pt",
+            "sha256": "8714abf248a4bb3201294300b6525030fd0bdbce55899d969d9f24236729e429",
+            "rows": [
+              {
+                "index": 87,
+                "prompt_tokens": 13008,
+                "action_tokens": 145
+              },
+              {
+                "index": 86,
+                "prompt_tokens": 12353,
+                "action_tokens": 226
+              },
+              {
+                "index": 85,
+                "prompt_tokens": 11997,
+                "action_tokens": 97
+              },
+              {
+                "index": 84,
+                "prompt_tokens": 11578,
+                "action_tokens": 100
+              }
+            ]
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/formal-dt-prefix-requests-1790974394/actual-requests-rank1.pt",
+            "sha256": "1fdc1eb0f701d921825b796426ad2d7b0751f61786710b830f4ea72a11e58818",
+            "rows": [
+              {
+                "index": 83,
+                "prompt_tokens": 12728,
+                "action_tokens": 174
+              },
+              {
+                "index": 82,
+                "prompt_tokens": 12416,
+                "action_tokens": 77
+              },
+              {
+                "index": 81,
+                "prompt_tokens": 12207,
+                "action_tokens": 97
+              },
+              {
+                "index": 80,
+                "prompt_tokens": 11789,
+                "action_tokens": 96
+              }
+            ]
+          }
+        ],
+        "readouts": [
+          {
+            "mode": "reference",
+            "seconds": 38.121407989412546
+          },
+          {
+            "mode": "candidate",
+            "seconds": 6.196094337850809
+          },
+          {
+            "mode": "reference",
+            "seconds": 14.642728604376316
+          },
+          {
+            "mode": "candidate",
+            "seconds": 6.188122067600489
+          }
+        ],
+        "phase": "complete",
+        "official_padding_assertion": "torch.testing.assert_close(masked_mean(log_probs, attention_mask[:, -response_length - 1:-1]), masked_mean(origin_log_probs, attention_mask[:, -response_length - 1:-1]), atol=0.01, rtol=1e-05)",
+        "official_test_sha256": "552e0360cf41b044080a78035c756ed7543611ea526e3525b9d4713f1d398859",
+        "observed_unix": 1791103845.5636137,
+        "rollout_mode": "async",
+        "selected_owners": [
+          {
+            "rank": 0,
+            "mode": "candidate",
+            "actor_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verl-root/verl/workers/actor/dp_actor.py",
+            "actor_sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "use_fused_kernels": true,
+            "entropy_coeff": 0.001,
+            "clip_ratio_c": 3.0
+          },
+          {
+            "rank": 1,
+            "mode": "candidate",
+            "actor_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verl-root/verl/workers/actor/dp_actor.py",
+            "actor_sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "use_fused_kernels": true,
+            "entropy_coeff": 0.001,
+            "clip_ratio_c": 3.0
+          }
+        ],
+        "padding_assertion_passed": true,
+        "policy_token_max_abs": 0.12055611610412598,
+        "policy_token_mean_abs": 0.003652311163023114,
+        "policy_tokens": 1012,
+        "mean_reference": -3.6314964294433594,
+        "mean_candidate": -3.6265006065368652,
+        "updates": [
+          {
+            "fixture": "literal_padded",
+            "seconds": 67.91282948851585,
+            "metrics": {
+              "actor/pg_loss": [
+                0.010748574510216713,
+                0.010748798958957195
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.0
+              ],
+              "actor/ppo_kl": [
+                0.0,
+                2.0003677491331473e-05
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.0
+              ],
+              "actor/grad_norm": [
+                0.00038321720785461366,
+                0.0003795410448219627
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 65.17013931274414,
+              "perf/max_memory_reserved_gb": 71.2578125,
+              "perf/cpu_memory_used_gb": 334.5666389465332,
+              "actor/lr": 1e-06
+            }
+          },
+          {
+            "fixture": "full_B8_32768",
+            "seconds": 134.1312298513949,
+            "metrics": {
+              "actor/pg_loss": [
+                -0.05000000447034836,
+                -0.04479635879397392
+              ],
+              "actor/pg_clipfrac": [
+                0.0,
+                0.08977019786834717
+              ],
+              "actor/ppo_kl": [
+                0.0,
+                0.011457771994173527
+              ],
+              "actor/pg_clipfrac_lower": [
+                0.0,
+                0.007744072005152702
+              ],
+              "actor/grad_norm": [
+                0.5642236471176147,
+                0.14971905946731567
+              ],
+              "perf/mfu/actor": 0.0,
+              "perf/max_memory_allocated_gb": 84.7398624420166,
+              "perf/max_memory_reserved_gb": 90.7109375,
+              "perf/cpu_memory_used_gb": 363.87353134155273,
+              "actor/lr": 1e-06
+            }
+          }
+        ],
+        "workers": [
+          {
+            "rank": 0,
+            "calls": [
+              {
+                "mode": "reference",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 38.07279960811138
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    13184
+                  ]
+                ],
+                "seconds": 6.1611605398356915
+              },
+              {
+                "mode": "reference",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 14.606303162872791
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    13184
+                  ]
+                ],
+                "seconds": 6.160948038101196
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    13184
+                  ]
+                ],
+                "seconds": 6.529247909784317
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    13184
+                  ]
+                ],
+                "seconds": 6.163932915776968
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 16.82605768740177
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 17.97649922594428
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 16.89435612782836
+              }
+            ],
+            "changed_parameter_tensors": 496,
+            "native_optimizer_steps": [
+              4.0
+            ],
+            "post_update_native_sync_sleep": false
+          },
+          {
+            "rank": 1,
+            "calls": [
+              {
+                "mode": "reference",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 38.07412477582693
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    12928
+                  ]
+                ],
+                "seconds": 6.115760654211044
+              },
+              {
+                "mode": "reference",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 14.606308180838823
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    12928
+                  ]
+                ],
+                "seconds": 6.1183165200054646
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    12928
+                  ]
+                ],
+                "seconds": 6.506019871681929
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    12928
+                  ]
+                ],
+                "seconds": 6.119039833545685
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 16.84992428123951
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 18.005924947559834
+              },
+              {
+                "mode": "candidate",
+                "model_shapes": [
+                  [
+                    4,
+                    32768
+                  ]
+                ],
+                "seconds": 16.931899774819613
+              }
+            ],
+            "changed_parameter_tensors": 496,
+            "native_optimizer_steps": [
+              4.0
+            ],
+            "post_update_native_sync_sleep": false
+          }
+        ],
+        "post_update_native_async_sync_sleep": true
+      }
+    },
+    "prepared.json": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/prepared.json",
+      "sha256": "11da42590e650f0084d628de4a52c5823fc3ade1f366f30012d7b62667668824",
+      "data": {
+        "role": "Prepared candidate; formal jobs unchanged; no model numerical or speed acceptance from CPU tests",
+        "observed_unix": 1791102962.2949002,
+        "previous_attempt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003",
+        "previous_actor_implementation_unchanged": true,
+        "code_commit": "2b0a05b38e98f34db60fda9dc4b192b60dc2e36b",
+        "stager_sha256": "fa77a4aa1399fd7c4ec42c9a3a7814581f682d846b7ba86e3fbcdb29b8e9e37d",
+        "base": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl",
+        "candidate": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verl-root",
+        "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/entry",
+        "formal_driver_pid": 3232113,
+        "formal_driver_birth": 1790924078.76,
+        "formal_driver_alive_at_staging": false,
+        "before_actor_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+        "after_actor_sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "changed_methods": [
+          "_forward_micro_batch"
+        ],
+        "test_returncode": 0,
+        "reused_cpu_tests": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261003-v2/cpu-tests.xml",
+          "sha256": "6af1dadca8b5510b472a7f9c286fdbf5d251838c7eee0ec0d09169e06311467a",
+          "scope": "Same actor and test file hashes; 98 original CPU cases not rerun"
+        },
+        "files": {
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/patch_actor_shared_right_padding.py": "8fbd26e2522cb0a336ceb7d0ab3240ab8a8b60fc616b2431a02dc1ffcac46a60",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/test_shared_padding.py": "8e02073887affd423fc0688573375151b31172f4472b5222434d392f4d481200",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verify_owner_response_padding.py": "a31e2a091a76414c4a511472f0d4a913b7d328244813667745a5338255cb8cda",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verify_actor_right_padding.py": "799b594b45f17e7a6d83645381a58d52a7f558a1eca1e5d50ebba3107d52ba3f",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verl-root/verl/workers/fsdp_workers.py": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+        },
+        "factory_cpu_check": "Passed: original async worker selection and original colocated WorkerDict factory; no model or Ray cluster initialized"
+      }
+    },
+    "job.json": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/job.json",
+      "sha256": "a1cc8a1a747713d322f461fae6b2ae141f303d779ab3d972e1b8365525a95578",
+      "data": {
+        "pid": 52877,
+        "started_unix": 1791103305.6975908,
+        "created_unix": 1791103305.18,
+        "argv": [
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+          "-u",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verify_actor_right_padding.py"
+        ],
+        "gpus": [
+          2,
+          3
+        ],
+        "code_commit": "2b0a05b38e98f34db60fda9dc4b192b60dc2e36b",
+        "launcher_sha256": "d83fd51bc81b7a37f2af6c9a0628fb4cc87343773f3210bbae19b4a7f92dacb5",
+        "prepared_source_commit": "2b0a05b38e98f34db60fda9dc4b192b60dc2e36b",
+        "environment_source": "Provisioned metax-entry.env.sh plus recorded formal owner paths; prior formal driver is terminal",
+        "scope": "Same-weight owner padding assertion, literal inputs and one full B8/32768 native capacity update; formal jobs unchanged"
+      }
+    },
+    "source.json": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/source.json",
+      "sha256": "9a4e03eaf4eff4d7093a8ad056c3a08921a5f447ced27fcbed4aa610cfd31a90",
+      "data": {
+        "formal_launch": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/launch.json",
+        "original_request_artifacts": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/formal-dt-prefix-requests-1790974394",
+        "official_padding_test": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/official/tests/models/test_transformer.py",
+        "reference_owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-015-native-futures-20261002/verl",
+        "candidate_owner": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/verl-root",
+        "original_total_training_steps": 200
+      }
+    },
+    "rank0.json": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/rank0.json",
+      "sha256": "949f2ba06a0a5e6ba7a8bb59c6c48eb05f290f8ed79e9f3de67197301a6c758a",
+      "data": [
+        {
+          "mode": "reference",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 38.07279960811138
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              13184
+            ]
+          ],
+          "seconds": 6.1611605398356915
+        },
+        {
+          "mode": "reference",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 14.606303162872791
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              13184
+            ]
+          ],
+          "seconds": 6.160948038101196
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              13184
+            ]
+          ],
+          "seconds": 6.529247909784317
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              13184
+            ]
+          ],
+          "seconds": 6.163932915776968
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 16.82605768740177
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 17.97649922594428
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 16.89435612782836
+        }
+      ]
+    },
+    "rank1.json": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/rank1.json",
+      "sha256": "9f0e81b8b2b5cc5b283a3620d4f79c96f0d923cf9169b278e068122dd55763fb",
+      "data": [
+        {
+          "mode": "reference",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 38.07412477582693
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              12928
+            ]
+          ],
+          "seconds": 6.115760654211044
+        },
+        {
+          "mode": "reference",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 14.606308180838823
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              12928
+            ]
+          ],
+          "seconds": 6.1183165200054646
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              12928
+            ]
+          ],
+          "seconds": 6.506019871681929
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              12928
+            ]
+          ],
+          "seconds": 6.119039833545685
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 16.84992428123951
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 18.005924947559834
+        },
+        {
+          "mode": "candidate",
+          "model_shapes": [
+            [
+              4,
+              32768
+            ]
+          ],
+          "seconds": 16.931899774819613
+        }
+      ]
+    },
+    "observer.json": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-shared-right-padding-20261004-v4/observer.json",
+      "sha256": "f696c120b02b71996bff7be0d6d584980eecb13027c9882890c6acbebcd5a024",
+      "data": {
+        "pid": 52878,
+        "created_unix": 1791103305.2
+      }
+    }
+  },
+  "physical_max_mib": {
+    "0": 861,
+    "1": 861,
+    "2": 51350,
+    "3": 51350,
+    "4": 54844,
+    "5": 50709
+  },
+  "resource_samples": 75,
+  "diagnostic_max_pss_bytes": 69344674816,
+  "max_cgroup_bytes": 236671066112
+}

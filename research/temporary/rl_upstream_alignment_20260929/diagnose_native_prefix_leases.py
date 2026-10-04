@@ -51,6 +51,19 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                             appworld_num_tests=int(rows[0]['appworld_num_tests']))
     assert readout.minibatch_size==4 and readout.max_length==32768
     assert readout.alphabet.label_ids(readout.tokenizer)==payload['outcome_token_ids']
+    native_prepare=readout._prepare_episode
+    expected={(r['traj_uid'],r['source_step']):r for r in requests}
+    def verify_prepare(*args,**kwargs):
+        values,pending=native_prepare(*args,**kwargs)
+        assert len(pending)==len(requests)
+        for actual in pending:
+            saved=expected[(actual['traj_uid'],actual['source_step'])]
+            for field in ('prompt','actions','query','target'):
+                assert torch.equal(actual[field],saved[field]), field
+            assert (actual['start'],actual['end'],actual['observed_return']) == (
+                saved['start'],saved['end'],saved['observed_return'])
+        return values,pending
+    readout._prepare_episode=verify_prepare
     vectors={};reports={}
     native_attribute=runner.attribute
     source=Path(out)/'qwen35_dense_finite_runner_candidate.py'
@@ -66,6 +79,19 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             readout.prefix_lease_factory=prepare_native_prefix_leases
         else:
             runner.attribute=native_attribute;readout.prefix_lease_factory=None
+        selected_attribute=runner.attribute
+        phase_totals={}
+        phase_counts={}
+        def observe_attribute(*args,**kwargs):
+            result=selected_attribute(*args,**kwargs)
+            for call in result[1].get('calls',[]):
+                kind=call['kind']
+                phase_totals[kind]=phase_totals.get(kind,0.0)+call.get('seconds',0.0)
+                phase_counts[kind]=phase_counts.get(kind,0)+1
+            return result
+        # Read timings emitted by the existing owner; no extra forward,
+        # synchronization, target, or altered finite computation.
+        runner.attribute=observe_attribute
         torch.cuda.synchronize();start=time.perf_counter()
         try:
             result=readout.episodes([rows],complete_returns=[returns])[0]
@@ -76,6 +102,8 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                         for key in ('dt_token_advantages','dt_q_estimates','dt_v_estimates')}
         reports[label]=dict(total_wall_seconds=time.perf_counter()-start,
             original_readout_report=readout.last_report,
+            original_runner_phase_seconds=phase_totals,
+            original_runner_phase_counts=phase_counts,
             peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
             physical_free_bytes=torch.cuda.mem_get_info()[0],
             pss_bytes=psutil.Process().memory_full_info().pss)

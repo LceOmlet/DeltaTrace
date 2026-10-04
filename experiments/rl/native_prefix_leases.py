@@ -58,6 +58,12 @@ def prepare_native_prefix_leases(runner, requests, *, minibatch_size, eos_token_
     capture_tokens = 0
     if capture_rounds:
         indices = DataProto.from_dict(tensors={'canonical_index': torch.arange(len(records))})
+        # Capture is a representation producer, not a DT consumer. Keep the
+        # original consumer order, but group factual histories by the largest
+        # boundary actually needed so native B4 padding is not set by a random
+        # long history. VERL owns the permutation and subsequent row padding.
+        indices.reorder(torch.tensor(sorted(range(len(records)),
+            key=lambda row: max(needed[records[row][0]])), dtype=torch.long))
         indices, _ = pad_dataproto_to_divisor(indices, capture_rounds*minibatch_size)
         indices = indices.batch['canonical_index'].tolist()
         for offset in range(0, len(indices), minibatch_size):
