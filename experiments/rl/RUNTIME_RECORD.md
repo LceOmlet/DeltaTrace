@@ -40,6 +40,17 @@ SSH端口30821。当前清单仅三组DTPO，SQL与AppWorld已退出，TextCraft
 
 ## 当前代码组合
 
+### 2026-10-05：候选接口核查，不将结构测试当作接通
+
+此前重复前缀/root replay问题尚未完整修好。全量GPU保留新增的显存压力属于候选副作用，
+不是原正式训练新增的大头；不能将提速候选当成已完成修复。正式版本未部署该候选。
+本次只读核查确认CPU候选传`defer_sync`，私有transport接口名为`defer_host_sync`；
+实际accelerated code-local backend仍继承原retained/clean类，runner fallback导入修改
+并未接通实际构造路径。11项结构测试的Capture记录器接受任意kwargs，未覆盖这个接口。
+上述结论来自源码/签名核查，不声称已执行真实构造失败；候选保持prepared/unaccepted。
+本次没有GPU测试、正式部署或新的数值容差。
+[逐文件SHA与核查范围](../../research/temporary/rl_upstream_alignment_20260929/phase-observation-20261005/root-capture-candidate-interface-audit.json)。
+
 ### 2026-10-05：同一修复的剩余成本；未接受全量 GPU root 保留
 
 本次读取已完成 fd2b25d 的真实 B4 hot trace，不增加模型前向、GPU运行或新的

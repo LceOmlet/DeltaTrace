@@ -1,0 +1,43 @@
+{
+  "recorded_utc": "2026-10-05T03:22:58.805604+00:00",
+  "scope": "Read-only source/interface audit; no runtime constructor execution, GPU test, deployment or numerical acceptance",
+  "status": "prepared_unaccepted_not_connected_to_actual_backend",
+  "sources": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\prepare_native_root_tape_cpu_owner_20261005.py",
+      "sha256": "061a7eec6b3efdc9761d9efcd93b3df1d1684a591e5aa98bfaa3ad7326971279"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\prepare_native_root_capture_transport_owner_20261005.py",
+      "sha256": "34ef267c410e4cf46a0dfefdadfc4ba0228b25ba05000538c465f5140244c445"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\test_native_root_tape_cpu_owner.py",
+      "sha256": "1d2e19eff22a0a15c2cdf324adb8c977c16f176c082cb0ac853ec304cdb6b35d"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\test_native_root_capture_transport_owner.py",
+      "sha256": "90d2bb42dbdfa51dc7ee9b18f754faed7c4f336d339694e928894d698a5d2844"
+    }
+  ],
+  "evidence": [
+    {
+      "candidate": "CPU root transport",
+      "finding": "Runner preparer passes defer_sync, private transport constructor defines defer_host_sync. Signature inspection shows incompatible keyword; no runtime TypeError is claimed."
+    },
+    {
+      "actual_backend": "accelerated.qwen35.qwen35_code_local_capture",
+      "finding": "Actual decoder inherits qwen35_retained_capture and the original clean decoder. Replacing runner fallback imports does not replace this backend class inheritance or constructor."
+    },
+    {
+      "test": "test_native_root_tape_cpu_owner.py",
+      "finding": "The Capture(*args, **kwargs) recorder checks argument construction/default AST/finally cleanup, not the actual accelerated constructor. Its passing status cannot establish runtime connection."
+    }
+  ],
+  "old_issue_status": {
+    "repeated_prefix": "Measured on saved actual 88 requests, roughly 19.3 percent reduction; not formally deployed.",
+    "root_replay": "Measured savings from retaining captures, but additional retained GPU memory is introduced by this candidate; it is not a newly discovered defect of the unchanged training baseline.",
+    "closure": "Previous efficiency issue remains incomplete. No new production problem or unrelated optimization is authorized by this audit."
+  },
+  "formal_deployment": false
+}

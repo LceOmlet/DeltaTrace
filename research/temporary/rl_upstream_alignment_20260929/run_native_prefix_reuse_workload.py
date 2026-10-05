@@ -36,6 +36,10 @@ if __name__ == '__main__':
         help='Observe one layer at a time in the existing root forward with original capture APIs; release immediately, no retained tape or replacement computation.')
     parser.add_argument('--root-tape',action='store_true',
         help='Compare the isolated default-off owner root-capture reuse seam on the same B4 and immutable prefix bank.')
+    parser.add_argument('--root-tape-cpu',action='store_true',
+        help='With --root-tape, use existing pinned CPU capture transport and the original accelerated capture bodies; no formal deployment.')
+    parser.add_argument('--request-offset',type=int,
+        help='Select this original context-sorted B4 offset instead of the recorded numerical residual B4.')
     parser.add_argument('--root-tape-capacity',action='store_true',
         help='With --root-tape, substitute the original exact32768 fixture for the saved real B4; no actor update.')
     parser.add_argument('--root-tape-gdn0',action='store_true',
@@ -69,6 +73,10 @@ if __name__ == '__main__':
         parser.error('Observe capture storage independently of copying, trace export and scheduling candidates')
     if args.root_tape and not (args.phase_only and args.warm_phases):
         parser.error('--root-tape requires --phase-only --warm-phases')
+    if args.root_tape_cpu and not args.root_tape:
+        parser.error('--root-tape-cpu requires --root-tape')
+    if args.request_offset is not None and (not args.phase_only or args.request_offset<0 or args.request_offset%4):
+        parser.error('--request-offset requires --phase-only and an original nonnegative B4 offset')
     if args.root_tape and (args.root_capture_inventory or args.projection_inputs or args.hot_profile or args.reverse_prefetch):
         parser.error('Compare root tape without separate observers or scheduling candidates')
     if args.root_tape_capacity and not args.root_tape:
@@ -82,10 +90,10 @@ if __name__ == '__main__':
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     parent = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-dt-leases-20261003-v2'
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
-        'local-prefix-' if args.local_prefix_branch else '')+(
+        'local-prefix-' if args.local_prefix_branch else '')+('cpu-' if args.root_tape_cpu else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
         'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
-        'phase' if args.phase_only else 'workload')+'-20261004-'+commit[:7]
+        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261005-' if args.root_tape_cpu else '-20261004-')+commit[:7]
     files = {
         REPO/'experiments/rl/native_prefix_leases.py': 'native_prefix_leases.py',
         REPO/'experiments/rl/test_native_prefix_leases.py': 'test_native_prefix_leases.py',
@@ -109,6 +117,12 @@ if __name__ == '__main__':
                      'native_qwen35_root_tape.py', 'test_native_root_tape_owner.py',
                      'test_native_root_inventory_decoder_owner.py'):
             files[AUDIT/name] = name
+    if args.root_tape_cpu:
+        for name in ('prepare_native_root_tape_cpu_owner_20261005.py',
+                     'prepare_native_root_capture_transport_owner_20261005.py',
+                     'test_native_root_tape_cpu_owner.py',
+                     'test_native_root_capture_transport_owner.py'):
+            files[AUDIT/name]=name
     if args.root_tape_capacity:
         files[AUDIT/'diagnose_native_root_tape_capacity.py']='diagnose_native_root_tape_capacity.py'
         files[REPO/'experiments/rl/verify_dt_context_capacity.py']='verify_dt_context_capacity.py'
@@ -188,11 +202,15 @@ if @ROOT_TAPE_CAPACITY@:
 root_tape_patch=None
 if @ROOT_TAPE@:
  import importlib.util
- path=out/'prepare_native_root_tape_owner_20261004.py'
+ sys.path.insert(0,str(out))
+ path=out/('prepare_native_root_tape_cpu_owner_20261005.py' if @ROOT_TAPE_CPU@ else 'prepare_native_root_tape_owner_20261004.py')
  spec=importlib.util.spec_from_file_location('_isolated_root_tape_preparer',path)
  preparer=importlib.util.module_from_spec(spec);sys.modules[spec.name]=preparer;spec.loader.exec_module(preparer)
  baseline=out/'qwen35_dense_finite_runner_candidate.py'
- root_tape_patch=preparer.prepare(baseline,out/'root-tape-owner',hashlib.sha256(baseline.read_bytes()).hexdigest())
+ if @ROOT_TAPE_CPU@:
+  root_tape_patch=preparer.prepare(baseline,root/'releases/c9cd147/clean/qwen35',out/'root-tape-owner',hashlib.sha256(baseline.read_bytes()).hexdigest())
+ else:
+  root_tape_patch=preparer.prepare(baseline,out/'root-tape-owner',hashlib.sha256(baseline.read_bytes()).hexdigest())
 prefix_branch_patch=None
 if @LOCAL_PREFIX_BRANCH@:
  # Keep every other byte of the actual frozen original entry. The candidate
@@ -254,6 +272,7 @@ run_env.pop('DT_PREFIX_PROJECTION_INPUTS',None)
 run_env.pop('DT_PREFIX_REVERSE_PREFETCH',None)
 run_env.pop('DT_PREFIX_ROOT_CAPTURE_INVENTORY',None)
 run_env.pop('DT_PREFIX_ROOT_TAPE',None)
+run_env.pop('DT_PREFIX_ROOT_TAPE_CPU',None)
 run_env.pop('DT_PREFIX_ROOT_TAPE_GDN0',None)
 run_env.pop('DT_PREFIX_ROOT_TAPE_FA3',None)
 run_env.pop('DT_PREFIX_ROOT_TAPE_HOT',None)
@@ -270,6 +289,8 @@ if @BOUNDED_ONLY@:
   maxima.append(dict(rank=rank,row=row,column=column,residual=float(delta[row,column]),
    vector_sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
  peak=max(maxima,key=lambda item:item['residual']);offset=peak['row']//4*4
+ if @REQUEST_OFFSET@ is not None:
+  offset=@REQUEST_OFFSET@
  run_env.update(DT_PREFIX_PHASE_ONLY='1',DT_PREFIX_DIAGNOSTIC_OFFSET=str(offset),DT_PREFIX_DIAGNOSTIC_ROWS='4')
  if @COMPONENTS_ONLY@:
   run_env.update(DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC='1',DT_PREFIX_COMPONENT_REQUEST_INDEX=str(peak['row']))
@@ -287,6 +308,8 @@ if @BOUNDED_ONLY@:
   run_env['DT_PREFIX_ROOT_CAPTURE_INVENTORY']='1'
  if @ROOT_TAPE@:
   run_env['DT_PREFIX_ROOT_TAPE']='1'
+ if @ROOT_TAPE_CPU@:
+  run_env['DT_PREFIX_ROOT_TAPE_CPU']='1'
  if @ROOT_TAPE_GDN0@:
   run_env['DT_PREFIX_ROOT_TAPE_GDN0']='1'
  if @ROOT_TAPE_FA3@:
@@ -302,6 +325,7 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  native_reverse_prefetch_candidate=@REVERSE_PREFETCH@,
  root_capture_inventory=@ROOT_CAPTURE_INVENTORY@,
  native_root_tape_candidate=root_tape_patch,
+ root_tape_existing_cpu_transport=@ROOT_TAPE_CPU@,
  root_tape_exact32768_fixture=@ROOT_TAPE_CAPACITY@,
  root_tape_actual_gdn0_operand_check=@ROOT_TAPE_GDN0@,
  root_tape_actual_fa3_operand_check=@ROOT_TAPE_FA3@,
@@ -312,7 +336,7 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  live_environment_source=dict(pid=live.pid,pid_birth=live.create_time(),task='TextCraft',
   use='Recorded provisioning/cache/DT flags only; AppWorld task and sampling come from the original frozen launch'),
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
- source_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('*.py')},
+ source_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*out.glob('*.py'),*out.glob('root-tape-owner/*.py')]},
  literal_request_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('actual-requests-rank*.pt')},
  configuration=dict(rank=8,alpha=16,actor_microbatch=4,dt_minibatch=4,max_length=32768,
   official_launch_sha256=hashlib.sha256((out/'native-launch-options.json').read_bytes()).hexdigest(),
@@ -321,7 +345,7 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  observed_before_start=time.time(),physical_before_start=physical,
  available_host_bytes=psutil.virtual_memory().available)
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
-test_env=dict(run_env,CUDA_VISIBLE_DEVICES='')
+test_env=dict(run_env,CUDA_VISIBLE_DEVICES='',MACA_VISIBLE_DEVICES='')
 if @ROOT_TAPE_FA3@:
  test_env['DT_OFFICIAL_FA_TEST_SOURCE']=str(pathlib.Path('@ROOT@')/'receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py')
 if @ROOT_TAPE_HOT@:
@@ -333,6 +357,8 @@ with (out/'cpu-tests.log').open('wb') as log:
   test_paths.extend(str(out/name) for name in ('test_root_capture_inventory_cpu_structure.py',
    'test_native_root_inventory_decoder_owner.py','test_prefix_component_diagnostic_selection.py'))
  if @ROOT_TAPE@:test_paths.append(str(out/'test_native_root_tape_owner.py'))
+ if @ROOT_TAPE_CPU@:
+  test_paths.extend(str(out/name) for name in ('test_native_root_tape_cpu_owner.py','test_native_root_capture_transport_owner.py'))
  if @ROOT_TAPE_CAPACITY@:test_paths.append(str(out/'test_capacity_fixture_readout_interface.py'))
  if @ROOT_TAPE_GDN0@:test_paths.append(str(out/'test_observe_native_gdn0_operands.py'))
  if @ROOT_TAPE_FA3@:test_paths.append(str(out/'test_observe_native_fa3_operands.py'))
@@ -365,6 +391,8 @@ PY
         .replace('@REVERSE_PREFETCH@',str(args.reverse_prefetch))
         .replace('@ROOT_CAPTURE_INVENTORY@',str(args.root_capture_inventory))
         .replace('@ROOT_TAPE@',str(args.root_tape))
+        .replace('@ROOT_TAPE_CPU@',str(args.root_tape_cpu))
+        .replace('@REQUEST_OFFSET@',repr(args.request_offset))
         .replace('@ROOT_TAPE_CAPACITY@',str(args.root_tape_capacity))
         .replace('@ROOT_TAPE_GDN0@',str(args.root_tape_gdn0))
         .replace('@ROOT_TAPE_FA3@',str(args.root_tape_fa3))

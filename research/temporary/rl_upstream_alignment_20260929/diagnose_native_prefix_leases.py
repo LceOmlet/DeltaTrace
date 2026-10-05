@@ -107,6 +107,9 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     root_tape_module=None
     if os.environ.get('DT_PREFIX_ROOT_TAPE')=='1':
         source=Path(out)/'root-tape-owner'/'qwen35_dense_finite_runner_root_tape_candidate.py'
+        if os.environ.get('DT_PREFIX_ROOT_TAPE_CPU')=='1':
+            import sys
+            sys.path.insert(0,str(source.parent))
         spec=importlib.util.spec_from_file_location('_isolated_native_root_tape_runner',source)
         root_tape_module=importlib.util.module_from_spec(spec);spec.loader.exec_module(root_tape_module)
         labels=(*labels,'root_tape_disabled_warm','root_tape_cold','root_tape_warm')
@@ -132,6 +135,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         save('native_prefix_lease_variant_start',variant=label,
              shared_bank_already_prepared=shared_bank is not None)
         previous_class=runner.__class__
+        previous_capture_backend=runner.capture_backend
         had_root_flag=hasattr(runner,'reuse_root_captures')
         previous_root_flag=getattr(runner,'reuse_root_captures',False)
         if label.startswith('root_tape'):
@@ -139,6 +143,10 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             # isolated owner dispatch seam changes, and is restored below.
             runner.__class__=root_tape_module.Qwen35DenseFiniteRunner
             runner.reuse_root_captures=label!='root_tape_disabled_warm'
+            if os.environ.get('DT_PREFIX_ROOT_TAPE_CPU')=='1':
+                # Import binding only: original retained/local-event bodies,
+                # inheriting the same private transport owners as this runner.
+                runner.capture_backend=root_tape_module._root_capture_backend
         if label.startswith(('shared','prefetch','root_tape')):
             owner=(root_tape_module if label.startswith('root_tape') else module)
             runner.attribute=types.MethodType(owner.Qwen35DenseFiniteRunner.attribute,runner)
@@ -336,6 +344,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         finally:
             runner.attribute=native_attribute;readout.prefix_lease_factory=None
             runner.__class__=previous_class
+            runner.capture_backend=previous_capture_backend
             if had_root_flag:runner.reuse_root_captures=previous_root_flag
             elif hasattr(runner,'reuse_root_captures'):del runner.reuse_root_captures
         torch.cuda.synchronize()
