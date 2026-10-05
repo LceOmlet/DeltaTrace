@@ -16,7 +16,7 @@ import textwrap
 from stage_environment_entry import AUDIT, ENTRY, REPO, ROOT, SCP, SSH, remote
 
 
-NAME = "sql-native-host-cache-20261005"
+NAME = "sql-native-host-cache-20261005-v2"
 PRIOR_PREPARED_SHA = "ecf31cc9b98f6a4b73c89a2e39bed3e68ba3ca040610009689547994df607b06"
 RESOURCE_COMMIT = "6781bdde60b4873f8336e12dd0e6c2ea1fca22b3"
 RESOURCE_RECORDER_COMMIT = "e945acb06a11b1417855efd1eeeda80f2e28d2b1"
@@ -144,8 +144,9 @@ assert patch_namespace['patch_source'](original_path.read_text()).encode()==patc
 (owner/'verl/workers/fsdp_workers.py').write_bytes(patched)
 
 launcher=entry/'launch_sql_native.py';launcher_before=launcher.read_bytes()
-anchor=b"    options = {**runtime_options(),\n"
-addition=b"        '+ray_init.runtime_env.env_vars.VERL_RELEASE_UNUSED_HOST_CACHE': '1',\n"
+# The pinned launcher SHA contains CRLF here; preserve all original bytes.
+anchor=b"    options = {**runtime_options(),\r\n"
+addition=b"        '+ray_init.runtime_env.env_vars.VERL_RELEASE_UNUSED_HOST_CACHE': '1',\r\n"
 assert launcher_before.count(anchor)==1
 offset=launcher_before.index(anchor)+len(anchor)
 launcher_after=launcher_before[:offset]+addition+launcher_before[offset:]
