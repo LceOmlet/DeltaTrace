@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 GDN 残差定位：原生三段观测
+
+隔离PID1926348/birth1791237432.3已完成，GPU4/5，338.435秒。仍为原7个B4/rank、checkpoint25、LoRA8/16、原runner/producer/目标/切点；14 full finite、28 single root，backward/optimizer/scheduler均0。层6/8共104 transport-layer，按原身份保留重复后84 unique probe-layer，即42 probe×2层。
+
+只读取原norm-gate有限系数及paired8原生输入/输出。compact capture_start来自原gdn_finite_pullback实际frame；只内侧o/z/gated按同一suffix裁切，外侧mixer保持全长。不启用public observer/diagnostics，不保存额外递推状态，不增加模型调用或修正倍率。两层三项中remaining_input_FLA的平均绝对残差最大，但它仍包含投影、卷积、FLA与存储，不能冒称FLA kernel超官方容差。
+
+来源、实际dtype、CPU绑定、完整原始ranks、重复probe统计及独立复核见results_textcraft_learning_degradation_20261006.json的conditional_gdn；这是定位进展，不是已修复学习信号，TextCraft不恢复。
+
+
 ## 2026-10-06 下层真实子块：有限传播与原生存储分项
 
 隔离诊断PID1721442/birth1791235562.77已完成，GPU4/5，243.217秒。复用原7个B4/rank、checkpoint25、LoRA8/16、原runner/producer/目标/切点；14 full finite、28 single root，backward/optimizer/scheduler均0。层6/8(GDN)、11(FA)共156 transport投影，按原映射保留后为126 unique probe-layer，即42 probe×3层。
