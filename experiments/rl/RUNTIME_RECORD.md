@@ -1,5 +1,23 @@
 # 当前运行版本与修复记录
 
+## 2026-10-05 TextCraft退化优先调查
+
+
+用户将TextCraft退化原因置于效率之前。旧PID3218909已停止；截断漏奖修复仍prepared，
+没有把接口修复当作收益恢复，也未选择旧checkpoint100继续或从原模型重训。
+实际原日志SHA54f4aef6…绑定92轮：优先查35–40更新窗口，39/40实际成功131/256→117/256。
+83/85/109原grad_norm为nan，两rank共6 WARN；原actor跳过对应optimizer.step，
+发生晚于首轮退化，不能作为已定位的首因。实际PG/entropy/KL分项梯度仍未保存。
+原min-B4记录中成功样本的负信用集中于empty-think格式前缀是待核实线索，
+不是整批统计。详细来源、范围及下一项原owner读出观察见
+[退化回执](results_textcraft_degradation_20261005.json)。
+
+未接受的GDN边界行存储候选及syntax-only测试完整保存在
+research/temporary/rl_upstream_alignment_20260929/paused-boundary-row-storage-20261005，
+默认两生产源已恢复HEAD基线，未部署/启动该效率候选，避免调查时混入候选版本。
+AppWorld正式2/3仍用原冻结入口；4/5可做必要有界诊断，0/1及6/7不用。
+
+
 本文件记录运行与修复事实，不定义信用方法；信用规范仍是 [PLAN.md](PLAN.md)。
 最近三组只读源码快照与原阶段观察分别记录，见下方定向回执。
 [current_runtime.json](current_runtime.json)保留精确采集时间，

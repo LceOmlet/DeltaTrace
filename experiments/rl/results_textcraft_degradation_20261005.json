@@ -1,0 +1,53 @@
+{
+  "status": "degradation_confirmed_cause_investigation_in_progress_not_repaired",
+  "priority": "User prioritized TextCraft bad updates over further efficiency work",
+  "original_job": {
+    "pid": 3218909,
+    "pid_birth": 1790895651.16,
+    "status": "stopped_with_original_checkpoints_and_logs_retained",
+    "source_receipt_sha256": "6ce9aecf79305cf398ca5988ca20ce1a3aa9a571c4c32275be5d499bf48d5644",
+    "actor_sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+    "dt_release": "c9cd147",
+    "native_loss": "Original VERL PG - 0.001 entropy + 0.001 KL; no changed coefficients"
+  },
+  "evidence": {
+    "log_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/train.log",
+    "log_sha256": "54f4aef6d71bc864fca7f7e4e339e0ec55cb6b146e064f38370da6764185d933",
+    "collected_original_records": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/records.json",
+    "collected_original_records_sha256": "18b5ff7d70b73069a88e5570023dc71bba2458fa0a7a6e50a560e1b469384495",
+    "metrics_audit": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/training-degradation-metrics-audit.json",
+    "plot": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/degradation.png"
+  },
+  "confirmed_findings": [
+    "Earliest sustained lower success range is observed from rollout40; inspect updates35-40. Actual rollout39 success131/256, rollout40 success117/256. This is a temporal boundary, not proof that update39 alone caused the change.",
+    "Previously confirmed truncation reward loss is real, but 24 no-cap-hit iterations and complete-positive-event anchor batches still degrade. The repair has not been shown to recover training quality.",
+    "Original iterations83,85,109 each record grad_norm:nan, with warnings from both ranks (six warnings). The original actor skips the respective optimizer.step and clears gradients. It does not justify saying the entire iteration was skipped.",
+    "Source-level sign, token boundaries, request refill and inverse dispatch do not show a further mismatch. Historical final actor arrays were not saved, so this is not a completed runtime scatter check.",
+    "At iteration35, 19 of24 saved extreme-batch success samples have the empty-think prefix; 16 of19 assign negative signed credit to each of its first four tokens. These are selected extrema, not representative full-batch statistics."
+  ],
+  "representative_original_sample": {
+    "iteration": 35,
+    "traj_uid": "2d5ff7df-e9b1-4f94-91b7-106e88cf5d3b",
+    "source_step": 0,
+    "observed_return": 1.0,
+    "root_effect": -0.2895938754081726,
+    "first_four_source_token_ids": [248068, 271, 248069, 271],
+    "first_four_decoded_source_tokens": ["<think>", "\n\n", "</think>", "\n\n"],
+    "first_four_signed_log_ratios": [-0.10735429619355122, -0.0806627815792463, -0.012951896595509042, -0.1326954709849342],
+    "claim": "A concrete negative format-credit pattern to investigate; no attribution clipping or redistribution applied"
+  },
+  "limitations_and_next_observations": [
+    "Console PG loss, clipping and gradient values are rounded to three decimals; displayed zero cannot establish weak or zero task gradients.",
+    "Logged entropy comes from old-policy attention-tail statistics, whereas the actual actor loss uses policy loss_mask. KL logging is the last microbatch per rank. These logs cannot establish objective dominance.",
+    "Use original saved IDs with checkpoint25/iteration26 to compare original categorical readout under factual, joint-EOS and selected single-token-EOS inputs. Keep raw differences; no new numerical acceptance gate or corrective multiplier.",
+    "Observe original PPO task, entropy and KL gradient components on the same saved responses using original loss functions. This is not recovery of the unsaved whole historical update."
+  ],
+  "efficiency_candidate": {
+    "status": "paused_unaccepted_not_deployed",
+    "preserved_path": "research/temporary/rl_upstream_alignment_20260929/paused-boundary-row-storage-20261005",
+    "default_production_sources": "Restored to committed verified baseline; unaccepted test removed from default test path after exact archival hash check"
+  },
+  "training_parameter_changes": [],
+  "credit_formula_changes": [],
+  "claim_of_recovery": false
+}
