@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 
 NATIVE = re.compile(r"^DT_native_layer_(\d+)_pass_(\d+)$")
+PARAMETER = re.compile(r"^DT_native_(prepare|release)_finite_layer_(\d+)$")
 SIZE_BINS = ((1024, "<1KiB"), (2**20, "1KiB..<1MiB"),
              (16*2**20, "1MiB..<16MiB"), (64*2**20, "16MiB..<64MiB"),
              (256*2**20, "64MiB..<256MiB"), (2**30, "256MiB..<1GiB"))
@@ -43,11 +44,13 @@ def family(name, cpu_name):
     return "other_kernel"
 
 
-def analyze(path, root_pass=1, replay_pass=2, top=25):
+def analyze(path, root_pass=1, replay_pass=2, top=25, *, parameter_ranges=False):
     data = json.loads(path.read_text(encoding="utf-8-sig"))
     events = data.get("traceEvents", []) if isinstance(data, dict) else data
     cpu_by_id = defaultdict(list)
     ranges = defaultdict(list)
+    parameter_regions = defaultdict(list)
+    parameter_cpu = defaultdict(lambda: [0, 0.0])
     pass_counts = Counter()
     for event in events:
         if event.get("ph") != "X":
@@ -60,12 +63,27 @@ def analyze(path, root_pass=1, replay_pass=2, top=25):
             layer, pass_number = map(int, matched.groups())
             ranges[(event.get("pid"), event.get("tid"))].append(event)
             pass_counts[pass_number] += 1
+        if parameter_ranges:
+            matched_parameter = PARAMETER.fullmatch(event.get("name", ""))
+            if matched_parameter:
+                stage, index = matched_parameter.groups()
+                parameter_regions[(event.get("pid"), event.get("tid"))].append(event)
+                values = parameter_cpu[(stage, int(index))]
+                values[0] += 1
+                values[1] += duration(event)
     for regions in ranges.values():
+        regions.sort(key=lambda e: (float(e["ts"]), duration(e)))
+    for regions in parameter_regions.values():
         regions.sort(key=lambda e: (float(e["ts"]), duration(e)))
 
     tables = {key: defaultdict(lambda: [0, 0, 0, 0.0]) for key in
               ("copies_by_owner", "copies_by_layer", "copies_by_cpu_op", "copies_by_size_bin",
                "kernels_by_owner", "kernels_by_layer", "mm_by_owner", "collectives_by_owner")}
+    if parameter_ranges:
+        for key in ("parameter_device_by_stage", "parameter_device_by_layer",
+                    "parameter_device_by_cpu_op"):
+            tables[key] = defaultdict(lambda: [0, 0, 0, 0.0])
+    parameter_links = Counter()
     links = Counter()
     unknown_examples = []
     raw_counts = Counter()
@@ -113,6 +131,23 @@ def analyze(path, root_pass=1, replay_pass=2, top=25):
             else:
                 owner = layer_name = "outside_native"
                 links["outside_native_range"] += 1
+        parameter_stage = parameter_index = None
+        if parameter_ranges:
+            if cpu is None:
+                parameter_links[reason] += 1
+            else:
+                # Use the same unique External-id CPU launch and innermost
+                # same-thread range rule as the original native partition.
+                start = float(cpu["ts"])
+                containing = [r for r in parameter_regions.get((cpu.get("pid"), cpu.get("tid")), [])
+                              if float(r["ts"]) <= start < float(r["ts"]) + duration(r)]
+                if containing:
+                    region = min(containing, key=lambda r: (duration(r), -float(r["ts"])))
+                    parameter_stage, index = PARAMETER.fullmatch(region["name"]).groups()
+                    parameter_index = int(index)
+                    parameter_links["inside_parameter_range"] += 1
+                else:
+                    parameter_links["outside_parameter_range"] += 1
         if category == "gpu_memcpy":
             name = event.get("name", "")
             direction = next((kind for kind in ("HtoD", "DtoH", "DtoD") if kind in name), "other_memcpy")
@@ -122,6 +157,10 @@ def analyze(path, root_pass=1, replay_pass=2, top=25):
             add("copies_by_layer", (direction, layer_name), event, byte_count)
             add("copies_by_cpu_op", (direction, owner, cpu_name), event, byte_count)
             add("copies_by_size_bin", (direction, owner, size_bin(byte_count)), event, byte_count)
+            if parameter_stage is not None:
+                add("parameter_device_by_stage", (parameter_stage, direction), event, byte_count)
+                add("parameter_device_by_layer", (parameter_stage, parameter_index, direction), event, byte_count)
+                add("parameter_device_by_cpu_op", (parameter_stage, direction, cpu_name), event, byte_count)
         else:
             kind = family(event.get("name", ""), cpu_name)
             add("kernels_by_owner", (kind, owner), event)
@@ -130,6 +169,10 @@ def analyze(path, root_pass=1, replay_pass=2, top=25):
                 add("mm_by_owner", (kind, owner, cpu_name), event)
             elif kind in ("all_gather", "all_reduce"):
                 add("collectives_by_owner", (kind, owner, cpu_name), event)
+            if parameter_stage is not None:
+                add("parameter_device_by_stage", (parameter_stage, kind), event)
+                add("parameter_device_by_layer", (parameter_stage, parameter_index, kind), event)
+                add("parameter_device_by_cpu_op", (parameter_stage, kind, cpu_name), event)
 
     result = {
         "source_path": str(path.resolve()), "source_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -143,6 +186,19 @@ def analyze(path, root_pass=1, replay_pass=2, top=25):
         "mapping_scope": "Pass1=root and pass2=replay apply to hot-shared_warm whose bank preparation is outside attribute. Other pass values are reported verbatim.",
         "unknown_link_examples": unknown_examples,
     }
+    if parameter_ranges:
+        stages = defaultdict(lambda: [0, 0.0])
+        for (stage, _index), values in parameter_cpu.items():
+            stages[stage][0] += values[0]
+            stages[stage][1] += values[1]
+        result.update(
+            parameter_range_scope="Passive original prepare/release callbacks: CPU range durations are inclusive host time. Device tables are another partition of the same original events, not extra work or additive wall time. Missing/ambiguous External ids remain unknown.",
+            parameter_owner_rule="GPU External id to one original cpu_op with same id, then innermost DT_native_prepare/release_finite_layer range containing CPU op start on same pid/tid; original native partition unchanged.",
+            parameter_link_counts=dict(parameter_links),
+            parameter_cpu_by_stage=[dict(stage=stage, count=values[0], cpu_seconds=values[1]/1e6)
+                                    for stage, values in sorted(stages.items())],
+            parameter_cpu_by_layer=[dict(stage=stage, layer=index, count=values[0], cpu_seconds=values[1]/1e6)
+                                    for (stage, index), values in sorted(parameter_cpu.items())])
     for table, values in tables.items():
         rows = [{"group": list(key), "count": value[0], "known_bytes": value[1],
                  "events_without_bytes": value[2], "device_seconds": value[3]/1e6}
@@ -158,8 +214,11 @@ def main():
     parser.add_argument("--root-pass", type=int, default=1)
     parser.add_argument("--replay-pass", type=int, default=2)
     parser.add_argument("--top", type=int, default=25)
+    parser.add_argument("--parameter-ranges", action="store_true",
+                        help="Additionally attribute existing prepare/release CPU ranges and their device events; default output is unchanged.")
     args = parser.parse_args()
-    results = [analyze(path, args.root_pass, args.replay_pass, args.top) for path in args.traces]
+    results = [analyze(path, args.root_pass, args.replay_pass, args.top,
+                       parameter_ranges=args.parameter_ranges) for path in args.traces]
     encoded = json.dumps({"traces": results}, ensure_ascii=False, indent=2)
     if args.output:
         args.output.write_text(encoded + "\n", encoding="utf-8")

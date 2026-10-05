@@ -40,6 +40,59 @@ SSH端口30821。当前清单仅三组DTPO，SQL与AppWorld已退出，TextCraft
 
 ## 当前代码组合
 
+### 2026-10-05：同一修复的剩余成本；未接受全量 GPU root 保留
+
+本次读取已完成 fd2b25d 的真实 B4 hot trace，不增加模型前向、GPU运行或新的
+验收门槛。当前问题仍是此前重复前缀和 root/replay 重算的修复，不另开训练算法。
+正式版本未应用这些候选；已测到收益不能写成正式训练已经提速。
+
+| 原问题 | 已取得的实际证据 | 尚未完成的部分 |
+| --- | --- | --- |
+| 重复前缀计算 | 原88请求196.65→158.74秒，已包括bank准备 | 仅对应保存的实际请求；尚未正式部署 |
+| 同一次DT的root/replay重算 | 真实B4热调用3.698/3.702→2.991/2.981秒，32层replay为0 | GPU保留的显存代价尚未满足完整真实输入范围 |
+| 候选的容量 | 32768总长原夹具通过，每卡B4、LoRA8/16 | 夹具suffix832；保存的真实B4最大suffix2630/3332，未由该夹具覆盖 |
+
+[原参数阶段拆分](results_native_root_tape_parameter_phases_20261004.json)直接读取
+同一trace：原prepare32次CPU inclusive仅0.07519/0.07389秒；相关device HtoD
+6,963,708,544字节、0.175/0.179秒，相关all-gather0.274/0.076秒。全次HtoD
+19.423/19.501GB、0.571/0.585秒，不能把这些设备时间与CPU同步时间相加。
+原分析器默认输出及原事件分区在两份真实trace上保持逐值相同。
+
+[原runtime API归属](results_native_root_tape_runtime_cpu_20261005.json)进一步确认：
+最大的mcMemcpyAsync对应最终signed token向量回传，rank0为18,432字节
+（4×576×FP64）、rank1为19,520字节（4×610×FP64）。CPU API分别占
+1.164304/1.163577秒，device实际复制仅38.912/46.848微秒；该边界等待此前
+GPU工作完成，不是搬18KB花1.16秒，不能算成另一个可删除的搬运大头。
+这也不授权删掉最终返回、有限计算或原诊断。原prepare/release与有限算子未改。
+实际c9cd147 environment.json SHA为2467f6555282c52b4dc646c2242dc700eb5adff46c3c83701d54dfbf1bbf3ad7，
+已读原内容并绑定dt_pin_root_host=true，不把已开启pin_memory当作新修复。
+
+[真实请求形状](results_actual_prefix_request_geometry_20261004.json)仅CPU读取原
+88行/rank的实际请求和token IDs；最大后缀对应原排序12–15行，完整上下文
+分别5382/6084，suffix2630/3332。热计时40–43行只有suffix576/610。
+全量GPU保留已测短后缀峰值34.54/36.20GiB，原路径约11.45GiB；这项额外显存
+是候选尚未解决的成本，不能隐瞒、不能据832容量把它认定为真实范围已通过。
+候选默认False、保持prepared_only_not_deployed，未替换正式worker。
+[同布局字段保留量外推](results_native_root_tape_retained_storage_20261005.json)只读实际
+inventory并按原storage别名去重：最大真实B4约123.38/156.09GiB，分别包含
+decoder56.50/71.59GiB、GDN60.11/76.11GiB及FA6.77/8.40GiB。
+短576/610和832容量场景的同一计算为28.55/30.22/46.57GiB，与原保存的字段量
+对应。该数值不是实测物理峰值或OOM结果，不包含完整跨层/已有cache别名与分配
+生命周期证明，也不能加到独立baseline峰值上。它直接暴露全32层GPU保留布局的
+规模问题；不得先把这个候选投入正式任务，随后再用OOM确认。后续先沿既有owner
+capture/卸载/释放接口处理这项同一修复的代价，不能再堆新的优化来掩盖。
+本次只沿原捕获/运输/释放接口核对该成本，不加入减小B4、缩短输出、改变rank/alpha、
+信用裁剪或新卸载器作为替代。
+
+来源对应：hot原诊断提交fd2b25d，PID2521687/创建1791125978.23，已退出。
+两个原trace SHA为4df67108ca903dce9b0d970b39c42d16d2b9563916d16b13ef71872132cc427a及
+e76e00a28d8b9352f33eded213b1c53777d85ec2895ebf1ed646a81581c011ff。
+参数分析器SHA405e730b42ff1aaa4a989d4d0ae8ec3540dd61f4345f308718ce262623a4f16a；
+runtime分析器SHA9eb0c1cdffee854e88a58da7625b4e21f0dba757c68b83d7fb7f79398a548c46。
+原几何观察脚本执行SHA9b55b18efe8f11c19985b0a882eeb83aa381cdced5d6230c6c026316599377e2；
+后续仅修dotted配置键展示的本机源码尚未重跑，不能冒充该原回执的执行版本。
+
+
 ### 2026-10-04：原 root capture 复用，实际操作数与官方容差来源
 
 本次只在隔离诊断 owner 中复用原 root forward 的32层 capture，减少同一次 DT

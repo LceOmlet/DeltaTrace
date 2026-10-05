@@ -1,0 +1,88 @@
+{
+  "scope": "CPU-only same-layout retained-payload projection; no model, GPU, allocation, physical peak, OOM claim or new threshold",
+  "formal_deployment": false,
+  "sources": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_native_root_capture_inventory_20261004.json",
+      "sha256": "b7a5a4d81b03b2df6857f6068cb4d7c547f58ad93a6959c8892fcba1000d07c5"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_actual_prefix_request_geometry_20261004.json",
+      "sha256": "a61c185751434edb4d2fbbac4305e3dbbcaf53c81f705693cacc9a75d42f97a0"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\analyze_native_root_tape_retained_storage.py",
+      "sha256": "a4a5750e4afc7d4e77166a92eac359694fd3483e1a3c0ed48b018b187016e9bd"
+    }
+  ],
+  "assumptions": [
+    "Actual saved native dtype/layout and 32-layer capture fields retained unchanged",
+    "Aliases within each actual storage group counted once",
+    "Per-layer storage sums do not prove cross-layer/owner-cache alias accounting or liveness peak",
+    "Original inventory released captures each layer; projections are not measured simultaneous allocations",
+    "GDN h uses ceil(suffix/64); projected_qkv retains actual four-token conv context",
+    "Do not add retained payload to an independently measured baseline peak"
+  ],
+  "rows": [
+    {
+      "rank": 0,
+      "suffix": 576,
+      "context": 7552,
+      "bytes_by_capture": {
+        "decoder": 13287555072,
+        "linear_attention": 14104657920,
+        "full_attention": 3263168512
+      },
+      "retained_bytes": 30655381504,
+      "three_MLP_outputs_bytes": 10871635968
+    },
+    {
+      "rank": 1,
+      "suffix": 610,
+      "context": 7586,
+      "bytes_by_capture": {
+        "decoder": 14071889920,
+        "linear_attention": 15030853632,
+        "full_attention": 3347841024
+      },
+      "retained_bytes": 32450584576,
+      "three_MLP_outputs_bytes": 11513364480
+    },
+    {
+      "rank": 0,
+      "suffix": 832,
+      "context": 32768,
+      "bytes_by_capture": {
+        "decoder": 19193135104,
+        "linear_attention": 20367802368,
+        "full_attention": 10443816960
+      },
+      "retained_bytes": 50004754432,
+      "three_MLP_outputs_bytes": 15703474176
+    },
+    {
+      "rank": 0,
+      "suffix": 2630,
+      "context": 5382,
+      "bytes_by_capture": {
+        "decoder": 60670607360,
+        "linear_attention": 64539058176,
+        "full_attention": 7271088128
+      },
+      "retained_bytes": 132480753664,
+      "three_MLP_outputs_bytes": 49639587840
+    },
+    {
+      "rank": 1,
+      "suffix": 3332,
+      "context": 6084,
+      "bytes_by_capture": {
+        "decoder": 76864815104,
+        "linear_attention": 81720066048,
+        "full_attention": 9019326464
+      },
+      "retained_bytes": 167604207616,
+      "three_MLP_outputs_bytes": 62889394176
+    }
+  ]
+}
