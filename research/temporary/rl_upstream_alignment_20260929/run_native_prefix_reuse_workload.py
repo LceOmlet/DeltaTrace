@@ -289,8 +289,9 @@ if @BOUNDED_ONLY@:
   maxima.append(dict(rank=rank,row=row,column=column,residual=float(delta[row,column]),
    vector_sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
  peak=max(maxima,key=lambda item:item['residual']);offset=peak['row']//4*4
- if @REQUEST_OFFSET@ is not None:
-  offset=@REQUEST_OFFSET@
+ request_offset=@REQUEST_OFFSET@
+ if request_offset is not None:
+  offset=request_offset
  run_env.update(DT_PREFIX_PHASE_ONLY='1',DT_PREFIX_DIAGNOSTIC_OFFSET=str(offset),DT_PREFIX_DIAGNOSTIC_ROWS='4')
  if @COMPONENTS_ONLY@:
   run_env.update(DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC='1',DT_PREFIX_COMPONENT_REQUEST_INDEX=str(peak['row']))

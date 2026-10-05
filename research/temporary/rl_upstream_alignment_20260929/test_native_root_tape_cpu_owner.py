@@ -23,6 +23,9 @@ AUDIT = Path(__file__).resolve().parent
 REPO = AUDIT.parents[2]
 OWNER = Path(os.environ.get('DT_ROOT_TAPE_OWNER_SOURCE',
     REPO / 'deltatrace/clean/qwen35/qwen35_dense_finite_runner.py'))
+OWNER_ROOT = Path(os.environ.get('DT_ROOT_INVENTORY_DECODER_SOURCE',
+    REPO / 'deltatrace/clean/qwen35/qwen35_decoder_finite.py')).parent
+ACCELERATED_ROOT = OWNER_ROOT.parent.parent / 'accelerated/qwen35'
 if str(AUDIT) not in sys.path:
     sys.path.insert(0, str(AUDIT))
 
@@ -166,13 +169,13 @@ class RootTapeCPUOwnerSourceContracts(unittest.TestCase):
                                     for value in (cls.gpu_bytes, cls.cpu_bytes)]
         cls.gpu, cls.cpu = [owner_class(value) for value in (cls.gpu_tree, cls.cpu_tree)]
         cls.transport_sources, cls.transport_metadata = patched_sources({
-            name: (REPO / 'deltatrace/clean/qwen35' / name).read_bytes()
+            name: (OWNER_ROOT / name).read_bytes()
             for name in ('native_attention_capture.py', 'native_dense_attention_capture.py',
                          'qwen35_decoder_finite.py', 'qwen35_gdn_finite.py')})
 
     def test_real_six_source_prepare_entry_creates_complete_isolated_artifacts(self):
-        owner_root = REPO / 'deltatrace/clean/qwen35'
-        accelerated_root = REPO / 'deltatrace/accelerated/qwen35'
+        owner_root = OWNER_ROOT
+        accelerated_root = ACCELERATED_ROOT
         originals = {name: ((owner_root if name in MODULES else accelerated_root) / name).read_bytes()
                      for name in MODULES | ACCELERATED_MODULES}
         paths = {name: (owner_root if name in MODULES else accelerated_root) / name
@@ -225,7 +228,7 @@ class RootTapeCPUOwnerSourceContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='dt-cpu-root-sha-') as temporary:
             destination = Path(temporary) / 'isolated'
             with self.assertRaisesRegex(ValueError, 'verified runner SHA'):
-                prepare(OWNER, REPO / 'deltatrace/clean/qwen35', destination, '0' * 64)
+                prepare(OWNER, OWNER_ROOT, destination, '0' * 64)
             self.assertFalse(destination.exists())
 
     def test_generation_keeps_original_and_binds_exact_gpu_parent(self):
