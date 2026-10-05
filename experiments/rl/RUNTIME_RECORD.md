@@ -40,6 +40,41 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从
 
 ## 当前代码组合
 
+### 2026-10-05 19:02：AppWorld恢复20；TextCraft旧作业停止、v2修复待训练起点
+
+19:16实际原TaskRunner调用栈指向新entry的loop_owner_worker、loop_async_transport
+和loop_owner_rollout；已进入原训练采样。原rank1已返回54/120轨迹，观察到两条
+官方训练ret0.857/0.800。它们不是整批成功率、评估分数或新完成更新。
+另已核查checkpoint100实际每rank496个LoRA tensor全FP32/Shard(0)，不同于基座BF16；
+原state_dict prehook/full_tensor/all-gather物化独立完整payload。vLLM packed scaling
+状态与缓存激活链路不支持“回写actor或重复缩放”假设，未添加clone、dtype或同步
+改动；11项实际源码SHA绑定的只读审计见TextCraft修复回执。训练起点仍待用户选择。
+
+
+AppWorld新PID1856052/创建1791197944.7，GPU2/3；原submitter从完整checkpoint20
+恢复，当前初始化。实际entry为appworld-eval-client-routing-resume-20261005-v1，
+含本机CPU v2已修兼容性的worker SHA1bf093a2…、rollout01eca1bf…、transport8ecbf018…。
+三个文件之外entry bytes、原VERL与DT目录均不变；配置composer同输出/恢复点
+逐值比较，仅custom dataset定位随entry迁移，官方参数逐值相同。新source.json及launch/job在
+appworld-eval-client-routing-20261005/deployment。部署来源6d92fe3；本次启动不计
+新完整迭代，不提前承诺评估提速或健康性。数值核心仍c9＋8e7dd71 prefix provider。
+
+TextCraft原PID3218909已停止、完整检查点100保留，晚期完成到118的旧日志仍在，
+这些旧训练包含已确认的奖励mask错误，不作为修复后的有效实验。4/5已空闲。
+准备完成textcraft-truncated-terminal-resume-20261005-v2，来源e42f596；只包含
+已测的真实reward/native slice接线，另将原6781bdd已应用的阶段末host-cache释放
+与原Ray环境变量折入恢复入口。原卸载策略、LoRA8/16、每卡B4、PPO、官方
+训练及采样参数不变，dt_root仍c9cd147。真实17/1 CPU回执与基座精确值检查已绑定。
+候选尚未提交；从原模型重训或checkpoint100继续的选择已询问用户。
+
+未接受的textcraft-truncated-terminal-resume-20261005-v1保留：准备助手误将
+AppWorld的data.custom_cls.path假设套给TextCraft，配置比较KeyError后退出，
+没有提交模型或训练。e42f596仅移除该无来源假设，比较实际TextCraft owner配置；
+v2完整比较通过。SQL仍停止，仅已有prepared版本；0/1与6/7未占用。
+19:02物理GPU2/3各19952MiB，4/5各860MiB，主机可用930229796864字节。
+当前current_runtime.json采集19:01:49，无entry或数值source hash不匹配。
+
+
 ### 2026-10-05 18:49：修复真实终局奖励丢失，评估服务路由候选补齐默认接口
 
 [TextCraft回执](results_textcraft_truncated_terminal_20261005.json)绑定实际旧入口

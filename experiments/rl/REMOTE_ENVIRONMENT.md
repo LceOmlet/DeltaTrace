@@ -6,6 +6,16 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-05 当前运行入口
 
+19:02更新：AppWorld通过原VERL从checkpoint20恢复，PID1856052/创建1791197944.7，
+GPU2/3，冻结entry appworld-eval-client-routing-resume-20261005-v1（本机CPU v2
+服务路由文件）；VERL/DT复用既有prefix冻结目录，官方预算、LoRA8/16与每卡B4
+不变，仍初始化，未声称新迭代或评估提速。
+TextCraft已确认native训练截断后reward active-mask接线错误，停止旧PID3218909，
+保留检查点100和旧日志；textcraft-truncated-terminal-resume-20261005-v2已完成
+CPU接口17通过/1可选检查跳过及配置逐值比较，尚未部署，等待训练起点选择。
+4/5空闲供测试；SQL停止，0/1与6/7不用。详见最新RUNTIME_RECORD和两项修复回执。
+
+
 
 17:20更新：AppWorld原step20训练、评估与完整检查点均已保存。按用户允许2/3
 测试、4/5正式的安排，用既有助手c134d93 stop-only停止当前AppWorld树并保留20；

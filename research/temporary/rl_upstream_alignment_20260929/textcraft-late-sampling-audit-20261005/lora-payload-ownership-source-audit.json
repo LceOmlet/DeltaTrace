@@ -1,0 +1,153 @@
+{
+  "scope": "Read-only local audit of actual copied TextCraft/native installed owner source and existing checkpoint100 dtype receipt. No SSH, privilege escalation, model construction, GPU test, production source/config edit, or new numerical tolerance.",
+  "method_specification": "experiments/rl/PLAN.md; Q/V/A, observation mask and upstream PPO are unchanged.",
+  "skill": "C:/Users/Administrator/.codex/skills/integrate-upstream-first/SKILL.md",
+  "runtime_identity": {
+    "snapshot": "experiments/rl/current_runtime.json",
+    "snapshot_observed_utc": "2026-10-05T19:01:49.412593+08:00",
+    "task": "TextCraft",
+    "recorded_driver_pid": 3218909,
+    "recorded_driver_created_unix": 1790895651.6807766,
+    "upstream_commit": "20bd331",
+    "startup_submission_repository_commit": "7831caf8f019eec1a0f069cb5a05b1ccddc60e0b",
+    "recorded_source_json_sha256": "6ce9aecf79305cf398ca5988ca20ce1a3aa9a571c4c32275be5d499bf48d5644",
+    "fsdp_strategy": "fsdp2",
+    "offload_policy": "CPUOffloadPolicy(pin_memory=True)",
+    "world_size": 2,
+    "rank": 8,
+    "alpha": 16,
+    "base_sync_done": true,
+    "status_scope": "Dated snapshot identity only; not a fresh live-process assertion. The stopped job is not restarted by this audit."
+  },
+  "actual_tensor_receipt": {
+    "path": "actual-adapter-dtypes.json",
+    "checkpoint_iteration": 100,
+    "each_rank_adapter_tensors": 496,
+    "all_adapter_dtype": "torch.float32",
+    "all_adapter_placements": "(Shard(dim=0),)",
+    "sample_A_global_local_shape": [[8, 4096], [4, 4096]],
+    "sample_B_global_local_shape": [[4096, 8], [2048, 8]]
+  },
+  "call_chain": [
+    {
+      "owner": "TextCraft pinned VERL FSDP worker",
+      "local": "research/temporary/rl_upstream_alignment_20260929/native-host-cache-owner-before.py",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/workers/fsdp_workers.py",
+      "sha256": "807e51856f9990d408fb2c33998fdcf9b0cbf3f230178677d6a5d2ecc0b7cc0d",
+      "source_lines": [[345, 364], [457, 467]],
+      "finding": "Applies FSDP2 to actor_module with CPUOffloadPolicy(pin_memory=True); _is_offload_param=False. Original sharder receives the actor and native full_params/load_format/layered_summon settings."
+    },
+    {
+      "owner": "Actual copied installed FSDP2",
+      "local": "research/temporary/rl_upstream_alignment_20260929/native-torch-sac-20261004/_fsdp_param_group.py",
+      "source_receipt": "research/temporary/rl_upstream_alignment_20260929/native-torch-sac-20261004/fsdp-source.json",
+      "sha256": "2798a87b2631091df738afaff6dfcead38ce0cc421585b4331ecaaefb4e784f5",
+      "source_lines": [[614, 634]],
+      "finding": "state_dict pre-save hook calls _to_sharded before parameter state is collected."
+    },
+    {
+      "owner": "Actual copied installed FSDP2 parameter",
+      "local": "research/temporary/rl_upstream_alignment_20260929/native-torch-sac-20261004/_fsdp_param.py",
+      "sha256": "12e459491589b623158627846f837175eae353e685f691875b5eb6b7884896e1",
+      "source_lines": [[273, 278], [371, 388], [540, 541]],
+      "finding": "Default placement is Shard(0); actor local DTensor is a view of pinned CPU padded shard storage. _to_sharded restores this parameter object."
+    },
+    {
+      "owner": "Actual installed torch.nn.Module",
+      "local": "installed-owner-sources/torch/nn/modules/module.py",
+      "sha256": "0cb24956454199a46e8fc37a7cce4fc1cff52130f25fb6eb052745e9eca89067",
+      "source_lines": [[2150, 2156], [2194, 2196], [2257, 2263]],
+      "finding": "state_dict recursively collects param.detach(), a shallow storage-sharing state artifact; this stage is not the ownership isolation boundary."
+    },
+    {
+      "owner": "Actual installed PEFT",
+      "source_receipt": "research/temporary/rl_upstream_alignment_20260929/appworld-prefix-resume-20261005/textcraft-lora-mutation-source-audit-20261005.json",
+      "remote": "/opt/conda/lib/python3.12/site-packages/peft/utils/save_and_load.py",
+      "sha256": "499d7bc36929d172da951b97ae81129834a5c69d6d4c434a1ee4359f256149ca",
+      "source_lines": [[57, 353]],
+      "finding": "get_peft_model_state_dict calls model.state_dict(), filters LoRA tensors and removes adapter names while retaining tensor values by reference."
+    },
+    {
+      "owner": "Actual pinned TextCraft VERL sharder",
+      "local": "research/temporary/rl_upstream_alignment_20260929/appworld-official-async-20261002/current-owner-source/verl/workers/sharding_manager/fsdp_vllm.py",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/workers/sharding_manager/fsdp_vllm.py",
+      "sha256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+      "source_lines": [[130, 134], [177, 181], [215, 218], [281, 296]],
+      "finding": "Native collection materializes DTensors with full_tensor().detach().cpu(); the extra outer conversion handles DTensors returned through the PEFT wrapper branch. A fresh local params mapping is built for every __enter__; update_params forwards that mapping in a new TensorLoRARequest ID, then params is deleted. LoRA base_sync_done path returns before base model.load_weights. No persistent staged export dictionary is reused by this sharder."
+    },
+    {
+      "owner": "Actual installed DTensor full_tensor",
+      "local": "installed-owner-sources/torch/distributed/tensor/_api.py",
+      "sha256": "8aaadd817b0f78d9c6e67c02efe08b3142342ab6f43023c4ccca06ac8359b062",
+      "source_lines": [[79, 84], [560, 589]],
+      "finding": "full_tensor redistributes to Replicate then returns a view of the redistributed local tensor."
+    },
+    {
+      "owner": "Actual installed DTensor redistribution",
+      "local": "installed-owner-sources/torch/distributed/tensor/_redistribute.py",
+      "sha256": "2fa3f8d44a6d17813ddf187c98f7fbe1561b4afd66697285ecbd735b2d4e96d8",
+      "source_lines": [[211, 215], [316, 327]],
+      "finding": "Recorded Shard(0) -> Replicate follows shard all-gather, not the same-placement storage-reuse shortcut."
+    },
+    {
+      "owner": "Actual installed Shard placement",
+      "local": "installed-owner-sources/torch/distributed/tensor/placement_types.py",
+      "sha256": "f23db5e6d07d3a3885c6d05725dd9a65839f12a4bc54732c53bc2df83ba95e0b",
+      "source_lines": [[251, 259]],
+      "finding": "Shard._to_replicate_tensor calls funcol.all_gather_tensor; optional unpadding is applied to the gathered result."
+    },
+    {
+      "owner": "Actual installed functional collective",
+      "local": "installed-owner-sources/torch/distributed/_functional_collectives.py",
+      "sha256": "5d34090d965215ce8d6ce1bc12e178c681d83ab491dd649c49c2d6aa537cebfe",
+      "source_lines": [[180, 217], [958, 961], [999, 999]],
+      "finding": "all_gather_tensor contract leaves the input unchanged and calls native all_gather_into_tensor. Registered Meta allocates input.new_empty with dimension zero multiplied by group size. The gather is the actor-to-payload isolation boundary according to the owner contract."
+    },
+    {
+      "owner": "Actual pinned VERL tensor-backed LoRA transport",
+      "source_receipt": "research/temporary/rl_upstream_alignment_20260929/appworld-prefix-resume-20261005/textcraft-lora-native-transport-source-20261005.json",
+      "remote": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/utils/vllm_utils.py",
+      "sha256": "17f3355dbcba9d9f2f8e04d7a1de54f6b3cdf8a6c660ac3440cbc8977cdb86ad",
+      "source_lines": [[160, 239]],
+      "finding": "TensorLoRARequest carries the exact updated_params mapping. Hijacked _load_adapter passes lora_tensors to native from_lora_tensors(device='cpu', dtype=self.lora_config.lora_dtype)."
+    },
+    {
+      "owner": "Actual installed vLLM LoRAModel",
+      "source_receipt": "research/temporary/rl_upstream_alignment_20260929/appworld-prefix-resume-20261005/textcraft-lora-native-transport-source-20261005.json",
+      "remote": "/opt/conda/lib/python3.12/site-packages/vllm/lora/lora_model.py",
+      "sha256": "10c987b1c6389d35d31fbdb269e0d7ea5253bda72aae970811d7601c255b0a10",
+      "source_lines": [[66, 109]],
+      "finding": "from_lora_tensors uses tensor.to(device,dtype) and optional pin_memory. It can share storage with its already-gathered payload when these are no-ops; that does not reconnect it to the actor shard."
+    },
+    {
+      "owner": "Actual installed vLLM layer weights",
+      "local": "installed-owner-sources/vllm/lora/lora_weights.py",
+      "sha256": "53bed6b2160269183c2a24acb74bb8eb7d42385c3256ea297d7bdf8b520cd25c",
+      "source_lines": [[37, 43], [127, 153], [231, 238]],
+      "finding": "optimize folds scaling into B then sets scaling=1. PackedLoRALayerWeights.pack first optimizes each child and builds the packed object with scaling=1, so the manager's subsequent packed optimize does not scale B a second time."
+    },
+    {
+      "owner": "Actual installed vLLM model manager",
+      "local": "installed-owner-sources/vllm/lora/model_manager.py",
+      "sha256": "affffd9900fe01ec9542744d836cbec3f82fab5e0cfe393617803d1204438c64",
+      "source_lines": [[232, 278], [577, 618], [758, 765], [824, 851]],
+      "finding": "First registration _add_adapter calls _create_merged_loras_inplace and optimize. Cache hits only touch and activate the existing LoRAModel. Activation calls set_lora, not optimize. Repeated activation therefore does not reapply alpha/r."
+    },
+    {
+      "owner": "Actual installed vLLM slot layers",
+      "source_receipt": "research/temporary/rl_upstream_alignment_20260929/appworld-prefix-resume-20261005/textcraft-lora-native-transport-source-20261005.json",
+      "remote": "/opt/conda/lib/python3.12/site-packages/vllm/lora/layers/base_linear.py",
+      "sha256": "8b1433278a205a0c884ca8ef50509beef654d51ba5fbde3deaf85578badb2a41",
+      "source_lines": [[94, 120]],
+      "finding": "set_lora copies A/B into dedicated stacked slot tensors with copy_; it does not mutate the actor or fold scaling again."
+    }
+  ],
+  "conclusions": {
+    "actor_storage_alias": "The recorded world-size-2 Shard(0) export path isolates actor storage at native full_tensor all-gather. PEFT shallow references and no-op detach/cpu do not bypass that gather. No actor B storage alias defect is supported by this source path.",
+    "payload_mutation": "vLLM may fold alpha/r into its gathered export payload if from_lora_tensors retains that storage. Such payload-local mutation is expected owner behavior and is distinct from actor mutation.",
+    "repeated_scaling": "Fresh native collection/ID per sync, optimize->scaling=1, packed scaling=1, and cache activation without optimize do not implement a repeated alpha/r scaling loop. No repeated-scaling defect is supported for this recorded native path.",
+    "production_action": "No LoRA clone, alpha/r config change, transport replacement, or other production patch is justified by this audit.",
+    "policy_collapse": "This audit does not identify LoRA alias/repeated scaling as the cause of late TextCraft collapse and does not claim recovery. The separately demonstrated truncated terminal reward wiring defect remains the confirmed defect."
+  },
+  "verification_scope": "Actual copied source and source receipt hashes plus actual checkpoint100 dtype/placement evidence; no runtime actor/payload data_ptr witness, model log-prob comparison, training recovery, or new tensor-ownership test was performed or made into an acceptance requirement."
+}
