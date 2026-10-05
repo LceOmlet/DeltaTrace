@@ -40,6 +40,29 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从
 
 ## 当前代码组合
 
+### 2026-10-05 14:52：只核对旧问题的修复范围，没有部署新变体
+
+原PID3658900/创建1791175714.44再次匹配；两rank仍在本次原actor更新，
+没有新的完整step或检查点。非阻塞原栈确认实际调用为冻结VERL的
+dp_actor.update_policy → torch.backward → 原FSDP2 foreach_reduce。
+这只证明采样时的调用路径，不把一次栈当成更新吞吐或无阻塞证明。
+原5秒物理采样GPU2/3各51696MiB、App PSS398037095424字节，
+主机可用346894004224字节，oom_kill仍1、failcnt0。
+对应只读phase-1791183084.json及owner-update-stack-1791183154.json保存在
+research/temporary/rl_upstream_alignment_20260929/appworld-prefix-resume-20261005。
+
+修复边界不扩大：已上线前缀复用的同88请求196.66→158.72秒；本轮DT已返回，
+整轮更新、保存及后续生成尚未验收。root/replay剩余计算并未宣告消除；
+GPU/CPU全量root保留、重排和低秩候选均未进入正式路径。
+当前固定VERL原fit在step20的顺序是actor返回→评估→保存→完整step日志，
+不能在actor或评估未返回时把尚无完成标记认定为保存错误。
+
+本次仅只读复核SQL旧prepared ecf31cc9…：原worker807e518…仍缺少
+AppWorld/TextCraft已验证的e5eb4afc…主机闲置缓存阶段释放补丁，准备配置也没有
+VERL_RELEASE_UNUSED_HOST_CACHE=1。它仍是prepared-only，不计入已修好的SQL部署。
+SQL没有完整检查点；旧恢复入口固定0/1且校验退役PID，不能照旧启动。
+本轮未修改或启动SQL、未改算法/配置/数值容差，未使用0/1或6/7。
+
 ### 2026-10-05 14:29：本次完整DT已返回，原actor更新开始
 
 [当前恢复回执](results_appworld_native_prefix_resume_20261005.json)绑定原readout日志行SHA：
