@@ -1,5 +1,21 @@
 # 当前运行版本与修复记录
 
+## 2026-10-05 持续退化：原更新端与信用信号分开核查
+
+旧TextCraft仍停止。本次只读核对原actor update_policy/optimizer AST与VERL20bd331一致，
+核心PPO文件SHA一致；没有发现新增信用反号变换、whitening或第二次优势累加。
+作者TextCraft GRPO原n8组内mean/std与当前DT直接插入的优势不同；G0任务优势为0，
+原熵/KL仍作用于全部action。成功轨迹39/93/117为131/8/约1条（每批256），
+熵.777/5.498/9.830；尚未把这条趋势当作熵梯度主导的证明。
+checkpoint25已测成功B4中合成正则梯度约为PG的4.09%，不能代替完整minibatch。
+少数反号按16slots/11token身份分别计量，不能扩成总体或主因。
+[信号对照](official_grpo_vs_dt_signal_audit.json)、
+[原更新端](results_textcraft_actor_credit_path_audit_20261005.json)及
+[退化回执](results_textcraft_degradation_20261005.json)固定源码/SHA与结论范围。
+原历史整批uid/IDs/mask/advantages未保留，未从文本重建。仅原输出观察口在已有远端
+Torch/原DataProto完成CPU5项测试，CUDA为空，无模型/DT/optimizer；观察口未接入生产。
+本次没有更新训练源、超参数或DT方法，也没有确认退化主因/恢复。
+
 ## 2026-10-05 TextCraft退化优先调查
 
 

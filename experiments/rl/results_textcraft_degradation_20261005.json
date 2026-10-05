@@ -155,5 +155,53 @@
     "production_method_changed": false,
     "readout_comparison": "Same original categorical head and original DeltaTrace runner c7fc969f; no environment simulation or new predictor",
     "gradient_scope": "Current-response-only selected success subset; v1 used FP64 QVA then A32, while original owner uses raw->row32->QVA32. CPU owner comparison max A difference1.4901161193847656e-8, max V difference1.1920928955078125e-7. No gradient equivalence threshold or rerun claimed."
+  },
+  "systematic_signal_audit": {
+    "observed_utc": "2026-10-05T15:53:59.601398+00:00",
+    "scope": "Source-bound investigation of persistent quality drift; no model execution, optimizer, hyperparameter/method change or TextCraft restart in this audit.",
+    "sources": {
+      "experiments/rl/results_textcraft_actor_credit_path_audit_20261005.json": "886085efc0b9cb196b8755e24b169605191eba8b573c9402c869cd676bdc0c53",
+      "experiments/rl/official_grpo_vs_dt_signal_audit.json": "d2ecae9ea0577e22b92bab25e253fff5a405405cd86a23b600a64809da599140",
+      "experiments/rl/results_textcraft_credit_sign_measurement_20261005.json": "d71d2ac36255a0814f3a5eaba01cfa203e89c9d7a23c86944b2bd3e8effbb414",
+      "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\quality_interface_owner_audit.json": "5b9f5313f5c40ef3bfe420cfe87e6383ac8998c705877dfa8eb36025a6a925cd",
+      "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\first-degradation-window-quality.json": "167ef094c5fa029f5f07a14ffcad26e2a4e5f7e7cb7abb6d7bf50343e8e15233",
+      "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\full-readout-distribution.json": "3556e3847c9ffbad3ab8d74f73093552ca425f7e4bb1e1ffd157f7a18287fb6e"
+    },
+    "established": [
+      "Actual TextCraft update_policy and _optimizer_step AST match pinned VERL20bd331; core_algos and torch_functional SHA match. This establishes checked owner source behavior, not a historical dynamic replay.",
+      "Author TextCraft GRPO computes n8 within-uid group mean/sample-std. For k4 successes its positive/negative coefficients are approximately +/-.9354126. Current DT directly inserts G*(-expm1(-d)); G0 has zero PG, G1 has individual signed token coefficients. No extra DT whitening/sign transform was found.",
+      "Native action mask and token-mean denominator retain zero-return actions; native weighted entropy/KL remain active on them.",
+      "Native reward-loss truncation interface defect exists separately; old no-cap-hit batches also exhibit degradation, so it is not established as a sufficient explanation.",
+      "Actual sampled successes fell from131/256 at39 to8/256 at93 and approximately1/256 at117; printed action entropy rose .777 to5.498 to9.830. These are trajectory counts and scalar metrics, not nonzero actor-token fractions or gradient dominance.",
+      "Selected successful B4 component gradient diagnostic at checkpoint25 had PG norm.00358669, weighted entropy.000142814 and weighted KL.0000409251; combined regularizer norm approximately4.09% of PG. It does not show regularizer dominance there.",
+      "Selected original joint sign flips were2/16 slots and2/11 independent token identities; this is not a population error rate or causal-impact measure."
+    ],
+    "mechanism_hypotheses_not_verdicts": [
+      "Task gradient weakening relative to fixed entropy/KL can produce cumulative drift and success-drop feedback. Failure G0 does not itself prove bias: exact return-conditional weighting compensates across outcome samples.",
+      "Systematic bias in same-model reward-event probability readout or joint-EOS token decomposition can change task gradient direction even with small finite credit extrema and unmodified PPO code.",
+      "PPO ratio clipping cannot establish correctness of supplied advantages. At the recomputed old-policy point rho=1, its task-gradient coefficient is the supplied advantage; a small persistent wrong direction need not trigger large clipping or nonfinite warnings."
+    ],
+    "most_discriminating_observation": {
+      "artifact": "Exact native complete actor minibatch with existing uid/traj_uid, policy token IDs, action mask, old/ref logprobs and DT advantages; original native config/checkpoint.",
+      "calls": "Call imported official VERL GRPO advantage and policy/entropy/KL loss functions on the same native data and original actor. Diagnostic component backward only; no optimizer or production replacement.",
+      "measures": [
+        "Full-minibatch task/weighted-entropy/weighted-KL parameter-gradient norms and dot products",
+        "DT task-gradient vs same-data official GRPO task-gradient cosine and norms",
+        "Native token/trajectory support and omitted true reward identity, not scalar loss sizes"
+      ],
+      "inference_scope": "GRPO gradient is a same-data practical comparison, not an oracle and not a requirement that correct DT match every GRPO token.",
+      "available": false,
+      "missing": "Old saved raw rollout JSONL has input/output/score/step only; full uid, exact tensors and final actor arrays were not retained. No reconstructed tokens/groups substitute for them."
+    },
+    "native_output_observer": {
+      "cpu_receipt": "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\native-batch-observer-cpu-result.json",
+      "tests": "Original imported DataProto CPU:5passed",
+      "installed_in_production": false,
+      "claim": "Verified observation seam only; no complete minibatch gradient cause measurement yet."
+    },
+    "production_method_changed": false,
+    "training_parameters_changed": false,
+    "cause_proven": false,
+    "recovery_claimed": false
   }
 }
