@@ -1,5 +1,5 @@
 {
-  "status": "degradation_confirmed_cause_investigation_in_progress_not_repaired",
+  "status": "degradation_confirmed_full_minibatch_loss_imbalance_observed_cause_investigation_not_repaired",
   "priority": "User prioritized TextCraft bad updates over further efficiency work",
   "original_job": {
     "pid": 3218909,
@@ -78,6 +78,11 @@
     "first_degradation_window_quality": {
       "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/first-degradation-window-quality.json",
       "sha256": "167ef094c5fa029f5f07a14ffcad26e2a4e5f7e7cb7abb6d7bf50343e8e15233"
+    },
+    "complete_native_optimizer_minibatch_20261006": {
+      "path": "experiments/rl/results_textcraft_native_minibatch_20261006.json",
+      "sha256": "a5b00a409263d88b2d56305d13095948907a5f4705fb74e576a183af20ce9736",
+      "bytes": 32530
     }
   },
   "confirmed_findings": [
@@ -99,7 +104,14 @@
     "Same-process v6 repeats identical single-EOS trace before/during/after actual layer3 norm capture: rank1 case0 native effects -.078378319740/-.078380048275/-.078378498554; finite signed -.031541740025/-.031596541316/-.030366225718. The .0468-.0480 finite/native gap persists without observer. Both ranks complete with zero optimizer steps and no capture errors; exact BF16/FP32 operands remain remote with SHA-bound JSON receipts. Existing raw conservation_tolerance fields are historical diagnostic metadata, not adopted official gates.",
     "Actual v6 layer3 norm input BF16 tensors match saved native input exactly. Same-owner CPU recomputation: rank1 post/input continuous FP32 finite gaps -6.22355e-8/+2.88878e-7 and FP64 gaps near1e-16; saved compiled vs owner CPU eager effect differences1.40769e-8/1.50237e-8. Main norm gaps .00324217/.00877132 are explained by native BF16 storage (GPU/CPU BF16 effect differences only4.63251e-6/2.09608e-5). Both native BF16 residual-add outputs reproduce exactly on CPU; their effects differ from separate branch sums by -.00704490/-.00333991. This locates low-precision storage effects and does not diagnose an analytic norm bug, declare a FA/FLA tolerance failure, or justify conservation rescaling.",
     "Original driver log contains zero printed records of exact author messages Rollou step Error: or Reset Timeout:. This is a log-scope negative result, not proof that all per-turn environment actions were valid or no unforwarded service errors occurred.",
-    "First-window original official metrics and six raw dumps checked: actual TextCraft launch disables invalid-action penalty. All dumps contain only input/output/score/step, without per-turn validity/errors/IDs or truncation flags. Response-length metric is the native full-trajectory attention tail including observations, while entropy is action-masked. Mean task_rounds increases from18.64 at30-35 to21.52 at46-50 and29.359 at93; no-cap-hit batches55/93 still decline. Zero printed clipfrac cannot establish exact absence of clipping."
+    "First-window original official metrics and six raw dumps checked: actual TextCraft launch disables invalid-action penalty. All dumps contain only input/output/score/step, without per-turn validity/errors/IDs or truncation flags. Response-length metric is the native full-trajectory attention tail including observations, while entropy is action-masked. Mean task_rounds increases from18.64 at30-35 to21.52 at46-50 and29.359 at93; no-cap-hit batches55/93 still decline. Zero printed clipfrac cannot establish exact absence of clipping.",
+    "The original weighted entropy gradient norm is4.39994x DT-PG, but only2.082% the same-data official GRPO-PG. Combined original H+KL is4.28074x DT-PG. This complete-minibatch loss imbalance is measured, unlike the earlier successful-B4 subset.",
+    "DT-PG norm is0.473187% same-data GRPO-PG; their cosine is−0.03467, nearly orthogonal. This is not a population sign-error rate or proof of an opposite true reward gradient.",
+    "The algebraic DT total negative-loss-gradient direction increases local entropy; the same-data GRPO total direction decreases it. This concerns loss gradients, not Adam preconditioned parameter updates.",
+    "43/64 zero-return trajectories contain213133/245386 action tokens (86.8562%); their saved DT advantages are allzero. Original H/KL still acts on that same mask. Zero-return vanishing is the fixed sampled formula and not in itself an estimator-bias proof.",
+    "The specified think token IDs have positive pooled netcredit in this batch; the earlier selected-minimum format-token hypothesis does not generalize. Pooled ID mass is not B4 tokenmean loss weighting.",
+    "All427 frozenBF16 base tensors/rank are exactly equal at checkpoint25/100. Every recorded Adam stepcounter goes100→398 and original hyperparameters match; no frozen-base overwrite evidence.",
+    "Original actor/core loss, clipping, accumulation and optimizer implementation remain upstream. Replacing advantages changes their distribution/scale and consequently the task/entropy balance even when coefficients stay identical."
   ],
   "representative_original_sample": {
     "iteration": 35,

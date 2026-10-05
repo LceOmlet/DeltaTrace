@@ -25,6 +25,77 @@ def _source_identity(value):
     return {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
+def capture_native_gradient(parameter, groups):
+    """Shared diagnostic snapshot; preserve native backward/DTensor ownership."""
+    import torch
+    from torch.distributed.tensor import DTensor, Replicate, Shard
+
+    grad = parameter.grad
+    tensor = parameter if grad is None else grad
+    record = {"shape": list(parameter.shape), "parameter_dtype": str(parameter.dtype),
+              "grad_dtype": None if grad is None else str(grad.dtype), "grad_is_none": grad is None}
+    bucket = ("local_plain",)
+    if isinstance(tensor, DTensor):
+        mesh = tensor.device_mesh
+        placements = tensor.placements
+        record.update(mesh=mesh.mesh.detach().cpu().tolist(), mesh_device_type=mesh.device_type,
+                      placements=[str(p) for p in placements])
+        if mesh.ndim != 1:
+            raise ValueError("Actual gradient mesh is outside this observation's recorded one-dimensional owner path.")
+        mesh_key = (mesh.device_type, tuple(mesh.mesh.detach().cpu().reshape(-1).tolist()))
+        if isinstance(placements[0], Shard):
+            bucket = ("sharded",) + mesh_key
+            groups[bucket] = mesh.get_group(0)
+        elif isinstance(placements[0], Replicate):
+            bucket = ("replicated",) + mesh_key
+        else:
+            raise ValueError(f"Cannot label gradient statistics for actual placement {placements} without owner materialization.")
+        if grad is not None:
+            grad = grad.detach().to_local()
+            from torch.distributed._functional_collectives import AsyncCollectiveTensor
+            if isinstance(grad, AsyncCollectiveTensor):
+                grad = grad.wait()
+    record["statistics_bucket"] = list(bucket)
+    copied = None if grad is None else grad.detach().to(device="cpu", copy=True)
+    if copied is not None:
+        record["local_grad_shape"] = list(copied.shape)
+    return copied, record, bucket
+
+
+def native_gradient_statistics(trainable, snapshots, groups, device, labels, *, norm_scope):
+    """Shared FP64 scalar statistics; never replace the native gradient reducer."""
+    import torch
+
+    pair_keys = tuple((a, b) for i, a in enumerate(labels) for b in labels[i:])
+    buckets = {}
+    for name in trainable:
+        for i, (a, b) in enumerate(pair_keys):
+            ga, bucket_a = snapshots[a][name]
+            gb, bucket_b = snapshots[b][name]
+            if bucket_a != bucket_b:
+                raise ValueError(f"Native gradient ownership changed between fresh forwards: {name}")
+            values = buckets.setdefault(bucket_a, [0.0] * len(pair_keys))
+            if ga is not None and gb is not None:
+                values[i] += torch.dot(ga.reshape(-1).double(), gb.reshape(-1).double()).item()
+    totals = [0.0] * len(pair_keys)
+    for bucket, values in buckets.items():
+        if bucket[0] == "sharded":
+            group = groups[bucket]
+            statistic_device = device if torch.distributed.get_backend(group) == "nccl" else "cpu"
+            values_tensor = torch.tensor(values, dtype=torch.float64, device=statistic_device)
+            torch.distributed.all_reduce(values_tensor, op=torch.distributed.ReduceOp.SUM, group=group)
+            values = values_tensor.cpu().tolist()
+            del values_tensor
+        totals = [total + value for total, value in zip(totals, values)]
+    return {
+        "measurement_dtype": "torch.float64",
+        "ownership_buckets": [list(bucket) for bucket in buckets],
+        "norm_scope": norm_scope,
+        "inner_products": {f"{a}:{b}": value for (a, b), value in zip(pair_keys, totals)},
+        "norms": {a: value ** 0.5 for (a, b), value in zip(pair_keys, totals) if a == b},
+    }
+
+
 def observe_native_actor_loss_gradients(worker, micro_batch, *, temperature, multi_turn=True):
     """Return PG, weighted entropy and weighted KL gradient norms/inner products.
 
@@ -120,39 +191,6 @@ def observe_native_actor_loss_gradients(worker, micro_batch, *, temperature, mul
     def scalar(value):
         return value.detach().item()
 
-    def capture_gradient(name, parameter):
-        grad = parameter.grad
-        tensor = parameter if grad is None else grad
-        record = {"shape": list(parameter.shape), "parameter_dtype": str(parameter.dtype),
-                  "grad_dtype": None if grad is None else str(grad.dtype), "grad_is_none": grad is None}
-        bucket = ("local_plain",)
-        if isinstance(tensor, DTensor):
-            mesh = tensor.device_mesh
-            placements = tensor.placements
-            record.update(mesh=mesh.mesh.detach().cpu().tolist(), mesh_device_type=mesh.device_type,
-                          placements=[str(p) for p in placements])
-            if mesh.ndim != 1:
-                raise ValueError("Actual gradient mesh is outside this observation's recorded one-dimensional owner path.")
-            mesh_key = (mesh.device_type, tuple(mesh.mesh.detach().cpu().reshape(-1).tolist()))
-            if isinstance(placements[0], Shard):
-                bucket = ("sharded",) + mesh_key
-                groups[bucket] = mesh.get_group(0)
-            elif isinstance(placements[0], Replicate):
-                bucket = ("replicated",) + mesh_key
-            else:
-                raise ValueError(f"Cannot label gradient statistics for actual placement {placements} without owner materialization.")
-            if grad is not None:
-                grad = grad.detach().to_local()
-                # The native DTensor API can expose an asynchronous local tensor.
-                from torch.distributed._functional_collectives import AsyncCollectiveTensor
-                if isinstance(grad, AsyncCollectiveTensor):
-                    grad = grad.wait()
-        record["statistics_bucket"] = list(bucket)
-        copied = None if grad is None else grad.detach().to(device="cpu", copy=True)
-        if copied is not None:
-            record["local_grad_shape"] = list(copied.shape)
-        return copied, record, bucket
-
     try:
         # Preserve caller RNG while giving the three fresh train forwards the
         # same RNG start. Native activation-checkpoint RNG behavior is unchanged.
@@ -219,40 +257,16 @@ def observe_native_actor_loss_gradients(worker, micro_batch, *, temperature, mul
                 snapshots[label] = {}
                 parameter_records[label] = {}
                 for name, parameter in trainable.items():
-                    copied, record, bucket = capture_gradient(name, parameter)
+                    copied, record, bucket = capture_native_gradient(parameter, groups)
                     snapshots[label][name] = (copied, bucket)
                     parameter_records[label][name] = record
                 model.zero_grad(set_to_none=True)
 
             # Statistics are measured in FP64 on independent native-dtype
             # snapshots; no training tensor is recast or modified.
-            buckets = {}
-            for name in trainable:
-                for i, (a, b) in enumerate(pair_keys):
-                    ga, bucket_a = snapshots[a][name]
-                    gb, bucket_b = snapshots[b][name]
-                    if bucket_a != bucket_b:
-                        raise ValueError(f"Native gradient ownership changed between fresh forwards: {name}")
-                    values = buckets.setdefault(bucket_a, [0.0] * len(pair_keys))
-                    if ga is not None and gb is not None:
-                        values[i] += torch.dot(ga.reshape(-1).double(), gb.reshape(-1).double()).item()
-            totals = [0.0] * len(pair_keys)
-            for bucket, values in buckets.items():
-                if bucket[0] == "sharded":
-                    group = groups[bucket]
-                    device = micro_batch["input_ids"].device if torch.distributed.get_backend(group) == "nccl" else "cpu"
-                    values_tensor = torch.tensor(values, dtype=torch.float64, device=device)
-                    torch.distributed.all_reduce(values_tensor, op=torch.distributed.ReduceOp.SUM, group=group)
-                    values = values_tensor.cpu().tolist()
-                    del values_tensor
-                totals = [total + value for total, value in zip(totals, values)]
-            result["gradient_statistics"] = {
-                "measurement_dtype": "torch.float64",
-                "ownership_buckets": [list(bucket) for bucket in buckets],
-                "norm_scope": "Logical DTensor gradients after native backward; plain tensors remain local. No clipping or optimizer step.",
-                "inner_products": {f"{a}:{b}": value for (a, b), value in zip(pair_keys, totals)},
-                "norms": {a: value ** 0.5 for (a, b), value in zip(pair_keys, totals) if a == b},
-            }
+            result["gradient_statistics"] = native_gradient_statistics(
+                trainable, snapshots, groups, micro_batch["input_ids"].device, labels,
+                norm_scope="Logical DTensor gradients after native backward; plain tensors remain local. No clipping or optimizer step.")
             result["fresh_forward_log_prob_equal"] = {f"{a}:{b}": torch.equal(forwards[a], forwards[b])
                                                       for a, b in pair_keys if a != b}
             result["parameters"] = parameter_records

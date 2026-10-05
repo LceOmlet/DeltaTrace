@@ -1,0 +1,154 @@
+{
+  "status": "read-only aggregation of existing completed observations; no new model/GPU/test",
+  "scope": "Distinguish measured native64 task-gradient weakness from possible readout or joint-EOS-to-token decomposition causes. No production edit, scaling, baseline or entropy change.",
+  "sources": [
+    {
+      "path": "experiments/rl/results_textcraft_native_minibatch_20261006.json",
+      "sha256": "44123b814e646f3073efc0c9c06cff7f043163a5af14716bd084e8cfd67cd68e"
+    },
+    {
+      "path": "experiments/rl/results_textcraft_credit_sign_measurement_20261005.json",
+      "sha256": "d71d2ac36255a0814f3a5eaba01cfa203e89c9d7a23c86944b2bd3e8effbb414"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/matched-comparison-v3.json",
+      "sha256": "4a6adf54ce199ca508ce08368887ed5fe1a731b6c776d4a463bcf30225faa971"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/matched-comparison-v6.json",
+      "sha256": "c33a2d823ee3b9da9bf2a526058349ceeb33694935def3792be6c19c1c1e1eb2"
+    },
+    {
+      "path": "experiments/rl/PLAN.md",
+      "sha256": "32f8379f1390bedf8d092cb9bd7765e39dd9f3dd62945d0249e6e3110248d1d0"
+    }
+  ],
+  "native64_scope": "Checkpoint25 native first8 prompts x original n8, one complete global64/local32/B4x8 minibatch. Four original backward passes, zero optimizer/scheduler updates. No historical bad update reconstructed.",
+  "original_action_mask": {
+    "total_action_tokens": 245386,
+    "all_rows": 64,
+    "uid_groups": 8,
+    "success_failure": {
+      "success": {
+        "rows": 21,
+        "action_tokens": 32253,
+        "token_fraction": 0.13143781633834042
+      },
+      "failure": {
+        "rows": 43,
+        "action_tokens": 213133,
+        "token_fraction": 0.8685621836616596
+      }
+    }
+  },
+  "success_token_advantages": {
+    "dt": {
+      "abs_mean": 0.0031253368737238795,
+      "rms": 0.007132434064288012,
+      "nonzero_count": 32067,
+      "zero_count": 186,
+      "signed_sum": 11.382526265195633,
+      "abs_sum": 100.80149018821629,
+      "signed_sum_over_abs_sum": 0.11292021818270949
+    },
+    "official_grpo": {
+      "abs_mean": 1.3311073281848294,
+      "rms": 1.4267755829353939,
+      "nonzero_count": 32253
+    },
+    "dt_grpo_absmean_ratio": 0.0023479225210079487,
+    "dt_grpo_rms_ratio": 0.004998988032591653,
+    "interpretation": "Different accepted estimators and distributions; these descriptive ratios are not a required equivalence, gradient norm identity or an official numerical failure criterion."
+  },
+  "measured_gradient_norms": {
+    "dt_pg": 0.00014529571645840992,
+    "weighted_entropy": 0.0006392929289644645,
+    "weighted_kl": 2.340718248176125e-05,
+    "grpo_pg": 0.03070575192965294,
+    "regularizer": 0.0006219736953375856,
+    "dt_total_loss": 0.0006360443570906153,
+    "grpo_total_loss": 0.030680927640415034
+  },
+  "measured_gradient_ratios": {
+    "weighted_entropy/dt_pg": 4.399943401961602,
+    "weighted_kl/dt_pg": 0.16110029292199696,
+    "regularizer/dt_pg": 4.280743510533031,
+    "dt_pg/grpo_pg": 0.004731872933490874,
+    "weighted_entropy/grpo_pg": 0.02081997309263386,
+    "weighted_kl/grpo_pg": 0.0007623061156550487,
+    "regularizer/grpo_pg": 0.020255934352707956,
+    "dt_total_loss/grpo_pg": 0.020714176241239644,
+    "dt_total_loss/grpo_total_loss": 0.02073093631800017
+  },
+  "zero_return_scope": {
+    "failure_tokens_with_zero_dt_credit": 213133,
+    "zero_dt_is_fixed_formula": "G=0 gives A=G*(-expm1(-d))=0; not evidence of a dropped/incorrect action mask.",
+    "dilution": "The native masked-mean still includes these long failure action tokens for entropy; this is a measured support difference from same-data original GRPO, not an attribution-only conclusion."
+  },
+  "single_delete_existing_scope": {
+    "checkpoint": "global_step_25",
+    "original_iteration": 26,
+    "v3_response_slots": 8,
+    "v3_unique_responses": 5,
+    "v3_selected_token_slots": 16,
+    "v3_unique_token_identities": 11,
+    "identity_definition": "(traj_uid, exact original_selected_input_ids, selected input position, token_id). Rank duplicates share identity; differing selected positions do not. This is identity counting, not independent statistical sampling.",
+    "not_independent_sampling": "Unique identities are not statistically independent samples; the original first minimum B4 selected token extrema, not random/population sampling.",
+    "joint_vs_direct_single_native_deletion": {
+      "selected_slots": 16,
+      "unique_selected_token_identities": 11,
+      "opposite_sign_slots": 2,
+      "opposite_sign_unique_identities": 2,
+      "logprob_difference_abs_min": 0.006390926435137917,
+      "logprob_difference_abs_median": 0.08131195497059479,
+      "logprob_difference_abs_max": 0.17963006052233757,
+      "G1_advantage_abs_difference_max_all_selected": 0.15956036928811262,
+      "G1_advantage_abs_difference_max_opposite_only": 0.07751763077919814
+    },
+    "single_finite_vs_own_direct_single_native_deletion": {
+      "selected_slots": 16,
+      "unique_selected_token_identities": 11,
+      "opposite_sign_slots": 1,
+      "opposite_sign_unique_identities": 1,
+      "logprob_difference_abs_min": 0.00014406988193760295,
+      "logprob_difference_abs_median": 0.011665791237860233,
+      "logprob_difference_abs_max": 0.050075564558277275,
+      "G1_advantage_abs_difference_max_all_selected": 0.056615269893105585,
+      "G1_advantage_abs_difference_max_opposite_only": 0.05051914832071828
+    },
+    "selected_d_abs_medians": {
+      "original_joint": 0.06223275960014232,
+      "single_finite": 0.08610174364265444,
+      "native_single_deletion": 0.08285314962267876
+    },
+    "joint_to_native_single_abs_ratio_selected_only": {
+      "median": 1.0121042898312298,
+      "minimum": 0.13825286094833528,
+      "maximum": 9.032734681088757,
+      "less_than_one_count": 8,
+      "slots": 16
+    },
+    "joint_endpoint_replay_max_abs_delta": 3.248453140258789e-06,
+    "v6_repeats": {
+      "selected_slots_per_call": 8,
+      "unique_identities": 6,
+      "observations": 24,
+      "meaning": "The same positive-extrema subset repeated three times, not 24 new distinct/independent probes."
+    }
+  },
+  "supported": [
+    "The full native64 minibatch has a much weaker DT task gradient than same-data original GRPO; original weighted entropy is dominant over this DT task gradient.",
+    "The native64 support difference includes 43 zero-return long failure trajectories versus 21 successful trajectories, alongside small successful-token DT advantages and signed cancellation.",
+    "For the selected local tokens, joint-response EOS decomposition does not equal direct single-token EOS model deletion, even when native joint endpoints replay almost identically.",
+    "Some selected joint credits are weaker than direct single deletion, while others are stronger; the existing sample does not establish uniform attenuation.",
+    "A one-token finite-versus-its-own-native-endpoint residual is separately recorded, so joint-span interaction alone cannot explain every selected discrepancy."
+  ],
+  "unknown": [
+    "Population single-token deletion error rate or typical amplitude ratio across native64.",
+    "Whether, or what fraction of, the measured 0.00473187 DT/GRPO task-gradient norm ratio is caused by same-model return readout, joint-EOS decomposition, finite propagation or trajectory/support mix.",
+    "Reward-event readout calibration or exact environmental token-counterfactual values.",
+    "Whole-batch task-gradient change that replacing selected joint credits by direct single deletion would produce; no such original actor backward was measured.",
+    "Unique historical cause of TextCraft degradation or restored task performance."
+  ],
+  "method_preserved": "Accepted token Q/V/A and original PPO remain unchanged. No credit normalization, scaling, new baseline, entropy tuning, whole-DT tolerance, correction or production implementation was proposed."
+}

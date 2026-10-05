@@ -1,0 +1,191 @@
+{
+  "scope": "Native CPU torch.load mmap/map_location=cpu/weights_only=False; native DTensor.to_local; exact frozen local value comparison and native dtype LoRA differences. No model or optimizer restore, gather, tensor dtype cast, CUDA initialization or training.",
+  "full_receipt": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/checkpoint25-100-native-cpu-comparison-20261006.json",
+    "sha256": "e28e5273fbcc4f67084be9d3e60fd53a96ef16631e6293179d98215d246266fe",
+    "bytes": 1856509
+  },
+  "script": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/compare_native_checkpoints_cpu_20261006.py",
+    "sha256": "0e794e52c8de87ed135a2372b2063654eaca174c5d4fa0fcb324b0c868dccf06",
+    "bytes": 10497
+  },
+  "stdout": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/checkpoint25-100-native-cpu-comparison-20261006.stdout.txt",
+    "sha256": "387c0df56f80c1af4367b71f6772b5c5caf676653e96ea329fe1e3ea573fa40e",
+    "bytes": 6421
+  },
+  "preceding_native_metadata": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/checkpoint-native-cpu-metadata-20261006.stdout.txt",
+    "sha256": "180c8815bc249989a6c19cae4f9f53009adabdd4040e2278246b52692832d4e6",
+    "bytes": 1777
+  },
+  "old_job_source": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/source.json",
+    "sha256": "6ce9aecf79305cf398ca5988ca20ce1a3aa9a571c4c32275be5d499bf48d5644",
+    "bytes": 113252
+  },
+  "upstream_commit": "20bd331",
+  "checkpoint_manager_actual_sha256": "d002ddff90f177bf7fe2f0ef53394b53681638d1a2254fe63ad3a9f98683e002",
+  "checkpoint_manager_scope": "Actual bytes reconstructed in memory from pinned owner base normalized to LF and its recorded GenerationConfig local-file patch; model/optimizer native torch.save/load primitives unchanged. No FSDP checkpoint manager or model instance created for this observation.",
+  "runtime": {
+    "pid": 3952319,
+    "started_unix": 1791217383.6654859,
+    "completed_unix": 1791217390.1552262,
+    "torch_version": "2.8.0+metax3.5.3.9",
+    "imported_sources": [
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/__init__.py",
+        "sha256": "7c9bcb6aa939250a05beb02c6ee30383af6b61461b845f85b3b252de94a9aed5"
+      },
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/tensor/__init__.py",
+        "sha256": "32e8abf9b60edffecad400c7f7b9ffe670f5d6e661ae2a490d845acc64bc37a2"
+      }
+    ],
+    "CPU_threads": 4,
+    "CUDA_VISIBLE_DEVICES": "",
+    "MACA_VISIBLE_DEVICES": "",
+    "process_group_initialized_before": false,
+    "process_group_initialized_after": false,
+    "cuda_initialized_before": false,
+    "cuda_initialized_after": false
+  },
+  "resources": {
+    "before": {
+      "mem_available_bytes": 499399806976,
+      "process_rss_bytes": 537063424,
+      "process_highwater_rss_bytes": 537063424,
+      "process_ru_maxrss_bytes": 537063424
+    },
+    "after": {
+      "mem_available_bytes": 499396382720,
+      "process_rss_bytes": 548880384,
+      "process_highwater_rss_bytes": 18571759616,
+      "process_ru_maxrss_bytes": 18571759616
+    },
+    "minimum_observed_mem_available_bytes": 499351232512,
+    "maximum_process_highwater_rss_bytes": 18571759616
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "checkpoint25": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25/actor/model_world_size_2_rank_0.pt",
+      "checkpoint100": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/checkpoints/global_step_100/actor/model_world_size_2_rank_0.pt",
+      "file_bytes": [
+        8997781971,
+        8997781971
+      ],
+      "keys": [
+        923,
+        923
+      ],
+      "keys_only25": [],
+      "keys_only100": [],
+      "frozen_base": {
+        "tensors": 427,
+        "equal": 427,
+        "local_elements": 4476901632,
+        "dtype_counts": {
+          "torch.bfloat16": 427
+        },
+        "different": [],
+        "metadata_mismatches": []
+      },
+      "lora": {
+        "tensors": 496,
+        "equal": 0,
+        "different": 496,
+        "local_elements": 10819584,
+        "changed_local_elements": 10819548,
+        "dtype": "torch.float32",
+        "maximum_absolute_difference": 0.0007606248836964369,
+        "local_l2_difference_from_native_fp32_norms": 0.7410495843946981,
+        "metadata_mismatches": []
+      },
+      "optimizer25": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25/actor/optim_world_size_2_rank_0.pt",
+        "bytes": 87091812,
+        "state_count": 496,
+        "step_counters": {
+          "100.0": 496
+        },
+        "missing_steps": []
+      },
+      "optimizer100": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/checkpoints/global_step_100/actor/optim_world_size_2_rank_0.pt",
+        "bytes": 87091812,
+        "state_count": 496,
+        "step_counters": {
+          "398.0": 496
+        },
+        "missing_steps": []
+      },
+      "optimizer_hyperparameters_equal": true,
+      "seconds": 2.574805360287428
+    },
+    {
+      "rank": 1,
+      "checkpoint25": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25/actor/model_world_size_2_rank_1.pt",
+      "checkpoint100": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/checkpoints/global_step_100/actor/model_world_size_2_rank_1.pt",
+      "file_bytes": [
+        8997781971,
+        8997781971
+      ],
+      "keys": [
+        923,
+        923
+      ],
+      "keys_only25": [],
+      "keys_only100": [],
+      "frozen_base": {
+        "tensors": 427,
+        "equal": 427,
+        "local_elements": 4476901632,
+        "dtype_counts": {
+          "torch.bfloat16": 427
+        },
+        "different": [],
+        "metadata_mismatches": []
+      },
+      "lora": {
+        "tensors": 496,
+        "equal": 0,
+        "different": 496,
+        "local_elements": 10819584,
+        "changed_local_elements": 10819551,
+        "dtype": "torch.float32",
+        "maximum_absolute_difference": 0.0007560527883470058,
+        "local_l2_difference_from_native_fp32_norms": 0.7467531314398743,
+        "metadata_mismatches": []
+      },
+      "optimizer25": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25/actor/optim_world_size_2_rank_1.pt",
+        "bytes": 87091812,
+        "state_count": 496,
+        "step_counters": {
+          "100.0": 496
+        },
+        "missing_steps": []
+      },
+      "optimizer100": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-rollout-scope-20261002/textcraft-dt/checkpoints/global_step_100/actor/optim_world_size_2_rank_1.pt",
+        "bytes": 87091812,
+        "state_count": 496,
+        "step_counters": {
+          "398.0": 496
+        },
+        "missing_steps": []
+      },
+      "optimizer_hyperparameters_equal": true,
+      "seconds": 2.371721051633358
+    }
+  ],
+  "interpretation": {
+    "established": "At these two original saved checkpoints, same metadata/key sets and all427 BF16 non-LoRA frozen-base local tensors/rank are exactly equal. All496 FP32 LoRA tensors/rank changed. Every original per-parameter optimizer counter is100 at checkpoint25 and398 at checkpoint100; original optimizer hyperparameters agree.",
+    "step_scope": "398−100=298 recorded optimizer counter increments. Counters do not identify individual historical updates or prove gradient correctness. The existing official NaN-skip records83/85 are separate evidence; no new expected-counter gate is introduced.",
+    "excluded_scope": "No frozen-base value change between the two saved states. Combined with the earlier checkpoint100-to-original427-tensor equality receipt, this also supports checkpoint25 unchanged base values for the same examined keys/shards.",
+    "not_established": "No dynamic reference/vLLM equality, every intervening parameter state, update-direction correctness, DT credit quality, or causal explanation of entropy/success deterioration."
+  },
+  "no_production_or_training_changes": true
+}

@@ -1,5 +1,33 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 TextCraft完整minibatch：原熵项相对任务梯度主导
+
+checkpoint25实际采集8个原prompt×作者n8=64轨迹，原global64→local32→8个B4，
+四次原update_policy backward观察，optimizer和scheduler均0次更新。
+v4诊断PID4189526、birth1791219550.81，于1791221830.87完成并退出；4/5只用于观察，
+旧TextCraft正式仍停止。实际actor/core/c9runner SHA与旧验证基线相同；
+采集入口使用已接受的终局截断漏奖修复v2，不能称历史坏更新原样重放。
+
+两rank完整Gram逐值相同：DT-PG norm0.000145296、加权熵0.000639293、
+加权KL0.0000234072；同批原生GRPO-PG0.0307058。加权熵为DT-PG的4.40倍，
+为GRPO-PG的2.08%；H+KL为DT-PG的4.28倍。DT-PG与GRPO-PG cosine−0.03467，
+近正交，不能称为已证明普遍反号。四分项Gram的代数组合显示DT总loss负梯度
+局部提高熵，GRPO总loss负梯度降低熵；不是Adam实际参数更新方向或新数值通过门槛。
+独立复算原Gram确认DT总loss与熵项cosine+0.97428，GRPO为−0.03298；
+来源见native-minibatch-v4/native-minibatch-entropy-direction-interpretation.json。
+43/64零回报轨迹占86.86% action tokens，DT-A全零；原H/KL仍参与。
+本批两个think标签ID净credit为正，旧minimum格式负值不能推广。
+
+427个冻结BF16基座tensor/rank在checkpoint25/100逐值相同；496个LoRA tensor
+均变化，原Adam计数100→398且超参数相同。只排除这两个保存点的基座误改，
+不当作学习方向正确证明。原PPO、LoRA8/16、microbatch4、DT公式均未改。
+
+来源与范围见[完整minibatch回执](results_textcraft_native_minibatch_20261006.json)，
+其中记录了v1 worker绑定失败、v2错误诊断范围主动停止、v3仅CPU绑定检查和
+v4实际成功观察，均不得混作旧正式训练退化原因。观察口只在隔离research入口，
+未接入默认launch。后续聚焦DT任务信号衰减来自读出还是逐token估计；
+不以任意缩放、信用裁剪、熵调参或效率工作掩盖，不称训练已修复。
+
 ## 2026-10-05 持续退化：原更新端与信用信号分开核查
 
 旧TextCraft仍停止。本次只读核对原actor update_policy/optimizer AST与VERL20bd331一致，
