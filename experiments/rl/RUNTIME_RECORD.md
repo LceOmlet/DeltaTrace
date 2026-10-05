@@ -40,6 +40,61 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从
 
 ## 当前代码组合
 
+
+### 2026-10-05 17:20：原step20完整保存，2/3释放给有界实际输入测试
+
+[本次恢复回执](results_appworld_native_prefix_resume_20261005.json)绑定原TaskRunner
+step20行5909/SHA c716c2fb…；原计时采样1445.833秒、旧概率384.645秒、
+DT3427.063秒、actor2785.245秒、评估3460.799秒、保存49.306秒、整轮11553.830秒。
+训练reward均值0.796、原评估test_score0.333、梯度范数0.001；这些来自完整原日志，
+不把评估混成训练成功率。新目录完成标记20和data/model/optim/extra_state七个
+原文件均存在，两个rank model各8997781971字节。
+
+按用户最新授权，既有停止助手c134d93增加stop-only，不修改训练代码、保存或恢复
+实现。真实PID3658900/创建1791175714.44、当前冻结entry/VERL/DT源SHA匹配后，
+在原完成标记20保留完毕的条件下停止该进程树；第21轮未完成部分不作为训练完成。
+原停止回执及17:20事后检查保存在appworld-prefix-resume-20261005/
+completed-step20-and-stop.json，SHA ce148902…：没有该树非zombie残留，
+TextCraft PID3218909/创建时间未变。2/3物理各859MiB，4/5正式训练继续；
+主机可用846618984448字节。当前快照17:20:38再次确认没有源码漂移；
+AppWorld已停供测试，不把停止前状态或旧PID称作仍运行。
+
+[原88请求CPU去重核查](results_native_prefix_duplicate_work_20261005.json)证实
+同UID已只取最长canonical：每rank88请求、18个canonical、5次原B4 capture。
+跨UID短初始前缀去重41920槽位，占bank约21.8%；正式bank464秒占DT3409秒
+13.6%，按冻结88槽位线性且零固定开销乐观折算也只约整DT3%，并非已实测收益。
+没有新跨UID缓存/调度器、全量root tape、排序或低秩候选进入默认训练路径。
+长B4 root/replay仍沿保存的真实请求与原owner做一次有界profile，不再整轮采集。
+
+
+### 2026-10-05 15:16：旧SQL资源缺项已准备补齐，AppWorld原更新已返回
+
+[SQL准备回执](results_sql_native_host_cache_20261005.json)绑定新隔离候选
+sql-native-host-cache-20261005-v2，prepared SHA630ed1f6…，准备提交2b12898。
+复用6781bdd原补丁，worker807e518…→e5eb4afc…；SQL原launcher仅插入
+原Ray runtime_env.env_vars的VERL_RELEASE_UNUSED_HOST_CACHE=1。
+另两项配置差异仅为同SHA Dataset/template的冻结路径。整树比对只改变上述
+worker和launcher；actor1f862e8b…、DT c9、官方任务配置、LoRA8/16、每卡B4与
+32768未变。原16项CPU接口检查25.66秒通过，原3项资源边界检查通过；
+它们不代替GPU容量、DT/PPO/vLLM数值容差或SQL训练健康验收。
+旧目录、active清单与作业不变；新候选prepared-only，没有分配GPU或启动训练。
+
+首次准备bf0dfa8因错误按LF匹配冻结launcher的真实CRLF行而失败。原源SHA51a854…
+已实际取回，修正插入后SHA2f4588…、其余字节不变；失败候选及回执保留，不加入
+默认launch路径。该问题属于准备器插入错误，没有改动正式算法或环境。
+
+15:15:58原AppWorld两rank已打印update_actor阶段末释放，reserved各从
+66252495789降至32858176416字节，耗时2.219/2.242秒；原TaskRunner进入
+本次官方评估，实际已返回534个请求、84542生成token，运输elapsed328.1秒。
+这包含环境/生成RPC，不是纯decode。检查点尚未保存，符合原fit评估后保存顺序。
+物理GPU2/3为56286/48000MiB，主机可用382603558912字节，原oom_kill仍1。
+原step18/19的更新耗时3003.368/2673.444秒已从原日志取回，不能与不同本轮轨迹
+直接宣称同负载提速。源码快照14:58:11 SHAaff5e942…无漂移，TextCraft已完成115。
+
+用户随后允许2/3做必要有界测试、4/5保留正式训练（或反过来）。当前正在评估的
+AppWorld新更新先保留到原完成保存点；同步分析现有实际profile和请求，避免
+只等待整轮。SQL尚未启动，GPU0/1与6/7继续空置，GRPO不再提交。
+
 ### 2026-10-05 14:52：只核对旧问题的修复范围，没有部署新变体
 
 原PID3658900/创建1791175714.44再次匹配；两rank仍在本次原actor更新，

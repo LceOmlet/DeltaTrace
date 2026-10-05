@@ -6,6 +6,21 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-05 当前运行入口
 
+
+17:20更新：AppWorld原step20训练、评估与完整检查点均已保存。按用户允许2/3
+测试、4/5正式的安排，用既有助手c134d93 stop-only停止当前AppWorld树并保留20；
+2/3物理各859MiB，TextCraft4/5不变，主机可用846618984448字节。
+测试将直接调用原VERL加载checkpoint20及保存的真实请求；SQL仍仅prepared。
+详见RUNTIME_RECORD、results_appworld_native_prefix_resume_20261005.json。
+
+
+15:16更新：AppWorld原actor更新已返回，正在原step20评估；新完整保存标记仍未
+形成。SQL已准备sql-native-host-cache-20261005-v2（prepared SHA630ed1f6…），
+含与AppWorld/TextCraft相同的已验证阶段末host-cache释放及原Ray资源开关，
+原16+3项CPU检查通过，但尚未提交或宣称训练健康。首次LF/CRLF插入失败的候选
+保留且不在默认launch路径。用户允许2/3有界测试、4/5正式（或反向）；0/1继续空置。
+具体版本、来源和检查范围见RUNTIME_RECORD及results_sql_native_host_cache_20261005.json。
+
 AppWorld已由原提交入口从完整检查点19恢复，PID3658900/创建1791175714.44，
 GPU2/3，冻结candidate appworld-native-prefix-resume-20261005-v2。前缀provider只替换
 共享历史prefill；原PPO/采样/任务配置、LoRA8/16、每卡B4和host-cache补丁不变。
