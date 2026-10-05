@@ -30,7 +30,7 @@ for ax,y,label,color in zip(axes,[success,entropy,ppo_kl],
 axes[0].set_title('TextCraft: original training records, iterations 26–117')
 axes[-1].set_xlabel('Completed iteration (4 native optimizer attempts per iteration)')
 fig.text(.095,.021,'Gray: earliest decline window to inspect. Red: nonfinite gradient warnings (83, 85, 109).\n'
-    'Console values rounded to 3 decimals. Entropy includes native attention-tail; PPO KL is logged actor aggregation.',
+    'Console values rounded to 3 decimals. Entropy uses the deployed policy loss_mask; PPO KL is logged actor aggregation.',
     fontsize=8,color='#555555')
 fig.savefig(folder/'degradation.png',dpi=170)
 print(folder/'degradation.png')

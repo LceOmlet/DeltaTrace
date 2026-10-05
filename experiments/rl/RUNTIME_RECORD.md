@@ -2609,3 +2609,56 @@ B8夹具证明固定参数下的原更新容量，head原容差证明对应算�
 已撤回的整网两次更新阈值不再作为验收要求；历史零信用、守恒或进程存活也不作为成功证据。
 
 </details>
+
+
+### 2026-10-05 TextCraft 实际信用反号定位（质量优先）
+
+原停机作业、c9 数值版本、LoRA8/16、每卡actor/DT4及原任务预算均不变。
+仅GPU4/5加载原完整checkpoint25，读取step26原IDs；各诊断零optimizer step。
+TextCraft未恢复，效率候选仍封存。原成功率首次持续下降窗口仍是35–40；
+下述数值证据不能被扩大为已经证明整个退化的唯一原因。
+
+| 诊断 | 身份及实际结果 |
+| --- | --- |
+| v1 | PID2747303/birth1791206224.41，已结束；原head直接EOS读出及原VERL三项梯度。PG=.00358669，weighted H=.000142814，KL=.0000409251，仅五个独立成功response子集；不代表完整minibatch。 |
+| v2 | PID2887764/birth1791207512.79，诊断模块过早import有限目标类导致进入DT前失败；原回执保留，无更新。 |
+| v3 | PID2914261/birth1791207731.26，已结束；原B4/paired8、EOS右补702/718、prefix320，三次原trace调用。原joint端点最大差3.24845e-6；16 selected slots中两处joint与single native root反号，一处single finite自身反号。 |
+| v4 | PID3002000/birth1791208539.48，已结束；只single-positive一次，原函数及其返回对象不变的被动token_effect观察，98次小标量收缩。rank1 Thought负root-.045309、最终正finite+.004223；decoder3改变+.0282005，GDN2/1/0继续累积。rank0冷/热端点差另列，未代替rank1证据。 |
+| v5 | PID3108984/birth1791209508.79，已结束；被动拆查decoder3，原有限算子和参数不变。但rank1 case0 native factual从v4的-.546221变为-.585652，root从-.045309变为-.078381；变化发生在有限包装执行之前，不能把v5层残差混入v4反号路径。v5 signed为-.031702，未证明根因或修复。 |
+| v6 | PID3237912/birth1791210683.51，已结束；同进程原/采集norm操作数/原三次同一个single-EOS调用。rank1 case0 native root分别-.07837832/-.07838005/-.07837850；finite分别-.03154174/-.03159654/-.03036623。无观察器仍有.0468–.0480差值；两rank零更新，无采集错误。实际.pt分别93908758/97840918字节，SHA在rankN-norm-operands.json，仅保存第3层case0，不保留全B8张量。 |
+
+所有冻结诊断与原始日志路径/SHA、导入源及effective config在
+`research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v{1,2,3,4}`；
+v2/v3/v4/v5的source tar分别保留，当前本机诊断脚本的新版本不替换历史回执。
+实际runner仍是原nested c9 `c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1`，
+未调用正式AppWorld的flat prefix候选或封存存储优化。
+
+更正口径：旧实际trainer SHA8816ea4e…通过原轨迹补丁优先loss_mask，
+其H统计也屏蔽观测；此前attention-tail解释仅对应未打补丁上游，不对应该作业。
+v1 gradient diagnostic用了rawFP64组合再A32，原readout先raw→rowFP32再组合；
+CPU调用同一counterfactual owner对八行比较，A最大差1.4901161e-8、V最大差1.1920929e-7，
+GPU未初始化。这只限定该诊断精度口径，不设新验收标准或归因退化于该差值。
+后续诊断适配已对齐原rowFP32，旧v1源码/结果保留。
+
+完整原readout日志已stream汇总178条report/92条completed metric，logSHA54f4aef6…
+匹配原停机记录；缺失不填0、原调整产生的复制槽位不称独立trajectory。
+源码全轨迹credit按唯一slice赋值，未见历史动作重复建立PPO loss行；35–40
+完整actor数组未保留，不能称真实scatter数值回放完成。当前只继续针对
+decoder3原计算拆分MLP/投影、归一化/残差及attention误差；FA/FLA容差、
+Q/V/A公式、损失系数及全部训练参数均未改，未称任务质量已恢复。
+
+实际安装HF Qwen3.5 RMSNorm源码SHAf7e1a804…已只读取回：FP32归一化及
+乘(1+w)后存回输入dtype，原decoder两次residual相加也存BF16。当前finite norm
+是连续FP32解析secant。这只指出需要按实际操作数拆分的误差来源，不构成
+FA/FLA超差结论，也不授权守恒倍率或其他纠偏。来源文件及SHA在同目录
+`owner-sources/source.json`。同进程原调用/采集norm操作数/原调用诊断v6已完成，
+与所有正式训练版本分开；实际.pt留在远端receipt目录，只读CPU拆分已经完成。
+两个norm的native/finite输入BF16逐值相同；rank1 post/input连续FP32有限差仅
+-6.22e-8/+2.89e-7，FP64约1e-16；保存compiled与原函数CPU eager收缩差
+1.41e-8/1.50e-8。主要norm差.003242/.008771来自BF16落盘，GPU/CPU原norm
+输出收缩差只4.63e-6/2.10e-5。两次原BF16 residual add在CPU逐值复现，
+实际output与两branch和的效应差-.007045/-.003340。对应
+`model-probe-v6/rank{0,1}-norm-analysis.json`绑定实际.pt SHA、原函数路径及SHA；
+解析norm公式未发现该样本的实现错误，不能为吸收舍入而改正确公式。
+原输出conservation_tolerance/verified字段保留作为历史元数据，未使用
+它们自建官方门槛或修正信用。TextCraft仍停止。

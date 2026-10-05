@@ -31,7 +31,7 @@ RUNNER_SHA = 'c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1'
 
 
 def source_of(owner):
-    path = Path(inspect.getsourcefile(owner)).resolve()
+    path = Path(inspect.getsourcefile(inspect.unwrap(owner))).resolve()
     return dict(path=str(path), sha256=hashlib.sha256(path.read_bytes()).hexdigest())
 
 
@@ -93,6 +93,11 @@ def selected_positions(sample, tokenizer):
 
 @ray.remote
 class TextCraftDeletionWorker(ActorRolloutRefWorker):
+    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
+    def inspect_matched_attribution(self):
+        from observe_textcraft_matched_attribution import observe_matched_attribution
+        return observe_matched_attribution(self, OUT, RECORDS, SOURCE, RUNNER_SHA)
+
     @register(dispatch_mode=Dispatch.ONE_TO_ALL)
     def inspect_gradients(self):
         from observe_native_actor_loss_gradients import observe_gradients
@@ -268,7 +273,9 @@ if __name__ == '__main__':
         (OUT/'checkpoint-load.json').write_text(json.dumps(dict(path=str(checkpoint),
             actor_path=str(checkpoint/'actor'), original_loader='ActorRolloutRefWorker.load_checkpoint',
             returned_unix=time.time()), indent=2)+'\n')
-        results = group.inspect_deletions()
+        results = (group.inspect_matched_attribution()
+            if os.environ.get('DT_TEXTCRAFT_MATCHED_DIAGNOSTIC') == '1'
+            else group.inspect_deletions())
         (OUT/'result.json').write_text(json.dumps(results, indent=2)+'\n')
         if os.environ.get('DT_TEXTCRAFT_GRADIENT_DIAGNOSTIC')=='1':
             gradients=group.inspect_gradients()

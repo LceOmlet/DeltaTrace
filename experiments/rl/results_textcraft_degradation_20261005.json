@@ -16,14 +16,80 @@
     "collected_original_records": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/records.json",
     "collected_original_records_sha256": "18b5ff7d70b73069a88e5570023dc71bba2458fa0a7a6e50a560e1b469384495",
     "metrics_audit": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/training-degradation-metrics-audit.json",
-    "plot": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/degradation.png"
+    "plot": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/degradation.png",
+    "actual_gradient_probe": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v1/gradient-results.json",
+      "sha256": "ff4f6f5d2e6a62f22a4ea55eb3ddf99e28ac4ad6e7f4f36b43cfa092e964f1ff"
+    },
+    "matched_owner_probe": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v3/result.json",
+      "sha256": "c4cd4df3069ec8dd8a08e3812394a0f85e0dda373cede926879d8d3fd604417e"
+    },
+    "matched_comparison": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/matched-comparison-v3.json",
+      "sha256": "4a6adf54ce199ca508ce08368887ed5fe1a731b6c776d4a463bcf30225faa971"
+    },
+    "passive_per_sample_finite_ledger": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v4/result.json",
+      "sha256": "248855772f30e743f35bb64556998de710356f1a8217ca1a72d6de4f3561bd50"
+    },
+    "full_readout_distribution": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/full-readout-distribution.json",
+      "sha256": "3556e3847c9ffbad3ab8d74f73093552ca425f7e4bb1e1ffd157f7a18287fb6e"
+    },
+    "qva_dtype_comparison": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/qva-dtype-comparison.json",
+      "sha256": "5c89b677324641c57229b91fc64fc105c58b6f9bff46df0ddd4ed2bc7002a258"
+    },
+    "passive_layer3_stage_probe": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v5/result.json",
+      "sha256": "3a4d41971b0558278203d121af4547fd8fef606c317b5aaad674456756480bef"
+    },
+    "actual_installed_norm_source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/owner-sources/source.json",
+      "sha256": "8eeac152fc0e3e4e9dae163b7810711f7d544fd7bdada310653e54588e26cef4"
+    },
+    "same_process_native_norm_capture_probe": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v6/result.json",
+      "sha256": "8eeb9dbc158674957267d15bd12baa3c478e4d9cfa7a6e784a2ff448a30c8f26"
+    },
+    "same_process_comparison": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/matched-comparison-v6.json",
+      "sha256": "c33a2d823ee3b9da9bf2a526058349ceeb33694935def3792be6c19c1c1e1eb2"
+    },
+    "matched_stage_comparison": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/matched-comparison-v5.json",
+      "sha256": "5e63502f7bcef311caa78b7e8a061516125f46ea531d1ea67e565a7f30f590a4"
+    },
+    "actual_norm_operand_analysis": [
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v6/rank0-norm-analysis.json",
+        "sha256": "69fcb0c224b37fcb6b1d2031973eaf6d75e8699cfb02c39678ed6b2129fca277"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/model-probe-v6/rank1-norm-analysis.json",
+        "sha256": "fac246dbc098395711a7760684e016d643403d48b77334848c0e0d2b22330279"
+      }
+    ]
   },
   "confirmed_findings": [
     "Earliest sustained lower success range is observed from rollout40; inspect updates35-40. Actual rollout39 success131/256, rollout40 success117/256. This is a temporal boundary, not proof that update39 alone caused the change.",
     "Previously confirmed truncation reward loss is real, but 24 no-cap-hit iterations and complete-positive-event anchor batches still degrade. The repair has not been shown to recover training quality.",
     "Original iterations83,85,109 each record grad_norm:nan, with warnings from both ranks (six warnings). The original actor skips the respective optimizer.step and clears gradients. It does not justify saying the entire iteration was skipped.",
     "Source-level sign, token boundaries, request refill and inverse dispatch do not show a further mismatch. Historical final actor arrays were not saved, so this is not a completed runtime scatter check.",
-    "At iteration35, 19 of24 saved extreme-batch success samples have the empty-think prefix; 16 of19 assign negative signed credit to each of its first four tokens. These are selected extrema, not representative full-batch statistics."
+    "At iteration35, 19 of24 saved extreme-batch success samples have the empty-think prefix; 16 of19 assign negative signed credit to each of its first four tokens. These are selected extrema, not representative full-batch statistics.",
+    "Original checkpoint25 readout/gradient diagnostics completed without optimizer steps on GPU4/5. Selected B8 has five distinct successful source-step0 responses, not the whole native optimizer minibatch.",
+    "On that subset, native PG gradient norm .00358669 versus weighted entropy .000142814 and KL .0000409251. It does not support regularizer dominance on this subset; it cannot establish full-batch gradient balance.",
+    "Matched original dense EOS extension, pairedB8, prefix320 and checkpoint25 reproduce original joint endpoint scores with maximum absolute difference 3.248453140258789e-6. Across the three v3 passes factual scores differ at most 3.337860107421875e-6.",
+    "Two of16 selected joint-credit slots have opposite sign to matched single-EOS native endpoint effects. One of16 single-deletion finite credits itself has opposite sign to its own endpoint effect. This is selected-case evidence, not a full-batch error rate or a new official tolerance verdict.",
+    "Rank1 UID1744 Thought: joint credit +.031699801785; single native endpoint effect -.045308351517; single finite credit +.004177407631. The one-token intervention rules out explaining this whole discrepancy solely as a joint-span interaction.",
+    "Passive v4 same rank1 case reproduces the negative native endpoint and positive finite credit. Native replay vs root layer values are equal in the saved owner ledger. Coefficients are FP32, captured endpoints BF16 and contraction FP64. The largest per-layer effect shift is decoder3 +.028200477812; lower GDN layers2/1/0 add .010041308449/.005441583006/.006344363889 and complete the sign reversal.",
+    "v4 rank0 cold first-call native scores differ from v3 later warmed pass despite identical IDs and owner options; this is preserved separately. The reproducible rank1 failure, not rank0 cross-run endpoint comparison, anchors the per-layer localization.",
+    "Original TextCraft entropy metric uses native action loss_mask through the deployed trajectory entry patch (actual trainer SHA8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df). Earlier attention-tail explanation is corrected.",
+    "Source-bound trajectory scatter assigns each current response Q/V/A to its unique policy slice in the native whole trajectory. No response-as-new-PPO-row or repeated historical loss path was found. Historical step35-40 final actor arrays were not saved.",
+    "v5 retains original decoder/boundary callables, unchanged options and paired IDs, but its rank1 case0 native factual score -.585651934 differs from v4 -.546220541 before the finite decoder wrapper executes. Its native effect -.078380823 and final signed -.031702233 are not the v4 numerical path and must not be mixed with v4 layer residues. No operator blame or fix is inferred from this cross-process difference.",
+    "Same-process v6 repeats identical single-EOS trace before/during/after actual layer3 norm capture: rank1 case0 native effects -.078378319740/-.078380048275/-.078378498554; finite signed -.031541740025/-.031596541316/-.030366225718. The .0468-.0480 finite/native gap persists without observer. Both ranks complete with zero optimizer steps and no capture errors; exact BF16/FP32 operands remain remote with SHA-bound JSON receipts. Existing raw conservation_tolerance fields are historical diagnostic metadata, not adopted official gates.",
+    "Actual v6 layer3 norm input BF16 tensors match saved native input exactly. Same-owner CPU recomputation: rank1 post/input continuous FP32 finite gaps -6.22355e-8/+2.88878e-7 and FP64 gaps near1e-16; saved compiled vs owner CPU eager effect differences1.40769e-8/1.50237e-8. Main norm gaps .00324217/.00877132 are explained by native BF16 storage (GPU/CPU BF16 effect differences only4.63251e-6/2.09608e-5). Both native BF16 residual-add outputs reproduce exactly on CPU; their effects differ from separate branch sums by -.00704490/-.00333991. This locates low-precision storage effects and does not diagnose an analytic norm bug, declare a FA/FLA tolerance failure, or justify conservation rescaling."
   ],
   "representative_original_sample": {
     "iteration": 35,
@@ -31,16 +97,34 @@
     "source_step": 0,
     "observed_return": 1.0,
     "root_effect": -0.2895938754081726,
-    "first_four_source_token_ids": [248068, 271, 248069, 271],
-    "first_four_decoded_source_tokens": ["<think>", "\n\n", "</think>", "\n\n"],
-    "first_four_signed_log_ratios": [-0.10735429619355122, -0.0806627815792463, -0.012951896595509042, -0.1326954709849342],
+    "first_four_source_token_ids": [
+      248068,
+      271,
+      248069,
+      271
+    ],
+    "first_four_decoded_source_tokens": [
+      "<think>",
+      "\n\n",
+      "</think>",
+      "\n\n"
+    ],
+    "first_four_signed_log_ratios": [
+      -0.10735429619355122,
+      -0.0806627815792463,
+      -0.012951896595509042,
+      -0.1326954709849342
+    ],
     "claim": "A concrete negative format-credit pattern to investigate; no attribution clipping or redistribution applied"
   },
   "limitations_and_next_observations": [
-    "Console PG loss, clipping and gradient values are rounded to three decimals; displayed zero cannot establish weak or zero task gradients.",
-    "Logged entropy comes from old-policy attention-tail statistics, whereas the actual actor loss uses policy loss_mask. KL logging is the last microbatch per rank. These logs cannot establish objective dominance.",
-    "Use original saved IDs with checkpoint25/iteration26 to compare original categorical readout under factual, joint-EOS and selected single-token-EOS inputs. Keep raw differences; no new numerical acceptance gate or corrective multiplier.",
-    "Observe original PPO task, entropy and KL gradient components on the same saved responses using original loss functions. This is not recovery of the unsaved whole historical update."
+    "Earliest sustained task decline remains the35-40 update window. Actual numerical counterexample at checkpoint25/step26 shows an earlier credit sign mismatch, not sole causation of the later complete task collapse.",
+    "Native readout forecast calibration, joint decomposition approximation and finite arithmetic propagation are different issues. Full-readout roots from sampled successes cannot calibrate the missing G0 cases; a negative success trajectory root is not by itself proof of wrong credit.",
+    "Observe decoder3 original MLP/projection, norms/residual and attention phase effects with unchanged actual operands. Reuse corresponding official FA/FLA references where applicable; do not invent a whole-model threshold or compensate the returned credit.",
+    "The old NaN updates83/85/109 remain a separate late instability. Exact historical ratio/gradient operands were not saved; no cause is assigned from warnings alone.",
+    "No repair or quality recovery claimed from conservation, selected numeric probes or gradient connectivity. TextCraft stays stopped; restart origin remains a user decision already requested.",
+    "Actual installed Qwen3.5 RMSNorm normalizes and scales in FP32 then returns the input dtype (BF16 here); both native residual additions also store BF16. The finite norm uses an analytic FP32 continuous secant. Actual operands are needed to separate this storage difference from arithmetic error; source inspection alone is not a FA/FLA tolerance failure.",
+    "The correct continuous RMSNorm formula must not be altered simply to absorb ordinary BF16 storage. Remaining projection, GDN and joint-per-token approximation quality require corresponding actual owner operands and references. No production correction, threshold, coefficient or parameter change is inferred from the storage ledger."
   ],
   "efficiency_candidate": {
     "status": "paused_unaccepted_not_deployed",
@@ -49,5 +133,16 @@
   },
   "training_parameter_changes": [],
   "credit_formula_changes": [],
-  "claim_of_recovery": false
+  "claim_of_recovery": false,
+  "actual_model_diagnostic_scope": {
+    "checkpoint": 25,
+    "original_source_step": 26,
+    "local_batch_per_rank": 4,
+    "world_size": 2,
+    "optimizer_steps": 0,
+    "task_parameters_changed": false,
+    "production_method_changed": false,
+    "readout_comparison": "Same original categorical head and original DeltaTrace runner c7fc969f; no environment simulation or new predictor",
+    "gradient_scope": "Current-response-only selected success subset; v1 used FP64 QVA then A32, while original owner uses raw->row32->QVA32. CPU owner comparison max A difference1.4901161193847656e-8, max V difference1.1920928955078125e-7. No gradient equivalence threshold or rerun claimed."
+  }
 }

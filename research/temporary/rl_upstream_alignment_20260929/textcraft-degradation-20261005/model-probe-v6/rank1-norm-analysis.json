@@ -1,0 +1,1416 @@
+{
+  "scope": "CPU-only diagnosis of actual layer3 norm/storage operands, with native owners.\n\nNo model checkpoint, optimizer, finite replacement, correction, or acceptance\nthreshold is used. The actual installed HF RMSNorm and pinned c9 finite rules\nare invoked on the captured tensors. CPU owner recomputation is identified\nseparately from the original GPU compiled return and native BF16 outputs.\n",
+  "backend": "CPU on captured operands; original saved return was compiled on GPU",
+  "input_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-degradation-probe-20261005-v6/rank1-norm-operands.pt",
+  "input_sha256": "4c4b7451f65e64d69444b069858cb48aa7171566f19d5d890eee3e13fe483537",
+  "analyzer_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-degradation-probe-20261005-v6/analyze_textcraft_norm_operands.py",
+  "analyzer_sha256": "b7e1902174901b69a344c7e98a876af0dcc7c5becabc016beb6e150705b91258",
+  "torch_version": "2.8.0+metax3.5.3.9",
+  "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/clean/qwen35",
+  "sources": {
+    "hf_forward": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+      "function": "forward",
+      "first_line": 749
+    },
+    "hf_norm_primitive": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+      "function": "_norm",
+      "first_line": 746
+    },
+    "finite_norm_primitive": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/clean/qwen35/signed_secant_rules.py",
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d",
+      "function": "rmsnorm_secant_pullback",
+      "first_line": 46
+    },
+    "finite_norm_residual": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/clean/qwen35/qwen35_decoder_finite.py",
+      "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197",
+      "function": "_norm_residual_rule",
+      "first_line": 101
+    },
+    "token_effect": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/clean/qwen35/qwen35_dense_finite_runner.py",
+      "sha256": "c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1",
+      "function": "_token_effect",
+      "first_line": 39
+    }
+  },
+  "captured_receipt": {
+    "scope": "Bounded layer3/case0 operand capture around the unchanged native owners.\n\nSave the last native replay's paired rows0/1 and the original two finite norm\ncalls' case0 operands. No norm, residual addition, finite formula, precision,\nprefix, or model call is replaced. Copies and serialization are diagnostics;\nthis context is not a performance measurement or an accuracy threshold.\n",
+    "layer_index": 3,
+    "case_index": 0,
+    "paired_rows": [
+      0,
+      1
+    ],
+    "owner_decoder": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/clean/qwen35/qwen35_decoder_finite.py",
+      "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197",
+      "function": "decoder_finite_pullback",
+      "first_line": 221
+    },
+    "decoder_calls": 1,
+    "native_captures": {
+      "input_norm_output": {
+        "original_type": "Tensor",
+        "original_shape": [
+          8,
+          398,
+          4096
+        ],
+        "original_dtype": "torch.bfloat16",
+        "original_device": "cuda:0",
+        "original_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "original_storage_offset": 0,
+        "local_shape": [
+          8,
+          398,
+          4096
+        ],
+        "retained_shape": [
+          2,
+          398,
+          4096
+        ],
+        "retained_dtype": "torch.bfloat16",
+        "retained_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "retained_bytes": 6520832,
+        "calls": 3
+      },
+      "input_norm_input": {
+        "original_type": "Tensor",
+        "original_shape": [
+          8,
+          398,
+          4096
+        ],
+        "original_dtype": "torch.bfloat16",
+        "original_device": "cuda:0",
+        "original_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "original_storage_offset": 0,
+        "local_shape": [
+          8,
+          398,
+          4096
+        ],
+        "retained_shape": [
+          2,
+          398,
+          4096
+        ],
+        "retained_dtype": "torch.bfloat16",
+        "retained_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "retained_bytes": 6520832,
+        "calls": 3
+      },
+      "attention_output": {
+        "original_type": "Tensor",
+        "original_shape": [
+          8,
+          398,
+          4096
+        ],
+        "original_dtype": "torch.bfloat16",
+        "original_device": "cuda:0",
+        "original_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "original_storage_offset": 0,
+        "local_shape": [
+          8,
+          398,
+          4096
+        ],
+        "retained_shape": [
+          2,
+          398,
+          4096
+        ],
+        "retained_dtype": "torch.bfloat16",
+        "retained_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "retained_bytes": 6520832,
+        "calls": 3
+      },
+      "post_norm_output": {
+        "original_type": "Tensor",
+        "original_shape": [
+          8,
+          398,
+          4096
+        ],
+        "original_dtype": "torch.bfloat16",
+        "original_device": "cuda:0",
+        "original_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "original_storage_offset": 0,
+        "local_shape": [
+          8,
+          398,
+          4096
+        ],
+        "retained_shape": [
+          2,
+          398,
+          4096
+        ],
+        "retained_dtype": "torch.bfloat16",
+        "retained_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "retained_bytes": 6520832,
+        "calls": 3
+      },
+      "post_norm_input": {
+        "original_type": "Tensor",
+        "original_shape": [
+          8,
+          398,
+          4096
+        ],
+        "original_dtype": "torch.bfloat16",
+        "original_device": "cuda:0",
+        "original_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "original_storage_offset": 0,
+        "local_shape": [
+          8,
+          398,
+          4096
+        ],
+        "retained_shape": [
+          2,
+          398,
+          4096
+        ],
+        "retained_dtype": "torch.bfloat16",
+        "retained_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "retained_bytes": 6520832,
+        "calls": 3
+      },
+      "mlp_output": {
+        "original_type": "Tensor",
+        "original_shape": [
+          8,
+          398,
+          4096
+        ],
+        "original_dtype": "torch.bfloat16",
+        "original_device": "cuda:0",
+        "original_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "original_storage_offset": 0,
+        "local_shape": [
+          8,
+          398,
+          4096
+        ],
+        "retained_shape": [
+          2,
+          398,
+          4096
+        ],
+        "retained_dtype": "torch.bfloat16",
+        "retained_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "retained_bytes": 6520832,
+        "calls": 3
+      },
+      "decoder_output": {
+        "original_type": "Tensor",
+        "original_shape": [
+          8,
+          398,
+          4096
+        ],
+        "original_dtype": "torch.bfloat16",
+        "original_device": "cuda:0",
+        "original_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "original_storage_offset": 0,
+        "local_shape": [
+          8,
+          398,
+          4096
+        ],
+        "retained_shape": [
+          2,
+          398,
+          4096
+        ],
+        "retained_dtype": "torch.bfloat16",
+        "retained_stride": [
+          1630208,
+          4096,
+          1
+        ],
+        "retained_bytes": 6520832,
+        "calls": 3
+      }
+    },
+    "norm_calls": [
+      {
+        "name": "post_attention_norm",
+        "original_call_index": 0,
+        "eps": 1e-06,
+        "tensors": {
+          "x0": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.bfloat16",
+            "original_device": "cuda:0",
+            "original_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.bfloat16",
+            "retained_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "retained_bytes": 3260416
+          },
+          "x1": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.bfloat16",
+            "original_device": "cuda:0",
+            "original_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "original_storage_offset": 1630208,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.bfloat16",
+            "retained_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "retained_bytes": 3260416
+          },
+          "raw_weight": {
+            "original_type": "Parameter",
+            "original_shape": [
+              4096
+            ],
+            "original_dtype": "torch.bfloat16",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4096
+            ],
+            "retained_shape": [
+              4096
+            ],
+            "retained_dtype": "torch.bfloat16",
+            "retained_stride": [
+              1
+            ],
+            "retained_bytes": 8192
+          },
+          "upstream": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.float32",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.float32",
+            "retained_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "retained_bytes": 6520832
+          },
+          "residual": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.float32",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.float32",
+            "retained_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "retained_bytes": 6520832
+          },
+          "result": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.float32",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.float32",
+            "retained_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "retained_bytes": 6520832
+          }
+        }
+      },
+      {
+        "name": "input_norm",
+        "original_call_index": 1,
+        "eps": 1e-06,
+        "tensors": {
+          "x0": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.bfloat16",
+            "original_device": "cuda:0",
+            "original_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.bfloat16",
+            "retained_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "retained_bytes": 3260416
+          },
+          "x1": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.bfloat16",
+            "original_device": "cuda:0",
+            "original_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "original_storage_offset": 1630208,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.bfloat16",
+            "retained_stride": [
+              3260416,
+              4096,
+              1
+            ],
+            "retained_bytes": 3260416
+          },
+          "raw_weight": {
+            "original_type": "Parameter",
+            "original_shape": [
+              4096
+            ],
+            "original_dtype": "torch.bfloat16",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4096
+            ],
+            "retained_shape": [
+              4096
+            ],
+            "retained_dtype": "torch.bfloat16",
+            "retained_stride": [
+              1
+            ],
+            "retained_bytes": 8192
+          },
+          "upstream": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.float32",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.float32",
+            "retained_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "retained_bytes": 6520832
+          },
+          "residual": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.float32",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.float32",
+            "retained_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "retained_bytes": 6520832
+          },
+          "result": {
+            "original_type": "Tensor",
+            "original_shape": [
+              4,
+              398,
+              4096
+            ],
+            "original_dtype": "torch.float32",
+            "original_device": "cuda:0",
+            "original_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "original_storage_offset": 0,
+            "local_shape": [
+              4,
+              398,
+              4096
+            ],
+            "retained_shape": [
+              1,
+              398,
+              4096
+            ],
+            "retained_dtype": "torch.float32",
+            "retained_stride": [
+              1630208,
+              4096,
+              1
+            ],
+            "retained_bytes": 6520832
+          }
+        }
+      }
+    ],
+    "diagnostic_errors": [],
+    "artifact_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-degradation-probe-20261005-v6/rank1-norm-operands.pt",
+    "retained_payload": "Native two-row clones and finite case0 clones only; no full B8 tensor storage."
+  },
+  "norms": [
+    {
+      "name": "post_attention_norm",
+      "eps": 1e-06,
+      "raw_tensors": {
+        "x0": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            3260416,
+            4096,
+            1
+          ]
+        },
+        "x1": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            3260416,
+            4096,
+            1
+          ]
+        },
+        "raw_weight": {
+          "shape": [
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1
+          ]
+        },
+        "upstream": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "residual": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "result": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        }
+      },
+      "native_captured_input_vs_finite_input": {
+        "actual": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": true,
+        "maximum_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "mean_difference": 0.0
+      },
+      "captured_native_output_vs_same_HF_CPU_forward": {
+        "actual": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": false,
+        "maximum_absolute_difference": 0.00390625,
+        "rms_difference": 3.608561104409841e-06,
+        "mean_difference": -4.024811126478952e-10
+      },
+      "saved_compiled_vs_same_owner_CPU_eager": {
+        "actual": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": false,
+        "maximum_absolute_difference": 5.960464477539063e-08,
+        "rms_difference": 1.2336243246973824e-09,
+        "mean_difference": 7.717513116562968e-13
+      },
+      "eager_minus_residual_vs_finite_primitive_FP32": {
+        "actual": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": false,
+        "maximum_absolute_difference": 2.9802322387695312e-08,
+        "rms_difference": 4.214642108580517e-10,
+        "mean_difference": -4.630159757137331e-13
+      },
+      "effects": {
+        "captured_compiled_input_total": -0.05737172934814071,
+        "captured_residual": 0.014983012367355303,
+        "captured_native_BF16_output": -0.07559690848604687,
+        "same_owner_CPU_eager_input_total": -0.05737174342506353,
+        "finite_primitive_FP32_input": -0.07235475662910937,
+        "finite_primitive_FP64_input": -0.07235474895565604,
+        "CPU_native_BF16_output": -0.07560154099714515,
+        "CPU_continuous_FP32_output": -0.07235469439357822,
+        "CPU_continuous_FP64_output": -0.07235474895565591
+      },
+      "decomposition": {
+        "captured_compiled_gap": 0.003242166770550864,
+        "same_owner_CPU_eager_gap": 0.003242152693628042,
+        "saved_compiled_minus_CPU_eager_total": 1.407692282184847e-08,
+        "continuous_FP32_finite_gap": -6.223553114526048e-08,
+        "continuous_FP64_finite_gap": -1.249000902703301e-16,
+        "CPU_eager_residual_addition_gap": 8.366905362988675e-10,
+        "continuous_FP32_minus_FP64_output": 5.4562077689279675e-08,
+        "CPU_BF16_storage_minus_continuous_FP32_output": -0.0032468466035669302,
+        "captured_GPU_BF16_minus_CPU_BF16_output": 4.632511098279224e-06,
+        "captured_GPU_BF16_minus_CPU_continuous_FP32_output": -0.003242214092468651
+      }
+    },
+    {
+      "name": "input_norm",
+      "eps": 1e-06,
+      "raw_tensors": {
+        "x0": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            3260416,
+            4096,
+            1
+          ]
+        },
+        "x1": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            3260416,
+            4096,
+            1
+          ]
+        },
+        "raw_weight": {
+          "shape": [
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1
+          ]
+        },
+        "upstream": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "residual": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "result": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        }
+      },
+      "native_captured_input_vs_finite_input": {
+        "actual": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": true,
+        "maximum_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "mean_difference": 0.0
+      },
+      "captured_native_output_vs_same_HF_CPU_forward": {
+        "actual": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": false,
+        "maximum_absolute_difference": 0.0078125,
+        "rms_difference": 7.716358976405408e-06,
+        "mean_difference": 4.717453041268353e-09
+      },
+      "saved_compiled_vs_same_owner_CPU_eager": {
+        "actual": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": false,
+        "maximum_absolute_difference": 5.960464477539063e-08,
+        "rms_difference": 8.231178218673968e-10,
+        "mean_difference": 1.0016125282608593e-12
+      },
+      "eager_minus_residual_vs_finite_primitive_FP32": {
+        "actual": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            1,
+            398,
+            4096
+          ],
+          "dtype": "torch.float32",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": false,
+        "maximum_absolute_difference": 1.4901161193847656e-08,
+        "rms_difference": 4.5989139558390257e-10,
+        "mean_difference": 8.39741496955511e-15
+      },
+      "effects": {
+        "captured_compiled_input_total": -0.041825162782263295,
+        "captured_residual": -0.0454642793288003,
+        "captured_native_BF16_output": -0.0051322075357936175,
+        "same_owner_CPU_eager_input_total": -0.04182517780597948,
+        "finite_primitive_FP32_input": 0.003639104190843328,
+        "finite_primitive_FP64_input": 0.0036391152442171587,
+        "CPU_native_BF16_output": -0.005153168303315289,
+        "CPU_continuous_FP32_output": 0.0036388153132344506,
+        "CPU_continuous_FP64_output": 0.0036391152442168603
+      },
+      "decomposition": {
+        "captured_compiled_gap": 0.008771324082330625,
+        "same_owner_CPU_eager_gap": 0.008771309058614438,
+        "saved_compiled_minus_CPU_eager_total": 1.5023716187778646e-08,
+        "continuous_FP32_finite_gap": 2.88877608877261e-07,
+        "continuous_FP64_finite_gap": 2.983724378680108e-16,
+        "CPU_eager_residual_addition_gap": -2.6680225077846398e-09,
+        "continuous_FP32_minus_FP64_output": -2.9993098240969907e-07,
+        "CPU_BF16_storage_minus_continuous_FP32_output": -0.00879198361654974,
+        "captured_GPU_BF16_minus_CPU_BF16_output": 2.096076752167164e-05,
+        "captured_GPU_BF16_minus_CPU_continuous_FP32_output": -0.008771022849028068
+      }
+    }
+  ],
+  "residual_additions": [
+    {
+      "name": "attention_residual_add",
+      "coefficient_from": "attention_residual_add uses input_norm.residual",
+      "coefficient": {
+        "shape": [
+          1,
+          398,
+          4096
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "stride": [
+          1630208,
+          4096,
+          1
+        ]
+      },
+      "tensors": {
+        "left": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "right": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "output": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        }
+      },
+      "original_fields": [
+        "input_norm_input",
+        "attention_output",
+        "post_norm_input"
+      ],
+      "actual_output_vs_CPU_same_dtype_addition": {
+        "actual": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": true,
+        "maximum_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "mean_difference": 0.0
+      },
+      "effects": {
+        "actual_output": -0.05737172934814071,
+        "left_branch": -0.0454642793288003,
+        "right_branch": -0.004862550514506108,
+        "CPU_BF16_sum": -0.05737172934814071,
+        "CPU_FP32_sum": -0.050326829869930506
+      },
+      "decomposition": {
+        "actual_output_minus_branch_sum": -0.007044899504834296,
+        "CPU_BF16_storage_minus_FP32_sum": -0.007044899478210201,
+        "actual_output_minus_CPU_BF16_sum": 0.0,
+        "CPU_FP32_sum_minus_branch_sum": -2.6624095289529137e-11
+      }
+    },
+    {
+      "name": "mlp_residual_add",
+      "coefficient_from": "mlp_residual_add uses post_attention_norm.residual",
+      "coefficient": {
+        "shape": [
+          1,
+          398,
+          4096
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "stride": [
+          1630208,
+          4096,
+          1
+        ]
+      },
+      "tensors": {
+        "left": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "right": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "output": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        }
+      },
+      "original_fields": [
+        "post_norm_input",
+        "mlp_output",
+        "decoder_output"
+      ],
+      "actual_output_vs_CPU_same_dtype_addition": {
+        "actual": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "reference": {
+          "shape": [
+            2,
+            398,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "device": "cpu",
+          "stride": [
+            1630208,
+            4096,
+            1
+          ]
+        },
+        "exactly_equal": true,
+        "maximum_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "mean_difference": 0.0
+      },
+      "effects": {
+        "actual_output": -0.06263570446804033,
+        "left_branch": 0.014983012367355303,
+        "right_branch": -0.07427880413947824,
+        "CPU_BF16_sum": -0.06263570446804033,
+        "CPU_FP32_sum": -0.05929579098631486
+      },
+      "decomposition": {
+        "actual_output_minus_branch_sum": -0.0033399126959173936,
+        "CPU_BF16_storage_minus_FP32_sum": -0.003339913481725472,
+        "actual_output_minus_CPU_BF16_sum": 0.0,
+        "CPU_FP32_sum_minus_branch_sum": 7.858080852685134e-10
+      }
+    }
+  ],
+  "interpretation": "Each effect is the original _token_effect contraction. The captured GPU BF16 output is compared with CPU native forward and CPU continuous weighted _norm. Their difference is reported separately, so GPU/backend variation is not silently attributed entirely to BF16 storage. No number is an official FA/FLA/PPO accuracy assertion."
+}

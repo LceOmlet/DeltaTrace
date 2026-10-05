@@ -294,7 +294,9 @@ def observe_gradients(worker, samples, out, save):
             raise ValueError("The original source range and original signed vector do not align.")
         prefixes.append(torch.tensor(ids[:start], dtype=torch.long).unsqueeze(0))
         response_ids.append(ids[start:end])
-        signed.append(torch.tensor(values, dtype=torch.float64).unsqueeze(0))
+        # Actual stopped EventRatioReadout copies raw FP64 signed entries to
+        # its FP32 row vector before the unchanged Q/V/A composition.
+        signed.append(torch.tensor(values, dtype=torch.float32).unsqueeze(0))
         rewards.append([sample["observed_return"]])
         sample_metadata.append({"traj_uid": sample["traj_uid"], "source_start": start,
                                 "source_end": end, "prefix_tokens": start,
@@ -336,7 +338,8 @@ def observe_gradients(worker, samples, out, save):
                       current_response_mask_provenance="Only the original source_start:end policy-action span; no past/future action mask reconstructed.",
                       batch_scope="Constructed current-response-only B4 from exact recorded IDs; not the original complete historical train batch.",
                       qva_composition_source=_source_identity(reward_event_token_credit),
-                      original_source_signed_dtype=str(original_signed.dtype),
+                      row_signed_dtype=str(original_signed.dtype),
+                      original_source_signed_storage='Original JSON values emitted from the owner FP64 contraction',
                       qva_composition_dtype=str(credit.advantages.dtype),
                       actor_advantages_dtype=str(batch["advantages"].dtype),
                       batch_owner_sources={"padding": _source_identity(pad_sequence_to_length),

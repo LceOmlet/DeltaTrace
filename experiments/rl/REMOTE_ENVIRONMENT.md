@@ -4,6 +4,15 @@
 [带采集时间的源码快照](current_runtime.json)。数值基线、冻结启动源码和已完成的
 worker运行时覆盖分别记录；不能用下面历史段落中的“当前”或旧launch命令代替。
 
+## 2026-10-05 TextCraft 质量诊断状态（22:00后）
+
+TextCraft保持停止。GPU4/5上的checkpoint25原owner诊断v1、v3、v4已结束，
+v2在进入DT前因诊断导入顺序失败，全部零optimizer step。原成功动作token的
+单EOS端点负效应、有限信用反号已重现，逐层误差最大在decoder3；只继续
+必要的原计算阶段定位，效率候选暂停，不部署存储优化、不恢复TextCraft。
+原始源/参数/SHA与诊断范围见RUNTIME_RECORD及results_textcraft_degradation_20261005.json。
+AppWorld2/3原PID1856052入口与方法保持；SQL停止，0/1与6/7仍不用。
+
 ## 2026-10-05 当前运行入口
 
 20:27诊断2411666已完成并退出；已证实GDN bank两rank分别多存6.0425/6.4775GiB
