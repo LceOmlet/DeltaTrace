@@ -6,6 +6,11 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-05 当前运行入口
 
+19:43观察：同一AppWorld PID1856052已完成本次原采样（217条实际轨迹、最长context24436），
+进入原DT；当前回报类别组两rank均77/112个B4，不是整轮总计。入口/LoRA8/16/每卡B4
+未变。TextCraft旧作业仍停止、v2仍prepared，训练起点待答；4/5仍空闲供必要测试。
+最新实际漏奖范围与阶段证据见RUNTIME_RECORD；未把修复接口称作质量已恢复。
+
 19:02更新：AppWorld通过原VERL从checkpoint20恢复，PID1856052/创建1791197944.7，
 GPU2/3，冻结entry appworld-eval-client-routing-resume-20261005-v1（本机CPU v2
 服务路由文件）；VERL/DT复用既有prefix冻结目录，官方预算、LoRA8/16与每卡B4

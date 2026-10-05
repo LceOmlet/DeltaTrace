@@ -40,6 +40,29 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已从20恢�
 
 ## 当前代码组合
 
+### 2026-10-05 19:43：实际漏奖范围与当前DT组进度
+
+TextCraft原停止作业92个完成迭代的原metrics及178个DT报告已只读提取，原train.log
+SHA54f4aef6…；8批原rollout score另按原jsonl逐行计数和SHA绑定。
+[实际范围回执](results_textcraft_actual_reward_loss_scope_20261005.json)确认step28为
+135/256成功、DT非零reward事件73+61=134；step109为3/256成功、事件1+1=2。
+原padding只可能增加该计数，故两批各至少遗漏一项真实正奖励。没有原完整source rows、
+native slices与padding inverse，不能声称已确定全部漏奖身份或精确频率。
+
+24/92批原response cap-hit ratio为0；其中step55/70/80/91/93真实成功依次
+102/50/35/21/8，每批256条，DT事件计数与成功数相符，但entropy依次
+0.958/1.304/2.148/5.026/5.498。实际metric_utils SHA80e18175…与固定VERL20bd331
+原文件相同，其指标是attention-derived长度等于stored response width的比例。
+这些批次不能用当批“终局action被完全截断、丢reward”解释；仍不能排除此前更新的
+累积影响。不将三位小数pg_loss=0推成零梯度，也未改熵、学习率、信用倍率或同步。
+已修接口和训练起点待答状态保持不变。
+
+AppWorld本次原采样已结束：217条实际轨迹、3460个response、840146个policy token，
+最长context24436；原运输日志末值945097 generated token/1513.7秒，包含已取消
+轨迹的生成，不冒充只计保留token或纯decode。19:43原两个worker均处于DT，当前
+回报类别组77/112个B4，最近批次约4–9秒；112不是整轮总批数，不据此外推整轮。
+原native-phase-bounded.json保存采样结束及原old_log_prob阶段；未等待完整迭代。
+
 ### 2026-10-05 19:28：当前采样、物理资源与已推送版本
 
 只读回执`appworld-eval-client-routing-20261005/deployment/phase-followup.json`
