@@ -1,5 +1,27 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 真实条件边界：低层传播削弱并错向token信号
+
+隔离诊断v2 PID1472838/birth1791233251.16已完成退出，GPU4/5、185.171秒；原7个
+B4/rank、原checkpoint25、LoRA8/16、原c7fc runner/0ad producer及原目标/布局/切点。
+实际14次完整joint finite、28次single原生root，backward/optimizer/scheduler均0。
+每组仅短暂留所选slot的实际FP32系数CPU副本（每rank最高约1.05GB），用原_token_effect
+收缩原已有BF16 CPU roots并只保存标量；不是CPU模拟有限传播或官方GPU容差验收。
+
+52 transport保留后聚合42既定probe/21成功首次response：C0与实际导出DT信用最大差
+4.34e-19；C32与原生single d相关0.98627。C15仍42/42同号、平均|C|0.015733；
+C0平均|C|0.001818、22/42反号、相关0.04956。重复槽位完整保留，其中一身份跨零。
+误差沿低层传播扩大；不能由最大增量就指认单层bug，不能据此宣布FA/FLA核超差。
+下一步针对已定位操作数区分原生dtype存储效应和联合有限分解的条件近似。
+
+v1隔离诊断仅执行42原生root后被计数断言截住（finite0），失败资料及提交源冻结。
+根因是public module dict与实际执行recipe globals不同；v2沿官方Ray method/VERL
+func闭包解析真实字典，CPU roundtrip/实际caller双身份已核对。中间两次CPU失败日志
+保留，无GPU提交。修的是诊断接线，PPO/core/QVA/PLAN/训练参数/正式代码均未改。
+原始ranks、独立逐槽复核及来源汇总到results_textcraft_learning_degradation_20261006.json。
+TextCraft仍停止，未声称已修复质量，不新增第四组或恢复训练。
+
+
 ## 2026-10-06 输出层拆分：反号来源在head之前
 
 仅重用已保存的matched v1原FP32类别logits，正式c9 seed_with_checks及依赖三模块SHA
