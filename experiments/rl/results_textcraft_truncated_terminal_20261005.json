@@ -1,0 +1,70 @@
+{
+  "observed_utc": "2026-10-05T10:55:07.056844+00:00",
+  "status": "candidate CPU interface verified; not deployed",
+  "defect": "Actual executed terminal reward was excluded by active_masks=retained_training_length>0 after native trajectory truncation. Earlier retained token returns became zero.",
+  "fix": "Keep executed reward rows active; calculate complete original returns first; existing native training slices select DT request identities afterward. Full original partial-response endpoint remains.",
+  "method_and_official_algorithms_changed": false,
+  "source_binding": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-late-sampling-audit-20261005\\baseline\\source.json",
+    "sha256": "03e22a1e08d3790e9ace7207be2c03034fc720bd02e2c20f1210c9950ca33b28",
+    "prior_driver_pid": 3218909,
+    "prior_created_unix": 1790895651.16
+  },
+  "changes": {
+    "textcraft_owner_rollout.py": {
+      "before_sha256": "92c724a520aa10412e2ced92e4667cf0638be0e2a909d477e52aca75ee805e2c",
+      "candidate_sha256": "d9bb65501ded52fb2fd7a5aebf06557496c22e4ea679a649bc46596b9ba420f5"
+    },
+    "dt_training_batch.py": {
+      "before_sha256": "da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2",
+      "candidate_sha256": "cdefd4b7ec764dccf1b7ab3d5783102264c969f0d343fb949782dfda58f92223"
+    },
+    "owner_trajectory_batch.py": {
+      "before_sha256": "2d3a93f03ba13b49056209c5be5488da6bea0fb9ba1f58d8549b358194b6aca3",
+      "candidate_sha256": "95042a7a610e4c7781982873b5730d4bb744145dbcabe61961d55621e83d8939"
+    }
+  },
+  "tests": {
+    "original_torch_verl_cpu": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-late-sampling-audit-20261005\\cpu-tests.xml",
+      "sha256": "b0fec460e89332aa517b9033250ce6526cefd8e799277e7bee6caf1b10b9f733",
+      "passed": 17,
+      "skipped": 1,
+      "skip_reason": "Pristine author archive not provided to optional AST test; no numerical acceptance claimed.",
+      "xml_counts": {
+        "name": "pytest tests"
+      }
+    },
+    "native_source_contract": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/test_textcraft_truncated_terminal_contract_cpu.py",
+      "sha256": "a42cd24a52e6955a8e10479d47efbc2ff9f1aec0958f64f2863779b6ccdf536c",
+      "passed": 5
+    },
+    "model_numerical_tolerance": "Not redefined or tested by these CPU transport checks; DT numerical operations and upstream PPO remain unchanged."
+  },
+  "stopped_job": {
+    "receipt": "research/temporary/rl_upstream_alignment_20260929/checkpoint-boundary-20261002/textcraft-stop-current-completed-stop.json",
+    "sha256": "c033a963472eb312af88cb7bb58d733f1f3767cd627ce30d7ab0e0b46a82f279",
+    "native_checkpoint_completed_step": 100
+  },
+  "frozen_base_check": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-late-sampling-audit-20261005\\frozen-base-result.json",
+    "sha256": "26a301a78f9ae3fab054bf0979662ee8283926075ed1d084957ca2b8468db87c",
+    "exactly_equal_frozen_tensors_per_rank": 427,
+    "checkpoint_step": 100
+  },
+  "actual_policy_degradation_evidence": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\textcraft-late-sampling-audit-20261005\\actual-samples.json",
+    "sha256": "329abc1742d55750f7f44db8f148d22092426d71e95832d17cea91082d667667",
+    "late_successes_per_256": [
+      1,
+      0,
+      0,
+      1
+    ],
+    "all_degradation_explained": false
+  },
+  "rollout_parser_sampling_reward_truncation_and_ppo_changed": false,
+  "added_dt_requests_for_wholly_truncated_actions": false,
+  "state_warning": "Checkpoint100 contains training under the old erroneous reward mask; do not label prior training or a restart as recovered policy quality."
+}

@@ -159,7 +159,7 @@ class TextCraftOwner:
                 start = turn['start']-len(h.prompt_ids)
                 length = min(len(turn['native_response_ids']), len(h.response_ids)-start)
                 sources.append(dict(prompt_ids=turn['native_prompt_ids'], response_ids=turn['native_response_ids'],
-                    traj_uid=ids[index], data_source='textcraft', env_step=step, active_masks=True,
+                    traj_uid=ids[index], data_source='textcraft', env_step=step, active_masks=length>0,
                     episode_rewards=scores[index], episode_lengths=len(turns),
                     rewards=scores[index] if step == len(turns)-1 else 0.))
                 if length > 0:

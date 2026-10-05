@@ -1,0 +1,16 @@
+--- baseline/loop_owner_rollout.py
++++ candidate/loop_owner_rollout.py
+@@ -37,8 +37,12 @@
+         from ray.util.actor_pool import ActorPool
+         if self.processes is None:
+             world = 1 if self.evaluation else self.config.trainer.n_gpus_per_node*self.config.trainer.nnodes
++            inference_clients = 1
++            if self.evaluation and hasattr(collector, 'async_rollout_manager'):
++                inference_clients = len(collector.async_rollout_manager.async_llm_servers)
+             self.processes = OwnerProcesses(OmegaConf.to_container(self.native, resolve=True),
+-                self.config.actor_rollout_ref.model.path, self.reserve, self.evaluation, world)
++                self.config.actor_rollout_ref.model.path, self.reserve, self.evaluation, world,
++                inference_clients)
+         pool = self.processes
+         if hasattr(collector, 'async_rollout_manager'):
+             from loop_async_transport import collect

@@ -1,0 +1,45 @@
+--- baseline/loop_async_transport.py
++++ candidate/loop_async_transport.py
+@@ -39,19 +39,20 @@
+         if event[0]=='result':
+             results[event[1]]=event[2]
+         elif event[0]=='completion':
+-            _,rank,key,raw=event
++            _,rank,key,raw=event[:4]
++            server_index=event[4] if len(event)==5 else rank
+             if pool.cancellations[rank].is_set():continue
+             options=dict(raw);ids=options.pop('prompt')
+             options.pop('model');options.pop('stream');options['detokenize']=True
+             carrier=DataProto.from_dict(tensors=dict(input_ids=torch.zeros(1,1,dtype=torch.long)),
+                 non_tensors=dict(data_source=np.array(['appworld'],dtype=object)),meta_info=gen_batch.meta_info)
+             prompt=collector.preprocess_batch(carrier,dict(raw_prompt_ids=[ids],sampling_kwargs=[options]))
+-            ref=servers[rank].generate_tokens.remote(ids,options,key)
+-            inflight[key]=(rank,prompt,ref)
++            ref=servers[server_index].generate_tokens.remote(ids,options,key)
++            inflight[key]=(rank,prompt,ref,server_index)
+             ref.future().add_done_callback(lambda _,key=key:pool.output.put(('async_ready',key)))
+             calls+=1
+         elif event[0]=='async_ready':
+-            key=event[1];rank,prompt,ref=inflight.pop(key)
++            key=event[1];rank,prompt,ref,server_index=inflight.pop(key)
+             if key in aborted:
+                 # The owner's cancellation ended this environment request.
+                 continue
+@@ -62,13 +63,14 @@
+             pool.replies[rank].put((key,reply));tokens+=len(reply.token_ids)
+             print(f'[loop_transport] calls={calls} rpc_mode=native_async batch_requests=1 '
+                   f'requests={len(records)} generated_tokens={tokens} '
+-                  f'elapsed={time.monotonic()-started:.1f}s completed_ranks={len(results)}',flush=True)
++                  f'elapsed={time.monotonic()-started:.1f}s completed_ranks={len(results)} '
++                  f'server_index={server_index} reply_rank={rank}',flush=True)
+         else:
+             raise RuntimeError(f'Unexpected LOOP transport event: {event[0]}')
+         # Cancellation is LOOP's existing signal. vLLM owns request abort.
+-        for key,(rank,_,_) in inflight.items():
++        for key,(rank,_,_,server_index) in inflight.items():
+             if key not in aborted and pool.cancellations[rank].is_set():
+-                servers[rank].abort_request.remote(key);aborted.add(key)
++                servers[server_index].abort_request.remote(key);aborted.add(key)
+     owner.records=records
+     rows=[]
+     from uuid import uuid4

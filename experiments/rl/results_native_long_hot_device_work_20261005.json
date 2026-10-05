@@ -1,0 +1,1695 @@
+{
+  "scope": "Read-only stdlib CPU analysis of existing actual hot long B4-per-rank original-source trace, restored checkpoint20. No GPU/model/source/launch mutation.",
+  "job": {
+    "driver_pid": 1308306,
+    "driver_birth_unix": 1791192830.38,
+    "preparer_commit": "067e641",
+    "local_microbatch": 4,
+    "global_microbatch": 8,
+    "checkpoint": 20,
+    "formal_algorithm_unchanged": true
+  },
+  "source_raw_cpu_receipt": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-prefix-resume-20261005\\current-long-profile-cpu-analysis.json",
+  "source_raw_cpu_receipt_sha256": "fcf08207fe880114768508d3e378d0ee8b4f71a6901963836ab475eb6577dbc6",
+  "remote_analysis_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-hot-phase-offset84-20261004-067e641-current-global_step_20/trace-analysis-readonly",
+  "constraints": [
+    "GPU event sums may overlap and are never wall time or achievable speedup.",
+    "Device active interval union and device span are computed using original GPU kernel/memcpy events only, via existing union_seconds helper.",
+    "Exactly32 CPU user_annotation and32 GPU user_annotation records per native pass were read; only32 actual layer calls per root/replay, not64.",
+    "Original trace contains no input shape fields for MM/BMM, so all replay MM is reported rather than claiming MLP-specific operator attribution.",
+    "Profile label wall includes export; compare original_attribute_wall_seconds with non-profile shared_warm.",
+    "Original cached-GDN source contains torch.cat([conv_state,mixed_qkv],dim=-1); 24 cats per native pass are consistent with 24 GDN layers but exact source consumer is not proven by saved shape/stack data."
+  ],
+  "ranks": [
+    {
+      "rank": 0,
+      "source_sha256": "87936dcbcaba84b0cef45e4445fa63afb7ef753347bac0999d57d1af0ac95366",
+      "mapping": {
+        "1": 64,
+        "2": 64
+      },
+      "device_totals": {
+        "events": 43130,
+        "span_seconds": 12.230626047973633,
+        "active_union_seconds": 11.915741950317383,
+        "active_fraction": 0.9742544579139986
+      },
+      "streams": [
+        {
+          "pid": 0,
+          "tid": 0,
+          "stream": 0,
+          "events": 39795,
+          "span_seconds": 12.230626047973633,
+          "active_union_seconds": 11.471426045959472,
+          "active_fraction": 0.9379263171781836
+        },
+        {
+          "pid": 0,
+          "tid": 10,
+          "stream": 10,
+          "events": 3269,
+          "span_seconds": 11.825150720031738,
+          "active_union_seconds": 0.4613309455566406,
+          "active_fraction": 0.0390126905338423
+        },
+        {
+          "pid": 0,
+          "tid": 13,
+          "stream": 13,
+          "events": 66,
+          "span_seconds": 11.799249664001465,
+          "active_union_seconds": 0.46748134411621095,
+          "active_fraction": 0.03961958238263725
+        }
+      ],
+      "raw_device_sum_seconds": 12.400388095999784,
+      "copies": [
+        {
+          "group": [
+            "HtoD",
+            "outside_native"
+          ],
+          "count": 2142,
+          "known_bytes": 27253980248,
+          "events_without_bytes": 0,
+          "device_seconds": 0.659127295999997
+        },
+        {
+          "group": [
+            "DtoH",
+            "root"
+          ],
+          "count": 128,
+          "known_bytes": 4216905728,
+          "events_without_bytes": 0,
+          "device_seconds": 0.08650931199999999
+        },
+        {
+          "group": [
+            "DtoD",
+            "outside_native"
+          ],
+          "count": 88,
+          "known_bytes": 3240099840,
+          "events_without_bytes": 0,
+          "device_seconds": 0.006991360000000002
+        },
+        {
+          "group": [
+            "DtoH",
+            "outside_native"
+          ],
+          "count": 20,
+          "known_bytes": 128161925,
+          "events_without_bytes": 0,
+          "device_seconds": 0.0025136639999999997
+        },
+        {
+          "group": [
+            "DtoD",
+            "replay"
+          ],
+          "count": 24,
+          "known_bytes": 12582912,
+          "events_without_bytes": 0,
+          "device_seconds": 0.0013793280000000002
+        },
+        {
+          "group": [
+            "DtoD",
+            "root"
+          ],
+          "count": 24,
+          "known_bytes": 12582912,
+          "events_without_bytes": 0,
+          "device_seconds": 0.001285632
+        }
+      ],
+      "collectives": [
+        {
+          "group": [
+            "all_gather",
+            "outside_native",
+            "record_param_comms"
+          ],
+          "count": 67,
+          "known_bytes": 0,
+          "events_without_bytes": 67,
+          "device_seconds": 0.47818367999999983
+        },
+        {
+          "group": [
+            "all_reduce",
+            "outside_native",
+            "record_param_comms"
+          ],
+          "count": 1,
+          "known_bytes": 0,
+          "events_without_bytes": 1,
+          "device_seconds": 1.2800000000000001e-05
+        }
+      ],
+      "mm": [
+        {
+          "group": [
+            "bmm",
+            "outside_native",
+            "aten::bmm"
+          ],
+          "count": 3953,
+          "known_bytes": 0,
+          "events_without_bytes": 3953,
+          "device_seconds": 1.201329664000008
+        },
+        {
+          "group": [
+            "mm",
+            "root",
+            "aten::mm"
+          ],
+          "count": 1040,
+          "known_bytes": 0,
+          "events_without_bytes": 1040,
+          "device_seconds": 0.9699630080000001
+        },
+        {
+          "group": [
+            "mm",
+            "replay",
+            "aten::mm"
+          ],
+          "count": 1040,
+          "known_bytes": 0,
+          "events_without_bytes": 1040,
+          "device_seconds": 0.9231106560000004
+        },
+        {
+          "group": [
+            "mm",
+            "outside_native",
+            "aten::mm"
+          ],
+          "count": 252,
+          "known_bytes": 0,
+          "events_without_bytes": 252,
+          "device_seconds": 0.01448294400000001
+        }
+      ],
+      "kernels": [
+        {
+          "group": [
+            "other_kernel",
+            "outside_native"
+          ],
+          "count": 29253,
+          "known_bytes": 0,
+          "events_without_bytes": 29253,
+          "device_seconds": 2.245073920000046
+        },
+        {
+          "group": [
+            "other_kernel",
+            "unknown_owner"
+          ],
+          "count": 410,
+          "known_bytes": 0,
+          "events_without_bytes": 410,
+          "device_seconds": 2.0312744959999973
+        },
+        {
+          "group": [
+            "other_kernel",
+            "replay"
+          ],
+          "count": 2336,
+          "known_bytes": 0,
+          "events_without_bytes": 2336,
+          "device_seconds": 1.8976046079999958
+        },
+        {
+          "group": [
+            "other_kernel",
+            "root"
+          ],
+          "count": 2352,
+          "known_bytes": 0,
+          "events_without_bytes": 2352,
+          "device_seconds": 1.8815457279999974
+        },
+        {
+          "group": [
+            "bmm",
+            "outside_native"
+          ],
+          "count": 3953,
+          "known_bytes": 0,
+          "events_without_bytes": 3953,
+          "device_seconds": 1.201329664000008
+        },
+        {
+          "group": [
+            "mm",
+            "root"
+          ],
+          "count": 1040,
+          "known_bytes": 0,
+          "events_without_bytes": 1040,
+          "device_seconds": 0.9699630080000001
+        },
+        {
+          "group": [
+            "mm",
+            "replay"
+          ],
+          "count": 1040,
+          "known_bytes": 0,
+          "events_without_bytes": 1040,
+          "device_seconds": 0.9231106560000004
+        },
+        {
+          "group": [
+            "all_gather",
+            "outside_native"
+          ],
+          "count": 67,
+          "known_bytes": 0,
+          "events_without_bytes": 67,
+          "device_seconds": 0.47818367999999983
+        },
+        {
+          "group": [
+            "mm",
+            "outside_native"
+          ],
+          "count": 252,
+          "known_bytes": 0,
+          "events_without_bytes": 252,
+          "device_seconds": 0.01448294400000001
+        },
+        {
+          "group": [
+            "all_reduce",
+            "outside_native"
+          ],
+          "count": 1,
+          "known_bytes": 0,
+          "events_without_bytes": 1,
+          "device_seconds": 1.2800000000000001e-05
+        }
+      ],
+      "cpu_shape_examples": [
+        {
+          "name": "aten::bmm",
+          "args": {
+            "External id": 3151,
+            "Record function id": 0,
+            "Ev Idx": 3150
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3502,
+            "Record function id": 0,
+            "Ev Idx": 3501
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3511,
+            "Record function id": 0,
+            "Ev Idx": 3510
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3520,
+            "Record function id": 0,
+            "Ev Idx": 3519
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3534,
+            "Record function id": 0,
+            "Ev Idx": 3533
+          }
+        }
+      ],
+      "bmm": [
+        {
+          "owner": "outside_native",
+          "unique_cpu_bmm_calls": 3953,
+          "gpu_kernel_count": 3953,
+          "cpu_inclusive_seconds": 0.08052745599999978,
+          "device_seconds": 1.201329664000008,
+          "gpu_kernels_per_cpu_bmm_histogram": {
+            "1": 3953
+          },
+          "original_shape_fields": {
+            "missing": 3953
+          }
+        }
+      ],
+      "top_kernel_names": [
+        {
+          "kind": "other_kernel",
+          "owner": "unknown_owner",
+          "cpu_op": "unknown_cpu_op",
+          "kernel_name": "void deltatrace_fa_finite_p1_kernel<1, Flash_fwd_kernel_traits<256, 64, 64, 4, false, false, mctlass::bfloat16_t, Flash_kernel_traits<256, 64, 64, 4, mctlass::bfloat16_t> > >(FiniteParams)",
+          "gpu_kernel_count": 8,
+          "device_seconds": 1.092050944
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "replay",
+          "cpu_op": "aten::cat",
+          "kernel_name": "void at::native::(anonymous namespace)::MACA_CatArrayBatchedCopyNoPartialWrite_any_any_any_0_non_contiguous_input_last_dim_cat<c10::BFloat16, unsigned int, 3, 4, 128, 64>(c10::BFloat16*, at::native::(anonymous namespace)::CatArrInputTensorMetadataNotAllContiguous<c10::BFloat16, 128>, int, at::native::(anonymous namespace)::CatArrTensorMetadataNoPartialWriteInfo)",
+          "gpu_kernel_count": 24,
+          "device_seconds": 0.927118848
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "root",
+          "cpu_op": "aten::cat",
+          "kernel_name": "void at::native::(anonymous namespace)::MACA_CatArrayBatchedCopyNoPartialWrite_any_any_any_0_non_contiguous_input_last_dim_cat<c10::BFloat16, unsigned int, 3, 4, 128, 64>(c10::BFloat16*, at::native::(anonymous namespace)::CatArrInputTensorMetadataNotAllContiguous<c10::BFloat16, 128>, int, at::native::(anonymous namespace)::CatArrTensorMetadataNoPartialWriteInfo)",
+          "gpu_kernel_count": 24,
+          "device_seconds": 0.9253329920000001
+        },
+        {
+          "kind": "mm",
+          "owner": "root",
+          "cpu_op": "aten::mm",
+          "kernel_name": "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+          "gpu_kernel_count": 384,
+          "device_seconds": 0.91369856
+        },
+        {
+          "kind": "mm",
+          "owner": "replay",
+          "cpu_op": "aten::mm",
+          "kernel_name": "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+          "gpu_kernel_count": 384,
+          "device_seconds": 0.8705456640000001
+        },
+        {
+          "kind": "bmm",
+          "owner": "outside_native",
+          "cpu_op": "aten::bmm",
+          "kernel_name": "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0",
+          "gpu_kernel_count": 496,
+          "device_seconds": 0.8612254720000001
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "unknown_owner",
+          "cpu_op": "unknown_cpu_op",
+          "kernel_name": "void deltatrace_fa_finite_p1_kernel<0, Flash_fwd_kernel_traits<256, 64, 64, 4, false, false, mctlass::bfloat16_t, Flash_kernel_traits<256, 64, 64, 4, mctlass::bfloat16_t> > >(FiniteParams)",
+          "gpu_kernel_count": 8,
+          "device_seconds": 0.478813696
+        },
+        {
+          "kind": "all_gather",
+          "owner": "outside_native",
+          "cpu_op": "record_param_comms",
+          "kernel_name": "mcclkernel_AllGather_FC2_int8_t(fcinfo)",
+          "gpu_kernel_count": 67,
+          "device_seconds": 0.47818367999999983
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "outside_native",
+          "cpu_op": "aten::copy_",
+          "kernel_name": "void at::native::elementwise_kernel_3_1<128, 4, c10::BFloat16, c10::BFloat16, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})",
+          "gpu_kernel_count": 64,
+          "device_seconds": 0.31984230399999997
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "unknown_owner",
+          "cpu_op": "unknown_cpu_op",
+          "kernel_name": "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64",
+          "gpu_kernel_count": 192,
+          "device_seconds": 0.3159487999999999
+        },
+        {
+          "kind": "bmm",
+          "owner": "outside_native",
+          "cpu_op": "aten::bmm",
+          "kernel_name": "mcblas__Mck_hgemm_nn_256x256x64_8m1n8k_512t_4stage_fp16_fp32_fp32_sb_0_0",
+          "gpu_kernel_count": 1728,
+          "device_seconds": 0.24622028799999873
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "root",
+          "cpu_op": "FlashAttnFunc",
+          "kernel_name": "void flash_fwd_kernel<Flash_fwd_kernel_traits<256, 64, 32, 4, true, true, mctlass::bfloat16_t, 256, Flash_kernel_traits<256, 64, 32, 4, mctlass::bfloat16_t> >, false, true, false, false, false, false, true, false, false, 1, false, (Arch)1000>(mcFlashAttn::Flash_fwd_params, int, int)",
+          "gpu_kernel_count": 8,
+          "device_seconds": 0.24311731199999997
+        }
+      ],
+      "phase_summary": {
+        "shared_cold": {
+          "label_total_wall_seconds": 78.1392498575151,
+          "original_attribute_wall_seconds": [
+            30.068473789840937
+          ],
+          "root_seconds": 4.891955078125,
+          "replay_seconds": 3.104736022949219,
+          "finite_decoder_seconds": 20.22760440826416,
+          "public_fa_lse_seconds": 0.2445808620452881,
+          "phase_seconds_sum": 29.334551636785267,
+          "phase_counts": {
+            "shared_native_prefix_cache": 1,
+            "fork_native_prefix_cache": 1,
+            "native_root_with_CPU_checkpoints": 1,
+            "pack_actual_target_logits": 1,
+            "categorical_head_FP32": 1,
+            "actual_root_FP32_logprob_diagnostic": 1,
+            "finite_seed": 1,
+            "finite_final_norm": 1,
+            "native_replay_31": 1,
+            "public_FA_LSE_31": 1,
+            "finite_decoder_31": 1,
+            "native_replay_30": 1,
+            "finite_decoder_30": 1,
+            "native_replay_29": 1,
+            "finite_decoder_29": 1,
+            "native_replay_28": 1,
+            "finite_decoder_28": 1,
+            "native_replay_27": 1,
+            "public_FA_LSE_27": 1,
+            "finite_decoder_27": 1,
+            "native_replay_26": 1,
+            "finite_decoder_26": 1,
+            "native_replay_25": 1,
+            "finite_decoder_25": 1,
+            "native_replay_24": 1,
+            "finite_decoder_24": 1,
+            "native_replay_23": 1,
+            "public_FA_LSE_23": 1,
+            "finite_decoder_23": 1,
+            "native_replay_22": 1,
+            "finite_decoder_22": 1,
+            "native_replay_21": 1,
+            "finite_decoder_21": 1,
+            "native_replay_20": 1,
+            "finite_decoder_20": 1,
+            "native_replay_19": 1,
+            "public_FA_LSE_19": 1,
+            "finite_decoder_19": 1,
+            "native_replay_18": 1,
+            "finite_decoder_18": 1,
+            "native_replay_17": 1,
+            "finite_decoder_17": 1,
+            "native_replay_16": 1,
+            "finite_decoder_16": 1,
+            "native_replay_15": 1,
+            "public_FA_LSE_15": 1,
+            "finite_decoder_15": 1,
+            "native_replay_14": 1,
+            "finite_decoder_14": 1,
+            "native_replay_13": 1,
+            "finite_decoder_13": 1,
+            "native_replay_12": 1,
+            "finite_decoder_12": 1,
+            "native_replay_11": 1,
+            "public_FA_LSE_11": 1,
+            "finite_decoder_11": 1,
+            "native_replay_10": 1,
+            "finite_decoder_10": 1,
+            "native_replay_9": 1,
+            "finite_decoder_9": 1,
+            "native_replay_8": 1,
+            "finite_decoder_8": 1,
+            "native_replay_7": 1,
+            "public_FA_LSE_7": 1,
+            "finite_decoder_7": 1,
+            "native_replay_6": 1,
+            "finite_decoder_6": 1,
+            "native_replay_5": 1,
+            "finite_decoder_5": 1,
+            "native_replay_4": 1,
+            "finite_decoder_4": 1,
+            "native_replay_3": 1,
+            "public_FA_LSE_3": 1,
+            "finite_decoder_3": 1,
+            "native_replay_2": 1,
+            "finite_decoder_2": 1,
+            "native_replay_1": 1,
+            "finite_decoder_1": 1,
+            "native_replay_0": 1,
+            "finite_decoder_0": 1
+          },
+          "peak_torch_allocated_bytes": 14674473472,
+          "readout_max": 13468
+        },
+        "shared_warm": {
+          "label_total_wall_seconds": 12.002573624253273,
+          "original_attribute_wall_seconds": [
+            11.989179946482182
+          ],
+          "root_seconds": 3.126016845703125,
+          "replay_seconds": 3.1023741455078127,
+          "finite_decoder_seconds": 4.646329612731933,
+          "public_fa_lse_seconds": 0.2434583034515381,
+          "phase_seconds_sum": 11.270397781908512,
+          "phase_counts": {
+            "shared_native_prefix_cache": 1,
+            "fork_native_prefix_cache": 1,
+            "native_root_with_CPU_checkpoints": 1,
+            "pack_actual_target_logits": 1,
+            "categorical_head_FP32": 1,
+            "actual_root_FP32_logprob_diagnostic": 1,
+            "finite_seed": 1,
+            "finite_final_norm": 1,
+            "native_replay_31": 1,
+            "public_FA_LSE_31": 1,
+            "finite_decoder_31": 1,
+            "native_replay_30": 1,
+            "finite_decoder_30": 1,
+            "native_replay_29": 1,
+            "finite_decoder_29": 1,
+            "native_replay_28": 1,
+            "finite_decoder_28": 1,
+            "native_replay_27": 1,
+            "public_FA_LSE_27": 1,
+            "finite_decoder_27": 1,
+            "native_replay_26": 1,
+            "finite_decoder_26": 1,
+            "native_replay_25": 1,
+            "finite_decoder_25": 1,
+            "native_replay_24": 1,
+            "finite_decoder_24": 1,
+            "native_replay_23": 1,
+            "public_FA_LSE_23": 1,
+            "finite_decoder_23": 1,
+            "native_replay_22": 1,
+            "finite_decoder_22": 1,
+            "native_replay_21": 1,
+            "finite_decoder_21": 1,
+            "native_replay_20": 1,
+            "finite_decoder_20": 1,
+            "native_replay_19": 1,
+            "public_FA_LSE_19": 1,
+            "finite_decoder_19": 1,
+            "native_replay_18": 1,
+            "finite_decoder_18": 1,
+            "native_replay_17": 1,
+            "finite_decoder_17": 1,
+            "native_replay_16": 1,
+            "finite_decoder_16": 1,
+            "native_replay_15": 1,
+            "public_FA_LSE_15": 1,
+            "finite_decoder_15": 1,
+            "native_replay_14": 1,
+            "finite_decoder_14": 1,
+            "native_replay_13": 1,
+            "finite_decoder_13": 1,
+            "native_replay_12": 1,
+            "finite_decoder_12": 1,
+            "native_replay_11": 1,
+            "public_FA_LSE_11": 1,
+            "finite_decoder_11": 1,
+            "native_replay_10": 1,
+            "finite_decoder_10": 1,
+            "native_replay_9": 1,
+            "finite_decoder_9": 1,
+            "native_replay_8": 1,
+            "finite_decoder_8": 1,
+            "native_replay_7": 1,
+            "public_FA_LSE_7": 1,
+            "finite_decoder_7": 1,
+            "native_replay_6": 1,
+            "finite_decoder_6": 1,
+            "native_replay_5": 1,
+            "finite_decoder_5": 1,
+            "native_replay_4": 1,
+            "finite_decoder_4": 1,
+            "native_replay_3": 1,
+            "public_FA_LSE_3": 1,
+            "finite_decoder_3": 1,
+            "native_replay_2": 1,
+            "finite_decoder_2": 1,
+            "native_replay_1": 1,
+            "finite_decoder_1": 1,
+            "native_replay_0": 1,
+            "finite_decoder_0": 1
+          },
+          "peak_torch_allocated_bytes": 14674543616,
+          "readout_max": 13468
+        },
+        "shared_profile_warm": {
+          "label_total_wall_seconds": 31.37869280949235,
+          "original_attribute_wall_seconds": [
+            12.23395186290145
+          ],
+          "root_seconds": 3.238947265625,
+          "replay_seconds": 3.1219330444335935,
+          "finite_decoder_seconds": 4.694264579772949,
+          "public_fa_lse_seconds": 0.2466844139099121,
+          "phase_seconds_sum": 11.446729150995612,
+          "phase_counts": {
+            "shared_native_prefix_cache": 1,
+            "fork_native_prefix_cache": 1,
+            "native_root_with_CPU_checkpoints": 1,
+            "pack_actual_target_logits": 1,
+            "categorical_head_FP32": 1,
+            "actual_root_FP32_logprob_diagnostic": 1,
+            "finite_seed": 1,
+            "finite_final_norm": 1,
+            "native_replay_31": 1,
+            "public_FA_LSE_31": 1,
+            "finite_decoder_31": 1,
+            "native_replay_30": 1,
+            "finite_decoder_30": 1,
+            "native_replay_29": 1,
+            "finite_decoder_29": 1,
+            "native_replay_28": 1,
+            "finite_decoder_28": 1,
+            "native_replay_27": 1,
+            "public_FA_LSE_27": 1,
+            "finite_decoder_27": 1,
+            "native_replay_26": 1,
+            "finite_decoder_26": 1,
+            "native_replay_25": 1,
+            "finite_decoder_25": 1,
+            "native_replay_24": 1,
+            "finite_decoder_24": 1,
+            "native_replay_23": 1,
+            "public_FA_LSE_23": 1,
+            "finite_decoder_23": 1,
+            "native_replay_22": 1,
+            "finite_decoder_22": 1,
+            "native_replay_21": 1,
+            "finite_decoder_21": 1,
+            "native_replay_20": 1,
+            "finite_decoder_20": 1,
+            "native_replay_19": 1,
+            "public_FA_LSE_19": 1,
+            "finite_decoder_19": 1,
+            "native_replay_18": 1,
+            "finite_decoder_18": 1,
+            "native_replay_17": 1,
+            "finite_decoder_17": 1,
+            "native_replay_16": 1,
+            "finite_decoder_16": 1,
+            "native_replay_15": 1,
+            "public_FA_LSE_15": 1,
+            "finite_decoder_15": 1,
+            "native_replay_14": 1,
+            "finite_decoder_14": 1,
+            "native_replay_13": 1,
+            "finite_decoder_13": 1,
+            "native_replay_12": 1,
+            "finite_decoder_12": 1,
+            "native_replay_11": 1,
+            "public_FA_LSE_11": 1,
+            "finite_decoder_11": 1,
+            "native_replay_10": 1,
+            "finite_decoder_10": 1,
+            "native_replay_9": 1,
+            "finite_decoder_9": 1,
+            "native_replay_8": 1,
+            "finite_decoder_8": 1,
+            "native_replay_7": 1,
+            "public_FA_LSE_7": 1,
+            "finite_decoder_7": 1,
+            "native_replay_6": 1,
+            "finite_decoder_6": 1,
+            "native_replay_5": 1,
+            "finite_decoder_5": 1,
+            "native_replay_4": 1,
+            "finite_decoder_4": 1,
+            "native_replay_3": 1,
+            "public_FA_LSE_3": 1,
+            "finite_decoder_3": 1,
+            "native_replay_2": 1,
+            "finite_decoder_2": 1,
+            "native_replay_1": 1,
+            "finite_decoder_1": 1,
+            "native_replay_0": 1,
+            "finite_decoder_0": 1
+          },
+          "peak_torch_allocated_bytes": 14674613760,
+          "readout_max": 13468
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "source_sha256": "44da2afc229ae98e84d496edf5f98b52ac0a52fc9875861aa6dffe511e4132ae",
+      "mapping": {
+        "1": 64,
+        "2": 64
+      },
+      "device_totals": {
+        "events": 39282,
+        "span_seconds": 12.244196351989746,
+        "active_union_seconds": 11.894283280578613,
+        "active_fraction": 0.9714221283821317
+      },
+      "streams": [
+        {
+          "pid": 0,
+          "tid": 0,
+          "stream": 0,
+          "events": 35947,
+          "span_seconds": 12.244196351989746,
+          "active_union_seconds": 9.321214226257323,
+          "active_fraction": 0.7612761146829026
+        },
+        {
+          "pid": 0,
+          "tid": 10,
+          "stream": 10,
+          "events": 3269,
+          "span_seconds": 11.656862464050294,
+          "active_union_seconds": 0.47639808203125,
+          "active_fraction": 0.04086846554983893
+        },
+        {
+          "pid": 0,
+          "tid": 13,
+          "stream": 13,
+          "events": 66,
+          "span_seconds": 11.686752000061036,
+          "active_union_seconds": 4.657583360046386,
+          "active_fraction": 0.39853531246509394
+        }
+      ],
+      "raw_device_sum_seconds": 14.455224831999555,
+      "copies": [
+        {
+          "group": [
+            "HtoD",
+            "outside_native"
+          ],
+          "count": 2142,
+          "known_bytes": 25055911000,
+          "events_without_bytes": 0,
+          "device_seconds": 0.6668533759999985
+        },
+        {
+          "group": [
+            "DtoH",
+            "root"
+          ],
+          "count": 128,
+          "known_bytes": 3117219840,
+          "events_without_bytes": 0,
+          "device_seconds": 0.0650624
+        },
+        {
+          "group": [
+            "DtoD",
+            "outside_native"
+          ],
+          "count": 88,
+          "known_bytes": 3307208704,
+          "events_without_bytes": 0,
+          "device_seconds": 0.006880767999999999
+        },
+        {
+          "group": [
+            "DtoH",
+            "outside_native"
+          ],
+          "count": 20,
+          "known_bytes": 94861573,
+          "events_without_bytes": 0,
+          "device_seconds": 0.001941504
+        },
+        {
+          "group": [
+            "DtoD",
+            "root"
+          ],
+          "count": 24,
+          "known_bytes": 12582912,
+          "events_without_bytes": 0,
+          "device_seconds": 0.0013102079999999996
+        },
+        {
+          "group": [
+            "DtoD",
+            "replay"
+          ],
+          "count": 24,
+          "known_bytes": 12582912,
+          "events_without_bytes": 0,
+          "device_seconds": 0.0011397119999999998
+        }
+      ],
+      "collectives": [
+        {
+          "group": [
+            "all_gather",
+            "outside_native",
+            "record_param_comms"
+          ],
+          "count": 67,
+          "known_bytes": 0,
+          "events_without_bytes": 67,
+          "device_seconds": 4.871228159999999
+        },
+        {
+          "group": [
+            "all_reduce",
+            "outside_native",
+            "record_param_comms"
+          ],
+          "count": 1,
+          "known_bytes": 0,
+          "events_without_bytes": 1,
+          "device_seconds": 0.063347456
+        }
+      ],
+      "mm": [
+        {
+          "group": [
+            "bmm",
+            "outside_native",
+            "aten::bmm"
+          ],
+          "count": 3953,
+          "known_bytes": 0,
+          "events_without_bytes": 3953,
+          "device_seconds": 0.9753233919999929
+        },
+        {
+          "group": [
+            "mm",
+            "root",
+            "aten::mm"
+          ],
+          "count": 744,
+          "known_bytes": 0,
+          "events_without_bytes": 744,
+          "device_seconds": 0.8913510400000006
+        },
+        {
+          "group": [
+            "mm",
+            "replay",
+            "aten::mm"
+          ],
+          "count": 744,
+          "known_bytes": 0,
+          "events_without_bytes": 744,
+          "device_seconds": 0.6794283519999987
+        },
+        {
+          "group": [
+            "mm",
+            "outside_native",
+            "aten::mm"
+          ],
+          "count": 252,
+          "known_bytes": 0,
+          "events_without_bytes": 252,
+          "device_seconds": 0.014526207999999997
+        }
+      ],
+      "kernels": [
+        {
+          "group": [
+            "all_gather",
+            "outside_native"
+          ],
+          "count": 67,
+          "known_bytes": 0,
+          "events_without_bytes": 67,
+          "device_seconds": 4.871228159999999
+        },
+        {
+          "group": [
+            "other_kernel",
+            "outside_native"
+          ],
+          "count": 25999,
+          "known_bytes": 0,
+          "events_without_bytes": 25999,
+          "device_seconds": 1.755378432000029
+        },
+        {
+          "group": [
+            "other_kernel",
+            "unknown_owner"
+          ],
+          "count": 408,
+          "known_bytes": 0,
+          "events_without_bytes": 408,
+          "device_seconds": 1.5128693759999996
+        },
+        {
+          "group": [
+            "other_kernel",
+            "root"
+          ],
+          "count": 2352,
+          "known_bytes": 0,
+          "events_without_bytes": 2352,
+          "device_seconds": 1.4882296320000081
+        },
+        {
+          "group": [
+            "other_kernel",
+            "replay"
+          ],
+          "count": 2336,
+          "known_bytes": 0,
+          "events_without_bytes": 2336,
+          "device_seconds": 1.4603548160000008
+        },
+        {
+          "group": [
+            "bmm",
+            "outside_native"
+          ],
+          "count": 3953,
+          "known_bytes": 0,
+          "events_without_bytes": 3953,
+          "device_seconds": 0.9753233919999929
+        },
+        {
+          "group": [
+            "mm",
+            "root"
+          ],
+          "count": 744,
+          "known_bytes": 0,
+          "events_without_bytes": 744,
+          "device_seconds": 0.8913510400000006
+        },
+        {
+          "group": [
+            "mm",
+            "replay"
+          ],
+          "count": 744,
+          "known_bytes": 0,
+          "events_without_bytes": 744,
+          "device_seconds": 0.6794283519999987
+        },
+        {
+          "group": [
+            "all_reduce",
+            "outside_native"
+          ],
+          "count": 1,
+          "known_bytes": 0,
+          "events_without_bytes": 1,
+          "device_seconds": 0.063347456
+        },
+        {
+          "group": [
+            "mm",
+            "outside_native"
+          ],
+          "count": 252,
+          "known_bytes": 0,
+          "events_without_bytes": 252,
+          "device_seconds": 0.014526207999999997
+        }
+      ],
+      "cpu_shape_examples": [
+        {
+          "name": "aten::bmm",
+          "args": {
+            "External id": 3151,
+            "Record function id": 0,
+            "Ev Idx": 3150
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3502,
+            "Record function id": 0,
+            "Ev Idx": 3501
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3511,
+            "Record function id": 0,
+            "Ev Idx": 3510
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3520,
+            "Record function id": 0,
+            "Ev Idx": 3519
+          }
+        },
+        {
+          "name": "aten::mm",
+          "args": {
+            "External id": 3534,
+            "Record function id": 0,
+            "Ev Idx": 3533
+          }
+        }
+      ],
+      "bmm": [
+        {
+          "owner": "outside_native",
+          "unique_cpu_bmm_calls": 3953,
+          "gpu_kernel_count": 3953,
+          "cpu_inclusive_seconds": 0.08169382600000002,
+          "device_seconds": 0.9753233919999929,
+          "gpu_kernels_per_cpu_bmm_histogram": {
+            "1": 3953
+          },
+          "original_shape_fields": {
+            "missing": 3953
+          }
+        }
+      ],
+      "top_kernel_names": [
+        {
+          "kind": "all_gather",
+          "owner": "outside_native",
+          "cpu_op": "record_param_comms",
+          "kernel_name": "mcclkernel_AllGather_FC2_int8_t(fcinfo)",
+          "gpu_kernel_count": 67,
+          "device_seconds": 4.871228159999999
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "unknown_owner",
+          "cpu_op": "unknown_cpu_op",
+          "kernel_name": "void deltatrace_fa_finite_p1_kernel<1, Flash_fwd_kernel_traits<256, 64, 64, 4, false, false, mctlass::bfloat16_t, Flash_kernel_traits<256, 64, 64, 4, mctlass::bfloat16_t> > >(FiniteParams)",
+          "gpu_kernel_count": 8,
+          "device_seconds": 0.824112384
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "replay",
+          "cpu_op": "aten::cat",
+          "kernel_name": "void at::native::(anonymous namespace)::MACA_CatArrayBatchedCopyNoPartialWrite_any_any_any_0_non_contiguous_input_last_dim_cat<c10::BFloat16, unsigned int, 3, 4, 128, 64>(c10::BFloat16*, at::native::(anonymous namespace)::CatArrInputTensorMetadataNotAllContiguous<c10::BFloat16, 128>, int, at::native::(anonymous namespace)::CatArrTensorMetadataNoPartialWriteInfo)",
+          "gpu_kernel_count": 24,
+          "device_seconds": 0.761563904
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "root",
+          "cpu_op": "aten::cat",
+          "kernel_name": "void at::native::(anonymous namespace)::MACA_CatArrayBatchedCopyNoPartialWrite_any_any_any_0_non_contiguous_input_last_dim_cat<c10::BFloat16, unsigned int, 3, 4, 128, 64>(c10::BFloat16*, at::native::(anonymous namespace)::CatArrInputTensorMetadataNotAllContiguous<c10::BFloat16, 128>, int, at::native::(anonymous namespace)::CatArrTensorMetadataNoPartialWriteInfo)",
+          "gpu_kernel_count": 24,
+          "device_seconds": 0.7496448
+        },
+        {
+          "kind": "bmm",
+          "owner": "outside_native",
+          "cpu_op": "aten::bmm",
+          "kernel_name": "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0",
+          "gpu_kernel_count": 496,
+          "device_seconds": 0.673645312
+        },
+        {
+          "kind": "mm",
+          "owner": "root",
+          "cpu_op": "aten::mm",
+          "kernel_name": "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+          "gpu_kernel_count": 224,
+          "device_seconds": 0.53191296
+        },
+        {
+          "kind": "mm",
+          "owner": "replay",
+          "cpu_op": "aten::mm",
+          "kernel_name": "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+          "gpu_kernel_count": 224,
+          "device_seconds": 0.4075650559999995
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "unknown_owner",
+          "cpu_op": "unknown_cpu_op",
+          "kernel_name": "void deltatrace_fa_finite_p1_kernel<0, Flash_fwd_kernel_traits<256, 64, 64, 4, false, false, mctlass::bfloat16_t, Flash_kernel_traits<256, 64, 64, 4, mctlass::bfloat16_t> > >(FiniteParams)",
+          "gpu_kernel_count": 8,
+          "device_seconds": 0.36561254400000004
+        },
+        {
+          "kind": "mm",
+          "owner": "root",
+          "cpu_op": "aten::mm",
+          "kernel_name": "mcblas__Mck_bf16gemm_tn_256x192x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+          "gpu_kernel_count": 176,
+          "device_seconds": 0.3160537599999999
+        },
+        {
+          "kind": "mm",
+          "owner": "replay",
+          "cpu_op": "aten::mm",
+          "kernel_name": "mcblas__Mck_bf16gemm_tn_256x192x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+          "gpu_kernel_count": 176,
+          "device_seconds": 0.244593664
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "unknown_owner",
+          "cpu_op": "unknown_cpu_op",
+          "kernel_name": "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64",
+          "gpu_kernel_count": 192,
+          "device_seconds": 0.23457740800000002
+        },
+        {
+          "kind": "other_kernel",
+          "owner": "outside_native",
+          "cpu_op": "aten::copy_",
+          "kernel_name": "void at::native::elementwise_kernel_3_1<128, 4, c10::BFloat16, c10::BFloat16, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}, unsigned int, unsigned int>(long, char*, char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1})",
+          "gpu_kernel_count": 64,
+          "device_seconds": 0.22992051199999985
+        }
+      ],
+      "phase_summary": {
+        "shared_cold": {
+          "label_total_wall_seconds": 78.12849284335971,
+          "original_attribute_wall_seconds": [
+            30.011246908456087
+          ],
+          "root_seconds": 4.8873525390625,
+          "replay_seconds": 4.267488754272461,
+          "finite_decoder_seconds": 19.29255595397949,
+          "public_fa_lse_seconds": 0.18222540855407715,
+          "phase_seconds_sum": 29.46251378324628,
+          "phase_counts": {
+            "shared_native_prefix_cache": 1,
+            "fork_native_prefix_cache": 1,
+            "native_root_with_CPU_checkpoints": 1,
+            "pack_actual_target_logits": 1,
+            "categorical_head_FP32": 1,
+            "actual_root_FP32_logprob_diagnostic": 1,
+            "finite_seed": 1,
+            "finite_final_norm": 1,
+            "native_replay_31": 1,
+            "public_FA_LSE_31": 1,
+            "finite_decoder_31": 1,
+            "native_replay_30": 1,
+            "finite_decoder_30": 1,
+            "native_replay_29": 1,
+            "finite_decoder_29": 1,
+            "native_replay_28": 1,
+            "finite_decoder_28": 1,
+            "native_replay_27": 1,
+            "public_FA_LSE_27": 1,
+            "finite_decoder_27": 1,
+            "native_replay_26": 1,
+            "finite_decoder_26": 1,
+            "native_replay_25": 1,
+            "finite_decoder_25": 1,
+            "native_replay_24": 1,
+            "finite_decoder_24": 1,
+            "native_replay_23": 1,
+            "public_FA_LSE_23": 1,
+            "finite_decoder_23": 1,
+            "native_replay_22": 1,
+            "finite_decoder_22": 1,
+            "native_replay_21": 1,
+            "finite_decoder_21": 1,
+            "native_replay_20": 1,
+            "finite_decoder_20": 1,
+            "native_replay_19": 1,
+            "public_FA_LSE_19": 1,
+            "finite_decoder_19": 1,
+            "native_replay_18": 1,
+            "finite_decoder_18": 1,
+            "native_replay_17": 1,
+            "finite_decoder_17": 1,
+            "native_replay_16": 1,
+            "finite_decoder_16": 1,
+            "native_replay_15": 1,
+            "public_FA_LSE_15": 1,
+            "finite_decoder_15": 1,
+            "native_replay_14": 1,
+            "finite_decoder_14": 1,
+            "native_replay_13": 1,
+            "finite_decoder_13": 1,
+            "native_replay_12": 1,
+            "finite_decoder_12": 1,
+            "native_replay_11": 1,
+            "public_FA_LSE_11": 1,
+            "finite_decoder_11": 1,
+            "native_replay_10": 1,
+            "finite_decoder_10": 1,
+            "native_replay_9": 1,
+            "finite_decoder_9": 1,
+            "native_replay_8": 1,
+            "finite_decoder_8": 1,
+            "native_replay_7": 1,
+            "public_FA_LSE_7": 1,
+            "finite_decoder_7": 1,
+            "native_replay_6": 1,
+            "finite_decoder_6": 1,
+            "native_replay_5": 1,
+            "finite_decoder_5": 1,
+            "native_replay_4": 1,
+            "finite_decoder_4": 1,
+            "native_replay_3": 1,
+            "public_FA_LSE_3": 1,
+            "finite_decoder_3": 1,
+            "native_replay_2": 1,
+            "finite_decoder_2": 1,
+            "native_replay_1": 1,
+            "finite_decoder_1": 1,
+            "native_replay_0": 1,
+            "finite_decoder_0": 1
+          },
+          "peak_torch_allocated_bytes": 14808638976,
+          "readout_max": 13216
+        },
+        "shared_warm": {
+          "label_total_wall_seconds": 12.010622162371874,
+          "original_attribute_wall_seconds": [
+            11.997802395373583
+          ],
+          "root_seconds": 3.125481689453125,
+          "replay_seconds": 4.363016944885254,
+          "finite_decoder_seconds": 3.5676234130859377,
+          "public_fa_lse_seconds": 0.1813951988220215,
+          "phase_seconds_sum": 11.389774526901544,
+          "phase_counts": {
+            "shared_native_prefix_cache": 1,
+            "fork_native_prefix_cache": 1,
+            "native_root_with_CPU_checkpoints": 1,
+            "pack_actual_target_logits": 1,
+            "categorical_head_FP32": 1,
+            "actual_root_FP32_logprob_diagnostic": 1,
+            "finite_seed": 1,
+            "finite_final_norm": 1,
+            "native_replay_31": 1,
+            "public_FA_LSE_31": 1,
+            "finite_decoder_31": 1,
+            "native_replay_30": 1,
+            "finite_decoder_30": 1,
+            "native_replay_29": 1,
+            "finite_decoder_29": 1,
+            "native_replay_28": 1,
+            "finite_decoder_28": 1,
+            "native_replay_27": 1,
+            "public_FA_LSE_27": 1,
+            "finite_decoder_27": 1,
+            "native_replay_26": 1,
+            "finite_decoder_26": 1,
+            "native_replay_25": 1,
+            "finite_decoder_25": 1,
+            "native_replay_24": 1,
+            "finite_decoder_24": 1,
+            "native_replay_23": 1,
+            "public_FA_LSE_23": 1,
+            "finite_decoder_23": 1,
+            "native_replay_22": 1,
+            "finite_decoder_22": 1,
+            "native_replay_21": 1,
+            "finite_decoder_21": 1,
+            "native_replay_20": 1,
+            "finite_decoder_20": 1,
+            "native_replay_19": 1,
+            "public_FA_LSE_19": 1,
+            "finite_decoder_19": 1,
+            "native_replay_18": 1,
+            "finite_decoder_18": 1,
+            "native_replay_17": 1,
+            "finite_decoder_17": 1,
+            "native_replay_16": 1,
+            "finite_decoder_16": 1,
+            "native_replay_15": 1,
+            "public_FA_LSE_15": 1,
+            "finite_decoder_15": 1,
+            "native_replay_14": 1,
+            "finite_decoder_14": 1,
+            "native_replay_13": 1,
+            "finite_decoder_13": 1,
+            "native_replay_12": 1,
+            "finite_decoder_12": 1,
+            "native_replay_11": 1,
+            "public_FA_LSE_11": 1,
+            "finite_decoder_11": 1,
+            "native_replay_10": 1,
+            "finite_decoder_10": 1,
+            "native_replay_9": 1,
+            "finite_decoder_9": 1,
+            "native_replay_8": 1,
+            "finite_decoder_8": 1,
+            "native_replay_7": 1,
+            "public_FA_LSE_7": 1,
+            "finite_decoder_7": 1,
+            "native_replay_6": 1,
+            "finite_decoder_6": 1,
+            "native_replay_5": 1,
+            "finite_decoder_5": 1,
+            "native_replay_4": 1,
+            "finite_decoder_4": 1,
+            "native_replay_3": 1,
+            "public_FA_LSE_3": 1,
+            "finite_decoder_3": 1,
+            "native_replay_2": 1,
+            "finite_decoder_2": 1,
+            "native_replay_1": 1,
+            "finite_decoder_1": 1,
+            "native_replay_0": 1,
+            "finite_decoder_0": 1
+          },
+          "peak_torch_allocated_bytes": 14808709120,
+          "readout_max": 13216
+        },
+        "shared_profile_warm": {
+          "label_total_wall_seconds": 30.295613426715136,
+          "original_attribute_wall_seconds": [
+            12.246837470680475
+          ],
+          "root_seconds": 3.12161669921875,
+          "replay_seconds": 4.391248634338379,
+          "finite_decoder_seconds": 3.617456398010254,
+          "public_fa_lse_seconds": 0.18428672218322753,
+          "phase_seconds_sum": 11.576535876125098,
+          "phase_counts": {
+            "shared_native_prefix_cache": 1,
+            "fork_native_prefix_cache": 1,
+            "native_root_with_CPU_checkpoints": 1,
+            "pack_actual_target_logits": 1,
+            "categorical_head_FP32": 1,
+            "actual_root_FP32_logprob_diagnostic": 1,
+            "finite_seed": 1,
+            "finite_final_norm": 1,
+            "native_replay_31": 1,
+            "public_FA_LSE_31": 1,
+            "finite_decoder_31": 1,
+            "native_replay_30": 1,
+            "finite_decoder_30": 1,
+            "native_replay_29": 1,
+            "finite_decoder_29": 1,
+            "native_replay_28": 1,
+            "finite_decoder_28": 1,
+            "native_replay_27": 1,
+            "public_FA_LSE_27": 1,
+            "finite_decoder_27": 1,
+            "native_replay_26": 1,
+            "finite_decoder_26": 1,
+            "native_replay_25": 1,
+            "finite_decoder_25": 1,
+            "native_replay_24": 1,
+            "finite_decoder_24": 1,
+            "native_replay_23": 1,
+            "public_FA_LSE_23": 1,
+            "finite_decoder_23": 1,
+            "native_replay_22": 1,
+            "finite_decoder_22": 1,
+            "native_replay_21": 1,
+            "finite_decoder_21": 1,
+            "native_replay_20": 1,
+            "finite_decoder_20": 1,
+            "native_replay_19": 1,
+            "public_FA_LSE_19": 1,
+            "finite_decoder_19": 1,
+            "native_replay_18": 1,
+            "finite_decoder_18": 1,
+            "native_replay_17": 1,
+            "finite_decoder_17": 1,
+            "native_replay_16": 1,
+            "finite_decoder_16": 1,
+            "native_replay_15": 1,
+            "public_FA_LSE_15": 1,
+            "finite_decoder_15": 1,
+            "native_replay_14": 1,
+            "finite_decoder_14": 1,
+            "native_replay_13": 1,
+            "finite_decoder_13": 1,
+            "native_replay_12": 1,
+            "finite_decoder_12": 1,
+            "native_replay_11": 1,
+            "public_FA_LSE_11": 1,
+            "finite_decoder_11": 1,
+            "native_replay_10": 1,
+            "finite_decoder_10": 1,
+            "native_replay_9": 1,
+            "finite_decoder_9": 1,
+            "native_replay_8": 1,
+            "finite_decoder_8": 1,
+            "native_replay_7": 1,
+            "public_FA_LSE_7": 1,
+            "finite_decoder_7": 1,
+            "native_replay_6": 1,
+            "finite_decoder_6": 1,
+            "native_replay_5": 1,
+            "finite_decoder_5": 1,
+            "native_replay_4": 1,
+            "finite_decoder_4": 1,
+            "native_replay_3": 1,
+            "public_FA_LSE_3": 1,
+            "finite_decoder_3": 1,
+            "native_replay_2": 1,
+            "finite_decoder_2": 1,
+            "native_replay_1": 1,
+            "finite_decoder_1": 1,
+            "native_replay_0": 1,
+            "finite_decoder_0": 1
+          },
+          "peak_torch_allocated_bytes": 14808779264,
+          "readout_max": 13216
+        }
+      }
+    }
+  ],
+  "native_range_provenance": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-prefix-resume-20261005\\current-long-profile-native-range-provenance.json",
+    "sha256": "f961908a6e1df3c202817c423d6adee18801150b9d354c6966b45a96406029d3",
+    "ranks": [
+      {
+        "rank": 0,
+        "effective": {
+          "rank": 0,
+          "pid": 1311634,
+          "phase": "original_actor_backward_complete",
+          "rank_lora": 8,
+          "alpha": 16,
+          "local_microbatch": 4,
+          "actual_rows": 4,
+          "context_lengths": [
+            11993,
+            12409,
+            12893,
+            13468
+          ],
+          "original_request_sha256": "8714abf248a4bb3201294300b6525030fd0bdbce55899d969d9f24236729e429",
+          "restored_checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt/checkpoints/global_step_20",
+          "variant": "shared_profile_warm",
+          "factual_input_shape": [
+            4,
+            13468
+          ],
+          "dt_paired_input_shape": [
+            8,
+            13468
+          ],
+          "native_backward_runs": [
+            {
+              "variant": "native_backward_cold",
+              "forward_seconds": 7.318512037396431,
+              "backward_seconds": 34.94309997186065,
+              "loss": 13.043599128723145,
+              "gradient_tensors": 496,
+              "finite_gradients": true,
+              "original_logits_dtype": "torch.bfloat16",
+              "peak_torch_allocated_bytes": 20824566272,
+              "peak_torch_reserved_bytes": 35532046336,
+              "physical_free_bytes": 28951916544
+            },
+            {
+              "variant": "native_backward_warm",
+              "forward_seconds": 5.838610798120499,
+              "backward_seconds": 15.878382071852684,
+              "loss": 13.043599128723145,
+              "gradient_tensors": 496,
+              "finite_gradients": true,
+              "original_logits_dtype": "torch.bfloat16",
+              "peak_torch_allocated_bytes": 20824566272,
+              "peak_torch_reserved_bytes": 35532046336,
+              "physical_free_bytes": 28951916544
+            }
+          ],
+          "target_positions": [
+            11991,
+            12407,
+            12891,
+            13466
+          ],
+          "attention_backend": "flash_attention_2",
+          "native_fla_fp16": true,
+          "forward_owner": {
+            "method": "owner_forward",
+            "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fully_shard.py",
+            "sha256": "901220efd8b6ea015eebd468a689a8edcf5023cfcc3694159d892950261d8e15"
+          },
+          "shared_preparation": {
+            "capture_rounds": 5,
+            "local_unique_histories": 18,
+            "consumer_batches": 22,
+            "capture_token_slots": 192000,
+            "original_shared_prefix_token_slots": 615936,
+            "capture_and_preparation_seconds": 48.028817515820265,
+            "diagnostic_selected_consumer_batches": 1,
+            "diagnostic_bank_reused": true
+          }
+        },
+        "native_range_categories": [
+          {
+            "pass_number": 1,
+            "category": "user_annotation",
+            "pid": 1311634,
+            "tid": 1311634,
+            "record_count": 32,
+            "unique_layers": 32
+          },
+          {
+            "pass_number": 2,
+            "category": "user_annotation",
+            "pid": 1311634,
+            "tid": 1311634,
+            "record_count": 32,
+            "unique_layers": 32
+          },
+          {
+            "pass_number": 2,
+            "category": "gpu_user_annotation",
+            "pid": 0,
+            "tid": 0,
+            "record_count": 32,
+            "unique_layers": 32
+          },
+          {
+            "pass_number": 1,
+            "category": "gpu_user_annotation",
+            "pid": 0,
+            "tid": 0,
+            "record_count": 32,
+            "unique_layers": 32
+          }
+        ]
+      },
+      {
+        "rank": 1,
+        "effective": {
+          "rank": 1,
+          "pid": 1313211,
+          "phase": "original_actor_backward_complete",
+          "rank_lora": 8,
+          "alpha": 16,
+          "local_microbatch": 4,
+          "actual_rows": 4,
+          "context_lengths": [
+            12200,
+            12619,
+            12808,
+            13216
+          ],
+          "original_request_sha256": "1fdc1eb0f701d921825b796426ad2d7b0751f61786710b830f4ea72a11e58818",
+          "restored_checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt/checkpoints/global_step_20",
+          "variant": "shared_profile_warm",
+          "factual_input_shape": [
+            4,
+            13216
+          ],
+          "dt_paired_input_shape": [
+            8,
+            13216
+          ],
+          "native_backward_runs": [
+            {
+              "variant": "native_backward_cold",
+              "forward_seconds": 8.385920494794846,
+              "backward_seconds": 34.9772842079401,
+              "loss": 13.398702621459961,
+              "gradient_tensors": 496,
+              "finite_gradients": true,
+              "original_logits_dtype": "torch.bfloat16",
+              "peak_torch_allocated_bytes": 20526219776,
+              "peak_torch_reserved_bytes": 34737225728,
+              "physical_free_bytes": 29746737152
+            },
+            {
+              "variant": "native_backward_warm",
+              "forward_seconds": 5.810200918465853,
+              "backward_seconds": 15.917773202061653,
+              "loss": 13.398702621459961,
+              "gradient_tensors": 496,
+              "finite_gradients": true,
+              "original_logits_dtype": "torch.bfloat16",
+              "peak_torch_allocated_bytes": 20526219776,
+              "peak_torch_reserved_bytes": 34737225728,
+              "physical_free_bytes": 29746737152
+            }
+          ],
+          "target_positions": [
+            12198,
+            12617,
+            12806,
+            13214
+          ],
+          "attention_backend": "flash_attention_2",
+          "native_fla_fp16": true,
+          "forward_owner": {
+            "method": "owner_forward",
+            "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fully_shard.py",
+            "sha256": "901220efd8b6ea015eebd468a689a8edcf5023cfcc3694159d892950261d8e15"
+          },
+          "shared_preparation": {
+            "capture_rounds": 5,
+            "local_unique_histories": 18,
+            "consumer_batches": 22,
+            "capture_token_slots": 192768,
+            "original_shared_prefix_token_slots": 610816,
+            "capture_and_preparation_seconds": 48.07489740476012,
+            "diagnostic_selected_consumer_batches": 1,
+            "diagnostic_bank_reused": true
+          }
+        },
+        "native_range_categories": [
+          {
+            "pass_number": 1,
+            "category": "user_annotation",
+            "pid": 1313211,
+            "tid": 1313211,
+            "record_count": 32,
+            "unique_layers": 32
+          },
+          {
+            "pass_number": 2,
+            "category": "user_annotation",
+            "pid": 1313211,
+            "tid": 1313211,
+            "record_count": 32,
+            "unique_layers": 32
+          },
+          {
+            "pass_number": 2,
+            "category": "gpu_user_annotation",
+            "pid": 0,
+            "tid": 0,
+            "record_count": 32,
+            "unique_layers": 32
+          },
+          {
+            "pass_number": 1,
+            "category": "gpu_user_annotation",
+            "pid": 0,
+            "tid": 0,
+            "record_count": 32,
+            "unique_layers": 32
+          }
+        ]
+      }
+    ]
+  }
+}

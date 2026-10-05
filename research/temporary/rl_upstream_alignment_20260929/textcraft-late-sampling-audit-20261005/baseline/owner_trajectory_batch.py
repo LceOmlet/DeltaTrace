@@ -108,14 +108,8 @@ def trajectory_credit(data, response_data, worker_group, *, eos_token_id, pad_to
         # Native reset failures can return no actions at all.
         assert not any(data.non_tensor_batch['dt_response_slices'])
         return DataProto.from_dict(tensors=result)
-    # Native trajectory truncation can remove a later reward-bearing action
-    # from the training tensor. Its real reward remains in response_data; only
-    # actions with retained native token slices require a DT request.
-    indices = torch.tensor(sorted({source
-        for slices in data.non_tensor_batch['dt_response_slices']
-        for source, _, length in slices if length > 0}), dtype=torch.long)
     values = compute_training_credit(response_data, worker_group,
-        eos_token_id=eos_token_id, pad_token_id=pad_token_id, source_indices=indices)
+        eos_token_id=eos_token_id, pad_token_id=pad_token_id)
     for row, slices in enumerate(data.non_tensor_batch['dt_response_slices']):
         for source, start, length in slices:
             for key in CREDIT_KEYS:

@@ -80,6 +80,65 @@ def test_zero_batch_does_not_enter_fsdp_collectives():
     assert all(not output.batch[key].any() for key in CREDIT_KEYS)
 
 
+@pytest.mark.parametrize('reward', [0., 1.])
+def test_training_slices_do_not_drop_later_executed_reward(reward):
+    # The final action is an executed environment event even when its tokens
+    # are outside the author's training truncation. Keep the original reward
+    # there; DT requests cover only retained training-token source identities.
+    order = [2, 0, 1, 0]
+    data = training_data([0., 0., reward], order)
+    from dt_training_batch import prepare_training_credit
+    prepared, inverse = prepare_training_credit(data)
+    assert prepared.batch['dt_complete_return'].tolist() == [reward] * 3
+    group = NativeDispatchFixture(2)
+    actual = compute_training_credit(data, group, eos_token_id=99, pad_token_id=0,
+                                     source_indices=torch.tensor([1, 2, 3]))
+    if reward:
+        assert len(group.calls) == 1
+        # Native B8 transport padding can duplicate eligible requests, but
+        # cannot cause the excluded terminal response to enter a model call.
+        for chunk in group.calls[0]:
+            assert set(chunk.non_tensor_batch['env_step']) <= {0, 1}
+            assert chunk.batch['dt_complete_return'].tolist() == [reward] * len(chunk)
+    else:
+        assert not group.calls
+    for index, step in enumerate(order):
+        expected = 0. if step == 2 else reward
+        assert actual.batch['dt_q_estimates'][index, 0].item() == expected
+    # Reward location and complete native response artifacts are unchanged.
+    assert data.non_tensor_batch['rewards'].tolist() == [reward, 0., 0., 0.]
+
+
+def test_empty_training_slice_selection_avoids_all_dt_calls():
+    data = training_data([0., 1.], [0, 1])
+    group = NativeDispatchFixture(2)
+    actual = compute_training_credit(data, group, eos_token_id=99, pad_token_id=0,
+                                     source_indices=torch.tensor([], dtype=torch.long))
+    assert not group.calls
+    assert all(not actual.batch[key].any() for key in CREDIT_KEYS)
+
+
+def test_trajectory_uses_native_slice_sources_after_complete_returns():
+    from owner_trajectory_batch import trajectory_credit
+    source = training_data([0., 0., 1.], [0, 1, 2])
+    # Observation/unused slots receive no policy credit. A partially retained
+    # response keeps its original full source endpoint and exact slice length.
+    mapping = np.empty(1, dtype=object)
+    mapping[0] = [(0, 1, 1), (1, 3, 2)]
+    destination = DataProto.from_dict(tensors=dict(responses=torch.tensor([[90, 7, 91, 7, 8]])),
+        non_tensors=dict(dt_response_slices=mapping))
+    group = NativeDispatchFixture(2)
+    output = trajectory_credit(destination, source, group, eos_token_id=99, pad_token_id=0)
+    assert len(group.calls) == 1
+    for chunk in group.calls[0]:
+        assert set(chunk.non_tensor_batch['env_step']) <= {0, 1}
+        assert chunk.batch['responses'].tolist() == [[7, 8, 0]] * len(chunk)
+        assert chunk.batch['dt_complete_return'].tolist() == [1.] * len(chunk)
+    assert output.batch['dt_q_estimates'].tolist() == [[0., 1., 0., 1., 1.]]
+    for key in CREDIT_KEYS:
+        assert not output.batch[key][0, [0, 2]].any()
+
+
 @pytest.mark.parametrize('count', [17, 22])
 def test_owner_balance_restores_credit_after_padding_and_duplicate_rows(count, monkeypatch):
     from verl.utils import seqlen_balancing

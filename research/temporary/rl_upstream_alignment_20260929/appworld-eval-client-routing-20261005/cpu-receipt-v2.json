@@ -1,0 +1,63 @@
+{
+  "state": "prepared-only-cpu-contract-verified",
+  "observed_local_date": "2026-10-05T18:49:04.115331+08:00",
+  "scope": "AppWorld selected eval client identity IPC; single-client eval and training retain original four-field event",
+  "old_candidate_preserved": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-eval-client-routing-20261005\\candidate",
+  "new_manifest": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-eval-client-routing-20261005\\candidate-v2\\prepared.json",
+  "fixed_observed_defect": {
+    "before": "Old candidate bound server_index=0 for default single-client evaluation; unchanged synchronous collect still unpacked four event fields",
+    "after": "Bind selected server_index only when evaluation inference_clients>1; initial original completion binding stays for one client"
+  },
+  "cpu_test": {
+    "command": "C:/Users/Administrator/miniconda3/python.exe -X utf8 -m pytest -q -p no:cacheprovider experiments/rl/test_appworld_eval_client_routing_local.py --basetemp research/temporary/rl_upstream_alignment_20260929/appworld-eval-client-routing-20261005/cpu-test-tmp-v4",
+    "exit_code": 0,
+    "stdout": "10 passed in 0.62s",
+    "coverage": [
+      "reproduce all three candidate bytes from frozen baseline",
+      "original LOOP round-robin selection on 57 tasks x 2 rollouts",
+      "training baseline four-field events and parameters",
+      "default one-client evaluation four-field events",
+      "execute unchanged synchronous collector with real candidate producer events",
+      "two-client async selected server and original reply rank",
+      "cancellation abort on selected server",
+      "default four-field async transport equality",
+      "async entry service-count forwarding"
+    ]
+  },
+  "source_hashes": {
+    "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\prepare_appworld_eval_client_routing_20261005.py": "acd4777326aa58f531c1a7a79272d8c651130742362fe384bef96f48289e2ee3",
+    "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\test_appworld_eval_client_routing_local.py": "ea97bb9f476b4feff77b077b578b4c5405a86c2c6c1fc3f6b4ef07cdcd3c0aad",
+    "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-eval-client-routing-20261005\\candidate-v2\\prepared.json": "3822a9a7594deeac491ddfc97bce44dfc5f03ee22e82cd4dd526a453173dcd0a"
+  },
+  "candidate_hashes": {
+    "loop_owner_rollout.py": {
+      "original_sha256": "c4a46492a665dbb6b1ac9076a6309ed3e128cb534068fca4f65c9f9a5532fcce",
+      "candidate_sha256": "01eca1bf47f8228060cd4bcda2cab424a69bdb865f5d3dc23297bfc66f828ef7"
+    },
+    "loop_owner_worker.py": {
+      "original_sha256": "6ad5a3e383d032fdc7f0dd2dab1ee027d8f0ed182f9725d07a3faedb46e54ec9",
+      "candidate_sha256": "1bf093a213aa4b4dee0b2a68b50b947564d1781e615929891137bc73a5719cdb"
+    },
+    "loop_async_transport.py": {
+      "original_sha256": "3d6438314908dba0076d0d1874025f321e7627d5f63193801e5b70165ea7ecc1",
+      "candidate_sha256": "8ecbf018e2d2c77d5f545a67db71368905ba3c400f02609ec8e8c9ae74f181bf"
+    }
+  },
+  "unchanged_owners": [
+    "LOOP task sampler",
+    "LOOP round-robin submission and runner pool",
+    "AppWorld environment execution/reward/cleanup",
+    "DT producer/readout/Q/V/A",
+    "PPO and training parameters"
+  ],
+  "default_production_three_sources_modified": false,
+  "remote_actions": "none",
+  "numerical_acceptance": "not performed; CPU dispatch tests are not GPU/model/tolerance acceptance",
+  "resource_acceptance": "not performed; new client repeats original tokenizer construction, no model or environment session created by client",
+  "review": {
+    "two_clients": "Original VLLMQwen3 constructor AST equal for template and appended client; original VLLMClient stores URL and cancellation flag, not AppWorld state",
+    "state_owner": "ScenarioRunner.world and per-runner lock remain unchanged",
+    "routing": "generate/abort use server_index; replies/cancellation use original owner rank; UUID request key unchanged",
+    "dataset_rank": "No new dataset/rank partition: original eval world=1 and scenario count/rollout count/num_runners remain; original local_rank selection expression reused"
+  }
+}

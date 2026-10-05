@@ -1,0 +1,95 @@
+{
+  "observed_unix": 1791195776.9155703,
+  "scope": "Source-only installed owner LoRA transport; no torch/model/GPU.",
+  "records": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-rollout-scope-20261001/verl/verl/utils/vllm_utils.py",
+      "sha256": "17f3355dbcba9d9f2f8e04d7a1de54f6b3cdf8a6c660ac3440cbc8977cdb86ad",
+      "bytes": 10396,
+      "methods": [
+        {
+          "name": "hijack",
+          "line": 159,
+          "end_line": 244,
+          "source": "def hijack():\n        def hijack__load_adapter(self, lora_request: TensorLoRARequest) -> LoRAModel:\n            \"\"\"\n            based on vllm.lora.worker_manager.WorkerLoRAManager._load_adapter, support load adapter with lora tensors\n\n            Reason:\n            VLLM does not support adding LoRA from tensors directly. It only supports adding LoRA via file paths.\n            To synchronize the LoRA tensors of the actor model, we need to find a workaround to enable VLLM to\n            load memory-based LoRA tensors.\n            \"\"\"\n            try:\n                supported_lora_modules = self._adapter_manager.supported_lora_modules\n                packed_modules_mapping = self._adapter_manager.packed_modules_mapping\n                expected_lora_modules: list[str] = []\n                for module in supported_lora_modules:\n                    if module in packed_modules_mapping:\n                        expected_lora_modules.extend(packed_modules_mapping[module])\n                    else:\n                        expected_lora_modules.append(module)\n\n                expected_lora_modules = list(set(expected_lora_modules))\n\n                lora_tensors = None\n                from vllm.lora.peft_helper import PEFTHelper\n\n                if isinstance(lora_request, TensorLoRARequest):\n                    peft_config = lora_request.peft_config\n                    lora_tensors = lora_request.lora_tensors\n                    peft_helper = PEFTHelper.from_dict(peft_config)\n                else:\n                    lora_path = get_adapter_absolute_path(lora_request.lora_path)\n\n                    peft_helper = PEFTHelper.from_local_dir(lora_path, self.max_position_embeddings)\n\n                # Validates the LoRA configuration against requirements before\n                # loading weights, throwing an exception if validation fails.\n                peft_helper.validate_legal(self.lora_config)\n\n                # For some models like Qwen2VL, we need to use hf_to_vllm_mapper\n                # to ensure correct loading of lora weights.\n                model = self._adapter_manager.model\n                hf_to_vllm_mapper = None\n                if hasattr(model, \"hf_to_vllm_mapper\") and model.hf_to_vllm_mapper is not None:\n                    hf_to_vllm_mapper = model.hf_to_vllm_mapper\n\n                lora_request_kwargs = {\n                    \"peft_helper\": peft_helper,\n                    \"lora_model_id\": lora_request.lora_int_id,\n                    \"device\": \"cpu\",\n                    \"dtype\": self.lora_config.lora_dtype,\n                    \"weights_mapper\": hf_to_vllm_mapper,\n                }\n                if hasattr(self, \"embedding_padding_modules\"):\n                    lora_request_kwargs[\"embedding_modules\"] = self.embedding_modules\n                    lora_request_kwargs[\"embedding_padding_modules\"] = self.embedding_padding_modules\n                else:\n                    lora_request_kwargs[\"model_vocab_size\"] = self.vocab_size\n                if hasattr(self.lora_config, \"lora_extra_vocab_size\"):\n                    lora_request_kwargs[\"target_embedding_padding\"] = (\n                        self.vocab_size + self.lora_config.lora_extra_vocab_size\n                    )\n                if isinstance(lora_request, TensorLoRARequest):\n                    lora = self._lora_model_cls.from_lora_tensors(\n                        tensors=lora_tensors,\n                        **lora_request_kwargs,\n                    )\n                else:\n                    lora = self._lora_model_cls.from_local_checkpoint(\n                        lora_path,\n                        expected_lora_modules,\n                        **lora_request_kwargs,\n                    )\n            except Exception:\n                raise\n\n            if getattr(lora, \"extra_vocab_size\", 0) > getattr(self.lora_config, \"lora_extra_vocab_size\", 0):\n                raise ValueError(\n                    f\"LoRA added vocab size {lora.extra_vocab_size} is greater than lora_extra_vocab_size \"\n                    f\"{self.lora_config.lora_extra_vocab_size}.\"\n                )\n            return lora\n\n        def do_hijack(target_cls, target_method_name, hooking_method):\n            setattr(target_cls, target_method_name, hooking_method)\n\n        do_hijack(LRUCacheWorkerLoRAManager, \"_load_adapter\", hijack__load_adapter)"
+        },
+        {
+          "name": "hijack__load_adapter",
+          "line": 160,
+          "end_line": 239,
+          "source": "def hijack__load_adapter(self, lora_request: TensorLoRARequest) -> LoRAModel:\n            \"\"\"\n            based on vllm.lora.worker_manager.WorkerLoRAManager._load_adapter, support load adapter with lora tensors\n\n            Reason:\n            VLLM does not support adding LoRA from tensors directly. It only supports adding LoRA via file paths.\n            To synchronize the LoRA tensors of the actor model, we need to find a workaround to enable VLLM to\n            load memory-based LoRA tensors.\n            \"\"\"\n            try:\n                supported_lora_modules = self._adapter_manager.supported_lora_modules\n                packed_modules_mapping = self._adapter_manager.packed_modules_mapping\n                expected_lora_modules: list[str] = []\n                for module in supported_lora_modules:\n                    if module in packed_modules_mapping:\n                        expected_lora_modules.extend(packed_modules_mapping[module])\n                    else:\n                        expected_lora_modules.append(module)\n\n                expected_lora_modules = list(set(expected_lora_modules))\n\n                lora_tensors = None\n                from vllm.lora.peft_helper import PEFTHelper\n\n                if isinstance(lora_request, TensorLoRARequest):\n                    peft_config = lora_request.peft_config\n                    lora_tensors = lora_request.lora_tensors\n                    peft_helper = PEFTHelper.from_dict(peft_config)\n                else:\n                    lora_path = get_adapter_absolute_path(lora_request.lora_path)\n\n                    peft_helper = PEFTHelper.from_local_dir(lora_path, self.max_position_embeddings)\n\n                # Validates the LoRA configuration against requirements before\n                # loading weights, throwing an exception if validation fails.\n                peft_helper.validate_legal(self.lora_config)\n\n                # For some models like Qwen2VL, we need to use hf_to_vllm_mapper\n                # to ensure correct loading of lora weights.\n                model = self._adapter_manager.model\n                hf_to_vllm_mapper = None\n                if hasattr(model, \"hf_to_vllm_mapper\") and model.hf_to_vllm_mapper is not None:\n                    hf_to_vllm_mapper = model.hf_to_vllm_mapper\n\n                lora_request_kwargs = {\n                    \"peft_helper\": peft_helper,\n                    \"lora_model_id\": lora_request.lora_int_id,\n                    \"device\": \"cpu\",\n                    \"dtype\": self.lora_config.lora_dtype,\n                    \"weights_mapper\": hf_to_vllm_mapper,\n                }\n                if hasattr(self, \"embedding_padding_modules\"):\n                    lora_request_kwargs[\"embedding_modules\"] = self.embedding_modules\n                    lora_request_kwargs[\"embedding_padding_modules\"] = self.embedding_padding_modules\n                else:\n                    lora_request_kwargs[\"model_vocab_size\"] = self.vocab_size\n                if hasattr(self.lora_config, \"lora_extra_vocab_size\"):\n                    lora_request_kwargs[\"target_embedding_padding\"] = (\n                        self.vocab_size + self.lora_config.lora_extra_vocab_size\n                    )\n                if isinstance(lora_request, TensorLoRARequest):\n                    lora = self._lora_model_cls.from_lora_tensors(\n                        tensors=lora_tensors,\n                        **lora_request_kwargs,\n                    )\n                else:\n                    lora = self._lora_model_cls.from_local_checkpoint(\n                        lora_path,\n                        expected_lora_modules,\n                        **lora_request_kwargs,\n                    )\n            except Exception:\n                raise\n\n            if getattr(lora, \"extra_vocab_size\", 0) > getattr(self.lora_config, \"lora_extra_vocab_size\", 0):\n                raise ValueError(\n                    f\"LoRA added vocab size {lora.extra_vocab_size} is greater than lora_extra_vocab_size \"\n                    f\"{self.lora_config.lora_extra_vocab_size}.\"\n                )\n            return lora"
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/lora/lora_model.py",
+      "sha256": "10c987b1c6389d35d31fbdb269e0d7ea5253bda72aae970811d7601c255b0a10",
+      "bytes": 8670,
+      "methods": [
+        {
+          "name": "from_lora_tensors",
+          "line": 66,
+          "end_line": 109,
+          "source": "def from_lora_tensors(\n        cls,\n        lora_model_id: int,\n        tensors: dict[str, torch.Tensor],\n        peft_helper: PEFTHelper,\n        device: str = \"cuda\",\n        dtype: torch.dtype | None = None,\n        model_vocab_size: int | None = None,\n        weights_mapper: WeightsMapper | None = None,\n    ) -> \"LoRAModel\":\n        \"\"\"Create a LoRAModel from a dictionary of tensors.\"\"\"\n        pin_memory = str(device) == \"cpu\" and is_pin_memory_available()\n        loras: dict[str, LoRALayerWeights] = {}\n        for tensor_name, tensor in tensors.items():\n            if is_base_embeddding_weights(tensor_name):\n                continue\n            module_name, is_lora_a = parse_fine_tuned_lora_name(\n                tensor_name, weights_mapper\n            )\n            if module_name not in loras:\n                loras[module_name] = LoRALayerWeights.from_config(\n                    module_name, peft_helper\n                )\n\n            if is_lora_a:\n                if (\n                    \"lora_embedding_A\" in tensor_name\n                    and model_vocab_size is not None\n                    and model_vocab_size != tensor.shape[1]\n                ):\n                    raise RuntimeError(\n                        f\"The embedding LoRA size({tensor.shape[1]}) must be consistent\"\n                        f\" with the base model's vocabulary size({model_vocab_size}).\"\n                    )\n                loras[module_name].lora_a = tensor.to(device=device, dtype=dtype)\n                if pin_memory:\n                    loras[module_name].lora_a = loras[module_name].lora_a.pin_memory()\n            else:\n                loras[module_name].lora_b = tensor.to(device=device, dtype=dtype)\n\n                if pin_memory:\n                    loras[module_name].lora_b = loras[module_name].lora_b.pin_memory()\n\n        return cls(lora_model_id, peft_helper.r, loras)"
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/lora/lora_weights.py",
+      "sha256": "53bed6b2160269183c2a24acb74bb8eb7d42385c3256ea297d7bdf8b520cd25c",
+      "bytes": 7908,
+      "methods": [
+        {
+          "name": "optimize",
+          "line": 37,
+          "end_line": 43,
+          "source": "def optimize(self) -> \"LoRALayerWeights\":\n        \"\"\"Optimize the LoRA by merging the scaling into lora_b.\"\"\"\n        if self.scaling == 1:\n            return self\n        self.lora_b *= self.scaling\n        self.scaling = 1\n        return self"
+        },
+        {
+          "name": "optimize",
+          "line": 231,
+          "end_line": 238,
+          "source": "def optimize(self) -> \"PackedLoRALayerWeights\":\n        \"\"\"Optimize the LoRA by merging the scaling into lora_b.\"\"\"\n        for i in range(len(self.lora_b)):\n            if self.scaling[i] == 1 or self.lora_b[i] is None:  # type: ignore\n                continue\n            self.lora_b[i] *= self.scaling[i]  # type: ignore\n            self.scaling[i] = 1  # type: ignore\n        return self"
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/lora/layers/base_linear.py",
+      "sha256": "8b1433278a205a0c884ca8ef50509beef654d51ba5fbde3deaf85578badb2a41",
+      "bytes": 5909,
+      "methods": [
+        {
+          "name": "reset_lora",
+          "line": 89,
+          "end_line": 92,
+          "source": "def reset_lora(self, index: int):\n        for s_index in range(self.n_slices):\n            self.lora_a_stacked[s_index][index] = 0\n            self.lora_b_stacked[s_index][index] = 0"
+        },
+        {
+          "name": "set_lora",
+          "line": 94,
+          "end_line": 120,
+          "source": "def set_lora(\n        self,\n        index: int,\n        lora_a: torch.Tensor | list[torch.Tensor],\n        lora_b: torch.Tensor | list[torch.Tensor],\n    ):\n        # Except for QKVParallelLinearWithLoRA and\n        # MergedColumnParallelLinearWithLoRA, all other linear LoRA layers\n        # store weights in a tuple of size 1. These two layers will\n        # override this function.\n        assert isinstance(lora_a, torch.Tensor)\n        assert isinstance(lora_b, torch.Tensor)\n        assert (\n            len(self.lora_a_stacked) == len(self.lora_b_stacked) == self.n_slices == 1\n        )\n\n        self.reset_lora(index)\n        if self.tp_size > 1:\n            lora_a = self.slice_lora_a(lora_a)\n            lora_b = self.slice_lora_b(lora_b)\n\n        self.lora_a_stacked[0][index, 0, : lora_a.shape[0], : lora_a.shape[1]].copy_(\n            lora_a, non_blocking=True\n        )\n        self.lora_b_stacked[0][index, 0, : lora_b.shape[0], : lora_b.shape[1]].copy_(\n            lora_b, non_blocking=True\n        )"
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/lora/layers/column_parallel_linear.py",
+      "sha256": "469dec4931b80251bf376140ed0c26126bdad3aab147383498b160f1dcffec23",
+      "bytes": 22947,
+      "methods": [
+        {
+          "name": "set_lora",
+          "line": 255,
+          "end_line": 275,
+          "source": "def set_lora(\n        self,\n        index: int,\n        lora_a: torch.Tensor | list[torch.Tensor],\n        lora_b: torch.Tensor | list[torch.Tensor],\n    ):\n        self.reset_lora(index)\n\n        if self.tp_size > 1:\n            lora_a = self.slice_lora_a(lora_a)\n            lora_b = self.slice_lora_b(lora_b)\n\n        for i in range(self.n_slices):\n            if (lora_a_i := lora_a[i]) is not None:\n                self.lora_a_stacked[i][\n                    index, 0, : lora_a_i.shape[0], : lora_a_i.shape[1]\n                ].copy_(lora_a_i, non_blocking=True)\n            if (lora_b_i := lora_b[i]) is not None:\n                self.lora_b_stacked[i][\n                    index, 0, : lora_b_i.shape[0], : lora_b_i.shape[1]\n                ].copy_(lora_b_i, non_blocking=True)"
+        },
+        {
+          "name": "set_lora",
+          "line": 630,
+          "end_line": 658,
+          "source": "def set_lora(\n        self,\n        index: int,\n        lora_a: torch.Tensor | list[torch.Tensor],\n        lora_b: torch.Tensor | list[torch.Tensor],\n    ):\n        \"\"\"Override to handle single tensor weights\n        that need to be split into slices.\"\"\"\n        self.reset_lora(index)\n\n        # Handle case where checkpoint has single tensor weights\n        # lora_a shape: (rank, input_size) - same for all slices, duplicate it\n        if isinstance(lora_a, torch.Tensor):\n            lora_a = [lora_a] * self.n_slices\n\n        # lora_b shape: (total_output_size, rank) -\n        # split along dim 0 based on output_sizes\n        if isinstance(lora_b, torch.Tensor):\n            output_sizes = self.base_layer.output_sizes\n            lora_b_list = []\n            start_idx = 0\n            for output_size in output_sizes:\n                end_idx = start_idx + output_size\n                lora_b_list.append(lora_b[start_idx:end_idx, :])\n                start_idx = end_idx\n            lora_b = lora_b_list\n\n        # Now call parent's set_lora which expects lists\n        super().set_lora(index, lora_a, lora_b)"
+        }
+      ]
+    }
+  ]
+}

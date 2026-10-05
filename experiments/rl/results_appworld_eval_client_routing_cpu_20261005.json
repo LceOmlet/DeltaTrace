@@ -1,0 +1,67 @@
+{
+  "status": "prepared-only; local CPU dispatch contracts passed",
+  "production_deployed": false,
+  "gpu_or_remote_actions": false,
+  "scope": "Preserve the original LOOP selected evaluation client index across existing IPC/native asynchronous vLLM RPC; default training path remains a four-field completion event.",
+  "candidate_manifest": "research/temporary/rl_upstream_alignment_20260929/appworld-eval-client-routing-20261005/candidate-v2/prepared.json",
+  "preparer": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/prepare_appworld_eval_client_routing_20261005.py",
+    "sha256": "acd4777326aa58f531c1a7a79272d8c651130742362fe384bef96f48289e2ee3"
+  },
+  "test": {
+    "path": "experiments/rl/test_appworld_eval_client_routing_local.py",
+    "sha256": "ea97bb9f476b4feff77b077b578b4c5405a86c2c6c1fc3f6b4ef07cdcd3c0aad",
+    "command": "C:/Users/Administrator/miniconda3/python.exe -X utf8 -m pytest -q -p no:cacheprovider experiments/rl/test_appworld_eval_client_routing_local.py --basetemp research/temporary/rl_upstream_alignment_20260929/appworld-eval-client-routing-20261005/cpu-test-tmp-v4",
+    "passed": 10,
+    "failed": 0,
+    "elapsed_seconds": 0.62
+  },
+  "official_owner": {
+    "commit": "f14107a976e5793990329d3193df4742076c5a1d",
+    "path": "research/temporary/rl_upstream_alignment_20260929/recipe-sources/ml-loop/phi_agents/rl/vllm_rollout_worker.py",
+    "sha256": "9ae148ac9b06bb72457a7d061e194bdc981a179c758d587caca2121e076e618f",
+    "existing_injection_patch": "experiments/rl/patch_loop_external_completion.py",
+    "existing_injection_patch_sha256": "4bc50258b6fee3d76431aee06085bb6115170fc7852a6713da2e97b0dca8b5c4",
+    "executed_method": "_submit_scenarios_and_get_rollouts",
+    "scheduling_body_ast_equal_after_existing_client_injection": true,
+    "new_scheduler_or_round_robin": false
+  },
+  "files": {
+    "loop_owner_rollout.py": {
+      "baseline_sha256": "c4a46492a665dbb6b1ac9076a6309ed3e128cb534068fca4f65c9f9a5532fcce",
+      "candidate_sha256": "01eca1bf47f8228060cd4bcda2cab424a69bdb865f5d3dc23297bfc66f828ef7"
+    },
+    "loop_owner_worker.py": {
+      "baseline_sha256": "6ad5a3e383d032fdc7f0dd2dab1ee027d8f0ed182f9725d07a3faedb46e54ec9",
+      "candidate_sha256": "1bf093a213aa4b4dee0b2a68b50b947564d1781e615929891137bc73a5719cdb"
+    },
+    "loop_async_transport.py": {
+      "baseline_sha256": "3d6438314908dba0076d0d1874025f321e7627d5f63193801e5b70165ea7ecc1",
+      "candidate_sha256": "8ecbf018e2d2c77d5f545a67db71368905ba3c400f02609ec8e8c9ae74f181bf"
+    }
+  },
+  "observed_cpu_contracts": [
+    "Frozen input hashes match; preparation refuses mismatched bytes and an existing candidate directory.",
+    "Original owner queue, executor and selection method executes 57 scenarios times 2 rollouts with CPU dependency doubles; candidate callbacks and the original owner constructor branch select the same sequence, 57 requests per each of two clients.",
+    "Actual run_owner optional inference_clients defaults to 1; all evaluation clients use the same unchanged original VLLMQwen3 constructor AST/arguments and existing cancellation event.",
+    "Actual native async collect generates on selected server 0 or 1 while returning both replies to environment rank 0.",
+    "Cancellation consults environment rank 0 and invokes original abort_request on selected server 1; cancelled request has no reply record.",
+    "Training run_owner and actual native async collect retain baseline four-field events and request/sampling/collection options.",
+    "Actual collect_native_trajectories passes the existing native server count only for asynchronous evaluation; asynchronous training still passes 1 client per environment owner.",
+    "recorded_runner, response_carrier, to_batch and IPC event/start/close lifecycle function ASTs remain unchanged; all three candidate files compile.",
+    "Default one-client evaluation preserves four event fields; original synchronous collect method executed with actual candidate producer events."
+  ],
+  "evidence_limits": [
+    "CPU dependency doubles replace unavailable Torch/Ray/Qwen dependencies only for these dispatch tests; they are not GPU numerical/tolerance evidence or model evaluation.",
+    "No actual generation, elapsed-time improvement, task reward, remote runtime or formal deployment has been validated by this local run.",
+    "The original LOOP training/evaluation budgets, selection expression, runner method, task state, rewards, PPO and DT mathematics were not modified."
+  ],
+  "reviewed_candidate_correction": {
+    "before": "Old candidate bound server_index=0 for default single-client evaluation; unchanged synchronous collect still unpacked four event fields",
+    "after": "Bind selected server_index only when evaluation inference_clients>1; initial original completion binding stays for one client"
+  },
+  "v2_review_receipt": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-eval-client-routing-20261005\\cpu-receipt-v2.json",
+    "sha256": "6c800024560371b33d0998d81d2fca74f51999555d6d311c8050229c3e04cc4a"
+  }
+}

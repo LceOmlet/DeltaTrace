@@ -43,7 +43,7 @@ def prepare_training_credit(data):
     return source, torch.tensor(inverse, dtype=torch.long)
 
 
-def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id, source_indices=None):
+def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id):
     from verl import DataProto
     from verl.protocol import pad_dataproto_to_divisor, unpad_dataproto
     from verl.utils.seqlen_balancing import get_seqlen_balanced_partitions
@@ -54,12 +54,6 @@ def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id, s
     active = torch.tensor([bool(value) for value in source.non_tensor_batch['active_masks']])
     policy_lengths = source.batch['attention_mask'][:, -shape[1]:].sum(-1).cpu()
     nonzero = (source.batch['dt_complete_return'] != 0) & active & (policy_lengths > 0)
-    if source_indices is not None:
-        # Truncation selects training tokens, not environment reward events.
-        # Complete returns above still include every executed future row.
-        eligible = torch.zeros(len(source), dtype=torch.bool)
-        eligible[inverse[source_indices]] = True
-        nonzero &= eligible
     indices = nonzero.nonzero().flatten()
     if len(indices):
         # Same number of nonzero B4 calls on every FSDP rank. Zero-return

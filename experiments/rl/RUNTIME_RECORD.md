@@ -40,6 +40,65 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从
 
 ## 当前代码组合
 
+### 2026-10-05 18:49：修复真实终局奖励丢失，评估服务路由候选补齐默认接口
+
+[TextCraft回执](results_textcraft_truncated_terminal_20261005.json)绑定实际旧入口
+SHA92c724a5…、PID3218909/创建1790895651.16。官方AgentGym在整条轨迹结束后
+将训练response截到10240；旧本地接线把截后无slice行标为inactive，进而将该行
+真实终局奖励排除。22轮×511token的原truncate/source-row AST复现该缺陷：末行
+reward1存在、没有训练slice，却使原episode_returns的输入全部变0。
+
+候选仅15行接线变化：真实已执行事件active=True；原complete return先包含全部
+未来真实奖励；原dt_response_slices确定需要DT的源行。奖励不迁移，未保留动作
+不新增DT请求，部分保留动作仍使用原完整native response端点。Q/V/A、事件读出、
+DT有限传播、原PPO、任务parser/采样/奖励/截断参数均未变。真实Torch/VERL CPU
+接口检查17通过、1项可选原archive AST检查跳过；本机源契约5通过。这不是新的
+模型数值容差验收，不替代原FA/FLA/VERL/vLLM适用回执。
+
+TextCraft晚期step114–117每256条仅1/0/0/1成功，出现无效动作并跑满30交互。
+checkpoint100两rank各427个冻结基座tensor与原BF16权重精确相同；不能据此
+宣称LoRA同步或训练质量已恢复，也尚未证明mask缺陷解释全部退化。
+通过原stop-only助手停止旧树，保留原完整checkpoint100与全部旧日志。
+修复候选尚未部署，训练起点已请求用户裁定，不能把旧损坏训练视为正确结果。
+
+[AppWorld评估IPC回执](results_appworld_eval_client_routing_cpu_20261005.json)的
+v2保留原LOOP轮转选中的客户端编号：原eval world1只返回一个客户端，导致
+双卡配置只向server0发送请求；该轮原评估3460.799秒。候选仅传原选择的索引，
+生成/取消按服务编号，回复按原环境rank。审查发现v1在默认单服务eval产生五字段
+而原同步collector只收四字段，v1保留为未接受候选；v2只在多服务eval附加索引。
+单服务eval/训练默认四字段不变，原同步collector实跑、双服务路由/取消共10项
+CPU通过。未新增轮转器、任务执行器、采样或推理内核；真实速度收益尚未测量。
+
+
+### 2026-10-05 17:41：真实长B8有界profile及原生反向参照完成
+
+[本次回执](results_current_owner_hot_b8_20261005.json)绑定诊断入口`067e641`、
+原检查点20和已冻结的AppWorld source SHA `5f190f46…`。两rank取原88请求中的
+最后一个B4，事实输入分别B4×13468/B4×13216，DT配对端点分别B8×13468/
+B8×13216。这是实际请求耗时检查，不是新增32768容量或整网数值验收。
+
+当前实际runner SHA为`6348ebef…`，对应`8e7dd71`原生prefix provider扩展；
+不是目录内保留的nested c9原runner `c7fc969f…`。对Git原字节的再次核对证实
+`replay_cache.reorder_cache`及其后的有限传播语句不变。准确版本口径为
+“c9数值核心＋8e7dd71 prefix provider”，不能用c9旧runner SHA替代实际进口。
+
+两rank首次bank准备48.029/48.075秒，随后未开profile的热DT为12.003/12.011秒；
+原生target autograd热forward为5.839/5.810秒、热backward为15.878/15.918秒，
+每rank496个梯度tensor均有限。两者复用同一原actor/checkpoint和原卸载配置；
+DT原事件head为FP32，原actor logits为BF16。没有新增head或反向实现，
+没有optimizer更新，不是PPO梯度/容差对拍。首次准备成本单列，不能把热调用
+说成整个DT流程仅12秒；profile导出的31/30秒也不是正常DT耗时。
+
+实际热phase：root两rank约3.125秒，32层replay合计3.102/4.363秒，finite decoder
+4.646/3.568秒。完整replay不等于可删除的MLP工作量，不据此部署root tape、
+排序或低秩缓存。原trace保留在远端receipt目录，CPU分析不再占用模型显卡。
+外部物理采样2/3峰值36857/36099MiB，测试进程树PSS峰值67713381376字节，
+整机最低可用756318842880字节；历史oom_kill=1未增加、failcnt=0。
+本次无vLLM共驻，不能把这些峰值扩展成完整训练容量结论。
+
+2/3有界测试已结束，AppWorld完成标记20保留；4/5 TextCraft正式训练继续。
+评估单环境rank与推理服务索引的接线仍在单独核查，不把未部署修复称成已提速。
+
 
 ### 2026-10-05 17:20：原step20完整保存，2/3释放给有界实际输入测试
 
