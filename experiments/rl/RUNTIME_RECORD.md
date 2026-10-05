@@ -40,6 +40,17 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从
 
 ## 当前代码组合
 
+### 2026-10-05 12:57：AppWorld原检查点加载返回，正式rollout推进
+
+[本次恢复回执](results_appworld_native_prefix_resume_20261005.json)新增1791176244.48
+原阶段记录：TaskRunner此前已设置global_step19，两个原load_checkpoint RPC返回后
+进入execute_method和原LOOP rollout。运输累计calls240、已交付requests177、
+生成25221 token、elapsed100.5秒，completed_ranks仍0。它不是纯decode速度或
+新完整迭代；尚未取得本次DT/PPO批次的正式效率。新PID与创建时间仍匹配。
+物理GPU2/3占用55314/55226MiB，主机可用712651153408字节，App进程树PSS
+102077540352字节；0/1仍空置，TextCraft4/5继续。保留原CPU准备失败与后续修正
+记录，不将启动、加载或首批生成称为三个任务全部修好。
+
 ### 2026-10-05 12:51：AppWorld已提交前缀复用恢复，初始化中
 
 [本次恢复回执](results_appworld_native_prefix_resume_20261005.json)绑定修正8a23818、
