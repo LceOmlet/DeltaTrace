@@ -1,5 +1,35 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 同原生布局核对：token估计差异仍显著
+
+隔离诊断PID930901/birth1791228196.09已完成退出；GPU4/5、checkpoint25、原7个B4/rank
+及原目标/补齐/缓存切点，42次paired root、42次原prefix前向，finite/backward/optimizer均0。
+原c7fc runner、0ad producer与原VERL加载路径不变；每卡B4、LoRA8/16、32k上限不变。
+仅包装原selected_target_log_probs，原分数算一次后停止；single variant通过现有
+synchronize_prefix_start委托原MIN同步保持实测旧cut，没有新缓存或新打分实现。
+
+21个首次response的完整端点factual MAE7.59e-7、joint root MAE1.16e-6；同布局单删差异仍在。
+21个成功首次response、42个既定随机probe：DT平均|d|0.001816，原生单删0.018964
+（10.44倍），相关0.050997；21/42反号，占原生单删绝对效应48.46%。全部52 transport
+probe槽及重复范围另存，唯一42统计明确使用replica均值。未设整网容差或纠偏。
+该结果定位实际联合EOS归因向量对单token删除量的估计质量，不等于世界反事实oracle，
+也不否定固定精确token价值前提。原Q/V/A组合、观察mask、PPO/optimizer仍保留。
+
+结合原完整minibatch DT任务梯度弱211倍、熵项占其4.4倍，当前最强机制证据是任务信号
+弱/方向对应差，令原熵项主导小幅持续漂移；原clipping不能校正优势估计或硬约束独立H/KL。
+仍未从该局部原始梯度证明全部历史Adam因果。没有降低熵、缩放信用、改容差或重启TextCraft。
+原事件读出区分弱是另一个已测质量问题。原owner README27明确单token删除是不同干预；
+原runner39–45的逐token收缩使用共同联合端点传播系数，answer86–98守恒该联合log-prob差，
+不构造每个token的事实背景单删量。已确认实际估计语义/质量缺口，未给FA/FLA数值算子定罪。
+independent-review原raw+pack独立复核84输入SHA/52位置换算/42predictor映射，未见错位；
+官方source捕获与原c7fc runner/9819 head SHA对应。没有为修复另造信用分配或替代计划。
+
+本次总墙钟317.66秒，原初始化218.29秒、root观察约54秒/rank；初始化慢点未采到栈，
+不归因于编译或扩展效率工作。来源与范围见
+[退化学习信号回执](results_textcraft_learning_degradation_20261006.json)及其原始source/PID/SHA。
+
+
+
 ## 2026-10-06 TextCraft事件读出与随机token删除：实测质量问题
 
 固定checkpoint25与同一原生64轨迹完成只读观察：GPU4/5，v2 PID675223、
