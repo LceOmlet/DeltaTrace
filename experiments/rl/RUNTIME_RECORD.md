@@ -35,10 +35,32 @@ SQL PID552842已因整机global OOM退出；最后完成step11，原save_freq60�
 | 哪次提交解决了哪个问题 | 下方修复表及对应代码/测试 | Git提交是修复来源，不能代替远端已部署证明 |
 
 远端根目录：`/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922`，
-SSH端口30821。当前清单仅三组DTPO，SQL与AppWorld已退出，TextCraft继续；
+SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从19恢复，TextCraft继续；
 物理GPU0/1空置，仅2–5用于当前实验，GPU6/7不提交GRPO。具体状态以带时间回执为准。
 
 ## 当前代码组合
+
+### 2026-10-05 12:51：AppWorld已提交前缀复用恢复，初始化中
+
+[本次恢复回执](results_appworld_native_prefix_resume_20261005.json)绑定修正8a23818、
+实际准备1ae223cc…、提交助手6f6e3be…、新PID3658900/创建1791175714.44，
+GPU2/3。由原VERL加载器指定原完整global_step_19，没有改变任务/采样、PPO、
+LoRA8/16、actor/DT每卡B4或32768上界。原retry worker6ad5…、actor1f862…、
+host-worker e5eb…和release=1均继承。未启用拒绝的GPU/CPU root保留。
+
+首次d3b8bcf源码准备因误认为credit在entry而失败，没有prepared.json或GPU作业。
+只读查询确认原credit实际来自c9/experiments/rl，修正落在同一owner路径；
+提交助手仅将已展开的两个DT PYTHONPATH项指向选定版本，保留entry优先和其余
+依赖顺序。旧失败目录保留，v2原配置composer及实际模块路径核对通过。
+13项现有Cache/provider/factory接口测试通过（14.78秒），Git源比较另有原AST
+对照，不把接口夹具当作新的数值证据。原FA/FLA及本次真实ht回执仍单独索引。
+
+12:51新worker3665902/3667445基础权重已读，仍在原模型/引擎初始化；检查点
+指定19不等于此刻已经完成加载，更不等于本次完成新迭代。当前快照绑定新清单
+runs/appworld-native-prefix-resume-20261005-v2/formal-training.json。原被动资源
+观察PID3673733/创建1791175812.75，源b5ce0035…，仅采物理GPU/PSS/主机/cgroup。
+SQL仍停止无检查点，GPU0/1保持空闲；TextCraft原PID3218909继续4/5，已完成113。
+正式DT效率仍待新实际批次，不能把88请求约19%的对照扩大成整轮提速。
 
 ### 2026-10-05 12:26：原前缀续算检查完成，仍未宣告整体修复
 

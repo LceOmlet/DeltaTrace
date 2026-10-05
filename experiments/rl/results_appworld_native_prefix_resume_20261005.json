@@ -1,0 +1,342 @@
+{
+  "observed_unix": 1791175900.764913,
+  "scope": "AppWorld original checkpoint19 formal resume with existing native prefix provider/factory. Initialization verified only; no new completed iteration or whole-training throughput claim.",
+  "status": "formal_resume_native_checkpoint_load_observed_not_yet_updated",
+  "job": {
+    "task": "AppWorld",
+    "method": "dt",
+    "pid": 3658900,
+    "devices": [
+      2,
+      3
+    ],
+    "started_unix": 1791175714.964618,
+    "observed_process_created_unix": 1791175714.44,
+    "argv": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/entry/launch_appworld_native.py",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt",
+      "--resume-from",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/checkpoints/global_step_19"
+    ],
+    "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/entry",
+    "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/verl",
+    "dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace",
+    "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt",
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt/train.log",
+    "checkpoints": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt/checkpoints",
+    "source_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt/source.json",
+    "status": "formal_resume_submitted_not_yet_verified",
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "actor_microbatch": 4,
+    "log_prob_micro_batch_size_per_gpu": 4,
+    "budget": {
+      "iterations": 200,
+      "prompt_groups_per_iteration": 40,
+      "requested_trajectories_per_group": 6,
+      "global_completion_fraction": 0.9,
+      "per_group_completion_fraction": 0.75,
+      "global_mini_trajectories": 32,
+      "ppo_epochs": 2,
+      "train_runners_per_rank": 32,
+      "train_environment_ranks": 2,
+      "eval_runners": 64,
+      "eval_groups": 57,
+      "eval_trajectories_per_group": 2,
+      "max_turns": 40,
+      "training_context": 32000,
+      "agent_context_upper_bound": 32768,
+      "eval_interval": 5,
+      "save_interval": 1
+    },
+    "resume_from": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/checkpoints/global_step_19",
+    "resume_completed_step": 19,
+    "prior_driver_pid": 3232113
+  },
+  "prepared_receipt": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/prepared.json",
+    "sha256": "1ae223cc78fe55e4e809f692d0d4fd96360780a73d19869d8b782ba90b15dc40"
+  },
+  "preparation_source_commit": "8a23818",
+  "submission_source_sha256": "6f6e3be24e6d080c005d9ab060432f34382e2ebc15f8bc6d815f569726119779",
+  "cpu_source_config_verification": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/cpu-preparation-verification.json",
+    "sha256": "9c5077170946e88f27ab3070b0eaffa6a9161e1601cdff3c6debea8ba6a7e91c",
+    "content": {
+      "observed_unix": 1791175482.364494,
+      "passed": true,
+      "scope": "Frozen owner source bytes and unchanged official launch composition only; no GPU/numerical/capacity/throughput acceptance",
+      "patches": [
+        {
+          "target": "entry/reward_readout.py",
+          "before_sha256": "228afbc7a10841d482c3d73def59dfe9ef192c057a97d76dca57369502a10137",
+          "after_sha256": "8acf94d46cef8ca03ce1e92352723b2490c76e66a075f6b2a5f969163bcdc774",
+          "baseline_commit": "99fb5c28d9be064bab22dc8ad949494b3fd85150",
+          "source_commit": "8e7dd71258b2173ae0be0784e7783a49c9cd5b94",
+          "source_path": "experiments/rl/reward_readout.py",
+          "original_git_diff": "diff --git a/experiments/rl/reward_readout.py b/experiments/rl/reward_readout.py\nindex 45e19d3..f1fcf25 100644\n--- a/experiments/rl/reward_readout.py\n+++ b/experiments/rl/reward_readout.py\n@@ -164,7 +164,8 @@ class EventRatioReadout:\n     def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,\n                  packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4,\n                  invalid_action_penalty_coef: float = 0.0,\n-                 appworld_num_tests: int | None = None, sampling: dict | None = None):\n+                 appworld_num_tests: int | None = None, sampling: dict | None = None,\n+                 prefix_lease_factory: Any = None):\n         if max_steps < 1:\n             raise ValueError('Horizon must be positive')\n         if tokenizer.eos_token_id is None:\n@@ -178,6 +179,7 @@ class EventRatioReadout:\n                                               appworld_num_tests=appworld_num_tests)\n         self.max_steps, self.max_length = max_steps, max_length\n         self.packed_answer_targets = packed_answer_targets\n+        self.prefix_lease_factory = prefix_lease_factory\n         self.last_report: dict[str, Any] = {}\n \n     def _prepare_episode(self, rows, report, returns):\n@@ -258,6 +260,12 @@ class EventRatioReadout:\n         planned_batches = (len(requests) + self.minibatch_size - 1) // self.minibatch_size\n         print(f\"[DT EOS plan] events={report['nonzero_reward_events']} \"\n               f\"contrasts={len(requests)} batches={planned_batches}\", flush=True)\n+        leases = None\n+        if self.prefix_lease_factory is not None:\n+            leases, prefix_report = self.prefix_lease_factory(\n+                self.runner, requests, minibatch_size=self.minibatch_size,\n+                eos_token_id=self.tokenizer.eos_token_id)\n+            report['shared_native_prefix'] = prefix_report\n         minimum_log_ratio = float('inf')\n         minimum_batch = None\n         for offset in range(0, len(requests), self.minibatch_size):\n@@ -277,6 +285,8 @@ class EventRatioReadout:\n                     self.runner, reference, selected, [request['case'] for request in batch],\n                     [[0] for _ in batch], packed_answer_targets=self.packed_answer_targets,\n                     outcome_token_ids=labels,\n+                    **({} if leases is None else {\n+                        'prefix_cache_provider': leases[offset // self.minibatch_size]}),\n                 )\n             except ValueError as exc:\n                 if 'Nonfinite DT coefficients' in str(exc):\n"
+        },
+        {
+          "target": "deltatrace/experiments/rl/deltatrace_credit.py",
+          "before_sha256": "dc1e82233d4da6b5f5b2159e9979a3777c20d23e2a86bf845d3ddf50af582292",
+          "after_sha256": "8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497",
+          "baseline_commit": "c9cd147",
+          "source_commit": "8e7dd71258b2173ae0be0784e7783a49c9cd5b94",
+          "source_path": "experiments/rl/deltatrace_credit.py",
+          "original_git_diff": "diff --git a/experiments/rl/deltatrace_credit.py b/experiments/rl/deltatrace_credit.py\nindex 9d0926f..72839cc 100644\n--- a/experiments/rl/deltatrace_credit.py\n+++ b/experiments/rl/deltatrace_credit.py\n@@ -26,6 +26,7 @@ def trace_token_attribution(\n     *,\n     packed_answer_targets: Any,\n     outcome_token_ids: list[int] | None = None,\n+    prefix_cache_provider: Any = None,\n     # Numerical audit envelope, NOT a training gate or a 2% relative-error\n     # claim when abs(root_effect) < 1. Never renormalize the attribution.\n     attribution_tolerance: float = 2e-2,\n@@ -52,9 +53,13 @@ def trace_token_attribution(\n     selection = packed_answer_targets(\n         cases, offsets, pair.shape[1], selected_input_ids.device, **options\n     )\n+    cache_option = {} if prefix_cache_provider is None else {\n+        \"prefix_cache_provider\": prefix_cache_provider\n+    }\n     try:\n         signed, detail = dt_runner.attribute(\n-            pair, torch.ones_like(pair), selection, select_output_rows=True, observer=None\n+            pair, torch.ones_like(pair), selection, select_output_rows=True, observer=None,\n+            **cache_option,\n         )\n     finally:\n         release = getattr(getattr(dt_runner, \"model\", None), \"release_owner_params\", None)\n"
+        },
+        {
+          "target": "deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+          "before_sha256": "c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1",
+          "after_sha256": "6348ebef115ff0ea45deeee3df8b65dcfbf0d1ae86619edc67f34d16d92d69aa",
+          "baseline_commit": "c9cd147",
+          "source_commit": "8e7dd71258b2173ae0be0784e7783a49c9cd5b94",
+          "source_path": "deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+          "original_git_diff": "diff --git a/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py b/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\nindex 46224fa..59aafe1 100644\n--- a/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\n+++ b/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\n@@ -161,7 +161,16 @@ class Qwen35DenseFiniteRunner:\n         (logits,)=captured\n         return logits.log_softmax(-1)\n \n-    def attribute(self,paired_ids,mask,selection,select_output_rows=True,observer=None):\n+    def attribute(self,paired_ids,mask,selection,select_output_rows=True,observer=None,*,prefix_cache_provider=None):\n+        \"\"\"Trace endpoints, optionally consuming an already prepared native cache.\n+\n+        The provider receives the exact factual IDs at the synchronized common\n+        prefix and returns a fresh HF cache. It only replaces the existing\n+        prefix forward; HF still owns duplication, forks and cache transitions.\n+        Its optional prefix_length limits reuse to a prepared factual boundary.\n+        An unavailable artifact must raise rather than run a rank-local forward.\n+        The default path and all finite propagation remain unchanged.\n+        \"\"\"\n         if paired_ids.shape!=mask.shape or paired_ids.shape!=(2*selection.batch,selection.length):\n             raise ValueError('Endpoint input/mask/target dimensions disagree.')\n         if not bool(mask.eq(1).all()):raise ValueError('This validated dense runner requires unpadded equal lengths.')\n@@ -200,15 +209,22 @@ class Qwen35DenseFiniteRunner:\n             # common prefix once per sample, then let the owner duplicate it\n             # into the interleaved endpoints. No model layer is reimplemented.\n             prefix_start=min(min(coefficient_starts),int(selection.positions.min()))//64*64\n+            if prefix_cache_provider is not None:\n+                prefix_start=min(prefix_start,getattr(prefix_cache_provider,'prefix_length',prefix_start))\n             synchronize_prefix=getattr(model,'synchronize_prefix_start',None)\n             if callable(synchronize_prefix):prefix_start=synchronize_prefix(prefix_start)\n             if prefix_start:\n-                forward=getattr(model,'forward_root',model)\n-                with torch.no_grad():\n-                    prefix=timed('native_shared_prefix',lambda:forward(\n-                        input_ids=paired_ids[1::2,:prefix_start],use_cache=True,logits_to_keep=1))\n-                replay_cache=prefix.past_key_values\n-                del prefix\n+                if prefix_cache_provider is None:\n+                    forward=getattr(model,'forward_root',model)\n+                    with torch.no_grad():\n+                        prefix=timed('native_shared_prefix',lambda:forward(\n+                            input_ids=paired_ids[1::2,:prefix_start],use_cache=True,logits_to_keep=1))\n+                    replay_cache=prefix.past_key_values\n+                    del prefix\n+                else:\n+                    with torch.no_grad():\n+                        replay_cache=timed('shared_native_prefix_cache',lambda:prefix_cache_provider(\n+                            paired_ids[1::2,:prefix_start]))\n                 replay_cache.reorder_cache(torch.arange(selection.batch,device=paired_ids.device).repeat_interleave(2))\n                 # HF GDN updates its cache in place. Keep the original state\n                 # for the later native layer replay; the root owns this fork.\n"
+        },
+        {
+          "target": "deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py",
+          "before_sha256": null,
+          "after_sha256": "06fda7843c4120cb1406b671f06cb19f29921b61b5d524dc28539550446aef16",
+          "baseline_commit": null,
+          "source_commit": "8e7dd71258b2173ae0be0784e7783a49c9cd5b94",
+          "source_path": "deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py"
+        },
+        {
+          "target": "entry/native_prefix_leases.py",
+          "before_sha256": null,
+          "after_sha256": "d5b539c7ffb8a431374cf79f4b995ef6f4138c3e6e289890409b6b79dbad393e",
+          "baseline_commit": null,
+          "source_commit": "712795d1812b6b29b9626ab2ab88f0bd98564d1e",
+          "source_path": "experiments/rl/native_prefix_leases.py"
+        },
+        {
+          "target": "entry/deltatrace_rollout.py",
+          "before_sha256": "0ad37a17aede30089fd2ac9a609a42689e6a3a68d00b601520db0a5cff8b8e6e",
+          "after_sha256": "5d0f897e47fbf805321b50ebda6abca17dfdf16f6ee86f772a52f17550f7a6ee",
+          "source_commit": "206fececc54ce3fbf7ef739284f70568ae3599c6",
+          "source_path": "experiments/rl/deltatrace_rollout.py",
+          "outside_original_method_and_factory_insertion_bytes_unchanged": true,
+          "original_method_sha256": "38f9f3bc84fbef27bf20453bfffe8578f4b0f3ab807d4a366a78d8b74e7d070d",
+          "replacement_method_sha256": "a6999f2397ace25c6c3e91e8831689de571a58108a0a48992104ad25149d9eac"
+        }
+      ],
+      "entry_changes": [
+        "deltatrace_rollout.py",
+        "native_prefix_leases.py",
+        "reward_readout.py"
+      ],
+      "dt_changes": [
+        "clean/qwen35/qwen35_dense_finite_runner.py",
+        "clean/qwen35/qwen35_native_prefix_artifacts.py",
+        "experiments/rl/deltatrace_credit.py"
+      ],
+      "owner_changes": [],
+      "import_sources": {
+        "deltatrace_credit": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/experiments/rl/deltatrace_credit.py",
+          "sha256": "8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497"
+        },
+        "reward_readout": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/entry/reward_readout.py",
+          "sha256": "8acf94d46cef8ca03ce1e92352723b2490c76e66a075f6b2a5f969163bcdc774"
+        },
+        "deltatrace_rollout": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/entry/deltatrace_rollout.py",
+          "sha256": "5d0f897e47fbf805321b50ebda6abca17dfdf16f6ee86f772a52f17550f7a6ee"
+        },
+        "native_prefix_leases": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/entry/native_prefix_leases.py",
+          "sha256": "d5b539c7ffb8a431374cf79f4b995ef6f4138c3e6e289890409b6b79dbad393e"
+        }
+      },
+      "options": {
+        "ray_init.num_cpus": 16,
+        "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "actor_rollout_ref.model.trust_remote_code": true,
+        "actor_rollout_ref.model.lora_rank": 8,
+        "actor_rollout_ref.model.lora_alpha": 16,
+        "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+        "actor_rollout_ref.model.enable_activation_offload": true,
+        "actor_rollout_ref.model.use_fused_kernels": true,
+        "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+        "actor_rollout_ref.actor.strategy": "fsdp2",
+        "actor_rollout_ref.actor.ppo_mini_batch_size": 32,
+        "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+        "actor_rollout_ref.actor.use_torch_compile": true,
+        "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+        "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+        "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+        "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+        "actor_rollout_ref.rollout.name": "vllm",
+        "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+        "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+        "actor_rollout_ref.rollout.load_format": "safetensors",
+        "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+        "actor_rollout_ref.rollout.max_model_len": 32768,
+        "actor_rollout_ref.rollout.max_num_seqs": 32,
+        "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+        "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+          "image": 0,
+          "video": 0
+        },
+        "trainer.n_gpus_per_node": 2,
+        "trainer.nnodes": 1,
+        "algorithm.adv_estimator": "deltatrace",
+        "actor_rollout_ref.rollout.mode": "async",
+        "actor_rollout_ref.rollout.chat_scheduler": "verl.workers.rollout.async_server.ChatCompletionScheduler",
+        "data.train_files": "loop-training",
+        "data.val_files": "loop-evaluation",
+        "data.custom_cls.path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/entry/loop_iteration_dataset.py",
+        "data.custom_cls.name": "LoopIterationDataset",
+        "+data.loop_train_groups": 40,
+        "+data.loop_eval_groups": 57,
+        "data.train_batch_size": 40,
+        "data.val_batch_size": 57,
+        "data.max_prompt_length": 32768,
+        "data.max_response_length": 1500,
+        "data.return_raw_chat": true,
+        "data.truncation": "error",
+        "+data.dataloader_num_workers": 0,
+        "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+        "actor_rollout_ref.actor.ppo_epochs": 2,
+        "actor_rollout_ref.rollout.multi_turn.enable": true,
+        "actor_rollout_ref.rollout.prompt_length": 31268,
+        "actor_rollout_ref.rollout.temperature": 1.0,
+        "actor_rollout_ref.rollout.val_kwargs.temperature": 0.0,
+        "actor_rollout_ref.rollout.val_kwargs.do_sample": false,
+        "env.env_name": "AppWorld",
+        "env.rollout.n": 6,
+        "env.max_steps": 40,
+        "+env.factory._target_": "loop_environment_entry.make_loop_environments",
+        "+env.loop": {
+          "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v6/loop-owner"
+        },
+        "trainer.logger": [
+          "console"
+        ],
+        "trainer.project_name": "deltatrace_official_environments",
+        "trainer.experiment_name": "dt-AppWorld",
+        "trainer.default_local_dir": "/same-formal-output/checkpoints",
+        "trainer.rollout_data_dir": "/same-formal-output/rollouts",
+        "trainer.validation_data_dir": "/same-formal-output/validation",
+        "trainer.max_actor_ckpt_to_keep": 2,
+        "trainer.total_epochs": 200,
+        "trainer.total_training_steps": 200,
+        "trainer.save_freq": 1,
+        "trainer.test_freq": 5,
+        "trainer.val_before_train": false,
+        "trainer.resume_mode": "resume_path",
+        "+ray_init.runtime_env.worker_process_setup_hook": "observe_worker_visibility.install",
+        "+ray_init.runtime_env.env_vars.VERL_RELEASE_UNUSED_HOST_CACHE": "1",
+        "+ray_init.runtime_env.env_vars.DT_WORKER_VISIBILITY_DIR": "/same-formal-output/worker-visibility",
+        "trainer.resume_from_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/checkpoints/global_step_19"
+      },
+      "sampling": {
+        "temperature": 1.0,
+        "max_tokens": 1500
+      },
+      "official_task_options_unchanged": true,
+      "inherited_retry_cpu": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-async-retry-recording-resume-20261004/cpu-verification.json",
+        "sha256": "ee600363f6853531740fe50ef06bab951401cabe1e704c02594796dd11384fdf"
+      },
+      "checkpoint": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/checkpoints/global_step_19",
+        "marker": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-async-native-futures-20261002/appworld-dt/checkpoints/latest_checkpointed_iteration.txt",
+        "value": 19,
+        "marker_sha256": "9400f1b21cb527d7fa3d3eabba93557a18ebe7a2ca4e471cfe5e4c5b4ca7f767"
+      }
+    }
+  },
+  "cpu_interfaces": {
+    "receipt": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/prefix-interfaces.xml",
+      "sha256": "e8903c28a15d84ac87c370fb9ce6d09a86cb8fee2eb5838c7aacf7295e33d0ff"
+    },
+    "result": "13 passed, 2 Git-only source comparisons deselected; original default-owner AST comparison remains separately recorded",
+    "seconds": 14.78
+  },
+  "official_numerical_receipts": [
+    "experiments/rl/results_native_prefix_official_coverage_20261005.json",
+    "experiments/rl/results_native_prefix_segments_20261005.json"
+  ],
+  "prior_failed_preparation": {
+    "source_commit": "d3b8bcf",
+    "directory": "appworld-native-prefix-resume-20261005",
+    "reason": "Prep assumed credit module in entry; actual owner was provisioned DT_ROOT/experiments/rl. No prepared receipt, GPU submission or formal mutation occurred. Failed candidate preserved.",
+    "evidence": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-prefix-resume-20261005\\first-preparation-failure-links.json"
+  },
+  "deployment_changes": "Only current AppWorld source selection changed. Actor, PPO, task recipe/sampling, LoRA8/16, per-cardB4, checkpoint loader and host-cache release preserved; no root retention.",
+  "current_snapshot": {
+    "file": "experiments/rl/current_runtime.json",
+    "sha256": "23478d306549ca7aaee9e39c13c25e237451012fd91c7355999abd1b8e2411c0",
+    "driver": {
+      "alive": true,
+      "created_unix": 1791175714.44,
+      "pid_identity_matches": true,
+      "status": "sleeping",
+      "workers": [
+        3665902,
+        3667445
+      ]
+    }
+  },
+  "passive_observer": {
+    "started_unix": 1791175813.2704875,
+    "pid": 3673733,
+    "pid_birth": 1791175812.75,
+    "argv": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/saved-prefix-segments-20261005-2a9456b/observe_entry_resources.py",
+      "--job",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt/job.json",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-prefix-resume-20261005-v2/appworld-dt/physical-resources.jsonl"
+    ],
+    "source_sha256": "b5ce0035f0332c4113760fe4c566221dcecf913839597eb1dc7cf1ce2e71c91b",
+    "driver_pid": 3658900,
+    "driver_birth": 1791175714.44,
+    "role": "Existing passive physical GPU/PSS/host/cgroup observer only; no training hooks or resource configuration changes"
+  },
+  "completion_claim": false,
+  "native_checkpoint_load_observation": {
+    "observed_unix": 1791176099.4050915,
+    "phase_receipt": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-prefix-resume-20261005\\phase-1791176099.json",
+    "driver_pid": 3658900,
+    "birth_matches": true,
+    "workers": [
+      {
+        "pid": 3662537,
+        "name": "ray::TaskRunner.run",
+        "birth": 1791175738.3
+      },
+      {
+        "pid": 3665902,
+        "name": "ray::WorkerDict.actor_rollout_load_checkpoint",
+        "birth": 1791175758.97
+      },
+      {
+        "pid": 3667445,
+        "name": "ray::WorkerDict.actor_rollout_load_checkpoint",
+        "birth": 1791175772.68
+      }
+    ],
+    "evidence": "Original TaskRunner set global_step19; original rank0/1 load model/optim/extra_state files from global_step19. RPC still in load_checkpoint, completion not yet claimed.",
+    "physical_gpu_mib": [
+      862,
+      862,
+      3160,
+      3160,
+      55226,
+      55206,
+      862,
+      862
+    ],
+    "host_available_bytes": 730474033152,
+    "pss_bytes": 83802585088
+  }
+}

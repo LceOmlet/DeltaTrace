@@ -4,6 +4,16 @@
 [带采集时间的源码快照](current_runtime.json)。数值基线、冻结启动源码和已完成的
 worker运行时覆盖分别记录；不能用下面历史段落中的“当前”或旧launch命令代替。
 
+## 2026-10-05 当前运行入口
+
+AppWorld已由原提交入口从完整检查点19恢复，PID3658900/创建1791175714.44，
+GPU2/3，冻结candidate appworld-native-prefix-resume-20261005-v2。前缀provider只替换
+共享历史prefill；原PPO/采样/任务配置、LoRA8/16、每卡B4和host-cache补丁不变。
+12:51仍初始化，无本次新完整更新；实际源SHA、CPU接口、原算子断言和准备失败
+记录见RUNTIME_RECORD及results_appworld_native_prefix_resume_20261005.json。
+SQL仍停、0/1空闲；TextCraft原PID3218909继续4/5。下方是已明确日期的历史入口，
+不能照旧AppWorld PID或目录再次提交。
+
 ## 2026-10-02 当前运行入口
 
 21:26首次正式路径回执：TextCraft两rank原DT结束释放用时1.5746/1.6470秒，
