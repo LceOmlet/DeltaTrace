@@ -40,6 +40,26 @@ SSH端口30821。当前清单仅三组DTPO，SQL与AppWorld已退出，TextCraft
 
 ## 当前代码组合
 
+### 2026-10-05：复用已有官方算子证据，继续处理原前缀重复计算
+
+[前缀官方对照索引](results_native_prefix_official_coverage_20261005.json)将已完成的实际
+FA/FLA输入、原参考/断言与712795d前缀源SHA对应起来。root-tape诊断中的
+shared_warm本身没有保留root capture，可复用它的非空BF16状态/FP16 GDN后缀和
+完整BF16 FA后缀操作数对照；不因此接受已失败的GPU/CPU保留候选。
+[默认owner对照](results_native_prefix_default_owner_20261005.json)本次实际执行stdlib
+AST投影，确认6348 provider默认路径的完整模块与c9原owner相同，有限数学未变。
+这些不是整网容差；不增加整条DT的自定义门槛。尚需核查的具体新增计算仅是缓存
+生产时原FLA fwd_h在多个真实边界间传递FP32状态，现有从0直接计算/后缀消费
+对照没有直接覆盖它。原真实B4操作数已保存，可直接核查，不重载模型或重跑88请求。
+
+本次原日志/PID/物理资源只读采集于1791173005.9116776，原回执为
+../../research/temporary/rl_upstream_alignment_20260929/phase-observation-20261004/prefix-context-1791173005.json。
+TextCraft原PID3218909创建时间仍匹配，完成step112，原检查点标记100；该轮生成
+3795.342秒、DT65.166秒、actor588.385秒、整轮4752.114秒，奖励均值0.004、梯度
+0.003。SQL/AppWorld仍退出，原标记分别无/19；没有启动或部署新候选。
+物理GPU0/1/2/3/6/7空置，4/5仅原Text worker；主机可用880038387712字节、
+cgroup130640531456字节。新索引或准备文件不算训练提速或恢复完成。
+
 ### 2026-10-05：CPU root候选已执行，因性能回退拒绝部署
 
 修复代码aac4121仅准备隔离候选：沿原copy/restore/consume接口扩展，accelerated
