@@ -1,0 +1,106 @@
+{
+  "scope": "Independent source-only review of the isolated conditional primitive diagnostic; no Torch import, model call, SSH, GPU execution or production modification.",
+  "reviewer": "/root/dt_batch_geometry_audit",
+  "observed_utc": "2026-10-05T21:32:31.049667+00:00",
+  "files": {
+    "verify_textcraft_conditional_primitives.py": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\verify_textcraft_conditional_primitives.py",
+      "sha256": "55b244c5fe75f13bf02fd152f0f491fc7f42482a5094124195f62827918ecb97",
+      "bytes": 4290,
+      "stdlib_AST_parse_and_compile": "passed_without_execution"
+    },
+    "stage_textcraft_conditional_primitives.py": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\stage_textcraft_conditional_primitives.py",
+      "sha256": "22964caf4e39a2000c8d57014f685a876c426705227dd5c133165bfa5a275507",
+      "bytes": 2524,
+      "stdlib_AST_parse_and_compile": "passed_without_execution"
+    },
+    "analyze_textcraft_conditional_primitives.py": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\analyze_textcraft_conditional_primitives.py",
+      "sha256": "102aa887c3e2e6ae4b7b7d4726cbcddf0e3348ee782fc064c896f31089d0a4cb",
+      "bytes": 7171,
+      "stdlib_AST_parse_and_compile": "passed_without_execution"
+    },
+    "observe_textcraft_conditional_primitives.py": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\observe_textcraft_conditional_primitives.py",
+      "sha256": "252f10731f6a59e87de206576381692c6ed2b9b8f0de3de61af1b6e0b50bacc0",
+      "bytes": 25875,
+      "stdlib_AST_parse_and_compile": "passed_without_execution"
+    }
+  },
+  "owner_basis": {
+    "commit": "c9cd147f2889041375af0e526c6f8aba9e2a4bc6",
+    "runner_sha256": "c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1",
+    "decoder_finite_sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197",
+    "actual_HF_modeling_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be"
+  },
+  "mathematics": {
+    "six_terms": "mlp,post_norm,mlp_residual_add,mixer,input_norm,attention_residual_add",
+    "telescoping_identity": "six-term sum = m_input dot Delta(native decoder input) - m_output dot Delta(native decoder output) = Cin-Cout",
+    "closure_scope": "Observation arithmetic identity, not credit accuracy or official kernel acceptance.",
+    "interpretation": "Residual additions observe actual native storage differences. MLP/mixer and joint norm terms cannot alone identify a kernel defect; norm CPU/backend/storage terms are recorded separately."
+  },
+  "interfaces": {
+    "native_decoder_capture_retained_names": [
+      "input_norm_output",
+      "post_norm_input",
+      "post_norm_output",
+      "mlp_output"
+    ],
+    "retained_names_exist_in_original_owner": true,
+    "capture_exit": "Original NativeDecoderCapture.__exit__ removes handles without clearing values; accelerated retained helper has AUDIT=False on default path. Therefore cleanup-before-projection retains cap.values.",
+    "mixer_hook": "GDN Tensor or FA tuple[0], final native module output after output projection, not internal FLA/FA output.",
+    "real_interfaces_checked": [
+      "layer.hidden_size",
+      "runner.capture_backend",
+      "runner.model._conditional"
+    ],
+    "original_objects": "Original finite callback returns and selected score return objects are returned unchanged. No public attribute observer or diagnostics flag is supplied."
+  },
+  "phase": {
+    "prefix_B4": "Ignored by the added root capture.",
+    "paired_root_B8": "Capture begins only at the original exact suffix shape and full-EOS coordinates.",
+    "replay": "Single score closes capture before subsequent replay; full coefficients are captured only at original finite callbacks.",
+    "calls": "Same original seven groups/rank: seven complete finite traces and fourteen single roots; all three layers share these original model calls."
+  },
+  "driver": {
+    "globals": "Resolve actual registered ConditionalBoundary method body; patch complete.__globals__ collector and executing body globals contractor separately; delegate original recipe; restore all entries in finally.",
+    "bank_lifetime": "Each original group creates a new bank. Primitive bank is cleared after its second single. Original worker then clears by_boundary/state. Scalar metadata remains in reports."
+  },
+  "analysis_mapping": {
+    "transport_key": [
+      "rank",
+      "original_owner_batch_index",
+      "slot",
+      "probe_index"
+    ],
+    "logical_identity": [
+      "traj_uid",
+      "source_step",
+      "source_position"
+    ],
+    "per_layer_transport": 52,
+    "per_layer_unique_probes": 42,
+    "layers": [
+      6,
+      8,
+      11
+    ],
+    "total_transport_projections": 156,
+    "total_unique_probe_layer_projections": 126,
+    "replicas": "Original reduce_replicas is reused independently per layer; explicit means, transport rows and replica ranges remain recorded."
+  },
+  "stager": "Compose the prior owner stager and exact named dependency files. Native configuration/loading/occupancy/source checks remain in prior staging; no runtime/dependency installation or replacement training behavior.",
+  "observed_issue_fixed": {
+    "issue": "_source(decoder_capture) received a Class but the original function helper accesses __code__; this would fail before capture.",
+    "fixed": "Record class name/module plus _source(decoder_capture.__init__). Current reviewed source contains the fix.",
+    "scope": "Source API repair only; no finite or native algorithm change."
+  },
+  "outcome": "No additional concrete source/API defect found in this review.",
+  "verification_limits": [
+    "Syntax compilation did not execute modules or import Torch.",
+    "No dynamic Ray binding, numerical or GPU acceptance was performed by this independent review.",
+    "Parent separately reported frozen-source CPU inspection passed and the bounded GPU diagnostic underway.",
+    "No FA/FLA official tolerance pass, production repair or training correctness is claimed."
+  ]
+}

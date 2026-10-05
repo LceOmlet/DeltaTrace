@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 下层真实子块：有限传播与原生存储分项
+
+隔离诊断PID1721442/birth1791235562.77已完成，GPU4/5，243.217秒。复用原7个B4/rank、checkpoint25、LoRA8/16、原runner/producer/目标/切点；14 full finite、28 single root，backward/optimizer/scheduler均0。层6/8(GDN)、11(FA)共156 transport投影，按原映射保留后为126 unique probe-layer，即42 probe×3层。
+
+只观察原decoder有限系数、原NativeDecoderCapture与mixer模块输出；未启用public observer/diagnostics，不改prefix/replay路径。六项闭合仅验证观测算术；norm用原HF/finite CPU调用分开联合条件、dtype存储与GPU/CPU差。MLP/mixer尚未拆开，不能声明核超差。
+
+CPU准备的源名映射、漏传既有helper和序列化来源字段问题均在GPU前修复，失败stdout保留。本次原始ranks、source SHA、独立复核及数值汇总见results_textcraft_learning_degradation_20261006.json的conditional_primitives；不是已修复学习信号，TextCraft不恢复。
+
+
 ## 2026-10-06 真实条件边界：低层传播削弱并错向token信号
 
 隔离诊断v2 PID1472838/birth1791233251.16已完成退出，GPU4/5、185.171秒；原7个
