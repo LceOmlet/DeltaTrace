@@ -1,0 +1,57 @@
+{
+  "recorded_utc": "2026-10-05T03:50:29.407520+00:00",
+  "scope": "Same frozen real context-sorted rows12-15, each card B4, actual query/target/action IDs and official output1500 retained; original finite operators and parameter callbacks; performance decision, not numerical acceptance.",
+  "status": "executed_rejected_performance_regression_not_deployed",
+  "sources": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_native_root_tape_cpu_20261005.json",
+      "sha256": "61cfb72c32585c550e32af454f4799ab00fbd06bd58c460ecac3c12233aafbd1"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_native_root_tape_cpu_resources_20261005.json",
+      "sha256": "4d3a5771e4fc9852f409f2f405290ea9e3d14c60c549532483d9bffb35b0ac17"
+    }
+  ],
+  "candidate_prepare_commit": "aac4121",
+  "executed_diagnostic_commit": "c79ff3c",
+  "prior_aac4121_cpu_path_failure_preserved": true,
+  "formal_deployment": false,
+  "numerical_acceptance": false,
+  "official_tolerance_changed": false,
+  "rows": [
+    {
+      "rank": 0,
+      "baseline_warm_seconds": 15.01820668950677,
+      "candidate_warm_seconds": 20.756210777908564,
+      "candidate_cold_seconds": 88.02555947378278,
+      "warm_regression_fraction": 0.3820698574092034,
+      "baseline_root_seconds": 3.782744140625,
+      "candidate_root_seconds": 7.77945458984375,
+      "baseline_replay_seconds": 5.313327880859375,
+      "candidate_replay_seconds": 0,
+      "baseline_finite_seconds": 4.7326440887451175,
+      "candidate_finite_seconds": 9.4645703125
+    },
+    {
+      "rank": 1,
+      "baseline_warm_seconds": 15.012153506278992,
+      "candidate_warm_seconds": 20.729343876242638,
+      "candidate_cold_seconds": 88.03304792195559,
+      "warm_regression_fraction": 0.38083745730233654,
+      "baseline_root_seconds": 3.780200927734375,
+      "candidate_root_seconds": 7.77571142578125,
+      "baseline_replay_seconds": 3.6522344970703124,
+      "candidate_replay_seconds": 0,
+      "baseline_finite_seconds": 6.176595703125,
+      "candidate_finite_seconds": 12.006155059814454
+    }
+  ],
+  "interpretation": [
+    "The CPU candidate really consumed all32 root captures and removed reverse replay. Eliminating replay alone is not evidence of an overall speedup.",
+    "Root and finite phases expanded on the unchanged actual workload. This is the candidate transport/lifetime cost, not a newly discovered defect of the unchanged formal training.",
+    "The first CPU root call took about88seconds, with about74.72seconds inside root. The additional cold cost is localized to that phase; no finer allocator/compiler split is claimed.",
+    "The tape helper snapshot_copies_added=0 means no extra audit snapshots. It does not mean CPU capture transport copies are absent.",
+    "Raw Q/V/A differences are diagnostics only. No new full-network pass threshold or reward correction is introduced.",
+    "The original numeric/official baselines remain unchanged. No costly numerical acceptance probes are launched for a candidate rejected on real workload cost."
+  ]
+}
