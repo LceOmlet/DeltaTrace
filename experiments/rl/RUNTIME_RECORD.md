@@ -40,6 +40,23 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从
 
 ## 当前代码组合
 
+### 2026-10-05 13:34：正式前缀路径实际进入DT，首组66/122批
+
+[实际DT回执](results_appworld_native_prefix_resume_20261005.json)绑定
+first-dt-1791178447.json：原采样末已交付886853 token，运输elapsed1394.3秒；
+随后两rank原compute_dt_token_advantages各提交488请求/122个B4，现已完成66。
+两卡单批中位4.305/4.295秒，范围2.776–26.389秒，最长项未分解为编译或计算。
+这是当前回报类别RPC的部分批次，不是整轮DT，更不是完整PPO更新。
+前缀bank准备总量仍待原readout结束报告，不能拿plan到首批的间隙全部称bank。
+
+现有py-spy非阻塞栈实际指向v2冻结runner/credit/readout/producer与原VERL worker；
+五个当前源SHA与prepared逐项匹配，没有候选或配置漂移。
+54次原5秒资源采样中App进程树PSS最高320052067328字节，GPU2/3物理最高
+29337/29195MiB，主机可用最低444804636672字节，原oom_kill1→1、failcnt0。
+PSS从19批到66批约320GB，没有继续按批线性增长；不是整阶段峰值或内存归因。
+已打印d范围约-0.322至0.435，未见本次异常退出；完整DT、PPO、检查点与后续
+生成仍未验收，不以这些部分批次宣告训练健康或小时级效率问题已解决。
+
 ### 2026-10-05 13:20：继续原重复计算问题，排除低收益排序
 
 [真实批几何核算](results_native_prefix_batch_geometry_assessment_20261005.json)仅使用
