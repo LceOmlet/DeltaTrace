@@ -142,7 +142,15 @@ else:
     launcher=entry/'launch_textcraft_native.py'
     argv=[env['VENV_PYTHON'],str(launcher),'--data',data,'--output',str(output),
           '--resume-from',str(checkpoint)]
-env['PYTHONPATH']=':'.join([str(entry),str(verl),*extra_path,env['PYTHONPATH']])
+# The provisioned environment expanded its DT paths when it was sourced.
+# Repoint those exact owner paths when a frozen DT release is selected.
+# Preserve the original ordering and all unrelated environment dependencies.
+provisioned_dt_root=Path(os.environ['DT_ROOT'])
+dt_paths={str(provisioned_dt_root):prepared['dt_root'],
+          str(provisioned_dt_root/'experiments/rl'):str(Path(prepared['dt_root'])/'experiments/rl')}
+inherited_paths=[dt_paths.get(path,path) for path in env['PYTHONPATH'].split(':')]
+env['PYTHONPATH']=':'.join([str(entry),str(verl),*extra_path,*inherited_paths])
+source['pythonpath']=env['PYTHONPATH']
 source['resume_launcher']=dict(path=str(launcher),sha256=sha(launcher))
 (output/'source.json').write_text(json.dumps(source,indent=2)+'\n')
 with (output/'train.log').open('wb') as log:

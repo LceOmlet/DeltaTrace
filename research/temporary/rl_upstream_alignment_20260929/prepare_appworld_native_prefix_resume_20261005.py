@@ -14,7 +14,7 @@ import subprocess
 from stage_environment_entry import ENTRY, REPO, ROOT, remote
 
 
-NAME = 'appworld-native-prefix-resume-20261005'
+NAME = 'appworld-native-prefix-resume-20261005-v2'
 SOURCE = ROOT + '/candidates/appworld-native-async-retry-recording-resume-20261004/prepared.json'
 SOURCE_SHA = '001078cf260e11a451156b01529406bdce24059f4afeb3a54ca7907c8b305b41'
 RETRY_CPU_SHA = 'ee600363f6853531740fe50ef06bab951401cabe1e704c02594796dd11384fdf'
@@ -25,7 +25,7 @@ LEASE = '712795d1812b6b29b9626ab2ab88f0bd98564d1e'
 ACTOR_SHA = '1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd'
 HOST_SHA = 'e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39'
 RETRY_SHA = '6ad5a3e383d032fdc7f0dd2dab1ee027d8f0ed182f9725d07a3faedb46e54ec9'
-SUBMIT_SHA = 'a90911710d87d8da82e639eda5ba2c78ae3f8738136b56487108329da4022252'
+SUBMIT_SHA = '6f6e3be24e6d080c005d9ab060432f34382e2ebc15f8bc6d815f569726119779'
 SEGMENTS = 'experiments/rl/results_native_prefix_segments_20261005.json'
 SEGMENTS_SHA = '8ae9e1c766b23282e727a6d565b9c14e3b5eba38f7b090946a7b5601f2072183'
 COVERAGE_SHA = 'df03f9a10bfecbfbe71616993e659800e87bbb5f725b6b39cd36914215fe9e33'
@@ -81,7 +81,7 @@ def build_payload():
     specs = [
         ('entry/reward_readout.py', BASE, PROVIDER, 'experiments/rl/reward_readout.py',
          '8acf94d46cef8ca03ce1e92352723b2490c76e66a075f6b2a5f969163bcdc774'),
-        ('entry/deltatrace_credit.py', BASE, PROVIDER, 'experiments/rl/deltatrace_credit.py',
+        ('deltatrace/experiments/rl/deltatrace_credit.py', 'c9cd147', PROVIDER, 'experiments/rl/deltatrace_credit.py',
          '8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497'),
         ('deltatrace/clean/qwen35/qwen35_dense_finite_runner.py', 'c9cd147', PROVIDER,
          'deltatrace/clean/qwen35/qwen35_dense_finite_runner.py',
@@ -141,7 +141,7 @@ export CUDA_VISIBLE_DEVICES=-1
 export MACA_VISIBLE_DEVICES=-1
 "$VENV_PYTHON" - <<'PY'
 from pathlib import Path
-import ast,base64,hashlib,json,os,runpy,shutil,sys,time
+import ast,base64,hashlib,importlib.util,json,os,runpy,shutil,sys,time
 root=Path(@ROOT@);payload=json.loads(@PAYLOAD@)
 read=lambda p:json.loads(p.read_bytes())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
@@ -203,15 +203,24 @@ for change in payload['changes']:
 new_entry=tree_bytes(entry);new_dt=tree_bytes(dt)
 entry_changes={n for n in old_entry.keys()|new_entry.keys() if old_entry.get(n)!=new_entry.get(n)}
 dt_changes={n for n in old_dt.keys()|new_dt.keys() if old_dt.get(n)!=new_dt.get(n)}
-assert entry_changes=={'reward_readout.py','deltatrace_credit.py','deltatrace_rollout.py','native_prefix_leases.py'}
-assert dt_changes=={'clean/qwen35/qwen35_dense_finite_runner.py','clean/qwen35/qwen35_native_prefix_artifacts.py'}
+assert entry_changes=={'reward_readout.py','deltatrace_rollout.py','native_prefix_leases.py'}
+assert dt_changes=={'clean/qwen35/qwen35_dense_finite_runner.py','clean/qwen35/qwen35_native_prefix_artifacts.py',
+    'experiments/rl/deltatrace_credit.py'}
 assert tree_bytes(owner)==old_owner
 assert sha(entry/'loop_owner_worker.py')==payload['retry_sha256']
 
 # Import only the original author configuration composer, never its main/loader/model.
 os.environ.update(LOOP_ROOT=prior['loop_root'],VERL_ROOT=str(owner),DT_ROOT=str(dt),DT_ENTRY_ROOT=str(entry),
     APPWORLD_ROOT=str(root/'receipts/environment-only-20260930/loop-entry/appworld-root'))
-sys.path[:0]=[str(entry),str(owner),prior['loop_root']]
+sys.path[:0]=[str(entry),str(owner),prior['loop_root'],str(dt/'experiments/rl'),str(dt)]
+import_sources={}
+for name,target in (('deltatrace_credit',dt/'experiments/rl/deltatrace_credit.py'),
+                    ('reward_readout',entry/'reward_readout.py'),
+                    ('deltatrace_rollout',entry/'deltatrace_rollout.py'),
+                    ('native_prefix_leases',entry/'native_prefix_leases.py')):
+    spec=importlib.util.find_spec(name)
+    assert spec is not None and Path(spec.origin).resolve()==target.resolve(), (name,spec)
+    import_sources[name]=dict(path=spec.origin,sha256=sha(Path(spec.origin)))
 old=runpy.run_path(str(source_entry/'launch_appworld_native.py'))
 new=runpy.run_path(str(entry/'launch_appworld_native.py'))
 output=Path('/same-formal-output')
@@ -229,6 +238,7 @@ assert tree_bytes(owner)==old_owner and tree_bytes(entry)==new_entry and tree_by
 cpu=dict(observed_unix=time.time(),passed=True,
     scope='Frozen owner source bytes and unchanged official launch composition only; no GPU/numerical/capacity/throughput acceptance',
     patches=patches,entry_changes=sorted(entry_changes),dt_changes=sorted(dt_changes),owner_changes=[],
+    import_sources=import_sources,
     options=new_options,sampling=new_sampling,official_task_options_unchanged=True,
     inherited_retry_cpu=dict(path=str(verification),sha256=sha(verification)),
     checkpoint=dict(path=str(checkpoint),marker=str(marker),value=19,marker_sha256=sha(marker)))
