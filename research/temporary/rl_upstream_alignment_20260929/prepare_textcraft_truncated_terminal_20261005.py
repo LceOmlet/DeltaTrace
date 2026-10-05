@@ -52,7 +52,7 @@ checkpoint=marker.parent/f'global_step_{step}'
 assert all(p.is_file() and p.stat().st_size for p in [checkpoint/'data.pt']+[
  checkpoint/'actor'/f'{kind}_world_size_2_rank_{rank}.pt'
  for rank in range(2) for kind in ('model','optim','extra_state')])
-base=root/'candidates/textcraft-truncated-terminal-resume-20261005-v1'
+base=root/'candidates/textcraft-truncated-terminal-resume-20261005-v2'
 assert not base.exists(), 'Preserve immutable candidates; inspect existing attempt'
 entry=base/'entry';owner=base/'verl';base.mkdir()
 shutil.copytree(old,entry,symlinks=True);shutil.copytree(old_owner,owner,symlinks=True)
@@ -88,7 +88,7 @@ data_root=Path(job['argv'][job['argv'].index('--data')+1]);same_output=Path('/sa
 a=runpy.run_path(str(old/'launch_textcraft_native.py'))['options_for'](data_root,same_output,resume_from=checkpoint)
 os.environ['DT_ENTRY_ROOT']=str(entry)
 b=runpy.run_path(str(launcher))['options_for'](data_root,same_output,resume_from=checkpoint)
-normalized=dict(b[0]);normalized['data.custom_cls.path']=a[0]['data.custom_cls.path']
+normalized=dict(b[0])
 resource='+ray_init.runtime_env.env_vars.VERL_RELEASE_UNUSED_HOST_CACHE'
 assert normalized.pop(resource)=='1' and normalized==a[0] and b[1]==a[1]
 (base/'prior-prepared.json').write_bytes(prior_path.read_bytes())
@@ -110,7 +110,7 @@ PY
 '''.replace('@ENTRY@',ENTRY).replace('@ROOT@',repr(ROOT)).replace('@PAYLOAD@',repr(json.dumps(payload)))
     remote(script)
     destination=AUDIT/'textcraft-late-sampling-audit-20261005/remote-prepared.json'
-    subprocess.run(SCP+[f'{SSH[-1]}:{ROOT}/candidates/textcraft-truncated-terminal-resume-20261005-v1/prepared.json',str(destination)],check=True)
+    subprocess.run(SCP+[f'{SSH[-1]}:{ROOT}/candidates/textcraft-truncated-terminal-resume-20261005-v2/prepared.json',str(destination)],check=True)
 
 
 if __name__ == '__main__':
