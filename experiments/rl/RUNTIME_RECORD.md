@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 FLA 剩余链路：原生系数、操作数与 dtype 边界
+
+隔离PID2154124/birth1791239530.75已完成，GPU4/5，207.520秒。沿用原7个B4/rank、checkpoint25、LoRA8/16、原DT/FLA接口；14 full finite、28 single root，actor backward/optimizer/scheduler均0。原始104 transport-layer保留，按同一UID/source位置明确合并为42 probe×2层；不改变分母。
+
+只观察原外层对称FLA回调最终系数及真实do；原LocalCaptureEvents读取stage q/k/v/beta、public raw-g和FP16输出，避免把stage累计g当raw-g。实际capture_start+cut/head8与原GDN一致。输入链I-Z-F、FLA投影F-Y、dtype边界Y-O闭合到同次原remaining；闭合不是官方数值验收，也不是信用已修复。
+
+原raw、实际dtype/payload、CPU绑定与独立复核见results_textcraft_learning_degradation_20261006.json的conditional_fla。生产代码、Q/V/A、PPO和参数不变，TextCraft继续停止。
+
+
 ## 2026-10-06 GDN 残差定位：原生三段观测
 
 隔离PID1926348/birth1791237432.3已完成，GPU4/5，338.435秒。仍为原7个B4/rank、checkpoint25、LoRA8/16、原runner/producer/目标/切点；14 full finite、28 single root，backward/optimizer/scheduler均0。层6/8共104 transport-layer，按原身份保留重复后84 unique probe-layer，即42 probe×2层。
