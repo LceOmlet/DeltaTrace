@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 原 B4 任务信号：真实分母与既有熵项
+
+仅CPU复用原native-optimizer-minibatch.pkl与原DataProto.load/chunk、原core agg_loss/compute_policy_loss；global64→rank32→连续B4→/8，不重建采样或logits。PID2450806/birth1791242284.97，14.892秒，maxRSS916328448字节；CUDA/distributed未初始化，模型/forward/DT/backward/更新均0。
+
+原B4均值口径零Q分母82.07085%，不同于global pooled的86.85622%；16个B4中4个任务PG为0，原熵项仍在。保留原分母的DT |A|均值0.000523759、GRPO 0.757718；成功内部信用也小，不只分母稀释。优势mass不等于梯度norm或方向；原32个PG标量差只描述，未新设/扩展任何官方容差。
+
+实际输入/官方import SHA、运行回执和独立逐B4复核绑定到results_textcraft_learning_degradation_20261006.json。没有缩放优势、改熵系数或恢复TextCraft；历史完整Adam因果尚未重放。
+
+
+## 2026-10-06 原 FLA 双顺序：现成系数与相同单删操作数
+
+隔离PID2324520/birth1791241126.75已完成，GPU4/5，204.834秒。原7 B4/rank、checkpoint25、LoRA8/16及冻结runner/producer均不变；14 full finite、28 single root，actor backward/optimizer/scheduler均0。原avg仍执行一次，其两次原FLA调用和返回对象保留。
+
+只在原avg的PY_RETURN读取forward/reverse现成系数。单删阶段复用原观察器已复制的paired CPU操作数，用原_token_effect做两组标量收缩，不重复native复制、监测或模型运算。原52 transport按身份明确合并为42 probe/层；两order对同一Y的差、符号与抵消只是描述，不替换平均规则或放宽官方容差。
+
+两层平均后的F−Y平均绝对差均小于各单order，未支持取消平均。这里F来自full-response EOS/fact，Y来自single-token EOS/fact，区间不同；偏差量化条件估计质量，不是同端点应归零的恒等式，也不能据此指认FLA kernel超差。
+
+原raw、dtype/head/cut/payload、独立复核及64条读出分组统计已关联到results_textcraft_learning_degradation_20261006.json。生产仍未修复，TextCraft保持停止。
+
+
 ## 2026-10-06 FLA 剩余链路：原生系数、操作数与 dtype 边界
 
 隔离PID2154124/birth1791239530.75已完成，GPU4/5，207.520秒。沿用原7个B4/rank、checkpoint25、LoRA8/16、原DT/FLA接口；14 full finite、28 single root，actor backward/optimizer/scheduler均0。原始104 transport-layer保留，按同一UID/source位置明确合并为42 probe×2层；不改变分母。
