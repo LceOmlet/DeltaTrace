@@ -40,6 +40,25 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已提交从
 
 ## 当前代码组合
 
+### 2026-10-05 13:20：继续原重复计算问题，排除低收益排序
+
+[真实批几何核算](results_native_prefix_batch_geometry_assessment_20261005.json)仅使用
+原保存的88请求/rank、既定B4和本地prefix边界，没有模型/GPU调用或新调度器。
+当前两卡166372个suffix槽位包含88018个action/query/target、33162个右padding、
+45192个共同前缀之后的历史；旧跨卡MIN已排除，不能把它当作当前新增问题。
+按source_start排序反而增加3.76%；按64对齐start及context排序仅减少1.58%，
+且rank1变差。因此没有改正式排列，也没有将槽位差写成时间或FLOPs收益。
+原捕获字段已为必要集合；此前真实trace中的dense LoRA应用0.131/0.157秒、
+物化约0.013秒也不足解释主要耗时，不继续用这些小项启动候选或GPU测试。
+原root/replay大头尚未解决，拒绝的GPU/CPU全量保留仍未部署。
+
+[同一AppWorld恢复的有界观察](results_appworld_native_prefix_resume_20261005.json)新增
+13:17:53记录：PID3658900/创建1791175714.44匹配，原rollout已交付3685次生成、
+859337 token、elapsed1328秒，尚无本次DT批次或新完整迭代。
+物理GPU2/3为55316/55226MiB，App进程树PSS110028387328字节，主机可用
+704689729536字节；原oom_kill仍1、failcnt0。SQL仍停、0/1空置，TextCraft继续。
+这是原作业的特定阶段观察，不是整轮健康或前缀复用正式提速验收。
+
 ### 2026-10-05 12:57：AppWorld原检查点加载返回，正式rollout推进
 
 [本次恢复回执](results_appworld_native_prefix_resume_20261005.json)新增1791176244.48
