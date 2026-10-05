@@ -25,6 +25,74 @@ def select_component_request(all_requests, *, offset, limit, request_index):
     return requests, request_index-offset, offset//4
 
 
+def native_bank_inventory(leases, requests, *, minibatch_size):
+    """Read existing artifact metadata; never copy or consume its tensors."""
+    artifacts={}; consumed=set(); source_slots=0
+    for batch_index,lease in enumerate(leases):
+        batch=requests[batch_index*minibatch_size:(batch_index+1)*minibatch_size]
+        if lease is None:
+            continue
+        assert len(lease.sources)==len(batch)
+        for request,(artifact,row) in zip(batch,lease.sources):
+            identity=id(artifact)
+            if identity not in artifacts:
+                artifacts[identity]=(len(artifacts),artifact)
+            consumed.add((identity,int(lease.prefix_length),int(row)))
+            source_slots+=1
+    storages={}
+    def tensor_metadata(tensor):
+        storage=tensor.untyped_storage()
+        identity=(str(tensor.device),storage.data_ptr())
+        storages.setdefault(identity,storage.nbytes())
+        return dict(shape=list(tensor.shape),stride=list(tensor.stride()),
+            dtype=str(tensor.dtype),device=str(tensor.device),
+            pinned_host=tensor.is_pinned() if tensor.device.type=='cpu' else False,
+            logical_bytes=tensor.numel()*tensor.element_size(),
+            storage_bytes=storage.nbytes())
+    totals=dict(input_ids_bytes=0,fa_keys_bytes=0,fa_values_bytes=0,
+        gdn_conv_bytes=0,gdn_state_bytes=0,gdn_stored_boundary_rows=0,
+        gdn_consumed_boundary_rows=0,gdn_consumed_conv_bytes=0,gdn_consumed_state_bytes=0)
+    records=[]
+    for identity,(index,artifact) in artifacts.items():
+        pairs={(boundary,row) for source,boundary,row in consumed if source==identity}
+        ids=tensor_metadata(artifact.input_ids)
+        totals['input_ids_bytes']+=ids['logical_bytes']
+        layers=[]
+        for layer_index,layer in enumerate(artifact.layers):
+            if 'boundaries' in layer:
+                boundaries=[]
+                for boundary,(conv,state) in layer['boundaries'].items():
+                    conv_meta=tensor_metadata(conv);state_meta=tensor_metadata(state)
+                    rows=sorted(row for length,row in pairs if length==int(boundary))
+                    totals['gdn_conv_bytes']+=conv_meta['logical_bytes']
+                    totals['gdn_state_bytes']+=state_meta['logical_bytes']
+                    totals['gdn_stored_boundary_rows']+=conv.shape[0]
+                    totals['gdn_consumed_boundary_rows']+=len(rows)
+                    totals['gdn_consumed_conv_bytes']+=conv_meta['logical_bytes']//conv.shape[0]*len(rows)
+                    totals['gdn_consumed_state_bytes']+=state_meta['logical_bytes']//state.shape[0]*len(rows)
+                    boundaries.append(dict(prefix_length=int(boundary),consumed_rows=rows,
+                        conv=conv_meta,state=state_meta))
+                layers.append(dict(index=layer_index,kind='GDN',boundary_count=len(boundaries),
+                    boundaries=boundaries))
+            else:
+                keys=tensor_metadata(layer['keys']);values=tensor_metadata(layer['values'])
+                totals['fa_keys_bytes']+=keys['logical_bytes']
+                totals['fa_values_bytes']+=values['logical_bytes']
+                layers.append(dict(index=layer_index,kind='FA',keys=keys,values=values))
+        records.append(dict(artifact_index=index,input_ids=ids,
+            consumed_boundary_rows=[dict(prefix_length=n,row=row) for n,row in sorted(pairs)],layers=layers))
+    totals['gdn_unconsumed_boundary_rows']=totals['gdn_stored_boundary_rows']-totals['gdn_consumed_boundary_rows']
+    totals['gdn_unconsumed_conv_bytes']=totals['gdn_conv_bytes']-totals['gdn_consumed_conv_bytes']
+    totals['gdn_unconsumed_state_bytes']=totals['gdn_state_bytes']-totals['gdn_consumed_state_bytes']
+    totals['logical_tensor_bytes']=sum(totals[key] for key in (
+        'input_ids_bytes','fa_keys_bytes','fa_values_bytes','gdn_conv_bytes','gdn_state_bytes'))
+    totals['distinct_live_storage_bytes']=sum(storages.values())
+    return dict(scope='Complete originally constructed bank before bounded B4 selection; consumption counts cover all original requests, not only the diagnostic subset. Unconsumed rows are retained representation, not evidence of a leak.',
+        original_requests=len(requests),original_consumer_batches=len(leases),source_slots=source_slots,
+        distinct_artifacts=len(artifacts),distinct_consumed_artifact_boundary_rows=len(consumed),
+        totals=totals,artifacts=records)
+
+
 def diagnose(runner, producer, out, save, *, cache_tensors=None):
     from native_prefix_leases import prepare_native_prefix_leases
     from reward_readout import EventRatioReadout
@@ -92,7 +160,16 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     readout._prepare_episode=verify_prepare
     vectors={};reports={}
     native_attribute=runner.attribute
+    original_request_path=path
     current_owner=os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
+    ledger_only=os.environ.get('DT_PREFIX_LEDGER_ONLY')=='1'
+    if ledger_only:
+        assert current_owner and phase_only and os.environ.get('DT_PREFIX_PHASE_WARM')=='1'
+        assert not any(os.environ.get(key)=='1' for key in (
+            'DT_PREFIX_HOT_PROFILE','DT_PREFIX_NATIVE_BACKWARD','DT_PREFIX_PROJECTION_INPUTS',
+            'DT_PREFIX_REVERSE_PREFETCH','DT_PREFIX_ROOT_CAPTURE_INVENTORY','DT_PREFIX_ROOT_TAPE',
+            'DT_PREFIX_ROOT_TAPE_CPU','DT_PREFIX_ROOT_TAPE_GDN0','DT_PREFIX_ROOT_TAPE_FA3',
+            'DT_PREFIX_ROOT_TAPE_HOT','DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC'))
     native_backward_inputs=None
     module=None
     if not current_owner:
@@ -110,6 +187,8 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         'original_cold','original_warm','shared_cold','shared_warm')
     if current_owner:
         labels=('shared_cold','shared_warm','shared_profile_warm')
+    if ledger_only:
+        labels=('shared_ledger',)
     if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
         labels=(*labels,'prefetch_warm')
     root_tape_module=None
@@ -123,6 +202,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         labels=(*labels,'root_tape_disabled_warm','root_tape_cold','root_tape_warm')
     reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
     if current_owner:reference_label='shared_warm'
+    if ledger_only:reference_label='shared_ledger'
     shared_bank=None
     def shared_factory(*args,**kwargs):
         nonlocal shared_bank
@@ -132,7 +212,31 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 shared_bank=prepare_native_prefix_leases(*args,**kwargs)
             else:
                 # Preserve the full capture geometry and original B4 selection.
+                if ledger_only:
+                    def host_observation():
+                        observation=dict(pss_bytes=psutil.Process().memory_full_info().pss,
+                            scope='Raw original allocator counters only; MetaX allocated counters have a recorded accounting defect and are not interpreted as live bytes. Artifact CPU storage inventory is separate from the pinned allocator.')
+                        try:observation['original_host_memory_stats']=torch.cuda.memory.host_memory_stats()
+                        except (AttributeError,RuntimeError) as exc:
+                            observation['original_host_memory_stats_unavailable']=repr(exc)
+                        return observation
+                    host_before=host_observation()
                 leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)
+                if ledger_only:
+                    import json
+                    host_after=host_observation()
+                    inventory=native_bank_inventory(leases,all_requests,minibatch_size=kwargs['minibatch_size'])
+                    inventory.update(rank=torch.distributed.get_rank(),
+                        original_request_path=str(original_request_path),
+                        original_request_sha256=hashlib.sha256(original_request_path.read_bytes()).hexdigest(),
+                        original_preparation=preparation,host_before_prepare=host_before,
+                        host_after_prepare=host_after,diagnostic_selected_offset=offset,
+                        diagnostic_selected_rows=limit)
+                    inventory_path=Path(out)/f'original-prefix-bank-inventory-rank{torch.distributed.get_rank()}.json'
+                    inventory_path.write_text(json.dumps(inventory,indent=2)+'\n')
+                    save('native_original_prefix_bank_inventory',receipt=dict(path=str(inventory_path),
+                        sha256=hashlib.sha256(inventory_path.read_bytes()).hexdigest()),
+                        totals=inventory['totals'],host_before_prepare=host_before,host_after_prepare=host_after)
                 selected=leases[offset//4:(offset+limit)//4]
                 shared_bank=(selected,{**preparation,'diagnostic_selected_consumer_batches':len(selected)})
         # The owner lease creates a fresh DynamicCache on every consumption.
@@ -172,6 +276,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         root_tape_reports=[]
         gdn0_observations=[]
         fa3_observations=[]
+        ledger_receipts=[]
         def observe_attribute(*args,**kwargs):
             nonlocal native_backward_inputs
             if (current_owner and os.environ.get('DT_PREFIX_NATIVE_BACKWARD')=='1'
@@ -348,6 +453,32 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                      scope='One actual warm attribute B4; owner computations unchanged; excludes bank preparation; instrumented costs only',
                      trace=dict(path=str(trace),sha256=hashlib.sha256(trace.read_bytes()).hexdigest(),bytes=trace.stat().st_size),
                      events=records)
+            if ledger_only:
+                import json
+                # The unchanged owner already returns this scalar ledger.
+                # Save it after its completion timer; no tensor capture or
+                # extra model call, and return the same original result below.
+                detail=result[1]
+                fields=('root_effect','seed_effect','signed_sum','relative_residual','layers',
+                    'compiled_seed_logprob_effect','compiled_seed_logprob_effect_minus_root',
+                    'target_logp0','target_logp1','native_shared_prefix_length',
+                    'gdn_fla_coefficient_start','controller_diagnostic_scheduling')
+                owner_source=Path(selected_attribute.__func__.__code__.co_filename)
+                observation=dict(variant=label,rank=torch.distributed.get_rank(),
+                    original_request_sha256=hashlib.sha256(original_request_path.read_bytes()).hexdigest(),
+                    original_request_path=str(original_request_path),original_sorted_offset=offset,
+                    paired_input_shape=list(args[0].shape),
+                    restored_checkpoint=os.environ.get('DT_PREFIX_CHECKPOINT'),
+                    owner_source=dict(path=str(owner_source),
+                        sha256=hashlib.sha256(owner_source.read_bytes()).hexdigest()),
+                    scope='Existing original owner scalar details from one actual shared B4; no numerical acceptance criterion or tensor capture.',
+                    owner_details={key:detail[key] for key in fields if key in detail})
+                ledger_path=Path(out)/f'owner-ledger-{label}-rank{torch.distributed.get_rank()}-call{len(ledger_receipts)}.json'
+                ledger_path.write_text(json.dumps(observation,indent=2)+'\n')
+                receipt=dict(path=str(ledger_path),sha256=hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
+                    variant=label,layer_count=len(detail['layers']))
+                ledger_receipts.append(receipt)
+                save('native_original_scalar_ledger',receipt=receipt)
             for call in result[1].get('calls',[]):
                 kind=call['kind']
                 seconds=call.get('stream_elapsed_seconds',call.get('seconds'))
@@ -384,6 +515,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
             peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
             physical_free_bytes=torch.cuda.mem_get_info()[0],
             pss_bytes=psutil.Process().memory_full_info().pss)
+        if ledger_only:reports[label]['original_scalar_ledger_receipts']=ledger_receipts
         save('native_prefix_lease_variant_complete',variant=label,
              total_wall_seconds=reports[label]['total_wall_seconds'],
              shared_preparation=readout.last_report.get('shared_native_prefix'))

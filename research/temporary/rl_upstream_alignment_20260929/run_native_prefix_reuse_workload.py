@@ -1,7 +1,7 @@
 """Replay saved multi-turn requests with the completed native diagnostic owner.
 
 No training restart, model/task download, optimizer, or formal import change.
-Only GPUs 2/3 are used; physical GPUs 0/1 stay free as requested.
+Uses the two explicitly selected physical GPUs (default 2/3).
 """
 import argparse
 import ast
@@ -16,6 +16,10 @@ from stage_environment_entry import AUDIT, ENTRY, REPO, ROOT, SSH, SCP, remote
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--devices',type=int,nargs=2,default=[2,3],metavar=('FIRST','SECOND'),
+        help='Two physical GPU indices for the existing B4-per-rank diagnosis; default 2 3.')
+    parser.add_argument('--ledger-only',action='store_true',
+        help='With current formal owner and phase/warm flags, run one original shared B4 and save its existing scalar layer ledger only.')
     parser.add_argument('--phase-only',action='store_true',
         help='Two DT calls on the largest recorded residual B4, retaining the full factual capture bank.')
     parser.add_argument('--components-only',action='store_true',
@@ -55,6 +59,15 @@ if __name__ == '__main__':
     parser.add_argument('--native-backward',action='store_true',
         help='After current-owner DT, time one first and one warm original actor backward on the same factual B4 event target; no optimizer update.')
     args=parser.parse_args()
+    if min(args.devices)<0 or len(set(args.devices))!=2:
+        parser.error('--devices requires two distinct nonnegative physical GPU indices')
+    if args.ledger_only and not (args.current_formal_owner and args.phase_only and args.warm_phases):
+        parser.error('--ledger-only requires --current-formal-owner --phase-only --warm-phases')
+    if args.ledger_only and any((args.hot_profile,args.native_backward,args.local_prefix_branch,
+            args.projection_inputs,args.reverse_prefetch,args.root_capture_inventory,args.root_tape,
+            args.root_tape_cpu,args.root_tape_capacity,args.root_tape_gdn0,args.root_tape_fa3,
+            args.root_tape_hot,args.components_only,args.component_layer is not None)):
+        parser.error('--ledger-only does not run profiling, backward, operator observers or owner variants')
     if args.current_formal_owner and (not args.checkpoint or not args.phase_only or not args.warm_phases):
         parser.error('--current-formal-owner requires --checkpoint --phase-only --warm-phases')
     if args.current_formal_owner and any((args.local_prefix_branch,args.projection_inputs,
@@ -105,8 +118,8 @@ if __name__ == '__main__':
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
         'local-prefix-' if args.local_prefix_branch else '')+('cpu-' if args.root_tape_cpu else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
-        'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
-        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261005-' if args.root_tape_cpu else '-20261004-')+commit[:7]
+        'ledger' if args.ledger_only else 'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
+        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261005-' if args.root_tape_cpu or args.ledger_only else '-20261004-')+commit[:7]
     if args.current_formal_owner:
         out+='-current-'+args.checkpoint.rstrip('/').split('/')[-1]
     files = {
@@ -195,7 +208,9 @@ previous=json.loads((parent/'prepared.json').read_bytes())
 assert (parent/'result.json').exists(), 'Reuse only the completed original comparison'
 assert not (out/'prepared.json').exists() and not (out/'job.json').exists()
 physical=subprocess.check_output(['mx-smi'],text=True)
-assert not re.search(r'^\|\s+[23]\s+\d+\s+',physical.split('| Process:')[-1],re.M), 'GPUs2/3 are occupied'
+devices=@DEVICES@
+assert not any(re.search(r'^\|\s+'+str(device)+r'\s+\d+\s+',physical.split('| Process:')[-1],re.M)
+ for device in devices), f'GPUs{devices} are occupied'
 manifest=json.loads((root/'active-training.json').read_bytes())
 formal_owner=None
 if @CURRENT_FORMAL_OWNER@:
@@ -306,7 +321,7 @@ if @COMPONENTS_ONLY@:
  assert before.count(needle)==1, 'Inspect the frozen diagnostic call before changing it'
  p.write_text(before.replace(needle,'diagnose(runner, producer, OUT, save, cache_tensors=tensors)'))
 options=json.loads((out/'native-launch-options.json').read_bytes())
-run_env.update(CUDA_VISIBLE_DEVICES='2,3',DT_PREFIX_PROBE_ROOT=str(out),VERL_ROOT=str(out/'verl-root'),
+run_env.update(CUDA_VISIBLE_DEVICES=','.join(map(str,devices)),DT_PREFIX_PROBE_ROOT=str(out),VERL_ROOT=str(out/'verl-root'),
  DT_PREFIX_DT_LEASE_DIAGNOSTIC='1',DT_PREFIX_DIAGNOSTIC_ROWS='88',
  DT_TASK='AppWorld',DT_MAX_STEPS=str(options['env.max_steps']),DT_MAX_LENGTH='32768',
  DT_SAMPLING_JSON=json.dumps(dict(temperature=options['actor_rollout_ref.rollout.temperature'],
@@ -329,6 +344,8 @@ if @CHECKPOINT@ is not None:run_env['DT_PREFIX_CHECKPOINT']=@CHECKPOINT@
 else:run_env.pop('DT_PREFIX_CHECKPOINT',None)
 if @NATIVE_BACKWARD@:run_env['DT_PREFIX_NATIVE_BACKWARD']='1'
 else:run_env.pop('DT_PREFIX_NATIVE_BACKWARD',None)
+if @LEDGER_ONLY@:run_env['DT_PREFIX_LEDGER_ONLY']='1'
+else:run_env.pop('DT_PREFIX_LEDGER_ONLY',None)
 if @ROOT_CAPTURE_INVENTORY@ or @ROOT_TAPE@:
  run_env['DT_ROOT_INVENTORY_DECODER_SOURCE']=str(root/'releases/c9cd147/clean/qwen35/qwen35_decoder_finite.py')
 if @ROOT_TAPE@:
@@ -394,7 +411,8 @@ if @BOUNDED_ONLY@:
  selected_observation=dict(peak=peak,all_ranks=maxima,offset=offset,component_layer=component_layer,
   scope='Same original B4 stream and full 88-row capture bank; bounded operator/phase instrumentation, not a repeat of the workload benchmark')
 receipt=dict(role='Isolated original B4 DT replay; no formal deployment or acceptance of a new numerical core',
- diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',devices=[2,3],rows_per_rank=int(run_env['DT_PREFIX_DIAGNOSTIC_ROWS']),
+ diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',devices=devices,rows_per_rank=int(run_env['DT_PREFIX_DIAGNOSTIC_ROWS']),
+ original_scalar_ledger_only=@LEDGER_ONLY@,
  instrumented_hot_profile=@HOT_PROFILE@,
  projection_input_observation=@PROJECTION_INPUTS@,
  native_reverse_prefetch_candidate=@REVERSE_PREFETCH@,
@@ -460,7 +478,7 @@ with (out/'probe.log').open('wb') as log:
   cwd=out,env=run_env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
 receipt.update(pid=p.pid,pid_birth=psutil.Process(p.pid).create_time(),started_unix=time.time(),log=str(out/'probe.log'))
 (out/'job.json').write_text(json.dumps(receipt,indent=2)+'\n')
-print(json.dumps(dict(out=str(out),pid=p.pid,pid_birth=receipt['pid_birth'],cpu_tests_returncode=0,devices=[2,3])))
+print(json.dumps(dict(out=str(out),pid=p.pid,pid_birth=receipt['pid_birth'],cpu_tests_returncode=0,devices=devices)))
 PY
 '''.replace('@ENTRY@',ENTRY).replace('@ROOT@',ROOT).replace('@PARENT@',parent)
         .replace('@OUT@',out).replace('@COMMIT@',commit).replace('@PHASE_ONLY@',str(args.phase_only))
@@ -480,6 +498,7 @@ PY
         .replace('@ROOT_TAPE_HOT@',str(args.root_tape_hot))
         .replace('@LOCAL_PREFIX_BRANCH@',str(args.local_prefix_branch))
         .replace('@CURRENT_FORMAL_OWNER@',str(args.current_formal_owner))
+        .replace('@DEVICES@',repr(args.devices)).replace('@LEDGER_ONLY@',str(args.ledger_only))
         .replace('@CHECKPOINT@',repr(args.checkpoint)).replace('@NATIVE_BACKWARD@',str(args.native_backward))
         .replace('@BRANCH_REFERENCE_SHA@',repr(hashlib.sha256(branch_reference).hexdigest()) if branch_reference is not None else 'None')
         .replace('@BRANCH_COMMIT@',repr(branch_commit)).replace('@BRANCH_BASELINE_COMMIT@',repr(branch_baseline_commit))
