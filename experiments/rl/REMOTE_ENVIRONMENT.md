@@ -6,6 +6,18 @@ worker运行时覆盖分别记录；不能用下面历史段落中的“当前�
 
 ## 2026-10-05 当前运行入口
 
+20:27诊断2411666已完成并退出；已证实GDN bank两rank分别多存6.0425/6.4775GiB
+未消费边界行，原逐层ledger已保存。仅准备存储候选，尚未对照/部署；正式2/3不变。
+详见results_native_dt_bank_ledger_20261005.json。下方20:25启动状态是历史。
+
+20:25新增有界诊断PID2411666/出生1791203111.34、GPU4/5，来源d1b67a2；
+原checkpoint20与真实B8只执行一次DT，记录原ledger及prefix bank storage，
+不修改正式入口。AppWorld2/3原PID1856052继续：20:06三个回报类别组各199个B4
+完成，尚无本次完整更新。20:09两个DT worker PSS142.54/145.59GB，原pinned
+释放确实执行；live普通CPU bank与allocator驻留继续分开核验。
+诊断进程、来源与输出路径见RUNTIME_RECORD及results_dt_phase_bounded_20261005.json；
+不要再在4/5重复启动测试，先查原job及PID创建时间。TextCraft起点仍待答，SQL停。
+
 19:43观察：同一AppWorld PID1856052已完成本次原采样（217条实际轨迹、最长context24436），
 进入原DT；当前回报类别组两rank均77/112个B4，不是整轮总计。入口/LoRA8/16/每卡B4
 未变。TextCraft旧作业仍停止、v2仍prepared，训练起点待答；4/5仍空闲供必要测试。

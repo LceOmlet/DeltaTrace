@@ -40,6 +40,45 @@ SSH端口30821。当前清单仅三组DTPO，SQL仍退出，AppWorld已从20恢�
 
 ## 当前代码组合
 
+### 2026-10-05 20:25：正式阶段账目与一次真实B8诊断并行
+
+上述诊断20:27已完成并退出，原checkpoint20/实际进口SHA与source对应，
+不是新optimizer更新。[原ledger和bank回执](results_native_dt_bank_ledger_20261005.json)
+记录rank0/1完整88请求bank为16.8815/17.3219GB，其中从不消费的GDN状态及window
+分别6.4881/6.9552GB（6.0425/6.4775GiB）。这是已证明的多存边界行，
+不是将全部匿名内存解释为泄漏，也不据此提前承诺整轮加速。
+两rank32层记录的root/replay L2与effect差均0；root到seed差−0.00367/−0.00715，
+总残差0.19113/0.10159精确分解到head/finalnorm与有限decoder传播，
+compiled seed与root的事件logprob差相同，没有旧head倍率放大。
+只准备GDN boundary-row存储候选，原FLA计算、Cache更新、dtype及正式源码不改；
+同一真实B8的旧/候选消费状态、Q/V/A逐值及热耗时对照尚待执行，不新增容差。
+4/5原诊断已退出，后续候选测试必须用独立job和SHA，不能把d1b67a2读账当修复通过。
+
+20:06原AppWorld PID1856052两rank完成三个回报类别组、各199个B4；合计组墙钟
+1515.39/1515.13秒，其中归因body1293.55/1293.69秒、prefix准备220.33/219.91秒，
+剩余外层约1.5秒。第四组当时64/101；这些是已完成类别组，不是完整step21。
+[有界阶段回执](results_dt_phase_bounded_20261005.json)绑定原日志、PID出生时间和
+source SHAaa8fac16…；没有因等待整轮结束而延迟定位。
+
+20:09容器使用451.21GB，匿名384.30GB、文件缓存66.61GB；两个DT worker
+PSS142.54/145.59GB。原e5eb4afc…worker及实际环境均启用阶段末原host-cache
+释放，四次组返回日志的reserved均回到32858176416字节/rank。不能将全部PSS
+称为live tensor或泄漏；普通CPU prefix artifacts也不属于该pinned allocator。
+已记录的MetaX allocated计数缺陷使该counter不能解释成live字节，reserved及原
+释放日志另用。现有13k热B8 trace中的27.25/25.06GB HtoD仅0.659/0.667秒，
+不是整个模型重复搬三遍或可立即删除的27GB工作量。
+
+首组内部残差标记236/243个、各448个contrast，实际规则为
+abs(root-signed_sum)<=0.02*max(1,abs(root))；不是FA/FLA官方容差，也没有纠偏。
+FP32事件head与实际FP16 FLA/BF16 FA来源不变。现有真实13k报告仅保存总残差，
+未保存原runner已经返回的layers ledger，因此在空闲4/5做一次原真实B8补充观察。
+来源`d1b67a2`，PID2411666/出生1791203111.34，原checkpoint20、原88请求bank、
+context排序offset84、每卡4。只保存已有逐层标量与去重storage/消费计数，不增加
+forward、optimizer、dtype变体、cache清理或容差；原CPU接口检查返回0。
+输出在`receipts/owner-b8-dispatch-20260930/native-prefix-reuse-ledger-offset84-20261005-d1b67a2-current-global_step_20`。
+提交`d1b67a27cc368a5a81a2dde596c8702a417621db`已推送，它是诊断版本，不是
+正式训练或新的DT数值发布。AppWorld2/3、训练参数、TextCraft待训练起点状态均不变。
+
 ### 2026-10-05 19:43：实际漏奖范围与当前DT组进度
 
 TextCraft原停止作业92个完成迭代的原metrics及178个DT报告已只读提取，原train.log
