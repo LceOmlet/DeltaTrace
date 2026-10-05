@@ -92,16 +92,24 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     readout._prepare_episode=verify_prepare
     vectors={};reports={}
     native_attribute=runner.attribute
-    source=Path(out)/'qwen35_dense_finite_runner_candidate.py'
-    spec=importlib.util.spec_from_file_location('_prepared_prefix_lease_runner',source)
-    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    current_owner=os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
+    native_backward_inputs=None
+    module=None
+    if not current_owner:
+        source=Path(out)/'qwen35_dense_finite_runner_candidate.py'
+        spec=importlib.util.spec_from_file_location('_prepared_prefix_lease_runner',source)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     save('native_prefix_lease_diagnostic_start',actual_rows=limit,
          context_lengths=[r['context_tokens'] for r in requests],
          original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-         diagnostic_scope='Original readout/QVA consumers; raw residuals have no invented full-network tolerance. Loaded actor is not a restored formal checkpoint.')
+         diagnostic_scope=('Current frozen formal owner and original checkpoint loader; raw residuals have no invented full-network tolerance.'
+             if current_owner else 'Original readout/QVA consumers; raw residuals have no invented full-network tolerance. Loaded actor is not a restored formal checkpoint.'),
+         restored_checkpoint=os.environ.get('DT_PREFIX_CHECKPOINT'))
     warm_phase=os.environ.get('DT_PREFIX_PHASE_WARM')=='1'
     labels=('original_phase','shared_phase') if phase_only and not warm_phase else (
         'original_cold','original_warm','shared_cold','shared_warm')
+    if current_owner:
+        labels=('shared_cold','shared_warm','shared_profile_warm')
     if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
         labels=(*labels,'prefetch_warm')
     root_tape_module=None
@@ -114,6 +122,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         root_tape_module=importlib.util.module_from_spec(spec);spec.loader.exec_module(root_tape_module)
         labels=(*labels,'root_tape_disabled_warm','root_tape_cold','root_tape_warm')
     reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
+    if current_owner:reference_label='shared_warm'
     shared_bank=None
     def shared_factory(*args,**kwargs):
         nonlocal shared_bank
@@ -148,8 +157,11 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 # inheriting the same private transport owners as this runner.
                 runner.capture_backend=root_tape_module._root_capture_backend
         if label.startswith(('shared','prefetch','root_tape')):
-            owner=(root_tape_module if label.startswith('root_tape') else module)
-            runner.attribute=types.MethodType(owner.Qwen35DenseFiniteRunner.attribute,runner)
+            if current_owner:
+                runner.attribute=native_attribute
+            else:
+                owner=(root_tape_module if label.startswith('root_tape') else module)
+                runner.attribute=types.MethodType(owner.Qwen35DenseFiniteRunner.attribute,runner)
             readout.prefix_lease_factory=shared_factory
         else:
             runner.attribute=native_attribute;readout.prefix_lease_factory=None
@@ -161,8 +173,19 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         gdn0_observations=[]
         fa3_observations=[]
         def observe_attribute(*args,**kwargs):
+            nonlocal native_backward_inputs
+            if (current_owner and os.environ.get('DT_PREFIX_NATIVE_BACKWARD')=='1'
+                    and native_backward_inputs is None):
+                # Preserve only the real factual IDs and target metadata on
+                # CPU. No model tensors or prefix bank outlive diagnose().
+                pair,selection=args[0],args[2]
+                native_backward_inputs=dict(input_ids=pair[1::2].detach().cpu(),
+                    positions=selection.positions.detach().cpu(),
+                    samples=selection.samples.detach().cpu(), labels=selection.labels.detach().cpu(),
+                    outcome_token_ids=selection.outcome_token_ids.detach().cpu(),
+                    dt_paired_input_shape=list(pair.shape))
             profile_this_call=(os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
-                               and label.endswith('_warm')) or (
+                               and (label=='shared_profile_warm' if current_owner else label.endswith('_warm'))) or (
                                os.environ.get('DT_PREFIX_ROOT_TAPE_HOT')=='1'
                                and label=='root_tape_warm')
             parameter_context=nullcontext()
@@ -391,3 +414,5 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     torch.save(vectors,tensor_path)
     save('native_prefix_lease_diagnostic_complete',reports=reports,raw_value_observations=observations,
          vectors=dict(path=str(tensor_path),sha256=hashlib.sha256(tensor_path.read_bytes()).hexdigest()))
+    shared_bank=None
+    return native_backward_inputs

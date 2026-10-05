@@ -48,7 +48,20 @@ if __name__ == '__main__':
         help='With --root-tape, save complete actual FA3 operands and execute the original FA output assertions after attribute returns; diagnostic timing only.')
     parser.add_argument('--root-tape-hot',action='store_true',
         help='Profile only the existing real root-tape warm B4, including original parameter prepare/release callbacks; no scheduling change.')
+    parser.add_argument('--checkpoint',
+        help='Completed global_step directory passed once to the original VERL checkpoint loader.')
+    parser.add_argument('--current-formal-owner',action='store_true',
+        help='Use the current frozen AppWorld entry/VERL/DT and launch options, not historical diagnostic owner overrides.')
+    parser.add_argument('--native-backward',action='store_true',
+        help='After current-owner DT, time one first and one warm original actor backward on the same factual B4 event target; no optimizer update.')
     args=parser.parse_args()
+    if args.current_formal_owner and (not args.checkpoint or not args.phase_only or not args.warm_phases):
+        parser.error('--current-formal-owner requires --checkpoint --phase-only --warm-phases')
+    if args.current_formal_owner and any((args.local_prefix_branch,args.projection_inputs,
+            args.reverse_prefetch,args.root_capture_inventory,args.root_tape,args.components_only)):
+        parser.error('Current formal owner mode does not load historical scheduling/capture/source variants')
+    if args.native_backward and not args.current_formal_owner:
+        parser.error('--native-backward uses --current-formal-owner and its restored checkpoint')
     if args.components_only and args.phase_only:
         parser.error('Select either the native operator diagnosis or the DT phase replay')
     if args.warm_phases and not args.phase_only:
@@ -94,6 +107,8 @@ if __name__ == '__main__':
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
         'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
         'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261005-' if args.root_tape_cpu else '-20261004-')+commit[:7]
+    if args.current_formal_owner:
+        out+='-current-'+args.checkpoint.rstrip('/').split('/')[-1]
     files = {
         REPO/'experiments/rl/native_prefix_leases.py': 'native_prefix_leases.py',
         REPO/'experiments/rl/test_native_prefix_leases.py': 'test_native_prefix_leases.py',
@@ -101,6 +116,11 @@ if __name__ == '__main__':
         AUDIT/'diagnose_native_prefix_components.py': 'diagnose_native_prefix_components.py',
         Path(__file__): 'run_native_prefix_reuse_workload.py',
     }
+    if args.checkpoint or args.current_formal_owner:
+        files[AUDIT/'verify_native_prefix_artifacts.py']='verify_native_prefix_artifacts.py'
+    if args.current_formal_owner:
+        # These production modules come only from the frozen formal entry.
+        del files[REPO/'experiments/rl/native_prefix_leases.py']
     if args.projection_inputs:
         files[AUDIT/'diagnose_native_projection_inputs.py'] = 'diagnose_native_projection_inputs.py'
     if args.reverse_prefetch:
@@ -177,23 +197,59 @@ assert not (out/'prepared.json').exists() and not (out/'job.json').exists()
 physical=subprocess.check_output(['mx-smi'],text=True)
 assert not re.search(r'^\|\s+[23]\s+\d+\s+',physical.split('| Process:')[-1],re.M), 'GPUs2/3 are occupied'
 manifest=json.loads((root/'active-training.json').read_bytes())
-text=next(j for j in manifest['jobs'] if j['task']=='TextCraft')
-live=psutil.Process(text['pid'])
-run_env={k.decode():v.decode() for k,v in (x.split(b'=',1) for x in
- pathlib.Path('/proc',str(live.pid),'environ').read_bytes().split(b'\0') if b'=' in x)}
+formal_owner=None
+if @CURRENT_FORMAL_OWNER@:
+ app=next(j for j in manifest['jobs'] if j['task']=='AppWorld')
+ source_path=pathlib.Path(app.get('source_receipt',str(pathlib.Path(app['output'])/'source.json')))
+ source=json.loads(source_path.read_bytes())
+ formal_entry=pathlib.Path(app['entry']);formal_verl=pathlib.Path(app['verl_root']);formal_dt=pathlib.Path(source['dt_root'])
+ source_bindings={}
+ for base,bindings in ((formal_entry,source['entry_sha256']),(formal_verl,source['owner_head_sha256'])):
+  for name,expected in bindings.items():
+   p=base/name;actual=hashlib.sha256(p.read_bytes()).hexdigest()
+   assert actual==expected,p
+   source_bindings[str(p)]=actual
+ prepared_path=pathlib.Path(source['prepared_receipt'])
+ prepared=json.loads(prepared_path.read_bytes())
+ assert hashlib.sha256(prepared_path.read_bytes()).hexdigest()==source['prepared_receipt_sha256']
+ for name in ('clean/qwen35/qwen35_dense_finite_runner.py','clean/qwen35/qwen35_native_prefix_artifacts.py',
+              'experiments/rl/deltatrace_credit.py'):
+  p=formal_dt/name;actual=hashlib.sha256(p.read_bytes()).hexdigest()
+  assert actual==prepared['dt_source_sha256'][name],p
+  source_bindings[str(p)]=actual
+ run_env=dict(os.environ)
+ run_env.update(VERL_ROOT=str(formal_verl),DT_ROOT=str(formal_dt),DT_ENTRY_ROOT=str(formal_entry),
+                LOOP_ROOT=source['loop_root'],APPWORLD_ROOT=str(root/'receipts/environment-only-20260930/loop-entry/appworld-root'))
+ formal_owner=dict(source_path=str(source_path),source_sha256=hashlib.sha256(source_path.read_bytes()).hexdigest(),
+  entry=str(formal_entry),verl_root=str(formal_verl),dt_root=str(formal_dt),
+  source_bindings=source_bindings,prepared_path=str(prepared_path),
+  prepared_sha256=source['prepared_receipt_sha256'],pythonpath=source['pythonpath'])
+else:
+ text=next(j for j in manifest['jobs'] if j['task']=='TextCraft')
+ live=psutil.Process(text['pid'])
+ run_env={k.decode():v.decode() for k,v in (x.split(b'=',1) for x in
+  pathlib.Path('/proc',str(live.pid),'environ').read_bytes().split(b'\0') if b'=' in x)}
 for key in ('MACA_VISIBLE_DEVICES','RAY_ADDRESS','RAY_TMPDIR'):
  run_env.pop(key,None)
 # Frozen original numerical owner, validated diagnostic and literal inputs.
 for path in parent.iterdir():
- if path.is_dir() and path.name=='verl-root': shutil.copytree(path,out/path.name)
+ if @CURRENT_FORMAL_OWNER@:
+  if path.is_file() and path.name.startswith('actual-requests-rank'):shutil.copy2(path,out/path.name)
+ elif path.is_dir() and path.name=='verl-root': shutil.copytree(path,out/path.name)
  elif path.is_file() and (path.suffix=='.py' or path.name=='native-launch-options.json'
-                          or path.name.startswith('actual-requests-rank')):
+                         or path.name.startswith('actual-requests-rank')):
   shutil.copy2(path,out/path.name)
 for source,expected in previous['source_files'].items():
- if source.startswith(str(parent)):
+ if source.startswith(str(parent)) and not @CURRENT_FORMAL_OWNER@:
   destination=out/pathlib.Path(source).relative_to(parent)
   assert hashlib.sha256(destination.read_bytes()).hexdigest()==expected, destination
 subprocess.run(['tar','-xf',str(out/'overlay.tar'),'-C',str(out)],check=True)
+if @CURRENT_FORMAL_OWNER@:
+ launch_path=pathlib.Path(app['output'])/'launch.json'
+ launch=json.loads(launch_path.read_bytes())
+ (out/'native-launch-options.json').write_text(json.dumps(launch['options'],indent=2)+'\n')
+ formal_owner['launch_path']=str(launch_path)
+ formal_owner['launch_sha256']=hashlib.sha256(launch_path.read_bytes()).hexdigest()
 if @ROOT_TAPE_CAPACITY@:
  p=out/'verify_native_prefix_artifacts.py';before=p.read_text()
  needle='from diagnose_native_prefix_leases import diagnose'
@@ -258,6 +314,21 @@ run_env.update(CUDA_VISIBLE_DEVICES='2,3',DT_PREFIX_PROBE_ROOT=str(out),VERL_ROO
  DT_PREFIX_OWNER_SOURCE=str(out/'qwen35_dense_finite_runner_candidate.py'),
  DT_PREFIX_ARTIFACT_SOURCE=str(out/'qwen35_native_prefix_artifacts.py'))
 run_env['PYTHONPATH']=':'.join([str(out),previous['source_formal_entry'],str(out/'verl-root'),run_env.get('PYTHONPATH','')])
+if @CURRENT_FORMAL_OWNER@:
+ run_env['VERL_ROOT']=str(formal_verl)
+ run_env['DT_ROOT']=str(formal_dt)
+ run_env['PYTHONPATH']=':'.join([str(out),str(formal_dt/'clean/qwen35'),formal_owner['pythonpath']])
+ run_env['DT_PREFIX_CURRENT_FORMAL_OWNER']='1'
+ # The formal producer imports the current owner directly; no older source
+ # override or diagnostic artifact module can enter this path.
+ run_env.pop('DT_PREFIX_OWNER_SOURCE',None)
+ run_env.pop('DT_PREFIX_ARTIFACT_SOURCE',None)
+else:
+ run_env.pop('DT_PREFIX_CURRENT_FORMAL_OWNER',None)
+if @CHECKPOINT@ is not None:run_env['DT_PREFIX_CHECKPOINT']=@CHECKPOINT@
+else:run_env.pop('DT_PREFIX_CHECKPOINT',None)
+if @NATIVE_BACKWARD@:run_env['DT_PREFIX_NATIVE_BACKWARD']='1'
+else:run_env.pop('DT_PREFIX_NATIVE_BACKWARD',None)
 if @ROOT_CAPTURE_INVENTORY@ or @ROOT_TAPE@:
  run_env['DT_ROOT_INVENTORY_DECODER_SOURCE']=str(root/'releases/c9cd147/clean/qwen35/qwen35_decoder_finite.py')
 if @ROOT_TAPE@:
@@ -278,17 +349,20 @@ run_env.pop('DT_PREFIX_ROOT_TAPE_FA3',None)
 run_env.pop('DT_PREFIX_ROOT_TAPE_HOT',None)
 if @BOUNDED_ONLY@:
  import torch
- completed=root/'receipts/owner-b8-dispatch-20260930/native-prefix-reuse-workload-20261004-712795d'
  maxima=[]
- for rank in (0,1):
-  p=completed/f'prefix-lease-vectors-rank{rank}.pt'
-  values=torch.load(p,map_location='cpu',weights_only=False)
-  original=values['original_warm']['dt_token_advantages']
-  delta=(values['shared_warm']['dt_token_advantages']-original).abs()
-  index=int(delta.argmax());row,column=divmod(index,delta.shape[1])
-  maxima.append(dict(rank=rank,row=row,column=column,residual=float(delta[row,column]),
-   vector_sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
- peak=max(maxima,key=lambda item:item['residual']);offset=peak['row']//4*4
+ peak=None
+ if not @CURRENT_FORMAL_OWNER@:
+  completed=root/'receipts/owner-b8-dispatch-20260930/native-prefix-reuse-workload-20261004-712795d'
+  for rank in (0,1):
+   p=completed/f'prefix-lease-vectors-rank{rank}.pt'
+   values=torch.load(p,map_location='cpu',weights_only=False)
+   original=values['original_warm']['dt_token_advantages']
+   delta=(values['shared_warm']['dt_token_advantages']-original).abs()
+   index=int(delta.argmax());row,column=divmod(index,delta.shape[1])
+   maxima.append(dict(rank=rank,row=row,column=column,residual=float(delta[row,column]),
+    vector_sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
+  peak=max(maxima,key=lambda item:item['residual']);offset=peak['row']//4*4
+ else:offset=0
  request_offset=@REQUEST_OFFSET@
  if request_offset is not None:
   offset=request_offset
@@ -334,8 +408,10 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  prefix_branch_patch=prefix_branch_patch,
  selected_observation=selected_observation,
  parent_prepared=dict(path=str(parent/'prepared.json'),sha256=hashlib.sha256((parent/'prepared.json').read_bytes()).hexdigest()),
- live_environment_source=dict(pid=live.pid,pid_birth=live.create_time(),task='TextCraft',
-  use='Recorded provisioning/cache/DT flags only; AppWorld task and sampling come from the original frozen launch'),
+ live_environment_source=(dict(pid=live.pid,pid_birth=live.create_time(),task='TextCraft',
+  use='Recorded provisioning/cache/DT flags only; AppWorld task and sampling come from the original frozen launch')
+  if not @CURRENT_FORMAL_OWNER@ else None),
+ current_formal_owner=formal_owner,checkpoint=@CHECKPOINT@,native_backward_reference=@NATIVE_BACKWARD@,
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
  source_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*out.glob('*.py'),*out.glob('root-tape-owner/*.py')]},
  literal_request_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('actual-requests-rank*.pt')},
@@ -347,6 +423,10 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  available_host_bytes=psutil.virtual_memory().available)
 (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
 test_env=dict(run_env,CUDA_VISIBLE_DEVICES='',MACA_VISIBLE_DEVICES='')
+if @CURRENT_FORMAL_OWNER@:
+ # Existing CPU owner-interface tests read this explicit source path; the
+ # GPU producer itself has no historical override and imports the frozen DT.
+ test_env['DT_PREFIX_ARTIFACT_SOURCE']=str(formal_dt/'clean/qwen35/qwen35_native_prefix_artifacts.py')
 if @ROOT_TAPE_FA3@:
  test_env['DT_OFFICIAL_FA_TEST_SOURCE']=str(pathlib.Path('@ROOT@')/'receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py')
 if @ROOT_TAPE_HOT@:
@@ -399,6 +479,8 @@ PY
         .replace('@ROOT_TAPE_FA3@',str(args.root_tape_fa3))
         .replace('@ROOT_TAPE_HOT@',str(args.root_tape_hot))
         .replace('@LOCAL_PREFIX_BRANCH@',str(args.local_prefix_branch))
+        .replace('@CURRENT_FORMAL_OWNER@',str(args.current_formal_owner))
+        .replace('@CHECKPOINT@',repr(args.checkpoint)).replace('@NATIVE_BACKWARD@',str(args.native_backward))
         .replace('@BRANCH_REFERENCE_SHA@',repr(hashlib.sha256(branch_reference).hexdigest()) if branch_reference is not None else 'None')
         .replace('@BRANCH_COMMIT@',repr(branch_commit)).replace('@BRANCH_BASELINE_COMMIT@',repr(branch_baseline_commit))
         .replace('@OLD_METHOD_AST@',repr(old_method_ast)).replace('@NEW_METHOD_AST@',repr(new_method_ast))
