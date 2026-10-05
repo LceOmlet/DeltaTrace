@@ -222,16 +222,16 @@
       "actual_trainer_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
       "actual_trainer_lines": [
         [
-          241,
-          241
+          227,
+          242
         ],
         [
-          1135,
+          1133,
           1135
         ],
         [
           1158,
-          1163
+          1164
         ]
       ],
       "statement": "The actual trainer compute_response_mask helper prefers loss_mask. Its old-policy entropy metric uses that action mask. metric_utils length/advantage-summary helper still uses attention tail, so the two masks must not be conflated."
@@ -276,7 +276,12 @@
         ]
       ],
       "fields": "Writes input/output/score/step. Additional fields require reward_extra_infos_dict arrays of length n; arbitrary batch metadata is not exported.",
-      "decoding": "batch_decode(responses, skip_special_tokens=True); score=token_level_scores.sum(-1). Flattened text cannot reconstruct original IDs/masks/truncation flags."
+      "decoding": "batch_decode(responses, skip_special_tokens=True); score=token_level_scores.sum(-1). Flattened text cannot reconstruct original IDs/masks/truncation flags.",
+      "actual_update_order_lines": [
+        1282,
+        1300
+      ],
+      "update_order": "actor.update_policy occurs before JSONL serialization, but the serialized responses were generated before that iteration update. Thus rollout40 is not a new rollout from updated40; it follows preceding update39."
     },
     "native_reward_extras": {
       "episode_reward_source": {
@@ -1364,5 +1369,19 @@
     "kind": "Suggested evidence only; no new test or launch requirement.",
     "observation": "On the next already-authorized original native rollout/update, retain the owner-emitted per-turn response IDs/source spans and original official step_output structure alongside the same task/trajectory/turn IDs and native score; retain owner errors/stop data as available, marking unavailable validity/finish fields missing. This distinguishes task outcome from native execution/format failures without a replacement parser. The existing flattened old dumps cannot supply it.",
     "if_update_causality_is_examined": "The corresponding original batch advantages/loss_mask and old/new logprob arrays would tie changed outcomes to the actual PPO update; no full historical arrays are available here, and the earlier selected-extrema diagnostics are not their substitute."
+  },
+  "official_exception_messages_in_driver_log": {
+    "source": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-exception-message-audit.json",
+      "sha256": "5e885cdd4f6f200a46d55345aa285af426693bf611ed1bb480393d3e39664a3a",
+      "bytes": 524
+    },
+    "original_log_sha256": "54f4aef6d71bc864fca7f7e4e339e0ec55cb6b146e064f38370da6764185d933",
+    "searched_messages": [
+      "Rollou step Error:",
+      "Reset Timeout:"
+    ],
+    "matched_printed_records": 0,
+    "limit": "Only these exact official exception strings are absent from the driver log. Ray deduplication or unforwarded owner output prevents concluding all environment/transport errors were absent."
   }
 }
