@@ -1,0 +1,67 @@
+{
+  "scope": "Supplemental capture of pinned owner helper bytes for read-only saved-logits head-seed analysis; no import/model/test/GPU/runtime or production modification.",
+  "capture_method": "git show COMMIT:repository_path stdout bytes written directly, without decoding or newline translation",
+  "commit": "c9cd147f2889041375af0e526c6f8aba9e2a4bc6",
+  "sources": [
+    {
+      "commit": "c9cd147f2889041375af0e526c6f8aba9e2a4bc6",
+      "repository_path": "deltatrace/clean/qwen35/compiled_logprob_seed.py",
+      "local_path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/native-layout-20261006/v1/owner-contract/compiled_logprob_seed.py",
+      "sha256": "757edb728aa57e2e802ab83dc59297ec32bbbb4eb9b2ecae6ca42fea5ed1a651",
+      "bytes": 824
+    },
+    {
+      "commit": "c9cd147f2889041375af0e526c6f8aba9e2a4bc6",
+      "repository_path": "deltatrace/clean/qwen35/compiled_finite_rules.py",
+      "local_path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/native-layout-20261006/v1/owner-contract/compiled_finite_rules.py",
+      "sha256": "e1cc970f15e23a58c2001173220a9826cb3257464a163c1fd722c705e2a2c144",
+      "bytes": 1778
+    },
+    {
+      "commit": "c9cd147f2889041375af0e526c6f8aba9e2a4bc6",
+      "repository_path": "deltatrace/clean/qwen35/signed_secant_rules.py",
+      "local_path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/native-layout-20261006/v1/owner-contract/signed_secant_rules.py",
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d",
+      "bytes": 3063
+    }
+  ],
+  "existing_source_contract": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/native-layout-20261006/v1/owner-contract/source-contract.json",
+    "sha256": "fb86f72c9885319cc6d47f118f94b81bb0a52235bde4b5389087df41842303e5",
+    "modified": false
+  },
+  "owner_interface": {
+    "module": "compiled_logprob_seed",
+    "function": "seed_with_checks(z0,z1,target)",
+    "function_lines": [
+      10,
+      15
+    ],
+    "dependency": "compiled_finite_rules.logarithmic_mean_with_checks",
+    "dependency_lines": [
+      11,
+      22
+    ],
+    "module_dependency": "signed_secant_rules.rmsnorm_secant_pullback is imported by compiled_finite_rules; not executed by the seed call",
+    "categorical_call_source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/native-layout-20261006/v1/owner-contract/qwen35_answer_finite.py",
+      "sha256": "9819cf34333d2ce67224cd49d404d21192040311001429b5c97982d76c727526",
+      "seed_call_line": 94,
+      "validity_check_line": 152,
+      "outcome_target_mapping_line": 137
+    },
+    "saved_data_outcome_token_ids": [
+      15,
+      16
+    ],
+    "saved_data_target_token_id": 16,
+    "saved_data_target_class_index": 1,
+    "precision": "Saved categorical logits are FP32; analysis calls the original helper on FP32 CPU tensors. CPU arithmetic is not GPU operator tolerance acceptance.",
+    "compilation": "Original module registers torch.compile wrappers during import; direct seed_with_checks calls its original uncompiled dependency, not compiled_seed."
+  },
+  "limits": [
+    "Pinned Git helper identities are recorded here; this supplement is not a new active remote import observation.",
+    "No head-seed or equal-endpoint computation was run by this source capture.",
+    "No new tolerance, correction, normalization or training alternative is introduced."
+  ]
+}

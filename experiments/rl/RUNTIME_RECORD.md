@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 输出层拆分：反号来源在head之前
+
+仅重用已保存的matched v1原FP32类别logits，正式c9 seed_with_checks及依赖三模块SHA
+与原Git对象/实际import一致。CPU PID1147956，2.722秒、maxRSS655851520字节，CUDA/
+distributed未初始化，模型/decoder有限传播/backward/optimizer/scheduler均0。
+首个CPU导入因未继承MetaX环境变量失败；已复用原记录PID1856052/birth1791197944.7的
+完整环境后完成，失败日志另存，没有重装、清缓存或更改训练环境。
+
+52 transport观察先逐项计算再显式聚合42唯一probe（21成功首次response）：joint
+categorical seed乘实际single Δlogits与原生单删42/42同号，相关0.985639；最终DT仍21/42
+反号。head条件失配MAE0.004105/RMS0.007005，余下传播/分解/投影/存储残差
+MAE0.015630/RMS0.023300；交叉项保留，不能按MSE做因果百分比分账。CPU原log-prob
+与已存原生差最大1.043e-7，仅描述，未设官方之外的容差或纠偏。
+
+新增证据排除仅靠换输出seed修反号的方向；未部署equal_endpoint或缩放信用，仍须在
+原pre-head边界定位残差。独立review逐值复核原raw/map及52 dot/42聚合，来源在
+results_textcraft_learning_degradation_20261006.json。PPO/core/optimizer、Q/V/A、
+PLAN、LoRA8/16和B4不变，TextCraft正式保持停止，未称已修好质量。
+
+
 ## 2026-10-06 同原生布局核对：token估计差异仍显著
 
 隔离诊断PID930901/birth1791228196.09已完成退出；GPU4/5、checkpoint25、原7个B4/rank
