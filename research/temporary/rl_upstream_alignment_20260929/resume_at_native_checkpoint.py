@@ -3,6 +3,8 @@
 Waits only for the recorded job's native completion marker. It stops that
 identified process tree, then calls the existing submission helper. VERL owns
 checkpoint creation, dataloader state, loading and all training behavior.
+--stop-only preserves the latest completed native checkpoint and does not
+submit another job. It cannot be combined with --reuse-loaded-checkpoint.
 """
 import argparse
 import hashlib
@@ -18,11 +20,17 @@ def main():
     parser.add_argument('--task',choices=['AppWorld','TextCraft'],required=True)
     parser.add_argument('--minimum-step',type=int,required=True)
     parser.add_argument('--prepared',required=True)
-    parser.add_argument('--run-dir',required=True)
+    parser.add_argument('--run-dir',help='Required for the default stop-and-resume mode.')
     parser.add_argument('--receipt',required=True)
+    parser.add_argument('--stop-only',action='store_true',
+                        help='Stop only the current prepared task after its latest native checkpoint; do not resubmit.')
     parser.add_argument('--reuse-loaded-checkpoint',action='store_true',
                         help='Use the originally loaded complete checkpoint only while its next training rollout is still unfinished.')
     args=parser.parse_args()
+    if args.stop_only and args.reuse_loaded_checkpoint:
+        parser.error('--stop-only cannot use --reuse-loaded-checkpoint; preserve the latest native checkpoint instead')
+    if not args.stop_only and args.run_dir is None:
+        parser.error('--run-dir is required unless --stop-only is selected')
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
     script_sha=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     remote(r'''set -e
@@ -34,21 +42,39 @@ root=Path('@ROOT@');read=lambda p:json.loads(p.read_text())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 task=@TASK@;prepared_path=Path(@PREPARED@);prepared=read(prepared_path)
 active=read(root/'active-training.json');old=next(j for j in active['jobs'] if j['task']==task)
-assert old['pid']==prepared['prior_driver_pid']
-assert old['entry']==prepared['prior_entry'] and old['verl_root']==prepared['prior_verl_root']
-assert old['checkpoints']==prepared['future_checkpoint_root']
+if @STOP_ONLY@:
+    assert old['entry']==prepared['entry'] and old['verl_root']==prepared['verl_root']
+    assert old['dt_root']==prepared['dt_root']
+else:
+    assert old['pid']==prepared['prior_driver_pid']
+    assert old['entry']==prepared['prior_entry'] and old['verl_root']==prepared['prior_verl_root']
+    assert old['checkpoints']==prepared['future_checkpoint_root']
 parent=psutil.Process(old['pid'])
 assert abs(parent.create_time()-old['observed_process_created_unix'])<.02
 expected_owner=prepared.get('owner_sha256',prepared.get('owner_head_sha256'))
 for name,h in prepared['entry_sha256'].items():assert sha(Path(prepared['entry'])/name)==h,name
 for name,h in expected_owner.items():assert sha(Path(prepared['verl_root'])/name)==h,name
 for name,h in prepared['dt_source_sha256'].items():assert sha(Path(prepared['dt_root'])/name)==h,name
+current_source=None
+if @STOP_ONLY@:
+    source_path=Path(old['source_receipt'])
+    source=read(source_path)
+    assert source['dt_root']==old['dt_root'] and source['verl_root']==old['verl_root']
+    assert source['entry_sha256']==prepared['entry_sha256']
+    for name,h in source['verl_sha256'].items():assert sha(Path(old['verl_root'])/name)==h,name
+    for name,h in source.get('owner_head_sha256',{}).items():
+        assert expected_owner[name]==h and sha(Path(old['verl_root'])/name)==h,name
+    current_source=dict(path=str(source_path),sha256=sha(source_path),
+        entry=old['entry'],verl_root=old['verl_root'],dt_root=old['dt_root'],
+        scope='Current job startup source receipt and frozen file paths/hashes; not a new live module introspection.')
 receipt=Path(@RECEIPT@);receipt.mkdir(parents=True,exist_ok=True)
 assert not (receipt/'completed-stop.json').exists(), 'Inspect the completed transition instead of repeating it'
 identity=dict(task=task,prior_driver_pid=parent.pid,prior_created_unix=parent.create_time(),
     helper_repository_commit=@REVISION@,helper_source_sha256=@SCRIPT_SHA@,
     prepared_receipt=str(prepared_path),prepared_receipt_sha256=sha(prepared_path),
     minimum_checkpoint_step=@STEP@,started_unix=time.time())
+if @STOP_ONLY@:
+    identity.update(stop_only=True,current_source=current_source)
 (receipt/'waiting.json').write_text(json.dumps(dict(identity,status='waiting_original_checkpoint',
     observer_pid=psutil.Process().pid,observer_created_unix=psutil.Process().create_time()),indent=2)+'\n')
 phase=None
@@ -128,11 +154,14 @@ PY
        .replace('@PREPARED@',repr(args.prepared)).replace('@RECEIPT@',repr(args.receipt))
        .replace('@REVISION@',repr(revision)).replace('@SCRIPT_SHA@',repr(script_sha))
        .replace('@REUSE_LOADED@',repr(args.reuse_loaded_checkpoint))
+       .replace('@STOP_ONLY@',repr(args.stop_only))
        .replace('@STEP@',str(args.minimum_step)))
     target=AUDIT/'checkpoint-boundary-20261002';target.mkdir(exist_ok=True)
     stop_file=target/(args.task.lower()+'-'+Path(args.receipt).name+'-completed-stop.json')
     assert not stop_file.exists(), 'Preserve each original transition receipt'
     subprocess.run(SCP+[f'{SSH[-1]}:{args.receipt}/completed-stop.json',str(stop_file)],check=True)
+    if args.stop_only:
+        return
     import json
     stopped=json.loads(stop_file.read_text())
     submit_args=[sys.executable,str(AUDIT/'submit_prepared_appworld_resume.py'),
