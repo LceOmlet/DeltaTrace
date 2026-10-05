@@ -1,5 +1,21 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 读出目标与官方 carrier：真实 ID 只读核查
+
+64条真实首轮prompt/response/query由原tokenizer仅CPU解码；具体Goal、标签0/1语义、30步/512输出/temp1预算均保留，186个正式输入保留对应首轮Goal原ID前缀。无模型、前向、额外采样、backward、更新或目标改写。decode PID2547941，CUDA/distributed均false，maxRSS约1.04 GB；回执记录精确资源与SHA。
+
+已记录连续两个im_end、部分先前think未闭和查询自身的原控制序列；未据此定义新的格式门槛或宣称退化原因。实际AgentGym schema与冻结原件字节相同，原training carrier及Qwen generation模板的system/reasoning/think行为差异由原源码负责。采样prompt IDs未保存，不能推定动态逐行差值。没有改官方schema、历史窗口或查询。源清单与审计绑定到既有degradation结果。
+
+
+## 2026-10-06 相同完整端点的 FLA 观察：区分算术与单删除估计
+
+隔离PID2564897/birth1791243341.36已完成，GPU4/5，203.829秒。原7 B4/rank、checkpoint25、LoRA8/16与冻结runner/producer保持不变；14 full finite、28 single root，actor backward/optimizer/scheduler均0。读取既有原生FP16 FLA输出与其原BF16 norm边界，不增加模型/FLA调用；原finite返回对象和公式未改。
+
+每层26运输样本按traj_uid/source_step合并为21 UID，四个head组按原输入逐项合并。L6/L8同端点F−Y_public平均绝对差0.0000606994/0.0000905424，均0/21反号；公共FP16输出到BF16 norm边界同do差0.000278545/0.000310393。208个选定incoming h配对差均0；28 public/28 norm/112原finite head返回齐全，组结束保留输出均0，观察器峰值CPU输出63,602,688字节。
+
+原full系数投影single的42 probes仍是另一测量人口，不能混入21 UID分母。目前未支持将较大条件估计偏差归因于同端点算术错误；本观察未执行新的官方容差门槛，也不代表整网或单token信用准确。已绑定原导入SHA、配置、PID/birth、raw回执及独立审计到results_textcraft_learning_degradation_20261006.json。生产未修复，TextCraft保持停止，无信用倍率、纠偏或重启。
+
+
 ## 2026-10-06 原 B4 任务信号：真实分母与既有熵项
 
 仅CPU复用原native-optimizer-minibatch.pkl与原DataProto.load/chunk、原core agg_loss/compute_policy_loss；global64→rank32→连续B4→/8，不重建采样或logits。PID2450806/birth1791242284.97，14.892秒，maxRSS916328448字节；CUDA/distributed未初始化，模型/forward/DT/backward/更新均0。
