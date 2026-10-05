@@ -1,5 +1,36 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 TextCraft事件读出与随机token删除：实测质量问题
+
+固定checkpoint25与同一原生64轨迹完成只读观察：GPU4/5，v2 PID675223、
+birth1791225807.69，约119.7秒完成并退出。原VERL actor加载、原DT
+read_outcomes共66次前向；有限DT、backward、optimizer/scheduler均0次。
+LoRA8/16、每卡B4、32k上限未变，实际首次response读出764–1371token。
+基座BF16、原GDN FP16执行开关、类别log-prob FP32；不新增数值容差。
+
+64条（8个作者prompt组）实际成功21条=32.81%，原事件读出成功概率均值
+71.79%；成功/失败组均值74.24%/70.59%，与结果相关0.0986、Brier0.3864。
+支持本批实际读出偏高、区分弱；不以此否定精确token价值的既定假设。
+每条首次response随机两位置；21个G1共42个依赖token样本，保存DT平均|d|
+0.001816，原模型单EOS删除0.019175（10.56倍），相关0.1222，18/42反号，
+这些位置占原模型单删绝对效应质量38.90%。没有把G0缺失d补成0。
+新旧native前向布局亦有差异：factual log-prob MAE0.00853、joint root
+MAE0.00843；故不能把单删差异全部归因于DT分解或称为世界信用错误。
+两个同输入重复差异4.29e-6/7.87e-6仅作描述，不成为整网官方容差。
+
+原192请求精确映射186独立response；无token/reward/scatter错位证据。
+完整32253个G1 action tokens的length与mean|A|相关仅-0.176，不支持简单
+按1/L摊薄作为主要解释。结合上节完整minibatch任务梯度弱、原熵项占优，
+当前证据聚焦实际事件概率估计和逐token删除估计；不再凭少数极值归罪，
+不任意修改熵、信用尺度、归一化或Q/V/A来掩盖。PPO核心和优化器未改。
+
+v1观察器在Ray重建类的源码身份记录处失败，尚无读出；v2改用原Python方法
+身份并先在CPU核验序列化。CPU映射多加sampling字段/错误切mask也只是诊断
+重建错误，失败回执保留，未冒充原训练bug。实际源/PID/哈希/范围见
+[原读出回执](results_textcraft_native_readout_20261006.json)与
+[完整response描述](results_textcraft_readout_signal_scale_20261006.json)。
+TextCraft正式保持停止、AppWorld原作业未改；没有声称质量已经修复。
+
 ## 2026-10-06 TextCraft完整minibatch：原熵项相对任务梯度主导
 
 checkpoint25实际采集8个原prompt×作者n8=64轨迹，原global64→local32→8个B4，

@@ -1,0 +1,118 @@
+{
+  "status": "completed_independent_cpu_descriptive_review",
+  "scope": "Previously completed read-only independent raw-rank recomputation; this receipt performs no model, GPU, training, numerical test or tolerance assertion.",
+  "sources": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/readout-quality-20261006/v2/rank0-readout.json",
+      "sha256": "83e29b133c85513491b375fded2c2e3309d26379cdb92a2821b251aead1bda8b",
+      "bytes": 77991
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/readout-quality-20261006/v2/rank1-readout.json",
+      "sha256": "380a55a04f954efb32ecbabc3b973a4d8e0420245d80234f51134de9e2a55251",
+      "bytes": 77787
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/readout-quality-20261006/v2/native-readout-analysis.json",
+      "sha256": "a166188c77b29588e20a978141da57cc96b8d5558562949bfd17fc0e5e384544",
+      "bytes": 52144
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/readout-quality-20261006/v2/completed.json",
+      "sha256": "cc55e662511ad58446cb069c2e3c5339838e90d72b66cac7367a872f93e1b4d3",
+      "bytes": 733
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/analyze_textcraft_native_readout.py",
+      "sha256": "f7d4bce7d70041a047182c5fb2bb11efecac696bccfffc9e4edf621237720fef",
+      "bytes": 10188
+    }
+  ],
+  "source_mapping_review": {
+    "ranks": [
+      0,
+      1
+    ],
+    "cases_per_rank": [
+      32,
+      32
+    ],
+    "unique_trajectory_uids": 64,
+    "source_step": 0,
+    "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25",
+    "checkpoint_equal_between_ranks": true,
+    "input_sha256": "3ca15c0ac56b0d73fb3b5948330773d95ffb1990e6fe0edca53fbf5b67575d41",
+    "input_sha_equal_between_ranks": true,
+    "selection_and_owner_sources_equal_between_ranks": true,
+    "outcome_token_ids": [
+      15,
+      16
+    ],
+    "all_return_to_class_mappings_match": true,
+    "variant_order": [
+      "factual",
+      "full_response_eos",
+      "single_eos_0",
+      "single_eos_1"
+    ],
+    "all_variant_orders_match": true,
+    "native_read_outcomes_log_probability_dtypes": [
+      "torch.float32"
+    ],
+    "model_dtype": "torch.bfloat16",
+    "native_fla_fp16_context_enabled": true,
+    "dtype_scope": "The saved values dtype is categorical read_outcomes log-probability dtype, not an assertion about every intermediate operator dtype.",
+    "max_categorical_probability_sum_residual": 9.012336510405561e-08
+  },
+  "verified_raw_rank_recomputations": {
+    "successes": 21,
+    "failures": 43,
+    "success_fraction": 0.328125,
+    "factual_p_success_mean": 0.7178606180986897,
+    "observed_success_factual_p_success_mean": 0.7423679405149884,
+    "observed_failure_factual_p_success_mean": 0.7058919257558461,
+    "factual_forecast_brier": 0.3864135390924239,
+    "batch_fitted_constant_brier": 0.220458984375,
+    "observed_outcome_factual_probability_pearson": 0.09864463878647009,
+    "success_token_probe_count": 42,
+    "success_trajectory_probe_count": 21,
+    "saved_dt_d_abs_mean": 0.0018161751040727007,
+    "native_single_delete_d_abs_mean": 0.01917469022529466,
+    "native_over_saved_dt_abs_mean_ratio": 10.557732116411119,
+    "paired_d_mean_absolute_difference": 0.019001600753949428,
+    "paired_d_pearson": 0.12217577890274131,
+    "strict_opposite_sign_count": 18,
+    "strict_opposite_sign_denominator": 42,
+    "same_input_repeat_count": 2,
+    "same_input_repeat_max_absolute_log_probability_differences": [
+      7.867813110351562e-06,
+      4.291534423828125e-06
+    ]
+  },
+  "matched_ids_cross_layout_caution": {
+    "cases": 21,
+    "comparison": "Original selected literal IDs: new native-reader factual/full-EOS/single-delete B4 variant layout versus previous paired attribute batches.",
+    "factual_log_probability_mean_absolute_difference": 0.00853263231970015,
+    "full_eos_log_probability_mean_absolute_difference": 0.0052130452933765595,
+    "root_effect_mean_absolute_difference": 0.008432835340499878,
+    "conclusion": "These pre-existing endpoint differences are non-negligible relative to the sampled single-delete effects. The paired token discrepancy alone does not isolate all error or attenuation to the DT decomposition."
+  },
+  "report_wording_review": {
+    "categorical_log_probability_dtype": "Complete dtype set is reported; no silent set.pop selection.",
+    "case_timing": "64 case timers cover 66 native forwards because the first case on each rank includes one same-input repetition; not 64 individual forward durations.",
+    "pooled_target_log_ratio": "Observed-class mixture: success-class target for successful rows and failure-class target for failed rows.",
+    "wording_fixes_completed_by_parent": true,
+    "scalar_numerical_outputs_unchanged": true
+  },
+  "limitations": [
+    "One checkpoint and eight original prompt groups; 64 trajectories are not 64 independent tasks.",
+    "Two token positions per successful trajectory are dependent samples, selected uniformly with the fixed seed rather than by credit magnitude.",
+    "Native single deletion is the same model counterfactual, not a true-world environment oracle.",
+    "Practical readout calibration is separate from the accepted exact-token-value premise.",
+    "G0 fixed-formula advantages remain zero; this probe did not measure failed-trajectory DT d.",
+    "Saved d was diagnostically inverted from saved FP32 A rather than measured anew by a finite trace.",
+    "Batch-fitted constant Brier is descriptive and is not an out-of-sample predictive baseline.",
+    "Same-input repetition and cross-layout differences are descriptive observations, not new whole-network tolerances or official FA/FLA numerical acceptance.",
+    "No production, Q/V/A formula, optimizer, entropy setting or training configuration changed."
+  ]
+}

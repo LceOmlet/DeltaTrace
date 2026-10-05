@@ -1,0 +1,71 @@
+{
+  "scope": "Corrected only this CPU diagnostic query reconstruction; original training and native64 diagnostic sampling/query unchanged",
+  "original_stage": {
+    "file": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\stage_textcraft_native_minibatch.py",
+      "sha256": "01fc00c630939f3f784a186507cca9626bb27b91fb9c852c07d431187b84b472",
+      "bytes": 8920
+    },
+    "lines": [
+      105,
+      106
+    ],
+    "binding": "DT_SAMPLING_JSON=dict(temperature=original launch rollout.temperature,max_tokens=original launch data.max_response_length)"
+  },
+  "literal_query_inspection": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\native-minibatch-v4\\native64-query-literal-inspection.stdout.txt",
+    "sha256": "46668a9d8ba6c9db8aedfd1e365e9d10da7475394fcd9b03d7a02f465ab5a541",
+    "bytes": 1583
+  },
+  "literal_query": {
+    "original_minimum_log_line": 750,
+    "query_literal_sha256": "42d2e92e42d54fa0d4fc0b604d3cde5e9d083b74a140441127beea978beaf03d",
+    "context": 776,
+    "query_tokens": 211,
+    "target_id": 16
+  },
+  "observed_failed_reconstruction": {
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\native-minibatch-v4\\native-minibatch-readout-mapping.json.attempt-v2",
+      "sha256": "be24c7b8be7f9c1a6a2695b0a3fd87baa71002bdc6b2e293c149833f72e9b4aa",
+      "bytes": 10424
+    },
+    "status": "mapping_failed_no_model_called",
+    "error": "rank0 request0 fieldcontext_tokens differs: 776 / 792",
+    "sampler_fields": {
+      "temperature": 1.0,
+      "top_k": -1,
+      "top_p": 1,
+      "max_tokens": 512,
+      "ignore_eos": false
+    },
+    "scope": "These extra fields were added by mapper, not by original training/DT query"
+  },
+  "corrected_mapper": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\map_textcraft_native64_readout.py",
+    "sha256": "aa5be01fd020d7f1c52d6321aaa7b8483dfe76f5c69b9203d221aaff5715fd9a",
+    "bytes": 25572
+  },
+  "actual_sampling": {
+    "temperature": 1.0,
+    "max_tokens": 512
+  },
+  "completed_mapping": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\native-minibatch-v4\\native-minibatch-readout-mapping.json",
+    "sha256": "38e83aac88dc000b2b1b6c03ad3ca34a0bdd39de1449081580e3325996dcc344",
+    "bytes": 99102
+  },
+  "reductions": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\native-minibatch-v4\\native64-mapping-reductions.json",
+    "sha256": "f733a42c15130275ed179ed5408a89afab5c538a8e50d1de32a775284f9e7b2f",
+    "bytes": 864
+  },
+  "preserved_attempts": [
+    "Remote attempt-v1 import error without owner artifact/model load",
+    "Remote and local attempt-v2 mismatched CPU query reconstruction; no model calls"
+  ],
+  "training_parameters_changed": false,
+  "model_calls": 0,
+  "optimizer_steps": 0,
+  "numerical_tolerance_or_correction_added": false
+}
