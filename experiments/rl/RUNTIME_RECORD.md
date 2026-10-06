@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 官方白化后的原生真实更新：已准备，未启动
+
+复用已验收的白化VERL候选和原checkpoint25/真实64行，新增薄观测入口
+`verify_textcraft_whitened_update.py`（SHA bf8e2e853d2f…），其stager只组合既有
+官方白化stager，不重写初始化、损失、优化器、保存或恢复。CPU实际导入与
+save/load/logprob签名检查已通过，整批白化和非advantages字段对照保留。
+计划仅一次原VERL真实optimizer/scheduler更新、原logprob、原save/load、再次
+原logprob；原74b66观察器代理原step并保留返回，未用no-op。原LoRA8/16、
+每卡B4、全局64和所有损失配置保持；不重算DT，不重新采样。
+
+输出为`receipts/textcraft-whitened-update-20261006-v1`。手动原save使用默认
+global_step=0，隔离`updated-actor`不是正式step26完成标记；原每轮含4次
+optimizer更新，不能将本次1次更新冒充完整正式迭代。原save_freq25不改。
+Actor-only只能读logprob，后续vLLM生成留给原正式actor_rollout角色。
+
+本次只读远端1791286432.4038582：三个旧训练PID及上一轮诊断PID均不存在，
+八卡物理均858MiB且无GPU进程；原TextCraft服务4049454/birth1790706407.49
+和36005端口仍在。磁盘可用147121504256字节，checkpoint25完整文件仍在。
+不从旧active清单的observed_process_alive推当前存活，不重启或重装服务。
+本节为prepared/CPU verified，真实更新及保存恢复尚未完成，正式未恢复。
+
 ## 2026-10-06 用户批准的官方 DT 优势白化：隔离对照
 
 本轮用户明确要求实施并测试官方白化。唯一PLAN只增加actor优势预处理，raw

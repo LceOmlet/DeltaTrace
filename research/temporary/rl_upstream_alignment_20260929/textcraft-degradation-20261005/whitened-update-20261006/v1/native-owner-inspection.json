@@ -1,0 +1,405 @@
+{
+  "scope": "Same native64/checkpoint25 and one full-batch official whitening; actual update/save/load/logprob API inspection only, no model.",
+  "native_reader_inputs_sha256": "45ae51e3e18f206e238a1f1e934eaf9a4074c9361dabdab83bb3e00a2b4b084d",
+  "worker_constructor": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+    "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+  },
+  "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25/actor",
+  "actor_config": {
+    "hybrid_engine": true,
+    "model": {
+      "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+      "use_shm": false,
+      "external_lib": null,
+      "override_config": {},
+      "enable_gradient_checkpointing": true,
+      "enable_activation_offload": true,
+      "use_remove_padding": false,
+      "lora_rank": 8,
+      "lora_alpha": 16,
+      "target_modules": "all-linear",
+      "use_liger": false,
+      "use_fused_kernels": true,
+      "trust_remote_code": true,
+      "fused_kernel_options": {
+        "impl_backend": "torch"
+      }
+    },
+    "actor": {
+      "strategy": "fsdp2",
+      "ppo_mini_batch_size": 64,
+      "ppo_micro_batch_size": null,
+      "ppo_micro_batch_size_per_gpu": 4,
+      "use_dynamic_bsz": false,
+      "ppo_max_token_len_per_gpu": 32768,
+      "grad_clip": 1.0,
+      "clip_ratio": 0.2,
+      "clip_ratio_low": 0.2,
+      "clip_ratio_high": 0.2,
+      "clip_ratio_c": 3.0,
+      "loss_agg_mode": "token-mean",
+      "entropy_coeff": 0.001,
+      "use_invalid_action_penalty": false,
+      "invalid_action_penalty_coef": 0.1,
+      "use_kl_loss": true,
+      "use_torch_compile": true,
+      "kl_loss_coef": 0.001,
+      "kl_loss_type": "low_var_kl",
+      "ppo_epochs": 1,
+      "shuffle": false,
+      "ulysses_sequence_parallel_size": 1,
+      "policy_loss": {
+        "loss_mode": "vanilla"
+      },
+      "checkpoint": {
+        "contents": [
+          "model",
+          "optimizer",
+          "extra"
+        ]
+      },
+      "optim": {
+        "lr": 1e-06,
+        "lr_warmup_steps": -1,
+        "lr_warmup_steps_ratio": 0.0,
+        "min_lr_ratio": 0.0,
+        "num_cycles": 0.5,
+        "warmup_style": "constant",
+        "total_training_steps": 330,
+        "weight_decay": 0.01
+      },
+      "fsdp_config": {
+        "wrap_policy": {
+          "min_num_params": 0
+        },
+        "param_offload": true,
+        "optimizer_offload": true,
+        "offload_policy": true,
+        "reshard_after_forward": true,
+        "fsdp_size": -1,
+        "model_dtype": "bfloat16"
+      }
+    },
+    "ref": {
+      "strategy": "fsdp",
+      "fsdp_config": {
+        "param_offload": false,
+        "reshard_after_forward": true,
+        "wrap_policy": {
+          "min_num_params": 0
+        }
+      },
+      "use_torch_compile": true,
+      "log_prob_micro_batch_size": null,
+      "log_prob_micro_batch_size_per_gpu": 4,
+      "log_prob_use_dynamic_bsz": false,
+      "log_prob_max_token_len_per_gpu": 32768,
+      "ulysses_sequence_parallel_size": 1
+    },
+    "rollout": {
+      "name": "vllm",
+      "mode": "sync",
+      "chat_scheduler": null,
+      "temperature": 1.0,
+      "top_k": -1,
+      "top_p": 1,
+      "use_fire_sampling": false,
+      "prompt_length": 32256,
+      "response_length": 512,
+      "dtype": "bfloat16",
+      "gpu_memory_utilization": 0.75,
+      "ignore_eos": false,
+      "enforce_eager": true,
+      "free_cache_engine": true,
+      "load_format": "safetensors",
+      "layered_summon": false,
+      "tensor_model_parallel_size": 1,
+      "max_num_batched_tokens": 32768,
+      "max_model_len": 32768,
+      "max_num_seqs": 32,
+      "log_prob_micro_batch_size": null,
+      "log_prob_micro_batch_size_per_gpu": 4,
+      "log_prob_use_dynamic_bsz": false,
+      "log_prob_max_token_len_per_gpu": 32768,
+      "disable_log_stats": true,
+      "enable_chunked_prefill": true,
+      "do_sample": true,
+      "n": 1,
+      "engine_kwargs": {
+        "vllm": {
+          "swap_space": null,
+          "limit_mm_per_prompt": {
+            "image": 0,
+            "video": 0
+          }
+        },
+        "sglang": {
+          "attention_backend": null
+        }
+      },
+      "val_kwargs": {
+        "top_k": -1,
+        "top_p": 1,
+        "temperature": 1,
+        "n": 1,
+        "do_sample": true
+      },
+      "multi_turn": {
+        "enable": true,
+        "max_turns": null,
+        "tool_config_path": null,
+        "format": "chatml"
+      }
+    }
+  },
+  "config_source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/base-owner-inspection/effective-config.yaml",
+    "sha256": "9f663a7ddad06203edaaa59ec0237c1bdf64ac1ced88e9ce00d598f9a556b4dd"
+  },
+  "sources": {
+    "worker": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_constructor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_model_loader": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_checkpoint_loader": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_update": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_log_probs": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd"
+    },
+    "core": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py",
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+    },
+    "observer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/observe_native_adam_update.py",
+      "sha256": "74b66bf8bb703c66ae17e2cbb8506a18fe7685b3b073fd94b8ca07a6e43be36c"
+    },
+    "snapshot": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-minibatch-20261006-v4/observe_textcraft_native_batches.py",
+      "sha256": "429ca8254e54ed3ec4882027e72d74a59aba0d9069a92086943a5817102daa4d"
+    },
+    "harness": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/verify_textcraft_native_adam.py",
+      "sha256": "cdb45238843b685234f21b882f5635b22a1bdba072948354a92ab98360268901"
+    },
+    "paired_observer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-label-gradient-20261006-v2/observe_textcraft_label_gradients.py",
+      "sha256": "9ed52c51f5eac34a2b12d5425e386f4b3e5b5945f2c6b61e01b25aba837eddb7"
+    },
+    "whitening_observer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-20261006-v1/verify_textcraft_official_whitening.py",
+      "sha256": "f20d727252d66c9c023526f4f9e91108333d74edfe6f9dbb3deec254f1b4e774"
+    },
+    "real_update_observer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/observe_native_adam_update.py",
+      "sha256": "74b66bf8bb703c66ae17e2cbb8506a18fe7685b3b073fd94b8ca07a6e43be36c"
+    },
+    "new_harness": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/verify_textcraft_whitened_update.py",
+      "sha256": "bf8e2e853d2f17b47ec3661aa37655aa5c6957e83144d2065c1d2b42750abedd"
+    },
+    "native_state_observer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/verify_textcraft_whitened_update.py",
+      "sha256": "bf8e2e853d2f17b47ec3661aa37655aa5c6957e83144d2065c1d2b42750abedd"
+    },
+    "original_checkpoint_save": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    }
+  },
+  "original_native_imports": {
+    "worker": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_constructor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_model_loader": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_checkpoint_loader": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_update": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "worker_log_probs": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+    },
+    "actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd"
+    },
+    "core": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-truncated-terminal-resume-20261005-v2/verl/verl/trainer/ppo/core_algos.py",
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+    },
+    "observer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/observe_native_adam_update.py",
+      "sha256": "74b66bf8bb703c66ae17e2cbb8506a18fe7685b3b073fd94b8ca07a6e43be36c"
+    },
+    "snapshot": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-minibatch-20261006-v4/observe_textcraft_native_batches.py",
+      "sha256": "429ca8254e54ed3ec4882027e72d74a59aba0d9069a92086943a5817102daa4d"
+    },
+    "harness": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/verify_textcraft_native_adam.py",
+      "sha256": "cdb45238843b685234f21b882f5635b22a1bdba072948354a92ab98360268901"
+    }
+  },
+  "groups": [
+    "raw",
+    "white"
+  ],
+  "labels": [
+    "dt_pg",
+    "weighted_entropy",
+    "weighted_kl"
+  ],
+  "normalization": {
+    "scope": "One trainer compute_advantage call over the full saved collected native64, before rank/microbatch splitting; direct official helper parity is CPU interface verification.",
+    "trainer_source": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/ray_trainer.py",
+      "sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619"
+    },
+    "official_helper_source": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/utils/torch_functional.py",
+      "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+    },
+    "helper_call": "masked_whiten(saved dt_token_advantages, original loss_mask response tail) * same mask; default shift_mean=True",
+    "full_collected_rows": 64,
+    "trainer_compute_advantage_calls": 1,
+    "direct_official_helper_calls": 1,
+    "official_helper_exact_equal": true,
+    "normalization_mask": "loss_mask[:, -responses.shape[-1]:]",
+    "original_tensor_field_identity": {
+      "attention_mask": true,
+      "diagnostic_grpo_advantages": true,
+      "dt_q_estimates": true,
+      "dt_token_advantages": true,
+      "dt_v_estimates": true,
+      "input_ids": true,
+      "loss_mask": true,
+      "old_log_probs": true,
+      "position_ids": true,
+      "prompts": true,
+      "ref_log_prob": true,
+      "response_mask": true,
+      "responses": true,
+      "returns": true,
+      "rm_scores": true,
+      "task_rounds": true,
+      "task_scores": true,
+      "token_level_rewards": true,
+      "token_level_scores": true
+    },
+    "original_non_tensor_field_identity": {
+      "data_source": true,
+      "uid": true,
+      "traj_uid": true,
+      "episode_rewards": true,
+      "episode_lengths": true,
+      "tool_callings": true,
+      "dt_response_slices": true
+    },
+    "original_meta_info_exact": true,
+    "raw_A": {
+      "valid_tokens": 245386,
+      "dtype": "torch.float32",
+      "masked_mean": 4.638620521291159e-05,
+      "masked_variance": 6.684328582196031e-06,
+      "descriptive_FP64_sum": 11.382526265195633,
+      "descriptive_FP64_L1": 100.80149018821629,
+      "descriptive_FP64_mean_abs": 0.00041078745400396227,
+      "positive_tokens": 17606,
+      "negative_tokens": 14461,
+      "zero_tokens": 213319
+    },
+    "white_A": {
+      "valid_tokens": 245386,
+      "dtype": "torch.float32",
+      "masked_mean": 2.4873121340363014e-09,
+      "masked_variance": 0.9985062479972839,
+      "descriptive_FP64_sum": 0.000270051652478287,
+      "descriptive_FP64_L1": 42733.61332502695,
+      "descriptive_FP64_mean_abs": 0.17414853873092576,
+      "positive_tokens": 17266,
+      "negative_tokens": 228120,
+      "zero_tokens": 0
+    },
+    "raw_QVA_retained": true,
+    "observed_return_and_saved_old_ref_retained": true,
+    "model_forward_calls": 0,
+    "DT_calls": 0,
+    "backward_calls": 0,
+    "optimizer_steps": 0
+  },
+  "white_carrier": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/officially-whitened-native-minibatch.pkl",
+    "sha256": "679a576e37ceb6f9cbec5bd23d6f542c657d2e12b3ff7fc1eeec2157df378903",
+    "bytes": 61626532
+  },
+  "rows": 64,
+  "serialized_worker_method": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-20261006-v1/verify_textcraft_official_whitening.py",
+    "sha256": "f20d727252d66c9c023526f4f9e91108333d74edfe6f9dbb3deec254f1b4e774"
+  },
+  "cuda_initialized": false,
+  "distributed_initialized": false,
+  "pid": 3044308,
+  "pid_birth": 1791286934.12,
+  "rss_bytes": 1089761280,
+  "elapsed_seconds": 16.88944273069501,
+  "sampling_calls": 0,
+  "DT_calls": 0,
+  "backward_calls": 0,
+  "optimizer_steps": 0,
+  "scheduler_steps": 0,
+  "original_api_signatures": {
+    "save_checkpoint": "(self, local_path, hdfs_path=None, global_step=0, max_ckpt_to_keep=None, *, _ray_trace_ctx=None)",
+    "load_checkpoint": "(self, local_path, hdfs_path=None, del_local_after_load=False, *, _ray_trace_ctx=None)",
+    "compute_log_prob": "(self, data: verl.protocol.DataProto, *, _ray_trace_ctx=None)"
+  },
+  "serialized_worker_methods": {
+    "observe_update": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/verify_textcraft_whitened_update.py",
+      "sha256": "bf8e2e853d2f17b47ec3661aa37655aa5c6957e83144d2065c1d2b42750abedd"
+    },
+    "observe_native_state": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/verify_textcraft_whitened_update.py",
+      "sha256": "bf8e2e853d2f17b47ec3661aa37655aa5c6957e83144d2065c1d2b42750abedd"
+    }
+  },
+  "saved_checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/updated-actor",
+  "worker_role": "actor",
+  "checkpoint_scope": "Manual original save interface with its default global_step=0; one optimizer step is not a completed formal training iteration.",
+  "requested_real_optimizer_steps_per_rank": 1,
+  "requested_real_scheduler_steps_per_rank": 1,
+  "real_update_branch": "dt with officially whitened actor advantages; raw dt_* retained"
+}

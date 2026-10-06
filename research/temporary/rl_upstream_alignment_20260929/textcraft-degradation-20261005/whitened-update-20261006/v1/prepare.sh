@@ -1,0 +1,122 @@
+/opt/conda/bin/python - <<'PY'
+import ast,hashlib,json,pathlib,psutil,re,subprocess,time
+out=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1'); base=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-minibatch-20261006-v4'); mode='prepare'; name='verify_textcraft_whitened_update.py'
+assert not (out/'job.json').exists(), 'Inspect the existing job; never submit twice'
+out.mkdir(exist_ok=True)
+source=out/name; assert hashlib.sha256(source.read_bytes()).hexdigest()=='bf8e2e853d2f17b47ec3661aa37655aa5c6957e83144d2065c1d2b42750abedd'
+ast.parse(source.read_bytes())
+extra_hashes={}
+pinned={'/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/verify_textcraft_native_adam.py': 'cdb45238843b685234f21b882f5635b22a1bdba072948354a92ab98360268901', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/observe_native_adam_update.py': '74b66bf8bb703c66ae17e2cbb8506a18fe7685b3b073fd94b8ca07a6e43be36c', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/effective-config.yaml': '9f663a7ddad06203edaaa59ec0237c1bdf64ac1ced88e9ce00d598f9a556b4dd', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-minibatch-20261006-v4/observe_native_optimizer_minibatch.py': '022466b2bac94617b8e627ea027fb3afdf4490dc4bc2bcaa11944ab444e36214', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-minibatch-20261006-v4/observe_native_actor_loss_gradients.py': '94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-minibatch-20261006-v4/observe_textcraft_native_batches.py': '429ca8254e54ed3ec4882027e72d74a59aba0d9069a92086943a5817102daa4d', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-readout-20261006-v2/verify_textcraft_native_readout.py': '1fd8d8981bf82f0992db78cce43251cd2040afb4a3f039d702eb528b8d8f69cb', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-label-gradient-20261006-v2/observe_textcraft_label_gradients.py': '9ed52c51f5eac34a2b12d5425e386f4b3e5b5945f2c6b61e01b25aba837eddb7', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-20261006-v1/verify_textcraft_official_whitening.py': 'f20d727252d66c9c023526f4f9e91108333d74edfe6f9dbb3deec254f1b4e774', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/verify_textcraft_whitened_update.py': 'bf8e2e853d2f17b47ec3661aa37655aa5c6957e83144d2065c1d2b42750abedd'}
+for filename, expected in extra_hashes.items():
+ p=out/filename; assert hashlib.sha256(p.read_bytes()).hexdigest()==expected; ast.parse(p.read_bytes())
+for filename, expected in pinned.items():
+ p=pathlib.Path(filename); assert hashlib.sha256(p.read_bytes()).hexdigest()==expected,(filename,'Pinned owner/config mismatch')
+prior=json.loads((base/'job.json').read_bytes()); prepared=json.loads((base/'prepared-diagnostic.json').read_bytes())
+assert (base/'native-minibatch-completed.json').is_file()
+roots={}
+for basename,kind in [('textcraft_owner_rollout.py','entry'),('dp_actor.py','verl'),('qwen35_dense_finite_runner.py','dt')]:
+ paths=[pathlib.Path(p) for p in prepared['sources'] if pathlib.Path(p).name==basename]
+ assert len(paths)==1
+ p=paths[0]; roots[kind]=p.parent if kind=='entry' else p.parents[3] if kind=='verl' else p.parents[2]
+checks={}
+for f,h in prepared['sources'].items():
+ p=pathlib.Path(f); actual=hashlib.sha256(p.read_bytes()).hexdigest(); assert actual==h,(str(p),actual)
+ checks[f]=h
+cases=base/'native-optimizer-minibatch.pkl'
+boundary=json.loads((base/'native-minibatch-update-boundary.json').read_bytes())
+assert hashlib.sha256(cases.read_bytes()).hexdigest()==boundary['snapshot']['sha256']
+environment_file=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-20261006-v1/recovered-runtime-environment.json')
+assert hashlib.sha256(environment_file.read_bytes()).hexdigest()=='9c7a56dd8a0e49558b7378be0e8ea3784fce49a75524738819b4e5d4b3c3cea7'
+recovered=json.loads(environment_file.read_bytes())
+assert all(isinstance(k,str) and isinstance(v,str) for k,v in recovered['environment'].items())
+for filename,expected in recovered['sources'].items():
+ assert hashlib.sha256(pathlib.Path(filename).read_bytes()).hexdigest()==expected,(filename,'Recovered environment source changed')
+import os
+env=os.environ.copy(); env.update(recovered['environment'])
+for key in ('RAY_ADDRESS','MACA_VISIBLE_DEVICES','RAY_TMP','RAY_TMPDIR'):
+ env.pop(key,None)
+frozen_verl_root=roots['verl']; overlay_verl_root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl')
+overlay_trainer=overlay_verl_root/'verl/trainer/ppo/ray_trainer.py'
+assert hashlib.sha256(overlay_trainer.read_bytes()).hexdigest()=='7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619'
+overlay_sources={str(overlay_trainer):'7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619'}
+for filename,expected in checks.items():
+ p=pathlib.Path(filename)
+ if p.is_relative_to(frozen_verl_root):
+  relative=p.relative_to(frozen_verl_root)
+  if relative==pathlib.Path('verl/trainer/ppo/ray_trainer.py'):
+   continue
+  actual=overlay_verl_root/relative
+  assert hashlib.sha256(actual.read_bytes()).hexdigest()==expected,(str(actual),'Frozen VERL non-trainer source changed')
+  overlay_sources[str(actual)]=expected
+roots['verl']=overlay_verl_root
+tail=env['PYTHONPATH']
+root=base.parents[1]
+tail=tail.replace(str(root/'candidates/appworld-eval-client-routing-resume-20261005-v1/entry'),str(roots['entry']))
+tail=tail.replace(str(root/'candidates/appworld-native-prefix-resume-20261005-v2/verl'),str(roots['verl']))
+tail=tail.replace(str(root/'candidates/appworld-native-prefix-resume-20261005-v2/deltatrace'),str(roots['dt']))
+tail=tail.replace(str(frozen_verl_root),str(overlay_verl_root))
+env.update(PYTHONPATH=str(out)+':/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-20261006-v1:'+str(overlay_verl_root)+':/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-label-gradient-20261006-v2:'+str(base)+':/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1:'+str(base.parent/'textcraft-native-readout-20261006-v2')+':'+tail,VERL_ROOT=str(roots['verl']),DT_ROOT=str(roots['dt']),
+ DT_TASK='TextCraft',DT_MAX_STEPS='30',DT_MAX_LENGTH='32768',
+ DT_TEXTCRAFT_READOUT_ROOT=str(out),DT_TEXTCRAFT_READOUT_BASE=str(base),
+ DT_TEXTCRAFT_READOUT_CASES=str(cases),DT_TEXTCRAFT_CHECKPOINT=prior['checkpoint'],CUDA_VISIBLE_DEVICES='4,5')
+env['DT_TEXTCRAFT_ADAM_RECIPE_ROOT']='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1'
+env['DT_TEXTCRAFT_WHITENING_ROOT']=str(out)
+env['DT_TEXTCRAFT_WHITENING_TRAINER_SHA']='7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619'
+launch=json.loads((base/'launch.json').read_bytes())
+env['DT_SAMPLING_JSON']=json.dumps(dict(temperature=launch['options']['actor_rollout_ref.rollout.temperature'],
+ max_tokens=launch['options']['data.max_response_length']))
+for key in ['DT_TEXTCRAFT_GRADIENT_DIAGNOSTIC','DT_TEXTCRAFT_MATCHED_DIAGNOSTIC','DT_TEXTCRAFT_PROBE_ROOT',
+            'DT_TEXTCRAFT_MINIBATCH_ROOT','DT_TEXTCRAFT_NATIVE_OBSERVATION_DIR']:
+ env.pop(key,None)
+receipt=dict(role='Prepared saved native64/checkpoint25 official full-batch whitening, one real original VERL update, original logprob and manual checkpoint save/restore; no rollout or DT recomputation',
+ sources=checks,diagnostic_source=dict(path=str(source),sha256='bf8e2e853d2f17b47ec3661aa37655aa5c6957e83144d2065c1d2b42750abedd'),
+ diagnostic_dependencies={n:dict(path=str(out/n),sha256=h) for n,h in extra_hashes.items()},
+ reused_diagnostic_sources=pinned,
+ input=dict(path=str(cases),sha256=hashlib.sha256(cases.read_bytes()).hexdigest(),bytes=cases.stat().st_size),
+ checkpoint=prior['checkpoint'],devices=[4,5],recovered_runtime_environment=dict(path=str(environment_file),sha256='9c7a56dd8a0e49558b7378be0e8ea3784fce49a75524738819b4e5d4b3c3cea7',scope=recovered['scope']),
+ overlay_verl_sources=overlay_sources,observed_unix=time.time(),optimizer_steps=0,
+ native_batch_per_call=4,planned_backward_passes_per_rank=1,planned_optimizer_steps_per_rank=1,finite_trace_calls=0,config_source=dict(path=str(base/'launch.json'),
+ sha256=hashlib.sha256((base/'launch.json').read_bytes()).hexdigest()),
+ runtime_environment={k:env.get(k) for k in ['VERL_ROOT','DT_ROOT','DT_ENVIRONMENT_JSON','CUDA_VISIBLE_DEVICES',
+  'TRITON_CACHE_DIR','TORCHINDUCTOR_CACHE_DIR','PYTHONPATH','DT_SAMPLING_JSON']})
+if mode=='prepare':
+ code="import hashlib,importlib,json,pathlib,os,psutil,torch; names=('observe_native_optimizer_minibatch','observe_native_actor_loss_gradients','observe_textcraft_native_batches','observe_textcraft_label_gradients','verify_textcraft_native_adam','verify_textcraft_official_whitening','verify_textcraft_whitened_update'); modules={n:importlib.import_module(n) for n in names}; sources={n:dict(path=str(pathlib.Path(m.__file__).resolve()),sha256=hashlib.sha256(pathlib.Path(m.__file__).read_bytes()).hexdigest()) for n,m in modules.items()}; observer=modules['observe_native_optimizer_minibatch']; assert observer.observe_native_optimizer_minibatch.__globals__ is vars(observer); value=dict(sources=sources,pid=os.getpid(),pid_birth=psutil.Process().create_time(),rss_bytes=psutil.Process().memory_info().rss,cuda_initialized=torch.cuda.is_initialized(),distributed_initialized=torch.distributed.is_initialized(),scope='Fresh Python subprocess using worker PYTHONPATH only; no driver import/sys.path edits, model or loss calls.'); pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/worker-callsite-import-inspection.json').write_text(json.dumps(value,indent=2)+chr(10))"
+ with (out/'worker-callsite-import.stdout.txt').open('wb') as log:
+  callsite=subprocess.run([env['VENV_PYTHON'],'-c',code],cwd=out,env=dict(env,CUDA_VISIBLE_DEVICES=''),stdout=log,stderr=subprocess.STDOUT)
+ assert callsite.returncode==0, 'Recorded helper callsite import failure before GPU submission'
+ imports=json.loads((out/'worker-callsite-import-inspection.json').read_bytes())
+ for item in imports['sources'].values():
+  assert item['sha256']==pinned[item['path']], 'Helper callsite actual path/hash mismatch'
+ assert not imports['cuda_initialized'] and not imports['distributed_initialized']
+ receipt['worker_callsite_import_inspection']=dict(path=str(out/'worker-callsite-import-inspection.json'),sha256=hashlib.sha256((out/'worker-callsite-import-inspection.json').read_bytes()).hexdigest())
+ with (out/'native-owner-inspection.stdout.txt').open('wb') as log:
+  result=subprocess.run([env['VENV_PYTHON'],'-u',str(source),'--inspect-only'],cwd=out,
+   env=dict(env,CUDA_VISIBLE_DEVICES=''),stdout=log,stderr=subprocess.STDOUT)
+ assert result.returncode==0, 'Inspect CPU binding failure before any GPU submission'
+ inspected=json.loads((out/'native-owner-inspection.json').read_bytes())
+ assert not inspected['cuda_initialized']
+ assert inspected['native_reader_inputs_sha256']==receipt['input']['sha256']
+ prior_imports=json.loads((base/'native-minibatch-source-identity.json').read_bytes())
+ assert inspected['worker_constructor']['sha256']==prior_imports['worker_constructor']['sha256'], 'Copied native worker bytes changed'
+ receipt['original_frozen_worker_constructor']=prior_imports['worker_constructor']
+ receipt['inspection']=dict(path=str(out/'native-owner-inspection.json'),
+  sha256=hashlib.sha256((out/'native-owner-inspection.json').read_bytes()).hexdigest())
+ (out/'prepared.json').write_text(json.dumps(receipt,indent=2)+'\n')
+ print(json.dumps(dict(status='prepared_cpu_owner_inspection',out=str(out),input_sha256=receipt['input']['sha256'])))
+else:
+ accepted=json.loads((out/'prepared.json').read_bytes())
+ for key in ['sources','diagnostic_source','diagnostic_dependencies','reused_diagnostic_sources','input','config_source','checkpoint','recovered_runtime_environment','overlay_verl_sources']:
+  assert receipt[key]==accepted[key], 'Prepared and launch sources differ: '+key
+ physical=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout
+ (out/'physical-before-start.txt').write_text(physical)
+ occupied=[line for line in physical.splitlines() if re.match(r'^\|\s+[45]\s+\d+\s+',line)]
+ assert not occupied,occupied
+ available=psutil.virtual_memory().available; assert available>150*1024**3
+ argv=[env['VENV_PYTHON'],'-u',str(source)]
+ with (out/'diagnostic.log').open('wb') as log:
+  child=subprocess.Popen(argv,cwd=out,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+ receipt.update(pid=child.pid,pid_birth=psutil.Process(child.pid).create_time(),started_unix=time.time(),
+  argv=argv,log=str(out/'diagnostic.log'),host_available_before_bytes=available)
+ (out/'job.json').write_text(json.dumps(receipt,indent=2)+'\n')
+ print(json.dumps(dict(status='native_whitened_update_submitted',out=str(out),pid=child.pid,pid_birth=receipt['pid_birth'],devices=[4,5])))
+PY
