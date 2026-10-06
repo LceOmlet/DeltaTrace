@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 弱信用来源：类别读出配对与历史支持集
+
+隔离v2 PID3037369/birth1791247724.44完成，GPU4/5，231.851秒。原checkpoint25、64条真实首轮输入、原VERL worker/config、LoRA8/16与每卡B4均保留。只由原RewardAlphabet.query_ids交换两个类别label ID，values/meanings顺序、回报及轨迹ID不变；按实际query等长配对。64 native B4前向，DT/反向/optimizer/scheduler均0。
+
+原/交换标签事实读出Brier=0.38641347/0.35645212。根端点变化不是token优势，类别敏感性不自动证明整个弱梯度原因或历史因果。复用原native精度、head与卸载；旧同编码LP差只作描述，不新增官方容差。原论文累计删除/RISE/MAS仍是整体归因评价接口；single probes不替代。
+
+v1因新Ray worker未继承旧reader helper搜索路径，在模型初始化前停止并保存日志。v2只把既有helper目录加入诊断PYTHONPATH，未复制owner或修改生产。新审计绑定二类logprob饱和与正式43/93奖励支持集；历史分项梯度未保存，不将1/211扩展为历史参数更新比例，不从缺失报告造零。生产信用/熵系数/采样/任务配置不变，TextCraft未恢复。
+
+
 ## 2026-10-06 弱任务信号：原 Adam 单步对照与幅度来源
 
 隔离PID2778451/birth1791245326.02已完成，GPU4/5，830.290秒。原64条完整carrier、checkpoint25、LoRA8/16、每卡B4、原VERL actor/core/import SHA与损失默认保持不变；三支分别完整恢复model/optimizer/extra，复用原AdamW动量/RNG/scheduler。每支每rank实际1次optimizer与1次scheduler，496个state均100→101。无rollout、DT重算或正式重启。诊断只保留原返回值，原step/clip/offload未替换。
