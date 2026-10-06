@@ -4,6 +4,7 @@ CPU preparation only. No running entry, model, service or job is modified.
 The shared two-file fix is taken from its recorded Git commit; no credit,
 environment or training implementation is copied into this preparer.
 """
+import argparse
 import ast
 import hashlib
 import json
@@ -30,13 +31,49 @@ BASE = ROOT + '/candidates/appworld-retained-credit-sources-20261006-v1'
 
 
 def main():
-    LOCAL.mkdir(parents=True, exist_ok=True)
-    for name, (_, _, digest) in FILES.items():
-        blob = subprocess.check_output(['git', 'show', f'{FIX}:experiments/rl/{name}'], cwd=REPO)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--work-metrics', action='store_true',
+                        help='Prepare a separate v2 entry with CPU source-work counters.')
+    args = parser.parse_args()
+    local, receipt_root, candidate_root = LOCAL, REMOTE, BASE
+    files = dict(FILES)
+    if args.work_metrics:
+        local = LOCAL.with_name('retained-action-v2')
+        receipt_root = REMOTE.replace('retained-action-v1', 'retained-action-v2')
+        candidate_root = BASE.replace('20261006-v1', '20261006-v2')
+        function, before, _ = files['dt_training_batch.py']
+        metric_blob = (REPO / 'experiments/rl/dt_training_batch.py').read_bytes()
+        baseline = subprocess.check_output(
+            ['git', 'show', f'{FIX}:experiments/rl/dt_training_batch.py'], cwd=REPO)
+
+        class RemoveWorkCounters(ast.NodeTransformer):
+            def visit_Assign(self, node):
+                if any(isinstance(t, ast.Name) and t.id in ('nonzero_before', 'retained_sources')
+                       for t in node.targets):
+                    return None
+                return self.generic_visit(node)
+
+            def visit_Expr(self, node):
+                if (isinstance(node.value, ast.Call) and
+                    isinstance(node.value.func, ast.Name) and node.value.func.id == 'print' and
+                    node.value.args and isinstance(node.value.args[0], ast.JoinedStr) and
+                    '[DT source workload]' in ast.unparse(node.value.args[0])):
+                    return None
+                return self.generic_visit(node)
+
+        assert ast.dump(RemoveWorkCounters().visit(ast.parse(metric_blob))) == ast.dump(ast.parse(baseline)), \
+            'Work counters must not change the accepted credit computation'
+        files['dt_training_batch.py'] = (function, before, hashlib.sha256(metric_blob).hexdigest())
+    # Keep v1's immutable receipt and source; v2 composes that same accepted
+    # two-function seam with counters only, not another dispatch algorithm.
+    local.mkdir(parents=True, exist_ok=True)
+    for name, (_, _, digest) in files.items():
+        blob = (metric_blob if args.work_metrics and name == 'dt_training_batch.py' else
+                subprocess.check_output(['git', 'show', f'{FIX}:experiments/rl/{name}'], cwd=REPO))
         assert hashlib.sha256(blob).hexdigest() == digest
-        (LOCAL / name).write_bytes(blob)
+        (local / name).write_bytes(blob)
     test = 'test_distributed_credit.py'
-    (LOCAL / test).write_bytes(subprocess.check_output(
+    (local / test).write_bytes(subprocess.check_output(
         ['git', 'show', f'HEAD:experiments/rl/{test}'], cwd=REPO))
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
     code = r'''
@@ -86,7 +123,9 @@ r=subprocess.run([env['VENV_PYTHON'],'-m','pytest','-q','--import-mode=importlib
 (receipt/'cpu-tests.stdout.txt').write_bytes(r.stdout+r.stderr)
 record={'status':'prepared_only_CPU_interface_tests_passed' if r.returncode==0 else 'prepared_only_CPU_tests_failed',
  'observed_unix':time.time(),'wall_seconds':time.time()-started,'preparation_repository_commit':@REVISION@,
- 'source_fix_commit':@FIX@,'prior_entry':str(old),'entry':str(entry),'verl_root':source['verl_root'],
+ 'source_fix_commit':@FIX@,'work_counters':@WORK_COUNTERS@,
+ 'work_counters_source_commit':@REVISION@ if @WORK_COUNTERS@ else None,
+ 'prior_entry':str(old),'entry':str(entry),'verl_root':source['verl_root'],
  'dt_root':source['dt_root'],'driver_pid':3592468,'driver_birth':driver.create_time(),
  'source_receipt':str(run/'source.json'),'source_receipt_sha256':sha(run/'source.json'),
  'changes':changes,'unchanged_entry_sha256':unchanged,
@@ -98,22 +137,22 @@ record={'status':'prepared_only_CPU_interface_tests_passed' if r.returncode==0 e
 print(json.dumps(record))
 r.check_returncode()
 '''
-    for key, value in {'ROOT': ROOT, 'REMOTE': REMOTE, 'BASE': BASE, 'FILES': FILES,
-                       'FIX': FIX, 'REVISION': revision}.items():
+    for key, value in {'ROOT': ROOT, 'REMOTE': receipt_root, 'BASE': candidate_root, 'FILES': files,
+                       'FIX': FIX, 'REVISION': revision, 'WORK_COUNTERS': args.work_metrics}.items():
         code = code.replace('@' + key + '@', repr(value))
     ast.parse(code)
-    mkdir = subprocess.run(SSH + ['mkdir', '-p', REMOTE], capture_output=True)
+    mkdir = subprocess.run(SSH + ['mkdir', '-p', receipt_root], capture_output=True)
     mkdir.check_returncode()
-    subprocess.run(SCP + [str(LOCAL / name) for name in [*FILES, test]] +
-                   [f'{SSH[-1]}:{REMOTE}/'], check=True)
+    subprocess.run(SCP + [str(local / name) for name in [*files, test]] +
+                   [f'{SSH[-1]}:{receipt_root}/'], check=True)
     script = f'source {ENTRY}/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n{code}\nPY\n'
-    (LOCAL / 'prepare.sh').write_text(script, encoding='utf-8')
+    (local / 'prepare.sh').write_text(script, encoding='utf-8')
     result = subprocess.run(SSH + ['bash', '-s'], input=script.encode(), capture_output=True)
-    (LOCAL / 'prepare.stdout.txt').write_bytes(result.stdout + result.stderr)
+    (local / 'prepare.stdout.txt').write_bytes(result.stdout + result.stderr)
     for name in ('prepared.json', 'cpu-tests.xml', 'cpu-tests.stdout.txt'):
-        subprocess.run(SCP + [f'{SSH[-1]}:{REMOTE}/{name}', str(LOCAL / name)], check=True)
+        subprocess.run(SCP + [f'{SSH[-1]}:{receipt_root}/{name}', str(local / name)], check=True)
     result.check_returncode()
-    print(json.dumps({'local': str(LOCAL), 'remote': REMOTE, 'candidate': BASE}))
+    print(json.dumps({'local': str(local), 'remote': receipt_root, 'candidate': candidate_root}))
 
 
 if __name__ == '__main__':

@@ -54,13 +54,19 @@ def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id, s
     active = torch.tensor([bool(value) for value in source.non_tensor_batch['active_masks']])
     policy_lengths = source.batch['attention_mask'][:, -shape[1]:].sum(-1).cpu()
     nonzero = (source.batch['dt_complete_return'] != 0) & active & (policy_lengths > 0)
+    nonzero_before = int(nonzero.sum())
+    retained_sources = len(source)
     if source_indices is not None:
         # Truncation selects training tokens, not environment reward events.
         # Complete returns above still include every executed future row.
         eligible = torch.zeros(len(source), dtype=torch.bool)
         eligible[inverse[source_indices]] = True
+        retained_sources = int(eligible.sum())
         nonzero &= eligible
     indices = nonzero.nonzero().flatten()
+    print(f'[DT source workload] response_rows={len(data)} unique_rows={len(source)} '
+          f'retained_sources={retained_sources} nonzero_before={nonzero_before} '
+          f'nonzero_after={len(indices)} skipped_nonzero={nonzero_before-len(indices)}', flush=True)
     if len(indices):
         # Same number of nonzero B4 calls on every FSDP rank. Zero-return
         # responses require no model call and remain zero at their identities.
