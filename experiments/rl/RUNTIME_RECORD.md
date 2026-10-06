@@ -34,6 +34,11 @@ LoRA8/16、micro4、epochs2、entropy.001、dualclip3及32768一致；两owner
 开关True和有限库4f42都在实际环境。DT仍lazy未import，没有主动调用DT，
 trainer d35/373整批masked_whiten源核对不等于本次已经执行白化。
 06:28原配置检查通过，仍初始化/register-center阶段，没有正式DT/actor完成。
+06:31:05原LOOP采样服务启动，两rank原sample_tokens已进入；06:31:22物理GPU
+4/5为55299/55287MiB、容器118.28GiB，是采样阶段时刻值非峰值；未见OOM。
+原Ray metrics exporter连接警告及Qwen3.5未支持MFU计数保留在日志，未将其
+误判为训练异常或据此修改运行。06:31:58原collector更新主snapshot，实际
+workers2367855/2369144，源哈希核对无差异；DT/完整更新计时与学习恢复仍未完成。
 
 更新时间比采样时间长尚不能判为正常：原actor每行是完整trajectory，DT每请求
 是当前response；v2实测3198 responses，DT403个B4/卡；217trajectory原padding
