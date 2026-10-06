@@ -1,5 +1,29 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 04:29 本轮DT结束，已实际经过白化进入原actor
+
+同一driver1181392/birth1791314386.58保持。04:29:02两worker均进入原
+actor_rollout_update_actor；04:29:29非阻塞原TaskRunner栈为ray_trainer.py:1285。
+实际trainer仍d35ddd26，fit1256调用compute_advantage后才到1285；DT分支373
+唯一调用原masked_whiten(raw_A,response_mask)，374仅交给actor advantages，
+375保留原returns。因此本轮已经过所批准的整批白化出口，不能仍报告为
+“仅启用、尚未执行”。这不等于已拿到本轮梯度范数或证明学习退化恢复；
+完整原actor计时/指标尚未返回，不用旧2495秒代替。
+
+七组完整原DT日志：每rank1612 contrasts、403 B4，readout分别2499.8495/
+2498.7801秒（约41.7分钟，双卡并行不相加）；bank382.2528/381.5483秒，
+原B4 wall合计2114.3560/2113.9928秒，未解释差额仅3.2407/3.2389秒。
+这定位了本轮时间大头在403次B4调用，而非外层RPC或几十秒以下的复制。
+3198个原response对应两卡3224运输槽，原padding26槽，不是平方请求展开。
+actor仍按217条整轨迹pad224、每卡56次B4前后向/14 optimizer step运行；
+两种调用单位和token范围不同，次数比7.20不是FLOP或速度比。
+
+原始完成日志前缀SHA、逐组计时、实际trainer片段及TaskRunner栈见
+continuation-1791314906/completed-DT-and-actor-entry-1791318569-readonly.json。
+实际阶段与资源见official-phase-1791318542.json：container344.43GB，
+failcnt0、oom_kill0；该瞬间资源不是32k峰值验收。没有加载/导出检查点，
+没有重启或改训练参数、PPO/FA/FLA、容差及存储owner部署状态。
+
 ## 2026-10-07 04:25 当前DT计算与官方actor重算审查
 
 31146同一driver1181392/birth1791314386.58、source3cd90b2d、GPU4/5仍从base运行，
