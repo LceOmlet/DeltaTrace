@@ -27,13 +27,23 @@ def select_component_request(all_requests, *, offset, limit, request_index):
 
 def native_bank_inventory(leases, requests, *, minibatch_size):
     """Read existing artifact metadata; never copy or consume its tensors."""
-    artifacts={}; consumed=set(); source_slots=0
+    artifacts={}; consumed=set(); source_slots=0; consumed_gdn_row_checks=0
     for batch_index,lease in enumerate(leases):
         batch=requests[batch_index*minibatch_size:(batch_index+1)*minibatch_size]
         if lease is None:
             continue
         assert len(lease.sources)==len(batch)
         for request,(artifact,row) in zip(batch,lease.sources):
+            length=int(lease.prefix_length)
+            assert 0<=row<artifact.input_ids.shape[0]
+            assert torch.equal(artifact.input_ids[row,:length],request['prompt'][:length].detach().cpu())
+            row_map=getattr(artifact,'boundary_rows',None)
+            packed_row=row if row_map is None else row_map[length][row]
+            for layer in artifact.layers:
+                if 'boundaries' in layer:
+                    conv,state=layer['boundaries'][length]
+                    assert 0<=packed_row<conv.shape[0] and packed_row<state.shape[0]
+                    consumed_gdn_row_checks+=1
             identity=id(artifact)
             if identity not in artifacts:
                 artifacts[identity]=(len(artifacts),artifact)
@@ -70,7 +80,11 @@ def native_bank_inventory(leases, requests, *, minibatch_size):
                     totals['gdn_consumed_boundary_rows']+=len(rows)
                     totals['gdn_consumed_conv_bytes']+=conv_meta['logical_bytes']//conv.shape[0]*len(rows)
                     totals['gdn_consumed_state_bytes']+=state_meta['logical_bytes']//state.shape[0]*len(rows)
+                    row_map=getattr(artifact,'boundary_rows',None)
+                    stored_original_rows=(sorted(row_map[int(boundary)],key=row_map[int(boundary)].get)
+                        if row_map is not None else list(range(conv.shape[0])))
                     boundaries.append(dict(prefix_length=int(boundary),consumed_rows=rows,
+                        stored_original_rows=stored_original_rows,
                         conv=conv_meta,state=state_meta))
                 layers.append(dict(index=layer_index,kind='GDN',boundary_count=len(boundaries),
                     boundaries=boundaries))
@@ -90,6 +104,9 @@ def native_bank_inventory(leases, requests, *, minibatch_size):
     return dict(scope='Complete originally constructed bank before bounded B4 selection; consumption counts cover all original requests, not only the diagnostic subset. Unconsumed rows are retained representation, not evidence of a leak.',
         original_requests=len(requests),original_consumer_batches=len(leases),source_slots=source_slots,
         distinct_artifacts=len(artifacts),distinct_consumed_artifact_boundary_rows=len(consumed),
+        lease_source_checks=dict(factual_id_prefixes_equal=source_slots,
+            gdn_original_to_stored_rows_in_range=consumed_gdn_row_checks,
+            scope='Every original lease source and needed GDN boundary checked without materializing a cache or running a model'),
         totals=totals,artifacts=records)
 
 
@@ -144,6 +161,17 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     base_prefetch=os.environ.get('DT_PREFIX_BASE_MODEL_PREFETCH')=='1'
     conv_initial_states=os.environ.get('DT_PREFIX_NATIVE_CONV_INITIAL_STATES')=='1'
     conv_capacity=os.environ.get('DT_PREFIX_NATIVE_CONV_CAPACITY')=='1'
+    boundary_row_storage=os.environ.get('DT_PREFIX_BOUNDARY_ROW_STORAGE')=='1'
+    if boundary_row_storage:
+        assert base_prefetch and os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
+        assert os.environ.get('DT_PREFIX_PHASE_ONLY')=='1' and os.environ.get('DT_PREFIX_PHASE_WARM')=='1'
+        assert not os.environ.get('DT_PREFIX_CHECKPOINT')
+        assert not any(os.environ.get(key)=='1' for key in (
+            'DT_PREFIX_NATIVE_BACKWARD','DT_PREFIX_HOT_PROFILE','DT_PREFIX_REVERSE_PREFETCH',
+            'DT_PREFIX_NATIVE_CONV_INITIAL_STATES','DT_PREFIX_NATIVE_CONV_CAPACITY','DT_PREFIX_LEDGER_ONLY',
+            'DT_PREFIX_PROJECTION_INPUTS','DT_PREFIX_ROOT_CAPTURE_INVENTORY','DT_PREFIX_ROOT_TAPE',
+            'DT_PREFIX_ROOT_TAPE_CPU','DT_PREFIX_ROOT_TAPE_GDN0','DT_PREFIX_ROOT_TAPE_FA3',
+            'DT_PREFIX_ROOT_TAPE_HOT','DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC'))
     if conv_capacity:
         assert conv_initial_states
     if conv_initial_states:
@@ -153,7 +181,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     current_request_origin=None
     if base_prefetch:
         assert os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
-        assert (os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states
+        assert (os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states or boundary_row_storage
                 or (os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
                     and os.environ.get('DT_PREFIX_PHASE_ONLY')=='1'
                     and os.environ.get('DT_PREFIX_PHASE_WARM')=='1'))
@@ -314,6 +342,26 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 else ('shared_cold','shared_warm','shared_profile_warm'))
     if ledger_only:
         labels=('shared_ledger',)
+    if boundary_row_storage:
+        labels=('shared_cold','shared_warm','shared_boundary_rows_cold','shared_boundary_rows_warm')
+        import inspect,importlib,json
+        prepared=json.loads((Path(out)/'prepared.json').read_bytes())
+        candidate=prepared['boundary_row_storage_candidate']
+        sources={}
+        for name,value,expected_sha in (
+            ('artifact',importlib.import_module('qwen35_native_prefix_artifacts'),candidate['artifact']['sha256']),
+            ('lease',prepare_native_prefix_leases,candidate['lease']['sha256']),
+            ('runner',type(runner),'e9c7576486f742c26f895cd4078891a98d94c189e84a6e565fc8042a74aabcab'),
+            ('gdn_finite',importlib.import_module('qwen35_gdn_finite'),'ef55ce08dec9374304018b43b9f85510fca36054408c439ab1109dca8ac23ca9'),
+            ('model',type(runner.model.model.language_model.layers[0].linear_attn),candidate['canonical_HF_owner']['sha256'])):
+            source=Path(inspect.getsourcefile(value))
+            digest=hashlib.sha256(source.read_bytes()).hexdigest()
+            assert digest==expected_sha,(name,str(source),digest)
+            sources[name]=dict(path=str(source),resolved_path=str(source.resolve()),sha256=digest)
+        assert getattr(runner,'native_conv_initial_states',False) is True
+        save('native_boundary_row_storage_sources',sources=sources,
+            native_conv_initial_states=runner.native_conv_initial_states,
+            scope='One isolated candidate artifact/lease default OFF then ON; current runner/GDN and installed canonical HF unchanged; no checkpoint, optimizer or formal deployment')
     if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
         labels=(*labels,'prefetch_warm')
     root_tape_module=None
@@ -348,6 +396,25 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     if current_owner:reference_label='shared_warm'
     if ledger_only:reference_label='shared_ledger'
     shared_bank=None
+    boundary_row_checks=[]
+    def observe_boundary_rows(kind,layer_index,prefix_length,original_rows,full_tensor,saved_tensor):
+        # Observe the same capture export, then release each original row.
+        # Copies belong to diagnostic bank preparation, never DT timing.
+        started=time.perf_counter()
+        assert full_tensor.dtype==saved_tensor.dtype
+        assert tuple(full_tensor.shape[1:])==tuple(saved_tensor.shape[1:])
+        assert saved_tensor.shape[0]==len(original_rows)
+        compared_bytes=0
+        for packed,original in enumerate(original_rows):
+            factual=full_tensor[original].detach().cpu().contiguous().view(torch.uint8)
+            exported=saved_tensor[packed].detach().cpu().contiguous().view(torch.uint8)
+            assert torch.equal(factual,exported),(kind,layer_index,prefix_length,original)
+            compared_bytes+=factual.numel()
+            del factual,exported
+        boundary_row_checks.append(dict(kind=kind,layer_index=layer_index,prefix_length=prefix_length,
+            original_rows=list(original_rows),dtype=str(saved_tensor.dtype),
+            saved_shape=list(saved_tensor.shape),logical_element_bytes_compared=compared_bytes,
+            equal=True,observer_seconds=time.perf_counter()-started))
     def shared_factory(*args,**kwargs):
         nonlocal shared_bank
         reused=shared_bank is not None
@@ -356,7 +423,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                 shared_bank=prepare_native_prefix_leases(*args,**kwargs)
             else:
                 # Preserve the full capture geometry and original B4 selection.
-                if ledger_only:
+                if ledger_only or boundary_row_storage:
                     def host_observation():
                         observation=dict(pss_bytes=psutil.Process().memory_full_info().pss,
                             scope='Raw original allocator counters only; MetaX allocated counters have a recorded accounting defect and are not interpreted as live bytes. Artifact CPU storage inventory is separate from the pinned allocator.')
@@ -365,22 +432,43 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                             observation['original_host_memory_stats_unavailable']=repr(exc)
                         return observation
                     host_before=host_observation()
-                leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)
-                if ledger_only:
+                if boundary_row_storage and label.startswith('shared_boundary_rows'):
+                    leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs,
+                        boundary_row_storage=True,observe_boundary_rows=observe_boundary_rows)
+                else:
+                    leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)
+                if ledger_only or boundary_row_storage:
                     import json
                     host_after=host_observation()
                     inventory=native_bank_inventory(leases,all_requests,minibatch_size=kwargs['minibatch_size'])
                     inventory.update(rank=torch.distributed.get_rank(),
+                        variant=label,boundary_row_storage=label.startswith('shared_boundary_rows'),
                         original_request_path=str(original_request_path),
                         original_request_sha256=hashlib.sha256(original_request_path.read_bytes()).hexdigest(),
                         original_preparation=preparation,host_before_prepare=host_before,
                         host_after_prepare=host_after,diagnostic_selected_offset=offset,
                         diagnostic_selected_rows=limit)
-                    inventory_path=Path(out)/f'original-prefix-bank-inventory-rank{torch.distributed.get_rank()}.json'
+                    if boundary_row_storage:
+                        inventory['same_capture_row_checks']=list(boundary_row_checks)
+                        checked_rows_by_kind={kind:sum(len(check['original_rows'])
+                            for check in boundary_row_checks if check['kind']==kind) for kind in ('conv','state')}
+                        if label.startswith('shared_boundary_rows'):
+                            assert all(count==inventory['totals']['gdn_consumed_boundary_rows']
+                                for count in checked_rows_by_kind.values())
+                        inventory['same_capture_row_check_summary']=dict(
+                            exported_boundaries=len(boundary_row_checks),
+                            exported_rows=sum(len(check['original_rows']) for check in boundary_row_checks),
+                            checked_rows_by_kind=checked_rows_by_kind,
+                            logical_element_bytes_compared=sum(check['logical_element_bytes_compared'] for check in boundary_row_checks),
+                            observer_seconds=sum(check['observer_seconds'] for check in boundary_row_checks),
+                            scope='Exact same-capture logical element bytes, dtype and shape of each declared consumed row; contiguous observer copies only. Copy time is included in capture_and_preparation_seconds, not attribute. No new floating tolerance.')
+                    inventory_name=(f'prefix-bank-inventory-{label}' if boundary_row_storage else 'original-prefix-bank-inventory')
+                    inventory_path=Path(out)/f'{inventory_name}-rank{torch.distributed.get_rank()}.json'
                     inventory_path.write_text(json.dumps(inventory,indent=2)+'\n')
                     save('native_original_prefix_bank_inventory',receipt=dict(path=str(inventory_path),
                         sha256=hashlib.sha256(inventory_path.read_bytes()).hexdigest()),
-                        totals=inventory['totals'],host_before_prepare=host_before,host_after_prepare=host_after)
+                        variant=label,totals=inventory['totals'],host_before_prepare=host_before,host_after_prepare=host_after,
+                        same_capture_row_check_summary=inventory.get('same_capture_row_check_summary'))
                 selected=leases[offset//4:(offset+limit)//4]
                 shared_bank=(selected,{**preparation,'diagnostic_selected_consumer_batches':len(selected)})
         # The owner lease creates a fresh DynamicCache on every consumption.
@@ -389,6 +477,11 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         leases,preparation=shared_bank
         return leases,{**preparation,'diagnostic_bank_reused':reused}
     for label in labels:
+        if boundary_row_storage and label=='shared_boundary_rows_cold':
+            # Do not retain original/full and compact banks simultaneously.
+            # Pinned allocator retention remains visible in the PSS receipt.
+            shared_bank=None
+            boundary_row_checks.clear()
         save('native_prefix_lease_variant_start',variant=label,
              shared_bank_already_prepared=shared_bank is not None)
         previous_conv_option=getattr(runner,'native_conv_initial_states',False)

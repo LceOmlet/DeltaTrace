@@ -40,6 +40,8 @@ if __name__ == '__main__':
         help='Current-base same-bank cold/warm OFF and warm ON for the original public cached-convolution initial_states API; isolated owner paths only.')
     parser.add_argument('--native-conv-capacity',action='store_true',
         help='With --native-conv-initial-states, call the unchanged capacity fixture at exact32768/response512; no environment reward or actor-update claim.')
+    parser.add_argument('--boundary-row-storage',action='store_true',
+        help='Current-base original full-bank versus selected boundary-row storage; isolated artifact/lease owners only, same-capture bytewise observations and original cold/warm DT calls.')
     parser.add_argument('--root-capture-inventory',action='store_true',
         help='Observe one layer at a time in the existing root forward with original capture APIs; release immediately, no retained tape or replacement computation.')
     parser.add_argument('--root-tape',action='store_true',
@@ -61,7 +63,7 @@ if __name__ == '__main__':
     parser.add_argument('--current-formal-owner',action='store_true',
         help='Use the current frozen AppWorld entry/VERL/DT and launch options, not historical diagnostic owner overrides.')
     parser.add_argument('--base-model',action='store_true',
-        help='With current formal owner and prefetch/convolution or hot-profile diagnosis, initialize its original base actor without loading a checkpoint; replay current owner queries on saved literal rows.')
+        help='With current formal owner and prefetch/convolution, boundary-row storage or hot-profile diagnosis, initialize its original base actor without loading a checkpoint; replay current owner queries on saved literal rows.')
     parser.add_argument('--native-backward',action='store_true',
         help='After current-owner DT, time one first and one warm original actor backward on the same factual B4 event target; no optimizer update.')
     args=parser.parse_args()
@@ -74,9 +76,17 @@ if __name__ == '__main__':
             args.root_tape_cpu,args.root_tape_capacity,args.root_tape_gdn0,args.root_tape_fa3,
             args.root_tape_hot,args.components_only,args.component_layer is not None)):
         parser.error('--ledger-only does not run profiling, backward, operator observers or owner variants')
-    if args.base_model and not (args.current_formal_owner and (args.reverse_prefetch or args.native_conv_initial_states or args.hot_profile)
+    if args.base_model and not (args.current_formal_owner and (args.reverse_prefetch or args.native_conv_initial_states or args.hot_profile or args.boundary_row_storage)
             and args.phase_only and args.warm_phases):
-        parser.error('--base-model requires --current-formal-owner, --reverse-prefetch or --native-conv-initial-states or --hot-profile, --phase-only --warm-phases')
+        parser.error('--base-model requires --current-formal-owner, --reverse-prefetch or --native-conv-initial-states or --hot-profile or --boundary-row-storage, --phase-only --warm-phases')
+    if args.boundary_row_storage and not (args.current_formal_owner and args.base_model and args.phase_only and args.warm_phases):
+        parser.error('--boundary-row-storage requires --current-formal-owner --base-model --phase-only --warm-phases')
+    if args.boundary_row_storage and any((args.checkpoint,args.native_backward,args.hot_profile,
+            args.reverse_prefetch,args.native_conv_initial_states,args.native_conv_capacity,args.ledger_only,
+            args.local_prefix_branch,args.projection_inputs,args.root_capture_inventory,args.root_tape,
+            args.root_tape_cpu,args.root_tape_capacity,args.root_tape_gdn0,args.root_tape_fa3,args.root_tape_hot,
+            args.components_only,args.component_layer is not None)):
+        parser.error('Measure boundary-row storage independently of checkpoints, backward, profiles and other owner variants')
     if args.native_conv_initial_states and not args.base_model:
         parser.error('--native-conv-initial-states requires explicit --base-model current-owner diagnosis')
     if args.native_conv_capacity and not args.native_conv_initial_states:
@@ -140,8 +150,8 @@ if __name__ == '__main__':
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
         'local-prefix-' if args.local_prefix_branch else '')+('cpu-' if args.root_tape_cpu else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
-        'ledger' if args.ledger_only else 'native-conv-capacity' if args.native_conv_capacity else 'native-conv-initial-states' if args.native_conv_initial_states else 'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
-        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261007-' if args.native_conv_initial_states or (args.current_formal_owner and args.base_model and args.hot_profile) else '-20261005-' if args.root_tape_cpu or args.ledger_only else '-20261004-')+commit[:7]
+        'ledger' if args.ledger_only else 'boundary-row-storage' if args.boundary_row_storage else 'native-conv-capacity' if args.native_conv_capacity else 'native-conv-initial-states' if args.native_conv_initial_states else 'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
+        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261007-' if args.native_conv_initial_states or args.boundary_row_storage or (args.current_formal_owner and args.base_model and args.hot_profile) else '-20261005-' if args.root_tape_cpu or args.ledger_only else '-20261004-')+commit[:7]
     if args.current_formal_owner:
         out+='-current-'+('base' if args.base_model else args.checkpoint.rstrip('/').split('/')[-1])
     files = {
@@ -156,6 +166,11 @@ if __name__ == '__main__':
     if args.current_formal_owner:
         # These production modules come only from the frozen formal entry.
         del files[REPO/'experiments/rl/native_prefix_leases.py']
+    if args.boundary_row_storage:
+        candidate=AUDIT/'native-prefix-boundary-rows-20261007-v1'
+        files[candidate/'deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py']='boundary-row-artifact.py'
+        files[candidate/'experiments/rl/native_prefix_leases.py']='native_prefix_leases.py'
+        files[candidate/'experiments/rl/test_native_prefix_boundary_rows.py']='test_native_prefix_boundary_rows.py'
     if args.projection_inputs:
         files[AUDIT/'diagnose_native_projection_inputs.py'] = 'diagnose_native_projection_inputs.py'
     if args.reverse_prefetch:
@@ -264,7 +279,7 @@ if @CURRENT_FORMAL_OWNER@:
  assert hashlib.sha256(prepared_path.read_bytes()).hexdigest()==source['prepared_receipt_sha256']
  dt_bindings=source['dt_source_sha256'] if @BASE_MODEL@ else prepared['dt_source_sha256']
  for name in ('clean/qwen35/qwen35_dense_finite_runner.py','clean/qwen35/qwen35_native_prefix_artifacts.py',
-              'experiments/rl/deltatrace_credit.py'):
+              'experiments/rl/deltatrace_credit.py',*(['clean/qwen35/qwen35_gdn_finite.py'] if @BOUNDARY_ROW_STORAGE@ else [])):
   p=formal_dt/name;actual=hashlib.sha256(p.read_bytes()).hexdigest()
   assert actual==dt_bindings[name],p
   source_bindings[str(p)]=actual
@@ -276,7 +291,7 @@ if @CURRENT_FORMAL_OWNER@:
   source_bindings[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
   run_env['DT_ENVIRONMENT_JSON']=str(p)
  canonical_hf_owner=None
- if @BASE_MODEL@ and @HOT_PROFILE@:
+ if @BASE_MODEL@ and (@HOT_PROFILE@ or @BOUNDARY_ROW_STORAGE@):
   canonical_hf_owner=prepared['canonical_HF_owner']
   p=pathlib.Path(canonical_hf_owner['path'])
   actual=hashlib.sha256(p.read_bytes()).hexdigest()
@@ -404,6 +419,35 @@ if @NATIVE_CONV_INITIAL_STATES@:
 else:
  run_env.pop('DT_PREFIX_NATIVE_CONV_INITIAL_STATES',None)
  run_env.pop('DT_CONV_ISOLATED_IMPORT_ROOT',None)
+boundary_candidate=None
+if @BOUNDARY_ROW_STORAGE@:
+ # Reuse the existing linked-owner layout. Only the artifact file changes;
+ # the current runner, finite libraries and installed HF remain their owners.
+ linked=out/'boundary-row-owners'/'deltatrace';linked.mkdir(parents=True)
+ def link_children(old,new,exception):
+  for path in old.iterdir():
+   if path.name not in exception and path.name!='__pycache__':
+    (new/path.name).symlink_to(path,target_is_directory=path.is_dir())
+ link_children(formal_dt,linked,{'clean'})
+ (linked/'clean').mkdir();link_children(formal_dt/'clean',linked/'clean',{'qwen35'})
+ (linked/'clean/qwen35').mkdir()
+ link_children(formal_dt/'clean/qwen35',linked/'clean/qwen35',{'qwen35_native_prefix_artifacts.py'})
+ artifact=linked/'clean/qwen35/qwen35_native_prefix_artifacts.py'
+ shutil.copyfile(out/'boundary-row-artifact.py',artifact)
+ run_env['DT_ROOT']=str(linked)
+ run_env['PYTHONPATH']=':'.join(part.replace(str(formal_dt),str(linked),1)
+  if part==str(formal_dt) or part.startswith(str(formal_dt)+'/') else part
+  for part in run_env['PYTHONPATH'].split(':'))
+ boundary_candidate=dict(dt_root=str(linked),artifact=dict(path=str(artifact),sha256=hashlib.sha256(artifact.read_bytes()).hexdigest()),
+  lease=dict(path=str(out/'native_prefix_leases.py'),sha256=hashlib.sha256((out/'native_prefix_leases.py').read_bytes()).hexdigest()),
+  original_artifact=dict(path=str(formal_dt/'clean/qwen35/qwen35_native_prefix_artifacts.py'),
+   sha256=hashlib.sha256((formal_dt/'clean/qwen35/qwen35_native_prefix_artifacts.py').read_bytes()).hexdigest()),
+  original_lease=dict(path=str(formal_entry/'native_prefix_leases.py'),
+   sha256=hashlib.sha256((formal_entry/'native_prefix_leases.py').read_bytes()).hexdigest()),
+  current_original_dt_root=str(formal_dt),canonical_HF_owner=canonical_hf_owner,
+  pythonpath=run_env['PYTHONPATH'],scope='Diagnostic linked current owner; only artifact and lease storage interfaces differ; no HF namespace loader or formal deployment')
+ run_env['DT_PREFIX_BOUNDARY_ROW_STORAGE']='1'
+else:run_env.pop('DT_PREFIX_BOUNDARY_ROW_STORAGE',None)
 if @BASE_MODEL@:run_env['DT_PREFIX_BASE_MODEL_PREFETCH']='1'
 else:run_env.pop('DT_PREFIX_BASE_MODEL_PREFETCH',None)
 if @NATIVE_CONV_CAPACITY@:
@@ -488,6 +532,7 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  projection_input_observation=@PROJECTION_INPUTS@,
  native_reverse_prefetch_candidate=@REVERSE_PREFETCH@,
  native_conv_initial_states_candidate=conv_isolated,
+ boundary_row_storage_candidate=boundary_candidate,
  native_conv_exact32768_capacity=@NATIVE_CONV_CAPACITY@,
  root_capture_inventory=@ROOT_CAPTURE_INVENTORY@,
  native_root_tape_candidate=root_tape_patch,
@@ -518,13 +563,18 @@ test_env=dict(run_env,CUDA_VISIBLE_DEVICES='',MACA_VISIBLE_DEVICES='')
 if @CURRENT_FORMAL_OWNER@:
  # Existing CPU owner-interface tests read this explicit source path; the
  # GPU producer itself has no historical override and imports the frozen DT.
- test_env['DT_PREFIX_ARTIFACT_SOURCE']=str(formal_dt/'clean/qwen35/qwen35_native_prefix_artifacts.py')
+ test_env['DT_PREFIX_ARTIFACT_SOURCE']=str(pathlib.Path(run_env['DT_ROOT'])/'clean/qwen35/qwen35_native_prefix_artifacts.py')
+if @BOUNDARY_ROW_STORAGE@:
+ test_env.update(DT_PREFIX_LEASE_SOURCE=boundary_candidate['lease']['path'],
+  DT_PREFIX_BOUNDARY_BASELINE_SOURCE=boundary_candidate['original_artifact']['path'],
+  DT_PREFIX_BOUNDARY_BASELINE_LEASE_SOURCE=boundary_candidate['original_lease']['path'])
 if @ROOT_TAPE_FA3@:
  test_env['DT_OFFICIAL_FA_TEST_SOURCE']=str(pathlib.Path('@ROOT@')/'receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py')
 if @ROOT_TAPE_HOT@:
  test_env['DT_FINITE_PARAMETER_RANGE_OWNER_SOURCE']=str(out/'deltatrace_rollout.py') if @LOCAL_PREFIX_BRANCH@ else str(pathlib.Path(previous['source_formal_entry'])/'deltatrace_rollout.py')
 with (out/'cpu-tests.log').open('wb') as log:
  test_paths=[str(out/'test_native_prefix_leases.py')]
+ if @BOUNDARY_ROW_STORAGE@:test_paths=[str(out/'test_native_prefix_boundary_rows.py')]
  if @LOCAL_PREFIX_BRANCH@:test_paths.append(str(out/'test_prefix_branch_owner.py'))
  if @ROOT_CAPTURE_INVENTORY@:
   test_paths.extend(str(out/name) for name in ('test_root_capture_inventory_cpu_structure.py',
@@ -567,6 +617,7 @@ PY
         .replace('@REVERSE_PREFETCH@',str(args.reverse_prefetch))
         .replace('@NATIVE_CONV_INITIAL_STATES@',str(args.native_conv_initial_states))
         .replace('@NATIVE_CONV_CAPACITY@',str(args.native_conv_capacity))
+        .replace('@BOUNDARY_ROW_STORAGE@',str(args.boundary_row_storage))
         .replace('@ROOT_CAPTURE_INVENTORY@',str(args.root_capture_inventory))
         .replace('@ROOT_TAPE@',str(args.root_tape))
         .replace('@ROOT_TAPE_CPU@',str(args.root_tape_cpu))

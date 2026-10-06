@@ -1,5 +1,54 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 04:13 新冻结存储入口准备完成，未重启当前正式训练
+
+新的entry=/candidates/appworld-native-boundary-row-storage-20261007-v1/entry，
+prepared fd233d09（完整路径仍在MetaX固定ROOT下）；复用通过实际B8的DT linked tree，
+只替artifact4a461f21、lease6d2aecb0及producer的原factory绑定partial(True)。
+新producer SHA 900f7ae41b6840ed0834d9744e275adc6f12b51d78d04069b636cb94c809d0bd。
+原VERL/HF/LOOP/environment.json、白化、rank8/alpha16/B4、budget与原launcher不变。
+CPU实际import身份通过，原AppWorld workload/native validator 1项通过（11.04秒），
+无model/GPU/checkpoint加载，无job启动或停止。准备脚本e12c54d6；
+完整source库存按prior source的原键重哈希，只有明确3文件不同。
+prepared-only不冒充deployed：active-training仍driver1181392/source3cd90b2d。
+当前已采集/计算的正式轨迹保留，不为纯存储节省重启本轮；待当前更新确认后再切换。
+
+## 2026-10-07 04:07 状态行存储修复通过真实B8运输检查，正式进程未切换
+
+实际driver1181392/出生1791314386.58、GPU4/5、source3cd90b2d保持，
+从base启动、resume disable，无检查点加载。VERL trainer d35ddd26仅在完整
+action mask上调用一次原masked_whiten(373行)，原fit1256后才update_actor1285；
+原Q/V/A/returns不改。04:05:59尚未到actor，不能把启用等同于已完成本轮白化更新
+或学习退化恢复。当前前三个DT组已完成，每卡736contrast/184B4/1125.36秒，
+其中bank193.69秒、B4sum930.30秒，第4组380contrast/95B4刚开始。
+3198个有效response用于DT，actor输入217个完整trajectory；原adjust_batch补至224，
+DP每卡112、epoch2、mini每卡16、micro4，待执行每卡56次B4 fwd/backward和14次
+optimizer step，oldlogprob每卡28次B4。不能拿旧2495秒替代本次actor结果。
+
+有界诊断1442344/出生1791316826.03、GPU2/3，同当前base/owner、offset84每卡B4，
+没有checkpoint/backward/optimizer/额外rollout。候选artifact4a461f21、lease6d2aecb0
+默认None/False不改原路径。实际相同capture所有被消费BF16卷积/FP32递推状态逐字节
+相同：rank0每类1896行、rank1每类1872行；全88请求的消费身份/边界/row映射检查通过。
+原FA KV、完整B4递推、runner e9c75764/GDN ef55ce08/canonicalHF59f9c339不变。
+此为精确表示运输检查，不新增整网FP容差，不修改官方FA/FLA断言。
+
+每卡完整bank去重存储16.8815→10.3934GB、17.3219→10.3667GB，
+减少6.4881/6.9552GB（38.43%/40.15%），未消费GDN行归零。
+热wall9.7783/9.7888→9.7675/9.7748秒，未证明有意义的热计算提速。
+OFF先捕获42.45秒、ON后捕获24.86秒混有首次/顺序差异及1.42秒字节观测，
+不能称为独立提速对照。PSS23.785/24.270→17.997/18.251GB，仍含原allocator驻留。
+不同capture/重复warm Q/V/A最大残差0.00189224只记录，不裁剪、不纠偏、
+不自设通过阈值。原CPU接口7项通过；整轮训练、32k更新和学习效果不由此新增背书。
+代码进入主分支的默认惰性接口；本次正式冻结06f/d5入口未覆盖，尚未部署该存储选项。
+原始及汇总：native-prefix-boundary-rows-20261007-v1/accepted-storage-transport.json
+与runtime-v1/runtime-summary.json。
+
+现有实际热trace每卡67次FSDP allgather，顺序root/embed/32层正向/root/32层逆向；
+每层正好2次，finite前32个prepare范围collective为0。producer2c01已用原
+set_reshard_after_forward(False)保留replay参数至finite后，PyTorch原unshard
+对已展开参数直接返回。未发现第三次收集；3.6368秒含另一rank等待，不能当可删成本。
+详见current-base-hot-profile-v1/fsdp-parameter-owner-review.json。
+
 ## 2026-10-07 03:42 当前真实B8 profile完成，白化入口保持
 
 当前正式AppWorld仍driver1181392/出生1791314386.58、GPU4/5，从base启动，
