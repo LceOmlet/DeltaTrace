@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 真实更新方向：弱任务信号不等于Adam反向
+
+复用六份原Adam更新的FP32本地LoRA参数/梯度shards，仅CPU描述DT总梯度与当前PG置零对照总梯度的差。原clip均未触发，496参数初值/布局/支持相同；独立反向的舍入及RNG边界保留，差分不冒充精确单项梯度。实际DT参数位移与该task proxy内积为-3.65394843e-08/-3.79671514e-08，两rank一阶方向均下降。先前完整minibatch Gram的gDT·gTotal=+1.94059959e-08，亦未被H/KL反向。因此仅凭熵范数4.4倍或有限冻结PG升+1.708e-07，不能声称Adam把当前任务方向推反；训练退化与弱信用仍需奖励相关性证据，不把这一更新代理等同真实成功率。
+
+CPU PID3481127/birth1791251847.82，分析3.197秒、RSS约.548GiB、PSS约.261GiB，CUDA/distributed未初始化；0模型/预测/DT/反向/更新。输出bd1d1651、分析source9bcb5861和独立review1d48c06a绑定既有结果。另对64原native B4首轮读出按完全相同prompt/query分组：跨原response长度EOS参考成功概率最大差3.9463pp，相同prompt+长度513的最大差2.72e-06；描述长度依赖，不将其当成211倍原因或新数值门槛。
+
+版本角色：仅保存的原始张量分析，无生产修复或新训练。PLAN、c9cd147 DT、原VERL、LoRA8/16和每卡B4不变；TextCraft保持停止。单token仍仅局部诊断，整体归因评价保留原论文累计删除/RISE/MAS。
+
+
 ## 2026-10-06 当前响应时钟候选与真实更新的冻结目标变化
 
 隔离query候选：原环境直接执行已交付response，冻结228afbc7查询却要求补完同一response。仅在诊断tokenizer入口替换两句，原prefix/source IDs、EOS参照、labels、G、sampling、步数和Q/V/A不变；新增query IDs仅对应上述两句变动。v2 PID3208088/birth1791249307.77完成，GPU4/5，149.368秒；64真实首轮病例，每rank64次native B2事实/EOS配对，无重复行/补padding；actor/DT配置仍每卡B4。原/candidate pooled Brier .38691061/.39847212，成功根绝对均值 .15918764/.12382817。成功/失败评分和相关变化混合，不能称其修复了小token信用或1/211 PG。原B2与旧B4同编码LP差保存为描述，未扩大FA/FLA容差或加纠偏。v1仅CPU prepared；review发现分桶会造成rank42/44次FSDP调用及class来源观察错误，未提交GPU。v2固定同步调用次数并改为method来源，保留v1原始源码和CPU回执。
