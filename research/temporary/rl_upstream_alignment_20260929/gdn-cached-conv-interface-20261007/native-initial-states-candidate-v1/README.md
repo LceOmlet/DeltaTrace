@@ -1,9 +1,14 @@
 # Cached-convolution initial_states: measured and deployed
 
 2026-10-07: the actual long B8 comparison and exact32768 capacity check have
-completed. Production AppWorld driver1119928 uses the two tested DT owner
-bytes and the minimal patched canonical HF module, with original VERL/LOOP
-unchanged. It starts from base weights without checkpoint recovery. See
+completed. Current production AppWorld driver1181392 uses the two tested DT owner
+bytes and the minimal patch in the original installed canonical HF module,
+with original VERL/LOOP unchanged. Driver1119928 failed at task service
+readiness before sampling: its isolation namespace loader added about4s to
+every environment interpreter startup. The current production PYTHONPATH
+excludes that loader; both loader flags are removed. The private namespace
+path below describes the completed isolated DT comparison, not the production
+service import path. It starts from base weights without checkpoint recovery. See
 `experiments/rl/results_appworld_efficiency_20261007.json` and RUNTIME_RECORD.md
 for source hashes and the scope of official operator assertions. Historical
 preparation receipts remain unchanged; they do not override deployment status.
@@ -135,3 +140,9 @@ These observations, raw Q/V/A differences and source hashes are retained in
 scale, clipping or threshold change was introduced. Whole-DT conservation
 is not reported as passing, and this diagnostic is not used to invent a new
 training gate.
+
+The historical `prepare_appworld_native_conv_initial_states.py` namespace
+preparation is not the accepted production import route. The exact canonical
+owner change, original backup SHA, CPU import verification and new submitted
+source are recorded under `appworld-efficiency-20261007/native-conv-canonical-
+owner-v2`. No LOOP wait/retry or service parameters were altered.

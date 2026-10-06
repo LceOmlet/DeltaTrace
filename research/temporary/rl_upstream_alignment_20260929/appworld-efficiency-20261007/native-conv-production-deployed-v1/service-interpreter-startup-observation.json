@@ -1,0 +1,41 @@
+{
+  "observed_unix": 1791314360.7110536,
+  "scope": "Two sequential same-service-interpreter startup -c probes only. No torch call/model/AppWorld service/HTTP/forward/backward/optimizer/GPU. GPU visibility empty. Single observation, not concurrent-service reproduction.",
+  "environment_basis": "Existing sourced metax-entry.env.sh plus recorded actual driver safe startup environment; not a claim of full dead-process environment reproduction. Only probe flag differs.",
+  "source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-fresh-native-conv-20261007-v1/appworld-dt/source.json",
+    "sha256": "b8ae7e7da7cf79aff067f8524027140a091ca2c1374ff904ab17c83249e95901"
+  },
+  "server": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-loop-readiness-20261006-v1/loop-owner/phi_agents/appworld/server.py",
+    "sha256": "446e16a0bf2a1fbec25add6a12d3e02879d075171a2bc0eba6d73d3be133f2a6",
+    "text": "#\n# For licensing see accompanying LICENSE file.\n# Copyright (C) 2025 Apple Inc. All Rights Reserved.\n#\n\nimport signal\nimport subprocess\nfrom pathlib import Path\n\nfrom phi_agents.utils.logger import get_phi_logger\n\nDEFAULT_APPWORLD_BIN = \"appworld-env/bin/appworld\"\n\n\nlogger = get_phi_logger()\n\n\ndef launch_appworld_environment_server(\n    port: int | None, docker: bool, appworld_root: str | None, stdout_to_devnull: bool\n) -> subprocess.Popen[bytes]:\n    \"\"\"Launch an AppWorld server.\n\n    Run `appworld serve --help` for more details.\n\n    Args:\n        port: .\n        docker: Whether to run it in a docker container.\n        appworld_root: .\n        stdout_to_devnull: Whether to redirect stdout to devnull.\n    \"\"\"\n    appworld_cmd = DEFAULT_APPWORLD_BIN if Path(DEFAULT_APPWORLD_BIN).exists() else \"appworld\"\n    args = [appworld_cmd, \"serve\", \"environment\", \"--no-show-usage\"]\n    if port:\n        args.extend([\"--port\", str(port)])\n    if docker:\n        args.append(\"--docker\")\n    if appworld_root:\n        args.extend([\"--root\", appworld_root])\n    return subprocess.Popen(args, stdout=subprocess.DEVNULL if stdout_to_devnull else None)\n\n\ndef stop_appworld_environment_server(popen: subprocess.Popen[bytes]) -> None:\n    logger.info(\"sending SIGINT command to the appworld subprocess...\")\n    popen.send_signal(signal.SIGINT)\n    popen.wait(timeout=20)\n    logger.info(\"appworld server terminated\")\n\n\ndef force_stop_appworld_environment_server(popen: subprocess.Popen[bytes]) -> None:\n    logger.info(\"sending SIGKILL command to the appworld subprocess...\")\n    popen.send_signal(signal.SIGKILL)\n    popen.wait(timeout=10)\n    logger.info(\"appworld server forcefully terminated\")\n"
+  },
+  "cli": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/appworld",
+    "sha256": "3d28e631071461134ac8fa7a67736fe1861b41de372b6818226197848dcdc8d5",
+    "shebang": "#!/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python"
+  },
+  "results": [
+    {
+      "enabled": false,
+      "elapsed_seconds": 0.040175830999942264,
+      "returncode": 0,
+      "stdout": "{\"executable\": \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python\", \"torch_present\": false, \"transformers_present\": false, \"qwen35_package_present\": false, \"qwen35_model_present\": false, \"torch_path\": null, \"transformers_path\": null, \"max_rss_kib\": 19308, \"cuda_visible_devices\": \"\", \"maca_visible_devices\": \"\"}\n",
+      "stderr": ""
+    },
+    {
+      "enabled": true,
+      "elapsed_seconds": 4.031218682001054,
+      "returncode": 0,
+      "stdout": "{\"executable\": \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python\", \"torch_present\": false, \"transformers_present\": true, \"qwen35_package_present\": true, \"qwen35_model_present\": false, \"torch_path\": null, \"transformers_path\": \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/__init__.py\", \"max_rss_kib\": 78872, \"cuda_visible_devices\": \"\", \"maca_visible_devices\": \"\"}\n",
+      "stderr": ""
+    }
+  ],
+  "remote_reader_stderr": "",
+  "reader_source_sha256": "da512df2dc6bf43b119c9f44e668878d39ed4be71bd2076292e1367e1cf353e4",
+  "actual_driver_safe_environment_receipt": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\native-conv-production-deployed-v1\\independent-source-review-1791313886.json",
+    "sha256": "10ea1c9f5ba002c11b2911bd21f853616053f380a0f3f51cee799d37f6f0dfed"
+  }
+}

@@ -37,6 +37,9 @@ for j in active['jobs']:
         entry=str(entry),verl_root=str(vr),dt_root=j['dt_root'],source=artifact(src),output=j['output'],log=j['log'],
         checkpoints=j['checkpoints'],budget=j['budget'],launch=artifact(Path(j['output'])/'launch.json'),
         declared_resource_config={k:j.get(k) for k in ['lora_rank','lora_alpha','actor_microbatch','log_prob_micro_batch_size_per_gpu']})
+    rec['declared_job_status']=j.get('status')
+    if j.get('latest_service_startup'):
+        rec['latest_service_startup']=j['latest_service_startup']
     rec['startup_provenance']={k:source[k] for k in [
         'submission_repository_commit','submission_script_sha256','prepared_receipt',
         'prepared_receipt_sha256','prior_driver_pid','resume_from','completed_checkpoint_marker',
@@ -47,7 +50,9 @@ for j in active['jobs']:
         'rollout_scope_commit','rollout_scope_comparison','rollout_scope_comparison_sha256',
         'completion_transport_code_commit','completion_transport_receipt',
         'completion_transport_receipt_sha256','completion_transport_sources',
-        'resume_launcher','unfinished_rollout_restart','initialization_retry'] if k in source}
+        'resume_launcher','unfinished_rollout_restart','initialization_retry',
+        'native_conv_preparation','canonical_HF_owner','candidate_environment',
+        'native_conv_capacity_receipt','isolated_owners'] if k in source}
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')

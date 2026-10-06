@@ -1,5 +1,33 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 03:19 最新：移除任务服务继承的额外导入
+
+下方1119928不是健康训练：它在原LOOP构造64个runner时全部readiness失败，
+192次server launch/128次restart/0ready，尚未采样、DT或更新；已退出、八卡无进程。
+原Popen不传env，新的namespace sitecustomize因而进入每个AppWorld解释器启动。
+同实际CLI shebang解释器、纯CPU的OFF/ON：.04018/4.03122秒、19,308/78,872KiB；
+ON导入Transformers/Qwen包，未导入torch或Qwen modeling。不能写成torch急导入。
+约3.991秒额外开销占原5×1秒sleep预算大部；requests无timeout，故5秒非绝对墙钟。
+这不是修改LOOP wait/retry的理由，原参数与服务行为保留。
+
+已将相同验过的最小HF owner patch f7e1a804→59f9c339原子写入本任务private VENV
+原canonical modeling_qwen3_5.py，原before文件及SHA保存于native-conv-canonical-owner-v2。
+不是重装包/替代模型/新loader。生产PYTHONPATH删除isolation父目录，移除两个
+namespace loader变量；DT linked tree/runner e9c75764/GDN ef55ce08及producer2c01c47e
+保持不变。新CPU实际import从原installed canonical路径得到59f9c339，CUDA未初始化。
+原VERL、LOOP、LoRA8/16、每卡B4、epoch2/全部采样预算和DT Q/V/A及白化不变。
+
+新base driver1181392、出生1791314386.58、GPU4/5，run
+appworld-fresh-native-conv-canonical-20261007-v2/appworld-dt；resume disable，不加载检查点。
+source SHA3cd90b2db649cd477bc21398e7677dc8ea5534d5230296fc5f63c04037cd3427；
+prepared SHAf5232ac1dc7cc13a6142902488fdb28243f86dd7de91774bb91c3279fe5c0ec3。
+原isolated_owners回执仍作为DT tree和历史诊断身份，不能把其中旧HF/sitecustomize路径
+当当前导入；当前路径以canonical_HF_owner和CPU实际import回执为准。
+03:20只读RPC在两个actor尚未注册时退出，未进行模型调用，不把诊断未就绪当训练失败。
+原AppWorldInterface真实单服务已ready：constructor3.2181秒、原dummy GET200、close_server.464秒，PID1198262退出0/_server清空；原默认等待和重试未改，未执行任务/模型。单服务不是64服务池验收。03:22:51新job仍引擎初始化，物理4/5卡47729/47713MiB，container88.64GB/966.37GB，OOM/failcnt0；非DT峰值。03:23:47原池已64/64ready、64次launch、0restart/连接错误，实际loop_transport开始采样（latest两rank16/19项回复、2044/2495生成token；含交互，非纯decode）。03:24原worker1189140/1190575实际导入installed canonical HF59f9、actor3a65/worker e5eb/helper079a及两个vLLM已验SHA7e55/37db，namespace flag为None；LoRA8/16/B4/epoch2/entropy.001/dualclip3同原。完整白化更新尚未发生，不称学习退化已修复。
+本次实际运行源以这些哈希为准；ae35ecc只记录前一次source，不能冒充新source。
+
+
 ## 2026-10-07 03:10 最新：官方卷积 initial_states 接口已部署，仍无检查点恢复
 
 覆盖下方722849/v2的当前状态。旧base作业722849在1791313817.799完整停止，

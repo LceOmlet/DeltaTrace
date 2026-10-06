@@ -1,0 +1,197 @@
+{
+  "status": "read_only_source_and_existing_failure_observation_plus_two_cpu_startups_complete",
+  "scope": "No formal/source mutation, restart, service launch, HTTP, model/forward/backward/optimizer/GPU call.",
+  "inputs": {
+    "failure_raw": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\native-conv-production-deployed-v1\\readiness-failure-observation-1791314225.json",
+      "sha256": "6303dc48379bb743fae25d2e40a30355b57f45d1aa920ee098375f0690dc4005"
+    },
+    "deployment_source_review": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\native-conv-production-deployed-v1\\independent-source-review-1791313886.json",
+      "sha256": "10ea1c9f5ba002c11b2911bd21f853616053f380a0f3f51cee799d37f6f0dfed"
+    },
+    "startup_raw": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\native-conv-production-deployed-v1\\service-interpreter-startup-observation.json",
+      "sha256": "96feb25c00414b4364bb8f5c9a1846bb517f1368144fe53ebc332fcf8e40396a"
+    },
+    "previous_formal_phase": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\fresh-official-padding-v2\\formal-phase-review-1791312148.json",
+      "sha256": "cbd9e15c2db130283006b18db679a0fa212bc2d21215f3dc94ceddc4898a4da1"
+    }
+  },
+  "failed_job": {
+    "pid": 1119928,
+    "create_time": 1791313820.3,
+    "source_sha256": "b8ae7e7da7cf79aff067f8524027140a091ca2c1374ff904ab17c83249e95901",
+    "driver_exists_at_observation": false,
+    "training_completed_iterations": 0,
+    "failure_phase": "Original LOOP environment runner pool construction, before sampler start completion. No collected episode/DT/update is established for this failed job.",
+    "exception_call_chain": [
+      "rollout_loop.multi_turn_loop:571",
+      "loop_owner_rollout.collect_native_trajectories:49",
+      "loop_async_transport.collect:32 pool.start()",
+      "loop_owner_worker.start:210 -> event:189",
+      "original VLLMRolloutWorker.__init__:133 executor.map(_create_runner)",
+      "_create_runner:127 hydra.instantiate",
+      "loop_owner_worker.RecordedRunner.__init__:25 super().__init__",
+      "original AppWorldScenarioRunner.__init__:112 AppWorldInterface(stdout_to_devnull=True)",
+      "original AppWorldInterface._wait_for_server_ready:193 RuntimeError localhost:49216"
+    ]
+  },
+  "failure_log": {
+    "path": "/tmp/ray/session_2026-10-07_03-10-44_215608_1119928/logs/worker-c25fa1a6ac8cb9c098dbce6fe10464d49e48d2b89105648d1593a6e3-01000000-1124886.err",
+    "sha256": "897a6828b3178e77842a63244640109609be1d8b68b122d259ab3d6a02c4db11",
+    "bytes": 124735,
+    "counts_in_all_retained_matching_lines_deduplicated_by_original_line": {
+      "Launching AppWorld server with port:": 192,
+      " is ready.": 0,
+      "Restarting server after client connection failure.": 128,
+      "RuntimeError: Could not connect": 64
+    },
+    "coverage": "Reader retained all matching launch/restart/ready/failure lines plus context. These counts are log facts, not service exit-code evidence.",
+    "owner_1144819_thread0_timeline": [
+      {
+        "line": 53,
+        "text": "PHI: 2026-10-07 03:14:19,955 - 1144819 - ThreadPoolExecutor-0_0 - INFO - Launching AppWorld server with port: 31511"
+      },
+      {
+        "line": 55,
+        "text": "PHI: 2026-10-07 03:14:19,961 - 1144819 - ThreadPoolExecutor-0_0 - INFO - Waiting for AppWorld server at http://localhost:31511 to be ready."
+      },
+      {
+        "line": 164,
+        "text": "PHI: 2026-10-07 03:14:25,002 - 1144819 - ThreadPoolExecutor-0_0 - WARNING - Restarting server after client connection failure."
+      },
+      {
+        "line": 233,
+        "text": "PHI: 2026-10-07 03:14:28,035 - 1144819 - ThreadPoolExecutor-0_0 - INFO - Launching AppWorld server with port: 34825"
+      },
+      {
+        "line": 322,
+        "text": "PHI: 2026-10-07 03:14:33,071 - 1144819 - ThreadPoolExecutor-0_0 - WARNING - Restarting server after client connection failure."
+      },
+      {
+        "line": 462,
+        "text": "PHI: 2026-10-07 03:14:36,231 - 1144819 - ThreadPoolExecutor-0_0 - INFO - Launching AppWorld server with port: 49216"
+      },
+      {
+        "line": 464,
+        "text": "PHI: 2026-10-07 03:14:36,240 - 1144819 - ThreadPoolExecutor-0_0 - WARNING - Failed to connect attempt_wait=0/5 attempt_restart=2/2"
+      },
+      {
+        "line": 521,
+        "text": "PHI: 2026-10-07 03:14:37,242 - 1144819 - ThreadPoolExecutor-0_0 - WARNING - Failed to connect attempt_wait=1/5 attempt_restart=2/2"
+      },
+      {
+        "line": 600,
+        "text": "PHI: 2026-10-07 03:14:38,244 - 1144819 - ThreadPoolExecutor-0_0 - WARNING - Failed to connect attempt_wait=2/5 attempt_restart=2/2"
+      },
+      {
+        "line": 665,
+        "text": "PHI: 2026-10-07 03:14:39,245 - 1144819 - ThreadPoolExecutor-0_0 - WARNING - Failed to connect attempt_wait=3/5 attempt_restart=2/2"
+      },
+      {
+        "line": 868,
+        "text": "PHI: 2026-10-07 03:14:41,247 - 1144819 - ThreadPoolExecutor-0_0 - WARNING - Failed to connect attempt_wait=4/5 attempt_restart=2/2"
+      },
+      {
+        "line": 870,
+        "text": "PHI: 2026-10-07 03:14:41,247 - 1144819 - ThreadPoolExecutor-0_0 - ERROR - Error occured when waiting for AppWorld server to be ready."
+      }
+    ]
+  },
+  "owner_sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-loop-readiness-20261006-v1/loop-owner/phi_agents/appworld/server.py",
+      "sha256": "446e16a0bf2a1fbec25add6a12d3e02879d075171a2bc0eba6d73d3be133f2a6",
+      "line_start": 18,
+      "line_end": 39
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-loop-readiness-20261006-v1/loop-owner/phi_agents/appworld/interface.py",
+      "sha256": "17adc301aae395b789b5528abc167fd025b6cbb22379e954c600ed586987610e",
+      "line_start": 139,
+      "line_end": 149
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-loop-readiness-20261006-v1/loop-owner/phi_agents/appworld/interface.py",
+      "sha256": "17adc301aae395b789b5528abc167fd025b6cbb22379e954c600ed586987610e",
+      "line_start": 155,
+      "line_end": 197
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/sitecustomize.py",
+      "sha256": "b5eaaa84ad28cfca35201e02647570ec9bf4bd5915ccb6d395e8b66d08eb5da3",
+      "line_start": 1,
+      "line_end": 10
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/entry/loop_owner_worker.py",
+      "sha256": "1bf093a213aa4b4dee0b2a68b50b947564d1781e615929891137bc73a5719cdb",
+      "line_start": 1,
+      "line_end": 75
+    }
+  ],
+  "startup_inheritance": {
+    "official_popen": "server.py:39 Popen(args,stdout=DEVNULL if stdout_to_devnull else None); no env or stderr kwargs.",
+    "consequence": "Service Python inherits parent PYTHONPATH/loader flag; stderr inherits the original owner stderr, stdout is discarded. This LOOP launch function creates no separate service log file.",
+    "new_loader": "sitecustomize.py:2/9 imports transformers.models.qwen3_5 for every inherited Python startup while flag is1, without process-role restriction.",
+    "existing_readiness": "interface.py:159-190 preserves5 checks,5 one-second sleeps per attempt and2 restarts. requests.get has no timeout, so this is sleep budget, not a hard5-second wall limit.",
+    "actual_cli": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/appworld",
+      "sha256": "3d28e631071461134ac8fa7a67736fe1861b41de372b6818226197848dcdc8d5",
+      "shebang": "#!/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python"
+    }
+  },
+  "pure_cpu_same_interpreter_startup": {
+    "environment_scope": "Existing sourced metax-entry.env.sh plus recorded actual driver safe startup environment; not a claim of full dead-process environment reproduction. Only probe flag differs.",
+    "results": [
+      {
+        "loader_enabled": false,
+        "seconds": 0.040175830999942264,
+        "exit_code": 0,
+        "modules": {
+          "torch_present": false,
+          "transformers_present": false,
+          "qwen35_package_present": false,
+          "qwen35_model_present": false
+        },
+        "max_rss_kib": 19308,
+        "stderr": "",
+        "cuda_visible_devices": "",
+        "maca_visible_devices": ""
+      },
+      {
+        "loader_enabled": true,
+        "seconds": 4.031218682001054,
+        "exit_code": 0,
+        "modules": {
+          "torch_present": false,
+          "transformers_present": true,
+          "qwen35_package_present": true,
+          "qwen35_model_present": false
+        },
+        "max_rss_kib": 78872,
+        "stderr": "",
+        "cuda_visible_devices": "",
+        "maca_visible_devices": ""
+      }
+    ],
+    "on_minus_off_seconds": 3.9910428510011116,
+    "only_probe_difference": "DT_PREFIX_NATIVE_CONV_INITIAL_STATES 0 versus1; GPU visibility empty in both.",
+    "confirmed": "The eager Transformers/Qwen-package import adds about3.99s to this sequential interpreter startup. Torch and the Qwen modeling module were not imported in this measurement.",
+    "not_measured": "Actual AppWorld serve startup and64 concurrent services were not replayed. Do not multiply the sequential time by64 or claim a measured concurrent deadline."
+  },
+  "conclusion": {
+    "proven_integration_cost": "The production isolation mechanism adds previously absent per-service Python startup work, even though the convolution primitive itself is not used by the environment service.",
+    "supported_failure_hypothesis": "About3.99s extra startup consumes most of the original5s per-attempt sleep budget and is a concrete plausible contributor to the observed all64 readiness failures.",
+    "not_proven": "No per-service import timeline/exit code proves that eager import alone caused every timeout; no service200 readiness or application-startup messages are present in the retained failure evidence.",
+    "minimum_owner_fix_scope_for_parent_review": "Use the already accepted minimal HF canonical-owner patch in the private VENV and remove the isolation startup loader path/flags, preserving LOOP/readiness/retries/official rollout and training parameters. This review did not apply it.",
+    "previous_run_scope": "Previous unchanged-LOOP v2 had232 collected episodes and reachedDT; this distinguishes source/version history, not an isolated causal experiment."
+  },
+  "limitations": [
+    "An empty port/process list after the failed driver exited does not establish service lifetime or exit code at failure.",
+    "No new training or numerical tolerance claim is made.",
+    "Source identity and CPU startup evidence do not establish fresh DT/PPO health."
+  ]
+}
