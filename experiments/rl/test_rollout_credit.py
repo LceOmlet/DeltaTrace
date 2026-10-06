@@ -14,6 +14,7 @@ from agent_system.multi_turn_rollout.rollout_loop import TrajectoryCollector
 from verl import DataProto
 from verl.trainer.ppo.ray_trainer import AdvantageEstimator, compute_advantage
 from verl.trainer.ppo.core_algos import compute_policy_loss
+import verl.utils.torch_functional as verl_F
 
 from counterfactual import return_credit_for_episode
 
@@ -77,11 +78,16 @@ def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient(monkeypatch)
     original_ids = data.batch["responses"].clone()
     original_advantages = data.batch["dt_token_advantages"].clone()
     data = compute_advantage(data, AdvantageEstimator.DELTATRACE)
-    torch.testing.assert_close(data.batch["advantages"], original_advantages, atol=0, rtol=0)
+    response_mask = data.batch["response_mask"].to(dtype=torch.bool)
+    expected_actor_advantages = torch.where(
+        response_mask, verl_F.masked_whiten(original_advantages, response_mask), 0.0,
+    )
+    torch.testing.assert_close(data.batch["dt_token_advantages"], original_advantages, atol=0, rtol=0)
+    torch.testing.assert_close(data.batch["advantages"], expected_actor_advantages, atol=0, rtol=0)
     torch.testing.assert_close(data.batch["responses"], original_ids)
     torch.testing.assert_close(data.batch["returns"], data.batch["dt_q_estimates"])
     assert not torch.equal(data.batch["returns"], data.batch["advantages"])
-    torch.testing.assert_close(data.batch["advantages"], data.batch["dt_q_estimates"] - data.batch["dt_v_estimates"])
+    torch.testing.assert_close(data.batch["dt_token_advantages"], data.batch["dt_q_estimates"] - data.batch["dt_v_estimates"])
     assert "values" not in data.batch  # No learned critic inserted.
     old_log_prob = torch.full_like(data.batch["advantages"], -2.0)
     log_prob = old_log_prob.clone().requires_grad_()

@@ -666,11 +666,49 @@ RAY_ADV_ENUM_NEW = "    GiGPO = 'gigpo'\n    DELTATRACE = 'deltatrace'\n"
 RAY_ADV_ENUM_STALE = "    GiGPO = 'gigpo'\n    COUNTERFACTUAL = 'counterfactual'\n"
 RAY_ADV_INSERT_ANCHOR = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    else:\n        raise NotImplementedError\n    return data\n"
 RAY_ADV_INSERT_PREVIOUS = '        data.batch[\'advantages\'] = advantages\n        data.batch[\'returns\'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        if "dt_token_advantages" not in data.batch:\n            raise RuntimeError("deltatrace estimator requires owner-produced token advantages")\n        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)\n        advantages = data.batch["dt_token_advantages"].to(device=data.batch["responses"].device, dtype=torch.float32)\n        if advantages.shape != response_mask.shape:\n            raise RuntimeError("owner DT token advantages must align with responses")\n        advantages = advantages * response_mask.to(dtype=advantages.dtype)\n        if not torch.isfinite(advantages).all():\n            raise RuntimeError("owner DT token advantages contain non-finite values")\n        data.batch["advantages"] = advantages\n        data.batch["returns"] = advantages.detach().clone()\n    else:\n        raise NotImplementedError\n    return data\n'
-RAY_ADV_INSERT = '        data.batch[\'advantages\'] = advantages\n        data.batch[\'returns\'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)\n        for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):\n            if name not in data.batch:\n                raise RuntimeError(f"deltatrace estimator requires {name}")\n            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)\n            if value.shape != response_mask.shape:\n                raise RuntimeError(f"{name} must align with original response tokens")\n            if not torch.isfinite(value).all():\n                raise RuntimeError(f"{name} contains non-finite values")\n            data.batch[name] = torch.where(response_mask, value, 0.0)\n        data.batch["advantages"] = data.batch["dt_token_advantages"]\n        data.batch["returns"] = data.batch["dt_q_estimates"]\n    else:\n        raise NotImplementedError\n    return data\n'
+RAY_ADV_INSERT_RAW_PREVIOUS = '        data.batch[\'advantages\'] = advantages\n        data.batch[\'returns\'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)\n        for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):\n            if name not in data.batch:\n                raise RuntimeError(f"deltatrace estimator requires {name}")\n            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)\n            if value.shape != response_mask.shape:\n                raise RuntimeError(f"{name} must align with original response tokens")\n            if not torch.isfinite(value).all():\n                raise RuntimeError(f"{name} contains non-finite values")\n            data.batch[name] = torch.where(response_mask, value, 0.0)\n        data.batch["advantages"] = data.batch["dt_token_advantages"]\n        data.batch["returns"] = data.batch["dt_q_estimates"]\n    else:\n        raise NotImplementedError\n    return data\n'
+# Keep the deployed raw branch intact as a migration predecessor. Whitening
+# creates only the actor training coefficient; sampled DT Q/V/A stay raw.
+RAY_ADV_INSERT = RAY_ADV_INSERT_RAW_PREVIOUS.replace(
+    '        data.batch["advantages"] = data.batch["dt_token_advantages"]\n',
+    '        advantages = verl_F.masked_whiten(data.batch["dt_token_advantages"], response_mask)\n'
+    '        data.batch["advantages"] = torch.where(response_mask, advantages, 0.0)\n',
+    1,
+)
+RAY_WHITEN_IMPORT = "import verl.utils.torch_functional as verl_F\n"
+RAY_WHITEN_IMPORT_ANCHOR = "from verl.utils.torch_functional import masked_mean\n"
 RAY_ADV_INSERT_STALE = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    elif adv_estimator == AdvantageEstimator.COUNTERFACTUAL:\n        if \"counterfactual_credit\" not in data.batch or \"counterfactual_action_mask\" not in data.batch:\n            raise RuntimeError(\"counterfactual estimator requires collector-provided action credit\")\n        credit = data.batch[\"counterfactual_credit\"].to(device=data.batch[\"responses\"].device, dtype=torch.float32)\n        action_mask = data.batch[\"counterfactual_action_mask\"].to(device=data.batch[\"responses\"].device, dtype=torch.bool)\n        response_mask = data.batch[\"response_mask\"].to(dtype=torch.float32)\n        advantages = response_mask * credit[:, None] * action_mask[:, None].to(torch.float32)\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = advantages.detach().clone()\n    else:\n        raise NotImplementedError\n    return data\n"
 RAY_USE_CRITIC_OLD = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.COUNTERFACTUAL\n        ]:\n"
 RAY_USE_CRITIC_PRISTINE = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO\n        ]:\n"
 RAY_USE_CRITIC_NEW = "            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.DELTATRACE\n        ]:\n"
+
+
+def patch_dt_advantage_preprocessing(trainer_text: str) -> str:
+    """Upgrade only the pinned trainer's DT advantage seam and owner import."""
+    if RAY_ADV_ENUM_STALE in trainer_text:
+        trainer_text = trainer_text.replace(RAY_ADV_ENUM_STALE, RAY_ADV_ENUM_NEW, 1)
+    for previous in (RAY_ADV_INSERT_PREVIOUS, RAY_ADV_INSERT_RAW_PREVIOUS, RAY_ADV_INSERT_STALE):
+        if previous in trainer_text:
+            trainer_text = trainer_text.replace(previous, RAY_ADV_INSERT, 1)
+    if RAY_ADV_ENUM_NEW not in trainer_text:
+        if RAY_ADV_ENUM_OLD not in trainer_text:
+            raise RuntimeError("cannot find VERL advantage enum anchor")
+        trainer_text = trainer_text.replace(RAY_ADV_ENUM_OLD, RAY_ADV_ENUM_NEW, 1)
+    if RAY_ADV_INSERT not in trainer_text:
+        if RAY_ADV_INSERT_ANCHOR not in trainer_text:
+            raise RuntimeError("cannot find VERL advantage branch anchor")
+        trainer_text = trainer_text.replace(RAY_ADV_INSERT_ANCHOR, RAY_ADV_INSERT, 1)
+    if RAY_WHITEN_IMPORT not in trainer_text:
+        if RAY_WHITEN_IMPORT_ANCHOR not in trainer_text:
+            raise RuntimeError("cannot find VERL torch_functional import anchor")
+        trainer_text = trainer_text.replace(
+            RAY_WHITEN_IMPORT_ANCHOR,
+            RAY_WHITEN_IMPORT + RAY_WHITEN_IMPORT_ANCHOR,
+            1,
+        )
+    return trainer_text
+
+
 RAY_ROLLOUT_FILE = "agent_system/multi_turn_rollout/rollout_loop.py"
 ROLLOUT_STEP_ANCHOR = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n"
 ROLLOUT_STEP_INSERT = "            batch.non_tensor_batch['traj_uid'] = traj_uid\n            batch.non_tensor_batch['env_step'] = np.full(batch_size, _step, dtype=np.int64)\n"
@@ -1491,21 +1529,7 @@ def main() -> None:
     # This is intentionally a source patch to the pinned upstream tree rather
     # than a second trainer implementation.
     ray_trainer = args.verl_root / RAY_TRAINER_FILE
-    text = ray_trainer.read_text()
-    if RAY_ADV_ENUM_STALE in text:
-        text = text.replace(RAY_ADV_ENUM_STALE, RAY_ADV_ENUM_NEW, 1)
-    if RAY_ADV_INSERT_PREVIOUS in text:
-        text = text.replace(RAY_ADV_INSERT_PREVIOUS, RAY_ADV_INSERT, 1)
-    if RAY_ADV_INSERT_STALE in text:
-        text = text.replace(RAY_ADV_INSERT_STALE, RAY_ADV_INSERT, 1)
-    if RAY_ADV_ENUM_NEW not in text:
-        if RAY_ADV_ENUM_OLD not in text:
-            raise RuntimeError(f"cannot find VERL advantage enum anchor in {ray_trainer}")
-        text = text.replace(RAY_ADV_ENUM_OLD, RAY_ADV_ENUM_NEW, 1)
-    if RAY_ADV_INSERT not in text:
-        if RAY_ADV_INSERT_ANCHOR not in text:
-            raise RuntimeError(f"cannot find VERL advantage branch anchor in {ray_trainer}")
-        text = text.replace(RAY_ADV_INSERT_ANCHOR, RAY_ADV_INSERT, 1)
+    text = patch_dt_advantage_preprocessing(ray_trainer.read_text())
     if RAY_USE_CRITIC_NEW not in text:
         if RAY_USE_CRITIC_OLD in text:
             text = text.replace(RAY_USE_CRITIC_OLD, RAY_USE_CRITIC_NEW, 1)

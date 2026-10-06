@@ -6,6 +6,13 @@ dual-clip=3），DT Q/V/A 不变。依据用户既定约束，禁止 O(n²) 的�
 不再展开 response × 未来奖励事件。不逐 token 询问，不额外采样参考 token。
 本文件是唯一方法规范；README 只记录实现状态，环境记录只规定复用。
 
+**2026-10-06 用户批准：在原 trainer 的 DT 优势出口复用固定 VERL 的
+`verl_F.masked_whiten`，以整批已采集的有效 action-token mask 计算一次，
+然后交给原 actor 分发、microbatch 与 PPO loss。保留原始 d、Q_hat、V_hat、
+A_hat；白化只产生 actor 使用的训练系数，不改写反事实价值定义。
+不在每卡或每个 B4 内重新白化，不另做 GAE。当前先做隔离对照，
+不能仅因任务梯度变大而宣称学习退化已修复或恢复正式训练。**
+
 **2026-09-30 当前范围：按用户最新指令，仅 SkyRL-SQL、TextCraft、AppWorld 三组 DTPO，
 每组两卡，只使用 GPU 0–5；GPU 6/7 的 SQL GRPO 对照组停止，不再提交。
 只复用任务作者的环境、数据、采样/评测接口；不引入 SkyRL、
@@ -70,7 +77,8 @@ d_i(g)=\log p_i(G_t=g)-\log p_i^{\setminus i}(G_t=g),
 
 这里读取的是累计回报的分布，**不是把旧的各步 log-prob 归因相加后取指数**。
 同一回报可以来自不同未来轨迹，其概率包含这些轨迹的总概率；不假设各步奖励
-独立。不能用 g*d 替代，不能再次乘 reward、取绝对值、归一化或裁剪指数。
+独立。不能用 g*d 替代，不能再次乘 reward、取绝对值，不能对原始
+d/Q_hat/V_hat/A_hat 归一化或裁剪指数。批准的 actor 优势白化见下节。
 
 在参考回报分布被事实回报分布覆盖时，精确 d 满足：
 
@@ -97,9 +105,16 @@ G_t，不能只预测成功奖励或丢弃步罚。该组合与 return-condition
 | O | 状态，不参与 actor loss | 相同 |
 | Actor loss | 原 token PPO ratio/clipping、原熵项 | 完全复用固定 VERL 的原实现与默认设置 |
 
-这里的 A_hat（也记作 C_i^{DT}）已经汇总该 token 之后的奖励事件，直接进入
-它自己的 PPO ratio 和逐 token clipping。**不再对 A_hat 做 GAE、第二次
+这里的 A_hat（也记作 C_i^{DT}）已经汇总该 token 之后的奖励事件。原始值保留；
+actor 的 `advantages` 由官方 `masked_whiten(A_hat, response_mask)` 产生，
+mask 外存为零。每个生成 token 的训练系数进入自己的 PPO ratio 和逐 token
+clipping。**不再对 A_hat 做 GAE、第二次
 return-to-go 累加或 span 平均。** O/padding 仍不参与策略损失。
+
+白化使用官方默认 `shift_mean=True`、官方 masked variance 与 epsilon，
+不复制公式或自定容差。它是优化预处理，白化后系数不再逐值等于 Q_hat−V_hat。
+原始 Q/V/A 的等价范围保持如下；有限 batch 的中心化、缩放可能改变 PPO
+clipping 的分支和 PG/entropy/KL 配比，不能宣称整个 clipped 更新逐值不变。
 
 保留既定精确 PPO 对照目标：
 

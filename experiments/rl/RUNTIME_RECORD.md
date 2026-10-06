@@ -1,5 +1,29 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 用户批准的官方 DT 优势白化：隔离对照
+
+本轮用户明确要求实施并测试官方白化。唯一PLAN只增加actor优势预处理，raw
+d/Q/V/A及Q−V定义保留。`patch_dt_advantage_preprocessing`复用20bd331的
+`verl_F.masked_whiten`，整批action mask计算一次，mask外再置零；没有第二次
+GAE、额外奖励分配或自行实现的normalizer。原actor/core/worker和损失参数未改。
+
+隔离VERL副本为`candidates/textcraft-official-whitening-20261006-v1/verl`；
+1450文件逐一SHA比较，仅trainer从8816ea4e…变为7366557b…，helper仍079a6d20…。
+source patch SHA84155a17…。实际Torch源码/接口测试6通过，原collector/trainer
+测试8通过；真实64行CPU检查与直接官方helper逐值一致，245386有效action
+tokens，19非advantages tensor、7非tensor字段和metadata保留。
+
+GPU4/5隔离诊断PID2687746/birth1791283608.36观察同一checkpoint25原批次的
+raw/white PG/H/KL与cross-PG，原每卡B4/全局64和LoRA8/16保持。实际
+optimizer/scheduler、DT重算、rollout均禁止执行；开始记录不代表GPU测试完成。
+原parent1856052已退出，环境由已配置entry脚本和此前已存运行字段/完成资源
+override恢复，明确不声称拿到旧进程完整继承环境，不重装或清缓存。
+
+此时为prepared/CPU verified/native diagnostic submitted，未部署正式训练，
+TextCraft未恢复。候选源、CPU回执、原件和后续实际反向结果统一保存在
+`research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-whitening-20261006/v1/`。
+不能仅凭PG幅度增加宣称学习退化、DT估计质量或正式训练已修复。
+
 ## 2026-10-06 成功末动作信用支持与原actor载体闭合
 
 仅CPU重新归约冻结的原64/186成功response与21成功末动作，按原16个B4各自action-mask分母、每rank÷8及两rank均值保留。末动作2402 tokens，此前29851；A-L1分别3.58776707和97.21372312，token |A|均值0.001493658与0.003256632。末动作占G1 token 7.447%，A-L1 3.559%，原B4权重后3.889%；这些是系数份额，不是任务梯度贡献比例。
