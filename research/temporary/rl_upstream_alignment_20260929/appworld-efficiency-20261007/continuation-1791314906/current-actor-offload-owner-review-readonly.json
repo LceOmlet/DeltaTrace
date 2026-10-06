@@ -1,0 +1,717 @@
+{
+  "observed_unix": 1791318282.5443304,
+  "scope": "Read source files only; no torch/model/Ray/checkpoint/optimizer or test execution",
+  "files": {
+    "verl/utils/activation_offload.py": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/activation_offload.py",
+      "sha256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+      "function": "enable_activation_offloading",
+      "function_AST_sha256": "371945df488a805c7509c2bcb3e840739d07d1b22d3729f2fce65af704b0d69c",
+      "lines": [
+        {
+          "line": 525,
+          "text": "                    wrapped_module = child._fsdp_wrapped_module"
+        },
+        {
+          "line": 526,
+          "text": "                # In some cases, torch.nn.Embedding is wrapped with FSDP alone. However, the activation"
+        },
+        {
+          "line": 527,
+          "text": "                # size of torch.nn.Embedding is small, so it's not necessary to offload it."
+        },
+        {
+          "line": 528,
+          "text": "                if not isinstance(wrapped_module, torch.nn.Embedding):"
+        },
+        {
+          "line": 529,
+          "text": "                    layers.append(child)"
+        },
+        {
+          "line": 530,
+          "text": ""
+        },
+        {
+          "line": 531,
+          "text": "    get_layers(model)"
+        },
+        {
+          "line": 532,
+          "text": "    if len(layers) < 3:"
+        },
+        {
+          "line": 533,
+          "text": "        logger.warning(f\"Find only {len(layers)} fsdp layers, not neccessary to enable async activation offloading\")"
+        },
+        {
+          "line": 534,
+          "text": "        return"
+        },
+        {
+          "line": 535,
+          "text": ""
+        },
+        {
+          "line": 536,
+          "text": "    tensor_filter = FSDPParameterFilter()"
+        },
+        {
+          "line": 537,
+          "text": "    context, sync_func = get_activation_offload_context(len(layers) - 1, len(layers), tensor_filter)"
+        },
+        {
+          "line": 538,
+          "text": "    if enable_ckpt:"
+        },
+        {
+          "line": 539,
+          "text": "        # The implementation of activation checkpointing in transformers library is incompatible with activation offloading,"
+        },
+        {
+          "line": 540,
+          "text": "        # so it will be disabled, but this implementation supports another version of activation checkpointing, so that"
+        },
+        {
+          "line": 541,
+          "text": "        # these two features can be enabled at the same time."
+        },
+        {
+          "line": 542,
+          "text": "        for module in model.modules():"
+        },
+        {
+          "line": 543,
+          "text": "            if hasattr(module, \"gradient_checkpointing_disable\"):"
+        },
+        {
+          "line": 544,
+          "text": "                module.gradient_checkpointing_disable()"
+        },
+        {
+          "line": 545,
+          "text": ""
+        },
+        {
+          "line": 546,
+          "text": "    handler = ActivationHandler(context, sync_func, tensor_filter, enable_ckpt)"
+        },
+        {
+          "line": 547,
+          "text": "    for layer in layers:"
+        },
+        {
+          "line": 548,
+          "text": "        module = layer"
+        },
+        {
+          "line": 549,
+          "text": "        if isinstance(layer, FSDP):"
+        },
+        {
+          "line": 550,
+          "text": "            module = module._fsdp_wrapped_module"
+        },
+        {
+          "line": 551,
+          "text": "        handler.wrap_module_forward_method(module)"
+        }
+      ],
+      "official_file": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\utils\\activation_offload.py",
+      "official_file_sha256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+      "official_function_AST_sha256": "371945df488a805c7509c2bcb3e840739d07d1b22d3729f2fce65af704b0d69c",
+      "official_function_AST_equal": true
+    },
+    "verl/workers/actor/dp_actor.py": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "function": "update_policy",
+      "function_AST_sha256": "cc9e4bfde2c3b973e27dec0c048c19b922ec0faa7132d164fb9bf58f7e328a8e",
+      "lines": [
+        {
+          "line": 210,
+          "text": "                if calculate_entropy:"
+        },
+        {
+          "line": 211,
+          "text": "                    entropy = full_entropy.squeeze(-1)[:, -response_length - 1 : -1]  # (bsz, response_length)"
+        },
+        {
+          "line": 212,
+          "text": "                log_probs = full_log_probs.squeeze(-1)[:, -response_length - 1 : -1]  # (bsz, response_length)"
+        },
+        {
+          "line": 213,
+          "text": ""
+        },
+        {
+          "line": 214,
+          "text": "            else:  # not using rmpad and no ulysses sp"
+        },
+        {
+          "line": 215,
+          "text": "                # Preserve the response columns and original tensors. Only"
+        },
+        {
+          "line": 216,
+          "text": "                # columns masked out for every example leave the model input."
+        },
+        {
+          "line": 217,
+          "text": "                if not multi_modal_inputs and os.getenv(\"VERL_TRIM_SHARED_PADDING\", \"0\") == \"1\":"
+        },
+        {
+          "line": 218,
+          "text": "                    left_trim = int(attention_mask.long().argmax(-1).min().item())"
+        },
+        {
+          "line": 219,
+          "text": "                    # Keep the predecessor of the first real token."
+        },
+        {
+          "line": 220,
+          "text": "                    left_trim = max(0, left_trim - 1)"
+        },
+        {
+          "line": 221,
+          "text": "                    if getattr(getattr(self.actor_module, \"config\", None), \"model_type\", None) in (\"qwen3_5\", \"qwen3_5_text\"):"
+        },
+        {
+          "line": 222,
+          "text": "                        # Match the pinned FLA 64-token chunk grid in forward/backward."
+        },
+        {
+          "line": 223,
+          "text": "                        left_trim -= left_trim % 64"
+        },
+        {
+          "line": 224,
+          "text": "                    # Preserve the caller's response layout on return."
+        },
+        {
+          "line": 225,
+          "text": "                    response_left_pad = max(0, left_trim - (input_ids.shape[-1] - response_length - 1))"
+        },
+        {
+          "line": 226,
+          "text": "                    response_length -= response_left_pad"
+        },
+        {
+          "line": 227,
+          "text": "                    response_labels = response_labels[:, response_left_pad:]"
+        },
+        {
+          "line": 228,
+          "text": "                    input_ids = input_ids[:, left_trim:]"
+        },
+        {
+          "line": 229,
+          "text": "                    attention_mask = attention_mask[:, left_trim:]"
+        },
+        {
+          "line": 230,
+          "text": "                    position_ids = position_ids[..., left_trim:]"
+        },
+        {
+          "line": 231,
+          "text": "                    columns = torch.arange(input_ids.shape[-1], device=attention_mask.device)"
+        },
+        {
+          "line": 232,
+          "text": "                    right_end = int((attention_mask * columns).max().item()) + 1"
+        },
+        {
+          "line": 233,
+          "text": "                    # Retain a response position even for an empty action mask."
+        },
+        {
+          "line": 234,
+          "text": "                    right_end = max(right_end, input_ids.shape[-1] - response_length + 1)"
+        },
+        {
+          "line": 235,
+          "text": "                    if getattr(getattr(self.actor_module, \"config\", None), \"model_type\", None) in (\"qwen3_5\", \"qwen3_5_text\"):"
+        },
+        {
+          "line": 236,
+          "text": "                        right_end = min(input_ids.shape[-1], (right_end + 63) // 64 * 64)"
+        },
+        {
+          "line": 237,
+          "text": "                    response_right_pad = input_ids.shape[-1] - right_end"
+        },
+        {
+          "line": 238,
+          "text": "                    if response_right_pad:"
+        },
+        {
+          "line": 239,
+          "text": "                        response_length -= response_right_pad"
+        },
+        {
+          "line": 240,
+          "text": "                        response_labels = response_labels[:, :response_length]"
+        },
+        {
+          "line": 241,
+          "text": "                        input_ids = input_ids[:, :right_end]"
+        },
+        {
+          "line": 242,
+          "text": "                        attention_mask = attention_mask[:, :right_end]"
+        },
+        {
+          "line": 243,
+          "text": "                        position_ids = position_ids[..., :right_end]"
+        },
+        {
+          "line": 244,
+          "text": "                extra_args = {}"
+        },
+        {
+          "line": 245,
+          "text": "                if self.use_fused_kernels:"
+        },
+        {
+          "line": 246,
+          "text": "                    extra_args[\"temperature\"] = temperature"
+        },
+        {
+          "line": 247,
+          "text": "                # Select response head rows; decoder inputs and kernels stay unchanged."
+        },
+        {
+          "line": 248,
+          "text": "                head_response_length = response_length"
+        },
+        {
+          "line": 249,
+          "text": "                head_positions = response_length + 1"
+        },
+        {
+          "line": 250,
+          "text": "                if (not multi_modal_inputs and not self.use_fused_kernels"
+        },
+        {
+          "line": 251,
+          "text": "                        and os.getenv(\"VERL_TRIM_RESPONSE_HEAD\", \"0\") == \"1\""
+        },
+        {
+          "line": 252,
+          "text": "                        and getattr(getattr(self.actor_module, \"config\", None), \"model_type\", None)"
+        },
+        {
+          "line": 253,
+          "text": "                        in (\"qwen3_5\", \"qwen3_5_text\")):"
+        },
+        {
+          "line": 254,
+          "text": "                    columns = torch.arange(1, response_length + 1, device=attention_mask.device)"
+        },
+        {
+          "line": 255,
+          "text": "                    head_response_length = max(1, int((attention_mask[:, -response_length:] * columns).max().item()))"
+        },
+        {
+          "line": 256,
+          "text": "                    if head_response_length < response_length:"
+        },
+        {
+          "line": 257,
+          "text": "                        start = input_ids.shape[-1] - response_length - 1"
+        },
+        {
+          "line": 258,
+          "text": "                        head_positions = torch.arange(start, start + head_response_length + 1, device=input_ids.device)"
+        },
+        {
+          "line": 259,
+          "text": "                output = self.actor_module("
+        },
+        {
+          "line": 260,
+          "text": "                    input_ids=input_ids,"
+        },
+        {
+          "line": 261,
+          "text": "                    attention_mask=attention_mask,"
+        },
+        {
+          "line": 262,
+          "text": "                    position_ids=position_ids,"
+        },
+        {
+          "line": 263,
+          "text": "                    logits_to_keep=head_positions,"
+        },
+        {
+          "line": 264,
+          "text": "                    **multi_modal_inputs,"
+        },
+        {
+          "line": 265,
+          "text": "                    use_cache=False,"
+        },
+        {
+          "line": 266,
+          "text": "                    **extra_args,"
+        },
+        {
+          "line": 267,
+          "text": "                )  # prevent model thinks we are generating"
+        },
+        {
+          "line": 268,
+          "text": ""
+        },
+        {
+          "line": 269,
+          "text": "                if self.use_fused_kernels:"
+        },
+        {
+          "line": 270,
+          "text": "                    log_probs = output.log_probs[:, -response_length - 1 : -1]"
+        },
+        {
+          "line": 271,
+          "text": "                    entropy = output.entropy[:, -response_length - 1 : -1]  # (bsz, response_length)"
+        },
+        {
+          "line": 272,
+          "text": ""
+        },
+        {
+          "line": 273,
+          "text": "                else:"
+        },
+        {
+          "line": 274,
+          "text": "                    logits = output.logits"
+        },
+        {
+          "line": 275,
+          "text": ""
+        },
+        {
+          "line": 475,
+          "text": ""
+        },
+        {
+          "line": 476,
+          "text": "                        # compute policy loss"
+        },
+        {
+          "line": 477,
+          "text": "                        policy_loss = pg_loss - entropy_loss * entropy_coeff"
+        },
+        {
+          "line": 478,
+          "text": "                    else:"
+        },
+        {
+          "line": 479,
+          "text": "                        policy_loss = pg_loss"
+        },
+        {
+          "line": 480,
+          "text": ""
+        },
+        {
+          "line": 481,
+          "text": "                    if self.config.use_kl_loss:"
+        },
+        {
+          "line": 482,
+          "text": "                        ref_log_prob = data[\"ref_log_prob\"]"
+        },
+        {
+          "line": 483,
+          "text": "                        # compute kl loss"
+        },
+        {
+          "line": 484,
+          "text": "                        kld = kl_penalty(logprob=log_prob, ref_logprob=ref_log_prob, kl_penalty=self.config.kl_loss_type)"
+        },
+        {
+          "line": 485,
+          "text": "                        kl_loss = agg_loss(loss_mat=kld, loss_mask=response_mask, loss_agg_mode=loss_agg_mode)"
+        },
+        {
+          "line": 486,
+          "text": ""
+        },
+        {
+          "line": 487,
+          "text": "                        policy_loss = policy_loss + kl_loss * self.config.kl_loss_coef"
+        },
+        {
+          "line": 488,
+          "text": "                        metrics[\"actor/kl_loss\"] = kl_loss.detach().item()"
+        },
+        {
+          "line": 489,
+          "text": "                        metrics[\"actor/kl_coef\"] = self.config.kl_loss_coef"
+        },
+        {
+          "line": 490,
+          "text": ""
+        },
+        {
+          "line": 491,
+          "text": "                    if self.config.use_dynamic_bsz:"
+        },
+        {
+          "line": 492,
+          "text": "                        # relative to the dynamic bsz"
+        },
+        {
+          "line": 493,
+          "text": "                        loss = policy_loss * (len(data) / self.config.ppo_mini_batch_size)"
+        },
+        {
+          "line": 494,
+          "text": "                    else:"
+        },
+        {
+          "line": 495,
+          "text": "                        loss = policy_loss / self.gradient_accumulation"
+        },
+        {
+          "line": 496,
+          "text": "                    loss.backward()"
+        },
+        {
+          "line": 497,
+          "text": ""
+        },
+        {
+          "line": 498,
+          "text": "                    data = {"
+        },
+        {
+          "line": 499,
+          "text": "                        \"actor/pg_loss\": pg_loss.detach().item(),"
+        },
+        {
+          "line": 500,
+          "text": "                        \"actor/pg_clipfrac\": pg_clipfrac.detach().item(),"
+        },
+        {
+          "line": 501,
+          "text": "                        \"actor/ppo_kl\": ppo_kl.detach().item(),"
+        },
+        {
+          "line": 502,
+          "text": "                        \"actor/pg_clipfrac_lower\": pg_clipfrac_lower.detach().item(),"
+        },
+        {
+          "line": 503,
+          "text": "                    }"
+        },
+        {
+          "line": 504,
+          "text": "                    append_to_dict(metrics, data)"
+        },
+        {
+          "line": 505,
+          "text": ""
+        },
+        {
+          "line": 506,
+          "text": "                grad_norm = self._optimizer_step()"
+        },
+        {
+          "line": 507,
+          "text": "                data = {\"actor/grad_norm\": grad_norm.detach().item()}"
+        },
+        {
+          "line": 508,
+          "text": "                append_to_dict(metrics, data)"
+        },
+        {
+          "line": 509,
+          "text": "        self.actor_optimizer.zero_grad()"
+        },
+        {
+          "line": 510,
+          "text": "        return metrics"
+        }
+      ],
+      "official_file": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\workers\\actor\\dp_actor.py",
+      "official_file_sha256": "5f3f9b09a1a0d497bf1e45fd97590bf80c63c08bb768ddf6967415f96fc8a928",
+      "official_function_AST_sha256": "cc9e4bfde2c3b973e27dec0c048c19b922ec0faa7132d164fb9bf58f7e328a8e",
+      "official_function_AST_equal": true
+    },
+    "verl/workers/fsdp_workers.py": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+      "function": null,
+      "function_AST_sha256": null,
+      "lines": [
+        {
+          "line": 340,
+          "text": "                sync_module_states=True,"
+        },
+        {
+          "line": 341,
+          "text": "                device_mesh=self.device_mesh,"
+        },
+        {
+          "line": 342,
+          "text": "                forward_prefetch=False,"
+        },
+        {
+          "line": 343,
+          "text": "            )"
+        },
+        {
+          "line": 344,
+          "text": "        elif fsdp_strategy == \"fsdp2\":"
+        },
+        {
+          "line": 345,
+          "text": "            assert CPUOffloadPolicy is not None, \"PyTorch version >= 2.4 is required for using fully_shard API (FSDP2)\""
+        },
+        {
+          "line": 346,
+          "text": "            mp_policy = MixedPrecisionPolicy(param_dtype=param_dtype, reduce_dtype=reduce_dtype, cast_forward_inputs=True)"
+        },
+        {
+          "line": 347,
+          "text": "            if role == \"actor\" and fsdp_config.offload_policy:"
+        },
+        {
+          "line": 348,
+          "text": "                cpu_offload = CPUOffloadPolicy(pin_memory=True)"
+        },
+        {
+          "line": 349,
+          "text": "                self._is_offload_param = False"
+        },
+        {
+          "line": 350,
+          "text": "                self._is_offload_optimizer = False"
+        },
+        {
+          "line": 351,
+          "text": "            else:"
+        },
+        {
+          "line": 352,
+          "text": "                cpu_offload = None if role == \"actor\" else CPUOffloadPolicy(pin_memory=True)"
+        },
+        {
+          "line": 600,
+          "text": "            self.ref_policy = DataParallelPPOActor(config=self.config.ref, actor_module=self.ref_module_fsdp)"
+        },
+        {
+          "line": 601,
+          "text": ""
+        },
+        {
+          "line": 602,
+          "text": "        if self._is_actor:"
+        },
+        {
+          "line": 603,
+          "text": "            self.flops_counter = FlopsCounter(self.actor_model_config)"
+        },
+        {
+          "line": 604,
+          "text": "            self.checkpoint_manager = FSDPCheckpointManager("
+        },
+        {
+          "line": 605,
+          "text": "                model=self.actor_module_fsdp,"
+        },
+        {
+          "line": 606,
+          "text": "                optimizer=self.actor.actor_optimizer,"
+        },
+        {
+          "line": 607,
+          "text": "                lr_scheduler=self.actor_lr_scheduler,"
+        },
+        {
+          "line": 608,
+          "text": "                processing_class=self.processor if self.processor is not None else self.tokenizer,"
+        },
+        {
+          "line": 609,
+          "text": "                checkpoint_contents=self.config.actor.checkpoint.contents,"
+        },
+        {
+          "line": 610,
+          "text": "            )"
+        },
+        {
+          "line": 611,
+          "text": ""
+        },
+        {
+          "line": 612,
+          "text": "    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)"
+        },
+        {
+          "line": 613,
+          "text": "    def update_actor(self, data: DataProto):"
+        },
+        {
+          "line": 614,
+          "text": "        # Support all hardwares"
+        },
+        {
+          "line": 615,
+          "text": "        data = data.to(get_torch_device().current_device())"
+        },
+        {
+          "line": 616,
+          "text": ""
+        },
+        {
+          "line": 617,
+          "text": "        assert self._is_actor"
+        },
+        {
+          "line": 618,
+          "text": "        if self._is_offload_param:"
+        },
+        {
+          "line": 619,
+          "text": "            load_fsdp_model_to_gpu(self.actor_module_fsdp)"
+        },
+        {
+          "line": 620,
+          "text": "        if self._is_offload_optimizer:"
+        },
+        {
+          "line": 621,
+          "text": "            load_fsdp_optimizer(optimizer=self.actor_optimizer, device_id=get_torch_device().current_device())"
+        },
+        {
+          "line": 622,
+          "text": ""
+        },
+        {
+          "line": 623,
+          "text": "        with self.ulysses_sharding_manager:"
+        },
+        {
+          "line": 624,
+          "text": "            data = self.ulysses_sharding_manager.preprocess_data(data=data)"
+        },
+        {
+          "line": 625,
+          "text": "            # perform training"
+        }
+      ]
+    }
+  },
+  "findings": {
+    "double_parameter_offload": false,
+    "double_checkpoint_wrappers": false,
+    "shared_right_padding_fix_active": true,
+    "whole_current_actor_timing_available": false,
+    "scope": "Owner source inspection; actor has not yet started in latest phase1791318242. Not an update/tolerance/performance test."
+  }
+}

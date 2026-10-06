@@ -1,5 +1,42 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 04:25 当前DT计算与官方actor重算审查
+
+31146同一driver1181392/birth1791314386.58、source3cd90b2d、GPU4/5仍从base运行，
+resume disable；本次不加载/导出检查点、不重启、不替换冻结owner。
+原第6组两卡71个B4完成，第7组各136 contrasts/34 B4开始；尚未进入actor，
+不能拿旧2495秒判定本次actor>sampling，不能声称本次白化更新已经完成。
+实际trainer d35ddd26仍在整批action mask上唯一调用原masked_whiten，
+随后原DP/mini/B4/update_policy；原d/Q/V/A/returns和LoRA8/16/B4不变。
+
+当前前5个完整组各1192 contrasts/298 B4的原字段已核算：单端点suffix槽数
+996996/978580，其中action230753/234665、query+target372184/372178，
+历史尾部+64对齐+右padding394059/371737，占39.52%/37.99%。右padding本身
+119620/113500，其余历史尾部与对齐尚不能分开。这是token工作量，不能称为
+可删墙钟/FLOPs比例；旧轮44–45%不代填本轮。原字段两种query计数逐组相等。
+回执current-native-slot-accounting-1791318168-readonly.json保留原日志前缀SHA。
+
+实际owner审查排除两项具体重复：fsdp_workers e5eb4afc:347–350启用原FSDP2
+CPUOffloadPolicy后关闭手工参数/optimizer offload；activation_offload82904250:
+538–544先禁用HF checkpoint，再装原activation-offload checkpoint。实际
+enable_activation_offloading与update_policy AST均与固定VERL20bd331相同；
+actor3a65e173已使用共同右padding裁切和原fused head。此为源码行为审查，
+不是新PPO数值容差或完整更新计时。来源current-actor-offload-owner-review-readonly.json。
+
+runner e9c75764的root保存32层CPU输入，replay逐层恢复finite实际操作数；
+其计算换内存的用途与checkpoint重算对应，不能整段当可删浪费。既有GPU
+root capture容量尚未覆盖最大真实后缀；CPU版本实测回退38%，继续拒绝。
+不同response的EOS端点/query不同；PackedAnswerTargets多offset合为一个
+dense seed，没有独立query归因轴，不能把它当成合并独立response的接口。
+本次未发现可直接部署的大计算提速，不把“未发现”写成没有改进空间。
+出处current-root-replay-reuse-audit-readonly.json；两项报告及来源SHA由
+results_appworld_efficiency_20261007.json索引。
+
+状态行存储修复仍verified/prepared，不做未经验证的canonical模块热交换：
+官方Worker RPC只提供串行调用边界，不能单独证明完整artifact/lease交换正确。
+当前任务不中断；不会为无明显热耗时收益而丢弃这批已计算轨迹，也不会为
+应用存储选项重新引入用户已禁止的旧checkpoint恢复。
+
 ## 2026-10-07 04:13 新冻结存储入口准备完成，未重启当前正式训练
 
 新的entry=/candidates/appworld-native-boundary-row-storage-20261007-v1/entry，
