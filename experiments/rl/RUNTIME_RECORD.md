@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 官方白化与既有query时点修复：TextCraft已提交
+
+通过冻结原launcher提交正式恢复：代码faf0d89，PID3269087/birth1791289021.47，
+1791289021.992开始，GPU4/5。完整原checkpoint25由原VERL resume loader读取；
+正式预算仍30epochs/330iterations、每轮32组×8轨迹、原global minibatch64/4次更新、
+30交互步、训练10752/eval14848、transport32768、LoRA8/16、每卡B4、lr1e-6。
+原entropy0.001/dual-clip3和save25保留。1791289304实际核对：两rank原model/optim/extra加载25，TaskRunner原step25，
+原AgentGym rollout→adapter→原vLLM生成，当前round1/30；
+不能将单次手动updated-actor或进程存活当正式26轮/效果恢复。
+
+物理4/5约49.0/49.8GiB、cgroup133.3GiB、host available846.6GiB；本次仅启动观测，
+无新完整迭代或峰值/32k复测结论。两actor py-spy读取失败属于观测器结果，
+原样保留、不当训练异常；成功TaskRunner栈与实际源路径独立记录。
+
+正式entry textcraft-official-whitening-formal-20261006-v2；原launcher3dcecb5d…、
+readout94a7afbc…（afe59dd已有query clock修复），VERL trainer7366557b…
+（8f52官方masked_whiten）、原actor1f862e8b…、worker e5eb4afc…，DT c9/c7fc969f…。
+保留原host-cache释放env、官方AgentGym服务4049454/36005与持久编译缓存。
+启动只标准Popen原argv，不复制训练、恢复、生成、优化器或重试行为。
+
+远端active-training/active-source与新formal-training已登记实际PID/source/旧job历史；
+其他task配置未改，旧保存行不代表存活。完整源SHA、有效配置、CPU实际进口、
+提交Gitcommit及dated current_runtime.json见
+research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-whitening-formal-20261006/v2/deployment/。
+本机experiments/rl/current_runtime.json仍是明确日期的10-05历史快照，不能当最新。
+
+本机GitHub443连接连续失败（连接失败/重置），本轮bcf5caa/faf0d89目前仅本地提交；
+已部署源码和远端清单独立保存，不为推送问题重跑训练或改参数。
+
 ## 2026-10-06 官方白化后的原生真实更新与正式准备
 
 原生单次更新已完成：PID3068397/birth1791287168.04，提交源码f441671，
