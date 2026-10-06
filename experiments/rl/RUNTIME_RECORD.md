@@ -1,5 +1,16 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 等价标签编码的原任务梯度诊断
+
+隔离诊断PID552348/birth1791263586.6在GPU[4, 5]已完成并退出，墙钟902.172s（原job started到completed）。同一保存64条和完整checkpoint25，只加载一次原模型/checkpoint。先保存原A的PG/H，再临时将原RewardAlphabet.labels从01换成10，原query_ids 228保持，标签/目标编码同步；原return语义/数值、observed index、原Q/V/A公式、trajectory_credit和compute_advantage保持并恢复临时方法。新信用仅通过原DataProto pop/union接回，不重建轨迹、mask或奖励。
+
+rank0原PG norm 0.00013231116091309，换标签PG 7.0287321615131e-05；旧/新PG原互积cos -0.219494522043，weighted-H 0.00063805396851262→0.00063805092585502。实际反向pass 4，原B4反向 32，optimizer no-op 4，scheduler no-op 2；原DT报告finite_trace_calls=24，event_contrasts=96。
+
+rank1原PG norm 0.00013231116091309，换标签PG 7.0287321615131e-05；旧/新PG原互积cos -0.219494522043，weighted-H 0.00063805396851262→0.00063805092585502。实际反向pass 4，原B4反向 32，optimizer no-op 4，scheduler no-op 2；原DT报告finite_trace_calls=24，event_contrasts=96。
+
+这些是当前条件事件编码对实际PG幅度/方向的描述；不把换标签称为修好训练，不从梯度比值推未来成功率，也不替代原作者累计删除RISE/MAS。原完整action mask、每卡B4/8累积、上游PPO和H/KL配置保持；原clip执行，真实optimizer/scheduler更新和rollout均0。v1在CPU准备阶段因TensorDict键迭代接口失败，0模型/DT/backward；失败源和日志保留，v2仅修.keys()检查。source/import/config/carrier SHA、原报告、CPU分析、独立review及完成资源绑定结果字段`equivalent_label_native_task_gradient`。正式版本、原status和PLAN不变，未运行pending归一化。
+
+
 ## 2026-10-06 弱任务梯度：长度、事件读出及原优势预处理
 
 仅CPU复用原checkpoint25/iteration26的真实64条、8个原prompt组各8条及186成功response原件。长度分解未证明固定1/L是完整人口的主因，expm1组合未再次显著缩幅；原1/211仍是preclip任务梯度范数比，不是Adam更新或归因质量比。原同任务内奖励预测与等价标签交换的响应已绑定新原件，不能把读出缺陷与DT整体归因评价混同。
