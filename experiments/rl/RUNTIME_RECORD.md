@@ -1,5 +1,16 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 弱任务信号：原 Adam 单步对照与幅度来源
+
+隔离PID2778451/birth1791245326.02已完成，GPU4/5，830.290秒。原64条完整carrier、checkpoint25、LoRA8/16、每卡B4、原VERL actor/core/import SHA与损失默认保持不变；三支分别完整恢复model/optimizer/extra，复用原AdamW动量/RNG/scheduler。每支每rank实际1次optimizer与1次scheduler，496个state均100→101。无rollout、DT重算或正式重启。诊断只保留原返回值，原step/clip/offload未替换。
+
+按原B4分母，DT优势绝对均值为GRPO约1/1446.69，原任务梯度约1/211.33；幅度小已在DT的d里，未发现额外概率、长度除数或expm1衰减。GRPO含官方组内标准化和失败轨迹负系数，两者不要求梯度范数相等，不能将211变成信用倍率。零回报DT项为零是固定估计性质，不标为丢mask。
+
+实际原Adam DT与当前PG置零对照的本地分片更新cos=0.999581/0.999579，差向量约DT更新范数3%；对照仍含共同历史动量与weight decay，不线性分账为纯熵。原B4等权H变化DT+0.000575458、GRPO+0.000070508、对照+0.000238523。fresh before与saved trainer LP存在差异，保留原old/ref未覆写，不声称ratio恒1或新增数值容差通过。三支初始参数与before读数相同，配对变化单独记录。
+
+CPU分析只复用原DataProto/chunk与agg_loss，CUDA/distributed均false；实际本地dtype为FP32 LoRA分片，FP64副本只作描述、无gather。模型与CPU分析source/配置/资源/输入SHA、raw与独立复核全部绑定现有结果。单token对照仅补充，不取代原论文累计删除曲线及RISE/MAS。优先继续查弱信号来源；没有生产修复、信用放大、熵系数改动或TextCraft重启，正式版本保持不动。
+
+
 ## 2026-10-06 读出目标与官方 carrier：真实 ID 只读核查
 
 64条真实首轮prompt/response/query由原tokenizer仅CPU解码；具体Goal、标签0/1语义、30步/512输出/temp1预算均保留，186个正式输入保留对应首轮Goal原ID前缀。无模型、前向、额外采样、backward、更新或目标改写。decode PID2547941，CUDA/distributed均false，maxRSS约1.04 GB；回执记录精确资源与SHA。
