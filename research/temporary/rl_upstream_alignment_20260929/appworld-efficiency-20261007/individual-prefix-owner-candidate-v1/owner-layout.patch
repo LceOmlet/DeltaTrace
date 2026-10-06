@@ -1,0 +1,209 @@
+--- baseline/vendor_fa_finite_p1_bf16_d256.cu
++++ candidate/vendor_fa_finite_p1_bf16_d256.cu
+@@ -38,6 +38,9 @@
+     const int *coefficient_starts;
+     int batch,heads,kv_heads,length,query_start;
+     float scale;
++    // Optional row-specific logical starts; old exported ABIs leave both zero.
++    const int *query_starts;
++    int query_length;
+ };
+ 
+ // Phase 0: row normalization and finite center.
+@@ -53,14 +56,17 @@
+     const E *v0=static_cast<const E*>(p.v0), *u=static_cast<const E*>(p.u);
+     E *dq=static_cast<E*>(p.dq), *dk=static_cast<E*>(p.dk), *dv=static_cast<E*>(p.dv);
+     constexpr int M=Traits::kBlockM,N=Traits::kBlockN,D=Traits::kHeadDim;
+-    const int tid=threadIdx.x, bh=blockIdx.y, row0=blockIdx.x*M+p.query_start;
++    const int tid=threadIdx.x, bh=blockIdx.y;
++    const int query_start=p.query_starts?p.query_starts[bh/p.heads]:p.query_start;
++    const int row0=blockIdx.x*M+query_start;
+     // Padded length remains the storage stride; valid bounds are per sample.
+     const int length=p.length, valid=p.valid_lengths[bh/p.heads];
+     const int start=p.coefficient_starts?p.coefficient_starts[bh/p.heads]:0;
+-    const int query_length=length-p.query_start;
++    const int query_length=p.query_starts?p.query_length:length-p.query_start;
++    const int query_end=query_start+query_length;
+     // Q/U and requested coefficients contain only the cached suffix. K/V
+     // retain the complete native history. Keep global causal coordinates.
+-    const int64_t head_offset=(int64_t(bh)*query_length-p.query_start)*D;
++    const int64_t head_offset=(int64_t(bh)*query_length-query_start)*D;
+     // Same GQA mapping as pinned FA flash_fwd_kernel.h: bidh / h_h_k_ratio.
+     const int kv_bh=(bh/p.heads)*p.kv_heads+(bh%p.heads)/(p.heads/p.kv_heads);
+     const int64_t kv_offset=int64_t(kv_bh)*length*D;
+@@ -74,13 +80,13 @@
+     // history, while earlier coefficient output tiles can be omitted.
+     if(row0>=valid || row0+M<=start) {
+         if constexpr(Phase==0) {
+-            for(int j=tid;j<M;j+=blockDim.x) if(row0+j<length) {
+-                const int64_t pos=int64_t(bh)*query_length+row0+j-p.query_start;
++            for(int j=tid;j<M;j+=blockDim.x) if(row0+j<query_end) {
++                const int64_t pos=int64_t(bh)*query_length+row0+j-query_start;
+                 p.tau[pos]=0.f;p.center[pos]=0.f;
+             }
+         } else {
+             E *out=Phase==1?dq:dk;
+-            for(int j=tid;j<M*D;j+=blockDim.x) if(row0+j/D<length) {
++            for(int j=tid;j<M*D;j+=blockDim.x) if(row0+j/D<query_end) {
+                 const int64_t pos=head_offset+int64_t(row0)*D+j;
+                 out[pos]=E(0.f);
+                 if constexpr(Phase==2) dv[pos]=E(0.f);
+@@ -185,7 +191,7 @@
+             const int query=Phase==2?c:r,key=Phase==2?r:c;
+             float lm=0.f,actual_p1=0.f;
+             if(query<valid && key<valid && key<=query) {
+-                const int64_t pos=int64_t(bh)*query_length+query-p.query_start;
++                const int64_t pos=int64_t(bh)*query_length+query-query_start;
+                 const float lp0=a0(i)*p.scale-p.lse0[pos];
+                 const float lp1=a1(i)*p.scale-p.lse1[pos];
+                 const float distance=fabsf(lp1-lp0);
+@@ -268,9 +274,9 @@
+             #pragma unroll
+             for(int i=0;i<size(denominator);++i) {
+                 const int r=row0+get<0>(rowcoords(i));
+-                if(r<length) {
+-                    p.tau[int64_t(bh)*query_length+r-p.query_start]=r<valid?denominator(i):0.f;
+-                    p.center[int64_t(bh)*query_length+r-p.query_start]=r<valid?numerator(i)/denominator(i):0.f;
++                if(r<query_end) {
++                    p.tau[int64_t(bh)*query_length+r-query_start]=r<valid?denominator(i):0.f;
++                    p.center[int64_t(bh)*query_length+r-query_start]=r<valid?numerator(i)/denominator(i):0.f;
+                 }
+             }
+         }
+@@ -280,7 +286,7 @@
+         #pragma unroll
+         for(int i=0;i<size(accQ);++i) {
+             const int r=row0+get<0>(outcoords(i)),d=get<1>(outcoords(i));
+-            if(r<length) {
++            if(r<query_end) {
+                 const int64_t pos=head_offset+int64_t(r)*D+d;
+                 out[pos]=E(r<valid && r>=start?accQ(i)*p.scale:0.f);
+                 if constexpr(Phase==2) dv[pos]=E(r<valid && r>=start?accV(i):0.f);
+@@ -292,13 +298,15 @@
+ static int launch_finite(FiniteParams p,void *stream_ptr) {
+     using E=mctlass::bfloat16_t;
+     if(p.batch<1||p.heads<1||p.kv_heads<1||p.heads%p.kv_heads!=0||p.length<1)return -1;
+-    if(p.query_start<0||p.query_start>=p.length||p.query_start%FiniteTraits::kBlockM)return -2;
+-    dim3 grid((p.length-p.query_start+FiniteTraits::kBlockM-1)/FiniteTraits::kBlockM,p.batch*p.heads);
++    if(p.query_starts) {if(p.query_length<1)return -2;}
++    else if(p.query_start<0||p.query_start>=p.length||p.query_start%FiniteTraits::kBlockM)return -2;
++    const int query_length=p.query_starts?p.query_length:p.length-p.query_start;
++    dim3 grid((query_length+FiniteTraits::kBlockM-1)/FiniteTraits::kBlockM,p.batch*p.heads);
+     constexpr int shared=(size(typename FiniteTraits::SmemLayoutQ{})+size(typename FiniteTraits::SmemLayoutKV{}))*sizeof(E);
+     auto stream=reinterpret_cast<cudaStream_t>(stream_ptr);
+     deltatrace_fa_finite_p1_kernel<0><<<grid,FiniteTraits::kNThreads,shared,stream>>>(p);
+     auto error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
+-    dim3 cachedGrid((p.length-p.query_start+CachedTraits::kBlockM-1)/CachedTraits::kBlockM,p.batch*p.heads);
++    dim3 cachedGrid((query_length+CachedTraits::kBlockM-1)/CachedTraits::kBlockM,p.batch*p.heads);
+     constexpr int cachedShared=(size(typename CachedTraits::SmemLayoutQ{})+size(typename CachedTraits::SmemLayoutKV{}))*sizeof(E);
+     deltatrace_fa_finite_p1_kernel<1,CachedTraits><<<cachedGrid,CachedTraits::kNThreads,cachedShared,stream>>>(p);
+     error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
+@@ -339,3 +347,20 @@
+         (const int*)coefficient_starts,batch,heads,kv_heads,length,query_start,scale};
+     return launch_finite(p,stream_ptr);
+ }
++
++// Optional compact-K/V layout. Per-row starts and lengths are validated once
++// by the Python owner; Q/U/LSE/coefficient storage uses the independent stride.
++extern "C" int deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix(
++    const void *q0,const void *k0,const void *q1,const void *k1,const void *v0,
++    const void *u,const void *lse0,const void *lse1,
++    void *tau,void *center,void *dq,void *dk,void *dv,const void *valid_lengths,
++    const void *coefficient_starts,const void *query_starts,
++    int batch,int heads,int kv_heads,int length,int query_length,
++    float scale,void *stream_ptr) {
++    FiniteParams p{q0,k0,q1,k1,v0,u,(const float*)lse0,(const float*)lse1,
++        (float*)tau,(float*)center,dq,dk,dv,(const int*)valid_lengths,
++        (const int*)coefficient_starts,batch,heads,kv_heads,length,0,scale,
++        (const int*)query_starts,query_length};
++    if(!p.query_starts||!p.coefficient_starts)return -2;
++    return launch_finite(p,stream_ptr);
++}
+--- baseline/vendor_fa_finite_bf16_d256.py
++++ candidate/vendor_fa_finite_bf16_d256.py
+@@ -18,8 +18,11 @@
+     The private tensor must not be mutated while this layout is in use.
+     Optional coefficient_starts restrict only dQ/dK/dV output positions;
+     all K/V history remains available. They do not shorten model context.
++    Optional query_starts give per-row logical cuts with independent Q storage;
++    K/V must already be logically compact with right padding, not interior holes.
+     """
+-    def __init__(self, lengths, padded_length, device, *, coefficient_starts=None, query_start=0):
++    def __init__(self, lengths, padded_length, device, *, coefficient_starts=None, query_start=0,
++                 query_starts=None, query_padded_length=None):
+         self.lengths = tuple(lengths)
+         if not self.lengths or not all(type(n) is int and 0 < n <= padded_length for n in self.lengths):
+             raise ValueError('Require nonempty positive integer lengths within the padded extent.')
+@@ -27,19 +30,37 @@
+         if type(query_start) is not int or query_start<0 or query_start%64 or query_start>=min(self.lengths):
+             raise ValueError('Cached query suffix must start at a valid native 64-token boundary.')
+         self.query_start=query_start
++        self.query_starts=None if query_starts is None else tuple(query_starts)
++        self.query_padded_length=padded_length-query_start
++        self._query_starts=None
++        if self.query_starts is None:
++            if query_padded_length is not None:
++                raise ValueError('An independent query stride requires row-specific query starts.')
++        else:
++            if query_start!=0 or type(query_padded_length) is not int or query_padded_length<1:
++                raise ValueError('Row-specific cached queries require an independent positive query stride and no scalar start.')
++            if len(self.query_starts)!=len(self.lengths) or not all(
++                    type(start) is int and 0<=start<length and start%64==0
++                    and length-start<=query_padded_length
++                    for start,length in zip(self.query_starts,self.lengths)):
++                raise ValueError('Row query starts must be valid 64-token boundaries with suffixes within the query stride.')
++            self.query_padded_length=query_padded_length
+         self._tensor = torch.tensor(self.lengths, dtype=torch.int32, device=device)
+         if not self._tensor.is_cuda:
+             raise ValueError('The native finite operator requires a CUDA/MACA device.')
+         self.coefficient_starts = None if coefficient_starts is None else tuple(coefficient_starts)
+         self._starts = None
+         if self.coefficient_starts is not None:
++            starts=self.query_starts if self.query_starts is not None else (query_start,)*len(self.lengths)
+             if len(self.coefficient_starts)!=len(self.lengths) or not all(
+                     type(start) is int and query_start<=start<=length
+-                    for start,length in zip(self.coefficient_starts,self.lengths)):
++                    for start,length,query_start in zip(self.coefficient_starts,self.lengths,starts)):
+                 raise ValueError('Coefficient suffix starts must lie within each valid sequence.')
+             self._starts = torch.tensor(self.coefficient_starts, dtype=torch.int32, device=device)
+-        if query_start and self._starts is None:
++        if (query_start or self.query_starts is not None) and self._starts is None:
+             raise ValueError('Cached queries require an explicit coefficient suffix.')
++        if self.query_starts is not None:
++            self._query_starts=torch.tensor(self.query_starts,dtype=torch.int32,device=device)
+ 
+ 
+ class VendorFAFiniteP1BF16D256:
+@@ -58,7 +79,7 @@
+         assert dim == 256 and ref.is_cuda and ref.dtype == torch.bfloat16
+         assert isinstance(layout, RightPaddedLengths)
+         length=layout.padded_length
+-        assert len(layout.lengths) == batch and length-layout.query_start == query_length
++        assert len(layout.lengths) == batch and layout.query_padded_length == query_length
+         assert layout._tensor.device == ref.device
+         kv_heads = operands['k0'].shape[1]
+         assert kv_heads > 0 and heads % kv_heads == 0
+@@ -88,7 +109,13 @@
+             operation.restype = ctypes.c_int
+             buffers.append(layout._starts)
+         dimensions=[batch,heads,kv_heads,length]
+-        if layout.query_start:
++        if layout._query_starts is not None:
++            operation=self.library.deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix
++            operation.argtypes=[ctypes.c_void_p]*16+[ctypes.c_int]*5+[ctypes.c_float,ctypes.c_void_p]
++            operation.restype=ctypes.c_int
++            buffers.append(layout._query_starts)
++            dimensions.append(query_length)
++        elif layout.query_start:
+             operation=self.library.deltatrace_fa_finite_p1_bf16_d256_cached_suffix
+             operation.argtypes=[ctypes.c_void_p]*15+[ctypes.c_int]*5+[ctypes.c_float,ctypes.c_void_p]
+             operation.restype=ctypes.c_int
+@@ -102,6 +129,8 @@
+                 buffer_contract=[{'shape': list(v.shape), 'dtype': str(v.dtype),
+                                   'bytes': v.numel() * v.element_size()} for v in buffers])
+             activity['calls_attempted'] = activity.get('calls_attempted', 0) + 1
++            if layout.query_starts is not None:
++                activity.update(query_starts=layout.query_starts,query_padded_length=query_length)
+         with torch.cuda.device(ref.device):
+             status = operation(*[ctypes.c_void_p(v.data_ptr()) for v in buffers],
+                 *dimensions, scale,

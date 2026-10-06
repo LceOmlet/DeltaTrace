@@ -1,0 +1,126 @@
+{
+  "status": "read_only_source_review_no_specific_actionable_indexing_defect_found",
+  "observed_unix": 1791319979.5185378,
+  "scope": "Local source/diff and static arithmetic review only. No candidate or test imported/executed; no compile, Torch, GPU, model, remote command, RPC, checkpoint, production or numerical validation. Candidate remains unaccepted and undeployed. Formal actor exit/lifecycle was not investigated here and is not associated with this isolated patch.",
+  "inputs": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-layout.patch",
+      "bytes": 12855,
+      "sha256": "475463a5628798162100718dc58b901b878d7181943885b61f4f3d4f42a725c3"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\candidate\\vendor_fa_finite_p1_bf16_d256.cu",
+      "bytes": 20505,
+      "sha256": "9ebcef18cec94f45a875694acac0fed4b46064f13d3d0af1a4581c931df54c8b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\candidate\\vendor_fa_finite_bf16_d256.py",
+      "bytes": 8748,
+      "sha256": "3e1d61037be22a1cc826b004d49f854e3c246a149642a4f9167c204181f34089"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\baseline\\vendor_fa_finite_p1_bf16_d256.cu",
+      "bytes": 19101,
+      "sha256": "d408cce5d4b09f5600af0133c10b73cc69cb25472ad5df6cea3b36d6c57e7d21"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\baseline\\vendor_fa_finite_bf16_d256.py",
+      "bytes": 6645,
+      "sha256": "f5ea2f67af2a47b2a736545b22ff6683336be14be505060674fce6f01de3f15c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\prepared-candidate.json",
+      "bytes": 5507,
+      "sha256": "192659b25528a498cf159e9b89ec7171b973e018230b70be1e0001c2ee50b0ba"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\test_layout_interface_cpu.py",
+      "bytes": 8739,
+      "sha256": "2ecf795911b1ccccea95d4c0a71fc5b1ea6f74e9e5f8cf352c3e822d3fb3d67f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\cpu-test-output.txt",
+      "bytes": 879,
+      "sha256": "0883397771c20db03b7971a577bcd7be872ea6a38ddd18aaa61a5238a12b4fd4"
+    }
+  ],
+  "semantic_owner": {
+    "wrapper": "VendorFAFiniteP1BF16D256/RightPaddedLengths",
+    "cuda": "single deltatrace_fa_finite_p1_kernel with original phases0/1/2",
+    "pinned_vendor_framework": "MetaX-MACA/mcXformer aef88de756194e077460a1c8b8b341baa429259a",
+    "baseline_cuda_sha256": "d408cce5d4b09f5600af0133c10b73cc69cb25472ad5df6cea3b36d6c57e7d21",
+    "baseline_wrapper_sha256": "f5ea2f67af2a47b2a736545b22ff6683336be14be505060674fce6f01de3f15c"
+  },
+  "notation": {
+    "a": "per-row query_start",
+    "S": "query_padded_length / p.query_length; Q,U,LSE,tau,center,dQ,dK,dV stride",
+    "K": "padded_length / p.length; compact K,V stride",
+    "v": "valid_lengths[b]",
+    "c": "coefficient_starts[b]",
+    "bh": "b*heads+h",
+    "kv_bh": "b*kv_heads+h/(heads/kv_heads)"
+  },
+  "input_contract": {
+    "owner_lines": "candidate/vendor_fa_finite_bf16_d256.py:27-64,80-99",
+    "row_constraints": "0<=a<v<=K; a is64-aligned; v-a<=S; a<=c<=v. Hence all valid global Q coordinates q lie in[a,a+S).",
+    "representation": "K/V must already be chronologically compact and right-padded; the isolated wrapper/kernel do not remove interior cache holes or wire a runner/lease.",
+    "ctypes_ABI": "14 original pointer buffers + coefficient_starts + query_starts =16 pointers; batch,heads,kv_heads,K,S =5 ints; float scale; stream pointer. Wrapper112-117 matches new export353-365."
+  },
+  "phase_review": [
+    {
+      "phase": 0,
+      "lines": "CUDA60-74,81-95,160-204,274-280",
+      "result": "No concrete indexing defect found",
+      "reason": "Output row r=a+block*M+local; Q/U pointer(head bh*S-a)*D+r*D equals(bh*S+r-a)*D. Keys begin0 and advance only below min(v,row0+M); K/V use kv_bh*K. LSE/tau/center index bh*S+q-a has0<=q-a<S whenever q<v. Valid load predicates use v-row0 or v-col0, and v<=a+S."
+    },
+    {
+      "phase": 1,
+      "lines": "CUDA145-178,184-204,214-238,283-294",
+      "result": "No concrete indexing defect found",
+      "reason": "The owner Q/U tile uses S and per-row a, RHS K/V history uses K; causal/global coordinates and original coefficient start filtering remain. Stores require r<a+S and select zero unless r<v and r>=c."
+    },
+    {
+      "phase": 2,
+      "lines": "CUDA145-178,183-204,214-243,283-294",
+      "result": "No concrete indexing defect found",
+      "reason": "Owner K/V tile uses compact kv_bh*K; RHS Q/U uses bh*S-a. Query columns start at row0>=a and end below v<=a+S, while coefficients are stored in query-head S layout. Causal q>=k and c>=a mean requested K/V coefficients require no queries before the available cached Q suffix."
+    },
+    {
+      "phase": "all padding and zero writes",
+      "lines": "CUDA81-95,277-292,303-313",
+      "result": "Every S output position has a source-level writer",
+      "reason": "ceil(S/M) tiles partition local rows[0,S). Entire invalid/coefficient-skipped tiles write zero below a+S; partial invalid tails are zeroed by final r<v predicates. a+S may exceed K: rows at or after v take uniform early zero branch, and v<=K prevents K/V reads there. Queries or keys below v are still bounded by the correct independent storage extent."
+    }
+  ],
+  "scalar_default_preservation": {
+    "old_C_exports": [
+      {
+        "name": "deltatrace_fa_finite_p1_bf16_d256",
+        "signature_and_body_text_equal": true
+      },
+      {
+        "name": "deltatrace_fa_finite_p1_bf16_d256_suffix",
+        "signature_and_body_text_equal": true
+      },
+      {
+        "name": "deltatrace_fa_finite_p1_bf16_d256_cached_suffix",
+        "signature_and_body_text_equal": true
+      }
+    ],
+    "aggregate_initialization": "Old three FiniteParams aggregate initializers omit the two appended members; C++ aggregate initialization value-initializes query_starts to null and query_length to0.",
+    "equation_reduction": "When query_starts==null, a=old scalar query_start and S=K-a, so query_end=a+S=K; head_offset, LSE coordinates, grid extents and every changed bound reduce to the original expressions.",
+    "Python_branch": "query_starts=None derives query_padded_length=K-query_start. Existing default/suffix/cached selection and scalar dimensions remain; the extra ABI is selected only when _query_starts is present.",
+    "numerical_claim": "Source-path equivalence reasoning only; no compiled binary or GPU result comparison was performed."
+  },
+  "findings": [],
+  "minimal_code_fix": null,
+  "not_verified": [
+    "CUDA compilation",
+    "Original FA numerical tolerances on row layout",
+    "GPU arithmetic for padding, mixed lengths, GQA and coefficients",
+    "Real paired-endpoint prefix/cache/runner integration",
+    "Speed and memory",
+    "Formal actor lifecycle"
+  ],
+  "existing_CPU_receipt_scope": "The existing five CPU cases were read but not rerun. They cover argument/shape/integer address transport and do not establish kernel arithmetic or official numerical acceptance."
+}

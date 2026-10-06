@@ -1,0 +1,87 @@
+{
+  "status": "unaccepted_candidate_not_deployed",
+  "scope": "Isolated finite-FA owner layout/ABI extension only. No lease, runner, targets, production owner, model, checkpoint, RPC or GPU task changed or run. Not a replacement PLAN or a numerical tolerance.",
+  "authority": {
+    "plan": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\PLAN.md",
+      "sha256": "3bc7fcd0ed77e5626220025ab4edc844cf2bc02211cee27438add1fa1cdc3112",
+      "bytes": 21524
+    },
+    "runtime_snapshot": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\current_runtime.json",
+      "sha256": "e1ae469b6e059f0c85d9dc62e2f3f3749789d137f36dd5c84cbbac29aa8c9fa7",
+      "bytes": 1040153
+    }
+  },
+  "original_owner": {
+    "cuda": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\baseline\\vendor_fa_finite_p1_bf16_d256.cu",
+      "sha256": "d408cce5d4b09f5600af0133c10b73cc69cb25472ad5df6cea3b36d6c57e7d21",
+      "bytes": 19101
+    },
+    "wrapper": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\baseline\\vendor_fa_finite_bf16_d256.py",
+      "sha256": "f5ea2f67af2a47b2a736545b22ff6683336be14be505060674fce6f01de3f15c",
+      "bytes": 6645
+    },
+    "active_library_sha256": "5d2af760abb2684401682029e41ac68aefc58ed2796082d435874a2b74bbcebb",
+    "cuda_source_origin": "research/prototypes/vendor_fa_finite_p1_bf16_d256.cu",
+    "wrapper_source_origin": "deltatrace/clean/qwen35/vendor_fa_finite_bf16_d256.py"
+  },
+  "candidate_owner": {
+    "cuda": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\candidate\\vendor_fa_finite_p1_bf16_d256.cu",
+      "sha256": "9ebcef18cec94f45a875694acac0fed4b46064f13d3d0af1a4581c931df54c8b",
+      "bytes": 20505
+    },
+    "wrapper": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\candidate\\vendor_fa_finite_bf16_d256.py",
+      "sha256": "3e1d61037be22a1cc826b004d49f854e3c246a149642a4f9167c204181f34089",
+      "bytes": 8748
+    }
+  },
+  "patch": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-layout.patch",
+    "sha256": "475463a5628798162100718dc58b901b878d7181943885b61f4f3d4f42a725c3",
+    "bytes": 12855
+  },
+  "interface": {
+    "old_export_signatures_and_bodies": "preserved exactly in isolated CUDA candidate",
+    "new_export": "deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix",
+    "new_export_abi": "16 pointer arguments; batch, heads, kv_heads, KV padded length, Q padded length; scale; stream",
+    "layout_kwargs": "query_starts per-row 64-aligned logical starts, query_padded_length independent Q storage stride; coefficient_starts remains required for cached output restriction",
+    "default": "query_starts=None retains scalar query_start ABI and derives original Q stride=KV padded length-scalar start",
+    "arithmetic": "Original finite log-mean/center/P1 formulas, GQA, tile layouts and three kernel launch phases unchanged. Per-row indexing and query-tail write bounds use independent Q extent.",
+    "not_supported_here": "No K/V holes or native cache/model adaptation: input K/V must already be logically compact/right-padded. No runner wiring implemented."
+  },
+  "CPU_interface_tests": {
+    "command": [
+      "C:\\Users\\Administrator\\miniconda3\\python.exe",
+      "-X",
+      "utf8",
+      "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\test_layout_interface_cpu.py"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.17190900000059628,
+    "cases": 5,
+    "source": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\test_layout_interface_cpu.py",
+      "sha256": "2ecf795911b1ccccea95d4c0a71fc5b1ea6f74e9e5f8cf352c3e822d3fb3d67f",
+      "bytes": 8739
+    },
+    "stdout": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\cpu-test-output.txt",
+      "sha256": "0883397771c20db03b7971a577bcd7be872ea6a38ddd18aaa61a5238a12b4fd4",
+      "bytes": 879
+    },
+    "meaning": "Integer indexing and Python shape/ABI transport only, using small Tensor argument stand-ins; no tensor arithmetic or Torch runtime import. These do not replace official GPU numerical comparisons."
+  },
+  "not_verified": [
+    "CUDA compilation",
+    "GPU output or gradient accuracy",
+    "applicable original FA/FLA numerical tolerance",
+    "kernel speed or VRAM",
+    "B4 native-model/lease integration"
+  ],
+  "deployment": "none; baseline core files and formal imports unchanged"
+}
