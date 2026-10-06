@@ -1,0 +1,159 @@
+--- original-diagnostic
++++ isolated-row-diagnostic
+@@ -159,6 +159,7 @@
+     path=Path(out)/f'actual-requests-rank{torch.distributed.get_rank()}.pt'
+     payload=torch.load(path,map_location='cpu',weights_only=False)
+     base_prefetch=os.environ.get('DT_PREFIX_BASE_MODEL_PREFETCH')=='1'
++    individual_rows=os.environ.get('DT_PREFIX_INDIVIDUAL_ROW_CANDIDATE')=='1'
+     conv_initial_states=os.environ.get('DT_PREFIX_NATIVE_CONV_INITIAL_STATES')=='1'
+     conv_capacity=os.environ.get('DT_PREFIX_NATIVE_CONV_CAPACITY')=='1'
+     boundary_row_storage=os.environ.get('DT_PREFIX_BOUNDARY_ROW_STORAGE')=='1'
+@@ -181,7 +182,7 @@
+     current_request_origin=None
+     if base_prefetch:
+         assert os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
+-        assert (os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states or boundary_row_storage
++        assert (individual_rows or os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states or boundary_row_storage
+                 or (os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
+                     and os.environ.get('DT_PREFIX_PHASE_ONLY')=='1'
+                     and os.environ.get('DT_PREFIX_PHASE_WARM')=='1'))
+@@ -340,6 +341,38 @@
+         labels=(('shared_cold','shared_warm')
+                 if base_prefetch and os.environ.get('DT_PREFIX_HOT_PROFILE')!='1'
+                 else ('shared_cold','shared_warm','shared_profile_warm'))
++    if individual_rows:
++        assert current_owner and base_prefetch and phase_only and warm_phase
++        assert not os.environ.get('DT_PREFIX_CHECKPOINT')
++        assert not any(os.environ.get(key)=='1' for key in (
++            'DT_PREFIX_HOT_PROFILE','DT_PREFIX_NATIVE_BACKWARD','DT_PREFIX_REVERSE_PREFETCH',
++            'DT_PREFIX_NATIVE_CONV_INITIAL_STATES','DT_PREFIX_NATIVE_CONV_CAPACITY',
++            'DT_PREFIX_BOUNDARY_ROW_STORAGE','DT_PREFIX_LEDGER_ONLY','DT_PREFIX_ROOT_TAPE'))
++        import inspect,importlib,json,sys
++        prepared=json.loads((Path(out)/'prepared.json').read_bytes())
++        owner=prepared['individual_row_candidate']
++        modules={}
++        for name in ('runner','finite_wrapper'):
++            item=owner[name];source=Path(item['path'])
++            assert hashlib.sha256(source.read_bytes()).hexdigest()==item['sha256']
++            spec=importlib.util.spec_from_file_location('_isolated_individual_row_'+name,source)
++            value=importlib.util.module_from_spec(spec);sys.modules[spec.name]=value
++            spec.loader.exec_module(value);modules[name]=value
++        row_module=modules['runner'];row_finite=modules['finite_wrapper']
++        row_module.RightPaddedLengths=row_finite.RightPaddedLengths
++        row_operation=row_finite.VendorFAFiniteP1BF16D256(
++            owner['finite_library']['path'],owner['finite_library']['sha256'])
++        for name,value in (('artifact',importlib.import_module('qwen35_native_prefix_artifacts')),
++                           ('lease',prepare_native_prefix_leases),
++                           ('answer',importlib.import_module('qwen35_answer_finite'))):
++            source=Path(inspect.getsourcefile(value));item=owner[name]
++            assert source.resolve()==Path(item['path']).resolve()
++            assert hashlib.sha256(source.read_bytes()).hexdigest()==item['sha256']
++        original_finite=runner.finite_fa
++        labels=('shared_cold','shared_warm','shared_individual_rows_cold','shared_individual_rows_warm',
++                'shared_individual_rows_observed')
++        save('individual_row_candidate_sources',sources=owner,
++             scope='Isolated actual B8 dispatch and representation comparison; no checkpoint, optimizer, new full-network tolerance or formal deployment')
+     if ledger_only:
+         labels=('shared_ledger',)
+     if boundary_row_storage:
+@@ -436,7 +469,8 @@
+                     leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs,
+                         boundary_row_storage=True,observe_boundary_rows=observe_boundary_rows)
+                 else:
+-                    leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)
++                    leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs,
++                        **({'individual_prefixes':True} if individual_rows and label.startswith('shared_individual_rows') else {}))
+                 if ledger_only or boundary_row_storage:
+                     import json
+                     host_after=host_observation()
+@@ -477,6 +511,10 @@
+         leases,preparation=shared_bank
+         return leases,{**preparation,'diagnostic_bank_reused':reused}
+     for label in labels:
++        if individual_rows and label=='shared_individual_rows_cold':
++            shared_bank=None
++            import gc
++            gc.collect()
+         if boundary_row_storage and label=='shared_boundary_rows_cold':
+             # Do not retain original/full and compact banks simultaneously.
+             # Pinned allocator retention remains visible in the PSS receipt.
+@@ -490,6 +528,9 @@
+             save('native_conv_initial_states_execution_option',variant=label,
+                  native_conv_initial_states=runner.native_conv_initial_states)
+         previous_class=runner.__class__
++        if individual_rows and label.startswith('shared_individual_rows'):
++            runner.__class__=row_module.Qwen35DenseFiniteRunner
++            runner.finite_fa=row_operation
+         previous_capture_backend=runner.capture_backend
+         had_root_flag=hasattr(runner,'reuse_root_captures')
+         previous_root_flag=getattr(runner,'reuse_root_captures',False)
+@@ -504,7 +545,8 @@
+                 runner.capture_backend=root_tape_module._root_capture_backend
+         if label.startswith(('shared','prefetch','root_tape')):
+             if current_owner:
+-                runner.attribute=native_attribute
++                runner.attribute=(types.MethodType(row_module.Qwen35DenseFiniteRunner.attribute,runner)
++                    if individual_rows and label.startswith('shared_individual_rows') else native_attribute)
+             else:
+                 owner=(root_tape_module if label.startswith('root_tape') else module)
+                 runner.attribute=types.MethodType(owner.Qwen35DenseFiniteRunner.attribute,runner)
+@@ -589,6 +631,28 @@
+                         target_module=runner.model.model.language_model.layers[3].self_attn,
+                         records=fa3_records),
+                     NativeGDNCapture=capture_class('NativeGDNCapture'))
++            actual_row_finite=None
++            row_fa_records=None
++            if individual_rows and label=='shared_individual_rows_observed':
++                from observe_native_gdn0_operands import NativeGDN0Operands
++                from observe_native_fa3_varlen_operands import make_attention_capture_observer
++                from observe_actual_row_finite_fa import ActualRowFiniteFA
++                globals_=selected_attribute.__func__.__globals__
++                def row_capture_class(name):
++                    return globals_[name] if saved_capture_backend is None else getattr(saved_capture_backend,name)
++                gdn0_audit=NativeGDN0Operands(runner.model.model.language_model.layers[0].linear_attn,
++                    Path(out)/'actual-gdn0-operands',variant=label,rank=torch.distributed.get_rank())
++                row_fa_records=[]
++                runner.capture_backend=types.SimpleNamespace(
++                    NativeDecoderCapture=row_capture_class('NativeDecoderCapture'),
++                    NativeGDNCapture=gdn0_audit.capture_type(row_capture_class('NativeGDNCapture')),
++                    NativeDenseAttentionCapture=make_attention_capture_observer(
++                        row_capture_class('NativeDenseAttentionCapture'),
++                        target_module=runner.model.model.language_model.layers[3].self_attn,
++                        records=row_fa_records))
++                actual_row_finite=ActualRowFiniteFA(row_operation,
++                    Path(out)/f'actual-row-finite-fa3-rank{torch.distributed.get_rank()}.pt')
++                runner.finite_fa=actual_row_finite
+             context=(torch.profiler.profile(
+                 activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA],
+                 record_shapes=False,with_stack=False,profile_memory=False)
+@@ -617,8 +681,22 @@
+                     attribute_walls.append(time.perf_counter()-attribute_started)
+                 finally:
+                     runner.capture_backend=saved_capture_backend
++                    if actual_row_finite is not None:
++                        runner.finite_fa=row_operation
+                     for handle in handles:handle.remove()
+                     for value in reversed(list(ranges.values())):value.__exit__(None,None,None)
++            if individual_rows and label=='shared_individual_rows_observed':
++                import json
++                assert len(gdn0_audit.records)==len(row_fa_records)==1
++                assert actual_row_finite.calls==8 and actual_row_finite.saved is not None
++                fa_path=Path(out)/f'actual-row-native-fa3-rank{torch.distributed.get_rank()}.pt'
++                with fa_path.open('xb') as stream:torch.save(row_fa_records[0],stream)
++                save('actual_individual_row_operands_saved',
++                     actual_finite=actual_row_finite.saved,
++                     native_gdn0=gdn0_audit.records[0],
++                     native_fa3=dict(path=str(fa_path),sha256=hashlib.sha256(fa_path.read_bytes()).hexdigest()),
++                     scope='Passive actual operands including original finite LSE/upstream; copy/export overhead belongs to this observed variant only. Official numerical checks run after model release.')
++                gdn0_audit=None
+             if gdn0_audit is not None:
+                 from observe_native_gdn0_operands import check_saved_fla
+                 observation=gdn0_audit.report()
+@@ -745,6 +823,7 @@
+         finally:
+             runner.attribute=native_attribute;readout.prefix_lease_factory=None
+             runner.__class__=previous_class
++            if individual_rows:runner.finite_fa=original_finite
+             if conv_initial_states:runner.native_conv_initial_states=previous_conv_option
+             runner.capture_backend=previous_capture_backend
+             if had_root_flag:runner.reuse_root_captures=previous_root_flag

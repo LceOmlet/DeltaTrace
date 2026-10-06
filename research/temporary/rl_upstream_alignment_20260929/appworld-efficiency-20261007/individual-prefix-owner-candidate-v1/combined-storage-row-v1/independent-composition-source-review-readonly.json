@@ -1,0 +1,58 @@
+{
+  "observed_unix": 1791324088.538853,
+  "scope": "Independent read-only source/complete AST review; no code mutation, imports of Torch/HF, tests, remote, model or GPU execution",
+  "files": {
+    "qwen35_native_prefix_artifacts.py": {
+      "baseline_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\baseline\\qwen35_native_prefix_artifacts.py",
+      "baseline_sha256": "4a461f2168d07b5ce88dbc8468e6a0d3eaae2a2c1d879cd5281347098e2ea5a8",
+      "candidate_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\candidate\\qwen35_native_prefix_artifacts.py",
+      "candidate_sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4",
+      "baseline_complete_ast_sha256": "dfa56ec1d4fc7fd2abca3658a405d0a1b2332c19f979eec0c39e5bcf395d693e",
+      "candidate_complete_ast_sha256": "8f72a3668fa1a60fedd60fc3ff656d830d3fbb7c2afccc3c9568497b24096289",
+      "candidate_default_ast_sha256": "dfa56ec1d4fc7fd2abca3658a405d0a1b2332c19f979eec0c39e5bcf395d693e",
+      "default_ast_equal": true
+    },
+    "native_prefix_leases.py": {
+      "baseline_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\baseline\\native_prefix_leases.py",
+      "baseline_sha256": "6d2aecb0a47c3f4f6bd0e128b6da304ce7d53a602cbb331e18eea8edc745acc8",
+      "candidate_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\candidate\\native_prefix_leases.py",
+      "candidate_sha256": "b94756147cc6f8e59fb39baa1c2737aa655b0d9c6b87091969a65c9071ad0852",
+      "baseline_complete_ast_sha256": "629ac863dc276956df5b99826c0e11f1f4284591c721737475c018a75fa11d08",
+      "candidate_complete_ast_sha256": "2b6a018f792758d9be90ed87f6f43d7ba0139db33408f07f9753e859f022ead7",
+      "candidate_default_ast_sha256": "629ac863dc276956df5b99826c0e11f1f4284591c721737475c018a75fa11d08",
+      "default_ast_equal": true
+    }
+  },
+  "checks": [
+    "Complete capture() AST unchanged from verified storage owner",
+    "All boundary_row_storage branches, including last_slots and per-boundary capture selection, retain exact verified AST"
+  ],
+  "composition_findings": [
+    {
+      "file": "qwen35_native_prefix_artifacts.py",
+      "lines": [
+        209,
+        215
+      ],
+      "finding": "For each zipped source/original row and its own n, compact selection uses source.boundary_rows[n][row]; mixed compact/noncompact sources preserve the original row for sources with boundary_rows=None. The all-None fast branch uses the unchanged original torch.cat selections."
+    },
+    {
+      "file": "native_prefix_leases.py",
+      "lines": [
+        90,
+        113
+      ],
+      "finding": "last_slots is the final padded capture occurrence per canonical UID, matching existing sources[uid] last-write semantics. Only the final slot for each UID stores its consumed boundaries; sources assignment still runs in original padded order."
+    },
+    {
+      "file": "native_prefix_leases.py",
+      "lines": [
+        23,
+        31
+      ],
+      "finding": "Individual mode retains original synchronized common-zero branch and collective call count. It changes only per-row captured cuts; no-cache common-zero consumer remains unchanged."
+    }
+  ],
+  "issues_found": [],
+  "limits": "Source composition review only. Does not replace original CPU check_contracts, actual compact-plus-row B8 execution, exact32768 capacity or official kernel numerical assertions."
+}

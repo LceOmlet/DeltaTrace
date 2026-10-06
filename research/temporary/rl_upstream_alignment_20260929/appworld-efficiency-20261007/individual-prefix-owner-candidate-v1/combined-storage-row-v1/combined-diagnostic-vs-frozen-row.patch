@@ -1,0 +1,161 @@
+--- frozen-row-cdfe43a5
++++ isolated-combined-row-capacity
+@@ -152,7 +152,7 @@
+             capacity_details, capacity_receipt)
+ 
+ 
+-def diagnose(runner, producer, out, save, *, cache_tensors=None):
++def _diagnose_combined_stage(runner, producer, out, save, *, cache_tensors=None, capacity=False):
+     from native_prefix_leases import prepare_native_prefix_leases
+     from reward_readout import EventRatioReadout
+ 
+@@ -163,6 +163,13 @@
+     conv_initial_states=os.environ.get('DT_PREFIX_NATIVE_CONV_INITIAL_STATES')=='1'
+     conv_capacity=os.environ.get('DT_PREFIX_NATIVE_CONV_CAPACITY')=='1'
+     boundary_row_storage=os.environ.get('DT_PREFIX_BOUNDARY_ROW_STORAGE')=='1'
++    exact_capacity=bool(capacity)
++    assert individual_rows and base_prefetch
++    assert not any(os.environ.get(key)=='1' for key in (
++        'DT_PREFIX_NATIVE_CONV_CAPACITY','DT_PREFIX_NATIVE_CONV_INITIAL_STATES',
++        'DT_PREFIX_BOUNDARY_ROW_STORAGE','DT_PREFIX_NATIVE_BACKWARD',
++        'DT_PREFIX_HOT_PROFILE','DT_PREFIX_REVERSE_PREFETCH','DT_PREFIX_ROOT_TAPE'))
++    assert not os.environ.get('DT_PREFIX_CHECKPOINT')
+     if boundary_row_storage:
+         assert base_prefetch and os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
+         assert os.environ.get('DT_PREFIX_PHASE_ONLY')=='1' and os.environ.get('DT_PREFIX_PHASE_WARM')=='1'
+@@ -226,7 +233,7 @@
+     phase_only=os.environ.get('DT_PREFIX_PHASE_ONLY')=='1'
+     offset=int(os.environ.get('DT_PREFIX_DIAGNOSTIC_OFFSET','0'))
+     requests=all_requests[offset:offset+limit]
+-    if conv_capacity:
++    if conv_capacity or exact_capacity:
+         capacity_source_offset=offset
+         (capacity_episodes, capacity_returns, capacity_requests, capacity_factual_inputs,
+          capacity_details, capacity_receipt)=_prepare_native_conv_capacity_inputs(
+@@ -270,7 +277,7 @@
+                           comparison_ids=comparison, matched_rows=[(source_row,local_row)],
+                           prepared_prefix_fields=prepared_fields, cache_tensors=cache_tensors,
+                           gdn_layer_index=None, operand_output_dir=Path(out))
+-    if conv_capacity:
++    if conv_capacity or exact_capacity:
+         rows=[episode[0] for episode in capacity_episodes]
+         returns=[episode[0] for episode in capacity_returns]
+     else:
+@@ -286,7 +293,7 @@
+     expected={(r['traj_uid'],r['source_step']):r for r in requests}
+     def verify_prepare(*args,**kwargs):
+         values,pending=native_prepare(*args,**kwargs)
+-        if conv_capacity:
++        if conv_capacity or exact_capacity:
+             assert len(pending)==1
+             capacity_actual=pending[0]
+             capacity_index=next(i for i,episode in enumerate(capacity_episodes)
+@@ -330,7 +337,7 @@
+          current_request_origin=current_request_origin,
+          native_conv_initial_states=getattr(runner,'native_conv_initial_states',False),
+          diagnostic_scope=('Existing synthetic exact32768/response512 capacity input with current original readout; no checkpoint, optimizer, task-performance or invented full-network tolerance.'
+-             if conv_capacity else 'Current frozen formal owner and original checkpoint loader; raw residuals have no invented full-network tolerance.'
++             if (conv_capacity or exact_capacity) else 'Current frozen formal owner and original checkpoint loader; raw residuals have no invented full-network tolerance.'
+              if current_owner and not base_prefetch else 'Current frozen owner on base-model initialization; same saved literal policy IDs and current owner query; no checkpoint load or invented full-network tolerance.'
+              if base_prefetch else 'Original readout/QVA consumers; raw residuals have no invented full-network tolerance. Loaded actor is not a restored formal checkpoint.'),
+          restored_checkpoint=os.environ.get('DT_PREFIX_CHECKPOINT'))
+@@ -369,8 +376,7 @@
+             assert source.resolve()==Path(item['path']).resolve()
+             assert hashlib.sha256(source.read_bytes()).hexdigest()==item['sha256']
+         original_finite=runner.finite_fa
+-        labels=('shared_cold','shared_warm','shared_individual_rows_cold','shared_individual_rows_warm',
+-                'shared_individual_rows_observed')
++        labels=('shared_individual_rows_cold','shared_individual_rows_warm')
+         save('individual_row_candidate_sources',sources=owner,
+              scope='Isolated actual B8 dispatch and representation comparison; no checkpoint, optimizer, new full-network tolerance or formal deployment')
+     if ledger_only:
+@@ -426,7 +432,7 @@
+              default_enabled=False,prefetch_enabled=False,
+              scope='Original public initial_states API; same-bank three-variant observation, no new tolerance')
+     reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
+-    if current_owner:reference_label='shared_warm'
++    if current_owner:reference_label='shared_individual_rows_warm'
+     if ledger_only:reference_label='shared_ledger'
+     shared_bank=None
+     boundary_row_checks=[]
+@@ -470,7 +476,17 @@
+                         boundary_row_storage=True,observe_boundary_rows=observe_boundary_rows)
+                 else:
+                     leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs,
+-                        **({'individual_prefixes':True} if individual_rows and label.startswith('shared_individual_rows') else {}))
++                        **({'individual_prefixes':True,'boundary_row_storage':True} if individual_rows and label.startswith('shared_individual_rows') else {}))
++                if individual_rows and label.startswith('shared_individual_rows'):
++                    consumed=[(source,row,n) for lease in leases if lease is not None
++                              for (source,row),n in zip(lease.sources,lease.prefix_lengths)]
++                    assert consumed and all(getattr(source,'boundary_rows',None) is not None for source,row,n in consumed)
++                    assert all(row in source.boundary_rows[n] for source,row,n in consumed)
++                    save('combined_storage_row_bank_enabled',variant=label,
++                        individual_prefixes=True,boundary_row_storage=True,
++                        consumed_source_slots=len(consumed),
++                        distinct_artifacts=len({id(source) for source,row,n in consumed}),
++                        original_preparation=preparation)
+                 if ledger_only or boundary_row_storage:
+                     import json
+                     host_after=host_observation()
+@@ -815,7 +831,7 @@
+         runner.attribute=observe_attribute
+         torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats();start=time.perf_counter()
+         try:
+-            if conv_capacity:
++            if conv_capacity or exact_capacity:
+                 result=[row for episode in readout.episodes(capacity_episodes,complete_returns=capacity_returns)
+                         for row in episode]
+             else:
+@@ -875,3 +891,52 @@
+          vectors=dict(path=str(tensor_path),sha256=hashlib.sha256(tensor_path.read_bytes()).hexdigest()))
+     shared_bank=None
+     return native_backward_inputs
++
++
++def diagnose(runner, producer, out, save, *, cache_tensors=None):
++    """Run only the two explicitly approved compact+row resource stages."""
++    import gc,json
++    out=Path(out)
++    prepared=json.loads((out/'prepared.json').read_bytes())
++    assert prepared['combined_storage_row_capacity_entry'] is True
++    assert prepared['checkpoint'] is None and prepared['base_model_initialization'] is True
++    completed={}
++    for stage,capacity in (('actual_b8',False),('exact32768_b8',True)):
++        stage_out=out/stage
++        assert stage_out.is_dir()
++        def stage_save(phase,**values):
++            if phase=='native_prefix_lease_diagnostic_complete':
++                completed[stage]=dict(**values)
++            save(phase,stage=stage,**values)
++        save('combined_storage_row_stage_start',stage=stage,exact32768_capacity=capacity,
++             checkpoint_loads=0,optimizer_steps=0,extra_observer_calls=0)
++        _diagnose_combined_stage(runner,producer,stage_out,stage_save,
++                                cache_tensors=cache_tensors,capacity=capacity)
++        if not capacity:
++            rank=str(torch.distributed.get_rank())
++            previous=prepared['previous_uncompressed_row_vectors'][rank]
++            source=Path(previous['path'])
++            assert hashlib.sha256(source.read_bytes()).hexdigest()==previous['sha256']
++            actual_path=stage_out/f'prefix-lease-vectors-rank{rank}.pt'
++            actual=torch.load(actual_path,map_location='cpu',weights_only=False)
++            reference=torch.load(source,map_location='cpu',weights_only=False)
++            comparisons=[]
++            for key in ('dt_token_advantages','dt_q_estimates','dt_v_estimates'):
++                left=actual['shared_individual_rows_warm'][key]
++                right=reference['shared_individual_rows_warm'][key]
++                assert left.shape==right.shape and left.dtype==right.dtype
++                comparisons.append(dict(key=key,shape=list(left.shape),dtype=str(left.dtype),
++                    literal_bytes_equal=bool(torch.equal(left.contiguous().view(torch.uint8),right.contiguous().view(torch.uint8))),
++                    numerical_equal=bool(torch.equal(left,right)),
++                    maximum_absolute_difference=float((left.double()-right.double()).abs().max())))
++            completed[stage]['previous_uncompressed_row_comparison']=dict(
++                source=previous,actual=dict(path=str(actual_path),sha256=hashlib.sha256(actual_path.read_bytes()).hexdigest()),
++                values=comparisons,scope='Literal output comparison only; no new floating-point tolerance or numerical correction')
++            save('combined_storage_row_previous_output_compared',stage=stage,
++                 comparison=completed[stage]['previous_uncompressed_row_comparison'])
++            del actual,reference,left,right
++        gc.collect()
++    save('combined_storage_row_capacity_complete',completed_stages=completed,
++         checkpoint_loads=0,optimizer_steps=0,
++         scope='Actual compact+row B8 and exact32768 resource calls only; no task-quality or new kernel tolerance claim')
++    return None

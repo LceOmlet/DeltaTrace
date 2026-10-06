@@ -1,5 +1,150 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 06:20 逐行缓存与存储组合完成有界验收，生产接线仅prepared
+
+正式v3仍1953903/birth1791321793.72、GPU4/5、source97e3cb75，没有导入旧训练
+检查点。旧v2已实际执行整批官方masked_whiten；v3继续相同trainer d35ddd26，
+06:11仍DT第二组44/46，无本次actor入口/完整gen-update timer。此前2495秒actor
+属于旧padding版本，不能充作当前正常性能证明或本次更新时间。
+
+隔离real-b8-v3已完成，非仍在运行：result f637f0e5，runner5f14/answerd473、
+未压缩artifact50af/lease54ad，wrapper3e1d/library4f42。原same-input热调用
+9.77/9.74秒→逐行3.93/3.94秒。实际FA varlen原断言通过，原7ff保存操作数的
+每行7项coincident断言通过；实际非零B4五项输出与原scalar逐行bitwise相同。
+GDN旧checker对FP16全零padding直接F.normalize产生NaN，实际native张量全finite。
+新d107只接原FLA l2norm_fwd后执行不变reference/o-ht断言，两rank通过；本机
+canonical checker c2853a15已同样修接口。旧5c192源/失败保留，没有nan_to_num或
+放宽tol。上述均为对应算子范围，不是新整网容差。
+
+组合artifact37a860/leaseb947复用已验证4a/6d存储owner，只存消费的边界行。
+实际176请求CPU合同a3b469：原literal IDs/边界/last-write保持、HF Cache 32项
+字节检查通过、CUDA未初始化。隔离combined-capacity-b8-v1原verify22bc、
+diag9b1d、prepared0189，PID2235930/birth1791324452.14已自行完成并释放GPU2/3。
+总体完成result87deb9be；原模型初始化顺序真实B8冷暖→exact32768冷暖，无CP/
+optimizer step/profiler。真实热调用3.962秒，32768热调用8.30秒/每卡B4。
+32768 torch allocated peak25351057920B是该DT容量范围，不是新PPO更新或vLLM
+共存峰值验收。真实行PSS13289958400/13900460032B，32k PSS约14.4GB。
+
+跨bank/layout的A最大差.02030/.03152、1012有效action的方向cosine.989422、
+L2比.98455均保留；native端点已有.16量级变化，不能归咎单FA finite或把缓存
+dtype转换当作全部原因。组合对未压缩row A/V最大差.00194/.00140，同bank
+重复也有非零差；不加整网通过阈值。原Q/V/A/奖励/观察mask/PPO公式未改。
+
+production-wiring-v1 prepared6c65，producer3e0c只给原prefix factory透传已有
+individual_prefixes/boundary_row_storage参数，默认不进入；canonical路径直接
+指向上述owner，不使用诊断class/sys.modules替换。environment4ff仅改库/sha与
+两开关；原factory/profile、VERL/LOOP/trainer不变。禁CUDA真实14模块import
+f1f481通过，未构造模型；此时仍仅prepared，不能当部署或正式DT已执行。
+来源索引individual-prefix-owner-candidate-v1/verification-index.json；所有源、
+实际dtype/原断言、失败和测量范围在对应冻结收据，PLAN没有修改。
+
+
+## 2026-10-07 05:53 逐行前缀候选进入真实B8；正式owner与整批白化保持
+
+正式v3仍driver1953903/birth1791321793.72、GPU4/5、source97e3cb75，原冻结
+3cd90b2d/preparedf5232ac1的源字节不变。整批官方masked_whiten已在旧v2实际执行，
+本次fresh继续相同trainer；不能把尺度修复生效称为学习质量恢复。不载入旧训练
+检查点。05:46只读LOOP采样完成207/240，运输3695回复/737768 tokens/1168.0s；
+尚无本次完整gen/update_actor时间比，旧actor2495秒也不能作为当前版本实测。
+
+逐行切点隔离候选实际176请求/44个B4 CPU接口检查通过：target label/sample/
+paired顺序、suffix位置、原action绝对索引与原NativeTargetLogitRows保持。小CPU
+Cache接口单独标注，没用它代替真实B8/数值验收。source-review f6b97835完整绑定
+runner5f14bb3c、answerd47333ea、artifact50af8daf、lease54ad5ae1；new finite wrapper
+3e1d6103/library4f42c391、kernel CUDA9ebcef18只扩展逐行query starts表示，公式不变。
+原FA真实saved operands的官方coincident检查与非零layout逐值对照见05:13记录；
+这些不能冒称真实异质B8/32k/完整信用已验收。
+
+第一次隔离probe2138789之前的v1/2105248已在DT bank前因导入路径断言退出：
+原producer212再次prepend DT_ROOT/clean/qwen35，遮盖out的answer接口。原错误
+日志保留；root随后停止请求发现PID已退出，实际上没发signal。v2仅prepared，
+不覆盖其源或把它称为执行。v3复用原已存在的链接owner目录接口，只有目标/
+artifact指向惰性扩展，bare runner仍原e9c757，原wrapper不遮盖；未改正式目录。
+
+隔离B8 v3 driver2138789/birth1791323526.94、GPU2/3，prepared e30a1f17，原verify
+22bc698c字节不变，原88请求/rank的SHA8714abf2/1fdc1eb0不变。diagnose cdfe43a5
+只改诊断分发与读取表示：前4次baseline/row冷暖分别测量，第5次组合原GDN0、
+varlen FA3与真实finite输入/LSE/upstream被动观察，不算速度。05:53实际两rank
+inspect/SHA确认answer/artifact/lease及6个DI身份，进入shared_cold，尚无完成结果。
+此时owned子树PSS36.98GiB、容器168.89GiB；GPU2/3约17.9/17.7GiB，资源只作
+该时刻观测，不称峰值或容量验收。没有挂live tracer、优化器step或新容差。
+
+新FA varlen离线接口37c2c9fb复用原a290e11c reference/原断言：原packed每行完整
+Q/K取出后再还原整批比较，不能把KV carrier中间洞直接喂给原reference。GDN0
+仍用原5c1924ce/check_saved_fla与原FLA断言。原fa/LSE/finite非零输出分别报告，
+不把native forward断言扩大为完整DT验收。候选仍不在默认launch路径。
+收据位于appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/，
+结果索引experiments/rl/results_appworld_efficiency_20261007.json；正式事实继续以
+v3 job/source/原worker日志为准。PLAN、PPO损失、任务预算、LoRA8/16、每卡B4未改。
+
+
+## 2026-10-07 05:23 AppWorld原冻结owner fresh v3已提交，采样开始
+
+旧v2 actor中途退出保留在下方。复用原launch_appworld_native.py1223c007与原env
+beb9c001，从原基础权重fresh启动；没有--resume-from，原resume_mode=disable。
+新driver1953903/birth1791321793.72，GPU4/5；worker1959905/1961414。
+运行目录/runs/appworld-fresh-native-conv-canonical-20261007-v3/appworld-dt。
+新source97e3cb754f505b79a52d3dc3464b9027ae7bdc38e7074b866f80dc7624be3481；
+继承原冻结3cd90b2d与preparedf5232ac1，95entry/396VERL/55LOOP/105DT文件逐项
+SHA无差异。新source只变运行身份与来源记录，不是新的数值算法版本。
+提交5155c9b3保留原guard，旧一次性v2脚本未原样重跑，不重prepare、不改参数。
+本次完整launch对照v2，只有4个output/visibility目录字段变化。
+
+实际原worker RPC已核LoRA8/alpha16、actor micro4、PPO epochs2、entropy.001、
+dualclip3、sharedpadding1、canonical HF59f9、actor3a65/fsdp e5eb/torchfunction079a；
+原trainer d35ddd26/373行整批masked_whiten保持。v2该白化实际已执行；本次
+仍在采样，尚未执行DT/actor更新，不能冒称本次梯度或学习恢复。DT/vLLM lazy
+模块没有出现在此时worker sys.modules，未将其冒称已执行的真实DT导入证据。
+预算仍200×40groups×6、mini32、epoch2、40turns、32runners/rank、train32000/
+上限32768，没改rank/alpha/B4，也没接storage或row-cut候选。
+
+05:27原vLLM已初始化、LOOP任务采样服务开始；物理GPU4/5分别48501/48485MiB。
+容器总122789081088B（114.36GiB），anonymous约89.98GiB；未相加fork RSS。
+没有完整rollout/DT/actor时间、梯度或新检查点；进程存活不是训练健康证明。
+不再live attach mcTracer；候选继续在隔离目录做原操作数、官方断言与表示对照。
+本机snapshot更新为原只读collector独立输出e094acb7；collector33e1705c字节未改，
+仅内存重定向保存目的地，IO重定向收据可查。来源都在
+research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/
+native-conv-canonical-owner-v3/，旧snapshot/失败日志仍保留，不当新运行事实。
+
+
+## 2026-10-07 05:13 逐行切点finite-FA接口通过实际操作数检查，未接入训练
+
+正式driver1181392/worker仍已退出；本轮没有重启、检查点加载/导出/恢复或参数修改。
+隔离candidate=/candidates/appworld-row-cuts-finite-20261007-v1，CUDA9ebcef18、
+wrapper3e1d6103，复用既有prepare_remote.py699b3f1b原cucc flags/头文件，49.32秒
+编译成功，library4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157。
+编译实际子树PSS采样峰1.017GB，无GPU launch；初次诊断模板替换误中STDOUT、
+第二次调用缺失/usr/bin/time，均在compiler启动前失败，已保存stderr并改用已装
+psutil PSS采样，不安装工具、不清缓存、不替换正式owner。没有称失败为通过。
+
+实际GPU2原saved-operand检查15.46秒退出0，reuse actual-dt-layer3-boundaries.pt
+SHA0ade21d748c0fa37bd46a08ee3c1452d6cb298dac36b0fed6ad7c7be4b9978aa。
+单decoder3真实八操作数：Q BF16[4,16,527,256]、K/V BF16[4,4,911,256]、u FP32
+同Q、LSE FP32[4,16,527]，原cut384/coefficient start433。不是模型权重或checkpoint。
+原verify_saved_fa_dtypes.py7ff11d9d字节未改，只注入隔离library和row-layout表示，
+使用原FA2.6.3 source a290e11c的attention_ref/普通低精度参照和原断言：output2倍、
+dq/dk/dv3倍。原native四项及coincident finite三项全部通过；这个官方误差断言
+只用于相同端点的普通导数极限，绝不作为非零finite的新误差门槛。
+
+非零真实操作数仍保留原完整合法范围433以后：新scalar与新row ABI（四行cut384、
+Q stride527）对原5d2af760库的dq/dk/dv/tau/center均逐值相同，max_abs0。
+混合cut384/448/512/576只补充核查索引，保留范围同步缩至433/448/512/576后，
+五输出也相同。此范围不是原四行训练action范围，不能当原完整credit保持或
+真实异质cut/runner验证。尚无真实异质prefix-cache/mask/position/target/lease接入、
+新FLA/32k B8/full DT速度验收；候选仍未部署，原冻结3cd90b2d不替换。
+
+单GPU检查采样物理峰2556MiB、子树PSS10.015GB，Torch峰allocated1.136GB/
+reserved1.439GB；不同资源口径分开。没有模型forward/训练/额外rollout/optimizer。
+实际GPU计算由原FA reference和finite owner完成，未使用随机u补造异质训练样本。
+原源、编译、实际dtype、原断言、所有残差与资源由kernel-verification.json索引。
+
+排序owner只读复查也已完成：原consumer按context稳定排序，原DataProto.reorder/
+等行数跨卡分区已接；动态microbatch不能直接保B4。已有88行按切点排序没有大
+收益（约1.58% suffix槽减少且rank1反增2.91%），不新增影子调度器。逐行cut后
+FA phase0/1仍必须读完整事实KV，不能把必要score/LSE计算当可删历史重算。
+
+
 ## 2026-10-07 04:44 原actor期间worker意外退出；正式任务已停止
 
 driver1181392/birth1791314386.58及worker1189140/1190575均已退出，GPU4/5释放。

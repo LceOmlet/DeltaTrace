@@ -1,0 +1,187 @@
+--- baseline/qwen35_dense_finite_runner.py
++++ candidate/qwen35_dense_finite_runner.py
+@@ -81,6 +81,58 @@
+         for module,had,value in reversed(saved):
+             if had:setattr(module,name,value)
+             else:delattr(module,name)
++
++
++
++def _pack_native_cached_suffix_rows(paired_ids,selection,provider):
++    """Transport original valid IDs/positions to HF's existing row mask API."""
++    starts=tuple(provider.prefix_lengths);lengths=tuple(provider.context_lengths)
++    if (len(starts)!=selection.batch or len(lengths)!=selection.batch
++            or max(starts)!=provider.prefix_length):
++        raise ValueError('Prepared row prefix metadata does not match the original targets.')
++    selected=selection.suffix_rows(starts,lengths)
++    width=selected.length;prefix_width=provider.prefix_length
++    ids=paired_ids.new_zeros((2*selection.batch,width))
++    suffix_mask=paired_ids.new_zeros(ids.shape)
++    full_mask=paired_ids.new_zeros((2*selection.batch,prefix_width+width))
++    for row,(start,length) in enumerate(zip(starts,lengths)):
++        count=length-start
++        ids[2*row:2*row+2,:count]=paired_ids[2*row:2*row+2,start:length]
++        suffix_mask[2*row:2*row+2,:count]=1
++        full_mask[2*row:2*row+2,:start]=1
++        full_mask[2*row:2*row+2,prefix_width:prefix_width+count]=1
++    positions=(torch.tensor(starts,device=paired_ids.device,dtype=torch.long)
++               .repeat_interleave(2)[:,None]+torch.arange(width,device=paired_ids.device)[None,:])
++    positions=positions.masked_fill(suffix_mask==0,0)
++    return ids,{'full_attention':full_mask,'linear_attention':suffix_mask},positions,selected
++
++
++def _compact_native_cached_kv(value,starts,lengths,prefix_width):
++    """Remove only masked carrier columns, retaining original K/V values."""
++    # Native attention captures [2B,H,Pmax+Smax,D]; finite FA consumes
++    # logically contiguous [2B,H,max(Li),D]. Torch owns the exact copies.
++    result=value.new_zeros((value.shape[0],value.shape[1],max(lengths),value.shape[3]))
++    for row,(start,length) in enumerate(zip(starts,lengths)):
++        result[2*row:2*row+2,:,:start]=value[2*row:2*row+2,:,:start]
++        result[2*row:2*row+2,:,start:length]=value[2*row:2*row+2,:,prefix_width:prefix_width+length-start]
++    return result
++
++
++def _public_varlen_attention_lse(captures,mask,args):
++    """Compose the installed HF unpad and public FA return, without new FA."""
++    from flash_attn.bert_padding import unpad_input,pad_input
++    from transformers.modeling_flash_attention_utils import _upad_input
++    q,k,v=[captures[name].transpose(1,2) for name in ('query','key','value')]
++    batch,width=q.shape[:2]
++    q,k,v,indices,(cuq,cuk),(maxq,maxk)=_upad_input(q,k,v,mask,width,unpad_input)
++    aux,lse,unused=flash_attn_varlen_func(q,k,v,cuq,cuk,maxq,maxk,
++        return_attn_probs=True,**args)
++    # The installed MetaX owner actually returns [H,total_q] FP32,
++    # measured on the saved actual operands; do not use its stale 3-D doc.
++    if lse.ndim!=2 or lse.shape!=(q.shape[1],q.shape[0]):
++        raise ValueError('Installed public varlen FA LSE representation changed.')
++    return (pad_input(aux,indices,batch,width),
++            pad_input(lse.transpose(0,1),indices,batch,width).transpose(1,2),unused)
+ 
+ 
+ class Qwen35DenseFiniteRunner:
+@@ -226,7 +278,28 @@
+             changed=paired_ids[0::2]!=paired_ids[1::2]
+             coefficient_starts=torch.where(changed,positions,original_length).amin(-1).cpu().tolist()
+         prefix_start=0;replay_cache=None;native_cache=None
+-        if self.reuse_native_prefix and observer is None:
++        row_starts=None;row_lengths=None;root_positions={}
++        if (self.reuse_native_prefix and observer is None
++                and getattr(prefix_cache_provider,'prefix_lengths',None) is not None):
++            row_starts=tuple(prefix_cache_provider.prefix_lengths)
++            row_lengths=tuple(prefix_cache_provider.context_lengths)
++            # The original first-change sentinel is the common padded extent.
++            # Identical rows have no source change; retain that meaning at
++            # their real length rather than an invalid physical-pad index.
++            coefficient_starts=[length if start==original_length else start
++                                for start,length in zip(coefficient_starts,row_lengths)]
++            if any(start>coefficient_starts[row] for row,start in enumerate(row_starts)):
++                raise ValueError('A row cache boundary crosses a changed source token.')
++            prefix_start=prefix_cache_provider.prefix_length
++            with torch.no_grad():
++                replay_cache=timed('shared_native_prefix_cache',lambda:prefix_cache_provider(
++                    paired_ids[1::2,:prefix_start]))
++            replay_cache.reorder_cache(torch.arange(selection.batch,device=paired_ids.device).repeat_interleave(2))
++            native_cache=timed('fork_native_prefix_cache',lambda:copy.deepcopy(replay_cache))
++            paired_ids,mask,position_ids,selection=_pack_native_cached_suffix_rows(
++                paired_ids,selection,prefix_cache_provider)
++            root_positions={'position_ids':position_ids}
++        elif self.reuse_native_prefix and observer is None:
+             # The native hybrid cache contains the real full-attention K/V,
+             # GDN recurrent state, and causal-convolution window. Evaluate the
+             # common prefix once per sample, then let the owner duplicate it
+@@ -272,7 +345,7 @@
+         selector=NativeTargetLogitRows(selection) if select_output_rows else None
+         try:
+             with torch.no_grad(),_native_conv_initial_states_scope(layers,self.native_conv_initial_states):out=timed('native_root_with_CPU_checkpoints',lambda:model(input_ids=paired_ids,attention_mask=mask,use_cache=bool(prefix_start),past_key_values=native_cache,
+-                **({'logits_to_keep':selector.rows} if selector is not None else {})))
++                **root_positions,**({'logits_to_keep':selector.rows} if selector is not None else {})))
+         finally:
+             if self.pin_root_host:torch.cuda.current_stream().synchronize()
+             for h in handles:h.remove()
+@@ -307,10 +380,16 @@
+         with torch.no_grad():m=timed('finite_final_norm',lambda:self.boundaries.norm_residual(x[0::2],x[1::2],norm.weight,mnorm,torch.zeros_like(mnorm),norm.eps))
+         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
+         seed_effect=effect(m,x);del x,mnorm,seed,z
+-        layout=RightPaddedLengths([original_length]*selection.batch,original_length,paired_ids.device,
+-                                  coefficient_starts=coefficient_starts if self.fa_coefficient_suffix or prefix_start else None,
+-                                  query_start=prefix_start)
+-        local_starts=None if coefficient_starts is None else [start-prefix_start for start in coefficient_starts]
++        if row_starts is not None:
++            layout=RightPaddedLengths(list(row_lengths),max(row_lengths),paired_ids.device,
++                coefficient_starts=coefficient_starts,query_starts=row_starts,
++                query_padded_length=selection.length)
++            local_starts=[start-prefix for start,prefix in zip(coefficient_starts,row_starts)]
++        else:
++            layout=RightPaddedLengths([original_length]*selection.batch,original_length,paired_ids.device,
++                                      coefficient_starts=coefficient_starts if self.fa_coefficient_suffix or prefix_start else None,
++                                      query_start=prefix_start)
++            local_starts=None if coefficient_starts is None else [start-prefix_start for start in coefficient_starts]
+         gdn_cut=(min(min(local_starts)//64,(selection.length-1)//64)*64
+                  if self.gdn_coefficient_suffix and local_starts is not None else 0)
+         for i in reversed(range(32)):
+@@ -346,7 +425,9 @@
+             prepare_layer=getattr(model,'prepare_finite_layer',None)
+             if callable(prepare_layer):prepare_layer(layer)
+             if dc.calls!={k:1 for k in ('input_norm','post_norm','gate','up','silu','down','mlp','decoder')}:raise ValueError('Missing actual decoder captures.')
+-            if mc.calls!=({'module':1,'interface':1,'native_varlen':0,'native_dense':1} if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError(f'Missing actual native mixer captures at layer {i} ({layer.block_type}): {mc.calls!r}')
++            expected_fa_calls=({'module':1,'interface':1,'native_varlen':1,'native_dense':0}
++                               if row_starts is not None else {'module':1,'interface':1,'native_varlen':0,'native_dense':1})
++            if mc.calls!=(expected_fa_calls if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError(f'Missing actual native mixer captures at layer {i} ({layer.block_type}): {mc.calls!r}')
+             d,c,e=dc.values,mc.values,getattr(mc,'endpoints',{});scale=getattr(mc,'scale',0.0625)
+             mixer_input_shape=getattr(mc,'input_shape',None)
+             gdn_capture_start=getattr(mc,'coefficient_start',0)
+@@ -358,10 +439,11 @@
+             ledger[str(i)]=row;del expected,y,x
+             lse=None
+             if is_fa:
+-                args={k:v for k,v in mc.dense_arguments.items() if k!='return_attn_probs'}
++                native_args=mc.packed_arguments if row_starts is not None else mc.dense_arguments
++                args={k:v for k,v in native_args.items() if k in ('dropout_p','softmax_scale','causal')}
+                 if args['dropout_p']!=0 or not args['causal']:raise ValueError('Unsupported native FA settings.')
+                 if not offload_mixer:
+-                    with torch.no_grad():aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args))
++                    with torch.no_grad():aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:(_public_varlen_attention_lse(c,kw['attention_mask'],args) if row_starts is not None else flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args)))
+                     if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                     row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
+             del dc,mc
+@@ -385,11 +467,15 @@
+                     timed('restore_mixer_captures_'+str(i),restore)
+                 if is_fa:
+                     if offload_mixer:
+-                        aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args))
++                        aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:(_public_varlen_attention_lse(c,kw['attention_mask'],args) if row_starts is not None else flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args)))
+                         if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                         row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
+-                        for name in ('dense_q','dense_k','dense_v'):
+-                            del c[name]
++                        if row_starts is None:
++                            for name in ('dense_q','dense_k','dense_v'):
++                                del c[name]
++                    if row_starts is not None:
++                        for name in ('key','value'):
++                            c[name]=_compact_native_cached_kv(c[name],row_starts,row_lengths,prefix_start)
+                     cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused,
+                         pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=offload_mixer,input_shape=mixer_input_shape)
+                 finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
+@@ -416,11 +502,19 @@
+             if callable(release_layer):release_layer(layer)
+             if observer is not None:observer.boundary(str(i),m.detach(),root[str(i)])
+         x=root['0'].to('cuda',non_blocking=self.pin_root_host);signed=_token_effect(m,x).cpu()
+-        if prefix_start:signed=torch.nn.functional.pad(signed,(prefix_start,0))
++        if row_starts is not None:
++            restored=signed.new_zeros((selection.batch,original_length))
++            for row,(start,length) in enumerate(zip(row_starts,row_lengths)):
++                restored[row,start:length]=signed[row,:length-start]
++            signed=restored
++        elif prefix_start:signed=torch.nn.functional.pad(signed,(prefix_start,0))
+         torch.cuda.synchronize();seconds=time.perf_counter()-started
+         info={'select_output_rows':select_output_rows,'complete_attribution_seconds_with_diagnostics':seconds,
++              'native_row_prefix_lengths':row_starts,'native_row_context_lengths':row_lengths,
+               'fa_coefficient_starts':coefficient_starts if self.fa_coefficient_suffix else None,
+-              'gdn_fla_coefficient_start':gdn_cut,'native_shared_prefix_length':prefix_start,
++              'gdn_fla_coefficient_start':gdn_cut,
++              'native_shared_prefix_length':prefix_start if row_starts is None else None,
++              'native_prefix_carrier_width':prefix_start if row_starts is not None else None,
+               'norm_gate_rules':{str(i):rule for i,rule in sorted(self.norm_gate_rules.items())},
+               'finite_fla_by_layer':sorted(self.finite_fla_by_layer),
+               'attention_pv_rules':{str(i):rule for i,rule in sorted(self.attention_pv_rules.items())},

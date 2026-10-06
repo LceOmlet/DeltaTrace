@@ -1,0 +1,148 @@
+{
+  "role": "Independent local source-only review of the isolated individual-prefix representation and real-B8 diagnostic interfaces.",
+  "reviewed_utc": "2026-10-06T21:53:46.249313+00:00",
+  "reviewer": "/root/dt_batch_geometry_audit",
+  "scope": {
+    "local_source_reading": true,
+    "source_hashes_rechecked_at_receipt_write": true,
+    "model_execution": false,
+    "torch_import": false,
+    "gpu_execution": false,
+    "remote_calls_for_this_receipt": false,
+    "production_source_modified": false,
+    "formal_job_modified": false
+  },
+  "sources": {
+    "runner": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/candidate/qwen35_dense_finite_runner.py",
+      "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555",
+      "bytes": 40266
+    },
+    "answer_targets": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/candidate/qwen35_answer_finite.py",
+      "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+      "bytes": 11203
+    },
+    "prefix_artifacts": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/candidate/qwen35_native_prefix_artifacts.py",
+      "sha256": "50af8daf2ce5beb44c474801dbdd3bc00e736d2f92c530a0ef17b1c0168d35ee",
+      "bytes": 11387
+    },
+    "prefix_leases": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/candidate/native_prefix_leases.py",
+      "sha256": "54ad5ae1a07cefcbc4002fa63e7450d8281493a93567ad3df46cb7e9c2e74260",
+      "bytes": 6438
+    },
+    "diagnostic": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/diagnose_native_prefix_leases.py",
+      "sha256": "cdfe43a52ad5e6bdd7f51404f5094b0ac602332719b643604282bb6c41404dc4",
+      "bytes": 61121
+    },
+    "gdn0_observer": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/observe_native_gdn0_operands.py",
+      "sha256": "5c1924ce50d797acf2b9f7ac1bb79a7adfd752c6c383dac160fff6fa695cd53a",
+      "bytes": 10334
+    },
+    "native_varlen_fa_observer": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/observe_native_fa3_varlen_operands.py",
+      "sha256": "37c2c9fb0ceaf7eaa74fb59ee44dab3b694a0657fe0c07e48e1e048292b5539c",
+      "bytes": 12820
+    },
+    "finite_fa_observer": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/observe_actual_row_finite_fa.py",
+      "sha256": "865ff24fb02ded351ee87b3ab3811523a5a507cf36b9c78ea0ad91e5e7901d49",
+      "bytes": 1862
+    }
+  },
+  "representation_review": {
+    "finding": "No concrete source-level shape, ownership or interface defect found in the reviewed version; not numerical acceptance.",
+    "checks": [
+      {
+        "owner": "prefix_leases",
+        "interface": "prepare_native_prefix_leases(..., individual_prefixes=False)",
+        "observation": "Opt-in rows use each original request start aligned to 64 and literal context_tokens. Existing consumer order, B4 and public capture-count synchronization remain. The default scalar route remains the baseline route."
+      },
+      {
+        "owner": "prefix_artifacts",
+        "interface": "NativePrefixLease.prefix_lengths/context_lengths and compose_native_prefix_cache(..., prefix_lengths=None)",
+        "observation": "Per-row factual ID checks address the original artifact row. Each consumption constructs a fresh public DynamicCache; FA prefix rows are right-padded to the carrier width and GDN uses its actual stored boundary. Original public cache update order is retained."
+      },
+      {
+        "owner": "answer_targets",
+        "interface": "PackedAnswerTargets.suffix_rows(starts, lengths)",
+        "observation": "Only target predictor positions and suffix extent are rebased. Original sample/label identities and interleaved endpoint order remain; true Li bounds come from saved request context, not common Lmax."
+      },
+      {
+        "owner": "runner",
+        "interface": "_pack_native_cached_suffix_rows / _compact_native_cached_kv",
+        "observation": "Native suffix uses per-row pi and Li, explicit absolute position_ids, full FA mask with interior carrier holes and separate GDN suffix mask. Finite K/V remove carrier holes to logical maxLi; signed output is restored to original pi:Li positions."
+      },
+      {
+        "owner": "runner",
+        "interface": "_public_varlen_attention_lse / original _upad_input and pad_input",
+        "observation": "Uses the original installed packing/padding and public varlen FA interface. Measured public LSE representation is H,totalQ FP32; transpose-pad-transpose restores B,H,Smax. The review does not promote that interface observation to numerical acceptance."
+      },
+      {
+        "owner": "runner",
+        "interface": "unchanged-endpoint sentinel and metadata",
+        "observation": "Only an original unchanged sentinel equal to original Lmax is replaced by true Li. Shared scalar prefix is reported None in row mode; physical carrier width is recorded separately."
+      },
+      {
+        "owner": "runner",
+        "interface": "scalar/default branch",
+        "observation": "Row behavior is conditional on prefix_lengths metadata. Original scalar finite arithmetic/callbacks remain selected when metadata is absent; this is a source review, not a new output-equality test."
+      }
+    ]
+  },
+  "diagnostic_review": {
+    "finding": "No concrete runtime dispatch/capture-composition defect found in the reviewed diagnostic sources.",
+    "checks": [
+      {
+        "lines": "341-375; 510-550",
+        "observation": "Labels select baseline cold/warm, then row cold/warm, then a separate row-observed call. Row class and finite_fa are switched together. The candidate runner RightPaddedLengths global is bound to the same candidate finite-wrapper class, preserving its isinstance contract."
+      },
+      {
+        "lines": "451-515",
+        "observation": "Baseline and row each prepare one full88-request bank. Entering row cold clears the previous diagnostic bank; row warm and observed reuse the row bank. They are not the same immutable bank across scalar/row variants."
+      },
+      {
+        "lines": "636-655",
+        "observation": "One capture_backend namespace combines the original decoder class, GDN0 observer subclass and FA3-varlen observer subclass. No public attribute observer argument is passed, so the existing prefix path is not disabled."
+      },
+      {
+        "lines": "676-699",
+        "observation": "Original selected_attribute receives original args/kwargs. Inner finally restores saved capture_backend and row finite operator. Export and reference checking are separate; only the fifth observed label bears added snapshot/copy/export overhead."
+      },
+      {
+        "lines": "823-830",
+        "observation": "Outer variant finally restores original attribute, class, finite operator, capture backend and original optional flags even if the observed operation raises."
+      },
+      {
+        "owner": "gdn0_observer",
+        "observation": "Calls original capture event first. The existing replay0 call supplies actual public/stage operands; original capture-count expectation is one record. This observer does not add a native model or FLA call."
+      },
+      {
+        "owner": "native_varlen_fa_observer",
+        "observation": "Adds only its retention names to the supplied original FA capture. Original exit clears hooks but keeps captured values readable, enabling the subsequent CPU copy. Original varlen profile exposes packed Q/K/V, cu_seqlens, mask and output."
+      },
+      {
+        "owner": "finite_fa_observer",
+        "observation": "Calls the original finite operator first and returns the exact same result object. Original attention finite owner calls it once per FA decoder; reverse order makes call8 decoder3. Operands and returned dq/dk/dv/tau/center are tensors compatible with the snapshot interface."
+      }
+    ]
+  },
+  "limitations": [
+    "Source inspection is not FA/FLA tolerance acceptance, whole-DT numerical acceptance, 32k capacity acceptance, performance validation or formal deployment.",
+    "The scalar and row banks are separately captured with their required boundaries; changed capture geometry may affect native values. Cross-bank QVA differences cannot be attributed solely to the finite ABI.",
+    "Raw equality/max-absolute-difference observations are descriptive and introduce no full-network tolerance.",
+    "No official reference assertion was executed in this source review. Offline official checks must retain their original ownership and scope.",
+    "The separate fifth observed phase includes CPU copies and exports and must not be presented as the first four unobserved timing results.",
+    "Original verify_native_prefix_artifacts.py remains SHA22bc698c7ae848581c1572095029c17e3542209589a8faa8d12109b3337ec7e8; original actor loading, precision and release interfaces are reused."
+  ],
+  "phase_observation_coordination": {
+    "probe_pid": 2138789,
+    "probe_birth": 1791323526.94,
+    "read_by": "/root/actor_workload_accounting",
+    "this_agent_repeated_remote_phase_read": false
+  }
+}

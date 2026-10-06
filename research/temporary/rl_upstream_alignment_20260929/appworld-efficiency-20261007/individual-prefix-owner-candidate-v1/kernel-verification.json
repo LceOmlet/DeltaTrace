@@ -1,0 +1,309 @@
+{
+  "status": "kernel_layout_verified_with_stated_scope_not_deployed",
+  "original_assertions": {
+    "out": "(out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()",
+    "dq": "(dq - dq_ref).abs().max().item() <= 3 * (dq_pt - dq_ref).abs().max().item()",
+    "dk": "(dk - dk_ref).abs().max().item() <= 3 * (dk_pt - dk_ref).abs().max().item()",
+    "dv": "(dv - dv_ref).abs().max().item() <= 3 * (dv_pt - dv_ref).abs().max().item()"
+  },
+  "actual_checks": [
+    {
+      "name": "out",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.015625,
+      "baseline_max_abs": 0.09375,
+      "status": "passed"
+    },
+    {
+      "name": "dq",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00054931640625,
+      "baseline_max_abs": 0.000732421875,
+      "status": "passed"
+    },
+    {
+      "name": "dq",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.000244140625,
+      "baseline_max_abs": 0.000732421875,
+      "status": "passed"
+    },
+    {
+      "name": "dk",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.001800537109375,
+      "status": "passed"
+    },
+    {
+      "name": "dk",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.001800537109375,
+      "status": "passed"
+    },
+    {
+      "name": "dv",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.0068359375,
+      "status": "passed"
+    },
+    {
+      "name": "dv",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.0068359375,
+      "status": "passed"
+    }
+  ],
+  "zero_endpoint_scope": "Same real saved input; original FA FP32 reference/reordered BF16 baseline and unchanged assertions. Output factor2; dq/dk/dv factor3. Only the coincident-endpoint ordinary-gradient limit is covered.",
+  "nonzero_finite": {
+    "candidate_scalar_vs_original": {
+      "dq": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "dk": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "dv": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "tau": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.float32",
+        "shape": [
+          4,
+          16,
+          527
+        ]
+      },
+      "center": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.float32",
+        "shape": [
+          4,
+          16,
+          527
+        ]
+      }
+    },
+    "candidate_row_vs_original": {
+      "dq": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "dk": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "dv": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "tau": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.float32",
+        "shape": [
+          4,
+          16,
+          527
+        ]
+      },
+      "center": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.float32",
+        "shape": [
+          4,
+          16,
+          527
+        ]
+      }
+    }
+  },
+  "nonzero_scope": "Actual B4 eight operands, uniform row cut384/Q stride527, original coefficient range433 onward: new scalar and new row ABI both exactly equal to deployed old scalar owner in all five outputs. No new finite-error threshold.",
+  "mixed_transport": {
+    "query_starts": [
+      384,
+      448,
+      512,
+      576
+    ],
+    "coefficient_starts": [
+      433,
+      448,
+      512,
+      576
+    ],
+    "query_stride": 527,
+    "differences": {
+      "dq": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "dk": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "dv": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ]
+      },
+      "tau": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.float32",
+        "shape": [
+          4,
+          16,
+          527
+        ]
+      },
+      "center": {
+        "equal": true,
+        "max_abs": 0.0,
+        "dtype": "torch.float32",
+        "shape": [
+          4,
+          16,
+          527
+        ]
+      }
+    },
+    "scope": "Supplementary ABI transport on real tensors, preserving only the declared shortened coefficient ranges. Not actual heterogeneous training cuts or full-credit equivalence."
+  },
+  "missing": "Actual heterogeneous factual cuts, native cache/mask/position target/lease/runner integration, FLA check, 32k B8 update capacity, complete DT runtime speed or learning recovery.",
+  "measured_resources": {
+    "seconds": 15.458616018295288,
+    "sampled_peak_tree_PSS_bytes": 10014730240,
+    "sampled_physical_GPU2_peak_MiB": 2556,
+    "torch": {
+      "torch_peak_allocated_bytes": 1135623168,
+      "torch_peak_reserved_bytes": 1438646272
+    }
+  },
+  "production_changed": false,
+  "model_or_checkpoint_loaded": false,
+  "sources": {
+    "compiled-owner.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/compiled-owner.json",
+      "sha256": "6a9790b19331a0aa0e153b64902fbaac14dbdedae9f85a9dfdb3cec9459d245b"
+    },
+    "official-owner-test-audit-readonly.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/official-owner-test-audit-readonly.json",
+      "sha256": "f866897b133059ca802e8c81d0ee3f8c00f544c6c9cd76781741796ec43e8c8e"
+    },
+    "saved-real-finite-fa-schema-readonly.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/saved-real-finite-fa-schema-readonly.json",
+      "sha256": "e05aca530865efcc9c98639ae9576f415553b7fd96a55f5a5ae5369eaba72020"
+    },
+    "original-official-saved-operand-check.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/original-official-saved-operand-check.json",
+      "sha256": "2dc639ab01a6a37c1f75ad6220e6a29e277be7308dc77e27ae985015e61affec"
+    },
+    "real-layout-result.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/real-layout-result.json",
+      "sha256": "cb1cd5b2e0c2ca38752f1e38540ddc1494faa766f4688301d7d1367571e37757"
+    },
+    "real-operands-execution.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/real-operands-execution.json",
+      "sha256": "9ad17a8652d8f4b0bd9bc89c60e76e9cdbfc491314e97178365dff9bb811e09b"
+    },
+    "compile_isolated_owner.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/compile_isolated_owner.py",
+      "sha256": "675d723dc7eba740d9c918e8d8685501ca3b634256571856eca065f1a096e19c"
+    },
+    "verify_row_layout_real_operands.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/verify_row_layout_real_operands.py",
+      "sha256": "d5f464783c5428cd33bdf92f81d4ab4209abeee6ff85448ecd87e270b644d2c8"
+    },
+    "run_isolated_real_operand_check.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/run_isolated_real_operand_check.py",
+      "sha256": "f0779e036e70edc01f4a6ee2d9cd0ce18e85103b40a54bcccc0541c61d1e39f1"
+    }
+  }
+}

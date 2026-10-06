@@ -1,0 +1,85 @@
+{
+  "status": "isolated_B8_and_exact32768_DT_completed_production_wiring_prepared",
+  "no_checkpoint_restore": true,
+  "no_optimizer_step": true,
+  "original_request_and_official_config_preserved": true,
+  "resources": {
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "actor_microbatch_per_card": 4,
+    "DT_minibatch_per_card": 4,
+    "total_submitted_batch": 8,
+    "max_length": 32768
+  },
+  "measurements": {
+    "0": {
+      "original_actual_B4_hot_seconds": 9.769534486997145,
+      "combined_actual_B4_hot_seconds": 3.961641783000232,
+      "same_input_observed_ratio": 2.466031767162572,
+      "combined_exact32768_B4_hot_seconds": 8.304581804997724,
+      "actual_pss_bytes": 13289958400,
+      "capacity_pss_bytes": 14496642048,
+      "capacity_torch_peak_allocated_bytes": 25351057920
+    },
+    "1": {
+      "original_actual_B4_hot_seconds": 9.742399900998862,
+      "combined_actual_B4_hot_seconds": 3.962101163000625,
+      "same_input_observed_ratio": 2.4588973123595443,
+      "combined_exact32768_B4_hot_seconds": 8.300716937999823,
+      "actual_pss_bytes": 13900460032,
+      "capacity_pss_bytes": 14365619200,
+      "capacity_torch_peak_allocated_bytes": 25351057920
+    }
+  },
+  "evidence": {
+    "completed": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\combined-b8-capacity-completed-summary-1791324705.json",
+      "sha256": "648af81ee223b1c3a2914a226591026e77cbe8c3a65edff4176aec11f368b427"
+    },
+    "combined_CPU": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\cpu-contracts.json",
+      "sha256": "a3b469124e7384d6287a775d37ec4d70702aabb7d1e13ed88c03edf51fa29d01"
+    },
+    "official_native_varlen_and_finite": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\offline-checks-v1\\independent-fa-results\\execution.json",
+      "sha256": "801f768e16cd14d4b60ebfc195189d4a8f1c64ad4f63240b6a9a1d54bbc523d4"
+    },
+    "official_GDN": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\gdn-normalizer-v2\\result.json",
+      "sha256": "7c30156c5b031fdcaf7b6cd6bbcea33f8b20781f2388c23b13d8cf6b4b57f0ea"
+    },
+    "failed_old_reference": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\offline-checks-v1\\rank0-failure-inspection.stdout.txt",
+      "sha256": "6e73068b3708918a5de98bc4202782e8c6b5517cf15ba2ee4978107f8a079d23"
+    },
+    "canonical_reference_interface_fix": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\gdn-checker-canonical-fix-v1\\source-fix.json",
+      "sha256": "d354f385b91dd36b6eab7c11e4828767d7eee55479c4a566c438a4f37296f2f4"
+    },
+    "QVA_comparison": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\saved-qva-cpu-review\\compact-qva-review.json",
+      "sha256": "f2c121a7abe14c8792bc06f8e1660cccbd3b746294af7146e0f6ff2ecace46f0"
+    },
+    "raw_A_direction": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\saved-qva-cpu-review\\real-b8-v3-rawA-direction.json",
+      "sha256": "6fc2204775be89e42013871ced36a158f96c3bcac5af6ba693dc2f6fdfad4a6e"
+    },
+    "production_prepared": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\production-wiring-v1\\prepared.json",
+      "sha256": "6c65c8c17f80575cbb643505e06cd8e6c8150d90ccdb23c0d49d4320aace2103"
+    },
+    "production_actual_CPU_imports": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\production-wiring-v1\\actual-imports-cpu.json",
+      "sha256": "f1f481e8a76e2abaf84f0ca5c0ca7147a46b0d907cdba28a95882fb236c23a47"
+    }
+  },
+  "limits": [
+    "Speed ratio covers this saved B8 only, not a full iteration or training-throughput ratio.",
+    "The exact32768 call is DT capacity, not a new optimizer-update or vLLM-colocation test.",
+    "FA original assertions cover native varlen forward and coincident finite derivative checks; nonzero row/scalar outputs are bitwise equal on the actual saved operands.",
+    "GDN uses production official l2norm_fwd at the reference boundary, then unchanged official recurrence/o/ht assertions. The previous FP16 normalization failure remains recorded.",
+    "Cross-bank Q/V/A differences are measured and retained, not assigned a new whole-network tolerance.",
+    "Whole-batch official whitening remains enabled in the trainer; this evidence does not prove learning quality recovered.",
+    "Current formal-v3 has no completed update/gen timing pair; no historical ratio is substituted."
+  ]
+}

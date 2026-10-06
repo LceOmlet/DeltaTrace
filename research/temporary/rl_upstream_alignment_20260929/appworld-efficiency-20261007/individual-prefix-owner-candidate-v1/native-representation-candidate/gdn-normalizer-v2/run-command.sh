@@ -1,0 +1,4 @@
+set -e
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+unset MACA_VISIBLE_DEVICES
+CUDA_VISIBLE_DEVICES=3 "$VENV_PYTHON" -u /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-gdn-normalization-v2/check_saved_gdn_official_normalizer_v2.py --parent /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3 --official-source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py --output /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-gdn-normalization-v2/result.json

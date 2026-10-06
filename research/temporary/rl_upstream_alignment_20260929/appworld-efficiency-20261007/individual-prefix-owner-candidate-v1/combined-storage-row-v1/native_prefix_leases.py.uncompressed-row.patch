@@ -1,0 +1,41 @@
+--- uncompressed-row/native_prefix_leases.py
++++ combined-storage-row/native_prefix_leases.py
+@@ -10,7 +10,7 @@
+ import torch
+ 
+ 
+-def prepare_native_prefix_leases(runner, requests, *, minibatch_size, eos_token_id, individual_prefixes=False):
++def prepare_native_prefix_leases(runner, requests, *, minibatch_size, eos_token_id, boundary_row_storage=False, observe_boundary_rows=None, individual_prefixes=False):
+     from qwen35_native_prefix_artifacts import NativePrefixArtifacts, NativePrefixLease
+     from verl import DataProto
+     from verl.protocol import pad_dataproto_to_divisor
+@@ -86,6 +86,10 @@
+             key=lambda row: max(needed[records[row][0]])), dtype=torch.long))
+         indices, _ = pad_dataproto_to_divisor(indices, capture_rounds*minibatch_size)
+         indices = indices.batch['canonical_index'].tolist()
++        if boundary_row_storage:
++            # Match the original sources[uid] last-write semantics after native
++            # padding. Earlier repeated slots are not consumed by any lease.
++            last_slots = {records[row][0]: slot for slot, row in enumerate(indices)}
+         for offset in range(0, len(indices), minibatch_size):
+             rows = indices[offset:offset+minibatch_size]
+             lengths = sorted(set(n for row in rows for n in needed[records[row][0]]))
+@@ -95,8 +99,16 @@
+                 prompt = records[row][1]
+                 end = min(width, prompt.numel())
+                 ids[i, :end] = prompt[:end].to(device)
+-            artifacts = NativePrefixArtifacts.capture(runner.model, ids, lengths,
+-                                                       config=runner.model._conditional.config)
++            if boundary_row_storage:
++                boundary_rows = {n: [i for i, row in enumerate(rows)
++                    if last_slots[records[row][0]] == offset+i and n in needed[records[row][0]]]
++                    for n in lengths}
++                artifacts = NativePrefixArtifacts.capture(runner.model, ids, lengths,
++                    config=runner.model._conditional.config, boundary_rows=boundary_rows,
++                    observe_boundary_rows=observe_boundary_rows)
++            else:
++                artifacts = NativePrefixArtifacts.capture(runner.model, ids, lengths,
++                                                           config=runner.model._conditional.config)
+             for i, row in enumerate(rows):
+                 sources[records[row][0]] = (artifacts, i)
+             capture_tokens += ids.numel()

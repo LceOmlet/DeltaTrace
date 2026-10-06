@@ -1,0 +1,73 @@
+{
+  "status": "prepared_only",
+  "scope": "Stdlib import, syntax and original official AST identity only",
+  "source_checks": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\observe_native_fa3_varlen_operands.py",
+      "sha256": "37c2c9fb0ceaf7eaa74fb59ee44dab3b694a0657fe0c07e48e1e048292b5539c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\observe_native_fa3_operands.py",
+      "sha256": "2ebd8b4963e1c8413b0595eebe64bd1d6c1d80cc3dbac49a1e623adda4e9db63"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\observe_native_gdn0_operands.py",
+      "sha256": "5c1924ce50d797acf2b9f7ac1bb79a7adfd752c6c383dac160fff6fa695cd53a"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\native_attention_capture.py",
+      "sha256": "2a226ac35302e933920aa096fe962db7ed724c1a478c247ef5700b253461ab74"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\native_dense_attention_capture.py",
+      "sha256": "d02c51325e852289358b74f5756f285af0148915c9a3a0c2d8c535a945945604"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\candidate\\qwen35_dense_finite_runner.py",
+      "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555"
+    }
+  ],
+  "official_FA": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\numerical-path-readonly-20261007\\test_flash_attn_v263.py",
+    "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+    "reference_loader": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\observe_native_fa3_operands.py",
+      "sha256": "2ebd8b4963e1c8413b0595eebe64bd1d6c1d80cc3dbac49a1e623adda4e9db63"
+    },
+    "reference_functions": [
+      "construct_local_mask",
+      "attention_ref"
+    ],
+    "reference_ast_sha256": "ba8c7ff5f8eb8ba65347725ae7175a0b4c47ccb8b3156115be2c8b4abab971ed",
+    "test_function": "test_flash_attn_varlen_output",
+    "output_assertion_lines": [
+      1440
+    ],
+    "output_assertion_ast_sha256": "33d7649c61244179add1648f1836f2046dd96f989038cdd7bc8921809ea7283c",
+    "output_assertions": [
+      "assert (out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()"
+    ]
+  },
+  "torch_imported": false,
+  "GPU": false,
+  "model": false,
+  "checkpoint": false,
+  "numerical_check_executed": false,
+  "formal_sources_or_manifests_modified": false,
+  "observer_fields": [
+    "packed_q",
+    "packed_k",
+    "packed_v",
+    "packed_cu_seqlens_q",
+    "packed_cu_seqlens_k",
+    "attention_mask",
+    "attention_output"
+  ],
+  "reference_semantics": "Each actual packed logical row uses every query and full key context; references returned to original padded output then original single whole-batch max assertion",
+  "limits": [
+    "Native output only; no gradients, finite acceptance or whole DT acceptance",
+    "Existing dense observer cannot observe real varlen, so this retains only original capture operands in isolated diagnostic",
+    "LSE is not exposed by the original capture; none is manufactured",
+    "B1 reduces batch factor but original attention_ref still materializes H*Sq*Sk score/attention per row"
+  ]
+}

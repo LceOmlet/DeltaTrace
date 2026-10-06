@@ -1,0 +1,110 @@
+--- uncompressed-row/qwen35_native_prefix_artifacts.py
++++ combined-storage-row/qwen35_native_prefix_artifacts.py
+@@ -15,10 +15,11 @@
+     config: object
+     input_ids: torch.Tensor
+     layers: list
++    boundary_rows: object = None
+ 
+     @classmethod
+     @torch.no_grad()
+-    def capture(cls, model, input_ids, prefix_lengths, *, config, observe_native_cache=None):
++    def capture(cls, model, input_ids, prefix_lengths, *, config, observe_native_cache=None, boundary_rows=None, observe_boundary_rows=None):
+         """Read requested boundaries during one unchanged native forward.
+ 
+         Only the supplied factual IDs are forwarded. A boundary consumes
+@@ -34,6 +35,12 @@
+         lengths = sorted(set(int(n) for n in prefix_lengths))
+         if not lengths or any(n < 64 or n % 64 or n > input_ids.shape[1] for n in lengths):
+             raise ValueError('Native DT prefix boundaries must be positive 64-token boundaries in the factual input')
++        selected_rows = None
++        if boundary_rows is not None:
++            selected_rows = {n: tuple(int(row) for row in boundary_rows.get(n, ())) for n in lengths}
++            if any(len(set(rows)) != len(rows) or any(row < 0 or row >= input_ids.shape[0] for row in rows)
++                   for rows in selected_rows.values()):
++                raise ValueError('Selected native boundary rows must be distinct original capture rows')
+         cache = DynamicCache(config=config)
+         layers = model.model.language_model.layers
+         artifacts = [None] * len(layers)
+@@ -58,8 +65,18 @@
+         def projection(_module, _args, output, i, width):
+             # Exact native pre-convolution projection. HF's prefill stores
+             # the last conv_kernel_size columns; no convolution is repeated.
+-            windows[i] = {n: output[:, n-width:n].transpose(1, 2).detach().cpu()
+-                          for n in lengths}
++            if selected_rows is None:
++                windows[i] = {n: output[:, n-width:n].transpose(1, 2).detach().cpu()
++                              for n in lengths}
++            else:
++                windows[i] = {n: output[:, n-width:n].index_select(0,
++                    torch.tensor(rows, device=output.device, dtype=torch.long)).transpose(1, 2).detach().cpu()
++                    for n, rows in selected_rows.items() if rows}
++                if observe_boundary_rows is not None:
++                    for n, rows in selected_rows.items():
++                        if rows:
++                            observe_boundary_rows('conv', i, n, rows,
++                                output[:, n-width:n].transpose(1, 2).detach(), windows[i][n])
+ 
+         def end(_module, _args, _output, i):
+             owner_layer = cache.layers[i]
+@@ -80,7 +97,14 @@
+                             initial_state=previous_state, output_final_state=True,
+                             save_new_value=False)
+                         del h, v_new
+-                    boundaries[n] = (windows[i].pop(n), state.detach().cpu())
++                    if selected_rows is None:
++                        boundaries[n] = (windows[i].pop(n), state.detach().cpu())
++                    elif selected_rows[n]:
++                        indices = torch.tensor(selected_rows[n], device=state.device, dtype=torch.long)
++                        boundaries[n] = (windows[i].pop(n), state.index_select(0, indices).detach().cpu())
++                        if observe_boundary_rows is not None:
++                            observe_boundary_rows('state', i, n, selected_rows[n],
++                                state.detach(), boundaries[n][1])
+                     # The public owner accepts its FP32 final state as the
+                     # next segment's initial state. Consume each token once;
+                     # no restart from token zero for every requested boundary.
+@@ -117,6 +141,10 @@
+                 handle.remove()
+             pending.clear()
+             windows.clear()
++        if selected_rows is not None:
++            return cls(config, input_ids.detach().cpu(), artifacts,
++                boundary_rows={n: {row: index for index, row in enumerate(rows)}
++                               for n, rows in selected_rows.items()})
+         return cls(config, input_ids.detach().cpu(), artifacts)
+ 
+     def materialize(self, prefix_length, *, device, rows=None):
+@@ -141,8 +169,14 @@
+     for i, layer in enumerate(result.layers):
+         if isinstance(layer, LinearAttentionCacheLayerMixin):
+             states = [source.layers[i]['boundaries'][prefix_length] for source, row in sources]
+-            conv = torch.cat([state[0][row:row+1] for state, (_, row) in zip(states, sources)])
+-            recurrent = torch.cat([state[1][row:row+1] for state, (_, row) in zip(states, sources)])
++            if all(getattr(source, 'boundary_rows', None) is None for source, row in sources):
++                conv = torch.cat([state[0][row:row+1] for state, (_, row) in zip(states, sources)])
++                recurrent = torch.cat([state[1][row:row+1] for state, (_, row) in zip(states, sources)])
++            else:
++                rows = [row if getattr(source, 'boundary_rows', None) is None
++                        else source.boundary_rows[prefix_length][row] for source, row in sources]
++                conv = torch.cat([state[0][row:row+1] for state, row in zip(states, rows)])
++                recurrent = torch.cat([state[1][row:row+1] for state, row in zip(states, rows)])
+             result.update_conv_state(conv.to(device), i)
+             result.update_recurrent_state(recurrent.to(device), i)
+         else:
+@@ -172,8 +206,14 @@
+     for i, layer in enumerate(result.layers):
+         if isinstance(layer, LinearAttentionCacheLayerMixin):
+             states = [source.layers[i]['boundaries'][n] for (source, row), n in zip(sources, lengths)]
+-            conv = torch.cat([state[0][row:row+1] for state, (_, row) in zip(states, sources)])
+-            recurrent = torch.cat([state[1][row:row+1] for state, (_, row) in zip(states, sources)])
++            if all(getattr(source, 'boundary_rows', None) is None for source, row in sources):
++                conv = torch.cat([state[0][row:row+1] for state, (_, row) in zip(states, sources)])
++                recurrent = torch.cat([state[1][row:row+1] for state, (_, row) in zip(states, sources)])
++            else:
++                rows = [row if getattr(source, 'boundary_rows', None) is None
++                        else source.boundary_rows[n][row] for (source, row), n in zip(sources, lengths)]
++                conv = torch.cat([state[0][row:row+1] for state, row in zip(states, rows)])
++                recurrent = torch.cat([state[1][row:row+1] for state, row in zip(states, rows)])
+             result.update_conv_state(conv.to(device), i)
+             result.update_recurrent_state(recurrent.to(device), i)
+         else:

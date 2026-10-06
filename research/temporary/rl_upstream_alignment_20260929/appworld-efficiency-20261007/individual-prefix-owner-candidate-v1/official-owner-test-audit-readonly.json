@@ -1,0 +1,393 @@
+{
+  "status": "read_only_evidence_and_minimal_validation_map_no_GPU_execution_or_acceptance",
+  "observed_unix": 1791320819.611994,
+  "scope": "Read PLAN/RUNTIME/current_runtime and source. Read-only remote stat/hash/pickle metadata plus official Torch FakeTensorMode/mmap/weights_only metadata load on CPU. No model, weights, checkpoint, GPU operator, profiler attachment, numerical test, production edit or deployment.",
+  "inputs": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\PLAN.md",
+      "sha256": "3bc7fcd0ed77e5626220025ab4edc844cf2bc02211cee27438add1fa1cdc3112",
+      "bytes": 21524
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\RUNTIME_RECORD.md",
+      "sha256": "31fced861ff258eb08cf7802f68cf41e423fb1aa8d7cb6a5dd42df33b86ed0fc",
+      "bytes": 312411
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\continuation-1791314906\\current_runtime-after-exit-1791319881.json",
+      "sha256": "62a7499e32f4366d1080fb5b108777294c91660f4b66939ac47e744abeac8e7e",
+      "bytes": 1038913
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\saved-real-finite-fa-schema-readonly.json",
+      "sha256": "e05aca530865efcc9c98639ae9576f415553b7fd96a55f5a5ae5369eaba72020",
+      "bytes": 14954
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\verify_dt_fa_candidate.py",
+      "sha256": "58ccf5a06001b3c893287e2c74d6a969a5a2bd0428f9984b6604c49e865aa676",
+      "bytes": 6529
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\verify_saved_fa_dtypes.py",
+      "sha256": "7ff11d9d800a2c233b019213ae0fa9a5b603dfea51dfffabe6b9296a74aab9a9",
+      "bytes": 5124
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\observe_native_fa3_operands.py",
+      "sha256": "2ebd8b4963e1c8413b0595eebe64bd1d6c1d80cc3dbac49a1e623adda4e9db63",
+      "bytes": 7053
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\observe_native_gdn0_operands.py",
+      "sha256": "5c1924ce50d797acf2b9f7ac1bb79a7adfd752c6c383dac160fff6fa695cd53a",
+      "bytes": 10334
+    }
+  ],
+  "official_FA": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py",
+    "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+    "fresh_remote_hash_confirmed": true,
+    "reference": {
+      "function": "attention_ref",
+      "line": 217,
+      "end": 304,
+      "mask_helper": "construct_local_mask",
+      "mask_helper_lines": [
+        182,
+        214
+      ],
+      "unchanged_reference_dtype": "FP32 upcast reference, ordinary low precision reorder_ops=True/upcast=False baseline"
+    },
+    "tests": [
+      {
+        "function": "test_flash_attn_output",
+        "lines": [
+          903,
+          1132
+        ],
+        "assert_lines": {
+          "out": 1121,
+          "dq": 1130,
+          "dk": 1131,
+          "dv": 1132
+        }
+      },
+      {
+        "function": "test_flash_attn_varlen_output",
+        "lines": [
+          1172,
+          1451
+        ],
+        "assert_lines": {
+          "out": 1440,
+          "dq": 1449,
+          "dk": 1450,
+          "dv": 1451
+        }
+      }
+    ],
+    "assertions": {
+      "out": "assert (out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()",
+      "dq": "assert (dq - dq_ref).abs().max().item() <= 3 * (dq_pt - dq_ref).abs().max().item()",
+      "dk": "assert (dk - dk_ref).abs().max().item() <= 3 * (dk_pt - dk_ref).abs().max().item()",
+      "dv": "assert (dv - dv_ref).abs().max().item() <= 3 * (dv_pt - dv_ref).abs().max().item()"
+    },
+    "scope": "Original attention output and ordinary gradients. At coincident endpoints the finite owner derivative limit can be tested with those original gradient assertions. No original assertion in this file provides a nonzero finite-attribution error bound, a whole-network bound, token-credit correctness or update tolerance."
+  },
+  "official_FLA": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py",
+    "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+    "fresh_remote_hash_confirmed": true,
+    "owner": "test_chunk + recurrent_gated_delta_rule_ref + installed fla.utils.assert_close with FLA_CI_ENV disabled",
+    "statements": [
+      {
+        "line": 258,
+        "text": "assert_close('o', ref, tri, 0.005)"
+      },
+      {
+        "line": 259,
+        "text": "assert_close('ht', ref_ht, tri_ht, 0.005)"
+      },
+      {
+        "line": 260,
+        "text": "assert_close('dq', ref_dq, tri_dq, 0.008)"
+      },
+      {
+        "line": 261,
+        "text": "assert_close('dk', ref_dk, tri_dk, 0.008)"
+      },
+      {
+        "line": 262,
+        "text": "assert_close('dv', ref_dv, tri_dv, 0.008)"
+      },
+      {
+        "line": 263,
+        "text": "assert_close('db', ref_dbeta, tri_dbeta, 0.02)"
+      },
+      {
+        "line": 264,
+        "text": "assert_close('dg', ref_dg, tri_dg, 0.02)"
+      }
+    ],
+    "scope": "The isolated row-query FA candidate does not change FLA arithmetic. When integrating per-row native prefix states, use actual dtype/h0/normalization with original o/ht statements; finite FLA ordinary-gradient limit is distinct from nonzero interventions."
+  },
+  "saved_finite_FA": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/actual-dt-layer3-boundaries.pt",
+    "sha256": "0ade21d748c0fa37bd46a08ee3c1452d6cb298dac36b0fed6ad7c7be4b9978aa",
+    "bytes": 1248287964,
+    "fresh_remote_hash_confirmed": true,
+    "schema_receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\saved-real-finite-fa-schema-readonly.json",
+      "sha256": "e05aca530865efcc9c98639ae9576f415553b7fd96a55f5a5ae5369eaba72020",
+      "bytes": 14954
+    },
+    "layer": 3,
+    "not_weights_or_checkpoint": true,
+    "query_start": 384,
+    "lengths": [
+      911,
+      911,
+      911,
+      911
+    ],
+    "padded_length": 911,
+    "coefficient_starts": [
+      433,
+      433,
+      433,
+      433
+    ],
+    "scale": 0.0625,
+    "operands": {
+      "q0": {
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "q1": {
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "k0": {
+        "shape": [
+          4,
+          4,
+          911,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "k1": {
+        "shape": [
+          4,
+          4,
+          911,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "v0": {
+        "shape": [
+          4,
+          4,
+          911,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "u": {
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ],
+        "dtype": "torch.float32",
+        "owner_transport": "Existing wrapper casts once to BF16 before C ABI; preserve this existing cast"
+      },
+      "lse0": {
+        "shape": [
+          4,
+          16,
+          527
+        ],
+        "dtype": "torch.float32"
+      },
+      "lse1": {
+        "shape": [
+          4,
+          16,
+          527
+        ],
+        "dtype": "torch.float32"
+      }
+    },
+    "outputs": {
+      "dq": {
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "dk": {
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "dv": {
+        "shape": [
+          4,
+          16,
+          527,
+          256
+        ],
+        "dtype": "torch.bfloat16"
+      },
+      "tau": {
+        "shape": [
+          4,
+          16,
+          527
+        ],
+        "dtype": "torch.float32"
+      },
+      "center": {
+        "shape": [
+          4,
+          16,
+          527
+        ],
+        "dtype": "torch.float32"
+      }
+    },
+    "schema_explanation": "Single real decoder3 diagnostic including native inputs/outputs, multiple boundary tensors, attention captures, actual finite operands and coefficients. 1.248 GB is this single-layer diagnostic duplication, not a multi-layer model or checkpoint."
+  },
+  "saved_AppWorld_forward_FA": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-local-prefix-root-tape-fa3-20261004-48da1c3/actual-fa3-operands-shared_warm-rank0.pt",
+      "sha256": "9b8ef91ddb464eeab2584a38270fe4c4723a4ee1e94c27efbfe02289a325a99e",
+      "bytes": 322964573,
+      "q": [
+        8,
+        576,
+        16,
+        256
+      ],
+      "k_v": [
+        8,
+        7552,
+        4,
+        256
+      ],
+      "dtype": "torch.bfloat16",
+      "fresh_remote_hash_confirmed": true
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-local-prefix-root-tape-fa3-20261004-48da1c3/actual-fa3-operands-shared_warm-rank1.pt",
+      "sha256": "3aefb700edac8d0f0a778aa14e796de171d189d353af607256e12ffd5a33e645",
+      "bytes": 328535133,
+      "q": [
+        8,
+        610,
+        16,
+        256
+      ],
+      "k_v": [
+        8,
+        7586,
+        4,
+        256
+      ],
+      "dtype": "torch.bfloat16",
+      "fresh_remote_hash_confirmed": true
+    }
+  ],
+  "AppWorld_forward_payload_limit": "Fresh hash and zip field read confirms only dense_q/dense_k/dense_v/attention_output plus call metadata; no actual u/lse0/lse1/finite coefficients. Suitable original native forward/cached geometry check, not nonzero finite consumer validation.",
+  "minimum_validation_sequence": [
+    {
+      "step": 1,
+      "need": "Old/default ABI unchanged",
+      "operation": "Original library5d versus newly compiled candidate scalar exports on saved fa operands; record each of five outputs, then new row export with starts384 per row and S527 on exactly those same operands.",
+      "claim": "Real full nonzero finite same-operand/representation/default-path comparison. Do not invent an official finite epsilon or treat conservation as tolerance."
+    },
+    {
+      "step": 2,
+      "need": "New row ABI ordinary-gradient limit",
+      "operation": "The existing verify_dt_fa_candidate.py official-test bridge can import the isolated candidate wrapper and construct coefficient_starts=[0]*B, query_starts=[0]*B, query_padded_length=L. Call its unchanged pinned test_flash_attn_output with the original test generator/reference/assertions.",
+      "claim": "Original FA gradient acceptance for new row export at coincident endpoints and zero cut. This is supplementary owner test, not replacement for real operands."
+    },
+    {
+      "step": 3,
+      "need": "Real cached independent Q stride gradient limit",
+      "operation": "Reuse verify_saved_fa_dtypes.py actual factual endpoints, saved actual u and original reference/assertion AST. Change only owner binding and layout to starts=[384]*4,S527, K911. Preserve its coefficient433 suffix selection and GQA reduction.",
+      "claim": "Actual BF16 cached Q/K geometry at coincident endpoints with original statements. A cached p>0 suffix-only gradient cannot be returned as a full-KV gradient to unmodified generic official test."
+    },
+    {
+      "step": 4,
+      "need": "Mixed-start row packing",
+      "operation": "For supplemental ABI-only transportation, repack existing real q/q1/u/lse rows at64-aligned starts>=384 and select original scalar outputs only on retained valid coefficient coordinates >=max(433,new_start). Keep compact original K/V chronological order, original scale, same u dtype transport and aligned tile order. Padding outputs zero.",
+      "claim": "A test-derived change in starts/coefficient range is representation coverage only; it is not evidence all original training source coefficients have been preserved."
+    },
+    {
+      "step": 5,
+      "need": "Actual heterogeneous action-source integration",
+      "operation": "Use one original real B4 with heterogeneous floor(action_start/64) and matching actual q0/q1/k0/k1/v0/u/lse0/lse1, lengths, coefficient_starts and requested logical source indices from the original capture. Compare existing common-cut finite owner with exact per-row repacking on all original requested coefficients. No extra rollout or checkpoint is necessary if such data is already saved.",
+      "claim": "This is the actual data missing in the currently enumerated AppWorld forward-only snapshots; do not replace u by random data or attention output and call it the actual finite consumer."
+    }
+  ],
+  "source_equivalence_reason": "Per-row query starts are64-aligned; global Q/K causal coordinates and full compact KV chronology remain. Changing storage stride should preserve the same operations on every retained coefficient row. Source equality/real operand transportation can be exact without inventing a finite numerical threshold. If nonzero finite results differ, report and locate the arithmetic/index cause; original FA ordinary-gradient assertions cannot independently certify that finite difference.",
+  "explicit_nonclaims": [
+    "No GPU test, numerical pass, compile, speed, memory or deployment claim.",
+    "No invented two-update/whole-network tolerance.",
+    "The FA source uses2x for output and3x for gradients in the relevant tests; do not report uniform2x.",
+    "Uniform original starts384 and coefficient433 cannot be converted to different64-aligned starts<=433; only384 lies in that interval. Therefore all-source unchanged mixed cuts need a genuine heterogeneous source capture.",
+    "No trained value model, clipping, compensation, reward rerouting or method/config change."
+  ],
+  "unchanged_test_source_snapshots": {
+    "scope": "Unmodified byte snapshots of existing diagnostic entry files, not a new reference or assertions. Local bytes independently match currently observed release/c9cd147 files. Root/repo verify_dt_fa_candidate.py is older and differs; do not use it.",
+    "files": [
+      {
+        "name": "verify_dt_fa_candidate.py",
+        "local_source": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\verify_dt_fa_candidate.py",
+        "copy": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-test-source\\verify_dt_fa_candidate.py",
+        "bytes": 6529,
+        "sha256": "58ccf5a06001b3c893287e2c74d6a969a5a2bd0428f9984b6604c49e865aa676",
+        "fresh_remote_same_sha256_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/experiments/rl/verify_dt_fa_candidate.py"
+      },
+      {
+        "name": "verify_saved_fa_dtypes.py",
+        "local_source": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\verify_saved_fa_dtypes.py",
+        "copy": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-test-source\\verify_saved_fa_dtypes.py",
+        "bytes": 5124,
+        "sha256": "7ff11d9d800a2c233b019213ae0fa9a5b603dfea51dfffabe6b9296a74aab9a9",
+        "fresh_remote_same_sha256_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/experiments/rl/verify_saved_fa_dtypes.py"
+      },
+      {
+        "name": "verify_official_kernel_tolerances.py",
+        "local_source": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\verify_official_kernel_tolerances.py",
+        "copy": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-test-source\\verify_official_kernel_tolerances.py",
+        "bytes": 3960,
+        "sha256": "e9ee6be0bb59bdddb99400c7a0c14af775b75fa98b0bcbf744781f26f9b2f2a8",
+        "fresh_remote_same_sha256_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/experiments/rl/verify_official_kernel_tolerances.py"
+      }
+    ]
+  },
+  "metadata_read_environment": "First FakeTensorMode import without existing metax-entry.env.sh failed because MACA_HOME was absent while Triton discovered its installed driver. Reused the recorded metax-entry.env.sh then the official CPU-only metadata read succeeded. No dependency reinstall, environment creation, driver repair or GPU operation was performed."
+}

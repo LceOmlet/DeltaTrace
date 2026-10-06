@@ -1,0 +1,203 @@
+{
+  "scope": "Original native varlen FA forward output; unchanged official whole-batch assertion",
+  "official_source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py",
+    "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+    "reference_loader": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/observe_native_fa3_operands.py",
+      "sha256": "2ebd8b4963e1c8413b0595eebe64bd1d6c1d80cc3dbac49a1e623adda4e9db63"
+    },
+    "reference_functions": [
+      "construct_local_mask",
+      "attention_ref"
+    ],
+    "reference_ast_sha256": "ba8c7ff5f8eb8ba65347725ae7175a0b4c47ccb8b3156115be2c8b4abab971ed",
+    "test_function": "test_flash_attn_varlen_output",
+    "output_assertion_lines": [
+      1440
+    ],
+    "output_assertion_ast_sha256": "33d7649c61244179add1648f1836f2046dd96f989038cdd7bc8921809ea7283c",
+    "output_assertions": [
+      "assert (out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()"
+    ]
+  },
+  "original_capture_owner": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/isolated-row-owners/deltatrace/accelerated/qwen35/qwen35_code_local_capture.py",
+    "sha256": "993ae72a49dc90901bfcbb7817e5fd32ad6004fbe630a190b775c6f1e77fbe72",
+    "name": "accelerated.qwen35.qwen35_code_local_capture.NativeDenseAttentionCapture",
+    "actual_profile_source": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/isolated-row-owners/deltatrace/clean/qwen35/native_dense_attention_capture.py",
+      "sha256": "d02c51325e852289358b74f5756f285af0148915c9a3a0c2d8c535a945945604"
+    }
+  },
+  "native_arguments": {
+    "max_seqlen_q": 558,
+    "max_seqlen_k": 13230,
+    "dropout_p": 0.0,
+    "softmax_scale": 0.0625,
+    "causal": true,
+    "return_attn_probs": false
+  },
+  "interface_arguments": {
+    "dropout": 0.0,
+    "scaling": 0.0625,
+    "sliding_window": null,
+    "softcap": null,
+    "is_causal": null
+  },
+  "actual_tensor_metadata": {
+    "packed_q": {
+      "shape": [
+        3750,
+        16,
+        256
+      ],
+      "stride": [
+        4096,
+        256,
+        1
+      ],
+      "dtype": "torch.bfloat16",
+      "device": "cuda:0",
+      "bytes": 30720000
+    },
+    "packed_k": {
+      "shape": [
+        101798,
+        4,
+        256
+      ],
+      "stride": [
+        1024,
+        256,
+        1
+      ],
+      "dtype": "torch.bfloat16",
+      "device": "cuda:0",
+      "bytes": 208482304
+    },
+    "packed_v": {
+      "shape": [
+        101798,
+        4,
+        256
+      ],
+      "stride": [
+        1024,
+        256,
+        1
+      ],
+      "dtype": "torch.bfloat16",
+      "device": "cuda:0",
+      "bytes": 208482304
+    },
+    "packed_cu_seqlens_q": {
+      "shape": [
+        9
+      ],
+      "stride": [
+        1
+      ],
+      "dtype": "torch.int32",
+      "device": "cuda:0",
+      "bytes": 36
+    },
+    "packed_cu_seqlens_k": {
+      "shape": [
+        9
+      ],
+      "stride": [
+        1
+      ],
+      "dtype": "torch.int32",
+      "device": "cuda:0",
+      "bytes": 36
+    },
+    "attention_mask": {
+      "shape": [
+        8,
+        13230
+      ],
+      "stride": [
+        13230,
+        1
+      ],
+      "dtype": "torch.int64",
+      "device": "cuda:0",
+      "bytes": 846720
+    },
+    "attention_output": {
+      "shape": [
+        8,
+        558,
+        16,
+        256
+      ],
+      "stride": [
+        2285568,
+        4096,
+        256,
+        1
+      ],
+      "dtype": "torch.bfloat16",
+      "device": "cuda:0",
+      "bytes": 36569088
+    }
+  },
+  "rows": [
+    {
+      "row": 0,
+      "complete_query_tokens": 438,
+      "complete_key_tokens": 12214
+    },
+    {
+      "row": 1,
+      "complete_query_tokens": 438,
+      "complete_key_tokens": 12214
+    },
+    {
+      "row": 2,
+      "complete_query_tokens": 473,
+      "complete_key_tokens": 12633
+    },
+    {
+      "row": 3,
+      "complete_query_tokens": 473,
+      "complete_key_tokens": 12633
+    },
+    {
+      "row": 4,
+      "complete_query_tokens": 406,
+      "complete_key_tokens": 12822
+    },
+    {
+      "row": 5,
+      "complete_query_tokens": 406,
+      "complete_key_tokens": 12822
+    },
+    {
+      "row": 6,
+      "complete_query_tokens": 558,
+      "complete_key_tokens": 13230
+    },
+    {
+      "row": 7,
+      "complete_query_tokens": 558,
+      "complete_key_tokens": 13230
+    }
+  ],
+  "native_max_error": 0.03125,
+  "original_low_precision_max_error": 0.1171875,
+  "reference_execution": "B1 complete logical rows; full original padded outputs merged before the assertion",
+  "causal_alignment": "Original bottom-right construct_local_mask on actual packed contiguous logical tokens",
+  "reference_tf32": false,
+  "additional_native_forward_calls": 0,
+  "gradients_checked": false,
+  "finite_operation_checked": false,
+  "whole_dt_acceptance": false,
+  "original_fa_varlen_output_assertion": "passed",
+  "operands": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/actual-row-native-fa3-rank1.pt",
+    "sha256": "d0b13368bded845abc0763beb57e5367fdb1552757c0b436f9b0d2174b8fdbd3"
+  }
+}

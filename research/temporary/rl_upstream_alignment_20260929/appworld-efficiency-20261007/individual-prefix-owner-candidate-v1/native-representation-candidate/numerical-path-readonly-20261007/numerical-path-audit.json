@@ -1,0 +1,117 @@
+{
+  "status": "read_only_source_audit_and_isolated_observer_prepared_not_numerically_executed",
+  "official_sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py",
+      "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9",
+      "bytes": 98161,
+      "local_snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\numerical-path-readonly-20261007\\test_flash_attn_v263.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py",
+      "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+      "bytes": 13148,
+      "local_snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\numerical-path-readonly-20261007\\test_gated_delta_v041.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/utils.py",
+      "sha256": "2971d3805da9da36e1000e82c0abddb491d65eec27c393e1431921281f09b2a6",
+      "bytes": 18398,
+      "local_snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\numerical-path-readonly-20261007\\utils.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/utils/__init__.py",
+      "missing": true
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+      "bytes": 94297,
+      "local_snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\numerical-path-readonly-20261007\\modeling_qwen3_5.py"
+    }
+  ],
+  "actual_owner_sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/deltatrace/clean/qwen35/native_attention_capture.py",
+      "sha256": "2a226ac35302e933920aa096fe962db7ed724c1a478c247ef5700b253461ab74",
+      "bytes": 5149
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/deltatrace/clean/qwen35/native_dense_attention_capture.py",
+      "sha256": "d02c51325e852289358b74f5756f285af0148915c9a3a0c2d8c535a945945604",
+      "bytes": 3165
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py",
+      "sha256": "3460f1d82895fda7dd5ef13894941327e34ca546bc13b9b99de9e517e516928b",
+      "bytes": 38234
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/masking_utils.py",
+      "sha256": "ad7b312bc3830894a198760520cc1baf02e35d327d216d41f00b0c61e9604334",
+      "bytes": 77425
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/flash_attn/flash_attn_interface.py",
+      "sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+      "bytes": 67754
+    }
+  ],
+  "FA": {
+    "existing_dense_observer": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\observe_native_fa3_operands.py",
+      "sha256": "2ebd8b4963e1c8413b0595eebe64bd1d6c1d80cc3dbac49a1e623adda4e9db63",
+      "limitations": [
+        "SNAPSHOT_FIELDS only dense_q/k/v and attention_output; actual varlen lacks dense fields",
+        "check_saved_operands does not pass query/key padding masks, unsuitable for heterogeneous carrier rows"
+      ]
+    },
+    "original_capture": {
+      "packed_inputs": "native_attention_capture.py lines 58-63: actual native q/k/v and cuQ/cuK at public call",
+      "mask_output": "lines 68-75: original full attention mask and original pre-gate attention output",
+      "LSE": "Native public return is not captured; packed_arguments records return_attn_probs but no LSE tensor",
+      "retention": "Diagnostic subclass unions seven existing original fields into target retained_names; no profile replacement or new unpad"
+    },
+    "reference_alignment": {
+      "official": "test_flash_attn_v263.py attention_ref217-304, construct_local_mask182-214",
+      "physical_holes": "Original construct_local_mask uses physical col_idx and valid sk-sq; passing KV interior holes would give incorrect causal positions",
+      "bridge": "Use actual packed cuQ/cuK slices for each whole logical row; do not crop any valid prefix/key/query; merge reference outputs into complete original padded output using original suffix query mask",
+      "memory": "B1 reduces simultaneous batch factor only; original eager scores and attention each require H*Qi*Ki elements per row",
+      "unchanged_global_assert": "test_flash_attn_varlen_output line1440, output <= 2x ordinary BF16/FP16 original reference error. Execute once on complete merged original batch, not stricter per-row asserts",
+      "grad_scope": "Original varlen dq/dk/dv assertions1449-1451 use factor3; new passive output checker does not execute them and cannot claim gradient acceptance without actual upstream/native gradients"
+    },
+    "prepared_checker": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\observe_native_fa3_varlen_operands.py",
+      "sha256": "37c2c9fb0ceaf7eaa74fb59ee44dab3b694a0657fe0c07e48e1e048292b5539c",
+      "source_check_receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\numerical-path-readonly-20261007\\observer-prepared-source-check.json",
+      "GPU": false,
+      "numerically_executed": false
+    }
+  },
+  "FLA": {
+    "observer": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\observe_native_gdn0_operands.py",
+      "sha256": "5c1924ce50d797acf2b9f7ac1bb79a7adfd752c6c383dac160fff6fa695cd53a"
+    },
+    "actual_fields": "raw_q/k/v/g/beta, raw public initial_state/cu_seqlens/normalization flag, original stage initial_state/scale/final-state flag, original native_o/native_ht",
+    "supports": "Nonzero and row-specific actual initial_state; actual q/k normalized exactly once when original public flag true",
+    "rejects": "cu_seqlens or fla_cu_seqlens non-None. Current heterogeneous candidate supplies dense GDN suffix mask, not packed cu-seqlens, so this original route remains applicable if actual capture confirms it",
+    "official": "test_gated_delta_v041.py SHA35f28bf6... original recurrent_gated_delta_rule_ref and test_chunk assert_close o/ht0.005; installed fla.utils.py SHA2971d380... strict FLA_CI_ENV false",
+    "dtype": "Do not substitute source default dtype; actual record metadata determines raw tensor/state dtype",
+    "padding_scope": "o/ht check validates the complete physical Smax native dense recurrence. ht is not automatically the logical per-row end state after Si; raw native padded tail is part of that actual operator call. No new masking or correction is introduced",
+    "limits": "Existing helper checks original forward o/ht only; original q/k/v grad0.008, beta/g0.02, h0grad0.008 assertions are not executed"
+  },
+  "integration": {
+    "route": "Inject passive subclasses via existing runner.capture_backend; preserve runner.attribute observer=None so prefix reuse remains enabled",
+    "existing_env_blocks": "Current diagnostic creates GDN and FA backends independently from saved backend; both flags together let FA overwrite GDN. One composed isolated backend can retain both original factories; no formal code changed here",
+    "no_new_standard": true,
+    "no_model_FA_unpad_reimplementation": true,
+    "no_GPU_CP_or_formal_changes": true
+  },
+  "still_needed": [
+    "One actual heterogeneous candidate capture after real B8 dispatch, with exact actual row lengths/context masks/cut/source identities",
+    "Captured original FA packed operands/output for the prepared official forward check; current original capture does not expose native LSE",
+    "For finite ABI evidence, retain actual existing auxiliary LSE and actual finite upstream/outputs before their consumption; do not manufacture LSE or upstream",
+    "Existing original FA/FLA reference and assertions cover forward/ordinary gradients, and coincident finite derivative limit only; do not turn them into a new bound for nonzero finite operations"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "role": "Select a bounded row-layout comparison in the existing real-ID diagnostic.\n\nOnly diagnostic dispatch, owner injection and reporting differ. The original\nactor loader, readout, finite arithmetic and Q/V/A consumers are called intact.\nNo model or remote process is launched by this preparation script.\n",
+  "original": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\diagnose_native_prefix_leases.py",
+    "sha256": "6a0af68922d6ef9bd75bbb7c909333497b75ec09a1019f41624aa56e8fe0f349"
+  },
+  "candidate": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\diagnose_native_prefix_leases.py",
+    "sha256": "cdfe43a52ad5e6bdd7f51404f5094b0ac602332719b643604282bb6c41404dc4"
+  },
+  "changes": [
+    {
+      "original": "    base_prefetch=os.environ.get('DT_PREFIX_BASE_MODEL_PREFETCH')=='1'",
+      "candidate": "    base_prefetch=os.environ.get('DT_PREFIX_BASE_MODEL_PREFETCH')=='1'\n    individual_rows=os.environ.get('DT_PREFIX_INDIVIDUAL_ROW_CANDIDATE')=='1'"
+    },
+    {
+      "original": "assert (os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states or boundary_row_storage",
+      "candidate": "assert (individual_rows or os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states or boundary_row_storage"
+    },
+    {
+      "original": "    if ledger_only:\n        labels=('shared_ledger',)",
+      "candidate": "    if individual_rows:\n        assert current_owner and base_prefetch and phase_only and warm_phase\n        assert not os.environ.get('DT_PREFIX_CHECKPOINT')\n        assert not any(os.environ.get(key)=='1' for key in (\n            'DT_PREFIX_HOT_PROFILE','DT_PREFIX_NATIVE_BACKWARD','DT_PREFIX_REVERSE_PREFETCH',\n            'DT_PREFIX_NATIVE_CONV_INITIAL_STATES','DT_PREFIX_NATIVE_CONV_CAPACITY',\n            'DT_PREFIX_BOUNDARY_ROW_STORAGE','DT_PREFIX_LEDGER_ONLY','DT_PREFIX_ROOT_TAPE'))\n        import inspect,importlib,json,sys\n        prepared=json.loads((Path(out)/'prepared.json').read_bytes())\n        owner=prepared['individual_row_candidate']\n        modules={}\n        for name in ('runner','finite_wrapper'):\n            item=owner[name];source=Path(item['path'])\n            assert hashlib.sha256(source.read_bytes()).hexdigest()==item['sha256']\n            spec=importlib.util.spec_from_file_location('_isolated_individual_row_'+name,source)\n            value=importlib.util.module_from_spec(spec);sys.modules[spec.name]=value\n            spec.loader.exec_module(value);modules[name]=value\n        row_module=modules['runner'];row_finite=modules['finite_wrapper']\n        row_module.RightPaddedLengths=row_finite.RightPaddedLengths\n        row_operation=row_finite.VendorFAFiniteP1BF16D256(\n            owner['finite_library']['path'],owner['finite_library']['sha256'])\n        for name,value in (('artifact',importlib.import_module('qwen35_native_prefix_artifacts')),\n                           ('lease',prepare_native_prefix_leases),\n                           ('answer',importlib.import_module('qwen35_answer_finite'))):\n            source=Path(inspect.getsourcefile(value));item=owner[name]\n            assert source.resolve()==Path(item['path']).resolve()\n            assert hashlib.sha256(source.read_bytes()).hexdigest()==item['sha256']\n        original_finite=runner.finite_fa\n        labels=('shared_cold','shared_warm','shared_individual_rows_cold','shared_individual_rows_warm',\n                'shared_individual_rows_observed')\n        save('individual_row_candidate_sources',sources=owner,\n             scope='Isolated actual B8 dispatch and representation comparison; no checkpoint, optimizer, new full-network tolerance or formal deployment')\n    if ledger_only:\n        labels=('shared_ledger',)"
+    },
+    {
+      "original": "                    leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs)",
+      "candidate": "                    leases,preparation=prepare_native_prefix_leases(args[0],all_requests,**kwargs,\n                        **({'individual_prefixes':True} if individual_rows and label.startswith('shared_individual_rows') else {}))"
+    },
+    {
+      "original": "    for label in labels:\n        if boundary_row_storage and label=='shared_boundary_rows_cold':",
+      "candidate": "    for label in labels:\n        if individual_rows and label=='shared_individual_rows_cold':\n            shared_bank=None\n            import gc\n            gc.collect()\n        if boundary_row_storage and label=='shared_boundary_rows_cold':"
+    },
+    {
+      "original": "        previous_class=runner.__class__\n        previous_capture_backend=runner.capture_backend",
+      "candidate": "        previous_class=runner.__class__\n        if individual_rows and label.startswith('shared_individual_rows'):\n            runner.__class__=row_module.Qwen35DenseFiniteRunner\n            runner.finite_fa=row_operation\n        previous_capture_backend=runner.capture_backend"
+    },
+    {
+      "original": "                runner.attribute=native_attribute\n            else:",
+      "candidate": "                runner.attribute=(types.MethodType(row_module.Qwen35DenseFiniteRunner.attribute,runner)\n                    if individual_rows and label.startswith('shared_individual_rows') else native_attribute)\n            else:"
+    },
+    {
+      "original": "            runner.__class__=previous_class\n            if conv_initial_states:",
+      "candidate": "            runner.__class__=previous_class\n            if individual_rows:runner.finite_fa=original_finite\n            if conv_initial_states:"
+    },
+    {
+      "original": "            context=(torch.profiler.profile(",
+      "candidate": "            actual_row_finite=None\n            row_fa_records=None\n            if individual_rows and label=='shared_individual_rows_observed':\n                from observe_native_gdn0_operands import NativeGDN0Operands\n                from observe_native_fa3_varlen_operands import make_attention_capture_observer\n                from observe_actual_row_finite_fa import ActualRowFiniteFA\n                globals_=selected_attribute.__func__.__globals__\n                def row_capture_class(name):\n                    return globals_[name] if saved_capture_backend is None else getattr(saved_capture_backend,name)\n                gdn0_audit=NativeGDN0Operands(runner.model.model.language_model.layers[0].linear_attn,\n                    Path(out)/'actual-gdn0-operands',variant=label,rank=torch.distributed.get_rank())\n                row_fa_records=[]\n                runner.capture_backend=types.SimpleNamespace(\n                    NativeDecoderCapture=row_capture_class('NativeDecoderCapture'),\n                    NativeGDNCapture=gdn0_audit.capture_type(row_capture_class('NativeGDNCapture')),\n                    NativeDenseAttentionCapture=make_attention_capture_observer(\n                        row_capture_class('NativeDenseAttentionCapture'),\n                        target_module=runner.model.model.language_model.layers[3].self_attn,\n                        records=row_fa_records))\n                actual_row_finite=ActualRowFiniteFA(row_operation,\n                    Path(out)/f'actual-row-finite-fa3-rank{torch.distributed.get_rank()}.pt')\n                runner.finite_fa=actual_row_finite\n            context=(torch.profiler.profile("
+    },
+    {
+      "original": "                    runner.capture_backend=saved_capture_backend\n",
+      "candidate": "                    runner.capture_backend=saved_capture_backend\n                    if actual_row_finite is not None:\n                        runner.finite_fa=row_operation\n"
+    },
+    {
+      "original": "            if gdn0_audit is not None:\n",
+      "candidate": "            if individual_rows and label=='shared_individual_rows_observed':\n                import json\n                assert len(gdn0_audit.records)==len(row_fa_records)==1\n                assert actual_row_finite.calls==8 and actual_row_finite.saved is not None\n                fa_path=Path(out)/f'actual-row-native-fa3-rank{torch.distributed.get_rank()}.pt'\n                with fa_path.open('xb') as stream:torch.save(row_fa_records[0],stream)\n                save('actual_individual_row_operands_saved',\n                     actual_finite=actual_row_finite.saved,\n                     native_gdn0=gdn0_audit.records[0],\n                     native_fa3=dict(path=str(fa_path),sha256=hashlib.sha256(fa_path.read_bytes()).hexdigest()),\n                     scope='Passive actual operands including original finite LSE/upstream; copy/export overhead belongs to this observed variant only. Official numerical checks run after model release.')\n                gdn0_audit=None\n            if gdn0_audit is not None:\n"
+    }
+  ],
+  "syntactically_valid": true,
+  "executed": false,
+  "numerical_threshold_added": false,
+  "checkpoint_load": false,
+  "optimizer_update": false
+}

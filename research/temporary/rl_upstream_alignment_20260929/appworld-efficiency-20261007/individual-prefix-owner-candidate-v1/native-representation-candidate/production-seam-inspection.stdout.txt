@@ -1,0 +1,73 @@
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/entry/deltatrace_rollout.py 2c01c47e699b8b5a05206e881bda596cfbca03d1b89a7c3d3de2ce30ae5995a4
+219:         # top-level); the local worktree wraps it one directory deeper.
+220:         try:
+221:             from deltatrace.profiles.official import make_qwen35_runner
+222:             from deltatrace.accelerated.qwen35 import qwen35_code_local_capture
+223:         except ModuleNotFoundError:
+224:             from profiles.official import make_qwen35_runner
+225:             from accelerated.qwen35 import qwen35_code_local_capture
+226:         from finite_fla_gpu import make_compiled_finite_pullback, verify_native_sources
+227:         from qwen35_answer_finite import PackedAnswerTargets
+222:             from deltatrace.accelerated.qwen35 import qwen35_code_local_capture
+223:         except ModuleNotFoundError:
+224:             from profiles.official import make_qwen35_runner
+225:             from accelerated.qwen35 import qwen35_code_local_capture
+226:         from finite_fla_gpu import make_compiled_finite_pullback, verify_native_sources
+227:         from qwen35_answer_finite import PackedAnswerTargets
+228:         from vendor_fa_finite_bf16_d256 import VendorFAFiniteP1BF16D256
+229: 
+230:         verify_native_sources(env["native_stage_source_sha256"])
+230:         verify_native_sources(env["native_stage_source_sha256"])
+231:         # Finite attribution temporarily uses FA; actor updates retain SDPA.
+232:         finite_fa = VendorFAFiniteP1BF16D256(env["finite_library"], env["finite_library_sha256"])
+233:         # VERL's FSDP2 rollout object is a wrapper around the actor (and may
+234:         # also be a PEFT wrapper).  The owner runner must receive the actual
+235:         # HuggingFace module whose ``model.language_model.layers`` and
+236:         # ``lm_head`` it already captures.  Keep the PEFT candidate first so
+237:         # LoRA's effective weights remain part of the factual trace.
+238:         candidates: list[Any] = []
+346:         if env.get("dt_dynamic_shapes", False):
+347:             execution = {"dynamic_shapes": True, "compiler_options": env.get("dt_compiler_options", {})}
+348:         self.runner = make_qwen35_runner(
+349:             owner_model,
+350:             finite_fa,
+351:             make_compiled_finite_pullback(reuse_scalar_products=False, **execution),
+352:             answer_compiled=env.get('dt_answer_compiled', True),
+353:             copy_replay_captures=False,
+354:             capture_backend=qwen35_code_local_capture,
+392:             sampling=json.loads(os.environ.get('DT_SAMPLING_JSON', 'null')),
+393:         )
+394:         from native_prefix_leases import prepare_native_prefix_leases
+395:         self.readout_options['prefix_lease_factory'] = prepare_native_prefix_leases
+396:         self.readout = None if self.readout_options['task'] == 'AppWorld' else EventRatioReadout(
+397:             self.runner, self.readout_tokenizer, **self.readout_options)
+398:         self.appworld_readouts = {}
+399: 
+400:     def attribute_prepared_batch(self, data):
+393:         )
+394:         from native_prefix_leases import prepare_native_prefix_leases
+395:         self.readout_options['prefix_lease_factory'] = prepare_native_prefix_leases
+396:         self.readout = None if self.readout_options['task'] == 'AppWorld' else EventRatioReadout(
+397:             self.runner, self.readout_tokenizer, **self.readout_options)
+398:         self.appworld_readouts = {}
+399: 
+400:     def attribute_prepared_batch(self, data):
+401:         """Consume native DP rows whose complete returns were prepared globally."""
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/deltatrace/profiles/qwen35_gdn_symmetric.py dd6bbfff9aae4c679439af113a160e0bd8c4cf1b19bb17cab47a04ff7b0831d0
+48:     validated execution overlay). Layer-specific rule overrides are disallowed.
+49:     """
+50:     from qwen35_dense_finite_runner import Qwen35DenseFiniteRunner
+51: 
+52:     rules = {'norm_gate_rules', 'finite_fla_by_layer', 'attention_pv_rules', 'key_norm_by_layer'}
+53:     if rules.intersection(runner_options):
+54:         raise ValueError('This profile applies one fixed rule to every GDN layer.')
+55:     indices = [i for i, layer in enumerate(model.model.language_model.layers)
+56:                if layer.block_type == 'linear_attention']
+58:         raise ValueError('This profile requires a model containing GDN layers.')
+59:     callback = average_memory_endpoint_orders(finite_fla)
+60:     return Qwen35DenseFiniteRunner(
+61:         model, finite_fa, finite_fla,
+62:         norm_gate_rules={i: 'symmetric' for i in indices},
+63:         finite_fla_by_layer={i: callback for i in indices},
+64:         **runner_options,
+65:     )

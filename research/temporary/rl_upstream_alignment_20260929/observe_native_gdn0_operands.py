@@ -128,7 +128,7 @@ class NativeGDN0Operands:
 def check_saved_fla(operands, official_source, *, device='cuda'):
     """Use the pinned original reference and exact o/ht assertion AST, unchanged."""
     import torch
-    import torch.nn.functional as F
+    from fla.modules.l2norm import l2norm_fwd
     import fla.utils as owner
     if owner.FLA_CI_ENV:
         raise AssertionError('Original FLA assertion must remain strict; FLA_CI_ENV is enabled.')
@@ -160,9 +160,9 @@ def check_saved_fla(operands, official_source, *, device='cuda'):
     q, k = [move(tensors['raw_' + name]) for name in ('q', 'k')]
     normalize = calls['fla']['use_qk_l2norm_in_kernel']
     if normalize:
-        # Apply the reference's ordinary normalization to its raw inputs once;
-        # never normalize already-normalized native stage q/k a second time.
-        q, k = F.normalize(q, p=2, dim=-1), F.normalize(k, p=2, dim=-1)
+        # Match production chunk's official normalization of raw inputs once;
+        # FP16 zero padding cannot use F.normalize's default 1e-12 epsilon.
+        q, k = l2norm_fwd(q)[0], l2norm_fwd(k)[0]
     with torch.no_grad():
         ref, ref_ht = reference.recurrent_gated_delta_rule_ref(
             q=q, k=k, v=move(tensors['raw_v']), beta=move(tensors['raw_beta']),

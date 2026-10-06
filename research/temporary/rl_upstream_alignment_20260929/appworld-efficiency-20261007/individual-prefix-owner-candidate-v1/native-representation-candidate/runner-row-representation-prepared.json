@@ -1,0 +1,63 @@
+{
+  "status": "prepared_only_unaccepted_not_deployed",
+  "baseline_sha256": "e9c7576486f742c26f895cd4078891a98d94c189e84a6e565fc8042a74aabcab",
+  "candidate_sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555",
+  "patch_sha256": "6b87d7ea3bab793e1371ea2c0f5dcd2d91c56527188208003e60d3bd8ec36986",
+  "scope": "Row cache/ID/mask/position/target/FA operand representation only; original finite rules, head and PPO untouched. Varlen numerical and full runner validation still required.",
+  "source_edits": [
+    {
+      "original": "class Qwen35DenseFiniteRunner:",
+      "candidate": "\ndef _pack_native_cached_suffix_rows(paired_ids,selection,provider):\n    \"\"\"Transport original valid IDs/positions to HF's existing row mask API.\"\"\"\n    starts=tuple(provider.prefix_lengths);lengths=tuple(provider.context_lengths)\n    if (len(starts)!=selection.batch or len(lengths)!=selection.batch\n            or max(starts)!=provider.prefix_length):\n        raise ValueError('Prepared row prefix metadata does not match the original targets.')\n    selected=selection.suffix_rows(starts,lengths)\n    width=selected.length;prefix_width=provider.prefix_length\n    ids=paired_ids.new_zeros((2*selection.batch,width))\n    suffix_mask=paired_ids.new_zeros(ids.shape)\n    full_mask=paired_ids.new_zeros((2*selection.batch,prefix_width+width))\n    for row,(start,length) in enumerate(zip(starts,lengths)):\n        count=length-start\n        ids[2*row:2*row+2,:count]=paired_ids[2*row:2*row+2,start:length]\n        suffix_mask[2*row:2*row+2,:count]=1\n        full_mask[2*row:2*row+2,:start]=1\n        full_mask[2*row:2*row+2,prefix_width:prefix_width+count]=1\n    positions=(torch.tensor(starts,device=paired_ids.device,dtype=torch.long)\n               .repeat_interleave(2)[:,None]+torch.arange(width,device=paired_ids.device)[None,:])\n    positions=positions.masked_fill(suffix_mask==0,0)\n    return ids,{'full_attention':full_mask,'linear_attention':suffix_mask},positions,selected\n\n\ndef _compact_native_cached_kv(value,starts,lengths,prefix_width):\n    \"\"\"Remove only masked carrier columns, retaining original K/V values.\"\"\"\n    # Native attention captures [2B,H,Pmax+Smax,D]; finite FA consumes\n    # logically contiguous [2B,H,max(Li),D]. Torch owns the exact copies.\n    result=value.new_zeros((value.shape[0],value.shape[1],max(lengths),value.shape[3]))\n    for row,(start,length) in enumerate(zip(starts,lengths)):\n        result[2*row:2*row+2,:,:start]=value[2*row:2*row+2,:,:start]\n        result[2*row:2*row+2,:,start:length]=value[2*row:2*row+2,:,prefix_width:prefix_width+length-start]\n    return result\n\n\ndef _public_varlen_attention_lse(captures,mask,args):\n    \"\"\"Compose the installed HF unpad and public FA return, without new FA.\"\"\"\n    from flash_attn.bert_padding import unpad_input,pad_input\n    from transformers.modeling_flash_attention_utils import _upad_input\n    q,k,v=[captures[name].transpose(1,2) for name in ('query','key','value')]\n    batch,width=q.shape[:2]\n    q,k,v,indices,(cuq,cuk),(maxq,maxk)=_upad_input(q,k,v,mask,width,unpad_input)\n    aux,lse,unused=flash_attn_varlen_func(q,k,v,cuq,cuk,maxq,maxk,\n        return_attn_probs=True,**args)\n    # The installed MetaX owner actually returns [H,total_q] FP32,\n    # measured on the saved actual operands; do not use its stale 3-D doc.\n    if lse.ndim!=2 or lse.shape!=(q.shape[1],q.shape[0]):\n        raise ValueError('Installed public varlen FA LSE representation changed.')\n    return (pad_input(aux,indices,batch,width),\n            pad_input(lse.transpose(0,1),indices,batch,width).transpose(1,2),unused)\n\n\nclass Qwen35DenseFiniteRunner:"
+    },
+    {
+      "original": "        prefix_start=0;replay_cache=None;native_cache=None\n",
+      "candidate": "        prefix_start=0;replay_cache=None;native_cache=None\n        row_starts=None;row_lengths=None;root_positions={}\n"
+    },
+    {
+      "original": "        if self.reuse_native_prefix and observer is None:\n",
+      "candidate": "        if (self.reuse_native_prefix and observer is None\n                and getattr(prefix_cache_provider,'prefix_lengths',None) is not None):\n            row_starts=tuple(prefix_cache_provider.prefix_lengths)\n            row_lengths=tuple(prefix_cache_provider.context_lengths)\n            # The original first-change sentinel is the common padded extent.\n            # Identical rows have no source change; retain that meaning at\n            # their real length rather than an invalid physical-pad index.\n            coefficient_starts=[length if start==original_length else start\n                                for start,length in zip(coefficient_starts,row_lengths)]\n            if any(start>coefficient_starts[row] for row,start in enumerate(row_starts)):\n                raise ValueError('A row cache boundary crosses a changed source token.')\n            prefix_start=prefix_cache_provider.prefix_length\n            with torch.no_grad():\n                replay_cache=timed('shared_native_prefix_cache',lambda:prefix_cache_provider(\n                    paired_ids[1::2,:prefix_start]))\n            replay_cache.reorder_cache(torch.arange(selection.batch,device=paired_ids.device).repeat_interleave(2))\n            native_cache=timed('fork_native_prefix_cache',lambda:copy.deepcopy(replay_cache))\n            paired_ids,mask,position_ids,selection=_pack_native_cached_suffix_rows(\n                paired_ids,selection,prefix_cache_provider)\n            root_positions={'position_ids':position_ids}\n        elif self.reuse_native_prefix and observer is None:\n"
+    },
+    {
+      "original": "                **({'logits_to_keep':selector.rows} if selector is not None else {})))",
+      "candidate": "                **root_positions,**({'logits_to_keep':selector.rows} if selector is not None else {})))"
+    },
+    {
+      "original": "        layout=RightPaddedLengths([original_length]*selection.batch,original_length,paired_ids.device,\n                                  coefficient_starts=coefficient_starts if self.fa_coefficient_suffix or prefix_start else None,\n                                  query_start=prefix_start)\n        local_starts=None if coefficient_starts is None else [start-prefix_start for start in coefficient_starts]\n",
+      "candidate": "        if row_starts is not None:\n            layout=RightPaddedLengths(list(row_lengths),max(row_lengths),paired_ids.device,\n                coefficient_starts=coefficient_starts,query_starts=row_starts,\n                query_padded_length=selection.length)\n            local_starts=[start-prefix for start,prefix in zip(coefficient_starts,row_starts)]\n        else:\n            layout=RightPaddedLengths([original_length]*selection.batch,original_length,paired_ids.device,\n                                      coefficient_starts=coefficient_starts if self.fa_coefficient_suffix or prefix_start else None,\n                                      query_start=prefix_start)\n            local_starts=None if coefficient_starts is None else [start-prefix_start for start in coefficient_starts]\n"
+    },
+    {
+      "original": "            if mc.calls!=({'module':1,'interface':1,'native_varlen':0,'native_dense':1} if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError(f'Missing actual native mixer captures at layer {i} ({layer.block_type}): {mc.calls!r}')",
+      "candidate": "            expected_fa_calls=({'module':1,'interface':1,'native_varlen':1,'native_dense':0}\n                               if row_starts is not None else {'module':1,'interface':1,'native_varlen':0,'native_dense':1})\n            if mc.calls!=(expected_fa_calls if is_fa else {'module':1,'conv':1,'FLA':1,'stage':1}):raise ValueError(f'Missing actual native mixer captures at layer {i} ({layer.block_type}): {mc.calls!r}')"
+    },
+    {
+      "original": "                args={k:v for k,v in mc.dense_arguments.items() if k!='return_attn_probs'}",
+      "candidate": "                native_args=mc.packed_arguments if row_starts is not None else mc.dense_arguments\n                args={k:v for k,v in native_args.items() if k in ('dropout_p','softmax_scale','causal')}"
+    },
+    {
+      "original": "flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args)",
+      "candidate": "(_public_varlen_attention_lse(c,kw['attention_mask'],args) if row_starts is not None else flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args))",
+      "count": 2
+    },
+    {
+      "original": "                        for name in ('dense_q','dense_k','dense_v'):\n                            del c[name]",
+      "candidate": "                        if row_starts is None:\n                            for name in ('dense_q','dense_k','dense_v'):\n                                del c[name]"
+    },
+    {
+      "original": "                    cos,sin=kw['position_embeddings'];return attention_finite_pullback(",
+      "candidate": "                    if row_starts is not None:\n                        for name in ('key','value'):\n                            c[name]=_compact_native_cached_kv(c[name],row_starts,row_lengths,prefix_start)\n                    cos,sin=kw['position_embeddings'];return attention_finite_pullback("
+    },
+    {
+      "original": "        if prefix_start:signed=torch.nn.functional.pad(signed,(prefix_start,0))",
+      "candidate": "        if row_starts is not None:\n            restored=signed.new_zeros((selection.batch,original_length))\n            for row,(start,length) in enumerate(zip(row_starts,row_lengths)):\n                restored[row,start:length]=signed[row,:length-start]\n            signed=restored\n        elif prefix_start:signed=torch.nn.functional.pad(signed,(prefix_start,0))"
+    },
+    {
+      "original": "              'fa_coefficient_starts':coefficient_starts if self.fa_coefficient_suffix else None,",
+      "candidate": "              'native_row_prefix_lengths':row_starts,'native_row_context_lengths':row_lengths,\n              'fa_coefficient_starts':coefficient_starts if self.fa_coefficient_suffix else None,"
+    },
+    {
+      "original": "              'gdn_fla_coefficient_start':gdn_cut,'native_shared_prefix_length':prefix_start,",
+      "candidate": "              'gdn_fla_coefficient_start':gdn_cut,\n              'native_shared_prefix_length':prefix_start if row_starts is None else None,\n              'native_prefix_carrier_width':prefix_start if row_starts is not None else None,"
+    }
+  ],
+  "production_changes": 0
+}

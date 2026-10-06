@@ -1,0 +1,78 @@
+--- baseline/qwen35_native_prefix_artifacts.py
++++ candidate/qwen35_native_prefix_artifacts.py
+@@ -126,13 +126,15 @@
+ 
+ 
+ @torch.no_grad()
+-def compose_native_prefix_cache(config, sources, prefix_length, *, device):
++def compose_native_prefix_cache(config, sources, prefix_length, *, device, prefix_lengths=None):
+     """Batch exact artifacts with the original Cache's public update methods.
+ 
+     In particular, conv state is written before recurrent state, matching
+     the HF forward and retaining the owner's dtype conversion and lifecycle.
+     No Cache fields or transition flags are assigned by this adapter.
+     """
++    if prefix_lengths is not None:
++        return _compose_row_prefix_cache(config, sources, prefix_length, prefix_lengths, device=device)
+     from transformers.cache_utils import DynamicCache, LinearAttentionCacheLayerMixin
+ 
+     result = DynamicCache(config=config)
+@@ -152,13 +154,58 @@
+     return result
+ 
+ 
++@torch.no_grad()
++def _compose_row_prefix_cache(config, sources, prefix_length, prefix_lengths, *, device):
++    """Represent literal row prefixes in the original Cache's public carrier.
++
++    FA rows are padded after their real prefix to a shared physical width.
++    The runner owns the mask and original positions for those padded columns.
++    GDN rows select their real captured boundary; no padding enters recurrence.
++    """
++    from transformers.cache_utils import DynamicCache, LinearAttentionCacheLayerMixin
++
++    lengths = tuple(int(n) for n in prefix_lengths)
++    if (len(lengths) != len(sources) or not lengths or max(lengths) != prefix_length
++            or any(n < 64 or n % 64 for n in lengths)):
++        raise ValueError('Row prefix lengths must match exact positive captured boundaries')
++    result = DynamicCache(config=config)
++    for i, layer in enumerate(result.layers):
++        if isinstance(layer, LinearAttentionCacheLayerMixin):
++            states = [source.layers[i]['boundaries'][n] for (source, row), n in zip(sources, lengths)]
++            conv = torch.cat([state[0][row:row+1] for state, (_, row) in zip(states, sources)])
++            recurrent = torch.cat([state[1][row:row+1] for state, (_, row) in zip(states, sources)])
++            result.update_conv_state(conv.to(device), i)
++            result.update_recurrent_state(recurrent.to(device), i)
++        else:
++            keys = torch.cat([torch.nn.functional.pad(
++                source.layers[i]['keys'][row:row+1, :, :n], (0, 0, 0, prefix_length-n))
++                for (source, row), n in zip(sources, lengths)])
++            values = torch.cat([torch.nn.functional.pad(
++                source.layers[i]['values'][row:row+1, :, :n], (0, 0, 0, prefix_length-n))
++                for (source, row), n in zip(sources, lengths)])
++            result.update(keys.to(device), values.to(device), i)
++    return result
++
++
+ @dataclass
+ class NativePrefixLease:
+     """Exact artifacts for one original consumer; HF owns the fresh cache."""
+     sources: list
+     prefix_length: int
++    prefix_lengths: tuple | None = None
+ 
+     def __call__(self, factual_ids):
++        if self.prefix_lengths is not None:
++            if factual_ids.shape != (len(self.sources), self.prefix_length):
++                raise ValueError('Prepared row prefix lease and factual input shapes differ')
++            actual = factual_ids.detach().cpu()
++            if len(self.prefix_lengths) != len(self.sources):
++                raise ValueError('One original prefix length is required per factual row')
++            for i, ((source, row), n) in enumerate(zip(self.sources, self.prefix_lengths)):
++                if not torch.equal(actual[i, :n], source.input_ids[row, :n]):
++                    raise ValueError('Prepared row prefix lease does not match exact factual token IDs')
++            return compose_native_prefix_cache(self.sources[0][0].config, self.sources,
++                self.prefix_length, device=factual_ids.device, prefix_lengths=self.prefix_lengths)
+         if factual_ids.shape != (len(self.sources), self.prefix_length):
+             raise ValueError('Prepared prefix lease and factual input shapes differ')
+         actual = factual_ids.detach().cpu()

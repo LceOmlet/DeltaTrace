@@ -1,0 +1,54 @@
+{
+  "status": "prepared_only",
+  "helper": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\check_actual_row_finite_fa_offline.py",
+    "sha256": "e32fc0098c5cccb0cb8a5e87150484e407be35c279f5035eb52958c068c6dad0"
+  },
+  "original_sources": [
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-test-source\\verify_saved_fa_dtypes.py",
+      "sha256": "7ff11d9d800a2c233b019213ae0fa9a5b603dfea51dfffabe6b9296a74aab9a9"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-test-source\\verify_official_kernel_tolerances.py",
+      "sha256": "e9ee6be0bb59bdddb99400c7a0c14af775b75fa98b0bcbf744781f26f9b2f2a8"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\candidate\\vendor_fa_finite_bf16_d256.py",
+      "sha256": "3e1d61037be22a1cc826b004d49f854e3c246a149642a4f9167c204181f34089"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\baseline\\vendor_fa_finite_bf16_d256.py",
+      "sha256": "f5ea2f67af2a47b2a736545b22ff6683336be14be505060674fce6f01de3f15c"
+    }
+  ],
+  "checks": [
+    "Stdlib-only import passed with no Torch module",
+    "Python syntax compiled",
+    "Original 7ff verifier, original load helper, row/scalar wrapper hashes matched"
+  ],
+  "official_script_bytes_edited": false,
+  "official_assertions_reimplemented": false,
+  "actual_saved_input_required": [
+    "actual-row-native-fa3-rankX.pt: tensors packed_q/k/v,cuQ/cuK",
+    "actual-row-finite-fa3-rankX.pt: actual eight operands, five outputs, original lengths/query_starts/coefficient_starts/scale"
+  ],
+  "representation": [
+    "Each row copies both actual endpoints; original verifier selects factual endpoint 2i+1 unchanged",
+    "Original u row retained in FP32; original verifier and owner own actual conversion",
+    "All Si queries and Li real KV tokens retained",
+    "DI changes only row ABI layout and selects isolated row library",
+    "Nonzero original scalar operator compares all five saved B4 outputs over original valid Si and same coefficient range"
+  ],
+  "numerical_executed": false,
+  "GPU": false,
+  "model": false,
+  "checkpoint": false,
+  "random_operands": false,
+  "formal_sources_or_manifests_modified": false,
+  "limits": [
+    "Original verifier does not define its gradient max reduction for an empty retained coefficient mask; the helper reports that actual condition before GPU instead of inventing a fallback",
+    "Per-row original dense coincident checks are separate from the complete native varlen output check",
+    "No bound for nonzero finite output error is introduced"
+  ]
+}

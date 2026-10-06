@@ -1,0 +1,699 @@
+{
+  "scope": "Original saved GDN checker with only its normalization input boundary fixed.\n\nThe installed FLA l2norm_fwd owns normalization, exactly as in its production\nchunk forward. Original recurrent reference and original o/ht assertion AST\nare unchanged. This isolated diagnostic never changes a model or DT owner.\n",
+  "pid": 2223023,
+  "pid_birth": 1791324316.49,
+  "started_unix": 1791324324.9921362,
+  "physical_device": 3,
+  "helper_source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-gdn-normalization-v2/check_saved_gdn_official_normalizer_v2.py",
+    "sha256": "d1072f9847e2d8e267c5f6e886083f50792c6993321564471d50fbf958f1ccae"
+  },
+  "normalization": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/modules/l2norm.py",
+    "sha256": "fca8a850419b44d60aa2cd7c84899c9de1a250896a3098bfe8e937854aa1bbc8",
+    "original_signature": "(x: torch.Tensor, eps: float = 1e-06, output_dtype: torch.dtype | None = None)",
+    "production_chunk_source": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/ops/gated_delta_rule/chunk.py",
+      "sha256": "fe10b455f8c71f4f845415f60a4385ff4f630336e5e46c592611765dfd8cce97"
+    }
+  },
+  "reference_interface": {
+    "original_checker": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/observe_native_gdn0_operands.py",
+      "sha256": "5c1924ce50d797acf2b9f7ac1bb79a7adfd752c6c383dac160fff6fa695cd53a"
+    },
+    "changed_statement_lines": [
+      165
+    ],
+    "original_statement": "q, k = F.normalize(q, p=2, dim=-1), F.normalize(k, p=2, dim=-1)",
+    "replacement_statement": "q, k = _official_l2norm_fwd(q)[0], _official_l2norm_fwd(k)[0]",
+    "original_function_ast_sha256": "73285cfe262a8925d9efbdf4b2447e2ff73ce15571e869c8fb4412f263bd5269",
+    "checked_function_ast_sha256": "2f1dd9c5e5ca738a0797bf8ce925bf8b8e0c59c40687cd664e9ff1d19eadc9df",
+    "recurrent_reference_changed": false,
+    "original_o_ht_assertion_AST_changed": false
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "all_actual_saved_tensors_finite": true,
+      "actual_finite": {
+        "raw_q": true,
+        "raw_k": true,
+        "raw_v": true,
+        "raw_g": true,
+        "raw_beta": true,
+        "fla_initial_state": true,
+        "initial_state": true,
+        "stage_o": true,
+        "stage_final_state": true,
+        "stage_k": true,
+        "stage_w": true,
+        "stage_u": true,
+        "stage_g": true,
+        "stage_h": true,
+        "native_o": true,
+        "native_ht": true,
+        "model_boundary_o": true
+      },
+      "original_checker_result": {
+        "role": "Original FLA forward o/ht check on one actual cached-suffix call",
+        "operands": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/actual-gdn0-operands/gdn0-shared_individual_rows_observed-rank0-call1.pt",
+          "sha256": "889b9bc4f5960902749f17380de690d5d72966d066e446ed7b79bb82f3186118"
+        },
+        "official_source": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py",
+          "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813"
+        },
+        "original_assertions": [
+          "assert_close('o', ref, tri, 0.005)",
+          "assert_close('ht', ref_ht, tri_ht, 0.005)"
+        ],
+        "status": "passed",
+        "normalization_applied_once": true,
+        "actual_calls": {
+          "fla": {
+            "scale": null,
+            "output_final_state": true,
+            "use_qk_l2norm_in_kernel": true
+          },
+          "stage": {
+            "scale": 0.08838834764831845,
+            "output_final_state": true
+          }
+        },
+        "actual_tensor_metadata": {
+          "raw_q": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_k": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_v": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_g": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              555,
+              32
+            ],
+            "stride": [
+              17760,
+              32,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_beta": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32
+            ],
+            "stride": [
+              17760,
+              32,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "fla_initial_state": {
+            "dtype": "torch.bfloat16",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "fla_cu_seqlens": null,
+          "initial_state": {
+            "dtype": "torch.bfloat16",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "cu_seqlens": null,
+          "stage_o": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_final_state": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_k": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_w": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_u": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_g": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              555,
+              32
+            ],
+            "stride": [
+              17760,
+              32,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_h": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              9,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              4718592,
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "native_o": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "native_ht": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "model_boundary_o": {
+            "dtype": "torch.bfloat16",
+            "shape": [
+              8,
+              555,
+              32,
+              128
+            ],
+            "stride": [
+              2273280,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          }
+        },
+        "initial_state_was_none": false,
+        "numeric_correction": false,
+        "whole_dt_acceptance": false
+      }
+    },
+    {
+      "rank": 1,
+      "all_actual_saved_tensors_finite": true,
+      "actual_finite": {
+        "raw_q": true,
+        "raw_k": true,
+        "raw_v": true,
+        "raw_g": true,
+        "raw_beta": true,
+        "fla_initial_state": true,
+        "initial_state": true,
+        "stage_o": true,
+        "stage_final_state": true,
+        "stage_k": true,
+        "stage_w": true,
+        "stage_u": true,
+        "stage_g": true,
+        "stage_h": true,
+        "native_o": true,
+        "native_ht": true,
+        "model_boundary_o": true
+      },
+      "original_checker_result": {
+        "role": "Original FLA forward o/ht check on one actual cached-suffix call",
+        "operands": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/actual-gdn0-operands/gdn0-shared_individual_rows_observed-rank1-call1.pt",
+          "sha256": "62ae64bc2a7a73cb9b0cb2e647b741a0ca5e1476ae395fb49adb22347c7eabeb"
+        },
+        "official_source": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py",
+          "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813"
+        },
+        "original_assertions": [
+          "assert_close('o', ref, tri, 0.005)",
+          "assert_close('ht', ref_ht, tri_ht, 0.005)"
+        ],
+        "status": "passed",
+        "normalization_applied_once": true,
+        "actual_calls": {
+          "fla": {
+            "scale": null,
+            "output_final_state": true,
+            "use_qk_l2norm_in_kernel": true
+          },
+          "stage": {
+            "scale": 0.08838834764831845,
+            "output_final_state": true
+          }
+        },
+        "actual_tensor_metadata": {
+          "raw_q": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_k": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_v": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_g": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              558,
+              32
+            ],
+            "stride": [
+              17856,
+              32,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "raw_beta": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32
+            ],
+            "stride": [
+              17856,
+              32,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "fla_initial_state": {
+            "dtype": "torch.bfloat16",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "fla_cu_seqlens": null,
+          "initial_state": {
+            "dtype": "torch.bfloat16",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "cu_seqlens": null,
+          "stage_o": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_final_state": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_k": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_w": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_u": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_g": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              558,
+              32
+            ],
+            "stride": [
+              17856,
+              32,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "stage_h": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              9,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              4718592,
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "native_o": {
+            "dtype": "torch.float16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "native_ht": {
+            "dtype": "torch.float32",
+            "shape": [
+              8,
+              32,
+              128,
+              128
+            ],
+            "stride": [
+              524288,
+              16384,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          },
+          "model_boundary_o": {
+            "dtype": "torch.bfloat16",
+            "shape": [
+              8,
+              558,
+              32,
+              128
+            ],
+            "stride": [
+              2285568,
+              4096,
+              128,
+              1
+            ],
+            "device": "cuda:0"
+          }
+        },
+        "initial_state_was_none": false,
+        "numeric_correction": false,
+        "whole_dt_acceptance": false
+      }
+    }
+  ],
+  "status": "passed",
+  "numeric_correction": false,
+  "tolerance_changed": false,
+  "model": false,
+  "checkpoint": false,
+  "whole_DT_acceptance": false,
+  "finished_unix": 1791324332.6094983,
+  "torch_peak_allocated_bytes": 533164032,
+  "torch_peak_reserved_bytes": 706740224,
+  "process_PSS_bytes": 6160812032
+}
