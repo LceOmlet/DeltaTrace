@@ -1,0 +1,5365 @@
+{
+  "scope": "All original 88 requests/rank and original22 B4 groups/rank; descriptive CPU metadata geometry only.",
+  "script": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\analyze_prefix_replay_slot_distribution.py",
+    "sha256": "52754697cf83cf2a9997a68247622f6fba524ec5fda8dd3597386d11125cd32e"
+  },
+  "metadata": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_actual_prefix_request_geometry_20261004.json",
+    "sha256": "a61c185751434edb4d2fbbac4305e3dbbcaf53c81f705693cacc9a75d42f97a0"
+  },
+  "csv": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\replay-slot-distribution-20261007\\prefix-replay-slot-distribution.csv",
+    "sha256": "3b4a9403f1815d6220a58e9f30174944167b9b38dd7c88d4ce160b92eb003309"
+  },
+  "owner_sources": {
+    "readout": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\reward_readout.py",
+      "sha256": "94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b",
+      "functions": {
+        "episodes": {
+          "line": 232,
+          "end_line": 366
+        }
+      }
+    },
+    "row_runner": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\candidate\\qwen35_dense_finite_runner.py",
+      "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555",
+      "functions": {
+        "_pack_native_cached_suffix_rows": {
+          "line": 87,
+          "end_line": 107
+        },
+        "_compact_native_cached_kv": {
+          "line": 110,
+          "end_line": 118
+        }
+      }
+    },
+    "row_targets": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\candidate\\qwen35_answer_finite.py",
+      "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+      "functions": {
+        "suffix_rows": {
+          "line": 73,
+          "end_line": 95
+        }
+      }
+    },
+    "row_leases": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\candidate\\native_prefix_leases.py",
+      "sha256": "54ad5ae1a07cefcbc4002fa63e7450d8281493a93567ad3df46cb7e9c2e74260",
+      "functions": {
+        "prepare_native_prefix_leases": {
+          "line": 13,
+          "end_line": 116
+        }
+      }
+    },
+    "row_artifacts": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\candidate\\qwen35_native_prefix_artifacts.py",
+      "sha256": "50af8daf2ce5beb44c474801dbdd3bc00e736d2f92c530a0ef17b1c0168d35ee",
+      "functions": {
+        "_compose_row_prefix_cache": {
+          "line": 158,
+          "end_line": 187
+        }
+      }
+    },
+    "combined_storage_leases": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\candidate\\native_prefix_leases.py",
+      "sha256": "b94756147cc6f8e59fb39baa1c2737aa655b0d9c6b87091969a65c9071ad0852",
+      "functions": {
+        "prepare_native_prefix_leases": {
+          "line": 13,
+          "end_line": 128
+        }
+      }
+    },
+    "combined_storage_artifacts": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\combined-storage-row-v1\\candidate\\qwen35_native_prefix_artifacts.py",
+      "sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4",
+      "functions": {
+        "_compose_row_prefix_cache": {
+          "line": 192,
+          "end_line": 227
+        }
+      }
+    }
+  },
+  "formulas": {
+    "L_i": "Original saved context_tokens includes literal query and target; no query reconstruction.",
+    "p_i": "floor(source_start_i/64)*64",
+    "p_common": "min(p_i) within the original local B4; no historical cross-rank MIN.",
+    "old_suffix_width": "max(L_i)-p_common",
+    "row_suffix_width": "max(L_i-p_i)",
+    "row_KV_width": "max(p_i)+max(L_i-p_i)",
+    "old_decomposition": "B*old_width = action_query_target + 64_alignment + common_min_history_tail + right_padding",
+    "row_decomposition": "B*row_width = action_query_target + 64_alignment + right_padding",
+    "row_carrier_padding": "B*(P+S)-sum(L_i) = sum(P-p_i) + B*S-sum(L_i-p_i)",
+    "replay_layer_token_slots": "2 endpoints *32 decoder replays * single-endpoint suffix slots; layout extent, not FLOPs."
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "literal_requests": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-workload-20261004-712795d/actual-requests-rank0.pt",
+        "sha256": "8714abf248a4bb3201294300b6525030fd0bdbce55899d969d9f24236729e429",
+        "bytes": 55533395
+      },
+      "summary": {
+        "batches": 22,
+        "totals": {
+          "old_suffix_slots": 80720,
+          "row_suffix_slots": 55688,
+          "saved_suffix_slots": 25032,
+          "action_query_target_slots": 42357,
+          "alignment_slots": 2676,
+          "old_common_history_tail_slots": 19008,
+          "old_right_padding_slots": 16679,
+          "row_right_padding_slots": 10655,
+          "old_KV_carrier_slots": 696656,
+          "row_KV_carrier_slots": 708232,
+          "row_internal_prefix_hole_slots": 17600,
+          "suffix_slot_reduction_fraction": 0.3101090188305253,
+          "row_native_KV_carrier_ratio": 1.016616522358237,
+          "row_suffix_padding_fraction": 0.19133386007757505,
+          "row_64_alignment_fraction": 0.048053440597615286,
+          "paired_root_suffix_slots_old": 161440,
+          "paired_root_suffix_slots_row": 111376,
+          "paired_32_decoder_replay_layer_token_slots_old": 5166080,
+          "paired_32_decoder_replay_layer_token_slots_row": 3564032
+        },
+        "smaller_suffix_batches": 20,
+        "unchanged_suffix_batches": 2,
+        "suffix_reduction_fraction_distribution": {
+          "count": 22,
+          "minimum": 0.0,
+          "p25": 0.11801927173345123,
+          "median": 0.23626064269368702,
+          "p75": 0.3299907903800653,
+          "maximum": 0.7222792607802875,
+          "mean": 0.2441699864365947,
+          "sum": 5.371739701605083
+        },
+        "saved_suffix_slots_distribution": {
+          "count": 22,
+          "minimum": 0,
+          "p25": 256.0,
+          "median": 684.0,
+          "p75": 1024.0,
+          "maximum": 5628,
+          "mean": 1137.8181818181818,
+          "sum": 25032
+        },
+        "row_true_suffix_length_distribution": {
+          "count": 88,
+          "minimum": 383,
+          "p25": 434.0,
+          "median": 466.5,
+          "p75": 507.25,
+          "maximum": 1819,
+          "mean": 511.7386363636364,
+          "sum": 45033
+        },
+        "largest_savings": [
+          {
+            "rank": 0,
+            "batch_index": 21,
+            "offset": 84,
+            "old_suffix_width": 1948,
+            "row_suffix_width": 541,
+            "saved_suffix_slots": 5628,
+            "suffix_slot_reduction_fraction": 0.7222792607802875
+          },
+          {
+            "rank": 0,
+            "batch_index": 2,
+            "offset": 8,
+            "old_suffix_width": 1811,
+            "row_suffix_width": 673,
+            "saved_suffix_slots": 4552,
+            "suffix_slot_reduction_fraction": 0.6283821093318609
+          },
+          {
+            "rank": 0,
+            "batch_index": 3,
+            "offset": 12,
+            "old_suffix_width": 2630,
+            "row_suffix_width": 1819,
+            "saved_suffix_slots": 3244,
+            "suffix_slot_reduction_fraction": 0.30836501901140684
+          },
+          {
+            "rank": 0,
+            "batch_index": 20,
+            "offset": 80,
+            "old_suffix_width": 1284,
+            "row_suffix_width": 698,
+            "saved_suffix_slots": 2344,
+            "suffix_slot_reduction_fraction": 0.45638629283489096
+          },
+          {
+            "rank": 0,
+            "batch_index": 19,
+            "offset": 76,
+            "old_suffix_width": 828,
+            "row_suffix_width": 491,
+            "saved_suffix_slots": 1348,
+            "suffix_slot_reduction_fraction": 0.40700483091787437
+          }
+        ],
+        "largest_remaining_suffix_padding": [
+          {
+            "rank": 0,
+            "batch_index": 3,
+            "offset": 12,
+            "row_suffix_width": 1819,
+            "row_true_suffix_lengths": [
+              1819,
+              430,
+              479,
+              1030
+            ],
+            "action_tokens": [
+              1500,
+              113,
+              128,
+              708
+            ],
+            "row_right_padding_slots": 3518
+          },
+          {
+            "rank": 0,
+            "batch_index": 16,
+            "offset": 64,
+            "row_suffix_width": 1157,
+            "row_true_suffix_lengths": [
+              558,
+              441,
+              1157,
+              549
+            ],
+            "action_tokens": [
+              206,
+              85,
+              784,
+              179
+            ],
+            "row_right_padding_slots": 1923
+          },
+          {
+            "rank": 0,
+            "batch_index": 18,
+            "offset": 72,
+            "row_suffix_width": 870,
+            "row_true_suffix_lengths": [
+              467,
+              434,
+              870,
+              782
+            ],
+            "action_tokens": [
+              142,
+              98,
+              494,
+              411
+            ],
+            "row_right_padding_slots": 927
+          },
+          {
+            "rank": 0,
+            "batch_index": 20,
+            "offset": 80,
+            "row_suffix_width": 698,
+            "row_true_suffix_lengths": [
+              698,
+              488,
+              490,
+              452
+            ],
+            "action_tokens": [
+              337,
+              119,
+              133,
+              111
+            ],
+            "row_right_padding_slots": 664
+          },
+          {
+            "rank": 0,
+            "batch_index": 2,
+            "offset": 8,
+            "row_suffix_width": 673,
+            "row_true_suffix_lengths": [
+              600,
+              673,
+              401,
+              595
+            ],
+            "action_tokens": [
+              285,
+              350,
+              56,
+              231
+            ],
+            "row_right_padding_slots": 423
+          }
+        ],
+        "offset84_concentration": {
+          "last_batch_saved_suffix_slots": 5628,
+          "last_batch_fraction_of_rank_savings": 0.22483221476510068,
+          "excluding_last_batch": {
+            "batches": 21,
+            "totals": {
+              "old_suffix_slots": 72928,
+              "row_suffix_slots": 53524,
+              "saved_suffix_slots": 19404,
+              "action_query_target_slots": 40530,
+              "alignment_slots": 2572,
+              "old_common_history_tail_slots": 16256,
+              "old_right_padding_slots": 13570,
+              "row_right_padding_slots": 10422,
+              "old_KV_carrier_slots": 642784,
+              "row_KV_carrier_slots": 654100,
+              "row_internal_prefix_hole_slots": 14464,
+              "suffix_slot_reduction_fraction": 0.2660706450197455,
+              "row_native_KV_carrier_ratio": 1.0176046696868621,
+              "row_suffix_padding_fraction": 0.194716388909648,
+              "row_64_alignment_fraction": 0.04805320977505418,
+              "paired_root_suffix_slots_old": 145856,
+              "paired_root_suffix_slots_row": 107048,
+              "paired_32_decoder_replay_layer_token_slots_old": 4667392,
+              "paired_32_decoder_replay_layer_token_slots_row": 3425536
+            },
+            "smaller_suffix_batches": 19,
+            "unchanged_suffix_batches": 2,
+            "suffix_reduction_fraction_distribution": {
+              "count": 21,
+              "minimum": 0.0,
+              "p25": 0.11359404096834265,
+              "median": 0.2327469553450609,
+              "p75": 0.32514450867052025,
+              "maximum": 0.6283821093318609,
+              "mean": 0.2214028781345141,
+              "sum": 4.649460440824796
+            },
+            "saved_suffix_slots_distribution": {
+              "count": 21,
+              "minimum": 0,
+              "p25": 244.0,
+              "median": 680,
+              "p75": 1024.0,
+              "maximum": 4552,
+              "mean": 924,
+              "sum": 19404
+            },
+            "row_true_suffix_length_distribution": {
+              "count": 84,
+              "minimum": 383,
+              "p25": 434.0,
+              "median": 463.5,
+              "p75": 507.25,
+              "maximum": 1819,
+              "mean": 513.1190476190476,
+              "sum": 43102
+            },
+            "largest_savings": [
+              {
+                "rank": 0,
+                "batch_index": 2,
+                "offset": 8,
+                "old_suffix_width": 1811,
+                "row_suffix_width": 673,
+                "saved_suffix_slots": 4552,
+                "suffix_slot_reduction_fraction": 0.6283821093318609
+              },
+              {
+                "rank": 0,
+                "batch_index": 3,
+                "offset": 12,
+                "old_suffix_width": 2630,
+                "row_suffix_width": 1819,
+                "saved_suffix_slots": 3244,
+                "suffix_slot_reduction_fraction": 0.30836501901140684
+              },
+              {
+                "rank": 0,
+                "batch_index": 20,
+                "offset": 80,
+                "old_suffix_width": 1284,
+                "row_suffix_width": 698,
+                "saved_suffix_slots": 2344,
+                "suffix_slot_reduction_fraction": 0.45638629283489096
+              },
+              {
+                "rank": 0,
+                "batch_index": 19,
+                "offset": 76,
+                "old_suffix_width": 828,
+                "row_suffix_width": 491,
+                "saved_suffix_slots": 1348,
+                "suffix_slot_reduction_fraction": 0.40700483091787437
+              },
+              {
+                "rank": 0,
+                "batch_index": 12,
+                "offset": 48,
+                "old_suffix_width": 772,
+                "row_suffix_width": 516,
+                "saved_suffix_slots": 1024,
+                "suffix_slot_reduction_fraction": 0.3316062176165803
+              }
+            ],
+            "largest_remaining_suffix_padding": [
+              {
+                "rank": 0,
+                "batch_index": 3,
+                "offset": 12,
+                "row_suffix_width": 1819,
+                "row_true_suffix_lengths": [
+                  1819,
+                  430,
+                  479,
+                  1030
+                ],
+                "action_tokens": [
+                  1500,
+                  113,
+                  128,
+                  708
+                ],
+                "row_right_padding_slots": 3518
+              },
+              {
+                "rank": 0,
+                "batch_index": 16,
+                "offset": 64,
+                "row_suffix_width": 1157,
+                "row_true_suffix_lengths": [
+                  558,
+                  441,
+                  1157,
+                  549
+                ],
+                "action_tokens": [
+                  206,
+                  85,
+                  784,
+                  179
+                ],
+                "row_right_padding_slots": 1923
+              },
+              {
+                "rank": 0,
+                "batch_index": 18,
+                "offset": 72,
+                "row_suffix_width": 870,
+                "row_true_suffix_lengths": [
+                  467,
+                  434,
+                  870,
+                  782
+                ],
+                "action_tokens": [
+                  142,
+                  98,
+                  494,
+                  411
+                ],
+                "row_right_padding_slots": 927
+              },
+              {
+                "rank": 0,
+                "batch_index": 20,
+                "offset": 80,
+                "row_suffix_width": 698,
+                "row_true_suffix_lengths": [
+                  698,
+                  488,
+                  490,
+                  452
+                ],
+                "action_tokens": [
+                  337,
+                  119,
+                  133,
+                  111
+                ],
+                "row_right_padding_slots": 664
+              },
+              {
+                "rank": 0,
+                "batch_index": 2,
+                "offset": 8,
+                "row_suffix_width": 673,
+                "row_true_suffix_lengths": [
+                  600,
+                  673,
+                  401,
+                  595
+                ],
+                "action_tokens": [
+                  285,
+                  350,
+                  56,
+                  231
+                ],
+                "row_right_padding_slots": 423
+              }
+            ]
+          }
+        }
+      },
+      "batches": [
+        {
+          "rank": 0,
+          "batch_index": 0,
+          "offset": 0,
+          "sorted_rows": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "original_row_indices": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "traj_uids": [
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9",
+            "83491d8d-3e45-4164-967e-f9e685b13324",
+            "7daa06c2-e910-4629-b373-1de7614513de",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832"
+          ],
+          "source_steps": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "logical_context_lengths": [
+            3139,
+            3185,
+            3187,
+            3193
+          ],
+          "source_starts": [
+            2753,
+            2757,
+            2761,
+            2753
+          ],
+          "action_tokens": [
+            72,
+            114,
+            112,
+            126
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            2752,
+            2752,
+            2752,
+            2752
+          ],
+          "old_true_suffix_lengths": [
+            387,
+            433,
+            435,
+            441
+          ],
+          "row_true_suffix_lengths": [
+            387,
+            433,
+            435,
+            441
+          ],
+          "old_suffix_width": 441,
+          "row_suffix_width": 441,
+          "old_suffix_slots": 1764,
+          "row_suffix_slots": 1764,
+          "saved_suffix_slots": 0,
+          "suffix_slot_reduction_fraction": 0.0,
+          "action_query_target_slots": 1680,
+          "alignment_slots": 16,
+          "old_common_history_tail_slots": 0,
+          "old_right_padding_slots": 68,
+          "row_right_padding_slots": 68,
+          "old_KV_width": 3193,
+          "row_prefix_carrier_width": 2752,
+          "row_KV_width": 3193,
+          "old_KV_carrier_slots": 12772,
+          "row_KV_carrier_slots": 12772,
+          "row_internal_prefix_hole_slots": 0,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 0,
+          "batch_index": 1,
+          "offset": 4,
+          "sorted_rows": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "original_row_indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "traj_uids": [
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e",
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e"
+          ],
+          "source_steps": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "logical_context_lengths": [
+            3195,
+            3212,
+            3230,
+            3258
+          ],
+          "source_starts": [
+            2757,
+            2757,
+            2761,
+            2757
+          ],
+          "action_tokens": [
+            124,
+            141,
+            155,
+            187
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            2752,
+            2752,
+            2752,
+            2752
+          ],
+          "old_true_suffix_lengths": [
+            443,
+            460,
+            478,
+            506
+          ],
+          "row_true_suffix_lengths": [
+            443,
+            460,
+            478,
+            506
+          ],
+          "old_suffix_width": 506,
+          "row_suffix_width": 506,
+          "old_suffix_slots": 2024,
+          "row_suffix_slots": 2024,
+          "saved_suffix_slots": 0,
+          "suffix_slot_reduction_fraction": 0.0,
+          "action_query_target_slots": 1863,
+          "alignment_slots": 24,
+          "old_common_history_tail_slots": 0,
+          "old_right_padding_slots": 137,
+          "row_right_padding_slots": 137,
+          "old_KV_width": 3258,
+          "row_prefix_carrier_width": 2752,
+          "row_KV_width": 3258,
+          "old_KV_carrier_slots": 13032,
+          "row_KV_carrier_slots": 13032,
+          "row_internal_prefix_hole_slots": 0,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 0,
+          "batch_index": 2,
+          "offset": 8,
+          "sorted_rows": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "original_row_indices": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "traj_uids": [
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9",
+            "1bd936ae-287f-48ab-8cde-30e8214406b5"
+          ],
+          "source_steps": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "logical_context_lengths": [
+            3352,
+            3425,
+            3665,
+            4563
+          ],
+          "source_starts": [
+            2753,
+            2761,
+            3295,
+            4018
+          ],
+          "action_tokens": [
+            285,
+            350,
+            56,
+            231
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            2752,
+            2752,
+            3264,
+            3968
+          ],
+          "old_true_suffix_lengths": [
+            600,
+            673,
+            913,
+            1811
+          ],
+          "row_true_suffix_lengths": [
+            600,
+            673,
+            401,
+            595
+          ],
+          "old_suffix_width": 1811,
+          "row_suffix_width": 673,
+          "old_suffix_slots": 7244,
+          "row_suffix_slots": 2692,
+          "saved_suffix_slots": 4552,
+          "suffix_slot_reduction_fraction": 0.6283821093318609,
+          "action_query_target_slots": 2178,
+          "alignment_slots": 91,
+          "old_common_history_tail_slots": 1728,
+          "old_right_padding_slots": 3247,
+          "row_right_padding_slots": 423,
+          "old_KV_width": 4563,
+          "row_prefix_carrier_width": 3968,
+          "row_KV_width": 4641,
+          "old_KV_carrier_slots": 18252,
+          "row_KV_carrier_slots": 18564,
+          "row_internal_prefix_hole_slots": 3136,
+          "row_native_KV_carrier_ratio": 1.017094017094017
+        },
+        {
+          "rank": 0,
+          "batch_index": 3,
+          "offset": 12,
+          "sorted_rows": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "original_row_indices": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "traj_uids": [
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a",
+            "1bd936ae-287f-48ab-8cde-30e8214406b5",
+            "1bd936ae-287f-48ab-8cde-30e8214406b5",
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a"
+          ],
+          "source_steps": [
+            0,
+            2,
+            3,
+            1
+          ],
+          "logical_context_lengths": [
+            4571,
+            4782,
+            5023,
+            5382
+          ],
+          "source_starts": [
+            2757,
+            4355,
+            4581,
+            4360
+          ],
+          "action_tokens": [
+            1500,
+            113,
+            128,
+            708
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            2752,
+            4352,
+            4544,
+            4352
+          ],
+          "old_true_suffix_lengths": [
+            1819,
+            2030,
+            2271,
+            2630
+          ],
+          "row_true_suffix_lengths": [
+            1819,
+            430,
+            479,
+            1030
+          ],
+          "old_suffix_width": 2630,
+          "row_suffix_width": 1819,
+          "old_suffix_slots": 10520,
+          "row_suffix_slots": 7276,
+          "saved_suffix_slots": 3244,
+          "suffix_slot_reduction_fraction": 0.30836501901140684,
+          "action_query_target_slots": 3705,
+          "alignment_slots": 53,
+          "old_common_history_tail_slots": 4992,
+          "old_right_padding_slots": 1770,
+          "row_right_padding_slots": 3518,
+          "old_KV_width": 5382,
+          "row_prefix_carrier_width": 4544,
+          "row_KV_width": 6363,
+          "old_KV_carrier_slots": 21528,
+          "row_KV_carrier_slots": 25452,
+          "row_internal_prefix_hole_slots": 2176,
+          "row_native_KV_carrier_ratio": 1.1822742474916388
+        },
+        {
+          "rank": 0,
+          "batch_index": 4,
+          "offset": 16,
+          "sorted_rows": [
+            16,
+            17,
+            18,
+            19
+          ],
+          "original_row_indices": [
+            16,
+            17,
+            18,
+            19
+          ],
+          "traj_uids": [
+            "83491d8d-3e45-4164-967e-f9e685b13324",
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe"
+          ],
+          "source_steps": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "logical_context_lengths": [
+            6143,
+            6197,
+            6249,
+            6254
+          ],
+          "source_starts": [
+            5666,
+            5696,
+            5693,
+            5707
+          ],
+          "action_tokens": [
+            163,
+            187,
+            242,
+            233
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 5632,
+          "row_cuts": [
+            5632,
+            5696,
+            5632,
+            5696
+          ],
+          "old_true_suffix_lengths": [
+            511,
+            565,
+            617,
+            622
+          ],
+          "row_true_suffix_lengths": [
+            511,
+            501,
+            617,
+            558
+          ],
+          "old_suffix_width": 622,
+          "row_suffix_width": 617,
+          "old_suffix_slots": 2488,
+          "row_suffix_slots": 2468,
+          "saved_suffix_slots": 20,
+          "suffix_slot_reduction_fraction": 0.008038585209003215,
+          "action_query_target_slots": 2081,
+          "alignment_slots": 106,
+          "old_common_history_tail_slots": 128,
+          "old_right_padding_slots": 173,
+          "row_right_padding_slots": 281,
+          "old_KV_width": 6254,
+          "row_prefix_carrier_width": 5696,
+          "row_KV_width": 6313,
+          "old_KV_carrier_slots": 25016,
+          "row_KV_carrier_slots": 25252,
+          "row_internal_prefix_hole_slots": 128,
+          "row_native_KV_carrier_ratio": 1.009433962264151
+        },
+        {
+          "rank": 0,
+          "batch_index": 5,
+          "offset": 20,
+          "sorted_rows": [
+            20,
+            21,
+            22,
+            23
+          ],
+          "original_row_indices": [
+            20,
+            21,
+            22,
+            23
+          ],
+          "traj_uids": [
+            "83491d8d-3e45-4164-967e-f9e685b13324",
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832"
+          ],
+          "source_steps": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "logical_context_lengths": [
+            6318,
+            6414,
+            6483,
+            6580
+          ],
+          "source_starts": [
+            5930,
+            6038,
+            6077,
+            6163
+          ],
+          "action_tokens": [
+            74,
+            62,
+            92,
+            103
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 5888,
+          "row_cuts": [
+            5888,
+            6016,
+            6016,
+            6144
+          ],
+          "old_true_suffix_lengths": [
+            430,
+            526,
+            595,
+            692
+          ],
+          "row_true_suffix_lengths": [
+            430,
+            398,
+            467,
+            436
+          ],
+          "old_suffix_width": 692,
+          "row_suffix_width": 467,
+          "old_suffix_slots": 2768,
+          "row_suffix_slots": 1868,
+          "saved_suffix_slots": 900,
+          "suffix_slot_reduction_fraction": 0.32514450867052025,
+          "action_query_target_slots": 1587,
+          "alignment_slots": 144,
+          "old_common_history_tail_slots": 512,
+          "old_right_padding_slots": 525,
+          "row_right_padding_slots": 137,
+          "old_KV_width": 6580,
+          "row_prefix_carrier_width": 6144,
+          "row_KV_width": 6611,
+          "old_KV_carrier_slots": 26320,
+          "row_KV_carrier_slots": 26444,
+          "row_internal_prefix_hole_slots": 512,
+          "row_native_KV_carrier_ratio": 1.0047112462006078
+        },
+        {
+          "rank": 0,
+          "batch_index": 6,
+          "offset": 24,
+          "sorted_rows": [
+            24,
+            25,
+            26,
+            27
+          ],
+          "original_row_indices": [
+            24,
+            25,
+            26,
+            27
+          ],
+          "traj_uids": [
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9",
+            "83491d8d-3e45-4164-967e-f9e685b13324",
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc"
+          ],
+          "source_steps": [
+            2,
+            3,
+            2,
+            2
+          ],
+          "logical_context_lengths": [
+            6610,
+            6647,
+            6691,
+            6700
+          ],
+          "source_starts": [
+            6145,
+            6226,
+            6268,
+            6314
+          ],
+          "action_tokens": [
+            151,
+            107,
+            109,
+            72
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6144,
+          "row_cuts": [
+            6144,
+            6208,
+            6208,
+            6272
+          ],
+          "old_true_suffix_lengths": [
+            466,
+            503,
+            547,
+            556
+          ],
+          "row_true_suffix_lengths": [
+            466,
+            439,
+            483,
+            428
+          ],
+          "old_suffix_width": 556,
+          "row_suffix_width": 483,
+          "old_suffix_slots": 2224,
+          "row_suffix_slots": 1932,
+          "saved_suffix_slots": 292,
+          "suffix_slot_reduction_fraction": 0.13129496402877697,
+          "action_query_target_slots": 1695,
+          "alignment_slots": 121,
+          "old_common_history_tail_slots": 256,
+          "old_right_padding_slots": 152,
+          "row_right_padding_slots": 116,
+          "old_KV_width": 6700,
+          "row_prefix_carrier_width": 6272,
+          "row_KV_width": 6755,
+          "old_KV_carrier_slots": 26800,
+          "row_KV_carrier_slots": 27020,
+          "row_internal_prefix_hole_slots": 256,
+          "row_native_KV_carrier_ratio": 1.0082089552238807
+        },
+        {
+          "rank": 0,
+          "batch_index": 7,
+          "offset": 28,
+          "sorted_rows": [
+            28,
+            29,
+            30,
+            31
+          ],
+          "original_row_indices": [
+            28,
+            29,
+            30,
+            31
+          ],
+          "traj_uids": [
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf",
+            "7daa06c2-e910-4629-b373-1de7614513de",
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e"
+          ],
+          "source_steps": [
+            3,
+            3,
+            3,
+            4
+          ],
+          "logical_context_lengths": [
+            6819,
+            6823,
+            6841,
+            6975
+          ],
+          "source_starts": [
+            6439,
+            6418,
+            6432,
+            6571
+          ],
+          "action_tokens": [
+            66,
+            91,
+            95,
+            90
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6400,
+          "row_cuts": [
+            6400,
+            6400,
+            6400,
+            6528
+          ],
+          "old_true_suffix_lengths": [
+            419,
+            423,
+            441,
+            575
+          ],
+          "row_true_suffix_lengths": [
+            419,
+            423,
+            441,
+            447
+          ],
+          "old_suffix_width": 575,
+          "row_suffix_width": 447,
+          "old_suffix_slots": 2300,
+          "row_suffix_slots": 1788,
+          "saved_suffix_slots": 512,
+          "suffix_slot_reduction_fraction": 0.22260869565217392,
+          "action_query_target_slots": 1598,
+          "alignment_slots": 132,
+          "old_common_history_tail_slots": 128,
+          "old_right_padding_slots": 442,
+          "row_right_padding_slots": 58,
+          "old_KV_width": 6975,
+          "row_prefix_carrier_width": 6528,
+          "row_KV_width": 6975,
+          "old_KV_carrier_slots": 27900,
+          "row_KV_carrier_slots": 27900,
+          "row_internal_prefix_hole_slots": 384,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 0,
+          "batch_index": 8,
+          "offset": 32,
+          "sorted_rows": [
+            32,
+            33,
+            34,
+            35
+          ],
+          "original_row_indices": [
+            32,
+            33,
+            34,
+            35
+          ],
+          "traj_uids": [
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc"
+          ],
+          "source_steps": [
+            3,
+            3,
+            4,
+            3
+          ],
+          "logical_context_lengths": [
+            6999,
+            7068,
+            7077,
+            7129
+          ],
+          "source_starts": [
+            6610,
+            6629,
+            6681,
+            6695
+          ],
+          "action_tokens": [
+            75,
+            125,
+            82,
+            120
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6592,
+          "row_cuts": [
+            6592,
+            6592,
+            6656,
+            6656
+          ],
+          "old_true_suffix_lengths": [
+            407,
+            476,
+            485,
+            537
+          ],
+          "row_true_suffix_lengths": [
+            407,
+            476,
+            421,
+            473
+          ],
+          "old_suffix_width": 537,
+          "row_suffix_width": 476,
+          "old_suffix_slots": 2148,
+          "row_suffix_slots": 1904,
+          "saved_suffix_slots": 244,
+          "suffix_slot_reduction_fraction": 0.11359404096834265,
+          "action_query_target_slots": 1658,
+          "alignment_slots": 119,
+          "old_common_history_tail_slots": 128,
+          "old_right_padding_slots": 243,
+          "row_right_padding_slots": 127,
+          "old_KV_width": 7129,
+          "row_prefix_carrier_width": 6656,
+          "row_KV_width": 7132,
+          "old_KV_carrier_slots": 28516,
+          "row_KV_carrier_slots": 28528,
+          "row_internal_prefix_hole_slots": 128,
+          "row_native_KV_carrier_ratio": 1.0004208163837844
+        },
+        {
+          "rank": 0,
+          "batch_index": 9,
+          "offset": 36,
+          "sorted_rows": [
+            36,
+            37,
+            38,
+            39
+          ],
+          "original_row_indices": [
+            36,
+            37,
+            38,
+            39
+          ],
+          "traj_uids": [
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc",
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9"
+          ],
+          "source_steps": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "logical_context_lengths": [
+            7144,
+            7151,
+            7295,
+            7351
+          ],
+          "source_starts": [
+            6748,
+            6743,
+            6915,
+            6943
+          ],
+          "action_tokens": [
+            82,
+            94,
+            66,
+            94
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6720,
+          "row_cuts": [
+            6720,
+            6720,
+            6912,
+            6912
+          ],
+          "old_true_suffix_lengths": [
+            424,
+            431,
+            575,
+            631
+          ],
+          "row_true_suffix_lengths": [
+            424,
+            431,
+            383,
+            439
+          ],
+          "old_suffix_width": 631,
+          "row_suffix_width": 439,
+          "old_suffix_slots": 2524,
+          "row_suffix_slots": 1756,
+          "saved_suffix_slots": 768,
+          "suffix_slot_reduction_fraction": 0.30427892234548337,
+          "action_query_target_slots": 1592,
+          "alignment_slots": 85,
+          "old_common_history_tail_slots": 384,
+          "old_right_padding_slots": 463,
+          "row_right_padding_slots": 79,
+          "old_KV_width": 7351,
+          "row_prefix_carrier_width": 6912,
+          "row_KV_width": 7351,
+          "old_KV_carrier_slots": 29404,
+          "row_KV_carrier_slots": 29404,
+          "row_internal_prefix_hole_slots": 384,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 0,
+          "batch_index": 10,
+          "offset": 40,
+          "sorted_rows": [
+            40,
+            41,
+            42,
+            43
+          ],
+          "original_row_indices": [
+            40,
+            41,
+            42,
+            43
+          ],
+          "traj_uids": [
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc",
+            "fc500361-a998-42cd-8f8d-46a13ca90522"
+          ],
+          "source_steps": [
+            4,
+            5,
+            5,
+            6
+          ],
+          "logical_context_lengths": [
+            7410,
+            7472,
+            7550,
+            7552
+          ],
+          "source_starts": [
+            6989,
+            7025,
+            7147,
+            7164
+          ],
+          "action_tokens": [
+            107,
+            133,
+            89,
+            74
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6976,
+          "row_cuts": [
+            6976,
+            6976,
+            7104,
+            7104
+          ],
+          "old_true_suffix_lengths": [
+            434,
+            496,
+            574,
+            576
+          ],
+          "row_true_suffix_lengths": [
+            434,
+            496,
+            446,
+            448
+          ],
+          "old_suffix_width": 576,
+          "row_suffix_width": 496,
+          "old_suffix_slots": 2304,
+          "row_suffix_slots": 1984,
+          "saved_suffix_slots": 320,
+          "suffix_slot_reduction_fraction": 0.1388888888888889,
+          "action_query_target_slots": 1659,
+          "alignment_slots": 165,
+          "old_common_history_tail_slots": 256,
+          "old_right_padding_slots": 224,
+          "row_right_padding_slots": 160,
+          "old_KV_width": 7552,
+          "row_prefix_carrier_width": 7104,
+          "row_KV_width": 7600,
+          "old_KV_carrier_slots": 30208,
+          "row_KV_carrier_slots": 30400,
+          "row_internal_prefix_hole_slots": 256,
+          "row_native_KV_carrier_ratio": 1.00635593220339
+        },
+        {
+          "rank": 0,
+          "batch_index": 11,
+          "offset": 44,
+          "sorted_rows": [
+            44,
+            45,
+            46,
+            47
+          ],
+          "original_row_indices": [
+            44,
+            45,
+            46,
+            47
+          ],
+          "traj_uids": [
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e"
+          ],
+          "source_steps": [
+            5,
+            2,
+            5,
+            6
+          ],
+          "logical_context_lengths": [
+            7602,
+            7783,
+            7786,
+            7906
+          ],
+          "source_starts": [
+            7200,
+            7282,
+            7344,
+            7467
+          ],
+          "action_tokens": [
+            88,
+            187,
+            128,
+            125
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 7168,
+          "row_cuts": [
+            7168,
+            7232,
+            7296,
+            7424
+          ],
+          "old_true_suffix_lengths": [
+            434,
+            615,
+            618,
+            738
+          ],
+          "row_true_suffix_lengths": [
+            434,
+            551,
+            490,
+            482
+          ],
+          "old_suffix_width": 738,
+          "row_suffix_width": 551,
+          "old_suffix_slots": 2952,
+          "row_suffix_slots": 2204,
+          "saved_suffix_slots": 748,
+          "suffix_slot_reduction_fraction": 0.25338753387533874,
+          "action_query_target_slots": 1784,
+          "alignment_slots": 173,
+          "old_common_history_tail_slots": 448,
+          "old_right_padding_slots": 547,
+          "row_right_padding_slots": 247,
+          "old_KV_width": 7906,
+          "row_prefix_carrier_width": 7424,
+          "row_KV_width": 7975,
+          "old_KV_carrier_slots": 31624,
+          "row_KV_carrier_slots": 31900,
+          "row_internal_prefix_hole_slots": 576,
+          "row_native_KV_carrier_ratio": 1.008727548697192
+        },
+        {
+          "rank": 0,
+          "batch_index": 12,
+          "offset": 48,
+          "sorted_rows": [
+            48,
+            49,
+            50,
+            51
+          ],
+          "original_row_indices": [
+            48,
+            49,
+            50,
+            51
+          ],
+          "traj_uids": [
+            "83491d8d-3e45-4164-967e-f9e685b13324",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc",
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8"
+          ],
+          "source_steps": [
+            6,
+            8,
+            4,
+            6
+          ],
+          "logical_context_lengths": [
+            8010,
+            8037,
+            8230,
+            8388
+          ],
+          "source_starts": [
+            7623,
+            7658,
+            7803,
+            7887
+          ],
+          "action_tokens": [
+            73,
+            65,
+            113,
+            187
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 7616,
+          "row_cuts": [
+            7616,
+            7616,
+            7744,
+            7872
+          ],
+          "old_true_suffix_lengths": [
+            394,
+            421,
+            614,
+            772
+          ],
+          "row_true_suffix_lengths": [
+            394,
+            421,
+            486,
+            516
+          ],
+          "old_suffix_width": 772,
+          "row_suffix_width": 516,
+          "old_suffix_slots": 3088,
+          "row_suffix_slots": 2064,
+          "saved_suffix_slots": 1024,
+          "suffix_slot_reduction_fraction": 0.3316062176165803,
+          "action_query_target_slots": 1694,
+          "alignment_slots": 123,
+          "old_common_history_tail_slots": 384,
+          "old_right_padding_slots": 887,
+          "row_right_padding_slots": 247,
+          "old_KV_width": 8388,
+          "row_prefix_carrier_width": 7872,
+          "row_KV_width": 8388,
+          "old_KV_carrier_slots": 33552,
+          "row_KV_carrier_slots": 33552,
+          "row_internal_prefix_hole_slots": 640,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 0,
+          "batch_index": 13,
+          "offset": 52,
+          "sorted_rows": [
+            52,
+            53,
+            54,
+            55
+          ],
+          "original_row_indices": [
+            52,
+            53,
+            54,
+            55
+          ],
+          "traj_uids": [
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf",
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "7f293cc6-e47f-4328-9d53-48622817fe6c"
+          ],
+          "source_steps": [
+            5,
+            5,
+            7,
+            6
+          ],
+          "logical_context_lengths": [
+            8422,
+            8528,
+            8611,
+            8761
+          ],
+          "source_starts": [
+            8017,
+            8134,
+            8226,
+            8309
+          ],
+          "action_tokens": [
+            91,
+            80,
+            71,
+            138
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 8000,
+          "row_cuts": [
+            8000,
+            8128,
+            8192,
+            8256
+          ],
+          "old_true_suffix_lengths": [
+            422,
+            528,
+            611,
+            761
+          ],
+          "row_true_suffix_lengths": [
+            422,
+            400,
+            419,
+            505
+          ],
+          "old_suffix_width": 761,
+          "row_suffix_width": 505,
+          "old_suffix_slots": 3044,
+          "row_suffix_slots": 2020,
+          "saved_suffix_slots": 1024,
+          "suffix_slot_reduction_fraction": 0.3363994743758213,
+          "action_query_target_slots": 1636,
+          "alignment_slots": 110,
+          "old_common_history_tail_slots": 576,
+          "old_right_padding_slots": 722,
+          "row_right_padding_slots": 274,
+          "old_KV_width": 8761,
+          "row_prefix_carrier_width": 8256,
+          "row_KV_width": 8761,
+          "old_KV_carrier_slots": 35044,
+          "row_KV_carrier_slots": 35044,
+          "row_internal_prefix_hole_slots": 448,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 0,
+          "batch_index": 14,
+          "offset": 56,
+          "sorted_rows": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "original_row_indices": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "traj_uids": [
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e",
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf"
+          ],
+          "source_steps": [
+            7,
+            5,
+            7,
+            6
+          ],
+          "logical_context_lengths": [
+            8896,
+            8943,
+            9014,
+            9045
+          ],
+          "source_starts": [
+            8496,
+            8356,
+            8521,
+            8521
+          ],
+          "action_tokens": [
+            86,
+            273,
+            179,
+            210
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 8320,
+          "row_cuts": [
+            8448,
+            8320,
+            8512,
+            8512
+          ],
+          "old_true_suffix_lengths": [
+            576,
+            623,
+            694,
+            725
+          ],
+          "row_true_suffix_lengths": [
+            448,
+            623,
+            502,
+            533
+          ],
+          "old_suffix_width": 725,
+          "row_suffix_width": 623,
+          "old_suffix_slots": 2900,
+          "row_suffix_slots": 2492,
+          "saved_suffix_slots": 408,
+          "suffix_slot_reduction_fraction": 0.1406896551724138,
+          "action_query_target_slots": 2004,
+          "alignment_slots": 102,
+          "old_common_history_tail_slots": 512,
+          "old_right_padding_slots": 282,
+          "row_right_padding_slots": 386,
+          "old_KV_width": 9045,
+          "row_prefix_carrier_width": 8512,
+          "row_KV_width": 9135,
+          "old_KV_carrier_slots": 36180,
+          "row_KV_carrier_slots": 36540,
+          "row_internal_prefix_hole_slots": 256,
+          "row_native_KV_carrier_ratio": 1.0099502487562189
+        },
+        {
+          "rank": 0,
+          "batch_index": 15,
+          "offset": 60,
+          "sorted_rows": [
+            60,
+            61,
+            62,
+            63
+          ],
+          "original_row_indices": [
+            60,
+            61,
+            62,
+            63
+          ],
+          "traj_uids": [
+            "1bd936ae-287f-48ab-8cde-30e8214406b5",
+            "7daa06c2-e910-4629-b373-1de7614513de",
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "fc500361-a998-42cd-8f8d-46a13ca90522"
+          ],
+          "source_steps": [
+            6,
+            6,
+            7,
+            8
+          ],
+          "logical_context_lengths": [
+            9097,
+            9179,
+            9229,
+            9349
+          ],
+          "source_starts": [
+            8693,
+            8680,
+            8805,
+            8890
+          ],
+          "action_tokens": [
+            90,
+            185,
+            110,
+            145
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 8640,
+          "row_cuts": [
+            8640,
+            8640,
+            8768,
+            8832
+          ],
+          "old_true_suffix_lengths": [
+            457,
+            539,
+            589,
+            709
+          ],
+          "row_true_suffix_lengths": [
+            457,
+            539,
+            461,
+            517
+          ],
+          "old_suffix_width": 709,
+          "row_suffix_width": 539,
+          "old_suffix_slots": 2836,
+          "row_suffix_slots": 2156,
+          "saved_suffix_slots": 680,
+          "suffix_slot_reduction_fraction": 0.2397743300423131,
+          "action_query_target_slots": 1786,
+          "alignment_slots": 188,
+          "old_common_history_tail_slots": 320,
+          "old_right_padding_slots": 542,
+          "row_right_padding_slots": 182,
+          "old_KV_width": 9349,
+          "row_prefix_carrier_width": 8832,
+          "row_KV_width": 9371,
+          "old_KV_carrier_slots": 37396,
+          "row_KV_carrier_slots": 37484,
+          "row_internal_prefix_hole_slots": 448,
+          "row_native_KV_carrier_ratio": 1.0023531928548508
+        },
+        {
+          "rank": 0,
+          "batch_index": 16,
+          "offset": 64,
+          "sorted_rows": [
+            64,
+            65,
+            66,
+            67
+          ],
+          "original_row_indices": [
+            64,
+            65,
+            66,
+            67
+          ],
+          "traj_uids": [
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "7daa06c2-e910-4629-b373-1de7614513de",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832",
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe"
+          ],
+          "source_steps": [
+            9,
+            7,
+            5,
+            6
+          ],
+          "logical_context_lengths": [
+            9390,
+            9465,
+            9477,
+            9509
+          ],
+          "source_starts": [
+            8869,
+            9066,
+            8379,
+            9016
+          ],
+          "action_tokens": [
+            206,
+            85,
+            784,
+            179
+          ],
+          "query_tokens": [
+            314,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 8320,
+          "row_cuts": [
+            8832,
+            9024,
+            8320,
+            8960
+          ],
+          "old_true_suffix_lengths": [
+            1070,
+            1145,
+            1157,
+            1189
+          ],
+          "row_true_suffix_lengths": [
+            558,
+            441,
+            1157,
+            549
+          ],
+          "old_suffix_width": 1189,
+          "row_suffix_width": 1157,
+          "old_suffix_slots": 4756,
+          "row_suffix_slots": 4628,
+          "saved_suffix_slots": 128,
+          "suffix_slot_reduction_fraction": 0.02691337258200168,
+          "action_query_target_slots": 2511,
+          "alignment_slots": 194,
+          "old_common_history_tail_slots": 1856,
+          "old_right_padding_slots": 195,
+          "row_right_padding_slots": 1923,
+          "old_KV_width": 9509,
+          "row_prefix_carrier_width": 9024,
+          "row_KV_width": 10181,
+          "old_KV_carrier_slots": 38036,
+          "row_KV_carrier_slots": 40724,
+          "row_internal_prefix_hole_slots": 960,
+          "row_native_KV_carrier_ratio": 1.070669891681565
+        },
+        {
+          "rank": 0,
+          "batch_index": 17,
+          "offset": 68,
+          "sorted_rows": [
+            68,
+            69,
+            70,
+            71
+          ],
+          "original_row_indices": [
+            68,
+            69,
+            70,
+            71
+          ],
+          "traj_uids": [
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e",
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe"
+          ],
+          "source_steps": [
+            6,
+            8,
+            8,
+            7
+          ],
+          "logical_context_lengths": [
+            9591,
+            9673,
+            9748,
+            9763
+          ],
+          "source_starts": [
+            9075,
+            9224,
+            9334,
+            9372
+          ],
+          "action_tokens": [
+            202,
+            135,
+            100,
+            77
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 9024,
+          "row_cuts": [
+            9024,
+            9216,
+            9280,
+            9344
+          ],
+          "old_true_suffix_lengths": [
+            567,
+            649,
+            724,
+            739
+          ],
+          "row_true_suffix_lengths": [
+            567,
+            457,
+            468,
+            419
+          ],
+          "old_suffix_width": 739,
+          "row_suffix_width": 567,
+          "old_suffix_slots": 2956,
+          "row_suffix_slots": 2268,
+          "saved_suffix_slots": 688,
+          "suffix_slot_reduction_fraction": 0.2327469553450609,
+          "action_query_target_slots": 1770,
+          "alignment_slots": 141,
+          "old_common_history_tail_slots": 768,
+          "old_right_padding_slots": 277,
+          "row_right_padding_slots": 357,
+          "old_KV_width": 9763,
+          "row_prefix_carrier_width": 9344,
+          "row_KV_width": 9911,
+          "old_KV_carrier_slots": 39052,
+          "row_KV_carrier_slots": 39644,
+          "row_internal_prefix_hole_slots": 512,
+          "row_native_KV_carrier_ratio": 1.0151592748130698
+        },
+        {
+          "rank": 0,
+          "batch_index": 18,
+          "offset": 72,
+          "sorted_rows": [
+            72,
+            73,
+            74,
+            75
+          ],
+          "original_row_indices": [
+            72,
+            73,
+            74,
+            75
+          ],
+          "traj_uids": [
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e",
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832",
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a"
+          ],
+          "source_steps": [
+            7,
+            8,
+            6,
+            5
+          ],
+          "logical_context_lengths": [
+            9875,
+            10162,
+            10278,
+            10318
+          ],
+          "source_starts": [
+            9419,
+            9750,
+            9470,
+            9593
+          ],
+          "action_tokens": [
+            142,
+            98,
+            494,
+            411
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 9408,
+          "row_cuts": [
+            9408,
+            9728,
+            9408,
+            9536
+          ],
+          "old_true_suffix_lengths": [
+            467,
+            754,
+            870,
+            910
+          ],
+          "row_true_suffix_lengths": [
+            467,
+            434,
+            870,
+            782
+          ],
+          "old_suffix_width": 910,
+          "row_suffix_width": 870,
+          "old_suffix_slots": 3640,
+          "row_suffix_slots": 3480,
+          "saved_suffix_slots": 160,
+          "suffix_slot_reduction_fraction": 0.04395604395604396,
+          "action_query_target_slots": 2401,
+          "alignment_slots": 152,
+          "old_common_history_tail_slots": 448,
+          "old_right_padding_slots": 639,
+          "row_right_padding_slots": 927,
+          "old_KV_width": 10318,
+          "row_prefix_carrier_width": 9728,
+          "row_KV_width": 10598,
+          "old_KV_carrier_slots": 41272,
+          "row_KV_carrier_slots": 42392,
+          "row_internal_prefix_hole_slots": 832,
+          "row_native_KV_carrier_ratio": 1.0271370420624153
+        },
+        {
+          "rank": 0,
+          "batch_index": 19,
+          "offset": 76,
+          "sorted_rows": [
+            76,
+            77,
+            78,
+            79
+          ],
+          "original_row_indices": [
+            76,
+            77,
+            78,
+            79
+          ],
+          "traj_uids": [
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b"
+          ],
+          "source_steps": [
+            9,
+            8,
+            6,
+            5
+          ],
+          "logical_context_lengths": [
+            10603,
+            10707,
+            10755,
+            10940
+          ],
+          "source_starts": [
+            10172,
+            10276,
+            10330,
+            10536
+          ],
+          "action_tokens": [
+            116,
+            117,
+            111,
+            90
+          ],
+          "query_tokens": [
+            314,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 10112,
+          "row_cuts": [
+            10112,
+            10240,
+            10304,
+            10496
+          ],
+          "old_true_suffix_lengths": [
+            491,
+            595,
+            643,
+            828
+          ],
+          "row_true_suffix_lengths": [
+            491,
+            467,
+            451,
+            444
+          ],
+          "old_suffix_width": 828,
+          "row_suffix_width": 491,
+          "old_suffix_slots": 3312,
+          "row_suffix_slots": 1964,
+          "saved_suffix_slots": 1348,
+          "suffix_slot_reduction_fraction": 0.40700483091787437,
+          "action_query_target_slots": 1691,
+          "alignment_slots": 162,
+          "old_common_history_tail_slots": 704,
+          "old_right_padding_slots": 755,
+          "row_right_padding_slots": 111,
+          "old_KV_width": 10940,
+          "row_prefix_carrier_width": 10496,
+          "row_KV_width": 10987,
+          "old_KV_carrier_slots": 43760,
+          "row_KV_carrier_slots": 43948,
+          "row_internal_prefix_hole_slots": 832,
+          "row_native_KV_carrier_ratio": 1.0042961608775136
+        },
+        {
+          "rank": 0,
+          "batch_index": 20,
+          "offset": 80,
+          "sorted_rows": [
+            80,
+            81,
+            82,
+            83
+          ],
+          "original_row_indices": [
+            80,
+            81,
+            82,
+            83
+          ],
+          "traj_uids": [
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b",
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1"
+          ],
+          "source_steps": [
+            7,
+            6,
+            8,
+            14
+          ],
+          "logical_context_lengths": [
+            11194,
+            11368,
+            11498,
+            11780
+          ],
+          "source_starts": [
+            10543,
+            10935,
+            11051,
+            11354
+          ],
+          "action_tokens": [
+            337,
+            119,
+            133,
+            111
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            314
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 10496,
+          "row_cuts": [
+            10496,
+            10880,
+            11008,
+            11328
+          ],
+          "old_true_suffix_lengths": [
+            698,
+            872,
+            1002,
+            1284
+          ],
+          "row_true_suffix_lengths": [
+            698,
+            488,
+            490,
+            452
+          ],
+          "old_suffix_width": 1284,
+          "row_suffix_width": 698,
+          "old_suffix_slots": 5136,
+          "row_suffix_slots": 2792,
+          "saved_suffix_slots": 2344,
+          "suffix_slot_reduction_fraction": 0.45638629283489096,
+          "action_query_target_slots": 1957,
+          "alignment_slots": 171,
+          "old_common_history_tail_slots": 1728,
+          "old_right_padding_slots": 1280,
+          "row_right_padding_slots": 664,
+          "old_KV_width": 11780,
+          "row_prefix_carrier_width": 11328,
+          "row_KV_width": 12026,
+          "old_KV_carrier_slots": 47120,
+          "row_KV_carrier_slots": 48104,
+          "row_internal_prefix_hole_slots": 1600,
+          "row_native_KV_carrier_ratio": 1.0208828522920204
+        },
+        {
+          "rank": 0,
+          "batch_index": 21,
+          "offset": 84,
+          "sorted_rows": [
+            84,
+            85,
+            86,
+            87
+          ],
+          "original_row_indices": [
+            84,
+            85,
+            86,
+            87
+          ],
+          "traj_uids": [
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b"
+          ],
+          "source_steps": [
+            15,
+            17,
+            7,
+            9
+          ],
+          "logical_context_lengths": [
+            11993,
+            12409,
+            12893,
+            13468
+          ],
+          "source_starts": [
+            11578,
+            11997,
+            12353,
+            13008
+          ],
+          "action_tokens": [
+            100,
+            97,
+            226,
+            145
+          ],
+          "query_tokens": [
+            314,
+            314,
+            313,
+            314
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 11520,
+          "row_cuts": [
+            11520,
+            11968,
+            12352,
+            12992
+          ],
+          "old_true_suffix_lengths": [
+            473,
+            889,
+            1373,
+            1948
+          ],
+          "row_true_suffix_lengths": [
+            473,
+            441,
+            541,
+            476
+          ],
+          "old_suffix_width": 1948,
+          "row_suffix_width": 541,
+          "old_suffix_slots": 7792,
+          "row_suffix_slots": 2164,
+          "saved_suffix_slots": 5628,
+          "suffix_slot_reduction_fraction": 0.7222792607802875,
+          "action_query_target_slots": 1827,
+          "alignment_slots": 104,
+          "old_common_history_tail_slots": 2752,
+          "old_right_padding_slots": 3109,
+          "row_right_padding_slots": 233,
+          "old_KV_width": 13468,
+          "row_prefix_carrier_width": 12992,
+          "row_KV_width": 13533,
+          "old_KV_carrier_slots": 53872,
+          "row_KV_carrier_slots": 54132,
+          "row_internal_prefix_hole_slots": 3136,
+          "row_native_KV_carrier_ratio": 1.0048262548262548
+        }
+      ]
+    },
+    {
+      "rank": 1,
+      "literal_requests": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-workload-20261004-712795d/actual-requests-rank1.pt",
+        "sha256": "1fdc1eb0f701d921825b796426ad2d7b0751f61786710b830f4ea72a11e58818",
+        "bytes": 55533651
+      },
+      "summary": {
+        "batches": 22,
+        "totals": {
+          "old_suffix_slots": 85652,
+          "row_suffix_slots": 62156,
+          "saved_suffix_slots": 23496,
+          "action_query_target_slots": 45661,
+          "alignment_slots": 2324,
+          "old_common_history_tail_slots": 21184,
+          "old_right_padding_slots": 16483,
+          "row_right_padding_slots": 14171,
+          "old_KV_carrier_slots": 696468,
+          "row_KV_carrier_slots": 714188,
+          "row_internal_prefix_hole_slots": 20032,
+          "suffix_slot_reduction_fraction": 0.2743193387194695,
+          "row_native_KV_carrier_ratio": 1.025442662118001,
+          "row_suffix_padding_fraction": 0.22799086170281227,
+          "row_64_alignment_fraction": 0.037389793423000195,
+          "paired_root_suffix_slots_old": 171304,
+          "paired_root_suffix_slots_row": 124312,
+          "paired_32_decoder_replay_layer_token_slots_old": 5481728,
+          "paired_32_decoder_replay_layer_token_slots_row": 3977984
+        },
+        "smaller_suffix_batches": 19,
+        "unchanged_suffix_batches": 3,
+        "suffix_reduction_fraction_distribution": {
+          "count": 22,
+          "minimum": 0.0,
+          "p25": 0.06980322906155398,
+          "median": 0.24458810031497258,
+          "p75": 0.3286240786240786,
+          "maximum": 0.6222222222222222,
+          "mean": 0.22763026744041762,
+          "sum": 5.007865883689187
+        },
+        "saved_suffix_slots_distribution": {
+          "count": 22,
+          "minimum": 0,
+          "p25": 173.0,
+          "median": 768.0,
+          "p75": 1045.0,
+          "maximum": 6036,
+          "mean": 1068,
+          "sum": 23496
+        },
+        "row_true_suffix_length_distribution": {
+          "count": 88,
+          "minimum": 384,
+          "p25": 433.75,
+          "median": 462.0,
+          "p75": 521.5,
+          "maximum": 1825,
+          "mean": 545.2840909090909,
+          "sum": 47985
+        },
+        "largest_savings": [
+          {
+            "rank": 1,
+            "batch_index": 3,
+            "offset": 12,
+            "old_suffix_width": 3332,
+            "row_suffix_width": 1823,
+            "saved_suffix_slots": 6036,
+            "suffix_slot_reduction_fraction": 0.45288115246098437
+          },
+          {
+            "rank": 1,
+            "batch_index": 21,
+            "offset": 84,
+            "old_suffix_width": 1440,
+            "row_suffix_width": 544,
+            "saved_suffix_slots": 3584,
+            "suffix_slot_reduction_fraction": 0.6222222222222222
+          },
+          {
+            "rank": 1,
+            "batch_index": 19,
+            "offset": 76,
+            "old_suffix_width": 1045,
+            "row_suffix_width": 498,
+            "saved_suffix_slots": 2188,
+            "suffix_slot_reduction_fraction": 0.523444976076555
+          },
+          {
+            "rank": 1,
+            "batch_index": 18,
+            "offset": 72,
+            "old_suffix_width": 1125,
+            "row_suffix_width": 613,
+            "saved_suffix_slots": 2048,
+            "suffix_slot_reduction_fraction": 0.45511111111111113
+          },
+          {
+            "rank": 1,
+            "batch_index": 20,
+            "offset": 80,
+            "old_suffix_width": 917,
+            "row_suffix_width": 562,
+            "saved_suffix_slots": 1420,
+            "suffix_slot_reduction_fraction": 0.3871319520174482
+          }
+        ],
+        "largest_remaining_suffix_padding": [
+          {
+            "rank": 1,
+            "batch_index": 15,
+            "offset": 60,
+            "row_suffix_width": 1825,
+            "row_true_suffix_lengths": [
+              1825,
+              1387,
+              503,
+              446
+            ],
+            "action_tokens": [
+              1500,
+              1018,
+              148,
+              80
+            ],
+            "row_right_padding_slots": 3139
+          },
+          {
+            "rank": 1,
+            "batch_index": 2,
+            "offset": 8,
+            "row_suffix_width": 1402,
+            "row_true_suffix_lengths": [
+              414,
+              412,
+              418,
+              1402
+            ],
+            "action_tokens": [
+              69,
+              95,
+              75,
+              1087
+            ],
+            "row_right_padding_slots": 2962
+          },
+          {
+            "rank": 1,
+            "batch_index": 3,
+            "offset": 12,
+            "row_suffix_width": 1823,
+            "row_true_suffix_lengths": [
+              1815,
+              1823,
+              450,
+              452
+            ],
+            "action_tokens": [
+              1500,
+              1500,
+              133,
+              101
+            ],
+            "row_right_padding_slots": 2752
+          },
+          {
+            "rank": 1,
+            "batch_index": 7,
+            "offset": 28,
+            "row_suffix_width": 678,
+            "row_true_suffix_lengths": [
+              678,
+              433,
+              431,
+              460
+            ],
+            "action_tokens": [
+              344,
+              96,
+              105,
+              99
+            ],
+            "row_right_padding_slots": 710
+          },
+          {
+            "rank": 1,
+            "batch_index": 17,
+            "offset": 68,
+            "row_suffix_width": 648,
+            "row_true_suffix_lengths": [
+              648,
+              502,
+              461,
+              429
+            ],
+            "action_tokens": [
+              283,
+              139,
+              132,
+              110
+            ],
+            "row_right_padding_slots": 552
+          }
+        ],
+        "offset84_concentration": {
+          "last_batch_saved_suffix_slots": 3584,
+          "last_batch_fraction_of_rank_savings": 0.15253660197480423,
+          "excluding_last_batch": {
+            "batches": 21,
+            "totals": {
+              "old_suffix_slots": 79892,
+              "row_suffix_slots": 59980,
+              "saved_suffix_slots": 19912,
+              "action_query_target_slots": 43958,
+              "alignment_slots": 2208,
+              "old_common_history_tail_slots": 19264,
+              "old_right_padding_slots": 14462,
+              "row_right_padding_slots": 13814,
+              "old_KV_carrier_slots": 643604,
+              "row_KV_carrier_slots": 661324,
+              "row_internal_prefix_hole_slots": 18368,
+              "suffix_slot_reduction_fraction": 0.24923646923346518,
+              "row_native_KV_carrier_ratio": 1.0275324578467504,
+              "row_suffix_padding_fraction": 0.23031010336778926,
+              "row_64_alignment_fraction": 0.03681227075691897,
+              "paired_root_suffix_slots_old": 159784,
+              "paired_root_suffix_slots_row": 119960,
+              "paired_32_decoder_replay_layer_token_slots_old": 5113088,
+              "paired_32_decoder_replay_layer_token_slots_row": 3838720
+            },
+            "smaller_suffix_batches": 18,
+            "unchanged_suffix_batches": 3,
+            "suffix_reduction_fraction_distribution": {
+              "count": 21,
+              "minimum": 0.0,
+              "p25": 0.06666666666666667,
+              "median": 0.23587223587223588,
+              "p75": 0.3144963144963145,
+              "maximum": 0.523444976076555,
+              "mean": 0.20884017435556976,
+              "sum": 4.385643661466965
+            },
+            "saved_suffix_slots_distribution": {
+              "count": 21,
+              "minimum": 0,
+              "p25": 156.0,
+              "median": 768,
+              "p75": 1024.0,
+              "maximum": 6036,
+              "mean": 948.1904761904761,
+              "sum": 19912
+            },
+            "row_true_suffix_length_distribution": {
+              "count": 84,
+              "minimum": 384,
+              "p25": 434.75,
+              "median": 462.5,
+              "p75": 521.5,
+              "maximum": 1825,
+              "mean": 549.5952380952381,
+              "sum": 46166
+            },
+            "largest_savings": [
+              {
+                "rank": 1,
+                "batch_index": 3,
+                "offset": 12,
+                "old_suffix_width": 3332,
+                "row_suffix_width": 1823,
+                "saved_suffix_slots": 6036,
+                "suffix_slot_reduction_fraction": 0.45288115246098437
+              },
+              {
+                "rank": 1,
+                "batch_index": 19,
+                "offset": 76,
+                "old_suffix_width": 1045,
+                "row_suffix_width": 498,
+                "saved_suffix_slots": 2188,
+                "suffix_slot_reduction_fraction": 0.523444976076555
+              },
+              {
+                "rank": 1,
+                "batch_index": 18,
+                "offset": 72,
+                "old_suffix_width": 1125,
+                "row_suffix_width": 613,
+                "saved_suffix_slots": 2048,
+                "suffix_slot_reduction_fraction": 0.45511111111111113
+              },
+              {
+                "rank": 1,
+                "batch_index": 20,
+                "offset": 80,
+                "old_suffix_width": 917,
+                "row_suffix_width": 562,
+                "saved_suffix_slots": 1420,
+                "suffix_slot_reduction_fraction": 0.3871319520174482
+              },
+              {
+                "rank": 1,
+                "batch_index": 11,
+                "offset": 44,
+                "old_suffix_width": 789,
+                "row_suffix_width": 526,
+                "saved_suffix_slots": 1052,
+                "suffix_slot_reduction_fraction": 0.3333333333333333
+              }
+            ],
+            "largest_remaining_suffix_padding": [
+              {
+                "rank": 1,
+                "batch_index": 15,
+                "offset": 60,
+                "row_suffix_width": 1825,
+                "row_true_suffix_lengths": [
+                  1825,
+                  1387,
+                  503,
+                  446
+                ],
+                "action_tokens": [
+                  1500,
+                  1018,
+                  148,
+                  80
+                ],
+                "row_right_padding_slots": 3139
+              },
+              {
+                "rank": 1,
+                "batch_index": 2,
+                "offset": 8,
+                "row_suffix_width": 1402,
+                "row_true_suffix_lengths": [
+                  414,
+                  412,
+                  418,
+                  1402
+                ],
+                "action_tokens": [
+                  69,
+                  95,
+                  75,
+                  1087
+                ],
+                "row_right_padding_slots": 2962
+              },
+              {
+                "rank": 1,
+                "batch_index": 3,
+                "offset": 12,
+                "row_suffix_width": 1823,
+                "row_true_suffix_lengths": [
+                  1815,
+                  1823,
+                  450,
+                  452
+                ],
+                "action_tokens": [
+                  1500,
+                  1500,
+                  133,
+                  101
+                ],
+                "row_right_padding_slots": 2752
+              },
+              {
+                "rank": 1,
+                "batch_index": 7,
+                "offset": 28,
+                "row_suffix_width": 678,
+                "row_true_suffix_lengths": [
+                  678,
+                  433,
+                  431,
+                  460
+                ],
+                "action_tokens": [
+                  344,
+                  96,
+                  105,
+                  99
+                ],
+                "row_right_padding_slots": 710
+              },
+              {
+                "rank": 1,
+                "batch_index": 17,
+                "offset": 68,
+                "row_suffix_width": 648,
+                "row_true_suffix_lengths": [
+                  648,
+                  502,
+                  461,
+                  429
+                ],
+                "action_tokens": [
+                  283,
+                  139,
+                  132,
+                  110
+                ],
+                "row_right_padding_slots": 552
+              }
+            ]
+          }
+        }
+      },
+      "batches": [
+        {
+          "rank": 1,
+          "batch_index": 0,
+          "offset": 0,
+          "sorted_rows": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "original_row_indices": [
+            84,
+            85,
+            86,
+            87
+          ],
+          "traj_uids": [
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9",
+            "83491d8d-3e45-4164-967e-f9e685b13324",
+            "7daa06c2-e910-4629-b373-1de7614513de",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832"
+          ],
+          "source_steps": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "logical_context_lengths": [
+            3139,
+            3185,
+            3187,
+            3193
+          ],
+          "source_starts": [
+            2753,
+            2757,
+            2761,
+            2753
+          ],
+          "action_tokens": [
+            72,
+            114,
+            112,
+            126
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            2752,
+            2752,
+            2752,
+            2752
+          ],
+          "old_true_suffix_lengths": [
+            387,
+            433,
+            435,
+            441
+          ],
+          "row_true_suffix_lengths": [
+            387,
+            433,
+            435,
+            441
+          ],
+          "old_suffix_width": 441,
+          "row_suffix_width": 441,
+          "old_suffix_slots": 1764,
+          "row_suffix_slots": 1764,
+          "saved_suffix_slots": 0,
+          "suffix_slot_reduction_fraction": 0.0,
+          "action_query_target_slots": 1680,
+          "alignment_slots": 16,
+          "old_common_history_tail_slots": 0,
+          "old_right_padding_slots": 68,
+          "row_right_padding_slots": 68,
+          "old_KV_width": 3193,
+          "row_prefix_carrier_width": 2752,
+          "row_KV_width": 3193,
+          "old_KV_carrier_slots": 12772,
+          "row_KV_carrier_slots": 12772,
+          "row_internal_prefix_hole_slots": 0,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 1,
+          "batch_index": 1,
+          "offset": 4,
+          "sorted_rows": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "original_row_indices": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "traj_uids": [
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc"
+          ],
+          "source_steps": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "logical_context_lengths": [
+            3211,
+            3215,
+            3227,
+            3270
+          ],
+          "source_starts": [
+            2761,
+            2757,
+            2753,
+            2761
+          ],
+          "action_tokens": [
+            136,
+            144,
+            160,
+            195
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            2752,
+            2752,
+            2752,
+            2752
+          ],
+          "old_true_suffix_lengths": [
+            459,
+            463,
+            475,
+            518
+          ],
+          "row_true_suffix_lengths": [
+            459,
+            463,
+            475,
+            518
+          ],
+          "old_suffix_width": 518,
+          "row_suffix_width": 518,
+          "old_suffix_slots": 2072,
+          "row_suffix_slots": 2072,
+          "saved_suffix_slots": 0,
+          "suffix_slot_reduction_fraction": 0.0,
+          "action_query_target_slots": 1891,
+          "alignment_slots": 24,
+          "old_common_history_tail_slots": 0,
+          "old_right_padding_slots": 157,
+          "row_right_padding_slots": 157,
+          "old_KV_width": 3270,
+          "row_prefix_carrier_width": 2752,
+          "row_KV_width": 3270,
+          "old_KV_carrier_slots": 13080,
+          "row_KV_carrier_slots": 13080,
+          "row_internal_prefix_hole_slots": 0,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 1,
+          "batch_index": 2,
+          "offset": 8,
+          "sorted_rows": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "original_row_indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "traj_uids": [
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "1bd936ae-287f-48ab-8cde-30e8214406b5"
+          ],
+          "source_steps": [
+            1,
+            1,
+            1,
+            0
+          ],
+          "logical_context_lengths": [
+            3422,
+            3548,
+            3618,
+            4154
+          ],
+          "source_starts": [
+            3039,
+            3139,
+            3229,
+            2753
+          ],
+          "action_tokens": [
+            69,
+            95,
+            75,
+            1087
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            3008,
+            3136,
+            3200,
+            2752
+          ],
+          "old_true_suffix_lengths": [
+            670,
+            796,
+            866,
+            1402
+          ],
+          "row_true_suffix_lengths": [
+            414,
+            412,
+            418,
+            1402
+          ],
+          "old_suffix_width": 1402,
+          "row_suffix_width": 1402,
+          "old_suffix_slots": 5608,
+          "row_suffix_slots": 5608,
+          "saved_suffix_slots": 0,
+          "suffix_slot_reduction_fraction": 0.0,
+          "action_query_target_slots": 2582,
+          "alignment_slots": 64,
+          "old_common_history_tail_slots": 1088,
+          "old_right_padding_slots": 1874,
+          "row_right_padding_slots": 2962,
+          "old_KV_width": 4154,
+          "row_prefix_carrier_width": 3200,
+          "row_KV_width": 4602,
+          "old_KV_carrier_slots": 16616,
+          "row_KV_carrier_slots": 18408,
+          "row_internal_prefix_hole_slots": 704,
+          "row_native_KV_carrier_ratio": 1.1078478574867598
+        },
+        {
+          "rank": 1,
+          "batch_index": 3,
+          "offset": 12,
+          "sorted_rows": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "original_row_indices": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "traj_uids": [
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b",
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "7daa06c2-e910-4629-b373-1de7614513de"
+          ],
+          "source_steps": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "logical_context_lengths": [
+            4567,
+            4575,
+            4802,
+            6084
+          ],
+          "source_starts": [
+            2753,
+            2761,
+            4355,
+            5669
+          ],
+          "action_tokens": [
+            1500,
+            1500,
+            133,
+            101
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 2752,
+          "row_cuts": [
+            2752,
+            2752,
+            4352,
+            5632
+          ],
+          "old_true_suffix_lengths": [
+            1815,
+            1823,
+            2050,
+            3332
+          ],
+          "row_true_suffix_lengths": [
+            1815,
+            1823,
+            450,
+            452
+          ],
+          "old_suffix_width": 3332,
+          "row_suffix_width": 1823,
+          "old_suffix_slots": 13328,
+          "row_suffix_slots": 7292,
+          "saved_suffix_slots": 6036,
+          "suffix_slot_reduction_fraction": 0.45288115246098437,
+          "action_query_target_slots": 4490,
+          "alignment_slots": 50,
+          "old_common_history_tail_slots": 4480,
+          "old_right_padding_slots": 4308,
+          "row_right_padding_slots": 2752,
+          "old_KV_width": 6084,
+          "row_prefix_carrier_width": 5632,
+          "row_KV_width": 7455,
+          "old_KV_carrier_slots": 24336,
+          "row_KV_carrier_slots": 29820,
+          "row_internal_prefix_hole_slots": 7040,
+          "row_native_KV_carrier_ratio": 1.22534516765286
+        },
+        {
+          "rank": 1,
+          "batch_index": 4,
+          "offset": 16,
+          "sorted_rows": [
+            16,
+            17,
+            18,
+            19
+          ],
+          "original_row_indices": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "traj_uids": [
+            "e87729db-ba3e-4345-acc5-0f7553f4d832",
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e",
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e"
+          ],
+          "source_steps": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "logical_context_lengths": [
+            6115,
+            6187,
+            6215,
+            6258
+          ],
+          "source_starts": [
+            5673,
+            5693,
+            5712,
+            5739
+          ],
+          "action_tokens": [
+            128,
+            180,
+            189,
+            205
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 5632,
+          "row_cuts": [
+            5632,
+            5632,
+            5696,
+            5696
+          ],
+          "old_true_suffix_lengths": [
+            483,
+            555,
+            583,
+            626
+          ],
+          "row_true_suffix_lengths": [
+            483,
+            555,
+            519,
+            562
+          ],
+          "old_suffix_width": 626,
+          "row_suffix_width": 562,
+          "old_suffix_slots": 2504,
+          "row_suffix_slots": 2248,
+          "saved_suffix_slots": 256,
+          "suffix_slot_reduction_fraction": 0.10223642172523961,
+          "action_query_target_slots": 1958,
+          "alignment_slots": 161,
+          "old_common_history_tail_slots": 128,
+          "old_right_padding_slots": 257,
+          "row_right_padding_slots": 129,
+          "old_KV_width": 6258,
+          "row_prefix_carrier_width": 5696,
+          "row_KV_width": 6258,
+          "old_KV_carrier_slots": 25032,
+          "row_KV_carrier_slots": 25032,
+          "row_internal_prefix_hole_slots": 128,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 1,
+          "batch_index": 5,
+          "offset": 20,
+          "sorted_rows": [
+            20,
+            21,
+            22,
+            23
+          ],
+          "original_row_indices": [
+            16,
+            17,
+            18,
+            19
+          ],
+          "traj_uids": [
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc",
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf",
+            "7daa06c2-e910-4629-b373-1de7614513de"
+          ],
+          "source_steps": [
+            1,
+            2,
+            2,
+            2
+          ],
+          "logical_context_lengths": [
+            6264,
+            6405,
+            6449,
+            6506
+          ],
+          "source_starts": [
+            5752,
+            5903,
+            6028,
+            6103
+          ],
+          "action_tokens": [
+            198,
+            188,
+            107,
+            89
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 5696,
+          "row_cuts": [
+            5696,
+            5888,
+            6016,
+            6080
+          ],
+          "old_true_suffix_lengths": [
+            568,
+            709,
+            753,
+            810
+          ],
+          "row_true_suffix_lengths": [
+            568,
+            517,
+            433,
+            426
+          ],
+          "old_suffix_width": 810,
+          "row_suffix_width": 568,
+          "old_suffix_slots": 3240,
+          "row_suffix_slots": 2272,
+          "saved_suffix_slots": 968,
+          "suffix_slot_reduction_fraction": 0.29876543209876544,
+          "action_query_target_slots": 1838,
+          "alignment_slots": 106,
+          "old_common_history_tail_slots": 896,
+          "old_right_padding_slots": 400,
+          "row_right_padding_slots": 328,
+          "old_KV_width": 6506,
+          "row_prefix_carrier_width": 6080,
+          "row_KV_width": 6648,
+          "old_KV_carrier_slots": 26024,
+          "row_KV_carrier_slots": 26592,
+          "row_internal_prefix_hole_slots": 640,
+          "row_native_KV_carrier_ratio": 1.021826006762988
+        },
+        {
+          "rank": 1,
+          "batch_index": 6,
+          "offset": 24,
+          "sorted_rows": [
+            24,
+            25,
+            26,
+            27
+          ],
+          "original_row_indices": [
+            20,
+            21,
+            22,
+            23
+          ],
+          "traj_uids": [
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e",
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe",
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e"
+          ],
+          "source_steps": [
+            2,
+            3,
+            2,
+            2
+          ],
+          "logical_context_lengths": [
+            6638,
+            6661,
+            6670,
+            6726
+          ],
+          "source_starts": [
+            6215,
+            6277,
+            6271,
+            6276
+          ],
+          "action_tokens": [
+            109,
+            70,
+            85,
+            136
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6208,
+          "row_cuts": [
+            6208,
+            6272,
+            6208,
+            6272
+          ],
+          "old_true_suffix_lengths": [
+            430,
+            453,
+            462,
+            518
+          ],
+          "row_true_suffix_lengths": [
+            430,
+            389,
+            462,
+            454
+          ],
+          "old_suffix_width": 518,
+          "row_suffix_width": 462,
+          "old_suffix_slots": 2072,
+          "row_suffix_slots": 1848,
+          "saved_suffix_slots": 224,
+          "suffix_slot_reduction_fraction": 0.10810810810810811,
+          "action_query_target_slots": 1656,
+          "alignment_slots": 79,
+          "old_common_history_tail_slots": 128,
+          "old_right_padding_slots": 209,
+          "row_right_padding_slots": 113,
+          "old_KV_width": 6726,
+          "row_prefix_carrier_width": 6272,
+          "row_KV_width": 6734,
+          "old_KV_carrier_slots": 26904,
+          "row_KV_carrier_slots": 26936,
+          "row_internal_prefix_hole_slots": 128,
+          "row_native_KV_carrier_ratio": 1.0011894142134998
+        },
+        {
+          "rank": 1,
+          "batch_index": 7,
+          "offset": 28,
+          "sorted_rows": [
+            28,
+            29,
+            30,
+            31
+          ],
+          "original_row_indices": [
+            24,
+            25,
+            26,
+            27
+          ],
+          "traj_uids": [
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe"
+          ],
+          "source_steps": [
+            2,
+            3,
+            3,
+            3
+          ],
+          "logical_context_lengths": [
+            6758,
+            6833,
+            6959,
+            6988
+          ],
+          "source_starts": [
+            6100,
+            6423,
+            6540,
+            6575
+          ],
+          "action_tokens": [
+            344,
+            96,
+            105,
+            99
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6080,
+          "row_cuts": [
+            6080,
+            6400,
+            6528,
+            6528
+          ],
+          "old_true_suffix_lengths": [
+            678,
+            753,
+            879,
+            908
+          ],
+          "row_true_suffix_lengths": [
+            678,
+            433,
+            431,
+            460
+          ],
+          "old_suffix_width": 908,
+          "row_suffix_width": 678,
+          "old_suffix_slots": 3632,
+          "row_suffix_slots": 2712,
+          "saved_suffix_slots": 920,
+          "suffix_slot_reduction_fraction": 0.2533039647577093,
+          "action_query_target_slots": 1900,
+          "alignment_slots": 102,
+          "old_common_history_tail_slots": 1216,
+          "old_right_padding_slots": 414,
+          "row_right_padding_slots": 710,
+          "old_KV_width": 6988,
+          "row_prefix_carrier_width": 6528,
+          "row_KV_width": 7206,
+          "old_KV_carrier_slots": 27952,
+          "row_KV_carrier_slots": 28824,
+          "row_internal_prefix_hole_slots": 576,
+          "row_native_KV_carrier_ratio": 1.0311963365769892
+        },
+        {
+          "rank": 1,
+          "batch_index": 8,
+          "offset": 32,
+          "sorted_rows": [
+            32,
+            33,
+            34,
+            35
+          ],
+          "original_row_indices": [
+            28,
+            29,
+            30,
+            31
+          ],
+          "traj_uids": [
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832",
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e",
+            "83491d8d-3e45-4164-967e-f9e685b13324"
+          ],
+          "source_steps": [
+            3,
+            3,
+            3,
+            4
+          ],
+          "logical_context_lengths": [
+            7038,
+            7045,
+            7082,
+            7117
+          ],
+          "source_starts": [
+            6627,
+            6597,
+            6636,
+            6697
+          ],
+          "action_tokens": [
+            97,
+            134,
+            132,
+            106
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6592,
+          "row_cuts": [
+            6592,
+            6592,
+            6592,
+            6656
+          ],
+          "old_true_suffix_lengths": [
+            446,
+            453,
+            490,
+            525
+          ],
+          "row_true_suffix_lengths": [
+            446,
+            453,
+            490,
+            461
+          ],
+          "old_suffix_width": 525,
+          "row_suffix_width": 490,
+          "old_suffix_slots": 2100,
+          "row_suffix_slots": 1960,
+          "saved_suffix_slots": 140,
+          "suffix_slot_reduction_fraction": 0.06666666666666667,
+          "action_query_target_slots": 1725,
+          "alignment_slots": 125,
+          "old_common_history_tail_slots": 64,
+          "old_right_padding_slots": 186,
+          "row_right_padding_slots": 110,
+          "old_KV_width": 7117,
+          "row_prefix_carrier_width": 6656,
+          "row_KV_width": 7146,
+          "old_KV_carrier_slots": 28468,
+          "row_KV_carrier_slots": 28584,
+          "row_internal_prefix_hole_slots": 192,
+          "row_native_KV_carrier_ratio": 1.0040747505971617
+        },
+        {
+          "rank": 1,
+          "batch_index": 9,
+          "offset": 36,
+          "sorted_rows": [
+            36,
+            37,
+            38,
+            39
+          ],
+          "original_row_indices": [
+            32,
+            33,
+            34,
+            35
+          ],
+          "traj_uids": [
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf",
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "7daa06c2-e910-4629-b373-1de7614513de",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832"
+          ],
+          "source_steps": [
+            4,
+            5,
+            4,
+            4
+          ],
+          "logical_context_lengths": [
+            7129,
+            7254,
+            7275,
+            7374
+          ],
+          "source_starts": [
+            6724,
+            6865,
+            6873,
+            6950
+          ],
+          "action_tokens": [
+            91,
+            75,
+            88,
+            110
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6720,
+          "row_cuts": [
+            6720,
+            6848,
+            6848,
+            6912
+          ],
+          "old_true_suffix_lengths": [
+            409,
+            534,
+            555,
+            654
+          ],
+          "row_true_suffix_lengths": [
+            409,
+            406,
+            427,
+            462
+          ],
+          "old_suffix_width": 654,
+          "row_suffix_width": 462,
+          "old_suffix_slots": 2616,
+          "row_suffix_slots": 1848,
+          "saved_suffix_slots": 768,
+          "suffix_slot_reduction_fraction": 0.29357798165137616,
+          "action_query_target_slots": 1620,
+          "alignment_slots": 84,
+          "old_common_history_tail_slots": 448,
+          "old_right_padding_slots": 464,
+          "row_right_padding_slots": 144,
+          "old_KV_width": 7374,
+          "row_prefix_carrier_width": 6912,
+          "row_KV_width": 7374,
+          "old_KV_carrier_slots": 29496,
+          "row_KV_carrier_slots": 29496,
+          "row_internal_prefix_hole_slots": 320,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 1,
+          "batch_index": 10,
+          "offset": 40,
+          "sorted_rows": [
+            40,
+            41,
+            42,
+            43
+          ],
+          "original_row_indices": [
+            36,
+            37,
+            38,
+            39
+          ],
+          "traj_uids": [
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "1bd936ae-287f-48ab-8cde-30e8214406b5",
+            "83491d8d-3e45-4164-967e-f9e685b13324"
+          ],
+          "source_steps": [
+            5,
+            4,
+            4,
+            5
+          ],
+          "logical_context_lengths": [
+            7431,
+            7432,
+            7550,
+            7586
+          ],
+          "source_starts": [
+            7038,
+            7018,
+            7035,
+            7111
+          ],
+          "action_tokens": [
+            79,
+            100,
+            201,
+            161
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 6976,
+          "row_cuts": [
+            6976,
+            6976,
+            6976,
+            7104
+          ],
+          "old_true_suffix_lengths": [
+            455,
+            456,
+            574,
+            610
+          ],
+          "row_true_suffix_lengths": [
+            455,
+            456,
+            574,
+            482
+          ],
+          "old_suffix_width": 610,
+          "row_suffix_width": 574,
+          "old_suffix_slots": 2440,
+          "row_suffix_slots": 2296,
+          "saved_suffix_slots": 144,
+          "suffix_slot_reduction_fraction": 0.05901639344262295,
+          "action_query_target_slots": 1797,
+          "alignment_slots": 170,
+          "old_common_history_tail_slots": 128,
+          "old_right_padding_slots": 345,
+          "row_right_padding_slots": 329,
+          "old_KV_width": 7586,
+          "row_prefix_carrier_width": 7104,
+          "row_KV_width": 7678,
+          "old_KV_carrier_slots": 30344,
+          "row_KV_carrier_slots": 30712,
+          "row_internal_prefix_hole_slots": 384,
+          "row_native_KV_carrier_ratio": 1.012127603480095
+        },
+        {
+          "rank": 1,
+          "batch_index": 11,
+          "offset": 44,
+          "sorted_rows": [
+            44,
+            45,
+            46,
+            47
+          ],
+          "original_row_indices": [
+            40,
+            41,
+            42,
+            43
+          ],
+          "traj_uids": [
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc",
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8"
+          ],
+          "source_steps": [
+            4,
+            6,
+            7,
+            5
+          ],
+          "logical_context_lengths": [
+            7630,
+            7720,
+            7872,
+            7893
+          ],
+          "source_starts": [
+            7131,
+            7336,
+            7506,
+            7459
+          ],
+          "action_tokens": [
+            185,
+            70,
+            52,
+            120
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 7104,
+          "row_cuts": [
+            7104,
+            7296,
+            7488,
+            7424
+          ],
+          "old_true_suffix_lengths": [
+            526,
+            616,
+            768,
+            789
+          ],
+          "row_true_suffix_lengths": [
+            526,
+            424,
+            384,
+            469
+          ],
+          "old_suffix_width": 789,
+          "row_suffix_width": 526,
+          "old_suffix_slots": 3156,
+          "row_suffix_slots": 2104,
+          "saved_suffix_slots": 1052,
+          "suffix_slot_reduction_fraction": 0.3333333333333333,
+          "action_query_target_slots": 1683,
+          "alignment_slots": 120,
+          "old_common_history_tail_slots": 896,
+          "old_right_padding_slots": 457,
+          "row_right_padding_slots": 301,
+          "old_KV_width": 7893,
+          "row_prefix_carrier_width": 7488,
+          "row_KV_width": 8014,
+          "old_KV_carrier_slots": 31572,
+          "row_KV_carrier_slots": 32056,
+          "row_internal_prefix_hole_slots": 640,
+          "row_native_KV_carrier_ratio": 1.0153300392753073
+        },
+        {
+          "rank": 1,
+          "batch_index": 12,
+          "offset": 48,
+          "sorted_rows": [
+            48,
+            49,
+            50,
+            51
+          ],
+          "original_row_indices": [
+            44,
+            45,
+            46,
+            47
+          ],
+          "traj_uids": [
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "ddb4f8d9-da82-4572-9630-9b8908c4ef6e",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc"
+          ],
+          "source_steps": [
+            3,
+            5,
+            6,
+            9
+          ],
+          "logical_context_lengths": [
+            7953,
+            8131,
+            8280,
+            8366
+          ],
+          "source_starts": [
+            7567,
+            7624,
+            7836,
+            7823
+          ],
+          "action_tokens": [
+            72,
+            193,
+            130,
+            228
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            314
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 7552,
+          "row_cuts": [
+            7552,
+            7616,
+            7808,
+            7808
+          ],
+          "old_true_suffix_lengths": [
+            401,
+            579,
+            728,
+            814
+          ],
+          "row_true_suffix_lengths": [
+            401,
+            515,
+            472,
+            558
+          ],
+          "old_suffix_width": 814,
+          "row_suffix_width": 558,
+          "old_suffix_slots": 3256,
+          "row_suffix_slots": 2232,
+          "saved_suffix_slots": 1024,
+          "suffix_slot_reduction_fraction": 0.3144963144963145,
+          "action_query_target_slots": 1880,
+          "alignment_slots": 66,
+          "old_common_history_tail_slots": 576,
+          "old_right_padding_slots": 734,
+          "row_right_padding_slots": 286,
+          "old_KV_width": 8366,
+          "row_prefix_carrier_width": 7808,
+          "row_KV_width": 8366,
+          "old_KV_carrier_slots": 33464,
+          "row_KV_carrier_slots": 33464,
+          "row_internal_prefix_hole_slots": 448,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 1,
+          "batch_index": 13,
+          "offset": 52,
+          "sorted_rows": [
+            52,
+            53,
+            54,
+            55
+          ],
+          "original_row_indices": [
+            48,
+            49,
+            50,
+            51
+          ],
+          "traj_uids": [
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe",
+            "b0437e9d-c2eb-4331-8ad1-647817b313bc",
+            "7daa06c2-e910-4629-b373-1de7614513de",
+            "1bd936ae-287f-48ab-8cde-30e8214406b5"
+          ],
+          "source_steps": [
+            4,
+            10,
+            5,
+            5
+          ],
+          "logical_context_lengths": [
+            8480,
+            8581,
+            8685,
+            8750
+          ],
+          "source_starts": [
+            7993,
+            8157,
+            8260,
+            8175
+          ],
+          "action_tokens": [
+            173,
+            109,
+            111,
+            261
+          ],
+          "query_tokens": [
+            313,
+            314,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 7936,
+          "row_cuts": [
+            7936,
+            8128,
+            8256,
+            8128
+          ],
+          "old_true_suffix_lengths": [
+            544,
+            645,
+            749,
+            814
+          ],
+          "row_true_suffix_lengths": [
+            544,
+            453,
+            429,
+            622
+          ],
+          "old_suffix_width": 814,
+          "row_suffix_width": 622,
+          "old_suffix_slots": 3256,
+          "row_suffix_slots": 2488,
+          "saved_suffix_slots": 768,
+          "suffix_slot_reduction_fraction": 0.23587223587223588,
+          "action_query_target_slots": 1911,
+          "alignment_slots": 137,
+          "old_common_history_tail_slots": 704,
+          "old_right_padding_slots": 504,
+          "row_right_padding_slots": 440,
+          "old_KV_width": 8750,
+          "row_prefix_carrier_width": 8256,
+          "row_KV_width": 8878,
+          "old_KV_carrier_slots": 35000,
+          "row_KV_carrier_slots": 35512,
+          "row_internal_prefix_hole_slots": 576,
+          "row_native_KV_carrier_ratio": 1.0146285714285714
+        },
+        {
+          "rank": 1,
+          "batch_index": 14,
+          "offset": 56,
+          "sorted_rows": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "original_row_indices": [
+            52,
+            53,
+            54,
+            55
+          ],
+          "traj_uids": [
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8",
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "1851ad74-d0ae-45de-a32a-2bb81f9d8ffe"
+          ],
+          "source_steps": [
+            8,
+            6,
+            6,
+            5
+          ],
+          "logical_context_lengths": [
+            8845,
+            8953,
+            8973,
+            9043
+          ],
+          "source_starts": [
+            8411,
+            8546,
+            8416,
+            8473
+          ],
+          "action_tokens": [
+            120,
+            93,
+            243,
+            256
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 8384,
+          "row_cuts": [
+            8384,
+            8512,
+            8384,
+            8448
+          ],
+          "old_true_suffix_lengths": [
+            461,
+            569,
+            589,
+            659
+          ],
+          "row_true_suffix_lengths": [
+            461,
+            441,
+            589,
+            595
+          ],
+          "old_suffix_width": 659,
+          "row_suffix_width": 595,
+          "old_suffix_slots": 2636,
+          "row_suffix_slots": 2380,
+          "saved_suffix_slots": 256,
+          "suffix_slot_reduction_fraction": 0.09711684370257967,
+          "action_query_target_slots": 1968,
+          "alignment_slots": 118,
+          "old_common_history_tail_slots": 192,
+          "old_right_padding_slots": 358,
+          "row_right_padding_slots": 294,
+          "old_KV_width": 9043,
+          "row_prefix_carrier_width": 8512,
+          "row_KV_width": 9107,
+          "old_KV_carrier_slots": 36172,
+          "row_KV_carrier_slots": 36428,
+          "row_internal_prefix_hole_slots": 320,
+          "row_native_KV_carrier_ratio": 1.0070772973570719
+        },
+        {
+          "rank": 1,
+          "batch_index": 15,
+          "offset": 60,
+          "sorted_rows": [
+            60,
+            61,
+            62,
+            63
+          ],
+          "original_row_indices": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "traj_uids": [
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b",
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a",
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "b3313f98-c7c1-4ee1-bbcc-391301448dd9"
+          ],
+          "source_steps": [
+            1,
+            2,
+            7,
+            6
+          ],
+          "logical_context_lengths": [
+            9121,
+            9195,
+            9271,
+            9278
+          ],
+          "source_starts": [
+            7307,
+            7863,
+            8809,
+            8884
+          ],
+          "action_tokens": [
+            1500,
+            1018,
+            148,
+            80
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 7296,
+          "row_cuts": [
+            7296,
+            7808,
+            8768,
+            8832
+          ],
+          "old_true_suffix_lengths": [
+            1825,
+            1899,
+            1975,
+            1982
+          ],
+          "row_true_suffix_lengths": [
+            1825,
+            1387,
+            503,
+            446
+          ],
+          "old_suffix_width": 1982,
+          "row_suffix_width": 1825,
+          "old_suffix_slots": 7928,
+          "row_suffix_slots": 7300,
+          "saved_suffix_slots": 628,
+          "suffix_slot_reduction_fraction": 0.07921291624621594,
+          "action_query_target_slots": 4002,
+          "alignment_slots": 159,
+          "old_common_history_tail_slots": 3520,
+          "old_right_padding_slots": 247,
+          "row_right_padding_slots": 3139,
+          "old_KV_width": 9278,
+          "row_prefix_carrier_width": 8832,
+          "row_KV_width": 10657,
+          "old_KV_carrier_slots": 37112,
+          "row_KV_carrier_slots": 42628,
+          "row_internal_prefix_hole_slots": 2624,
+          "row_native_KV_carrier_ratio": 1.148631170510886
+        },
+        {
+          "rank": 1,
+          "batch_index": 16,
+          "offset": 64,
+          "sorted_rows": [
+            64,
+            65,
+            66,
+            67
+          ],
+          "original_row_indices": [
+            60,
+            61,
+            62,
+            63
+          ],
+          "traj_uids": [
+            "37a950a5-0bc1-4a97-82a9-39c96a00887e",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b",
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a",
+            "cc7c6dff-546d-49e6-a8e9-61a01502ecaf"
+          ],
+          "source_steps": [
+            8,
+            2,
+            3,
+            7
+          ],
+          "logical_context_lengths": [
+            9458,
+            9464,
+            9480,
+            9503
+          ],
+          "source_starts": [
+            9033,
+            8911,
+            8986,
+            9048
+          ],
+          "action_tokens": [
+            111,
+            239,
+            180,
+            141
+          ],
+          "query_tokens": [
+            313,
+            313,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 8896,
+          "row_cuts": [
+            9024,
+            8896,
+            8960,
+            9024
+          ],
+          "old_true_suffix_lengths": [
+            562,
+            568,
+            584,
+            607
+          ],
+          "row_true_suffix_lengths": [
+            434,
+            568,
+            520,
+            479
+          ],
+          "old_suffix_width": 607,
+          "row_suffix_width": 568,
+          "old_suffix_slots": 2428,
+          "row_suffix_slots": 2272,
+          "saved_suffix_slots": 156,
+          "suffix_slot_reduction_fraction": 0.0642504118616145,
+          "action_query_target_slots": 1927,
+          "alignment_slots": 74,
+          "old_common_history_tail_slots": 320,
+          "old_right_padding_slots": 107,
+          "row_right_padding_slots": 271,
+          "old_KV_width": 9503,
+          "row_prefix_carrier_width": 9024,
+          "row_KV_width": 9592,
+          "old_KV_carrier_slots": 38012,
+          "row_KV_carrier_slots": 38368,
+          "row_internal_prefix_hole_slots": 192,
+          "row_native_KV_carrier_ratio": 1.0093654635378302
+        },
+        {
+          "rank": 1,
+          "batch_index": 17,
+          "offset": 68,
+          "sorted_rows": [
+            68,
+            69,
+            70,
+            71
+          ],
+          "original_row_indices": [
+            64,
+            65,
+            66,
+            67
+          ],
+          "traj_uids": [
+            "9bd29e74-5c2a-4bcb-ae82-487540ae83b8",
+            "7e28bfae-9b67-4833-98c1-e289cdfc421a",
+            "fc500361-a998-42cd-8f8d-46a13ca90522",
+            "23b64c0d-126c-4fbc-b57a-35c4729fc0f8"
+          ],
+          "source_steps": [
+            7,
+            4,
+            9,
+            10
+          ],
+          "logical_context_lengths": [
+            9544,
+            9718,
+            9741,
+            9773
+          ],
+          "source_starts": [
+            8947,
+            9265,
+            9294,
+            9348
+          ],
+          "action_tokens": [
+            283,
+            139,
+            132,
+            110
+          ],
+          "query_tokens": [
+            313,
+            313,
+            314,
+            314
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 8896,
+          "row_cuts": [
+            8896,
+            9216,
+            9280,
+            9344
+          ],
+          "old_true_suffix_lengths": [
+            648,
+            822,
+            845,
+            877
+          ],
+          "row_true_suffix_lengths": [
+            648,
+            502,
+            461,
+            429
+          ],
+          "old_suffix_width": 877,
+          "row_suffix_width": 648,
+          "old_suffix_slots": 3508,
+          "row_suffix_slots": 2592,
+          "saved_suffix_slots": 916,
+          "suffix_slot_reduction_fraction": 0.2611174458380844,
+          "action_query_target_slots": 1922,
+          "alignment_slots": 118,
+          "old_common_history_tail_slots": 1152,
+          "old_right_padding_slots": 316,
+          "row_right_padding_slots": 552,
+          "old_KV_width": 9773,
+          "row_prefix_carrier_width": 9344,
+          "row_KV_width": 9992,
+          "old_KV_carrier_slots": 39092,
+          "row_KV_carrier_slots": 39968,
+          "row_internal_prefix_hole_slots": 640,
+          "row_native_KV_carrier_ratio": 1.0224086769671543
+        },
+        {
+          "rank": 1,
+          "batch_index": 18,
+          "offset": 72,
+          "sorted_rows": [
+            72,
+            73,
+            74,
+            75
+          ],
+          "original_row_indices": [
+            68,
+            69,
+            70,
+            71
+          ],
+          "traj_uids": [
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "34228672-4265-4a57-98a7-b6d9afd8af2d",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1"
+          ],
+          "source_steps": [
+            7,
+            9,
+            3,
+            8
+          ],
+          "logical_context_lengths": [
+            9793,
+            10013,
+            10174,
+            10341
+          ],
+          "source_starts": [
+            9265,
+            9609,
+            9720,
+            9788
+          ],
+          "action_tokens": [
+            214,
+            89,
+            140,
+            239
+          ],
+          "query_tokens": [
+            313,
+            314,
+            313,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 9216,
+          "row_cuts": [
+            9216,
+            9600,
+            9664,
+            9728
+          ],
+          "old_true_suffix_lengths": [
+            577,
+            797,
+            958,
+            1125
+          ],
+          "row_true_suffix_lengths": [
+            577,
+            413,
+            510,
+            613
+          ],
+          "old_suffix_width": 1125,
+          "row_suffix_width": 613,
+          "old_suffix_slots": 4500,
+          "row_suffix_slots": 2452,
+          "saved_suffix_slots": 2048,
+          "suffix_slot_reduction_fraction": 0.45511111111111113,
+          "action_query_target_slots": 1939,
+          "alignment_slots": 174,
+          "old_common_history_tail_slots": 1344,
+          "old_right_padding_slots": 1043,
+          "row_right_padding_slots": 339,
+          "old_KV_width": 10341,
+          "row_prefix_carrier_width": 9728,
+          "row_KV_width": 10341,
+          "old_KV_carrier_slots": 41364,
+          "row_KV_carrier_slots": 41364,
+          "row_internal_prefix_hole_slots": 704,
+          "row_native_KV_carrier_ratio": 1.0
+        },
+        {
+          "rank": 1,
+          "batch_index": 19,
+          "offset": 76,
+          "sorted_rows": [
+            76,
+            77,
+            78,
+            79
+          ],
+          "original_row_indices": [
+            72,
+            73,
+            74,
+            75
+          ],
+          "traj_uids": [
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b",
+            "e87729db-ba3e-4345-acc5-0f7553f4d832",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1"
+          ],
+          "source_steps": [
+            4,
+            7,
+            10,
+            11
+          ],
+          "logical_context_lengths": [
+            10486,
+            10610,
+            10851,
+            11093
+          ],
+          "source_starts": [
+            10068,
+            10164,
+            10401,
+            10648
+          ],
+          "action_tokens": [
+            104,
+            132,
+            135,
+            130
+          ],
+          "query_tokens": [
+            313,
+            313,
+            314,
+            314
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 10048,
+          "row_cuts": [
+            10048,
+            10112,
+            10368,
+            10624
+          ],
+          "old_true_suffix_lengths": [
+            438,
+            562,
+            803,
+            1045
+          ],
+          "row_true_suffix_lengths": [
+            438,
+            498,
+            483,
+            469
+          ],
+          "old_suffix_width": 1045,
+          "row_suffix_width": 498,
+          "old_suffix_slots": 4180,
+          "row_suffix_slots": 1992,
+          "saved_suffix_slots": 2188,
+          "suffix_slot_reduction_fraction": 0.523444976076555,
+          "action_query_target_slots": 1759,
+          "alignment_slots": 129,
+          "old_common_history_tail_slots": 960,
+          "old_right_padding_slots": 1332,
+          "row_right_padding_slots": 104,
+          "old_KV_width": 11093,
+          "row_prefix_carrier_width": 10624,
+          "row_KV_width": 11122,
+          "old_KV_carrier_slots": 44372,
+          "row_KV_carrier_slots": 44488,
+          "row_internal_prefix_hole_slots": 1344,
+          "row_native_KV_carrier_ratio": 1.0026142612458306
+        },
+        {
+          "rank": 1,
+          "batch_index": 20,
+          "offset": 80,
+          "sorted_rows": [
+            80,
+            81,
+            82,
+            83
+          ],
+          "original_row_indices": [
+            76,
+            77,
+            78,
+            79
+          ],
+          "traj_uids": [
+            "7f293cc6-e47f-4328-9d53-48622817fe6c",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "7f293cc6-e47f-4328-9d53-48622817fe6c"
+          ],
+          "source_steps": [
+            9,
+            12,
+            13,
+            10
+          ],
+          "logical_context_lengths": [
+            11250,
+            11327,
+            11556,
+            11605
+          ],
+          "source_starts": [
+            10700,
+            10890,
+            11125,
+            11193
+          ],
+          "action_tokens": [
+            235,
+            122,
+            116,
+            97
+          ],
+          "query_tokens": [
+            314,
+            314,
+            314,
+            314
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 10688,
+          "row_cuts": [
+            10688,
+            10880,
+            11072,
+            11136
+          ],
+          "old_true_suffix_lengths": [
+            562,
+            639,
+            868,
+            917
+          ],
+          "row_true_suffix_lengths": [
+            562,
+            447,
+            484,
+            469
+          ],
+          "old_suffix_width": 917,
+          "row_suffix_width": 562,
+          "old_suffix_slots": 3668,
+          "row_suffix_slots": 2248,
+          "saved_suffix_slots": 1420,
+          "suffix_slot_reduction_fraction": 0.3871319520174482,
+          "action_query_target_slots": 1830,
+          "alignment_slots": 132,
+          "old_common_history_tail_slots": 1024,
+          "old_right_padding_slots": 682,
+          "row_right_padding_slots": 286,
+          "old_KV_width": 11605,
+          "row_prefix_carrier_width": 11136,
+          "row_KV_width": 11698,
+          "old_KV_carrier_slots": 46420,
+          "row_KV_carrier_slots": 46792,
+          "row_internal_prefix_hole_slots": 768,
+          "row_native_KV_carrier_ratio": 1.0080137871607067
+        },
+        {
+          "rank": 1,
+          "batch_index": 21,
+          "offset": 84,
+          "sorted_rows": [
+            84,
+            85,
+            86,
+            87
+          ],
+          "original_row_indices": [
+            80,
+            81,
+            82,
+            83
+          ],
+          "traj_uids": [
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "7a01c455-d6d9-4a7d-a1f4-cb98c6b12ec1",
+            "a1edd19c-4b34-4f14-a40a-2d853518c28b"
+          ],
+          "source_steps": [
+            16,
+            18,
+            19,
+            8
+          ],
+          "logical_context_lengths": [
+            12200,
+            12619,
+            12808,
+            13216
+          ],
+          "source_starts": [
+            11789,
+            12207,
+            12416,
+            12728
+          ],
+          "action_tokens": [
+            96,
+            97,
+            77,
+            174
+          ],
+          "query_tokens": [
+            314,
+            314,
+            314,
+            313
+          ],
+          "target_tokens": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "common_cut": 11776,
+          "row_cuts": [
+            11776,
+            12160,
+            12416,
+            12672
+          ],
+          "old_true_suffix_lengths": [
+            424,
+            843,
+            1032,
+            1440
+          ],
+          "row_true_suffix_lengths": [
+            424,
+            459,
+            392,
+            544
+          ],
+          "old_suffix_width": 1440,
+          "row_suffix_width": 544,
+          "old_suffix_slots": 5760,
+          "row_suffix_slots": 2176,
+          "saved_suffix_slots": 3584,
+          "suffix_slot_reduction_fraction": 0.6222222222222222,
+          "action_query_target_slots": 1703,
+          "alignment_slots": 116,
+          "old_common_history_tail_slots": 1920,
+          "old_right_padding_slots": 2021,
+          "row_right_padding_slots": 357,
+          "old_KV_width": 13216,
+          "row_prefix_carrier_width": 12672,
+          "row_KV_width": 13216,
+          "old_KV_carrier_slots": 52864,
+          "row_KV_carrier_slots": 52864,
+          "row_internal_prefix_hole_slots": 1664,
+          "row_native_KV_carrier_ratio": 1.0
+        }
+      ]
+    }
+  ],
+  "pooled_176": {
+    "batches": 44,
+    "totals": {
+      "old_suffix_slots": 166372,
+      "row_suffix_slots": 117844,
+      "saved_suffix_slots": 48528,
+      "action_query_target_slots": 88018,
+      "alignment_slots": 5000,
+      "old_common_history_tail_slots": 40192,
+      "old_right_padding_slots": 33162,
+      "row_right_padding_slots": 24826,
+      "old_KV_carrier_slots": 1393124,
+      "row_KV_carrier_slots": 1422420,
+      "row_internal_prefix_hole_slots": 37632,
+      "suffix_slot_reduction_fraction": 0.2916836967758998,
+      "row_native_KV_carrier_ratio": 1.0210289967009398,
+      "row_suffix_padding_fraction": 0.2106683411968365,
+      "row_64_alignment_fraction": 0.04242897389769526,
+      "paired_root_suffix_slots_old": 332744,
+      "paired_root_suffix_slots_row": 235688,
+      "paired_32_decoder_replay_layer_token_slots_old": 10647808,
+      "paired_32_decoder_replay_layer_token_slots_row": 7542016
+    },
+    "smaller_suffix_batches": 39,
+    "unchanged_suffix_batches": 5,
+    "suffix_reduction_fraction_distribution": {
+      "count": 44,
+      "minimum": 0.0,
+      "p25": 0.07607635385132863,
+      "median": 0.2378232829572745,
+      "p75": 0.3320379965457686,
+      "maximum": 0.7222792607802875,
+      "mean": 0.23590012693850615,
+      "sum": 10.379605585294271
+    },
+    "saved_suffix_slots_distribution": {
+      "count": 44,
+      "minimum": 0,
+      "p25": 208.0,
+      "median": 718.0,
+      "p75": 1031.0,
+      "maximum": 6036,
+      "mean": 1102.909090909091,
+      "sum": 48528
+    },
+    "row_true_suffix_length_distribution": {
+      "count": 176,
+      "minimum": 383,
+      "p25": 434.0,
+      "median": 462.5,
+      "p75": 517.25,
+      "maximum": 1825,
+      "mean": 528.5113636363636,
+      "sum": 93018
+    },
+    "largest_savings": [
+      {
+        "rank": 1,
+        "batch_index": 3,
+        "offset": 12,
+        "old_suffix_width": 3332,
+        "row_suffix_width": 1823,
+        "saved_suffix_slots": 6036,
+        "suffix_slot_reduction_fraction": 0.45288115246098437
+      },
+      {
+        "rank": 0,
+        "batch_index": 21,
+        "offset": 84,
+        "old_suffix_width": 1948,
+        "row_suffix_width": 541,
+        "saved_suffix_slots": 5628,
+        "suffix_slot_reduction_fraction": 0.7222792607802875
+      },
+      {
+        "rank": 0,
+        "batch_index": 2,
+        "offset": 8,
+        "old_suffix_width": 1811,
+        "row_suffix_width": 673,
+        "saved_suffix_slots": 4552,
+        "suffix_slot_reduction_fraction": 0.6283821093318609
+      },
+      {
+        "rank": 1,
+        "batch_index": 21,
+        "offset": 84,
+        "old_suffix_width": 1440,
+        "row_suffix_width": 544,
+        "saved_suffix_slots": 3584,
+        "suffix_slot_reduction_fraction": 0.6222222222222222
+      },
+      {
+        "rank": 0,
+        "batch_index": 3,
+        "offset": 12,
+        "old_suffix_width": 2630,
+        "row_suffix_width": 1819,
+        "saved_suffix_slots": 3244,
+        "suffix_slot_reduction_fraction": 0.30836501901140684
+      }
+    ],
+    "largest_remaining_suffix_padding": [
+      {
+        "rank": 0,
+        "batch_index": 3,
+        "offset": 12,
+        "row_suffix_width": 1819,
+        "row_true_suffix_lengths": [
+          1819,
+          430,
+          479,
+          1030
+        ],
+        "action_tokens": [
+          1500,
+          113,
+          128,
+          708
+        ],
+        "row_right_padding_slots": 3518
+      },
+      {
+        "rank": 1,
+        "batch_index": 15,
+        "offset": 60,
+        "row_suffix_width": 1825,
+        "row_true_suffix_lengths": [
+          1825,
+          1387,
+          503,
+          446
+        ],
+        "action_tokens": [
+          1500,
+          1018,
+          148,
+          80
+        ],
+        "row_right_padding_slots": 3139
+      },
+      {
+        "rank": 1,
+        "batch_index": 2,
+        "offset": 8,
+        "row_suffix_width": 1402,
+        "row_true_suffix_lengths": [
+          414,
+          412,
+          418,
+          1402
+        ],
+        "action_tokens": [
+          69,
+          95,
+          75,
+          1087
+        ],
+        "row_right_padding_slots": 2962
+      },
+      {
+        "rank": 1,
+        "batch_index": 3,
+        "offset": 12,
+        "row_suffix_width": 1823,
+        "row_true_suffix_lengths": [
+          1815,
+          1823,
+          450,
+          452
+        ],
+        "action_tokens": [
+          1500,
+          1500,
+          133,
+          101
+        ],
+        "row_right_padding_slots": 2752
+      },
+      {
+        "rank": 0,
+        "batch_index": 16,
+        "offset": 64,
+        "row_suffix_width": 1157,
+        "row_true_suffix_lengths": [
+          558,
+          441,
+          1157,
+          549
+        ],
+        "action_tokens": [
+          206,
+          85,
+          784,
+          179
+        ],
+        "row_right_padding_slots": 1923
+      }
+    ]
+  },
+  "scope_limits": [
+    "This population retains the historical literal query IDs/lengths. Current clock-query hot probes have different query lengths; no full176 current-query timing is inferred.",
+    "These are dense suffix/carrier extents. Original FA varlen masking/unpadding and compact finite KV use valid logical sequences; carrier extent is not measured FA memory traffic.",
+    "The reported32 replay layer-token extents do not equate compute across layer types, finite kernels, backward, communication or memory copy.",
+    "Offset84 is the only measured hot B8 here; no other batch wall time, FLOP ratio or speedup is inferred from slot ratios.",
+    "Remaining suffix padding is observable work amplification, not proof all of it is removable at equal behavior/resources.",
+    "Bank preparation and its separate storage/segment accounting are excluded; no task, scheduler, model, GPU, DT, optimizer or checkpoint is run."
+  ]
+}

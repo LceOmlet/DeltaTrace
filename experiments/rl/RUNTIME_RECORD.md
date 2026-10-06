@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 06:45 当前fresh采样继续；补齐已有实际工作量计量
+
+当前仍为driver2360541/birth1791325655.01/source c83b96de，GPU4/5，入口和
+配置与06:27部署相同。06:45:26只读phase-1791326726观察到原采样仍在推进，
+原transport累计约54.2万生成token/2818已返回请求、约873秒；该窗口包含
+prefill/decode、环境和取消任务，不是纯decode或trainer完整gen timer。
+物理GPU55309/55295MiB，cgroup134072762368B（约124.86GiB）；无当前DT或
+actor完成记录。整批官方白化源码和旧v2执行证据保留，不能称新fresh已执行。
+没有恢复/导出旧训练检查点、改参数、重启本次作业或新增GPU测试。
+
+CPU只读原176请求/44个B4的计量表明，逐行缓存使39批减少历史重放，后缀
+槽位166372降到117844（29.17%）。该范围不是本次正式迭代，也不是FLOP或
+整轮加速比。剩余padding24826槽占新后缀21.07%；按后缀长度重排的槽位
+下界虽可减少18648槽，但dense KV carrier增加28.11%，且改变原capture组。
+未据此部署排序或添加新的性能要求。原metadata/query版本差异在回执中列明。
+
+已保存热调用的阶段计量：实际B8约3.96秒中，原root forward及CPU检查点
+0.86–0.87秒、32层forward重建0.94–1.05秒、有限传播1.49–1.60秒；精确
+32768约8.30秒中有限传播4.16–4.19秒，其中8层FA约2.94秒。旧实际profile
+没有finite前第三次重复FSDP gather的证据；这些值不支持再改卸载策略，
+也不能把wall与stream差值直接称作搬运。原报告汇总范围/嵌套计时限制保留。
+
+新证据：appworld-efficiency-20261007/saved-b8-phase-costs-readonly-20261007.json
+SHA8f049083；individual-prefix-owner-candidate-v1/replay-slot-distribution-20261007/
+prefix-replay-slot-distribution.json SHA bd9f5825。原预算、PPO公式、Q/V/A、
+LoRA8/16、每卡B4均未改；新完整DT/白化/更新耗时继续以当前作业日志为准。
+
 ## 2026-10-07 06:27 AppWorld逐行缓存正式fresh入口已部署，无旧检查点
 
 旧v3 driver1953903/birth1791321793.72/source97e3已按唯一身份停止，receipt
