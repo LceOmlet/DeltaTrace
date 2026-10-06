@@ -1,5 +1,23 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 AppWorld原采样完成并进入DT
+
+1791294467原LOOP明确采样完成：rank0为112+8取消，rank1为105+15取消，
+共217/240、3891responses、1258007policy tokens。原全局0.9与每场景0.75
+规则保留（原round(6*.75)=4），不改取消或舍入行为。
+1791295087原old_log_prob/ref已返回，TaskRunnerfit1244及两actor实际栈
+进入既有DT/readout/capture。当前plan每rank122个B4，最初3个已返回，
+warm后两批2.89/2.95秒、日志d在−0.178至0.334内；这些只是当前组开头，
+不能称完整DT速度/精度/全部有限性验收，尚无完整step29或checkpoint29。
+
+TextCraft下一轮原采样30/30已返回33:01，原旧概率计算进行中；最后完整step26。
+本次DT capture阶段cgroup484922011648B、limit966367641600B、
+host available493831966720B；App两个DT actor PSS104.14/106.95GiB。
+物理GPU2/3为30300/30299MiB，4/5为17058/17058MiB，0/1和6/7各861MiB。
+按实际phase区分CPU bank/物理GPU和allocator，不把进程存活当训练健康。
+训练源、原算法/预算/LoRA8/16/每卡B4/DT B4未改，未新增模型测试、容差或补丁。
+最新dated snapshot：research/temporary/rl_upstream_alignment_20260929/whitening-formal-followup-20261006/1791295087/current_runtime.json。
+
 ## 2026-10-06 白化后首个TextCraft正式更新已返回
 
 1791293395原PID3269087/birth1791289021.47已完成正式step26并进入下一轮
