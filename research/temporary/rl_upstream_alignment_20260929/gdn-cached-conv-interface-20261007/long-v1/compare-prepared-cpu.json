@@ -1,0 +1,56 @@
+{
+  "script": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\long-v1\\compare_actual_cached_conv.py",
+    "bytes": 17769,
+    "sha256": "5a6006b26147c92e491a14fbaeacd85c0f7f6a6af0041ec642397cbd6d6d8cb5"
+  },
+  "owner": {
+    "test": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\test_causal_conv1d_v150.py",
+      "bytes": 16911,
+      "sha256": "c15131c88911cf7e942fdd693cfbddd3e2b4d29b0acbfd28ca69b7fd6cb965bf"
+    },
+    "owner_test": "test_causal_conv1d",
+    "statements": {
+      "tolerance": [
+        {
+          "line": 42,
+          "end_line": 42,
+          "source": "rtol, atol = (3e-4, 1e-3) if itype == torch.float32 else (3e-3, 5e-3)"
+        },
+        {
+          "line": 43,
+          "end_line": 44,
+          "source": "if itype == torch.bfloat16:\n        rtol, atol = 1e-2, 5e-2"
+        }
+      ],
+      "output": [
+        {
+          "line": 82,
+          "end_line": 82,
+          "source": "assert torch.allclose(out, out_ref, rtol=rtol, atol=atol)"
+        }
+      ],
+      "dx": [
+        {
+          "line": 99,
+          "end_line": 99,
+          "source": "assert torch.allclose(x.grad, x_ref.grad.to(dtype=itype), rtol=rtol, atol=atol)"
+        }
+      ]
+    },
+    "official_fixture_weight_dtype": "torch.float32",
+    "skipped_assertions": "Frozen weight/bias and fixed initial state: no dweight/dbias/dinitial_states assertion"
+  },
+  "scope": "Real cached convolution output and frozen-weight input VJP only; no model/PPO/DT acceptance",
+  "operations": {
+    "model_loads": 0,
+    "checkpoint_loads": 0,
+    "production_edits": 0,
+    "installs": 0,
+    "extra_dt_calls": 0
+  },
+  "phases": [],
+  "checks": [],
+  "status": "official_AST_prepared_only_no_torch_import"
+}

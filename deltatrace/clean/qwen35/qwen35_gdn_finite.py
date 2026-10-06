@@ -89,8 +89,23 @@ class NativeGDNCapture:
             # Native cached multi-token forward prepends the actual conv state.
             # Keep its left window; finite coefficients are needed only for
             # current tokens, never for the unchanged cached prefix.
-            self.cached_conv_context=f['x'].shape[2]-self.input_shape[1]
-            self.values['projected_qkv']=self.copy(self.select_time(f['x'],2,start=self.conv_context_start))
+            if f.get('initial_states') is None:
+                self.cached_conv_context=f['x'].shape[2]-self.input_shape[1]
+                self.values['projected_qkv']=self.copy(self.select_time(f['x'],2,start=self.conv_context_start))
+            else:
+                # Public initial_states consumes fixed history separately.
+                # Preserve actual paired operands, with compact channel-last
+                # storage when the existing capture range starts after zero.
+                self.cached_conv_context=0
+                start=self.coefficient_start
+                projected=f['x']
+                initial=f['initial_states']
+                if start:
+                    width=f['weight'].shape[-1]
+                    initial=projected[...,start-width+1:start].transpose(1,2).contiguous().transpose(1,2)
+                    projected=projected[...,start:].transpose(1,2).contiguous().transpose(1,2)
+                self.values['projected_qkv']=self.copy(projected)
+                self.values['conv_initial_states']=self.copy(initial)
         if kind=='return' and label=='conv' and value is not None:
             self.values['conv_output']=self.copy(self.select_time(value,2,start=self.cached_conv_context+self.coefficient_start))
         if kind=='call' and label=='FLA':
@@ -266,12 +281,15 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         del mq,mk,coeff,b0,b1,a0,a1,sigmoid,ga0
         e.clear()
     restore(c,'projected_qkv','conv_output')
+    if c.get('conv_initial_states') is not None:
+        restore(c,'conv_initial_states')
     # One real public paired preactivation call, one real public autograd bwd.
     # Preserve fused model SiLU outputs as endpoints. Rounding can make equal
     # saved preactivations have different fused outputs; report those cases.
     with torch.enable_grad():
         projected=c['projected_qkv'].detach().requires_grad_(True)
-        pre=module.causal_conv1d_fn(projected,module.conv1d.weight.squeeze(1),activation=None)
+        pre=module.causal_conv1d_fn(projected,module.conv1d.weight.squeeze(1),
+            initial_states=c.get('conv_initial_states'),activation=None)
         context=pre.shape[-1]-length
         conv_silu=_conv_silu_finite_rule if conv_silu_pullback is None else conv_silu_pullback
         mpre=conv_silu(pre.detach()[...,context:],c['conv_output'],mconv)

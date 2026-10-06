@@ -36,6 +36,10 @@ if __name__ == '__main__':
         help='Observe root/replay inputs of actual base MLP projections in the existing shared warm B4; no replacement computation.')
     parser.add_argument('--reverse-prefetch',action='store_true',
         help='Compare one extra shared warm B4 using the official FSDP next-layer prefetch setter only during reverse replay.')
+    parser.add_argument('--native-conv-initial-states',action='store_true',
+        help='Current-base same-bank cold/warm OFF and warm ON for the original public cached-convolution initial_states API; isolated owner paths only.')
+    parser.add_argument('--native-conv-capacity',action='store_true',
+        help='With --native-conv-initial-states, call the unchanged capacity fixture at exact32768/response512; no environment reward or actor-update claim.')
     parser.add_argument('--root-capture-inventory',action='store_true',
         help='Observe one layer at a time in the existing root forward with original capture APIs; release immediately, no retained tape or replacement computation.')
     parser.add_argument('--root-tape',action='store_true',
@@ -56,6 +60,8 @@ if __name__ == '__main__':
         help='Completed global_step directory passed once to the original VERL checkpoint loader.')
     parser.add_argument('--current-formal-owner',action='store_true',
         help='Use the current frozen AppWorld entry/VERL/DT and launch options, not historical diagnostic owner overrides.')
+    parser.add_argument('--base-model',action='store_true',
+        help='With current formal owner and prefetch/convolution diagnosis, initialize its original base actor without loading a checkpoint; replay current owner queries on saved literal rows.')
     parser.add_argument('--native-backward',action='store_true',
         help='After current-owner DT, time one first and one warm original actor backward on the same factual B4 event target; no optimizer update.')
     args=parser.parse_args()
@@ -68,11 +74,27 @@ if __name__ == '__main__':
             args.root_tape_cpu,args.root_tape_capacity,args.root_tape_gdn0,args.root_tape_fa3,
             args.root_tape_hot,args.components_only,args.component_layer is not None)):
         parser.error('--ledger-only does not run profiling, backward, operator observers or owner variants')
-    if args.current_formal_owner and (not args.checkpoint or not args.phase_only or not args.warm_phases):
-        parser.error('--current-formal-owner requires --checkpoint --phase-only --warm-phases')
+    if args.base_model and not (args.current_formal_owner and (args.reverse_prefetch or args.native_conv_initial_states)
+            and args.phase_only and args.warm_phases):
+        parser.error('--base-model requires --current-formal-owner, --reverse-prefetch or --native-conv-initial-states, --phase-only --warm-phases')
+    if args.native_conv_initial_states and not args.base_model:
+        parser.error('--native-conv-initial-states requires explicit --base-model current-owner diagnosis')
+    if args.native_conv_capacity and not args.native_conv_initial_states:
+        parser.error('--native-conv-capacity requires --native-conv-initial-states')
+    if args.native_conv_initial_states and any((args.reverse_prefetch,args.ledger_only,args.hot_profile,
+            args.projection_inputs,args.local_prefix_branch,args.root_capture_inventory,args.root_tape,
+            args.components_only,args.native_backward)):
+        parser.error('Measure initial_states independently of prefetch, profiles, observers and other owner variants')
+    if args.base_model and (args.checkpoint or args.native_backward):
+        parser.error('--base-model does not load checkpoints or run actor backward')
+    if args.current_formal_owner and (not (args.checkpoint or args.base_model)
+            or not args.phase_only or not args.warm_phases):
+        parser.error('--current-formal-owner requires --checkpoint or --base-model, plus --phase-only --warm-phases')
     if args.current_formal_owner and any((args.local_prefix_branch,args.projection_inputs,
-            args.reverse_prefetch,args.root_capture_inventory,args.root_tape,args.components_only)):
+            args.root_capture_inventory,args.root_tape,args.components_only)):
         parser.error('Current formal owner mode does not load historical scheduling/capture/source variants')
+    if args.current_formal_owner and args.reverse_prefetch and not args.base_model:
+        parser.error('Current-owner reverse prefetch is scoped to the explicit --base-model diagnosis')
     if args.native_backward and not args.current_formal_owner:
         parser.error('--native-backward uses --current-formal-owner and its restored checkpoint')
     if args.components_only and args.phase_only:
@@ -118,10 +140,10 @@ if __name__ == '__main__':
     out = ROOT+'/receipts/owner-b8-dispatch-20260930/native-prefix-reuse-'+(
         'local-prefix-' if args.local_prefix_branch else '')+('cpu-' if args.root_tape_cpu else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
-        'ledger' if args.ledger_only else 'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
-        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261005-' if args.root_tape_cpu or args.ledger_only else '-20261004-')+commit[:7]
+        'ledger' if args.ledger_only else 'native-conv-capacity' if args.native_conv_capacity else 'native-conv-initial-states' if args.native_conv_initial_states else 'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
+        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261007-' if args.native_conv_initial_states else '-20261005-' if args.root_tape_cpu or args.ledger_only else '-20261004-')+commit[:7]
     if args.current_formal_owner:
-        out+='-current-'+args.checkpoint.rstrip('/').split('/')[-1]
+        out+='-current-'+('base' if args.base_model else args.checkpoint.rstrip('/').split('/')[-1])
     files = {
         REPO/'experiments/rl/native_prefix_leases.py': 'native_prefix_leases.py',
         REPO/'experiments/rl/test_native_prefix_leases.py': 'test_native_prefix_leases.py',
@@ -138,6 +160,17 @@ if __name__ == '__main__':
         files[AUDIT/'diagnose_native_projection_inputs.py'] = 'diagnose_native_projection_inputs.py'
     if args.reverse_prefetch:
         files[AUDIT/'native_reverse_prefetch_candidate.py'] = 'native_reverse_prefetch_candidate.py'
+    if args.native_conv_initial_states:
+        conv=AUDIT/'gdn-cached-conv-interface-20261007/native-initial-states-candidate-v1'
+        files[conv/'prepare_isolated_owner_paths.py']='prepare_isolated_owner_paths.py'
+        for relative in ('transformers/models/qwen3_5/modeling_qwen3_5.py',
+                         'deltatrace/clean/qwen35/qwen35_gdn_finite.py',
+                         'deltatrace/clean/qwen35/qwen35_dense_finite_runner.py'):
+            files[conv/'candidate_sources'/relative]='candidate_sources/'+relative
+    if args.native_conv_capacity:
+        files[REPO/'experiments/rl/verify_dt_context_capacity.py']='verify_dt_context_capacity.py'
+        files[AUDIT/'test_capacity_fixture_readout_interface.py']='test_capacity_fixture_readout_interface.py'
+        files[AUDIT/'test_native_conv_capacity_interface.py']='test_native_conv_capacity_interface.py'
     if args.root_capture_inventory:
         for name in ('diagnose_qwen35_root_capture_inventory.py',
                      'native_root_capture_inventory_factory.py',
@@ -227,14 +260,19 @@ if @CURRENT_FORMAL_OWNER@:
  prepared_path=pathlib.Path(source['prepared_receipt'])
  prepared=json.loads(prepared_path.read_bytes())
  assert hashlib.sha256(prepared_path.read_bytes()).hexdigest()==source['prepared_receipt_sha256']
+ dt_bindings=source['dt_source_sha256'] if @BASE_MODEL@ else prepared['dt_source_sha256']
  for name in ('clean/qwen35/qwen35_dense_finite_runner.py','clean/qwen35/qwen35_native_prefix_artifacts.py',
               'experiments/rl/deltatrace_credit.py'):
   p=formal_dt/name;actual=hashlib.sha256(p.read_bytes()).hexdigest()
-  assert actual==prepared['dt_source_sha256'][name],p
+  assert actual==dt_bindings[name],p
   source_bindings[str(p)]=actual
  run_env=dict(os.environ)
  run_env.update(VERL_ROOT=str(formal_verl),DT_ROOT=str(formal_dt),DT_ENTRY_ROOT=str(formal_entry),
                 LOOP_ROOT=source['loop_root'],APPWORLD_ROOT=str(root/'receipts/environment-only-20260930/loop-entry/appworld-root'))
+ if @BASE_MODEL@:
+  p=pathlib.Path(source['resource_environment']['DT_ENVIRONMENT_JSON'])
+  source_bindings[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+  run_env['DT_ENVIRONMENT_JSON']=str(p)
  formal_owner=dict(source_path=str(source_path),source_sha256=hashlib.sha256(source_path.read_bytes()).hexdigest(),
   entry=str(formal_entry),verl_root=str(formal_verl),dt_root=str(formal_dt),
   source_bindings=source_bindings,prepared_path=str(prepared_path),
@@ -340,6 +378,28 @@ if @CURRENT_FORMAL_OWNER@:
  run_env.pop('DT_PREFIX_ARTIFACT_SOURCE',None)
 else:
  run_env.pop('DT_PREFIX_CURRENT_FORMAL_OWNER',None)
+conv_isolated=None
+if @NATIVE_CONV_INITIAL_STATES@:
+ # Standard package namespace path plus a linked original DT tree. Nothing
+ # installed or used by the running formal job is overwritten.
+ import importlib.util
+ hf_package=pathlib.Path(importlib.util.find_spec('transformers').origin).parent
+ isolation=out/'conv-isolated-owners'
+ subprocess.run([sys.executable,str(out/'prepare_isolated_owner_paths.py'),
+  '--dt-root',str(formal_dt),'--hf-model',str(hf_package/'models/qwen3_5/modeling_qwen3_5.py'),
+  '--candidate-sources',str(out/'candidate_sources'),'--output',str(isolation)],check=True)
+ conv_isolated=json.loads((isolation/'isolated-owner-paths.json').read_bytes())
+ run_env.update(conv_isolated['env'])
+ run_env['PYTHONPATH']=':'.join([str(isolation),str(pathlib.Path(conv_isolated['isolated_dt_root'])/'clean/qwen35'),run_env['PYTHONPATH']])
+else:
+ run_env.pop('DT_PREFIX_NATIVE_CONV_INITIAL_STATES',None)
+ run_env.pop('DT_CONV_ISOLATED_IMPORT_ROOT',None)
+if @BASE_MODEL@:run_env['DT_PREFIX_BASE_MODEL_PREFETCH']='1'
+else:run_env.pop('DT_PREFIX_BASE_MODEL_PREFETCH',None)
+if @NATIVE_CONV_CAPACITY@:
+ run_env['DT_PREFIX_NATIVE_CONV_CAPACITY']='1'
+ run_env['DT_CAPACITY_FIXTURE_SOURCE']=str(out/'verify_dt_context_capacity.py')
+else:run_env.pop('DT_PREFIX_NATIVE_CONV_CAPACITY',None)
 if @CHECKPOINT@ is not None:run_env['DT_PREFIX_CHECKPOINT']=@CHECKPOINT@
 else:run_env.pop('DT_PREFIX_CHECKPOINT',None)
 if @NATIVE_BACKWARD@:run_env['DT_PREFIX_NATIVE_BACKWARD']='1'
@@ -416,6 +476,8 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  instrumented_hot_profile=@HOT_PROFILE@,
  projection_input_observation=@PROJECTION_INPUTS@,
  native_reverse_prefetch_candidate=@REVERSE_PREFETCH@,
+ native_conv_initial_states_candidate=conv_isolated,
+ native_conv_exact32768_capacity=@NATIVE_CONV_CAPACITY@,
  root_capture_inventory=@ROOT_CAPTURE_INVENTORY@,
  native_root_tape_candidate=root_tape_patch,
  root_tape_existing_cpu_transport=@ROOT_TAPE_CPU@,
@@ -429,7 +491,8 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  live_environment_source=(dict(pid=live.pid,pid_birth=live.create_time(),task='TextCraft',
   use='Recorded provisioning/cache/DT flags only; AppWorld task and sampling come from the original frozen launch')
   if not @CURRENT_FORMAL_OWNER@ else None),
- current_formal_owner=formal_owner,checkpoint=@CHECKPOINT@,native_backward_reference=@NATIVE_BACKWARD@,
+ current_formal_owner=formal_owner,checkpoint=@CHECKPOINT@,base_model_initialization=@BASE_MODEL@,
+ native_backward_reference=@NATIVE_BACKWARD@,
  baseline_dt_release='c9cd147',baseline_dt_reference='fc2e6c2',baseline_verl_upstream='20bd331',
  source_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*out.glob('*.py'),*out.glob('root-tape-owner/*.py')]},
  literal_request_files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('actual-requests-rank*.pt')},
@@ -459,6 +522,9 @@ with (out/'cpu-tests.log').open('wb') as log:
  if @ROOT_TAPE_CPU@:
   test_paths.extend(str(out/name) for name in ('test_native_root_tape_cpu_owner.py','test_native_root_capture_transport_owner.py'))
  if @ROOT_TAPE_CAPACITY@:test_paths.append(str(out/'test_capacity_fixture_readout_interface.py'))
+ if @NATIVE_CONV_CAPACITY@:
+  test_paths.extend(str(out/name) for name in ('test_capacity_fixture_readout_interface.py',
+   'test_native_conv_capacity_interface.py'))
  if @ROOT_TAPE_GDN0@:test_paths.append(str(out/'test_observe_native_gdn0_operands.py'))
  if @ROOT_TAPE_FA3@:test_paths.append(str(out/'test_observe_native_fa3_operands.py'))
  if @ROOT_TAPE_HOT@:test_paths.append(str(out/'test_native_finite_parameter_ranges.py'))
@@ -488,6 +554,8 @@ PY
         .replace('@HOT_PROFILE@',str(args.hot_profile))
         .replace('@PROJECTION_INPUTS@',str(args.projection_inputs))
         .replace('@REVERSE_PREFETCH@',str(args.reverse_prefetch))
+        .replace('@NATIVE_CONV_INITIAL_STATES@',str(args.native_conv_initial_states))
+        .replace('@NATIVE_CONV_CAPACITY@',str(args.native_conv_capacity))
         .replace('@ROOT_CAPTURE_INVENTORY@',str(args.root_capture_inventory))
         .replace('@ROOT_TAPE@',str(args.root_tape))
         .replace('@ROOT_TAPE_CPU@',str(args.root_tape_cpu))
@@ -498,6 +566,7 @@ PY
         .replace('@ROOT_TAPE_HOT@',str(args.root_tape_hot))
         .replace('@LOCAL_PREFIX_BRANCH@',str(args.local_prefix_branch))
         .replace('@CURRENT_FORMAL_OWNER@',str(args.current_formal_owner))
+        .replace('@BASE_MODEL@',str(args.base_model))
         .replace('@DEVICES@',repr(args.devices)).replace('@LEDGER_ONLY@',str(args.ledger_only))
         .replace('@CHECKPOINT@',repr(args.checkpoint)).replace('@NATIVE_BACKWARD@',str(args.native_backward))
         .replace('@BRANCH_REFERENCE_SHA@',repr(hashlib.sha256(branch_reference).hexdigest()) if branch_reference is not None else 'None')

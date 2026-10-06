@@ -1,0 +1,42 @@
+--- a/transformers/models/qwen3_5/modeling_qwen3_5.py
++++ b/transformers/models/qwen3_5/modeling_qwen3_5.py
+@@ -481,11 +481,22 @@
+             )
+         else:
+             # Multi-token forward (prefill, or chunked-tokens decode when the cache has prior state).
++            conv_initial_states = None
+             if use_precomputed_states:
+-                # Cached chunked-tokens decode: prepend the cached conv context so the causal conv
+-                # sees the correct left-context rather than zero-padding. Dropped from the output
+-                # at the end of this branch.
+-                mixed_qkv = torch.cat([conv_state, mixed_qkv], dim=-1)
++                if (
++                    getattr(self, "_deltatrace_native_conv_initial_states", False)
++                    and self.causal_conv1d_fn is not None
++                    and seq_len >= self.conv_kernel_size
++                    and kwargs.get("seq_idx") is None
++                ):
++                    # The original cache update below uses copy_ in-place.
++                    # Snapshot the small prior window before that owner update.
++                    conv_initial_states = conv_state[..., -(self.conv_kernel_size - 1) :].transpose(1, 2).clone(
++                        memory_format=torch.contiguous_format
++                    ).transpose(1, 2)
++                else:
++                    # Unchanged default, single-/short-token and fallback paths.
++                    mixed_qkv = torch.cat([conv_state, mixed_qkv], dim=-1)
+             if cache_params is not None:
+                 new_conv_state = F.pad(mixed_qkv, (self.conv_kernel_size - mixed_qkv.shape[-1], 0))
+                 cache_params.update_conv_state(new_conv_state, self.layer_idx)
+@@ -496,10 +507,11 @@
+                     bias=self.conv1d.bias,
+                     activation=self.activation,
+                     seq_idx=kwargs.get("seq_idx"),
++                    initial_states=conv_initial_states,
+                 )
+             else:
+                 mixed_qkv = F.silu(self.conv1d(mixed_qkv)[:, :, : mixed_qkv.shape[-1]])
+-            if use_precomputed_states:
++            if use_precomputed_states and conv_initial_states is None:
+                 mixed_qkv = mixed_qkv[:, :, -seq_len:]
+ 
+         mixed_qkv = mixed_qkv.transpose(1, 2)

@@ -1,0 +1,164 @@
+{
+  "status": "prepared_only_not_deployed_not_GPU_verified",
+  "script": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\native-initial-states-candidate-v1\\prepare_sources.py",
+    "sha256": "0cfaf40685177fcc6581cfdc1eefdddde1f670ef9337498d79a04de8a879ad9f",
+    "bytes": 13563
+  },
+  "sources": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\owner-sources\\modeling_qwen3_5.py",
+      "sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be",
+      "bytes": 93645
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\qwen35_gdn_finite.py",
+      "sha256": "fcbfd9e74a6c40c3bf970d7d24ec42e0f08e5d513ff49eb1ade6a5fcd52e9fca",
+      "bytes": 17328
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\qwen35_dense_finite_runner.py",
+      "sha256": "6348ebef115ff0ea45deeee3df8b65dcfbf0d1ae86619edc67f34d16d92d69aa",
+      "bytes": 33089
+    }
+  ],
+  "outputs": [
+    {
+      "relative": "transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "prepared": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\native-initial-states-candidate-v1\\candidate_sources\\transformers\\models\\qwen3_5\\modeling_qwen3_5.py",
+        "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+        "bytes": 94297
+      },
+      "patch": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\native-initial-states-candidate-v1\\modeling_qwen3_5.py.patch",
+        "sha256": "518ee4c9799ba3e8a1318c06901c39512246a3a9418daecfd3d652dffc6f4f47",
+        "bytes": 2303
+      },
+      "before_sha256": "f7e1a804fa12684bd1cc225c85cdf5f0b5996f30d66263f11de13449f53272be"
+    },
+    {
+      "relative": "deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+      "prepared": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\native-initial-states-candidate-v1\\candidate_sources\\deltatrace\\clean\\qwen35\\qwen35_gdn_finite.py",
+        "sha256": "ef55ce08dec9374304018b43b9f85510fca36054408c439ab1109dca8ac23ca9",
+        "bytes": 18354
+      },
+      "patch": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\native-initial-states-candidate-v1\\qwen35_gdn_finite.py.patch",
+        "sha256": "f80891f9db484d8d0ed2c9d093db77574ab6f5adc207f60c7ccda20506eabf95",
+        "bytes": 2876
+      },
+      "before_sha256": "fcbfd9e74a6c40c3bf970d7d24ec42e0f08e5d513ff49eb1ade6a5fcd52e9fca"
+    },
+    {
+      "relative": "deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+      "prepared": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\native-initial-states-candidate-v1\\candidate_sources\\deltatrace\\clean\\qwen35\\qwen35_dense_finite_runner.py",
+        "sha256": "e9c7576486f742c26f895cd4078891a98d94c189e84a6e565fc8042a74aabcab",
+        "bytes": 34051
+      },
+      "patch": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\native-initial-states-candidate-v1\\qwen35_dense_finite_runner.py.patch",
+        "sha256": "fae4191e4ca93e5536cc2367e8643661fde5651985d713c142a419e960fadcc4",
+        "bytes": 4836
+      },
+      "before_sha256": "6348ebef115ff0ea45deeee3df8b65dcfbf0d1ae86619edc67f34d16d92d69aa"
+    }
+  ],
+  "default": {
+    "runner_native_conv_initial_states": false,
+    "model_instance_option_default": false,
+    "unmodified_paths": [
+      "no cache",
+      "single token",
+      "short suffix smaller than conv_kernel_size",
+      "no official conv kernel",
+      "seq_idx present",
+      "prefix-bank preparation"
+    ]
+  },
+  "owner_api": "Original causal_conv1d_fn(initial_states=...) and original autograd input VJP",
+  "lifecycle": {
+    "original_cache_update": "Unchanged F.pad and update_conv_state; for suffix>=kernel_size, tail is the same original projection tail",
+    "inplace_state_source": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/cache_utils.py",
+      "sha256": "16bbbba2394c0151af53009800e5a4052479417a8c7e5edfbd5ef128a46fcbc1",
+      "line": 961,
+      "observation": "Original LinearAttentionLayer uses self.conv_states.copy_ in-place"
+    },
+    "initial_window": "Clone actual last kernel_size-1 states in channel-last format before original cache update; fixed per endpoint",
+    "finite_context": "New suffix preactivation has context0; original code computes context, seed and suffix dx without a new propagation formula",
+    "compact_capture": "At positive original 64-token coefficient start, use actual prior kernel_size-1 projected tokens as fixed initial state; capture exact remaining suffix compact channel-last",
+    "capture_contract": "One original conv/FLA call; no reconstruction of a full cached concat; no extra model forward/backward"
+  },
+  "arithmetic_AST_checks": {
+    "gdn_finite_body_identical_after_removing_only_optional_state_restore_and_API_keyword": true,
+    "scalar_secant_silu_l2_norm_gate_conv_silu_functions_identical": true
+  },
+  "performance_evidence": [
+    {
+      "rank": 0,
+      "source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\long-v1\\rank0-operator-result.json",
+        "sha256": "914fedd04b1bc2cf880c7484b4322d3f8e74c025170b75b774b899e68ec5fa21",
+        "bytes": 53601
+      },
+      "native_ms": {
+        "existing_materialized_cat": 0.9958400130271912,
+        "initial_states": 1.0832639932632446,
+        "native_actual_concat_then_kernel": 25.47494411468506
+      },
+      "finite_ms": {
+        "existing_materialized_cat": 1.7757440209388733,
+        "initial_states": 7.327872037887573
+      },
+      "root_only_24_layers_kernel_budget_saved_seconds": 0.5854003229141236,
+      "root_and_replay_48_layers_less_24_finite_increments_seconds": 1.0375495734214784,
+      "caveat": "Conditional same-shape kernel budget only; excludes capture transport, compaction, cache-window snapshot, full DT scheduling and FSDP/peer waits"
+    },
+    {
+      "rank": 1,
+      "source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\gdn-cached-conv-interface-20261007\\long-v1\\rank1-operator-result.json",
+        "sha256": "064fddd7806970df8174402c49b6acc7420270ff9dce786c96ff331e5310937b",
+        "bytes": 53610
+      },
+      "native_ms": {
+        "existing_materialized_cat": 0.9959680140018463,
+        "initial_states": 0.8144640028476715,
+        "native_actual_concat_then_kernel": 22.6114559173584
+      },
+      "finite_ms": {
+        "existing_materialized_cat": 1.7397760152816772,
+        "initial_states": 5.3591039180755615
+      },
+      "root_only_24_layers_kernel_budget_saved_seconds": 0.5231278059482575,
+      "root_and_replay_48_layers_less_24_finite_increments_seconds": 0.9593917422294617,
+      "caveat": "Conditional same-shape kernel budget only; excludes capture transport, compaction, cache-window snapshot, full DT scheduling and FSDP/peer waits"
+    }
+  ],
+  "numerical_scope": {
+    "owner_test": "causal-conv1d v1.5.0 test_causal_conv1d original output/dx assertions",
+    "test_sha256": "c15131c88911cf7e942fdd693cfbddd3e2b4d29b0acbfd28ca69b7fd6cb965bf",
+    "tolerances_AST_unchanged": true,
+    "actual_dtype": "BF16 including frozen weights; outside the original FP32-weight fixture",
+    "current_operator_evidence": "Both original real long cases pass all nine original output/dx assertion expressions",
+    "missing": "Integrated cached root/replay and compact capture not run; no whole-DT official tolerance invented"
+  },
+  "next_smallest_checks": [
+    "Default-disabled frozen owner path behavior unchanged",
+    "Same original base-model B8/current saved request bank, resume disabled, no checkpoint or update; enable candidate runner only in diagnostic",
+    "Record actual source hashes and original effective rank8/alpha16/B4/32k config before first DT call",
+    "At actual conv calls retain official original output/input-VJP reference checks; report actual dtype scope",
+    "Check cache-window bytes, context0 capture/output lengths, and compact start64+ representation against actual owner operands",
+    "Measure root, replay, finite, capture copies, physical VRAM and phase PSS/cgroup separately; count all relocated work"
+  ],
+  "operations": {
+    "remote_writes": 0,
+    "gpu_calls": 0,
+    "checkpoint_loads": 0,
+    "production_edits": 0,
+    "installs": 0
+  }
+}

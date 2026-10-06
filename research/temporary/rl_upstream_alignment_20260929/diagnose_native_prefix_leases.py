@@ -93,17 +93,117 @@ def native_bank_inventory(leases, requests, *, minibatch_size):
         totals=totals,artifacts=records)
 
 
+def _prepare_native_conv_capacity_inputs(readout, requests, payload, out, rank):
+    """Call the unchanged existing fixture and current readout input owner."""
+    from verify_dt_context_capacity import capacity_fixture
+
+    capacity_episodes, capacity_returns, capacity_details = [], [], []
+    capacity_factual_inputs, capacity_requests = [], []
+    assert len(requests) == 4
+    for capacity_index, capacity_request in enumerate(requests):
+        capacity_original = payload['rows'][capacity_request['row_index']]
+        capacity_coefficient = capacity_request['observed_return']
+        assert capacity_coefficient != 0 and bool(capacity_original['active_masks'])
+        capacity_source = {**capacity_original, 'rewards': capacity_coefficient,
+            'traj_uid': f'exact32k-conv-capacity-rank{rank}-row{capacity_index}'}
+        capacity_row, capacity_factual, capacity_detail, _ = capacity_fixture(
+            capacity_source, readout.tokenizer, readout.alphabet, response_tokens=512,
+            max_steps=readout.max_steps, sampling=readout.sampling)
+        capacity_report = dict(nonzero_reward_events=0, policy_tokens=0, actual_row_lengths=[])
+        _, capacity_pending = readout._prepare_episode(
+            [capacity_row], capacity_report, [capacity_coefficient])
+        assert len(capacity_pending) == 1
+        capacity_actual = capacity_pending[0]
+        capacity_prepared = torch.cat([capacity_actual[key] for key in ('prompt','actions','query','target')])
+        assert capacity_actual['context_tokens'] == capacity_prepared.numel() == 32768
+        assert torch.equal(capacity_prepared, capacity_factual)
+        assert capacity_actual['actions'].numel() == 512
+        assert capacity_actual['observed_return'] == capacity_coefficient
+        capacity_detail = {key: value.item() if isinstance(value,torch.Tensor) and value.ndim==0 else value
+                           for key,value in capacity_detail.items()}
+        capacity_detail['original_source'] = dict(row_index=capacity_request['row_index'],
+            traj_uid=capacity_request['traj_uid'], source_step=capacity_request['source_step'])
+        capacity_episodes.append([capacity_row]); capacity_returns.append([capacity_coefficient])
+        capacity_details.append(capacity_detail); capacity_factual_inputs.append(capacity_factual)
+        capacity_requests.append(capacity_actual)
+    assert len({episode[0]['traj_uid'] for episode in capacity_episodes}) == 4
+    capacity_path = Path(out)/f'exact32k-conv-inputs-rank{rank}.pt'
+    torch.save(dict(episodes=capacity_episodes, complete_returns=capacity_returns,
+                    factual_inputs=capacity_factual_inputs, details=capacity_details), capacity_path)
+    capacity_receipt = dict(path=str(capacity_path), sha256=hashlib.sha256(capacity_path.read_bytes()).hexdigest())
+    return (capacity_episodes, capacity_returns, capacity_requests, capacity_factual_inputs,
+            capacity_details, capacity_receipt)
+
+
 def diagnose(runner, producer, out, save, *, cache_tensors=None):
     from native_prefix_leases import prepare_native_prefix_leases
     from reward_readout import EventRatioReadout
 
     path=Path(out)/f'actual-requests-rank{torch.distributed.get_rank()}.pt'
     payload=torch.load(path,map_location='cpu',weights_only=False)
+    base_prefetch=os.environ.get('DT_PREFIX_BASE_MODEL_PREFETCH')=='1'
+    conv_initial_states=os.environ.get('DT_PREFIX_NATIVE_CONV_INITIAL_STATES')=='1'
+    conv_capacity=os.environ.get('DT_PREFIX_NATIVE_CONV_CAPACITY')=='1'
+    if conv_capacity:
+        assert conv_initial_states
+    if conv_initial_states:
+        assert base_prefetch and os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
+        assert os.environ.get('DT_PREFIX_REVERSE_PREFETCH')!='1'
+        assert not os.environ.get('DT_PREFIX_CHECKPOINT')
+    current_request_origin=None
+    if base_prefetch:
+        assert os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
+        assert os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states
+        assert not os.environ.get('DT_PREFIX_CHECKPOINT')
+        # The frozen rows predate the accepted response-clock query repair.
+        # Reuse the actual current owner to emit its query/case metadata; keep
+        # every literal policy prefix, source action and complete return.
+        readout=EventRatioReadout(runner,producer.readout_tokenizer,**producer.readout_options,
+                                appworld_num_tests=int(payload['rows'][0]['appworld_num_tests']))
+        metadata_report=dict(nonzero_reward_events=0,policy_tokens=0,actual_row_lengths=[])
+        _,current_requests=readout._prepare_episode(
+            payload['rows'],metadata_report,payload['complete_returns'])
+        saved_by_row={request['row_index']:request for request in payload['requests']}
+        assert len(saved_by_row)==len(current_requests)==len(payload['requests'])
+        query_changes=[]
+        for request in current_requests:
+            saved=saved_by_row[request['row_index']]
+            for field in ('prompt','actions','target'):
+                assert torch.equal(request[field],saved[field]),field
+            assert (request['traj_uid'],request['source_step'],request['start'],request['end'],
+                    request['observed_return']) == (saved['traj_uid'],saved['source_step'],
+                    saved['start'],saved['end'],saved['observed_return'])
+            query_changes.append(dict(row_index=request['row_index'],
+                saved_query_tokens=saved['query'].numel(),current_query_tokens=request['query'].numel(),
+                saved_query_sha256=hashlib.sha256(saved['query'].numpy().tobytes()).hexdigest(),
+                current_query_sha256=hashlib.sha256(request['query'].numpy().tobytes()).hexdigest(),
+                query_equal=bool(torch.equal(request['query'],saved['query']))))
+        saved_order=[request['row_index'] for request in sorted(
+            payload['requests'],key=lambda request:request['context_tokens'])]
+        current_order=[request['row_index'] for request in sorted(
+            current_requests,key=lambda request:request['context_tokens'])]
+        assert current_order==saved_order,'Current query changed the original B4 request grouping'
+        current_request_origin=dict(owner_method='EventRatioReadout._prepare_episode',
+            policy_ids_and_returns_unchanged=True,request_count=len(current_requests),
+            original_B4_request_order_preserved=True,original_context_sorted_row_indices=saved_order,
+            query_id_hash_representation='CPU int64 tensor bytes',query_changes=query_changes,
+            scope='CPU request metadata preparation through the current frozen owner; not a model call, credit result or historical query parity claim')
     limit=int(os.environ['DT_PREFIX_DIAGNOSTIC_ROWS'])
-    all_requests=sorted(payload['requests'],key=lambda request:request['context_tokens'])
+    all_requests=sorted(current_requests if base_prefetch else payload['requests'],
+                        key=lambda request:request['context_tokens'])
     phase_only=os.environ.get('DT_PREFIX_PHASE_ONLY')=='1'
     offset=int(os.environ.get('DT_PREFIX_DIAGNOSTIC_OFFSET','0'))
     requests=all_requests[offset:offset+limit]
+    if conv_capacity:
+        capacity_source_offset=offset
+        (capacity_episodes, capacity_returns, capacity_requests, capacity_factual_inputs,
+         capacity_details, capacity_receipt)=_prepare_native_conv_capacity_inputs(
+            readout,requests,payload,out,torch.distributed.get_rank())
+        all_requests=capacity_requests;requests=capacity_requests;offset=0
+        save('native_conv_exact32k_capacity_inputs',source_sorted_offset=capacity_source_offset,
+             fixture_details=capacity_details,literal_inputs=capacity_receipt,
+             sampling=readout.sampling,max_steps=readout.max_steps,
+             diagnostic_scope='Existing synthetic exact32768 fixture, response512, B4/rank; recorded return is a capacity coefficient, not a synthetic task reward or training-effect claim')
     if os.environ.get('DT_PREFIX_LEASE_COMPONENT_DIAGNOSTIC') == '1':
         # Reuse the actual adapter's capture/group/padding decisions. Do not
         # reconstruct a smaller bank, which would change native B4 geometry.
@@ -138,17 +238,33 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                           comparison_ids=comparison, matched_rows=[(source_row,local_row)],
                           prepared_prefix_fields=prepared_fields, cache_tensors=cache_tensors,
                           gdn_layer_index=None, operand_output_dir=Path(out))
-    indices=[request['row_index'] for request in requests]
-    rows=[payload['rows'][i] for i in indices]
-    returns=[payload['complete_returns'][i] for i in indices]
-    readout=EventRatioReadout(runner,producer.readout_tokenizer,**producer.readout_options,
-                            appworld_num_tests=int(rows[0]['appworld_num_tests']))
+    if conv_capacity:
+        rows=[episode[0] for episode in capacity_episodes]
+        returns=[episode[0] for episode in capacity_returns]
+    else:
+        indices=[request['row_index'] for request in requests]
+        rows=[payload['rows'][i] for i in indices]
+        returns=[payload['complete_returns'][i] for i in indices]
+    if not base_prefetch:
+        readout=EventRatioReadout(runner,producer.readout_tokenizer,**producer.readout_options,
+                                appworld_num_tests=int(rows[0]['appworld_num_tests']))
     assert readout.minibatch_size==4 and readout.max_length==32768
     assert readout.alphabet.label_ids(readout.tokenizer)==payload['outcome_token_ids']
     native_prepare=readout._prepare_episode
     expected={(r['traj_uid'],r['source_step']):r for r in requests}
     def verify_prepare(*args,**kwargs):
         values,pending=native_prepare(*args,**kwargs)
+        if conv_capacity:
+            assert len(pending)==1
+            capacity_actual=pending[0]
+            capacity_index=next(i for i,episode in enumerate(capacity_episodes)
+                                if episode[0]['traj_uid']==capacity_actual['traj_uid'])
+            capacity_prepared=torch.cat([capacity_actual[key] for key in ('prompt','actions','query','target')])
+            assert capacity_actual['context_tokens']==capacity_prepared.numel()==32768
+            assert torch.equal(capacity_prepared,capacity_factual_inputs[capacity_index])
+            assert capacity_actual['actions'].numel()==512
+            assert capacity_actual['observed_return']==capacity_returns[capacity_index][0]
+            return values,pending
         assert len(pending)==len(requests)
         for actual in pending:
             saved=expected[(actual['traj_uid'],actual['source_step'])]
@@ -179,14 +295,17 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     save('native_prefix_lease_diagnostic_start',actual_rows=limit,
          context_lengths=[r['context_tokens'] for r in requests],
          original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-         diagnostic_scope=('Current frozen formal owner and original checkpoint loader; raw residuals have no invented full-network tolerance.'
-             if current_owner else 'Original readout/QVA consumers; raw residuals have no invented full-network tolerance. Loaded actor is not a restored formal checkpoint.'),
+         current_request_origin=current_request_origin,
+         diagnostic_scope=('Existing synthetic exact32768/response512 capacity input with current original readout; no checkpoint, optimizer, task-performance or invented full-network tolerance.'
+             if conv_capacity else 'Current frozen formal owner and original checkpoint loader; raw residuals have no invented full-network tolerance.'
+             if current_owner and not base_prefetch else 'Current frozen owner on base-model initialization; same saved literal policy IDs and current owner query; no checkpoint load or invented full-network tolerance.'
+             if base_prefetch else 'Original readout/QVA consumers; raw residuals have no invented full-network tolerance. Loaded actor is not a restored formal checkpoint.'),
          restored_checkpoint=os.environ.get('DT_PREFIX_CHECKPOINT'))
     warm_phase=os.environ.get('DT_PREFIX_PHASE_WARM')=='1'
     labels=('original_phase','shared_phase') if phase_only and not warm_phase else (
         'original_cold','original_warm','shared_cold','shared_warm')
     if current_owner:
-        labels=('shared_cold','shared_warm','shared_profile_warm')
+        labels=('shared_cold','shared_warm') if base_prefetch else ('shared_cold','shared_warm','shared_profile_warm')
     if ledger_only:
         labels=('shared_ledger',)
     if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
@@ -200,6 +319,25 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         spec=importlib.util.spec_from_file_location('_isolated_native_root_tape_runner',source)
         root_tape_module=importlib.util.module_from_spec(spec);spec.loader.exec_module(root_tape_module)
         labels=(*labels,'root_tape_disabled_warm','root_tape_cold','root_tape_warm')
+    if conv_initial_states:
+        # Same initialized base actor, original immutable bank and real
+        # B4 geometry. The original preparation happens only once.
+        labels=('shared_cold','shared_warm','shared_conv_initial_states_warm')
+        assert runner.native_conv_initial_states is False
+        import inspect, importlib
+        module=runner.model.model.language_model.layers[0].linear_attn
+        owners={}
+        for name,value,expected_source_sha256 in (
+            ('runner',type(runner),'e9c7576486f742c26f895cd4078891a98d94c189e84a6e565fc8042a74aabcab'),
+            ('finite',importlib.import_module('qwen35_gdn_finite'),'ef55ce08dec9374304018b43b9f85510fca36054408c439ab1109dca8ac23ca9'),
+            ('model',type(module),'59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8')):
+            path_=Path(inspect.getsourcefile(value))
+            digest=hashlib.sha256(path_.read_bytes()).hexdigest()
+            assert digest==expected_source_sha256,(name,str(path_),digest)
+            owners[name]=dict(path=str(path_),sha256=digest)
+        save('native_conv_initial_states_candidate_sources',sources=owners,
+             default_enabled=False,prefetch_enabled=False,
+             scope='Original public initial_states API; same-bank three-variant observation, no new tolerance')
     reference_label='original_phase' if phase_only and not warm_phase else 'original_warm'
     if current_owner:reference_label='shared_warm'
     if ledger_only:reference_label='shared_ledger'
@@ -247,6 +385,11 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     for label in labels:
         save('native_prefix_lease_variant_start',variant=label,
              shared_bank_already_prepared=shared_bank is not None)
+        previous_conv_option=getattr(runner,'native_conv_initial_states',False)
+        if conv_initial_states:
+            runner.native_conv_initial_states=label=='shared_conv_initial_states_warm'
+            save('native_conv_initial_states_execution_option',variant=label,
+                 native_conv_initial_states=runner.native_conv_initial_states)
         previous_class=runner.__class__
         previous_capture_backend=runner.capture_backend
         had_root_flag=hasattr(runner,'reuse_root_captures')
@@ -494,10 +637,15 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         runner.attribute=observe_attribute
         torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats();start=time.perf_counter()
         try:
-            result=readout.episodes([rows],complete_returns=[returns])[0]
+            if conv_capacity:
+                result=[row for episode in readout.episodes(capacity_episodes,complete_returns=capacity_returns)
+                        for row in episode]
+            else:
+                result=readout.episodes([rows],complete_returns=[returns])[0]
         finally:
             runner.attribute=native_attribute;readout.prefix_lease_factory=None
             runner.__class__=previous_class
+            if conv_initial_states:runner.native_conv_initial_states=previous_conv_option
             runner.capture_backend=previous_capture_backend
             if had_root_flag:runner.reuse_root_captures=previous_root_flag
             elif hasattr(runner,'reuse_root_captures'):del runner.reuse_root_captures

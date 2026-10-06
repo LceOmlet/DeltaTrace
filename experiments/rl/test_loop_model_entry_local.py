@@ -100,3 +100,5 @@ def test_formal_appworld_launcher_matches_native_workload(tmp_path, monkeypatch)
     assert cfg['trainer']['total_training_steps'] == native.rl.params.total_iterations
     assert cfg['trainer']['test_freq'] == native.rl.eval.eval_every_n_iterations
     assert cfg['env']['max_steps'] == native.rl.scenario_runner.appworld_config.env.max_interactions
+    # A changed learning objective must not automatically load an old run.
+    assert cfg['trainer']['resume_mode'] == 'disable'

@@ -10,10 +10,10 @@ AUDIT = Path(__file__).resolve().parent
 REPO = AUDIT.parents[2]
 SSH = ['ssh', '-oBatchMode=yes', '-oConnectTimeout=12', '-oStrictHostKeyChecking=yes',
        '-oServerAliveInterval=15', '-oServerAliveCountMax=3',
-       '-oHostKeyAlias=[ssh.v5000-prod-gw.nhss.zhejianglab.com]:32036', '-p', '30821',
+       '-oHostKeyAlias=[ssh.v5000-prod-gw.nhss.zhejianglab.com]:32036', '-p', '31146',
        'root@ssh.v5000-prod-gw.nhss.zhejianglab.com']
 SCP = ['scp', '-oBatchMode=yes', '-oStrictHostKeyChecking=yes',
-       '-oHostKeyAlias=[ssh.v5000-prod-gw.nhss.zhejianglab.com]:32036', '-P', '30821']
+       '-oHostKeyAlias=[ssh.v5000-prod-gw.nhss.zhejianglab.com]:32036', '-P', '31146']
 ENTRY = ROOT + '/receipts/environment-only-20260930/entry'
 
 def remote(script):

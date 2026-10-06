@@ -1,0 +1,823 @@
+{
+  "script": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/gdn-cached-conv-interface-20261007/base-native-b8-long-v1/compare_actual_cached_conv.py",
+    "bytes": 17769,
+    "sha256": "5a6006b26147c92e491a14fbaeacd85c0f7f6a6af0041ec642397cbd6d6d8cb5"
+  },
+  "owner": {
+    "test": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/gdn-cached-conv-interface-20261007/official-initial-states-actual-v1/test_causal_conv1d_v150.py",
+      "bytes": 16911,
+      "sha256": "c15131c88911cf7e942fdd693cfbddd3e2b4d29b0acbfd28ca69b7fd6cb965bf"
+    },
+    "owner_test": "test_causal_conv1d",
+    "statements": {
+      "tolerance": [
+        {
+          "line": 42,
+          "end_line": 42,
+          "source": "rtol, atol = (3e-4, 1e-3) if itype == torch.float32 else (3e-3, 5e-3)"
+        },
+        {
+          "line": 43,
+          "end_line": 44,
+          "source": "if itype == torch.bfloat16:\n        rtol, atol = 1e-2, 5e-2"
+        }
+      ],
+      "output": [
+        {
+          "line": 82,
+          "end_line": 82,
+          "source": "assert torch.allclose(out, out_ref, rtol=rtol, atol=atol)"
+        }
+      ],
+      "dx": [
+        {
+          "line": 99,
+          "end_line": 99,
+          "source": "assert torch.allclose(x.grad, x_ref.grad.to(dtype=itype), rtol=rtol, atol=atol)"
+        }
+      ]
+    },
+    "official_fixture_weight_dtype": "torch.float32",
+    "skipped_assertions": "Frozen weight/bias and fixed initial state: no dweight/dbias/dinitial_states assertion"
+  },
+  "scope": "Real cached convolution output and frozen-weight input VJP only; no model/PPO/DT acceptance",
+  "operations": {
+    "model_loads": 0,
+    "checkpoint_loads": 0,
+    "production_edits": 0,
+    "installs": 0,
+    "extra_dt_calls": 0
+  },
+  "phases": [
+    {
+      "phase": "before_CPU_payload_load",
+      "unix": 1791309945.480392,
+      "rss": 9109184512,
+      "pss": 9109038080,
+      "gpu_free": 66686611456,
+      "gpu_total": 68283269120,
+      "allocated": 0,
+      "reserved": 0,
+      "peak_allocated": 0,
+      "cgroup_memory_bytes": 27396558848,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:45 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P9 | 870/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       12             |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "CPU_payload_loaded_before_GPU_operands",
+      "unix": 1791309946.3039727,
+      "rss": 10914578432,
+      "pss": 10913620992,
+      "gpu_free": 66686611456,
+      "gpu_total": 68283269120,
+      "allocated": 0,
+      "reserved": 0,
+      "peak_allocated": 0,
+      "cgroup_memory_bytes": 29199745024,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:46 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 98W / 450W       | 48C          P9 | 870/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       12             |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "native_prepare",
+      "unix": 1791309946.5680473,
+      "rss": 10914578432,
+      "pss": 10913641472,
+      "gpu_free": 66686611456,
+      "gpu_total": 68283269120,
+      "allocated": 0,
+      "reserved": 0,
+      "peak_allocated": 0,
+      "cgroup_memory_bytes": 29199982592,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:46 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 48C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 99W / 450W       | 48C          P9 | 870/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       12             |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "native_assertions_completed",
+      "unix": 1791309946.9771056,
+      "rss": 10926518272,
+      "pss": 10925773824,
+      "gpu_free": 62297251840,
+      "gpu_total": 68283269120,
+      "allocated": 2321743872,
+      "reserved": 4261412864,
+      "peak_allocated": 3869442048,
+      "cgroup_memory_bytes": 29200203776,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:46 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 10%         Disabled |\n| 103W / 450W      | 48C          P9 | 5056/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       4198           |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "native_benchmark_completed",
+      "unix": 1791309947.9449222,
+      "rss": 10926518272,
+      "pss": 10925802496,
+      "gpu_free": 62297251840,
+      "gpu_total": 68283269120,
+      "allocated": 2321743872,
+      "reserved": 4261412864,
+      "peak_allocated": 3869442048,
+      "cgroup_memory_bytes": 29200052224,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:47 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 64%         Disabled |\n| 114W / 450W      | 48C          P9 | 5056/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       4198           |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "finite_prepare",
+      "unix": 1791309948.2431421,
+      "rss": 10926518272,
+      "pss": 10925835264,
+      "gpu_free": 62297251840,
+      "gpu_total": 68283269120,
+      "allocated": 0,
+      "reserved": 4261412864,
+      "peak_allocated": 3869442048,
+      "cgroup_memory_bytes": 29200269312,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:48 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 59%         Disabled |\n| 115W / 450W      | 48C          P9 | 5056/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       4198           |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "finite_assertions_completed",
+      "unix": 1791309948.928585,
+      "rss": 10962481152,
+      "pss": 10962215936,
+      "gpu_free": 60556607488,
+      "gpu_total": 68283269120,
+      "allocated": 3869835264,
+      "reserved": 5941231616,
+      "peak_allocated": 5417533440,
+      "cgroup_memory_bytes": 29232861184,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:48 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 16%         Disabled |\n| 122W / 450W      | 48C          P9 | 6716/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       5858           |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "finite_benchmark_completed",
+      "unix": 1791309949.4209661,
+      "rss": 10962481152,
+      "pss": 10962334720,
+      "gpu_free": 60556607488,
+      "gpu_total": 68283269120,
+      "allocated": 3869835264,
+      "reserved": 5941231616,
+      "peak_allocated": 5417533440,
+      "cgroup_memory_bytes": 29233082368,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:49 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 36%         Disabled |\n| 129W / 450W      | 48C          P9 | 6716/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       5858           |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    },
+    {
+      "phase": "finished",
+      "unix": 1791309949.7065403,
+      "rss": 10962751488,
+      "pss": 10962461696,
+      "gpu_free": 60556607488,
+      "gpu_total": 68283269120,
+      "allocated": 0,
+      "reserved": 5941231616,
+      "peak_allocated": 5417533440,
+      "cgroup_memory_bytes": 29233008640,
+      "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 02:05:49 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 28%         Disabled |\n| 131W / 450W      | 48C          P9 | 6716/65536 MiB      | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                   704422         python                       5858           |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+    }
+  ],
+  "checks": [
+    {
+      "name": "native_existing_cat_vs_official_ref",
+      "assertion": "output",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 0.0625,
+      "mean_abs": 9.73512142081745e-05,
+      "passed": true
+    },
+    {
+      "name": "native_initial_states_vs_official_ref",
+      "assertion": "output",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 0.0625,
+      "mean_abs": 9.736591164255515e-05,
+      "passed": true
+    },
+    {
+      "name": "native_initial_states_vs_existing_cat_suffix",
+      "assertion": "output",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "passed": true
+    },
+    {
+      "name": "finite_existing_cat_vs_official_ref",
+      "assertion": "output",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "passed": true
+    },
+    {
+      "name": "finite_initial_states_vs_official_ref",
+      "assertion": "output",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "passed": true
+    },
+    {
+      "name": "finite_initial_states_vs_existing_cat_suffix",
+      "assertion": "output",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "passed": true
+    },
+    {
+      "name": "finite_existing_cat_dx_vs_official_ref",
+      "assertion": "dx",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "passed": true
+    },
+    {
+      "name": "finite_initial_states_dx_vs_official_ref",
+      "assertion": "dx",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 9.5367431640625e-07,
+      "mean_abs": 2.934841090854526e-14,
+      "passed": true
+    },
+    {
+      "name": "finite_initial_states_dx_vs_existing_cat_suffix",
+      "assertion": "dx",
+      "rtol": 0.01,
+      "atol": 0.05,
+      "max_abs": 9.5367431640625e-07,
+      "mean_abs": 2.934841090854526e-14,
+      "passed": true
+    }
+  ],
+  "installed_interface": {
+    "path": "/opt/conda/lib/python3.12/site-packages/causal_conv1d/causal_conv1d_interface.py",
+    "bytes": 8781,
+    "sha256": "7286f93996561532dac8452de1e75bd44a31baf5acbb3ad4fd48b87fbc7fdc94"
+  },
+  "torch": "2.8.0+metax3.5.3.9",
+  "payload": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/gdn-cached-conv-interface-20261007/base-native-b8-long-v1/rank0.pt",
+    "bytes": 1803950149,
+    "sha256": "1f557a5b4320d5ce6986ba9123c149fbd68274405e539b7e063a38006362c32a"
+  },
+  "capture_record": {
+    "rank": 0,
+    "pid": 659956,
+    "created_unix": 1791309536.39,
+    "installed_unix": 1791309586.0604267,
+    "restored": true,
+    "status": "Original call observed",
+    "diagnostic_source_sha256": "d05b94bd1a61555b911d59d57b3f2c53c183c87b85dff022a705a2b52545f344",
+    "repository_commit": "c1a079f002ceaac5f13a6145bea3adf7600c35f0",
+    "maximum_single_input_bytes": 402653184,
+    "maximum_total_snapshot_bytes": 3221225472,
+    "tensors": {
+      "native_x": {
+        "shape": [
+          8,
+          8192,
+          1966
+        ],
+        "stride": [
+          16105472,
+          1966,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 257687552
+      },
+      "native_output": {
+        "shape": [
+          8,
+          8192,
+          1966
+        ],
+        "stride": [
+          16105472,
+          1966,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 257687552
+      },
+      "native_weight": {
+        "shape": [
+          8192,
+          4
+        ],
+        "stride": [
+          4,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 65536
+      },
+      "native_conv_state": {
+        "shape": [
+          8,
+          8192,
+          4
+        ],
+        "stride": [
+          32768,
+          4,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 524288
+      },
+      "native_projection_output": {
+        "shape": [
+          8,
+          1962,
+          8192
+        ],
+        "stride": [
+          16072704,
+          8192,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 257163264
+      },
+      "finite_x": {
+        "shape": [
+          8,
+          8192,
+          1966
+        ],
+        "stride": [
+          16105472,
+          1966,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 257687552
+      },
+      "finite_pre": {
+        "shape": [
+          8,
+          8192,
+          1966
+        ],
+        "stride": [
+          16105472,
+          1966,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 257687552
+      },
+      "finite_weight": {
+        "shape": [
+          8192,
+          4
+        ],
+        "stride": [
+          4,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 65536
+      },
+      "finite_seed": {
+        "shape": [
+          8,
+          8192,
+          1966
+        ],
+        "stride": [
+          16105472,
+          1966,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 257687552
+      },
+      "finite_dx": {
+        "shape": [
+          8,
+          8192,
+          1966
+        ],
+        "stride": [
+          16105472,
+          1966,
+          1
+        ],
+        "dtype": "torch.bfloat16",
+        "device": "cuda:0",
+        "bytes": 257687552
+      }
+    },
+    "tensor_bytes": 1803943936,
+    "native_calls": 1,
+    "finite_calls": 1,
+    "skipped_oversized_calls": 0,
+    "calls": {
+      "native": {
+        "input_shape": [
+          8,
+          1962,
+          4096
+        ],
+        "left_context": 4,
+        "activation": "silu",
+        "width": 4,
+        "seq_idx_none": true,
+        "actual_preconcat_inputs": {
+          "conv_state": "native_conv_state",
+          "projection_output": "native_projection_output",
+          "projection_to_mixed_qkv": "Original transpose(1,2); no output reconstruction",
+          "source": "Original GDN pre-hook and original in_proj_qkv forward-hook",
+          "observer_hook_returns_none": true,
+          "extra_projection_forwards": 0
+        }
+      },
+      "finite": {
+        "activation": null,
+        "width": 4,
+        "seq_idx_none": true,
+        "initial_states_none": true
+      }
+    },
+    "extra_model_forwards": 0,
+    "extra_backwards": 0,
+    "numerical_replacements": 0,
+    "original_attribute_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+    "original_convolution_source": "/opt/conda/lib/python3.12/site-packages/causal_conv1d/causal_conv1d_interface.py",
+    "scope": "Passive original-call tensor copies; not timing/accuracy acceptance",
+    "owner_source_sha256": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py": "6348ebef115ff0ea45deeee3df8b65dcfbf0d1ae86619edc67f34d16d92d69aa",
+      "/opt/conda/lib/python3.12/site-packages/causal_conv1d/causal_conv1d_interface.py": "7286f93996561532dac8452de1e75bd44a31baf5acbb3ad4fd48b87fbc7fdc94"
+    },
+    "actual_paired_shape": [
+      8,
+      13482
+    ],
+    "restored_unix": 1791309633.6979342,
+    "convolution_identity_restored": true
+  },
+  "paired_endpoint_rows": 8,
+  "policy_minibatch": 4,
+  "left_context": 4,
+  "dtype_scope": {
+    "actual": {
+      "native_x": "torch.bfloat16",
+      "native_output": "torch.bfloat16",
+      "native_weight": "torch.bfloat16",
+      "native_conv_state": "torch.bfloat16",
+      "native_projection_output": "torch.bfloat16",
+      "finite_x": "torch.bfloat16",
+      "finite_pre": "torch.bfloat16",
+      "finite_weight": "torch.bfloat16",
+      "finite_seed": "torch.bfloat16",
+      "finite_dx": "torch.bfloat16"
+    },
+    "weight_dtype_preserved": true,
+    "reference_weight_dtype_preserved": true,
+    "official_FP32_weight_fixture": false,
+    "statement": "Original assertion formula is reused on actual dtypes; BF16 weights are outside the official FP32-weight parameterization"
+  },
+  "estimated_live_test_tensor_bytes": 3092250624,
+  "actual_preconcat_reproduction": {
+    "equal": true,
+    "original_state_stride": [
+      32768,
+      4,
+      1
+    ],
+    "original_projection_stride": [
+      16072704,
+      8192,
+      1
+    ],
+    "original_mixed_stride": [
+      16072704,
+      1,
+      8192
+    ],
+    "joined_stride": [
+      16105472,
+      1966,
+      1
+    ],
+    "recorded_cat_stride": [
+      16105472,
+      1966,
+      1
+    ]
+  },
+  "native_saved_output_reproduction": {
+    "equal": true,
+    "max_abs": 0.0,
+    "scope": "Diagnostic only; not a different tolerance or acceptance gate"
+  },
+  "native_benchmark": {
+    "warmup": 5,
+    "repeats": 20,
+    "input_stride": [
+      16105472,
+      1966,
+      1
+    ],
+    "suffix_stride": [
+      16072704,
+      1,
+      8192
+    ],
+    "initial_stride": [
+      24576,
+      1,
+      8192
+    ],
+    "operations": {
+      "existing_materialized_cat": {
+        "cuda_ms": [
+          1.0078719854354858,
+          0.9983999729156494,
+          1.0001920461654663,
+          0.9950720071792603,
+          0.9966080188751221,
+          0.9966080188751221,
+          0.997376024723053,
+          0.99481600522995,
+          0.99481600522995,
+          0.9958400130271912,
+          0.99481600522995,
+          0.9945600032806396,
+          0.994047999382019,
+          0.99481600522995,
+          0.99481600522995,
+          0.9958400130271912,
+          0.994047999382019,
+          1.0091520547866821,
+          0.9960960149765015,
+          0.9981439709663391
+        ],
+        "wall_ms": [
+          1.1071319995608064,
+          1.037502000144741,
+          1.029548999213148,
+          1.0453179993419326,
+          1.0473880001882208,
+          1.0446010001032846,
+          1.046521999342076,
+          1.0465289997227956,
+          1.0292119995938265,
+          1.0629709995555459,
+          1.044914999511093,
+          1.047534999997879,
+          1.0451150001244969,
+          1.047568000103638,
+          1.0487279996596044,
+          1.047433000167075,
+          1.0303769995516632,
+          1.060126000083983,
+          1.0241170002700528,
+          1.0277050005242927
+        ],
+        "median_cuda_ms": 0.9958400130271912,
+        "median_wall_ms": 1.0459199993420043
+      },
+      "initial_states": {
+        "cuda_ms": [
+          1.094912052154541,
+          1.0903040170669556,
+          1.084671974182129,
+          1.0790400505065918,
+          1.0869760513305664,
+          1.0839040279388428,
+          1.0808320045471191,
+          1.084671974182129,
+          1.0813440084457397,
+          1.080064058303833,
+          1.0787839889526367,
+          1.0787839889526367,
+          1.0833920240402222,
+          1.0741759538650513,
+          1.0841599702835083,
+          1.0785280466079712,
+          1.087231993675232,
+          1.083135962486267,
+          1.0818560123443604,
+          1.0839040279388428
+        ],
+        "wall_ms": [
+          1.1403930002416018,
+          1.14739400032704,
+          1.1526030002642074,
+          1.1433079998823814,
+          1.1352129995430005,
+          1.129223000134516,
+          1.1450939991846099,
+          1.1494219997985056,
+          1.1505890006446862,
+          1.149269999586977,
+          1.1500910004542675,
+          1.1122579999209847,
+          1.1518040000737528,
+          1.0990379996655975,
+          1.1500249993332545,
+          1.0982629992213333,
+          1.150676999714051,
+          1.1479790000521461,
+          1.1288929999864195,
+          1.1360069993315847
+        ],
+        "median_cuda_ms": 1.0832639932632446,
+        "median_wall_ms": 1.146243999755825
+      },
+      "native_actual_concat_then_kernel": {
+        "cuda_ms": [
+          25.806079864501953,
+          24.81920051574707,
+          24.813823699951172,
+          25.789440155029297,
+          23.888639450073242,
+          25.954559326171875,
+          25.84396743774414,
+          25.619712829589844,
+          25.4202880859375,
+          23.958784103393555,
+          26.56768035888672,
+          26.031103134155273,
+          26.627328872680664,
+          25.396223068237305,
+          25.624576568603516,
+          23.44985580444336,
+          25.529600143432617,
+          25.139711380004883,
+          24.596736907958984,
+          25.1200008392334
+        ],
+        "wall_ms": [
+          25.86315000007744,
+          24.904022000555415,
+          24.85919999980979,
+          25.842058999842266,
+          23.93381199999567,
+          26.00080899992463,
+          25.886586000524403,
+          25.669227000435058,
+          25.474391999523505,
+          24.00030799981323,
+          26.604036000207998,
+          26.06222099984734,
+          26.668428999983007,
+          25.424966999707976,
+          25.668614999631245,
+          23.477491999983613,
+          25.56623300006322,
+          25.216815999556275,
+          24.669475000337115,
+          25.150284000119427
+        ],
+        "median_cuda_ms": 25.47494411468506,
+        "median_wall_ms": 25.520312499793363
+      }
+    },
+    "scope": "One actual layer kernel or kernel+VJP; transfers/layout preparation excluded; not complete DT speedup"
+  },
+  "finite_saved_output_reproduction": {
+    "equal": true,
+    "max_abs": 0.0,
+    "scope": "Diagnostic only; not a different tolerance or acceptance gate"
+  },
+  "finite_saved_dx_reproduction": {
+    "equal": true,
+    "max_abs": 0.0,
+    "scope": "Diagnostic only; actual existing input VJP is preserved"
+  },
+  "finite_benchmark": {
+    "warmup": 5,
+    "repeats": 20,
+    "input_stride": [
+      16105472,
+      1966,
+      1
+    ],
+    "suffix_stride": [
+      16072704,
+      1,
+      8192
+    ],
+    "initial_stride": [
+      24576,
+      1,
+      8192
+    ],
+    "operations": {
+      "existing_materialized_cat": {
+        "cuda_ms": [
+          1.7922559976577759,
+          1.7802239656448364,
+          1.77510404586792,
+          1.7789440155029297,
+          1.7763839960098267,
+          1.7768959999084473,
+          1.7738239765167236,
+          1.7761280536651611,
+          1.7738239765167236,
+          1.7774080038070679,
+          1.7753599882125854,
+          1.7753599882125854,
+          1.77510404586792,
+          1.7774080038070679,
+          1.7779200077056885,
+          1.7748479843139648,
+          1.7743359804153442,
+          1.7776639461517334,
+          1.7745920419692993,
+          1.7697279453277588
+        ],
+        "wall_ms": [
+          1.9087559994659387,
+          1.8281490001754719,
+          1.8373619996054913,
+          1.8383490005362546,
+          1.8349339998167125,
+          1.8223950000901823,
+          1.835439999922528,
+          1.8376349999016384,
+          1.839790999838442,
+          1.8352710003455286,
+          1.8379729999651317,
+          1.8373859993516817,
+          1.8207720004284056,
+          1.8408830001135357,
+          1.8355809997956385,
+          1.8370470006630057,
+          1.8370899997535162,
+          1.839225999901828,
+          1.8209059999207966,
+          1.8372239992459072
+        ],
+        "median_cuda_ms": 1.7757440209388733,
+        "median_wall_ms": 1.8371569994997117
+      },
+      "initial_states": {
+        "cuda_ms": [
+          7.345664024353027,
+          7.316991806030273,
+          7.340288162231445,
+          7.332096099853516,
+          7.325183868408203,
+          7.319808006286621,
+          7.329279899597168,
+          7.326720237731934,
+          7.3315839767456055,
+          7.332352161407471,
+          7.337471961975098,
+          7.331071853637695,
+          7.333888053894043,
+          7.319808006286621,
+          7.3172478675842285,
+          7.328512191772461,
+          7.3218560218811035,
+          7.3272318840026855,
+          7.3218560218811035,
+          7.320576190948486
+        ],
+        "wall_ms": [
+          7.422596000651538,
+          7.375649000096018,
+          7.399881000310415,
+          7.404936999591882,
+          7.371433000116667,
+          7.401956000649079,
+          7.36648400015838,
+          7.407210000565101,
+          7.409806000396202,
+          7.365043999925547,
+          7.4058709997189,
+          7.370467000328063,
+          7.408939999550057,
+          7.409374000417301,
+          7.364024000708014,
+          7.406659000480431,
+          7.367725999756658,
+          7.406605999676685,
+          7.408503999613458,
+          7.3659810004755855
+        ],
+        "median_cuda_ms": 7.327872037887573,
+        "median_wall_ms": 7.403446500120481
+      }
+    },
+    "scope": "One actual layer kernel or kernel+VJP; transfers/layout preparation excluded; not complete DT speedup"
+  },
+  "status": "original_output_dx_assertions_pass_on_actual_operands"
+}

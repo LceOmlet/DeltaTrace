@@ -50,7 +50,7 @@ def options_for(output, resume_from=None):
         'trainer.total_epochs': cfg.rl.params.total_iterations,
         'trainer.total_training_steps': cfg.rl.params.total_iterations,
         'trainer.save_freq': 1, 'trainer.test_freq': cfg.rl.eval.eval_every_n_iterations,
-        'trainer.val_before_train': False, 'trainer.resume_mode': 'auto'}
+        'trainer.val_before_train': False, 'trainer.resume_mode': 'disable'}
     options.update({'+ray_init.runtime_env.worker_process_setup_hook': 'observe_worker_visibility.install',
         '+ray_init.runtime_env.env_vars.DT_WORKER_VISIBILITY_DIR': str(output/'worker-visibility')})
     if resume_from is not None:

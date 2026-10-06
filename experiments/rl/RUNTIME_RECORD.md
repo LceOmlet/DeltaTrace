@@ -1,5 +1,126 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 03:10 最新：官方卷积 initial_states 接口已部署，仍无检查点恢复
+
+覆盖下方722849/v2的当前状态。旧base作业722849在1791313817.799完整停止，
+remaining_non_zombie为空；未保存/加载检查点。新driver1119928、出生1791313820.3，
+GPU4/5，run appworld-fresh-native-conv-20261007-v1/appworld-dt，从基础Qwen3.5-9B启动。
+SQL/TextCraft未重启，其他六卡空闲。正式entry为appworld-native-conv-initial-states-
+20261007-v1/entry；VERL与LOOP仍原已验路径，DT为该候选isolated-owners/deltatrace。
+source SHA b8ae7e7da7cf79aff067f8524027140a091ca2c1374ff904ab17c83249e95901，
+prepared e9dacc24168d1849ec9b8da9b1024bed7e0b349ce308b70aba66ab02c52b1644，
+submit f214e078b7eb021d0baac5af91532d1c659db2fb636b9cbd2227363b404f342f。
+Git提交前继承c1a079f，实际运行版本由上述源码/脚本SHA单独固定，不能用新提交号
+反推这些作业已导入新源码。两个DT owner实际e9c75764/ef55ce08、私有canonical HF
+59f9c339；原installed HF文件未改。105项DT源103项保持、仅两owner不同。
+VERL白化trainer d35ddd26、actor3a65e173、worker e5eb4afc、原PPO/core及LOOP均未变。
+LoRA8/16、每卡B4/双卡B8、原采样/预算/epoch2/entropy.001/dualclip3不变。
+本机两owner已保存相同验过字节；producer仅加默认不传的可选keyword。本机producer
+与实际冻结producer原有其他差异仍保留，不能用本机源SHA冒充实际2c01c47e。
+
+此修复使用原causal_conv1d_fn(initial_states=...)，将原缓存末3项在原inplace
+更新前保留，避免每层大张量torch.cat；原缓存生命周期与卷积/finite公式不改。
+真实12k–13.5k同B8、同bank：critical总11.32949→9.79171秒，省13.57%；
+root与逐层原forward重算各省约.67秒，finite省.18–.20秒。原bank只建一次，
+80阶段计数同。primitive原v1.5.0 BF16 output/dx断言各rank9项通过，
+新旧输出逐值同、dx最大差9.54e-7/1.91e-6；BF16原rtol=.01/atol=.05，
+不扩展为整DT的FA/FLA容差。原FSDP预取无总收益，未部署。
+
+原capacity fixture实际32768、每卡4条/action512的三模式都结束、Q/V/A全finite、
+无OOM；同bankOFFwarm→ON两rank省4.36%/4.62%。运行中mx-smi采样44520MiB/卡，
+非连续峰值；MetaX torch allocator raw计数不作为物理占用。原CPU测试15项无失败跳过。
+这是DT容量，不称PPO新更新或真实任务效果。原actor B8/32768更新/LoRA同步回执仍
+单独绑定3a65e173，不因本次容量重新发明整网两次更新门槛。
+
+原readout .02守恒诊断在OFFcold/OFFwarm/ON均有旧残差：rank0各2/4、rank1各4/4，
+不是FA/FLA官方断言，不是训练gate；原真实长case也存在。OFFwarm残差最大
+.17655/.11852，ON .17342/.11970；原cold/warm变化与OFF/ON变化单独保留。
+没有加归因倍率、剪裁、改阈值或把该诊断称作通过；不能据此归罪新conv接口。
+完整来源在results_appworld_efficiency_20261007.json、runtime-capacity-20261007-v1/
+read-only-capacity-analysis.json与native-conv-production-deployed-v1只读review。
+03:13原worker RPC核实1128035/1130737实际导入HF59f9、actor3a65、worker e5eb、原helper079a；loader/JSON/LoRA8/16/B4均同prepared。DT producer尚未lazy初始化，未将CPU源检查称实际DT执行。第一次RPC仅因诊断输出目录缺失而写回失败，零模型调用；原失败保存，mkdir后原RPC成功，无训练源码修改。当前新作业仍初始化；实际白化后的更新及学习效果尚未观察，不把源码启用当质量修复。
+
+
+## 2026-10-07 最新：31146端口、基础模型新训练，不恢复旧检查点
+
+本节覆盖下面所有历史恢复说明。用户明确禁止恢复学习目标改变前的检查点。
+原恢复job634197已停止，旧PID在新端口不存在。新AppWorld只用基础Qwen3.5-9B；
+launch_appworld_native.py默认resume_mode=disable，不传resume-from。
+当前正式driver722849、出生1791310127.33、GPU4/5；输出runs/
+appworld-fresh-official-padding-20261007-v2/appworld-dt。SQL/TextCraft旧PID均已退出，
+未擅自重启；GPU2/3用于隔离长输入诊断，0/1与6/7不用。
+
+entry和VERL仍为candidates/appworld-fresh-official-padding-20261007-v1/entry、verl，
+run-v2不是另一份算法。DT仍为appworld-native-prefix-resume-20261005-v2/deltatrace；
+LOOP仍为appworld-loop-readiness-20261006-v1/loop-owner。实际source
+SHA dbb3dbf887293680757a44085fdc1c31d310c7b8731bea21c7e321149f2342d5；
+prepared SHA6779adfebd0b8d74626970f2bf7567770ea91c2b680b6b4efad89462c083839a。
+submit-v2 SHA28c81b66cd3f435bc851415e84ff3c34953287cb9504b602239a52bd28d22a7b。
+基础Git c1a079f，以上SHA固定本次未提交脚本与实际冻结源，不用目录名代替验证。
+
+弱梯度修复不是重新写白化：trainer d35ddd26通过原compute_advantage出口对
+完整collected action-mask调用一次官方masked_whiten，之后原分发/mini/B4/PPO。
+raw d/Q/V/A/returns不改。实际两rank729077/730834的原worker RPC核实actor
+3a65e173、worker e5eb4afc、原helper079a6d20；VERL_TRIM_SHARED_PADDING=1，
+LoRA8/16、每卡B4、ppo_epochs2、entropy=.001、dual-clip3。无新模型调用或override。
+已接受actor共同空白裁剪是原VERL padding断言对照，B8/32768原更新和LoRA同步
+回执e65662bf；其单次旧logprob14.6427→6.1881s不是整个新迭代加速比。
+同一历史TextCraft样本PG梯度白化增大386.229倍、方向cos=.999751，不能外推
+AppWorld学习效果已恢复。当前新正式作业刚开始采样，完整新更新仍待真实记录。
+
+新端口检查发现cumem和gpu_worker分别退回已知before SHA c5581b1e、9f9d0dbc。
+首个fresh job532620在1791309877完全停止；未从它保存/恢复任何检查点。
+用原c9cd147的patch_source和原before备份精确重建已验证7e557a8f、37db3830，
+不重装/升级包、不写新allocator。原vLLM hybrid/sleep断言回执a0b4a63f独立保留。
+submit-v2恢复原installed SHA检查；新两worker实际导入也核实上述after SHA。
+完整停止、恢复、source、job、launch、worker imports与dated snapshot保留于
+research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/
+fresh-official-padding-v2/。本机正式launcher原LOOP配置对照1 passed，
+19.531s、峰RSS254.37MiB、CUDA=-1/4GiB限制，resume_mode disable。
+
+DT耗时沿原操作拆开：native FA K/V和GDN历史缓存已复用。root计算改变后的suffix，
+逆向每层重跑本层原forward取finite操作数，不是重新执行环境或生成新轨迹。
+原长case阶段是root3.126s、layer replay3.102/4.363s、finite4.646/3.568s；
+rank间并行，all-gather等待不能当可删搬运。原step9实收216条，每卡108条，
+2个epoch=54次B4前反向、14次optimizer.step；非224条/56次。
+原矩形输入padding53.16%是有证浪费，update>采样并不能单凭比例判正常或异常。
+
+真实长cached convolution原张量/stride已采集，B8两卡、0checkpoint/optimizer，
+观察hook返回None且原函数身份已恢复。只对同一实际张量做public API对照：
+原native state+投影transpose拼接及kernel25.475/22.611ms；initial_states
+1.083/.814ms。finite materialized-cat kernel+VJP1.776/1.740ms，而initial_states
+7.328/5.359ms；两列不能漏掉拼接成本，也不能把native单项倍数说成完整DT倍数。
+9项原causal-conv1d v1.5.0 BF16 output/dx断言每rank通过，rtol=.01/atol=.05
+从原test AST执行；实际BF16 weight保留，区别于原FP32-weight fixture。
+没有增加FA/FLA/PPO容差或输出纠偏。此conv候选尚未正式部署。
+原tensor pt仅保留远端及SHA，Git只记录原json/operator回执。
+
+官方FSDP set_modules_to_forward_prefetch的同bank current-base长输入对照已结束。
+双卡critical总11.330→11.513s，无端到端收益，不部署；原attribute省.184s/1.63%，
+诊断记录抵消收益。Q逐值相等，A非零差在root阶段已出现、OFF冷热也有差；
+不归罪预取、不新造整DT容差、不称FA/FLA或32k验收。原设置恢复、pending为空。
+原回执completed-prefetch-analysis SHA65030fe9，保存于native-reverse-prefetch-current-
+base-20261007/v1。缓存卷积候选仅在GPU2/3隔离：PID889091出生1791311666.24，
+canonical HF namespace path与linked DT_ROOT，原installed与正式源码SHA不改。
+首次诊断889091在CPU请求校验失败：新增source loop覆盖原expected字典。
+已仅改局部变量、执行原verify_prepare闭包CPU复现；三owner字节不改。
+失败回执保留，20261007新诊断937178/出生1791312107.98继续相同bank比较。
+同一immutable bank做OFF冷/热和initial_states热调用，不载检查点、不跑optimizer；
+尚未取得完整候选接口/速度结果，不以单算子收益扩大整DT结论。
+本次真实长B8卷积OFF/ON已结束：critical 11.3295→9.7917s，约省13.6%；
+root与本层重算各省约.67s，finite省.18/.20s。原bank复用、80阶段计数相同，
+Q逐值同；A/V原残差保存，不新造整DT容差。单算子新旧输出同，dx两rank
+最大9.54e−7/1.91e−6，原causal-conv断言通过。未部署；原exact32k fixture
+只用于新增容量支路，不能替代真实长case或称PPO新对拍。
+02:42:28正式722849两rank已实际compute_dt_token_advantages，当前组各7/101；
+3573unique/retained、3562nonzero前后相同，无skipped。最新B4约3.1–4.8s非全组
+平均；采样232完成/8取消、745220生成token/1365.2s含交互。白化还未执行到更新。
+02:38:08 cgroup133GB/966GB、OOM/failcnt0是pre-DT时间，不能冒充当前DT内存；
+02:42:28实际actor PSS100.16/99.08GB独立保存。
+本次索引：experiments/rl/results_appworld_efficiency_20261007.json。
+
+
+
 ## 2026-10-07 AppWorld检查点29切换：原worker退出后提交完成
 
 原checkpoint29完整（data.pt及两rank的model/optim/extra_state）。原observer在

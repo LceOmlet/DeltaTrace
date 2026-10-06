@@ -1,0 +1,67 @@
+--- a/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py
++++ b/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py
+@@ -7,6 +7,7 @@
+ """
+ import copy
+ import time
++from contextlib import contextmanager
+ from collections.abc import Mapping
+ import torch
+ from flash_attn import flash_attn_func,flash_attn_varlen_func
+@@ -61,8 +62,29 @@
+     return value if deferred else float(value)
+ 
+ 
++@contextmanager
++def _native_conv_initial_states_scope(layers,enabled):
++    """Set only the patched owner's execution option, then restore it."""
++    if not enabled:
++        yield
++        return
++    name='_deltatrace_native_conv_initial_states'
++    saved=[]
++    try:
++        for layer in layers:
++            if layer.block_type!='linear_attention':continue
++            module=layer.linear_attn
++            saved.append((module,name in vars(module),getattr(module,name,None)))
++            setattr(module,name,True)
++        yield
++    finally:
++        for module,had,value in reversed(saved):
++            if had:setattr(module,name,value)
++            else:delattr(module,name)
++
++
+ class Qwen35DenseFiniteRunner:
+-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False,reuse_native_prefix=False):
++    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False,reuse_native_prefix=False,native_conv_initial_states=False):
+         """Optional GDN layer-index rules; unspecified layers retain content1.
+ 
+         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
+@@ -118,6 +140,7 @@
+         self.compact_gdn_captures=compact_gdn_captures
+         self.pin_root_host=pin_root_host
+         self.reuse_native_prefix=reuse_native_prefix
++        self.native_conv_initial_states=native_conv_initial_states
+         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
+         if not isinstance(key_rules,Mapping):
+             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
+@@ -248,7 +271,7 @@
+         handles.append(model.lm_head.register_forward_pre_hook(head_input))
+         selector=NativeTargetLogitRows(selection) if select_output_rows else None
+         try:
+-            with torch.no_grad():out=timed('native_root_with_CPU_checkpoints',lambda:model(input_ids=paired_ids,attention_mask=mask,use_cache=bool(prefix_start),past_key_values=native_cache,
++            with torch.no_grad(),_native_conv_initial_states_scope(layers,self.native_conv_initial_states):out=timed('native_root_with_CPU_checkpoints',lambda:model(input_ids=paired_ids,attention_mask=mask,use_cache=bool(prefix_start),past_key_values=native_cache,
+                 **({'logits_to_keep':selector.rows} if selector is not None else {})))
+         finally:
+             if self.pin_root_host:torch.cuda.current_stream().synchronize()
+@@ -313,7 +336,7 @@
+             mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host)
+                 if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures,gpu_capture_names=self.gdn_gpu_capture_names if offload_mixer else (),coefficient_start=gdn_cut if self.compact_gdn_captures else 0))
+             def replay():
+-                with torch.no_grad(),dc,mc:return layer(x,**kw)
++                with torch.no_grad(),dc,mc,_native_conv_initial_states_scope([layer],self.native_conv_initial_states):return layer(x,**kw)
+             owner_replay=getattr(model,'replay_finite_layer',None)
+             y=timed('native_replay_'+str(i),
+                     (lambda:owner_replay(layer,replay)) if callable(owner_replay) else replay)
