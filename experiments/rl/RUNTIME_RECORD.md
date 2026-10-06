@@ -1,5 +1,18 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 本轮原生采样进度及LOOP候选修复
+
+1791290776：TextCraft PID3269087/birth1791289021.47仍为原job，已返回18轮
+交互、当前19/30（原标签active138），尚无新DT/PPO完整更新。GPU4/5物理
+50587/50075MiB，cgroup147514339328B，host available904659709952B。
+这些是阶段观测，不是学习恢复、32k峰值或整轮速度验收。最新带时间的snapshot：
+research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-whitening-formal-20261006/v2/deployment/runtime-1791290776/current_runtime.json。
+
+AppWorld已退出的原1856052完整checkpoint28保留；原LOOP最后sleep期间服务
+已启动，原循环未再次poll即raise的真实日志已保存。ac8bbf9仅移动原最后等待
+至最后GET之前，保留5checks/5waits和原restart。该项仍候选，远端CPU真实
+owner与服务检查待完成；未覆盖旧验证baseline或启动App训练。
+
 ## 2026-10-06 官方白化与既有query时点修复：TextCraft已提交
 
 通过冻结原launcher提交正式恢复：代码faf0d89，PID3269087/birth1791289021.47，

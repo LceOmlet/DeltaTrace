@@ -121,12 +121,18 @@ for name in ('request_dispatch_commit','request_dispatch_receipt','request_dispa
              'prior_source_receipt','prior_source_sha256'):
     if name in prepared:source[name]=prepared[name]
 env=os.environ.copy()
+env.update(prepared.get('resource_environment',{}))
 env.update(VERL_ROOT=str(verl),DT_ROOT=prepared['dt_root'],
     DT_ENTRY_ROOT=str(entry),CUDA_VISIBLE_DEVICES=','.join(map(str,devices)))
 env.pop('MACA_VISIBLE_DEVICES',None)
 extra_path=[]
 if task=='AppWorld':
-    source.update(loop_root=prepared['loop_root'],author_sha256=prior_source['author_sha256'])
+    source.update(loop_root=prepared['loop_root'],
+        author_sha256=prepared.get('author_sha256',prior_source['author_sha256']))
+    if 'author_readiness_binding' in prepared:
+        source['author_readiness_binding']=prepared['author_readiness_binding']
+    for name,expected in source['author_sha256'].items():
+        assert sha(Path(prepared['loop_root'])/name)==expected,name
     env.update(LOOP_ROOT=prepared['loop_root'],
         APPWORLD_ROOT=str(root/'receipts/environment-only-20260930/loop-entry/appworld-root'))
     extra_path.append(prepared['loop_root'])
@@ -151,6 +157,7 @@ dt_paths={str(provisioned_dt_root):prepared['dt_root'],
 inherited_paths=[dt_paths.get(path,path) for path in env['PYTHONPATH'].split(':')]
 env['PYTHONPATH']=':'.join([str(entry),str(verl),*extra_path,*inherited_paths])
 source['pythonpath']=env['PYTHONPATH']
+source['resource_environment']=prepared.get('resource_environment',{})
 source['resume_launcher']=dict(path=str(launcher),sha256=sha(launcher))
 (output/'source.json').write_text(json.dumps(source,indent=2)+'\n')
 with (output/'train.log').open('wb') as log:
