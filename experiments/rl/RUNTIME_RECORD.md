@@ -1,5 +1,38 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 07:16 本次DT前两组完成，拆清原缓存准备与归因成本
+
+当前driver2360541/birth1791325655.01、source c83b96de、GPU4/5未变，fresh base、
+resume_mode=disable，无旧检查点操作。原完整采集字段为218 trajectories、3485
+responses、667405 policy_tokens、max_context26218；原adjust_batch默认copy按8补齐
+到224，因而原两epochs预计每卡56个B4、14次同步optimizer step，尚非已执行次数。
+
+原第一组121个B4/卡完整返回：readout747.022/747.048秒，batch计时合计609.393/
+609.392秒，原shared_native_prefix.capture_and_preparation_seconds为136.761/
+136.778秒，占18.31%；外层剩余0.868/0.879秒。第二组58个B4已完整返回，readout
+294.011/293.860秒，batch240.928/240.763秒，准备52.584/52.648秒。两rank并行，
+不能相加当墙钟时间。第三组39个B4在07:16观察到27个完成；整轮DT、白化、actor
+尚未返回，不能宣称本次梯度或学习质量已恢复，也不能拿旧2495秒证明当前正常。
+
+当前第一组与旧v2轨迹不同（121对130个B4、context_sum反而约多6%），不把平均
+batch时间或整组墙钟直接当加速比。原readout.compute_tokens仍为完整batch最大
+长度，original_shared_prefix_token_slots仍为原共同MIN边界的兼容元数据；不能
+把两者相减叫逐行缓存实际后缀/FLOPs。单个保存真实B8的9.75到3.96秒仍只作用于
+原同输入对照范围。首组events26但unique_histories63是先按完整轨迹算Gt、再按
+response分卡：另一卡37条原非零reward行，worker沿用预计算dt_complete_return，
+没有本卡重算Gt或为零Gt构建DT请求的证据。
+
+实际environment4ff已启用dt_dynamic_shapes和compile_gdn_scalar_rules。只读扫描
+未找到DT窗口后的新增Inductor文件（深度8范围内完整扫描）；Triton扫描超时，
+不能排除其编译，更不能把17.96秒首批定性为重编译。首批保存的实际后缀宽度400，
+其他长批没有完整源边界，未据猜测修改任何编译参数。07:12物理GPU31415/31257MiB，
+cgroup218068828160B（203.09GiB）均为时刻值，不是峰值。原FA/FLA容差不变。
+
+来源：row-prefix-owner-fresh-v1/completed-dt-readout-costs-1791328506-with-field-semantics-readonly.json
+SHA cdb95e8f；actual-dt-batches-1791328581-readonly.json SHA7f23b0da；
+compiler-cache-conclusion-readonly.json SHA478be7ea；phase-1791328350.json。
+本次只读定位和记录，没有新生产实现、GPU测试、profiler、RPC或训练参数改动。
+
 ## 2026-10-07 06:59 本次fresh已完成原旧概率重算，并开始正式DT批处理
 
 同一driver2360541/source c83b96de、原worker2367855/2369144继续GPU4/5。

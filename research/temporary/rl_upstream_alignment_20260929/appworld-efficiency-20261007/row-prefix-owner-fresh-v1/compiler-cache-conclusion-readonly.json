@@ -1,0 +1,255 @@
+{
+  "role": "bounded readonly compiler-cache and existing actual suffix geometry review",
+  "status": "no recent Inductor files within depth8; Triton traversal incomplete; no compile-duration attribution",
+  "source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-fresh-row-prefix-20261007-v1/appworld-dt/source.json",
+    "sha256": "c83b96debba90d85476e58b56b2c8c7f3900901f26ce41094e8f60ac489c7789"
+  },
+  "workers": [
+    {
+      "pid": 2360541,
+      "birth_unix": 1791325655.01
+    },
+    {
+      "pid": 2367855,
+      "birth_unix": 1791325698.36,
+      "environ_sha256_only": "49fe2fe5f860259ac0b8904f1cdbed5a17e4bbf44dca4a0aa30d8fd4e24bcfb9",
+      "cache_environment": {
+        "TORCHINDUCTOR_CACHE_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor",
+        "TRITON_CACHE_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/triton"
+      }
+    },
+    {
+      "pid": 2369144,
+      "birth_unix": 1791325712.24,
+      "environ_sha256_only": "5a93bd8b42af7029a554e517dc6efe98bc6bd7efd442164b650e6fa73a373d35",
+      "cache_environment": {
+        "TORCHINDUCTOR_CACHE_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor",
+        "TRITON_CACHE_DIR": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/triton"
+      }
+    }
+  ],
+  "window": {
+    "since_unix": 1791327400,
+    "artifact_scan_observed_unix": 1791328387.9015546,
+    "minimum_geometry_observed_unix": 1791328454.7686718
+  },
+  "execution_config": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/environment.json",
+    "sha256": "4ff007805297bfd5caddf7158f5b3198c42b41597951d7f226b0808f109b998e",
+    "whitelisted_execution_fields": {
+      "qwen35.dt_dynamic_shapes": true,
+      "qwen35.dt_compiler_options": {
+        "maca.disable_maca_triton_heuristics": true
+      },
+      "qwen35.dt_compile_gdn_scalar_rules": true,
+      "qwen35.dt_pin_root_host": true,
+      "qwen35.dt_native_conv_initial_states": true
+    }
+  },
+  "cache_observations": [
+    {
+      "root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor",
+      "returncode": 0,
+      "complete_within_bounds": true,
+      "elapsed_seconds": 11.83450542400169,
+      "recent_file_count": 0,
+      "recent_extensions": {},
+      "recent_bytes": 0,
+      "recent_60s_bins_from_since": {},
+      "recent_paths_truncated": false,
+      "errors": [],
+      "stderr": ""
+    },
+    {
+      "root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/triton",
+      "returncode": 124,
+      "complete_within_bounds": false,
+      "elapsed_seconds": 20.00210633200186,
+      "recent_file_count": 0,
+      "recent_extensions": {},
+      "recent_bytes": 0,
+      "recent_60s_bins_from_since": {},
+      "recent_paths_truncated": false,
+      "errors": [],
+      "stderr": ""
+    }
+  ],
+  "source_review": {
+    "producer_actual_sha256": "3e0c6feb2d55d54566f7e732f17a07f2e2b71333f326a34d90900b7daa13d011",
+    "producer_actual_remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/deltatrace_rollout.py",
+    "producer_baseline": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\production-wiring-v1\\frozen-deltatrace_rollout.py",
+      "sha256": "2c01c47e699b8b5a05206e881bda596cfbca03d1b89a7c3d3de2ce30ae5995a4",
+      "bytes": 24700
+    },
+    "producer_diff": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\production-wiring-v1\\producer.diff",
+      "sha256": "4ff34d6a553bc6d8d28dde065c1c0b94f0b8fd7ed993bb517900c8e7a8dcff0b",
+      "bytes": 1143
+    },
+    "producer_current_bytes_from_original_diff_verified": true,
+    "producer_compile_call_lines": [
+      345,
+      358
+    ],
+    "only_producer_changed_region_starts": 393,
+    "finite_compile_sources": [
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\qwen35_decoder_finite.py",
+        "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197",
+        "bytes": 13386,
+        "lines": [
+          143,
+          174
+        ],
+        "selected_source": "143:     def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):\n144:         from qwen35_gdn_finite import _norm_gate_finite_rule,_conv_silu_finite_rule\n145:         self.compiled=compiled\n146:         varying_dimensions={\n147:             'mlp':[(i,1) for i in range(7)],\n148:             'norm_residual':[(i,1) for i in (0,1,3,4)],\n149:             'attention_gate':[(i,1) for i in range(4)],\n150:             'gdn_norm_gate':[(i,1) for i in range(3)],\n151:             'gdn_conv_silu':[(i,2) for i in range(3)],\n152:             'attention_input':[(i,2) for i in range(3)]+[(i,1) for i in (3,4,5,6,7,10,11)],\n153:         }\n154:         for name,fn in [('mlp',_mlp_input_rule),('norm_residual',_norm_residual_rule),\n155:                         ('attention_gate',_attention_gate_rule),('attention_input',_attention_input_rule),\n156:                         ('gdn_norm_gate',_norm_gate_finite_rule),('gdn_conv_silu',_conv_silu_finite_rule)]:\n157:             op=torch.compile(fn,fullgraph=True,dynamic=None if dynamic_shapes else False,\n158:                 options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else fn\n159:             if compiled and dynamic_shapes:\n160:                 def varying(*args,_op=op,_dimensions=varying_dimensions[name]):\n161:                     for index,dimension in _dimensions:\n162:                         # The last RL minibatch can contain 1-3 contrasts.\n163:                         # Mark batch before its first compilation as well as\n164:                         # time; otherwise B4 -> B2 recompiles every boundary.\n165:                         if args[index].shape[0]>1:\n166:                             # A singleton contrast has paired batch 2 and\n167:                             # singleton adjoints. Dynamo must specialize that\n168:                             # 0/1 case instead of rejecting a forced symbol.\n169:                             torch._dynamo.maybe_mark_dynamic(args[index],0)\n170:                         if args[index].shape[dimension]>1:\n171:                             torch._dynamo.mark_dynamic(args[index],dimension)\n172:                     return _op(*args)\n173:                 op=varying\n174:             setattr(self,name,op)"
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\finite_fla_gpu.py",
+        "sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6",
+        "bytes": 10755,
+        "lines": [
+          192,
+          221
+        ],
+        "selected_source": "192: def make_compiled_finite_pullback(reuse_scalar_products=False, *, dynamic_shapes=False, compiler_options=None):\n193:     \"\"\"Use the official compiler to fuse layout/scalar work; keep native FLA calls.\n194: \n195:     Compile time and steady cost must be recorded separately. CUDA graphs and\n196:     max_autotune are disabled; default compiler kernel tuning can still run and\n197:     must be counted. This wrapper does not cache model endpoints or computed\n198:     coefficients. Source identity must be verified by its caller.\n199:     \"\"\"\n200:     def mixed(endpoints, adjoints, scale):\n201:         return mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products)\n202:     compiled = torch.compile(mixed, fullgraph=True, dynamic=None if dynamic_shapes else False,\n203:         options={'triton.cudagraphs':False, 'max_autotune':False, **(compiler_options or {})})\n204:     def pullback(endpoints, do, scale):\n205:         adjoints = native_input_adjoints(endpoints,do,scale)\n206:         if dynamic_shapes:\n207:             # Time/chunk count and minibatch size vary. The paired endpoint\n208:             # layout, head count and head width remain fixed. Batch permits\n209:             # the compiler's required singleton specialization for B1 tails.\n210:             for name in ('q','k','v','raw_g','g','beta','A','v_new','h'):\n211:                 value = endpoints[name]\n212:                 if value.shape[0] > 1:\n213:                     torch._dynamo.maybe_mark_dynamic(value, 0)\n214:                 if value.shape[1] > 1:\n215:                     torch._dynamo.mark_dynamic(value, 1)\n216:             for value in adjoints.values():\n217:                 if value.shape[0] > 1:\n218:                     torch._dynamo.maybe_mark_dynamic(value, 0)\n219:                 if value.shape[1] > 1:\n220:                     torch._dynamo.mark_dynamic(value, 1)\n221:         return compiled(endpoints, adjoints, scale)"
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\candidate\\qwen35_answer_finite.py",
+        "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+        "bytes": 11203,
+        "lines": [
+          137,
+          172
+        ],
+        "selected_source": "137: class FiniteAnswerOps:\n138:     def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):\n139:         self.dynamic_shapes=compiled and dynamic_shapes\n140:         self.seed=torch.compile(_answer_seed_rule,fullgraph=True,dynamic=None if dynamic_shapes else False,\n141:             options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else _answer_seed_rule\n142:         self.categorical_seed=torch.compile(_categorical_answer_seed_rule,fullgraph=True,dynamic=None if dynamic_shapes else False,\n143:             options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else _categorical_answer_seed_rule\n144: \n145:     def __call__(self,original_packed_logits,head,selection,equal_endpoint=False,*,original_packed_hidden=None,outcome_logits=None):\n146:         assert isinstance(head,torch.nn.Linear) and head.bias is None\n147:         assert original_packed_logits.shape==(2*len(selection.labels),head.out_features)\n148:         assert head.out_features==head.weight.shape[0]  # Full model vocabulary.\n149:         z0=original_packed_logits[1::2] if equal_endpoint else original_packed_logits[0::2]\n150:         z1=original_packed_logits[1::2]\n151:         if self.dynamic_shapes and len(selection.labels)>1:\n152:             for value in (z0,z1,selection.labels):\n153:                 torch._dynamo.mark_dynamic(value,0)\n154:         target=selection.labels;weight=head.weight\n155:         outcomes=getattr(selection,'outcome_token_ids',None)\n156:         if outcomes is not None:\n157:             # This explicitly requested categorical target uses the same head\n158:             # rows and established finite logsoftmax rule. Default text targets\n159:             # retain their full-vocabulary normalization unchanged.\n160:             weight=weight.index_select(0,outcomes)\n161:             target=(target[:,None]==outcomes[None,:]).long().argmax(-1)\n162:             if original_packed_hidden is None or original_packed_hidden.shape!=(2*len(selection.labels),head.in_features):\n163:                 raise ValueError('Categorical finite head requires its captured native input rows.')\n164:             if outcome_logits is None:\n165:                 outcome_logits=categorical_head_logits(head,original_packed_hidden,outcomes)\n166:             assert outcome_logits.shape==(2*len(selection.labels),len(outcomes))\n167:             z0=outcome_logits[1::2] if equal_endpoint else outcome_logits[0::2]\n168:             z1=outcome_logits[1::2]\n169:             if self.dynamic_shapes and len(selection.labels)>1:\n170:                 for value in (z0,z1):torch._dynamo.mark_dynamic(value,0)\n171:             with torch.autocast(device_type=z0.device.type,enabled=False):\n172:                 result=self.categorical_seed(z0,z1,target,weight)"
+      }
+    ],
+    "summary": "effective dt_dynamic_shapes=True reaches explicit sample/time marking and torch.compile(dynamic=None,fullgraph=True). cudagraphs/max_autotune False do not establish no compiler tuning."
+  },
+  "existing_geometry": {
+    "requested_long_batches": [
+      1,
+      4,
+      12,
+      13,
+      24,
+      29,
+      52,
+      59
+    ],
+    "group0_minimum_records_by_rank": [
+      {
+        "rank": 0,
+        "batches": [
+          1,
+          6,
+          8,
+          26,
+          47,
+          77
+        ]
+      },
+      {
+        "rank": 1,
+        "batches": [
+          1,
+          5,
+          6,
+          7,
+          93
+        ]
+      }
+    ],
+    "first_long_batch": [
+      {
+        "rank": 0,
+        "context_length": 3152,
+        "seconds": 17.959750311998505,
+        "derived_row_suffixes": [
+          330,
+          363,
+          386,
+          400
+        ],
+        "source_tokens": [
+          53,
+          78,
+          109,
+          123
+        ],
+        "derived_B4_Smax": 400,
+        "original_line": 13235,
+        "original_line_sha256": "df65b939c1d037c0b3f2d50174e802eac3c0e99d3d23ae32f2fb9b41c928b15a"
+      },
+      {
+        "rank": 1,
+        "context_length": 3152,
+        "seconds": 17.944230439999956,
+        "derived_row_suffixes": [
+          330,
+          363,
+          367,
+          400
+        ],
+        "source_tokens": [
+          53,
+          78,
+          71,
+          118
+        ],
+        "derived_B4_Smax": 400,
+        "original_line": 13431,
+        "original_line_sha256": "f936a0f39b0f4f469376bad24d1ad06aa070ba0ae18d4629f8a80c1fa9cc22b1"
+      }
+    ],
+    "other_requested_long_batch_source_geometry_available": false,
+    "reason": "Owner new-minimum records contain source boundaries only for selected batches. Missing source lengths cannot be inferred from context length."
+  },
+  "conclusions": [
+    "No disk artifact evidence of many newly emitted Inductor graph modules in the DT window; normal find completion is bounded to depth8.",
+    "Triton find hit20s limit: zero matches are partial and cannot establish no new Triton compile.",
+    "Cache reuse/module load, in-memory specialization, native tuning or synchronization can cost time without a new .py. No cause or seconds assigned.",
+    "First B4 Smax400 despite context3152. Saved minimum selection does not establish geometry of long calls13/24/etc.",
+    "These data do not justify changing compile flags or diagnosing long calls as a proved recompile defect."
+  ],
+  "inputs": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\compiler-recent-artifacts-1791328387-readonly.json",
+      "sha256": "d545235fa9f28871fedb71cbd690f96421b25ee3a47456eff555d6191ccb9152",
+      "bytes": 4838
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\dt-minimum-suffix-geometry-1791328454-readonly.json",
+      "sha256": "f65fac34dcee4cdb97186cf29655ca17cf4689ccc6400df20b0d7f2b4cab7156",
+      "bytes": 43194
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actual-worker-imports.json",
+      "sha256": "8fe68ab8c3c88e829912d491e637b1fc339d1c384abb74cfc4957d2a60224d2a",
+      "bytes": 25853
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\torchinductor-cache-paths-1791328069-readonly.json",
+      "sha256": "1150e7cb1c048a6d070b4183d239bb81b2806f2d8cec33dc9509d73823ba0aab",
+      "bytes": 2284
+    }
+  ],
+  "diagnostic_attempts": {
+    "initial_scandir": "Retained bounded partial traversal JSONs; zero matches not used as absence proof.",
+    "find_attempt": "Embedded-NUL argv ValueError before find invocation, failure/source retained; corrected to native find -print0.",
+    "local_identity_check": "Initial in-memory text-normalized producer check failed on mixed CRLF/LF. Raw-byte splice exactly reproduces current3e0 SHA; no owner file written."
+  },
+  "operations": {
+    "remote_cache_production_writes": 0,
+    "GPU_model_DT_RPC_profiler_optimizer_operations": 0,
+    "launch_restart_checkpoint_operations": 0
+  },
+  "limitations": [
+    "mtime is not compile elapsed time.",
+    "Shared paths cannot attribute files to a worker.",
+    "No numerical/performance threshold or configuration change.",
+    "Minimum records are not a representative suffix-workload population."
+  ]
+}
