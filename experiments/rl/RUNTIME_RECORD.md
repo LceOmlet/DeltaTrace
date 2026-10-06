@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 当前响应时钟候选与真实更新的冻结目标变化
+
+隔离query候选：原环境直接执行已交付response，冻结228afbc7查询却要求补完同一response。仅在诊断tokenizer入口替换两句，原prefix/source IDs、EOS参照、labels、G、sampling、步数和Q/V/A不变；新增query IDs仅对应上述两句变动。v2 PID3208088/birth1791249307.77完成，GPU4/5，149.368秒；64真实首轮病例，每rank64次native B2事实/EOS配对，无重复行/补padding；actor/DT配置仍每卡B4。原/candidate pooled Brier .38691061/.39847212，成功根绝对均值 .15918764/.12382817。成功/失败评分和相关变化混合，不能称其修复了小token信用或1/211 PG。原B2与旧B4同编码LP差保存为描述，未扩大FA/FLA容差或加纠偏。v1仅CPU prepared；review发现分桶会造成rank42/44次FSDP调用及class来源观察错误，未提交GPU。v2固定同步调用次数并改为method来源，保留v1原始源码和CPU回执。
+
+复用已保存的三分支真实Adam before/after LP/H，仅CPU调用原VERL core损失和归约：DT branch ΔPG=+1.7083357307e-07，Δ(-.001H)=-5.7544275478e-07，Δ(.001KL)=+1.3775558472e-08，Δtotal=-3.9083533920e-07。本次总目标下降但冻结DT任务目标上升；同批目标不是成功率，旧Adam历史不是可线性分账的当前熵向量。保留原old/ref、mask、rank32→B4×8→/8；无模型/预测/DT/反向/更新，约0.535秒CPU统计，RSS约.803GiB。
+
+版本角色：上述是已完成的隔离诊断；不是被接受/部署的生产query修复。原c9cd147 DT、原VERL actor/core、PLAN、LoRA8/16、每卡B4和正式任务配置均未改变。TextCraft未恢复，未从single probe判整个DT差，未放大/归一/裁剪信用或修改entropy系数。
+
+
 ## 2026-10-06 弱信用来源：类别读出配对与历史支持集
 
 隔离v2 PID3037369/birth1791247724.44完成，GPU4/5，231.851秒。原checkpoint25、64条真实首轮输入、原VERL worker/config、LoRA8/16与每卡B4均保留。只由原RewardAlphabet.query_ids交换两个类别label ID，values/meanings顺序、回报及轨迹ID不变；按实际query等长配对。64 native B4前向，DT/反向/optimizer/scheduler均0。
