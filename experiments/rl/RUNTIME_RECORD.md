@@ -1,5 +1,75 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 03:42 当前真实B8 profile完成，白化入口保持
+
+当前正式AppWorld仍driver1181392/出生1791314386.58、GPU4/5，从base启动，
+resume disable、无检查点加载。source3cd90b2d、preparedf5232ac1、
+canonical HF59f9c339、DT runner e9c75764/GDN ef55ce08、
+VERL trainer d35ddd26/actor3a65e173/worker e5eb4afc、helper079a6d20不变。
+白化只在原trainer完整action mask上调用一次原masked_whiten，然后原DP/mini/B4；
+原d/Q/V/A/returns不改，无GAE/value model。当前仍采样，未观测本次白化更新；
+不能以入口正确、历史梯度增大或进程存活宣称学习退化已经修复。
+
+GPU2/3原有界诊断1276181/出生1791315255.77已完成退出，物理显存回到860MiB。
+当前正式相同owner/base/JSON conv=true、实际offset84:88、每卡B4，
+长度rank0 12007/12423/12907/13482，rank1 12214/12633/12822/13230；
+原CPU接口7项通过。无采样/actor backward/optimizer/checkpoint调用，未改生产路径。
+非instrumented热wall9.76066/9.73879秒；cold67.80545/67.76047秒含首次开销，
+profiler wall28.52419/27.56367秒含instrumentation，不能当成热调用退化。
+原CUDA-event范围：root2.12729/2.12106秒、逐层原forward重放2.07505/3.30085秒、
+有限FA decoder1.98616/1.48796秒、有限GDN decoder2.43970/1.90637秒、
+原FA LSE .24429/.18201秒。device sum可重叠，不是可删除墙钟。
+
+原trace定位FA有限核三个阶段各8次：rank0 .48504/1.09360/.12862秒，
+rank1 .37032/.82508/.07598秒；不是重复两次endpoint。精确copy账目显示
+root检查点各上传两次，但其中一半只约.092/.068秒device time；
+不是本次主要瓶颈，不为它引入生产改造。保留未知owner内核分类，不凭名称猜用途。
+rawtrace仍在远端；local仅small原prepared/job、CPUxml和只读分析，
+current-base-hot-profile-v1/read-only-current-base-profile-analysis.json SHA772a7028，
+原结果/实际source SHA包含在该回执。诊断stager144b4e3b/diagnose115cd56d；
+analyzer不导入torch或调用模型。无新数值断言、纠偏或容差。
+
+03:40:14正式原LOOP collected108/89，共197/240；运输3270回复、635022生成token、
+1033.2秒，含prefill/decode/交互，非纯decode。尚无DT/actor完成或新检查点。
+container127.09GB/966.37GB、failcnt0，物理4/5为55309/55243MiB，
+仅采样phase观测，不是整轮峰值。原phase来源continuation-1791314906/
+official-phase-1791315609.json；只读current_runtime已于1791315689.64刷新。
+
+“actor>采样”不能单独判为异常：官方actor两epoch、完整轨迹前后向、checkpoint
+重算与原offload。但旧step9的2495.232秒含已证明的共同右侧padding浪费，不能
+称正常或当新版本耗时。对应原compute_log_prob同权重实际输入热14.6427→6.1881秒
+仅证明该forward修复；当前actor3a65已启用，仍等本次原阶段计时，不外推整轮加速。
+
+03:42:42原LOOP达到原完成条件：116/101、共217/240轨迹、取消4/19；
+保留3198个response、607470policy token，最长context25047；运输累计3495回复、
+693496token/1178.7秒。03:44:48原两worker实际在原compute_log_prob/HF FA调用，
+不是DT卡住；nonblocking py-spy出处formal-stack-1791315884.json。
+原TaskRunner打印reward_extra_info缺字段是原compute_reward对EpisodeRewardManager
+rm_scores字典的兼容回退，返回同一个reward张量/空metadata，无环境或模型重算；
+reward37686e6a/episode bb7e5f85与source及官方AST一致，不为它改奖励或停作业。
+当前FA adapterf5ea2f67/CUDA d408cce5/库5d2af760与原release manifest闭合，
+原FA断言回执绑定同库；三阶段各8次及compact GQA/cached query均已接，
+没有发现漏接的已验更快路径或可删阶段，故本轮未据此改FA数值/内核。
+出处current-base-hot-profile-v1/finite-FA-current-owner-review.json SHA c275c0f5。
+
+03:47:59本次DT source原日志：3198 unique/retained、nonzero3198、skipped0；
+首alphabet两rank各520 contrasts/130 B4，events37/38是reward事件数，不能
+当全轮组数、完成batch或canonical UID数。source当前前缀factory与06f/d5对齐。
+03:50:32 container365.15GB，匿名340.49GB、file24.40GB；worker PSS123.42/122.79GB，
+物理4/5为25911/25963MiB，OOM/failcnt0。非阻塞栈已在runner418有限循环后的
+输入贡献收缩，不再在bank准备；不能由日志尚无B4完成判卡死。
+只读memory-stack-1791316232.json SHA85354e38，当前尚不能分开live bank与allocator。
+
+进一步源证据：capture不保留root hidden checkpoint；已证浪费是B4 capture所有UID
+needed边界的union，每boundary却保存整B4 GDN状态。原真实88 inventory中
+rank0/1未消费GDN6.488/6.955GB，不能把这份比例外推本次整轮内存。
+已有10/05暂停候选可只在现有导出边界保存实际需要row，原B4 forward/FA KV/
+FLA FP32递推不变；本次复用该候选准备隔离验证，默认及当前formal owner均未改，
+未把候选称已接受/部署。整体证据current-producer-workload-review.json SHA33542524。
+原88请求的CPU分组核算：按source_start反增3.76%，按(start//64,context)仅减1.58%
+且另一rank更差；不为这项小/负收益改分组，不把88比例外推473-B4旧正式。
+
+
 ## 2026-10-07 03:19 最新：移除任务服务继承的额外导入
 
 下方1119928不是健康训练：它在原LOOP构造64个runner时全部readiness失败，

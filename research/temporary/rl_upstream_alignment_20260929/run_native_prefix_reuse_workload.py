@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument('--current-formal-owner',action='store_true',
         help='Use the current frozen AppWorld entry/VERL/DT and launch options, not historical diagnostic owner overrides.')
     parser.add_argument('--base-model',action='store_true',
-        help='With current formal owner and prefetch/convolution diagnosis, initialize its original base actor without loading a checkpoint; replay current owner queries on saved literal rows.')
+        help='With current formal owner and prefetch/convolution or hot-profile diagnosis, initialize its original base actor without loading a checkpoint; replay current owner queries on saved literal rows.')
     parser.add_argument('--native-backward',action='store_true',
         help='After current-owner DT, time one first and one warm original actor backward on the same factual B4 event target; no optimizer update.')
     args=parser.parse_args()
@@ -74,9 +74,9 @@ if __name__ == '__main__':
             args.root_tape_cpu,args.root_tape_capacity,args.root_tape_gdn0,args.root_tape_fa3,
             args.root_tape_hot,args.components_only,args.component_layer is not None)):
         parser.error('--ledger-only does not run profiling, backward, operator observers or owner variants')
-    if args.base_model and not (args.current_formal_owner and (args.reverse_prefetch or args.native_conv_initial_states)
+    if args.base_model and not (args.current_formal_owner and (args.reverse_prefetch or args.native_conv_initial_states or args.hot_profile)
             and args.phase_only and args.warm_phases):
-        parser.error('--base-model requires --current-formal-owner, --reverse-prefetch or --native-conv-initial-states, --phase-only --warm-phases')
+        parser.error('--base-model requires --current-formal-owner, --reverse-prefetch or --native-conv-initial-states or --hot-profile, --phase-only --warm-phases')
     if args.native_conv_initial_states and not args.base_model:
         parser.error('--native-conv-initial-states requires explicit --base-model current-owner diagnosis')
     if args.native_conv_capacity and not args.native_conv_initial_states:
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         'local-prefix-' if args.local_prefix_branch else '')+('cpu-' if args.root_tape_cpu else '')+(
         ('components' if args.component_layer is None else 'components-layer'+str(args.component_layer)) if args.components_only else
         'ledger' if args.ledger_only else 'native-conv-capacity' if args.native_conv_capacity else 'native-conv-initial-states' if args.native_conv_initial_states else 'root-tape-hot' if args.root_tape_hot else 'root-tape-fa3' if args.root_tape_fa3 else 'root-tape-gdn0' if args.root_tape_gdn0 else 'root-tape-capacity' if args.root_tape_capacity else 'root-tape' if args.root_tape else 'root-capture-inventory' if args.root_capture_inventory else 'reverse-prefetch' if args.reverse_prefetch else 'projection-inputs' if args.projection_inputs else 'hot-phase' if args.hot_profile else 'warm-phase' if args.warm_phases else
-        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261007-' if args.native_conv_initial_states else '-20261005-' if args.root_tape_cpu or args.ledger_only else '-20261004-')+commit[:7]
+        'phase' if args.phase_only else 'workload')+('-offset'+str(args.request_offset) if args.request_offset is not None else '')+('-20261007-' if args.native_conv_initial_states or (args.current_formal_owner and args.base_model and args.hot_profile) else '-20261005-' if args.root_tape_cpu or args.ledger_only else '-20261004-')+commit[:7]
     if args.current_formal_owner:
         out+='-current-'+('base' if args.base_model else args.checkpoint.rstrip('/').split('/')[-1])
     files = {
@@ -202,6 +202,8 @@ if __name__ == '__main__':
     if args.root_tape_hot:
         for name in ('native_finite_parameter_ranges.py','test_native_finite_parameter_ranges.py'):
             files[AUDIT/name]=name
+    if args.current_formal_owner and args.base_model and args.hot_profile:
+        files[AUDIT/'native_finite_parameter_ranges.py']='native_finite_parameter_ranges.py'
     branch_reference = None
     branch_commit = branch_baseline_commit = old_method_ast = new_method_ast = None
     if args.local_prefix_branch:
@@ -273,10 +275,18 @@ if @CURRENT_FORMAL_OWNER@:
   p=pathlib.Path(source['resource_environment']['DT_ENVIRONMENT_JSON'])
   source_bindings[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
   run_env['DT_ENVIRONMENT_JSON']=str(p)
+ canonical_hf_owner=None
+ if @BASE_MODEL@ and @HOT_PROFILE@:
+  canonical_hf_owner=prepared['canonical_HF_owner']
+  p=pathlib.Path(canonical_hf_owner['path'])
+  actual=hashlib.sha256(p.read_bytes()).hexdigest()
+  assert actual==canonical_hf_owner['sha256'],p
+  source_bindings[str(p)]=actual
  formal_owner=dict(source_path=str(source_path),source_sha256=hashlib.sha256(source_path.read_bytes()).hexdigest(),
   entry=str(formal_entry),verl_root=str(formal_verl),dt_root=str(formal_dt),
   source_bindings=source_bindings,prepared_path=str(prepared_path),
-  prepared_sha256=source['prepared_receipt_sha256'],pythonpath=source['pythonpath'])
+  prepared_sha256=source['prepared_receipt_sha256'],pythonpath=source['pythonpath'],
+  canonical_HF_owner=canonical_hf_owner)
 else:
  text=next(j for j in manifest['jobs'] if j['task']=='TextCraft')
  live=psutil.Process(text['pid'])
@@ -474,6 +484,7 @@ receipt=dict(role='Isolated original B4 DT replay; no formal deployment or accep
  diagnostic_commit='@COMMIT@',stager_sha256='@SHA@',devices=devices,rows_per_rank=int(run_env['DT_PREFIX_DIAGNOSTIC_ROWS']),
  original_scalar_ledger_only=@LEDGER_ONLY@,
  instrumented_hot_profile=@HOT_PROFILE@,
+ current_owner_parameter_phase_profile=(@CURRENT_FORMAL_OWNER@ and @BASE_MODEL@ and @HOT_PROFILE@),
  projection_input_observation=@PROJECTION_INPUTS@,
  native_reverse_prefetch_candidate=@REVERSE_PREFETCH@,
  native_conv_initial_states_candidate=conv_isolated,

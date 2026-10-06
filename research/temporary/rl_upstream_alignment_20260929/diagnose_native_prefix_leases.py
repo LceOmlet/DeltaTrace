@@ -153,7 +153,10 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     current_request_origin=None
     if base_prefetch:
         assert os.environ.get('DT_PREFIX_CURRENT_FORMAL_OWNER')=='1'
-        assert os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states
+        assert (os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1' or conv_initial_states
+                or (os.environ.get('DT_PREFIX_HOT_PROFILE')=='1'
+                    and os.environ.get('DT_PREFIX_PHASE_ONLY')=='1'
+                    and os.environ.get('DT_PREFIX_PHASE_WARM')=='1'))
         assert not os.environ.get('DT_PREFIX_CHECKPOINT')
         # The frozen rows predate the accepted response-clock query repair.
         # Reuse the actual current owner to emit its query/case metadata; keep
@@ -296,6 +299,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
          context_lengths=[r['context_tokens'] for r in requests],
          original_request_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
          current_request_origin=current_request_origin,
+         native_conv_initial_states=getattr(runner,'native_conv_initial_states',False),
          diagnostic_scope=('Existing synthetic exact32768/response512 capacity input with current original readout; no checkpoint, optimizer, task-performance or invented full-network tolerance.'
              if conv_capacity else 'Current frozen formal owner and original checkpoint loader; raw residuals have no invented full-network tolerance.'
              if current_owner and not base_prefetch else 'Current frozen owner on base-model initialization; same saved literal policy IDs and current owner query; no checkpoint load or invented full-network tolerance.'
@@ -305,7 +309,9 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     labels=('original_phase','shared_phase') if phase_only and not warm_phase else (
         'original_cold','original_warm','shared_cold','shared_warm')
     if current_owner:
-        labels=('shared_cold','shared_warm') if base_prefetch else ('shared_cold','shared_warm','shared_profile_warm')
+        labels=(('shared_cold','shared_warm')
+                if base_prefetch and os.environ.get('DT_PREFIX_HOT_PROFILE')!='1'
+                else ('shared_cold','shared_warm','shared_profile_warm'))
     if ledger_only:
         labels=('shared_ledger',)
     if os.environ.get('DT_PREFIX_REVERSE_PREFETCH')=='1':
@@ -437,7 +443,8 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
                                os.environ.get('DT_PREFIX_ROOT_TAPE_HOT')=='1'
                                and label=='root_tape_warm')
             parameter_context=nullcontext()
-            if os.environ.get('DT_PREFIX_ROOT_TAPE_HOT')=='1' and label=='root_tape_warm':
+            if ((os.environ.get('DT_PREFIX_ROOT_TAPE_HOT')=='1' and label=='root_tape_warm')
+                    or (current_owner and base_prefetch and profile_this_call)):
                 from native_finite_parameter_ranges import NativeFiniteParameterRanges
                 parameter_context=NativeFiniteParameterRanges(runner.model)
             projection_audit=None

@@ -1,0 +1,170 @@
+{
+  "status": "no evidenced defect/no production changes",
+  "scope": "Local source and existing receipt review only. No remote access, GPU execution, formula change, new tolerance, or production change.",
+  "conclusion": "The current owner already selects the fastest applicable finite-FA path supported by the saved validation receipts. No validated faster path was found to be omitted. This is not a claim of global optimality.",
+  "current_owner": {
+    "runner": {
+      "actual_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+      "local_source": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/gdn-cached-conv-interface-20261007/native-initial-states-candidate-v1/candidate_sources/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+      "sha256": "e9c7576486f742c26f895cd4078891a98d94c189e84a6e565fc8042a74aabcab",
+      "lines": "311-312: coefficient_starts and native query_start; 393-394: original attention_finite_pullback",
+      "identity_scope": "Current-base hot profile records this imported runner. The current e9 runner is used here rather than inferring deployment from original c9."
+    },
+    "decoder": {
+      "local_source": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+      "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197",
+      "lines": "198-208: paired endpoint operands and one finite_fa call; 213-216: original input-boundary pullback"
+    },
+    "adapter": {
+      "local_source": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/deltatrace/clean/qwen35/vendor_fa_finite_bf16_d256.py",
+      "sha256": "f5ea2f67af2a47b2a736545b22ff6683336be14be505060674fce6f01de3f15c",
+      "lines": "63-70: compact KV heads and actual dtypes; 82-95: suffix/cached-suffix selection; 96-103: existing activity metadata; 105-113: one operator call"
+    },
+    "cuda": {
+      "local_source": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/prototypes/vendor_fa_finite_p1_bf16_d256.cu",
+      "compiled_source_path_in_saved_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/native-prefix/vendor_fa_finite_p1_bf16_d256.cu",
+      "sha256": "d408cce5d4b09f5600af0133c10b73cc69cb25472ad5df6cea3b36d6c57e7d21",
+      "release_manifest_source_commit": "d6b7351ef4b13ade42526b79051e779fe58e789f",
+      "identity_scope": "The local source hash matches original prefix_reuse/release-manifest.json lines 372-375; the saved compile log names the native-prefix source. No new binary/source inspection was performed remotely."
+    },
+    "library": {
+      "configured_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-minibatch/native-prefix/libfinite_cached_queries.so",
+      "sha256": "5d2af760abb2684401682029e41ac68aefc58ed2796082d435874a2b74bbcebb",
+      "identity_scope": "Saved configured runtime and original operator receipts bind this hash; runtime-provenance-20260930.json also records finite_library_actual_sha256. This review does not add a fresh remote hash observation."
+    }
+  },
+  "enabled_paths": {
+    "generic_runner_constructor_defaults": {
+      "fa_coefficient_suffix": false,
+      "reuse_native_prefix": false
+    },
+    "bound_runtime_configuration": {
+      "dt_fa_coefficient_suffix": true,
+      "dt_reuse_native_prefix": true
+    },
+    "selected_export_when_query_start_nonzero": "deltatrace_fa_finite_p1_bf16_d256_cached_suffix",
+    "compact_GQA": "Intrinsic to current adapter and CUDA: K/V inputs retain kv_heads; CUDA maps query head to KV head. No global GQA input expansion.",
+    "already_in_current_cuda": [
+      "Owner operand register reuse and gemm_opt (lines 134-172).",
+      "D256 fast shared-tile transpose and gemm_rs using two D128 views (lines 237-258).",
+      "Suffix output restriction and cached-query offsets (lines 75-83, 279-286, 319-340)."
+    ]
+  },
+  "three_stages": {
+    "launch_source_lines": "292-306",
+    "finite_calls_per_rank": 8,
+    "kernels_per_call": 3,
+    "total_kernels_per_rank": 24,
+    "stages": [
+      {
+        "phase": 0,
+        "purpose": "Compute logarithmic-mean row normalization and finite center.",
+        "count_per_rank": 8,
+        "profile_device_seconds": {
+          "rank0": 0.485041664,
+          "rank1": 0.370317568
+        }
+      },
+      {
+        "phase": 1,
+        "purpose": "Compute dQ from the finite weights after the row center is available.",
+        "count_per_rank": 8,
+        "profile_device_seconds": {
+          "rank0": 1.09360128,
+          "rank1": 0.82508032
+        }
+      },
+      {
+        "phase": 2,
+        "purpose": "Compute dK and dV in one key-owned pass.",
+        "count_per_rank": 8,
+        "profile_device_seconds": {
+          "rank0": 0.128616448,
+          "rank1": 0.07598464
+        }
+      }
+    ],
+    "necessity": "These are different required outputs/dependencies of the accepted current streaming owner, not repeated endpoint forwards. The finite center must precede the coefficient passes in this implementation. This does not assert that every possible equivalent algorithm must use exactly three kernels.",
+    "history_contract": "CUDA lines 154-155 make phases 0/1 read the complete causal K/V history required by normalization and dQ. Phase 2 scans future query suffixes only. The cached prefix K/V is reused; these reads do not regenerate historical K/V projections. Prefix/padding output tiles return early and omitted coefficients are zeroed.",
+    "timing_scope": "Kernel durations are from the instrumented hot profile, not normal wall time or a proposed speedup. The non-profile warm wall is about 9.76 seconds."
+  },
+  "candidate_differences": [
+    {
+      "candidate": "Historical cached-owner register reuse / split-RS",
+      "disposition": "The applicable optimized operations are already present in current CUDA; historical timing is not new current-base benefit."
+    },
+    {
+      "candidate": "Key32",
+      "disposition": "Saved full-32k measurement was slower than the selected owner; no omitted faster path."
+    },
+    {
+      "candidate": "Split-output",
+      "disposition": "Saved full-32k measurement was slower; no omitted faster path."
+    },
+    {
+      "candidate": "M32/4-warps and backward-4-warps",
+      "disposition": "Saved compiler/layout failures; not validated deployable alternatives."
+    },
+    {
+      "candidate": "Qwen3 V4 accelerated controller",
+      "disposition": "Frozen FP16/D128 path, incompatible with the current BF16/D256 Qwen3.5 owner and current parameter updates."
+    }
+  ],
+  "saved_official_interface": {
+    "local_source": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/qwen35_fleet_20260917/source/third_party/metax_fa_2_5_3/csrc/flash_attn/flash_api.cpp",
+    "sha256": "e2e7acfc0e33562422b4c145dc5a4a3f7e7ae803c85fad1836ae201567793279",
+    "lines": "1318-1324",
+    "exposed_operations": [
+      "fwd",
+      "varlen_fwd",
+      "bwd",
+      "varlen_bwd",
+      "fwd_kvcache"
+    ],
+    "conclusion": "The saved official interface exposes ordinary single-endpoint FA forward/backward/cache operations, not the paired finite operator with its logarithmic-mean center. No saved validated direct official replacement for the current finite owner was found.",
+    "scope": "Saved vendor source evidence, not a new inspection of the installed Python wrapper."
+  },
+  "cited_receipts": [
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/current-base-hot-profile-v1/read-only-current-base-profile-analysis.json",
+      "sha256": "772a70280d95d66b664303325237680c5075b6c6bdbf8b61814cd5f2e9555f90",
+      "supports": "Current e9 imported owner; actual 24 phase kernels and recorded profile durations."
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/reward_readout_20260922/prefix_reuse/release-manifest.json",
+      "sha256": "db4325da950d6c0d0335aebdd4ab5be1ef17b7cac544c5e2278631be138e1e81",
+      "supports": "Original CUDA source hash and release commit."
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/reward_readout_20260922/prefix_reuse/compile.log",
+      "sha256": "f7d31c18fde8dfc54274795e837e500ce76d9eb6409b68c5f281cd5eaff40c03",
+      "supports": "Original native-prefix compiled source path and vendor headers."
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/reward_readout_20260922/prefix_reuse/environment.json",
+      "sha256": "96d4a7b46268dfa5987c0246e6b66fd7eb249998986462548618f4696f7d3e07",
+      "supports": "Selected library hash and enabled suffix/native-prefix flags in the original accepted path."
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/runtime-provenance-20260930.json",
+      "sha256": "1764ed005dcc04c587b375da5fa802287dae7712ffffd33b9764a1b8c4baa126",
+      "supports": "Saved finite_library_actual_sha256."
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/reward_readout_20260922/prefix_reuse/fa-cached.json",
+      "sha256": "20ddd0d70e81a229bbf7d66016e179b5f37c9bcec44059bb759ea1db26a783d5",
+      "supports": "Same library: exact required suffix outputs and zero omitted coefficients, including cached-query cases and a full-32k case."
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/reward_readout_20260922/prefix_reuse/fa-native-cached.json",
+      "sha256": "ebb0ca5ab3c62ef8aa2a3ccd79e99a572a3403095962a5d189773929d80a3b57",
+      "supports": "Same library: original native-FA assertion receipts for cached-query cases."
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/results_dt_minibatch_candidate.json",
+      "sha256": "3518388f94d9ee38b2ad3187f4777431a68bede84223a2bee8b749ca9f344683",
+      "supports": "Historical candidate differences and resource audit; not current-base speedup evidence."
+    }
+  ],
+  "action": "No FA production repair or new check requested by this review."
+}
