@@ -1,5 +1,27 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 白化后首个TextCraft正式更新已返回
+
+1791293395原PID3269087/birth1791289021.47已完成正式step26并进入下一轮
+原生采样（本次snapshot为round4/30）。原step26共3781.905秒：gen2167.631、
+old_log_prob176.273、ref139.455、DT/adv701.016、update_actor597.061。
+原日志grad_norm0.065、PG−0.001、entropy0.753、reward0.492均为打印精度；
+entropy及reward来自本轮更新前采样，不是白化后的效果提升。原save_freq25，
+故没有checkpoint26正常；已有native64保存恢复证据单独保留。
+
+原reward_extra_info缺键已核：原EpisodeRewardManager的rm_scores字典快路径
+缺可选extra键，原compute_reward退回同一个rm_scores Tensor；没有丢/重复奖励，
+不为此加补丁。该source/phase核查不是新容差或全部梯度有限性证明。
+
+AppWorld同一3592468/birth1791291997.14仍原LOOP采样，两rank原累计50/120、
+47/120；latest episode ret0.750/0.500不是完整迭代/独立评测成功率。
+本次物理GPU2/3为55316/55300MiB，4/5为50148/49990MiB，
+cgroup256780931072B、limit966367641600B、host available727530545152B。
+原allocator max_reserved64.398GB是另一口径，不能当物理峰值。
+LoRA8/16、每卡B4、DT B4、原预算/代码/PPO保持；0/1与6/7不用，SQL仍停。
+未新增训练/RPC/模型测试/容差或改动，学习恢复仍待后续正式趋势。
+最新dated snapshot：research/temporary/rl_upstream_alignment_20260929/whitening-formal-followup-20261006/1791293395/current_runtime.json。
+
 ## 2026-10-06 AppWorld官方白化与原LOOP服务恢复已提交
 
 source c775ddd，原提交器64c10036…实际Popen原launcher，PID3592468/birth1791291997.14，
