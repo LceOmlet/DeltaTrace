@@ -1,0 +1,297 @@
+{
+  "review": "Independent local-only review of complete frozen startup raw logs, stacks and source/configuration snapshot; not derived from startup-state-review summary.",
+  "reviewed_at": "2026-10-06T13:23:27.220416+00:00",
+  "status": "checkpoint28_native_loading_and_original_sampling_episode_return_observed_DT_PPO_health_not_yet_established",
+  "finding": "Both native rank loaders log model/optimizer/extra_state from completed checkpoint28, original trainer sets global step28, the actual stack is inside original LOOP sampling, and one original episode has returned. Source/argv/configuration remain bound to the accepted preparation.",
+  "snapshot": {
+    "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/startup-phase-observation.json",
+    "sha256": "8b9c74e5d315c34e51c73849365c7872fddc305c989ccb64888660769ca4d3f1"
+  },
+  "prior_source_review": {
+    "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/independent-source-review.json",
+    "sha256": "bae9860387d5c4f1da16f9d5e030e29ad059f0c3be1e63793af0575496c06505"
+  },
+  "raw_log_sources": {
+    "raw-0-train.log": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/raw-0-train.log",
+      "sha256": "342ceb023af147e5de499b633987419393a198c790e2598e27eed5fbad4685a3"
+    },
+    "raw-1-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.out": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/raw-1-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.out",
+      "sha256": "2bbb8a332d6d27d6cc9064bd3b72e841da2e2ef2cf50fe52afb6f1b322839c86"
+    },
+    "raw-2-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.err": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/raw-2-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.err",
+      "sha256": "868d9214e578efb103ddb091fb4785198efb05c3468c136bbdf9085b6a36f244"
+    },
+    "raw-3-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.out": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/raw-3-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.out",
+      "sha256": "c32cee7a277c44999d3c54ff9a258a52313ef69464ff7cb6724d7e7a2e52ef23"
+    },
+    "raw-4-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.err": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/raw-4-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.err",
+      "sha256": "4a81eb74dac67f2c497da7e82323529edb14a37098c489debd0f76805c0f0586"
+    },
+    "raw-5-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.out": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/raw-5-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.out",
+      "sha256": "a68f7fa1e52bdd056f012f0cc1f71e13bcbb7b96554b98190e6e0adb37162d30"
+    },
+    "raw-6-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.err": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/raw-6-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.err",
+      "sha256": "af23957860e424ea3ae2b28d9716de4632f4f1527f32549c11cd51a4b2d57102"
+    }
+  },
+  "raw_stack_sources": [
+    {
+      "source": {
+        "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/stack-3596559.json",
+        "sha256": "da324a6f66550062b7d93293217c5ef880ff3659406ec1ccf92f95afc96a77da"
+      },
+      "pid": 3596559,
+      "actual_birth": 1791292021.74,
+      "returncode": 0
+    },
+    {
+      "source": {
+        "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/stack-3598938.json",
+        "sha256": "b047f0fb91e7a2eac508a0c2b4ce4c417278c303ba6ab5ebf171c54f60da8cd0"
+      },
+      "pid": 3598938,
+      "actual_birth": 1791292042.22,
+      "returncode": 1,
+      "stderr": "Error: Failed to copy PyCodeObject\nReason: Bad address (os error 14)\nReason: Bad address (os error 14)\n"
+    },
+    {
+      "source": {
+        "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/startup-1791292393/stack-3601412.json",
+        "sha256": "f70dfa109886a964a0e0f2d3e364a583ee05c38bfbe85737c79c41ffb1920d2e"
+      },
+      "pid": 3601412,
+      "actual_birth": 1791292056.06,
+      "returncode": 1,
+      "stderr": "Error: Failed to copy PyCodeObject\nReason: Bad address (os error 14)\nReason: Bad address (os error 14)\n"
+    }
+  ],
+  "identity": {
+    "driver_pid": 3592468,
+    "driver_birth": 1791291997.14,
+    "snapshot_observed_unix": 1791292393.7292385,
+    "driver_birth_matches": true,
+    "snapshot_driver_status": "sleeping",
+    "devices": [
+      2,
+      3
+    ],
+    "job_status_as_recorded": "formal_resume_submitted_not_yet_verified",
+    "source_receipt_sha256": "2827c5ae8785c498785b639573769d7db0208d3e3540087a4a0816b6968a34ac",
+    "job_receipt_sha256": "95e3dcdaa66a7846ddac15060a90c88ab8a76889e5b5fd2250bc961e3ee47f4f",
+    "launch_plan_sha256": "08cbdfe1384696c6fe0d16e558f5c4eb6ab6a3b1b65564a70fc28dc17221de7a"
+  },
+  "source_and_configuration": {
+    "actual_source_snapshot_equals_submitted_source": true,
+    "actual_job_snapshot_equals_submitted_job": true,
+    "argv_equals_prepared_plan": true,
+    "actual_launcher_options_equal_prepared_formal_options": true,
+    "safe_driver_environment_field_count": 10,
+    "all_safe_driver_fields_equal_prepared": true,
+    "safe_driver_keys": [
+      "APPWORLD_ROOT",
+      "CUDA_VISIBLE_DEVICES",
+      "DT_ENTRY_ROOT",
+      "DT_ROOT",
+      "LOOP_ROOT",
+      "PYTHONPATH",
+      "TORCHINDUCTOR_CACHE_DIR",
+      "TRITON_CACHE_DIR",
+      "VERL_RELEASE_UNUSED_HOST_CACHE",
+      "VERL_ROOT"
+    ],
+    "actual_disk_source_hashes": {
+      "trainer": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/verl/verl/trainer/ppo/ray_trainer.py",
+        "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f"
+      },
+      "helper": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/verl/verl/utils/torch_functional.py",
+        "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+      },
+      "actor": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/verl/verl/workers/actor/dp_actor.py",
+        "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd"
+      },
+      "worker": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+        "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+      },
+      "core": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py",
+        "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+      },
+      "readout": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/reward_readout.py",
+        "sha256": "94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b"
+      },
+      "producer": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/deltatrace_rollout.py",
+        "sha256": "5d0f897e47fbf805321b50ebda6abca17dfdf16f6ee86f772a52f17550f7a6ee"
+      },
+      "prefix_leases": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/native_prefix_leases.py",
+        "sha256": "d5b539c7ffb8a431374cf79f4b995ef6f4138c3e6e289890409b6b79dbad393e"
+      },
+      "loop_worker": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/loop_owner_worker.py",
+        "sha256": "1bf093a213aa4b4dee0b2a68b50b947564d1781e615929891137bc73a5719cdb"
+      },
+      "loop_rollout": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/loop_owner_rollout.py",
+        "sha256": "01eca1bf47f8228060cd4bcda2cab424a69bdb865f5d3dc23297bfc66f828ef7"
+      },
+      "async_transport": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/loop_async_transport.py",
+        "sha256": "8ecbf018e2d2c77d5f545a67db71368905ba3c400f02609ec8e8c9ae74f181bf"
+      },
+      "loop_interface": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-loop-readiness-20261006-v1/loop-owner/phi_agents/appworld/interface.py",
+        "sha256": "17adc301aae395b789b5528abc167fd025b6cbb22379e954c600ed586987610e"
+      }
+    },
+    "all_12_actual_disk_sources_match_submitted_identity": true,
+    "LoRA_rank": 8,
+    "LoRA_alpha": 16,
+    "actor_microbatch": 4,
+    "global_PPO_minibatch": 32,
+    "ppo_epochs": 2
+  },
+  "native_checkpoint_and_sampling_evidence": {
+    "loader_logs": [
+      {
+        "rank": 0,
+        "file": "raw-3-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.out",
+        "line": 159,
+        "text": "[rank-0]: Loading from /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28/actor/model_world_size_2_rank_0.pt and /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28/actor/optim_world_size_2_rank_0.pt and /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28/actor/extra_state_world_size_2_rank_0.pt"
+      },
+      {
+        "rank": 1,
+        "file": "raw-5-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.out",
+        "line": 47,
+        "text": "[rank-1]: Loading from /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28/actor/model_world_size_2_rank_1.pt and /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28/actor/optim_world_size_2_rank_1.pt and /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28/actor/extra_state_world_size_2_rank_1.pt"
+      }
+    ],
+    "trainer_resume_step_log": [
+      {
+        "file": "raw-1-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.out",
+        "line": 290,
+        "text": "Setting global step to 28"
+      }
+    ],
+    "native_sampling_stack": [
+      {
+        "name": "event",
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/loop_owner_worker.py",
+        "line": 187
+      },
+      {
+        "name": "collect",
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/loop_async_transport.py",
+        "line": 38
+      },
+      {
+        "name": "collect_native_trajectories",
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/loop_owner_rollout.py",
+        "line": 49
+      },
+      {
+        "name": "fit",
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/verl/verl/trainer/ppo/ray_trainer.py",
+        "line": 1100
+      }
+    ],
+    "sample_tokens_call_log_counts": {
+      "raw-3-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.out": 731,
+      "raw-5-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.out": 727
+    },
+    "episode_return_logs": [
+      {
+        "file": "raw-2-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.err",
+        "line": 780,
+        "text": "PHI: 2026-10-06 21:13:11,021 - 3626405 - ThreadPoolExecutor-1_22 - INFO - Returning episode from 7d7fbf6_3"
+      },
+      {
+        "file": "raw-2-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.err",
+        "line": 781,
+        "text": "PHI: 2026-10-06 21:13:11,022 - 3626405 - ThreadPoolExecutor-1_22 - INFO - Episode completed (elapsed=90.78 seconds, ret=0.250, n_policy_messages=3)"
+      },
+      {
+        "file": "raw-2-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.err",
+        "line": 782,
+        "text": "PHI: 2026-10-06 21:13:11,029 - 3626405 - MainThread - INFO - rank1: scenario_idx=2 n_rollouts_collected=1 n_rollouts_cancelled=0 n_rollouts_total=120"
+      }
+    ],
+    "episode_scope": "One rank1 original rollout returned with ret0.250,3 policy messages,90.78 seconds; rank1 log reports1/120 collected, not a complete rollout batch/iteration or success-rate estimate.",
+    "original_ready_log_count": 64,
+    "process_snapshot_names": {
+      "gcs_server": 1,
+      "python": 77,
+      "raylet": 1,
+      "ray::IDLE": 11,
+      "ray::TaskRunner.run": 1,
+      "ray::WorkerDict.execute_method": 2,
+      "ray::WorkerGroupRegisterCenter": 1,
+      "ray::AsyncvLLMServer.generate_tokens": 2,
+      "VLLM::EngineCore": 2,
+      "appworld": 64
+    }
+  },
+  "observed_stage_limits": {
+    "saved_DT_readout_report_counts": {
+      "raw-0-train.log": 0,
+      "raw-1-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.out": 0,
+      "raw-2-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.err": 0,
+      "raw-3-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.out": 0,
+      "raw-4-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.err": 0,
+      "raw-5-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.out": 0,
+      "raw-6-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.err": 0
+    },
+    "saved_actor_grad_norm_metric_counts": {
+      "raw-0-train.log": 0,
+      "raw-1-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.out": 0,
+      "raw-2-worker-c35f81e1eb35cbab37f9cab23b7ddd99b066565201795f72f3f55fc9-01000000-3596559.err": 0,
+      "raw-3-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.out": 0,
+      "raw-4-worker-bf529f28a9b1d62fdd0ae9b7797e83a8c78eee8aec0e467dc1a4bd00-01000000-3598938.err": 0,
+      "raw-5-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.out": 0,
+      "raw-6-worker-4d317509ed99e3b3841f013a76b42845bc625f8c3dc5c8d0841aaac9-01000000-3601412.err": 0
+    },
+    "new_DT_or_PPO_health_asserted": false,
+    "new_completed_checkpoint_asserted": false,
+    "collection_operations": {
+      "model_initializations": 0,
+      "DT_calls": 0,
+      "rollout_calls": 0,
+      "backward_calls": 0,
+      "optimizer_steps": 0,
+      "training_RPC_calls": 0,
+      "service_HTTP_calls": 0,
+      "signals": 0
+    },
+    "operation_scope": "All zero operation counts are the read-only collector actions, not counters proving that the training job performs no model or rollout calls."
+  },
+  "observer_limits": [
+    "Both actor py-spy reads returned Bad address; no claim that actor stack dynamically confirms the imported LOOP interface or DT implementation. Disk source, configured paths and prior actual CPU imports bind interface17ad separately.",
+    "native_loop_listening_ports is empty because the original process detector has no usable cmdline-based match; this is not evidence of absent services. Raw log has64 AppWorld server ready messages and process snapshot has64 processes named appworld.",
+    "No raw new DT report, PPO gradient metric or new checkpoint completion appears in this frozen startup snapshot. Native load/sampling evidence cannot establish the next complete rollout/update, learning recovery or efficiency.",
+    "Checkpoint logs show use of the native loader and progression into sampling; they are not new parameter/optimizer numerical equality validation.",
+    "Raw Ray metrics exporter warnings and the pre-existing Triton-version recommendation are not treated as task failure or authorization to change dependencies."
+  ],
+  "resources_snapshot": {
+    "physical_GPU_source": "startup-phase-observation.json.physical_mx_smi",
+    "App_GPUs_memory_MiB": {
+      "2": 55316,
+      "3": 55300
+    },
+    "host_available_bytes": 699792977920,
+    "shared_cgroup_usage_bytes": 251088728064,
+    "shared_cgroup_limit_bytes": 966367641600,
+    "scope": "One shared host/container physical snapshot. No fork RSS summation or allocator-as-physical interpretation."
+  }
+}

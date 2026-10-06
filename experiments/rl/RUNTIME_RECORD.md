@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 AppWorld官方白化与原LOOP服务恢复已提交
+
+source c775ddd，原提交器64c10036…实际Popen原launcher，PID3592468/birth1791291997.14，
+1791291997.659开始，GPU2/3，从原完整checkpoint28恢复。原预算40组×6、
+completion0.9/0.75、global minibatch32/ppo_epochs2、200iterations/40交互步、
+train32000/effective transport32768、LoRA8/16/每卡B4/DT B4、sampling1/1500均保留。
+原async/prefix/eval routing与已验FA/FLA/PPO/vLLM源保留；0/1与6/7不用。
+
+原App trainer b174→d35ddd26（仅原masked_whiten helper seam）；readout8acf→94a
+只有已验query clock两句；LOOP原78d→17adc301仅末等待/poll位置修复，原5checks/
+5waits/2restarts/HTTP100秒保留，旧源未覆盖。App实际6项CPU合同测试/实际导入
+与配置通过；LOOP 7项原owner测试+真实init/restart/close通过、两服务和端口清理。
+不能称这些是App模型训练/学习验收，旧100秒execute为何卡住仍未查明。
+
+实际提交边界env/argv AST与CPU verified launch-plan逐项相同；继承原
+VERL_RELEASE_UNUSED_HOST_CACHE=1。原提交器只补已录资源env与新author source
+记录，未改算法/恢复/生成/优化器。source2827c5ae…、准备83393ed0…、计划08cbdfe1…
+及actual source/SHA/CPU receipts/PID/配置见results_appworld_official_whitening_20261006.json。
+1791292393原两rank checkpoint28 model/optim/extra加载后，TaskRunner step28
+进入原LOOP采样，rank1首条episode返回ret0.250（3 policy messages）。
+argv/options/10项env及12项源SHA符合提交记录；本次未直接采到LOOP接口live frame，
+既有CPU原导入与service回执仍单独绑定。尚无新DT/PPO更新或学习恢复证据。
+物理GPU2/3为55316/55300MiB，cgroup251088728064B，host available699792977920B。
+当前dated snapshot：research/temporary/rl_upstream_alignment_20260929/appworld-official-whitening-20261006/v2/deployment/current_runtime.json。
+
+TextCraft同一3269087/4,5已完成本轮30次采样交互（35:55），1791291491原调用栈
+确认进入旧策略compute_log_prob；尚无新完整26。原64一次白化真实Adam/保存
+恢复已有独立完成回执；整轮效果恢复仍待正式结果，不把放大PG当作质量修复。
+
 ## 2026-10-06 本轮原生采样进度及LOOP候选修复
 
 1791290776：TextCraft PID3269087/birth1791289021.47仍为原job，已返回18轮

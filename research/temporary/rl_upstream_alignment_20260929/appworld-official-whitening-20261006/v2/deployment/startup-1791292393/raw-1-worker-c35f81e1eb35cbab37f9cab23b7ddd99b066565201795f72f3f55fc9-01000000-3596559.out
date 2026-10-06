@@ -1,0 +1,419 @@
+:job_id:01000000
+:actor_name:TaskRunner
+{'actor_rollout_ref': {'actor': {'checkpoint': {'contents': ['model',
+                                                             'optimizer',
+                                                             'extra']},
+                                 'clip_ratio': 0.2,
+                                 'clip_ratio_c': 3.0,
+                                 'clip_ratio_high': 0.2,
+                                 'clip_ratio_low': 0.2,
+                                 'entropy_coeff': 0.001,
+                                 'fsdp_config': {'fsdp_size': -1,
+                                                 'model_dtype': 'bfloat16',
+                                                 'offload_policy': True,
+                                                 'optimizer_offload': True,
+                                                 'param_offload': True,
+                                                 'reshard_after_forward': True,
+                                                 'wrap_policy': {'min_num_params': 0}},
+                                 'grad_clip': 1.0,
+                                 'invalid_action_penalty_coef': 0.1,
+                                 'kl_loss_coef': 0.001,
+                                 'kl_loss_type': 'low_var_kl',
+                                 'loss_agg_mode': 'token-mean',
+                                 'optim': {'lr': 1e-06,
+                                           'lr_warmup_steps': -1,
+                                           'lr_warmup_steps_ratio': 0.0,
+                                           'min_lr_ratio': 0.0,
+                                           'num_cycles': 0.5,
+                                           'total_training_steps': -1,
+                                           'warmup_style': 'constant',
+                                           'weight_decay': 0.01},
+                                 'policy_loss': {'loss_mode': 'vanilla'},
+                                 'ppo_epochs': 2,
+                                 'ppo_max_token_len_per_gpu': 32768,
+                                 'ppo_micro_batch_size': None,
+                                 'ppo_micro_batch_size_per_gpu': 4,
+                                 'ppo_mini_batch_size': 32,
+                                 'shuffle': False,
+                                 'strategy': 'fsdp2',
+                                 'ulysses_sequence_parallel_size': 1,
+                                 'use_dynamic_bsz': False,
+                                 'use_invalid_action_penalty': False,
+                                 'use_kl_loss': False,
+                                 'use_torch_compile': True},
+                       'hybrid_engine': True,
+                       'model': {'enable_activation_offload': True,
+                                 'enable_gradient_checkpointing': True,
+                                 'external_lib': None,
+                                 'fused_kernel_options': {'impl_backend': 'torch'},
+                                 'lora_alpha': 16,
+                                 'lora_rank': 8,
+                                 'override_config': {},
+                                 'path': '/mnt/si0021787ci2/default/models/Qwen3.5-9B',
+                                 'target_modules': 'all-linear',
+                                 'trust_remote_code': True,
+                                 'use_fused_kernels': True,
+                                 'use_liger': False,
+                                 'use_remove_padding': False,
+                                 'use_shm': False},
+                       'ref': {'fsdp_config': {'param_offload': False,
+                                               'reshard_after_forward': True,
+                                               'wrap_policy': {'min_num_params': 0}},
+                               'log_prob_max_token_len_per_gpu': 32768,
+                               'log_prob_micro_batch_size': None,
+                               'log_prob_micro_batch_size_per_gpu': None,
+                               'log_prob_use_dynamic_bsz': False,
+                               'strategy': 'fsdp',
+                               'ulysses_sequence_parallel_size': 1,
+                               'use_torch_compile': True},
+                       'rollout': {'chat_scheduler': 'verl.workers.rollout.async_server.ChatCompletionScheduler',
+                                   'disable_log_stats': True,
+                                   'do_sample': True,
+                                   'dtype': 'bfloat16',
+                                   'enable_chunked_prefill': True,
+                                   'enforce_eager': True,
+                                   'engine_kwargs': {'sglang': {'attention_backend': None},
+                                                     'vllm': {'limit_mm_per_prompt': {'image': 0,
+                                                                                      'video': 0},
+                                                              'swap_space': None}},
+                                   'free_cache_engine': True,
+                                   'gpu_memory_utilization': 0.75,
+                                   'ignore_eos': False,
+                                   'layered_summon': False,
+                                   'load_format': 'safetensors',
+                                   'log_prob_max_token_len_per_gpu': 32768,
+                                   'log_prob_micro_batch_size': None,
+                                   'log_prob_micro_batch_size_per_gpu': 4,
+                                   'log_prob_use_dynamic_bsz': False,
+                                   'max_model_len': 32768,
+                                   'max_num_batched_tokens': 32768,
+                                   'max_num_seqs': 32,
+                                   'mode': 'async',
+                                   'multi_turn': {'enable': True,
+                                                  'format': 'chatml',
+                                                  'max_turns': None,
+                                                  'tool_config_path': None},
+                                   'n': 1,
+                                   'name': 'vllm',
+                                   'prompt_length': 31268,
+                                   'response_length': 1500,
+                                   'temperature': 1.0,
+                                   'tensor_model_parallel_size': 1,
+                                   'top_k': -1,
+                                   'top_p': 1,
+                                   'use_fire_sampling': False,
+                                   'val_kwargs': {'do_sample': False,
+                                                  'n': 1,
+                                                  'temperature': 0.0,
+                                                  'top_k': -1,
+                                                  'top_p': 1.0}}},
+ 'algorithm': {'adv_estimator': 'deltatrace',
+               'filter_groups': {'enable': False, 'max_num_gen_batches': 10},
+               'gamma': 1.0,
+               'gigpo': {'enable_similarity': False,
+                         'mode': 'mean_norm',
+                         'similarity_thresh': 0.95,
+                         'step_advantage_w': 1.0},
+               'kl_ctrl': {'horizon': 10000,
+                           'kl_coef': 0.001,
+                           'target_kl': 0.1,
+                           'type': 'fixed'},
+               'kl_penalty': 'kl',
+               'lam': 1.0,
+               'norm_adv_by_std_in_grpo': True,
+               'pf_ppo': {'reweight_method': 'pow', 'weight_pow': 2.0},
+               'use_kl_in_reward': False,
+               'use_pf_ppo': False},
+ 'critic': {'checkpoint': {'contents': ['model', 'optimizer', 'extra']},
+            'cliprange_value': 0.5,
+            'forward_max_token_len_per_gpu': 32768,
+            'forward_micro_batch_size': None,
+            'forward_micro_batch_size_per_gpu': None,
+            'grad_clip': 1.0,
+            'loss_agg_mode': 'token-mean',
+            'model': {'enable_activation_offload': False,
+                      'enable_gradient_checkpointing': True,
+                      'external_lib': None,
+                      'fsdp_config': {'fsdp_size': -1,
+                                      'offload_policy': False,
+                                      'optimizer_offload': False,
+                                      'param_offload': False,
+                                      'reshard_after_forward': True,
+                                      'wrap_policy': {'min_num_params': 0}},
+                      'lora_alpha': 16,
+                      'lora_rank': 0,
+                      'override_config': {},
+                      'path': '~/models/deepseek-llm-7b-chat',
+                      'target_modules': 'all-linear',
+                      'tokenizer_path': '/mnt/si0021787ci2/default/models/Qwen3.5-9B',
+                      'trust_remote_code': True,
+                      'use_remove_padding': False,
+                      'use_shm': False},
+            'optim': {'lr': 1e-05,
+                      'lr_warmup_steps_ratio': 0.0,
+                      'min_lr_ratio': None,
+                      'total_training_steps': -1,
+                      'warmup_style': 'constant',
+                      'weight_decay': 0.01},
+            'ppo_epochs': 2,
+            'ppo_max_token_len_per_gpu': 32768,
+            'ppo_micro_batch_size': None,
+            'ppo_micro_batch_size_per_gpu': None,
+            'ppo_mini_batch_size': 32,
+            'rollout_n': 1,
+            'shuffle': False,
+            'strategy': 'fsdp',
+            'ulysses_sequence_parallel_size': 1,
+            'use_dynamic_bsz': False},
+ 'custom_reward_function': {'name': 'compute_score', 'path': None},
+ 'data': {'apply_chat_template_kwargs': {},
+          'custom_cls': {'name': 'LoopIterationDataset',
+                         'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/entry/loop_iteration_dataset.py'},
+          'dataloader_num_workers': 0,
+          'filter_overlong_prompts': False,
+          'filter_overlong_prompts_workers': 1,
+          'image_key': 'images',
+          'loop_eval_groups': 57,
+          'loop_train_groups': 40,
+          'max_prompt_length': 32768,
+          'max_response_length': 1500,
+          'prompt_key': 'prompt',
+          'return_full_prompt': False,
+          'return_raw_chat': True,
+          'return_raw_input_ids': False,
+          'reward_fn_key': 'data_source',
+          'shuffle': True,
+          'tokenizer': None,
+          'train_batch_size': 40,
+          'train_files': 'loop-training',
+          'truncation': 'error',
+          'trust_remote_code': False,
+          'use_shm': False,
+          'val_batch_size': 57,
+          'val_files': 'loop-evaluation',
+          'video_key': 'videos'},
+ 'env': {'alfworld': {'eval_dataset': 'eval_in_distribution'},
+         'env_name': 'AppWorld',
+         'factory': {'_target_': 'loop_environment_entry.make_loop_environments'},
+         'history_length': 2,
+         'loop': {'owner_root': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-loop-readiness-20261006-v1/loop-owner'},
+         'max_steps': 40,
+         'resources_per_worker': {'num_cpus': 0.1, 'num_gpus': 0},
+         'rollout': {'n': 6},
+         'search': {'log_requests': False,
+                    'search_url': 'http://127.0.0.1:8000/retrieve',
+                    'timeout': 60,
+                    'topk': 3},
+         'seed': 0,
+         'sokoban': {'dim_room': [6, 6],
+                     'mode': 'tiny_rgb_array',
+                     'num_boxes': 1,
+                     'search_depth': 30},
+         'webshop': {'human_goals': False, 'use_small': True}},
+ 'ray_init': {'num_cpus': 16,
+              'runtime_env': {'env_vars': {'DT_WORKER_VISIBILITY_DIR': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/worker-visibility',
+                                           'VERL_RELEASE_UNUSED_HOST_CACHE': '1'},
+                              'worker_process_setup_hook': 'observe_worker_visibility.install'}},
+ 'reward_model': {'enable': False,
+                  'forward_max_token_len_per_gpu': 32768,
+                  'launch_reward_fn_async': False,
+                  'max_length': None,
+                  'micro_batch_size': None,
+                  'micro_batch_size_per_gpu': None,
+                  'model': {'external_lib': None,
+                            'fsdp_config': {'fsdp_size': -1,
+                                            'param_offload': False,
+                                            'reshard_after_forward': True,
+                                            'wrap_policy': {'min_num_params': 0}},
+                            'input_tokenizer': '/mnt/si0021787ci2/default/models/Qwen3.5-9B',
+                            'path': '~/models/FsfairX-LLaMA3-RM-v0.1',
+                            'trust_remote_code': False,
+                            'use_fused_kernels': True,
+                            'use_remove_padding': False,
+                            'use_shm': False},
+                  'reward_manager': 'episode',
+                  'sandbox_fusion': {'max_concurrent': 64, 'url': None},
+                  'strategy': 'fsdp',
+                  'ulysses_sequence_parallel_size': 1,
+                  'use_dynamic_bsz': False},
+ 'trainer': {'balance_batch': True,
+             'critic_warmup': 0,
+             'default_hdfs_dir': None,
+             'default_local_dir': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/checkpoints',
+             'del_local_ckpt_after_load': False,
+             'device': 'cuda',
+             'experiment_name': 'dt-AppWorld',
+             'log_val_generations': 0,
+             'logger': ['console'],
+             'max_actor_ckpt_to_keep': 2,
+             'max_critic_ckpt_to_keep': None,
+             'n_gpus_per_node': 2,
+             'nnodes': 1,
+             'project_name': 'deltatrace_official_environments',
+             'ray_wait_register_center_timeout': 300,
+             'resume_from_path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28',
+             'resume_mode': 'resume_path',
+             'rollout_data_dir': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/rollouts',
+             'save_freq': 1,
+             'test_freq': 5,
+             'total_epochs': 200,
+             'total_training_steps': 200,
+             'val_before_train': False,
+             'val_only': False,
+             'validation_data_dir': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/validation'}}
+INFO Print the version information of mcoplib during compilation.
+
+Version info:Mcoplib_Version = '0.4.1'
+Build_Maca_Version = '3.5.3.18'
+GIT_BRANCH = 'HEAD'
+GIT_COMMIT = '8c775a3'
+Vllm Op Version = 0.15.0
+SGlang Op Version  = 0.5.7 && 0.5.8 
+
+INFO Staring Check the current MACA version of the operating environment.
+
+INFO: Release major.minor matching,  successful:3.5. 
+
+Using dataset class: LoopIterationDataset
+Using dataset class: LoopIterationDataset
+WARNING: val_batch_size is deprecated. Validation datasets are sent to inference engines as a whole batch, which will schedule the memory themselves.
+[validate_config] All configuration checks passed successfully!
+Size of train dataloader: 1, Size of val dataloader: 1
+Total training steps: 200
+colocated worker base class <class 'verl.single_controller.base.worker.Worker'>
+bind role actor_rollout method execute_method to class <class 'verl.single_controller.ray.base.create_colocated_worker_cls.<locals>.WorkerDict'>
+bind role actor_rollout method offload to class <class 'verl.single_controller.ray.base.create_colocated_worker_cls.<locals>.WorkerDict'>
+bind role actor_rollout method resume to class <class 'verl.single_controller.ray.base.create_colocated_worker_cls.<locals>.WorkerDict'>
+Using LocalLogger is deprecated. The constructor API will change 
+Checkpoint tracker file does not exist: %s /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/checkpoints/latest_checkpointed_iteration.txt
+Load from checkpoint folder: /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28
+Setting global step to 28
+Resuming from /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-eval-client-routing-20261005-v1/appworld-dt/checkpoints/global_step_28
+[Gloo] Rank 1 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+[Gloo] Rank 0 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+[loop_transport] calls=64 rpc_mode=native_async batch_requests=1 requests=1 generated_tokens=59 elapsed=35.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=65 rpc_mode=native_async batch_requests=1 requests=2 generated_tokens=153 elapsed=38.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=66 rpc_mode=native_async batch_requests=1 requests=3 generated_tokens=255 elapsed=39.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=67 rpc_mode=native_async batch_requests=1 requests=4 generated_tokens=363 elapsed=39.7s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=68 rpc_mode=native_async batch_requests=1 requests=5 generated_tokens=430 elapsed=41.6s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=68 rpc_mode=native_async batch_requests=1 requests=6 generated_tokens=559 elapsed=41.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=70 rpc_mode=native_async batch_requests=1 requests=7 generated_tokens=696 elapsed=42.6s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=71 rpc_mode=native_async batch_requests=1 requests=8 generated_tokens=837 elapsed=42.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=72 rpc_mode=native_async batch_requests=1 requests=9 generated_tokens=987 elapsed=43.5s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=72 rpc_mode=native_async batch_requests=1 requests=10 generated_tokens=1139 elapsed=43.6s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=73 rpc_mode=native_async batch_requests=1 requests=11 generated_tokens=1285 elapsed=43.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=75 rpc_mode=native_async batch_requests=1 requests=12 generated_tokens=1435 elapsed=44.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=76 rpc_mode=native_async batch_requests=1 requests=13 generated_tokens=1594 elapsed=44.6s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=76 rpc_mode=native_async batch_requests=1 requests=14 generated_tokens=1755 elapsed=44.7s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=78 rpc_mode=native_async batch_requests=1 requests=15 generated_tokens=1915 elapsed=45.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=79 rpc_mode=native_async batch_requests=1 requests=16 generated_tokens=2085 elapsed=46.2s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=79 rpc_mode=native_async batch_requests=1 requests=17 generated_tokens=2258 elapsed=46.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=81 rpc_mode=native_async batch_requests=1 requests=18 generated_tokens=2437 elapsed=46.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=81 rpc_mode=native_async batch_requests=1 requests=19 generated_tokens=2618 elapsed=47.1s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=83 rpc_mode=native_async batch_requests=1 requests=20 generated_tokens=2815 elapsed=48.6s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=84 rpc_mode=native_async batch_requests=1 requests=21 generated_tokens=3023 elapsed=49.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=84 rpc_mode=native_async batch_requests=1 requests=22 generated_tokens=3226 elapsed=49.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=86 rpc_mode=native_async batch_requests=1 requests=23 generated_tokens=3449 elapsed=50.7s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=87 rpc_mode=native_async batch_requests=1 requests=24 generated_tokens=3671 elapsed=50.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=87 rpc_mode=native_async batch_requests=1 requests=25 generated_tokens=3895 elapsed=51.1s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=89 rpc_mode=native_async batch_requests=1 requests=26 generated_tokens=4131 elapsed=52.4s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=90 rpc_mode=native_async batch_requests=1 requests=27 generated_tokens=4374 elapsed=52.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=91 rpc_mode=native_async batch_requests=1 requests=28 generated_tokens=4628 elapsed=53.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=91 rpc_mode=native_async batch_requests=1 requests=29 generated_tokens=4764 elapsed=54.1s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=93 rpc_mode=native_async batch_requests=1 requests=30 generated_tokens=5031 elapsed=54.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=94 rpc_mode=native_async batch_requests=1 requests=31 generated_tokens=5201 elapsed=55.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=94 rpc_mode=native_async batch_requests=1 requests=32 generated_tokens=5479 elapsed=55.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=96 rpc_mode=native_async batch_requests=1 requests=33 generated_tokens=5591 elapsed=56.0s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=97 rpc_mode=native_async batch_requests=1 requests=34 generated_tokens=5885 elapsed=56.6s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=97 rpc_mode=native_async batch_requests=1 requests=35 generated_tokens=6170 elapsed=56.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=98 rpc_mode=native_async batch_requests=1 requests=36 generated_tokens=6469 elapsed=57.0s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=99 rpc_mode=native_async batch_requests=1 requests=37 generated_tokens=6770 elapsed=57.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=100 rpc_mode=native_async batch_requests=1 requests=38 generated_tokens=7060 elapsed=57.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=102 rpc_mode=native_async batch_requests=1 requests=39 generated_tokens=7123 elapsed=58.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=102 rpc_mode=native_async batch_requests=1 requests=40 generated_tokens=7434 elapsed=58.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=102 rpc_mode=native_async batch_requests=1 requests=41 generated_tokens=7493 elapsed=58.4s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=105 rpc_mode=native_async batch_requests=1 requests=42 generated_tokens=7596 elapsed=60.1s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=105 rpc_mode=native_async batch_requests=1 requests=43 generated_tokens=7777 elapsed=60.1s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=107 rpc_mode=native_async batch_requests=1 requests=44 generated_tokens=7922 elapsed=60.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=108 rpc_mode=native_async batch_requests=1 requests=45 generated_tokens=8028 elapsed=60.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=109 rpc_mode=native_async batch_requests=1 requests=46 generated_tokens=8232 elapsed=61.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=110 rpc_mode=native_async batch_requests=1 requests=47 generated_tokens=8370 elapsed=61.7s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=111 rpc_mode=native_async batch_requests=1 requests=48 generated_tokens=8730 elapsed=62.5s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=111 rpc_mode=native_async batch_requests=1 requests=49 generated_tokens=8908 elapsed=62.6s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=113 rpc_mode=native_async batch_requests=1 requests=50 generated_tokens=9271 elapsed=62.8s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=114 rpc_mode=native_async batch_requests=1 requests=51 generated_tokens=9480 elapsed=62.9s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=115 rpc_mode=native_async batch_requests=1 requests=52 generated_tokens=9683 elapsed=63.1s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=116 rpc_mode=native_async batch_requests=1 requests=53 generated_tokens=9961 elapsed=65.0s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=117 rpc_mode=native_async batch_requests=1 requests=54 generated_tokens=10072 elapsed=65.6s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=118 rpc_mode=native_async batch_requests=1 requests=55 generated_tokens=10470 elapsed=65.8s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=118 rpc_mode=native_async batch_requests=1 requests=56 generated_tokens=10863 elapsed=65.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=120 rpc_mode=native_async batch_requests=1 requests=57 generated_tokens=11105 elapsed=66.2s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=121 rpc_mode=native_async batch_requests=1 requests=58 generated_tokens=11250 elapsed=67.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=121 rpc_mode=native_async batch_requests=1 requests=59 generated_tokens=11560 elapsed=67.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=122 rpc_mode=native_async batch_requests=1 requests=60 generated_tokens=11968 elapsed=67.5s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=123 rpc_mode=native_async batch_requests=1 requests=61 generated_tokens=12083 elapsed=67.5s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=124 rpc_mode=native_async batch_requests=1 requests=62 generated_tokens=12498 elapsed=68.0s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=125 rpc_mode=native_async batch_requests=1 requests=63 generated_tokens=12645 elapsed=68.1s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=127 rpc_mode=native_async batch_requests=1 requests=64 generated_tokens=12839 elapsed=68.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=128 rpc_mode=native_async batch_requests=1 requests=65 generated_tokens=13004 elapsed=68.9s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=129 rpc_mode=native_async batch_requests=1 requests=66 generated_tokens=13447 elapsed=69.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=129 rpc_mode=native_async batch_requests=1 requests=67 generated_tokens=13728 elapsed=69.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=131 rpc_mode=native_async batch_requests=1 requests=68 generated_tokens=13808 elapsed=69.8s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=132 rpc_mode=native_async batch_requests=1 requests=69 generated_tokens=13934 elapsed=70.0s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=133 rpc_mode=native_async batch_requests=1 requests=70 generated_tokens=14393 elapsed=70.7s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=133 rpc_mode=native_async batch_requests=1 requests=71 generated_tokens=14653 elapsed=70.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=133 rpc_mode=native_async batch_requests=1 requests=72 generated_tokens=14889 elapsed=70.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=136 rpc_mode=native_async batch_requests=1 requests=73 generated_tokens=15012 elapsed=71.1s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=137 rpc_mode=native_async batch_requests=1 requests=74 generated_tokens=15152 elapsed=71.8s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=137 rpc_mode=native_async batch_requests=1 requests=75 generated_tokens=15299 elapsed=71.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=139 rpc_mode=native_async batch_requests=1 requests=76 generated_tokens=15778 elapsed=72.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=140 rpc_mode=native_async batch_requests=1 requests=77 generated_tokens=15957 elapsed=72.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=141 rpc_mode=native_async batch_requests=1 requests=78 generated_tokens=16274 elapsed=72.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=142 rpc_mode=native_async batch_requests=1 requests=79 generated_tokens=16417 elapsed=73.2s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=142 rpc_mode=native_async batch_requests=1 requests=80 generated_tokens=16539 elapsed=73.3s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=144 rpc_mode=native_async batch_requests=1 requests=81 generated_tokens=16634 elapsed=74.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=145 rpc_mode=native_async batch_requests=1 requests=82 generated_tokens=16723 elapsed=75.4s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=146 rpc_mode=native_async batch_requests=1 requests=83 generated_tokens=16793 elapsed=76.1s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=147 rpc_mode=native_async batch_requests=1 requests=84 generated_tokens=17162 elapsed=76.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=147 rpc_mode=native_async batch_requests=1 requests=85 generated_tokens=17252 elapsed=76.5s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=149 rpc_mode=native_async batch_requests=1 requests=86 generated_tokens=17324 elapsed=76.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=149 rpc_mode=native_async batch_requests=1 requests=87 generated_tokens=17571 elapsed=76.9s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=149 rpc_mode=native_async batch_requests=1 requests=88 generated_tokens=18102 elapsed=76.9s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=149 rpc_mode=native_async batch_requests=1 requests=89 generated_tokens=18622 elapsed=77.0s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=153 rpc_mode=native_async batch_requests=1 requests=90 generated_tokens=18714 elapsed=77.6s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=154 rpc_mode=native_async batch_requests=1 requests=91 generated_tokens=18785 elapsed=78.0s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=155 rpc_mode=native_async batch_requests=1 requests=92 generated_tokens=18964 elapsed=78.4s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=155 rpc_mode=native_async batch_requests=1 requests=93 generated_tokens=19092 elapsed=78.6s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=157 rpc_mode=native_async batch_requests=1 requests=94 generated_tokens=19207 elapsed=79.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=158 rpc_mode=native_async batch_requests=1 requests=95 generated_tokens=19270 elapsed=80.1s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=159 rpc_mode=native_async batch_requests=1 requests=96 generated_tokens=19370 elapsed=81.2s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=160 rpc_mode=native_async batch_requests=1 requests=97 generated_tokens=19582 elapsed=81.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=160 rpc_mode=native_async batch_requests=1 requests=98 generated_tokens=19768 elapsed=81.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=160 rpc_mode=native_async batch_requests=1 requests=99 generated_tokens=19863 elapsed=81.5s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=163 rpc_mode=native_async batch_requests=1 requests=100 generated_tokens=19943 elapsed=82.5s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=164 rpc_mode=native_async batch_requests=1 requests=101 generated_tokens=20019 elapsed=82.9s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=165 rpc_mode=native_async batch_requests=1 requests=102 generated_tokens=20180 elapsed=83.6s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=166 rpc_mode=native_async batch_requests=1 requests=103 generated_tokens=20490 elapsed=83.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=167 rpc_mode=native_async batch_requests=1 requests=104 generated_tokens=20646 elapsed=84.2s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=167 rpc_mode=native_async batch_requests=1 requests=105 generated_tokens=20829 elapsed=84.3s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=169 rpc_mode=native_async batch_requests=1 requests=106 generated_tokens=20985 elapsed=84.4s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=169 rpc_mode=native_async batch_requests=1 requests=107 generated_tokens=21071 elapsed=84.5s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=170 rpc_mode=native_async batch_requests=1 requests=108 generated_tokens=21152 elapsed=84.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=172 rpc_mode=native_async batch_requests=1 requests=109 generated_tokens=21354 elapsed=85.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=172 rpc_mode=native_async batch_requests=1 requests=110 generated_tokens=21455 elapsed=85.3s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=174 rpc_mode=native_async batch_requests=1 requests=111 generated_tokens=21550 elapsed=86.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=175 rpc_mode=native_async batch_requests=1 requests=112 generated_tokens=21645 elapsed=86.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=175 rpc_mode=native_async batch_requests=1 requests=113 generated_tokens=22114 elapsed=86.9s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=177 rpc_mode=native_async batch_requests=1 requests=114 generated_tokens=22171 elapsed=87.8s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=178 rpc_mode=native_async batch_requests=1 requests=115 generated_tokens=22300 elapsed=88.3s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=179 rpc_mode=native_async batch_requests=1 requests=116 generated_tokens=22560 elapsed=88.6s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=179 rpc_mode=native_async batch_requests=1 requests=117 generated_tokens=22699 elapsed=88.6s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=179 rpc_mode=native_async batch_requests=1 requests=118 generated_tokens=22769 elapsed=88.6s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=180 rpc_mode=native_async batch_requests=1 requests=119 generated_tokens=23132 elapsed=88.8s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=183 rpc_mode=native_async batch_requests=1 requests=120 generated_tokens=23312 elapsed=89.3s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=184 rpc_mode=native_async batch_requests=1 requests=121 generated_tokens=23559 elapsed=89.8s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=184 rpc_mode=native_async batch_requests=1 requests=122 generated_tokens=23764 elapsed=90.2s completed_ranks=0 server_index=0 reply_rank=0
+[loop_transport] calls=185 rpc_mode=native_async batch_requests=1 requests=123 generated_tokens=23886 elapsed=91.3s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=187 rpc_mode=native_async batch_requests=1 requests=124 generated_tokens=24156 elapsed=93.2s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=188 rpc_mode=native_async batch_requests=1 requests=125 generated_tokens=24320 elapsed=93.7s completed_ranks=0 server_index=1 reply_rank=1
+[loop_transport] calls=188 rpc_mode=native_async batch_requests=1 requests=126 generated_tokens=24435 elapsed=93.8s completed_ranks=0 server_index=0 reply_rank=0
