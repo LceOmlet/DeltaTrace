@@ -19,8 +19,24 @@ optimizer/scheduler、DT重算、rollout均禁止执行；开始记录不代表G
 原parent1856052已退出，环境由已配置entry脚本和此前已存运行字段/完成资源
 override恢复，明确不声称拿到旧进程完整继承环境，不重装或清缓存。
 
-此时为prepared/CPU verified/native diagnostic submitted，未部署正式训练，
-TextCraft未恢复。候选源、CPU回执、原件和后续实际反向结果统一保存在
+隔离诊断已于1791284730.6006439完成并退出，墙钟1121.722秒；每rank原生
+反向6pass/48个B4，真实optimizer/scheduler/DT重算/rollout均0。两rank的原owner
+统计一致：raw PG=0.000132319951383，white PG=0.0511058214626（386.229倍），
+cross-PG cos=0.999751065178。weighted-H为0.000638034939186→0.000638036725375，
+H/PG从4.82191降至0.0124846；KL为0.0000221442670258→0.0000221467383538。
+这些支持本批尺度失衡已纠正、PG方向基本保留，不证明DT估计或学习效果修复。
+原clipping实际执行，clipfrac并非全0：raw最大0.000313152，white最大0.000521921，
+dual-clip lower frac均0；没有继承旧样本的“全部未clip”结论。
+
+原PG首调用178.067秒，white热调用146.045秒；两组H/KL均约144.74秒，
+不能把首/热差称为白化加速。观测中两卡物理各27069MiB、容器usage约116.1GB，
+无OOM；这是此实际批次的观测，不是新的32k容量或显存峰值验收。
+source patch属于8f52b95658d37fc7a0cb69647de801188f70be02（SHA84155a17…），
+实际trainer为7366557b…；dated current_runtime.json绑定路径、SHA、配置及回执。
+旧PLAN来源改为9a9b532的历史Git blob，当前唯一PLAN仍为用户批准后的文件。
+
+当前为CPU/interface/native-gradient verified，未部署正式训练、TextCraft未恢复。
+候选源、CPU回执、原件和实际反向结果统一保存在
 `research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-whitening-20261006/v1/`。
 不能仅凭PG幅度增加宣称学习退化、DT估计质量或正式训练已修复。
 
