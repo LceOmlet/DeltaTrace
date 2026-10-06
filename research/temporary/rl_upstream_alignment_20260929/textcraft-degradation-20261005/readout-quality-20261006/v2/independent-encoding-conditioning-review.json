@@ -1,0 +1,801 @@
+{
+  "scope": "Independent stdlib raw paired-case recomputation; source/identity and descriptive arithmetic review, no new model/DT or causal attribution.",
+  "reviewed_unix": 1791266567.4456933,
+  "sources": {
+    "audit": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\readout-quality-20261006\\v2\\encoding-conditioning-audit.json",
+      "sha256": "f3710e1a57d6f1acc37bcd35303cf2c0cb7d46bcdb57f4f0230c9c85bd0dc0e2",
+      "bytes": 278226
+    },
+    "analyzer": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\analyze_textcraft_encoding_conditioning.py",
+      "sha256": "572cb4c8b0c728c20a7298b01f89dfb3d8794b2302bdedea1fb00906f49ded35",
+      "bytes": 12741
+    },
+    "cases": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\readout-quality-20261006\\v2\\original-first-response-cases.json",
+      "sha256": "3ca15c0ac56b0d73fb3b5948330773d95ffb1990e6fe0edca53fbf5b67575d41",
+      "bytes": 3101595
+    },
+    "boundary": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\native-minibatch-v4\\native-minibatch-update-boundary.json",
+      "sha256": "30e001103045d25b98216b721f3f4d76967072e600bfa677d2c6465552d022c9",
+      "bytes": 8905
+    },
+    "prior_group": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\readout-quality-20261006\\v2\\native64-task-group-label-response.json",
+      "sha256": "a3523a5b50ee3bc3c32935271e9728468a48031aef3522ef13d4e0d61b1a3c6a",
+      "bytes": 123651
+    },
+    "label_inspection": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\label-encoding-20261006\\v2\\native-owner-inspection.json",
+      "sha256": "139652f1460794cadf4409fa7a63aa965f5b8937cf80bcd554388131c7a6eeb1",
+      "bytes": 8724
+    },
+    "label_completed": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\label-encoding-20261006\\v2\\completed.json",
+      "sha256": "c0a52302bc16fbd9414874f27c4567a8024f9f34b5e3e3ed761bd0227c171deb",
+      "bytes": 763
+    },
+    "paired_rank0": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\label-encoding-20261006\\v2\\rank0-readout.json",
+      "sha256": "0fbc0fe7411f64b3af5b9e28cd9433c7de4c715b00de6681521acc64fe89e86e",
+      "bytes": 243619
+    },
+    "paired_rank1": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\label-encoding-20261006\\v2\\rank1-readout.json",
+      "sha256": "1432de9284b619400dfdbb4b665b54447cefe5771dec96f7b3b7f3a521ca04e1",
+      "bytes": 243605
+    },
+    "prior_rank0": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\readout-quality-20261006\\v2\\rank0-readout.json",
+      "sha256": "83e29b133c85513491b375fded2c2e3309d26379cdb92a2821b251aead1bda8b",
+      "bytes": 77991
+    },
+    "prior_rank1": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-degradation-20261005\\readout-quality-20261006\\v2\\rank1-readout.json",
+      "sha256": "380a55a04f954efb32ecbabc3b973a4d8e0420245d80234f51134de9e2a55251",
+      "bytes": 77787
+    }
+  },
+  "raw_population": {
+    "rows": 64,
+    "original_prompt_UID_groups": 8,
+    "group_rows": [
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8
+    ],
+    "successes": 21.0,
+    "failures": 43,
+    "source_step": 0,
+    "independent_world_rollouts_not_assumed": true
+  },
+  "definition": {
+    "probability": "exp(raw FP32 native two-category log-prob); success physical column1 original and column0 swapped.",
+    "log_odds": "Raw success-class LP minus raw failure-class LP in each row, not a separately observed full-vocabulary logit.",
+    "shift": "Swapped minus original semantic success probability/log-odds, separately at factual and same-length whole-response EOS endpoints.",
+    "interaction": "(swapped factual log-odds minus swapped EOS log-odds) minus (original factual log-odds minus original EOS log-odds).",
+    "centering": "For each real prompt, mean of its16 fact/EOS log-odds encoding shifts is removed for descriptive dispersion only; original LP/d/A remain untouched."
+  },
+  "pooled_recomputed_descriptions": {
+    "old_factual_success_probability": {
+      "count": 64,
+      "mean": 0.717860575459376,
+      "mean_absolute": 0.717860575459376,
+      "root_mean_square": 0.7385576680394124,
+      "population_standard_deviation": 0.17361919024390257,
+      "minimum": 0.12559582212545778,
+      "maximum": 0.9033885820401988,
+      "positive": 64,
+      "negative": 0,
+      "zero": 0
+    },
+    "old_EOS_success_probability": {
+      "count": 64,
+      "mean": 0.8134364246966673,
+      "mean_absolute": 0.8134364246966673,
+      "root_mean_square": 0.8148446196240945,
+      "population_standard_deviation": 0.047884622866201106,
+      "minimum": 0.6998337349119863,
+      "maximum": 0.878032460985776,
+      "positive": 64,
+      "negative": 0,
+      "zero": 0
+    },
+    "new_factual_success_probability": {
+      "count": 64,
+      "mean": 0.6814129166975078,
+      "mean_absolute": 0.6814129166975078,
+      "root_mean_square": 0.6839622211217823,
+      "population_standard_deviation": 0.05899793962196599,
+      "minimum": 0.551794043510035,
+      "maximum": 0.8681658192594842,
+      "positive": 64,
+      "negative": 0,
+      "zero": 0
+    },
+    "new_EOS_success_probability": {
+      "count": 64,
+      "mean": 0.6807162118091524,
+      "mean_absolute": 0.6807162118091524,
+      "root_mean_square": 0.6813689896729408,
+      "population_standard_deviation": 0.029818435038097984,
+      "minimum": 0.6248234986426444,
+      "maximum": 0.7762468584994485,
+      "positive": 64,
+      "negative": 0,
+      "zero": 0
+    },
+    "old_factual_success_log_odds": {
+      "count": 64,
+      "mean": 1.0296439002268016,
+      "mean_absolute": 1.2263725479133427,
+      "root_mean_square": 1.3396737689754246,
+      "population_standard_deviation": 0.857064318477067,
+      "minimum": -1.9404736459255219,
+      "maximum": 2.2354565262794495,
+      "positive": 58,
+      "negative": 6,
+      "zero": 0
+    },
+    "old_EOS_success_log_odds": {
+      "count": 64,
+      "mean": 1.5010787486098707,
+      "mean_absolute": 1.5010787486098707,
+      "root_mean_square": 1.531223669468179,
+      "population_standard_deviation": 0.3023384137211468,
+      "minimum": 0.8465061187744141,
+      "maximum": 1.97392837703228,
+      "positive": 64,
+      "negative": 0,
+      "zero": 0
+    },
+    "new_factual_success_log_odds": {
+      "count": 64,
+      "mean": 0.7775427952874452,
+      "mean_absolute": 0.7775427952874452,
+      "root_mean_square": 0.8330377567302566,
+      "population_standard_deviation": 0.29896338510721376,
+      "minimum": 0.20792198181152344,
+      "maximum": 1.8848379999399185,
+      "positive": 64,
+      "negative": 0,
+      "zero": 0
+    },
+    "new_EOS_success_log_odds": {
+      "count": 64,
+      "mean": 0.7607473540119827,
+      "mean_absolute": 0.7607473540119827,
+      "root_mean_square": 0.7736917451372384,
+      "population_standard_deviation": 0.14093395565750833,
+      "minimum": 0.5100727081298828,
+      "maximum": 1.243927001953125,
+      "positive": 64,
+      "negative": 0,
+      "zero": 0
+    },
+    "factual_success_probability_encoding_shift": {
+      "count": 64,
+      "mean": -0.03644765876186815,
+      "mean_absolute": 0.16224038680073846,
+      "root_mean_square": 0.21220037328204444,
+      "population_standard_deviation": 0.20904680478739066,
+      "minimum": -0.2716830000512267,
+      "maximum": 0.7425699971340265,
+      "positive": 15,
+      "negative": 49,
+      "zero": 0
+    },
+    "EOS_success_probability_encoding_shift": {
+      "count": 64,
+      "mean": -0.13272021288751495,
+      "mean_absolute": 0.13373808040968402,
+      "root_mean_square": 0.13921062110829474,
+      "population_standard_deviation": 0.04201121422251333,
+      "minimum": -0.17835787294555216,
+      "maximum": 0.03257176070941037,
+      "positive": 1,
+      "negative": 63,
+      "zero": 0
+    },
+    "factual_success_log_odds_encoding_shift": {
+      "count": 64,
+      "mean": -0.25210110493935645,
+      "mean_absolute": 0.8341733592096716,
+      "root_mean_square": 1.0728327758546243,
+      "population_standard_deviation": 1.0427920204126488,
+      "minimum": -1.6317405104637146,
+      "maximum": 3.8253116458654404,
+      "positive": 15,
+      "negative": 49,
+      "zero": 0
+    },
+    "EOS_success_log_odds_encoding_shift": {
+      "count": 64,
+      "mean": -0.740331394597888,
+      "mean_absolute": 0.7453525522723794,
+      "root_mean_square": 0.784927894193652,
+      "population_standard_deviation": 0.2608087906034368,
+      "minimum": -1.0944271385669708,
+      "maximum": 0.16067704558372498,
+      "positive": 1,
+      "negative": 63,
+      "zero": 0
+    },
+    "old_factual_minus_EOS_log_odds": {
+      "count": 64,
+      "mean": -0.47143484838306904,
+      "mean_absolute": 0.6972077740356326,
+      "root_mean_square": 0.9381793558214991,
+      "population_standard_deviation": 0.8111286503506554,
+      "minimum": -2.786979764699936,
+      "maximum": 0.9489116072654724,
+      "positive": 18,
+      "negative": 46,
+      "zero": 0
+    },
+    "new_factual_minus_EOS_log_odds": {
+      "count": 64,
+      "mean": 0.016795441275462508,
+      "mean_absolute": 0.22537272493354976,
+      "root_mean_square": 0.3230722316033642,
+      "population_standard_deviation": 0.3226353669168033,
+      "minimum": -0.8259105682373047,
+      "maximum": 1.1573065668344498,
+      "positive": 29,
+      "negative": 35,
+      "zero": 0
+    },
+    "factual_minus_EOS_log_odds_encoding_interaction": {
+      "count": 64,
+      "mean": 0.48823028965853155,
+      "mean_absolute": 0.7354308415669948,
+      "root_mean_square": 1.06394284607552,
+      "population_standard_deviation": 0.945307126798071,
+      "minimum": -1.1603201925754547,
+      "maximum": 3.9442863315343857,
+      "positive": 46,
+      "negative": 18,
+      "zero": 0
+    },
+    "old_success_logp_contrast": {
+      "count": 64,
+      "mean": -0.1735530593432486,
+      "mean_absolute": 0.2111342246644199,
+      "root_mean_square": 0.3874865924283329,
+      "population_standard_deviation": 0.3464465253171401,
+      "minimum": -1.7177737951278687,
+      "maximum": 0.15535444021224976,
+      "positive": 18,
+      "negative": 46,
+      "zero": 0
+    },
+    "new_success_logp_contrast": {
+      "count": 64,
+      "mean": -0.0016392369288951159,
+      "mean_absolute": 0.068416548660025,
+      "root_mean_square": 0.0925331538112135,
+      "population_standard_deviation": 0.09251863302351934,
+      "minimum": -0.2903057336807251,
+      "maximum": 0.2714148461818695,
+      "positive": 29,
+      "negative": 35,
+      "zero": 0
+    },
+    "old_observed_category_logp_contrast": {
+      "count": 64,
+      "mean": 0.16322194109670818,
+      "mean_absolute": 0.3708598210942,
+      "root_mean_square": 0.49165202939594393,
+      "population_standard_deviation": 0.4637675236082976,
+      "minimum": -0.7935571670532227,
+      "maximum": 1.5861224234104156,
+      "positive": 39,
+      "negative": 25,
+      "zero": 0
+    },
+    "new_observed_category_logp_contrast": {
+      "count": 64,
+      "mean": -0.05340961623005569,
+      "mean_absolute": 0.13154130359180272,
+      "root_mean_square": 0.2111217650452598,
+      "population_standard_deviation": 0.20425428409211904,
+      "minimum": -0.9045445919036865,
+      "maximum": 0.2122180461883545,
+      "positive": 30,
+      "negative": 34,
+      "zero": 0
+    }
+  },
+  "correlation_of_fact_and_EOS_encoding_shifts": {
+    "probability": 0.5657519557962513,
+    "log_odds": 0.4813610109306596
+  },
+  "prompt_common_shift_summary": {
+    "raw128": {
+      "count": 128,
+      "mean": -0.4962162497686222,
+      "mean_absolute": 0.7897629557410255,
+      "root_mean_square": 0.9399686069308963,
+      "population_standard_deviation": 0.7983172398747093,
+      "minimum": -1.6317405104637146,
+      "maximum": 3.8253116458654404,
+      "positive": 16,
+      "negative": 112,
+      "zero": 0
+    },
+    "per_prompt": [
+      {
+        "prompt_uid": "93f9a704-2eee-4632-87b4-4f847dedd4dd",
+        "rows": 8,
+        "success_rows": 3.0,
+        "common_fact_EOS_log_odds_shift": -0.658257364295423,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 0.3468376914970577,
+          "root_mean_square": 0.4338807510591294,
+          "population_standard_deviation": 0.4338807510591293,
+          "minimum": -0.40381158981472254,
+          "maximum": 0.9638069262728095,
+          "positive": 4,
+          "negative": 12,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 7.0,
+            "AUC": 0.4666666666666667,
+            "success_minus_failure": -0.02640138474011633
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 13.0,
+            "AUC": 0.8666666666666667,
+            "success_minus_failure": 0.004434931657806507
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 6.0,
+            "AUC": 0.4,
+            "success_minus_failure": -0.003994246335819018
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 10.5,
+            "AUC": 0.7,
+            "success_minus_failure": 0.009430474427392865
+          }
+        }
+      },
+      {
+        "prompt_uid": "cbd407ff-6561-4370-a961-8e9c3a18f40c",
+        "rows": 8,
+        "success_rows": 4.0,
+        "common_fact_EOS_log_odds_shift": -0.667505148332566,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 0.29960674582980573,
+          "root_mean_square": 0.41455521479168284,
+          "population_standard_deviation": 0.4145552147916829,
+          "minimum": -0.8109685373492539,
+          "maximum": 1.123422536533326,
+          "positive": 4,
+          "negative": 12,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 8.0,
+            "AUC": 0.5,
+            "success_minus_failure": -0.013504321705686939
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 13.0,
+            "AUC": 0.8125,
+            "success_minus_failure": 0.0052234132464816785
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 8.0,
+            "AUC": 0.5,
+            "success_minus_failure": -0.02766037406715871
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 10.0,
+            "AUC": 0.625,
+            "success_minus_failure": 0.01122885928095163
+          }
+        }
+      },
+      {
+        "prompt_uid": "600e628a-45de-4f56-94fa-95654cb8bf1b",
+        "rows": 8,
+        "success_rows": 3.0,
+        "common_fact_EOS_log_odds_shift": -0.7594797685742378,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 0.36127192340791225,
+          "root_mean_square": 0.4215738532019816,
+          "population_standard_deviation": 0.4215738532019816,
+          "minimum": -0.8722607418894768,
+          "maximum": 0.5892126336693764,
+          "positive": 10,
+          "negative": 6,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 5.0,
+            "AUC": 0.3333333333333333,
+            "success_minus_failure": -0.06188465132517906
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 11.5,
+            "AUC": 0.7666666666666667,
+            "success_minus_failure": 0.010797052095252169
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 13.0,
+            "AUC": 0.8666666666666667,
+            "success_minus_failure": 0.04599249392097837
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 11.5,
+            "AUC": 0.7666666666666667,
+            "success_minus_failure": 0.01008307247938689
+          }
+        }
+      },
+      {
+        "prompt_uid": "57cf774e-4c9e-4240-888a-74a71674a93b",
+        "rows": 8,
+        "success_rows": 3.0,
+        "common_fact_EOS_log_odds_shift": -0.6646418552845716,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 0.3775593009777367,
+          "root_mean_square": 0.5734799385235395,
+          "population_standard_deviation": 0.5734799385235395,
+          "minimum": -0.360111640766263,
+          "maximum": 1.98640969209373,
+          "positive": 6,
+          "negative": 10,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 11.0,
+            "AUC": 0.7333333333333333,
+            "success_minus_failure": 0.10709800165226546
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 1.0,
+            "AUC": 0.06666666666666667,
+            "success_minus_failure": -0.00020891242766807316
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 8.0,
+            "AUC": 0.5333333333333333,
+            "success_minus_failure": 0.007354014724276436
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 15,
+            "pairwise_wins_with_half_ties": 8.5,
+            "AUC": 0.5666666666666667,
+            "success_minus_failure": 0.007019234858736456
+          }
+        }
+      },
+      {
+        "prompt_uid": "05b0ab42-56b5-4e79-8bfe-8354fc761cbe",
+        "rows": 8,
+        "success_rows": 2.0,
+        "common_fact_EOS_log_odds_shift": -0.6061719609424472,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 0.4864684146596119,
+          "root_mean_square": 0.6462955345183302,
+          "population_standard_deviation": 0.6462955345183301,
+          "minimum": -0.48825517762452364,
+          "maximum": 1.5966657353565097,
+          "positive": 5,
+          "negative": 11,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 12,
+            "pairwise_wins_with_half_ties": 0.0,
+            "AUC": 0.0,
+            "success_minus_failure": -0.27179913105292053
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 12,
+            "pairwise_wins_with_half_ties": 6.0,
+            "AUC": 0.5,
+            "success_minus_failure": 0.002416081769347378
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 12,
+            "pairwise_wins_with_half_ties": 10.0,
+            "AUC": 0.8333333333333334,
+            "success_minus_failure": 0.043121342433367627
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 12,
+            "pairwise_wins_with_half_ties": 12.0,
+            "AUC": 1.0,
+            "success_minus_failure": 0.07294441361100346
+          }
+        }
+      },
+      {
+        "prompt_uid": "f2c4c361-dfc1-44cc-a9a1-7051dff50f9d",
+        "rows": 8,
+        "success_rows": 4.0,
+        "common_fact_EOS_log_odds_shift": -0.5462980130687356,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 0.25986933754757047,
+          "root_mean_square": 0.360504967368569,
+          "population_standard_deviation": 0.360504967368569,
+          "minimum": -0.4221659144386649,
+          "maximum": 0.981112495996058,
+          "positive": 4,
+          "negative": 12,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 9.0,
+            "AUC": 0.5625,
+            "success_minus_failure": 0.011131643570646
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 2.0,
+            "AUC": 0.125,
+            "success_minus_failure": -0.006529171060327688
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 4.0,
+            "AUC": 0.25,
+            "success_minus_failure": -0.02901056487805076
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 16,
+            "pairwise_wins_with_half_ties": 10.0,
+            "AUC": 0.625,
+            "success_minus_failure": -0.0015034400908049417
+          }
+        }
+      },
+      {
+        "prompt_uid": "37fcb07e-03f3-4d52-b386-84c9a038bc24",
+        "rows": 8,
+        "success_rows": 1.0,
+        "common_fact_EOS_log_odds_shift": 0.7189427725970745,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 1.174565449822694,
+          "root_mean_square": 1.366732841689006,
+          "population_standard_deviation": 1.366732841689006,
+          "minimum": -1.1161767356097698,
+          "maximum": 3.106368873268366,
+          "positive": 5,
+          "negative": 11,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 7.0,
+            "AUC": 1.0,
+            "success_minus_failure": 0.32481171374839524
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 3.5,
+            "AUC": 0.5,
+            "success_minus_failure": -0.003394411951801457
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 0.0,
+            "AUC": 0.0,
+            "success_minus_failure": -0.11435728855545424
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 0.5,
+            "AUC": 0.07142857142857142,
+            "success_minus_failure": -0.03380798913016125
+          }
+        }
+      },
+      {
+        "prompt_uid": "9c2172f4-1dda-4f6a-a36d-d2405ad80cf9",
+        "rows": 8,
+        "success_rows": 1.0,
+        "common_fact_EOS_log_odds_shift": -0.786318660248071,
+        "centered_residuals": {
+          "count": 16,
+          "mean": 0.0,
+          "mean_absolute": 0.18176134547684342,
+          "root_mean_square": 0.2958196306633504,
+          "population_standard_deviation": 0.2958196306633504,
+          "minimum": -0.6004077489487827,
+          "maximum": 0.7062633936293423,
+          "positive": 10,
+          "negative": 6,
+          "zero": 0
+        },
+        "realized_separation": {
+          "old_factual_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 6.0,
+            "AUC": 0.8571428571428571,
+            "success_minus_failure": 0.059360766943723275
+          },
+          "old_EOS_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 7.0,
+            "AUC": 1.0,
+            "success_minus_failure": 0.010846454842632913
+          },
+          "new_factual_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 0.0,
+            "AUC": 0.0,
+            "success_minus_failure": -0.07654299295285627
+          },
+          "new_EOS_success_probability": {
+            "success_failure_pairs": 7,
+            "pairwise_wins_with_half_ties": 1.0,
+            "AUC": 0.14285714285714285,
+            "success_minus_failure": 0.00013626499011953896
+          }
+        }
+      }
+    ],
+    "centered128": {
+      "count": 128,
+      "mean": 0.0,
+      "mean_absolute": 0.435992526152404,
+      "root_mean_square": 0.6490225294352264,
+      "population_standard_deviation": 0.6490225294352264,
+      "minimum": -1.1161767356097698,
+      "maximum": 3.106368873268366,
+      "positive": 48,
+      "negative": 80,
+      "zero": 0
+    }
+  },
+  "within_prompt_separation": {
+    "old_factual_success_probability": {
+      "success_failure_pairs": 103,
+      "pair_weighted_AUC": 0.5145631067961165,
+      "equal_prompt_success_minus_failure": 0.01610157963639089
+    },
+    "old_EOS_success_probability": {
+      "success_failure_pairs": 103,
+      "pair_weighted_AUC": 0.5533980582524272,
+      "equal_prompt_success_minus_failure": 0.0029481797714654284
+    },
+    "new_factual_success_probability": {
+      "success_failure_pairs": 103,
+      "pair_weighted_AUC": 0.47572815533980584,
+      "equal_prompt_success_minus_failure": -0.01938720196383957
+    },
+    "new_EOS_success_probability": {
+      "success_failure_pairs": 103,
+      "pair_weighted_AUC": 0.6213592233009708,
+      "equal_prompt_success_minus_failure": 0.00944136130332808
+    }
+  },
+  "root_sign_flips": {
+    "success_semantic_root": 29,
+    "actual_observed_category_root": 29
+  },
+  "prior_native_same_original_encoding_probability_difference": {
+    "factual_probability": {
+      "count": 64,
+      "mean": -4.263931379722488e-08,
+      "mean_absolute": 6.392375764851556e-07,
+      "root_mean_square": 8.099305430398244e-07,
+      "population_standard_deviation": 8.088073772337186e-07,
+      "minimum": -1.988018014098536e-06,
+      "maximum": 1.6127479583460946e-06,
+      "positive": 25,
+      "negative": 29,
+      "zero": 10
+    },
+    "EOS_probability": {
+      "count": 64,
+      "mean": 5.841136557598048e-08,
+      "mean_absolute": 5.550250726151645e-07,
+      "root_mean_square": 6.831225998132234e-07,
+      "population_standard_deviation": 6.806207451636533e-07,
+      "minimum": -1.6689605755182413e-06,
+      "maximum": 1.93217052957273e-06,
+      "positive": 32,
+      "negative": 25,
+      "zero": 7
+    }
+  },
+  "analyzer_comparison": {
+    "scalar_description_comparisons": 190,
+    "maximum_absolute_scalar_difference": 0,
+    "row_formula_comparisons": 1216,
+    "maximum_absolute_row_formula_difference": 0.0,
+    "centered_stat_differences": {
+      "count": 0,
+      "mean": 0.0,
+      "mean_absolute": 0.0,
+      "root_mean_square": 0.0,
+      "population_standard_deviation": 0.0,
+      "minimum": 0.0,
+      "maximum": 0.0,
+      "positive": 0,
+      "negative": 0,
+      "zero": 0
+    },
+    "within_AUC_and_group_center_values_exactly_match": true,
+    "no_numerical_acceptance_threshold_applied": true
+  },
+  "source_review": {
+    "actual_uid_mapping": "Original boundary uid/traj_uid plus existing exact prompt/action-ID mapping, not actorB4 grouping.",
+    "label_dictionary_bijection_verified": true,
+    "query_equal_length_and_only_two_labelIDs_verified": true,
+    "actual_logits_dtype": [
+      "torch.float32"
+    ],
+    "original_frozen_query_SHA": "228afbc7a10841d482c3d73def59dfe9ef192c057a97d76dca57369502a10137",
+    "checkpoints": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v7/textcraft-dt/checkpoints/global_step_25"
+    ]
+  },
+  "evidence_boundary": [
+    "The observed coding shift has factual/EOS and within-prompt variation. This rejects describing these saved LP changes as only one fixed additive log-odds offset; it does not identify an internal causal mechanism.",
+    "103 are success-failure comparisons inside8 shared prompts, not103 independent tasks/rollouts. AUC is descriptive and no world-counterfactual or calibration error threshold is defined.",
+    "29/64 is success-semantic whole-response EOS root-sign sensitivity. The binary complementary observed-category root has the same flip count; neither count is a token-credit or policy-gradient sign statistic.",
+    "These records concern native reward-readout endpoints. They neither establish individual token attribution, joint-DT propagation quality, total weak-PG cause, nor demonstrate a training repair.",
+    "Equivalent swapped encoding is not selected as a replacement, correction, average, normalization, or deployable improvement. EOS response-length and forecast-context variation remain possible descriptive contributors.",
+    "All source bindings and exact/raw arithmetic are local audit evidence, not official FA/FLA numerical acceptance."
+  ],
+  "operations": {
+    "local_JSON_source_analysis_only": true,
+    "new_models": 0,
+    "new_DT": 0,
+    "new_backward": 0,
+    "new_optimizer_updates": 0,
+    "remote_calls": 0,
+    "production_changes": 0
+  }
+}

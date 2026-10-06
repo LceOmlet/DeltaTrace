@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 奖励读出的条件交互与预算来源审计
+
+仅本机CPU复用已有64条配对概率和冻结owner源码，0模型/DT/反向/更新/远端调用。原事实成功概率的103个同prompt成功/失败pair AUC=0.514563，交换编码=0.475728；每个prompt去其fact+EOS共同log-odds编码偏移后，128点残余RMS=0.649023。这些描述排除仅一个常数标签偏移，不识别全部弱PG来源，不选择交换编码为修复；29/64反号属于完整response端点根差，不是token优势错误率。独立原件复算一致。
+
+冻结AgentGym rollout原while以max_rounds/done推进，10752/10240在collect结束后由原truncate_output_ids裁训练载体。未在forecast写这两个数字不能直接称漏了环境终止预算；原transport的32256 prompt超限走官方truncation=error，异常边界及既有数据的动态证据范围在return-forecast-budget-source-audit-20261006.json单独记录，未改停止策略。
+
+source与独立复核绑定既有results_textcraft_learning_degradation_20261006.json的reward_readout_conditioning_CPU_diagnostics。生产版本/status/PLAN、Q/V/A、原PPO、LoRA8/16与每卡B4均保持，TextCraft未恢复，未运行待答归一化候选。
+
+
 ## 2026-10-06 等价标签编码的原任务梯度诊断
 
 隔离诊断PID552348/birth1791263586.6在GPU[4, 5]已完成并退出，墙钟902.172s（原job started到completed）。同一保存64条和完整checkpoint25，只加载一次原模型/checkpoint。先保存原A的PG/H，再临时将原RewardAlphabet.labels从01换成10，原query_ids 228保持，标签/目标编码同步；原return语义/数值、observed index、原Q/V/A公式、trajectory_credit和compute_advantage保持并恢复临时方法。新信用仅通过原DataProto pop/union接回，不重建轨迹、mask或奖励。
