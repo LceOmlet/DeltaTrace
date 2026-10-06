@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 查询语义修复的原任务梯度实测
+
+GPU4/5隔离PID3996191/birth1791256647.02已完成并退出。同一原64条/checkpoint25/LoRA8/16/每卡B4，原模型及完整checkpoint各加载一次。先用保存的原信用测PG/H，再调用原trajectory_credit→worker→producer→runner重算，临时绑定afe59dd的query_ids(94a7afbc)，结束后恢复原方法；原pop/union/compute_advantage接回新信用。原reward、IDs、mask、old/ref LP及原Q/V/A组合保持，CPU逐字段回执另绑定。每rank两个信用组各两个local32反向（8B4/8），原clip执行；optimizer no-op4/scheduler no-op2，真实更新/rollout均0。
+
+原PG norm 0.00013232293184523，新PG 9.6505998641621e-05，新/旧 0.7293217985；weighted-H 0.00063804894845689→0.00063803891811982。这些是同job原preclip Gram的描述，不新增容差；没有新旧PG互积，不声称方向或成功率改善。查询修复对齐环境立即处理已发出的回复，但本次未增强任务梯度，不能当学习问题已修。正式TextCraft保持停止，查询候选仍prepared-only；不做信用缩放、归一化、熵调参或公式改动。
+
+原DT每rank24B4/96contrasts，实际查询225/226 token、最大读出5226/5297，保留原密集ABI、缓存与dtype；内部conservation标志不是FA/FLA官方容差断言。原作者累计删除/RISE/MAS仍是整体归因评价，不用单token或小梯度代替。失败v1在CPU检查TensorDict.keys接口前终止，无模型成本；v2只修诊断键迭代。所有source/import/config/input SHA、原件、阶段日志、完成资源、CPU对照和独立review绑定现有degradation结果。
+
+
 ## 2026-10-06 原任务梯度的成功/失败支持对照
 
 GPU4/5隔离PID3747980/birth1791254337.14已完成并退出，原64条/checkpoint25/LoRA8/16/每卡B4不变。复用原VERL observer，每rank两个支持组各两个完整local32反向（8B4/8），原clip执行；optimizer no-op4/scheduler no-op2，真实更新、rollout、DT重算均0。只把原GRPO系数在指定Q支持之外置零，完整DT A和原loss_mask/分母保留；未改loss。原助手PYTHONPATH导致v1在observer前失败，v2仅修诊断搜索路径并在fresh subprocess核实际导入，保留两版本原件。
