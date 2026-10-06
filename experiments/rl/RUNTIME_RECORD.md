@@ -26,8 +26,10 @@ readout94a7afbc…（afe59dd已有query clock修复），VERL trainer7366557b…
 research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-whitening-formal-20261006/v2/deployment/。
 本机experiments/rl/current_runtime.json仍是明确日期的10-05历史快照，不能当最新。
 
-本机GitHub443连接连续失败（连接失败/重置），本轮bcf5caa/faf0d89目前仅本地提交；
-已部署源码和远端清单独立保存，不为推送问题重跑训练或改参数。
+1791289725更新：原前3交互轮已返回，当前round4/30、active233，首轮172.33秒，
+随后原进度显示累计5:16与7:24；这些是采样/交互轮计时，不是整轮训练耗时。
+本机HTTPS连接失败；按GitHub官方公开Ed25519指纹校验后，既有SSH443鉴权
+成功，91aaf89→44dbe17已推送同一分支。没有改全局SSH/Git配置或绕过host检查。
 
 ## 2026-10-06 官方白化后的原生真实更新与正式准备
 

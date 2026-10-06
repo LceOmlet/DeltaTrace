@@ -1,5 +1,5 @@
 {
-  "observed_unix": 1791289304.9329836,
+  "observed_unix": 1791289725.1123536,
   "role": "Dated TextCraft actual checkpoint25 load and first original generation startup observation; no new completed formal iteration.",
   "submission_repository_commit": "faf0d892c1e5260d83663c825195733b3c3e0741",
   "job": {
@@ -195,7 +195,7 @@
       "status": "Historical manifest row. PID terminal status audited separately; never infer live from saved status."
     }
   ],
-  "performance_and_capacity_scope": "Actual initial generation physical memory observation, not peak memory or full iteration timing. Kernel and 32k capacity receipts remain separate.",
+  "performance_and_capacity_scope": "Startup memory snapshot at1791289304, and current returned rollout rounds at1791289725; not peak memory/full iteration timing or 32k revalidation.",
   "actual_startup_review": {
     "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-whitening-formal-20261006/v2/deployment/startup-independent-review.json",
     "sha256": "cc71a94e9ea7be65151aef98c5983841604ff7e6d3de73f06ea5a7fecbda0845",
@@ -250,6 +250,107 @@
     "finding": "Original TaskRunner set global step25, both actual actor ranks emitted original checkpoint model/optimizer/extra-state load paths, and subsequently entered generation. This is runtime evidence beyond a prepared resume setting."
   },
   "current_actual_phase": {
+    "name": "Original training rollout at round4/30 after three returned original generation/environment rounds",
+    "first_generation_has_returned": true,
+    "completed_interaction_rounds": 3,
+    "currently_active_trajectories": 233,
+    "source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/official-whitening-formal-20261006/v2/deployment/latest-small-phase.json",
+      "sha256": "cbcceac92f2a13b2655916763f117d837968ca6785a6b08c6c29c5348fd56378",
+      "bytes": 4165
+    },
+    "scope": "Original TaskRunner progress lines; no completed DT/update or success-rate inference. Prior native stack/source checkpoint review remains dated startup evidence."
+  },
+  "lora_sync_evidence": {
+    "native_actor_logs": [
+      {
+        "source": {
+          "path": "/tmp/ray/session_2026-10-06_20-17-25_541326_3269087/logs/worker-724a3c6dbc90eb56b23e4ac6ca136014b0e93aa6a654757246213bcc-01000000-3278197.out",
+          "exists": true,
+          "bytes": 5555,
+          "sha256": "e3bddf49ddfdf0f993cfd5200bdf4ce9ca05b7ac26a689b8dd98757116e74740",
+          "mtime": 1791289181.931169
+        },
+        "lines": [
+          {
+            "line": 5,
+            "text": "Applying LoRA to actor module"
+          },
+          {
+            "line": 41,
+            "text": "WARNING 10-06 20:19:41 [input_processor.py:287] vLLM has deprecated support for supporting different tokenizers for different LoRAs. By default, vLLM uses base model's tokenizer. If you are using a LoRA with its own tokenizer, consider specifying `--tokenizer [lora_path]` to use the LoRA tokenizer."
+          },
+          {
+            "line": 42,
+            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_SHRINK.json"
+          },
+          {
+            "line": 43,
+            "text": "WARNING 10-06 20:19:41 [utils.py:268] Using default LoRA kernel configs"
+          },
+          {
+            "line": 44,
+            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_EXPAND_TRUE.json"
+          }
+        ]
+      },
+      {
+        "source": {
+          "path": "/tmp/ray/session_2026-10-06_20-17-25_541326_3269087/logs/worker-abe30f8ccb0055dc4b9f713808fbe01aeeaf80dbe71215d92ec043b2-01000000-3276233.out",
+          "exists": true,
+          "bytes": 8506,
+          "sha256": "a05130bcd0c8b1470802b6ba1af9276a9f1c14bcef402b99f947917312ec41e2",
+          "mtime": 1791289181.7911744
+        },
+        "lines": [
+          {
+            "line": 116,
+            "text": "Applying LoRA to actor module"
+          },
+          {
+            "line": 153,
+            "text": "WARNING 10-06 20:19:41 [input_processor.py:287] vLLM has deprecated support for supporting different tokenizers for different LoRAs. By default, vLLM uses base model's tokenizer. If you are using a LoRA with its own tokenizer, consider specifying `--tokenizer [lora_path]` to use the LoRA tokenizer."
+          },
+          {
+            "line": 154,
+            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_SHRINK.json"
+          },
+          {
+            "line": 155,
+            "text": "WARNING 10-06 20:19:41 [utils.py:268] Using default LoRA kernel configs"
+          },
+          {
+            "line": 156,
+            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_EXPAND_TRUE.json"
+          }
+        ]
+      }
+    ],
+    "finding": "Both actor modules report original LoRA application, checkpoint restore, then native vLLM LoRA-kernel configuration and generation. No LoRA exception is present. This observation does not independently checksum synchronized vLLM adapter tensors; previously bound original LoRA synchronization verification remains distinct."
+  },
+  "resources": {
+    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Tue Oct  6 20:20:56 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.3.12           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.29.1.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 99W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 29%         Disabled |\n| 191W / 450W      | 47C          P9 | 50197/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 32%         Disabled |\n| 177W / 450W      | 47C          P9 | 50993/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 97W / 450W       | 49C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 95W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  4                  3276233         ray::WorkerDict              49274          |\n|  5                  3278197         ray::WorkerDict              50070          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "gpu4_memory_MiB": 50197,
+    "gpu5_memory_MiB": 50993,
+    "host_available_bytes": 909058326528,
+    "cgroup": {
+      "/sys/fs/cgroup/memory/memory.usage_in_bytes": "143116726272",
+      "/sys/fs/cgroup/memory/memory.limit_in_bytes": "966367641600"
+    },
+    "scope": "Physical mx-smi; shared-container cgroup usage and host availability, not summed fork RSS."
+  },
+  "observed_errors": {
+    "OOM_in_matched_startup_logs": false,
+    "Traceback_in_matched_startup_logs": false,
+    "nonfinite_message_in_matched_startup_logs": false,
+    "scope": "Current short startup logs only; DT/PPO update has not run and no numerical-health claim is made."
+  },
+  "limits": [
+    "This checks actual startup/restore/first-generation phase, not complete rollout or training health.",
+    "No first-round reward, DT or optimizer result is available in these snapshots.",
+    "Current GPU activity/process existence alone is not used as healthy-training proof."
+  ],
+  "startup_actual_phase_observation": {
     "name": "First training rollout, TextCraft round1/30, awaited original vLLM generation",
     "progress": [
       {
@@ -370,94 +471,5 @@
     ],
     "first_generation_has_returned": false,
     "finding": "Actual TaskRunner stack uses the original AgentGym-RL vllm_rollout.generate_sequences and frozen entry.generate adapter; actor processes are actor_rollout_generate_sequences. No completed round or first-generated-token counter is recorded yet."
-  },
-  "lora_sync_evidence": {
-    "native_actor_logs": [
-      {
-        "source": {
-          "path": "/tmp/ray/session_2026-10-06_20-17-25_541326_3269087/logs/worker-724a3c6dbc90eb56b23e4ac6ca136014b0e93aa6a654757246213bcc-01000000-3278197.out",
-          "exists": true,
-          "bytes": 5555,
-          "sha256": "e3bddf49ddfdf0f993cfd5200bdf4ce9ca05b7ac26a689b8dd98757116e74740",
-          "mtime": 1791289181.931169
-        },
-        "lines": [
-          {
-            "line": 5,
-            "text": "Applying LoRA to actor module"
-          },
-          {
-            "line": 41,
-            "text": "WARNING 10-06 20:19:41 [input_processor.py:287] vLLM has deprecated support for supporting different tokenizers for different LoRAs. By default, vLLM uses base model's tokenizer. If you are using a LoRA with its own tokenizer, consider specifying `--tokenizer [lora_path]` to use the LoRA tokenizer."
-          },
-          {
-            "line": 42,
-            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_SHRINK.json"
-          },
-          {
-            "line": 43,
-            "text": "WARNING 10-06 20:19:41 [utils.py:268] Using default LoRA kernel configs"
-          },
-          {
-            "line": 44,
-            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_EXPAND_TRUE.json"
-          }
-        ]
-      },
-      {
-        "source": {
-          "path": "/tmp/ray/session_2026-10-06_20-17-25_541326_3269087/logs/worker-abe30f8ccb0055dc4b9f713808fbe01aeeaf80dbe71215d92ec043b2-01000000-3276233.out",
-          "exists": true,
-          "bytes": 8506,
-          "sha256": "a05130bcd0c8b1470802b6ba1af9276a9f1c14bcef402b99f947917312ec41e2",
-          "mtime": 1791289181.7911744
-        },
-        "lines": [
-          {
-            "line": 116,
-            "text": "Applying LoRA to actor module"
-          },
-          {
-            "line": 153,
-            "text": "WARNING 10-06 20:19:41 [input_processor.py:287] vLLM has deprecated support for supporting different tokenizers for different LoRAs. By default, vLLM uses base model's tokenizer. If you are using a LoRA with its own tokenizer, consider specifying `--tokenizer [lora_path]` to use the LoRA tokenizer."
-          },
-          {
-            "line": 154,
-            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_SHRINK.json"
-          },
-          {
-            "line": 155,
-            "text": "WARNING 10-06 20:19:41 [utils.py:268] Using default LoRA kernel configs"
-          },
-          {
-            "line": 156,
-            "text": "WARNING 10-06 20:19:41 [utils.py:173] No LoRA kernel configs found in /opt/conda/lib/python3.12/site-packages/vllm_metax/model_executor/layers/fused_moe/configs/H=4096/MetaX_C550_EXPAND_TRUE.json"
-          }
-        ]
-      }
-    ],
-    "finding": "Both actor modules report original LoRA application, checkpoint restore, then native vLLM LoRA-kernel configuration and generation. No LoRA exception is present. This observation does not independently checksum synchronized vLLM adapter tensors; previously bound original LoRA synchronization verification remains distinct."
-  },
-  "resources": {
-    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Tue Oct  6 20:20:56 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.3.12           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.29.1.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 99W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 29%         Disabled |\n| 191W / 450W      | 47C          P9 | 50197/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 32%         Disabled |\n| 177W / 450W      | 47C          P9 | 50993/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 97W / 450W       | 49C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 95W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  4                  3276233         ray::WorkerDict              49274          |\n|  5                  3278197         ray::WorkerDict              50070          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
-    "gpu4_memory_MiB": 50197,
-    "gpu5_memory_MiB": 50993,
-    "host_available_bytes": 909058326528,
-    "cgroup": {
-      "/sys/fs/cgroup/memory/memory.usage_in_bytes": "143116726272",
-      "/sys/fs/cgroup/memory/memory.limit_in_bytes": "966367641600"
-    },
-    "scope": "Physical mx-smi; shared-container cgroup usage and host availability, not summed fork RSS."
-  },
-  "observed_errors": {
-    "OOM_in_matched_startup_logs": false,
-    "Traceback_in_matched_startup_logs": false,
-    "nonfinite_message_in_matched_startup_logs": false,
-    "scope": "Current short startup logs only; DT/PPO update has not run and no numerical-health claim is made."
-  },
-  "limits": [
-    "This checks actual startup/restore/first-generation phase, not complete rollout or training health.",
-    "No first-round reward, DT or optimizer result is available in these snapshots.",
-    "Current GPU activity/process existence alone is not used as healthy-training proof."
-  ]
+  }
 }
