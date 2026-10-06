@@ -1,5 +1,12 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 弱任务梯度：长度、事件读出及原优势预处理
+
+仅CPU复用原checkpoint25/iteration26的真实64条、8个原prompt组各8条及186成功response原件。长度分解未证明固定1/L是完整人口的主因，expm1组合未再次显著缩幅；原1/211仍是preclip任务梯度范数比，不是Adam更新或归因质量比。原同任务内奖励预测与等价标签交换的响应已绑定新原件，不能把读出缺陷与DT整体归因评价混同。
+
+原VERL源码的GAE接口在central batch/action-token mask上调用masked_whiten，GRPO按原组标准化；本次DT仍直接使用raw A，未执行GAE。masked_whiten默认同时中心化和缩放，不能称为只乘一个系数。原loss mask继续排除O/padding。用户尚未批准改变PLAN的禁止归一化条款，因此未实现或测试该候选；不改熵、Q/V/A、LoRA8/16、每卡B4或部署路径。实际同策略载体来源、mask语义、已存数值分解见results_textcraft_learning_degradation_20261006.json的weak_task_signal_cpu_followup。本次模型/GPU/DT/反向/更新/正式启动均0；先前作者累计删除/RISE/MAS结果保持。
+
+
 ## 2026-10-06 原作者累计删除与奖励事件曲线
 
 GPU[4, 5]隔离PID112109/birth1791259467.52已完成并退出，从启动到完成596.598秒。checkpoint25原成功首response 21 UID，原VERL padding后22运输槽，保留副本差与首个UID主记录。原作者k=20累计删除两视图，每rank原生评分调用[462, 462]；使用保存的d_from_A，不重算DT。原模型及完整checkpoint加载一次，评分B1与固定actor训练B4分开，LoRA8/16保持；DT/反向/optimizer/scheduler/rollout均0。
