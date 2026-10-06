@@ -1,0 +1,498 @@
+{
+  "scope": "One actual original worker update on one saved local32/global64 minibatch; original backward/clip/AdamW/scheduler/offload. No loss substitution or gradient gating.",
+  "branch": "dt",
+  "rank": 1,
+  "started_unix": 1791287261.0841053,
+  "sources": {
+    "diagnostic": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/observe_native_adam_update.py",
+      "sha256": "74b66bf8bb703c66ae17e2cbb8506a18fe7685b3b073fd94b8ca07a6e43be36c",
+      "qualname": "observe_saved_native_adam_update",
+      "actual_callable_code_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-adam-20261006-v1/observe_native_adam_update.py",
+      "actual_callable_code_first_line": 130
+    },
+    "original_update_actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+      "qualname": "ActorRolloutRefWorker.update_actor",
+      "actual_callable_code_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/single_controller/base/decorator.py",
+      "actual_callable_code_first_line": 530
+    },
+    "actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+      "qualname": "DataParallelPPOActor",
+      "actual_callable_code_file": null,
+      "actual_callable_code_first_line": null
+    },
+    "core": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py",
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "qualname": "compute_policy_loss",
+      "actual_callable_code_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py",
+      "actual_callable_code_first_line": 431
+    },
+    "native_clip_and_step": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+      "qualname": "DataParallelPPOActor._optimizer_step",
+      "actual_callable_code_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/actor/dp_actor.py",
+      "actual_callable_code_first_line": 279
+    },
+    "native_optimizer_step": {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/optim/adam.py",
+      "sha256": "46296644b82ae5f2ecae17ee30ce4691f4cc2078a0e478ec2beef10ffbe8018e",
+      "qualname": "Adam.step",
+      "actual_callable_code_file": "/opt/conda/lib/python3.12/site-packages/torch/optim/lr_scheduler.py",
+      "actual_callable_code_first_line": 129
+    },
+    "native_scheduler_step": {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/optim/lr_scheduler.py",
+      "sha256": "3876590cfc312630a68c82cde602432d2cf605dd0c1ed3aeb97936e11621a9a1",
+      "qualname": "LRScheduler.step",
+      "actual_callable_code_file": "/opt/conda/lib/python3.12/site-packages/torch/optim/lr_scheduler.py",
+      "actual_callable_code_first_line": 176
+    }
+  },
+  "effective_actor_config": {
+    "ppo_mini_batch_size": 32,
+    "ppo_micro_batch_size_per_gpu": 4,
+    "ppo_epochs": 1,
+    "use_dynamic_bsz": false,
+    "entropy_coeff": 0.001,
+    "use_kl_loss": true,
+    "kl_loss_coef": 0.001,
+    "kl_loss_type": "low_var_kl",
+    "loss_agg_mode": "token-mean",
+    "grad_clip": 1.0
+  },
+  "temperature": 1.0,
+  "multi_turn": true,
+  "input_fields": {
+    "prompts": {
+      "shape": [
+        32,
+        512
+      ],
+      "dtype": "torch.int64"
+    },
+    "responses": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.int32"
+    },
+    "input_ids": {
+      "shape": [
+        32,
+        10752
+      ],
+      "dtype": "torch.int64"
+    },
+    "attention_mask": {
+      "shape": [
+        32,
+        10752
+      ],
+      "dtype": "torch.int64"
+    },
+    "position_ids": {
+      "shape": [
+        32,
+        10752
+      ],
+      "dtype": "torch.int64"
+    },
+    "response_mask": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.int64"
+    },
+    "task_rounds": {
+      "shape": [
+        32
+      ],
+      "dtype": "torch.float32"
+    },
+    "task_scores": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "rm_scores": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "loss_mask": {
+      "shape": [
+        32,
+        10752
+      ],
+      "dtype": "torch.int64"
+    },
+    "old_log_probs": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "ref_log_prob": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "token_level_scores": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "token_level_rewards": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "dt_token_advantages": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "dt_q_estimates": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "dt_v_estimates": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "advantages": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "returns": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    },
+    "diagnostic_grpo_advantages": {
+      "shape": [
+        32,
+        10240
+      ],
+      "dtype": "torch.float32"
+    }
+  },
+  "trainable_parameters": 496,
+  "resources_before": {
+    "pid": 3075924,
+    "pid_birth": 1791287218.28,
+    "rss_bytes": 12391534592,
+    "pss_bytes": 8895483904,
+    "host_available_bytes": 960215011328,
+    "cuda_initialized": true,
+    "distributed_initialized": true,
+    "cuda_device": 0,
+    "cuda_allocated_bytes": 1024,
+    "cuda_reserved_bytes": 3053453312,
+    "cuda_max_allocated_bytes": 2034238464
+  },
+  "optimizer_before": {
+    "optimizer_type": "AdamW",
+    "state_entries": 496,
+    "state_key_counts": {
+      "step": 496,
+      "exp_avg": 496,
+      "exp_avg_sq": 496
+    },
+    "step_counters": {
+      "100.0": 496
+    },
+    "missing_steps": 0,
+    "parameter_groups": [
+      {
+        "parameter_count": 923,
+        "lr": 1e-06,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0.01,
+        "amsgrad": false,
+        "maximize": false,
+        "foreach": null,
+        "capturable": false,
+        "differentiable": false,
+        "fused": null
+      }
+    ]
+  },
+  "scheduler_before": {
+    "base_lrs": [
+      1e-06
+    ],
+    "last_epoch": 25,
+    "_step_count": 26,
+    "_is_initial": false,
+    "_get_lr_called_within_step": false,
+    "_last_lr": [
+      1e-06
+    ],
+    "lr_lambdas": [
+      null
+    ]
+  },
+  "gradient_scope": "Raw native optimizer input gradient at the real AdamW.step entry, after the original actor clipping. None remains None. Only local shard storage is copied; no gather/cast/reducer or Adam formula.",
+  "parameter_scope": "All requires_grad parameter local shards before/after original worker.update_actor. Original dtype; no full-model snapshot. Stored arrays allow exact storage-level parameter differences to be analyzed later.",
+  "original_metrics": {
+    "actor/kl_loss": 0.0007443468784913421,
+    "actor/kl_coef": 0.001,
+    "actor/pg_loss": [
+      -0.0012057587737217546,
+      -0.015236972831189632,
+      0.008777406066656113,
+      0.01348801702260971,
+      0.017935117706656456,
+      0.009846285916864872,
+      -0.09727592021226883,
+      0.017933979630470276
+    ],
+    "actor/pg_clipfrac": [
+      0.00043750001350417733,
+      0.0,
+      0.00015325671120081097,
+      0.00023179268464446068,
+      0.0002643521293066442,
+      0.0004111359012313187,
+      0.000521920679602772,
+      0.0001814333227230236
+    ],
+    "actor/ppo_kl": [
+      -5.2842460718238726e-05,
+      -0.00020560863777063787,
+      8.314322622027248e-05,
+      0.00019874413555953652,
+      7.517407357227057e-05,
+      -0.0007706685573793948,
+      0.00012488367792684585,
+      0.00012932813842780888
+    ],
+    "actor/pg_clipfrac_lower": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "actor/grad_norm": [
+      0.03772707283496857
+    ],
+    "perf/mfu/actor": 0.0,
+    "perf/max_memory_allocated_gb": 16.159980297088623,
+    "perf/max_memory_reserved_gb": 23.568359375,
+    "perf/cpu_memory_used_gb": 144.05080032348633,
+    "actor/lr": 1e-06
+  },
+  "status": "native_update_observed",
+  "parameter_shards": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-whitened-update-20261006-v1/rank1-dt-native-parameter-shards.pt",
+    "sha256": "9611f050352ef5b9601b444590b697336261b97995b553fc4b922644383d37a5",
+    "bytes": 130617709
+  },
+  "optimizer_step_calls": 1,
+  "scheduler_step_calls": 1,
+  "optimizer_steps": [
+    {
+      "entered_unix": 1791287441.5928507,
+      "optimizer_before": {
+        "optimizer_type": "AdamW",
+        "state_entries": 496,
+        "state_key_counts": {
+          "step": 496,
+          "exp_avg": 496,
+          "exp_avg_sq": 496
+        },
+        "step_counters": {
+          "100.0": 496
+        },
+        "missing_steps": 0,
+        "parameter_groups": [
+          {
+            "parameter_count": 923,
+            "lr": 1e-06,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 0.01,
+            "amsgrad": false,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null
+          }
+        ]
+      },
+      "returned_unix": 1791287441.8049333,
+      "optimizer_after": {
+        "optimizer_type": "AdamW",
+        "state_entries": 496,
+        "state_key_counts": {
+          "step": 496,
+          "exp_avg": 496,
+          "exp_avg_sq": 496
+        },
+        "step_counters": {
+          "101.0": 496
+        },
+        "missing_steps": 0,
+        "parameter_groups": [
+          {
+            "parameter_count": 923,
+            "lr": 1e-06,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 0.01,
+            "amsgrad": false,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null
+          }
+        ]
+      }
+    }
+  ],
+  "scheduler_steps": [
+    {
+      "entered_unix": 1791287441.9608254,
+      "before": {
+        "base_lrs": [
+          1e-06
+        ],
+        "last_epoch": 25,
+        "_step_count": 26,
+        "_is_initial": false,
+        "_get_lr_called_within_step": false,
+        "_last_lr": [
+          1e-06
+        ],
+        "lr_lambdas": [
+          null
+        ]
+      },
+      "returned_unix": 1791287441.9608567,
+      "after": {
+        "base_lrs": [
+          1e-06
+        ],
+        "last_epoch": 26,
+        "_step_count": 27,
+        "_is_initial": false,
+        "_get_lr_called_within_step": false,
+        "_last_lr": [
+          1e-06
+        ],
+        "lr_lambdas": [
+          null
+        ]
+      }
+    }
+  ],
+  "optimizer_after": {
+    "optimizer_type": "AdamW",
+    "state_entries": 496,
+    "state_key_counts": {
+      "step": 496,
+      "exp_avg": 496,
+      "exp_avg_sq": 496
+    },
+    "step_counters": {
+      "101.0": 496
+    },
+    "missing_steps": 0,
+    "parameter_groups": [
+      {
+        "parameter_count": 923,
+        "lr": 1e-06,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0.01,
+        "amsgrad": false,
+        "maximize": false,
+        "foreach": null,
+        "capturable": false,
+        "differentiable": false,
+        "fused": null
+      }
+    ]
+  },
+  "scheduler_after": {
+    "base_lrs": [
+      1e-06
+    ],
+    "last_epoch": 26,
+    "_step_count": 27,
+    "_is_initial": false,
+    "_get_lr_called_within_step": false,
+    "_last_lr": [
+      1e-06
+    ],
+    "lr_lambdas": [
+      null
+    ]
+  },
+  "completed_unix": 1791287444.9730203,
+  "resources_after": {
+    "pid": 3075924,
+    "pid_birth": 1791287218.28,
+    "rss_bytes": 12537286656,
+    "pss_bytes": 8991380480,
+    "host_available_bytes": 962148569088,
+    "cuda_initialized": true,
+    "distributed_initialized": true,
+    "cuda_device": 0,
+    "cuda_allocated_bytes": 165021184,
+    "cuda_reserved_bytes": 25306333184,
+    "cuda_max_allocated_bytes": 17351646720
+  }
+}
