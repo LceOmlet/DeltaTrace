@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 原任务梯度的成功/失败支持对照
+
+GPU4/5隔离PID3747980/birth1791254337.14已完成并退出，原64条/checkpoint25/LoRA8/16/每卡B4不变。复用原VERL observer，每rank两个支持组各两个完整local32反向（8B4/8），原clip执行；optimizer no-op4/scheduler no-op2，真实更新、rollout、DT重算均0。只把原GRPO系数在指定Q支持之外置零，完整DT A和原loss_mask/分母保留；未改loss。原助手PYTHONPATH导致v1在observer前失败，v2仅修诊断搜索路径并在fresh subprocess核实际导入，保留两版本原件。
+
+成功支持同组原SUM Gram：DT norm .00013230308934、GRPO成功norm .03067111740664，cos +.01494206473（范数约1/231.82）；失败支持DT norm .00013225878060、GRPO失败norm .02704332881123，cos -.00593101386。两rank原Gram相同；重复DT norm变化-.03349%仅描述，不新增容差。新run tiny clipfrac非0，不沿用旧zero-clip结论；没有成功/失败互积和raw gradients，不拼精确总梯度、不混旧run。失败惩罚缺失不能单独解释成功组的方向差；也不把GRPO当oracle。
+
+实际耗时从job start约722.60秒；结束后4/5各860MiB、无诊断GPU进程，主机可用452327534592字节。source、import、配置、输入、失败原件、完成marker、四rank raw和两份独立review绑定现有degradation结果。这是弱任务信号调查，不是生产修复；afe59dd查询语义修复仍prepared-only，TextCraft保持停止，PLAN/c9cd147/原VERL未变。整体归因仍按原论文累计删除/RISE/MAS评价。
+
+
 ## 2026-10-06 弱梯度分项与已交付响应查询修复
 
 本机接口源码提交afe59dd仅修reward_readout的两句查询：当前完整回复已经交付，环境立即执行，不再要求补完同一回复。源码SHA94a7afbc、test ae16a359；64原native查询与先前clock候选编码逐项一致，原prefix/target/source/EOS范围不变，查询增加14token。29项原adapter单测通过，CPU约28.9秒、RSS约.969GiB、无模型/DT/GPU/反向/更新。独立review89134a3f。仅prepared，不部署、不称弱PG修复；既有paired预测测量未改善，不因修正错误条件而扩大质量结论。
