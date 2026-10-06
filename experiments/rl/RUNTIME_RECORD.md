@@ -1,5 +1,141 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 AppWorld检查点29切换：原worker退出后提交完成
+
+原checkpoint29完整（data.pt及两rank的model/optim/extra_state）。原observer在
+1791302651因两actor尚未退出而保留remaining_non_zombie、未调用submitter；
+失败stdout原件保留。1791303464只读复核原process tree已全部退出、GPU2/3
+物理各859MiB，无其它该卡进程。没有修改或抹去旧停止失败回执。
+
+随后直接调用原submit_prepared_appworld_resume.py（64c10036），不新建停止/
+加载器、不改prepare/source。实际新driver634197、出生1791303503.79，
+恢复原checkpoint29；entry为appworld-retained-credit-sources-20261006-v2，
+VERL/DT/LOOP仍原冻结目录。实际source SHA2d49d687，prepared ff54c20d；
+entry71项、owner及DT文件全部与prepared逐SHA一致。原LoRA8/16、每卡B4、
+预算及公式不变。1791303573是原Ray初始化，尚未新采样/DT/更新，不能称
+提速已验证或健康。Ray记录metrics exporter不可达，仅指标导出警告，
+尚未看到训练退出；不新建推理/训练/事件导出服务来掩盖它。
+
+本次部署仅e42f source过滤及CPU计数：完整未来reward先算，再跳过训练
+序列没有任何action token的source。新的root重放/conv/prefetch优化未部署，
+全量GPU/CPU tape仍拒绝；上述473B4/73.7min属于旧source，不能作为新提速结果。
+最新dated snapshot：appworld-efficiency-20261006/1791303464/current_runtime.json；
+提交、旧退出复核、完整checkpoint及实际source原件保留在同目录。TextCraft不动，
+SQL仍停止，0/1与6/7不用。
+
+
+## 2026-10-06 AppWorld DT大头：实际473个B4与原hot profile定位
+
+1791300732原两rank均7组/473个B4返回，类别组累计4423.464/4422.388秒，
+bank459.625/458.714秒（10.39%/10.37%）。两rank并行，不能相加；这不是
+完整迭代wall或gen计时。每批median7.91/7.90秒，max43.39/43.27秒。
+
+同一采样原loop_transport末次回调累计2141.4秒、4298次回复、1439131
+生成token，包含交互，不是纯decode或完整trainer gen计时；原件保留在
+1791300731/original-sampling-boundary.json，不用driver启动时间代替采样。
+
+6348 runner的root只保存层输入，之后32层同suffix再次原forward取finite
+操作数，这是有证重算。原checkpoint20/offset84热B4总12.00/12.01秒：
+root3.126/3.125、replay3.102/4.363、finite4.646/3.568秒。它已复用
+11520/11776的历史prefix，实际后缀1948/1440，不是每次重算全13k。
+原FA suffix梯度及FLA有限传播已接；不存在新forward_tangent重算，
+num_tests互斥轨迹组也不重复同traj bank。67个all-gather是该DT trace，
+但rank1的4.871秒含peer等待，不是可删墙钟；prepare.unshard通常no-op。
+
+原全量GPU/CPU root tapes拒绝保持。部分保留不是现成跳算开关且有显存
+成本，不凭短case19%外推长32k。新的具体接缝是GDN cached conv拼接；
+已装官方causal_conv1d_fn支持initial_states，需与原capture/finite左窗口
+接口同时对齐，尚未改正式代码，也未把API存在当数值或提速验收。
+
+2026-10-07只读卷积回执d1c4e8ec：已装MetaX接口7286f939与原v1.5.0
+Python接口字节一致；原BF16输出/dx/dinitial_state断言rtol=.01、atol=.05，
+没有执行这些数值测试。既有467MB实际GDN0文件只含FLA操作数，不含
+conv输入/权重/梯度seed，不能据此反构造或造输入验收。下一原调用的
+被动采集接缝已记录，未live修改或占GPU，不把数据采集项说成方法阻塞。
+
+1791300912真实App已update_actor：物理GPU2/3各54272MiB，actor PSS
+124.04/122.85GiB，cgroup515282579456/966367641600B。原源码没有
+readout返回后继续持有bank的路径；缓存释放已执行，不能仅凭更新期PSS
+判为泄漏。本次CPU计量与源码排查未修改PPO/DT算法、FA/FLA、参数或占卡。
+原checkpoint29切换observer仍等待完整原checkpoint，不称已部署。
+原始报告、计算源、hash与声明范围：appworld-efficiency-20261006/
+1791300731/major-cost-accounting.json；canonical results_efficiency_work_items_20261006.json。
+最新dated snapshot：appworld-efficiency-20261006/1791300731/current_runtime.json。
+
+
+## 2026-10-06 SQL原588 B4同步负载：官方CPU分区计量
+
+复用原4704个请求长度和原VERL get_seqlen_balanced_partitions(96980f6)，
+同步最大context宽度总和2491524→2034648（−18.337%），两卡宽度差
+924608→2283（−99.753%）；packed slots32467520→32536104（+0.211%）。
+这是减少卡间等待的计算几何证据，不是删总DT工作或墙钟提速测量。
+attention/context官方分区indices逐值相同；缺全部prefix切点不称suffix FLOPs。
+CPU峰值RSS539812KiB，CUDA未初始化，0模型/DT/训练。首轮原序断言失败
+单独保留：原actual_row_lengths是运输序，traces是readout稳定排序后，
+不能混为一个序列。成功回执SHA1a7c8f44…及原source/log/owner字节来源
+见sql-paired-real-b4-20261006/v1/sql-original-588-b4-partition-workload.json。
+
+SQL host-cache-v2仍有原balance/scope/hostcache，但trainer8816与readout228
+缺已批准白化/两句clock，不作为最新正式版本直接部署。新隔离v4已完成CPU准备，
+SQL仍停止，未启动模型/训练、未占GPU、未修改App/Text或active清单。
+
+v4沿原SQL复制，仅trainer调用已有patch_dt_advantage_preprocessing，整批
+collected action-mask白化一次，再进原actor/B4；raw Q/V/A/returns保留。
+entry只有3项改变：common95042a7/3f4a5f70用于保留source与CPU工作计数，
+SQL query-only6f2a4e32只移植afe59dd两句。其query_ids方法AST等于已接受94a，
+其余SQL readout AST不变；未新增App prefix lease，仍只有pair内prefix。
+原entry总71个文件，68个不变；VERL其余文件、DT c9、whole-rollout scope、
+host-cache、预算/采样/LoRA8/16/B4/PPO及既有kernel断言保持。
+
+实际CPU transport11项（0错误/失败/跳过）+原白化接口6项均通过，共17项。
+总准备76.532秒；CPU PID255733/birth1791299960.09，parent RSS峰值
+790130688B、child峰值956944384B，Torch2.8.0+metax3.5.3.9，CUDA未初始化，
+CUDA/MACA=-1、OMP/MKL=1。这些是原DataProto运输及原helper/生成trainer
+接口测试，不是FA/FLA/DT数值、提速或学习验收，未新增数值门槛。
+
+v4完整prepared SHA：
+c0335f7bacbfcaa223f36db8c471f6e4f621522a139837d9d5422414c57a36d9；
+执行preparer源SHA：
+a2fc07e910720841694896613cfa4ef2bb0aeb332dc6e1062b7fe0cb1fa5a17a。
+trainer SHA7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619，
+SQL readout SHA6f2a4e326d1200994112a798fd6799c6842d7f7807262197ee864da956c5f5df。
+原件在research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/
+current-credit-v4；变化、完整源SHA、17项CPU日志/资源绑定到
+experiments/rl/results_efficiency_work_items_20261006.json的SQL subsection。
+
+先前v3在tests前被query_ids之外AST差异拒绝：whole94a还带此前App prefix
+lease接口，不能整体覆盖SQL228。失败source/stdout与partial candidate保留；
+执行源1ebccd227ccf3e452030ba394e1ced68aa51ae13926ae87b0e1f1e1a9e4f205a，
+0测试/模型/GPU/部署。v4仅修该source移植范围，没有改变算法或默认运行。
+上述588B4全负载分区的−18.337%仍只是同步最大宽度总和变化，不是速度；
+总packed slots反而+0.211%，没有声称删除总DT工作或SQL已提速。
+
+
+## 2026-10-06 AppWorld保留action修复：原checkpoint29自动切换已提交
+
+22bcfdb的retained-action-v2复用e42f596两函数，只过滤无训练token的
+source；完整未来奖励先计算。新增CPU计数记录nonzero before/after及skip，
+删除计数AST后与已接受cdef计算相同。实际CPU11通过/0失败/0跳过，
+不是新DT/FA/FLA数值验收。71个entry及VERL/DT/LOOP/source hash保持。
+fullprepared ff54c20d绑定当前3592468/birth1791291997.14，原helper5e1cbffd
+已提交（本机12844、远端observer105148），等待原完整checkpoint29后
+调用原submitter/launcher/VERL loader；此时仍旧入口，不能称已经部署。
+
+原日志1791298949已有5个完整类别组，每rank341个B4、约3146秒，
+加当前组100个已返回B4共441次，median7.8秒/max31.1秒。bank仅约344秒；
+rank并行不可相加，未完成DT不能冒称完整迭代时间或提速。
+1791297973资源：cgroup508118433792/966367641600B，RSS380.247GiB、
+cache92.892GiB，App DT actor PSS112.20/119.57GiB；物理GPU2/3
+34940/34242MiB，Text生成GPU4/5 50332/50064MiB。当前阶段可容纳，
+不把此观测当32k峰值或无内存浪费证明。0/1、6/7不用，SQL仍停。
+
+对应官方FA输出×2、梯度×3；FLA o/ht .005、qkv梯度.008、g/beta .02
+原reference/assertion和实际dtype收据保留，不加纠偏或整网容差。
+回执：experiments/rl/results_efficiency_work_items_20261006.json。
+最新dated snapshot：research/temporary/rl_upstream_alignment_20260929/
+appworld-efficiency-20261006/retained-action-transition-v2/current_runtime.json。
+
+
 ## 2026-10-06 效率修复：AppWorld仅归因保留action（prepared-only）
 
 当前正式App入口仍为2d3a93/da9b8a，完整response表做DT后只scatter保留slices。

@@ -1,6 +1,6 @@
 {
-  "status": "measured_work_and_retained_action_fix_prepared_not_deployed",
-  "observed_unix": 1791296478.4891174,
+  "status": "source_filter_deployed_from_checkpoint29_speedup_not_yet_measured",
+  "observed_unix": 1791303573.250209,
   "current_task": "Remove evidenced duplicate/wasted computation in AppWorld and SQL; preserve approved token Q/V/A, official task and PPO behavior.",
   "actual_appworld": {
     "source": {
@@ -54,8 +54,8 @@
         "max_context": 21411
       }
     ],
-    "scope": "Completed groups of pending formal29, not full iteration DT. Two ranks execute concurrently, never add rank seconds.",
-    "fixed_repeated_work": "Current AppWorld computes DT for all credit_responses, then only scatters dt_response_slices. Wholly truncated responses need no policy credit; their real environment rewards remain in complete returns.",
+    "scope": "Historical completed groups/source-filter-v1 preparation before checkpoint29, not current-source speed. Two ranks are parallel. Actual deployed v2 binding is actual_appworld_source_filter_transition_20261007.",
+    "fixed_repeated_work": "Old source computes all credit_responses then scatters only retained source slices. Deployed v2 skips wholly truncated action sources while keeping complete real environment returns; saving not yet measured.",
     "preparation": {
       "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-v1/prepared.json",
       "sha256": "3975c416ea6138b40219714f155bf0df353d0ae9a3a103702fad2980cbd3ae69",
@@ -95,7 +95,74 @@
     "test_scope": "Actual VERL transport plus fixed-ratio test doubles, not DT numerical or speed acceptance.",
     "actual_excluded_nonzero_request_count": null,
     "speedup_measured": false,
-    "deployed": false
+    "deployed": false,
+    "latest_major_cost_accounting": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791300731/major-cost-accounting.json",
+      "sha256": "3c7df4fbf57ee61c0c6ebf42aa934c00dbd5dc021883bc4b92273c78cb439c93",
+      "bytes": 4670,
+      "completed_groups_per_rank": 7,
+      "completed_B4_per_rank": 473,
+      "group_seconds_parallel_not_added": [
+        4423.463570415974,
+        4422.387679990381
+      ],
+      "bank_fraction": [
+        0.10390605081747331,
+        0.10372546403180599
+      ],
+      "scope": "Formal29 original structured groups; no whole-iteration or current generation-wall claim."
+    },
+    "major_cost_findings": {
+      "confirmed_replay": "Native root saves layer inputs; same suffix layers execute again to obtain finite operands. Existing checkpoint20 warm B4 root ~3.13s, replay3.10/4.36s, finite4.65/3.57s. This is not forwarding whole historical13k twice.",
+      "already_reused": "Native prefix bank; FA suffix dQ/dK/dV; symmetric finite FLA consumes captured operations without another forward_tangent.",
+      "not_duplicate": "num_tests groups contain mutually exclusive traj_uids. prepare_finite_layer public unshard is normally no-op after retained replay parameters.",
+      "remaining_concrete_candidate": "GDN cached convolution concat; installed official causal_conv1d_fn supports initial_states. Current capture/finite preactivation expect a left window, so only deleting cat would be incorrect. Actual operand/owner-reference measurement remains necessary.",
+      "not_deployed": [
+        "Rejected full GPU/CPU root tapes",
+        "Public FSDP forward-prefetch candidate",
+        "Convolution initial-state seam"
+      ],
+      "profile_collective_scope": "67 all-gathers in saved DT-only profile; rank0 .478s versus rank1 4.871s includes peer waiting. Not removable bandwidth time or measured benefit.",
+      "convolution_owner_interface_audit": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/gdn-cached-conv-interface-20261007/cpu-readonly-receipt.json",
+        "sha256": "d1c4e8ece3be165bb0e5ed2adf88c9b7f119a0bd7a1ae80db3a43b5634f8d539",
+        "bytes": 14446,
+        "scope": "Original installed MetaX/public initial_states contract and original v1.5.0 BF16 assertion source; CPU only, no numerical/operator test, no live/default changes. Actual convolution input/weight/seed not available from existing FLA-only operands.",
+        "original_BF16_assertion": {
+          "rtol": 0.01,
+          "atol": 0.05,
+          "executed": false
+        }
+      }
+    },
+    "latest_resource_phase": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/whitening-formal-followup-20261006/1791300912/phase-observation.json",
+      "sha256": "79bbcfeef6b0e1e680c570febf9d46274534826c8e5e16c7baa289950e28a3d7",
+      "observed_unix": 1791300912.2853034,
+      "phase": "update_actor (actual stacks)",
+      "cgroup_usage_bytes": 515282579456,
+      "cgroup_limit_bytes": 966367641600,
+      "App_actor_PSS_bytes": [
+        133191812096,
+        131905384448
+      ],
+      "physical_App_GPU_MiB": [
+        54272,
+        54272
+      ],
+      "source_bank_lifetime_audit": "Normal readout returns do not retain leases/artifacts in persistent readouts; actor PSS in update phase alone is not evidence of bank leak. Original host cache release executed.",
+      "scope": "Current observation, not max32k peak or proof of absence of waste."
+    },
+    "latest_sampling_boundary": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791300731/original-sampling-boundary.json",
+      "sha256": "0cb5ecf3f9a78dbf77bd1779b720d43eb56532fd0f0093481f1b6ca783746dd5",
+      "bytes": 1212,
+      "last_reply_elapsed_seconds": 2141.4,
+      "replies": 4298,
+      "generated_tokens": 1439131,
+      "scope": "Original loop_transport cumulative boundary timer, includes native async interaction; not pure decode and not the full trainer gen duration.",
+      "full_trainer_gen_seconds": null
+    }
   },
   "SQL": {
     "status": "stopped_no_new_job_or_GPU_use",
@@ -118,7 +185,256 @@
       "Original sharding manager scope spanning complete rollout",
       "Accepted native phase-end unused host cache release"
     ],
-    "missing_claim": "No same-load SQL formal measurement of the prepared source; old runtime numbers do not measure candidate speed."
+    "missing_claim": "No same-load SQL formal measurement of the prepared source; old runtime numbers do not measure candidate speed.",
+    "new_real_workload_measurement": {
+      "source": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-paired-real-b4-20261006/v1/sql-original-588-b4-partition-workload.json",
+        "sha256": "1a7c8f44e297331c534e37f103d3fe36aaa33aed8466f6b9aaa8068ab7cfbecf",
+        "bytes": 4665419
+      },
+      "requests": 4704,
+      "B4_calls_per_rank": 588,
+      "owner": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/sql-native-host-cache-20261005-v2/verl/verl/utils/seqlen_balancing.py",
+        "sha256": "96980f6d0f298d7daf32a102cdb33e6b7bafed7573b585f403d066c1eb409849",
+        "function": "get_seqlen_balanced_partitions",
+        "module": "sql_frozen_owner_seqlen_balancing",
+        "arguments": {
+          "k_partitions": 2,
+          "equal_size": true
+        }
+      },
+      "comparison": {
+        "total_paired_packed_slots": {
+          "before": 32467520,
+          "after": 32536104,
+          "difference": 68584,
+          "reduction_fraction": -0.002112388011157096
+        },
+        "total_paired_right_padding_slots": {
+          "before": 66682,
+          "after": 135266,
+          "difference": 68584,
+          "reduction_fraction": -1.02852343960889
+        },
+        "synchronized_max_context_length_sum": {
+          "before": 2491524,
+          "after": 2034648,
+          "difference": -456876,
+          "reduction_fraction": 0.18337210478405985
+        },
+        "absolute_rank_width_difference_sum": {
+          "before": 924608,
+          "after": 2283,
+          "difference": -922325,
+          "reduction_fraction": 0.997530845504257
+        }
+      },
+      "resources": {
+        "cuda_initialized": false,
+        "cuda_visible_devices": "",
+        "maca_visible_devices": "",
+        "max_rss_kib": 539812
+      },
+      "scope": "Complete original stopped SQL 588 B4/rank length accounting; frozen official partitioner called on actual attention lengths. No wall-time prediction.",
+      "limitations": [
+        "Packed slots count original paired input widths before prefix slicing. Full source_start/prefix cuts are not saved for all traces, so actual suffix FLOPs cannot be derived.",
+        "The synchronized maximum length sum and width difference describe batch geometry, not measured device waiting seconds or promised speedup.",
+        "Native UID tie order is unavailable outside eight retained rows; equal-length identity ties do not affect this length accounting.",
+        "SQL prepared balance/scope/host cache fixes were not deployed in these stopped logs."
+      ]
+    },
+    "latest_version_audit": {
+      "status": "isolated_current_credit_v4_prepared_only_not_deployed",
+      "missing": [
+        "Approved original VERL masked_whiten at global DT action-token outlet",
+        "Accepted query-clock two-clause readout"
+      ],
+      "old_trainer_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+      "old_readout_sha256": "228afbc7a10841d482c3d73def59dfe9ef192c057a97d76dca57369502a10137",
+      "action": "SQL v4 CPU interface preparation completed. SQL remains stopped; no model, GPU, launch, deployment or active-manifest change."
+    },
+    "current_credit_v4_prepared_only": {
+      "status": "prepared_only_CPU_interface_tests_passed",
+      "deployment": false,
+      "prepared": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v4/prepared.json",
+        "sha256": "c0335f7bacbfcaa223f36db8c471f6e4f621522a139837d9d5422414c57a36d9",
+        "bytes": 56032
+      },
+      "remote_prepared": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/prepared.json",
+      "candidate_entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/sql-native-current-credit-20261006-v4/entry",
+      "candidate_VERL": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/sql-native-current-credit-20261006-v4/verl",
+      "DT_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147",
+      "source": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v4/preparation-source.py",
+        "sha256": "a2fc07e910720841694896613cfa4ef2bb0aeb332dc6e1062b7fe0cb1fa5a17a",
+        "bytes": 17125
+      },
+      "composition_result": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v4/composition-result.json",
+        "sha256": "4ffcc0019b6f4052ac843ae4b313c9921ee15d0272d5a139b7f8afac4334b2bf",
+        "bytes": 7530
+      },
+      "changes": {
+        "owner_trajectory_batch.py": {
+          "before_sha256": "2d3a93f03ba13b49056209c5be5488da6bea0fb9ba1f58d8549b358194b6aca3",
+          "after_sha256": "95042a7a610e4c7781982873b5730d4bb744145dbcabe61961d55621e83d8939",
+          "function": "trajectory_credit",
+          "class": null,
+          "source_commit": "e42f5968f8cf62d447f6f30262c9672b9c9ddc52",
+          "outside_function_AST_equal": true
+        },
+        "dt_training_batch.py": {
+          "before_sha256": "da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2",
+          "after_sha256": "3f4a5f70abc93778db2d2285e55f2bc75e0f62bac03a880f4c66350465c95d56",
+          "function": "compute_training_credit",
+          "class": null,
+          "source_commit": "22bcfdbf271cd3278bcf3d2486c3e1dfaab4a329",
+          "outside_function_AST_equal": true
+        },
+        "reward_readout.py": {
+          "before_sha256": "228afbc7a10841d482c3d73def59dfe9ef192c057a97d76dca57369502a10137",
+          "after_sha256": "6f2a4e326d1200994112a798fd6799c6842d7f7807262197ee864da956c5f5df",
+          "function": "query_ids",
+          "class": "RewardAlphabet",
+          "source_commit": "afe59dd",
+          "outside_function_AST_equal": true,
+          "accepted_method_source_sha256": "94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b",
+          "accepted_query_method_AST_equal": true,
+          "scope": "Only the two accepted clock clauses; SQL EventRatioReadout/prefix interface preserved"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "before_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+          "after_sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+          "function": "compute_advantage",
+          "patch_function": "patch_dt_advantage_preprocessing",
+          "patch_sha256": "84155a172b4c41a4deea7f1a2dff6a6b2044f99035331841393c8ca210cf61b9",
+          "outside_function_and_official_import_AST_equal": true
+        }
+      },
+      "whitening_scope": "One original verl_F.masked_whiten call over the complete collected action-token response mask before native actor distribution; raw DT Q/V/A and returns are retained. Not per rank or per B4.",
+      "CPU_tests": {
+        "total_passed": 17,
+        "transport_passed": 11,
+        "whitening_passed": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "transport_xml": {
+          "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v4/transport-tests.xml",
+          "sha256": "88e716ebbc4b9c53d4d7d3bd4e43839e93fa5f88088e3adfbe44806f8dffce90",
+          "bytes": 2367
+        },
+        "transport_stdout": {
+          "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v4/transport-tests.stdout.txt",
+          "sha256": "0e25cc4d60525fb9261dd7dbafa23c78aea5f2dc689a30638b9446adeddeb7a5",
+          "bytes": 261
+        },
+        "whitening_stdout": {
+          "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v4/whitening-tests.stdout.txt",
+          "sha256": "18233ed27100d16cfcbcf014ab562d425395cde802bbd45854e4157e8bfecffb",
+          "bytes": 1154
+        },
+        "scope": "Original VERL DataProto dispatch/pad/collect with fixed-ratio doubles and SHA-pinned original helper/generated compute_advantage. These are CPU interface tests, not FA/FLA/DT numerical, model, speed or learning acceptance."
+      },
+      "resources": {
+        "pid": 255733,
+        "created_unix": 1791299960.09,
+        "wall_seconds": 76.53218603134155,
+        "parent_RSS_bytes": 790130688,
+        "parent_max_RSS_bytes": 790130688,
+        "child_max_RSS_bytes": 956944384,
+        "torch_version": "2.8.0+metax3.5.3.9",
+        "torch_path": "/opt/conda/lib/python3.12/site-packages/torch/__init__.py",
+        "CUDA_initialized": false,
+        "CUDA_VISIBLE_DEVICES": "-1",
+        "MACA_VISIBLE_DEVICES": "-1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "official_helper_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/sql-native-current-credit-20261006-v4/verl/verl/utils/torch_functional.py",
+        "official_helper_sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+      },
+      "preserved": {
+        "entry_file_count": 71,
+        "entry_files_unchanged": 68,
+        "VERL_changed_files": [
+          "verl/trainer/ppo/ray_trainer.py"
+        ],
+        "DT_c9_source_sha256_unchanged": true,
+        "actor_worker_core_transport_scope_host_cache_unchanged": true,
+        "SQL_prefix_scope": "Existing pair-internal prefix only; no cross-response lease/bank interface introduced",
+        "budget_sampling_LoRA8_16_B4_PPO_configuration_unchanged": true,
+        "active_manifest_sha256": {
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-training.json": "17e8e317c7cd27783150b42751c324edc2e4045a1a81de3e71ca4bab258e97e2",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-source.json": "cbc9a3d63a7ff4684a06873c74fa5f803ee7dfb07929a94145abb50a5b665391"
+        },
+        "old_candidates_unchanged": true
+      },
+      "budget": {
+        "epochs": 30,
+        "prompt_groups_per_batch": 256,
+        "samples_per_prompt": 5,
+        "global_mini_trajectories": 1280,
+        "ppo_epochs": 1,
+        "eval_before_train": true,
+        "eval_interval": 5,
+        "save_interval": 60
+      },
+      "resource_environment": {
+        "VERL_RELEASE_UNUSED_HOST_CACHE": "1"
+      },
+      "numeric_lock_sha256": "b5d5608ea76d941aca14314eb23811311b189e356cdcc0e478f3282a94c325c5",
+      "prior_host_cache_v2": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-native-host-cache-20261005-v2/prepared.json",
+        "sha256": "630ed1f67bb7b6dc6a9d0b16a5c91c69773c0c47c5da11e9dfb59795cdf87c92",
+        "bytes": 44624
+      },
+      "accepted_retained_preparation": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-v2/prepared.json",
+        "sha256": "4ae2f06dd440a15625c636b916bcda90eb4bb8f263fdda5c99436ea21f4406b2",
+        "bytes": 9983
+      },
+      "operations": {
+        "stop_calls": 0,
+        "launch_calls": 0,
+        "GPU_calls": 0,
+        "model_initializations": 0,
+        "training_calls": 0
+      },
+      "limitations": [
+        "Only the accepted query_ids method was transplanted onto SQL original readout228. SQL module6f2a4e32 does not introduce the App prefix-lease interface from whole readout94a.",
+        "SQL retains pair-internal prefix reuse; no cross-response bank was connected.",
+        "The original full 588 B4 partition measurement has an 18.337% smaller synchronized maximum-width sum, not an 18.337% measured wall-time speedup. Packed slots increased 0.211%; no total-DT-work deletion claim.",
+        "No SQL formal job has been submitted from this candidate."
+      ]
+    },
+    "v3_failed_preparation": {
+      "status": "source_scope_assertion_failed_before_CPU_tests",
+      "deployed": false,
+      "failure": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v3/failure-status.json",
+        "sha256": "ad195496c6b31d0960bf6cf97326c8f26852b50047419006970160a1ecd807bc",
+        "bytes": 801
+      },
+      "stdout": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v3/prepare.stdout.txt",
+        "sha256": "1b89408d7a3c887725bfff79910d38db6583dad63e6df0fa5622921c57d3d9eb",
+        "bytes": 108
+      },
+      "executed_source": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/sql-efficiency-20261006/current-credit-v3/failed-preparation-source.py",
+        "sha256": "1ebccd227ccf3e452030ba394e1ced68aa51ae13926ae87b0e1f1e1a9e4f205a",
+        "bytes": 15353
+      },
+      "cause": "SQL readout228 and accepted App whole readout94a also differ in pre-existing prefix-lease interfaces outside query_ids. Strict module-scope AST check stopped the preparation; no whole-readout override was accepted.",
+      "correction": "Separate immutable v4 transplants only the accepted query clock clauses; method AST equals the accepted method and all other SQL readout AST remains unchanged.",
+      "partial_candidate_preserved": true,
+      "CPU_tests": 0,
+      "GPU_calls": 0,
+      "models": 0,
+      "launches": 0
+    }
   },
   "remaining_large_cost": "Actual AppWorld per-B4 root + replay + finite propagation. Prefix bank only13% of the first current completed group. Shared-history capture is already active.",
   "rejected_shortcuts": [
@@ -127,12 +443,254 @@
     "Do not promise large whole-iteration speedup from sorting or cross-UID short-prefix overlap"
   ],
   "current_production_unchanged": [
-    "AppWorld entry/VERL/DT/LOOP",
+    "AppWorld VERL/DT/LOOP; entry source filtering changed with accepted functions/CPU counters only",
     "TextCraft entry/VERL/DT",
     "LoRA8/16",
     "per-card actorB4/DT B4",
     "native task budgets",
     "official numerical tolerances"
   ],
-  "next_evidence": "At the native completed checkpoint boundary, bind the retained-source entry for AppWorld. Measure eligible versus original nonzero source counts and actual stage time on real official artifacts; no repeated full-iteration trial merely to find the phase."
+  "next_evidence": "Measure v2 eligible/original nonzero source counts and native DT stage cost on next real official batch. Root-replay and convolution optimization remain undeployed; no extra full-iteration run solely to measure a phase.",
+  "latest_observed_unix": 1791298949.569066,
+  "appworld_current_action": {
+    "source_commit": "22bcfdbf271cd3278bcf3d2486c3e1dfaab4a329",
+    "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-retained-credit-sources-20261006-v2/entry",
+    "prepared": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-resume-v2/prepared.json",
+      "sha256": "ff54c20d2485f608e7330bfc864501e2bb42641a4db29477fe1aa94074c429d6",
+      "bytes": 270409
+    },
+    "retained_entry": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-v2/prepared.json",
+      "sha256": "4ae2f06dd440a15625c636b916bcda90eb4bb8f263fdda5c99436ea21f4406b2",
+      "bytes": 9983
+    },
+    "transition": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-transition-v2/submitted.json",
+      "sha256": "8208b3d4f391cc31ce659b303cc4fdd37121852ba82fe59b9d8c5f1f183b594e",
+      "bytes": 1327
+    },
+    "waiting": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-transition-v2/waiting.json",
+      "sha256": "ed4ee57d16ea77897bd4d4bbb220d776e276391b13dc4b122bc4acaff232caf4",
+      "bytes": 710
+    },
+    "status": "Frozen entry v2 submitted from complete checkpoint29; actual original Ray initialization, no new rollout/DT/update or speed verification",
+    "prior_driver_pid": 3592468,
+    "prior_driver_created_unix": 1791291997.14,
+    "actor_microbatch": 4,
+    "dt_minibatch": 4,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "helper": "Existing resume_at_native_checkpoint.py -> existing submitter -> original launch_appworld_native.py -> original VERL loader",
+    "CPU_tests": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Native VERL transport with fixed-ratio tests, not new DT numerical or speed acceptance"
+    },
+    "work_counters": [
+      "response_rows",
+      "unique_rows",
+      "retained_sources",
+      "nonzero_before",
+      "nonzero_after",
+      "skipped_nonzero"
+    ],
+    "scope": "Skip only wholly truncated action sources after full executed future returns; count existing work, do not change Q/V/A, DT math, sampling, owner partitioning, PPO, config or dtype.",
+    "actual_driver_pid": 634197,
+    "actual_driver_created_unix": 1791303503.79,
+    "completed_checkpoint_step": 29,
+    "actual_source_receipt_sha256": "2d49d6874330f3e5ade3afc27b1fffde71439c66b929e6ccbf5e5db18dc5efe6",
+    "actual_source_binding": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791303464/submitted-source-and-checkpoint.json",
+      "sha256": "738293cbc5fd7dc6bd8a74b3a8ed6f0a1d9abe7d033da9288c30a70d766d2da6",
+      "bytes": 285252
+    }
+  },
+  "latest_actual_work": {
+    "source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791298949/actual-group-readout.json",
+      "sha256": "0d72be7f7aa69d289c9d63a1c247e3c3ebfd2b60e2843e3d1a52605c8427cab8",
+      "bytes": 145174
+    },
+    "rank0_completed_groups": 5,
+    "scope": "Five completed denominator groups plus100 pending B4; not entire DT iteration, ranks run concurrently",
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_B4_calls": 341,
+        "completed_group_seconds": 3146.324799526483,
+        "completed_group_bank_seconds": 344.60171846300364,
+        "observed_B4_calls": 441,
+        "B4_median_seconds": 7.794093236327171,
+        "B4_max_seconds": 31.032439406961203,
+        "pending_group_logged_B4": 100
+      },
+      {
+        "rank": 1,
+        "completed_B4_calls": 341,
+        "completed_group_seconds": 3145.5991977266967,
+        "completed_group_bank_seconds": 344.0098405070603,
+        "observed_B4_calls": 441,
+        "B4_median_seconds": 7.802491437643766,
+        "B4_max_seconds": 31.06323531270027,
+        "pending_group_logged_B4": 100
+      }
+    ]
+  },
+  "latest_resource_observation": {
+    "source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/whitening-formal-followup-20261006/1791297973/phase-observation.json",
+      "sha256": "5275fbf282c9aaa737b7b2fe4357cba53c2a9714dfd558a76dbd8de4129a6f83",
+      "bytes": 167595
+    },
+    "observed_unix": 1791297973.0937648,
+    "phase": "AppWorld actual DT; TextCraft next native generation",
+    "cgroup_usage_bytes": 508118433792,
+    "cgroup_limit_bytes": 966367641600,
+    "cgroup_rss_bytes": 408286756864,
+    "cgroup_cache_bytes": 99741954048,
+    "host_available_bytes": 444543078400,
+    "AppWorld_actor_PSS_bytes": [
+      120478710784,
+      128390636544
+    ],
+    "physical_VRAM_MiB": {
+      "AppWorld GPU2": 34940,
+      "AppWorld GPU3": 34242,
+      "TextCraft GPU4": 50332,
+      "TextCraft GPU5": 50064
+    },
+    "scope": "Physical mx-smi and phase-specific PSS/cgroup observation. Fits current limits at this timestamp; not a leak-free or peak32k proof. Do not add RSS of forked workers; do not use virtual allocator as physical memory."
+  },
+  "numeric_ownership": {
+    "changed_numerical_kernels": false,
+    "new_numeric_acceptance_claim": false,
+    "FA": {
+      "reference": "Pinned2.6.3 attention_ref and original assertions",
+      "output_multiplier": 2,
+      "gradient_multiplier": 3,
+      "receipt": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/actual-finite-consumer-fa-dtypes.json",
+        "sha256": "26ae5c5c3974465a958c222870937526214671bf30e2915de7cbf7d9e1ab75cf",
+        "bytes": 3072
+      },
+      "scope": "Recorded BF16 QKV and BF16 kernel upstream, FP32 reference; native forward and coincident finite local derivatives"
+    },
+    "FLA": {
+      "reference": "Pinned0.4.1 original recurrent reference and assert_close",
+      "qkv_gradient_tolerance": 0.008,
+      "g_beta_gradient_tolerance": 0.02,
+      "output_final_state_tolerance": 0.005,
+      "receipt": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/actual-finite-consumer-fla-dtypes.json",
+        "sha256": "db0c231d4f48794cc31923499f9b67d29fbee91b4b64bbca0e0b809307653ca5",
+        "bytes": 8735
+      },
+      "scope": "Actual saved operands; original dtype/reference distinctions preserved. This is not noncoincident token-attribution accuracy."
+    },
+    "policy": "Any future arithmetic/dtype optimization must use actual changed operands and corresponding unchanged official reference/assertions. No extra multiplier correction, clipping, full-network invented threshold or unrelated framework tolerance."
+  },
+  "last_observed_unix": 1791300732.747737,
+  "actual_appworld_source_filter_transition_20261007": {
+    "observed_unix": 1791303573.250209,
+    "role": "Actual checkpoint29 preserved; existing submitter completed after original workers had fully exited",
+    "current_job": {
+      "task": "AppWorld",
+      "method": "dt",
+      "pid": 634197,
+      "devices": [
+        2,
+        3
+      ],
+      "started_unix": 1791303504.306084,
+      "observed_process_created_unix": 1791303503.79,
+      "argv": [
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-retained-credit-sources-20261006-v2/entry/launch_appworld_native.py",
+        "--output",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-retained-credit-sources-20261006-v2/appworld-dt",
+        "--resume-from",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/checkpoints/global_step_29"
+      ],
+      "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-retained-credit-sources-20261006-v2/entry",
+      "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-official-whitening-20261006-v1/verl",
+      "dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace",
+      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-retained-credit-sources-20261006-v2/appworld-dt",
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-retained-credit-sources-20261006-v2/appworld-dt/train.log",
+      "checkpoints": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-retained-credit-sources-20261006-v2/appworld-dt/checkpoints",
+      "source_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-retained-credit-sources-20261006-v2/appworld-dt/source.json",
+      "status": "formal_resume_submitted_not_yet_verified",
+      "lora_rank": 8,
+      "lora_alpha": 16,
+      "actor_microbatch": 4,
+      "log_prob_micro_batch_size_per_gpu": 4,
+      "budget": {
+        "iterations": 200,
+        "prompt_groups_per_iteration": 40,
+        "requested_trajectories_per_group": 6,
+        "global_completion_fraction": 0.9,
+        "per_group_completion_fraction": 0.75,
+        "global_mini_trajectories": 32,
+        "ppo_epochs": 2,
+        "train_runners_per_rank": 32,
+        "train_environment_ranks": 2,
+        "eval_runners": 64,
+        "eval_groups": 57,
+        "eval_trajectories_per_group": 2,
+        "max_turns": 40,
+        "training_context": 32000,
+        "agent_context_upper_bound": 32768,
+        "eval_interval": 5,
+        "save_interval": 1
+      },
+      "resume_from": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/checkpoints/global_step_29",
+      "resume_completed_step": 29,
+      "prior_driver_pid": 3592468
+    },
+    "phase": "original Ray initialization; no new rollout or DT/optimizer result verified",
+    "actual_source_receipt_sha256": "2d49d6874330f3e5ade3afc27b1fffde71439c66b929e6ccbf5e5db18dc5efe6",
+    "prepared_receipt_sha256": "ff54c20d2485f608e7330bfc864501e2bb42641a4db29477fe1aa94074c429d6",
+    "source_binding": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791303464/submitted-source-and-checkpoint.json",
+      "sha256": "738293cbc5fd7dc6bd8a74b3a8ed6f0a1d9abe7d033da9288c30a70d766d2da6",
+      "bytes": 285252
+    },
+    "original_stop_followup": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791303464/transition-post-stop-readonly.json",
+      "sha256": "3c27e005b2ca83fce01579b6faf66ffa8815a48b76d68d8897c6004d71e1669b",
+      "bytes": 122355
+    },
+    "old_processes_remaining": [],
+    "frozen_source_match": {
+      "frozen_entry_hashes_match": true,
+      "frozen_verl_hashes_match": true,
+      "frozen_dt_hashes_match": true
+    },
+    "submitter_sha256": "64c10036389de83e33c345251f25fbaa0afbef613d6c42659d7f1215abee769f",
+    "retained_source_scope": "Existing e42f accepted source filter plus CPU counters, future reward computed before eligibility filtering; same native actor/DT kernels/algorithms, rank8 alpha16 B4 and budget",
+    "numerical_changes": [],
+    "budget_and_LoRA_changes": [],
+    "measured_speedup": null,
+    "completed_native_checkpoint": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-official-whitening-20261006-v2/appworld-dt/checkpoints/global_step_29",
+      "files": {
+        "data.pt": 1499,
+        "actor/model_world_size_2_rank_0.pt": 8997781971,
+        "actor/optim_world_size_2_rank_0.pt": 87091812,
+        "actor/extra_state_world_size_2_rank_0.pt": 15077,
+        "actor/model_world_size_2_rank_1.pt": 8997781971,
+        "actor/optim_world_size_2_rank_1.pt": 87091812,
+        "actor/extra_state_world_size_2_rank_1.pt": 15077
+      }
+    },
+    "latest_major_costs": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791300731/major-cost-accounting.json",
+      "sha256": "3c7df4fbf57ee61c0c6ebf42aa934c00dbd5dc021883bc4b92273c78cb439c93",
+      "bytes": 4670
+    },
+    "SQL": "prepared-only; not launched; GPUs0/1 and6/7 remain unused",
+    "unaccepted_candidates": "No root-tape/conv/prefetch changes in default or current launch path"
+  }
 }

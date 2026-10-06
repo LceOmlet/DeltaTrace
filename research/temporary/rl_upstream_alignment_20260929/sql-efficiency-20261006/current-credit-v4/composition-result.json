@@ -1,0 +1,129 @@
+{
+  "prepared": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/prepared.json",
+  "sha256": "c0335f7bacbfcaa223f36db8c471f6e4f621522a139837d9d5422414c57a36d9",
+  "status": "prepared_only_CPU_interface_tests_passed",
+  "candidate": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/sql-native-current-credit-20261006-v4",
+  "changes": {
+    "owner_trajectory_batch.py": {
+      "before_sha256": "2d3a93f03ba13b49056209c5be5488da6bea0fb9ba1f58d8549b358194b6aca3",
+      "after_sha256": "95042a7a610e4c7781982873b5730d4bb744145dbcabe61961d55621e83d8939",
+      "function": "trajectory_credit",
+      "class": null,
+      "source_commit": "e42f5968f8cf62d447f6f30262c9672b9c9ddc52",
+      "outside_function_AST_equal": true
+    },
+    "dt_training_batch.py": {
+      "before_sha256": "da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2",
+      "after_sha256": "3f4a5f70abc93778db2d2285e55f2bc75e0f62bac03a880f4c66350465c95d56",
+      "function": "compute_training_credit",
+      "class": null,
+      "source_commit": "22bcfdbf271cd3278bcf3d2486c3e1dfaab4a329",
+      "outside_function_AST_equal": true
+    },
+    "reward_readout.py": {
+      "before_sha256": "228afbc7a10841d482c3d73def59dfe9ef192c057a97d76dca57369502a10137",
+      "after_sha256": "6f2a4e326d1200994112a798fd6799c6842d7f7807262197ee864da956c5f5df",
+      "function": "query_ids",
+      "class": "RewardAlphabet",
+      "source_commit": "afe59dd",
+      "outside_function_AST_equal": true,
+      "accepted_method_source_sha256": "94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b",
+      "accepted_query_method_AST_equal": true,
+      "scope": "Only the two accepted clock clauses; SQL EventRatioReadout/prefix interface preserved"
+    },
+    "verl/trainer/ppo/ray_trainer.py": {
+      "before_sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+      "after_sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+      "function": "compute_advantage",
+      "patch_function": "patch_dt_advantage_preprocessing",
+      "patch_sha256": "84155a172b4c41a4deea7f1a2dff6a6b2044f99035331841393c8ca210cf61b9",
+      "outside_function_and_official_import_AST_equal": true
+    }
+  },
+  "tests": [
+    {
+      "name": "transport",
+      "argv": [
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "--import-mode=importlib",
+        "-p",
+        "no:cacheprovider",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source/test_distributed_credit.py::test_native_two_rank_dispatch_keeps_complete_future_returns",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source/test_distributed_credit.py::test_zero_batch_does_not_enter_fsdp_collectives",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source/test_distributed_credit.py::test_training_slices_do_not_drop_later_executed_reward",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source/test_distributed_credit.py::test_empty_training_slice_selection_avoids_all_dt_calls",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source/test_distributed_credit.py::test_trajectory_uses_native_slice_sources_after_complete_returns",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source/test_distributed_credit.py::test_owner_balance_restores_credit_after_padding_and_duplicate_rows",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source/test_distributed_credit.py::test_native_denominators_stay_collectively_aligned_without_changing_credit",
+        "--junitxml=/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/transport-tests.xml"
+      ],
+      "returncode": 0,
+      "wall_seconds": 39.62416315078735,
+      "stdout": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/transport-tests.stdout.txt",
+      "stdout_sha256": "0e25cc4d60525fb9261dd7dbafa23c78aea5f2dc689a30638b9446adeddeb7a5",
+      "xml": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/transport-tests.xml",
+      "xml_sha256": "88e716ebbc4b9c53d4d7d3bd4e43839e93fa5f88088e3adfbe44806f8dffce90",
+      "counts": {
+        "tests": 11,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "whitening",
+      "argv": [
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/source",
+        "-p",
+        "test_dt_official_whitening.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "wall_seconds": 7.877913951873779,
+      "stdout": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/sql-efficiency-20261006/current-credit-v4/whitening-tests.stdout.txt",
+      "stdout_sha256": "18233ed27100d16cfcbcf014ab562d425395cde802bbd45854e4157e8bfecffb",
+      "scope": "Actual pinned owner helper definitions and generated original compute_advantage; no model or full PPO numerical test"
+    }
+  ],
+  "resources": {
+    "pid": 255733,
+    "created_unix": 1791299960.09,
+    "wall_seconds": 76.53218603134155,
+    "parent_RSS_bytes": 790130688,
+    "parent_max_RSS_bytes": 790130688,
+    "child_max_RSS_bytes": 956944384,
+    "torch_version": "2.8.0+metax3.5.3.9",
+    "torch_path": "/opt/conda/lib/python3.12/site-packages/torch/__init__.py",
+    "CUDA_initialized": false,
+    "CUDA_VISIBLE_DEVICES": "-1",
+    "MACA_VISIBLE_DEVICES": "-1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "official_helper_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/sql-native-current-credit-20261006-v4/verl/verl/utils/torch_functional.py",
+    "official_helper_sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+  },
+  "preserved": {
+    "entry_file_count": 71,
+    "entry_files_unchanged": 68,
+    "VERL_changed_files": [
+      "verl/trainer/ppo/ray_trainer.py"
+    ],
+    "DT_c9_source_sha256_unchanged": true,
+    "actor_worker_core_transport_scope_host_cache_unchanged": true,
+    "SQL_prefix_scope": "Existing pair-internal prefix only; no cross-response lease/bank interface introduced",
+    "budget_sampling_LoRA8_16_B4_PPO_configuration_unchanged": true,
+    "active_manifest_sha256": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-training.json": "17e8e317c7cd27783150b42751c324edc2e4045a1a81de3e71ca4bab258e97e2",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-source.json": "cbc9a3d63a7ff4684a06873c74fa5f803ee7dfb07929a94145abb50a5b665391"
+    },
+    "old_candidates_unchanged": true
+  }
+}
