@@ -1,0 +1,138 @@
+{
+  "status": "measured_work_and_retained_action_fix_prepared_not_deployed",
+  "observed_unix": 1791296478.4891174,
+  "current_task": "Remove evidenced duplicate/wasted computation in AppWorld and SQL; preserve approved token Q/V/A, official task and PPO behavior.",
+  "actual_appworld": {
+    "source": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/1791296478/actual-group-readout.json",
+      "sha256": "0e8c34e698ba3a715188052a240b60585a00afd6d292819b75e155c435f34d43",
+      "bytes": 101739
+    },
+    "completed_category_groups": [
+      {
+        "rank": 0,
+        "completed_category_group": 1,
+        "contrasts": 488,
+        "B4_calls": 122,
+        "seconds": 1135.529425535351,
+        "bank_seconds": 144.83400893583894,
+        "runner_seconds": 989.7454871237278,
+        "bank_fraction": 0.1275475612334363,
+        "max_context": 26046
+      },
+      {
+        "rank": 0,
+        "completed_category_group": 2,
+        "contrasts": 120,
+        "B4_calls": 30,
+        "seconds": 287.7069752700627,
+        "bank_seconds": 28.398733124136925,
+        "runner_seconds": 259.05196668580174,
+        "bank_fraction": 0.09870714151952628,
+        "max_context": 21157
+      },
+      {
+        "rank": 1,
+        "completed_category_group": 1,
+        "contrasts": 488,
+        "B4_calls": 122,
+        "seconds": 1135.5575739443302,
+        "bank_seconds": 144.84236620739102,
+        "runner_seconds": 989.7668828479946,
+        "bank_fraction": 0.1275517591805449,
+        "max_context": 26557
+      },
+      {
+        "rank": 1,
+        "completed_category_group": 2,
+        "contrasts": 120,
+        "B4_calls": 30,
+        "seconds": 287.53450014814734,
+        "bank_seconds": 28.283995661884546,
+        "runner_seconds": 258.9820613153279,
+        "bank_fraction": 0.09836731121765106,
+        "max_context": 21411
+      }
+    ],
+    "scope": "Completed groups of pending formal29, not full iteration DT. Two ranks execute concurrently, never add rank seconds.",
+    "fixed_repeated_work": "Current AppWorld computes DT for all credit_responses, then only scatters dt_response_slices. Wholly truncated responses need no policy credit; their real environment rewards remain in complete returns.",
+    "preparation": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-v1/prepared.json",
+      "sha256": "3975c416ea6138b40219714f155bf0df353d0ae9a3a103702fad2980cbd3ae69",
+      "bytes": 9881
+    },
+    "source_fix_commit": "e42f5968f8cf62d447f6f30262c9672b9c9ddc52",
+    "two_changed_files": {
+      "owner_trajectory_batch.py": {
+        "before_sha256": "2d3a93f03ba13b49056209c5be5488da6bea0fb9ba1f58d8549b358194b6aca3",
+        "after_sha256": "95042a7a610e4c7781982873b5730d4bb744145dbcabe61961d55621e83d8939",
+        "function": "trajectory_credit",
+        "source_commit": "e42f5968f8cf62d447f6f30262c9672b9c9ddc52"
+      },
+      "dt_training_batch.py": {
+        "before_sha256": "da9b8a01c3bb9ba00fe3388fd95f93961d33c44bdf0eccf32e7b5846e2ffcae2",
+        "after_sha256": "cdefd4b7ec764dccf1b7ab3d5783102264c969f0d343fb949782dfda58f92223",
+        "function": "compute_training_credit",
+        "source_commit": "e42f5968f8cf62d447f6f30262c9672b9c9ddc52"
+      }
+    },
+    "unchanged_entry_files": 71,
+    "cpu_test_XML": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-v1/cpu-tests.xml",
+      "sha256": "a98a395a81c18d604684b9cb3ee7b811299d2859f8bb990a5b501e46bfafd8af",
+      "bytes": 2356
+    },
+    "cpu_test_stdout": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261006/retained-action-v1/cpu-tests.stdout.txt",
+      "sha256": "01b959191e72306b602d1a69806a48f01b977af0346b9d9f0635d7936b4ceeca",
+      "bytes": 261
+    },
+    "test_result": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_scope": "Actual VERL transport plus fixed-ratio test doubles, not DT numerical or speed acceptance.",
+    "actual_excluded_nonzero_request_count": null,
+    "speedup_measured": false,
+    "deployed": false
+  },
+  "SQL": {
+    "status": "stopped_no_new_job_or_GPU_use",
+    "old_formal_step10": {
+      "total_seconds": 11995.09,
+      "DT_seconds": 6418.249,
+      "generation_seconds": 2721.968,
+      "actor_seconds": 1290.156,
+      "validation_seconds": 1200.061,
+      "DT_fraction": 0.5350730173762764,
+      "source": "RUNTIME_RECORD.md historical step10 entry"
+    },
+    "existing_prepared_fix": {
+      "path": "experiments/rl/results_sql_native_host_cache_20261005.json",
+      "sha256": "1ce42351eb501dac8075e087dcd4e34a3d3a30e99fbf95ad8d54eb4c6d5ea76c",
+      "bytes": 10475
+    },
+    "contains": [
+      "Original VERL sequence-length balanced DT partitioner",
+      "Original sharding manager scope spanning complete rollout",
+      "Accepted native phase-end unused host cache release"
+    ],
+    "missing_claim": "No same-load SQL formal measurement of the prepared source; old runtime numbers do not measure candidate speed."
+  },
+  "remaining_large_cost": "Actual AppWorld per-B4 root + replay + finite propagation. Prefix bank only13% of the first current completed group. Shared-history capture is already active.",
+  "rejected_shortcuts": [
+    "Do not treat mutually exclusive reward-denominator groups as per-response repeated targets",
+    "Do not deploy unaccepted whole-GPU/whole-CPU root-tape candidates: recorded memory/speed tradeoffs fail the current purpose",
+    "Do not promise large whole-iteration speedup from sorting or cross-UID short-prefix overlap"
+  ],
+  "current_production_unchanged": [
+    "AppWorld entry/VERL/DT/LOOP",
+    "TextCraft entry/VERL/DT",
+    "LoRA8/16",
+    "per-card actorB4/DT B4",
+    "native task budgets",
+    "official numerical tolerances"
+  ],
+  "next_evidence": "At the native completed checkpoint boundary, bind the retained-source entry for AppWorld. Measure eligible versus original nonzero source counts and actual stage time on real official artifacts; no repeated full-iteration trial merely to find the phase."
+}

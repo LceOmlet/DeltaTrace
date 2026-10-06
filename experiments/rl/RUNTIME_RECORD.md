@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 效率修复：AppWorld仅归因保留action（prepared-only）
+
+当前正式App入口仍为2d3a93/da9b8a，完整response表做DT后只scatter保留slices。
+已复用原e42f596的95042a7/cdefd4b两函数修复到独立candidate
+appworld-retained-credit-sources-20261006-v1；完整未来reward先算，之后仅选择
+官方训练保留的source identities。71个其他entry文件SHA保持，VERL/DT/LOOP
+及采样/PPO/白化/LoRA8/16/B4/32k未改。实际CPU原VERL transport测试11通过，
+不是DT数值或提速验收；未部署、未改正式进程，待原完成checkpoint边界接入。
+本次原日志首组122个B4：1135.56秒，bank144.84秒，runner989.77秒；
+次组30个B4：287.7秒、bank28.4秒。两rank并行，不相加；不是完整迭代时间。
+SQL仍停；latest host-cache-v2已含均衡分发和whole-rollout作用域，尚未运行。
+旧SQL step10的DT6418.249/总11995.090秒不能冒充该候选性能。
+具体原件/SHA/准备状态：experiments/rl/results_efficiency_work_items_20261006.json。
+
 ## 2026-10-06 AppWorld原采样完成并进入DT
 
 1791294467原LOOP明确采样完成：rank0为112+8取消，rank1为105+15取消，
