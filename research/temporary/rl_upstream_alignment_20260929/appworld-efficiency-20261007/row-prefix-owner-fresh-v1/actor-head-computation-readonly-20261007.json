@@ -1,0 +1,221 @@
+{
+  "schema": "readonly-actor-head-source-audit-v1",
+  "scope": "Read existing source snapshots and existing current-run flags only. No RPC, model, GPU, DT, profiler, hook, tests, checkpoint load/export/restore, or production changes.",
+  "identity": {
+    "observed_unix": 1791328862.1854239,
+    "driver_pid": 2360541,
+    "driver_birth": 1791325655.01,
+    "source_sha256": "c83b96debba90d85476e58b56b2c8c7f3900901f26ce41094e8f60ac489c7789"
+  },
+  "inputs": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/row-prefix-owner-fresh-v1/actor-head-actual-owner-sources-readonly.json",
+      "sha256": "1247278c871de0323f684e7410084e4d7da3709b999242a584c6de12b02af29e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/row-prefix-owner-fresh-v1/actor-workload-source-readonly.json",
+      "sha256": "a497628fafd6ef91c34fb99bd2c77a4820844fc839a7ba84579b43dc6df5bb63"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/row-prefix-owner-fresh-v1/actor-workload-accounting-readonly-20261007.json",
+      "sha256": "d3864b3c66817a9848b7ad1d18fa20a8f9fe770d4fa20ec92b8be402b3045c6e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/row-prefix-owner-fresh-v1/actual-worker-imports.json",
+      "sha256": "8fe68ab8c3c88e829912d491e637b1fc339d1c384abb74cfc4957d2a60224d2a"
+    }
+  ],
+  "actual_flags": {
+    "use_fused_kernels": true,
+    "fused_kernel_options.impl_backend": "torch",
+    "use_remove_padding": false,
+    "use_dynamic_bsz": false,
+    "entropy_coeff": 0.001,
+    "calculate_entropy_for_actor_update": true,
+    "evidence": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-fresh-row-prefix-20261007-v1/appworld-dt/train.log",
+      "observed_bytes": 7825445,
+      "sha256_of_observed_bytes": "ea5887243eac2ea20599e80aa69bfd0c17bdb801664236f2230352b165245944",
+      "lines": 9245,
+      "selected_lines": [
+        {
+          "line": 4398,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                                  'entropy_coeff': 0.001,"
+        },
+        {
+          "line": 4428,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                                  'use_dynamic_bsz': False,"
+        },
+        {
+          "line": 4436,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                                  'fused_kernel_options': {'impl_backend': 'torch'},"
+        },
+        {
+          "line": 4443,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                                  'use_fused_kernels': True,"
+        },
+        {
+          "line": 4445,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                                  'use_remove_padding': False,"
+        },
+        {
+          "line": 4453,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                                'log_prob_use_dynamic_bsz': False,"
+        },
+        {
+          "line": 4475,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                                    'log_prob_use_dynamic_bsz': False,"
+        },
+        {
+          "line": 4538,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                       'use_remove_padding': False,"
+        },
+        {
+          "line": 4555,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m             'use_dynamic_bsz': False},"
+        },
+        {
+          "line": 4619,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                             'use_fused_kernels': True,"
+        },
+        {
+          "line": 4620,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                             'use_remove_padding': False,"
+        },
+        {
+          "line": 4626,
+          "text": "\u001b[36m(TaskRunner pid=2364497)\u001b[0m                   'use_dynamic_bsz': False},"
+        },
+        {
+          "line": 4793,
+          "text": "\u001b[36m(WorkerDict pid=2369144)\u001b[0m Actor use_remove_padding=False"
+        },
+        {
+          "line": 4794,
+          "text": "\u001b[36m(WorkerDict pid=2369144)\u001b[0m Actor use_fused_kernels=True"
+        },
+        {
+          "line": 4824,
+          "text": "\u001b[36m(WorkerDict pid=2367855)\u001b[0m Actor use_remove_padding=False"
+        },
+        {
+          "line": 4825,
+          "text": "\u001b[36m(WorkerDict pid=2367855)\u001b[0m Actor use_fused_kernels=True"
+        }
+      ]
+    }
+  },
+  "source_evidence": {
+    "actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "line_evidence": [
+        {
+          "start": 217,
+          "end": 294,
+          "text": "                if not multi_modal_inputs and os.getenv(\"VERL_TRIM_SHARED_PADDING\", \"0\") == \"1\":\n                    left_trim = int(attention_mask.long().argmax(-1).min().item())\n                    # Keep the predecessor of the first real token.\n                    left_trim = max(0, left_trim - 1)\n                    if getattr(getattr(self.actor_module, \"config\", None), \"model_type\", None) in (\"qwen3_5\", \"qwen3_5_text\"):\n                        # Match the pinned FLA 64-token chunk grid in forward/backward.\n                        left_trim -= left_trim % 64\n                    # Preserve the caller's response layout on return.\n                    response_left_pad = max(0, left_trim - (input_ids.shape[-1] - response_length - 1))\n                    response_length -= response_left_pad\n                    response_labels = response_labels[:, response_left_pad:]\n                    input_ids = input_ids[:, left_trim:]\n                    attention_mask = attention_mask[:, left_trim:]\n                    position_ids = position_ids[..., left_trim:]\n                    columns = torch.arange(input_ids.shape[-1], device=attention_mask.device)\n                    right_end = int((attention_mask * columns).max().item()) + 1\n                    # Retain a response position even for an empty action mask.\n                    right_end = max(right_end, input_ids.shape[-1] - response_length + 1)\n                    if getattr(getattr(self.actor_module, \"config\", None), \"model_type\", None) in (\"qwen3_5\", \"qwen3_5_text\"):\n                        right_end = min(input_ids.shape[-1], (right_end + 63) // 64 * 64)\n                    response_right_pad = input_ids.shape[-1] - right_end\n                    if response_right_pad:\n                        response_length -= response_right_pad\n                        response_labels = response_labels[:, :response_length]\n                        input_ids = input_ids[:, :right_end]\n                        attention_mask = attention_mask[:, :right_end]\n                        position_ids = position_ids[..., :right_end]\n                extra_args = {}\n                if self.use_fused_kernels:\n                    extra_args[\"temperature\"] = temperature\n                # Select response head rows; decoder inputs and kernels stay unchanged.\n                head_response_length = response_length\n                head_positions = response_length + 1\n                if (not multi_modal_inputs and not self.use_fused_kernels\n                        and os.getenv(\"VERL_TRIM_RESPONSE_HEAD\", \"0\") == \"1\"\n                        and getattr(getattr(self.actor_module, \"config\", None), \"model_type\", None)\n                        in (\"qwen3_5\", \"qwen3_5_text\")):\n                    columns = torch.arange(1, response_length + 1, device=attention_mask.device)\n                    head_response_length = max(1, int((attention_mask[:, -response_length:] * columns).max().item()))\n                    if head_response_length < response_length:\n                        start = input_ids.shape[-1] - response_length - 1\n                        head_positions = torch.arange(start, start + head_response_length + 1, device=input_ids.device)\n                output = self.actor_module(\n                    input_ids=input_ids,\n                    attention_mask=attention_mask,\n                    position_ids=position_ids,\n                    logits_to_keep=head_positions,\n                    **multi_modal_inputs,\n                    use_cache=False,\n                    **extra_args,\n                )  # prevent model thinks we are generating\n\n                if self.use_fused_kernels:\n                    log_probs = output.log_probs[:, -response_length - 1 : -1]\n                    entropy = output.entropy[:, -response_length - 1 : -1]  # (bsz, response_length)\n\n                else:\n                    logits = output.logits\n\n                    logits.div_(temperature)\n                    logits = logits[:, -head_response_length - 1 : -1, :]\n                    log_probs = logprobs_from_logits(logits, response_labels[:, :head_response_length])\n                    if calculate_entropy:\n                        entropy = self.compute_entropy_from_logits(logits)\n                    if head_response_length < response_length:\n                        # The owner's PPO tensors keep their original columns/masks.\n                        log_probs = torch.nn.functional.pad(log_probs, (0, response_length - head_response_length))\n                        if calculate_entropy:\n                            entropy = torch.nn.functional.pad(entropy, (0, response_length - head_response_length))\n\n            if response_right_pad:\n                log_probs = torch.nn.functional.pad(log_probs, (0, response_right_pad))\n                if entropy is not None:\n                    entropy = torch.nn.functional.pad(entropy, (0, response_right_pad))\n            if response_left_pad:\n                log_probs = torch.nn.functional.pad(log_probs, (response_left_pad, 0))\n                if entropy is not None:\n                    entropy = torch.nn.functional.pad(entropy, (response_left_pad, 0))"
+        },
+        {
+          "start": 444,
+          "end": 451,
+          "text": "                    entropy_coeff = self.config.entropy_coeff\n                    loss_agg_mode = self.config.loss_agg_mode\n\n                    # all return: (bsz, response_length)\n                    calculate_entropy = False\n                    if entropy_coeff != 0:\n                        calculate_entropy = True\n                    entropy, log_prob = self._forward_micro_batch(micro_batch=data, temperature=temperature, calculate_entropy=calculate_entropy)"
+        },
+        {
+          "start": 476,
+          "end": 496,
+          "text": "                        # compute policy loss\n                        policy_loss = pg_loss - entropy_loss * entropy_coeff\n                    else:\n                        policy_loss = pg_loss\n\n                    if self.config.use_kl_loss:\n                        ref_log_prob = data[\"ref_log_prob\"]\n                        # compute kl loss\n                        kld = kl_penalty(logprob=log_prob, ref_logprob=ref_log_prob, kl_penalty=self.config.kl_loss_type)\n                        kl_loss = agg_loss(loss_mat=kld, loss_mask=response_mask, loss_agg_mode=loss_agg_mode)\n\n                        policy_loss = policy_loss + kl_loss * self.config.kl_loss_coef\n                        metrics[\"actor/kl_loss\"] = kl_loss.detach().item()\n                        metrics[\"actor/kl_coef\"] = self.config.kl_loss_coef\n\n                    if self.config.use_dynamic_bsz:\n                        # relative to the dynamic bsz\n                        loss = policy_loss * (len(data) / self.config.ppo_mini_batch_size)\n                    else:\n                        loss = policy_loss / self.gradient_accumulation\n                    loss.backward()"
+        }
+      ]
+    },
+    "backend_selector": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/models/transformers/monkey_patch.py",
+      "sha256": "3c78654e0ebada3727a852d8e96720eb59053a391a361ee44056dc96c449d693",
+      "line_evidence": [
+        {
+          "start": 196,
+          "end": 245,
+          "text": "def patch_forward_with_backends(\n    model: PreTrainedModel,\n    use_fused_kernels: bool = False,\n    fused_kernels_backend: str = None,\n):\n    \"\"\"\n    Choose the forward function based on the model and backend.\n    Args:\n        model (PreTrainedModel): The model to apply the monkey patch.\n        use_fused_kernels (bool): Whether to use fused kernels.\n        fused_kernels_backend (str): The backend to use for fused kernels.\n    \"\"\"\n    if not use_fused_kernels or fused_kernels_backend not in [\"triton\", \"torch\"]:\n        print(\n            f\"Skipping monkey patch for {model.__class__.__name__} as use_fused_kernels is \"\n            f\"{use_fused_kernels} or fused_kernels_backend is {fused_kernels_backend}\"\n        )\n        return\n\n    forward_with_torch_backend_function = model.__class__.forward\n    forward_with_triton_backend_function = model.__class__.forward\n    if model.config.model_type in [\"qwen2_5_vl\", \"qwen2_vl\"]:\n        from verl.models.transformers.qwen2_vl import forward_with_torch_backend, forward_with_triton_backend\n\n        forward_with_torch_backend_function = forward_with_torch_backend\n        forward_with_triton_backend_function = forward_with_triton_backend\n    elif model.config.model_type in [\"qwen3_vl\", \"qwen3_vl_moe\", \"qwen3_5_text\"]:\n        from verl.models.transformers.qwen3_vl import forward_with_torch_backend, forward_with_triton_backend\n\n        forward_with_torch_backend_function = forward_with_torch_backend\n        forward_with_triton_backend_function = forward_with_triton_backend\n    elif model.config.model_type == \"glm4v\":\n        from verl.models.transformers.glm4v import forward_with_torch_backend, forward_with_triton_backend\n\n        forward_with_torch_backend_function = forward_with_torch_backend\n        forward_with_triton_backend_function = forward_with_triton_backend\n    else:\n        from verl.models.transformers.dense_common import forward_with_torch_backend, forward_with_triton_backend\n\n        forward_with_torch_backend_function = forward_with_torch_backend\n        forward_with_triton_backend_function = forward_with_triton_backend\n\n    if fused_kernels_backend == \"triton\":\n        model.__class__.forward = forward_with_triton_backend_function\n        print(f\"Using Triton backend for fused kernels in {model.__class__.__name__}\")\n    elif fused_kernels_backend == \"torch\":\n        model.__class__.forward = forward_with_torch_backend_function\n        print(f\"Using Torch backend for fused kernels in {model.__class__.__name__}\")\n    else:\n        raise ValueError(f\"Unsupported fused_kernels_backend: {fused_kernels_backend}. Choose 'triton' or 'torch'.\")"
+        }
+      ]
+    },
+    "fused_forward": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/models/transformers/qwen3_vl.py",
+      "sha256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+      "line_evidence": [
+        {
+          "start": 271,
+          "end": 302,
+          "text": "def forward_with_torch_backend(\n    self: \"Qwen3VLForConditionalGeneration\",\n    input_ids: torch.LongTensor = None,\n    labels: Optional[torch.LongTensor] = None,\n    temperature: float = 1.0,\n    **kwargs,\n) -> \"Qwen3VLCausalLMOutputForPPO\":\n    from verl.utils.experimental.torch_functional import FusedLinearForPPO\n\n    outputs = self.model(input_ids, **kwargs)\n    hidden_states = outputs[0]\n\n    # Loss calculations\n    if labels is not None:\n        rolled_labels = torch.roll(labels, shifts=-1, dims=-1)\n    elif input_ids is not None:\n        rolled_labels = torch.roll(input_ids, shifts=-1, dims=-1)\n    else:\n        raise RuntimeError(\"To use forward_with_torch_backend, either labels or input_ids must be provided.\")\n\n    fused_linear_for_ppo = FusedLinearForPPO()\n    log_probs, entropy = fused_linear_for_ppo.forward(\n        hidden_states=hidden_states,\n        vocab_weights=self.lm_head.weight,\n        input_ids=rolled_labels,\n        temperature=temperature,\n    )\n    return Qwen3VLCausalLMOutputForPPO(\n        log_probs=log_probs,\n        entropy=entropy,\n        hidden_states=outputs.hidden_states,\n    )"
+        }
+      ]
+    },
+    "chunked_head": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/experimental/torch_functional.py",
+      "sha256": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+      "line_evidence": [
+        {
+          "start": 19,
+          "end": 39,
+          "text": "@torch.compile(dynamic=True, options={\"emulate_precision_casts\": True})\ndef _fused_linear_for_ppo_fwd(\n    hidden_states: torch.FloatTensor,\n    vocab_weights: torch.FloatTensor,\n    input_ids: torch.LongTensor,\n    temperature: float = 1.0\n) -> Tuple[torch.FloatTensor, torch.FloatTensor]:\n    logits = (hidden_states @ vocab_weights.t()) / temperature\n    if temperature != 1.0:\n        torch._dynamo.graph_break()\n    orig_dtype = logits.dtype\n    logits = logits.to(torch.float32)\n\n    # Slower but more numerically stable to do log_softmax than probs.log()\n    probs = logits.softmax(dim=-1)\n    log_probs = logits.log_softmax(dim=-1)\n\n    token_log_probs = log_probs.gather(-1, input_ids.unsqueeze(-1)).squeeze(-1)\n    entropy = torch.logsumexp(logits, dim=-1) - torch.sum(probs * logits, dim=-1)\n\n    return token_log_probs, entropy"
+        },
+        {
+          "start": 42,
+          "end": 77,
+          "text": "@torch.compile(dynamic=True, options={\"emulate_precision_casts\": True})\ndef _fused_linear_for_ppo_bwd(\n    dlog_probs: Optional[torch.FloatTensor],\n    dentropy: Optional[torch.FloatTensor],\n    hidden_states: torch.FloatTensor,\n    vocab_weights: torch.FloatTensor,\n    input_ids: torch.LongTensor,\n    temperature: float = 1.0,\n) -> Tuple[torch.FloatTensor, torch.FloatTensor]:\n    logits = (hidden_states @ vocab_weights.t()) / temperature\n    if temperature != 1.0:\n        torch._dynamo.graph_break()\n    orig_dtype = logits.dtype\n    logits = logits.to(torch.float32)\n\n    probs = logits.softmax(dim=-1)\n\n    dlogits = 0\n\n    # Gradient from log_probs\n    if dlog_probs is not None:\n        one_hot_input = torch.zeros_like(logits).scatter_(-1, input_ids.unsqueeze(-1), 1)\n        dlogits += (dlog_probs.to(torch.float32).unsqueeze(-1) * (one_hot_input - probs)).to(orig_dtype)\n\n    # Gradient from entropy\n    if dentropy is not None:\n        log_probs = logits.log_softmax(dim=-1)\n        entropy = torch.logsumexp(logits, dim=-1) - torch.sum(probs * logits, dim=-1)\n        dlogits += (probs * (log_probs + entropy.unsqueeze(-1)) * (-dentropy.unsqueeze(-1))).to(orig_dtype)\n\n    dlogits = dlogits.to(orig_dtype) / temperature\n\n    dhidden_states = dlogits @ vocab_weights\n    dvocab_weights = (dlogits.t() @ hidden_states)\n\n    return dhidden_states, dvocab_weights"
+        },
+        {
+          "start": 80,
+          "end": 135,
+          "text": "class FusedLinearForPPOFunction(torch.autograd.Function):\n\n    @staticmethod\n    def forward(\n        ctx,\n        hidden_states: torch.FloatTensor,\n        vocab_weights: torch.FloatTensor,\n        input_ids: torch.LongTensor,\n        temperature: float = 1.0,\n        chunk_size: int = 512,\n    ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:\n        ctx.set_materialize_grads(False)\n\n        # Cast to a 2D tensor of the shape [T, D] for ease of working\n        orig_ndim = hidden_states.ndim\n        assert orig_ndim in (2, 3), f\"Invalid hidden_states shape, received {hidden_states.shape}\"\n\n        orig_batch_size = -1\n        if orig_ndim == 3:\n            assert input_ids.ndim == 2, f\"input_ids shape doesn't match, {hidden_states.shape} {input_ids.shape}\"\n            orig_batch_size = hidden_states.shape[0]\n            hidden_states = hidden_states.flatten(0, 1)\n            input_ids = input_ids.flatten(0, 1)\n\n        T = hidden_states.shape[0]\n\n        # Allocate memory for outputs\n        output_requires_grad = hidden_states.requires_grad or vocab_weights.requires_grad\n        log_probs = torch.zeros(T, device=hidden_states.device, dtype=torch.float32, requires_grad=output_requires_grad)\n        entropy = torch.zeros(T, device=hidden_states.device, dtype=torch.float32, requires_grad=output_requires_grad)\n\n        # Perform forward one chunk at a time\n        for chunk_start in range(0, T, chunk_size):\n            chunk_end = min(chunk_start + chunk_size, T)\n\n            chunk_log_probs, chunk_entropy = _fused_linear_for_ppo_fwd(\n                hidden_states=hidden_states[chunk_start:chunk_end],\n                vocab_weights=vocab_weights,\n                input_ids=input_ids[chunk_start:chunk_end],\n                temperature=temperature,\n            )\n            log_probs[chunk_start:chunk_end] = chunk_log_probs\n            entropy[chunk_start:chunk_end] = chunk_entropy\n\n        # Cast the output back to the original input dimension\n        if orig_ndim == 3:\n            log_probs = log_probs.view(orig_batch_size, -1)\n            entropy = entropy.view(orig_batch_size, -1)\n\n        ctx.save_for_backward(hidden_states, vocab_weights, input_ids)\n        ctx.orig_batch_size = orig_batch_size\n        ctx.orig_ndim = orig_ndim\n        ctx.temperature = temperature\n        ctx.chunk_size = chunk_size\n\n        return log_probs, entropy"
+        },
+        {
+          "start": 144,
+          "end": 199,
+          "text": "        temperature = ctx.temperature\n        chunk_size = ctx.chunk_size\n\n        # Here orig_ndim refers to the orig_ndim of hidden_states\n        if orig_ndim == 3:\n            if dlog_probs is not None:\n                dlog_probs = dlog_probs.flatten()\n            if dentropy is not None:\n                dentropy = dentropy.flatten()\n\n        T = hidden_states.shape[0]\n\n        # Allocate memory for outputs\n        dhidden_states = None\n        if hidden_states.requires_grad:\n            dhidden_states = torch.zeros_like(hidden_states)\n        dvocab_weights = None\n        if vocab_weights.requires_grad:\n            dvocab_weights = torch.zeros_like(vocab_weights)\n\n        # Perform backward one chunk at a time\n        for chunk_start in range(0, T, chunk_size):\n            chunk_end = min(chunk_start + chunk_size, T)\n            chunk_dlog_probs = None\n            if dlog_probs is not None:\n                chunk_dlog_probs = dlog_probs[chunk_start:chunk_end]\n            chunk_dentropy = None\n            if dentropy is not None:\n                chunk_dentropy = dentropy[chunk_start:chunk_end]\n\n            h, v = _fused_linear_for_ppo_bwd(\n                dlog_probs=chunk_dlog_probs,\n                dentropy=chunk_dentropy,\n                hidden_states=hidden_states[chunk_start:chunk_end],\n                vocab_weights=vocab_weights,\n                input_ids=input_ids[chunk_start:chunk_end],\n                temperature=temperature,\n            )\n\n            if hidden_states.requires_grad:\n                dhidden_states[chunk_start:chunk_end] += h\n            if vocab_weights.requires_grad:\n                dvocab_weights += v\n\n        # Cast the output back to the original input dimension\n        if orig_ndim == 3 and hidden_states.requires_grad:\n            hidden_size = hidden_states.shape[-1]\n            dhidden_states = dhidden_states.view(orig_batch_size, -1, hidden_size)\n\n        return (\n            dhidden_states,  # hidden_states\n            dvocab_weights,  # vocab_weights\n            None,  # input_ids\n            None,  # temperature\n            None,  # chunk_size\n        )"
+        },
+        {
+          "start": 202,
+          "end": 223,
+          "text": "class FusedLinearForPPO(torch.nn.Module):\n\n    def __init__(self, chunk_size: int = 512):\n        super().__init__()\n\n        self.chunk_size = chunk_size\n\n    def forward(\n        self,\n        hidden_states: torch.FloatTensor,\n        vocab_weights: torch.FloatTensor,\n        input_ids: torch.LongTensor,\n        temperature: float = 1.0,\n    ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:\n        input_ids = input_ids.to(torch.int64)\n        return FusedLinearForPPOFunction.apply(\n            hidden_states,\n            vocab_weights,\n            input_ids,\n            temperature,\n            self.chunk_size,\n        )"
+        }
+      ]
+    },
+    "original_hf": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+      "line_evidence": [
+        {
+          "start": 1173,
+          "end": 1182,
+          "text": "    def forward(\n        self,\n        input_ids: torch.LongTensor | None = None,\n        attention_mask: torch.Tensor | None = None,\n        position_ids: torch.LongTensor | None = None,\n        past_key_values: Cache | None = None,\n        inputs_embeds: torch.FloatTensor | None = None,\n        use_cache: bool | None = None,\n        **kwargs: Unpack[TransformersKwargs],\n    ) -> BaseModelOutputWithPast:"
+        },
+        {
+          "start": 1633,
+          "end": 1643,
+          "text": "    def forward(\n        self,\n        input_ids: torch.LongTensor | None = None,\n        attention_mask: torch.Tensor | None = None,\n        position_ids: torch.LongTensor | None = None,\n        past_key_values: Cache | None = None,\n        inputs_embeds: torch.FloatTensor | None = None,\n        labels: torch.LongTensor | None = None,\n        use_cache: bool | None = None,\n        logits_to_keep: int | torch.Tensor = 0,\n        **kwargs: Unpack[TransformersKwargs],"
+        },
+        {
+          "start": 1667,
+          "end": 1684,
+          "text": "        outputs: BaseModelOutputWithPast = self.model(\n            input_ids=input_ids,\n            attention_mask=attention_mask,\n            position_ids=position_ids,\n            past_key_values=past_key_values,\n            inputs_embeds=inputs_embeds,\n            use_cache=use_cache,\n            **kwargs,\n        )\n\n        hidden_states = outputs.last_hidden_state\n        # Only compute necessary logits, and do not upcast them to float if we are not computing the loss\n        slice_indices = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep\n        lm_weight = self.lm_head.weight.to_local() if hasattr(self.lm_head.weight, \"to_local\") else self.lm_head.weight\n        lm_bias = self.lm_head.bias.to_local() if getattr(self.lm_head, \"bias\", None) is not None and hasattr(self.lm_head.bias, \"to_local\") else getattr(self.lm_head, \"bias\", None)\n        lm_weight = lm_weight.to(hidden_states.device)\n        lm_bias = lm_bias.to(hidden_states.device) if lm_bias is not None else None\n        logits = F.linear(hidden_states[:, slice_indices, :], lm_weight, lm_bias)"
+        }
+      ]
+    }
+  },
+  "conclusions": [
+    "The existing VERL torch fused forward is selected by actual fused=True/backend=torch and its Qwen3.5 selector. It already uses the original FusedLinearForPPO chunked linear/logprob/entropy implementation with default chunk_size=512; no evidence of a missing fused/chunked head feature.",
+    "The head flattens retained [B,S,D] hidden states into T=B*S and processes 512 positions at a time. It keeps FP32 [B,S] logprob and entropy outputs and saves hidden states, vocabulary weights and labels for backward. It does not save one complete [B,S,vocab] logits activation.",
+    "Its original backward intentionally recomputes logits/softmax for each chunk. Training therefore includes vocabulary projection and derivative work beyond cached autoregressive sampling. This source audit gives no runtime ratio or phase dominance.",
+    "Actor 3a65 passes logits_to_keep as integer response_length_after_common_trim+1. The tensor-index head selector is gated by not self.use_fused_kernels and is inactive here.",
+    "The current VERL fused forward accepts logits_to_keep in kwargs and forwards it to the backbone, then applies FusedLinearForPPO to all returned hidden states. It does not execute the original HF CausalLM head slice at modeling_qwen3_5:1679-1684.",
+    "For this native whole-trajectory layout, the prompt is one token and common left trim is zero, so the integer logits_to_keep equals the retained input width S. Its lack of a fused head slice does not establish a new error for this layout. No exact per-microbatch S was measured in this audit.",
+    "The dense head receives all retained positions, including observation positions and any remaining per-row padding. Action masks are applied to losses later; they do not select head rows. This is a source-level workload fact, not measured proof of a defect or dominant waste.",
+    "The nonzero configured entropy coefficient requires entropy during actor update. The fused wrapper returns both logprob and entropy independently of calculate_entropy; under current entropy=.001 the entropy output is required.",
+    "Original HF supports int or tensor logits_to_keep, but its CausalLM forward is replaced by the selected existing VERL fused forward. Switching backend/offering a new head adapter is not authorized or justified by this read-only audit."
+  ],
+  "limits": [
+    "No new worker method-binding RPC; runtime flags come from existing current-run worker log and worker-import receipt.",
+    "No head timing, exact per-microbatch width distribution, operator peak memory, or new numerical tolerance evidence was produced.",
+    "Current actor execution/whitening completion remains with root current-phase audit; no completion claim added."
+  ]
+}

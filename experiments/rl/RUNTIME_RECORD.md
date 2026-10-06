@@ -33,6 +33,15 @@ SHA cdb95e8f；actual-dt-batches-1791328581-readonly.json SHA7f23b0da；
 compiler-cache-conclusion-readonly.json SHA478be7ea；phase-1791328350.json。
 本次只读定位和记录，没有新生产实现、GPU测试、profiler、RPC或训练参数改动。
 
+同次actor源核实：当前两worker实际use_fused_kernels=True、backend=torch、
+use_remove_padding=False；原VERL qwen3_vl的forward_with_torch_backend复用原
+FusedLinearForPPO，默认chunk_size512，反向重算分块logits/probabilities，并非
+保留完整B×S×vocab张量。当前trajectory单token prompt使整数logits_to_keep等于
+保留序列长度，不据此认定新bug。O和B4内部尾pad仍进入dense fused head，但没有
+其成本占比，不当作已量出的大头，不关闭fused或新造head。来源actor-head-computation-
+readonly-20261007.json SHA f8c08c43，含实际flags、原文件SHA和行号。本轮actor仍
+未返回，不据静态设置提前确认完整更新时间或白化后的实际梯度。
+
 ## 2026-10-07 06:59 本次fresh已完成原旧概率重算，并开始正式DT批处理
 
 同一driver2360541/source c83b96de、原worker2367855/2369144继续GPU4/5。
