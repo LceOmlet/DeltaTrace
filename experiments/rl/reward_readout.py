@@ -132,8 +132,8 @@ class RewardAlphabet:
         query = (
             '<|im_end|>\n<|im_start|>user\n'
             f'Future cumulative return forecast for {self.task}. The preceding text is the exact agent prefix, '
-            'possibly ending inside an unfinished response. Do not treat this forecast request '
-            'as an environment action. Imagine completing that response and continuing with '
+            'after generation of the current response has ended, possibly at its token limit. Do not treat this forecast request '
+            'as an environment action. Imagine the environment immediately processing that response as emitted and then continuing with '
             'this same policy, ' + policy +
             f'The current interaction is {current_step + 1}; the episode allows {max_steps} interactions. '
             'Predict the SUM of all official rewards from the current interaction through the end '

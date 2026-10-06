@@ -102,6 +102,9 @@ def test_queries_encode_reward_events_without_revealing_sampled_future():
     assert 'interaction is 2' in text and '15 interactions' in text
     assert 'SUM of all official rewards' in text and 'Exclude earlier rewards' in text
     assert 'never occur' in text and '10.9' in text and '-0.1' in text
+    assert 'after generation of the current response has ended, possibly at its token limit.' in text
+    assert 'environment immediately processing that response as emitted' in text
+    assert 'unfinished response' not in text and 'Imagine completing that response' not in text
     assert alphabet.observed_index(10.8999999) == 16
     with pytest.raises(ValueError, match='outside'):
         alphabet.observed_index(0.9)
