@@ -1,5 +1,40 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 06:59 本次fresh已完成原旧概率重算，并开始正式DT批处理
+
+同一driver2360541/source c83b96de、原worker2367855/2369144继续GPU4/5。
+phase-1791327400已见两rank进入compute_dt_token_advantages；原当前类别组各
+484 contrasts/121个B4，不是整轮总数。无完整trainer阶段timer，旧概率重算
+仅按06:53:47仍在运行与06:56:40已进入DT的观察边界记录，不补造精确耗时。
+原/proc maps只读回执mapped-library-1791327429证明两rank实际加载已验证
+libfinite_row_query_starts.so，SHA4f42c391，与冻结源/数值验收绑定相同；加载
+本身不等于一次有限计算完成。
+
+phase-1791327553（06:59:13）已记录本次正式DT前三个B4完成：首批17.9598/
+17.9442秒，后两批2.6746/2.6717、2.7118/2.7125秒，输入约3152–3188。
+不将首批额外时间全部称作编译，不从短输入外推整轮/32k耗时。此时cgroup
+234.06GiB，两DT worker PSS57.68/58.18GiB，是阶段时刻值不是峰值。
+首批signed归因仍有原守恒诊断false（示例root .4666/sum .3065），只保留
+定位信息，不引入新的容差、补偿或扩大已有FA/FLA原断言的验证范围。
+本次全部DT、整批白化及actor更新仍待实际原调用完成；没有恢复旧训练检查点。
+
+## 2026-10-07 06:53 本次fresh原采集完成，进入原旧概率重算
+
+同一driver2360541/birth1791325655.01/source c83b96de继续GPU4/5。原LOOP在
+06:51:46.682/.697分别完成rank0/1采集：106/112返回、14/8取消，共218条返回、
+22条取消；按原完成条件停止，没有本地重新判定或补造轨迹。原transport最后
+3837回复/763099生成token/1250.6秒不是trainer完整gen timer，不称纯decode。
+phase-1791327227（06:53:47）显示两rank实际进程均进入
+ray::WorkerDict.actor_rollout_compute_log_prob，cgroup131.64GiB。原source/配置
+未改，未恢复/导出旧检查点，未启动其他任务或新GPU测试。
+
+本次DT/整批白化/actor仍未执行完。实际trainer d35在373–374调用原
+masked_whiten，1256–1271的compute_advantage返回后才可进入1285 actor RPC；
+届时以同一当前作业的原actor入口证明执行，不将源码存在或DT结束提前称通过。
+原生产没有raw_A或actor系数std/norm日志；原critic/advantages mean/max/min
+是白化后系数，actor/grad_norm是完整原损失梯度。不要把d极值当raw_A标准差，
+不要声称仅凭grad_norm证明任务梯度或学习质量已恢复，也不增加新hook来作门槛。
+
 ## 2026-10-07 06:45 当前fresh采样继续；补齐已有实际工作量计量
 
 当前仍为driver2360541/birth1791325655.01/source c83b96de，GPU4/5，入口和
