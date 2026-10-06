@@ -1,0 +1,232 @@
+{
+  "scope": "Read-only actual VERL-agent advantage-unit source audit; not a normalization proposal, numerical test or plan change.",
+  "sources": {
+    "actual_core": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/recipe-sources/verl-agent-20bd331/verl/trainer/ppo/core_algos.py",
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "bytes": 28863
+    },
+    "actual_trainer": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/native-minibatch-v4/actual-trainer.py",
+      "sha256": "8816ea4e5f9a95a1dfe1067349eee9101da8bf4ec916bcc28a5b03288976f0df",
+      "bytes": 68750
+    },
+    "official_default_config": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/recipe-sources/verl-agent-20bd331/verl/trainer/config/ppo_trainer.yaml",
+      "sha256": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+      "bytes": 13398
+    },
+    "actual_checkpoint25_diagnostic_config": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-degradation-20261005/native-adam-20261006/v1/effective-config.yaml",
+      "sha256": "9f663a7ddad06203edaaa59ec0237c1bdf64ac1ced88e9ce00d598f9a556b4dd",
+      "bytes": 9380
+    },
+    "PLAN": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/PLAN.md",
+      "sha256": "32f8379f1390bedf8d092cb9bd7765e39dd9f3dd62945d0249e6e3110248d1d0",
+      "bytes": 20399
+    }
+  },
+  "GAE": {
+    "owner_function": "compute_gae_advantage_return",
+    "function_line": 67,
+    "actual_return_and_whitening_lines": [
+      {
+        "line": 105,
+        "text": "        advantages = torch.stack(advantages_reversed[::-1], dim=1)"
+      },
+      {
+        "line": 106,
+        "text": ""
+      },
+      {
+        "line": 107,
+        "text": "        returns = advantages + values"
+      },
+      {
+        "line": 108,
+        "text": "        advantages = verl_F.masked_whiten(advantages, response_mask)"
+      },
+      {
+        "line": 109,
+        "text": "    return advantages, returns"
+      }
+    ],
+    "finding": "The owner first sets returns=raw_GAE+values, then applies masked_whiten to output advantages. The returned returns retain their reward/value units."
+  },
+  "GRPO": {
+    "owner_function": "compute_grpo_outcome_advantage",
+    "function_line": 113,
+    "actual_default_lines": [
+      {
+        "line": 118,
+        "text": "    epsilon: float = 1e-6,"
+      },
+      {
+        "line": 119,
+        "text": "    norm_adv_by_std_in_grpo: str = True,"
+      },
+      {
+        "line": 120,
+        "text": "    compute_mean_std_cross_steps: bool = True,"
+      }
+    ],
+    "actual_group_statistics_and_output_lines": [
+      {
+        "line": 158,
+        "text": "        for idx in id2score:"
+      },
+      {
+        "line": 159,
+        "text": "            if len(id2score[idx]) == 1:"
+      },
+      {
+        "line": 160,
+        "text": "                id2mean[idx] = torch.tensor(0.0)"
+      },
+      {
+        "line": 161,
+        "text": "                id2std[idx] = torch.tensor(1.0)"
+      },
+      {
+        "line": 162,
+        "text": "            elif len(id2score[idx]) > 1:"
+      },
+      {
+        "line": 163,
+        "text": "                id2mean[idx] = torch.mean(torch.tensor(id2score[idx]))"
+      },
+      {
+        "line": 164,
+        "text": "                id2std[idx] = torch.std(torch.tensor([id2score[idx]]))"
+      },
+      {
+        "line": 165,
+        "text": "            else:"
+      },
+      {
+        "line": 166,
+        "text": "                raise ValueError(f\"no score in prompt index: {idx}\")"
+      },
+      {
+        "line": 167,
+        "text": "        for i in range(bsz):"
+      },
+      {
+        "line": 168,
+        "text": "            if norm_adv_by_std_in_grpo:"
+      },
+      {
+        "line": 169,
+        "text": "                scores[i] = (scores[i] - id2mean[index[i]]) / (id2std[index[i]] + epsilon)"
+      },
+      {
+        "line": 170,
+        "text": "            else:"
+      },
+      {
+        "line": 171,
+        "text": "                scores[i] = scores[i] - id2mean[index[i]]"
+      },
+      {
+        "line": 172,
+        "text": "        scores = scores.unsqueeze(-1) * response_mask"
+      },
+      {
+        "line": 173,
+        "text": ""
+      },
+      {
+        "line": 174,
+        "text": "    return scores, scores"
+      }
+    ],
+    "official_flag": [
+      {
+        "line": 238,
+        "text": "  norm_adv_by_std_in_grpo: True"
+      }
+    ],
+    "actual_flag": [
+      {
+        "line": 239,
+        "text": "  norm_adv_by_std_in_grpo: true"
+      }
+    ],
+    "finding": "Default and this recorded configuration normalize centered group outcome scores by group std+epsilon, then apply the response mask."
+  },
+  "DT": {
+    "owner_function": "compute_advantage",
+    "function_line": 245,
+    "actual_dispatch_and_output_lines": [
+      {
+        "line": 361,
+        "text": "    elif adv_estimator == AdvantageEstimator.DELTATRACE:"
+      },
+      {
+        "line": 362,
+        "text": "        response_mask = data.batch[\"response_mask\"].to(device=data.batch[\"responses\"].device, dtype=torch.bool)"
+      },
+      {
+        "line": 363,
+        "text": "        for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+      },
+      {
+        "line": 364,
+        "text": "            if name not in data.batch:"
+      },
+      {
+        "line": 365,
+        "text": "                raise RuntimeError(f\"deltatrace estimator requires {name}\")"
+      },
+      {
+        "line": 366,
+        "text": "            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)"
+      },
+      {
+        "line": 367,
+        "text": "            if value.shape != response_mask.shape:"
+      },
+      {
+        "line": 368,
+        "text": "                raise RuntimeError(f\"{name} must align with original response tokens\")"
+      },
+      {
+        "line": 369,
+        "text": "            if not torch.isfinite(value).all():"
+      },
+      {
+        "line": 370,
+        "text": "                raise RuntimeError(f\"{name} contains non-finite values\")"
+      },
+      {
+        "line": 371,
+        "text": "            data.batch[name] = torch.where(response_mask, value, 0.0)"
+      },
+      {
+        "line": 372,
+        "text": "        data.batch[\"advantages\"] = data.batch[\"dt_token_advantages\"]"
+      },
+      {
+        "line": 373,
+        "text": "        data.batch[\"returns\"] = data.batch[\"dt_q_estimates\"]"
+      }
+    ],
+    "finding": "The fixed DT branch checks alignment/finiteness and casts/masks original fields; it directly assigns dt_token_advantages to advantages and dt_q_estimates to returns. No masked whitening or group-standard-deviation division occurs."
+  },
+  "shared_loss_interpretation": [
+    "The same original entropy coefficient does not imply the same effective task-gradient/entropy-gradient weight when advantages are produced in different units.",
+    "The observed DT/GRPO task-gradient norm ratio near1/211 was measured with raw DT log-prob/return credit versus official group-standardized GRPO coefficients. It is not a same-unit calibration factor or a proposed credit multiplier.",
+    "This source distinction alone does not prove task-direction quality, historical degradation causality, or prescribe a change to the accepted Q/V/A."
+  ],
+  "operations": {
+    "model_calls": 0,
+    "GPU_calls": 0,
+    "DT_calls": 0,
+    "backward_calls": 0,
+    "optimizer_steps": 0,
+    "production_changes": 0,
+    "normalization_changes": 0,
+    "new_tolerances": 0
+  }
+}

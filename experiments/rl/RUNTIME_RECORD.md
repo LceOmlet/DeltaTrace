@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 原作者累计删除与奖励事件曲线
+
+GPU[4, 5]隔离PID112109/birth1791259467.52已完成并退出，从启动到完成596.598秒。checkpoint25原成功首response 21 UID，原VERL padding后22运输槽，保留副本差与首个UID主记录。原作者k=20累计删除两视图，每rank原生评分调用[462, 462]；使用保存的d_from_A，不重算DT。原模型及完整checkpoint加载一次，评分B1与固定actor训练B4分开，LoRA8/16保持；DT/反向/optimizer/scheduler/rollout均0。
+
+实际runner c7fc969f9f521993f2449ea5f364adcb3e0fdac5b01c38c103963639551516c1，原作者metric 583f4b7d0426407eb9a517f173365762860a1f4382f472dffb5c07de7d3e94a1，完整导入路径和其余源SHA见绑定原件。signed_RISE: RISE=0.013519047666008659, MAS=0.6549049945432908, 原同集合ΔLP与Σd MAE=0.2088063485939311; positive_MAS: RISE=0.013519047666008659, MAS=0.12702971744703956, 原同集合ΔLP与Σd MAE=0.17183671696707087。原RISE/MAS及曲线由作者函数原样返回；两视图原归一化全零UID数量为{'signed_RISE': 13, 'positive_MAS': 13}，负full-EOS端点使初值clip到0并维持running-min；RISE很小不能自动解释为中间删除无效或归因优秀。同集合累计效应与单token条件删除不是同一统计对象，原非有限指标保留为缺失描述，未加纠偏或容差。完整raw、分析、两图、CPU来源合同、独立复核及物理资源回执绑定到既有degradation报告。
+
+另绑定已有14 B4同端点root/seed/32层/final账本和原VERL GAE/GRPO标准化与DT raw优势的来源审计。这些只解释现有信号的口径，不修改PLAN、Q/V/A、原PPO或参数，不称作者容差通过、世界反事实准确或弱任务梯度已修复；正式TextCraft仍保持停止。
+
+
 ## 2026-10-06 查询语义修复的原任务梯度实测
 
 GPU4/5隔离PID3996191/birth1791256647.02已完成并退出。同一原64条/checkpoint25/LoRA8/16/每卡B4，原模型及完整checkpoint各加载一次。先用保存的原信用测PG/H，再调用原trajectory_credit→worker→producer→runner重算，临时绑定afe59dd的query_ids(94a7afbc)，结束后恢复原方法；原pop/union/compute_advantage接回新信用。原reward、IDs、mask、old/ref LP及原Q/V/A组合保持，CPU逐字段回执另绑定。每rank两个信用组各两个local32反向（8B4/8），原clip执行；optimizer no-op4/scheduler no-op2，真实更新/rollout均0。
