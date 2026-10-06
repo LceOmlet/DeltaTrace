@@ -1,5 +1,47 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 06:27 AppWorld逐行缓存正式fresh入口已部署，无旧检查点
+
+旧v3 driver1953903/birth1791321793.72/source97e3已按唯一身份停止，receipt
+stop-before-row-prefix-1791325457/stopped.json，remaining_non_zombie=[]；没有
+保存/导入检查点，没有选择其他任务树。新driver2360541/birth1791325655.01、
+GPU4/5，output runs/appworld-fresh-row-prefix-20261007-v1/appworld-dt，source
+c83b96debba90d85476e58b56b2c8c7f3900901f26ce41094e8f60ac489c7789。
+
+源版本绑定已提交推送37b9085ab49babc582695cd0158ac1b837339484的验证候选；
+CPU prepare a7055ef8、inputs7559b090、prepare4b69366c、starter29221c62。
+原launcher1223字节不变，1550原/新绑定及entry95/VERL396/LOOP55/DT105文件
+核对完成。hash变化仅原allowlist（producer/lease/runner/artifact/environment，
+完整DT inventory另列answer/wrapper）；原sampling/全部非路径options与v3相同，
+5个新路径字段在prepared中逐项列出。原预算200×40groups×6、mini32、epochs2、
+train32000/max32768、rank8/alpha16、actor和DT每卡B4保持。fresh base，
+resume_mode=disable，argv没有--resume-from，不读取任何旧训练检查点。
+
+生产producer3e0c仅将两项已验owner参数透传原factory；runner5f14、answerd473、
+artifact37a860、leaseb947、wrapper3e1d/library4f42通过canonical接口使用，不用
+诊断class/sys.modules替换。正式VERL/LOOP/vLLM/HF/GDN/finiteFLA与trainer d35
+未改。原整批有效action mask的masked_whiten出口保持；旧v2已真实执行过，
+不能把本次初始化或源码存在当作本次已执行/梯度恢复/学习质量恢复。
+
+独立实际B8热调用9.77/9.74→3.962秒只证明保存的这一批，exact32768热调用
+8.30秒、allocated peak25351057920B只属于DT容量，不是新PPO或vLLM共存验收。
+FA/FLA原断言和实际dtype来源、先前NaN checker失败与最小接口修复、跨bank
+QVA差异都在下方06:20记录/verification-index，未增纠偏或整网容差。
+原只读collector33e1705c已更新current_runtime；本次没有完整迭代计时。
+06:30原worker只读RPC实际检查rank0/1 PID2367855/2369144，VERL actor3a65、
+worker e5eb、torchfunctional079a与HF59f9均匹配。各卡mini16是原global32分发，
+LoRA8/16、micro4、epochs2、entropy.001、dualclip3及32768一致；两owner
+开关True和有限库4f42都在实际环境。DT仍lazy未import，没有主动调用DT，
+trainer d35/373整批masked_whiten源核对不等于本次已经执行白化。
+06:28原配置检查通过，仍初始化/register-center阶段，没有正式DT/actor完成。
+
+更新时间比采样时间长尚不能判为正常：原actor每行是完整trajectory，DT每请求
+是当前response；v2实测3198 responses，DT403个B4/卡；217trajectory原padding
+到224，原PPO两epochs预计56个B4/卡、14同步optimizer steps。调用数不是FLOP
+或时间比；v2 actor未完成，旧2495秒属于旧padding版，不是本次成对计时。
+所有当前路径、birth、配置及来源见row-prefix-owner-fresh-v1/deployment-index.json。
+
+
 ## 2026-10-07 06:20 逐行缓存与存储组合完成有界验收，生产接线仅prepared
 
 正式v3仍1953903/birth1791321793.72、GPU4/5、source97e3cb75，没有导入旧训练

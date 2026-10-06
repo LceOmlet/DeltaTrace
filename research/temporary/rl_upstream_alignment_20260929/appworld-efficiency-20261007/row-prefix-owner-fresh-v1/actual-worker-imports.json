@@ -1,0 +1,388 @@
+{
+  "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-efficiency-20261007/row-prefix-owner-fresh-v1/actual-worker-imports-1791325800161903274.json",
+  "sha256": "6c0a5d14157d1cca2adfce63e24124686b53abd820615d1b3045d93901c27eb4",
+  "driver_pid": 2360541,
+  "driver_created_unix": 1791325655.01,
+  "job_output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-fresh-row-prefix-20261007-v1/appworld-dt",
+  "source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-fresh-row-prefix-20261007-v1/appworld-dt/source.json",
+    "sha256": "c83b96debba90d85476e58b56b2c8c7f3900901f26ce41094e8f60ac489c7789"
+  },
+  "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry",
+  "dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace",
+  "trainer_source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/trainer/ppo/ray_trainer.py",
+    "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+    "masked_whiten_calls": [
+      {
+        "line": 373,
+        "call": "verl_F.masked_whiten(data.batch['dt_token_advantages'], response_mask)"
+      }
+    ],
+    "source_excerpt": [
+      {
+        "line": 368,
+        "text": "            if value.shape != response_mask.shape:"
+      },
+      {
+        "line": 369,
+        "text": "                raise RuntimeError(f\"{name} must align with original response tokens\")"
+      },
+      {
+        "line": 370,
+        "text": "            if not torch.isfinite(value).all():"
+      },
+      {
+        "line": 371,
+        "text": "                raise RuntimeError(f\"{name} contains non-finite values\")"
+      },
+      {
+        "line": 372,
+        "text": "            data.batch[name] = torch.where(response_mask, value, 0.0)"
+      },
+      {
+        "line": 373,
+        "text": "        advantages = verl_F.masked_whiten(data.batch[\"dt_token_advantages\"], response_mask)"
+      },
+      {
+        "line": 374,
+        "text": "        data.batch[\"advantages\"] = torch.where(response_mask, advantages, 0.0)"
+      },
+      {
+        "line": 375,
+        "text": "        data.batch[\"returns\"] = data.batch[\"dt_q_estimates\"]"
+      },
+      {
+        "line": 376,
+        "text": "    else:"
+      },
+      {
+        "line": 377,
+        "text": "        raise NotImplementedError"
+      },
+      {
+        "line": 378,
+        "text": "    return data"
+      }
+    ],
+    "scope": "Read existing trainer source only; does not prove this fresh run has executed whitening"
+  },
+  "workers": [
+    {
+      "pid": 2369144,
+      "pid_birth": 1791325712.24,
+      "rank": 1,
+      "observed_unix": 1791325800.1577618,
+      "imported_files": {
+        "verl.workers.actor.dp_actor": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+          "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+            "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          },
+          "matches": true
+        },
+        "verl.workers.fsdp_workers": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+          "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+            "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+          },
+          "matches": true
+        },
+        "verl.utils.torch_functional": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+          "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+            "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+          },
+          "matches": true
+        },
+        "deltatrace_rollout": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/deltatrace_rollout.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/deltatrace_rollout.py",
+            "sha256": "3e0c6feb2d55d54566f7e732f17a07f2e2b71333f326a34d90900b7daa13d011"
+          }
+        },
+        "native_prefix_leases": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/native_prefix_leases.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/native_prefix_leases.py",
+            "sha256": "b94756147cc6f8e59fb39baa1c2737aa655b0d9c6b87091969a65c9071ad0852"
+          }
+        },
+        "reward_readout": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/reward_readout.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/entry/reward_readout.py",
+            "sha256": "94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b"
+          }
+        },
+        "qwen35_dense_finite_runner": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_dense_finite_runner_row_candidate.py",
+            "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555"
+          }
+        },
+        "qwen35_answer_finite": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_answer_finite.py",
+            "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e"
+          }
+        },
+        "qwen35_native_prefix_artifacts": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_native_prefix_artifacts.py",
+            "sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4"
+          }
+        },
+        "vendor_fa_finite_bf16_d256": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/vendor_fa_finite_bf16_d256.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/vendor_fa_finite_bf16_d256_row_candidate.py",
+            "sha256": "3e1d61037be22a1cc826b004d49f854e3c246a149642a4f9167c204181f34089"
+          }
+        },
+        "qwen35_gdn_finite": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+            "sha256": "ef55ce08dec9374304018b43b9f85510fca36054408c439ab1109dca8ac23ca9"
+          }
+        },
+        "finite_fla_gpu": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/finite_fla_gpu.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/finite_fla_gpu.py",
+            "sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6"
+          }
+        },
+        "transformers.models.qwen3_5.modeling_qwen3_5": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+          "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+            "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+          },
+          "matches": true
+        }
+      },
+      "installed_imports_present": {
+        "vllm_metax.device_allocator.cumem": {
+          "status": "not_imported"
+        },
+        "vllm.v1.worker.gpu_worker": {
+          "status": "not_imported"
+        }
+      },
+      "shared_padding": "1",
+      "lora_rank": 8,
+      "lora_alpha": 16,
+      "actor_microbatch": 4,
+      "ppo_epochs": 2,
+      "ppo_minibatch": 16,
+      "entropy_coeff": 0.001,
+      "clip_ratio_c": 3.0,
+      "rollout_max_model_len": 32768,
+      "dt_environment": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/environment.json",
+        "sha256": "4ff007805297bfd5caddf7158f5b3198c42b41597951d7f226b0808f109b998e",
+        "owner_kwargs": {
+          "individual_prefixes": true,
+          "boundary_row_storage": true
+        },
+        "finite_library": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/libfinite_row_query_starts.so",
+        "finite_library_sha256": "4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157"
+      },
+      "extra_model_calls": 0,
+      "scope": "Only sys.modules, existing file bytes, environment and actor configuration are read; lazy DT modules are not imported or invoked"
+    },
+    {
+      "pid": 2367855,
+      "pid_birth": 1791325698.36,
+      "rank": 0,
+      "observed_unix": 1791325800.1588223,
+      "imported_files": {
+        "verl.workers.actor.dp_actor": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+          "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+            "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          },
+          "matches": true
+        },
+        "verl.workers.fsdp_workers": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+          "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+            "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39"
+          },
+          "matches": true
+        },
+        "verl.utils.torch_functional": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+          "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/utils/torch_functional.py",
+            "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+          },
+          "matches": true
+        },
+        "deltatrace_rollout": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/deltatrace_rollout.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/deltatrace_rollout.py",
+            "sha256": "3e0c6feb2d55d54566f7e732f17a07f2e2b71333f326a34d90900b7daa13d011"
+          }
+        },
+        "native_prefix_leases": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/native_prefix_leases.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/native_prefix_leases.py",
+            "sha256": "b94756147cc6f8e59fb39baa1c2737aa655b0d9c6b87091969a65c9071ad0852"
+          }
+        },
+        "reward_readout": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/reward_readout.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/entry/reward_readout.py",
+            "sha256": "94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b"
+          }
+        },
+        "qwen35_dense_finite_runner": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_dense_finite_runner_row_candidate.py",
+            "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555"
+          }
+        },
+        "qwen35_answer_finite": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_answer_finite.py",
+            "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e"
+          }
+        },
+        "qwen35_native_prefix_artifacts": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_native_prefix_artifacts.py",
+            "sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4"
+          }
+        },
+        "vendor_fa_finite_bf16_d256": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/vendor_fa_finite_bf16_d256.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/vendor_fa_finite_bf16_d256_row_candidate.py",
+            "sha256": "3e1d61037be22a1cc826b004d49f854e3c246a149642a4f9167c204181f34089"
+          }
+        },
+        "qwen35_gdn_finite": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+            "sha256": "ef55ce08dec9374304018b43b9f85510fca36054408c439ab1109dca8ac23ca9"
+          }
+        },
+        "finite_fla_gpu": {
+          "status": "not_imported",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/finite_fla_gpu.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/finite_fla_gpu.py",
+            "sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6"
+          }
+        },
+        "transformers.models.qwen3_5.modeling_qwen3_5": {
+          "status": "imported",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+          "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+          "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+          "expected": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+            "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+            "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+          },
+          "matches": true
+        }
+      },
+      "installed_imports_present": {
+        "vllm_metax.device_allocator.cumem": {
+          "status": "not_imported"
+        },
+        "vllm.v1.worker.gpu_worker": {
+          "status": "not_imported"
+        }
+      },
+      "shared_padding": "1",
+      "lora_rank": 8,
+      "lora_alpha": 16,
+      "actor_microbatch": 4,
+      "ppo_epochs": 2,
+      "ppo_minibatch": 16,
+      "entropy_coeff": 0.001,
+      "clip_ratio_c": 3.0,
+      "rollout_max_model_len": 32768,
+      "dt_environment": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/environment.json",
+        "sha256": "4ff007805297bfd5caddf7158f5b3198c42b41597951d7f226b0808f109b998e",
+        "owner_kwargs": {
+          "individual_prefixes": true,
+          "boundary_row_storage": true
+        },
+        "finite_library": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/libfinite_row_query_starts.so",
+        "finite_library_sha256": "4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157"
+      },
+      "extra_model_calls": 0,
+      "scope": "Only sys.modules, existing file bytes, environment and actor configuration are read; lazy DT modules are not imported or invoked"
+    }
+  ],
+  "observed_unix": 1791325800.1618938,
+  "scope": "Read-only existing original-worker RPC; no forward/backward/update/checkpoint/runtime override, no DT lazy import; source evidence is distinct from execution evidence"
+}
