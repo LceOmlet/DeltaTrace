@@ -1,5 +1,14 @@
 # 当前运行版本与修复记录
 
+## 2026-10-06 成功末动作信用支持与原actor载体闭合
+
+仅CPU重新归约冻结的原64/186成功response与21成功末动作，按原16个B4各自action-mask分母、每rank÷8及两rank均值保留。末动作2402 tokens，此前29851；A-L1分别3.58776707和97.21372312，token |A|均值0.001493658与0.003256632。末动作占G1 token 7.447%，A-L1 3.559%，原B4权重后3.889%；这些是系数份额，不是任务梯度贡献比例。
+
+已存完整response A-L1合100.80149018821629与原actor有效mask内质量相同，partial slice=0、mask外非零A=0，原saved DT与actor A逐值一致。本项只闭合已存response信用接到actor的过程，不恢复未保存的提取前全input归因，也不证明逐token反事实准确。未测得每B4梯度增量，不把系数正负抵消说成梯度相消主因，不因此额外开GPU测试。
+
+两份新增只读分析源与回执绑定terminal_native_credit_support_CPU_observation；root独立重算阶段及原B4权重并重新执行stdlib分析，六份来源身份一致。0新模型/DT/环境/反向/更新，PLAN、Q/V/A、上游PPO、正式版本和原status不变；TextCraft未恢复，pending官方优势白化仍未实施/测试。
+
+
 ## 2026-10-06 原成功终止动作的已存奖励读出
 
 仅CPU读取原DT日志/head端点与原64 metadata，192运输slot映射到186唯一response；21条为导致官方done成功终止的最后已执行动作，165条为此前动作。没有伪造逐轮done字段，没有从Σd/守恒反推概率。原编码terminal事实成功概率均值0.921191、EOS参考0.842047，完整response目标LP差均值+0.0920603，21/21为正；交换编码另报，未选择为修复。
