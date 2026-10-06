@@ -1,0 +1,266 @@
+{
+  "status": "isolated_uncompiled_owner_candidate_not_deployed",
+  "baseline": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\candidate\\vendor_fa_finite_p1_bf16_d256.cu",
+    "sha256": "9ebcef18cec94f45a875694acac0fed4b46064f13d3d0af1a4581c931df54c8b"
+  },
+  "candidate": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\finite-fa-center-query-fusion-candidate-v1\\candidate\\vendor_fa_finite_p1_bf16_d256.cu",
+    "sha256": "7a6dfeb3d2f23903c8143d29a79e1e55b54effe1346221660924db5218f219ed"
+  },
+  "unchanged_wrapper": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\finite-fa-center-query-fusion-candidate-v1\\candidate\\vendor_fa_finite_bf16_d256.py",
+    "sha256": "3e1d61037be22a1cc826b004d49f854e3c246a149642a4f9167c204181f34089"
+  },
+  "patch": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\finite-fa-center-query-fusion-candidate-v1\\owner-fusion.patch",
+    "sha256": "66e1bebe3ba258c8b7775a3e18e54a4936724c60585a2e6e5f685e8fe378e9d7"
+  },
+  "entry": "deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix_fused",
+  "default_path": {
+    "existing_launch_and_4_ABI_function_text_equal": {
+      "static int launch_finite(": true,
+      "extern \"C\" int deltatrace_fa_finite_p1_bf16_d256(": true,
+      "extern \"C\" int deltatrace_fa_finite_p1_bf16_d256_suffix(": true,
+      "extern \"C\" int deltatrace_fa_finite_p1_bf16_d256_cached_suffix(": true,
+      "extern \"C\" int deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix(": true
+    },
+    "existing_python_wrapper_byte_equal": true,
+    "existing_ABIs_launch_phases": [
+      0,
+      1,
+      2
+    ],
+    "new_opt_in_ABI_launch_phases": [
+      3,
+      2
+    ],
+    "new_ABI_signature": "same parameters and ordering as existing row_cached_suffix",
+    "default_compiled_or_runtime_parity_checked": false
+  },
+  "implementation": {
+    "shared_template": "existing deltatrace_fa_finite_p1_kernel; additional Phase3 specialization only",
+    "Phase3_owners": [
+      "q0",
+      "q1",
+      "u"
+    ],
+    "Phase3_midpoint_RHS": [
+      "k0",
+      "k1"
+    ],
+    "projections": [
+      "accQ = BF16-MMA(lm * at, BF16(Kmean)) in FP32 accumulation",
+      "accV = BF16-MMA(lm, BF16(Kmean)) in FP32 accumulation",
+      "same original FP32 row reducer computes center",
+      "accQ -= center * accV, then original scale and BF16 output"
+    ],
+    "invalid_uniform_tile": "zeros tau, center and dq",
+    "center_visibility": "original CTA row-reduction writer then CTA __syncthreads before its own dQ rows consume FP32 global center",
+    "Phase2": "original K/V finite formula and invocation retained",
+    "query_owned_score_MMA_per_history_tile": {
+      "old_phase0_plus_phase1": 6,
+      "fused_phase3": 3
+    },
+    "query_owned_vector_MMA_per_history_tile": {
+      "old_phase1": 1,
+      "fused_phase3": 2
+    },
+    "extra_global_tensor_allocations": 0
+  },
+  "resource_scope": {
+    "traits": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\qwen35_fleet_20260917\\source\\third_party\\metax_fa_2_5_3\\csrc\\flash_attn\\src\\kernel_traits.h",
+      "sha256": "91222b45f82517c66f6230d4a50802a26263c728e9c74c633ee839ae08eb1bc3"
+    },
+    "M": 64,
+    "N": 64,
+    "D": 256,
+    "warps": 4,
+    "MetaX_threads": 256,
+    "two_M_by_D_FP32_accumulators": "same logical pair of vector accumulators as existing Phase2; 128 logical FP32 accumulator slots/thread total, excluding other live operands/layout details",
+    "register_count_spill_occupancy": "not compiled or measured; original RHS tile retention spill comment remains applicable risk",
+    "speed": "no timing or speed claim from operation counts"
+  },
+  "numerical_scope": {
+    "changed_rounding": "two independently BF16-quantized weighted projections followed by FP32 subtraction, versus original FP32 centering then one BF16 weight conversion",
+    "correction_added": false,
+    "new_tolerance_added": false,
+    "acceptance": "reuse unchanged original FA assertions on factual coincident derivative-limit inputs; separately record noncoincident actual B4 output differences without an invented finite tolerance",
+    "not_claimed": [
+      "whole-DT tolerance",
+      "noncoincident finite equality",
+      "performance improvement",
+      "learning quality"
+    ]
+  },
+  "reusable_test_sources": {
+    "original_checker": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-test-source\\verify_saved_fa_dtypes.py",
+      "sha256": "7ff11d9d800a2c233b019213ae0fa9a5b603dfea51dfffabe6b9296a74aab9a9"
+    },
+    "original_load_helper": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\owner-test-source\\verify_official_kernel_tolerances.py",
+      "sha256": "e9ee6be0bb59bdddb99400c7a0c14af775b75fa98b0bcbf744781f26f9b2f2a8"
+    },
+    "actual_row_transport_helper": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\check_actual_row_finite_fa_offline.py",
+      "sha256": "e32fc0098c5cccb0cb8a5e87150484e407be35c279f5035eb52958c068c6dad0"
+    },
+    "prior_actual_execution": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\offline-checks-v1\\independent-fa-results\\execution.json",
+      "sha256": "801f768e16cd14d4b60ebfc195189d4a8f1c64ad4f63240b6a9a1d54bbc523d4"
+    },
+    "compile_entry": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\compile_isolated_owner.py",
+      "sha256": "675d723dc7eba740d9c918e8d8685501ca3b634256571856eca065f1a096e19c"
+    },
+    "original_FA_assertions": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\numerical-path-readonly-20261007\\test_flash_attn_v263.py",
+      "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9"
+    }
+  },
+  "test_DI": {
+    "checker_source_unchanged": true,
+    "owner_layout": "reuse actual row helper ActualRowLayout to transport each saved logical B1 row into original row ABI",
+    "operation": "on diagnostic owner instance only, alias self.library.deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix to self.library.deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix_fused; original wrapper sets the same argtypes/restype",
+    "library_identity": "new actual compiled candidate library SHA must be supplied to unchanged wrapper; do not bypass its SHA check",
+    "important_old_helper_limit": "e32 helper pins old library SHA and requires nonzero_all_equal; reuse its transport/unchanged 7ff invocation, not that old nonzero equality gate for fusion",
+    "assertion_scope": "original 7ff checker extracts and executes the pinned test_flash_attn_output original out/dq/dk/dv assertions: native forward + native/finite derivative checks (seven total per logical row)",
+    "activity_metadata": "unchanged wrapper activity.kernel_launches_per_call=3 describes default entry; fused diagnostic must record selected ABI and actual two launches separately instead of claiming that field measures fused launches"
+  },
+  "actual_saved_assets": [
+    {
+      "rank": 0,
+      "prior_receipt": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\offline-checks-v1\\independent-fa-results\\rank0\\original-finite-rows\\actual-row-official-and-nonzero.json",
+        "sha256": "1d4a5394b42683684a808d4be3cc8b9cd0b7ed5531ee37b3dda40191565c04bf"
+      },
+      "native_operands": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/actual-row-native-fa3-rank0.pt",
+        "sha256": "1b7cfe81af1d5e4a39c8c35ed5c22aa7826646380cc3c0faeae9c0373d011556"
+      },
+      "finite_operands": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/actual-row-finite-fa3-rank0.pt",
+        "sha256": "d7b027e98dac6b2a8bbf1fd0cefc90e9b4ebf1ccd005b9a516d03eaa429c674f"
+      },
+      "existing_logical_B1_rows": [
+        {
+          "row": 0,
+          "Q": 487,
+          "K": 12007,
+          "query_start": 11520,
+          "coefficient_start": 11578,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank0/original-finite-rows/actual-complete-row0.pt",
+            "sha256": "a3eb2ae7a50d93b3563d7ecb54a25b471089bf7757c4aef50c5bfe32d4d32e94"
+          }
+        },
+        {
+          "row": 1,
+          "Q": 455,
+          "K": 12423,
+          "query_start": 11968,
+          "coefficient_start": 11997,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank0/original-finite-rows/actual-complete-row1.pt",
+            "sha256": "51d186d9b6ac09dc1814796df1dc1e37d1bb524d844f789518523c485f6851c4"
+          }
+        },
+        {
+          "row": 2,
+          "Q": 555,
+          "K": 12907,
+          "query_start": 12352,
+          "coefficient_start": 12353,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank0/original-finite-rows/actual-complete-row2.pt",
+            "sha256": "ac6d14404b054f5af0c338fc51b564d983e99d18e11d1deeaf08da7d3d30f496"
+          }
+        },
+        {
+          "row": 3,
+          "Q": 490,
+          "K": 13482,
+          "query_start": 12992,
+          "coefficient_start": 13008,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank0/original-finite-rows/actual-complete-row3.pt",
+            "sha256": "36d66720c2d51902047622ed5d3beb93bb49f344edc05927e8836babe245edb0"
+          }
+        }
+      ]
+    },
+    {
+      "rank": 1,
+      "prior_receipt": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\offline-checks-v1\\independent-fa-results\\rank1\\original-finite-rows\\actual-row-official-and-nonzero.json",
+        "sha256": "cc20f67b4f4f4ba13b93b115d309949363c022e648f8f39a809be879c4625a3a"
+      },
+      "native_operands": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/actual-row-native-fa3-rank1.pt",
+        "sha256": "d0b13368bded845abc0763beb57e5367fdb1552757c0b436f9b0d2174b8fdbd3"
+      },
+      "finite_operands": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3/actual-row-finite-fa3-rank1.pt",
+        "sha256": "75f63a8d75d2d731a138edea0caf5e042f76a8b580636a75129f8f76722df6a4"
+      },
+      "existing_logical_B1_rows": [
+        {
+          "row": 0,
+          "Q": 438,
+          "K": 12214,
+          "query_start": 11776,
+          "coefficient_start": 11789,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank1/original-finite-rows/actual-complete-row0.pt",
+            "sha256": "4b9370581d3279db1105d146f446b703e22316d6a20f613ed6389ad44c132d55"
+          }
+        },
+        {
+          "row": 1,
+          "Q": 473,
+          "K": 12633,
+          "query_start": 12160,
+          "coefficient_start": 12207,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank1/original-finite-rows/actual-complete-row1.pt",
+            "sha256": "921b9b78dcafa5d8f4f9d4ed7f32f0978bc6d67e23afb37d150dc9049fa10074"
+          }
+        },
+        {
+          "row": 2,
+          "Q": 406,
+          "K": 12822,
+          "query_start": 12416,
+          "coefficient_start": 12416,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank1/original-finite-rows/actual-complete-row2.pt",
+            "sha256": "a8b2d1a469ded97ccf02f4b980ecfa7a5746e78db20075000f53761e624b6cda"
+          }
+        },
+        {
+          "row": 3,
+          "Q": 558,
+          "K": 13230,
+          "query_start": 12672,
+          "coefficient_start": 12728,
+          "operands": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/real-b8-v3-official-checks-v1/independent-fa-1791324126475961069/rank1/original-finite-rows/actual-complete-row3.pt",
+            "sha256": "ab692dfa1d5d19db8105b41767f4441d54d15873f579e01e4d38990d1ee6c02e"
+          }
+        }
+      ]
+    }
+  ],
+  "checks_performed": {
+    "stdlib_source_inspection": true,
+    "wrapper_AST_and_compile_without_import": true,
+    "CUDA_compiler_called": false,
+    "Torch_imported": false,
+    "remote_calls": 0,
+    "GPU_kernel_calls": 0,
+    "model_loads": 0,
+    "production_or_baseline_edits": 0
+  }
+}

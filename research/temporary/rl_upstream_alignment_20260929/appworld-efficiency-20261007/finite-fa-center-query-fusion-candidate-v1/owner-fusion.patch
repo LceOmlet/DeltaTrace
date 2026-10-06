@@ -1,0 +1,147 @@
+--- baseline/vendor_fa_finite_p1_bf16_d256.cu
++++ candidate/vendor_fa_finite_p1_bf16_d256.cu
+@@ -45,6 +45,8 @@
+ 
+ // Phase 0: row normalization and finite center.
+ // Phase 1: query-owned Q multiplier. Phase 2: key-owned K/V multipliers.
++// Phase 3: optional fused normalization/center and query-owned Q multiplier.
++// Only the separately named fused row ABI selects Phase 3.
+ template<int Phase,typename Traits=FiniteTraits>
+ __global__ void deltatrace_fa_finite_p1_kernel(FiniteParams p) {
+     using E=typename Traits::Element;
+@@ -79,13 +81,14 @@
+     // Thus the requested suffix coefficients use the original full key
+     // history, while earlier coefficient output tiles can be omitted.
+     if(row0>=valid || row0+M<=start) {
+-        if constexpr(Phase==0) {
++        if constexpr(Phase==0 || Phase==3) {
+             for(int j=tid;j<M;j+=blockDim.x) if(row0+j<query_end) {
+                 const int64_t pos=int64_t(bh)*query_length+row0+j-query_start;
+                 p.tau[pos]=0.f;p.center[pos]=0.f;
+             }
+-        } else {
+-            E *out=Phase==1?dq:dk;
++        }
++        if constexpr(Phase!=0) {
++            E *out=(Phase==1 || Phase==3)?dq:dk;
+             for(int j=tid;j<M*D;j+=blockDim.x) if(row0+j/D<query_end) {
+                 const int64_t pos=head_offset+int64_t(row0)*D+j;
+                 out[pos]=E(0.f);
+@@ -198,23 +201,24 @@
+                 const float ratio=distance==0.f?1.f:-expm1f(-distance)/distance;
+                 lm=__builtin_exp2f(fmaxf(lp0,lp1)*float(M_LOG2E))*ratio;
+                 actual_p1=__builtin_exp2f(lp1*float(M_LOG2E));
+-                if constexpr(Phase!=0) a0(i)=lm*(at(i)-p.center[pos]);
+-            } else if constexpr(Phase!=0) a0(i)=0.f;
+-            if constexpr(Phase==0) {a0(i)=lm;a1(i)=lm*at(i);}
++                if constexpr(Phase==1 || Phase==2) a0(i)=lm*(at(i)-p.center[pos]);
++            } else if constexpr(Phase==1 || Phase==2) a0(i)=0.f;
++            if constexpr(Phase==0 || Phase==3) {a0(i)=lm;a1(i)=lm*at(i);}
+             else a1(i)=actual_p1;
+         }
+-        if constexpr(Phase==0) {
++        if constexpr(Phase==0 || Phase==3) {
+             auto lrows=make_tensor(a0.data(),flash::convert_layout_acc_rowcol(a0.layout()));
+             auto trows=make_tensor(a1.data(),flash::convert_layout_acc_rowcol(a1.layout()));
+             flash::SumOp<float> sum;
+             flash::thread_reduce_<false>(lrows,denominator,sum);
+             flash::thread_reduce_<false>(trows,numerator,sum);
+-        } else {
++        }
++        if constexpr(Phase!=0) {
+             auto multiply=[&](auto &weights,const E *values,auto &acc,bool shared_mean) __attribute__((always_inline)) {
+                 __syncthreads();
+                 if(shared_mean) {
+-                    const E *right0=Phase==1?k0:q0;
+-                    const E *right1=Phase==1?k1:q1;
++                    const E *right0=(Phase==1 || Phase==3)?k0:q0;
++                    const E *right1=(Phase==1 || Phase==3)?k1:q1;
+                     auto gB0=make_tensor(make_gmem_ptr(right0+pair_right_offset+int64_t(col0)*D),
+                                         Shape<Int<N>,Int<D>>{},Stride<Int<D>,_1>{});
+                     auto gB1=make_tensor(make_gmem_ptr(right1+pair_right_offset+int64_t(col0)*D),
+@@ -232,7 +236,7 @@
+                     for(int j=0;j<size(firstEndpointB);++j)
+                         toB(j)=E((float(firstEndpointB(j))+float(toB(j)))*0.5f);
+                 } else {
+-                auto gB=make_tensor(make_gmem_ptr(values+(Phase==1?kv_offset:head_offset)+int64_t(col0)*D),
++                auto gB=make_tensor(make_gmem_ptr(values+((Phase==1 || Phase==3)?kv_offset:head_offset)+int64_t(col0)*D),
+                                    Shape<Int<N>,Int<D>>{},Stride<Int<D>,_1>{});
+                 auto fromGB=global_thread.partition_S(gB);
+                 flash::copy<false,true,true>(global_copy,fromGB,toB,coordsB,predB,valid-col0);
+@@ -264,11 +268,16 @@
+                     flash::gemm_rs<false,true>(accHalf,regWeights,registerHalf,fromHalf,mma,offsets,sourceStride,destinationStride);
+                 }
+             };
+-            if constexpr(Phase==1) multiply(a0,nullptr,accQ,true);
++            if constexpr(Phase==3) {
++                // Keep the same FP32 row sums. Project lm*at and lm separately
++                // through the original BF16 MMA helper, then center once below.
++                multiply(a1,nullptr,accQ,true);
++                multiply(a0,nullptr,accV,true);
++            } else if constexpr(Phase==1) multiply(a0,nullptr,accQ,true);
+             else {multiply(a0,nullptr,accQ,true);multiply(a1,u,accV,false);}
+         }
+     }
+-    if constexpr(Phase==0) {
++    if constexpr(Phase==0 || Phase==3) {
+         flash::quadreduce_sum(denominator);flash::quadreduce_sum(numerator);
+         if(get<1>(rowcoords(0))==0) {
+             #pragma unroll
+@@ -280,14 +289,22 @@
+                 }
+             }
+         }
+-    } else {
++    }
++    if constexpr(Phase!=0) {
++        // This CTA owns every center row consumed by its dQ output. Reuse the
++        // original row-reduction layout and global FP32 center storage.
++        if constexpr(Phase==3) __syncthreads();
+         auto outcoords=mma_thread.partition_C(make_identity_tensor(Shape<Int<M>,Int<D>>{}));
+-        E *out=Phase==1?dq:dk;
++        E *out=(Phase==1 || Phase==3)?dq:dk;
+         #pragma unroll
+         for(int i=0;i<size(accQ);++i) {
+             const int r=row0+get<0>(outcoords(i)),d=get<1>(outcoords(i));
+             if(r<query_end) {
+                 const int64_t pos=head_offset+int64_t(r)*D+d;
++                if constexpr(Phase==3) {
++                    const int64_t row_pos=int64_t(bh)*query_length+r-query_start;
++                    accQ(i)-=p.center[row_pos]*accV(i);
++                }
+                 out[pos]=E(r<valid && r>=start?accQ(i)*p.scale:0.f);
+                 if constexpr(Phase==2) dv[pos]=E(r<valid && r>=start?accV(i):0.f);
+             }
+@@ -364,3 +381,32 @@
+     if(!p.query_starts||!p.coefficient_starts)return -2;
+     return launch_finite(p,stream_ptr);
+ }
++
++// Default-off owner extension. All existing exported ABIs above keep their
++// original three launches; only this independent row ABI selects Phase 3.
++static int launch_finite_row_fused(FiniteParams p,void *stream_ptr) {
++    using E=mctlass::bfloat16_t;
++    if(p.batch<1||p.heads<1||p.kv_heads<1||p.heads%p.kv_heads!=0||p.length<1)return -1;
++    if(!p.query_starts||!p.coefficient_starts||p.query_length<1)return -2;
++    dim3 grid((p.query_length+CachedTraits::kBlockM-1)/CachedTraits::kBlockM,p.batch*p.heads);
++    constexpr int shared=(size(typename CachedTraits::SmemLayoutQ{})+size(typename CachedTraits::SmemLayoutKV{}))*sizeof(E);
++    auto stream=reinterpret_cast<cudaStream_t>(stream_ptr);
++    deltatrace_fa_finite_p1_kernel<3,CachedTraits><<<grid,CachedTraits::kNThreads,shared,stream>>>(p);
++    auto error=cudaGetLastError();if(error!=cudaSuccess)return int(error);
++    deltatrace_fa_finite_p1_kernel<2,CachedTraits><<<grid,CachedTraits::kNThreads,shared,stream>>>(p);
++    return int(cudaGetLastError());
++}
++
++extern "C" int deltatrace_fa_finite_p1_bf16_d256_row_cached_suffix_fused(
++    const void *q0,const void *k0,const void *q1,const void *k1,const void *v0,
++    const void *u,const void *lse0,const void *lse1,
++    void *tau,void *center,void *dq,void *dk,void *dv,const void *valid_lengths,
++    const void *coefficient_starts,const void *query_starts,
++    int batch,int heads,int kv_heads,int length,int query_length,
++    float scale,void *stream_ptr) {
++    FiniteParams p{q0,k0,q1,k1,v0,u,(const float*)lse0,(const float*)lse1,
++        (float*)tau,(float*)center,dq,dk,dv,(const int*)valid_lengths,
++        (const int*)coefficient_starts,batch,heads,kv_heads,length,0,scale,
++        (const int*)query_starts,query_length};
++    return launch_finite_row_fused(p,stream_ptr);
++}

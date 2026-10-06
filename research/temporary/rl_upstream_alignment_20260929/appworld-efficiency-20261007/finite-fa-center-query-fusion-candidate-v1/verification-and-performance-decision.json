@@ -1,0 +1,122 @@
+{
+  "status": "rejected_performance_not_deployed",
+  "scope": "Saved actual BF16/FP32 B4 finite FA inputs from both ranks; original unchanged FA derivative-limit assertions. No full-DT or training speed claim and no noncoincident tolerance invented.",
+  "candidate_source": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/finite-fa-center-query-fusion-candidate-v1/candidate/vendor_fa_finite_p1_bf16_d256.cu",
+    "sha256": "7a6dfeb3d2f23903c8143d29a79e1e55b54effe1346221660924db5218f219ed"
+  },
+  "library_sha256": "60b9a5dfad574817ca13468b28cec18682bd54db604d2e83c70db6513fe216fc",
+  "compile": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/finite-fa-center-query-fusion-candidate-v1/compiled-owner.json",
+    "sha256": "8fc79d769384c1d0f438073185dce901468f5243e80146f99c5fda9a528c80df"
+  },
+  "execution": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/finite-fa-center-query-fusion-candidate-v1/actual-saved-operand-results/execution.json",
+    "sha256": "7626125a2d8c9ffeb1a0519686a60d687ffebfac6a982d86547a461b2b6bb442"
+  },
+  "harness": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/finite-fa-center-query-fusion-candidate-v1/check_fused_fa_offline.py",
+    "sha256": "9f3744c6bc42a535eab889d036ae725b91c6a2800cc88e3e17843a53c7ae42be"
+  },
+  "launcher": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/finite-fa-center-query-fusion-candidate-v1/run_isolated_fusion_check.py",
+    "sha256": "5d4490fa1af27706683399570b9e85daf71d52a40aa8a5f76e6a973a8301e857"
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "receipt": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/finite-fa-center-query-fusion-candidate-v1/actual-saved-operand-results/rank0/fusion-offline-result.json",
+        "sha256": "0bc19009b0ef63044ae69f071347cdfb0c4e379f183ab24c370d8d19cb2f05cd"
+      },
+      "official_coincident_status": "passed",
+      "original_checks": 28,
+      "default_ABI_status": "passed",
+      "original_seconds": 0.09018600799754495,
+      "fused_seconds": 0.1271831320009369,
+      "slowdown_fraction": 0.4102313077700377,
+      "nonzero_dq_max_abs": 0.000732421875,
+      "other_four_outputs_equal": true,
+      "measurements": {
+        "original_4f42": {
+          "warmup_calls": 2,
+          "measured_calls": 5,
+          "seconds": [
+            0.09018600799754495,
+            0.09020390099976794,
+            0.09020098700057133,
+            0.09014660100001493,
+            0.09012951700060512
+          ],
+          "median_seconds": 0.09018600799754495,
+          "torch_peak_allocated_bytes": 979318272,
+          "torch_peak_reserved_bytes": 5861539840
+        },
+        "candidate_fused": {
+          "warmup_calls": 2,
+          "measured_calls": 5,
+          "seconds": [
+            0.1271831320009369,
+            0.1276990250007657,
+            0.12736750999829383,
+            0.12701842800015584,
+            0.12704853399918647
+          ],
+          "median_seconds": 0.1271831320009369,
+          "torch_peak_allocated_bytes": 979318272,
+          "torch_peak_reserved_bytes": 5861539840
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "receipt": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/finite-fa-center-query-fusion-candidate-v1/actual-saved-operand-results/rank1/fusion-offline-result.json",
+        "sha256": "42efa203b57b2b80050bc03e7294589cce301ee429c3a252f4a08a53b1b00db1"
+      },
+      "official_coincident_status": "passed",
+      "original_checks": 28,
+      "default_ABI_status": "passed",
+      "original_seconds": 0.07687640099902637,
+      "fused_seconds": 0.10957575399879715,
+      "slowdown_fraction": 0.4253496856621177,
+      "nonzero_dq_max_abs": 0.0006103515625,
+      "other_four_outputs_equal": true,
+      "measurements": {
+        "original_4f42": {
+          "warmup_calls": 2,
+          "measured_calls": 5,
+          "seconds": [
+            0.07708302600076422,
+            0.0764548820006894,
+            0.07689295599993784,
+            0.07679196600292926,
+            0.07687640099902637
+          ],
+          "median_seconds": 0.07687640099902637,
+          "torch_peak_allocated_bytes": 967917056,
+          "torch_peak_reserved_bytes": 6706692096
+        },
+        "candidate_fused": {
+          "warmup_calls": 2,
+          "measured_calls": 5,
+          "seconds": [
+            0.1101381250009581,
+            0.11076998700082186,
+            0.1095742319994315,
+            0.10946752000018023,
+            0.10957575399879715
+          ],
+          "median_seconds": 0.10957575399879715,
+          "torch_peak_allocated_bytes": 967917056,
+          "torch_peak_reserved_bytes": 6706692096
+        }
+      }
+    }
+  ],
+  "decision": "Retain source/receipts outside all production launch and patch paths; no deployment or retry sweep because this concrete fusion is slower.",
+  "production_changes": 0,
+  "checkpoint_operations": 0,
+  "model_loads": 0,
+  "official_tolerance_or_reference_changes": 0
+}

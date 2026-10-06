@@ -1,5 +1,79 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 07:51 有界有限FA融合候选通过原断言但变慢，拒绝部署
+
+已在空闲GPU2使用此前保存的真实rank0/1 BF16/FP32 FA操作数，独立ABI融合原
+Phase0 center/tau与Phase1 dQ，原Phase2及默认三阶段ABI保留。候选CUDA7a6dfeb3，
+library60b9a5df；复用原cucc/header/flags，55秒编译峰值PSS约0.95GiB；未安装包、
+加载模型/检查点、清缓存或改正式4/5。原7ff checker对8个完整逻辑B1行的56项原
+FA断言全部通过，候选默认ABI对真实非零B4五输出与4f42逐位相同。融合非零dQ
+maxAbs差0.000732/0.000610，其余四输出相同；这不是新增有限误差容差或全DT精度。
+
+同输入原wrapper调用2warm+5次中位数：rank0 0.090186→0.127183秒(+41.02%)，
+rank1 0.076876→0.109576秒(+42.54%)，包含原Python/分配/转换/同步，不叫纯kernel。
+原三组score MMA被少算并不保证此融合快；尚未证明具体寄存器/spill原因，不据
+源码猜测下结论，也不继续扫参数。候选明确rejected_performance_not_deployed，
+保留在finite-fa-center-query-fusion-candidate-v1及原回执，正式source c83b96de和
+4f42库未改变。两rank测试串行约38秒，实测进程树PSS6.17/5.97GiB；无训练更新。
+来源verification-and-performance-decision.json；精确源码/SHA、原断言、计时与
+执行命令分别保存。这次失败候选不进入默认launch/patch路径。
+
+## 2026-10-07 07:39 当前fresh完整DT及整批白化已执行，原actor更新中
+
+同一driver2360541/birth1791325655.01、worker2367855/2369144、source c83b96de
+继续GPU4/5，fresh base、resume_mode=disable，没有旧检查点导入或导出。
+phase-1791329982原两worker进程名均为actor_rollout_update_actor；冻结trainer d35
+373对整批原response_mask调用原masked_whiten，374写入actor advantages，原1256–
+1271的compute_advantage返回后才进入1285 actor RPC。本次白化已经真实执行，
+不再仅是已安装/源码存在。原d/Q/V/A保留；actor尚未返回，不称任务梯度强度或
+学习质量已恢复。源和执行证据绑定whitening-execution-and-original-actor-workload-
+1791329982-readonly.json SHA9543cb0d，原actor expected56 B4/card与14 optimizer
+边界仍是源推导，不是完成次数。
+
+当前原DT七组全部返回，每卡121/58/39/71/23/107/20，共439 B4、1756 transport
+contrasts。rank0/1外层2476.151/2475.368秒；归因batch2044.021/2043.840秒，
+历史capture准备428.593/428.031秒，其他外层3.537/3.496秒。两rank并行，不加总
+成墙钟。实际3485源response保留，padding contrasts共3512不是新的轨迹或reward。
+回执completed-dt-readout-costs-1791330003-readonly.json SHA8b2d7d4f，绑定原worker
+日志前缀SHA/行号。未拿439/56调用比冒充FLOP比或效率达标。
+
+07:39 actor阶段物理GPU35384/40057MiB，worker PSS45.16/46.11GiB，cgroup
+223153205248B约207.83GiB；这些是当前时刻，不是峰值。仍等同一原迭代的
+VERL gen/update_actor完整计时；不引用旧2495秒判断新actor正常。当前只读记录，
+不添加生产hook或数值补偿，不改变LoRA8/16、actor/DT每卡B4及官方任务预算。
+
+## 2026-10-07 07:26 本次DT前五组成本完整；核查两个具体重复计算假设
+
+同一driver2360541/birth1791325655.01、source c83b96de继续GPU4/5，无检查点操作。
+原workload一行明确response_rows=unique_rows=retained_sources=nonzero_before=
+nonzero_after=3485，skipped_nonzero=0；这是完整未来Gt的源行数，不是非零环境
+reward行数或成功轨迹数。当前原DT每卡至少需要ceil(3485/8)=436个B4调用，
+不同num_tests组的原padding可能再增加调用数；原PPO预计56个B4/卡，两者计量
+单位与执行内容不同，不拿调用数比值直接当耗时/FLOP比或正常性证明。
+
+原前五组每卡计划并完成121/58/39/71/23，共312 B4、1248 transport contrasts；
+两rank累计outer1771.738/1771.317秒，batch1448.534/1448.365秒，capture准备
+320.747/320.534秒，剩余外层2.457/2.418秒。第六组已计划107 B4、428 contrasts
+每卡，尚未完成。回执completed-dt-readout-costs-1791329194-readonly.json SHA
+ea772d73，原日志前缀SHA、来源行与collector版本b80a67b3同时保留。不能从已完成
+transport contrasts直接减出精确剩余unique行数，不能将此称作整轮DT耗时。
+
+已排除“算完整历史dK/dV再丢弃”的具体假设：当前wrapper3e1d的100行只分配
+like(q0)的[B,Hq,Smax,256]系数，112–117走row_cached_suffix；CUDA9ebcef的
+60–69读取每行pi与实际Li，303–313按Smax/64启动，Phase2从pi后的key row开始。
+runner5f14/384–386传真实pi/Li/Smax，decoder047c/213–216直接消费后缀系数，
+没有先生成j<pi的历史K/V系数再切掉。Phase0/1读取历史K/V以计算变化后缀Q的
+概率、归一化和finite center，是当前有限传播的输入；未据假设添加新kernel。
+
+官方FSDP2公开参数驻留接口当前也已接入：producer3e0c沿用原2c01的126–145，
+在单层replay时set_reshard_after_forward(False,recurse=False)，finally恢复原设置；
+147–157通过原unshard/reshard衔接finite。原root101–109显式release decoder
+gathers后单独保持head/norm，并未整模型跨批驻留。现有B8 profile的67gathers
+没有finite前第三次重复gather证据；H2D25GB/.65秒混有参数与状态，不全算权重。
+本机只有当前Torch原文件SHA/行号摘要f84dd2a6，没有完整CPUOffloadPolicy源，
+不从另一个Torch版本或混合copy推断转移生命周期，未更改任何卸载策略。
+本次核查没有新增GPU测试、profiler或生产代码；当前完整DT/白化/actor仍待原调用。
+
 ## 2026-10-07 07:16 本次DT前两组完成，拆清原缓存准备与归因成本
 
 当前driver2360541/birth1791325655.01、source c83b96de、GPU4/5未变，fresh base、

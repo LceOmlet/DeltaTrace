@@ -1,0 +1,233 @@
+{
+  "status": "current_fresh_whitening_execution_proven_by_bound_original_control_flow_and_actor_entry",
+  "scope": "Local saved-source and saved-receipt review only. No remote calls, GPU/model/RPC/profiler/test/checkpoint or production changes.",
+  "observation_unix": 1791329982.6085324,
+  "job": {
+    "pid": 2360541,
+    "observed_process_created_unix": 1791325655.01,
+    "devices": [
+      4,
+      5
+    ],
+    "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry",
+    "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-fresh-row-prefix-20261007-v1/appworld-dt",
+    "resume_mode": "disable",
+    "checkpoint_restore_requested": false
+  },
+  "source_sha256": "c83b96debba90d85476e58b56b2c8c7f3900901f26ce41094e8f60ac489c7789",
+  "inputs": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\phase-1791329982.json",
+      "sha256": "0c338cd2f95e1bdc378c0efd7cfe0d5869af8e7b927fc6a2e643b0366c5cbfde"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actual-worker-imports.json",
+      "sha256": "8fe68ab8c3c88e829912d491e637b1fc339d1c384abb74cfc4957d2a60224d2a"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actor-workload-source-readonly.json",
+      "sha256": "a497628fafd6ef91c34fb99bd2c77a4820844fc839a7ba84579b43dc6df5bb63"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actor-workload-accounting-readonly-20261007.json",
+      "sha256": "d3864b3c66817a9848b7ad1d18fa20a8f9fe770d4fa20ec92b8be402b3045c6e"
+    }
+  ],
+  "actual_actor_entry": [
+    {
+      "pid": 2367855,
+      "birth": 1791325698.36,
+      "name": "ray::WorkerDict.actor_rollout_update_actor"
+    },
+    {
+      "pid": 2369144,
+      "birth": 1791325712.24,
+      "name": "ray::WorkerDict.actor_rollout_update_actor"
+    }
+  ],
+  "proof": {
+    "algorithm_adv_estimator": "deltatrace",
+    "whitening_call": {
+      "actual_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/trainer/ppo/ray_trainer.py",
+      "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+      "embedded_source_receipt": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actor-workload-source-readonly.json",
+        "sha256": "a497628fafd6ef91c34fb99bd2c77a4820844fc839a7ba84579b43dc6df5bb63"
+      },
+      "start_line": 362,
+      "end_line": 375,
+      "lines": [
+        {
+          "line": 362,
+          "text": "    elif adv_estimator == AdvantageEstimator.DELTATRACE:"
+        },
+        {
+          "line": 363,
+          "text": "        response_mask = data.batch[\"response_mask\"].to(device=data.batch[\"responses\"].device, dtype=torch.bool)"
+        },
+        {
+          "line": 364,
+          "text": "        for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+        },
+        {
+          "line": 365,
+          "text": "            if name not in data.batch:"
+        },
+        {
+          "line": 366,
+          "text": "                raise RuntimeError(f\"deltatrace estimator requires {name}\")"
+        },
+        {
+          "line": 367,
+          "text": "            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)"
+        },
+        {
+          "line": 368,
+          "text": "            if value.shape != response_mask.shape:"
+        },
+        {
+          "line": 369,
+          "text": "                raise RuntimeError(f\"{name} must align with original response tokens\")"
+        },
+        {
+          "line": 370,
+          "text": "            if not torch.isfinite(value).all():"
+        },
+        {
+          "line": 371,
+          "text": "                raise RuntimeError(f\"{name} contains non-finite values\")"
+        },
+        {
+          "line": 372,
+          "text": "            data.batch[name] = torch.where(response_mask, value, 0.0)"
+        },
+        {
+          "line": 373,
+          "text": "        advantages = verl_F.masked_whiten(data.batch[\"dt_token_advantages\"], response_mask)"
+        },
+        {
+          "line": 374,
+          "text": "        data.batch[\"advantages\"] = torch.where(response_mask, advantages, 0.0)"
+        },
+        {
+          "line": 375,
+          "text": "        data.batch[\"returns\"] = data.batch[\"dt_q_estimates\"]"
+        }
+      ]
+    },
+    "required_pre_actor_control_flow": {
+      "actual_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/trainer/ppo/ray_trainer.py",
+      "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+      "embedded_source_receipt": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actor-workload-source-readonly.json",
+        "sha256": "a497628fafd6ef91c34fb99bd2c77a4820844fc839a7ba84579b43dc6df5bb63"
+      },
+      "start_line": 1256,
+      "end_line": 1285,
+      "lines": [
+        {
+          "line": 1256,
+          "text": "                        batch = compute_advantage("
+        },
+        {
+          "line": 1257,
+          "text": "                            batch,"
+        },
+        {
+          "line": 1258,
+          "text": "                            adv_estimator=self.config.algorithm.adv_estimator,"
+        },
+        {
+          "line": 1271,
+          "text": "                        )"
+        },
+        {
+          "line": 1281,
+          "text": "                    if self.config.trainer.critic_warmup <= self.global_steps:"
+        },
+        {
+          "line": 1283,
+          "text": "                        with _timer(\"update_actor\", timing_raw):"
+        },
+        {
+          "line": 1284,
+          "text": "                            batch.meta_info[\"multi_turn\"] = self.config.actor_rollout_ref.rollout.multi_turn.enable"
+        },
+        {
+          "line": 1285,
+          "text": "                            actor_output = self.actor_rollout_wg.update_actor(batch)"
+        }
+      ]
+    },
+    "conclusion": "With this bound DELTATRACE trainer and the same fresh-job workers observed in update_actor, compute_advantage has returned before the actor RPC. Its unconditional DELTATRACE branch calls the original masked_whiten once on the complete driver batch response_mask before any actor DP/microbatch dispatch.",
+    "data_semantics": "Original DT A/Q/V fields remain distinct from actor advantages; line374 stores masked whitened coefficients, line375 retains Q as returns. This is execution proof for whitening, not proof of learning improvement.",
+    "official_masked_whiten": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\utils\\torch_functional.py",
+      "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+      "lines": "171-187",
+      "same_as_actual_worker_import": true,
+      "expression": "mean,var=masked_mean(values,mask),masked_var(values,mask); whitened=(values-mean)*rsqrt(var+1e-8)"
+    },
+    "scope_boundary": "The observed original actor RPC entry does not establish completion of a backward, optimizer step, complete actor timer, raw-A standard deviation or task-gradient improvement."
+  },
+  "expected_original_actor_workload_not_executed_count": {
+    "native_trajectories": 218,
+    "native_responses_not_actor_rows": 3485,
+    "original_adjust_copy_rows": 6,
+    "padded_training_rows": 224,
+    "data_parallel_ranks": 2,
+    "local_training_rows": 112,
+    "global_mini_trajectories": 32,
+    "actor_normalization_rollout_n": 1,
+    "observed_local_minibatch": 16,
+    "ppo_epochs": 2,
+    "microbatch_per_gpu": 4,
+    "minibatches_per_epoch_per_rank": 7,
+    "B4_forward_backward_calls_per_rank_if_complete": 56,
+    "two_rank_total_B4_calls_if_complete": 112,
+    "synchronized_global_optimizer_boundaries_if_complete": 14,
+    "per_rank_optimizer_boundaries_if_complete": 14,
+    "formula": "218 -> original copy-to-multiple-of8 ->224;224/DP2=112/card;globalmini32*actor-rollout.n1/DP2=16/card;112/16*epochs2=14 optimizer boundaries/card;16/B4=4 microbatches/boundary;14*4=56 B4 forward/backward calls/card.",
+    "not_28_global_steps": "Both ranks execute the same14 synchronized boundaries; summing rank calls gives28 local invocations, not28 sequential global updates.",
+    "nonfinite_rule": "Original actor _optimizer_step lines307-312 skips actor_optimizer.step if grad_norm is nonfinite; planned boundaries are not successful-update counts.",
+    "actual_executed_counts": null,
+    "source_refs": {
+      "adjust_batch": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/agent_system/multi_turn_rollout/utils.py",
+        "sha256": "b3eb9590723c021d10990001716f4efd01df7712373afbd765507776d01c6a5c",
+        "start_line": 86,
+        "end_line": 130
+      },
+      "trainer_adjust_call": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/trainer/ppo/ray_trainer.py",
+        "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+        "start_line": 1126,
+        "end_line": 1146
+      },
+      "fsdp_normalization": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/fsdp_workers.py",
+        "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+        "start_line": 148,
+        "end_line": 160
+      },
+      "actor_original_loop": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+        "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "start_line": 395,
+        "end_line": 423
+      },
+      "backward_optimizer_boundary": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+        "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "start_line": 490,
+        "end_line": 509
+      },
+      "nonfinite_skip": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+        "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "start_line": 297,
+        "end_line": 313
+      }
+    }
+  }
+}

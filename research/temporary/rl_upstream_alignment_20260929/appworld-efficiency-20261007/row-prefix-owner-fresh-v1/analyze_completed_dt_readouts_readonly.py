@@ -37,6 +37,22 @@ NEW = """current['readout']=dict(line=line_no,raw_line_sha256=hashlib.sha256(lin
 if __name__ == '__main__':
     assert reader.REMOTE.count(OLD) == 1
     remote = reader.REMOTE.replace(OLD, NEW).replace('@ROOT@', repr(reader.stage.ROOT))
+    anchor = 'assert psutil.Process(2360541).create_time()==1791325655.01'
+    workload_reader = '''workload_path=Path(job['log'])
+workload_raw=workload_path.read_bytes()
+workload_lines=[]
+for line_no,line in enumerate(workload_raw.decode(errors='replace').splitlines(),1):
+    if '[DT source workload] ' in line:
+        values={k:int(v) for k,v in re.findall(r'([a-z_]+)=(\\d+)',line.split('[DT source workload] ',1)[1])}
+        workload_lines.append(dict(line=line_no,raw=line,**values))
+workload_source=dict(path=str(workload_path),observed_prefix_bytes=len(workload_raw),
+    sha256_of_observed_prefix=hashlib.sha256(workload_raw).hexdigest(),lines=workload_lines)
+'''
+    assert remote.count(anchor) == 1
+    remote = remote.replace(anchor, workload_reader + anchor)
+    anchor = 'driver=dict(pid=2360541,birth=1791325655.01),source='
+    assert remote.count(anchor) == 1
+    remote = remote.replace(anchor, 'driver=dict(pid=2360541,birth=1791325655.01),source_workload=workload_source,source=')
     script = ("/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python - <<'PY'\n"
               + remote + '\nPY\n')
     result = subprocess.run(reader.stage.SSH + ['bash', '-s'], input=script.encode(), capture_output=True, timeout=65)
@@ -66,6 +82,18 @@ if __name__ == '__main__':
                 report_minus_logged_batches_seconds=readout['seconds'] - batch_sum,
                 report_minus_logged_batches_and_preparation_seconds=(
                     readout['seconds'] - batch_sum - preparation if preparation is not None else None))
+        complete = [g for g in log['groups'] if g['readout'] is not None]
+        partial = [g for g in log['groups'] if g['readout'] is None]
+        log['completed_groups_totals'] = dict(
+            completed_groups=len(complete),
+            report_seconds=sum(g['readout']['seconds'] for g in complete),
+            logged_batch_seconds=sum(g['summary']['sum_logged_batch_seconds'] for g in complete),
+            capture_and_preparation_seconds=sum((g['readout'].get('shared_native_prefix') or {}).get(
+                'capture_and_preparation_seconds', 0.) for g in complete),
+            finite_trace_calls=sum(g['readout']['finite_trace_calls'] for g in complete),
+            event_contrasts=sum(g['readout']['event_contrasts'] for g in complete),
+            partial_groups=[dict(group=g['group'],completed_logged_batches=g['completed_logged_batches'],
+                                 planned_batches=g['planned_batches']) for g in partial])
     data['scope'] = ('Original report scalar/capture costs and original per-batch log lines only. '
         'Large IDs, per-token vectors and minimum-batch payloads are omitted. '
         'Differences are descriptive outer-scope remainder, not identified copy/compile time. '
@@ -86,7 +114,8 @@ if __name__ == '__main__':
     output.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(dict(receipt=str(output),sha256=hashlib.sha256(output.read_bytes()).hexdigest(),
         script_sha256=data['analysis_script_sha256'],
-        logs=[dict(path=log['path'],source_sha256=log['sha256_of_observed_prefix'],
+        source_workload=data['source_workload'],
+        logs=[dict(path=log['path'],source_sha256=log['sha256_of_observed_prefix'],totals=log['completed_groups_totals'],
             groups=[dict(group=g['group'],status=g['status'],batches=g['completed_logged_batches'],
                 plan=g['plan'],costs=g.get('descriptive_cost_accounting'),readout=g['readout'])
                 for g in log['groups']]) for log in data['logs']]),indent=2))
