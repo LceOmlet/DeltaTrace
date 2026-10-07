@@ -1,5 +1,136 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 极端token已做真实端点对照；失败B4显存修复通过原vLLM共存验证
+
+代码79922486，汇总results_extreme_credit_memory_20261007.json。正式Text PID2833207/
+birth1791370325.16、source2796233e不变，首次更新仍Event hold，两rank无release。
+App原PID2786671终止，未恢复检查点、未重启正式训练。最新物理4/5回到859MiB；
+本次诊断只使用4/5，2/3的Text不推进。当前snapshot另存于
+direct-target-native-mlp-memory-20261007/v2/runtime-snapshot-20261007.json。
+
+两条实际极端source均由原VERL初始化fresh LoRA8/16、每卡B4，原HF/PEFT/FA/FLA
+前向对照，仅一个真实token换EOS，其余三行identity及更早target差值均为0。
+Text的token14606“ Format”、response351/packed666：原d=-3.17039663、rawA=-22.81692696，
+单EOS原生端点d=-2.21457285，删除/事实概率比9.1575，对应样本系数-8.1575。
+DT原估计比23.8169；负信用有实际概率影响依据，但原幅度未获该对照支持。
+主要变化落在官方parser实际执行的首段引用动作内的“ format”target，
+其原生logp由-2.250018变为-.029680；不是凭“格式词不重要”下判断。
+
+App的token198为Code:后的换行、response4498/packed7260：原d=-3.11176191，
+预期rawA=-21.46058（正式App未完成QVA，不称已消费优势）。原生单EOS端点
+d=+20.82963333，紧邻代码围栏target的logp从-4.634799降至-26.136734，
+说明该换行支持代码生成。另在同一prefix/正式producer/runner内仅改变该token，
+DT signed=+20.98582570，缓存原生root=+20.71933239，残差-.26649331；其他位置signed=0。
+同一诊断多source原接法仍给该位置-3.12821981。定位到联合有限分解对单删除效应的
+估计差异；非指数/白化造成原始反号。残差如实保留，不加纠偏，不将守恒flag或
+单例诊断称作FA/FLA整条验收，亦不替代累计删除/RISE/MAS的整体评价。
+完整前向与旧缓存root的事实漂移Text+.06321、App-.28363另存，未强行对齐。
+
+OOM已按实际phase/storage核查：GDN原GPU捕获先增加约27.14GiB，随后原HF MLP
+产生多份[8,24572,12288] BF16约4.499GiB张量，最终原PEFT乘scaling分配失败。
+此外，逐层有限消费结束后原replay cache仍累计保留FA K/V；末批rank0/1末尾
+7.3767/6.3305GB。不是白化阶段，也不是只修改报错行即可解决。
+先复用现有offload_replay_mixer=True，再在已完成原生重放和有限消费后替换该层
+为原HF空DynamicLayer，释放该本地replay cache的已消费K/V。默认offload关闭路径
+不变；不重写MLP、FA、FLA、cache状态机、PPO或信用公式。
+候选runner7d6f57f61ecd、environment cd28a6e21401；原runner628006b63751保留。
+
+v6诊断PID3714027/birth1791378722.34已结束：复用原create_colocated_worker_cls/spawn、
+AsyncActorRolloutRefWorker及AsyncLLMServerManager初始化、wake/sleep；原vLLM共存。
+原最后失败B8按每GPU真实B4完成，实际最长27334，180.795/180.363秒，物理mx-smi
+采样峰值57053/56617MiB（55.716/55.290GiB），worker PSS峰值8.19/8.14GiB。
+与此前原offload-only完成的同一末批相比，完整signed及Q/V/A均逐值相等、maxabs=0；
+短B4的offload关闭/开启也逐值相等。未增设或放宽容差。原生/有限算子数学未改，
+这项实际向量对照只证明存储生命周期修改保持本次输出，不证明单token估计准确。
+原offload-only actor-only末批181.554/181.147秒；初始化/共存条件不同，不宣称严格提速比。
+已消费cache末尾降至213909504B；物理图与逐层storage图在candidate-analysis-v6/。
+
+验证范围是实际失败末批及真实短B4，不冒称精确32768、整批28次或正式训练质量已验收。
+候选verification.json明确bounded验证通过但未正式部署；prepared原记录保留不覆盖。
+v2/v4/v5仅诊断初始化失败、未进入DT，原因及来源保留；v6使用原trainer组合方式，
+未加vLLM executor/name registry替代实现。CPU接口5+8项通过，不作为GPU算法证据。
+所有原token向量、源/导入SHA、PID出生、transport及有效配置随汇总绑定；未裁剪信用、
+放行Text更新、恢复旧检查点、启动备份或其他任务。
+
+## 2026-10-07 19:41 极端优势取证优先，Text更新前hold，App末批原生OOM终止
+
+Text同一PID2833207/source2796233e已完成首次DT22/22，两rank原raw readout和pre-update
+实际落盘，Event hold/actor_saved=true，release均不存在，无本次optimizer step。
+完整48文件CPU分析16.444秒、peakRSS1155891200B/CUDA未初始化，源文件前后SHA/mtime/size不变。
+原raw A最负及最大绝对为-22.816926956176758；UID6e76f70e-bdeb-4726-8b35-d9e21eff2f68，
+rank1-readout row77、response351、packed/input666、token14606，prior source非self。
+原native FP64 d=-3.1703966315267027，实际FP32 d=-3.170396566390991，Q=1、V=23.816926956176758。
+actor rank0 row5/response351/input863原QVA三项与该readout逐值一致；
+实际整批白化A=-140.34095764160156，也是white最负/最大绝对，唯一tie。
+原joint factualLP=-3.905878253712217、all-prior-EOS LP=-265.1357741963493，
+它们不是该token单删除端点；不能用全EOS端点替代个别token反事实可信性检查。
+raw/white均有限不等于极端估计可信，不据此放行更新。white绝对值>=100一个负token、>=50两个负token，
+统计二阶量不称参数梯度占比。164个唯一artifact候选rawQVA全相等；6个DP补齐重复候选
+均至少一个与actor全相等，保留全部候选，不将另一个补齐副本差值误报scatter错误。
+86个无非零trace候选的actor原值保留，不补造其d。
+
+App同一PID2786671/source58209daa最后第28批在原HF/PEFT MLP再次OOM，
+19:41:29 driver/两worker均NoSuchProcess，GPU4/5各859MiB，原完整DT/QVA/PPO未完成。
+已保存完整原input、前27批native原向量及原栈；没有重启或恢复旧检查点。
+实际失败replay_call890/layer6：up输入[8,24572,4096] BF16，up.base_layer和LoRA_B
+输出各[8,24572,12288] BF16=4831051776B(4.499GiB)。LoRA_B成功返回后
+原PEFT layer.py:807的乘scaling申请额外同尺寸4.50GiB，设备仅余2.90GiB。
+同时gate/silu各同尺寸已有storage证据。不是FP32猜测，也不是白化阶段；
+前缀接线修复并未解决该原生MLP峰值，不称容量已修复。虚拟100.08GiB不作物理占用。
+
+App前12批96工作行/121077 prior tokens CPU读取3.043秒/peak681254912B，无非有限。
+原最大预期|A|候选为rank1batch6/UIDb98de8ee-995e-49e7-acb8-1510b4433a6a，response4498、
+packed7260/input7288、token198，原r=1。官方既有tokenizer确认是Code:后、代码围栏前的换行。
+原FP64 d=-3.1117619098301255；以冻结原counterfactual函数0d341作CPU诊断得到
+预期FP32 A=-21.460580825805664，不冒称失败App作业已消费/已白化的A。
+同一token只有单删除原模型端点对照后才能判断这种22.46倍概率影响是否可信。
+当前优先Text实际极端及App该候选；单例诊断不能替代作者累计删除/RISE整体归因评价。
+
+证据见results_prefix_runtime_20261007.json、textcraft-credit-cpu-complete-1791373053/
+actual-complete-summary.json、native-credit-cpu-first12-1791372102/及
+appworld-terminal-native-shapes-1791373289.json。两组原信用/PPO/白化/任务参数未改；
+LoRA8/16、每卡B4保持。未release、信用裁剪/纠偏、备份或其他任务提交。
+
+## 2026-10-07 19:21 首次DT逐token取证进行中，未经检查的首次更新未放行
+
+19:21:42同一App两rank均完成12/28个B4，最新length11515/11506、42.811/42.813秒，
+各12个native原文件；未见本次新OOM/原native异常，完整readout/pre-update/hold尚未出现。
+Text完成25/30交互、当前26/30 active88，尚无本次DT/PPO更新。原更新前Event等待已安装，
+没有release。物理2/3=49924/49854MiB、4/5=35610/35730MiB，容器253.244GiB。
+本次取证优先，不能用采样进度代替数值检查；不重启或推进未经检查的更新。
+原snapshot paired-first-dt-readonly-1791372102.json SHA cb541544940302ee126941147621f94357a12c25b0ac15998d79c9277e18e257。
+
+CPU分析器0dd2ab8f新增读取已经保存的独立native-batch，修正App裁尾到完整artifact的映射；
+只消费原数据、不生成FP32 d/QVA或重算白化。实际schema接口8/8通过，独立只读review未见阻断，
+真实首批文件零分析错误；这是诊断接口验证，非DT数值/反事实准确性验收。
+下文19:15首批统计及对应dtype观测仍仅覆盖首B4，不冒充12批统计或完整actor结果。
+
+同一AppWorld PID2786671/birth1791369896.67/source58209daa，物理4/5；TextCraft
+PID2833207/birth1791370325.16/source2796233e，物理2/3。没有重启、恢复检查点或额外模型调用。
+App原采样已返回225条轨迹、3377个responses、639079个policy tokens，最长context27334；
+原old-logprob之后，两rank19:13:17激活已安装的首次DT观察。各保存103574211字节完整原DataProto，
+两rank第1/28个真实B4 trace完成，length8433/8188，原调用40.3047/40.2788秒。
+各首native文件4900067/4811107字节，经既有SCP复制并核对远端/本机SHA一致；
+不是新DT、额外采样或重建token。完整readout、pre-update与hold在19:15:02仍未出现，未release。
+
+本机CPU只读首native文件：8条真实轨迹共7680个prior source，原signed为FP64，
+范围-1.4845290905653894至7.370119502443012，未见非有限值；1156个负值。
+保留原UID、response槽、token ID与对应原奖励；负值数量和二阶量不作为梯度占比，
+也不单凭极值宣布整体归因差或训练健康。这是native原结果，尚无完整读出消费的FP32 d/QVA及白化actor输入。
+
+被动原MLP记录的首批最后layer0：up LoRA_B实际输出[8,5681,12288]/[8,5436,12288]，
+均BF16，逻辑1116930048/1068761088字节；down base及LoRA输出也为BF16。
+不能把旧OOM临时量直接猜作FP32；此为已完成较短首批，不能证明最长joint容量或末批OOM已消失。
+19:15:02物理2/3=49868/49606MiB，4/5=26834/26114MiB，容器252.061GiB；
+原torch虚拟allocator另存，不作物理峰值。Text已完成16/30交互，当前17/30 active99，未到首次DT。
+
+当前冻结App奖励owner7/7 SHA与原cached-reward审计一致：reward_extra_info KeyError
+回退同一EpisodeRewardManager的同一rm_scores tensor，不重跑环境或重算奖励。
+这是源码与缓存返回契约核对，非实际奖励tensor全值验证；不新增奖励管理器。
+运行/运输源见results_prefix_runtime_20261007.json、paired-first-dt-readonly-1791371702.json
+及first-native-artifacts/transport-1791371828.json。18:28 prepared-only快照已明确标为历史，
+不与现部署混淆。公式、官方容差、任务参数、LoRA8/16与每卡B4未改。
+
 ## 2026-10-07 19:03 两组新正式采样，首次DT原调用观测已安装
 
 原submit owner806651已从基础权重启动AppWorld PID2786671/birth1791369896.67/source58209daa，
