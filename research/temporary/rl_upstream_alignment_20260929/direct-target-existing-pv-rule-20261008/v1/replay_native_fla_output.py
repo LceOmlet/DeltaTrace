@@ -22,6 +22,7 @@ def main():
     for name in ('source','launch','output'):
         p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--single-deletion',action='store_true')
+    p.add_argument('--observe-memory-orders',action='store_true')
     a=p.parse_args()
     source=json.loads(a.source.read_bytes())
     launch=json.loads(a.launch.read_bytes())
@@ -51,6 +52,9 @@ def main():
         official_tolerance_claim=False,production_profile_changed=False,credit_repaired=False)
     if a.single_deletion:
         report['scope']='Original public native FLA and original symmetric finite callback on saved actual single-deletion operands. Both endpoints reuse the captured factual incoming state before the only changed token, by the original causal-prefix contract. No model/full-DT/actor/rollout/training-backward/update; no estimated or zero initial state.'
+    if a.observe_memory_orders:
+        assert not a.single_deletion
+        report['scope']+=' Passive observation of the two original memory callback orientations, returning every original coefficient unchanged; no profile replacement.'
     def save():
         (a.output/'result.json').write_text(json.dumps(report,indent=2)+'\n')
     try:
@@ -121,11 +125,34 @@ def main():
                     original_single_finite_contraction=sum(actual_terms.values()),
                     original_single_finite_minus_native=sum(actual_terms.values())-native_effect)
                 del actual_coeff,captured,single
+            if a.observe_memory_orders:
+                single_offset=saved['actual_single_time_start']-saved['time_start']
+                actual={k:v.to('cuda') for k,v in saved['actual_single'].items()}
+                orders=[]
+                def observe_order(endpoints,upstream,scale):
+                    values=finite_fla_pullback(endpoints,upstream,scale)
+                    ordered_terms={key:float(_token_effect(values[key][:,single_offset:],actual[key]).sum())
+                        for key in ('q','k','v','g','beta')}
+                    orders.append(dict(orientation='forward' if not orders else 'reversed',
+                        terms=ordered_terms,coefficient_times_actual_single_delta=sum(ordered_terms.values())))
+                    return values
+                with torch.no_grad():
+                    averaged=average_memory_endpoint_orders(observe_order)(ep,do,saved['scale'])
+                assert len(orders)==2
+                averaged_value=sum(float(_token_effect(averaged[key][:,single_offset:],actual[key]).sum())
+                    for key in ('q','k','v','g','beta'))
+                report['groups'][-1].update(memory_orders=orders,
+                    original_averaged_coefficients_times_single_delta=averaged_value)
+                del actual,averaged
             report['summary']=dict(finite_joint_contraction=sum(g['finite_joint_contraction'] for g in report['groups']),
                 native_output_effect=sum(g['native_output_effect'] for g in report['groups']),
                 native_output_cast_BF16_effect=sum(g['native_output_cast_BF16_effect'] for g in report['groups']))
             if a.single_deletion:
                 report['summary']['original_single_finite_contraction']=sum(g['original_single_finite_contraction'] for g in report['groups'])
+            if a.observe_memory_orders:
+                report['summary']['memory_orders']={name:sum(g['memory_orders'][i]['coefficient_times_actual_single_delta'] for g in report['groups'])
+                    for i,name in enumerate(('forward','reversed'))}
+                report['summary']['original_averaged_coefficients_times_single_delta']=sum(g['original_averaged_coefficients_times_single_delta'] for g in report['groups'])
             save()
             del ep,initial,do,output,saved
         report.update(phase='complete')
