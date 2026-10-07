@@ -1,0 +1,195 @@
+{
+  "observed_unix": 1791354294.381934,
+  "pid": 996278,
+  "pid_created_unix": 1791352696.13,
+  "source_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-causal-prefix-20261007-v2/appworld/appworld-dt/source.json",
+  "source_sha256": "ed3fdf7b3468116b65c96c4df915a4c549c0d9d9e55f72725f805751b2071cc6",
+  "scope": "Read-only exact frozen sources and original logs; no task/model/reward execution or source mutation",
+  "source_read_receipt": "research\\temporary\\rl_upstream_alignment_20260929\\direct-target-causal-prefix-20261007\\v3\\cached-reward-owner-source-read.json",
+  "source_read_receipt_sha256": "01ebcfd33299eaf2268acbaa6b56c676c4030b11cc2d2dc98f7220fd0c64b9fc",
+  "sources": [
+    {
+      "role": "verl/trainer/ppo/reward.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/verl/trainer/ppo/reward.py",
+      "sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+      "source_recorded_sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+      "pinned_official_local_path": "research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\reward.py",
+      "pinned_official_sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+      "byte_equal_to_pinned_official": true,
+      "relevant_source_lines": [
+        {
+          "line": 61,
+          "text": "reward_manager_name = config.reward_model.get(\"reward_manager\", \"naive\")"
+        },
+        {
+          "line": 62,
+          "text": "if reward_manager_name == \"naive\":"
+        },
+        {
+          "line": 66,
+          "text": "elif reward_manager_name == \"prime\":"
+        },
+        {
+          "line": 70,
+          "text": "elif reward_manager_name == \"batch\":"
+        },
+        {
+          "line": 74,
+          "text": "elif reward_manager_name == \"dapo\":"
+        },
+        {
+          "line": 114,
+          "text": "reward_tensor = reward_result[\"reward_tensor\"]"
+        },
+        {
+          "line": 115,
+          "text": "reward_extra_infos_dict = reward_result[\"reward_extra_info\"]"
+        },
+        {
+          "line": 118,
+          "text": "reward_tensor = reward_fn(data)"
+        },
+        {
+          "line": 119,
+          "text": "reward_extra_infos_dict = {}"
+        }
+      ]
+    },
+    {
+      "role": "verl/workers/reward_manager/naive.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/verl/workers/reward_manager/naive.py",
+      "sha256": "09f989349df9975eb10869ce18c1f25a09dd41e13e3908546425b21d8d92442c",
+      "source_recorded_sha256": "09f989349df9975eb10869ce18c1f25a09dd41e13e3908546425b21d8d92442c",
+      "pinned_official_local_path": "research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\workers\\reward_manager\\naive.py",
+      "pinned_official_sha256": "09f989349df9975eb10869ce18c1f25a09dd41e13e3908546425b21d8d92442c",
+      "byte_equal_to_pinned_official": true,
+      "relevant_source_lines": [
+        {
+          "line": 36,
+          "text": "if \"rm_scores\" in data.batch.keys():"
+        },
+        {
+          "line": 38,
+          "text": "return {\"reward_tensor\": data.batch[\"rm_scores\"]}"
+        },
+        {
+          "line": 40,
+          "text": "return data.batch[\"rm_scores\"]"
+        }
+      ]
+    },
+    {
+      "role": "verl/trainer/main_ppo.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/verl/trainer/main_ppo.py",
+      "sha256": "fc0c5480f891802b4a1c62c88d85d0c39a65b9c84e817e560dd66ef40d9811b8",
+      "source_recorded_sha256": "fc0c5480f891802b4a1c62c88d85d0c39a65b9c84e817e560dd66ef40d9811b8",
+      "relevant_source_lines": [
+        {
+          "line": 150,
+          "text": "reward_manager_name = config.reward_model.get(\"reward_manager\", \"episode\")"
+        },
+        {
+          "line": 151,
+          "text": "if reward_manager_name == 'episode':"
+        },
+        {
+          "line": 152,
+          "text": "from agent_system.reward_manager import EpisodeRewardManager"
+        },
+        {
+          "line": 153,
+          "text": "reward_manager_cls = EpisodeRewardManager"
+        }
+      ]
+    },
+    {
+      "role": "verl/trainer/ppo/ray_trainer.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/verl/trainer/ppo/ray_trainer.py",
+      "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+      "source_recorded_sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+      "relevant_source_lines": []
+    },
+    {
+      "role": "loop_owner_rollout.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-causal-prefix-20261007-v2/appworld/entry/loop_owner_rollout.py",
+      "sha256": "1117c3be186d5514bdf54a953951827e2d3126e6546a9a0e5624f47e41fd0262",
+      "source_recorded_sha256": "1117c3be186d5514bdf54a953951827e2d3126e6546a9a0e5624f47e41fd0262",
+      "relevant_source_lines": [
+        {
+          "line": 177,
+          "text": "rewards[index, lengths[index]-2] = rollout.ret"
+        },
+        {
+          "line": 187,
+          "text": "rm_scores=rewards, rollout_log_probs=logprobs[:, 1:]), non_tensors=metadata)"
+        },
+        {
+          "line": 246,
+          "text": "episode_rewards=np.array([rollout.ret]), episode_lengths=np.array([len(turns)]),"
+        },
+        {
+          "line": 247,
+          "text": "rewards=np.array([rollout.ret if step == len(turns)-1 else 0.]),"
+        }
+      ]
+    },
+    {
+      "role": "agent_system/reward_manager/episode.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/agent_system/reward_manager/episode.py",
+      "sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+      "source_recorded_sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+      "pinned_official_local_path": "research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\agent_system\\reward_manager\\episode.py",
+      "pinned_official_sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+      "byte_equal_to_pinned_official": true,
+      "relevant_source_lines": [
+        {
+          "line": 33,
+          "text": "if \"rm_scores\" in data.batch.keys():"
+        },
+        {
+          "line": 35,
+          "text": "return {\"reward_tensor\": data.batch[\"rm_scores\"]}"
+        },
+        {
+          "line": 37,
+          "text": "return data.batch[\"rm_scores\"]"
+        }
+      ]
+    },
+    {
+      "role": "agent_system/reward_manager/__init__.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/agent_system/reward_manager/__init__.py",
+      "sha256": "411910661de0ad1ebed67ba20bdd430700b588ba928346a06a627810f8e2b7da",
+      "source_recorded_sha256": "411910661de0ad1ebed67ba20bdd430700b588ba928346a06a627810f8e2b7da",
+      "relevant_source_lines": []
+    }
+  ],
+  "observed_log_events": [
+    {
+      "path": "/tmp/ray/session_2026-10-07_13-58-35_124936_996278/logs/worker-62b1221b07f603bfe5b4fee624e6831322a038a5327e25dd415c4b1e-01000000-1000202.out",
+      "size_bytes": 602729,
+      "sha256": "1a9579d629f6ae81ddc00af1641e95bd0aae40659b43e99fd94b753c45d0762f",
+      "hits": [
+        {
+          "line": 3837,
+          "context": [
+            "[loop_transport] calls=3553 rpc_mode=native_async batch_requests=1 requests=3545 generated_tokens=688565 elapsed=1215.0s completed_ranks=0 server_index=0 reply_rank=0",
+            "[loop_transport] calls=3554 rpc_mode=native_async batch_requests=1 requests=3546 generated_tokens=688654 elapsed=1218.7s completed_ranks=0 server_index=1 reply_rank=1",
+            "[loop_trajectory] trajectories=231 responses=3390 policy_tokens=635419 max_context=24794",
+            "Error in reward_fn: 'reward_extra_info'"
+          ]
+        }
+      ]
+    }
+  ],
+  "conclusion": {
+    "actual_reward_manager": "agent_system.reward_manager.episode.EpisodeRewardManager, selected by frozen main_ppo.py lines150-157; NaiveRewardManager is not the active synchronous reward_fn",
+    "observed_defect": "Pinned official cached rm_scores return_dict branch omits reward_extra_info; original compute_reward expects it, catches KeyError and prints the observed message.",
+    "fallback": "The same EpisodeRewardManager is called again with return_dict=False; cached branch directly returns data.batch[rm_scores]. No decode, environment call, verifier call, reward model, rescoring, reward normalization, clone, or value change is executed.",
+    "reward_preservation": "loop_owner_rollout.to_batch assigns rollout.ret once to each row rm_scores[index,lengths[index]-2]. Both calls return that same rm_scores tensor by code identity; no task reward is lost by this fallback.",
+    "metadata": "Only returned extra-info is replaced with an empty dict. The cached branch did not provide any such metadata; existing episode_rewards/episode_lengths/traj_uid in data.non_tensor_batch remain unchanged.",
+    "severity": "Nonfatal upstream optional-metadata contract mismatch and original owner log; this line alone is not evidence of a DT/PPO failure or reward corruption.",
+    "numerical_scope": "No actual reward tensor was retrieved or executed in this audit. Source proves the return path preserves its input tensor; this is not a numeric full-training validation.",
+    "action": "No source patch, process stop/restart, model/reward execution, or training configuration change performed."
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "status": "formal_AppWorld_native_sampling_TextCraft_completed3_no_new_AppWorld_DT_update",
-  "observed_unix": 1791352958,
+  "status": "formal_AppWorld_first_DT_batches_progressing_TextCraft_completed3_fourth_DT",
+  "observed_unix": 1791354644.1080084,
   "method_changed": false,
   "readout": {
     "path": "experiments/rl/reward_readout.py",
@@ -133,7 +133,7 @@
     },
     "source_sha256": "ed3fdf7b3468116b65c96c4df915a4c549c0d9d9e55f72725f805751b2071cc6",
     "source_bindings_verified": 1670,
-    "actual_phase": "original native_async sampling, two original workers execute sample_tokens; no new DT/PPO update completed",
+    "actual_phase": "first formal iteration DT, both ranks 7/29 B4",
     "restored_checkpoint": false,
     "actual_CPU_imports": {
       "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v2/cpu-imports.json",
@@ -144,14 +144,30 @@
       "sha256": "79743aa423ead6e59d3db88acd6009aac77a26568635cc0cd268edb9b9fe6d27"
     },
     "latest_native_sampling": {
-      "calls": 100,
-      "generated_tokens": 5494,
-      "elapsed_seconds": 55.5,
+      "calls": 3554,
+      "requests": 3546,
+      "generated_tokens": 688654,
+      "elapsed_seconds": 1218.7,
       "receipt": {
-        "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v2/appworld-startup-1791352958.json",
-        "sha256": "a09e3361ff1f07435178daf467e7d0a80dd61cddccdc5e769d49c5b7cb0e66a5"
+        "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/original-phase-1791354188.json",
+        "sha256": "ea0bfb8544c42b060bf27d03ae24db86ae4c5ecff3dca5521450364bed2694f8"
       },
-      "scope": "Original RPC transport elapsed includes scheduling/prefill/decode, not pure decode"
+      "scope": "Last original transport counters for this sampled batch, includes scheduling/prefill/decode; not current DT elapsed or pure decode"
+    },
+    "latest_phase_observation": {
+      "phase": "first formal iteration DT, both ranks 7/29 B4",
+      "completed_iterations": 0,
+      "actual_sampled_trajectories": 231,
+      "actual_responses": 3390,
+      "policy_tokens": 635419,
+      "max_retained_context": 24794,
+      "pid": 996278,
+      "source_sha256": "ed3fdf7b3468116b65c96c4df915a4c549c0d9d9e55f72725f805751b2071cc6",
+      "observed_unix": 1791354644.1080084,
+      "receipt": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/bounded-original-pair-1791354644.json",
+        "sha256": "848554303af2068fbbc150c43cabb8c86f18762a6eb3c03cf7839aa897bf99e9"
+      }
     }
   },
   "configuration_differences": {
@@ -177,23 +193,58 @@
     }
   },
   "resources": {
-    "cgroup_bytes": 206067019776,
+    "cgroup_bytes": 252910436352,
     "physical_gpu_MiB": {
-      "2": 49944,
-      "3": 50400,
-      "4": 47730,
-      "5": 47714
+      "2": 17329,
+      "3": 17047,
+      "4": 37176,
+      "5": 36862
     },
     "receipt": {
-      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v2/original-phase-1791352881.json",
-      "sha256": "6f2f01e8e725aa28746090a3e1686dda1fdb1e3b8ea359ed97be5e18ec327ade"
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/bounded-original-pair-1791354644.json",
+      "sha256": "848554303af2068fbbc150c43cabb8c86f18762a6eb3c03cf7839aa897bf99e9"
     },
-    "scope": "Whole-container cgroup and physical mx-smi at 14:01:21; not peak or virtual allocator"
+    "scope": "Whole-container cgroup and physical mx-smi phase snapshot, not peak or allocator reservation"
   },
   "limitations": [
     "Required causal-prefix packing/scatter passed CPU contracts; original failed 32835-token trajectory was not saved, so not replayed.",
-    "Fresh AppWorld full joint DT/head capacity and update are still unobserved.",
+    "Fresh AppWorld real joint DT B4 batches are progressing; first complete new DT/actor iteration is not yet observed.",
     "Original head/FA/FLA/PPO numerical receipts retain their original test scope; no new whole-network tolerance claim.",
     "Three TextCraft rewards are rollout samples preceding updates, not independent evaluation or a demonstrated trend."
-  ]
+  ],
+  "reward_cache_owner_audit": {
+    "receipt": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/cached-reward-owner-audit.json",
+      "sha256": "51aa40f76b4ac0d0a1c18b15042b08feb174eb3edd29ec9d15c49db5f15b0f65"
+    },
+    "conclusion": "Pinned official Episode cached rm_scores fallback returns the same tensor, without re-scoring, decoding, normalization, value change or loss; production unchanged"
+  },
+  "latest_original_phase_observations": {
+    "TextCraft": {
+      "phase": "fourth formal iteration DT, both ranks 6/20 B4",
+      "completed_iterations": 3,
+      "pid": 110053,
+      "source_sha256": "5013ebc878b972a5f52817f7c7de7ae55ddae7f1d61609e943e1ab55bf59b993",
+      "observed_unix": 1791354644.1080084,
+      "receipt": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/bounded-original-pair-1791354644.json",
+        "sha256": "848554303af2068fbbc150c43cabb8c86f18762a6eb3c03cf7839aa897bf99e9"
+      }
+    },
+    "AppWorld": {
+      "phase": "first formal iteration DT, both ranks 7/29 B4",
+      "completed_iterations": 0,
+      "actual_sampled_trajectories": 231,
+      "actual_responses": 3390,
+      "policy_tokens": 635419,
+      "max_retained_context": 24794,
+      "pid": 996278,
+      "source_sha256": "ed3fdf7b3468116b65c96c4df915a4c549c0d9d9e55f72725f805751b2071cc6",
+      "observed_unix": 1791354644.1080084,
+      "receipt": {
+        "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/bounded-original-pair-1791354644.json",
+        "sha256": "848554303af2068fbbc150c43cabb8c86f18762a6eb3c03cf7839aa897bf99e9"
+      }
+    }
+  }
 }

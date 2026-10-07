@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 14:30 两组正式DT推进，原奖励缓存路径已核对
+
+AppWorld原PID996278/birth1791352696.13/sourceed3fdf7b未变。原采样实际返回231条轨迹、
+3390个response、635419个policy token，最大context24794；原完成条件不要求恰好216条。
+transport累计688654生成token/1218.7秒包含调度、prefill和decode，不是纯decode。
+原old/ref概率阶段后两rank已完成DT 7/29个B4；首批52.374秒，后续2-7批约27-36秒，
+尚无完整新更新。没有因第一批冷启动耗时外推整轮，也没有重启、恢复或更改参数。
+TextCraft原PID110053/source5013ebc8继续第四轮DT，两rank6/20；原完整更新仍为step3。
+最新物理2/3为17329/17047MiB，4/5为37176/36862MiB；全容器cgroup235.54GiB、swap0。
+App DT worker PSS8.81/8.12GiB，Text8.43/8.32GiB；这是阶段快照，不是峰值。
+本次原日志尾没有新OOM/非有限值；来源bounded-original-pair-1791354644.json，
+SHA848554303af2068fbbc150c43cabb8c86f18762a6eb3c03cf7839aa897bf99e9。
+
+原reward_extra_info日志已按实际EpisodeRewardManager而非Naive核对：cached rm_scores
+分支缺metadata，原compute_reward的兼容fallback再次调用同一manager并直接返回同一个
+rm_scores张量；不进入decode、环境评分或归一化，不改值/重算/丢奖。原reward.py、
+Episode和Naive源与固定20bd331官方字节一致，不为此加入包装或修改。
+来源cached-reward-owner-audit.json SHA51aa40f76b4ac0d0a1c18b15042b08feb174eb3edd29ec9d15c49db5f15b0f65。
+以上回执位于direct-target-causal-prefix-20261007/v3；current_runtime已刷新实际PID、
+源码与启动绑定。代码仍为App139273c3/Textf29cc7c0，后续Git提交只保存观察记录。
+
 ## 2026-10-07 14:08 TextCraft前三轮原轨迹与DT工作量已核对
 
 原PID110053/birth1791344324.6/source5013ebc8不变。原rollouts1/2/3.jsonl各256行，
