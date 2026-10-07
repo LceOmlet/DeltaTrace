@@ -24,8 +24,9 @@ def main():
     p.add_argument('--single-deletion',action='store_true')
     p.add_argument('--observe-memory-orders',action='store_true')
     p.add_argument('--conditional-v-only',action='store_true')
+    p.add_argument('--factual-jacobian',action='store_true')
     a=p.parse_args()
-    assert sum((a.single_deletion,a.observe_memory_orders,a.conditional_v_only))<=1
+    assert sum((a.single_deletion,a.observe_memory_orders,a.conditional_v_only,a.factual_jacobian))<=1
     source=json.loads(a.source.read_bytes())
     launch=json.loads(a.launch.read_bytes())
     assert sha(a.source)==launch['source_sha256']
@@ -101,6 +102,49 @@ def main():
                 report['summary']={key:sum(g[key] for g in report['groups']) for key in ('native_conditional_V_effect','original_forward_V_times_actual_single_delta','original_symmetric_V_times_actual_single_delta','forward_minus_native','symmetric_minus_native')}
                 save()
                 del ep,saved,actual_v,operands,initial,do,output,forward
+            report['phase']='complete';save();return
+        if a.factual_jacobian:
+            report['scope']='Original native FLA factual-endpoint VJP on the saved actual single-deletion operand pair, using the original saved output cotangent and shared factual incoming state. Compare its contraction with the complete native single-deletion effect. Operator-only diagnosis, no model/full DT/credit/profile/optimizer/rollout or tolerance change.'
+            for artifact in native['operand_artifacts']:
+                path=Path(artifact['path']);assert sha(path)==artifact['sha256']
+                saved=torch.load(path,map_location='cpu',weights_only=True,mmap=True)
+                offset=saved['actual_single_time_start']-saved['time_start']
+                assert offset>=0 and offset%64==0
+                ep={('raw_g' if key=='g' else key):value.to('cuda').requires_grad_(True)
+                    for key,value in saved['actual_single'].items()}
+                factual_equal={key:torch.equal(value[1],saved['endpoints'][key][1,offset:].to('cuda'))
+                    for key,value in ep.items()}
+                assert all(factual_equal.values())
+                initial=saved['endpoints']['h'][1:2,offset//64].to('cuda').expand(2,-1,-1,-1).contiguous()
+                assert torch.equal(initial[0],initial[1])
+                do=saved['do'][:,offset:].to('cuda').contiguous()
+                torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats();tick=time.perf_counter()
+                output,state=chunk.chunk_gated_delta_rule(ep['q'],ep['k'],ep['v'],ep['raw_g'],ep['beta'],scale=saved['scale'],initial_state=initial,output_final_state=False,use_qk_l2norm_in_kernel=False)
+                assert state is None and output.requires_grad
+                incoming=torch.cat((torch.zeros_like(do),do),dim=0)
+                torch.autograd.backward(output,grad_tensors=incoming)
+                torch.cuda.synchronize()
+                terms={key:float(_token_effect(ep['raw_g' if key=='g' else key].grad[1:2],ep['raw_g' if key=='g' else key].detach()).sum())
+                    for key in ('q','k','v','g','beta')}
+                reference_gradient_maxabs={key:float(value.grad[0].abs().max()) for key,value in ep.items()}
+                actual_native=float(_token_effect(do,output.detach()).sum())
+                report['groups'].append(dict(head_start=saved['head_start'],seconds=time.perf_counter()-tick,
+                    original_native_forward_calls=1,original_native_backward_calls=1,
+                    factual_operands_equal=factual_equal,initial_state_pair_equal=True,
+                    input_dtypes={key:str(value.dtype) for key,value in ep.items()},
+                    gradient_dtypes={key:str(value.grad.dtype) for key,value in ep.items()},
+                    gradients_all_finite=all(bool(torch.isfinite(value.grad).all()) for value in ep.values()),
+                    reference_gradient_maxabs=reference_gradient_maxabs,
+                    native_single_deletion_output_effect=actual_native,
+                    factual_native_VJP_times_actual_delta_terms=terms,
+                    factual_native_VJP_times_actual_delta=sum(terms.values()),
+                    local_linearization_minus_native=sum(terms.values())-actual_native,
+                    peak_live_allocated_bytes=torch.cuda.max_memory_allocated(),
+                    pss_bytes=psutil.Process().memory_full_info().pss,artifact=artifact))
+                report['summary']={key:sum(group[key] for group in report['groups']) for key in ('native_single_deletion_output_effect','factual_native_VJP_times_actual_delta','local_linearization_minus_native')}
+                report['summary']['factual_native_VJP_terms']={key:sum(group['factual_native_VJP_times_actual_delta_terms'][key] for group in report['groups']) for key in terms}
+                save()
+                del ep,saved,initial,do,output,incoming
             report['phase']='complete';save();return
         for artifact in native['operand_artifacts']:
             path=Path(artifact['path'])

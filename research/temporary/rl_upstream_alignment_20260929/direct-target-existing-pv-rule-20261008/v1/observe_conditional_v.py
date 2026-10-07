@@ -7,13 +7,14 @@ from pathlib import Path
 import subprocess
 
 HERE=Path(__file__).resolve().parent
-parser=argparse.ArgumentParser();parser.add_argument('--fetch',action='store_true');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--fetch',action='store_true');parser.add_argument('--factual-jacobian',action='store_true');args=parser.parse_args()
+label='native-factual-jacobian' if args.factual_jacobian else 'native-conditional-v'
 spec=importlib.util.spec_from_file_location('transport',HERE.parents[1]/'stage_environment_entry.py')
 transport=importlib.util.module_from_spec(spec);spec.loader.exec_module(transport)
 code=r'''
 import hashlib,json,psutil,subprocess,time
 from pathlib import Path
-root=Path(@ROOT@);out=root/'receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/native-conditional-v'
+root=Path(@ROOT@);out=root/('receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/'+@LABEL@)
 launch=json.loads((out/'launch.json').read_bytes())
 alive=psutil.pid_exists(launch['pid']) and psutil.Process(launch['pid']).create_time()==launch['birth']
 result=json.loads((out/'results/result.json').read_bytes()) if (out/'results/result.json').is_file() else None
@@ -32,14 +33,14 @@ if @FETCH@:
  for name in names:
   p=out/name;data=p.read_bytes();record['files'].append(dict(path=str(p),relative=name,bytes=len(data),sha256=hashlib.sha256(data).hexdigest()))
 print(json.dumps(record))
-'''.replace('@ROOT@',repr(transport.ROOT)).replace('@FETCH@',repr(args.fetch))
+'''.replace('@ROOT@',repr(transport.ROOT)).replace('@FETCH@',repr(args.fetch)).replace('@LABEL@',repr(label))
 command='set -eu\nsource '+transport.ENTRY+'/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n'+code+'\nPY\n'
 result=subprocess.run(transport.SSH+['bash','-s'],input=command.encode(),capture_output=True)
 if result.returncode:print(result.stderr.decode(errors='replace'))
 result.check_returncode();record=json.loads(result.stdout)
-(HERE/('native-conditional-v-observation-'+str(int(record['unix']))+'.json')).write_text(json.dumps(record,indent=2)+'\n')
+(HERE/(label+'-observation-'+str(int(record['unix']))+'.json')).write_text(json.dumps(record,indent=2)+'\n')
 if args.fetch:
-    dest=HERE/'native-conditional-v-results'
+    dest=HERE/(label+'-results')
     for row in record['files']:
         target=dest/row['relative'];target.parent.mkdir(parents=True,exist_ok=True)
         subprocess.run(transport.SCP+[transport.SSH[-1]+':'+row['path'],str(target)],capture_output=True,check=True)
