@@ -1,5 +1,77 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 23:16 实际输出端/decoder27拆查完成；FA原断言通过，未放行训练
+
+诊断代码aeaa1352，results_extreme_operator_20261007.json绑定原source58209daa、
+真实B4 aaa03be7、脚本SHA、导入owner、配置、PID出生和原始张量运输SHA。
+PID200641/birth1791385210.51已完成退出，4/5最终各859MiB；Text PID2833207同
+出生时间仍hold，两rank无release；App保持终止，不恢复检查点、不推进optimizer。
+两个原DT调用无observer，无新增模型前向/梯度或公式改动；四项完整signed向量
+与此前原调用逐值一致，maxabs0。大张量约5.45GB留远端并存SHA，未搬本机/Git。
+
+真实换行单EOS native cached效应+20.71933239，而原joint head seed作用于同一
+single-EOS logit变化为+7.98411942（FP32）/+7.98411319（FP64）。原joint seed
+在其自身两端点的FP64收缩100.45795617519036，与LP差100.4579561751856接近；
+这说明其联合端点恒等式与逐token单删除效应是不同检查，不能把前者当后者。
+主导紧邻code-fence target原生single效应+21.33316231，joint seed方向分配仅
++6.65016737。事实logits与normalized-hidden端点跨两调用逐值相同。
+原BF16 head转置后single方向收缩+8.51523615，final norm后+7.61414271，分别保留。
+
+完整decoder27输出+.99628511，MLP系数对single post-norm输出差-.50737119，
+post-norm/residual输入+.86740143，attention后+.51147562；input-norm/residual
+合并后-1.58704043，其中residual branch为-2.22394793。两个norm原FP32 eager
+与实际compiled系数最大差7.45e-9；FP64单方向仍-1.58704043。原finite与Torch
+functional.rms_norm的连续FP64 joint端点恒等式残差均1.42e-14。此为描述性核算，
+没有新容差/守恒倍率，不认定norm或FA公式因整层反号而错误。
+
+复用未改verify_saved_fa_dtypes SHA7ff11d9d和FA v2.6.3原源码SHAa290e11c的
+AST断言：真实row0 Q6815/KV9567、BF16 QKV/FP32保存upstream、coefficient_start
+2762，原生out/dq/dk/dv和coincident finite dq/dk/dv共7项通过；out2x、grad3x
+门槛未改。因未保存v1，明确检查原reference q0/k0/v0而非冒称factual；统一实际
+row query_start2752只做既有scalar接口表示转换，无缩短有效上下文。
+该结果不提供非零有限归因的误差界、不覆盖旧其他操作数的BF16 dk失败。
+attention参考自身调用原算子autograd，但没有模型训练反向或更新。
+
+可选CPU HF norm导入触发device runtime初始化，原no-CUDA-init guard拒绝该次
+辅助结果；原脚本/stderr保留。完成的核算改为保存张量、原DT及Torch RMSNorm，
+CUDA未初始化，不将失败尝试写成成功，也未采用自行抄写的norm前向。
+
+证据当前指向实际joint-reference分解与事实single-token删除效应的大幅差异，
+发生在reward指数变换/白化前；不能提高核算精度或守恒纠偏后宣称已解决。
+PLAN精确假设及Q/V/A/PPO均不变，不撤回理论前提，也不以近似误差代替接口正确性。
+未称credit已修好或允许更新。原OOM修复79922486仍有界验证：原失败B4、原async
+vLLM共存、最长27334、物理55.716/55.290GiB，signed/QVA逐值一致；未正式部署，
+未扩大为精确32768/整轮28批验证。此次诊断采样PSS10.46/8.72GiB，最终容器141.65GiB，
+不是物理峰值或内存泄漏结论。代码/证据/部署状态逐项分开记录。
+
+
+## 2026-10-07 22:49 极端换行的原DT逐层诊断完成；未改信用
+
+诊断代码d07de9e8，results_token_layer_20261007.json绑定真实导入路径/SHA、配置、
+运输SHA和PID出生时间。PID69498/birth1791383985.22已完成退出；两rank各两次
+原DT，零采样/反向/optimizer/检查点恢复，GPU4/5最终各859MiB。
+Text原PID2833207同出生时间仍hold，无release；App正式任务保持终止。
+
+同一实际App B4，single-EOS及原joint-EOS完整signed向量分别与此前无观察调用
+逐值相等（四项maxabs0）。未传observer，原有限函数及返回对象保持不变。
+被动记录原joint系数与真实single-EOS隐藏状态差的33个边界收缩；两rank逐值
+相同，所有事实端点逐值相同。输出head+final norm之后为+7.61414271，
+decoder28输入+.99628511，完整decoder27输入-1.58704043，最终输入-3.12821981
+恰好等于原joint该token分量。cached single原生root为+20.71933239。
+
+该收缩仅用于定位：输出端已发生较大差异，第27层还包含MLP/norm/residual/FA，
+不能把整层变化认定为FA错误，不能冒称新的信用或容差验收。原完整single-DT
++20.98582570、原joint-DT-3.12821981分别保留；累计删除RISE/MAS证据未替代。
+额外native-root/cache hook因原root实际走model.__call__而未取得数据，明确记录
+capture_available=False，不称identity-row漂移已定位，不为这项可选缺口重复长跑。
+
+CPU隐藏快照每rank峰值3796058112字节，已全部释放；采样PSS最大11.06/11.23GiB。
+这些数字不是物理VRAM峰值。原OOM候选79922486仍只在原失败B4、原async-vLLM
+共存下有界验证，未正式部署、未扩称精确32768/整轮容量或信用已修复。
+当前继续只读拆查已定位的输出端与decoder27真实操作数；保留原FA/FLA门槛，
+不加守恒倍率、裁剪或更改Q/V/A/PPO/白化及训练参数。
+
+
 ## 2026-10-07 22:26 实际动作target累计删除完成；极端信用和显存结论分别保留
 
 诊断代码d0f2ebf4，汇总results_action_curve_20261007.json。PID4098367/
