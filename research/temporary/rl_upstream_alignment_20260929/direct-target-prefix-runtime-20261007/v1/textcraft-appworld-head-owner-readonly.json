@@ -1,0 +1,195 @@
+{
+  "kind": "Read-only exact frozen TextCraft/AppWorld head comparison; no source or runtime changes",
+  "observed_utc": "2026-10-07T10:57:08.225397+00:00",
+  "tasks": {
+    "TextCraft": {
+      "formal_source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-mlp-token-chunk-20261007\\v1\\runtime-metadata\\textcraft-source.json",
+        "sha256": "5013ebc878b972a5f52817f7c7de7ae55ddae7f1d61609e943e1ab55bf59b993",
+        "bytes": 730513
+      },
+      "actual_dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace",
+      "head_remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+      "head_recorded_sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+      "head_source_binding_sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+      "local_patch_commit": "f29cc7c055fcd4e5a055639c48aaf8d913bac180",
+      "head_local_actual_bytes": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-prefix-interface-20261007\\v1\\baseline-textcraft\\qwen35_answer_finite.py",
+        "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+        "bytes": 11203
+      }
+    },
+    "AppWorld": {
+      "formal_source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-mlp-token-chunk-20261007\\v1\\runtime-metadata\\source.json",
+        "sha256": "24b9e671f3533d88047fead3c709bbfddbf5200053f3cd8f3d308cb30f179f11",
+        "bytes": 762871
+      },
+      "actual_dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace",
+      "head_remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+      "head_recorded_sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+      "head_source_binding_sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+      "local_patch_commit": "d5b879d7acd49a5e7ba7550a52cb53a0f993d0d5",
+      "head_local_actual_bytes": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-head-memory-20261007\\v1\\candidate\\qwen35_answer_finite.py",
+        "sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+        "bytes": 12493
+      }
+    }
+  },
+  "diff_regions": [
+    {
+      "kind": "insert",
+      "text_original_lines": [
+        13,
+        12
+      ],
+      "app_original_lines": [
+        13,
+        15
+      ],
+      "text_original": [],
+      "app_original": [
+        "",
+        "# Bound only full-vocabulary target-row temporaries; original rules stay intact.",
+        "_TEXT_TARGET_ROW_LIMIT=128"
+      ]
+    },
+    {
+      "kind": "replace",
+      "text_original_lines": [
+        174,
+        174
+      ],
+      "app_original_lines": [
+        177,
+        188
+      ],
+      "text_original": [
+        "            result=self.seed(z0,z1,target,weight)"
+      ],
+      "app_original": [
+        "            if len(target)<=_TEXT_TARGET_ROW_LIMIT:",
+        "                result=self.seed(z0,z1,target,weight)",
+        "            else:",
+        "                parts=[self.seed(z0[start:start+_TEXT_TARGET_ROW_LIMIT],",
+        "                                 z1[start:start+_TEXT_TARGET_ROW_LIMIT],",
+        "                                 target[start:start+_TEXT_TARGET_ROW_LIMIT],weight)",
+        "                       for start in range(0,len(target),_TEXT_TARGET_ROW_LIMIT)]",
+        "                result=(torch.cat([part[0] for part in parts],dim=0),",
+        "                        torch.stack([part[1] for part in parts]).all(),",
+        "                        *(torch.cat([part[index] for part in parts],dim=0)",
+        "                          for index in range(2,len(parts[0]))))",
+        "                del parts"
+      ]
+    },
+    {
+      "kind": "insert",
+      "text_original_lines": [
+        190,
+        189
+      ],
+      "app_original_lines": [
+        204,
+        212
+      ],
+      "text_original": [],
+      "app_original": [
+        "        if len(labels)>_TEXT_TARGET_ROW_LIMIT:",
+        "            paired_labels=labels.repeat_interleave(2)",
+        "            parts=[]",
+        "            for start in range(0,len(labels),_TEXT_TARGET_ROW_LIMIT):",
+        "                first=2*start;last=2*(start+_TEXT_TARGET_ROW_LIMIT)",
+        "                logp=original_logits[first:last].float().log_softmax(-1)",
+        "                parts.append(logp.gather(-1,paired_labels[first:last,None]).squeeze(-1))",
+        "                del logp",
+        "            return torch.cat(parts,dim=0)"
+      ]
+    }
+  ],
+  "identical_original_functions": {
+    "_answer_seed_rule": {
+      "ast_equal": true,
+      "ast_sha256": "6a4d1d9e4d5c606b41e180f1c31c7d47444b795f45dd815b97535e95288a7513",
+      "text_lines": [
+        98,
+        107
+      ],
+      "app_lines": [
+        101,
+        110
+      ],
+      "original_formula": "def _answer_seed_rule(z0, z1, target, weight):\n    z0 = z0.float()\n    z1 = z1.float()\n    seed, checks = seed_with_checks(z0, z1, target)\n    hidden = _linear_transpose(seed, weight)\n    logp0 = z0.log_softmax(-1).gather(-1, target[:, None]).squeeze(-1)\n    logp1 = z1.log_softmax(-1).gather(-1, target[:, None]).squeeze(-1)\n    allocated = (seed * (z1 - z0)).sum(-1)\n    return (hidden, checks, logp0, logp1, allocated)"
+    },
+    "_categorical_answer_seed_rule": {
+      "ast_equal": true,
+      "ast_sha256": "f6f2033012953a456e6d37a7f42117d3aa3c1b3fb1ae932b2cc658906e44f549",
+      "text_lines": [
+        110,
+        122
+      ],
+      "app_lines": [
+        113,
+        125
+      ],
+      "original_formula": "def _categorical_answer_seed_rule(z0, z1, target, weight):\n    \"\"\"Same finite log-softmax seed and linear transpose, both at FP32.\n\n    The event readout is projected at FP32 before this call. Do not multiply\n    the seed by a secant of separately rounded BF16 outputs: that attributes\n    output quantization error to the input and can amplify it arbitrarily.\n    \"\"\"\n    z0 = z0.float()\n    z1 = z1.float()\n    weight = weight.float()\n    seed, checks = seed_with_checks(z0, z1, target)\n    hidden = seed @ weight\n    logp0 = z0.log_softmax(-1).gather(-1, target[:, None]).squeeze(-1)\n    logp1 = z1.log_softmax(-1).gather(-1, target[:, None]).squeeze(-1)\n    return (hidden, checks, logp0, logp1, (seed * (z1 - z0)).sum(-1))"
+    },
+    "categorical_head_logits": {
+      "ast_equal": true,
+      "ast_sha256": "a602c22e1898b007c96e551c131efe6a85f7ecaf58d946fb471efa081ca4dff4",
+      "text_lines": [
+        125,
+        134
+      ],
+      "app_lines": [
+        128,
+        137
+      ],
+      "original_formula": "def categorical_head_logits(head, original_hidden, outcome_token_ids):\n    \"\"\"Project only declared event rows of the original head, without BF16 storage.\n\n    No parameters or model activations are changed. Disabling ambient autocast\n    here is necessary: a float() input alone does not keep Linear in FP32.\n    \"\"\"\n    assert isinstance(head, torch.nn.Linear) and head.bias is None\n    with torch.autocast(device_type=original_hidden.device.type, enabled=False):\n        return torch.nn.functional.linear(original_hidden.float(), head.weight.index_select(0, outcome_token_ids).float())"
+    }
+  },
+  "underlying_seed_and_rule": {
+    "compiled_logprob_seed.py": {
+      "recorded_sha256": {
+        "TextCraft": "757edb728aa57e2e802ab83dc59297ec32bbbb4eb9b2ecae6ca42fea5ed1a651",
+        "AppWorld": "757edb728aa57e2e802ab83dc59297ec32bbbb4eb9b2ecae6ca42fea5ed1a651"
+      }
+    },
+    "compiled_finite_rules.py": {
+      "recorded_sha256": {
+        "TextCraft": "e1cc970f15e23a58c2001173220a9826cb3257464a163c1fd722c705e2a2c144",
+        "AppWorld": "e1cc970f15e23a58c2001173220a9826cb3257464a163c1fd722c705e2a2c144"
+      }
+    }
+  },
+  "conclusion": {
+    "only_head_difference": "App adds target-row limit128, full-vocabulary seed tiling and paired-target logprob tiling; Text retains original unchunked path",
+    "text_old_BF16_endpoint_secant_multiplier_present": false,
+    "multiplier_evidence": "Both categorical rules perform seed@FP32weight directly; both text rules call identical seed_with_checks then _linear_transpose. No endpoint-ratio multiplier or rescaling exists in either frozen head.",
+    "not_claimed": "No inference that different head hashes cause Text numerical outliers; no new numerical test or whole-DT acceptance"
+  },
+  "existing_validation": {
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-head-memory-20261007\\v3\\verification.json",
+      "sha256": "eaeff74ea65f0783f10b8a77a4ed98d99215bb6876896cea17640ed4105599d4",
+      "bytes": 3432
+    },
+    "status": "actual_FP32_head_owner_dtype_comparison_passed",
+    "candidate_answer_sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+    "scope": "Same original head tensors; one actual B4 per rank; original seed/rules and Q/V/A; PyTorch assert_close without rtol/atol overrides for this FP32 head only. FA/FLA kernels, original assertions, original PPO remain unchanged. Not full multi-turn joint-target 32k capacity or training-health proof.",
+    "assertion": "torch.testing.assert_close(actual, reference); no tolerance overrides",
+    "failed_diagnostics": {
+      "v1": "Import identity failed before DT; source preserved",
+      "v2": "Overstrong bitwise comparison failed at normal FP32 differences; no original dtype/FA/FLA tolerance was exceeded or changed"
+    }
+  },
+  "operations": {
+    "remote": 0,
+    "model": 0,
+    "GPU": 0,
+    "tests": 0,
+    "source_changes": 0,
+    "PLAN_changes": 0,
+    "training_changes": 0
+  }
+}

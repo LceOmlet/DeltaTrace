@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 19:03 两组新正式采样，首次DT原调用观测已安装
+
+原submit owner806651已从基础权重启动AppWorld PID2786671/birth1791369896.67/source58209daa，
+物理4/5；TextCraft PID2833207/birth1791370325.16/source2796233e，物理2/3。
+两组冻结prefix接线实现6469fa432e5eed381139dab86292fc92493e7f6e已实际部署：producer2aa5，
+App readoutb602，Text readout814c。各自原DT/VERL/任务owner保留，未将App628/1c58/head1e209
+替换到Text5f14/047c/headd473。原CPU导入及配置对照分别核1699/1640绑定；差异只在输出目录、
+entry路径及App同源dataset symlink路径，预算/生成/白化/PPO/LoRA8/16/B4每卡不变。
+无检查点恢复、备份、SQL/GRPO提交、重装或缓存清空。PLAN未改。
+
+观测实现56e4d778b222b3ab4dd64500e810cfa9812e65fd，Text准备helper40dc2a7a6d1bf289fab1111010406e17a7603acc。
+两个controller均已由原WorkerDict RPC恰好提交两次、正常结束，两rank实际armed；原worker e5eb、
+actor3a65、LoRA8/16及B4已在原worker核查。v4首次原attribute入口保存完整DataProto，再调用同一次原方法；
+v2逐批保存native signed、完整读出保存实际FP32 d/Q/V/A；原更新入口保存scatter和整批白化后的输入并Event等待
+显式release文件。没有STOP Ray、额外模型/DT/更新或数值修改。v4的armed.owners同时列出继承这些方法的ref对象，
+不是重复提交；激活匹配实际producer，v2只对拥有direct_readout的原owner安装。
+
+独立CPU15/15通过，范围仅接口/原AST/绑定与异常恢复。旧保存B8每行只有当前response，不能代表多轮joint；
+新完整输入在首次DT之前保存，19:03尚未产生。两组尚在原采样、无本次完整DT或PPO更新，不称训练健康、
+32k joint容量或原HF/PEFT MLP OOM已修复。原MLP hook只记录shape/dtype/storage及allocator元数据，
+不保留张量或开启runner observer。Text/App head只差128目标行分块，没有遗留BF16端点倍率纠偏。
+
+19:03:24 App两rank采集80/120、82/120，Text已完成4/30交互、当前active206。
+物理GPU2/3=49811/51345MiB、4/5=55290/55226MiB，容器214.772GiB，是采样阶段快照；
+各worker PSS单独保存，不累加fork RSS。无本次DT shape/dtype现场，原MLP API只读审查确认：
+官方apply_chunking_to_forward存在但当前Qwen/capture没有可直接启用的完整接线；没有擅自套分块或改dtype。
+完整源/commit/配置/原RPC回执见results_prefix_runtime_20261007.json及对应current_runtime快照；
+极端信用的逐token证据和原native MLP峰值仍待此次原调用，不能用启动或旧汇总值代替验收。
+
 ## 2026-10-07 18:28 前缀接线和原调用观测候选，仅本机接口验证
 
 已确认新DirectActionTargetReadout漏接既有prefix工厂/provider，原自动common-prefix仍存在。
