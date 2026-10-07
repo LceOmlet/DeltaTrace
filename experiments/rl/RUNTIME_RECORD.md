@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 当前GDN30反号的同操作数分阶段核算完成，零新增GPU调用
+
+仅CPU核算已经完成的原结果，以相同四份artifact SHA、当前newline2883/UID、
+原output cotangent及共享实际single-prefix state对齐；没有新模型/DT/backward/采样。
+原joint FLA自己的有限/原生差为107.287136/107.289270，差-0.002134；
+原single FLA自己的有限/原生差为15.825014/15.827504，差-0.002490。
+原joint系数乘actual single位移只得9.671126，与原生single差-6.156378。
+加同一已保存residual_skip=-16.636698、z=1.341236之后，记录的gate处+0.543606，
+记录的joint finite FLA处-5.624335；用已测single finite/native作算术诊断分别
+为+0.529553/+0.532043。不是新训练系数、全模型替换或官方有限归因容差。
+记录值的分支重构残差0；gate implied o与原native BF16重放差-0.001754，
+此普通数值差与跨端点背景的6.156378差分别保留，不新设误差门槛。
+这把当前点反号的主要实测差定位到joint分解近似single的环节，不能证明全部
+误差均来自该处。原V-only替换已全向量失败，不由此重试；原作者RISE/MAS独立保留。
+1791415904.0715535只读核实TextCraft同PID/birth仍在、双rank release不存在，
+AppWorld原正式PID不存在。79922486显存补丁保持verified/un-deployed；信用未修复。
+既有单删除精化裁定仍待用户回复；未增加查询策略、修改PLAN或放行训练。
+
+
+
 ## 2026-10-08 当前AppWorld极端点GDN30实际块完成原FLA dtype对照，信用未修复
 
 9bb32def/PID3281630/birth1791414714.78，物理GPU4。

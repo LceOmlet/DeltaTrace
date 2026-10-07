@@ -1,0 +1,165 @@
+{
+  "status": "Completed CPU accounting: current GDN30 joint-versus-single context difference explains the measured sign change at this sub-operation; no repair deployed.",
+  "case": {
+    "row": 3,
+    "traj_uid": "f0f85f5c-74b4-4670-a074-99a3a09dbb98",
+    "trajectory_index": 64,
+    "response_slot": 125,
+    "packed_slot": 2883,
+    "original_input_slot": 2915,
+    "token_id": 198,
+    "saved_native_signed_dtype": "torch.float64",
+    "saved_native_signed": -4.290090946861018,
+    "reward": 0.75
+  },
+  "source_sha256": "58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0",
+  "original_runner": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+    "sha256": "7d6f57f61ecde7ce3506b8ef58d61268859fc04357c35de99a1892928c4ba7a8",
+    "decoder_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+    "decoder_sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234",
+    "offload_replay_mixer": true
+  },
+  "artifacts": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head0.pt",
+      "bytes": 928056093,
+      "sha256": "e5699db053b82cf39f01c7d8af334d5b5792f748d2047e1a22481035bde7dce6"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head8.pt",
+      "bytes": 928056093,
+      "sha256": "b2c621825d4b21eb3fb818802488d34fa17fd7896105e6023b6c0ee3f1d7ec39"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head16.pt",
+      "bytes": 928056121,
+      "sha256": "c46e26c030ee632fff645977ab846adee724138794a453069615961335820bb1"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head24.pt",
+      "bytes": 928056121,
+      "sha256": "c6a55890dfbdade682f7f8586577e56156e24542d7ef8ef22762bc3f6c95a842"
+    }
+  ],
+  "unchanged_measured_branches": {
+    "residual_skip": -16.636697562557075,
+    "z_branch": 1.341235908634471,
+    "sum": -15.295461653922604
+  },
+  "original_joint_finite_terms_times_actual_single_delta": {
+    "q": 0.4107040333450175,
+    "k": 2.6216923985810268,
+    "v": 5.508958644193586,
+    "g": -0.2934506214952166,
+    "beta": 1.4232217584137514
+  },
+  "original_joint_finite_terms_sum": 9.671126213038166,
+  "source_identity_controls": {
+    "factual_operands_equal": true,
+    "same_four_artifact_hashes": true,
+    "fixed_original_output_cotangent": true,
+    "actual_single_incoming_state_is_shared_factual": true
+  },
+  "owner_self_comparisons": {
+    "joint_endpoints": {
+      "original_finite": 107.2871360456438,
+      "native": 107.28926998471758,
+      "difference": -0.0021339390737722397
+    },
+    "actual_single_endpoints": {
+      "original_finite": 15.825014309245729,
+      "native": 15.82750419616082,
+      "difference": -0.0024898869150913328
+    },
+    "joint_coefficients_on_single_delta": {
+      "original_finite": 9.671126213038166,
+      "native_actual_single": 15.82750419616082,
+      "difference": -6.156377983122654
+    },
+    "scope": "Different endpoint contexts, measured with the same original saved output cotangent. These descriptive differences are not official tolerance assertions."
+  },
+  "phase_rows": [
+    {
+      "name": "Recorded gate output, residual and z branches included",
+      "value": 0.5436059747837874
+    },
+    {
+      "name": "Recorded joint finite FLA coefficients contracted with actual single-deletion operand differences; residual and z included",
+      "value": -5.624335440884439
+    },
+    {
+      "name": "Same residual and z plus original finite FLA evaluated on the actual single-deletion pair; arithmetic diagnostic only",
+      "value": 0.5295526553231245
+    },
+    {
+      "name": "Same residual and z plus original native FLA output difference on actual single-deletion pair; arithmetic diagnostic only",
+      "value": 0.5320425422382158
+    }
+  ],
+  "diagnostic_closure": {
+    "recorded_after_FLA_minus_reconstructed": 0.0,
+    "gate_implied_native_o": 15.839067628706392,
+    "replay_native_o_BF16": 15.840821851677479,
+    "gate_implied_minus_native_replay_BF16": -0.0017542229710869606
+  },
+  "interpretation": [
+    "The original finite FLA is close to its own native endpoint difference for each measured endpoint pair. The measured large discrepancy appears when a joint-pair coefficient decomposition is used for a factual single-deletion perturbation.",
+    "Adding the unchanged measured residual and z contributions locates the positive-to-negative change at finite FLA inside GDN30. The arithmetic single-pair rows are diagnostics, not a new production path or full-model credit.",
+    "The new coincident-endpoint official dtype assertions pass independently. They cannot validate this joint-versus-single context approximation.",
+    "Replacing only the V branch was already tested and rejected on the full vector. This accounting does not justify another isolated branch substitution.",
+    "Do not infer an all-token error rate, a parameter-gradient share, or all learning degradation from this selected point. The original author cumulative deletion/RISE/MAS receipts remain separate."
+  ],
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "backward": 0,
+    "optimizer": 0,
+    "rollout": 0,
+    "production_modified": false,
+    "new_query_policy_implemented": false,
+    "credit_repaired": false
+  },
+  "evidence": {
+    "gdn": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/gdn-v2-results/results/rank0.json",
+      "bytes": 133700,
+      "sha256": "4e241312c96062c8ad5d5cc870b8bae9619d09826d3c11b3111684341d05b64a"
+    },
+    "joint": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/native-output-results/results/result.json",
+      "bytes": 6823,
+      "sha256": "f98e44359e2944cb4fc398b5ece33558e1fae2e6953f52272c5c86bccdc815b3"
+    },
+    "single": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/native-single-output-results/results/result.json",
+      "bytes": 9135,
+      "sha256": "f94a35f2f1ac5538000483c3dd0c8d0a6be1885ba00d9d817158f4509764fb93"
+    },
+    "orders": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/native-memory-orders-results/results/result.json",
+      "bytes": 10406,
+      "sha256": "fceff26ac7f3256d1a63f6afbfa0d30a637592d7b8e028dee89d4dbf06168c8e"
+    },
+    "jacobian": {
+      "path": "experiments/rl/results_native_factual_jacobian_20261008.json",
+      "bytes": 15664,
+      "sha256": "07185492be0348055db90ae166ac6bd8d10428bd5db87b9dc1e6d421bbbacba2"
+    },
+    "official": {
+      "path": "experiments/rl/results_current_extreme_official_block_dtype_20261008.json",
+      "bytes": 19748,
+      "sha256": "8d1d15c0547590332bbf9822a8916aaa2795a3c1ea73227c801dcc8c68282758"
+    },
+    "rejected_V": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/factual-v-analysis.json",
+      "bytes": 8719,
+      "sha256": "481b938b910e44e3fe3f04d8a3104b0a45925e48bee24547af9a3aee77be2dd4"
+    },
+    "causal": {
+      "path": "experiments/rl/results_credit_causal_diagnosis_20261008.json",
+      "bytes": 17307,
+      "sha256": "1643ab08b74c28d39409ceb5df73bb03c1dce14e4a73ba059b5686f891b46ab3"
+    }
+  }
+}
