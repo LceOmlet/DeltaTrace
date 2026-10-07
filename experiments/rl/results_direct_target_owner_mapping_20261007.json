@@ -1,0 +1,456 @@
+{
+  "scope": "Read-only factual native sampled-artifact -> official execution -> official reward mapping. Not a method plan or training change.",
+  "observed_utc": "2026-10-07T02:05:47.616855+00:00",
+  "operations": {
+    "local_source_read": true,
+    "local_receipt_write": true,
+    "remote_calls": 0,
+    "environment_calls": 0,
+    "model_calls": 0,
+    "GPU_calls": 0,
+    "tests": 0,
+    "checkpoint_operations": 0,
+    "production_changes": 0
+  },
+  "running_jobs_unchanged": {
+    "TextCraft": {
+      "pid": 3327460,
+      "pid_birth": 1791334993.84,
+      "source_prefix": "5faa6e2d",
+      "physical_GPUs": [
+        2,
+        3
+      ]
+    },
+    "AppWorld": {
+      "pid": 2360541,
+      "pid_birth": 1791325655.01,
+      "source_prefix": "c83b96de",
+      "physical_GPUs": [
+        4,
+        5
+      ]
+    }
+  },
+  "TextCraft": {
+    "pinned_owners": {
+      "AgentGym-RL": "82402a99c62a293735a3f412fb8ac9a600673bc0",
+      "AgentGym": "d014732d9fe39b975c368c03749bfd50950067f6"
+    },
+    "sources": [
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\textcraft_owner_rollout.py",
+        "sha256": "d9bb65501ded52fb2fd7a5aebf06557496c22e4ea679a649bc46596b9ba420f5",
+        "line_ranges": [
+          [
+            91,
+            99
+          ],
+          [
+            124,
+            150
+          ],
+          [
+            155,
+            177
+          ]
+        ],
+        "scope": "Current source-template binds this exact adapter SHA; original arrays passed through."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\AgentGym-RL-82402a99c62a293735a3f412fb8ac9a600673bc0\\AgentGym-RL\\verl\\workers\\rollout\\agent_vllm_rollout\\vllm_rollout.py",
+        "sha256": "6adcf97531f4ca3cda155e206f159f4e8e2245d92b700dcae560d1a1ab6ac5a0",
+        "line_ranges": [
+          [
+            229,
+            240
+          ],
+          [
+            323,
+            340
+          ],
+          [
+            351,
+            361
+          ]
+        ],
+        "scope": "Pinned original native rollout, decode/execute/reward tensor/log schema."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\AgentGym-RL-82402a99c62a293735a3f412fb8ac9a600673bc0\\AgentGym-RL\\verl\\workers\\rollout\\schemas.py",
+        "sha256": "dee5b652bde4ad7178d0075f14c8c940910cf3236b5686be0737eae1f8992e9d",
+        "line_ranges": [
+          [
+            83,
+            111
+          ],
+          [
+            122,
+            150
+          ]
+        ],
+        "scope": "Pinned original assistant retokenization and observation mask."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\AgentGym-d014732d9fe39b975c368c03749bfd50950067f6\\agentenv\\agentenv\\envs\\textcraft.py",
+        "sha256": "7fa7986b37bb589c61c2b3c78ddca9ce580a4ebff88054f1c095f8ff844383fb",
+        "line_ranges": [
+          [
+            85,
+            106
+          ]
+        ],
+        "scope": "Pinned original Action parser and native service client."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\AgentGym-d014732d9fe39b975c368c03749bfd50950067f6\\agentenv-textcraft\\agentenv_textcraft\\env_wrapper.py",
+        "sha256": "8e40a8cc6261663172fd61b59ea9796b9476c4d65f4bb083532ce8417cf26b2c",
+        "line_ranges": [
+          [
+            37,
+            45
+          ]
+        ],
+        "scope": "Pinned original env state dispatch and response payload."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\AgentGym-d014732d9fe39b975c368c03749bfd50950067f6\\agentenv-textcraft\\agentenv_textcraft\\environment.py",
+        "sha256": "541d2f23fb51a71d5faf80c6c2c5b057456bb21901c6ef9ead99760a2071e570",
+        "line_ranges": [
+          [
+            10,
+            20
+          ],
+          [
+            22,
+            99
+          ]
+        ],
+        "scope": "Pinned original inventory/recipe/goal state transitions and reward."
+      }
+    ],
+    "sampled_artifact": {
+      "raw": "EngineTransport records output.batch.responses[:owner_response_length] as output_ids, original prompt_ids and DataProto data.",
+      "native_training": "Original AgentGym decodes with skip_special_tokens=True, then original RolloutHandler re-encodes assistant content and appends its suffix. RecordedHandler retains native_prompt_ids/native_response_ids/start/end from the original action mask. Raw sampled IDs and native training IDs are distinct preserved artifacts; equality is not assumed.",
+      "identities": [
+        "traj_uid",
+        "env_step",
+        "source_index",
+        "dt_response_slices(source_index,start,length)",
+        "native dataset item_id in handler"
+      ]
+    },
+    "official_call_path": [
+      "raw response IDs -> original tokenizer.decode(skip_special_tokens=True) -> content",
+      "original env_client.step(content) -> one Action: line via regex; >1 Action returns official reward=0/done=False",
+      "original normalization -> _post(step, {action})",
+      "TextCraft_Wrapper.step(env_id,action) -> existing TextCraftEnv.step(action)",
+      "official state transition validates recipe/inventory/item; goal item produced or acquired -> reward1/doneTrue; otherwise original reward0",
+      "original native rollout score becomes final handler score and scores tensor at final valid response position; bridge renames exact tensor rm_scores"
+    ],
+    "reward_triggering_object": {
+      "execution_payload": "Original normalized action string, not a synthetic reward-category label or an arbitrary final answer suffix.",
+      "state": [
+        "inventory",
+        "crafting_tree",
+        "goal",
+        "current environment instance / dataset task"
+      ],
+      "scorer_result_fields": [
+        "observation",
+        "reward",
+        "done"
+      ],
+      "conditional_span_scope": "Given the complete native pre-action state, the full emitted assistant content passed to the original client determines its official parsed action and this immediate step reward. The command string alone without that state does not determine reward. One isolated terminal response is not the whole future generated outcome for an earlier action."
+    },
+    "recorded_evidence": {
+      "service_receipt": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-fresh-entry-readonly-20261007\\fresh-row-prefix-v2\\deployment\\service-formal-log-1791337179-readonly.json",
+        "sha256": "c7bc8c415ad5f365af12a55658eef6dc2bee09342f2f6116682e9da1dcd22d5a"
+      },
+      "original_log": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-fresh-row-prefix-20261007-v2/official-textcraft-service.log",
+        "bytes_at_read": 338002,
+        "sha256_read_prefix": "d6356d8e35f3d704a4b6168867795e9cb942ca2134da9d7ef14899f74ebf4d7b",
+        "mtime_unix": 1791336984.353311,
+        "line_count": 8312
+      },
+      "formal_sample": {
+        "reset_count": 256,
+        "reset_environment_id_range": [
+          2,
+          257
+        ],
+        "step_count": 3236,
+        "ready_environment_id_excluded": 0
+      },
+      "service_log_scope": "Confirms original parsed actions / env IDs were executed. It does not persist raw generation IDs or every reward result in this receipt.",
+      "in_memory_exact_fields": [
+        "self.records[].output_ids",
+        "self.records[].prompt_ids",
+        "self.records[].data",
+        "native_prompt_ids",
+        "native_response_ids",
+        "start",
+        "end",
+        "self.handlers",
+        "self.credit_responses",
+        "dt_response_slices"
+      ],
+      "owner_optional_disk_schema": "Original rollout writes item_id/conversations/reward to rollout_log_dir/stepN/rank.json when global_steps is truthy. This review did not confirm a current emitted full rollout file or full raw-ID dump.",
+      "parsed_subspan_offsets": "No current bridge/source field was found recording the Action parser match offsets back to sampled token IDs. Native full-response boundaries are recorded; parsed command token offsets are not confirmed."
+    }
+  },
+  "AppWorld": {
+    "pinned_LOOP_commit": "f14107a976e5793990329d3193df4742076c5a1d",
+    "actual_adapter": {
+      "remote_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/entry/loop_owner_rollout.py",
+      "sha256": "01eca1bf47f8228060cd4bcda2cab424a69bdb865f5d3dc23297bfc66f828ef7",
+      "line_ranges": [
+        [
+          156,
+          188
+        ],
+        [
+          196,
+          221
+        ]
+      ],
+      "local_saved_source_container": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actor-workload-source-readonly.json",
+        "sha256": "a497628fafd6ef91c34fb99bd2c77a4820844fc839a7ba84579b43dc6df5bb63"
+      }
+    },
+    "sources": [
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop\\phi_agents\\agent\\minimal_vllm_react_agent.py",
+        "sha256": "b53fe9766e9383d9700fc00a3cca077102c2f15c50e62661237c2b4e34a60bb0",
+        "line_ranges": [
+          [
+            382,
+            393
+          ]
+        ],
+        "scope": "Pinned native generation -> PolicyMessage -> original extractor."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop\\phi_agents\\utils\\appworld.py",
+        "sha256": "b71884a4f57b412cfd8d58abb61e16356cc905ea5930858647da41f5b9bb1b47",
+        "line_ranges": [
+          [
+            72,
+            97
+          ]
+        ],
+        "scope": "Pinned original extractor; may concatenate multiple Python code blocks / partial last block."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop\\phi_agents\\evals\\appworld_evals.py",
+        "sha256": "d51913602b21a26702055670e72ed155cf24f0894b478e6eeb33e74451182435",
+        "line_ranges": [
+          [
+            43,
+            65
+          ],
+          [
+            113,
+            139
+          ],
+          [
+            253,
+            312
+          ]
+        ],
+        "scope": "Pinned episode loop, environment execute/evaluate and original Episode metadata."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop\\phi_agents\\rl\\appworld_scenario_runner.py",
+        "sha256": "df8481f10f3bda5737160d159763189867ce73ea623a4b464cf899f2d9469eac",
+        "line_ranges": [
+          [
+            128,
+            175
+          ]
+        ],
+        "scope": "Pinned official return calculation and AppWorldTrainingRollout."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop\\phi_agents\\rl\\type_defs.py",
+        "sha256": "49f8954d42eb6b1addcc5ad4ced7c523c7c7e420aa93af1bdaa48067b9a034b3",
+        "line_ranges": [
+          [
+            144,
+            177
+          ],
+          [
+            244,
+            257
+          ],
+          [
+            299,
+            324
+          ]
+        ],
+        "scope": "Pinned original PolicyMessage / PolicyTokenInfo / TrainingRollout artifacts."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop\\phi_agents\\evals\\appworld_rollout_data.py",
+        "sha256": "4b2a7368025d7f9d6f6f609abd4519eb3cde04c9fb7b1875986c84f0b1412ea2",
+        "line_ranges": [
+          [
+            29,
+            57
+          ]
+        ],
+        "scope": "Pinned original task/eval_result/dataset/count metadata."
+      },
+      {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\ml-loop\\phi_agents\\appworld\\interface.py",
+        "sha256": "c673a2bf0b71aab76b69374385d609ee51bca3e645c2b58c4fcc3ab6b0c53079",
+        "line_ranges": [
+          [
+            73,
+            79
+          ],
+          [
+            296,
+            312
+          ],
+          [
+            322,
+            335
+          ],
+          [
+            358,
+            361
+          ]
+        ],
+        "scope": "Original LOOP file bytes. Current readiness-patched imported interface SHA is separately recorded, so these original line numbers are not claimed to be current patched-file line numbers."
+      }
+    ],
+    "current_interface_scope": {
+      "recorded_actual_SHA": "17adc301aae395b789b5528abc167fd025b6cbb22379e954c600ed586987610e",
+      "original_SHA": "c673a2bf0b71aab76b69374385d609ee51bca3e645c2b58c4fcc3ab6b0c53079",
+      "root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-loop-readiness-20261006-v1/loop-owner",
+      "limitation": "This local review has original interface source plus current runtime bindings; no assertion that the entire current patched interface bytes were newly imported/read in this review."
+    },
+    "official_call_path": [
+      "original llm.generate(messages) -> PolicyMessage(content,prompt_tokens,generated_tokens,generated_token_logprobs)",
+      "native agent appends that exact message -> extract_code_format_output(msg.content)",
+      "original extractor concatenates Python/py fenced code blocks, permits partial final block -> code string",
+      "native episode calls world.execute(code); returned observation becomes subsequent history; task_completed controls stop",
+      "after episode end original world.evaluate() returns AppWorldTaskEvalResult; no generated text argument is supplied to evaluate",
+      "official scenario converts success or len(passes)/num_tests minus configured penalties into rollout.ret; original actor bridge places that exact ret in rm_scores"
+    ],
+    "reward_triggering_object": {
+      "execution_payload": "Original extracted code string from the actual generated PolicyMessage; possibly multiple disjoint text fragments combined by the original parser.",
+      "evaluation_payload": "Current AppWorld task/world state reached by original execute calls; native evaluate consumes no final-answer or reward-label text.",
+      "original_return_object_fields": [
+        "success",
+        "difficulty",
+        "num_tests",
+        "passes",
+        "failures",
+        "num_interactions"
+      ],
+      "attached_metadata_fields": [
+        "task",
+        "dataset_name",
+        "n_execution_failed",
+        "n_no_code_found"
+      ],
+      "training_configuration_source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\owner_environment_configs.json",
+        "sha256": "69af7f858cd25f2f76f8ccc4c6831d0e9eb51dc072817489257bcb84cd0faafd",
+        "line_ranges": [],
+        "scope": "Current runtime binds this exact configuration SHA; training env sparse_reward=False and both error penalties=0."
+      },
+      "conditional_span_scope": "A full sampled PolicyMessage plus complete native pre-execution state supplies the original execution input; the resulting native world state is what is evaluated. The source does not establish that a single final generated text span by itself determines all episode test results. No new world simulator is required or proposed by this factual mapping."
+    },
+    "recorded_artifacts": {
+      "native_policy_message": [
+        "content",
+        "prompt_tokens",
+        "generated_tokens",
+        "generated_token_logprobs",
+        "stopped_by_max_tokens_limit"
+      ],
+      "native_full_trajectory": [
+        "policy_token_info.tokens",
+        "policy_token_info.is_output",
+        "policy_token_info.log_probs",
+        "messages",
+        "ret",
+        "appworld_rollout_data.eval_result"
+      ],
+      "current_bridge": [
+        "completion_requests(key,start,length)",
+        "records[key].batch.responses",
+        "records[key].non_tensor_batch",
+        "traj_uid",
+        "env_step",
+        "appworld_num_tests",
+        "dt_response_slices(source_index,start-1,length)"
+      ],
+      "alignment_assertions": "Actual adapter lines209-213 asserts each retained completion response equals the corresponding native trajectory token slice and that slice is an action mask.",
+      "state_records": "Original interface keeps task_id, experiment_name and executed_code tuple in memory; native Episode.asdict can serialize PolicyMessage token fields and eval_result. Current full Episode JSON/raw-ID dump persistence was not confirmed in this review.",
+      "parsed_subspan_offsets": "Original extractor returns code text only. No official parsed-code char/token offsets back to the PolicyMessage generated_tokens are recorded in the inspected interface. Existing completion_requests offsets are whole response offsets, not parsed code-block token offsets."
+    },
+    "existing_installed_environment_source_evidence": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-eval-client-routing-20261005\\deployment\\actual-appworld-execute-contract-20261006.json",
+      "sha256": "7650aaf01c72ba893fe92900830f16bfc0a57aafbe3307860318f2ddd034fb15"
+    }
+  },
+  "DT_target_interface_and_current_proxy": {
+    "target_owner": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\native-representation-candidate\\candidate\\qwen35_answer_finite.py",
+      "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+      "line_ranges": [
+        [
+          15,
+          43
+        ],
+        [
+          55,
+          57
+        ],
+        [
+          186,
+          195
+        ]
+      ],
+      "scope": "Current accepted DT target owner d47333ea: exact case target_ids, explicit selected offsets, causal target positions, full-vocabulary mode when outcome_token_ids=None."
+    },
+    "current_readout": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-official-whitening-20261006\\v1\\accepted-reward-readout-94a7afbc.py",
+      "sha256": "94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b",
+      "line_ranges": [
+        [
+          79,
+          90
+        ],
+        [
+          132,
+          146
+        ],
+        [
+          209,
+          228
+        ],
+        [
+          280,
+          287
+        ]
+      ],
+      "scope": "Current actual reward readout94a selects a manually assigned single-token return category and appends a forecast query; it restricts outcome normalization to the category alphabet."
+    },
+    "factual_difference": "The current 94a target is labels[observed_return], newly encoded from the reward alphabet, not a sampled assistant/action/code token span or a native verifier-consumed textual artifact. The DT target interface can accept explicit actual target_ids/offsets; the existing proxy construction does not use the actual sampled verifier-triggering IDs as its target.",
+    "not_claimed": [
+      "A done flag is itself a sampled DT target",
+      "A reward scalar string or synthetic category label is the official environment execution payload",
+      "An arbitrary final response fragment alone is the complete reward-determining generated outcome",
+      "Actual observation O tokens are policy actions or receive an actor ratio",
+      "Native full-response offsets supply parsed Action/code-block token offsets"
+    ]
+  }
+}

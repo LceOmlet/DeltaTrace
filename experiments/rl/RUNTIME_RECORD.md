@@ -1,5 +1,54 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 10:22 辅助标签两组已停止；目标自身删除边界按用户新澄清分析
+
+TextCraft PID3327460/birth1791334993.84、AppWorld PID2360541/birth1791325655.01
+已通过原resume_at_native_checkpoint.py的stop-only生命周期停止，两个原进程树
+均无剩余非zombie进程。原环境/采样/算法/DT源码未替换，没有提交替代训练，
+也没有创建、导出或恢复检查点。TextCraft停止前最后已读原进度1/330（首轮3342.758秒，
+gen1850.655、DT723.082、actor502.406秒），原保存marker尚不存在；AppWorld原
+进度2/200、第三轮DT，既有marker2只读保留，未因此宣称该实验语义正确。
+
+原停止助手默认要求等待完成检查点，第一次在TextCraft缺少marker时拒绝且零signal；
+随后stop descriptor遗漏source中owner_head_sha256的.deltatrace-patch.lock条目，原source guard
+再次拒绝且零signal。两次失败材料保留；最后v2 descriptor合并原两份源码映射、
+验证重叠项相等后复用同一助手。仅在该本地生命周期owner增加显式
+--stop-only --stop-now：不等待/创建/恢复检查点，原PID-birth、source和所属树保护
+保留；无新flag时默认路径不变。原CPU真实父子进程测试20passed（9.31秒），
+只证明生命周期，不是训练数值验证。实际助手SHAb5be347a4ba7deb2f02b7c892f375642b91d4992290d64f1d7b7c2659b211f0f。
+
+终态回执direct-target-semantics-20261007/terminal-state.json已与远端active-training、
+formal-training、active-source状态对齐；10:22原mx-smi显示GPU0–7均无进程、各858MiB。
+原备份独立PID3591046/birth1791337520.95身份一致且仍存活，未重复启动；存活不等于
+restic完成或校验通过。原训练输出和source记录保留。
+
+用户本轮进一步明确：真实action target自身的token删除后，该literal结果的反事实
+概率按定义为0。该直接信用项与目标之前source的DT归因须区分；本轮尚未修改PLAN、
+Q/V代码或发布新信用版本，不能把已停止的标签实验当成新接法验收。
+
+## 2026-10-07 10:06 实际奖励目标审计：当前辅助标签不是官方执行输入
+
+用户本轮明确关注实际 LLM 生成、经原环境执行/验证并产生奖励的 target span。
+核对当前 reward_readout.py SHA94a7afbc09da72b62572d31fd32a6534f6e8f3daf656fce1011cdfa68b3c3e2b：
+132–145追加 Future cumulative return forecast 询问，209–216按实际累计回报选取
+人为类别标签，284–287走类别子集归一化。这是在估计新增预测任务的标签概率，
+不是评分官方环境实际执行的生成结果；两种概率尚无等价证明。原DT算子容差、
+归因守恒或优势白化均不构成这层目标语义的验收。
+
+原TextCraft调用链是采样assistant→官方Action解析→原库存/配方/目标状态转移→奖励；
+原AppWorld调用链是PolicyMessage→官方代码提取→world.execute→world.evaluate→
+原测试通过比例。不能用任意final文本代替被验证的执行结果。两个桥已保留完整
+response边界；TextCraft原始采样IDs与原handler重编码后的训练IDs是不同的已有
+artifact，均有记录，不假定逐token相同。解析后子片段的token offsets及当前完整
+原始IDs磁盘dump未确认。原PackedAnswerTargets默认全词表分支支持真实target IDs，
+但这只证明评分接口存在，不证明替换target后所有action-token Q/V均已闭合。
+
+具体owner版本、实际源码SHA/行号与已有artifact字段见
+results_direct_target_owner_mapping_20261007.json（SHAe5be308a9705d375af746f11414260c330cf8644f3e0ccd4cbd484a5f61fba41）。
+本次仅本机只读源码审计与事实记录，零环境/模型/GPU调用，未改PLAN、算法或部署，
+未停止/重启TextCraft GPU2/3和AppWorld GPU4/5。两组现有运行仍是辅助标签目标，
+不得将其结果报告为“实际生成结果触发验证奖励”的直接target实验。
+
 
 ## 2026-10-07 09:47 TextCraft首轮DT、AppWorld2/200；备份已越过旧断线窗口
 

@@ -5,6 +5,8 @@ identified process tree, then calls the existing submission helper. VERL owns
 checkpoint creation, dataloader state, loading and all training behavior.
 --stop-only preserves the latest completed native checkpoint and does not
 submit another job. It cannot be combined with --reuse-loaded-checkpoint.
+--stop-only --stop-now stops without waiting for, creating or restoring a
+checkpoint. An existing completion marker is recorded without validation.
 """
 import argparse
 import hashlib
@@ -24,9 +26,13 @@ def main():
     parser.add_argument('--receipt',required=True)
     parser.add_argument('--stop-only',action='store_true',
                         help='Stop only the current prepared task after its latest native checkpoint; do not resubmit.')
+    parser.add_argument('--stop-now',action='store_true',
+                        help='Only with --stop-only: stop now without waiting for, creating or restoring a checkpoint.')
     parser.add_argument('--reuse-loaded-checkpoint',action='store_true',
                         help='Use the originally loaded complete checkpoint only while its next training rollout is still unfinished.')
     args=parser.parse_args()
+    if args.stop_now and not args.stop_only:
+        parser.error('--stop-now requires --stop-only; no checkpoint is restored or job submitted')
     if args.stop_only and args.reuse_loaded_checkpoint:
         parser.error('--stop-only cannot use --reuse-loaded-checkpoint; preserve the latest native checkpoint instead')
     if not args.stop_only and args.run_dir is None:
@@ -75,10 +81,29 @@ identity=dict(task=task,prior_driver_pid=parent.pid,prior_created_unix=parent.cr
     minimum_checkpoint_step=@STEP@,started_unix=time.time())
 if @STOP_ONLY@:
     identity.update(stop_only=True,current_source=current_source)
-(receipt/'waiting.json').write_text(json.dumps(dict(identity,status='waiting_original_checkpoint',
+(receipt/'waiting.json').write_text(json.dumps(dict(identity,status=('stopping_without_checkpoint_wait' if @STOP_NOW@ else 'waiting_original_checkpoint'),
     observer_pid=psutil.Process().pid,observer_created_unix=psutil.Process().create_time()),indent=2)+'\n')
 phase=None
-if @REUSE_LOADED@:
+if @STOP_NOW@:
+    assert parent.is_running() and parent.status()!=psutil.STATUS_ZOMBIE, 'Original job exited before stopping'
+    current=next(j for j in read(root/'active-training.json')['jobs'] if j['task']==task)
+    assert current['pid']==parent.pid and current['observed_process_created_unix']==old['observed_process_created_unix']
+    marker=Path(old['checkpoints'])/'latest_checkpointed_iteration.txt'
+    try:marker_bytes=marker.read_bytes()
+    except FileNotFoundError:marker_bytes=None
+    step=None
+    if marker_bytes is not None:
+        try:step=int(marker_bytes.decode().strip())
+        except (UnicodeDecodeError,ValueError):pass
+    checkpoint=None if step is None else marker.parent/f'global_step_{step}'
+    record=dict(identity,stop_now=True,checkpoint=None if checkpoint is None else str(checkpoint),
+        marker_step=step,marker_path=str(marker),
+        marker_sha256=None if marker_bytes is None else hashlib.sha256(marker_bytes).hexdigest(),
+        marker_text=None if marker_bytes is None else marker_bytes.decode(errors='replace'),
+        reused_loaded_checkpoint=False,unfinished_rollout_phase=None,checkpoint_files={},
+        checkpoint_observed_unix=time.time(),
+        checkpoint_observation_scope='Existing marker only, if present; no completion validation, waiting, checkpoint creation or restore. No minimum-step condition is applied in stop-now mode.')
+elif @REUSE_LOADED@:
     loaded=Path(old['resume_from'])
     marker=loaded.parent/'latest_checkpointed_iteration.txt'
     step=int(marker.read_text().strip())
@@ -112,14 +137,15 @@ else:
         except (FileNotFoundError,ValueError):step=-1
         if step>=@STEP@:break
         time.sleep(1)
-checkpoint=marker.parent/f'global_step_{step}'
-files=[checkpoint/'data.pt']+[checkpoint/'actor'/f'{kind}_world_size_2_rank_{rank}.pt'
-    for rank in range(2) for kind in ('model','optim','extra_state')]
-assert all(p.is_file() and p.stat().st_size for p in files), 'Incomplete native checkpoint; job not stopped'
-record=dict(identity,checkpoint=str(checkpoint),marker_step=step,marker_sha256=sha(marker),
-    reused_loaded_checkpoint=@REUSE_LOADED@,unfinished_rollout_phase=phase,
-    checkpoint_files={str(p.relative_to(checkpoint)):p.stat().st_size for p in files},
-    checkpoint_observed_unix=time.time())
+if not @STOP_NOW@:
+    checkpoint=marker.parent/f'global_step_{step}'
+    files=[checkpoint/'data.pt']+[checkpoint/'actor'/f'{kind}_world_size_2_rank_{rank}.pt'
+        for rank in range(2) for kind in ('model','optim','extra_state')]
+    assert all(p.is_file() and p.stat().st_size for p in files), 'Incomplete native checkpoint; job not stopped'
+    record=dict(identity,checkpoint=str(checkpoint),marker_step=step,marker_sha256=sha(marker),
+        reused_loaded_checkpoint=@REUSE_LOADED@,unfinished_rollout_phase=phase,
+        checkpoint_files={str(p.relative_to(checkpoint)):p.stat().st_size for p in files},
+        checkpoint_observed_unix=time.time())
 processes=[parent]+parent.children(recursive=True)
 record['processes']=[dict(pid=p.pid,created_unix=p.create_time(),name=p.name()) for p in processes]
 # Another authorized transition may have happened while this observer waited.
@@ -148,13 +174,14 @@ for name,(pid,created) in other.items():
 record['other_jobs_observation_scope']='Identity observations across this stop only; another task exiting or restarting does not prevent this task from resuming.'
 (receipt/'completed-stop.json').write_text(json.dumps(record,indent=2)+'\n')
 assert not remaining, 'Recorded job has remaining processes; no new job submitted'
-print(json.dumps(dict(task=task,checkpoint=str(checkpoint),marker_step=step,stopped_driver=parent.pid)),flush=True)
+print(json.dumps(dict(task=task,checkpoint=None if checkpoint is None else str(checkpoint),marker_step=step,stopped_driver=parent.pid)),flush=True)
 PY
 '''.replace('@ENTRY@',ENTRY).replace('@ROOT@',ROOT).replace('@TASK@',repr(args.task))
        .replace('@PREPARED@',repr(args.prepared)).replace('@RECEIPT@',repr(args.receipt))
        .replace('@REVISION@',repr(revision)).replace('@SCRIPT_SHA@',repr(script_sha))
        .replace('@REUSE_LOADED@',repr(args.reuse_loaded_checkpoint))
        .replace('@STOP_ONLY@',repr(args.stop_only))
+       .replace('@STOP_NOW@',repr(args.stop_now))
        .replace('@STEP@',str(args.minimum_step)))
     target=AUDIT/'checkpoint-boundary-20261002';target.mkdir(exist_ok=True)
     stop_file=target/(args.task.lower()+'-'+Path(args.receipt).name+'-completed-stop.json')

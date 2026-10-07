@@ -1,0 +1,141 @@
+{
+  "scope": "Existing fresh original-owner rollout dumps: two first-line instances only, no new sampling or logger/parser. Exact decoded text artifacts, not reconstructed raw token IDs.",
+  "observed_utc": "2026-10-07T02:13:48.634812+00:00",
+  "operations": {
+    "metadata_listing_SSH": 1,
+    "read_existing_instances_SSH": 1,
+    "earlier_failed_shell_python_command": 1,
+    "environment_API": 0,
+    "model_calls": 0,
+    "GPU_calls": 0,
+    "worker_RPC": 0,
+    "tests": 0,
+    "checkpoint_operations": 0,
+    "production_changes": 0
+  },
+  "listing": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-owner-mapping-20261007\\fresh-original-dump-list-readonly.json",
+    "sha256": "bdce653c0314472c47f17f050201ceecfeeb5f9f131519813f7b07b1a730f179"
+  },
+  "instances": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-owner-mapping-20261007\\fresh-original-rollout-instances-readonly.json",
+    "sha256": "9f1585ec26876710b6206a0c96f338f1ae19e41b36b9e846e60233f9b3211613"
+  },
+  "TextCraft": {
+    "original_instance": {
+      "task": "TextCraft",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-fresh-row-prefix-20261007-v2/textcraft-dt/rollouts/1.jsonl",
+      "source_bytes": 3700654,
+      "source_sha256": "027130ef38396c1e103439be43a3f999961cffa9c8c3c69ef505f4a6d160fb16",
+      "line_number": 1,
+      "line_bytes": 12582,
+      "line_sha256": "8ee0d438e48514a7546da360a40a77fa83b5f62920b2a73d79c2edbbbe2f27fc"
+    },
+    "schema_keys": [
+      "input",
+      "output",
+      "score",
+      "step"
+    ],
+    "score": 1.0,
+    "step": 1,
+    "verbatim_output_tail": "4 string\nassistant\n<think>\n\n</think>\n\nThought:\nI have 4 string.\nI can now craft 1 more white wool.\nAfter crafting, I will have 3 white wool and 4 warped planks.\nThen I can craft the white bed.\n\nAction:\ncraft 1 white wool using 4 string\nuser\nCrafted 1 minecraft:white_wool\nassistant\n<think>\n\n</think>\n\nThought:\nI have 3 white wool and 4 warped planks.\nRecipe for white bed: \"craft 1 white bed using 3 white wool, 3 planks\".\nI have:\n- 3 white wool (matches requirement)\n- 4 warped planks (I can use 3 of these as \"planks\")\n\nI can now craft the white bed.\n\nAction:\ncraft 1 white bed using 3 white wool, 3 warped planks\nuser\nCrafted 1 minecraft:white_bed",
+    "actual_execution_text": "craft 1 white bed using 3 white wool, 3 warped planks",
+    "actual_observation": "Crafted 1 minecraft:white_bed",
+    "supported": "The original decoded trajectory includes the assistant Action, following official observation and native score1 in one emitted record.",
+    "not_in_this_record": [
+      "raw sampled IDs",
+      "native training IDs",
+      "traj_uid",
+      "item_id",
+      "service env_id",
+      "pre-action snapshot/state identity",
+      "structured parser output",
+      "parsed action token offsets",
+      "individual step reward array"
+    ],
+    "state_scope": "The preceding native trajectory text is retained in output, including earlier commands/observations; it is not a full environment snapshot or a state-ID record. No service env_id is inferred from this unrelated row index."
+  },
+  "AppWorld": {
+    "original_instance": {
+      "task": "AppWorld",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-fresh-row-prefix-20261007-v1/appworld-dt/rollouts/2.jsonl",
+      "source_bytes": 9788315,
+      "source_sha256": "d2f247e213f05638a497e52ccda230efad2bdad7dd89ec817c6509104c12a20d",
+      "line_number": 1,
+      "line_bytes": 46904,
+      "line_sha256": "6c2700512f9fd49e91ae84594599d6a73241d8578e7b39323e951455406bd66f"
+    },
+    "schema_keys": [
+      "input",
+      "output",
+      "score",
+      "step"
+    ],
+    "score": 1.0,
+    "step": 2,
+    "verbatim_output_tail": "ny playlists, they passed the number. Here, the task is to perform an action. So maybe just pass the answer as empty.\n\nHowever, in the example where the task was to return information, they passed the answer. For action tasks, maybe just call without any argument. Let me proceed with completing the task without an answer argument.\n</think>\n\nThe error message indicates that 13 artists are already being followed, and the remaining 4 may need special handling. However, since the main action of attempting to follow all artists has been executed, I'll complete the task now.\n\n```python\napis.supervisor.complete_task()\n```\nuser\nExecution successful.\n",
+    "actual_generated_code_text": "apis.supervisor.complete_task()",
+    "actual_observation": "Execution successful.",
+    "supported": "One original decoded full trajectory contains actual generated Python blocks and original returned observations, with episode score1. The ending complete_task block is a sampled execution artifact; world.evaluate scores state after the whole execution history.",
+    "not_supported": "The episode score1 does not prove that the final complete_task block alone produced all credit or independently determines the evaluator result.",
+    "not_in_this_record": [
+      "raw sampled IDs",
+      "PolicyMessage.generated_tokens",
+      "task_id",
+      "experiment_name",
+      "completion request key",
+      "pre-action state identity",
+      "structured parsed code",
+      "parsed code token offsets",
+      "eval_result.passes",
+      "eval_result.failures",
+      "eval_result.num_tests"
+    ],
+    "state_scope": "The full decoded transcript is present, but no official pre-action state identifier/snapshot or structured evaluator object is persisted in these four JSON fields."
+  },
+  "original_logging_owner": {
+    "TextCraft_trainer": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-fresh-entry-readonly-20261007\\fresh-row-prefix-v2\\deployment\\reward-contract-current-sources\\ray_trainer.py",
+      "sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+      "line_ranges": [
+        [
+          658,
+          680
+        ],
+        [
+          1288,
+          1302
+        ]
+      ],
+      "sha_matches_current": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619"
+    },
+    "AppWorld_trainer": {
+      "remote_source_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/trainer/ppo/ray_trainer.py",
+      "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+      "saved_container": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\actor-workload-source-readonly.json",
+        "sha256": "a497628fafd6ef91c34fb99bd2c77a4820844fc839a7ba84579b43dc6df5bb63"
+      },
+      "line_ranges": [
+        [
+          658,
+          680
+        ],
+        [
+          1289,
+          1303
+        ]
+      ]
+    },
+    "config_switch": "trainer.rollout_data_dir truthy activates original dump after actor update.",
+    "representation": "Original tokenizer.batch_decode(prompts/responses, skip_special_tokens=True) creates input/output strings; token_level_scores.sum(-1) creates score; global_steps creates step. reward_extra_infos_dict fields are included only if existing values have batch length.",
+    "no_raw_token_ids": "The original dump does not automatically write batch token IDs, traj_uid, parsed action/code, state snapshots or eval_result. The actual two records contain exactly input/output/score/step.",
+    "other_existing_interfaces": {
+      "AgentGym_RL": "Pinned native vllm_rollout.py194,328-340: prompts.meta_info.global_steps truthy writes item_id/conversations/reward to rollout_log_dir/stepN/rank.json. This bridge call has not been proven to supply that optional global_steps key; no current emitted native AgentGym file was found in the bounded output listing.",
+      "LOOP": "Pinned original Episode.asdict/save (appworld_evals.py124-139) serializes PolicyMessage dictionaries and eval_result. PolicyMessage.asdict (type_defs.py168-177) includes generated_tokens/prompt_tokens/logprobs. These are existing owner interfaces; current bridge does not call Episode.save, and no emitted Episode JSON was found in the bounded fresh output listing.",
+      "LOOP_HTML": "Pinned original train.py1217-1243 calls original log_appworld_rollouts_html only under log_html; appworld_rollout_data.py231-257 writes selected examples to wandb. This is an original LOOP trainer path, not evidence it ran in current VERL integration."
+    }
+  },
+  "conclusion": "Actual verifier-related execution text and returned observations are now confirmed in original fresh dumps. A closed persisted raw-token-ID/parser-output/pre-state/evaluator-object instance is still absent from the inspected records. Existing in-memory native artifacts retain more information, as the earlier mapping receipt records. No new logging or parser is proposed or installed."
+}

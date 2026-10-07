@@ -26,7 +26,7 @@ OLD_REVISION = 'e87c5935a781a4bb7a91a97b173cdf1d612e4204'
 FLAGS = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 
-def generated_python(source, root, *, stop_only=False):
+def generated_python(source, root, *, stop_only=False, stop_now=False):
     """Capture the actual main() output without contacting a server."""
     fixture_source = root / 'observer-source.py'
     fixture_source.write_text(source, encoding='utf8')
@@ -47,6 +47,8 @@ def generated_python(source, root, *, stop_only=False):
                 '--prepared', str(root / 'prepared.json'),
                 '--receipt', str(root / 'receipt')]
     sys.argv += ['--stop-only'] if stop_only else ['--run-dir', str(root / 'run')]
+    if stop_now:
+        sys.argv += ['--stop-now']
     try:
         with pytest.raises(Captured):
             namespace['main']()
@@ -56,7 +58,7 @@ def generated_python(source, root, *, stop_only=False):
     return captured[0].split("<<'PY'\n", 1)[1].split('\nPY\n', 1)[0]
 
 
-def run_observer_case(root, source, event, *, stop_only=False):
+def run_observer_case(root, source, event, *, stop_only=False, stop_now=False):
     if psutil is None:
         pytest.skip('Existing process-lifecycle tests require provisioned psutil; no replacement or installation is used')
     root.mkdir()
@@ -127,21 +129,32 @@ def run_observer_case(root, source, event, *, stop_only=False):
             prepared['entry_sha256']['fixture.py'] = '0' * 64
         (root / 'prepared.json').write_text(json.dumps(prepared))
         checkpoint = root / 'checkpoints/global_step_1'
-        (checkpoint / 'actor').mkdir(parents=True)
-        files = [checkpoint / 'data.pt'] + [checkpoint / 'actor' / f'{kind}_world_size_2_rank_{rank}.pt'
-                 for kind in ('model', 'optim', 'extra_state') for rank in range(2)]
-        for file in files:
-            file.write_bytes(b'CPU metadata fixture, not a PyTorch checkpoint')
-        if event == 'incomplete':
-            files[-1].write_bytes(b'')
+        files = []
+        if not (stop_now and event == 'no_checkpoint'):
+            (checkpoint / 'actor').mkdir(parents=True)
+            files = [checkpoint / 'data.pt'] + [checkpoint / 'actor' / f'{kind}_world_size_2_rank_{rank}.pt'
+                     for kind in ('model', 'optim', 'extra_state') for rank in range(2)]
+            for file in files:
+                file.write_bytes(b'CPU metadata fixture, not a PyTorch checkpoint')
+            if event == 'incomplete':
+                files[-1].write_bytes(b'')
+            if stop_now:
+                # Below minimum-step and incomplete metadata must not delay a
+                # stop-now. The original marker is only recorded, never changed.
+                (root / 'checkpoints/latest_checkpointed_iteration.txt').write_text('0')
 
-        code = generated_python(source, root, stop_only=stop_only)
+        def checkpoint_inventory():
+            return {p.relative_to(root / 'checkpoints').as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+                    for p in (root / 'checkpoints').rglob('*') if p.is_file()}
+
+        checkpoints_before = checkpoint_inventory()
+        code = generated_python(source, root, stop_only=stop_only, stop_now=stop_now)
         observer = subprocess.Popen([sys.executable, '-X', 'utf8', '-c', code],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                     text=True, encoding='utf8', creationflags=FLAGS)
         tracked.append((observer.pid, psutil.Process(observer.pid).create_time()))
         replacement = None
-        if event not in ('wrong_source', 'wrong_current_source', 'wrong_birth'):
+        if not stop_now and event not in ('wrong_source', 'wrong_current_source', 'wrong_birth'):
             until = time.monotonic() + 8
             while not (root / 'receipt/waiting.json').exists():
                 assert observer.poll() is None and time.monotonic() < until
@@ -160,6 +173,8 @@ def run_observer_case(root, source, event, *, stop_only=False):
                       own_alive=alive(own), child_alive=child.is_running(),
                       other_alive=alive(replacement or other),
                       checkpoint_files_preserved=all(file.is_file() for file in files),
+                      checkpoint_tree_unchanged=checkpoint_inventory() == checkpoints_before,
+                      checkpoint_root_exists=(root / 'checkpoints').exists(),
                       stopped=json.loads(stopped.read_text()) if stopped.exists() else None,
                       helper_source_sha256=hashlib.sha256(source.encode()).hexdigest(),
                       scope='CPU process lifecycle only; placeholder checkpoint metadata')
@@ -215,7 +230,8 @@ def test_stop_only_current_prepared_identity(tmp_path, event):
         assert result['stopped'] is None
 
 
-def test_stop_only_returns_without_submission(tmp_path, monkeypatch):
+@pytest.mark.parametrize('stop_now', [False, True])
+def test_stop_only_returns_without_submission(tmp_path, monkeypatch, stop_now):
     source = HELPER.read_text(encoding='utf8')
     namespace = {'__name__': 'observer_fixture', '__file__': str(HELPER)}
     exec(compile(source, str(HELPER), 'exec'), namespace)
@@ -232,12 +248,14 @@ def test_stop_only_returns_without_submission(tmp_path, monkeypatch):
                      subprocess=SimpleNamespace(check_output=lambda *a, **k: 'a' * 40,
                                                 run=fake_run))
     monkeypatch.setattr(sys, 'argv', ['observer_fixture', '--task', 'AppWorld', '--minimum-step', '20',
-                                    '--prepared', 'prepared.json', '--receipt', 'receipt', '--stop-only'])
+                                    '--prepared', 'prepared.json', '--receipt', 'receipt', '--stop-only',
+                                    *(['--stop-now'] if stop_now else [])])
     namespace['main']()
     assert len(scripts) == len(calls) == 1
 
 
-@pytest.mark.parametrize('flags', [[], ['--stop-only', '--reuse-loaded-checkpoint']])
+@pytest.mark.parametrize('flags', [[], ['--stop-only', '--reuse-loaded-checkpoint'], ['--stop-now'],
+                                  ['--stop-only', '--stop-now', '--reuse-loaded-checkpoint']])
 def test_checkpoint_observer_cli_rejects_invalid_modes(monkeypatch, flags):
     namespace = {'__name__': 'observer_fixture', '__file__': str(HELPER)}
     exec(compile(HELPER.read_text(encoding='utf8'), str(HELPER), 'exec'), namespace)
@@ -247,3 +265,27 @@ def test_checkpoint_observer_cli_rejects_invalid_modes(monkeypatch, flags):
     with pytest.raises(SystemExit) as failure:
         namespace['main']()
     assert failure.value.code == 2
+
+
+@pytest.mark.parametrize('event', ['no_checkpoint', 'incomplete', 'wrong_source',
+                                  'wrong_current_source', 'wrong_birth'])
+def test_stop_now_without_checkpoint_wait(tmp_path, event):
+    result = run_observer_case(tmp_path / 'current', HELPER.read_text(encoding='utf8'), event,
+                               stop_only=True, stop_now=True)
+    assert result['other_alive'] and result['checkpoint_tree_unchanged']
+    if event in ('no_checkpoint', 'incomplete'):
+        assert result['returncode'] == 0, result['stderr']
+        assert not result['own_alive'] and not result['child_alive']
+        stopped = result['stopped']
+        assert stopped['stop_only'] is True and stopped['stop_now'] is True
+        assert stopped['remaining_non_zombie'] == []
+        assert stopped['checkpoint_files'] == {} and stopped['reused_loaded_checkpoint'] is False
+        if event == 'no_checkpoint':
+            assert stopped['checkpoint'] is None and stopped['marker_sha256'] is None
+            assert stopped['marker_step'] is None and not result['checkpoint_root_exists']
+        else:
+            assert stopped['marker_text'] == '0' and stopped['marker_step'] == 0
+            assert stopped['marker_sha256'] == hashlib.sha256(b'0').hexdigest()
+    else:
+        assert result['returncode'] != 0 and result['own_alive'] and result['child_alive']
+        assert result['stopped'] is None
