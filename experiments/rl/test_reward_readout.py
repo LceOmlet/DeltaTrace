@@ -387,6 +387,7 @@ def test_actor_attention_and_training_mode_restored_after_finite_trace(fails, na
     actor.chunk_gated_delta_rule = original_fla
     producer = object.__new__(DeltaTraceRolloutProducer)
     producer.actor = actor
+    producer.direct_readout = None  # Existing production constructor's legacy-path state.
     producer.readout_options = {'task': 'Sokoban'}
     producer.native_fla_fp16 = native_fp16
     producer.runner = SimpleNamespace(model=SimpleNamespace(model=SimpleNamespace(language_model=actor)))

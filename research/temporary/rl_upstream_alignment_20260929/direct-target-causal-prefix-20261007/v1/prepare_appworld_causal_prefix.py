@@ -52,7 +52,7 @@ assert sha(candidate)=='@READOUT_SHA@'
 entry_hashes={name:sha(entry/name) for name in prior['entry_sha256']}
 changed=[name for name in entry_hashes if entry_hashes[name]!=prior['entry_sha256'][name]]
 assert changed==['reward_readout.py'],changed
-output=R/'runs/direct-target-causal-prefix-20261007-v1/appworld/appworld-dt'
+output=R/'runs/direct-target-causal-prefix-20261007-@VERSION@/appworld/appworld-dt'
 assert not output.exists()
 def remap(path):
  value=str(path);prefix=str(old_entry)
@@ -133,6 +133,7 @@ print(json.dumps(dict(status=receipt['status'],prepared=binding(base/'prepared.j
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--commit', required=True)
+    parser.add_argument('--version', choices=('v1', 'v2'), default='v1')
     args = parser.parse_args()
     assert re.fullmatch(r'[0-9a-f]{40}', args.commit)
     owner = AUDIT/'direct-target-head-memory-20261007/v2/prepare_appworld_head_memory.py'
@@ -145,12 +146,15 @@ def main():
     submit = AUDIT/'direct-target-semantics-20261007/submit_prepared_direct_targets.py'
     readout = stage.REPO/'experiments/rl/reward_readout.py'
     tests = stage.REPO/'experiments/rl/test_reward_readout.py'
-    out = stage.ROOT+'/candidates/direct-target-causal-prefix-20261007-v1'
-    bundle = HERE/'setup-source.tar'
+    results = HERE.parent/args.version
+    results.mkdir(parents=True, exist_ok=True)
+    out = stage.ROOT+'/candidates/direct-target-causal-prefix-20261007-'+args.version
+    bundle = results/'setup-source.tar'
     with tarfile.open(bundle, 'w') as archive:
         for path in (readout, tests, Path(__file__), submit):
             archive.add(path, arcname=path.name)
     replacements = {'@ROOT@':repr(stage.ROOT), '@OUT@':repr(out), '@COMMIT@':args.commit,
+        '@VERSION@':args.version,
         '@READOUT_SHA@':hashlib.sha256(readout.read_bytes()).hexdigest(),
         '@INSPECT_CODE@':repr(inspect_code), '@INSPECT_OWNER@':str(owner.resolve()).replace('\\','/'),
         '@INSPECT_OWNER_SHA@':hashlib.sha256(owner.read_bytes()).hexdigest()}
@@ -158,13 +162,13 @@ def main():
     for key,value in replacements.items(): code=code.replace(key,value)
     ast.parse(code)
     script = 'set -eu\nsource '+stage.ENTRY+'/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n'+code+'\nPY\n'
-    (HERE/'prepare-command.sh').write_text(script, encoding='utf-8')
+    (results/'prepare-command.sh').write_text(script, encoding='utf-8')
     subprocess.run(stage.SSH+['mkdir','-p',out+'/setup'],check=True)
     subprocess.run(stage.SCP+[str(bundle),stage.SSH[-1]+':'+out+'/setup-source.tar'],check=True)
     subprocess.run(stage.SSH+['tar','-xf',out+'/setup-source.tar','-C',out+'/setup'],check=True)
     result = subprocess.run(stage.SSH+['bash','-s'],input=script.encode(),capture_output=True,timeout=300)
-    (HERE/'prepare.stdout.json').write_bytes(result.stdout)
-    (HERE/'prepare.stderr.txt').write_bytes(result.stderr)
+    (results/'prepare.stdout.json').write_bytes(result.stdout)
+    (results/'prepare.stderr.txt').write_bytes(result.stderr)
     print(result.stdout.decode(errors='replace'))
     print(result.stderr.decode(errors='replace'))
     result.check_returncode()
