@@ -1,0 +1,164 @@
+{
+  "status": "readonly_original_optional_reward_metadata_fallback_confirmed",
+  "observed_source_unix": 1791337325.3565016,
+  "formal_driver": {
+    "pid": 3327460,
+    "source_sha256": "5faa6e2d9e7be2b2f55e8014d3b648b944d725bf912f76410633574b6b80fbb8",
+    "pid_birth": 1791334993.84
+  },
+  "source_records": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-fresh-row-prefix-20261007-v2/verl/verl/trainer/ppo/ray_trainer.py",
+      "name": "verl/trainer/ppo/ray_trainer.py",
+      "sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+      "local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-fresh-entry-readonly-20261007\\fresh-row-prefix-v2\\deployment\\reward-contract-current-sources\\ray_trainer.py",
+      "line_ranges": [
+        [
+          1147,
+          1160
+        ],
+        [
+          1193,
+          1201
+        ],
+        [
+          1210,
+          1232
+        ],
+        [
+          1238,
+          1253
+        ]
+      ],
+      "upstream_source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\ray_trainer.py",
+        "sha256": "69dab6ef8a0521704468c8158c6b19c782d5455da49a3a1582d4bcd6a2a51e30",
+        "same_file_bytes": false
+      }
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-fresh-row-prefix-20261007-v2/verl/verl/trainer/ppo/reward.py",
+      "name": "verl/trainer/ppo/reward.py",
+      "sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+      "local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-fresh-entry-readonly-20261007\\fresh-row-prefix-v2\\deployment\\reward-contract-current-sources\\reward.py",
+      "line_ranges": [
+        [
+          102,
+          121
+        ]
+      ],
+      "upstream_source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\reward.py",
+        "sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+        "same_file_bytes": true
+      }
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-fresh-row-prefix-20261007-v2/verl/agent_system/reward_manager/episode.py",
+      "name": "agent_system/reward_manager/episode.py",
+      "sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+      "local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-fresh-entry-readonly-20261007\\fresh-row-prefix-v2\\deployment\\reward-contract-current-sources\\episode.py",
+      "line_ranges": [
+        [
+          29,
+          37
+        ],
+        [
+          90,
+          96
+        ]
+      ],
+      "upstream_source": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\agent_system\\reward_manager\\episode.py",
+        "sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+        "same_file_bytes": true
+      }
+    }
+  ],
+  "source_collection_receipt": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-fresh-entry-readonly-20261007\\fresh-row-prefix-v2\\deployment\\reward-contract-current-sources\\sources.json",
+    "sha256": "6e6bf7a68187a5291ef6b29240765ecf41a398381042a7a3248aa58cb22a251b"
+  },
+  "original_callpath": [
+    {
+      "path": "verl/trainer/ppo/ray_trainer.py",
+      "lines": [
+        1147,
+        1156
+      ],
+      "behavior": "Original reward timer invokes compute_reward(batch,self.reward_fn)."
+    },
+    {
+      "path": "verl/trainer/ppo/reward.py",
+      "lines": [
+        113,
+        119
+      ],
+      "behavior": "Try return_dict=True; optional reward_extra_info missing invokes original except, prints message, then ordinary reward_fn(data) and empty extra dictionary."
+    },
+    {
+      "path": "agent_system/reward_manager/episode.py",
+      "lines": [
+        33,
+        37
+      ],
+      "behavior": "rm_scores fast path returns dictionary with reward_tensor only, or exact data.batch[rm_scores] object in ordinary call. No environment/model/reward reevaluation."
+    },
+    {
+      "path": "verl/trainer/ppo/ray_trainer.py",
+      "lines": [
+        1158,
+        1201
+      ],
+      "behavior": "Original oldlogprob then ref-logprob calls occur after synchronous reward returns."
+    },
+    {
+      "path": "verl/trainer/ppo/ray_trainer.py",
+      "lines": [
+        1214,
+        1232
+      ],
+      "behavior": "Native reward tensor becomes token_level_scores; original owner applies its configured reward adjustments; empty extra metadata does not replace scores."
+    },
+    {
+      "path": "verl/trainer/ppo/ray_trainer.py",
+      "lines": [
+        1238,
+        1253
+      ],
+      "behavior": "DT consumes native rewards after original owner adjustments, not reward_extra_info."
+    }
+  ],
+  "observed_phase_receipt": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\textcraft-fresh-entry-readonly-20261007\\fresh-row-prefix-v2\\deployment\\phase-1791337180.json",
+    "sha256": "3e85ba2c1de536996c55b33a3bdf64800f04602bcedb88938a48fd9b33a0bf9b"
+  },
+  "observed_notice": "Error in reward_fn: 'reward_extra_info'",
+  "observed_workers": [
+    {
+      "pid": 3332777,
+      "birth": 1791335034.7,
+      "name": "ray::WorkerDict.actor_rollout_compute_ref_log_prob"
+    },
+    {
+      "pid": 3334413,
+      "birth": 1791335049.25,
+      "name": "ray::WorkerDict.actor_rollout_compute_ref_log_prob"
+    }
+  ],
+  "conclusion": "This exact notice is original optional-info fallback, not evidence of failed environment reward or extra model/environment work. Actual observation has proceeded to reference log-probability computation. No propagated exception/Traceback shown in the bounded current log sample.",
+  "limits": "Not an independent audit of reward values or DT/actor correctness; no complete iteration result yet. Trainer736 is patched for DT/whitening; original reward.py and episode.py are byte-identical to pinned20bd331 files.",
+  "changes": {
+    "production": false,
+    "reward": false,
+    "parameters": false
+  },
+  "operations": {
+    "API": false,
+    "RPC": false,
+    "GPU": false,
+    "model": false,
+    "test": false,
+    "checkpoint": false
+  }
+}

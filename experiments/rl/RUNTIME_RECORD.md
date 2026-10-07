@@ -1,6 +1,55 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-07 09:47 TextCraft首轮DT、AppWorld2/200；备份已越过旧断线窗口
+
+TextCraft同一PID3327460/source5faa/物理GPU2/3，原30/30采样用时30:40，官方服务
+256reset/3236step/256close；现两rank进入原compute_dt_token_advantages，当前类别组
+42/175个B4，约2.5–3.7秒/B4，该组不是整轮进度。没有恢复旧checkpoint；原整批
+masked_whiten与LoRA8/16、actor/DT每卡B4不变。原reward_extra_info提示已核实为
+VERL可选metadata的官方fallback，保留同一rm_scores，不重跑环境/模型、不补零。
+AppWorld同一PID2360541/sourcec83/物理GPU4/5，原进度2/200、两rank第二次actor
+phase释放已返回，第三轮原LOOP采样在推进。未对TextCraft首轮更新或学习恢复
+下结论。实际phase1791337516与reward原文件/hash回执见TextCraft结果索引。
+
+原attached SSH保活未阻止reset。只在本地backup运输边界使用标准Popen独立会话，
+沿用现有launcher lifecycle pattern；不是调用原launcher可复用helper（其无此API）。
+原training owner未改，restic cmd/flags及summary→restore/fullSHA/tag/cleanup同原。
+help与真实单manifest detached dryrun通过；完整源/范围回执见detached-restic边界。
+代码b139ddd/SHAcebe75b9已提交推送；本机PID13676/birth2026-10-07T01:44:56.0990573Z。
+远端控制PID3591046/birth1791337520.95与原restic独立于启动SSH，09:47实际持续
+103秒、原log累计96秒/83766files/548502552bytes，已越过此前53/70秒失败窗口。
+本次仅一个任务，原meta传输仍在进行；不占GPU，没有手工checkpoint导出/恢复，
+尚无完成snapshot或restore/fullSHA验收。原3次失败记录均保留，当前身份与日志/
+exitfile见results_backup_restart_20261007.json，不把prepared或失败版本混作运行。
+
+
+## 2026-10-07 09:37 备份native长连接亦失败；训练入口不变
+
+fresh-v3-native本机PID12432已退出；原OpenSSH255，日志明确Connection reset，
+末次原restic状态53秒/49363files/469745000bytes、无summary或完成snapshot。
+原保活未避免本次通道断开，不能称备份修好。精确远端restic3489870/birth1791336566.77
+及子进程存活在查，先不重复提交。正在复用已有远端独立进程/日志/exitfile入口，
+只处理原restic长命令生命周期，不改备份/恢复/SHA语义，不影响训练。真实失败
+receipt与日志保留，results_backup_restart_20261007.json已更新失败状态。
+下方09:30“运行”仅为当时38秒的观测，不代表现在仍在备份。
+
+
+## 2026-10-07 09:30 异机备份原OpenSSH长命令边界已启动，快照校验未完成
+
+仅原restic长命令改用现有stage_environment_entry.SSH（严格可信key与保活15/3）；
+原Paramiko保留SFTP/元数据并启用其公开keepalive15。未增加重试或另一套备份逻辑，
+原restic参数与summary→restore/fullSHA/tag/cleanup AST相同。原help和真实单个
+manifest dry-run通过，非全备份验收；此前70秒channel关闭根因尚未证实。
+修复commit1863fc8、脚本SHAa8461073；精确restic与本机backup均无残留后，仅提交
+一次fresh-v3-native：本机PID12432/birth2026-10-07T01:29:00.0633513Z，远端原restic
+PID3489870/birth1791336566.77，09:30仍运行，RSS749404160字节，CPU累计9.22秒。
+实际来源与运行记录见results_backup_restart_20261007.json。数据从MetaX经4090直写
+原A6000存储；不占GPU，没有手工导出或向训练恢复checkpoint。尚无完成snapshot、
+restore --verify或完整SHA结果，不称备份成功；原两次失败记录保留。TextCraft2/3、
+AppWorld4/5正式入口/PID/LoRA8/16/每卡B4保持，下方训练相位记录仍有效。
+
+
 ## 2026-10-07 09:19 TextCraft原正式环境已执行；AppWorld进入第二次actor更新
 
 TextCraft同一PID3327460/birth1791334993.84/source5faa6e2d，物理GPU2/3；
