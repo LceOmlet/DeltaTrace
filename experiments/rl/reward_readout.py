@@ -499,7 +499,8 @@ class DirectActionTargetReadout:
             for b, item in enumerate(batch):
                 values = signed[b, item['prompt_length']:item['selected'].numel()].cpu()
                 prior = item['prior'][item['suffix_positions']]
-                item['ratios'][item['suffix_positions'][prior]] = values[prior]
+                item['ratios'][item['suffix_positions'][prior]] = values[prior].to(
+                    dtype=item['ratios'].dtype)
                 audit = detail['per_sample'][b] if len(batch) > 1 else detail
                 report['traces'].append(dict(
                     trajectory_index=item['index'], traj_uid=str(item['row'].get('traj_uid', '')),

@@ -1,0 +1,33 @@
+{
+  "status": "prepared_CPU_transport_passed_not_deployed",
+  "demonstrated_failure": "Real signed was Float64; index_put into Float32 ratios rejected dtype mismatch after completed 32-layer cold trace",
+  "fix": "Explicitly convert selected prior signed values to existing FP32 training credit carrier at scatter only; original signed/detail remain unchanged",
+  "sources": {
+    "experiments/rl/reward_readout.py": "31e2acfb760eb1dd118af78a5a887898357feacc1b0f1caec04f06006a3b7d07",
+    "experiments/rl/test_reward_readout.py": "e146ca5eb629edfa1d4f0705eb3d66f9de6ac6ac908aff5d3256081dc4ec77de"
+  },
+  "tests": {
+    "passed": 6,
+    "deselected": 29,
+    "seconds": 3.57,
+    "receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-semantics-20261007\\readout-fp64-transport-local.json",
+    "test_stub_dtype": "float64 transport marker; not a DT numerical reference",
+    "peak_sampled_tree_rss_bytes": 348975104,
+    "gpu_before": {
+      "exit_code": 0,
+      "physical_gpu_memory_mib": "NVIDIA GeForce GTX 1050 Ti, 4096, 0"
+    },
+    "gpu_after": {
+      "exit_code": 0,
+      "physical_gpu_memory_mib": "NVIDIA GeForce GTX 1050 Ti, 4096, 0"
+    }
+  },
+  "not_changed": [
+    "Q/V/A formula",
+    "runner signed/detail",
+    "FA/FLA kernels or official tolerance",
+    "v2 source/manifests",
+    "formal jobs"
+  ],
+  "scope": "Existing direct interface tests with actual failing dtype at transportation boundary, no model/DT/GPU numerical claim"
+}

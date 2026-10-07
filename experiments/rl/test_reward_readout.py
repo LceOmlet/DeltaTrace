@@ -499,7 +499,7 @@ def test_direct_reference_and_scatter_keep_causally_later_source_factual(monkeyp
         assert factual.tolist() == [[10, 11, 12, 13, 14, 15, 16]]
         assert reference.tolist() == [[10, 11, 99, 13, 14, 15, 16]]
         assert offsets == [[1, 3]]
-        marker = torch.ones_like(factual, dtype=torch.float32)
+        marker = torch.ones_like(factual, dtype=torch.float64)
         marker[:, 2] = 0.  # Only the prior source is retained from this stub.
         return marker, None, dict(root_effect=0., policy_credit_signed_sum=0.,
                                   conservation_residual=0.)

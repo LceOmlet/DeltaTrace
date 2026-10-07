@@ -43,9 +43,11 @@ def linked_tree(source,destination):
 prepared=[]
 for task in ('TextCraft','AppWorld'):
     old=next(j for j in active['jobs'] if j['task']==task)
-    assert old['status']=='stopped_auxiliary_label_target_semantics',task
+    expected_status = ('stopped_direct_target_dtype_interface' if task=='AppWorld' and O.name.endswith('-v3')
+                       else 'stopped_auxiliary_label_target_semantics')
+    assert old['status']==expected_status,(task,old['status'])
     prior=read(old['source_receipt'])
-    expected={'TextCraft':'5faa6e2d','AppWorld':'c83b96de'}[task]
+    expected={'TextCraft':'5faa6e2d','AppWorld':('3f34b191' if O.name.endswith('-v3') else 'c83b96de')}[task]
     assert sha(old['source_receipt']).startswith(expected),(task,sha(old['source_receipt']))
     base=O/task.lower();entry=base/'entry';owner=base/'verl'
     assert not base.exists(),'Preserve previous preparation attempts'
@@ -180,7 +182,7 @@ print(json.dumps(prepared))
 
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument('--version', required=True, choices=('v2',))
+    parser.add_argument('--version', required=True, choices=('v2','v3'))
     args=parser.parse_args()
     out=stage.ROOT+'/candidates/direct-action-target-20261007-'+args.version
     files={name:stage.REPO/'experiments/rl'/name for name in ['counterfactual.py','dt_training_batch.py',
