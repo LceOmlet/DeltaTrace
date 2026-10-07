@@ -1,5 +1,53 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 00:20 显存候选完成连续32k及原失败B4回归；信用仍未修复
+
+诊断6cfa4a9d，PID595731/birth1791388988.67完成退出，4/5各860MiB。
+results_memory_capacity_20261008.json绑定实际runner导入7d6f57f6、环境cd28a6e2、
+原App source58209daa、补丁79922486、完整配置来源、脚本SHA、运输SHA及phase曲线。
+Text2833207同出生仍hold，两rank未release，零optimizer；App正式保持终止。
+
+每卡原B4、LoRA8/16、原VERL async actor及原vLLM sleep，三次DT/rank：
+精确32768重复两次，各四行，317.108/317.150秒及279.267/279.234秒；
+两次QVA逐值相同。物理峰值60.803/62.627GiB，均低于64，第二卡余量约1.37GiB。
+容量输入只延长原observation段，原policy/target IDs及顺序保持；明确是容量压力，
+不是实际官方32k任务、信用质量或PPO更新验证。每次结束live allocation增70144B，
+不能称严格零增长；未见大张量跨调用累积。最后finite层后FA DynamicLayer存储0，
+GDN LinearAttentionLayer保留204MiB本地状态，整个调用结束回到近起点。
+每rank采样PSS约8.11/8.30GiB，未见异常主机内存膨胀。
+
+随后原真实失败B4完成185.449/185.100秒，最长full context27334（causal27324），
+QVA与先前同候选、同原async-vLLM完成输出逐值相同；QVA全部有限。
+这些对照验证存储调度没有改值，不冒称整个DT通过FA/FLA有限归因精度标准。
+没有clip、倍率、dtype/公式/PPO/白化、任务参数或batch改动，没有恢复/正式重启。
+候选已通过此有界回归，仍未替换正式冻结source；不宣称完整训练健康。
+
+信用诊断补充：实际profile是gdn-symmetric-v1，不是误选clean-v1；原LOOP
+extractor不要求Code:或其后的换行，不能把该source移进target消除负值。
+Text Format实际单EOS支持负方向（A=-8.1575），joint给-22.8169是幅度夸大；
+App换行实际单EOS为正（A=.75），joint给-53.9798是方向错误。公式中的样本
+重要性权重可使|A|超过观测r，不能只按数值大判错；这两个位置按真实端点
+区分方向和幅度。未改现有Q/V/A，未用单点替代累计删除/RISE/MAS。
+
+
+## 2026-10-08 00:03 实际归因profile核对；32k连续调用显存诊断已提交
+
+诊断代码6cfa4a9d；PID595731/birth1791388988.67，原App source58209daa，
+GPU4/5，原VERL AsyncActorRolloutRefWorker与原vLLM wake/sleep。候选79922486
+runner7d6f57f6及环境cd28a6e2不变。CPU通过原DirectActionTargetReadout准备8行，
+每行实际DT causal input精确32768；仅延长原observation段，policy/target IDs
+顺序及数量保持。它是单独容量压力输入，不冒称真实32k任务或归因准确性。
+计划两次相同32k调用检查phase/重复后显存回落，再复测原失败B4，与先前同候选
+同async-vLLM生命周期完成输出比较。不请求采样/优化器/恢复/正式重启。
+Text2833207仍hold、两rank未release；App正式保持终止。当前只是已提交，
+尚无GPU32k成功、容差或长期无泄漏结论。
+
+远端正式factory/profile核对结果已保存direct-target-rule-audit-20261008/v1：
+Text/App都用gdn-symmetric-v1，24个GDN norm-gate symmetric并平均两种memory
+endpoint顺序；attention保留正式content1。未发现调用旧clean-v1的配置错误。
+未擅自修改正式profile、Q/V/A、PPO、白化或加入信用纠偏。
+
+
 ## 2026-10-07 23:49 保存信用全量统计及高影响B4单删除完成；未放行更新
 
 诊断代码34d4c390，results_credit_sample_20261007.json绑定原source、实际owner

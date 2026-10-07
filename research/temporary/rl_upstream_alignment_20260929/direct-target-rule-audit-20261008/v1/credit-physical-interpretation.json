@@ -1,0 +1,74 @@
+{
+  "source": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\direct-target-credit-sample-20261007\\v1\\sample-analysis.json",
+    "sha256": "29322e7a818c7ba8c23e46b2748bb5f3d087bd13e7ebf9c97a1818e3593c9acc"
+  },
+  "cases": [
+    {
+      "task": "textcraft",
+      "uid": "6e76f70e-bdeb-4726-8b35-d9e21eff2f68",
+      "response_slot": 351,
+      "packed_slot": 666,
+      "token_id": 14606,
+      "token": " Format",
+      "context": {
+        "start": 654,
+        "end": 679,
+        "decoded": " Goal: Craft 1 white bed.\n    *   Format: Strictly follow \"Thought:\\n...\\n\\nAction"
+      },
+      "reward": 1.0,
+      "DT_d": -3.1703966315267027,
+      "native_single_delete_d": -2.2145728506379783,
+      "DT_deleted_to_factual_ratio": 23.816929028199386,
+      "native_deleted_to_factual_ratio": 9.15749665721225,
+      "DT_A": -22.816926956176758,
+      "native_A": -8.15749740600586,
+      "dominant_future_target": {
+        "predictor_position": 681,
+        "label": 3443,
+        "decoded_label": " format",
+        "factual_logp": -2.2500181198120117,
+        "single_eos_logp": -0.02968006022274494,
+        "factual_probability": 0.10539731476503172,
+        "single_eos_probability": 0.9707560673497586,
+        "effect": -2.2203380595892668
+      },
+      "coefficient_interpretation": "A/r = 1 - deleted/factual probability. The sample coefficient is an importance-weighted estimate, so |A| exceeding observed r is not itself a contradiction.",
+      "conclusion": "The negative direction is supported by the original single-EOS score; its magnitude is exaggerated by the joint DT estimate."
+    },
+    {
+      "task": "appworld",
+      "uid": "f0f85f5c-74b4-4670-a074-99a3a09dbb98",
+      "response_slot": 125,
+      "packed_slot": 2883,
+      "token_id": 198,
+      "token": "\n",
+      "context": {
+        "start": 2871,
+        "end": 2896,
+        "decoded": " the available APIs for the simple_note app.\nCode:\n```python\nprint(apis.api_docs.show_api_descriptions"
+      },
+      "reward": 0.75,
+      "DT_d": -4.290090946861018,
+      "native_single_delete_d": 23.089031426084944,
+      "DT_deleted_to_factual_ratio": 72.9731048726765,
+      "native_deleted_to_factual_ratio": 9.387740133061743e-11,
+      "DT_A": -53.979835510253906,
+      "native_A": 0.75,
+      "dominant_future_target": {
+        "predictor_position": 2883,
+        "label": 71093,
+        "decoded_label": "```",
+        "factual_logp": -0.0014749611727893353,
+        "single_eos_logp": -21.03133773803711,
+        "factual_probability": 0.9985261260478395,
+        "single_eos_probability": 7.348624786957579e-10,
+        "effect": 21.02986277686432
+      },
+      "coefficient_interpretation": "A/r = 1 - deleted/factual probability. The sample coefficient is an importance-weighted estimate, so |A| exceeding observed r is not itself a contradiction.",
+      "conclusion": "The original single-EOS score has positive direction: the newline strongly supports the code fence. The joint DT negative credit has wrong direction for this recorded token."
+    }
+  ],
+  "scope": "Analysis of existing actual endpoint receipts; no new model execution, estimator, tolerance, correction, token reclassification or environment counterfactual. Single-token controls supplement original cumulative deletion/RISE/MAS.",
+  "method_change": false
+}
