@@ -24,6 +24,15 @@ def write_backup_sources(client, access, paths):
     return source_list
 
 
+def source_ssh_owner():
+    """Reuse the existing strict MetaX OpenSSH transport, including keepalives."""
+    path = Path(__file__).resolve().parents[2]/'research/temporary/rl_upstream_alignment_20260929/stage_environment_entry.py'
+    spec = importlib.util.spec_from_file_location('backup_source_ssh_owner', path)
+    owner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(owner)
+    return path, owner.SSH
+
+
 def recorded_metadata_sources(client, jobs):
     """Resolve only paths recorded by these jobs and their actual open Ray logs."""
     script = """import json,pathlib,sys,psutil
@@ -153,6 +162,8 @@ def main():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     client = module.connect()
+    client.get_transport().set_keepalive(15)
+    source_owner, source_ssh = source_ssh_owner()
     ssh = ['ssh', '-o', 'BatchMode=yes', '-J', args.jump, '-p', args.destination_port, args.destination]
     b = PurePosixPath(args.backup_root)
     restic = [str(b/'bin/restic'), '-r', str(b/'repository'), '--password-file', str(b/'repository.password'),
@@ -164,6 +175,9 @@ def main():
                      '-o', 'sftp.command=ssh -F '+str(access/'ssh_config')+' backup-a6000 -s sftp']
     report = {'status': 'running', 'source_root': args.source_root, 'destination': args.destination,
               'backup_root': args.backup_root, 'started': time.time(), 'transport': 'MetaX direct SFTP through 4090; no PC data relay', 'snapshots': []}
+    report['source_ssh_owner'] = {'path': str(source_owner),
+                                  'sha256': hashlib.sha256(source_owner.read_bytes()).hexdigest(),
+                                  'command': source_ssh}
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
 
     def destination(cmd):
@@ -215,16 +229,11 @@ def main():
             source_list = write_backup_sources(client, access, absolute_paths)
             cmd += ['--files-from-raw', source_list]
             print('Direct backup', label, flush=True)
-            _, output, errors = client.exec_command(shlex.join(cmd))
             with log.open('w', encoding='utf-8') as stream:
-                for line in output:
-                    stream.write(line)
-                    stream.flush()
-                error_text = errors.read().decode()
-                stream.write(error_text)
-            status = output.channel.recv_exit_status()
+                status = subprocess.run(source_ssh+[shlex.join(cmd)], stdout=stream,
+                                        stderr=subprocess.STDOUT).returncode
             if status:
-                raise RuntimeError(f'{label}: restic exit {status}: {error_text}')
+                raise RuntimeError(f'{label}: OpenSSH/restic exit {status}; see {log}')
             summary = next(json.loads(line) for line in reversed(log.read_text().splitlines())
                            if line.startswith('{') and json.loads(line).get('message_type') == 'summary')
             snapshot = summary['snapshot_id']
