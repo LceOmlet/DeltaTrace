@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 TextCraft实际Format轨迹的原作者累计删除完成
+
+2b98d7f9/PID2967962/birth1791411696.44，物理4/5诊断已完成退出。
+同一正式真实B4、3068个原source位置及原joint动作Y，原作者函数583f4b7d/k20，
+每rank42次原native forward，零DT/采样/backward/optimizer/恢复，约244.18秒。
+只给既有诊断增加task选择，并透传原TaskRunner已解析的330给原actor初始化；
+无新训练预算、metric/scorer/sorting实现。真实ID transport原2项CPU检查通过。
+两rank原数组/分数一致、paired twins差0、其他三行分数恒定，LoRA B均零。
+原signed RISE=0.408195828；positive-only评估MAS=0.694071027。
+Format在signed第20组删除。该组153个实际改变source均负、DT总和-13.990249，
+native kept-minus-deleted却+56.012404。这是前19组已删除背景下的联合效应，
+不能把56归给Format个人，也不替代它的原single删除A=-8.157497对照。
+原始非单调logp、作者归一化/penalty数组、CSV、图和完整回执均保留；
+这些是单条实际轨迹质量证据，不新设容差/总体质量结论或以排名证明指数幅度准确。
+PSS记录峰值7.612/8.558GB，无OOM；本诊断未连续采样物理峰值。
+Text原birth仍hold、release均不存在；App正式terminal，无正式重启/恢复。
+信用仍未修复。79922486的consumed-FA-cache生命周期修复单独已验收，未正式部署。
+导入路径/SHA、原配置、启动commit/PID创建时间与回执已绑定current_runtime末字段。
+
+
+
 ## 2026-10-08 原生事实梯度诊断结束：普通梯度不等于此有限删除效应
 
 3c9c7081/PID2889955/birth1791410961.25已完成退出。只对保存的实际GDN30
