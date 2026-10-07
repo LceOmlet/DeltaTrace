@@ -70,6 +70,17 @@ def signature_sha(value):
     return hashlib.sha256(json.dumps(value, separators=(',', ':')).encode('utf-8')).hexdigest()
 
 
+def full_artifact_signature(saved):
+    """Read complete artifact axes from saved IDs/masks, before causal packing."""
+    original = saved['row']
+    ids, responses = tensor(original['input_ids']), tensor(original['responses'])
+    attention = tensor(original['attention_mask']).bool()
+    boundary = ids.numel() - responses.numel()
+    suffix = attention[boundary:].nonzero().flatten()
+    return signature(ids[:boundary][attention[:boundary]], responses[suffix],
+                     tensor(saved['policy'])[suffix], tensor(saved['target'])[suffix]), suffix
+
+
 class Moments:
     def __init__(self, thresholds):
         self.thresholds = thresholds
@@ -158,25 +169,31 @@ def readout_position(record, slot):
             'prior_source_without_saved_native_trace' if bool(saved['prior'][slot]) else
             'other_policy_causal_zero' if bool(saved['policy'][slot]) else 'masked')
     trace = saved.get('trace') or {}
+    valid = attention.nonzero().flatten()
+    effective = (valid == absolute).nonzero().flatten()
+    ratios, outputs = saved.get('ratios'), saved.get('outputs', {})
     output = dict(record['identity'], response_slot=slot, original_input_slot=absolute,
                   packed_input_slot=packed if packed >= 0 else None,
-                  attention_effective_index=packed if packed >= 0 else None,
+                  attention_effective_index=int(effective[0]) if effective.numel() == 1 else None,
                   compressed_suffix_offset=packed - prompt if packed >= 0 else None,
                   dt_target_offset=packed - prompt if packed >= 0 and bool(saved['target'][slot]) else None,
                   target_predictor_slot=packed - 1 if packed >= 0 and bool(saved['target'][slot]) else None,
                   token_id=int(responses[slot]), input_token_id=int(ids[absolute]),
                   attention_valid=bool(attention[absolute]), d_role=role,
-                  consumed_d_storage=scalar(saved['ratios'][slot]),
-                  consumed_d_dtype=str(saved['ratios'].dtype),
+                  consumed_d_storage=scalar(ratios[slot]) if ratios is not None else None,
+                  consumed_d_dtype=str(ratios.dtype) if ratios is not None else None,
                   native_signed=scalar(native[packed]) if native is not None and 0 <= packed < native.numel() else None,
                   native_signed_dtype=str(native.dtype) if native is not None else None,
-                  raw_QVA={key: scalar(saved['outputs'][key][slot]) for key in CREDIT},
+                  raw_QVA={key: scalar(outputs[key][slot]) for key in CREDIT if key in outputs},
                   joint_factual_target_logp=trace.get('factual_target_logp'),
                   joint_all_prior_EOS_reference_target_logp=trace.get('reference_target_logp'),
                   joint_root_effect=trace.get('root_effect'),
-                  logp_scope='saved joint endpoint sums; not single-token deletion logp')
+                  logp_scope='saved joint endpoint sums; not single-token deletion logp',
+                  value_scope=('native trace only; no consumed FP32 d or Q/V/A saved'
+                               if record.get('native_only') else 'completed original readout'),
+                  native_signed_role=('native trace component, not literal self-target deletion d'
+                                      if bool(saved['target'][slot]) else 'original native trace component'))
     if packed >= 0:
-        valid = attention.nonzero().flatten()
         selected = tensor(saved['selected']).flatten()
         output['axis_token_ID_checks'] = dict(
             response_equals_original_input=bool(responses[slot] == ids[absolute]),
@@ -191,10 +208,10 @@ def add_stat(table, key, values, slots, position, thresholds):
     table[key].add(values, slots, position)
 
 
-def validate_readout(saved):
+def validate_readout(saved, *, native_only=False):
     for key in ('row', 'selected', 'suffix_positions', 'response_to_packed', 'prompt_length',
-                'valid_policy', 'valid_target', 'policy', 'target', 'prior', 'ratios',
-                'group_masks', 'outputs', 'target_offsets'):
+                'valid_policy', 'valid_target', 'policy', 'target', 'prior',
+                'group_masks', 'target_offsets') + (() if native_only else ('ratios', 'outputs')):
         if key not in saved:
             raise ValueError('missing saved readout field ' + key)
     original = saved['row']
@@ -205,10 +222,10 @@ def validate_readout(saved):
     if responses.ndim != 1 or selected.ndim != 1:
         raise ValueError('readout IDs are not original one-dimensional rows')
     width, prompt = responses.numel(), int(saved['prompt_length'])
-    for key in ('policy', 'target', 'prior', 'ratios', 'response_to_packed'):
+    for key in ('policy', 'target', 'prior', 'response_to_packed') + (() if native_only else ('ratios',)):
         if tensor(saved[key]).shape != responses.shape:
             raise ValueError(key + ' does not preserve original response slots')
-    for key in CREDIT:
+    for key in (() if native_only else CREDIT):
         if key not in saved['outputs'] or tensor(saved['outputs'][key]).shape != responses.shape:
             raise ValueError('missing or misaligned original ' + key)
     for key, mask in saved['group_masks'].items():
@@ -223,14 +240,45 @@ def validate_readout(saved):
     if not torch.equal(responses[suffix], selected[prompt:]):
         raise ValueError('saved packed/response token IDs differ')
     ids, attention = tensor(original['input_ids']), tensor(original['attention_mask']).bool()
-    if ids.ndim != 1 or attention.shape != ids.shape or not torch.equal(ids[attention], selected):
-        raise ValueError('saved attention-effective IDs differ from original selected IDs')
+    effective = ids[attention]
+    full_suffix = attention[-width:].nonzero().flatten()
+    if (ids.ndim != 1 or attention.shape != ids.shape or
+            not torch.equal(effective[:selected.numel()], selected) or
+            not torch.equal(full_suffix[:suffix.numel()], suffix) or
+            prompt != int(attention[:-width].sum())):
+        raise ValueError('saved selected IDs/slots are not an exact original attention-effective prefix')
     for key in ('valid_policy', 'valid_target'):
         if tensor(saved[key]).shape != suffix.shape:
             raise ValueError(key + ' does not align with attention-effective response IDs')
     native = saved.get('native_signed_packed')
     if native is not None and (native.ndim != 1 or native.numel() < selected.numel()):
         raise ValueError('saved original signed vector does not cover selected input')
+
+
+def native_batch_record(saved, native, trace):
+    """Adapt the v2 native-return snapshot schema; do not synthesize credit."""
+    saved = dict(saved, native_signed_packed=native, trace=trace)
+    suffix = tensor(saved['suffix_positions'], dtype=torch.long)
+    mapping = torch.full((saved['width'],), -1, dtype=torch.long)
+    mapping[suffix] = torch.arange(suffix.numel()) + saved['prompt_length']
+    saved.update(response_to_packed=mapping,
+                 valid_policy=tensor(saved['policy'])[suffix],
+                 valid_target=tensor(saved['target'])[suffix],
+                 group_masks=dict(self_target=saved['target'], prior_source=saved['prior'],
+                                  other_policy=saved['policy'] & ~saved['target'] & ~saved['prior'],
+                                  masked=~saved['policy'], all_slots=torch.ones_like(saved['policy'])))
+    return saved
+
+
+def add_native_statistics(record, table, thresholds):
+    saved = record['saved']
+    native, mapping = saved['native_signed_packed'], tensor(saved['response_to_packed'], dtype=torch.long)
+    add_stat(table, 'native_signed/all_packed_input', native, torch.arange(native.numel()),
+             lambda slot: packed_position(record, slot), thresholds)
+    for group, mask in dict(saved['group_masks'], policy=saved['policy']).items():
+        slots = (tensor(mask).bool() & (mapping >= 0)).nonzero().flatten()
+        add_stat(table, 'native_signed/' + group, native[mapping[slots]], slots,
+                 lambda slot: readout_position(record, slot), thresholds)
 
 
 def packed_position(record, packed):
@@ -241,17 +289,23 @@ def packed_position(record, packed):
         return readout_position(record, int(matches[0]))
     selected = tensor(saved['selected'])
     valid = tensor(saved['row']['attention_mask']).bool().nonzero().flatten()
+    trace = saved.get('trace') or {}
     return dict(record['identity'], packed_input_slot=packed,
-                original_input_slot=int(valid[packed]) if packed < valid.numel() else None,
+                original_input_slot=int(valid[packed]) if packed < selected.numel() else None,
+                attention_effective_index=packed if packed < selected.numel() else None,
                 response_slot=None, compressed_suffix_offset=None, dt_target_offset=None,
                 token_id=int(selected[packed]) if packed < selected.numel() else None,
                 d_role='prompt_or_packed_padding; not an estimated policy-source d',
                 native_signed=scalar(saved['native_signed_packed'][packed]),
-                native_signed_dtype=str(saved['native_signed_packed'].dtype))
+                native_signed_dtype=str(saved['native_signed_packed'].dtype),
+                joint_factual_target_logp=trace.get('factual_target_logp'),
+                joint_all_prior_EOS_reference_target_logp=trace.get('reference_target_logp'),
+                logp_scope='saved joint endpoint sums; not single-token deletion logp')
 
 
 def analyze(directory, thresholds, expected_ranks=(0, 1)):
-    files = sorted(directory.glob('rank*-readout.pt')) + sorted(directory.glob('rank*-pre-update.pt'))
+    files = (sorted(directory.glob('rank*-readout.pt')) + sorted(directory.glob('rank*-pre-update.pt')) +
+             sorted(directory.glob('rank*-readout-native-batch-*.pt')))
     result = dict(scope='CPU analysis of actual saved original tensors only', analyzed_unix=time.time(),
                   input_directory=str(directory.resolve()), sources=[], capture_metadata=[],
                   errors=[], missing_inputs=[],
@@ -260,7 +314,8 @@ def analyze(directory, thresholds, expected_ranks=(0, 1)):
                   old_step7_vector_status='No original step7 vectors were saved; scalar/group receipts cannot recover token locations or d. These captures are not step7 replay.',
                   d_scope='native FP64 signed and training-consumed FP32 d are separate; self-target zero is a storage placeholder, not a finite measured d',
                   second_moment_scope='uncentered finite-token second moment of saved rows, including actual DP duplicates; not gradient share',
-                  readout_rows=[], actor_rows=[], actor_extreme_links=[])
+                  readout_rows=[], actor_rows=[], actor_extreme_links=[], native_batch_rows=[],
+                  native_batch_scope='separate original native-return snapshots, possibly also present in completed readout; never added to readout/actor totals; no Q/V/A or consumed FP32 d inferred')
     expected = [f'rank{rank}-{suffix}.pt' for rank in expected_ranks
                 for suffix in ('readout', 'pre-update')]
     existing = {path.name for path in files}
@@ -281,7 +336,40 @@ def analyze(directory, thresholds, expected_ranks=(0, 1)):
             payloads.append((path, payload, source))
         except Exception as error:
             result['errors'].append(dict(path=str(path), stage='load', error=repr(error)))
-    records, lookup, readout_stats, actor_stats = [], defaultdict(list), {}, {}
+    records, lookup, readout_stats, actor_stats, native_stats = [], defaultdict(list), {}, {}, {}
+    for path, payload, source in payloads:
+        if '-readout-native-batch-' not in path.name:
+            continue
+        try:
+            native = tensor(payload['native_signed'])
+            if native.ndim != 2:
+                raise ValueError('native batch signed tensor must retain original batch and packed axes')
+            detail = payload.get('detail') or {}
+            for index, saved in enumerate(payload.get('rows', [])):
+                identity = dict(file=path.name, file_sha256=source['sha256'], saved_row=index,
+                                batch=payload.get('batch'), batch_row=saved['batch_row'],
+                                trajectory_index=saved.get('trajectory_index'), traj_uid=str(saved.get('traj_uid', '')))
+                try:
+                    batch_row = int(saved['batch_row'])
+                    if not 0 <= batch_row < native.shape[0]:
+                        raise ValueError('saved batch_row is outside original native batch')
+                    samples = detail.get('per_sample')
+                    trace = (samples[batch_row] if isinstance(samples, (list, tuple)) and batch_row < len(samples) else
+                             detail if native.shape[0] == 1 and samples is None else None)
+                    saved = native_batch_record(saved, native[batch_row], trace)
+                    validate_readout(saved, native_only=True)
+                    sig, full_suffix = full_artifact_signature(saved)
+                    record = dict(saved=saved, identity=identity, signature=sig,
+                                  full_suffix_positions=full_suffix, native_only=True)
+                    result['native_batch_rows'].append(dict(identity, full_artifact_sha256=signature_sha(sig),
+                        native_signed_dtype=str(native.dtype), target_offsets=plain(saved['target_offsets']),
+                        trace=plain(trace), available=dict(native_signed=True, consumed_FP32_d=False,
+                                                          QVA=False, actor=False)))
+                    add_native_statistics(record, native_stats, thresholds)
+                except Exception as error:
+                    result['errors'].append(dict(identity, stage='native_batch_row', error=repr(error)))
+        except Exception as error:
+            result['errors'].append(dict(file=path.name, stage='native_batch', error=repr(error)))
     for path, payload, source in payloads:
         if not path.name.endswith('-readout.pt'):
             continue
@@ -290,10 +378,8 @@ def analyze(directory, thresholds, expected_ranks=(0, 1)):
                             trajectory_index=saved.get('trajectory_index'), traj_uid=str(saved.get('traj_uid', '')))
             try:
                 validate_readout(saved)
-                prompt = int(saved['prompt_length'])
-                selected = tensor(saved['selected'])
-                sig = signature(selected[:prompt], selected[prompt:], saved['valid_policy'], saved['valid_target'])
-                record = dict(saved=saved, identity=identity, signature=sig)
+                sig, full_suffix = full_artifact_signature(saved)
+                record = dict(saved=saved, identity=identity, signature=sig, full_suffix_positions=full_suffix)
                 records.append(record)
                 lookup[(identity['traj_uid'], sig)].append(record)
                 result['readout_rows'].append(dict(identity, full_artifact_sha256=signature_sha(sig),
@@ -309,13 +395,7 @@ def analyze(directory, thresholds, expected_ranks=(0, 1)):
                         add_stat(readout_stats, name + '/' + group, values[slots], slots,
                                  lambda slot, record=record: readout_position(record, slot), thresholds)
                 if native is not None:
-                    add_stat(readout_stats, 'native_signed/all_packed_input', native,
-                             torch.arange(native.numel()),
-                             lambda slot, record=record: packed_position(record, slot), thresholds)
-                    for group, mask in groups.items():
-                        slots = (tensor(mask).bool() & (mapping >= 0)).nonzero().flatten()
-                        add_stat(readout_stats, 'native_signed/' + group, native[mapping[slots]], slots,
-                                 lambda slot, record=record: readout_position(record, slot), thresholds)
+                    add_native_statistics(record, readout_stats, thresholds)
                     slots = tensor(saved['prior']).bool().nonzero().flatten()
                     add_stat(readout_stats, 'consumed_d_estimated/prior_source', saved['ratios'][slots], slots,
                              lambda slot, record=record: readout_position(record, slot), thresholds)
@@ -382,7 +462,7 @@ def analyze(directory, thresholds, expected_ranks=(0, 1)):
                         roles = []
                         for candidate in context['candidates']:
                             saved = candidate['saved']
-                            response_slots = tensor(saved['suffix_positions'], dtype=torch.long)[original_slots]
+                            response_slots = candidate['full_suffix_positions'][original_slots]
                             roles.append(torch.stack([tensor(saved[name]).bool()[response_slots]
                                                       for name in ('target', 'prior', 'policy')]))
                         agree = torch.ones(slots.numel(), dtype=torch.bool)
@@ -419,6 +499,7 @@ def analyze(directory, thresholds, expected_ranks=(0, 1)):
             except Exception as error:
                 result['errors'].append(dict(identity, stage='actor_row', error=repr(error)))
     result['readout_statistics'] = {key: value.result() for key, value in readout_stats.items()}
+    result['native_batch_statistics'] = {key: value.result() for key, value in native_stats.items()}
     result['actor_statistics'] = {key: value.result() for key, value in actor_stats.items()}
     for name in ('advantages/policy', 'dt_token_advantages/policy'):
         stats = actor_stats.get(name)
@@ -431,6 +512,7 @@ def analyze(directory, thresholds, expected_ranks=(0, 1)):
             result['actor_extreme_links'].append(dict(measure=name, **actor_link(context, extreme['response_slot'])))
     result['counts'] = dict(readout_work_rows=len(records),
                           readout_unique_UIDs=len({record['identity']['traj_uid'] for record in records}),
+                          native_batch_work_rows=len(result['native_batch_rows']),
                           actor_work_rows=len(actor_identities),
                           actor_unique_UIDs=len({row['traj_uid'] for row in actor_identities if row['traj_uid'] is not None}),
                           repeated_readout_UID_counts={key: count for key, count in Counter(
@@ -463,7 +545,7 @@ def actor_link(context, slot):
         return output
     original_slot = output['full_native_response_slot']
     for candidate in context['candidates']:
-        response_slot = int(candidate['saved']['suffix_positions'][original_slot])
+        response_slot = int(candidate['full_suffix_positions'][original_slot])
         entry = readout_position(candidate, response_slot)
         entry['artifact_full_native_response_slot'] = original_slot
         entry['actor_token_ID_equals_readout'] = entry['token_id'] == output['token_id']

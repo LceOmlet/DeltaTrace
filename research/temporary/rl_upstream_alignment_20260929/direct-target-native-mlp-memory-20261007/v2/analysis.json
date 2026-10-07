@@ -1,0 +1,134 @@
+{
+  "scope": "Actual saved B4 and original failed final B4. Only existing mixer offload changed; original native/finite/PPO/reward/LoRA/B4 owners unchanged.",
+  "ranks": [
+    {
+      "rank": 0,
+      "signed_exact_equal": true,
+      "QVA_exact_equal": {
+        "dt_token_advantages": true,
+        "dt_q_estimates": true,
+        "dt_v_estimates": true
+      },
+      "modes": [
+        {
+          "mode": "original_gpu_captures",
+          "seconds": 63.852404211007524,
+          "sampled_physical_peak_mib": 37196,
+          "pss_max_bytes": 8996350976,
+          "recorded_allocated_peak_bytes": 21676204032,
+          "note": "Physical sampled peak includes warm allocator pool; only first pair has reset peak stats",
+          "cache_first_bytes": 935329792,
+          "cache_last_bytes": 2775842816,
+          "cache_growth_bytes": 1840513024
+        },
+        {
+          "mode": "existing_offload_mixer",
+          "seconds": 46.94687524699839,
+          "sampled_physical_peak_mib": 37206,
+          "pss_max_bytes": 8996441088,
+          "recorded_allocated_peak_bytes": 16589624832,
+          "note": "Physical sampled peak includes warm allocator pool; only first pair has reset peak stats",
+          "cache_first_bytes": 935329792,
+          "cache_last_bytes": 2775842816,
+          "cache_growth_bytes": 1840513024
+        },
+        {
+          "mode": "failed_actual_B4_existing_offload",
+          "seconds": 181.55366112499905,
+          "sampled_physical_peak_mib": 63322,
+          "pss_max_bytes": 8998022144,
+          "recorded_allocated_peak_bytes": null,
+          "note": "Physical sampled peak includes warm allocator pool; only first pair has reset peak stats",
+          "cache_first_bytes": 935329792,
+          "cache_last_bytes": 7376732160,
+          "cache_growth_bytes": 6441402368
+        }
+      ],
+      "failed_batch_all_finite": true,
+      "failed_batch_trace_calls": 1,
+      "failed_batch_actual_context_lengths": [
+        20157,
+        20868,
+        21359,
+        27334
+      ],
+      "failed_batch_causal_context_lengths": [
+        20144,
+        20858,
+        21349,
+        27324
+      ],
+      "App_extreme_current_d": -3.128219810460814,
+      "App_extreme_saved_original_d": -3.1117619098301255
+    },
+    {
+      "rank": 1,
+      "signed_exact_equal": true,
+      "QVA_exact_equal": {
+        "dt_token_advantages": true,
+        "dt_q_estimates": true,
+        "dt_v_estimates": true
+      },
+      "modes": [
+        {
+          "mode": "original_gpu_captures",
+          "seconds": 63.900268303987104,
+          "sampled_physical_peak_mib": 37196,
+          "pss_max_bytes": 8440044544,
+          "recorded_allocated_peak_bytes": 21676204032,
+          "note": "Physical sampled peak includes warm allocator pool; only first pair has reset peak stats",
+          "cache_first_bytes": 935329792,
+          "cache_last_bytes": 2775842816,
+          "cache_growth_bytes": 1840513024
+        },
+        {
+          "mode": "existing_offload_mixer",
+          "seconds": 46.84281333000399,
+          "sampled_physical_peak_mib": 37206,
+          "pss_max_bytes": 8440114176,
+          "recorded_allocated_peak_bytes": 16589624832,
+          "note": "Physical sampled peak includes warm allocator pool; only first pair has reset peak stats",
+          "cache_first_bytes": 935329792,
+          "cache_last_bytes": 2775842816,
+          "cache_growth_bytes": 1840513024
+        },
+        {
+          "mode": "failed_actual_B4_existing_offload",
+          "seconds": 181.1472491500026,
+          "sampled_physical_peak_mib": 62663,
+          "pss_max_bytes": 8440114176,
+          "recorded_allocated_peak_bytes": null,
+          "note": "Physical sampled peak includes warm allocator pool; only first pair has reset peak stats",
+          "cache_first_bytes": 935329792,
+          "cache_last_bytes": 6330515456,
+          "cache_growth_bytes": 5395185664
+        }
+      ],
+      "failed_batch_all_finite": true,
+      "failed_batch_trace_calls": 1,
+      "failed_batch_actual_context_lengths": [
+        20810,
+        21250,
+        22375,
+        23343
+      ],
+      "failed_batch_causal_context_lengths": [
+        20800,
+        21240,
+        22365,
+        23333
+      ],
+      "App_extreme_current_d": -3.128219810460814,
+      "App_extreme_saved_original_d": -3.1117619098301255
+    }
+  ],
+  "source_transport": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-native-mlp-memory-20261007\\v2\\actual-results\\transport.json",
+    "sha256": "fdfd93a559f4d8636f1c2b522671943c314d4d81aed65125a905b086774567d4"
+  },
+  "physical_scope": "Actor-only original FSDP initialization; no co-resident vLLM and no formal restart. Not full32k capacity or restored training-health proof.",
+  "timing_scope": "Original mode ran first, offload second after warmup; no speedup ratio claim.",
+  "tolerances": "Signed and QVA exactly equal on real comparison B4. No new FA/FLA tolerance or numerical correction.",
+  "numerical_scope": "The long failed B4 has a completed finite vector, but no successful former baseline exists for its full vector.",
+  "cache_scope": "Storage metadata confirms already consumed DynamicLayer keys/values remain GPU-resident until the attribute call ends; do not infer cross-batch leak."
+}

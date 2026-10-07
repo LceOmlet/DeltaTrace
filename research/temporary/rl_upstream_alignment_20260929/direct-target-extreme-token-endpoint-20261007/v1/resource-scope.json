@@ -1,0 +1,46 @@
+{
+  "status": "prepared_only",
+  "data": [
+    {
+      "task": "textcraft",
+      "input_sha256": "19b18c5f4204ec4d88e40d72d350a06954f64452824a8662e95497319f89a37a",
+      "paired_shape": [
+        8,
+        4062
+      ],
+      "target_count": 457,
+      "target_predictor_union": 429,
+      "vocab_inferred_from_original_BF16_output_bytes": 248320,
+      "native_head_BF16_logical_bytes": 1704468480,
+      "packed_logits_BF16_logical_bytes": 453928960,
+      "native_plus_packed_logits_overlap_bytes": 2158397440,
+      "one_native_MLP_feature_BF16_tensor_bytes": 798621696,
+      "one_hidden_BF16_tensor_bytes": 266207232,
+      "target_FP32_temporary_one_tensor_bytes": 907857920,
+      "head_scope": "Text original untiled FP32 log-softmax is preserved",
+      "full32k_capacity_verified": false
+    },
+    {
+      "task": "appworld",
+      "input_sha256": "aaa03be7fb10624918e5289aa1fc3409ae2d81ce32243a84df5539c48727be85",
+      "paired_shape": [
+        8,
+        9773
+      ],
+      "target_count": 2072,
+      "target_predictor_union": 1777,
+      "vocab_inferred_from_original_BF16_output_bytes": 248320,
+      "native_head_BF16_logical_bytes": 7060234240,
+      "packed_logits_BF16_logical_bytes": 2058076160,
+      "native_plus_packed_logits_overlap_bytes": 9118310400,
+      "one_native_MLP_feature_BF16_tensor_bytes": 1921449984,
+      "one_hidden_BF16_tensor_bytes": 640483328,
+      "target_FP32_temporary_one_tensor_bytes": 254279680,
+      "head_scope": "App original row128 tiling applies only to target log-softmax temporaries",
+      "full32k_capacity_verified": false
+    }
+  ],
+  "scope": "Individual logical sizes and known native-head/packed-logits overlap, not an observed full peak. Original no-grad actor-only forward has no vLLM engine or DT capture bank; native decoder/FSDP temporaries and model weights remain. Nominal 9B BF16 weights are about 16.76GiB before sharding, not measured storage.",
+  "gpu_scope": "Root reported fresh physical4/5 after App terminal; no GPU read or launch performed here",
+  "cuda_initialized": false
+}
