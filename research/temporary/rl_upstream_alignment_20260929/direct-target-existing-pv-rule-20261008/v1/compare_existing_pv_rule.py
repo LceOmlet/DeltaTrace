@@ -4,6 +4,8 @@ Calls the unchanged producer/runner and its existing rule-selection options.
 This is a diagnostic comparison, never a production profile or credit repair.
 Default compares attention PV; --memory compares averaged/forward memory only.
 Source, target, reward, norm/gate, head, Q/V/A and PPO parameters persist.
+--clean-gdn selects the preserved clean-v1 norm/gate and memory defaults,
+retaining the current execution settings; it is not a production switch.
 --code-fence-only isolates one actual target score diagnostically, retaining
 all original target INPUT tokens and original reference IDs. It never exports
 partial-score contributions as complete-event Q/V/A or changes training.
@@ -20,9 +22,9 @@ import profile_existing_offload as diagnostic_owner
 from inspect_extreme_endpoint import check_imports, sha, CASES
 
 
-def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False):
+def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False, compare_clean=False):
     assert not with_vllm
-    assert not (compare_memory and code_fence_only)
+    assert sum((compare_memory, code_fence_only, compare_clean)) <= 1
     import ray
     from verl.single_controller.base.decorator import Dispatch, register
     from verl.workers.fsdp_workers import ActorRolloutRefWorker
@@ -72,6 +74,7 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False)
             details = []
             original_pv = None
             original_memory = None
+            original_norm_gate = None
             release_owner = None
             mode = ['unset']
             try:
@@ -94,10 +97,17 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False)
                 original_pv = dict(runner.attention_pv_rules)
                 assert original_pv == {}
                 original_memory = dict(runner.finite_fla_by_layer)
+                original_norm_gate = dict(runner.norm_gate_rules)
+                if compare_clean:
+                    from qwen35_clean_runner import make_qwen35_clean_runner
+                    clean_path = inspect.getsourcefile(make_qwen35_clean_runner)
+                    assert sha(clean_path) == 'e5acd0b43d75677e0416e5b856dfad31f460562ef1968f02ac2357ba268b3cf0'
+                    record['preserved_clean_owner'] = dict(path=clean_path, sha256=sha(clean_path),
+                        numerical_rule_selection='Existing Qwen35DenseFiniteRunner defaults: empty norm_gate_rules and finite_fla_by_layer. Current execution/offload settings and all kernels retained, not a frozen-runtime restore.')
                 layers = runner.model.model.language_model.layers
                 full = [i for i, layer in enumerate(layers) if layer.block_type == 'full_attention']
                 assert full == [3, 7, 11, 15, 19, 23, 27, 31]
-                if compare_memory:
+                if compare_memory or compare_clean:
                     assert sorted(original_memory) == [i for i, layer in enumerate(layers)
                         if layer.block_type == 'linear_attention']
                 prepared_inputs = []
@@ -158,7 +168,7 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False)
                 record.update(runner=dict(path=path, sha256=sha(path)),
                               existing_offload=True, original_attention_pv_rules=original_pv,
                               original_GDN_rules=runner.norm_gate_rules,
-                              comparison_kind='actual_next_code_fence_score_only' if code_fence_only else ('memory_endpoint_order' if compare_memory else 'attention_PV'),
+                              comparison_kind='actual_next_code_fence_score_only' if code_fence_only else ('preserved_clean_GDN_rules' if compare_clean else ('memory_endpoint_order' if compare_memory else 'attention_PV')),
                               original_memory_override_layers=sorted(original_memory),
                               geometry=dict(selected_lengths=[row['selected'].numel() for row in prepared],
                                   uids=[row['traj_uid'] for row in prepared],
@@ -170,14 +180,20 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False)
                          ('existing_content0', {i: 'content0' for i in full})]
                 if code_fence_only:
                     modes = [('original_next_code_fence_score_only', original_pv)]
+                if compare_clean:
+                    modes = [('original_symmetric_memory', original_memory), ('existing_clean_gdn', {})]
                 for name, rules in modes:
                     mode[0] = name
-                    if compare_memory:
+                    if compare_memory or compare_clean:
                         # The owner's empty override map selects the existing
                         # original compiled finite_fla callback at every GDN.
-                        # Norm/gate, FA, head and the producer remain unchanged.
+                        # FA, head and producer remain unchanged. The clean
+                        # comparison also selects its existing norm/gate map.
                         runner.finite_fla_by_layer = dict(rules)
                         descriptor = dict(memory_override_layers=sorted(rules))
+                        if compare_clean:
+                            runner.norm_gate_rules = dict(original_norm_gate) if name == 'original_symmetric_memory' else {}
+                            descriptor['norm_gate_rules'] = dict(runner.norm_gate_rules)
                     else:
                         runner.attention_pv_rules = dict(rules)
                         descriptor = dict(attention_pv_rules=rules)
@@ -213,9 +229,11 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False)
                     save('DT_complete', active_mode=name)
                 runner.attention_pv_rules = original_pv
                 runner.finite_fla_by_layer = original_memory
+                runner.norm_gate_rules = original_norm_gate
                 save('complete', scope=__doc__, production_deployment=False,
                      credit_repaired=False, profile_restored=(runner.attention_pv_rules == original_pv
-                         and runner.finite_fla_by_layer == original_memory))
+                         and runner.finite_fla_by_layer == original_memory
+                         and runner.norm_gate_rules == original_norm_gate))
                 return dict(rank=self.rank, completed=True, optimizer_steps=0)
             except BaseException:
                 import traceback
@@ -228,6 +246,8 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False)
                         producer.runner.attention_pv_rules = original_pv
                     if original_memory is not None:
                         producer.runner.finite_fla_by_layer = original_memory
+                    if original_norm_gate is not None:
+                        producer.runner.norm_gate_rules = original_norm_gate
                     if release_owner is not None:
                         producer.runner.model.release_finite_layer = release_owner
                     producer.runner.model.release_owner_params()
@@ -245,5 +265,7 @@ if __name__ == '__main__':
     if memory:sys.argv.remove('--memory')
     code_fence = '--code-fence-only' in sys.argv
     if code_fence:sys.argv.remove('--code-fence-only')
-    diagnostic_owner.make_worker = partial(make_worker, compare_memory=memory, code_fence_only=code_fence)
+    clean = '--clean-gdn' in sys.argv
+    if clean:sys.argv.remove('--clean-gdn')
+    diagnostic_owner.make_worker = partial(make_worker, compare_memory=memory, code_fence_only=code_fence, compare_clean=clean)
     diagnostic_owner.main()

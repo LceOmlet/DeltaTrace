@@ -25,6 +25,7 @@ kind.add_argument('--gdn', action='store_true', help='Observe the original decod
 kind.add_argument('--memory', action='store_true', help='Compare the existing averaged/forward memory callbacks; other rules unchanged')
 kind.add_argument('--memory-curve', action='store_true', help='Original author curves for the completed memory callback comparison')
 kind.add_argument('--code-fence-only', action='store_true', help='One bounded original DT isolating the actual next code-fence score; unchanged original reference inputs')
+kind.add_argument('--clean-gdn', action='store_true', help='Compare owner-preserved clean-v1 GDN rule defaults; current execution/kernels retained, no production switch')
 parser.add_argument('--revision',type=int,default=1,help='Distinct receipt directory for a corrected GDN diagnostic')
 args = parser.parse_args()
 if args.revision != 1 and not args.gdn:parser.error('revision is only used for GDN diagnostics')
@@ -41,6 +42,8 @@ elif args.memory:
     OUT += '-memory'
 elif args.code_fence_only:
     OUT += '-code-fence'
+elif args.clean_gdn:
+    OUT += '-clean-gdn'
 if args.gdn and args.revision != 1:OUT += '-v' + str(args.revision)
 for p in files:
     compile(p.read_bytes(), str(p), 'exec')
@@ -131,6 +134,7 @@ else:
  argv=[env['VENV_PYTHON'],str(out/program),'--source',str(source_path)]
  if @MEMORY@:argv+=['--memory']
  if @FENCE@:argv+=['--code-fence-only']
+ if @CLEAN@:argv+=['--clean-gdn']
  if @LAYER@:argv+=['--case',str(out/'case.json')]
  elif not @CURVE@:argv+=['--native',str(native)]
  argv+=['--output',str(out/'results')]
@@ -139,15 +143,17 @@ else:
  if @LAYER@:record['case_binding']=dict(path=str(out/'case.json'),sha256=hashlib.sha256((out/'case.json').read_bytes()).hexdigest(),value=json.loads((out/'case.json').read_bytes()))
  if @SUBOPS@:record.update(partial_DT_only=True,stop_after_decoder=30,full_signed_vector_produced=False)
  if @FENCE@:record.update(DT_calls_per_rank=1,scope='Same original real B4 and original original-profile DT; isolate the next actual code-fence score only, without changing reference IDs or retained target input tokens; diagnostic-only, no complete-event QVA export, profile switch, update, rollout or restore')
+ if @CLEAN@:record.update(scope='Compare the owner-preserved clean-v1 GDN numerical rule defaults on the same actual B4; current offload/chunking/kernels/target/QVA/PPO retained, no frozen-runtime restore or formal profile switch',preserved_clean_owner_sha256='e5acd0b43d75677e0416e5b856dfad31f460562ef1968f02ac2357ba268b3cf0')
  (out/'launch.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
 """
 commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, FENCE=args.code_fence_only, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
+for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, FENCE=args.code_fence_only, CLEAN=args.clean_gdn, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
     code = code.replace('@' + k + '@', repr(v))
 command = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 prefix = 'gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else ('curve-' if args.curve else '')))
 if args.memory or args.memory_curve:prefix='memory-curve-' if args.memory_curve else 'memory-'
 if args.code_fence_only:prefix='code-fence-'
+if args.clean_gdn:prefix='clean-gdn-'
 if args.gdn and args.revision != 1:prefix = 'gdn-v' + str(args.revision) + '-'
 phase = prefix + ('launch' if args.launch else 'prepare')
 (HERE / (phase + '-command.sh')).write_text(command, encoding='utf8', newline='\n')
