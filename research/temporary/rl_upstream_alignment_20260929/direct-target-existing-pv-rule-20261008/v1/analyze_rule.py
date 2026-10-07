@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 import re
+import argparse
 
 import torch
 
@@ -18,14 +19,18 @@ def binding(p):
 
 
 def main():
-    manifest = json.loads((HERE / 'transport-manifest.json').read_bytes())
-    for item in manifest['files']:
-        actual = binding(HERE / item['name'])
+    parser=argparse.ArgumentParser();parser.add_argument('--memory',action='store_true');args=parser.parse_args()
+    folder=HERE/'memory-results' if args.memory else HERE
+    modes=('original_symmetric_memory','existing_forward_memory') if args.memory else MODES
+    transport_path=folder/('transport.json' if args.memory else 'transport-manifest.json')
+    manifest = json.loads(transport_path.read_bytes())
+    for item in (manifest if args.memory else manifest['files']):
+        actual = binding(Path(item['local_path']) if args.memory else HERE / item['name'])
         assert actual['bytes'] == item['bytes'] and actual['sha256'] == item['sha256']
-    paths = [[HERE / 'results' / f'rank{rank}-{mode}.pt' for mode in MODES] for rank in (0, 1)]
+    paths = [[folder / 'results' / f'rank{rank}-{mode}.pt' for mode in modes] for rank in (0, 1)]
     values = [[torch.load(p, map_location='cpu', weights_only=False) for p in pair] for pair in paths]
     cross_rank = {}
-    for j, mode in enumerate(MODES):
+    for j, mode in enumerate(modes):
         cross_rank[mode] = dict(signed=torch.equal(values[0][j]['signed'], values[1][j]['signed']),
                                QVA={k: all(torch.equal(a[k], b[k]) for a, b in zip(values[0][j]['values'], values[1][j]['values']))
                                     for k in values[0][j]['values'][0]})
@@ -38,15 +43,15 @@ def main():
     compared = []
     for p in points:
         item = {k: p[k] for k in ('mode', 'row', 'traj_uid', 'response_slot', 'packed_slot', 'token_id', 'token', 'reward', 'native_single_delete_d', 'native_endpoint_expected_A_FP32')}
-        for j, mode in enumerate(MODES):
+        for j, mode in enumerate(modes):
             value = values[0][j]
             d = float(value['signed'][p['row'], p['packed_slot']])
             a = float(value['values'][p['row']]['dt_token_advantages'][p['response_slot']])
             item[mode] = dict(d=d, A=a, opposite_sign_to_previous_single_delete=d * p['native_single_delete_d'] < 0)
         compared.append(item)
-    rank_reports = [json.loads((HERE / 'results' / f'rank{rank}.json').read_bytes()) for rank in (0, 1)]
+    rank_reports = [json.loads((folder / 'results' / f'rank{rank}.json').read_bytes()) for rank in (0, 1)]
     physical = []
-    for line in (HERE / 'results/physical-mx-smi.jsonl').read_bytes().splitlines():
+    for line in (folder / 'results/physical-mx-smi.jsonl').read_bytes().splitlines():
         e = json.loads(line)
         gpu = None
         for text in e['stdout'].splitlines():
@@ -58,27 +63,27 @@ def main():
                 physical.append(dict(unix=e['unix'], gpu=gpu, used_mib=int(memory[1])))
     resource = []
     for rank in (0, 1):
-        phases = [json.loads(line) for line in (HERE / 'results' / f'rank{rank}-phases.jsonl').read_bytes().splitlines()]
+        phases = [json.loads(line) for line in (folder / 'results' / f'rank{rank}-phases.jsonl').read_bytes().splitlines()]
         resource.append(dict(rank=rank, physical_sampled_peak_mib=max(e['used_mib'] for e in physical if e['gpu'] == rank + 4),
                              process_phase_max_pss_bytes=max(e['pss_bytes'] for e in phases),
-                             phases=binding(HERE / 'results' / f'rank{rank}-phases.jsonl')))
+                             phases=binding(folder / 'results' / f'rank{rank}-phases.jsonl')))
         assert rank_reports[rank]['phase'] == 'complete' and rank_reports[rank]['profile_restored']
     result = dict(
         status='Existing interaction-order sensitivity measured; not a credit repair or deployment',
-        diagnostic_code_commit='9567ba35ab470f2429dc55c33f4b33f28f8d2e19',
-        launch=binding(HERE / 'launch.json'), source_sha256=values[0][0]['source_sha256'],
+        diagnostic_code_commit=json.loads((folder/'launch.json').read_bytes())['code_commit'],
+        launch=binding(folder / 'launch.json'), source_sha256=values[0][0]['source_sha256'],
         original_native_sha256=values[0][0]['native_sha256'],
         scope='Same actual high-impact AppWorld B4, same initialized model and native target endpoint scores; only original attention_pv_rules option differs. Original GDN symmetric, head, reward, Q/V/A and PPO remain unchanged.',
         existing_owner=binding(HERE.parents[1] / 'direct-target-finite-owner-audit-20261008/v1/finite-reference-owner-source.json'),
         previous_independent_single_delete_reference=binding(reference),
-        transport=binding(HERE / 'transport-manifest.json'),
+        transport=binding(transport_path),
         artifacts=[binding(p) for pair in paths for p in pair],
         exact_target_endpoint_arrays_equal=endpoints,
         cross_rank_exact_equal=cross_rank,
         sampled_points=compared,
-        biased_sample_sign_disagreements={mode: sum(p[mode]['opposite_sign_to_previous_single_delete'] for p in compared) for mode in MODES},
+        biased_sample_sign_disagreements={mode: sum(p[mode]['opposite_sign_to_previous_single_delete'] for p in compared) for mode in modes},
         sampled_points_count=len(compared),
-        elapsed_seconds_by_rank=[{mode: r['modes'][mode]['seconds'] for mode in MODES} for r in rank_reports],
+        elapsed_seconds_by_rank=[{mode: r['modes'][mode]['seconds'] for mode in modes} for r in rank_reports],
         resources=resource,
         rule_definitions=dict(content1='Original deltaP*V0 + P1*deltaV finite interaction routing',
                               content0='Existing owner reverses finite endpoints and uses V1, selecting deltaP*V1 + P0*deltaV'),
@@ -100,9 +105,27 @@ def main():
         credit_repaired=False, formal_update_released=False,
         cuda_initialized_in_local_analysis=torch.cuda.is_initialized(),
     )
-    target = REPO / 'experiments/rl/results_existing_PV_rule_20261008.json'
+    if args.memory:
+        result['scope']='Same actual high-impact AppWorld B4, unchanged native target endpoint scores; only the existing finite_fla_by_layer map selects the original averaged or forward callback. Norm/gate, FA, head, reward, Q/V/A formula and PPO remain unchanged.'
+        result['rule_definitions']=dict(original_symmetric_memory='Original average_memory_endpoint_orders of the compiled finite_fla callback',existing_forward_memory='Original compiled finite_fla callback, selected by its existing empty finite_fla_by_layer map')
+        result['limitations']=[v for v in result['limitations'] if not v.startswith(('The current content1','The rule swap'))]
+        result['limitations'].append('This evaluates existing memory rules; the local worst-token improvement and twelve selected points do not establish improved original author curves or training. No profile switch is deployed.')
+        original=torch.load(HERE/'results/rank0-original_content1.pt',map_location='cpu',weights_only=False)
+        result['baseline_original_symmetric_vector_equals_prior_replay']=torch.equal(values[0][0]['signed'],original['signed'])
+        result['baseline_original_symmetric_vector_maxabs_vs_prior_replay']=float((values[0][0]['signed']-original['signed']).abs().max())
+        result['unchanged']['QVA_formula']=result['unchanged'].pop('QVA')
+        result['selected_B4_raw_advantage_moments']={}
+        for j,mode in enumerate(modes):
+            groups=values[0][j]['report']['raw_advantage_groups']
+            outlier=float(values[0][j]['values'][3]['dt_token_advantages'][125])
+            result['selected_B4_raw_advantage_moments'][mode]=dict(groups=groups,
+                newline_advantage=outlier,
+                newline_A_squared_share_of_prior_sources=outlier**2/groups['prior_source']['sumsq'],
+                newline_A_squared_share_of_all_policy=outlier**2/sum(g['sumsq'] for g in groups.values()),
+                scope='This selected B4 only; A-squared is not a parameter-gradient share or the original global-batch whitening variance.')
+    target = REPO / ('experiments/rl/results_existing_memory_rule_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_rule_20261008.json')
     target.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
-    (HERE / 'analysis.json').write_text(json.dumps(dict(points=compared, sign_disagreements=result['biased_sample_sign_disagreements']), ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    (HERE / ('memory-analysis.json' if args.memory else 'analysis.json')).write_text(json.dumps(dict(points=compared, sign_disagreements=result['biased_sample_sign_disagreements']), ensure_ascii=False, indent=2) + '\n', encoding='utf8')
     print(json.dumps(dict(receipt=binding(target), signs=result['biased_sample_sign_disagreements'],
                          worst_point=next(p for p in compared if p['row'] == 3 and p['mode'] == 'most_negative'),
                          resources=resource), ensure_ascii=False, indent=2))

@@ -13,12 +13,15 @@ spec.loader.exec_module(transport)
 parser = argparse.ArgumentParser()
 group=parser.add_mutually_exclusive_group();group.add_argument('--layer', action='store_true');group.add_argument('--subops',action='store_true')
 group.add_argument('--gdn',action='store_true')
+group.add_argument('--memory',action='store_true')
+group.add_argument('--memory-curve',action='store_true')
 parser.add_argument('--revision',type=int,default=1)
 args = parser.parse_args()
 code = r'''
 import json,psutil,subprocess,time
 from pathlib import Path
 root=Path(ROOT);out=root/('receipts/direct-target-existing-pv-rule-20261008-v1-'+('gdn' if GDN else ('subops' if SUBOPS else ('layers' if LAYER else 'curves'))))
+if MEMORY or MEMORY_CURVE:out=root/('receipts/direct-target-existing-pv-rule-20261008-v1-'+('memory-curves' if MEMORY_CURVE else 'memory'))
 if GDN and REVISION!=1:out=out.with_name(out.name+'-v'+str(REVISION))
 a=json.loads((out/'launch.json').read_bytes())
 p=psutil.Process(a['pid']) if psutil.pid_exists(a['pid']) else None
@@ -31,6 +34,10 @@ for rank in (0,1):
   entry['views']={key:dict(author_return=value['author_return'],points=len(value['score_points']),seconds=sum(x['seconds'] for x in value['score_points'])) for key,value in d.get('views',{}).items()}
   entry['layer_modes']={key:{k:v for k,v in value.items() if k in ('candidate_signed','seconds','remaining_snapshot_bytes')} for key,value in d.get('phases',{}).items()}
   entry['layer_contractions']={key:{k:v for k,v in value.items() if k in ('joint_coefficient_times_single_deletion_delta','factual_endpoints_equal','factual_endpoint_maxabs')} for key,value in d.get('cross_boundary_contractions',{}).items()}
+  if MEMORY:
+   entry['modes']={k:{name:value[name] for name in ('seconds','saved_worst_token','signed_all_finite','QVA_all_finite') if name in value} for k,value in d.get('modes',{}).items()}
+   phases=out/'results'/('rank'+str(rank)+'-phases.jsonl')
+   if phases.exists():entry['last_phase_event']=json.loads(phases.read_bytes().splitlines()[-1])
   if psutil.pid_exists(d['pid']):
    w=psutil.Process(d['pid'])
    if w.create_time()==d['birth']:entry['current_pss_bytes']=w.memory_full_info().pss
@@ -41,7 +48,7 @@ r['textcraft_same_birth']=psutil.Process(2833207).create_time()==1791370325.16
 r['textcraft_release_present']=[(root/'receipts/direct-target-prefix-runtime-20261007-v1/textcraft-first-dt'/('rank'+str(i)+'-release-update')).exists() for i in (0,1)]
 if not r['ranks'] or not r['driver']['same_birth']:r['driver_log_tail']=(out/'driver.log').read_text(errors='replace')[-6000:]
 print(json.dumps(r))
-'''.replace('ROOT', repr(transport.ROOT)).replace('LAYER', repr(args.layer)).replace('SUBOPS',repr(args.subops)).replace('GDN',repr(args.gdn)).replace('REVISION',repr(args.revision))
+'''.replace('ROOT', repr(transport.ROOT)).replace('LAYER', repr(args.layer)).replace('SUBOPS',repr(args.subops)).replace('GDN',repr(args.gdn)).replace('REVISION',repr(args.revision)).replace('MEMORY_CURVE',repr(args.memory_curve)).replace('MEMORY',repr(args.memory))
 shell = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 r = subprocess.run(transport.SSH + ['bash', '-s'], input=shell.encode(), capture_output=True)
 if r.returncode:
@@ -49,6 +56,7 @@ if r.returncode:
 r.check_returncode()
 record = json.loads(r.stdout)
 prefix=('gdn-v'+str(args.revision)+'-') if args.gdn and args.revision!=1 else None
+if args.memory or args.memory_curve:prefix='memory-curve-' if args.memory_curve else 'memory-'
 (HERE / ((prefix or ('gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else 'curve-')))) + 'observation-' + str(int(record['unix'])) + '.json')).write_text(json.dumps(record, indent=2) + '\n')
 # Exact positions remain in the saved receipt; keep the live report compact.
 for entry in record['ranks']:

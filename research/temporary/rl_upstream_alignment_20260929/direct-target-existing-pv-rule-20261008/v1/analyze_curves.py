@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import argparse
 
 import torch
 
@@ -17,7 +18,8 @@ def receipt(path):
 
 
 def main():
-    folder = HERE / 'curve-results'
+    parser=argparse.ArgumentParser();parser.add_argument('--memory',action='store_true');args=parser.parse_args()
+    folder = HERE / ('memory-curve-results' if args.memory else 'curve-results')
     transport = json.loads((folder / 'transport.json').read_bytes())
     for item in transport:
         assert receipt(Path(item['local_path']))['sha256'] == item['sha256']
@@ -33,7 +35,7 @@ def main():
         assert report['author']['sha256'] == '583f4b7d0426407eb9a517f173365762860a1f4382f472dffb5c07de7d3e94a1'
         assert report['author']['k_default'] == 20
         mode = binding['profile']
-        path = HERE / 'results' / f'rank0-{mode}.pt'
+        path = (HERE/'memory-results' if args.memory else HERE) / 'results' / f'rank0-{mode}.pt'
         assert receipt(path)['sha256'] == binding['provenance']['attribution_sha256']
         trace = torch.load(path, map_location='cpu', weights_only=False)
         candidate = binding['case']
@@ -98,7 +100,7 @@ def main():
             elapsed_driver_launch_to_last_worker_complete_seconds=max(r['unix'] for r in ranks)-launch['launched_unix'],
             physical_sampled_peak_mib={str(gpu):max(x['used_mib'] for x in physical if x['gpu']==gpu) for gpu in (4,5)}),
         interpretation='The existing content0 rule fixes the selected newline sign but does not improve this trajectory\'s original cumulative deletion/RISE/MAS results. Both rules assign a negative sum to their final signed-ranked deletion group, while preserving that group increases the native joint target score in that cumulative context. This documents an interaction-allocation mismatch, not merely a large coefficient or proof that all DT rankings are poor. No production rule switch is justified by these results.',
-        sources=[receipt(folder/'transport.json'),receipt(folder/'results/effective-config.yaml'),receipt(folder/'curve-inputs.json'),receipt(REPO/'experiments/rl/results_existing_PV_rule_20261008.json')],
+        sources=[receipt(folder/'transport.json'),receipt(folder/'results/effective-config.yaml'),receipt(folder/'curve-inputs.json'),receipt(REPO/('experiments/rl/results_existing_memory_rule_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_rule_20261008.json'))],
         limitations=[
             'One selected high-impact trajectory, not a paper-scale/global quality result or a population error rate.',
             'The original metric uses its normalization, running minimum and evaluation penalties. Raw nonmonotonic native scores are preserved; none of these evaluation transforms change training credit.',
@@ -110,10 +112,13 @@ def main():
         formal_restart=False, production_profile_changed=False,credit_repaired=False,
         TextCraft_first_update_released=False,checkpoint_restore=False,
         local_cuda_initialized=torch.cuda.is_initialized())
-    target = REPO/'experiments/rl/results_existing_PV_author_curves_20261008.json'
+    if args.memory:
+        out['scope']='Same real AppWorld trajectory and native B4 scorer; one previously measured existing averaged/forward memory rule per DP rank. Original author cumulative deletion/RISE/MAS with k20 unchanged.'
+        out['interpretation']='Original author metrics and native cumulative deletion groups for the existing memory rules are reported without fitting a threshold. This selected trajectory is supplemental to the complete B4 vector and separately measured individual-token endpoints; it does not establish population quality or repaired training.'
+    target = REPO/('experiments/rl/results_existing_memory_author_curves_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_author_curves_20261008.json')
     target.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
-    (HERE/'curve-analysis.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
-    with (HERE/'rule-curves.csv').open('w',newline='',encoding='utf8') as stream:
+    (HERE/('memory-curve-analysis.json' if args.memory else 'curve-analysis.json')).write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
+    with (HERE/('memory-rule-curves.csv' if args.memory else 'rule-curves.csv')).open('w',newline='',encoding='utf8') as stream:
         writer=csv.DictWriter(stream,fieldnames=list(csv_rows[0]));writer.writeheader();writer.writerows(csv_rows)
     print(json.dumps(dict(receipt=receipt(target),controls=control,measurements=out['measurements'],
         metrics={mode:{name:dict(author_return=v['author_return'],candidate_first_changed_step=v['candidate_first_changed_step']) for name,v in p['views'].items()} for mode,p in results.items()}),indent=2))

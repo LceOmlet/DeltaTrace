@@ -1,5 +1,6 @@
 """Plot original author arrays and native scores without smoothing or correction."""
 import json
+import argparse
 from pathlib import Path
 
 import matplotlib
@@ -7,12 +8,15 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
-data = json.loads((HERE/'curve-analysis.json').read_bytes())
+parser=argparse.ArgumentParser();parser.add_argument('--memory',action='store_true');args=parser.parse_args()
+data = json.loads((HERE/('memory-curve-analysis.json' if args.memory else 'curve-analysis.json')).read_bytes())
 plt.rcParams.update({'font.family':'DejaVu Sans','font.size':10,
                      'axes.spines.top':False,'axes.spines.right':False})
 fig,axes=plt.subplots(2,3,figsize=(13.2,7.0),layout='constrained')
 styles={'original_content1':('#1b6ca8','Original content1'),
         'existing_content0':('#d46b2a','Existing content0')}
+if args.memory:styles={'original_symmetric_memory':('#1b6ca8','Original averaged memory'),
+                      'existing_forward_memory':('#d46b2a','Existing forward memory')}
 for row,name in enumerate(('signed_RISE','positive_MAS')):
     for mode,profile in data['profiles'].items():
         view=profile['views'][name]
@@ -33,7 +37,7 @@ for row,name in enumerate(('signed_RISE','positive_MAS')):
         ax.legend(fontsize=8,frameon=False)
 count=next(iter(data['profiles'].values()))['source_count']
 fig.suptitle('One real AppWorld trajectory | %d prior-source tokens | unchanged author metric\nEvaluation only: no credit clipping, rule deployment or optimizer update'%count,fontsize=12)
-target=HERE/'existing-pv-author-curves.png'
+target=HERE/('existing-memory-author-curves.png' if args.memory else 'existing-pv-author-curves.png')
 fig.savefig(target,dpi=170)
 plt.close(fig)
 print(target.resolve())
