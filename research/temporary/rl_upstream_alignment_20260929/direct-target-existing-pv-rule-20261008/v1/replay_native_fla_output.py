@@ -23,7 +23,9 @@ def main():
         p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--single-deletion',action='store_true')
     p.add_argument('--observe-memory-orders',action='store_true')
+    p.add_argument('--conditional-v-only',action='store_true')
     a=p.parse_args()
+    assert sum((a.single_deletion,a.observe_memory_orders,a.conditional_v_only))<=1
     source=json.loads(a.source.read_bytes())
     launch=json.loads(a.launch.read_bytes())
     assert sha(a.source)==launch['source_sha256']
@@ -58,6 +60,48 @@ def main():
     def save():
         (a.output/'result.json').write_text(json.dumps(report,indent=2)+'\n')
     try:
+        if a.conditional_v_only:
+            report['scope']='Conditional V diagnostic only: saved actual single-deletion V pair, all other FLA inputs fixed to the original factual endpoint, actual shared factual incoming state. Original public FLA and existing forward callback only; no model, full DT, update, rollout, new credit rule or tolerance.'
+            for artifact in native['operand_artifacts']:
+                path=Path(artifact['path'])
+                assert sha(path)==artifact['sha256']
+                saved=torch.load(path,map_location='cpu',weights_only=True,mmap=True)
+                ep={k:v.to('cuda') for k,v in saved['endpoints'].items()}
+                offset=saved['actual_single_time_start']-saved['time_start']
+                assert offset>=0 and offset%64==0
+                actual_v=saved['actual_single']['v'].to('cuda')
+                assert torch.equal(actual_v[1],ep['v'][1,offset:])
+                operands={name:ep[name][1:2,offset:].expand(2,*ep[name][1:2,offset:].shape[1:]).contiguous()
+                          for name in ('q','k','raw_g','beta')}
+                assert all(torch.equal(value[0],value[1]) for value in operands.values())
+                operands['v']=actual_v
+                initial=ep['h'][1:2,offset//64].expand(2,*ep['h'][1:2,offset//64].shape[1:]).contiguous()
+                do=saved['do'].to('cuda')
+                torch.cuda.synchronize();tick=time.perf_counter()
+                with torch.no_grad():
+                    output,state=chunk.chunk_gated_delta_rule(operands['q'],operands['k'],operands['v'],operands['raw_g'],operands['beta'],scale=saved['scale'],initial_state=initial,output_final_state=False,use_qk_l2norm_in_kernel=False)
+                    forward=finite_fla_pullback(ep,do,saved['scale'])
+                torch.cuda.synchronize()
+                assert state is None
+                native_effect=float(_token_effect(do[:,offset:],output).sum())
+                forward_effect=float(_token_effect(forward['v'][:,offset:],actual_v).sum())
+                averaged_effect=float(_token_effect(saved['outputs']['v'][:,offset:].to('cuda'),actual_v).sum())
+                report['groups'].append(dict(head_start=saved['head_start'],seconds=time.perf_counter()-tick,
+                    native_conditional_V_effect=native_effect,
+                    original_forward_V_times_actual_single_delta=forward_effect,
+                    original_symmetric_V_times_actual_single_delta=averaged_effect,
+                    forward_minus_native=forward_effect-native_effect,
+                    symmetric_minus_native=averaged_effect-native_effect,
+                    all_other_inputs_factual_pair_equal=True,factual_V_exact_equal=True,
+                    actual_single_suffix_offset=offset,initial_state_pair_equal=torch.equal(initial[0],initial[1]),
+                    input_dtypes={key:str(value.dtype) for key,value in operands.items()},
+                    output_dtype=str(output.dtype),do_dtype=str(do.dtype),
+                    peak_live_allocated_bytes=torch.cuda.max_memory_allocated(),pss_bytes=psutil.Process().memory_full_info().pss,
+                    artifact=artifact))
+                report['summary']={key:sum(g[key] for g in report['groups']) for key in ('native_conditional_V_effect','original_forward_V_times_actual_single_delta','original_symmetric_V_times_actual_single_delta','forward_minus_native','symmetric_minus_native')}
+                save()
+                del ep,saved,actual_v,operands,initial,do,output,forward
+            report['phase']='complete';save();return
         for artifact in native['operand_artifacts']:
             path=Path(artifact['path'])
             assert sha(path)==artifact['sha256']
