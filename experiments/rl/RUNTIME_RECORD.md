@@ -1,5 +1,49 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 22:26 实际动作target累计删除完成；极端信用和显存结论分别保留
+
+诊断代码d0f2ebf4，汇总results_action_curve_20261007.json。PID4098367/
+birth1791382409.93已正常退出，物理4/5各859MiB；Text原PID2833207同出生时间仍
+在首次更新前hold，两rank无release；App原正式作业终止，未恢复检查点或重启。
+正式source2796233e/58209daa、LoRA8/16、实际每卡B4、信用/PPO/白化均不变。
+
+复用作者原faithfulness_test_skip_tokens，SHA583f4b7d，默认k20；由其负责排序、
+累计删除、density、归一化和RISE/MAS。薄接口传原IDs、1266个非连续source位置
+及原联合动作Y的标量分数，原PackedAnswerTargets/NativeTargetLogitRows/selected
+target logp负责评分。明确属于联合Y目标适配，不能称为原单suffix evaluator未改。
+target/O/其他三行不动，不生成奖励标签；positive-only仅为MAS评测视图，不进入信用。
+两CPU接口测试仅证明原ID重组及source/target分离，不证明模型或数值正确。
+
+两rank各42次paired原生前向，含初始化450.779秒，曲线和作者返回值逐值相同，
+twins差0、其他三行分数恒定，factual/all-EOS分数与前次原生端点相同。
+signed-input RISE=.31342148，positive-input MAS=.48193712；单条轨迹，不增设
+门槛，也不把分数作为FA/FLA验收或整体归因质量结论。
+最后signed组实际改变63个token，原DT值全负、总和-7.29023080，但删除后原生
+joint logp下降15.72953576；异常换行在此组。此为组上下文中的效应不匹配，
+补充前次单token真实上下文反号证据，不把组效应冒称逐token真值。
+早期高正值排序删除仍显著降低目标分数，不能从该异常宣称全部归因无效。
+原始非单调分数及作者running-minimum/penalty数组分别保存；评测变换未修改信用。
+
+此前实际Text极端“ Format”原生单删除仍有负向概率作用：删除/事实比9.1575，
+原DT估计23.8169，故负号有依据而原幅度未获此对照支持；App换行真实单删除
+则支持代码生成，与其联合DT负值不符。两例不混同，不按词义或符号先判毒性。
+完整批次极端白化系数的平方仅占有效系数平方和2.7603%，不是参数梯度占比。
+
+新增existing-numeric-scope.json仅拆已保存数据：single-source全局root20.57395893、
+head+final norm20.89706807、signed20.98582570；前者差.32310914、decoder累计差
+.08875763分别保留。聚焦行root20.71933239；三个cached identity-row差
+-.13623197/-.28043370/+.27129222不隐藏或纠偏。native replay与保存checkpoint相同
+不等于官方容差验收，全局守恒残差也不提供联合向量各分量的误差界。
+原signed反号在指数/白化前已经存在，当前未声称信用估计已修好。
+
+OOM存储修复仍为79922486：原失败B4在原async-vLLM共存下完成，实际最长27334、
+物理峰值55.716/55.290GiB，完整signed/QVA与已有offload同批逐值相等。
+已定位GDN捕获增加约27.14GiB、已消费FA缓存留存、原HF/PEFT多个4.499GiB临时量
+叠加；修复复用已有mixer卸载并释放已消费的原HF层cache。未正式部署，未扩大为
+精确32768/整轮28批容量或训练健康已验收；本次曲线没有重复DT或推进更新。
+原始结果、导入路径/SHA、effective config、运输SHA及物理资源图在
+direct-target-action-author-curve-20261007/v1/；每项代码与证据分开绑定。
+
 ## 2026-10-07 21:51 极端token参照上下文的真实反号已测量
 
 诊断代码c61c6772，汇总results_reference_context_20261007.json。原Text PID2833207/
