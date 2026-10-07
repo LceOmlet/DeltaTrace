@@ -27,11 +27,13 @@ kind.add_argument('--memory-curve', action='store_true', help='Original author c
 kind.add_argument('--code-fence-only', action='store_true', help='One bounded original DT isolating the actual next code-fence score; unchanged original reference inputs')
 kind.add_argument('--clean-gdn', action='store_true', help='Compare owner-preserved clean-v1 GDN rule defaults; current execution/kernels retained, no production switch')
 kind.add_argument('--clean-gdn-curve', action='store_true', help='Original author curves for the completed preserved GDN rule comparison')
+kind.add_argument('--factual-v', action='store_true', help='Diagnostic existing factual V coefficient with other symmetric fields; no conservation correction or production change')
+kind.add_argument('--factual-v-curve', action='store_true', help='Original author curves for the completed factual-V diagnostic vector')
 parser.add_argument('--revision',type=int,default=1,help='Distinct receipt directory for a corrected GDN diagnostic')
 args = parser.parse_args()
 if args.revision != 1 and not args.gdn:parser.error('revision is only used for GDN diagnostics')
-if args.curve or args.memory_curve or args.clean_gdn_curve:
-    OUT += '-clean-gdn-curves' if args.clean_gdn_curve else ('-memory-curves' if args.memory_curve else '-curves')
+if args.curve or args.memory_curve or args.clean_gdn_curve or args.factual_v_curve:
+    OUT += '-factual-v-curves' if args.factual_v_curve else ('-clean-gdn-curves' if args.clean_gdn_curve else ('-memory-curves' if args.memory_curve else '-curves'))
     files = [HERE / 'compare_existing_pv_curves.py',
              AUDIT / 'direct-target-action-author-curve-20261007/v1/inspect_action_curve.py',
              AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
@@ -45,6 +47,8 @@ elif args.code_fence_only:
     OUT += '-code-fence'
 elif args.clean_gdn:
     OUT += '-clean-gdn'
+elif args.factual_v:
+    OUT += '-factual-v'
 if args.gdn and args.revision != 1:OUT += '-v' + str(args.revision)
 for p in files:
     compile(p.read_bytes(), str(p), 'exec')
@@ -84,6 +88,9 @@ comparison='direct-target-existing-pv-rule-20261008-v1-memory' if @MEMORY_CURVE@
 if @CLEAN_CURVE@:
  profiles=[(0,'original_symmetric_memory'),(1,'existing_clean_gdn')]
  comparison='direct-target-existing-pv-rule-20261008-v1-clean-gdn'
+if @FACTUAL_V_CURVE@:
+ profiles=[(0,'original_symmetric_memory'),(1,'diagnostic_factual_V')]
+ comparison='direct-target-existing-pv-rule-20261008-v1-factual-v'
 for rank,mode in profiles:
  trace=root/'receipts'/comparison/'results'/('rank0-'+mode+'.pt')
  value=torch.load(trace,map_location='cpu',weights_only=False)
@@ -139,6 +146,7 @@ else:
  if @MEMORY@:argv+=['--memory']
  if @FENCE@:argv+=['--code-fence-only']
  if @CLEAN@:argv+=['--clean-gdn']
+ if @FACTUAL_V@:argv+=['--factual-v']
  if @LAYER@:argv+=['--case',str(out/'case.json')]
  elif not @CURVE@:argv+=['--native',str(native)]
  argv+=['--output',str(out/'results')]
@@ -149,10 +157,12 @@ else:
  if @FENCE@:record.update(DT_calls_per_rank=1,scope='Same original real B4 and original original-profile DT; isolate the next actual code-fence score only, without changing reference IDs or retained target input tokens; diagnostic-only, no complete-event QVA export, profile switch, update, rollout or restore')
  if @CLEAN@:record.update(scope='Compare the owner-preserved clean-v1 GDN numerical rule defaults on the same actual B4; current offload/chunking/kernels/target/QVA/PPO retained, no frozen-runtime restore or formal profile switch',preserved_clean_owner_sha256='e5acd0b43d75677e0416e5b856dfad31f460562ef1968f02ac2357ba268b3cf0')
  if @CLEAN_CURVE@:record.update(scope='Unchanged original author cumulative deletion/RISE/MAS for the completed original-symmetric versus preserved-clean-GDN full vectors; same actual trajectory and native B4 scorer, no DT, optimizer, rollout, restore or formal profile change')
+ if @FACTUAL_V@:record.update(scope='Diagnostic composition of existing factual V coefficients and remaining symmetric coefficients, justified by separately measured conditional V native effect; actual joint conservation residual retained without correction. Same input/target/reward/QVA/PPO, no production rule change.')
+ if @FACTUAL_V_CURVE@:record.update(scope='Unchanged original author cumulative deletion/RISE/MAS for original-symmetric versus diagnostic factual-V full vectors; same actual trajectory and native B4 scorer, no DT, optimizer, rollout, restore or formal change')
  (out/'launch.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
 """
 commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve or args.clean_gdn_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, CLEAN_CURVE=args.clean_gdn_curve, FENCE=args.code_fence_only, CLEAN=args.clean_gdn, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
+for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve or args.clean_gdn_curve or args.factual_v_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, CLEAN_CURVE=args.clean_gdn_curve, FACTUAL_V_CURVE=args.factual_v_curve, FACTUAL_V=args.factual_v, FENCE=args.code_fence_only, CLEAN=args.clean_gdn, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
     code = code.replace('@' + k + '@', repr(v))
 command = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 prefix = 'gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else ('curve-' if args.curve else '')))
@@ -160,6 +170,8 @@ if args.memory or args.memory_curve:prefix='memory-curve-' if args.memory_curve 
 if args.code_fence_only:prefix='code-fence-'
 if args.clean_gdn:prefix='clean-gdn-'
 if args.clean_gdn_curve:prefix='clean-gdn-curve-'
+if args.factual_v:prefix='factual-v-'
+if args.factual_v_curve:prefix='factual-v-curve-'
 if args.gdn and args.revision != 1:prefix = 'gdn-v' + str(args.revision) + '-'
 phase = prefix + ('launch' if args.launch else 'prepare')
 (HERE / (phase + '-command.sh')).write_text(command, encoding='utf8', newline='\n')

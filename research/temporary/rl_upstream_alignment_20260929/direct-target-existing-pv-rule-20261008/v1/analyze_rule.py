@@ -20,10 +20,10 @@ def binding(p):
 
 def main():
     parser=argparse.ArgumentParser();group=parser.add_mutually_exclusive_group()
-    group.add_argument('--memory',action='store_true');group.add_argument('--clean-gdn',action='store_true');args=parser.parse_args()
-    memory_rules=args.memory or args.clean_gdn
-    folder=HERE/('clean-gdn-results' if args.clean_gdn else 'memory-results') if memory_rules else HERE
-    modes=('original_symmetric_memory','existing_clean_gdn' if args.clean_gdn else 'existing_forward_memory') if memory_rules else MODES
+    group.add_argument('--memory',action='store_true');group.add_argument('--clean-gdn',action='store_true');group.add_argument('--factual-v',action='store_true');args=parser.parse_args()
+    memory_rules=args.memory or args.clean_gdn or args.factual_v
+    folder=HERE/('factual-v-results' if args.factual_v else ('clean-gdn-results' if args.clean_gdn else 'memory-results')) if memory_rules else HERE
+    modes=('original_symmetric_memory','diagnostic_factual_V' if args.factual_v else ('existing_clean_gdn' if args.clean_gdn else 'existing_forward_memory')) if memory_rules else MODES
     transport_path=folder/('transport.json' if memory_rules else 'transport-manifest.json')
     manifest = json.loads(transport_path.read_bytes())
     for item in (manifest if memory_rules else manifest['files']):
@@ -176,9 +176,17 @@ def main():
         result['preserved_clean_owner']=rank_reports[0]['preserved_clean_owner']
         result['limitations']=[v for v in result['limitations'] if not v.startswith('This evaluates existing memory rules.')]
         result['limitations'].append('The complete preserved GDN profile is compared, rather than only its memory rule. Selected-token improvements alone do not establish overall attribution quality; original author curves remain separate. No production switch or precision pass is asserted.')
-    target = REPO / ('experiments/rl/results_existing_clean_GDN_20261008.json' if args.clean_gdn else ('experiments/rl/results_existing_memory_rule_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_rule_20261008.json'))
+    if args.factual_v:
+        result['status']='Conditional-V motivated diagnostic composition measured; no production acceptance'
+        result['scope']='Same actual AppWorld B4. Original forward V coefficient selected, all other original symmetric fields retained. This diagnostic composition is not a conserved joint finite identity. No residual correction, target/reward/QVA/PPO change or deployment.'
+        result['rule_definitions']=dict(original_symmetric_memory='Unchanged original average_memory_endpoint_orders',diagnostic_factual_V='Original forward V field retained from first callback; other original symmetric fields unchanged')
+        result['limitations']=[v for v in result['limitations'] if not v.startswith('This evaluates existing memory rules.')]
+        result['limitations'].append('Native conditional V validates only V with other GDN inputs fixed. It does not validate this composition, its full token counterfactuals, or population quality. Actual joint residual and original author curves must remain visible; no conservation correction or tolerance change is made.')
+        result['conditional_V_reference']=binding(HERE/'native-conditional-v-results/results/result.json')
+        result['actual_joint_residuals']={mode:{key:values[0][j]['detail'][key] for key in ('root_effect','policy_credit_signed_sum','conservation_residual','conservation_tolerance','conservation_verified','per_sample')} for j,mode in enumerate(modes)}
+    target = REPO / ('experiments/rl/results_factual_V_diagnostic_20261008.json' if args.factual_v else ('experiments/rl/results_existing_clean_GDN_20261008.json' if args.clean_gdn else ('experiments/rl/results_existing_memory_rule_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_rule_20261008.json')))
     target.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
-    (HERE / ('clean-gdn-analysis.json' if args.clean_gdn else ('memory-analysis.json' if args.memory else 'analysis.json'))).write_text(json.dumps(dict(points=compared, sign_disagreements=result['biased_sample_sign_disagreements']), ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    (HERE / ('factual-v-analysis.json' if args.factual_v else ('clean-gdn-analysis.json' if args.clean_gdn else ('memory-analysis.json' if args.memory else 'analysis.json')))).write_text(json.dumps(dict(points=compared, sign_disagreements=result['biased_sample_sign_disagreements']), ensure_ascii=False, indent=2) + '\n', encoding='utf8')
     print(json.dumps(dict(receipt=binding(target), signs=result['biased_sample_sign_disagreements'],
                          worst_point=next(p for p in compared if p['row'] == 3 and p['mode'] == 'most_negative'),
                          resources=resource), ensure_ascii=False, indent=2))

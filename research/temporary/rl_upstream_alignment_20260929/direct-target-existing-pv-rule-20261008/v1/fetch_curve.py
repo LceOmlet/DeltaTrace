@@ -15,6 +15,8 @@ group.add_argument('--memory',action='store_true');group.add_argument('--memory-
 group.add_argument('--code-fence-only',action='store_true')
 group.add_argument('--clean-gdn',action='store_true')
 group.add_argument('--clean-gdn-curve',action='store_true')
+group.add_argument('--factual-v',action='store_true')
+group.add_argument('--factual-v-curve',action='store_true')
 parser.add_argument('--revision',type=int,default=1);parser.add_argument('--failed',action='store_true');args=parser.parse_args()
 remote = transport.ROOT + '/receipts/direct-target-existing-pv-rule-20261008-v1-' + ('gdn' if args.gdn else ('subops' if args.subops else ('layers' if args.layer else 'curves')))
 if args.gdn and args.revision!=1:remote+='-v'+str(args.revision)
@@ -22,6 +24,8 @@ if args.memory or args.memory_curve:remote=transport.ROOT+'/receipts/direct-targ
 if args.code_fence_only:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-code-fence'
 if args.clean_gdn:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-clean-gdn'
 if args.clean_gdn_curve:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-clean-gdn-curves'
+if args.factual_v:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-factual-v'
+if args.factual_v_curve:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-factual-v-curves'
 code = '''from pathlib import Path
 import hashlib,json,psutil
 root=Path(REMOTE)
@@ -30,10 +34,10 @@ if not FAILED:assert (root/'results/completed.json').is_file()
 else:assert all(json.loads((root/'results'/('rank'+str(i)+'.json')).read_bytes())['phase']=='failed' for i in (0,1))
 assert not psutil.pid_exists(launch['pid']) or psutil.Process(launch['pid']).create_time()!=launch['birth']
 names=['launch.json','driver.log','curve-inputs.json','curve-physical-mx-smi.jsonl','compare_existing_pv_curves.py','inspect_action_curve.py','inspect_extreme_endpoint.py','results/completed.json','results/effective-config.yaml','results/rank0.json','results/rank1.json']
-if MEMORY or CLEAN:
+if MEMORY or CLEAN or FACTUAL_V:
  names=['launch.json','driver.log','compare_existing_pv_rule.py','profile_existing_offload.py','inspect_extreme_endpoint.py','results/completed.json','results/physical-mx-smi.jsonl']
  for rank in (0,1):
-  names+=['results/rank'+str(rank)+suffix for suffix in ('.json','-phases.jsonl','-original_symmetric_memory.pt',('-existing_clean_gdn.pt' if CLEAN else '-existing_forward_memory.pt'))]
+  names+=['results/rank'+str(rank)+suffix for suffix in ('.json','-phases.jsonl','-original_symmetric_memory.pt',('-diagnostic_factual_V.pt' if FACTUAL_V else ('-existing_clean_gdn.pt' if CLEAN else '-existing_forward_memory.pt')))]
 if FENCE:
  names=['launch.json','driver.log','compare_existing_pv_rule.py','profile_existing_offload.py','inspect_extreme_endpoint.py','results/completed.json','results/physical-mx-smi.jsonl']
  for rank in (0,1):
@@ -47,7 +51,7 @@ rows=[]
 for name in names:
  p=root/name;data=p.read_bytes();rows.append(dict(path=str(p),relative=name,bytes=len(data),sha256=hashlib.sha256(data).hexdigest()))
 print(json.dumps(rows))
-'''.replace('REMOTE', repr(remote)).replace('LAYER',repr(args.layer or args.subops or args.gdn)).replace('SUBOPS',repr(args.subops or args.gdn)).replace('FAILED',repr(args.failed)).replace('MEMORY',repr(args.memory)).replace('FENCE',repr(args.code_fence_only)).replace('CLEAN',repr(args.clean_gdn))
+'''.replace('REMOTE', repr(remote)).replace('LAYER',repr(args.layer or args.subops or args.gdn)).replace('SUBOPS',repr(args.subops or args.gdn)).replace('FAILED',repr(args.failed)).replace('MEMORY',repr(args.memory)).replace('FENCE',repr(args.code_fence_only)).replace('CLEAN',repr(args.clean_gdn)).replace('FACTUAL_V',repr(args.factual_v))
 shell = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 r = subprocess.run(transport.SSH + ['bash', '-s'], input=shell.encode(), capture_output=True)
 if r.returncode:
@@ -60,6 +64,8 @@ if args.memory or args.memory_curve:dest=HERE/('memory-curve-results' if args.me
 if args.code_fence_only:dest=HERE/'code-fence-results'
 if args.clean_gdn:dest=HERE/'clean-gdn-results'
 if args.clean_gdn_curve:dest=HERE/'clean-gdn-curve-results'
+if args.factual_v:dest=HERE/'factual-v-results'
+if args.factual_v_curve:dest=HERE/'factual-v-curve-results'
 for row in rows:
     target = dest / row['relative']
     target.parent.mkdir(parents=True, exist_ok=True)

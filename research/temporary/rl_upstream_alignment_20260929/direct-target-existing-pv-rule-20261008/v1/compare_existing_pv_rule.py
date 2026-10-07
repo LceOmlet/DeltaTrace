@@ -6,6 +6,9 @@ Default compares attention PV; --memory compares averaged/forward memory only.
 Source, target, reward, norm/gate, head, Q/V/A and PPO parameters persist.
 --clean-gdn selects the preserved clean-v1 norm/gate and memory defaults,
 retaining the current execution settings; it is not a production switch.
+--factual-v is a diagnostic composition: use the existing forward V coefficient,
+with all other original symmetric coefficients. It is not a conserved joint
+finite identity; its actual residual is recorded without correction.
 --code-fence-only isolates one actual target score diagnostically, retaining
 all original target INPUT tokens and original reference IDs. It never exports
 partial-score contributions as complete-event Q/V/A or changes training.
@@ -22,9 +25,9 @@ import profile_existing_offload as diagnostic_owner
 from inspect_extreme_endpoint import check_imports, sha, CASES
 
 
-def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False, compare_clean=False):
+def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False, compare_clean=False, compare_factual_v=False):
     assert not with_vllm
-    assert sum((compare_memory, code_fence_only, compare_clean)) <= 1
+    assert sum((compare_memory, code_fence_only, compare_clean, compare_factual_v)) <= 1
     import ray
     from verl.single_controller.base.decorator import Dispatch, register
     from verl.workers.fsdp_workers import ActorRolloutRefWorker
@@ -107,7 +110,7 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False,
                 layers = runner.model.model.language_model.layers
                 full = [i for i, layer in enumerate(layers) if layer.block_type == 'full_attention']
                 assert full == [3, 7, 11, 15, 19, 23, 27, 31]
-                if compare_memory or compare_clean:
+                if compare_memory or compare_clean or compare_factual_v:
                     assert sorted(original_memory) == [i for i, layer in enumerate(layers)
                         if layer.block_type == 'linear_attention']
                 prepared_inputs = []
@@ -168,7 +171,7 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False,
                 record.update(runner=dict(path=path, sha256=sha(path)),
                               existing_offload=True, original_attention_pv_rules=original_pv,
                               original_GDN_rules=runner.norm_gate_rules,
-                              comparison_kind='actual_next_code_fence_score_only' if code_fence_only else ('preserved_clean_GDN_rules' if compare_clean else ('memory_endpoint_order' if compare_memory else 'attention_PV')),
+                              comparison_kind='actual_next_code_fence_score_only' if code_fence_only else ('factual_V_conditional_diagnostic' if compare_factual_v else ('preserved_clean_GDN_rules' if compare_clean else ('memory_endpoint_order' if compare_memory else 'attention_PV'))),
                               original_memory_override_layers=sorted(original_memory),
                               geometry=dict(selected_lengths=[row['selected'].numel() for row in prepared],
                                   uids=[row['traj_uid'] for row in prepared],
@@ -182,9 +185,23 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False,
                     modes = [('original_next_code_fence_score_only', original_pv)]
                 if compare_clean:
                     modes = [('original_symmetric_memory', original_memory), ('existing_clean_gdn', {})]
+                if compare_factual_v:
+                    from profiles.qwen35_gdn_symmetric import average_memory_endpoint_orders
+                    assert sha(inspect.getsourcefile(average_memory_endpoint_orders)) == 'dd6bbfff9aae4c679439af113a160e0bd8c4cf1b19bb17cab47a04ff7b0831d0'
+                    def factual_v(endpoints, upstream, scale):
+                        retained = []
+                        def capture(*args):
+                            result = runner.finite_fla(*args)
+                            if not retained: retained.append(result['v'])
+                            return result
+                        result = average_memory_endpoint_orders(capture)(endpoints, upstream, scale)
+                        result['v'] = retained[0]
+                        return result
+                    modes = [('original_symmetric_memory', original_memory),
+                             ('diagnostic_factual_V', {i:factual_v for i in original_memory})]
                 for name, rules in modes:
                     mode[0] = name
-                    if compare_memory or compare_clean:
+                    if compare_memory or compare_clean or compare_factual_v:
                         # The owner's empty override map selects the existing
                         # original compiled finite_fla callback at every GDN.
                         # FA, head and producer remain unchanged. The clean
@@ -194,6 +211,10 @@ def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False,
                         if compare_clean:
                             runner.norm_gate_rules = dict(original_norm_gate) if name == 'original_symmetric_memory' else {}
                             descriptor['norm_gate_rules'] = dict(runner.norm_gate_rules)
+                        if compare_factual_v:
+                            descriptor.update(V_coefficient_reference='factual' if name == 'diagnostic_factual_V' else 'symmetric',
+                                remaining_GDN_coefficients='original_symmetric',
+                                joint_conservation_not_claimed=name == 'diagnostic_factual_V')
                     else:
                         runner.attention_pv_rules = dict(rules)
                         descriptor = dict(attention_pv_rules=rules)
@@ -267,5 +288,7 @@ if __name__ == '__main__':
     if code_fence:sys.argv.remove('--code-fence-only')
     clean = '--clean-gdn' in sys.argv
     if clean:sys.argv.remove('--clean-gdn')
-    diagnostic_owner.make_worker = partial(make_worker, compare_memory=memory, code_fence_only=code_fence, compare_clean=clean)
+    factual_v = '--factual-v' in sys.argv
+    if factual_v:sys.argv.remove('--factual-v')
+    diagnostic_owner.make_worker = partial(make_worker, compare_memory=memory, code_fence_only=code_fence, compare_clean=clean, compare_factual_v=factual_v)
     diagnostic_owner.main()
