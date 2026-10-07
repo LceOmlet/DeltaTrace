@@ -1,4 +1,4 @@
-"""Reuse original author-curve diagnostic, one existing PV rule per DP rank.
+"""Reuse original author-curve diagnostic, one bound existing rule per DP rank.
 
 Only the bound real input attribution artifact differs. The original native
 scorer, literal-ID adapter, cumulative deletion, k=20 and RISE/MAS are called

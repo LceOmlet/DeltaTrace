@@ -1,8 +1,9 @@
-"""Two existing DT attention rules on the same real high-impact AppWorld B4.
+"""Existing DT rules on the same real high-impact AppWorld B4.
 
-Calls the unchanged producer/runner and its existing attention_pv_rules option.
+Calls the unchanged producer/runner and its existing rule-selection options.
 This is a diagnostic comparison, never a production profile or credit repair.
-Original source, target, reward, GDN, head, Q/V/A and PPO parameters persist.
+Default compares attention PV; --memory compares averaged/forward memory only.
+Source, target, reward, norm/gate, head, Q/V/A and PPO parameters persist.
 """
 import inspect
 import json
@@ -16,7 +17,7 @@ import profile_existing_offload as diagnostic_owner
 from inspect_extreme_endpoint import check_imports, sha, CASES
 
 
-def make_worker(with_vllm=False):
+def make_worker(with_vllm=False, *, compare_memory=False):
     assert not with_vllm
     import ray
     from verl.single_controller.base.decorator import Dispatch, register
@@ -66,6 +67,7 @@ def make_worker(with_vllm=False):
             traces = []
             details = []
             original_pv = None
+            original_memory = None
             release_owner = None
             mode = ['unset']
             try:
@@ -87,9 +89,13 @@ def make_worker(with_vllm=False):
                 assert runner.offload_replay_mixer
                 original_pv = dict(runner.attention_pv_rules)
                 assert original_pv == {}
+                original_memory = dict(runner.finite_fla_by_layer)
                 layers = runner.model.model.language_model.layers
                 full = [i for i, layer in enumerate(layers) if layer.block_type == 'full_attention']
                 assert full == [3, 7, 11, 15, 19, 23, 27, 31]
+                if compare_memory:
+                    assert sorted(original_memory) == [i for i, layer in enumerate(layers)
+                        if layer.block_type == 'linear_attention']
                 for i, row in enumerate(rows):
                     actual = producer.direct_readout._prepare_row(row, 0)
                     assert torch.equal(actual['selected'], prepared[i]['selected'])
@@ -115,18 +121,31 @@ def make_worker(with_vllm=False):
                 record.update(runner=dict(path=path, sha256=sha(path)),
                               existing_offload=True, original_attention_pv_rules=original_pv,
                               original_GDN_rules=runner.norm_gate_rules,
+                              comparison_kind='memory_endpoint_order' if compare_memory else 'attention_PV',
+                              original_memory_override_layers=sorted(original_memory),
                               geometry=dict(selected_lengths=[row['selected'].numel() for row in prepared],
                                   uids=[row['traj_uid'] for row in prepared],
                                   target_counts=[len(row['target_offsets']) for row in prepared]))
                 save('producer_ready')
-                for name, rules in [('original_content1', original_pv),
-                                    ('existing_content0', {i: 'content0' for i in full})]:
+                modes = [('original_symmetric_memory', original_memory),
+                         ('existing_forward_memory', {})] if compare_memory else [
+                         ('original_content1', original_pv),
+                         ('existing_content0', {i: 'content0' for i in full})]
+                for name, rules in modes:
                     mode[0] = name
-                    runner.attention_pv_rules = dict(rules)
+                    if compare_memory:
+                        # The owner's empty override map selects the existing
+                        # original compiled finite_fla callback at every GDN.
+                        # Norm/gate, FA, head and the producer remain unchanged.
+                        runner.finite_fla_by_layer = dict(rules)
+                        descriptor = dict(memory_override_layers=sorted(rules))
+                    else:
+                        runner.attention_pv_rules = dict(rules)
+                        descriptor = dict(attention_pv_rules=rules)
                     before = len(traces)
                     torch.cuda.synchronize()
                     torch.cuda.reset_peak_memory_stats()
-                    emit('DT_begin', mode=name, attention_pv_rules=rules)
+                    emit('DT_begin', mode=name, **descriptor)
                     save('DT_begin', active_mode=name)
                     tick = time.perf_counter()
                     values = producer.attribute_episodes([rows], [0.0])[0]
@@ -135,10 +154,10 @@ def make_worker(with_vllm=False):
                     artifact = root / f'rank{self.rank}-{name}.pt'
                     torch.save(dict(signed=traces[-1], detail=details[-1], values=values,
                                     report=producer.direct_readout.last_report,
-                                    attention_pv_rules=rules, source_sha256=sha(source_path),
+                                    **descriptor, source_sha256=sha(source_path),
                                     native_sha256=sha(native_path)), artifact)
                     record['modes'][name] = dict(seconds=time.perf_counter() - tick,
-                        artifact=str(artifact), sha256=sha(artifact), attention_pv_rules=rules,
+                        artifact=str(artifact), sha256=sha(artifact), **descriptor,
                         signed_all_finite=bool(torch.isfinite(traces[-1]).all()),
                         QVA_all_finite=all(bool(torch.isfinite(t).all()) for item in values for t in item.values()),
                         saved_worst_token=dict(row=3, packed_slot=2883, token_id=198,
@@ -148,8 +167,10 @@ def make_worker(with_vllm=False):
                     emit('DT_complete', mode=name, **record['modes'][name])
                     save('DT_complete', active_mode=name)
                 runner.attention_pv_rules = original_pv
+                runner.finite_fla_by_layer = original_memory
                 save('complete', scope=__doc__, production_deployment=False,
-                     credit_repaired=False, profile_restored=runner.attention_pv_rules == original_pv)
+                     credit_repaired=False, profile_restored=(runner.attention_pv_rules == original_pv
+                         and runner.finite_fla_by_layer == original_memory))
                 return dict(rank=self.rank, completed=True, optimizer_steps=0)
             except BaseException:
                 import traceback
@@ -160,6 +181,8 @@ def make_worker(with_vllm=False):
                 if producer is not None:
                     if original_pv is not None:
                         producer.runner.attention_pv_rules = original_pv
+                    if original_memory is not None:
+                        producer.runner.finite_fla_by_layer = original_memory
                     if release_owner is not None:
                         producer.runner.model.release_finite_layer = release_owner
                     producer.runner.model.release_owner_params()
@@ -171,5 +194,9 @@ def make_worker(with_vllm=False):
 
 
 if __name__ == '__main__':
-    diagnostic_owner.make_worker = make_worker
+    import sys
+    from functools import partial
+    memory = '--memory' in sys.argv
+    if memory:sys.argv.remove('--memory')
+    diagnostic_owner.make_worker = partial(make_worker, compare_memory=memory)
     diagnostic_owner.main()

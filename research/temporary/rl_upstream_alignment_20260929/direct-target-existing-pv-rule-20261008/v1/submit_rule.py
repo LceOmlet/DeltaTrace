@@ -22,11 +22,13 @@ kind.add_argument('--curve', action='store_true', help='Separate original-author
 kind.add_argument('--layer', action='store_true', help='Original passive layer diagnosis on the current largest negative token')
 kind.add_argument('--subops', action='store_true', help='Observe decoder31/30 branches and stop after decoder30; no full attribution is produced')
 kind.add_argument('--gdn', action='store_true', help='Observe the original decoder30 norm/gate and finite FLA calls; save actual finite operands')
+kind.add_argument('--memory', action='store_true', help='Compare the existing averaged/forward memory callbacks; other rules unchanged')
+kind.add_argument('--memory-curve', action='store_true', help='Original author curves for the completed memory callback comparison')
 parser.add_argument('--revision',type=int,default=1,help='Distinct receipt directory for a corrected GDN diagnostic')
 args = parser.parse_args()
 if args.revision != 1 and not args.gdn:parser.error('revision is only used for GDN diagnostics')
-if args.curve:
-    OUT += '-curves'
+if args.curve or args.memory_curve:
+    OUT += '-memory-curves' if args.memory_curve else '-curves'
     files = [HERE / 'compare_existing_pv_curves.py',
              AUDIT / 'direct-target-action-author-curve-20261007/v1/inspect_action_curve.py',
              AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
@@ -34,6 +36,8 @@ elif args.layer or args.subops or args.gdn:
     OUT += '-gdn' if args.gdn else ('-subops' if args.subops else '-layers')
     files = [AUDIT / 'direct-target-token-layer-effect-20261007/v1/inspect_layer_effect.py',
              AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
+elif args.memory:
+    OUT += '-memory'
 if args.gdn and args.revision != 1:OUT += '-v' + str(args.revision)
 for p in files:
     compile(p.read_bytes(), str(p), 'exec')
@@ -68,8 +72,10 @@ root=Path(ROOT);out=Path(OUT);native=Path(NATIVE)
 original=torch.load(native,map_location='cpu',weights_only=False)
 assert len(original['rows'])==4
 record=dict(scope='Original real B4, only the saved attribution vector is replaced by the two already-measured existing-rule vectors for author-metric evaluation',ranks={})
-for rank,mode in [(0,'original_content1'),(1,'existing_content0')]:
- trace=root/'receipts/direct-target-existing-pv-rule-20261008-v1/results'/('rank0-'+mode+'.pt')
+profiles=[(0,'original_symmetric_memory'),(1,'existing_forward_memory')] if @MEMORY_CURVE@ else [(0,'original_content1'),(1,'existing_content0')]
+comparison='direct-target-existing-pv-rule-20261008-v1-memory' if @MEMORY_CURVE@ else 'direct-target-existing-pv-rule-20261008-v1'
+for rank,mode in profiles:
+ trace=root/'receipts'/comparison/'results'/('rank0-'+mode+'.pt')
  value=torch.load(trace,map_location='cpu',weights_only=False)
  assert value['native_sha256']==hashlib.sha256(native.read_bytes()).hexdigest()
  assert value['signed'].shape==original['native_signed'].shape
@@ -116,20 +122,22 @@ else:
  env['CUDA_VISIBLE_DEVICES']='4,5'
  program='inspect_layer_effect.py' if @LAYER@ else ('compare_existing_pv_curves.py' if @CURVE@ else 'compare_existing_pv_rule.py')
  argv=[env['VENV_PYTHON'],str(out/program),'--source',str(source_path)]
+ if @MEMORY@:argv+=['--memory']
  if @LAYER@:argv+=['--case',str(out/'case.json')]
  elif not @CURVE@:argv+=['--native',str(native)]
  argv+=['--output',str(out/'results')]
  with (out/'driver.log').open('xb') as log:p=subprocess.Popen(argv,env=env,cwd=out,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
- record=dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),launched_unix=time.time(),code_commit=@COMMIT@,argv=argv,scripts=hashes,source_sha256=source_sha,native_sha256=hashlib.sha256(native.read_bytes()).hexdigest(),memory_candidate=candidate,devices=[4,5],DT_calls_per_rank=0 if @CURVE@ else 2,native_forwards_per_rank=42 if @CURVE@ else 0,scope=('Original passive single/joint layer comparison, current largest negative token' if @LAYER@ else 'Existing content1/content0 diagnostic only')+'; no profile deployment, no parameter/optimizer/scheduler updates, no rollout or checkpoint restore',formal_restart=False,credit_repaired=False,text_update_released=False)
+ record=dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),launched_unix=time.time(),code_commit=@COMMIT@,argv=argv,scripts=hashes,source_sha256=source_sha,native_sha256=hashlib.sha256(native.read_bytes()).hexdigest(),memory_candidate=candidate,devices=[4,5],DT_calls_per_rank=0 if @CURVE@ else 2,native_forwards_per_rank=42 if @CURVE@ else 0,scope=('Original passive single/joint layer comparison, current largest negative token' if @LAYER@ else ('Existing averaged/forward memory diagnostic only' if @MEMORY@ or @MEMORY_CURVE@ else 'Existing content1/content0 diagnostic only'))+'; no profile deployment, no parameter/optimizer/scheduler updates, no rollout or checkpoint restore',formal_restart=False,credit_repaired=False,text_update_released=False)
  if @LAYER@:record['case_binding']=dict(path=str(out/'case.json'),sha256=hashlib.sha256((out/'case.json').read_bytes()).hexdigest(),value=json.loads((out/'case.json').read_bytes()))
  if @SUBOPS@:record.update(partial_DT_only=True,stop_after_decoder=30,full_signed_vector_produced=False)
  (out/'launch.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
 """
 commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
+for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
     code = code.replace('@' + k + '@', repr(v))
 command = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 prefix = 'gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else ('curve-' if args.curve else '')))
+if args.memory or args.memory_curve:prefix='memory-curve-' if args.memory_curve else 'memory-'
 if args.gdn and args.revision != 1:prefix = 'gdn-v' + str(args.revision) + '-'
 phase = prefix + ('launch' if args.launch else 'prepare')
 (HERE / (phase + '-command.sh')).write_text(command, encoding='utf8', newline='\n')
