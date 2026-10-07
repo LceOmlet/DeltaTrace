@@ -68,7 +68,7 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
     def resources():
         return dict(observed_unix=time.time(),
                     pss_bytes=psutil.Process().memory_full_info().pss,
-                    physical_free_bytes=torch.cuda.mem_get_info()[0],
+                    cuda_reported_free_bytes=torch.cuda.mem_get_info()[0],
                     allocated_bytes=torch.cuda.memory_allocated(),
                     reserved_bytes=torch.cuda.memory_reserved())
 
@@ -88,6 +88,8 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
         actual, terms = candidate(module, values, endpoints, *args, **kwargs)
         torch.cuda.synchronize()
         candidate_seconds = time.perf_counter() - started
+        assert actual.shape == reference.shape
+        assert actual.dtype == reference.dtype
         equal = True
         max_abs_difference = 0.0
         # Same operands and arithmetic: no changed tolerance. Chunking only
@@ -127,7 +129,8 @@ def diagnose(runner, producer, out, save, *, cache_tensors=None):
          assertion='Unmodified torch.testing.assert_close dtype defaults on actual same-capture outputs; bitwise equality also reported. FA/FLA owner assertions and kernels unchanged.',
          scope='Actual saved B8 current-response rows; not terminal joint-target or 32k capacity proof',
          operations=dict(original_B4_attribute_calls_per_rank=1, rollout=0,
-                         optimizer=0, backward=0, checkpoint=0))
+                         optimizer=0, actor_backward=0, checkpoint=0,
+                         original_gdn_reverse_and_conv_autograd_retained=True))
     globals_['gdn_finite_pullback'] = compare
     globals_['decoder_finite_pullback'] = observe_decoder
     started = time.perf_counter()
