@@ -1,0 +1,68 @@
+{
+  "status": "actual_pre_update_mapping_complete_credit_not_repaired",
+  "scope": "Read-only actual pre-update actor mapping and original whole-batch whitening; not parameter gradient measurement or a production credit change",
+  "observation_unix": 1791390805.4707549,
+  "code_baseline_commit": "1f2f07773c751aa22872615f7bc994f95916ec28",
+  "formal_source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+  "analysis": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-update-gradient-20261008\\v1\\actual-actor-mapping.json",
+    "sha256": "a21216298358d4961b54665c4937ecde6f8bf6452518221142cc9c103e350465"
+  },
+  "original_whitening_owner": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/torch_functional.py",
+    "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+  },
+  "results": {
+    "mask_matches_original_loss_mask": [
+      true,
+      true
+    ],
+    "actual_advantages_match_owner_whitening": true,
+    "owner_whitening_maxabs_diff": 0.0,
+    "raw_stats": {
+      "valid_count": 713539,
+      "min": -22.816926956176758,
+      "max": 1.0,
+      "mean": 0.03915073094429738,
+      "sumsq": 20019.377606057336,
+      "negative_count": 40359,
+      "negative_sumsq": 1192.3404226183775,
+      "nonfinite": 0
+    },
+    "actor_stats": {
+      "valid_count": 713539,
+      "min": -140.34095764160156,
+      "max": 5.899809837341309,
+      "mean": 3.87129855867448e-08,
+      "sumsq": 713537.7686486043,
+      "negative_count": 610481,
+      "negative_sumsq": 80222.55520338492,
+      "nonfinite": 0
+    },
+    "text_release_present": [
+      false,
+      false
+    ],
+    "cpu_cuda_initialized": false,
+    "peak_rss_gib": 8.997589111328125
+  },
+  "selected_points": {
+    "count": 12,
+    "retained_valid_count": 12,
+    "sampling": "Previously selected biased high-impact B4, not a population error-rate sample"
+  },
+  "interpretation": [
+    "All 12 previously measured TextCraft source positions are present and policy-masked in the actual original pre-update batch.",
+    "Format token ID14606 is original response position351, not response position14606; it survives training truncation.",
+    "Actual whole-batch actor coefficients exactly equal the imported official masked_whiten applied once to saved raw A and original response_mask.",
+    "Raw -22.816926956 maps to actor -140.340957642. Known endpoint single-EOS value -8.157497406 confirms negative direction but smaller magnitude.",
+    "Coefficient magnitude and square share are not parameter-gradient shares; no backward or parameter-gradient claim was made.",
+    "No production tensors, PPO/whitening code, Q/V/A, training masks or optimizer state were changed."
+  ],
+  "formal_training": {
+    "textcraft": "held before first optimizer update; both releases absent",
+    "appworld": "terminal; no restart or checkpoint restoration"
+  },
+  "credit_repaired": false,
+  "GPU_diagnostic_launched": false
+}

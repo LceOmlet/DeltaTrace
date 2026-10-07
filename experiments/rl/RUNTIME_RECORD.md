@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 00:33 实际 actor 位置和原白化核对完成；未运行更新
+
+results_actor_credit_mapping_20261008.json 绑定正式Text source2796233e、真实两rank
+pre-update输入SHA及原VERL masked_whiten导入文件SHA。只读CPU诊断，CUDA未初始化，
+进程RSS约9.00GiB；没有新的GPU诊断、参数更新、恢复或正式重启。
+先前native端点对照的12个source位置全部在原保留映射及有效actor mask内。
+Format的14606是token ID，原回复位置351；原A=-22.816927，实际actor系数=-140.340958。
+整批713539个有效token的actor系数与原masked_whiten一次计算逐值相同；
+response_mask与原loss_mask回复切片逐值相同。不是按卡或B4另行白化。
+这排除了这些位置的截断/映射/白化实现错误，不证明DT估计已修复。
+尚未测参数梯度，不能把系数平方占比当梯度占比；12点仍是偏向高影响的诊断样本。
+Text两rank继续hold/release不存在，App正式仍终止，显存候选验收范围不变。
+
+
 ## 2026-10-08 00:20 显存候选完成连续32k及原失败B4回归；信用仍未修复
 
 诊断6cfa4a9d，PID595731/birth1791388988.67完成退出，4/5各860MiB。
