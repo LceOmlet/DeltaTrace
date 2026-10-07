@@ -1,5 +1,23 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 当前极值首次反号已缩小到 GDN mixer 内部
+
+2ce604be、PID1645795/birth1791399078.23完成退出；本次仅到decoder30，
+没有全程signed/QVA。两rank所有分支收缩完全相同，32/31/30边界逐值等于
+上一完整旁观结果；31/30的五类事实端点也逐值相同。FA31：MLP后30.6475、
+post RMSNorm后29.9594、attention mixer后5.27249、input RMSNorm后4.78742。
+GDN30：MLP后5.25186、post RMSNorm后5.39004、GDN mixer后-5.59863、
+input RMSNorm后-6.81460。因此MLP/外层RMSNorm没有制造首次反号；首次发生
+在gdn_finite_pullback内部，FA31 mixer是此前最大缩减。整体joint端点收缩
+32/31/30分别700.203/700.346/700.230；不能把整体守恒当作该token精确。
+
+原两partial DT约50.74/17.73秒，CPU边界快照最终0；无optimizer/rollout/恢复。
+本次完整启动至结束约139秒，physical终态4/5各859MiB。结果见
+results_current_extreme_subops_20261008.json及subops-results原SHA回执。
+尚不把定位称作GDN内核数值错误或信用修复；需继续分清原norm/gate与FLA。
+Text同birth hold，release不存在；App正式不重启，memory候选尚未正式部署。
+
+
 ## 2026-10-08 decoder31/30 原分支旁观诊断：已准备，尚未启动
 
 对当前 AppWorld row3/packed2883/ID198，同一原B4、memory候选与producer不变。
