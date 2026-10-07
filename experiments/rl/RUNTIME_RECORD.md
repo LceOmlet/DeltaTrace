@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 当前AppWorld极端点GDN30实际块完成原FLA dtype对照，信用未修复
+
+9bb32def/PID3281630/birth1791414714.78，物理GPU4。
+使用原保存的当前newline2883、GDN30首个single-intervention 64-token块，
+四个8-head拼为32-head；实际q/k/v/beta FP16、raw_g FP32、原非零initial state，
+原saved upstream，无随机替代。原verify_saved_fla_dtypes.py SHA386a389f...未修改，
+调用原FLA 0.4.1 reference/assert_close，FP16与BF16对照各11项通过，未改原阈值。
+这是重合端点的o/dq/dk/dv/dbeta/dg检查，不含ht/dh0，不证明非零有限整网归因准确。
+FP16原native adjoint部分RMS比显示0但max_abs非零，不能称逐位相同。
+此输入通过不覆盖历史不同输入的dk超差，也不覆盖整条PPO或归因质量。
+约60.09秒含准备/冷编译；torch peak allocated 564818432B，结束PSS6415631360B，
+live物理GPU4观测1996MiB，结束859MiB，物理观测不是连续峰值。
+原phase字段absolute_block_start=128实际是capture-local offset；原回执逐字保留，
+仅未来helper改名capture_local_block_start。未改输入/结果，也未为元数据重跑GPU。
+首次launch引号导致远端Python parse失败，未创建测试进程/GPU；修正后只启动一次。
+1791414791.8797884 terminal观测：TextCraft原PID/birth仍hold、双rank release不存在；
+AppWorld正式terminal。信用问题仍未修复，无新精化/倍率/裁剪，无训练重启/恢复。
+原AppWorld consumed-FA-cache生命周期修复和failed-B4/精确32k验收单独保留。
+
+
+
 ## 2026-10-08 极端点原生对照覆盖范围量化完成，无新增GPU调用
 
 以原population的actual native file SHA、source SHA、UID、token ID和位置，

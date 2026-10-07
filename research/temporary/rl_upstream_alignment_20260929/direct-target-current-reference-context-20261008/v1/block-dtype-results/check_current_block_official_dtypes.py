@@ -77,7 +77,7 @@ for artifact in native['operand_artifacts']:
     upstreams.append(saved['do'][:,offset:offset+64].clone())
     if len(pieces)==1:
         scale = saved['scale']
-        record['capture_local_block_start'] = saved['actual_single_time_start']
+        record['absolute_block_start'] = saved['actual_single_time_start']
     assert scale == saved['scale']
     record['source_artifacts'].append(dict(**artifact,head_start=saved['head_start'],
                                           actual_suffix_offset=offset))

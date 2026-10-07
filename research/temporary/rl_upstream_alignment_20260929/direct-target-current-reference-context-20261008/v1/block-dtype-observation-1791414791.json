@@ -1,0 +1,356 @@
+{
+  "unix": 1791414791.8797884,
+  "pid": 3281630,
+  "birth": 1791414714.78,
+  "same_birth": false,
+  "phase": {
+    "pid": 3281630,
+    "birth": 1791414714.78,
+    "phase": "complete",
+    "unix": 1791414775.2350864,
+    "source_sha256": "58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0",
+    "harness": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/verify_saved_fla_dtypes.py",
+      "sha256": "386a389fd6fbbc3a80aa7ab499610a8164ac7902578e65cda64629049ce97748"
+    },
+    "source_artifacts": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head0.pt",
+        "bytes": 928056093,
+        "sha256": "e5699db053b82cf39f01c7d8af334d5b5792f748d2047e1a22481035bde7dce6",
+        "head_start": 0,
+        "actual_suffix_offset": 128
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head8.pt",
+        "bytes": 928056093,
+        "sha256": "b2c621825d4b21eb3fb818802488d34fa17fd7896105e6023b6c0ee3f1d7ec39",
+        "head_start": 8,
+        "actual_suffix_offset": 128
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head16.pt",
+        "bytes": 928056121,
+        "sha256": "c46e26c030ee632fff645977ab846adee724138794a453069615961335820bb1",
+        "head_start": 16,
+        "actual_suffix_offset": 128
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn-v2/results/rank0-decoder30-finite-fla-head24.pt",
+        "bytes": 928056121,
+        "sha256": "c6a55890dfbdade682f7f8586577e56156e24542d7ef8ef22762bc3f6c95a842",
+        "head_start": 24,
+        "actual_suffix_offset": 128
+      }
+    ],
+    "scope": "Feed the actual first single-intervention GDN block to the original dtype test.\n\nOnly select/concatenate saved factual operands and call the existing diagnostic.\nThe original reference, finite implementation, thresholds and assertions own\nall numerical computations. No model, full DT, reward or optimizer is invoked.\n",
+    "model": 0,
+    "full_DT": 0,
+    "optimizer": 0,
+    "rollout": 0,
+    "pss_bytes": 6415631360,
+    "absolute_block_start": 128,
+    "prepared": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/current-extreme-official-block-dtype-20261008-v1/prepared-operands.pt",
+      "sha256": "452717df3c29f5ce3ccf5ae1b734c5687df6055ed672e8add6808928077b615e"
+    },
+    "shape": [
+      2,
+      64,
+      32,
+      128
+    ],
+    "upstream_shape": [
+      1,
+      64,
+      32,
+      128
+    ],
+    "initial_state_nonzero": true,
+    "cuda_initialized_before_original": false,
+    "torch_peak_allocated_bytes": 564818432
+  },
+  "result": {
+    "scope": "Replay recorded GDN operands in both native dtypes, with original FLA checks.\n\nThis is an operand diagnostic. It does not change production dtype, reference,\nthresholds or finite formulas. Coincident DT endpoints test the local derivative\nlimit; they do not certify an entire nonzero finite attribution.\n",
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/current-extreme-official-block-dtype-20261008-v1/prepared-operands.pt",
+    "cases": [
+      {
+        "dtype": "torch.bfloat16",
+        "operand_dtypes": {
+          "q": "torch.bfloat16",
+          "k": "torch.bfloat16",
+          "v": "torch.bfloat16",
+          "beta": "torch.bfloat16",
+          "raw_g": "torch.float32"
+        },
+        "native_upstream_dtype": "torch.bfloat16",
+        "finite_upstream_dtype": "torch.bfloat16",
+        "reference_upstream_dtype": "torch.float32",
+        "initial_state_dtype": "torch.float32",
+        "initial_state_nonzero": true,
+        "input_cast_max_abs": {
+          "q": 0.001953125,
+          "k": 0.001953125,
+          "v": 0.0,
+          "beta": 0.0,
+          "raw_g": 0.0
+        },
+        "checks": [
+          {
+            "name": "native o",
+            "expected_dtype": "torch.float32",
+            "actual_dtype": "torch.bfloat16",
+            "threshold": 0.005,
+            "rms_ratio": 0.0026449655213425065,
+            "max_abs": 0.0002772584557533264,
+            "status": "passed"
+          },
+          {
+            "name": "native dq",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.bfloat16",
+            "threshold": 0.008,
+            "rms_ratio": 0.0036916175558537345,
+            "max_abs": 0.0078125,
+            "status": "passed"
+          },
+          {
+            "name": "finite dq",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.008,
+            "rms_ratio": 0.0028376697838544494,
+            "max_abs": 0.004304409027099609,
+            "status": "passed"
+          },
+          {
+            "name": "native dk",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.bfloat16",
+            "threshold": 0.008,
+            "rms_ratio": 0.004766942533763858,
+            "max_abs": 0.0078125,
+            "status": "passed"
+          },
+          {
+            "name": "finite dk",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.008,
+            "rms_ratio": 0.004152744798853244,
+            "max_abs": 0.003617227077484131,
+            "status": "passed"
+          },
+          {
+            "name": "native dv",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.bfloat16",
+            "threshold": 0.008,
+            "rms_ratio": 0.004532251007560894,
+            "max_abs": 0.0625,
+            "status": "passed"
+          },
+          {
+            "name": "finite dv",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.008,
+            "rms_ratio": 0.004157148711045041,
+            "max_abs": 0.04840564727783203,
+            "status": "passed"
+          },
+          {
+            "name": "native dbeta",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.bfloat16",
+            "threshold": 0.02,
+            "rms_ratio": 0.003118942808124826,
+            "max_abs": 0.001953125,
+            "status": "passed"
+          },
+          {
+            "name": "finite dbeta",
+            "expected_dtype": "torch.bfloat16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.02,
+            "rms_ratio": 0.004413445313357325,
+            "max_abs": 0.0050629377365112305,
+            "status": "passed"
+          },
+          {
+            "name": "native dg",
+            "expected_dtype": "torch.float32",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.02,
+            "rms_ratio": 0.008638406912681019,
+            "max_abs": 0.0016684127040207386,
+            "status": "passed"
+          },
+          {
+            "name": "finite dg",
+            "expected_dtype": "torch.float32",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.02,
+            "rms_ratio": 0.004676736520874174,
+            "max_abs": 0.0009465329349040985,
+            "status": "passed"
+          }
+        ],
+        "seconds": 26.686571501995786,
+        "status": "passed"
+      },
+      {
+        "dtype": "torch.float16",
+        "operand_dtypes": {
+          "q": "torch.float16",
+          "k": "torch.float16",
+          "v": "torch.float16",
+          "beta": "torch.float16",
+          "raw_g": "torch.float32"
+        },
+        "native_upstream_dtype": "torch.float16",
+        "finite_upstream_dtype": "torch.float16",
+        "reference_upstream_dtype": "torch.float32",
+        "initial_state_dtype": "torch.float32",
+        "initial_state_nonzero": true,
+        "input_cast_max_abs": {
+          "q": 0.0,
+          "k": 0.0,
+          "v": 0.0,
+          "beta": 0.0,
+          "raw_g": 0.0
+        },
+        "checks": [
+          {
+            "name": "native o",
+            "expected_dtype": "torch.float32",
+            "actual_dtype": "torch.float16",
+            "threshold": 0.005,
+            "rms_ratio": 0.0003285057739144865,
+            "max_abs": 3.6913901567459106e-05,
+            "status": "passed"
+          },
+          {
+            "name": "native dq",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float16",
+            "threshold": 0.008,
+            "rms_ratio": 0.0,
+            "max_abs": 0.0009765625,
+            "status": "passed"
+          },
+          {
+            "name": "finite dq",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.008,
+            "rms_ratio": 0.00034723737826375503,
+            "max_abs": 0.0006335973739624023,
+            "status": "passed"
+          },
+          {
+            "name": "native dk",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float16",
+            "threshold": 0.008,
+            "rms_ratio": 0.0,
+            "max_abs": 0.0009765625,
+            "status": "passed"
+          },
+          {
+            "name": "finite dk",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.008,
+            "rms_ratio": 0.000449364006985851,
+            "max_abs": 0.0007655024528503418,
+            "status": "passed"
+          },
+          {
+            "name": "native dv",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float16",
+            "threshold": 0.008,
+            "rms_ratio": 0.0,
+            "max_abs": 0.0078125,
+            "status": "passed"
+          },
+          {
+            "name": "finite dv",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.008,
+            "rms_ratio": 0.0004998259246870258,
+            "max_abs": 0.008111953735351562,
+            "status": "passed"
+          },
+          {
+            "name": "native dbeta",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float16",
+            "threshold": 0.02,
+            "rms_ratio": 0.0,
+            "max_abs": 0.0009765625,
+            "status": "passed"
+          },
+          {
+            "name": "finite dbeta",
+            "expected_dtype": "torch.float16",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.02,
+            "rms_ratio": 0.0005718924657311966,
+            "max_abs": 0.0007185935974121094,
+            "status": "passed"
+          },
+          {
+            "name": "native dg",
+            "expected_dtype": "torch.float32",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.02,
+            "rms_ratio": 0.0008664650447181616,
+            "max_abs": 0.0001039355993270874,
+            "status": "passed"
+          },
+          {
+            "name": "finite dg",
+            "expected_dtype": "torch.float32",
+            "actual_dtype": "torch.float32",
+            "threshold": 0.02,
+            "rms_ratio": 0.0005749615025484922,
+            "max_abs": 0.00011797621846199036,
+            "status": "passed"
+          }
+        ],
+        "seconds": 22.086217301999568,
+        "status": "passed"
+      }
+    ],
+    "original_operand_dtypes": {
+      "q": "torch.float16",
+      "k": "torch.float16",
+      "v": "torch.float16",
+      "beta": "torch.float16",
+      "raw_g": "torch.float32"
+    },
+    "shape": [
+      1,
+      64,
+      32,
+      128
+    ],
+    "initial_state_dtype": "torch.float32",
+    "recorded_initial_state_dtype": "torch.float16",
+    "recorded_upstream_dtype": "torch.float16",
+    "original_assertion_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_gated_delta_v041.py",
+    "upstream_source": "recorded finite consumer",
+    "status": "completed_actual_operand_comparison"
+  },
+  "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Thu Oct  8 07:13:11 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 117W / 450W      | 48C          P9 | 30305/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 119W / 450W      | 48C          P9 | 36447/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                  2838967         ray::WorkerDict              29384          |\n|  3                  2840776         ray::WorkerDict              35526          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+  "current_PSS_bytes": null,
+  "textcraft_same_birth": true,
+  "textcraft_release_present": [
+    false,
+    false
+  ],
+  "log_tail": " 0.04840564727783203, \"status\": \"passed\"}, {\"name\": \"native dbeta\", \"expected_dtype\": \"torch.bfloat16\", \"actual_dtype\": \"torch.bfloat16\", \"threshold\": 0.02, \"rms_ratio\": 0.003118942808124826, \"max_abs\": 0.001953125, \"status\": \"passed\"}, {\"name\": \"finite dbeta\", \"expected_dtype\": \"torch.bfloat16\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.02, \"rms_ratio\": 0.004413445313357325, \"max_abs\": 0.0050629377365112305, \"status\": \"passed\"}, {\"name\": \"native dg\", \"expected_dtype\": \"torch.float32\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.02, \"rms_ratio\": 0.008638406912681019, \"max_abs\": 0.0016684127040207386, \"status\": \"passed\"}, {\"name\": \"finite dg\", \"expected_dtype\": \"torch.float32\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.02, \"rms_ratio\": 0.004676736520874174, \"max_abs\": 0.0009465329349040985, \"status\": \"passed\"}], \"seconds\": 26.686571501995786, \"status\": \"passed\"}\n{\"dtype\": \"torch.float16\", \"operand_dtypes\": {\"q\": \"torch.float16\", \"k\": \"torch.float16\", \"v\": \"torch.float16\", \"beta\": \"torch.float16\", \"raw_g\": \"torch.float32\"}, \"native_upstream_dtype\": \"torch.float16\", \"finite_upstream_dtype\": \"torch.float16\", \"reference_upstream_dtype\": \"torch.float32\", \"initial_state_dtype\": \"torch.float32\", \"initial_state_nonzero\": true, \"input_cast_max_abs\": {\"q\": 0.0, \"k\": 0.0, \"v\": 0.0, \"beta\": 0.0, \"raw_g\": 0.0}, \"checks\": [{\"name\": \"native o\", \"expected_dtype\": \"torch.float32\", \"actual_dtype\": \"torch.float16\", \"threshold\": 0.005, \"rms_ratio\": 0.0003285057739144865, \"max_abs\": 3.6913901567459106e-05, \"status\": \"passed\"}, {\"name\": \"native dq\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float16\", \"threshold\": 0.008, \"rms_ratio\": 0.0, \"max_abs\": 0.0009765625, \"status\": \"passed\"}, {\"name\": \"finite dq\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.008, \"rms_ratio\": 0.00034723737826375503, \"max_abs\": 0.0006335973739624023, \"status\": \"passed\"}, {\"name\": \"native dk\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float16\", \"threshold\": 0.008, \"rms_ratio\": 0.0, \"max_abs\": 0.0009765625, \"status\": \"passed\"}, {\"name\": \"finite dk\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.008, \"rms_ratio\": 0.000449364006985851, \"max_abs\": 0.0007655024528503418, \"status\": \"passed\"}, {\"name\": \"native dv\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float16\", \"threshold\": 0.008, \"rms_ratio\": 0.0, \"max_abs\": 0.0078125, \"status\": \"passed\"}, {\"name\": \"finite dv\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.008, \"rms_ratio\": 0.0004998259246870258, \"max_abs\": 0.008111953735351562, \"status\": \"passed\"}, {\"name\": \"native dbeta\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float16\", \"threshold\": 0.02, \"rms_ratio\": 0.0, \"max_abs\": 0.0009765625, \"status\": \"passed\"}, {\"name\": \"finite dbeta\", \"expected_dtype\": \"torch.float16\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.02, \"rms_ratio\": 0.0005718924657311966, \"max_abs\": 0.0007185935974121094, \"status\": \"passed\"}, {\"name\": \"native dg\", \"expected_dtype\": \"torch.float32\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.02, \"rms_ratio\": 0.0008664650447181616, \"max_abs\": 0.0001039355993270874, \"status\": \"passed\"}, {\"name\": \"finite dg\", \"expected_dtype\": \"torch.float32\", \"actual_dtype\": \"torch.float32\", \"threshold\": 0.02, \"rms_ratio\": 0.0005749615025484922, \"max_abs\": 0.00011797621846199036, \"status\": \"passed\"}], \"seconds\": 22.086217301999568, \"status\": \"passed\"}\n"
+}
