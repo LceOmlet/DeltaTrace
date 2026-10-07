@@ -5,12 +5,23 @@ nor implements backup storage, compression, encryption or deduplication.
 The connector is a local credential provider exposing connect() -> SSHClient.
 """
 import argparse
+import hashlib
 import importlib.util
 import json
 from pathlib import Path, PurePosixPath
 import shlex
 import subprocess
 import time
+
+
+def write_backup_sources(client, access, paths):
+    """Pass exact paths through restic's native NUL-separated input interface."""
+    payload = b''.join(path.encode('utf-8') + b'\0' for path in paths)
+    source_list = str(access/('backup-sources-'+hashlib.sha256(payload).hexdigest()+'.raw'))
+    with client.open_sftp() as sftp:
+        with sftp.open(source_list, 'wb') as stream:
+            stream.write(payload)
+    return source_list
 
 
 def recorded_metadata_sources(client, jobs):
@@ -201,7 +212,8 @@ def main():
             if not immutable:
                 absolute_paths += ray_logs
                 report['metadata_sources'] = absolute_paths
-            cmd += ['--', *absolute_paths]
+            source_list = write_backup_sources(client, access, absolute_paths)
+            cmd += ['--files-from-raw', source_list]
             print('Direct backup', label, flush=True)
             _, output, errors = client.exec_command(shlex.join(cmd))
             with log.open('w', encoding='utf-8') as stream:
