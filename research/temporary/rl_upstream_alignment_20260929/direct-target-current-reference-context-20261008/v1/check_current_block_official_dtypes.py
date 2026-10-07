@@ -28,6 +28,7 @@ def sha(path):
 
 
 assert sha(SOURCE) == '58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0'
+assert sha(HARNESS) == '386a389fd6fbbc3a80aa7ab499610a8164ac7902578e65cda64629049ce97748'
 source = json.loads(SOURCE.read_bytes())
 launch = json.loads((PARENT/'launch.json').read_bytes())
 os.environ.update(source['environment'])
