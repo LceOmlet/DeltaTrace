@@ -1,5 +1,44 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 08:13 同一fresh首轮完成：原采样/DT/更新计时与整批白化执行
+
+同一driver2360541/birth1791325655.01、source c83b96de、worker2367855/2369144、
+GPU4/5已完成原step1并进入下一轮LOOP采样；fresh base、resume_mode=disable，
+没有旧检查点恢复或手工导出。原VERL自行保存完成标记1，save52.529秒。
+actual runtime仍37b9085逐行prefix修复与3e0c/5f14/4f42绑定，本段仅记录，不把
+9850e12后的诊断/记录commit冒充新运行代码。LoRA8/16、actor/DT每卡B4不变。
+
+同一本轮原timing_s：gen1288.023秒(21.47分)、old_log_prob265.116秒、
+adv2482.782秒(41.38分)、update_actor1866.647秒(31.11分)、step5956.037秒。
+更新/采样1.449，DT/更新1.330，DT占整轮41.68%。原两rank DT外层2476.151/
+2475.368秒与driver adv边界不同；不是用DT batch计时替代原trainer完整adv。
+218原轨迹经原copy调整到224；原perf/total_num_tokens=2959628含O及6复制行，
+两epochs为5919256有效context位置呈现，不是policy tokens/FLOPs/dense padding
+槽。原采样policy_tokens667405；没有额外epochs或逐response PPO更新的证据。
+56 B4/card、14 optimizer边界是原代码工作量推导，不冒充逐调用计数；不能拿旧
+partial-mini容量probe134.131秒直接外推。当前更新比采样长有原负载解释，尚非
+与发表的同MetaX官方速度达标。没有新增测试、attach profiler或生产patch。
+
+整批原masked_whiten已在本次actor前真实执行；原d/Q/V/A保留。原actor/grad_norm
+0.041、pg_loss-0.002、pg_clipfrac0.001、entropy_loss0.391，均为原console三位小数；
+这是完整非零更新的证据，不是孤立任务梯度或后续学习恢复证明。原episode reward
+均值0.788不是独立评估成功率；本轮rollout发生在更新前。
+
+原training/rollout_probs_diff mean0.436/max1包含O：trainer d35的1173–1183按
+attention_mask选位置，LOOP转换01eca对O的rollout logprob填0，exp后为1；原actor
+3a65的432–433仍按loss_mask排除O。该汇总量不能宣称action-only推理误差或
+vLLM官方容差失败，不改原指标、损失或补偿。原perf虚拟allocator77.657/84.029GB
+不作物理显存峰值；实际mx-smi相位观测约43GiB/卡，无OOM，不扩成全程峰值。
+
+原日志/精确绑定：native-actor-return-1791331896-readonly.json SHAec64455e；
+解析native-first-iteration-metrics-readonly.json SHA8fcefb9c；mask源回执5083b0e1。
+最新current_runtime-1791331987.json SHA0e5bd19c。全部在row-prefix-owner-fresh-v1。
+现有完整轨迹有效长度总量缺失项已由原perf实测补齐；效率主项仍为DT归因批次，
+保留已验收的历史重算修复，未部署无端到端收益的预取或变慢FA融合候选。
+旧H2D trace2c01的27.315/25.117GB不是当前3e0c/c83搬运量；无shape/stack不能
+精确分参数/cache。对应版本与rank算术已固定h2d-owner-scope-readonly.json
+SHA2aba1789，不再把混合copy设备累计秒宣称可删除的权重搬运墙钟。
+
 ## 2026-10-07 07:51 有界有限FA融合候选通过原断言但变慢，拒绝部署
 
 已在空闲GPU2使用此前保存的真实rank0/1 BF16/FP32 FA操作数，独立ABI融合原

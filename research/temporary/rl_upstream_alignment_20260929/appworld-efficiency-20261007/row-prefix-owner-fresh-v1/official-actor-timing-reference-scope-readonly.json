@@ -1,0 +1,83 @@
+{
+  "scope": "Read-only interpretation of existing original VERL update_actor timings. No test, GPU/model, RPC, profiler, checkpoint or production change.",
+  "created_utc": "2026-10-07T00:06:47.172999+00:00",
+  "sources": {
+    "capacity_harness": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/verify_actor_right_padding.py",
+      "sha256": "799b594b45f17e7a6d83645381a58d52a7f558a1eca1e5d50ebba3107d52ba3f"
+    },
+    "capacity_results": {
+      "path": "experiments/rl/results_actor_shared_right_padding_20261004.json",
+      "sha256": "9013bb9cc57406bac2d52ba41f8f96c1ede4d14f97bcff5726a977efb4bcf643"
+    },
+    "old_config_snapshot": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/runtime-before-sql-oom-1790933220.json",
+      "sha256": "22a8bba4c5a7df61af8aa4ac1cdc7b255a46fe9e645a3bc5d3dbe636cba380d2"
+    },
+    "current_source_snapshot": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/row-prefix-owner-fresh-v1/actor-workload-source-readonly.json",
+      "sha256": "a497628fafd6ef91c34fb99bd2c77a4820844fc839a7ba84579b43dc6df5bb63"
+    },
+    "official_profiler": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/recipe-sources/verl-agent-20bd331/verl/utils/debug/profile.py",
+      "sha256": "627d195d2d687da67745c914ccc2b55f34af476903fead9da2a8aefa10637cec"
+    }
+  },
+  "observed_old_capacity_update_RPC_seconds": {
+    "literal_padded": 67.91282948851585,
+    "full_B8_32768": 134.1312298513949
+  },
+  "old_capacity_workload": {
+    "global_rows": 8,
+    "data_parallel_ranks": 2,
+    "local_rows": 4,
+    "configured_global_ppo_minibatch": 32,
+    "configured_local_ppo_minibatch": 16,
+    "microbatch_per_card": 4,
+    "epochs": 2,
+    "actual_B4_forward_backward_calls_per_card": 2,
+    "optimizer_boundaries": 2,
+    "owner_gradient_accumulation_coefficient": 4,
+    "input_scope": "Constructed exact32768 capacity input with all-action mask and constructed advantages; not this formal rollout.",
+    "timer_lines": [
+      138,
+      140
+    ],
+    "timer_scope": "Original group.update_actor blocking RPC only; old_log_prob before timer, subsequent vLLM wake/sleep outside. ObservedWorker forward wrapper includes diagnostic synchronization."
+  },
+  "current_native_formal_expected_workload": {
+    "native_trajectories_observed": 218,
+    "owner_adjust_batch_rows": 224,
+    "local_rows": 112,
+    "epochs": 2,
+    "B4_forward_backward_calls_per_card_expected": 56,
+    "optimizer_boundaries_expected": 14,
+    "completed_counts_proven": false
+  },
+  "shared_source_and_config_scope": {
+    "actor_sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "worker_sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "microbatch": 4,
+    "fused_head": true,
+    "fused_backend": "torch",
+    "gradient_checkpointing": true,
+    "activation_offload": true,
+    "fsdp_strategy": "fsdp2",
+    "parameter_offload": true,
+    "optimizer_offload": true
+  },
+  "limitations": [
+    "Partial optimizer minibatches in the old capacity probe differ from four-microbatch accumulation per current formal optimizer boundary; do not extrapolate 134.131/2 times56 as a measured current update.",
+    "Old capacity receipt lacks complete binding to the current HF59f9 imported source; it is not a current complete-version speed result.",
+    "No current full-trajectory context length list or sum has been preserved before native actor returns. Do not sum repeated 3485 DT response contexts or substitute max_context26218 times224.",
+    "Current native update and gen timers must come from the same completed formal iteration before reporting their ratio."
+  ],
+  "official_profiler_scope": {
+    "owner_commit": "20bd331",
+    "api": "verl.utils.debug.profile.Profiler",
+    "existing_wiring": "Megatron actor advances at optimizer minibatch; current frozen FSDP actor/worker/trainer has no equivalent configuration switch.",
+    "status": "Source audit only; no hook, configuration change or attach to formal process."
+  }
+}

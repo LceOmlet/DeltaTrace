@@ -1,0 +1,110 @@
+{
+  "status": "read_only_old_profile_scope_and_rank_correction",
+  "scope": "Existing original real B8 current-base hot profile only. Producer 2c01c47e bytes; not current producer 3e0c6feb/current c83 deployment or individual-row layout HtoD measurements.",
+  "source": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\current-base-hot-profile-v1\\read-only-current-base-profile-analysis.json",
+    "sha256": "772a70280d95d66b664303325237680c5075b6c6bdbf8b61814cd5f2e9555f90"
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "profile_imported_producer": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/entry/deltatrace_rollout.py",
+        "sha256": "2c01c47e699b8b5a05206e881bda596cfbca03d1b89a7c3d3de2ce30ae5995a4"
+      },
+      "HtoD_total": {
+        "events": 2142,
+        "bytes": 27315481688,
+        "decimal_GB": 27.315481688,
+        "device_seconds": 0.6860620799999965,
+        "recorded_cpu_parent": [
+          "HtoD",
+          "outside_native",
+          "aten::copy_"
+        ]
+      },
+      "source_size_correspondence_not_tensor_identity": {
+        "root_checkpoint_restores": {
+          "direction": "HtoD",
+          "bytes_per_event": 128581632,
+          "count": 66,
+          "total_bytes": 8486387712,
+          "device_seconds": 0.18388121600000001
+        },
+        "FA_prefix_KV_compose": {
+          "direction": "HtoD",
+          "bytes_per_event": 94371840,
+          "count": 16,
+          "total_bytes": 1509949440,
+          "device_seconds": 0.048838912
+        },
+        "classification_scope": "These exact-size bins correspond to original owner tensor dimensions and call counts; the trace does not record shape, stack, or tensor identity, so these are source/size correspondences, not exact runtime tensor ownership classifications."
+      },
+      "remaining_HtoD_size_bins": {
+        "bytes": 17319144536,
+        "decimal_GB": 17.319144536,
+        "classification": "Unresolved mixture: parameter, GDN cache/state, and other transfers; not identified parameter-only bytes."
+      },
+      "arithmetic": {
+        "expression": "HtoD_total_bytes - root_restore_size_bin_bytes - FA_prefix_KV_size_bin_bytes",
+        "sum_components_bytes": 27315481688
+      }
+    },
+    {
+      "rank": 1,
+      "profile_imported_producer": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/entry/deltatrace_rollout.py",
+        "sha256": "2c01c47e699b8b5a05206e881bda596cfbca03d1b89a7c3d3de2ce30ae5995a4"
+      },
+      "HtoD_total": {
+        "events": 2142,
+        "bytes": 25117412440,
+        "decimal_GB": 25.11741244,
+        "device_seconds": 0.6488686079999958,
+        "recorded_cpu_parent": [
+          "HtoD",
+          "outside_native",
+          "aten::copy_"
+        ]
+      },
+      "source_size_correspondence_not_tensor_identity": {
+        "root_checkpoint_restores": {
+          "direction": "HtoD",
+          "bytes_per_event": 95289344,
+          "count": 66,
+          "total_bytes": 6289096704,
+          "device_seconds": 0.13631488000000003
+        },
+        "FA_prefix_KV_compose": {
+          "direction": "HtoD",
+          "bytes_per_event": 96468992,
+          "count": 16,
+          "total_bytes": 1543503872,
+          "device_seconds": 0.052953344
+        },
+        "classification_scope": "These exact-size bins correspond to original owner tensor dimensions and call counts; the trace does not record shape, stack, or tensor identity, so these are source/size correspondences, not exact runtime tensor ownership classifications."
+      },
+      "remaining_HtoD_size_bins": {
+        "bytes": 17284811864,
+        "decimal_GB": 17.284811864,
+        "classification": "Unresolved mixture: parameter, GDN cache/state, and other transfers; not identified parameter-only bytes."
+      },
+      "arithmetic": {
+        "expression": "HtoD_total_bytes - root_restore_size_bin_bytes - FA_prefix_KV_size_bin_bytes",
+        "sum_components_bytes": 25117412440
+      }
+    }
+  ],
+  "correction": "The earlier prose listed totals in ascending order (25.117/27.315 GB) while the table used rank0/rank1 order. Exact order is rank0=27,315,481,688 bytes; rank1=25,117,412,440 bytes. The remainder values 17,319,144,536 and 17,284,811,864 bytes are correct with that rank mapping.",
+  "limits": [
+    "Profiler was configured without record_shapes, with_stack, or profile_memory. Existing HtoD links identify only outside_native / aten::copy_; exact parameter/cache attribution cannot be recovered from this summary.",
+    "Device event durations can overlap. The .68606208/.648868608 seconds are HtoD device-duration sums, not removable wall time or parameter-only copy time.",
+    "No new model, GPU, remote query, test, production change, threshold, or numerical acceptance is involved."
+  ],
+  "operations": {
+    "local_stdlib_read_only_analysis": true,
+    "new_owned_receipt_only": true,
+    "remote_calls": 0,
+    "GPU_calls": 0
+  }
+}
