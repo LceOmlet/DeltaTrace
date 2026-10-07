@@ -32,7 +32,7 @@ def summarize_pair(path, row, slot):
             removed_logp=float(data['reference_target_logp'][index]),
             kept_minus_removed=float(effect[index])))
     return dict(future_tokens=int(future.sum()), earlier_tokens=int(earlier.sum()),
-        earlier_maxabs=float(effect[earlier].abs().max()),
+        earlier_maxabs=float(effect[earlier].abs().max()) if earlier.any() else 0.0,
         other_rows_maxabs=float(effect[other].abs().max()),
         signed_future_effect=float(effect[future].sum()),
         top=sorted(top, key=lambda item: abs(item['kept_minus_removed']), reverse=True)[:15])

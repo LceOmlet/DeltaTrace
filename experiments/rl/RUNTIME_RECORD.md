@@ -1,5 +1,30 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 当前AppWorld极端换行的原生背景交互已量出
+
+3c17af2f/PID3063340/birth1791412620.43已完成退出，物理4/5各回到859MiB。
+当前真实B4、row3/packed2883/newline198及原joint Y不变。复用原native scorer、
+pair builder和原actor，每rank只增加一次27.82/27.85秒的native paired forward；
+零DT/backward/optimizer/rollout/恢复。两rank每target结果一致，其他三行差0、
+此前target差0，LoRA B均0。新all-EOS端点与此前实际作者曲线末端逐值相同，
+旧事实端点与作者曲线首端逐值相同。
+原native四端点F=-230.145626,D=-253.234657,B=-928.803608,C=-938.274391。
+完整事实背景的单删除效应F-D=+23.089031；其他source全EOS背景下恢复该token的
+效应C-B=-9.470783，背景交互差32.559815。原DT鲜重放d=-4.415554既不是F-D
+也不是C-B。因此当前大负优势不能解释为该换行在事实轨迹中有负作用；至少存在
+显著背景交互分摊的近似误差。不能据此声称已定位全部误差或官方算子超差。
+原DT接口明确分解joint端点变化；PLAN已经将其作为逐token删除效应估计，
+此次结果量出该近似在实际极端点的失效，不改变既定精确假设或Q/V/PPO公式。
+不把C-B或端点平均塞回训练，不再试无机制依据的kernel变体或数值纠偏。
+TextCraft Format原生负作用仍有根据但幅度被高估；其原作者累计删除/RISE/MAS
+与原single诊断同时保留，不被当前AppWorld四点对照取代。
+PSS记录9.111/8.223GB，未连续采样本次物理峰值。Text原birth继续hold，
+release均不存在；App正式terminal。信用仍未修复。79922486缓存生命周期补丁
+已另行通过真实失败B4及双次32768容量，未部署到正式作业，也不冒充PPO整网验收。
+实际导入、SHA、固定配置、PID创建时间、transport及回执写入current_runtime末字段。
+
+
+
 ## 2026-10-08 TextCraft实际Format轨迹的原作者累计删除完成
 
 2b98d7f9/PID2967962/birth1791411696.44，物理4/5诊断已完成退出。
