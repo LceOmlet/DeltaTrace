@@ -109,7 +109,7 @@ def main():
         result['scope']='Same actual high-impact AppWorld B4, unchanged native target endpoint scores; only the existing finite_fla_by_layer map selects the original averaged or forward callback. Norm/gate, FA, head, reward, Q/V/A formula and PPO remain unchanged.'
         result['rule_definitions']=dict(original_symmetric_memory='Original average_memory_endpoint_orders of the compiled finite_fla callback',existing_forward_memory='Original compiled finite_fla callback, selected by its existing empty finite_fla_by_layer map')
         result['limitations']=[v for v in result['limitations'] if not v.startswith(('The current content1','The rule swap'))]
-        result['limitations'].append('This evaluates existing memory rules; the local worst-token improvement and twelve selected points do not establish improved original author curves or training. No profile switch is deployed.')
+        result['limitations'].append('This evaluates existing memory rules. The earlier local forward-order improvement does not carry to the complete vector: the selected newline becomes more negative. Twelve selected points are not population accuracy. Original author curves are reported separately; no profile switch is deployed.')
         original=torch.load(HERE/'results/rank0-original_content1.pt',map_location='cpu',weights_only=False)
         result['baseline_original_symmetric_vector_equals_prior_replay']=torch.equal(values[0][0]['signed'],original['signed'])
         result['baseline_original_symmetric_vector_maxabs_vs_prior_replay']=float((values[0][0]['signed']-original['signed']).abs().max())
@@ -123,6 +123,51 @@ def main():
                 newline_A_squared_share_of_prior_sources=outlier**2/groups['prior_source']['sumsq'],
                 newline_A_squared_share_of_all_policy=outlier**2/sum(g['sumsq'] for g in groups.values()),
                 scope='This selected B4 only; A-squared is not a parameter-gradient share or the original global-batch whitening variance.')
+        previous_native=reference.parent/'results-appworld/appworld-rank0-most_negative-targets.pt'
+        native=torch.load(previous_native,map_location='cpu',weights_only=False)
+        selected=native['samples'].eq(3)
+        future=selected & native['predictor_positions'].ge(2883)
+        earlier=selected & ~future
+        differences=native['factual_target_logp'].double()-native['reference_target_logp'].double()
+        indices=future.nonzero().flatten()
+        largest=indices[differences[indices].abs().argmax()]
+        result['newline_previous_native_target_decomposition']=dict(
+            source=binding(previous_native),target_tokens=int(selected.sum()),
+            future_target_tokens=int(future.sum()),earlier_target_tokens=int(earlier.sum()),
+            earlier_maxabs=float(differences[earlier].abs().max()) if earlier.any() else None,
+            joint_d=float(differences[selected].sum()),
+            positive_future_sum=float(differences[future].clamp_min(0).sum()),
+            negative_future_sum=float(differences[future].clamp_max(0).sum()),
+            dominant=dict(predictor_position=int(native['predictor_positions'][largest]),
+                target_token_id=int(native['labels'][largest]),
+                d=float(differences[largest]),
+                factual_probability=float(native['factual_target_logp'][largest].double().exp()),
+                deleted_probability=float(native['reference_target_logp'][largest].double().exp())),
+            scope='Previously measured independent uncached native single deletion; not a new environment rollout or the cached DT endpoint. Empty earlier-target set is recorded as null, not zero evidence.')
+        orders_path=HERE/'native-memory-orders-results/results/result.json'
+        single_path=HERE/'native-single-output-results/results/result.json'
+        orders=json.loads(orders_path.read_bytes())
+        single=json.loads(single_path.read_bytes())
+        keys=('q','k','v','g','beta')
+        single_terms={key:sum(group['original_single_finite_terms'][key]
+                             for group in single['groups']) for key in keys}
+        order_terms={name:{key:sum(group['memory_orders'][i]['terms'][key]
+                                   for group in orders['groups']) for key in keys}
+                     for i,name in enumerate(('forward','reversed'))}
+        errors={name:{key:terms[key]-single_terms[key] for key in keys}
+                for name,terms in order_terms.items()}
+        result['native_fla_V_branch_order_diagnosis']=dict(
+            sources=[binding(orders_path),binding(single_path)],
+            original_finite_on_actual_single_endpoints=single_terms,
+            joint_coefficients_times_actual_single_delta=order_terms,
+            component_difference_from_actual_single_finite=errors,
+            reverse_total_component_difference=sum(errors['reversed'].values()),
+            reverse_V_component_difference=errors['reversed']['v'],
+            reverse_other_components_combined_difference=sum(errors['reversed'][key]
+                                                           for key in keys if key!='v'),
+            actual_native_single_output_effect=single['summary']['native_output_effect'],
+            actual_single_finite_output_effect=single['summary']['original_single_finite_contraction'],
+            scope='CPU reduction of previously saved original FLA measurements, no new model/operator run. The +12.016 V term belongs to the original finite decomposition on actual single-deletion endpoints, not a separately measured intervention on V, a reward, or a whole-token advantage. The full native single-output effect is +15.8275. This locates joint-context interaction allocation; it neither proves population error nor accepts a new rule or numerical tolerance.')
     target = REPO / ('experiments/rl/results_existing_memory_rule_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_rule_20261008.json')
     target.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
     (HERE / ('memory-analysis.json' if args.memory else 'analysis.json')).write_text(json.dumps(dict(points=compared, sign_disagreements=result['biased_sample_sign_disagreements']), ensure_ascii=False, indent=2) + '\n', encoding='utf8')

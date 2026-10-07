@@ -1,5 +1,47 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 完整memory对照与原作者曲线结束：单方向规则未被接受
+
+完整DT诊断99ad9596/PID2175801/birth1791404173.84、作者曲线8987deac/
+PID2233742/birth1791404715.28均已完成退出，物理4/5回到各859MiB。
+同一真实B4、原对称向量逐值复现；仅改为原已有forward memory callback时，
+newline的d从-4.415554变-4.698849，原始A从-61.295715变-81.615494。
+先前原生单删除d=+23.089031，对应A约+0.75；主要来自下一code fence的概率
+0.998526降至7.3486e-10。此大负值不符合当前定义的单删除文本反事实方向。
+原作者函数SHA583f4b7d、k20和所有原数组保留；原对称/forward的signed RISE
+为0.393269/0.403295，positive-view MAS为0.631998/0.644110，均未改善。
+这是选定真实轨迹，不能当总体质量结论；两rank各42个原生forward，无新DT/
+backward/optimizer/rollout/恢复。完整DT两模式各一次/rank的冷暖时差不称提速比。
+
+已有原生FLA张量的CPU分项汇总进一步定位：真实single端点上原finite的V分支
+为+12.016079；joint正向/反向系数乘同一single差为+14.112987/-3.095070。
+反向V项差-15.111150，其余项合计补偿约+2.686，不能把分项称独立V干预或
+全token优势。全native single输出效应+15.827504，原single finite为+15.825014；
+未发明非零finite官方容差。已有单方向局部改善没有传递到完整向量与作者曲线，
+故不部署，不组合扫描，不裁剪或加倍率，不修改Q/V/PPO与原白化。
+
+App OOM的79922486存储生命周期补丁与信用质量分开：实际失败B4和包含原
+async-vLLM生命周期的两次精确32768 DT容量已通过，峰值60.803/62.627GiB；
+此为容量回执，不是32k任务/PPO更新/信用准确性验收，也尚未正式部署。
+Text原PID2833207/birth1791370325.16继续hold，release不存在；App正式未重启。
+所有实际路径/SHA、启动commit/PID创建时间、配置与回执绑定见current_runtime
+末字段、results_existing_memory_rule_20261008.json及
+results_existing_memory_author_curves_20261008.json。信用尚未修复。
+
+
+## 2026-10-08 原已有memory callback完整B4对照已启动，尚未信用修复
+
+99ad9596/PID2175801/birth1791404173.84使用物理4/5；原真实B4四行、target IDs/
+offsets CPU逐值检查通过且CUDA未初始化。原VERL fresh actor、LoRA8/16、每卡B4不变。
+原对称memory与原forward memory各一次完整DT/rank，原finite_fla_by_layer空map选择
+已有compiled callback；norm/gate仍sym、FA仍content1，原head/奖励/QVA/PPO均不变。
+没有新公式、裁剪、倍率、逐token重算、rollout、optimizer、恢复或正式profile发布。
+初次原对称模式两rank112.04/112.14秒完成，极值d=-4.415553734907168复现；
+最新旁观单方向模式到decoder4、物理4/5各54196MiB。当前运行源/脚本SHA/phase/PID
+及实际输入SHA在memory-launch.json、memory-observation系列和current_runtime末字段。
+Text同birth hold、release不存在；App正式未重启。待完整向量及原作者曲线结果。
+
+
 ## 2026-10-08 原native FLA对照：当前反号来自联合memory分配，反向端点是主要来源
 
 原保存张量的三个算子诊断均已完成退出，仅物理4；没有加载模型、完整DT、训练
