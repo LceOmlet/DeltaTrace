@@ -1,5 +1,24 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 18:28 前缀接线和原调用观测候选，仅本机接口验证
+
+已确认新DirectActionTargetReadout漏接既有prefix工厂/provider，原自动common-prefix仍存在。
+候选实现提交6469fa432e5eed381139dab86292fc92493e7f6e：分别基于Text31e2/App7900实际冻结源码补同一薄接线，
+不混入另一任务的准备/裁尾行为；cut不越首个真实变更与最早target predictor。
+原factory/capture/cache、Q/V/A、mask、B4、白化、PPO、LoRA8/16及容差未改。
+本机独立prefix接口12项中8过/4缺真实依赖skip，不能冒充GPU缓存、DT数值、32k容量或OOM修复。
+
+首次DT被动观测v3复用v2，挂原producer惰性创建后首次attribute入口；同一次原调用，
+更新前Event等待，不再STOP Ray。独立CPU12过；测试已从旧模板纠正为实际e5eb owner原AST，
+保留host-cache finally但CPU该CUDA分支关闭未验。原生MLP被动hooks记录base/LoRA实际shape/dtype/storage；
+CPU6过，只是hook/绑定/异常恢复接口。失败29批原shape/dtype/layer仍未知，
+未证实接prefix即可消除原HF/PEFT瞬时峰值，不把有限MLP分块算成native覆盖。
+
+全部prepared-only，独立候选不在默认launch/patch路径。本轮无远端调用、模型、GPU、采样、
+DT/optimizer、重启、检查点或备份；两组最后终态及17:55:52物理快照不改成新观察。
+完整源SHA、两版patch、测试与范围见results_interface_inheritance_20261007.json；PLAN未改。
+
+
 ## 2026-10-07 17:56 数值检查优先；TextCraft错误暂停导致终止，AppWorld新原生重放OOM
 
 用户要求先查极端信用，不继续拿训练进展替代逐token证据。TextCraft原PID110053/
