@@ -1,5 +1,66 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 真实动作目标 v3：两组正式 fresh 已提交
+
+当前方法代码为 `f29cc7c055fcd4e5a055639c48aaf8d913bac180`（含 a317575e 的
+真实动作目标接线）；正式发布目录为远端 `candidates/direct-action-target-20261007-v3`。
+TextCraft 物理 GPU2/3：PID110053/birth1791344324.6，source SHA5013ebc8…；
+AppWorld 物理 GPU4/5：PID167065/birth1791344807.34，source SHA70ffdcfd…。
+两组均从基础权重启动，`resume_mode=disable`，没有恢复旧辅助标签检查点。
+11:50:34 观测 TextCraft 已完成5轮交互、进入6/30、0/330；AppWorld已进入
+原LOOP实际task/world runner初始化、原vLLM已wake并列出LoRA，尚无完成回复计数、0/200；
+尚未观察本次完整更新，不能据启动或算子验证报告学习效果已改善。
+该窗口物理2/3为50239/50241MiB、4/5为47730/47714MiB；两组worker PSS
+分别8.25/8.14与8.68/7.89GiB，整个容器cgroup204.64GiB（不归因于某一个job）。
+新窗口未见Traceback/OOM。来源为fresh-v3-pair-phase-1791345034.json，
+SHA c8c07389f5f6da950afc9c83b083a766ef9f507fa46d7872a7ef9ea7d02200ab。
+11:52:01 的后续 current_runtime 快照中，TextCraft 已进入7/30、仍0/330；
+AppWorld PID/source仍匹配，尚未观察到完成回复或新训练迭代。上述资源数值属于11:50:34。
+
+完整 PID/source/argv、实际入口 SHA、原有效配置、验证来源见
+`results_direct_action_target_20261007.json` 与带采集时间的 `current_runtime.json`；
+运行事实仍由远端 active-training/active-source/formal-training 清单给出。
+注意 source 继承的 `submission_repository_commit` 属于前序版本；本发布的实现
+由 `local_patch_commit=f29cc7c0…` 及实际字节绑定。只读采集器已显式区分这两项，
+没有原地改写冻结 source。不要凭旧字段、目录名或旧 workspace 入口重发历史版本。
+
+本次接线调用原 parser/execute 保留的实际 Action/代码位置和原 token IDs。
+每轨迹一次联合 Y、一次官方终局奖励；self-target用已接受的 Q=r/V=0/A=r，
+前序 source 用原 EOS DT signed 值及 expm1 组合。O/padding仍按原mask；
+没有额外标签、参考token采样、target长度分奖、source/target单独缩放或第二次GAE。
+原 VERL 整批 masked_whiten/PPO、LoRA8/16、每卡actor/DT B4和官方任务预算保持。
+TextCraft 32组×8、global PPO mini64、30epochs/330iters；
+AppWorld 40组×6、global mini32、PPO epochs2、200iters；原完成比例和评估设置不变。
+训练长度仍为各任务官方口径（TextCraft10752/eval14848，AppWorld32000），
+32768是运输/DT上限，不把上限冒充实际轨迹长度。
+
+上游固定版本：VERL-agent20bd331bdbc9026a5668e11362178e10ab7400c8，
+AgentGym-RL82402a99c62a293735a3f412fb8ac9a600673bc0，
+AgentGymd014732d9fe39b975c368c03749bfd50950067f6，
+LOOPf14107a976e5793990329d3193df4742076c5a1d。
+原producer494b53b0…、PPO actor3a65e173…保持；新readout31e2acfb…。
+两个实际12项CPU导入和所有冻结sourcebindings均已核对，旧未接受候选未混入启动。
+
+CPU：组合21passed、官方parser/桥23passed、direct readout6passed、
+原VERL运输5passed，分别对应各自范围。真实多目标首次发现原runner输出Float64
+写入Float32载体的index_put错误；修复仅在运输边界明确转换载体dtype，
+没有更改原signed/detail、公式、FA/FLA或增加纠偏。v2 AppWorld刚启动的
+PID27716/birth1791343616.74已精确停止，163个所属进程退出，原source3f34…
+保持；无等待/创建/导出/恢复checkpoint。其日志不是当前v3异常。
+
+数值回执为 `direct-target-numerics-20261007/v4/direct-target-numerical-receipt.json`
+（SHA85091a1f…63fb188）：8条真实原ID current-response载体、两UID历史，
+上下文11678–13153、356个实际target token；每rank一次B4完整读出/QVA回填成功。
+原FA 8实际row×7断言=56passed；原cached FLA两实际B8调用的o/ht共4passed，
+保留原BF16初态/FP16 qkv及原参考、原阈值。没有把它扩成整网有限传播容差、
+完整多轮联合目标32k容量或PPO训练成功。冷调用44.9秒、带操作数导出调用
+69.1/65.5秒仅为该输入诊断耗时，不是正式每迭代耗时或纯内核吞吐。
+本批raw self A范围0.6–0.8，prior A范围约−0.1192–0.7993；不能据此断言策略改善。
+数值进程已全部退出，4/5释放后才提交当前AppWorld正式任务。
+
+TextCraft原服务3313391/birth1791334851.48及36005监听已重新核对后直接复用。
+没有重装环境、下载资产、清理持久编译缓存、提交SQL/GRPO或修改备份进程。
+
 ## 2026-10-07 10:22 辅助标签两组已停止；目标自身删除边界按用户新澄清分析
 
 TextCraft PID3327460/birth1791334993.84、AppWorld PID2360541/birth1791325655.01

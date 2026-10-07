@@ -41,7 +41,8 @@ for j in active['jobs']:
     if j.get('latest_service_startup'):
         rec['latest_service_startup']=j['latest_service_startup']
     rec['startup_provenance']={k:source[k] for k in [
-        'submission_repository_commit','submission_script_sha256','prepared_receipt',
+        'submission_repository_commit','local_patch_commit','target_semantics',
+        'checkpoint_restore_requested','resume_mode','submission_script_sha256','prepared_receipt',
         'prepared_receipt_sha256','prior_driver_pid','resume_from','completed_checkpoint_marker',
         'actor_fix_commit','dt_dispatch_commit','resume_entry_commit','actor_padding_sha256',
         'padding_comparison_receipt','padding_comparison_receipt_sha256',
@@ -53,6 +54,14 @@ for j in active['jobs']:
         'resume_launcher','unfinished_rollout_restart','initialization_retry',
         'native_conv_preparation','canonical_HF_owner','candidate_environment',
         'native_conv_capacity_receipt','isolated_owners'] if k in source}
+    if source.get('target_semantics') == 'native_joint_action_target':
+        rec['startup_provenance']['inherited_submission_repository_commit'] = rec['startup_provenance'].pop(
+            'submission_repository_commit', None)
+        rec['startup_provenance']['implementation_commit'] = source['local_patch_commit']
+        rec['startup_provenance']['commit_scope'] = (
+            'local_patch_commit binds the frozen direct-target source; the inherited submission '
+            'commit belongs to the previous release, not this implementation. Actual file SHA '
+            'and current PID birth remain the deployment evidence.')
     # The frozen launch is not the effective config after a PID-bound overlay.
     # Keep both sources visible; never relabel its historical microbatch=1 as 4.
     launch=read(Path(j['output'])/'launch.json')
