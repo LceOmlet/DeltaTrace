@@ -5,6 +5,7 @@ nor implements backup storage, compression, encryption or deduplication.
 The connector is a local credential provider exposing connect() -> SSHClient.
 """
 import argparse
+import base64
 import hashlib
 import importlib.util
 import json
@@ -31,6 +32,47 @@ def source_ssh_owner():
     owner = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(owner)
     return path, owner.SSH
+
+
+def launch_backup_command(source_ssh, access, command):
+    """Use the existing remote owner Popen/log/exit-file lifecycle for one command."""
+    script = r'''import json,pathlib,psutil,shlex,subprocess,sys,tempfile
+access=pathlib.Path(sys.argv[1]); command=json.loads(sys.argv[2])
+directory=pathlib.Path(tempfile.mkdtemp(prefix='restic-command-',dir=access))
+run=directory/'run.sh'; log=directory/'output.log'; exit_file=directory/'exit-code'
+run.write_text(shlex.join(command)+"\nrc=$?\nprintf '%s\\n' \"$rc\" > "+shlex.quote(str(exit_file))+"\nexit \"$rc\"\n")
+with log.open('w') as output:
+ proc=subprocess.Popen(['bash',str(run)],stdout=output,stderr=subprocess.STDOUT,
+                       stdin=subprocess.DEVNULL,start_new_session=True)
+job={'pid':proc.pid,'observed_process_created_unix':psutil.Process(proc.pid).create_time(),
+     'directory':str(directory),'log':str(log),'exit_file':str(exit_file),'command':command}
+(directory/'job.json').write_text(json.dumps(job,indent=2)+'\n')
+print(json.dumps(job))
+'''
+    result = subprocess.run(source_ssh+[shlex.join(
+        ['/opt/conda/bin/python', '-c', script, str(access), json.dumps(command)])],
+        capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
+def observe_backup_command(source_ssh, job, offset):
+    """Read the same detached command; an observation failure never relaunches it."""
+    script = r'''import base64,json,pathlib,psutil,sys
+job=json.loads(sys.argv[1]); offset=int(sys.argv[2]); log=pathlib.Path(job['log'])
+with log.open('rb') as stream:
+ stream.seek(offset); data=stream.read(1024*1024); offset=stream.tell()
+exit_file=pathlib.Path(job['exit_file']); code=int(exit_file.read_text()) if exit_file.exists() else None
+try:
+ process=psutil.Process(job['pid'])
+ alive=process.create_time()==job['observed_process_created_unix'] and process.status()!=psutil.STATUS_ZOMBIE
+except psutil.NoSuchProcess: alive=False
+print(json.dumps({'offset':offset,'data':base64.b64encode(data).decode(),
+ 'exit_code':code,'alive':alive,'log_drained':offset==log.stat().st_size}))
+'''
+    result = subprocess.run(source_ssh+[shlex.join(
+        ['/opt/conda/bin/python', '-c', script, json.dumps(job), str(offset)])],
+        capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
 
 
 def recorded_metadata_sources(client, jobs):
@@ -229,11 +271,26 @@ def main():
             source_list = write_backup_sources(client, access, absolute_paths)
             cmd += ['--files-from-raw', source_list]
             print('Direct backup', label, flush=True)
-            with log.open('w', encoding='utf-8') as stream:
-                status = subprocess.run(source_ssh+[shlex.join(cmd)], stdout=stream,
-                                        stderr=subprocess.STDOUT).returncode
+            job = launch_backup_command(source_ssh, access, cmd)
+            report['active_remote_command'] = dict(label=label, **job)
+            record()
+            offset = 0
+            with log.open('wb') as stream:
+                while True:
+                    observed = observe_backup_command(source_ssh, job, offset)
+                    stream.write(base64.b64decode(observed['data']))
+                    stream.flush()
+                    offset = observed['offset']
+                    if observed['exit_code'] is not None and observed['log_drained']:
+                        status = observed['exit_code']
+                        report['active_remote_command']['exit_code'] = status
+                        record()
+                        break
+                    if not observed['alive'] and observed['exit_code'] is None:
+                        raise RuntimeError(f'{label}: detached command is no longer alive and has no exit file: {job}')
+                    time.sleep(5)
             if status:
-                raise RuntimeError(f'{label}: OpenSSH/restic exit {status}; see {log}')
+                raise RuntimeError(f'{label}: detached restic exit {status}; see {log}')
             summary = next(json.loads(line) for line in reversed(log.read_text().splitlines())
                            if line.startswith('{') and json.loads(line).get('message_type') == 'summary')
             snapshot = summary['snapshot_id']
