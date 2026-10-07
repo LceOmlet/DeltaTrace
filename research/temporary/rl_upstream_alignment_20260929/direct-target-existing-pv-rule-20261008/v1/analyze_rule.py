@@ -19,13 +19,15 @@ def binding(p):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--memory',action='store_true');args=parser.parse_args()
-    folder=HERE/'memory-results' if args.memory else HERE
-    modes=('original_symmetric_memory','existing_forward_memory') if args.memory else MODES
-    transport_path=folder/('transport.json' if args.memory else 'transport-manifest.json')
+    parser=argparse.ArgumentParser();group=parser.add_mutually_exclusive_group()
+    group.add_argument('--memory',action='store_true');group.add_argument('--clean-gdn',action='store_true');args=parser.parse_args()
+    memory_rules=args.memory or args.clean_gdn
+    folder=HERE/('clean-gdn-results' if args.clean_gdn else 'memory-results') if memory_rules else HERE
+    modes=('original_symmetric_memory','existing_clean_gdn' if args.clean_gdn else 'existing_forward_memory') if memory_rules else MODES
+    transport_path=folder/('transport.json' if memory_rules else 'transport-manifest.json')
     manifest = json.loads(transport_path.read_bytes())
-    for item in (manifest if args.memory else manifest['files']):
-        actual = binding(Path(item['local_path']) if args.memory else HERE / item['name'])
+    for item in (manifest if memory_rules else manifest['files']):
+        actual = binding(Path(item['local_path']) if memory_rules else HERE / item['name'])
         assert actual['bytes'] == item['bytes'] and actual['sha256'] == item['sha256']
     paths = [[folder / 'results' / f'rank{rank}-{mode}.pt' for mode in modes] for rank in (0, 1)]
     values = [[torch.load(p, map_location='cpu', weights_only=False) for p in pair] for pair in paths]
@@ -105,7 +107,7 @@ def main():
         credit_repaired=False, formal_update_released=False,
         cuda_initialized_in_local_analysis=torch.cuda.is_initialized(),
     )
-    if args.memory:
+    if memory_rules:
         result['scope']='Same actual high-impact AppWorld B4, unchanged native target endpoint scores; only the existing finite_fla_by_layer map selects the original averaged or forward callback. Norm/gate, FA, head, reward, Q/V/A formula and PPO remain unchanged.'
         result['rule_definitions']=dict(original_symmetric_memory='Original average_memory_endpoint_orders of the compiled finite_fla callback',existing_forward_memory='Original compiled finite_fla callback, selected by its existing empty finite_fla_by_layer map')
         result['limitations']=[v for v in result['limitations'] if not v.startswith(('The current content1','The rule swap'))]
@@ -168,9 +170,15 @@ def main():
             actual_native_single_output_effect=single['summary']['native_output_effect'],
             actual_single_finite_output_effect=single['summary']['original_single_finite_contraction'],
             scope='CPU reduction of previously saved original FLA measurements, no new model/operator run. The +12.016 V term belongs to the original finite decomposition on actual single-deletion endpoints, not a separately measured intervention on V, a reward, or a whole-token advantage. The full native single-output effect is +15.8275. This locates joint-context interaction allocation; it neither proves population error nor accepts a new rule or numerical tolerance.')
-    target = REPO / ('experiments/rl/results_existing_memory_rule_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_rule_20261008.json')
+    if args.clean_gdn:
+        result['scope']='Same original high-impact AppWorld B4; owner-preserved clean-v1 empty norm/gate and memory maps versus current symmetric profile. Current verified offload/chunking/kernels, FA, head, native endpoints, targets, Q/V/A formula and PPO unchanged. This is a numerical-rule diagnostic, not a historical-runtime restore or formal deployment.'
+        result['rule_definitions']=dict(original_symmetric_memory='Current owner symmetric norm/gate and averaged memory rules',existing_clean_gdn='Preserved clean-v1 defaults: content1 norm/gate and original forward memory callback')
+        result['preserved_clean_owner']=rank_reports[0]['preserved_clean_owner']
+        result['limitations']=[v for v in result['limitations'] if not v.startswith('This evaluates existing memory rules.')]
+        result['limitations'].append('The complete preserved GDN profile is compared, rather than only its memory rule. Selected-token improvements alone do not establish overall attribution quality; original author curves remain separate. No production switch or precision pass is asserted.')
+    target = REPO / ('experiments/rl/results_existing_clean_GDN_20261008.json' if args.clean_gdn else ('experiments/rl/results_existing_memory_rule_20261008.json' if args.memory else 'experiments/rl/results_existing_PV_rule_20261008.json'))
     target.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
-    (HERE / ('memory-analysis.json' if args.memory else 'analysis.json')).write_text(json.dumps(dict(points=compared, sign_disagreements=result['biased_sample_sign_disagreements']), ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    (HERE / ('clean-gdn-analysis.json' if args.clean_gdn else ('memory-analysis.json' if args.memory else 'analysis.json'))).write_text(json.dumps(dict(points=compared, sign_disagreements=result['biased_sample_sign_disagreements']), ensure_ascii=False, indent=2) + '\n', encoding='utf8')
     print(json.dumps(dict(receipt=binding(target), signs=result['biased_sample_sign_disagreements'],
                          worst_point=next(p for p in compared if p['row'] == 3 and p['mode'] == 'most_negative'),
                          resources=resource), ensure_ascii=False, indent=2))

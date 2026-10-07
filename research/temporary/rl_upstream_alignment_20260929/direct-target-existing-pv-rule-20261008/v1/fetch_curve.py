@@ -14,12 +14,14 @@ parser=argparse.ArgumentParser();group=parser.add_mutually_exclusive_group();gro
 group.add_argument('--memory',action='store_true');group.add_argument('--memory-curve',action='store_true')
 group.add_argument('--code-fence-only',action='store_true')
 group.add_argument('--clean-gdn',action='store_true')
+group.add_argument('--clean-gdn-curve',action='store_true')
 parser.add_argument('--revision',type=int,default=1);parser.add_argument('--failed',action='store_true');args=parser.parse_args()
 remote = transport.ROOT + '/receipts/direct-target-existing-pv-rule-20261008-v1-' + ('gdn' if args.gdn else ('subops' if args.subops else ('layers' if args.layer else 'curves')))
 if args.gdn and args.revision!=1:remote+='-v'+str(args.revision)
 if args.memory or args.memory_curve:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-'+('memory-curves' if args.memory_curve else 'memory')
 if args.code_fence_only:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-code-fence'
 if args.clean_gdn:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-clean-gdn'
+if args.clean_gdn_curve:remote=transport.ROOT+'/receipts/direct-target-existing-pv-rule-20261008-v1-clean-gdn-curves'
 code = '''from pathlib import Path
 import hashlib,json,psutil
 root=Path(REMOTE)
@@ -57,6 +59,7 @@ if args.gdn and args.revision!=1:dest=dest.with_name('gdn-v'+str(args.revision)+
 if args.memory or args.memory_curve:dest=HERE/('memory-curve-results' if args.memory_curve else 'memory-results')
 if args.code_fence_only:dest=HERE/'code-fence-results'
 if args.clean_gdn:dest=HERE/'clean-gdn-results'
+if args.clean_gdn_curve:dest=HERE/'clean-gdn-curve-results'
 for row in rows:
     target = dest / row['relative']
     target.parent.mkdir(parents=True, exist_ok=True)

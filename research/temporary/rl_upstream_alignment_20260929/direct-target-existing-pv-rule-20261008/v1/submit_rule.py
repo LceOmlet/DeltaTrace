@@ -26,11 +26,12 @@ kind.add_argument('--memory', action='store_true', help='Compare the existing av
 kind.add_argument('--memory-curve', action='store_true', help='Original author curves for the completed memory callback comparison')
 kind.add_argument('--code-fence-only', action='store_true', help='One bounded original DT isolating the actual next code-fence score; unchanged original reference inputs')
 kind.add_argument('--clean-gdn', action='store_true', help='Compare owner-preserved clean-v1 GDN rule defaults; current execution/kernels retained, no production switch')
+kind.add_argument('--clean-gdn-curve', action='store_true', help='Original author curves for the completed preserved GDN rule comparison')
 parser.add_argument('--revision',type=int,default=1,help='Distinct receipt directory for a corrected GDN diagnostic')
 args = parser.parse_args()
 if args.revision != 1 and not args.gdn:parser.error('revision is only used for GDN diagnostics')
-if args.curve or args.memory_curve:
-    OUT += '-memory-curves' if args.memory_curve else '-curves'
+if args.curve or args.memory_curve or args.clean_gdn_curve:
+    OUT += '-clean-gdn-curves' if args.clean_gdn_curve else ('-memory-curves' if args.memory_curve else '-curves')
     files = [HERE / 'compare_existing_pv_curves.py',
              AUDIT / 'direct-target-action-author-curve-20261007/v1/inspect_action_curve.py',
              AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
@@ -80,6 +81,9 @@ assert len(original['rows'])==4
 record=dict(scope='Original real B4, only the saved attribution vector is replaced by the two already-measured existing-rule vectors for author-metric evaluation',ranks={})
 profiles=[(0,'original_symmetric_memory'),(1,'existing_forward_memory')] if @MEMORY_CURVE@ else [(0,'original_content1'),(1,'existing_content0')]
 comparison='direct-target-existing-pv-rule-20261008-v1-memory' if @MEMORY_CURVE@ else 'direct-target-existing-pv-rule-20261008-v1'
+if @CLEAN_CURVE@:
+ profiles=[(0,'original_symmetric_memory'),(1,'existing_clean_gdn')]
+ comparison='direct-target-existing-pv-rule-20261008-v1-clean-gdn'
 for rank,mode in profiles:
  trace=root/'receipts'/comparison/'results'/('rank0-'+mode+'.pt')
  value=torch.load(trace,map_location='cpu',weights_only=False)
@@ -147,13 +151,14 @@ else:
  (out/'launch.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
 """
 commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, FENCE=args.code_fence_only, CLEAN=args.clean_gdn, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
+for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve or args.clean_gdn_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, CLEAN_CURVE=args.clean_gdn_curve, FENCE=args.code_fence_only, CLEAN=args.clean_gdn, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
     code = code.replace('@' + k + '@', repr(v))
 command = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 prefix = 'gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else ('curve-' if args.curve else '')))
 if args.memory or args.memory_curve:prefix='memory-curve-' if args.memory_curve else 'memory-'
 if args.code_fence_only:prefix='code-fence-'
 if args.clean_gdn:prefix='clean-gdn-'
+if args.clean_gdn_curve:prefix='clean-gdn-curve-'
 if args.gdn and args.revision != 1:prefix = 'gdn-v' + str(args.revision) + '-'
 phase = prefix + ('launch' if args.launch else 'prepare')
 (HERE / (phase + '-command.sh')).write_text(command, encoding='utf8', newline='\n')
