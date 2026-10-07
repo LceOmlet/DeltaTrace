@@ -1,5 +1,48 @@
 # 当前运行版本与修复记录
 
+
+## 2026-10-07 09:19 TextCraft原正式环境已执行；AppWorld进入第二次actor更新
+
+TextCraft同一PID3327460/birth1791334993.84/source5faa6e2d，物理GPU2/3；
+原官方服务3313391已记录256次正式reset、461次step及HTTP200，排除了已关闭的
+readiness env0。observe由原client读取返回缓存；未新增API、模型或GPU探测。
+09:18原日志仍首轮generate_sequences、0/330，没有完整训练更新验收。
+AppWorld同一PID2360541/sourcec83、物理GPU4/5、参数及入口不变；第二次DT两rank
+均已执行原phase末缓存释放，随后进入原update_actor。只读phase-1791335936
+及service-formal-log-1791335480来源见results_textcraft_fresh_20261007.json。
+
+备份fresh-v2的原restic实际传输70秒后channel exit=-1，无summary或完成snapshot。
+原失败receipt与输出保留；09:15原OpenSSH短命令成功，精确backup-access restic
+进程及子进程均为0，没有仍在运行的备份，不把首次TCP超时当成主机停机。
+正在定位原SSH长连接边界，未重复提交；backup/restore/SHA/tag语义不变。
+此段纠正下方09:06“传输及校验尚待确认”的历史状态，不宣称异机备份已成功。
+
+## 2026-10-07 09:06 TextCraft fresh正式GPU2/3已进入原生成；AppWorld4/5不变
+
+TextCraft PID3327460/birth1791334993.84，提交代码14ba007，实际source SHA5faa6e2d；
+entry/VERL为textcraft-fresh-row-prefix-20261007-v2，正式output为同名runs/textcraft-dt。
+新worker3332777/3334413已加载原模型，进入原generate_sequences；原trainer显示
+0/330、Total training steps330。没有恢复旧检查点，旧无效轨迹未复用。LoRA8/16、
+每卡actor/DT B4与原作者负载不变；原validator1passed及CPU准备31afb沿用。
+实际source scope已修正为fresh，不继承prepared模板中的历史checkpoint25描述；
+原template/hash仍保留作可审计输入。actualsource绑定本次prepared/plan/interface/
+service-current四份收据，不把旧服务PID或旧prepared当运行来源。
+
+09:06物理mx-smi：TextCraft GPU2/3 worker49472/49164MiB（生成阶段，不是峰值），
+AppWorld原GPU4/5 worker31348/31890MiB，driver2360541/sourcec83不变、第二轮原DT。
+TextCraft worker PSS约8.3/8.1GiB；cgroup总299.42GiB，不累加fork RSS。
+新TextCraft尚无完整rollout/DT/actor返回，不能称已稳定或质量恢复。
+原日志/资源回执phase-1791335163及正式source/job详见results_textcraft_fresh_20261007。
+
+首次异机backup PID10132在SSH exec输入处EOF，零snapshot；实际新manifest1678条
+路径使命令305599字节，旧manifest去重18KB结果不适用于新symlink源树。旧失败
+receipt保留。仅改用现有restic官方--files-from-raw：原路径NUL列表304758字节
+SFTP读回完全相同，实际命令1019字节；原单个真实manifest的native dry-run4.88秒
+exit0，未写snapshot。脚本commit1180126/SHA0b44f13d，原restic备份/restore verify/
+完整SHA/tag不变；09:07:53以新receipt fresh-v2重启本机PID12800，不占GPU，
+传输及校验尚待确认。未手工创建或向训练恢复任何checkpoint。
+
+
 ## 2026-10-07 09:02 用户指定TextCraft GPU2/3：fresh原入口就绪；备份边界修复
 
 AppWorld物理GPU4/5、PID2360541/birth1791325655.01、source c83b96de保持不动。
