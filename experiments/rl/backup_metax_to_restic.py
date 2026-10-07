@@ -13,6 +13,119 @@ import subprocess
 import time
 
 
+def recorded_metadata_sources(client, jobs):
+    """Resolve only paths recorded by these jobs and their actual open Ray logs."""
+    script = """import json,pathlib,sys,psutil
+jobs=json.loads(sys.argv[1]); sources=set()
+for job in jobs:
+ receipt=job.get('source_receipt')
+ if receipt:
+  p=pathlib.Path(receipt); source=json.loads(p.read_bytes()); sources.add(str(p.resolve()))
+  for name in source.get('source_bindings', {}):
+   p=pathlib.Path(name)
+   if p.is_file(): sources.add(str(p.resolve()))
+  environments={source.get(field, {}).get('DT_ENVIRONMENT_JSON') for field in ('resource_environment','environment')}
+  environments.add(source.get('candidate_environment', {}).get('path'))
+  for name in environments-{None}:
+   p=pathlib.Path(name)
+   if p.is_file():
+    sources.add(str(p.resolve())); env=json.loads(p.read_bytes())
+    library=env.get('qwen35', {}).get('finite_library')
+    if library: sources.add(str(pathlib.Path(library).resolve(strict=True)))
+ pid=job.get('pid'); birth=job.get('observed_process_created_unix')
+ if pid is None or birth is None: continue
+ try: process=psutil.Process(pid)
+ except psutil.NoSuchProcess: continue
+ if process.create_time()!=birth or process.status()==psutil.STATUS_ZOMBIE: continue
+ fd=pathlib.Path('/proc')/str(pid)/'fd'
+ if fd.is_dir():
+  for handle in fd.iterdir():
+   try: p=handle.resolve(strict=True)
+   except OSError: continue
+   for parent in p.parents:
+    if parent.name=='logs' and parent.parent.name.startswith('session_'):
+     sources.add(str(parent)); break
+print(json.dumps(sorted(sources)))
+"""
+    identities = [{key: job.get(key) for key in
+                   ('pid', 'observed_process_created_unix', 'source_receipt')} for job in jobs]
+    _, output, errors = client.exec_command(shlex.join(
+        ['/opt/conda/bin/python', '-c', script, json.dumps(identities)]))
+    raw, error = output.read(), errors.read()
+    if output.channel.recv_exit_status():
+        raise RuntimeError(error.decode())
+    return json.loads(raw)
+
+
+def select_backup_sources(sftp, source_root, training, verified_labels, checkpoints,
+                          profiler_trace, profiler_label):
+    """Use either recorded manifest schema, preserving original completion markers."""
+    runtime = PurePosixPath(source_root)
+    entries = [x for x in ('repo/experiments/rl', 'receipts', 'runs', 'formal-training.json',
+                           'active-training.json', 'active-source.json', 'environment.json')
+               if exists(sftp, str(runtime/x))]
+    jobs = training.get('jobs', [])
+    for owner in [training, *jobs]:
+        for field in ('dt_root', 'entry', 'verl_root', 'loop_root', 'source_receipt'):
+            if owner.get(field):
+                relative = str(PurePosixPath(owner[field]).relative_to(runtime))
+                if relative not in entries:
+                    entries.append(relative)
+    ray_logs = []
+    for job in jobs:
+        if not job.get('ray_tmpdir'):
+            continue  # New manifests use actual driver-open logs collected above.
+        ray_root = PurePosixPath(job['ray_tmpdir'])
+        session = (PurePosixPath(job['ray_session']) if job.get('ray_session')
+                   else ray_root/'ray/session_latest')
+        latest = session/'logs'
+        if exists(sftp, str(latest)):
+            resolved = PurePosixPath(sftp.normalize(str(latest)))
+            resolved.relative_to(ray_root)
+            ray_logs.append(str(resolved))
+    for job in jobs:
+        port_file = job.get('settings', {}).get('APPWORLD_PORT_FILE')
+        if job['task'] == 'AppWorld' and port_file:
+            outputs = PurePosixPath(port_file).parent/'experiments/outputs'
+            if exists(sftp, str(outputs)):
+                entries.append(str(outputs.relative_to(runtime)))
+    snapshots = [('metadata', entries, False)]
+    for job in jobs:
+        root = PurePosixPath(job.get('checkpoint_dir') or job['checkpoints'])
+        marker = str(root/'latest_checkpointed_iteration.txt')
+        if not exists(sftp, marker):
+            continue
+        with sftp.open(marker) as f:
+            latest = int(f.read())
+        for name in sorted(sftp.listdir(str(root))):
+            if not name.startswith('global_step_'):
+                continue
+            step = int(name.removeprefix('global_step_'))
+            run = PurePosixPath(job.get('run_dir') or job['output']).relative_to(runtime)
+            label = f"{'__'.join(run.parts)}-step-{step}"
+            if step <= latest and label not in verified_labels:
+                rel = str((root/name).relative_to(runtime))
+                snapshots.append((label, [rel], True))
+    for checkpoint in checkpoints:
+        relative = PurePosixPath(checkpoint)
+        if relative.is_absolute() or '..' in relative.parts:
+            raise ValueError('Checkpoint must remain within the recorded runtime')
+        if not relative.name.startswith('global_step_'):
+            raise ValueError('Checkpoint must be an original global_step_N directory')
+        marker = runtime/relative.parent/'latest_checkpointed_iteration.txt'
+        with sftp.open(str(marker)) as source:
+            latest = int(source.read())
+        if int(relative.name.removeprefix('global_step_')) > latest:
+            raise ValueError('Checkpoint is not covered by the original completion marker')
+        label = 'checkpoint-'+'__'.join(relative.parts)
+        if label not in verified_labels:
+            snapshots.append((label, [checkpoint], True))
+    # Preserve the legacy artifact, after all currently completed checkpoints.
+    if (profiler_label not in verified_labels and exists(sftp, str(runtime/profiler_trace))):
+        snapshots.append((profiler_label, [profiler_trace], True))
+    return snapshots, ray_logs
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--connector', type=Path, required=True)
@@ -38,7 +151,7 @@ def main():
                      '--password-file', str(access/'repository.password'),
                      '--cache-dir', str(access/'cache'),
                      '-o', 'sftp.command=ssh -F '+str(access/'ssh_config')+' backup-a6000 -s sftp']
-    report = {'source_root': args.source_root, 'destination': args.destination,
+    report = {'status': 'running', 'source_root': args.source_root, 'destination': args.destination,
               'backup_root': args.backup_root, 'started': time.time(), 'transport': 'MetaX direct SFTP through 4090; no PC data relay', 'snapshots': []}
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
 
@@ -48,6 +161,7 @@ def main():
     def record():
         args.receipt.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
 
+    record()
     try:
         previous = json.loads(destination(restic+['snapshots', '--json']))
         verified_labels = {tag for snap in previous
@@ -59,78 +173,19 @@ def main():
         profiler_trace = 'receipts/rollout-major-cost/webshop-native-live/generation-206031.json'
         profiler_label = 'native-profiler-webshop-generation-206031'
         with client.open_sftp() as sftp:
-            entries = [x for x in ('repo/experiments/rl', 'receipts', 'runs', 'formal-training.json',
-                                   'active-training.json', 'active-source.json', 'environment.json')
-                       if exists(sftp, str(PurePosixPath(args.source_root)/x))]
-            jobs = []
+            training = {}
             manifest = str(PurePosixPath(args.source_root)/'formal-training.json')
             if exists(sftp, manifest):
                 with sftp.open(manifest) as f:
                     training = json.load(f)
-                jobs = training['jobs']
-                # Current jobs load an immutable release rather than repo/.
-                # Archive that exact source and its environment/import receipt.
-                if training.get('dt_root'):
-                    release = PurePosixPath(training['dt_root']).relative_to(args.source_root)
-                    if str(release) not in entries:
-                        entries.append(str(release))
-            ray_logs = []
-            for job in jobs:
-                # Concurrent native Ray instances share a short IPC root.
-                # Prefer the recorded instance; session_latest is only for
-                # older manifests that used separate roots per job.
-                ray_root = PurePosixPath(job['ray_tmpdir'])
-                session = (PurePosixPath(job['ray_session']) if job.get('ray_session')
-                           else ray_root/'ray/session_latest')
-                latest = session/'logs'
-                if exists(sftp, str(latest)):
-                    resolved = PurePosixPath(sftp.normalize(str(latest)))
-                    resolved.relative_to(ray_root)
-                    ray_logs.append(str(resolved))
-            # The official AppWorld client writes API traces/evaluation files
-            # alongside its configured port file, outside trainer rollouts.
-            for job in jobs:
-                port_file = job.get('settings', {}).get('APPWORLD_PORT_FILE')
-                if job['task'] == 'AppWorld' and port_file:
-                    outputs = PurePosixPath(port_file).parent/'experiments/outputs'
-                    if exists(sftp, str(outputs)):
-                        entries.append(str(outputs.relative_to(args.source_root)))
-            snapshots = [('metadata', entries, False)]
-            if (profiler_label not in verified_labels and
-                    exists(sftp, str(PurePosixPath(args.source_root)/profiler_trace))):
-                snapshots.append((profiler_label, [profiler_trace], True))
-            for job in jobs:
-                root = PurePosixPath(job['checkpoint_dir'])
-                marker = str(root/'latest_checkpointed_iteration.txt')
-                if not exists(sftp, marker):
-                    continue
-                with sftp.open(marker) as f:
-                    latest = int(f.read())
-                for name in sorted(sftp.listdir(str(root))):
-                    if not name.startswith('global_step_'):
-                        continue
-                    step = int(name.removeprefix('global_step_'))
-                    # A different run's step1 must not inherit an old run's
-                    # verified tag merely because both are named Webshop.
-                    run = PurePosixPath(job['run_dir']).relative_to(args.source_root)
-                    label = f"{'__'.join(run.parts)}-step-{step}"
-                    if step <= latest and label not in verified_labels:
-                        rel = str((root/name).relative_to(args.source_root))
-                        snapshots.append((label, [rel], True))
-            for checkpoint in args.checkpoint:
-                relative = PurePosixPath(checkpoint)
-                if relative.is_absolute() or '..' in relative.parts:
-                    raise ValueError('Checkpoint must remain within the recorded runtime')
-                if not relative.name.startswith('global_step_'):
-                    raise ValueError('Checkpoint must be an original global_step_N directory')
-                marker = PurePosixPath(args.source_root)/relative.parent/'latest_checkpointed_iteration.txt'
-                with sftp.open(str(marker)) as source:
-                    latest = int(source.read())
-                if int(relative.name.removeprefix('global_step_')) > latest:
-                    raise ValueError('Checkpoint is not covered by the original completion marker')
-                label = 'checkpoint-'+'__'.join(relative.parts)
-                if label not in verified_labels:
-                    snapshots.append((label, [checkpoint], True))
+            snapshots, ray_logs = select_backup_sources(sftp, args.source_root, training,
+                verified_labels, args.checkpoint, profiler_trace, profiler_label)
+        # Restic already accepts absolute Ray logs outside source_root. Use the
+        # same metadata-only path for recorded resolved imports, including HF.
+        covered = [PurePosixPath(args.source_root)/path for path in snapshots[0][1]]
+        recorded = recorded_metadata_sources(client, training.get('jobs', []))
+        ray_logs = sorted({path for path in ray_logs + recorded
+                           if not any(PurePosixPath(path).is_relative_to(parent) for parent in covered)})
         for label, paths, immutable in snapshots:
             for path in paths:
                 if PurePosixPath(path).is_absolute() or '..' in PurePosixPath(path).parts:

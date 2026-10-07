@@ -1,0 +1,47 @@
+--- /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-formal-20261006-v2/entry/deltatrace_rollout.py
++++ /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-fresh-row-prefix-20261007-v2/entry/deltatrace_rollout.py
+@@ -164,6 +164,8 @@
+     def synchronize_prefix_start(self, prefix_start: int) -> int:
+         # A native cached-prefix forward gathers FSDP parameters. All ranks
+         # must take that branch together, including a rank with a short prompt.
++        # FSDP owns parameter gathers, not local sequence widths. Synchronize
++        # the branch only: each rank retains its own valid cache boundary.
+         # Use the actor's own sharding group, without changing finite rules.
+         from torch.distributed.tensor import DTensor
+         weight = self.lm_head.weight
+@@ -171,9 +173,9 @@
+             mesh = weight.device_mesh
+             if mesh.ndim > 1:
+                 mesh = mesh['fsdp']
+-            value = torch.tensor(prefix_start, device=self.execution_device, dtype=torch.long)
++            value = torch.tensor(int(prefix_start > 0), device=self.execution_device, dtype=torch.long)
+             torch.distributed.all_reduce(value, op=torch.distributed.ReduceOp.MIN, group=mesh.get_group())
+-            return int(value.item())
++            return prefix_start if value.item() else 0
+         return prefix_start
+ 
+     def release_owner_params(self) -> None:
+@@ -361,6 +363,7 @@
+             compact_gdn_captures=env.get('dt_compact_gdn_captures', False),
+             pin_root_host=env.get('dt_pin_root_host', False),
+             reuse_native_prefix=env.get('dt_reuse_native_prefix', False),
++            **({'native_conv_initial_states': True} if env.get('dt_native_conv_initial_states', False) else {}),
+             **execution,
+         )
+         self.packed_answer_targets = PackedAnswerTargets
+@@ -388,6 +391,15 @@
+             invalid_action_penalty_coef=invalid_action_penalty_coef,
+             sampling=json.loads(os.environ.get('DT_SAMPLING_JSON', 'null')),
+         )
++        from native_prefix_leases import prepare_native_prefix_leases
++        self.readout_options['prefix_lease_factory'] = prepare_native_prefix_leases
++        if env.get('individual_prefixes', False) or env.get('boundary_row_storage', False):
++            from functools import partial
++            self.readout_options['prefix_lease_factory'] = partial(
++                prepare_native_prefix_leases,
++                individual_prefixes=env.get('individual_prefixes', False),
++                boundary_row_storage=env.get('boundary_row_storage', False),
++            )
+         self.readout = None if self.readout_options['task'] == 'AppWorld' else EventRatioReadout(
+             self.runner, self.readout_tokenizer, **self.readout_options)
+         self.appworld_readouts = {}

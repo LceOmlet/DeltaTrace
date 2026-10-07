@@ -1,0 +1,41 @@
+--- /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/actor/dp_actor.py
++++ /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py
+@@ -81,6 +81,7 @@
+         response_length = micro_batch["responses"].size(-1)
+         response_labels = micro_batch["responses"]
+         response_left_pad = 0
++        response_right_pad = 0
+         multi_modal_inputs = {}
+         if "multi_modal_inputs" in micro_batch:
+             for key in micro_batch["multi_modal_inputs"][0].keys():
+@@ -227,6 +228,19 @@
+                     input_ids = input_ids[:, left_trim:]
+                     attention_mask = attention_mask[:, left_trim:]
+                     position_ids = position_ids[..., left_trim:]
++                    columns = torch.arange(input_ids.shape[-1], device=attention_mask.device)
++                    right_end = int((attention_mask * columns).max().item()) + 1
++                    # Retain a response position even for an empty action mask.
++                    right_end = max(right_end, input_ids.shape[-1] - response_length + 1)
++                    if getattr(getattr(self.actor_module, "config", None), "model_type", None) in ("qwen3_5", "qwen3_5_text"):
++                        right_end = min(input_ids.shape[-1], (right_end + 63) // 64 * 64)
++                    response_right_pad = input_ids.shape[-1] - right_end
++                    if response_right_pad:
++                        response_length -= response_right_pad
++                        response_labels = response_labels[:, :response_length]
++                        input_ids = input_ids[:, :right_end]
++                        attention_mask = attention_mask[:, :right_end]
++                        position_ids = position_ids[..., :right_end]
+                 extra_args = {}
+                 if self.use_fused_kernels:
+                     extra_args["temperature"] = temperature
+@@ -270,6 +284,10 @@
+                         if calculate_entropy:
+                             entropy = torch.nn.functional.pad(entropy, (0, response_length - head_response_length))
+ 
++            if response_right_pad:
++                log_probs = torch.nn.functional.pad(log_probs, (0, response_right_pad))
++                if entropy is not None:
++                    entropy = torch.nn.functional.pad(entropy, (0, response_right_pad))
+             if response_left_pad:
+                 log_probs = torch.nn.functional.pad(log_probs, (response_left_pad, 0))
+                 if entropy is not None:

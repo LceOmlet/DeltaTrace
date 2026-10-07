@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 09:02 用户指定TextCraft GPU2/3：fresh原入口就绪；备份边界修复
+
+AppWorld物理GPU4/5、PID2360541/birth1791325655.01、source c83b96de保持不动。
+TextCraft旧任务已停止；最新用户授权新任务使用物理GPU2/3，不恢复旧检查点。
+新候选textcraft-fresh-row-prefix-20261007-v2/prepared.json SHA31afb085，
+source-template7dfe857d、launch-plan c82f10f1。仅fresh launcher auto→disable，
+producer复用3e0c、lease b947、DT runner5f14/库4f42/environment4ff；原TextCraft
+同步rollout/任务客户端/奖励、原VERL wholebatch masked_whiten trainer736保持。
+actor仅复用已验3a65共享右padding补丁，update_policy AST仍原样；原配置32组×8、
+globalmini64、有效PPO epoch1、30 epochs，LoRA8/16与每卡actor/DT B4不变。
+v1只链接Python文件而缺原version资源的准备失败已保存；v2恢复原1450文件资源，
+14项真实模块CPU导入/factory接口通过，PSS546.7MB/maxRSS981.4MB、CUDA未初始化。
+这不是新的模型/数值/32k验收或已完成训练。
+
+原TextCraft服务4049454已退出。仅重启作者agentenv_textcraft.launch原CPU服务36005，
+复用已有textcraft-extras-20260930，不安装；新PID3313391/birth1791334851.48，
+原client create/reset/observe/close实际返回，service-current SHAd7ebfac1。
+原Hydra/native validator单项通过；原entry/textcraft-service.json已更新，旧记录保留。
+本段为prepared/live-service状态；正式训练PID以随后的提交收据为准。
+
+异机备份此前未运行。原私有连接器仅端口改31146，严格比对原可信ed25519公钥后
+绑定新端口。原backup_metax_to_restic.py修正新manifest output/checkpoints字段，
+记录的实际源/外置HF与FA库、PID birth匹配的Ray日志纳入原restic接口；1557路径
+去除已被目录覆盖的重复项后SSH路径段18,231字节，实际覆盖不减。原传输、
+restore --verify、完整SHA、tag/cleanup循环AST未改，完成CP先于旧47GiB profiler。
+最终脚本SHA09ae15e6、真实边界收据4b3032da；尚未启动传输，不能称备份成功。
+目标A6000只作存储，实测剩余139427086336字节；原恢复空间检查保留。
+
+
 ## 2026-10-07 08:40 有界有限FA算子trace定位dQ；原shared-A候选更慢，未部署
 
 同一fresh driver2360541/birth1791325655.01、source c83b96de、worker2367855/2369144
