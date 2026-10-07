@@ -1,5 +1,40 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 13:11 AppWorld 输出层内存修复已对拍并正式提交；TextCraft 第二轮更新中
+
+AppWorld 已由原提交器重新启动，PID670069/birth1791349552.74/source SHA42bb0eb9…，
+物理4/5。实现绑定 f921d49a70378488ba09b15e80f21ed5c1ef03ac；仅 DT 输出层文件改为
+1e20956a…3541e，entry、VERL、LOOP 沿用 direct-action-target-20261007-v3 原目录。
+实际发布为 candidates/direct-target-head-memory-20261007-v2/deltatrace；冻结 source
+核验1663项，原配置只改变四个输出/可见目录。LoRA8/16、每卡B4、原任务预算及原
+Q/V/A、PPO均未改，resume_mode=disable。旧PID167065的OOM属于已退役运行。
+原准备回执的 prepared_only 状态记录的是准备时刻；后续 verification.json、正式
+submit 回执和当前PID/source分别证明数值对拍、提交及当前运行，不能混为同一状态。
+
+修复按128个target row调用同一个原self.seed，保持原公式/FP32 dtype/顺序/checks，
+合并后一次原scatter；root log-softmax同样分片。对拍使用原真实输入，一卡一个B4，
+两rank分别160/196个target row，仍不是完整多轮joint目标的32k容量验证。
+两端目标log-prob逐值相等；hidden最大差1.222e-6/1.483e-6，allocated最大差
+3.248e-6/1.907e-6。原torch.testing.assert_close无rtol/atol覆盖，实际FP32默认
+rtol1.3e-6/atol1e-5，两rank均通过。该判据仅属于PyTorch输出层回归；原FA/FLA
+断言及PPO没有改变，不把它宣称为FA/FLA整链或完整训练可靠性证明。
+没有裁剪、倍率纠偏或更改信用；原full-vocab logits仍保留，正式完整joint峰值待观察。
+v1导入身份失败和v2过强bitwise诊断门槛的原记录保留；前者未进入DT，后者正常FP32
+差异通过后续原dtype默认对照，不将其写成原官方容差失效。
+
+TextCraft仍为f29cc7c0/PID110053/birth1791344324.6/source5013ebc8…、物理2/3。
+已完成step1；第二次采样30/30，原生成29分56秒，第二次DT两rank均21/21完成，
+当前在第二次actor update。第二批161个唯一非零奖励轨迹，原DP补至168；尚无step2
+完整指标，不能由启动/单阶段完成报告新的学习效果。
+
+13:11只读阶段回执 active-head-v2-pair-phase-1791349875.json SHA51fe7a68…e1d76：
+AppWorld已进入原native_async采样，完成31993生成token/99.6秒；该时间包含RPC、
+prefill和decode，不是纯decode。当前未完成首个新DT或更新，仍需观察原失败阶段。
+物理2/3显存41662/30924MiB，4/5为55308/55226MiB；容器cgroup235750555648字节
+（约219.56GiB，属于整个容器）。这只是当前占用，不是峰值或训练健康证明。
+完整来源见 results_direct_target_head_memory_20261007.json 及 current_runtime.json。
+SQL/GRPO保持停止，未恢复检查点、启动新备份或增加额外GPU测试。
+
 ## 2026-10-07 12:38 真实动作目标：TextCraft首轮完成；AppWorld有限输出层OOM
 
 TextCraft仍为f29cc7c0/PID110053/birth1791344324.6/source5013ebc8…、物理2/3，
