@@ -54,7 +54,8 @@ for j in active['jobs']:
         'resume_launcher','unfinished_rollout_restart','initialization_retry',
         'native_conv_preparation','canonical_HF_owner','candidate_environment',
         'native_conv_capacity_receipt','isolated_owners',
-        'head_memory_preparation','head_memory_verification'] if k in source}
+        'head_memory_preparation','head_memory_verification',
+        'gpu_lifetime_preparation','gpu_lifetime_verification'] if k in source}
     if source.get('target_semantics') == 'native_joint_action_target':
         rec['startup_provenance']['inherited_submission_repository_commit'] = rec['startup_provenance'].pop(
             'submission_repository_commit', None)

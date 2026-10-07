@@ -1,5 +1,33 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 15:13 AppWorld生命周期修复正式提交，TextCraft继续
+
+AppWorld由原submit_prepared_direct_targets从base新开，PID1468126/birth1791357190.77，
+物理4/5，source942c2d686a701317e8441f5b299dd86dfb55deb7356c7427e62bc4cbdcd36488。
+DT root为candidates/direct-target-gpu-lifetime-20261007-v1/deltatrace；冻结源码commit
+d7af4eaed5c16aacb1730b81946fe89d282e40d5，后续提交不覆盖这个部署身份。
+仅runner ba639b28/GDN448ef32c将已有最后消费者释放与CPU搬运开关分开；head1e209、
+readout7900、原VERL/LOOP/任务/PPO、每卡B4、rank8/alpha16及所有计算参数保持。
+CPU实际导入和原配置比较1677项通过，仅四个输出路径变化；正式原提交owner再核验1681项。
+不恢复检查点，未改变TextCraft原PID110053，也未恢复SQL/GRPO。
+
+修复前后在同一份真实原生捕获上，两rank各24次GDN输出bitwise一致，原PyTorch
+assert_close默认dtype断言也通过，FA/FLA算子和既有官方断言未变。真实B8原上下文
+11678-13153，实际GDN重放width1632/1125；这不是新joint target的32k容量证书。
+对照约48.7秒，包含重复baseline调用/比较，不能当正式速度或物理峰值。
+verification.json SHA2475457e866f812fea17b0915bde17eafa179735cd74e065d3187589bdf4ba65。
+15:14原正式worker加载权重，尚未完成新rollout/DT/PPO，仍需观察正式长批次和保存。
+当前不称OOM已全范围消除或训练效果已改善。来源在direct-target-gpu-lifetime-20261007/v1。
+
+TextCraft第5轮采样已完成30次交互，原完整更新仍step4；四批奖励为
+0.664/0.629/0.695/0.609、熵0.677/0.644/0.675/0.658。step4白化优势
+[-115.301,6.544]、raw prior最低-17.0131仍如实保留，不仅凭极值判数值错误。
+15:14全容器184.60GiB为阶段快照，非峰值；启动不等于完整更新健康性。
+15:18同一PID/source组合已推进：TextCraft第5轮DT两rank15/18，AppWorld原
+LOOP native_async已生成44382 token/113.1秒并有真实环境轨迹返回；该计数包含
+调度、prefill、decode及RPC，不是纯decode或完整rollout。cgroup222.49GiB。
+原source-bound快照formal-phase-1791357508.json SHA1b10108f…e600；新App完整更新仍未返回。
+
 ## 2026-10-07 14:52 AppWorld第29个DT批次GDN OOM；未重启
 
 AppWorld PID996278/birth1791352696.13/sourceed3fdf7b已NoSuchProcess，物理4/5均释放至859MiB。
