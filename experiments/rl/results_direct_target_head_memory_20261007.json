@@ -1,6 +1,6 @@
 {
   "observed_unix": 1791350061.568661,
-  "status": "formal_AppWorld_sampling_TextCraft_completed_step2_third_rollout",
+  "status": "AppWorld_terminal_context_guard_before_new_DT_TextCraft_third_iteration_in_progress",
   "method_specification": "experiments/rl/PLAN.md",
   "method_changed": false,
   "appworld": {
@@ -64,7 +64,7 @@
     "answer_sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
     "entry_verl_loop_changed": false,
     "restored_checkpoint": false,
-    "latest_phase": "native_async_sampling; no completed new DT/PPO update yet",
+    "latest_phase": "terminal: context 32835>32768 in reward_readout before first DT call, not OOM; no new PPO update",
     "latest_transport": {
       "generated_tokens": 157873,
       "elapsed_seconds": 284.9,
@@ -74,7 +74,8 @@
       "pid": 167065,
       "birth": 1791344807.34,
       "failure": "Original output head finite_seed torch.where allocation OOM after 21/27 B4s; failed exact N/U/context not logged"
-    }
+    },
+    "terminal_observed_unix": 1791351381
   },
   "textcraft": {
     "pid": 110053,
@@ -265,6 +266,10 @@
     "textcraft_step2": {
       "path": "experiments/rl/results_direct_action_target_textcraft_step2_20261007.json",
       "sha256": "10746388b912965f032918e9838ca381244b1ec9fd0ffae6a28c14f05b86c89e"
+    },
+    "terminal": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-head-memory-20261007/v3/terminal-original-1791351381.json",
+      "sha256": "c3c9b72fe67d876cecab54eb47ec2c286826c48487bcd48c3499634e76fb0b14"
     }
   },
   "limitations": [
@@ -279,5 +284,28 @@
     "new_automation": false,
     "extra_GPU_tests_after_formal_submission": false
   },
-  "previous_observation_unix": 1791349875.8502748
+  "previous_observation_unix": 1791349875.8502748,
+  "source_memory_review": {
+    "candidate": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-head-memory-20261007/v1/candidate/qwen35_answer_finite.py",
+      "sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+      "seed_rule_normalized_source_sha256": "28984cf85448511fb08d5d7b0a095cd94dabc26d6e1841c88d7849923c10835d"
+    },
+    "baseline": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/appworld-efficiency-20261007/individual-prefix-owner-candidate-v1/native-representation-candidate/candidate/qwen35_answer_finite.py",
+      "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e",
+      "seed_rule_normalized_source_sha256": "28984cf85448511fb08d5d7b0a095cd94dabc26d6e1841c88d7849923c10835d"
+    },
+    "seed_rule_unchanged": true,
+    "actual_diagnostic_vocabulary": 248320,
+    "text_seed_row_limit": 128,
+    "single_FP32_seed_array_upper_bytes": 127139840,
+    "single_FP32_root_array_upper_bytes": 254279680,
+    "remaining_baseline_arrays": {
+      "native_logits": "[2B,U,V]; BF16 bytes=4*B*U*V",
+      "packed_logits": "[2N,V]; BF16 bytes=4*N*V",
+      "coexistence": "Both arrays coexist during original packing; native output then deleted, packed logits retained through finite final norm."
+    },
+    "scope": "Source-derived per-array bounds only; no full joint N/U inferred from the 5.43 GiB failed allocation; not total peak or a new capacity test. No additional production change."
+  }
 }

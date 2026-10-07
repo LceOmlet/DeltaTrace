@@ -488,7 +488,7 @@ def test_direct_observation_cannot_be_marked_as_an_executed_target():
         DirectActionTargetReadout._prepare_row(value, 0)
 
 
-def test_direct_reference_and_scatter_keep_causally_later_source_factual(monkeypatch):
+def test_direct_reference_omits_causal_zero_tail_and_preserves_full_scatter(monkeypatch):
     # A transport-only stub records the endpoint IDs. Its marker values are
     # deliberately not model estimates or a numerical attribution reference.
     import reward_readout
@@ -496,8 +496,8 @@ def test_direct_reference_and_scatter_keep_causally_later_source_factual(monkeyp
 
     def trace_transport(runner, reference, factual, cases, offsets, **kwargs):
         seen.append((reference.clone(), factual.clone(), offsets))
-        assert factual.tolist() == [[10, 11, 12, 13, 14, 15, 16]]
-        assert reference.tolist() == [[10, 11, 99, 13, 14, 15, 16]]
+        assert factual.tolist() == [[10, 11, 12, 13, 14, 15]]
+        assert reference.tolist() == [[10, 11, 99, 13, 14, 15]]
         assert offsets == [[1, 3]]
         marker = torch.ones_like(factual, dtype=torch.float64)
         marker[:, 2] = 0.  # Only the prior source is retained from this stub.
@@ -517,3 +517,41 @@ def test_direct_reference_and_scatter_keep_causally_later_source_factual(monkeyp
     assert len(seen) == 1
     assert result['dt_token_advantages'].tolist() == [0., .5, 0., .5, 0., 0.]
     assert result['dt_q_estimates'][4].item() == result['dt_v_estimates'][4].item() == .5
+    assert dt.last_report['actual_context_lengths'] == [7]
+    assert dt.last_report['causal_context_lengths'] == [6]
+    assert dt.last_report['causal_suffix_tokens_omitted'] == 1
+
+
+def test_direct_terminal_observation_tail_does_not_expand_required_target_prefix():
+    # CPU packing/analytic-interface regression only. These IDs do not stand
+    # in for the unavailable failing rollout or a real DT numerical test.
+    row = dict(input_ids=torch.arange(32835), attention_mask=torch.ones(32835),
+               responses=torch.arange(1, 32835),
+               policy_mask=torch.zeros(32834, dtype=torch.bool),
+               target_mask=torch.zeros(32834, dtype=torch.bool),
+               dt_direct_reward=.75, traj_uid='cpu-terminal-tail')
+    row['policy_mask'][32765] = row['target_mask'][32765] = True
+    original = row['input_ids'].clone()
+    dt = DirectActionTargetReadout(NoTraceRunner(), Tokenizer(), task='AppWorld',
+                                  packed_answer_targets=None)
+    result = dt.trajectories([row])[0]
+    assert torch.equal(row['input_ids'], original)
+    assert result['dt_token_advantages'].shape == row['responses'].shape
+    assert result['dt_token_advantages'][32765].item() == .75
+    assert torch.count_nonzero(result['dt_token_advantages']) == 1
+    assert dt.last_report['actual_context_lengths'] == [32835]
+    assert dt.last_report['causal_context_lengths'] == [32767]
+    assert dt.last_report['finite_trace_calls'] == 0
+
+
+def test_direct_required_target_prefix_still_rejects_over_cap():
+    row = dict(input_ids=torch.arange(32769), attention_mask=torch.ones(32769),
+               responses=torch.arange(1, 32769),
+               policy_mask=torch.ones(32768, dtype=torch.bool),
+               target_mask=torch.zeros(32768, dtype=torch.bool),
+               dt_direct_reward=.75, traj_uid='cpu-required-overflow')
+    row['target_mask'][-1] = True
+    dt = DirectActionTargetReadout(NoTraceRunner(), Tokenizer(), task='AppWorld',
+                                  packed_answer_targets=None)
+    with pytest.raises(ValueError, match='context 32769 exceeds cap 32768'):
+        dt.trajectories([row])

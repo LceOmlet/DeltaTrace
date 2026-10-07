@@ -421,6 +421,16 @@ class DirectActionTargetReadout:
         suffix_positions = suffix_attention.nonzero().flatten()
         valid_policy, valid_target = policy[suffix_positions], target[suffix_positions]
         target_offsets = valid_target.nonzero().flatten().tolist()
+        full_context_length = selected.numel()
+        # The owner may append terminal observations after its final action.
+        # Retain that complete row for reward/scatter, but a causal target
+        # cannot depend on input to its right. Pack only the required prefix;
+        # later policy positions already have the existing known d=0 below.
+        if target_offsets:
+            causal_suffix_length = target_offsets[-1] + 1
+            selected = selected[:prompt_length + causal_suffix_length]
+            suffix_positions = suffix_positions[:causal_suffix_length]
+            valid_policy, valid_target = policy[suffix_positions], target[suffix_positions]
         prior = policy & ~target
         if bool(target.any()):
             prior = prior & (torch.arange(width) < int(target.nonzero()[-1]))
@@ -430,6 +440,7 @@ class DirectActionTargetReadout:
         if not math.isfinite(value):
             raise ValueError('The original terminal reward must be finite')
         return dict(index=index, row=row, width=width, selected=selected,
+                    full_context_length=full_context_length,
                     suffix_positions=suffix_positions, prompt_length=prompt_length,
                     policy=policy, target=target, prior=prior,
                     valid_policy=valid_policy, valid_target=valid_target,
@@ -457,7 +468,10 @@ class DirectActionTargetReadout:
         for item in prepared:
             if item['selected'].numel() > self.max_length:
                 raise ValueError(f'Native direct-target context {item["selected"].numel()} exceeds '
-                                 f'cap {self.max_length}; no truncation or auxiliary target is added')
+                                 f'cap {self.max_length}; required causal prefix, '
+                                 f'full history={item["full_context_length"]}, '
+                                 f'traj_uid={item["row"].get("traj_uid", "")}; '
+                                 f'no truncation or auxiliary target is added')
         requests.sort(key=lambda item: item['selected'].numel())
         report = dict(task=self.task, target_semantics='real_executed_action_joint',
                       target_normalization='original_full_vocabulary',
@@ -471,7 +485,10 @@ class DirectActionTargetReadout:
                       policy_tokens=sum(int(item['policy'].sum()) for item in prepared),
                       empty_joint_targets=sum(not item['target_offsets'] for item in prepared),
                       zero_reward_trajectories=sum(item['reward'] == 0 for item in prepared),
-                      actual_context_lengths=[item['selected'].numel() for item in prepared],
+                      actual_context_lengths=[item['full_context_length'] for item in prepared],
+                      causal_context_lengths=[item['selected'].numel() for item in prepared],
+                      causal_suffix_tokens_omitted=sum(item['full_context_length'] -
+                          item['selected'].numel() for item in prepared),
                       original_response_rows=[row.get('dt_direct_response_count') for row in rows],
                       traces=[])
         device = getattr(self.runner.model, 'execution_device', self.runner.model.lm_head.weight.device)
@@ -505,7 +522,8 @@ class DirectActionTargetReadout:
                 report['traces'].append(dict(
                     trajectory_index=item['index'], traj_uid=str(item['row'].get('traj_uid', '')),
                     reward=item['reward'], target_tokens=len(item['target_offsets']),
-                    actual_context_tokens=item['selected'].numel(), compute_tokens=length,
+                    actual_context_tokens=item['full_context_length'],
+                    causal_context_tokens=item['selected'].numel(), compute_tokens=length,
                     target_self_tokens=int(item['target'].sum()),
                     prior_source_tokens=int(item['prior'].sum()),
                     root_effect=audit['root_effect'], signed_sum=audit['policy_credit_signed_sum'],

@@ -1,0 +1,55 @@
+{
+  "status": "candidate_CPU_contracts_passed_not_prepared_or_deployed",
+  "observed_unix": 1791352409.5316508,
+  "method_changed": false,
+  "readout": {
+    "path": "experiments/rl/reward_readout.py",
+    "sha256": "7900a369a2d716b60e4b3cc24de13919f3c61eaeef6d4fa4511eecb088f67b27"
+  },
+  "tests": {
+    "path": "experiments/rl/test_reward_readout.py",
+    "sha256": "03c87d87369b68cdfebccebfd950040a6b5fca72acfd6153f76b25d7b7fd5c94"
+  },
+  "baseline_readout_sha256": "31e2acfb760eb1dd118af78a5a887898357feacc1b0f1caec04f06006a3b7d07",
+  "actual_failure": {
+    "pid": 670069,
+    "birth": 1791349552.74,
+    "source_sha256": "42bb0eb979f76527f545afd83f934cc46add4c042bf63a16dd3f7304d25789bc",
+    "full_native_context": 32835,
+    "cap": 32768,
+    "stage": "reward_readout packing before first DT model call",
+    "terminal_receipt": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-head-memory-20261007/v3/terminal-original-1791351381.json",
+      "sha256": "c3c9b72fe67d876cecab54eb47ec2c286826c48487bcd48c3499634e76fb0b14"
+    }
+  },
+  "minimal_fix": "Keep original full row/reward/masks/scatter. Compute only the causal prefix through the last real target; no truncation of required prefix, cap change, target/reward/PPO change.",
+  "local_CPU_test": {
+    "python": "C:/Users/Administrator/miniconda3/envs/pytorch/python.exe",
+    "command": "import sys; sys.path.append('C:/Users/Administrator/miniconda3/Lib/site-packages'); import pytest; pytest.main(['-q','experiments/rl/test_reward_readout.py'])",
+    "environment": {
+      "PYTHONPATH": "experiments/rl;deltatrace",
+      "CUDA_VISIBLE_DEVICES": ""
+    },
+    "passed": 37,
+    "seconds": 2.65,
+    "scope": "Existing readout contracts, actual owner selection-class ABI, synthetic CPU tail/overflow packing and analytic/scatter cases only; no DT numerical or failed-real-trajectory replay.",
+    "prior_attempts": [
+      "Base Python lacks torch; pytorch environment lacks pytest; existing base pytest appended without installation.",
+      "Initial missing deltatrace module path: 35 pass/2 import failures; corrected original module path, 37 pass."
+    ]
+  },
+  "preserved": {
+    "official_head_sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "per_card_B": 4,
+    "FA_FLA_PPO_unchanged": true,
+    "resume": false
+  },
+  "latest_original_observation": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v1/observed-before-submit.json",
+    "sha256": "dc577177e33dd50f191e2c8a4fef1363126082995dd501583896ea8fb7e96d38"
+  },
+  "limitation": "Actual failed UID and last-target offset were not persisted; formal run is still required to confirm actual path/capacity."
+}

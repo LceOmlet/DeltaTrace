@@ -1,0 +1,202 @@
+{
+  "status": "read_only_source_workload_audit_no_training_verification",
+  "source_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-head-memory-20261007-v2/appworld/appworld-dt/source.json",
+  "source_sha256": "42bb0eb979f76527f545afd83f934cc46add4c042bf63a16dd3f7304d25789bc",
+  "driver_pid": 670069,
+  "driver_creation_unix": 1791349552.74,
+  "source_read_receipt_sha256": "6e76fb8117a5d76e6bb2e13e920ebe79f536a844c3cae8f4304b1ff5981202e9",
+  "additional_source_bindings": [
+    {
+      "file": "verl/verl/trainer/config/ppo_trainer.yaml",
+      "sha256": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+      "current_runtime_configuration_artifact": "native_verl_defaults",
+      "matches": true
+    },
+    {
+      "file": "loop/phi_agents/rl/conf/rl/params/default.yaml",
+      "sha256": "2cd803395b5300ecc9b940575a7af11c694d9b5ef75b11ee9eedd74e41f7be4b",
+      "current_runtime_configuration_artifact": "loop_conf/rl/params/default.yaml",
+      "matches": true
+    },
+    {
+      "file": "loop/phi_agents/rl/train.py",
+      "sha256": "e9bc81dc8008fd8727cc34cb71593ac6efed6c7ebb75f2514f71e5ccbc85174f",
+      "pinned_original_tar_bytes_equal": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "optimizer_unit",
+      "conclusion": "One complete native trajectory per actor training row, both in official LOOP and the frozen thin bridge. The 3358 completion response records are a separate retained table and do not replace the 216-row trajectory batch.",
+      "references": {
+        "entry/loop_owner_rollout.py": [
+          155,
+          163,
+          184,
+          236,
+          257,
+          261,
+          263
+        ],
+        "verl/agent_system/multi_turn_rollout/rollout_loop.py": [
+          570,
+          571
+        ],
+        "verl/verl/trainer/ppo/ray_trainer.py": [
+          1127,
+          1136,
+          1161,
+          1285
+        ]
+      }
+    },
+    {
+      "id": "expected_optimizer_count",
+      "conclusion": "32 global trajectories per minibatch; actor rollout.n default 1 is separate from environment rollout.n 6; DP2 normalizes to local mini16. For the stated 216 trajectory collection, original adjust_batch divisor8 causes no copy; 108 rows per rank split as 6x16+12. Two epochs gives expected14 optimizer steps per rank, not ceil(3358/32)*2.",
+      "measured_optimizer_steps": null,
+      "limitation": "Source-derived expectation, not evidence that current first actor update has completed.",
+      "references": {
+        "entry/launch_appworld_native.py": [
+          32,
+          33,
+          42
+        ],
+        "verl/verl/trainer/config/ppo_trainer.yaml": [
+          48,
+          134,
+          301
+        ],
+        "verl/verl/workers/fsdp_workers.py": [
+          150,
+          151
+        ],
+        "verl/agent_system/multi_turn_rollout/utils.py": [
+          86,
+          88,
+          96,
+          97,
+          101
+        ],
+        "verl/verl/workers/actor/dp_actor.py": [
+          402,
+          405,
+          417,
+          419,
+          495,
+          506
+        ]
+      }
+    },
+    {
+      "id": "full_history_work",
+      "conclusion": "LOOP _get_tensors takes the complete PolicyTokenInfo history capped by learning_max_seq_len, and _loss computes log-probs across this history once. The bridge takes the identical native token artifact and prefix cap, with output mask copied from is_output; one-token prompt leaves later observations as masked context. VERL log-prob uses that same full trajectory table, microbatched at4.",
+      "references": {
+        "loop/phi_agents/rl/train.py": [
+          739,
+          772,
+          852,
+          857
+        ],
+        "entry/loop_owner_rollout.py": [
+          159,
+          163,
+          167,
+          168,
+          184,
+          186
+        ],
+        "verl/verl/trainer/ppo/ray_trainer.py": [
+          1161
+        ],
+        "verl/verl/workers/actor/dp_actor.py": [
+          337,
+          354,
+          358,
+          362
+        ]
+      }
+    },
+    {
+      "id": "token_weight",
+      "conclusion": "The sample unit matches, but LOOP and VERL token weights are not numerically identical: LOOP averages the surrogate over each trajectory output-token vector before accumulating trajectory losses; current upstream VERL uses masked token-mean over each B4 microbatch then divides by gradient_accumulation4. Relative per-token weight is inverse of that trajectory output count in LOOP, versus inverse of the B4 output-token total in VERL. PLAN explicitly retains VERL owner PPO and its approved whole-batch masked_whiten; this difference does not show response expansion or authorize importing LOOP trainer logic.",
+      "references": {
+        "loop/phi_agents/rl/train.py": [
+          906,
+          936,
+          940,
+          1099,
+          1118,
+          1389,
+          1390
+        ],
+        "verl/verl/trainer/config/ppo_trainer.yaml": [
+          56
+        ],
+        "verl/verl/trainer/ppo/core_algos.py": [
+          395,
+          410,
+          411
+        ],
+        "verl/verl/workers/actor/dp_actor.py": [
+          417,
+          470,
+          495
+        ],
+        "verl/verl/trainer/ppo/ray_trainer.py": [
+          373
+        ]
+      }
+    },
+    {
+      "id": "official_loop_filter_scope",
+      "conclusion": "Original LOOP performs RLOO-based absolute-advantage trajectory filtering before optimizer splitting, can keep fewer than the collected216, and reshuffles per epoch. It is not valid to claim exact original-LOOP full-run optimizer-count equivalence from collection size alone; no filter substitution is proposed.",
+      "references": {
+        "loop/phi_agents/rl/train.py": [
+          648,
+          655,
+          668,
+          674,
+          1648,
+          1658,
+          1397,
+          1405
+        ]
+      }
+    }
+  ],
+  "action": "No change to PLAN, deployed source, launch configuration, model, environment, optimizer, or running process. Only small source bytes and local audit receipts were retained.",
+  "terminal_observation": {
+    "receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-head-memory-20261007\\v3\\terminal-original-1791351381.json",
+    "receipt_sha256": "c3c9b72fe67d876cecab54eb47ec2c286826c48487bcd48c3499634e76fb0b14",
+    "observed_unix": 1791351381.0469763,
+    "appworld_status": {
+      "pid": 670069,
+      "status": "NoSuchProcess"
+    },
+    "selected_log_lines": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-head-memory-20261007-v2/appworld/appworld-dt/train.log",
+        "line": "\u001b[36m(TaskRunner pid=674053)\u001b[0m [loop_trajectory] trajectories=216 responses=3358 policy_tokens=637634 max_context=32000"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-head-memory-20261007-v2/appworld/appworld-dt/train.log",
+        "line": "\u001b[36m(TaskRunner pid=674053)\u001b[0m [DT direct target workload] trajectories=216 nonzero_requests=216 target_tokens=184342 source_tokens=453945"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-head-memory-20261007-v2/appworld/appworld-dt/train.log",
+        "line": "ValueError: Native direct-target context 32835 exceeds cap 32768; no truncation or auxiliary target is added"
+      },
+      {
+        "path": "/tmp/ray/session_2026-10-07_13-06-16_091675_670069/logs/worker-446c7148ecb092687fd93df83c041ac6fb8451454b003e5dccafccf9-01000000-674053.out",
+        "line": "[loop_trajectory] trajectories=216 responses=3358 policy_tokens=637634 max_context=32000"
+      },
+      {
+        "path": "/tmp/ray/session_2026-10-07_13-06-16_091675_670069/logs/worker-446c7148ecb092687fd93df83c041ac6fb8451454b003e5dccafccf9-01000000-674053.out",
+        "line": "[DT direct target workload] trajectories=216 nonzero_requests=216 target_tokens=184342 source_tokens=453945"
+      }
+    ],
+    "completed_current_dt_calls": 0,
+    "completed_current_optimizer_updates": 0,
+    "reason": "First DT readout rejects native full selected context32835 exceeding fixed32768 before any finite trace or actor update. Expected14 source-derived steps were not executed."
+  }
+}

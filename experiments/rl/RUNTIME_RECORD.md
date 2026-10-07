@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 13:50 AppWorld 新终态与因果右尾打包候选
+
+AppWorld PID670069/birth1791349552.74/source42bb0eb9已退出；此次不是OOM。
+原采样216条完整轨迹/3358个response，进入DT接线时完整原记录32835超过32768，
+在reward_readout检查处、首次DT模型调用之前报错。原PPO实际仍为216个完整轨迹行，
+没有展开为3358行；每rank原32全局minibatch/DP2、epochs2应14次optimizer step，
+本次实际0。记录中training截断32000与完整执行史不是同一个量，不能截DT到32000。
+官方最后工具观测/终止消息会追加在最后生成之后。准备仅让DT计算到最后真实target，
+保留完整原行、target ID/offset、reward、ratio/mask和scatter；尾部policy按既定d=0。
+必要前缀仍拒绝超过32768，不提高上限或改变环境。当前仅本机CPU37项通过，尚未
+准备/部署；失败真实轨迹未保存，不能称已重放修好或完整joint容量通过。
+唯一候选见results_direct_target_causal_prefix_20261007.json。头1e209、FA/FLA、PPO不变。
+
+13:50只读证据：TextCraft PID110053/source5013ebc8未改；第三次原采样完成，
+两rank DT各23个B4完成、177.47/177.32秒，最新完整指标仍step2；物理2/3为
+40646/35862MiB，4/5各859MiB，全容器129.63GiB。新前缀候选不改运行中的TextCraft。
+来源direct-target-causal-prefix-20261007/v1/observed-before-submit.json SHA dc577177…96d38；
+AppWorld原终态direct-target-head-memory-20261007/v3/terminal-original-1791351381.json
+SHA c3c9b72f…b0b14。SQL/GRPO仍停，无checkpoint恢复或新备份。
+
+
 ## 2026-10-07 13:14 TextCraft 第二轮完成，AppWorld 正式采样推进
 
 两组PID/birth/source仍为下节记录。TextCraft已完成step2并进入第三次采样；原整轮
