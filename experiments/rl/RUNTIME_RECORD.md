@@ -1,5 +1,37 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 16:43 AppWorld有限MLP分块版本已提交，原生采样中
+
+AppWorld新PID2001805/birth1791362313.39/source24b9e671已由原bind/submit入口
+在物理GPU4/5从基础权重新开，resume=disable，无检查点导出/恢复。实际实现提交
+d5b879d7acd49a5e7ba7550a52cb53a0f993d0d5；诊断提交4a98683445b33879f57bac6cf4872819458c5365、
+绑定助手提交d3447bef0f71b2629a0d32512eb90c5728244e2c及后续账本提交各自独立。
+本轮只将runner ba639b→628006与decoder047c→1c58替换为有限MLP token分块2048；
+GDN448ef、head1e209、readout7900a、actor3a65及VERL/LOOP/entry哈希保持。
+原launch仅四个输出路径不同；run-env仅DT_ROOT/PYTHONPATH对应目录映射，
+任务配置、采样/训练预算、LoRA rank8/alpha16、每卡actor/DT B4均未改。
+
+同一真实B4/卡的32次原有限MLP对照均通过原torch.testing.assert_close dtype默认值；
+rank0逐位相同，rank1保留实际非逐位误差（最大约3.43e-7），没有放宽容差或加纠偏。
+实测有多chunk及非整除宽度；这是该MLP同输入回归，不是FA/FLA/PPO整链、
+32k联合目标容量、正式速度或训练健康证明。原FA/FLA断言及PPO未改。
+旧PID1468126/source942在最后DT B4因buf7 OOM退出，旧源和终态收据完整保留。
+
+16:42:56原LOOP transport已采样63个请求、生成9149token、调用累计61.2秒，
+尚无完整rollout、DT或PPO更新；此时间包含生成调用，不称pure decode。
+当时物理GPU4/5=55314/55298MiB，容器约221.069GiB，为阶段快照非峰值保证。
+TextCraft原PID110053/birth1791344324.6/source5013、GPU2/3保持；最新完整更新仍6，
+第7轮原采样结束后的处理在推进，未把旧step6当新metric。
+
+完整active-training/active-source/formal/source/prepared/CPU-import/launch/verification
+按原字节保存于direct-target-mlp-token-chunk-20261007/v1/runtime-metadata，
+索引runtime-metadata-1791362591.json SHAe14454c4…c9efdf；阶段收据
+formal-phase-1791362528.json SHAd4e4f6d5…58e201及
+readonly-formal-initial-phase-1791362576.json SHA7ba6c49d…8e825bf。
+完整路径/SHA和验证范围见current_runtime及results_direct_target_mlp_token_chunk_20261007.json。
+本次账本更新仅一次原collector和小JSON只读采集，未改生产代码/任务参数或操作检查点。
+
+
 ## 2026-10-07 16:12 AppWorld末批DT显存不足，TextCraft第六次完整更新
 
 AppWorld原PID1468126/birth1791357190.77/source942c2d68已退出，原终态收据确认

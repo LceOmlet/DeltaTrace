@@ -1,0 +1,4 @@
+set -eu
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+tar -xf /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-mlp-token-chunk-20261007-v1/source.tar -C /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-mlp-token-chunk-20261007-v1
+CUDA_VISIBLE_DEVICES='' MACA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 "$VENV_PYTHON" /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-mlp-token-chunk-20261007-v1/remote_probe_control.py prepare --candidate /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-gpu-lifetime-20261007-v1/appworld --out /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-mlp-token-chunk-20261007-v1
