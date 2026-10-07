@@ -1,5 +1,18 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 decoder31/30 原分支旁观诊断：已准备，尚未启动
+
+对当前 AppWorld row3/packed2883/ID198，同一原B4、memory候选与producer不变。
+只在原 decoder_finite_pullback 的 MLP、两次 norm_residual 和 mixer callback
+外记录实际 single 状态差的收缩，所有 owner 参数/返回值不变。原native hooks
+只保存31/30两层所需端点；两次诊断均在decoder30后受控结束，原release_owner_params
+清理参数。不输出全程signed/QVA、不做PPO更新、不部署新的传播规则。
+CPU输入selected/target/offset与原件逐值一致且CUDA未初始化；真实producer的
+__call__/release_owner_params/attribute_episodes已按实际导入SHA2aa5f552核对。
+下一步只运行此有界分支定位，并核对31/30边界是否仍等于上一全程旁观结果。
+未声称精度通过、信用修好或训练恢复。Text仍hold，App正式不重启。
+
+
 ## 2026-10-08 02:29 当前极值首次反号在decoder30；不是旧样本layer27
 
 26b43fa2、PID1470525/birth1791397411.29完成退出；GPU4/5各859MiB。实际

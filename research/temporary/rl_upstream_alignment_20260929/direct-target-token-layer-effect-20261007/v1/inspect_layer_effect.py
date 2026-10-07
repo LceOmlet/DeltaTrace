@@ -45,6 +45,10 @@ def make_worker():
 
             binding=json.loads(Path(case_path).read_bytes()) if case_path is not None else None
             case=CASES['appworld'] if binding is None else binding['case']
+            probe_layers=set(() if binding is None else binding.get('probe_decoder_layers',()))
+            stop_after=None if binding is None else binding.get('stop_after_decoder')
+            class ProbeBoundaryReached(Exception):
+                """Stop a diagnostic after the explicitly requested boundary."""
             source,native,rows=load_request(source_path,case['native'],case)
             out=Path(output);log=(out/f'rank{self.rank}-phases.jsonl').open('a',buffering=1)
             result=dict(rank=self.rank,pid=os.getpid(),birth=psutil.Process().create_time(),
@@ -59,7 +63,8 @@ def make_worker():
             producer=None;globals_=None;handles=[]
             trace_owner=reward_readout.trace_token_attribution
             state=dict(mode='unset',root=False,token_effect_calls=0)
-            single={};cross={};index={}
+            single={};cross={};index={};native_sub={'single_EOS':{},'original_joint_EOS':{}}
+            result['decoder_subops']={}
             try:
                 assert self.actor.config.ppo_micro_batch_size_per_gpu==4
                 assert (self.config.model.lora_rank,self.config.model.lora_alpha)==(8,16)
@@ -98,6 +103,17 @@ def make_worker():
                         comparison=pair_differences(output)
                         if comparison is not None:result['native_root'].append(dict(mode=state['mode'],layer=i,kind='output',comparison=comparison))
                     handles.extend([layer.register_forward_pre_hook(before,with_kwargs=True),layer.register_forward_hook(after)])
+                    if i in probe_layers:
+                        def retain(name,value,i=i):
+                            if state['mode'] not in native_sub or not isinstance(value,torch.Tensor) or value.shape[0]!=8:return
+                            row=case['row']
+                            native_sub[state['mode']][i,name]=value[2*row:2*row+2].detach().to('cpu',copy=True)
+                        for name,module in [('input_norm',layer.input_layernorm),('post_norm',layer.post_attention_layernorm)]:
+                            def norm_capture(_module,args,value,name=name,retain=retain):
+                                retain(name+'_input',args[0]);retain(name+'_output',value)
+                            handles.append(module.register_forward_hook(norm_capture))
+                        def decoder_capture(_module,_args,value,retain=retain):retain('decoder_output',value)
+                        handles.append(layer.register_forward_hook(decoder_capture))
                 def forward(*args,**kwargs):
                     previous=state['root'];state['root']=True
                     try:return forward_owner(*args,**kwargs)
@@ -122,8 +138,45 @@ def make_worker():
                             del actual
                     emit('boundary',mode=state['mode'],layer=layer,remaining_single_endpoint_bytes=sum(v.numel()*v.element_size() for v in single.values()))
                 def decoder(*args,**kwargs):
-                    returned=decoder_owner(*args,**kwargs)
-                    boundary(index[id(args[0])],returned[0],args[1]['input_norm_input'])
+                    i=index[id(args[0])]
+                    if i not in probe_layers or state['mode']!='original_joint_EOS':
+                        returned=decoder_owner(*args,**kwargs)
+                    else:
+                        # All numerical operations remain the original owner
+                        # calls. Only scalar contractions observe their inputs
+                        # and return values on the actual single-delete states.
+                        def dot(coefficients,key):
+                            endpoints=native_sub['single_EOS'][i,key].to(coefficients.device)
+                            row=case['row']
+                            return float(effect_owner(coefficients[row:row+1],endpoints).sum())
+                        probe=dict(points=[],factual_endpoint_checks={})
+                        def point(name,value):
+                            probe['points'].append(dict(name=name,coefficient_times_single_delta=value))
+                            result['decoder_subops'][str(i)]=probe
+                            save('decoder_subop_complete',active_mode=state['mode'],active_decoder=i)
+                        point('before_MLP_residual',dot(args[2],'decoder_output'))
+                        boundaries=args[4];norm_owner=boundaries.norm_residual;mixer_owner=args[3];calls=[0]
+                        def norm(*operands,**options):
+                            which=calls[0];calls[0]+=1
+                            if which==0:
+                                point('after_MLP_before_post_RMSNorm',dot(operands[3],'post_norm_output')+dot(operands[4],'post_norm_input'))
+                            value=norm_owner(*operands,**options)
+                            point('after_post_RMSNorm_residual' if which==0 else 'after_input_RMSNorm_residual',dot(value,'post_norm_input' if which==0 else 'input_norm_input'))
+                            return value
+                        def mixer(upstream):
+                            value=mixer_owner(upstream)
+                            point('after_mixer_before_input_RMSNorm',dot(value[0],'input_norm_output')+dot(upstream,'input_norm_input'))
+                            return value
+                        wrapped=list(args);wrapped[3]=mixer;boundaries.norm_residual=norm
+                        try:returned=decoder_owner(*wrapped,**kwargs)
+                        finally:boundaries.norm_residual=norm_owner
+                        assert calls[0]==2
+                        for key in ('input_norm_input','input_norm_output','post_norm_input','post_norm_output','decoder_output'):
+                            a=native_sub['single_EOS'].pop((i,key));b=native_sub['original_joint_EOS'].pop((i,key))
+                            probe['factual_endpoint_checks'][key]=dict(equal=torch.equal(a[1],b[1]),maxabs=float((a[1].float()-b[1].float()).abs().max()),shape=list(a.shape),dtype=str(a.dtype))
+                        result['decoder_subops'][str(i)]=probe
+                    boundary(i,returned[0],args[1]['input_norm_input'])
+                    if stop_after is not None and i==stop_after:raise ProbeBoundaryReached()
                     return returned
                 def effect(coefficients,endpoints):
                     returned=effect_owner(coefficients,endpoints)
@@ -146,11 +199,19 @@ def make_worker():
                 for mode in ('single_EOS','original_joint_EOS'):
                     state.update(mode=mode,token_effect_calls=0)
                     emit('DT_begin',mode=mode);tick=time.perf_counter()
-                    producer.attribute_episodes([[row['row'] for row in rows]],[0.0])
+                    try:producer.attribute_episodes([[row['row'] for row in rows]],[0.0])
+                    except ProbeBoundaryReached:
+                        result['phases'][mode]=dict(partial=True,stopped_after_decoder=stop_after,
+                            scope='Native root and original finite propagation through the requested decoder only; no full signed vector or advantages are produced.')
+                        # The stop occurs before the runner's normal per-layer
+                        # release. Use its own parameter-release API before the
+                        # second diagnostic call; no cache rebuild is performed.
+                        model.release_owner_params()
                     torch.cuda.synchronize();result['phases'][mode]['seconds']=time.perf_counter()-tick
                     result['phases'][mode]['remaining_snapshot_bytes']=sum(v.numel()*v.element_size() for v in single.values())
                     save('DT_complete',active_mode=mode,cross_boundary_contractions=cross)
-                assert not single and len(cross)==33
+                assert not single and len(cross)==(33 if stop_after is None else 33-stop_after)
+                if probe_layers:assert not any(native_sub.values())
                 save('complete',cross_boundary_contractions=cross,
                     scope='Passive diagnostics of original coefficients and actual single-deletion hidden differences. No new learning signal, acceptance tolerance, observer-mode path, credit change or update.')
                 return dict(rank=self.rank,completed=True,optimizer_steps=0)
@@ -163,6 +224,7 @@ def make_worker():
                     globals_['decoder_finite_pullback']=decoder_owner;globals_['_token_effect']=effect_owner
                 for handle in handles:handle.remove()
                 single.clear()
+                for values in native_sub.values():values.clear()
                 if producer is not None:
                     producer.runner.model.forward_root=forward_owner
                     producer.runner.model.release_owner_params()
