@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 00:49 真实非零FA端点两种接口逐值一致；信用仍未修复
+
+results_nonzero_fa_layout_20261008.json记录原App source58209daa、decoder27真实
+operands ed804b5c、owner3e1d6103/库4f42c391；4行K长度9567/9644/9655/9773，
+Q为各自原后缀，Q/K两端点均非零变化。原scalar与row入口均与原B4保存输出
+dq/dk/dv/tau/center逐值一致，40个张量比较，8次原调用各0.33–0.34秒。
+这验证位置/padding表示未改值，不是非零有限归因的FA精度接受标准。
+没有改dtype/数学/PPO/QVA，无模型、DT、反向、优化器或恢复，未部署正式。
+PID880541/birth1791391756.04完成退出，后续4/5均859MiB；Torch峰值0.654GiB
+allocated，进程PSS约7.13GiB，不把它冒称物理峰值。Text仍hold，App未重启。
+正在准备复用原VERL完整64条first-minibatch的任务/Format贡献梯度观察，
+只关闭optimizer/scheduler写入；准备状态不冒充已完成梯度结果或训练修复。
+
+
 ## 2026-10-08 00:33 实际 actor 位置和原白化核对完成；未运行更新
 
 results_actor_credit_mapping_20261008.json 绑定正式Text source2796233e、真实两rank
