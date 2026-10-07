@@ -16,7 +16,7 @@ import time
 from types import SimpleNamespace
 
 import torch
-from inspect_extreme_endpoint import CASES, check_imports, geometry, load_request, sha
+from inspect_extreme_endpoint import CASES, actor_initialization_steps, check_imports, geometry, load_request, sha
 
 PROMPT = '<original-joint-action-context>'
 FORMATTED = '<literal-original-joint-action-context>'
@@ -91,7 +91,7 @@ def make_worker():
     @ray.remote
     class ActionCurveWorker(ActorRolloutRefWorker):
         @register(dispatch_mode=Dispatch.ONE_TO_ALL)
-        def inspect_action_curve(self, source_path, output):
+        def inspect_action_curve(self, source_path, output, case_name='appworld'):
             import psutil
             import ft_ifr_improve
             from deltatrace_rollout import DeltaTraceRolloutProducer
@@ -100,13 +100,13 @@ def make_worker():
             from verl.utils.fsdp_utils import load_fsdp_model_to_gpu, offload_fsdp_model_to_cpu
             from verl.utils.torch_functional import pad_2d_list_to_length
 
-            case = CASES['appworld']
+            case = CASES[case_name]
             source, native, rows = load_request(source_path, case['native'], case)
             root = Path(output)
             function = ft_ifr_improve.faithfulness_test_skip_tokens
             owner_path = Path(inspect.getsourcefile(function))
             assert sha(owner_path) == '583f4b7d0426407eb9a517f173365762860a1f4382f472dffb5c07de7d3e94a1'
-            record = dict(rank=self.rank,pid=os.getpid(),birth=psutil.Process().create_time(),
+            record = dict(case_name=case_name,rank=self.rank,pid=os.getpid(),birth=psutil.Process().create_time(),
                 owners=check_imports(source),source_sha256=sha(source_path),native_sha256=sha(case['native']),
                 geometry=geometry(source,native,rows,case),
                 author=dict(path=str(owner_path),sha256=sha(owner_path),
@@ -201,19 +201,34 @@ def main():
     from omegaconf import OmegaConf
     from verl.single_controller.ray import RayClassWithInitArgs,RayResourcePool,RayWorkerGroup
     parser=argparse.ArgumentParser();parser.add_argument('--source',type=Path,required=True)
-    parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
+    parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--case',choices=CASES,default='appworld')
+    parser.add_argument('--owner-total-training-steps',type=int)
+    parser.add_argument('--owner-total-steps-evidence',type=Path)
+    args=parser.parse_args()
     source=json.loads(args.source.read_bytes());check_imports(source)
-    assert sha(args.source)==CASES['appworld']['source_sha256']
+    assert sha(args.source)==CASES[args.case]['source_sha256']
     args.output.mkdir(exist_ok=False)
     config=OmegaConf.load(Path(source['verl_root'])/'verl/trainer/config/ppo_trainer.yaml')
     for key,value in source['startup_options'].items():OmegaConf.update(config,key.lstrip('+'),value,force_add=True)
-    config.actor_rollout_ref.actor.optim.total_training_steps=config.trainer.total_training_steps
+    config.actor_rollout_ref.actor.optim.total_training_steps=actor_initialization_steps(
+        config.trainer.total_training_steps,args.owner_total_training_steps)
+    (args.output/'actor-initialization.json').write_text(json.dumps(dict(
+        source_trainer_total_training_steps=config.trainer.total_training_steps,
+        original_owner_resolved=args.owner_total_training_steps,
+        actor_optim_total_training_steps=config.actor_rollout_ref.actor.optim.total_training_steps,
+        evidence=(dict(path=str(args.owner_total_steps_evidence),sha256=sha(args.owner_total_steps_evidence))
+                  if args.owner_total_steps_evidence else None)),indent=2)+'\n')
     (args.output/'effective-config.yaml').write_text(OmegaConf.to_yaml(config))
     ray.init(num_cpus=8,include_dashboard=False)
     try:
         group=RayWorkerGroup(RayResourcePool([2],use_gpu=True,max_colocate_count=1),
             RayClassWithInitArgs(make_worker(),config.actor_rollout_ref,'actor'))
-        group.init_model();values=group.inspect_action_curve(str(args.source),str(args.output))
+        group.init_model()
+        if args.case=='appworld':
+            values=group.inspect_action_curve(str(args.source),str(args.output))
+        else:
+            values=group.inspect_action_curve(str(args.source),str(args.output),args.case)
         (args.output/'completed.json').write_text(json.dumps(values,indent=2)+'\n')
     finally:ray.shutdown()
 
