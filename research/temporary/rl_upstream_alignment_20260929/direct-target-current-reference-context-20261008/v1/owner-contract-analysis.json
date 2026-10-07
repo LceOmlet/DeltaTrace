@@ -1,0 +1,133 @@
+{
+  "status": "Actual owner interface and measured approximation scope audited; no algorithm change",
+  "actual_runner": {
+    "module": "qwen35_dense_finite_runner",
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+    "sha256": "7d6f57f61ecde7ce3506b8ef58d61268859fc04357c35de99a1892928c4ba7a8"
+  },
+  "methods": [
+    {
+      "name": "__init__",
+      "line": 139,
+      "signature": "self, model, finite_fa, finite_fla, *, norm_gate_rules=None, finite_fla_by_layer=None, attention_pv_rules=None, key_norm_by_layer=None, dynamic_shapes=False, compiler_options=None, answer_compiled=True, copy_replay_captures=True, offload_replay_mixer=False, gdn_head_batch_size=None, capture_backend=None, defer_diagnostics=False, compile_gdn_scalar_rules=False, pin_replay_host=False, gdn_gpu_capture_names=(), fa_coefficient_suffix=False, gdn_coefficient_suffix=False, compact_gdn_captures=False, pin_root_host=False, reuse_native_prefix=False, native_conv_initial_states=False",
+      "docstring": "Optional GDN layer-index rules; unspecified layers retain content1.\n\nThe layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.\nIt replaces that layer's rule in the existing pass, without extra work\nfrom replaying a second candidate or changing the native forward.\nOptional finite_fla_by_layer explicitly replaces selected GDN callbacks;\nthe empty default uses the original finite_fla at every GDN layer.\nOptional attention_pv_rules selects content1/content0 at existing FA\nlayers; its empty default retains content1 at every attention layer."
+    },
+    {
+      "name": "forward_prefix",
+      "line": 211,
+      "signature": "self, input_ids, *, past_key_values=None",
+      "docstring": "Native cached prefix/branch evaluation, retaining only the last logits.\n\nThe caller owns cache forks; the HF model owns every cache transition.\nNo captures, replay, compilation or finite pullback are needed to read\nthe root of a single-input-position intervention."
+    },
+    {
+      "name": "read_outcomes",
+      "line": 223,
+      "signature": "self, input_ids, outcome_token_ids, *, past_key_values=None",
+      "docstring": null
+    },
+    {
+      "name": "attribute",
+      "line": 239,
+      "signature": "self, paired_ids, mask, selection, select_output_rows=True, observer=None, *, prefix_cache_provider=None",
+      "docstring": "Trace endpoints, optionally consuming an already prepared native cache.\n\nThe provider receives the exact factual IDs at the synchronized common\nprefix and returns a fresh HF cache. It only replaces the existing\nprefix forward; HF still owns duplication, forks and cache transitions.\nIts optional prefix_length limits reuse to a prepared factual boundary.\nAn unavailable artifact must raise rather than run a rank-local forward.\nThe default path and all finite propagation remain unchanged."
+    }
+  ],
+  "final_contraction": {
+    "line": 40,
+    "source": "def _token_effect(m,x):\n    # The final contraction is independent across tokens. Bound temporary\n    # FP64 storage instead of materializing several full B*T*H tensors.\n    tokens=max(1,4*1024*1024//(m.shape[0]*m.shape[-1]))\n    return torch.cat([(m[:,start:start+tokens].double()*\n        (x[1::2,start:start+tokens].double()-x[0::2,start:start+tokens].double())).sum(-1)\n        for start in range(0,m.shape[1],tokens)],dim=1)"
+  },
+  "verified_capabilities": [
+    "attribute accepts caller-supplied interleaved reference/factual pairs and a fixed target selection.",
+    "The same owner can score a factual-versus-single-EOS pair; the existing real diagnostics already did so.",
+    "A joint pair returns a vector from one set of finite coefficients contracted with all actual endpoint embedding displacements.",
+    "The inspected actual runner class has no separate full-vector factual-single-deletion estimator interface."
+  ],
+  "inference": [
+    "This is not a missing reward input, missing environment simulator, or a failure of the ideal Q/V/A identity.",
+    "The current joint finite vector is a joint-intervention decomposition, used by the fixed plan as the practical approximation to individual deletion d.",
+    "The current actual four corners show nonadditivity; joint conservation alone therefore cannot establish factual single-deletion accuracy.",
+    "The measured large error is not fixed by matching only the global sum or by hiding the exponential response with a multiplier."
+  ],
+  "error_identity": "If epsilon=d_est-d_native, A_est-A_native = r*exp(-d_native)*(1-exp(-epsilon)).",
+  "measured_coefficient_errors": {
+    "TextCraft_Format": {
+      "reward": 1.0,
+      "joint_DT_d": -3.1703966315267027,
+      "native_single_deletion_d": -2.2145728506379783,
+      "d_error": -0.9558237808887244,
+      "joint_DT_implied_probability_ratio": 23.816929028199386,
+      "measured_probability_ratio": 9.15749665721225,
+      "ratio_distortion_factor": 2.600812200072351,
+      "computed_native_A_FP64": -8.15749665721225,
+      "computed_joint_DT_A_FP64": -22.816929028199386,
+      "coefficient_error": -14.659432370987137,
+      "error_from_identity": -14.65943237098714,
+      "scope": "FP64 descriptive arithmetic from stored measurements; not a new numerical reference, acceptance tolerance or production credit."
+    },
+    "AppWorld_newline_fresh_replay": {
+      "reward": 0.75,
+      "joint_DT_d": -4.415553734907168,
+      "native_single_deletion_d": 23.089031426084944,
+      "d_error": -27.50458516099211,
+      "joint_DT_implied_probability_ratio": 82.72763740599697,
+      "measured_probability_ratio": 9.387740133061743e-11,
+      "ratio_distortion_factor": 881230586205.1582,
+      "computed_native_A_FP64": 0.749999999929592,
+      "computed_joint_DT_A_FP64": -61.29572805449773,
+      "coefficient_error": -62.04572805442732,
+      "error_from_identity": -62.04572805442727,
+      "scope": "FP64 descriptive arithmetic from stored measurements; not a new numerical reference, acceptance tolerance or production credit."
+    }
+  },
+  "current_actual_two_group_nonadditivity": {
+    "joint_factual_vs_all_EOS": 698.6579821926075,
+    "candidate_factual_single_deletion": 23.089031426084944,
+    "other_sources_factual_group_deletion": 708.1287655926017,
+    "sum_of_two_factual_group_deletions": 731.2177970186866,
+    "nonadditivity": 32.559814826079105,
+    "scope": "Two groups: this actual newline and the other actual sources. This is not a sum over all individual tokens, a population rate, or a quality metric."
+  },
+  "diagnostics_remain_separate": [
+    "Official FA/FLA operator reference tests and assertions.",
+    "Original author cumulative deletion, RISE and MAS on actual trajectories.",
+    "Actual selected-token native deletion and background-interaction probes.",
+    "Actual failed B4 and exact32768 DT memory lifetime regression."
+  ],
+  "pending_user_decision": "Whether to authorize research into bounded native single-deletion refinement beyond the fixed one-joint-DT estimator; no selection rule, threshold, replacement coefficient or new query has been implemented.",
+  "current_runtime_observation": {
+    "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-current-reference-context-20261008/v1/observation-1791413421.json",
+    "bytes": 8982,
+    "sha256": "eb611ef5c2becdd1a0fe7038bca7266d657af2f3ab3964439d8f7c14d5fab97e"
+  },
+  "sources": [
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/joint-finite-sources.json",
+      "bytes": 127729,
+      "sha256": "43b78129d5c62e2b18d7723c394ef4eceb7c6d73560212b613d4b7c8c84bdfcb"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/results_current_token_reference_context_20261008.json",
+      "bytes": 14718,
+      "sha256": "866b4c5e0bdd4f718273a0f5d5b6b364e7d17f3e35e5de8952aa6440240e4125"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/results_credit_causal_diagnosis_20261008.json",
+      "bytes": 17307,
+      "sha256": "1643ab08b74c28d39409ceb5df73bb03c1dce14e4a73ba059b5686f891b46ab3"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/PLAN.md",
+      "bytes": 21900,
+      "sha256": "1e4303e0cbae7bc2a1833086e30fe9df2dc3505a649ac6bae59369bff36acacb"
+    }
+  ],
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "backward": 0,
+    "optimizer": 0,
+    "rollout": 0,
+    "formal_restart": false,
+    "checkpoint_restore": false,
+    "production_modified": false
+  }
+}
