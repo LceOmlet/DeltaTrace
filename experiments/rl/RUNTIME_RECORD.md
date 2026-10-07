@@ -1,5 +1,36 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 原native FLA对照：当前反号来自联合memory分配，反向端点是主要来源
+
+原保存张量的三个算子诊断均已完成退出，仅物理4；没有加载模型、完整DT、训练
+backward、optimizer、rollout、恢复或正式发布。f004170b/PID2003987/birth1791402505.21
+核对原joint；a34e2228/PID2047919/birth1791402934.07核对真实single删除；
+4e7faa79/PID2107699/birth1791403500.67旁观原memory callback两端方向，原返回不变。
+每组8 head，原Q/K已归一化、raw_g FP32、Q/K/V/beta/do FP16。原public
+chunk_gated_delta_rule读实际incoming h；single在唯一删除之前的原chunk边界复用
+实际factual h，不估计初始状态、不置零、不构造工具返回。所有保留factual操作数逐值相同。
+
+联合finite收缩107.287136，原native输出差107.289270，相差-0.002134。
+真实single的原native输出效应15.827504，同端点原finite为15.825014，差-0.002490；
+原joint系数乘真实single差却只有9.671126，差-6.156378。加回相同skip与z后，
+原joint点-5.624335，native single点+0.532043（原BF16边界+0.545360）；原gate点+0.543606。
+最大差额来自head24..31：joint10.038809，native17.026803，差-6.987994。
+因此这次首次反号不能由该局部运算的舍入解释；joint总贡献近似一致不代表每token准确。
+
+原两方向分别15.942119、3.400138，原平均9.671128。正向对该single差+0.114615，
+反向差-12.427367；反向端点拉低是该点分配误差主要来源。仅据此不部署单方向规则，
+下一步是原已有单方向memory callback的完整向量和原作者累计删除/RISE/MAS对照；
+不新增公式、不修正倍率、不裁剪、不改Q/V/PPO。前次attention PV改法没有改善整条
+作者曲线的结果继续保留，不能混为本次memory对照。此诊断也不替代作者曲线。
+
+原native/finite/profile路径、SHA、三个code commit、PID/birth、原数据SHA及小文件运输
+回执已保存在results_current_extreme_native_fla_20261008.json。非零finite没有发明官方
+容差，此处不称FA/FLA官方验收通过。后补CPU同source导入解析与实际运行记录分开。
+Text同birth hold、release仍不存在，App正式未重启。App内存修复79922486已完成
+原失败B4及两次32768 DT有界回归，physical60.803/62.627GiB；仍非正式部署/更新健康性证明。
+LoRA8/16、每卡B4及32768不变。三个算子诊断终态4/5各859MiB；组末allocation/PSS非连续峰值。
+
+
 ## 2026-10-08 已排除当前反号由中间GEMM低精度舍入解释
 
 9863bd84、算子重放PID1874736/birth1791401248.61完成退出，只用物理4，
