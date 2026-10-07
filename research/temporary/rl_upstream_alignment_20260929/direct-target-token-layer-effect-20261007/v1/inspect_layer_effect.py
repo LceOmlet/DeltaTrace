@@ -37,13 +37,15 @@ def make_worker():
     @ray.remote
     class LayerEffectWorker(ActorRolloutRefWorker):
         @register(dispatch_mode=Dispatch.ONE_TO_ALL)
-        def inspect_layer_effect(self, source_path, output):
+        def inspect_layer_effect(self, source_path, output, case_path=None):
             import psutil
             import reward_readout
             from deltatrace_rollout import DeltaTraceRolloutProducer
             from verl.utils.fsdp_utils import load_fsdp_model_to_gpu,offload_fsdp_model_to_cpu
 
-            case=CASES['appworld'];source,native,rows=load_request(source_path,case['native'],case)
+            binding=json.loads(Path(case_path).read_bytes()) if case_path is not None else None
+            case=CASES['appworld'] if binding is None else binding['case']
+            source,native,rows=load_request(source_path,case['native'],case)
             out=Path(output);log=(out/f'rank{self.rank}-phases.jsonl').open('a',buffering=1)
             result=dict(rank=self.rank,pid=os.getpid(),birth=psutil.Process().create_time(),
                 owners=check_imports(source),geometry=geometry(source,native,rows,case),
@@ -77,7 +79,9 @@ def make_worker():
                 result['finite_owner']=dict(path=inspect.getsourcefile(runner.attribute),sha256=sha(inspect.getsourcefile(runner.attribute)),
                     decoder_path=inspect.getsourcefile(decoder_owner),decoder_sha256=sha(inspect.getsourcefile(decoder_owner)),
                     offload_replay_mixer=runner.offload_replay_mixer)
-                assert result['finite_owner']['sha256']=='628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f'
+                expected_runner='628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f' if binding is None else binding['runner_sha256']
+                assert result['finite_owner']['sha256']==expected_runner
+                result['case_binding']=binding
                 for i,layer in enumerate(model.model.language_model.layers):
                     index[id(layer)]=i
                     def before(module,args,kwargs,i=i):
@@ -101,7 +105,7 @@ def make_worker():
                 model.forward_root=forward
                 def boundary(layer,coefficients,endpoints):
                     with torch.no_grad():
-                        pair=endpoints[:2]
+                        row=case['row'];pair=endpoints[2*row:2*row+2]
                         if state['mode']=='single_EOS':
                             single[layer]=pair.detach().to('cpu',copy=True)
                         else:
@@ -109,8 +113,8 @@ def make_worker():
                             if pair.shape != actual.shape:raise ValueError('Single and joint owner boundary axes differ')
                             comparison=pair_differences(endpoints)
                             cross[str(layer)]=dict(boundary=layer,
-                                joint_coefficient_times_single_deletion_delta=float(effect_owner(coefficients[:1],actual).sum()),
-                                joint_coefficient_times_joint_delta=float(effect_owner(coefficients[:1],pair).sum()),
+                                joint_coefficient_times_single_deletion_delta=float(effect_owner(coefficients[row:row+1],actual).sum()),
+                                joint_coefficient_times_joint_delta=float(effect_owner(coefficients[row:row+1],pair).sum()),
                                 factual_endpoints_equal=torch.equal(actual[1],pair[1]),
                                 factual_endpoint_maxabs=float((actual[1].float()-pair[1].float()).abs().max()),
                                 coefficient_dtype=str(coefficients.dtype),endpoint_dtype=str(pair.dtype),shape=list(pair.shape),
@@ -130,10 +134,10 @@ def make_worker():
                 def trace(*args,**kwargs):
                     if state['mode']=='single_EOS':
                         owner,reference,factual,*rest=args
-                        reference=factual.clone();reference[0,case['packed_slot']]=self.tokenizer.eos_token_id
+                        reference=factual.clone();reference[case['row'],case['packed_slot']]=self.tokenizer.eos_token_id
                         args=(owner,reference,factual,*rest)
                     returned=trace_owner(*args,**kwargs)
-                    result['phases'][state['mode']]=dict(candidate_signed=float(returned[0][0,case['packed_slot']]),
+                    result['phases'][state['mode']]=dict(candidate_signed=float(returned[0][case['row'],case['packed_slot']]),
                         detail=returned[2],full_signed_shape=list(returned[0].shape),full_signed_dtype=str(returned[0].dtype))
                     torch.save(returned[0].detach().cpu(),out/f'rank{self.rank}-{state["mode"]}-signed.pt')
                     return returned
@@ -171,7 +175,7 @@ def main():
     import ray
     from omegaconf import OmegaConf
     from verl.single_controller.ray import RayClassWithInitArgs,RayResourcePool,RayWorkerGroup
-    parser=argparse.ArgumentParser();parser.add_argument('--source',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);a=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--source',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--case',type=Path);a=parser.parse_args()
     source=json.loads(a.source.read_bytes());check_imports(source);assert sha(a.source)==CASES['appworld']['source_sha256']
     a.output.mkdir(exist_ok=False)
     config=OmegaConf.load(Path(source['verl_root'])/'verl/trainer/config/ppo_trainer.yaml')
@@ -181,7 +185,7 @@ def main():
     ray.init(num_cpus=8,include_dashboard=False)
     try:
         group=RayWorkerGroup(RayResourcePool([2],use_gpu=True,max_colocate_count=1),RayClassWithInitArgs(make_worker(),config.actor_rollout_ref,'actor'))
-        group.init_model();v=group.inspect_layer_effect(str(a.source),str(a.output))
+        group.init_model();v=group.inspect_layer_effect(str(a.source),str(a.output),str(a.case) if a.case is not None else None)
         (a.output/'completed.json').write_text(json.dumps(v,indent=2)+'\n')
     finally:ray.shutdown()
 

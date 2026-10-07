@@ -1,45 +1,11 @@
-"""Stage/launch one bounded existing-rule diagnosis; no production deployment."""
-import argparse
-import hashlib
-import importlib.util
-import json
-from pathlib import Path
-import subprocess
+set -eu
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+"$VENV_PYTHON" - <<'PY'
 
-HERE = Path(__file__).resolve().parent
-AUDIT = HERE.parents[1]
-spec = importlib.util.spec_from_file_location('transport', AUDIT / 'stage_environment_entry.py')
-transport = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(transport)
-OUT = transport.ROOT + '/receipts/direct-target-existing-pv-rule-20261008-v1'
-files = [HERE / 'compare_existing_pv_rule.py',
-         AUDIT / 'direct-target-native-mlp-memory-20261007/v2/profile_existing_offload.py',
-         AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
-parser = argparse.ArgumentParser()
-parser.add_argument('--launch', action='store_true')
-kind = parser.add_mutually_exclusive_group()
-kind.add_argument('--curve', action='store_true', help='Separate original-author curve comparison; no new DT')
-kind.add_argument('--layer', action='store_true', help='Original passive layer diagnosis on the current largest negative token')
-args = parser.parse_args()
-if args.curve:
-    OUT += '-curves'
-    files = [HERE / 'compare_existing_pv_curves.py',
-             AUDIT / 'direct-target-action-author-curve-20261007/v1/inspect_action_curve.py',
-             AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
-elif args.layer:
-    OUT += '-layers'
-    files = [AUDIT / 'direct-target-token-layer-effect-20261007/v1/inspect_layer_effect.py',
-             AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
-for p in files:
-    compile(p.read_bytes(), str(p), 'exec')
-subprocess.run(transport.SSH + ['bash', '-s'], input=('set -eu\nmkdir -p ' + OUT + '\n').encode(), check=True)
-for p in files:
-    subprocess.run(transport.SCP + [str(p), transport.SSH[-1] + ':' + OUT + '/' + p.name], check=True)
-code = r"""
 import hashlib,json,os,re,subprocess,time
 from pathlib import Path
 import psutil
-root=Path(@ROOT@);out=Path(@OUT@);hashes=@HASHES@
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-layers');hashes={'inspect_layer_effect.py': '66f77d0816cf6ae66d0454c3c9d7a54c1c971f22e04ed8604aff63313da52d84', 'inspect_extreme_endpoint.py': '8a72887a32bd11533486ddee6dc0d36b4980bfb77ed94eadc7a9a13f031b36d5'}
 for name,expected in hashes.items():assert hashlib.sha256((out/name).read_bytes()).hexdigest()==expected
 source_path=root/'runs/direct-target-prefix-runtime-20261007-v1/appworld/appworld-dt/source.json'
 source_sha=hashlib.sha256(source_path.read_bytes()).hexdigest()
@@ -54,9 +20,9 @@ env=dict(os.environ,**source['environment']);env.pop('RAY_ADDRESS',None);env.pop
 env.update(DT_TASK=source['startup_options']['env.env_name'],DT_MAX_STEPS=str(source['startup_options']['env.max_steps']),DT_ROOT=candidate['candidate_dt_root'],DT_ENVIRONMENT_JSON=candidate['candidate_environment'])
 dt=Path(env['DT_ROOT']);qwen=json.loads(Path(env['DT_ENVIRONMENT_JSON']).read_bytes())['qwen35']
 env['PYTHONPATH']=':'.join([str(out),str(dt),env.get('DT_OFFICIAL_ROOT') or qwen['official_root'],str(dt/'clean/qwen35'),source['pythonpath'],qwen['ft_extension_root']])
-if not @LAUNCH@:
+if not False:
  env['CUDA_VISIBLE_DEVICES']=''
- if @CURVE@:
+ if False:
   script='''import json,torch,hashlib
 from pathlib import Path
 root=Path(ROOT);out=Path(OUT);native=Path(NATIVE)
@@ -90,13 +56,13 @@ for item in sorted(d['rows'],key=lambda x:x['batch_row']):
  result.append(dict(uid=item['traj_uid'],length=p['selected'].numel(),targets=len(p['target_offsets'])))
 print(json.dumps(dict(rows=result,cuda_initialized=torch.cuda.is_initialized(),scope='CPU input identity only, no model/DT/update')))
 '''.replace('NATIVE',repr(str(native)))
- if @LAYER@:
+ if True:
   case=dict(source_sha256=source_sha,native_sha256=hashlib.sha256(native.read_bytes()).hexdigest(),uid='f0f85f5c-74b4-4670-a074-99a3a09dbb98',row=3,trajectory_index=64,response_slot=125,packed_slot=2883,token_id=198,rank=1,batch=16,native=str(native))
   script+='\nfrom inspect_extreme_endpoint import load_request\nload_request('+repr(str(source_path))+','+repr(str(native))+','+repr(case)+')\nassert not torch.cuda.is_initialized()\n'
  r=subprocess.run([env['VENV_PYTHON'],'-c',script],env=env,cwd=out,capture_output=True)
  (out/'prepare.stdout.txt').write_bytes(r.stdout);(out/'prepare.stderr.txt').write_bytes(r.stderr);r.check_returncode()
  (out/'prepared.json').write_bytes(r.stdout);print(r.stdout.decode())
- if @LAYER@:
+ if True:
   binding=dict(case=case,runner_sha256=candidate['changed_sha256'],scope='Current actual extreme token on original unchanged B4; passive original single/joint boundary diagnosis only')
   (out/'case.json').write_text(json.dumps(binding,indent=2)+'\n')
 else:
@@ -107,28 +73,13 @@ else:
  physical=subprocess.run(['mx-smi'],capture_output=True,check=True).stdout;(out/'before-physical.txt').write_bytes(physical)
  assert not any(re.match(r'^\|\s*[45]\s+\d+\s+\S',line) for line in physical.decode(errors='replace').splitlines())
  env['CUDA_VISIBLE_DEVICES']='4,5'
- program='inspect_layer_effect.py' if @LAYER@ else ('compare_existing_pv_curves.py' if @CURVE@ else 'compare_existing_pv_rule.py')
+ program='inspect_layer_effect.py' if True else ('compare_existing_pv_curves.py' if False else 'compare_existing_pv_rule.py')
  argv=[env['VENV_PYTHON'],str(out/program),'--source',str(source_path)]
- if @LAYER@:argv+=['--case',str(out/'case.json')]
- elif not @CURVE@:argv+=['--native',str(native)]
+ if True:argv+=['--case',str(out/'case.json')]
+ elif not False:argv+=['--native',str(native)]
  argv+=['--output',str(out/'results')]
  with (out/'driver.log').open('xb') as log:p=subprocess.Popen(argv,env=env,cwd=out,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
- record=dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),launched_unix=time.time(),code_commit=@COMMIT@,argv=argv,scripts=hashes,source_sha256=source_sha,native_sha256=hashlib.sha256(native.read_bytes()).hexdigest(),memory_candidate=candidate,devices=[4,5],DT_calls_per_rank=0 if @CURVE@ else 2,native_forwards_per_rank=42 if @CURVE@ else 0,scope=('Original passive single/joint layer comparison, current largest negative token' if @LAYER@ else 'Existing content1/content0 diagnostic only')+'; no profile deployment, no parameter/optimizer/scheduler updates, no rollout or checkpoint restore',formal_restart=False,credit_repaired=False,text_update_released=False)
- if @LAYER@:record['case_binding']=dict(path=str(out/'case.json'),sha256=hashlib.sha256((out/'case.json').read_bytes()).hexdigest(),value=json.loads((out/'case.json').read_bytes()))
+ record=dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),launched_unix=time.time(),code_commit='a71ffdccfe005d1859bfe1ae8f4c0f9534130818',argv=argv,scripts=hashes,source_sha256=source_sha,native_sha256=hashlib.sha256(native.read_bytes()).hexdigest(),memory_candidate=candidate,devices=[4,5],DT_calls_per_rank=0 if False else 2,native_forwards_per_rank=42 if False else 0,scope=('Original passive single/joint layer comparison, current largest negative token' if True else 'Existing content1/content0 diagnostic only')+'; no profile deployment, no parameter/optimizer/scheduler updates, no rollout or checkpoint restore',formal_restart=False,credit_repaired=False,text_update_released=False)
  (out/'launch.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
-"""
-commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve, LAYER=args.layer, COMMIT=commit).items():
-    code = code.replace('@' + k + '@', repr(v))
-command = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
-prefix = 'layer-' if args.layer else ('curve-' if args.curve else '')
-phase = prefix + ('launch' if args.launch else 'prepare')
-(HERE / (phase + '-command.sh')).write_text(command, encoding='utf8', newline='\n')
-r = subprocess.run(transport.SSH + ['bash', '-s'], input=command.encode(), capture_output=True)
-(HERE / (phase + '.stdout.txt')).write_bytes(r.stdout)
-(HERE / (phase + '.stderr.txt')).write_bytes(r.stderr)
-print(r.stdout.decode(errors='replace'))
-if r.returncode:
-    print(r.stderr.decode(errors='replace'))
-r.check_returncode()
-(HERE / (prefix + ('launch.json' if args.launch else 'prepared.json'))).write_bytes(r.stdout)
+
+PY

@@ -1,5 +1,16 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 当前最大负优势样本的逐层诊断仅CPU准备完成
+
+原inspect_layer_effect诊断新增可选case绑定；旧row0默认不变，旁观切片和
+单EOS位置改为读取既有case.row，因此可保持原B4顺序测当前row3。未复制
+DT计算，没有改变有限算子/FA/FLA/头/信用/PPO；仅现有边界系数的scalar
+收缩及native状态比较。当前case f0f85f5c、traj64、response125、packed2883、
+ID198，native SHA3e902bc0、source58209daa。CPU原load_request核对UID、
+位置、prior/target映射，原readout核对selected/target IDs和offset，CUDA未初始化。
+使用另有容量回执的runner7d6f57f6；正式入口未修改、未启动诊断或释放更新。
+
+
 ## 2026-10-08 02:09 作者原累计删除/RISE/MAS对照已完成；不能靠修极值切换规则
 
 a7505556，PID1322365/birth1791396004.81完成退出。两个rank各42次原模型
