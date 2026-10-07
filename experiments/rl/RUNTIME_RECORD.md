@@ -1,5 +1,37 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 原已有attention PV两种顺序对照完成；尚未更换正式规则
+
+诊断9567ba35、PID1117764/birth1791394038.38完成退出。实际AppWorld B4
+rank1/batch16 SHA3e902bc0，原source58209daa；两个原owner选项共享完全相同
+事实/删除target logp数组，各自signed和QVA跨rank逐值一致。极值换行当前
+content1 d=-4.415554/A=-61.295715，content0 d=+3.562343/A=+0.728721；
+之前独立单删除d=+23.089031/A=+0.75。旧正式content1 d=-4.29009与此次
+fresh重放并非逐值一致，不将独立运行漂移冒称修复影响。
+预选12点的反号4→5，不能为修好极值就部署content0；正式profile未动。
+物理显存两卡各峰值54196MiB，进程phase最大PSS约8.34GB，QVA有限。
+两调用约107.5/67.9秒，后者热调用，不能据此宣称规则本身提速。原诊断main
+未输出effective-config.yaml，冻结source和实际main/runner SHA另有绑定，
+不把文件缺失当训练故障，也不冒充完整运行配置抓取。结果见
+results_existing_PV_rule_20261008.json；未更改FA/FLA容差、QVA、PPO或白化。
+作者累计删除/RISE/MAS原函数比较只已CPU准备，尚未启动或得出质量结论。
+Text原同birth hold、两个release不存在、零正式optimizer更新；App正式终止。
+
+
+## 2026-10-08 01:28 原已有attention PV顺序诊断已启动；未换正式profile
+
+诊断9567ba35，PID1117764/birth1791394038.38已实际核对存活，GPU4/5。
+原App source58209daa，实际极值B4 rank1/batch16 SHA3e902bc0；四行12512–12603。
+CPU通过原readout核对selected/target IDs和offset逐值一致，未初始化CUDA。
+原qwen35_decoder_finite 1c58c33c的attention_finite_pullback明确支持content1/content0：
+后者仅交换原有限FA端点及V参照，不是新的FA实现或新QVA。此处对同一B4调用
+原producer两次，只比较已有选项；24个GDN symmetric/head/原奖励/QVA不变。
+继承单独有界验证的显存候选runner7d6f57f6/env cd28a6e2，不把其旧preparation
+状态字段当当前验收。未改正式source或profile，未恢复/采样/反向/optimizer。
+Text原driver同birth仍hold，两个release不存在。该诊断尚无结果或质量接受结论，
+也不以规则差异测试代替FA/FLA数值容差或作者累计删除/RISE/MAS。
+
+
 ## 2026-10-08 01:12 原首个PPO minibatch的极值token梯度已量出；正式更新保持hold
 
 results_update_gradient_20261008.json绑定诊断5fba8de4、Text source2796233e、原actor
