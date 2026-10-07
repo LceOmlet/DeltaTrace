@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 16:12 AppWorld末批DT显存不足，TextCraft第六次完整更新
+
+AppWorld原PID1468126/birth1791357190.77/source942c2d68已退出，原终态收据确认
+第29/29个DT B4在有限MLP编译产物buf7申请2.35/2.37GiB时OOM；调用链为
+runner497→decoder228→decoder95 `_mlp_input_rule`→Inductor line286，非GDN或PPO。
+两rank此前各完成28个B4，最大完成length22268/21672；失败批长度没有打印，
+不从前批推测。没有完整DT读出、PPO更新或检查点，不称首轮成功或32k容量通过。
+原PyTorch约103GiB allocator文字不作为物理显存；16:11:36物理GPU4/5为
+64841/64341MiB，是退出前快照，不代表退出后资源状态。
+
+TextCraft原PID110053/birth1791344324.6/source5013ebc8完成step6，随后第7轮原采样。
+原rollouts/6.jsonl为256条、171个1分/85个0分、平均0.66796875，至此才把171
+核对为本轮实际成功数；不是仅凭nonzero_requests推断。原entropy0.648、grad0.035、
+PG loss -0.056，gen1771.923秒、oldprob121.314、ref105.839、DT156.021、
+actor441.282，整轮2596.801秒。两rank原第6份DT报告均88工作行/22次B4，
+读出154.039/154.009秒并行；self全1，prior范围[-3.06927,1]/[-10.20562,0.99999988]。
+原step6完整metric为TaskRunner113691.out第333行，完整报告及逐行SHA均保留。
+这些是当前训练批次的观察，不证明学习改善、token精确归因或32k容量。
+
+16:11:36 TextCraft物理GPU2/3=50204/50140MiB，容器236.290GiB；
+主进程/TaskRunner/两worker PSS约5.140/19.230/8.432/8.323GiB，均为阶段快照。
+此条及图表仅在本地复用原收据，未远端调用、改PLAN/训练参数、恢复检查点或重启。
+当前部署实现仍d7af4eaed5c16aacb1730b81946fe89d282e40d5；账本/绘图提交不替代运行版本。
+来源：readonly-DT-final-batches-1791360485.json SHA3f59488a…49fe0e9、
+textcraft-step6-original-1791360668.json SHA5036ed57…ab772fe、
+formal-phase-1791360696.json SHA288580f5…abc8fb8，完整路径/SHA见current_runtime和结果索引。
+
+
+
 ## 2026-10-07 16:00 两组正式DT推进，未重启或改参
 
 前一goal turn为progress：原AppWorld完成前6个真实B4，原信用工作量与版本记录已提交。
