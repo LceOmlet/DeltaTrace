@@ -1,5 +1,39 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 02:29 当前极值首次反号在decoder30；不是旧样本layer27
+
+26b43fa2、PID1470525/birth1791397411.29完成退出；GPU4/5各859MiB。实际
+row3/f0f85f5c/traj64/response125/packed2883/ID198、原B4 SHA3e902bc0。
+两rank整份joint signed逐值等于此前无逐层旁观的同B4 content1结果，差0；
+33边界的candidate事实状态逐值相同。原single DT d=+22.500395，当前cached
+native端点差=+21.783119；两者残差+0.717276。此前独立uncached native
+单删除=+23.089031，与当前cached相差1.305913，分别保留，不冒称同一端点。
+joint系数×真实single状态差：输出边界+27.714940，经FA decoder31到+4.787422，
+经GDN decoder30到-6.814600，输入-4.415554，等于原joint token d。实际模型
+日志layer_types确认31 full_attention、30 linear_attention。定位只缩小范围，
+不能称GDN内核数值错误；下一步需分清31/30层的MLP、RMSNorm及mixer贡献。
+
+每rank原两DT约95.75/71.8秒，无observer-mode/rollout/反向/optimizer/恢复。
+5.326GB single CPU快照最终全释放；phase记录PSS最大14.115/13.555GB。
+这不是物理VRAM峰值，原root.__call__未被forward_root hooks覆盖，也不把缺失
+native/cache记录当零差。结果results_current_extreme_layer_20261008.json、原始
+回执/源/配置/SHA/图已保存。没有新增容差、纠偏倍率或算法改动。Text仍同birth
+hold、两个release不存在；App正式未重启，信用误差未修。显存候选单独通过有界
+回归的状态不变，尚未正式部署。不以旁观逐值相同取代FA/FLA官方容差。
+
+
+## 2026-10-08 02:24 当前极值token原逐层诊断已实际启动
+
+26b43fa2，PID1470525/birth1791397411.29实际核对存活、GPU4/5，当前原actor
+初始化，尚无DT完成结果。诊断66f77d08继承原inspect_layer_effect，只增加
+case参数并将旧固定row0切片改为case.row；当前row3、f0f85f5c/traj64/
+response125/packed2883/ID198。原load_request CPU身份/映射检查通过。
+case SHA9827ca42、source58209daa、原B4 SHA3e902bc0、runner7d6f57f6。
+两次原producer调用仅测single/joint边界标量，不改变返回值、算子或公式；
+计划没有rollout/反向/optimizer/恢复。Text同birth hold且两个release不存在，
+App正式未重启。此处不引用旧样本的layer27反号来替代当前样本的定位。
+
+
 ## 2026-10-08 当前最大负优势样本的逐层诊断仅CPU准备完成
 
 原inspect_layer_effect诊断新增可选case绑定；旧row0默认不变，旁观切片和
