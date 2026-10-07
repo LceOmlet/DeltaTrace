@@ -1,5 +1,51 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 15:48 AppWorld前六个真实B4完成
+
+同一AppWorld PID/birth/source942已在两rank各完成6/29个联合目标B4。
+rank1473507第5/6批compute length9684/9942、33.9729/35.4048秒；
+rank1475058对应9749/9989、33.9677/35.3912秒，均来自原完成行。
+未见本次新OOM；这不是最后长批次、完整DT/PPO或精确32k容量通过。
+采样227条真实轨迹对应227个联合请求，不按3794个response展开；
+分布式补齐后的B4工作行与原环境轨迹、actor批量仍分别记录。
+同窗口TextCraft第6轮采样已完成19次交互、正在20/30；完整更新仍5。
+容器236.691GiB为阶段读数，来源formal-phase-1791359322.json
+SHAf85eb468…23591f3；未改训练参数、源码、方法或重启任何任务。
+
+## 2026-10-07 15:45 AppWorld首轮进入真实DT
+
+AppWorld当前PID1468126/birth1791357190.77/source942保持，原采样已经结束，
+原loop_trajectory保留227条轨迹/3794个response、716788个policy token，
+最长实际context28665。15:44两个worker均执行原actor_rollout_compute_log_prob；
+15:45已转为原actor_rollout_compute_dt_token_advantages。DT工作量原日志为
+227条轨迹/227个非零回报请求、193460个target token、523328个source token。
+非零回报包含原trainer处理后的奖励，不能把请求数当成功数。
+目前尚无本次B4完成行，不猜批次长度/耗时，不据此称完整DT、PPO或32k容量通过。
+15:45原物理GPU4/5=27520/27420MiB，容器236.59GiB，均为阶段快照。
+已有reward_extra_info提示仍走未修改官方cached reward metadata fallback，
+当前source audit已核对其owner字节；未为该提示增加重评分或替代奖励。
+来源formal-phase-1791359067.json SHAa42a0b77…4aeb1f及
+readonly-first-DT-watch-1791358683.json SHAd48b95bc…e32e554。
+TextCraft原第6轮采样已完成13次交互、正在第14/30次，完整更新仍5；任务/信用/PPO/参数未变。
+
+## 2026-10-07 15:36正式进程复核及第五轮信用离线观察
+
+前一goal turn为progress：实际绘制本次训练曲线、绑定第五次原更新/部署源码并提交推送。
+本次继续当前用户接受的两组DTPO，不恢复旧goal文字中的已取消SQL/GRPO。
+15:36同一TextCraft110053/source5013、AppWorld1468126/source942均存活且出生时间匹配；
+TextCraft第6轮原采样推进至6/30，AppWorld原collection107+102=209/240，
+transport740034 token/1196.8秒；容器229.606GiB，为阶段读数而非峰值。
+来源formal-phase-1791358591.json SHA9d8c10e5…f10cef。
+
+原TextCraft step5离线观察：137个唯一非零回报traj_uid在原DP补齐后形成144工作行，
+7个重复UID；两rank各72行、18次B4，DT阶段142.329秒，两rank读出139.659/139.745秒
+并行，不能相加或把144工作行叫actor训练批量。self原信用全1，prior范围两rank为
+[-7.2645869,1]和[-23.0169945,1]，已有other组全0。已有2002个数值字段未见非有限值；
+报告没有逐token向量，不能推断分布、错位或精确反事实准确性。白化后系数仍为原日志
+[-164.145,6.917]，原PPO梯度0.034。工作量和公式入口已生效不等于学习改善。
+来源textcraft-step5-credit-workload-offline.json SHA67709a57…4f560；仅离线读取已存
+收据，没有模型、环境、优化器调用或参数/容差变化。
+
 ## 2026-10-07 15:27 TextCraft第五次完整更新，AppWorld新源码绑定核对
 
 TextCraft原PID110053/birth1791344324.6/source5013ebc8不变，完整step5已返回，
