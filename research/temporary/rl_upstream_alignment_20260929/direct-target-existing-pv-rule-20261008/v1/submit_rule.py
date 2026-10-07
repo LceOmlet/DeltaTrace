@@ -148,6 +148,7 @@ else:
  if @SUBOPS@:record.update(partial_DT_only=True,stop_after_decoder=30,full_signed_vector_produced=False)
  if @FENCE@:record.update(DT_calls_per_rank=1,scope='Same original real B4 and original original-profile DT; isolate the next actual code-fence score only, without changing reference IDs or retained target input tokens; diagnostic-only, no complete-event QVA export, profile switch, update, rollout or restore')
  if @CLEAN@:record.update(scope='Compare the owner-preserved clean-v1 GDN numerical rule defaults on the same actual B4; current offload/chunking/kernels/target/QVA/PPO retained, no frozen-runtime restore or formal profile switch',preserved_clean_owner_sha256='e5acd0b43d75677e0416e5b856dfad31f460562ef1968f02ac2357ba268b3cf0')
+ if @CLEAN_CURVE@:record.update(scope='Unchanged original author cumulative deletion/RISE/MAS for the completed original-symmetric versus preserved-clean-GDN full vectors; same actual trajectory and native B4 scorer, no DT, optimizer, rollout, restore or formal profile change')
  (out/'launch.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
 """
 commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
