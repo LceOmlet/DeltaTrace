@@ -1,5 +1,37 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 02:09 作者原累计删除/RISE/MAS对照已完成；不能靠修极值切换规则
+
+a7505556，PID1322365/birth1791396004.81完成退出。两个rank各42次原模型
+前向，driver到最后worker完成556.30秒；原函数583f4b7d、k20未改。原
+signed排序RISE=.393269，已有content0=.425759；正值评估视图MAS=.631998
+对.690447。原source/positions、事实与全EOS端点一致，另外三行分数恒定，
+paired twin最大差1.14e-13，仅作控制观察，不称官方数值容差验收。
+同一实际极值轨迹2693个prior source位置；原signed排序最后改变134个
+负DT token，signed和=-28.6496，但保留该组使原目标logp增加89.9530。
+这是该累计背景下的组交互不匹配，不把组效应当单token真值，也不证明全部
+归因排序差。两规则都有该现象；content0修了换行点却没有改善该轨迹的原
+整体指标，不部署。归因误差仍未修，QVA/PPO/白化/任务/FA-FLA容差未改。
+结果results_existing_PV_author_curves_20261008.json、原始数组/CSV/图及运输
+SHA已保存。物理峰值56523/56524MiB、worker PSS峰值7.564/8.488GB；结束
+后GPU4/5各859MiB。Text2833207同birth、两个release不存在、零正式更新。
+App正式仍终止。显存修复单独通过原失败B4与两次32k容量回归，尚未正式部署；
+不把曲线结束、显存候选或启动等同于信用修复或训练健康。
+
+
+## 2026-10-08 02:03 作者原累计删除/RISE/MAS双规则对照运行中
+
+诊断a7505556、PID1322365/birth1791396004.81、GPU4/5，两个worker已分别
+完成signed_RISE的12/21原模型前向点；每次约10.81秒。原曲线诊断55f88c76
+未改，原作者ft_ifr_improve 583f4b7d的排序、分组、k20、归一化和指标未抄写。
+薄调用层只为rank0/1分别绑定此前保存的content1/content0 signed向量；实际
+AppWorld B4 IDs、target和O未变。每rank共42次原前向，无DT/反向/optimizer。
+原FA/FLA、QVA、PPO、正式profile和rank8/alpha16/B4不变。positive_MAS的
+正值视图仅评估，不修改训练信用。Text仍同birth hold、零正式更新；App未重启。
+运行回执curve-launch.json和curve-observation-1791396237.json已本地保存。
+尚无最终质量结论，不能把部分曲线或启动等同于信用修复。
+
+
 ## 2026-10-08 原已有attention PV两种顺序对照完成；尚未更换正式规则
 
 诊断9567ba35、PID1117764/birth1791394038.38完成退出。实际AppWorld B4
