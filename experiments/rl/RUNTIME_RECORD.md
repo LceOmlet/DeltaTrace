@@ -1,5 +1,39 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 14:02 两组原正式任务在运行
+
+AppWorld PID996278/birth1791352696.13/sourceed3fdf7b已进入原native_async真实采样，
+两rank原sample_tokens执行，最新transport为100calls、5494生成token/55.5秒；含调度、
+prefill与decode，不是纯decode速度。首个新DT/PPO未完成，不把启动当健康验收。
+TextCraft原PID110053继续第四次采样，已有3次完整更新。14:01物理2/3显存
+49944/50400MiB，4/5为47730/47714MiB，全容器191.915GiB；非峰值。
+来源见results_direct_target_causal_prefix_20261007.json及最新current_runtime快照。
+实现commit139273c3，后续提交仅保存来源/状态记录；运行版本不能用新HEAD覆盖。
+
+
+## 2026-10-07 13:59 AppWorld 因果右尾修复正式提交，TextCraft第三轮完成
+
+AppWorld已由原submit_prepared_direct_targets提交到物理4/5，从base新开，PID996278/
+birth1791352696.13/source SHA ed3fdf7b3468116b65c96c4df915a4c549c0d9d9e55f72725f805751b2071cc6。
+源码commit139273c36f2546acf37cfab7612a22e2b54d2597，entry为
+candidates/direct-target-causal-prefix-20261007-v2/appworld/entry；仅reward_readout.py
+SHA7900a369…67b27改变。DT root仍head-memory-v2、answer1e209，VERL/LOOP/任务/PPO
+不变。冻结1670项核验通过，远端原生产导入CPU37项通过/2.03秒；配置差异只为
+四个输出目录及相同dataset文件的入口路径，没有算法/任务参数改变。rank8/alpha16、
+每卡B4、200迭代/原40组×6及90%完成、原minibatch32/epochs2、32000训练/32768生成
+上限保留。原完整执行史回填保留，只省去最后真实target之后的DT计算右尾。
+当前仅原Ray/VERL初始化，未完成首个新DT/PPO，不称完整容量或训练健康已通过。
+来源results_direct_target_causal_prefix_20261007.json；v1为未提交的CPU测试对象初始化
+失败，原log保留；v2仅补测试构造状态，不改生产producer。原头数值回执仍原范围。
+
+TextCraft原PID110053/source5013ebc8继续2/3，第三轮已完整返回，进入第四次采样。
+step3整轮2589.735秒：gen1765.050、oldprob116.819、ref101.904、DT179.880、
+actor425.637；reward0.695/entropy0.675/grad_norm0.036。三批reward0.664/0.629/0.695
+均为各批更新前采样，暂不判断质量趋势。原token优势范围-36.775至6.195。
+原日志/SHA见direct-target-causal-prefix-20261007/v1/textcraft-latest-original.json。
+无checkpoint恢复、新备份、新自动化；SQL/GRPO保持停止。
+
+
 ## 2026-10-07 13:50 AppWorld 新终态与因果右尾打包候选
 
 AppWorld PID670069/birth1791349552.74/source42bb0eb9已退出；此次不是OOM。
