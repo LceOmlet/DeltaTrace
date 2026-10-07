@@ -1,0 +1,96 @@
+{
+  "status": "Intermediate GEMM operand rounding does not explain this observed sign flip; credit not repaired",
+  "diagnostic_code_commit": "9863bd84a93e1d8be8d9c42be95d57389e365acd",
+  "helper_sha256": "fc4b0a74679a303c5fbeab8841c68d97c62378ce8f9c444d7b77eb450e35f00c",
+  "pid": 1874736,
+  "birth": 1791401248.61,
+  "devices": [
+    4
+  ],
+  "owners": {
+    "finite_fla_gpu": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/finite_fla_gpu.py",
+      "sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6"
+    },
+    "symmetric": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/profiles/qwen35_gdn_symmetric.py",
+      "sha256": "dd6bbfff9aae4c679439af113a160e0bd8c4cf1b19bb17cab47a04ff7b0831d0"
+    }
+  },
+  "measured": {
+    "original_saved_B4_point": -5.624335440884439,
+    "eager_same_native_GEMM_point": -5.62433324497408,
+    "eager_FP32_intermediate_GEMM_point": -5.624418072720292,
+    "native_eager_minus_saved": 2.1959103584379136e-06,
+    "FP32_control_minus_native_eager": -8.482774621221267e-05
+  },
+  "profiles": {
+    "eager_original_native_GEMM": {
+      "groups": 4,
+      "operator_seconds": 4.749066153992317,
+      "group_end_max_live_allocated_bytes": 516182016,
+      "max_recorded_pss_bytes": 7237254144,
+      "max_coefficient_error_vs_original_saved_B4": {
+        "q": 3.190338611602783e-05,
+        "k": 7.034838199615479e-05,
+        "v": 9.5367431640625e-07,
+        "beta": 3.343448042869568e-06,
+        "alpha": 1.6922131180763245e-06,
+        "g": 1.3960525393486023e-06
+      }
+    },
+    "eager_FP32_intermediate_GEMM": {
+      "groups": 4,
+      "operator_seconds": 0.13849934401514474,
+      "group_end_max_live_allocated_bytes": 516202496,
+      "max_recorded_pss_bytes": 7216656384,
+      "max_coefficient_error_vs_original_saved_B4": {
+        "q": 0.0009225606918334961,
+        "k": 0.0018138885498046875,
+        "v": 1.9073486328125e-06,
+        "beta": 0.00021380186080932617,
+        "alpha": 0.00011634081602096558,
+        "g": 9.554624557495117e-05
+      }
+    }
+  },
+  "allow_tf32": false,
+  "float32_matmul_precision": "highest",
+  "sources": [
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/fla-replay-results/results/result.json",
+      "bytes": 18177,
+      "sha256": "cd6fcb327424ab6191732823aa1260f7401fea75fc3619fc6419242bdd871bb8"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-existing-pv-rule-20261008/v1/fla-replay-results/transport.json",
+      "bytes": 1840,
+      "sha256": "d098bf9745c7cdf2b53b303e6f0a9c496b83fb5f397f8a860ddded60081b8b4d"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/results_current_extreme_gdn_20261008.json",
+      "bytes": 44044,
+      "sha256": "54f1a37ec5a5b57a1f888ef452e167989799db19d35d9df6e65cd755434627f7"
+    }
+  ],
+  "scope": "Selected saved original B4 row replayed as paired B1; no model/full-DT/actor/rollout/training-backward/update. Original FLA adjoint stages do execute. Eager native formula versus FP32 intermediate-GEMM control, not a complete FP32 reference.",
+  "limitations": [
+    "This changes only the finite formula GEMM operand casts. Native FLA adjoint stages, captured low-precision model endpoints, elementwise/Triton stages and symmetric formulas remain unchanged. It does not rule out every other numerical or formula defect.",
+    "Selected B1 eager replay is compared numerically to the original saved B4 compiled outputs. No official FA/FLA pass criterion is claimed for this nonzero finite computation.",
+    "The two timings include their own cold/warm ordering and are not a production speed comparison.",
+    "Group-end allocated and PSS values are observations, not continuous physical VRAM or process-memory peaks."
+  ],
+  "official_tolerance_claim": false,
+  "production_profile_changed": false,
+  "credit_repaired": false,
+  "formal_restart": false,
+  "text_update_released": false,
+  "operations": {
+    "model_load": 0,
+    "full_DT": 0,
+    "rollout": 0,
+    "training_backward": 0,
+    "optimizer": 0,
+    "checkpoint_restore": 0
+  }
+}

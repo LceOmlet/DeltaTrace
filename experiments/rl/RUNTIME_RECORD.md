@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 已排除当前反号由中间GEMM低精度舍入解释
+
+9863bd84、算子重放PID1874736/birth1791401248.61完成退出，只用物理4，
+不加载模型/不运行完整DT/无训练backward、optimizer、rollout或恢复。
+原四组8-head FLA张量直接调用原finite_fla_pullback与原两端平均callback。
+原native-GEMM eager收缩-5.624333245，与原B4 compiled保存值-5.624335441
+相差+0.000002196；仅取消中间GEMM的FP16操作数舍入后为-5.624418073，
+相较eager只变-0.000084828。TF32=False、float32_matmul_precision=highest。
+这与前面+0.543606到-5.624335的6.16794变化不在同一量级，不能靠这一部分
+提高精度修复信用反号。native FLA adjoint阶段/捕获值/elementwise/Triton仍保持
+原样，因此没有排除其他数值来源或公式错误，也未发明非零finite的FA/FLA容差。
+
+原四组算子累计4.749秒，FP32对照0.1385秒有先冷后热差异，不作速度比较。
+每组结束live allocated约0.516GB、PSS最大7.237GB；这些不是连续物理峰值。
+终态4/5各859MiB。完整原始结果与SHA在results_current_extreme_fla_precision_20261008.json。
+正式Text同birth hold、App未重启；Q/V/PPO/LoRA8/16/B4与生产后端没有改动。
+内存修复已完成有界原失败B4+两次32768容量回归，但仍未部署到正式作业。
+下一步核查原有限FLA公式/联合删除分配与原native输出，而不是再调head或MLP。
+
+
 ## 2026-10-08 GDN30 首次反号在有限FLA；原算子输入已留存
 
 e1bc175d、PID1788375/birth1791400430.70完成退出。原B4/两rank/31与30边界
