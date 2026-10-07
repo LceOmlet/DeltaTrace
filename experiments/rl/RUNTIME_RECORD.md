@@ -25,6 +25,12 @@ actor/entropy_loss曲线；两项原日志解析测试通过，实际当前两�
 图表/CSV/快照位于direct-target-gpu-lifetime-20261007/v1/plots/textcraft-1791344324；
 仅观察和显示改动，未改训练，也未恢复旧检查点或SQL/GRPO。
 
+15:34 AppWorld同一PID/birth/source继续首轮采样，原两rank collection90/120、85/120，
+合计175/240、取消0。原transport为656007生成token/1048.3秒/3494 requests，
+包含调度、prefill、decode和RPC，非纯decode或完整采样耗时。未进入DT，尚无
+完整更新；本次日志尾未见新OOM/RuntimeError。原只读阶段回执
+readonly-phase-final-1791358443.json SHA4f9b20ad…77bbd54。
+
 ## 2026-10-07 15:13 AppWorld生命周期修复正式提交，TextCraft继续
 
 AppWorld由原submit_prepared_direct_targets从base新开，PID1468126/birth1791357190.77，
