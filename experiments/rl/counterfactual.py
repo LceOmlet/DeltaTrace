@@ -29,6 +29,7 @@ def reward_event_token_credit(
     policy_mask: torch.Tensor,
     *,
     discounts: torch.Tensor | None = None,
+    self_target_mask: torch.Tensor | None = None,
 ) -> DTTokenCredit:
     """Compose sampled terminal/process rewards into individual token advantages.
 
@@ -38,6 +39,12 @@ def reward_event_token_credit(
     events not yet settled at token i, using rollout event identities. Only
     policy_mask[b,i] positions are actions. Optional discounts[b,k,i] come
     from the same reward clock as PPO.
+
+    self_target_mask[b,k,i] identifies token i as part of that SAME observed
+    literal target y_k. Under the specified deletion reference its event
+    probability is zero, so that event contributes Q_hat=r, V_hat=0, A_hat=r.
+    This replaces its DT term; it is never added to a second attribution of
+    the same event. No log(0) or numerical infinite ratio is evaluated.
 
     Q_hat_i = sum_k discount_ki * r_k
     V_hat_i = sum_k discount_ki * r_k * exp(-d_ki)
@@ -59,6 +66,10 @@ def reward_event_token_credit(
     if policy_mask.shape != (batch, tokens) or policy_mask.dtype != torch.bool:
         raise ValueError("policy_mask must be bool [batch, tokens]")
     inputs = [rewards, future_event_mask, policy_mask]
+    if self_target_mask is not None:
+        if self_target_mask.shape != log_ratios.shape or self_target_mask.dtype != torch.bool:
+            raise ValueError("self_target_mask must be bool [batch, events, tokens]")
+        inputs.append(self_target_mask)
     if discounts is not None:
         if discounts.shape != log_ratios.shape or not discounts.is_floating_point():
             raise ValueError("discounts must be floating [batch, events, tokens]")
@@ -78,11 +89,12 @@ def reward_event_token_credit(
         if not bool((torch.isfinite(values) & (values >= 0)).all()):
             raise ValueError("active discounts must be finite and nonnegative")
         active = active & (discounts > 0)
-    if not bool(torch.isfinite(log_ratios[active]).all()):
+    estimated = active if self_target_mask is None else active & ~self_target_mask
+    if not bool(torch.isfinite(log_ratios[estimated]).all()):
         raise ValueError("active event log ratios must be finite; do not smooth away missing support")
     if dtype in (torch.float16, torch.bfloat16):
         dtype = torch.float32
-    d = torch.where(active, log_ratios.to(dtype), 0.0)
+    d = torch.where(estimated, log_ratios.to(dtype), 0.0)
     weighted_reward = torch.where(active, rewards.to(dtype)[:, :, None], 0.0)
     if discounts is not None:
         weighted_reward = weighted_reward * torch.where(active, discounts.to(dtype), 0.0)
@@ -90,6 +102,9 @@ def reward_event_token_credit(
     # Stable near d=0: sampled importance correction, not R*(p_action-p_policy).
     event_advantages = weighted_reward * (-torch.expm1(-d))
     event_baselines = weighted_reward * torch.exp(-d)
+    if self_target_mask is not None:
+        event_advantages = torch.where(self_target_mask, weighted_reward, event_advantages)
+        event_baselines = torch.where(self_target_mask, 0.0, event_baselines)
     advantages = event_advantages.sum(dim=1)
     q_estimates = weighted_reward.sum(dim=1)
     v_estimates = event_baselines.sum(dim=1)

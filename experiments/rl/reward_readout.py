@@ -15,7 +15,7 @@ from typing import Any
 
 import torch
 
-from counterfactual import episode_returns, return_credit_for_rows
+from counterfactual import episode_returns, return_credit_for_rows, reward_event_token_credit
 from deltatrace_credit import trace_token_attribution
 
 
@@ -367,3 +367,177 @@ class EventRatioReadout:
 
     def episode(self, rows: list[dict[str, Any]]) -> list[dict[str, torch.Tensor]]:
         return self.episodes([rows])[0]
+
+
+class DirectActionTargetReadout:
+    """One genuine executed-action joint target per native trajectory.
+
+    The environment/rollout owner supplies exact IDs, payload masks and the
+    terminal reward. This adapter selects those existing target rows, calls
+    the formal DT interface and restores its vector to native suffix slots.
+    It does not parse actions, score environments or construct reward labels.
+    """
+
+    def __init__(self, runner: Any, tokenizer: Any, *, task: str,
+                 packed_answer_targets: Any, max_length: int = 32768,
+                 minibatch_size: int = 4, prefix_lease_factory: Any = None):
+        if task not in ('TextCraft', 'AppWorld'):
+            raise ValueError('Direct action targets are enabled only for TextCraft and AppWorld')
+        if tokenizer.eos_token_id is None or minibatch_size < 1:
+            raise ValueError('The native EOS token and a positive DT minibatch are required')
+        self.runner, self.tokenizer = runner, tokenizer
+        self.task, self.max_length = task, max_length
+        self.minibatch_size = minibatch_size
+        self.packed_answer_targets = packed_answer_targets
+        # A joint target can contain predictors before a later source span.
+        # Do not feed those targets to the old response-prefix lease boundary.
+        self.prefix_lease_factory = prefix_lease_factory
+        self.last_report: dict[str, Any] = {}
+
+    @staticmethod
+    def _prepare_row(row, index):
+        ids, attention, response = (row[key].detach().cpu() for key in
+                                    ('input_ids', 'attention_mask', 'responses'))
+        policy, target = (row[key].detach().cpu() for key in ('policy_mask', 'target_mask'))
+        if ids.ndim != 1 or attention.shape != ids.shape or response.ndim != 1:
+            raise ValueError('A native trajectory requires one-dimensional IDs, attention and suffix')
+        width = response.numel()
+        if not width or width >= ids.numel() or not torch.equal(ids[-width:], response):
+            raise ValueError('Native responses must be the unchanged full input suffix')
+        if policy.shape != response.shape or target.shape != response.shape:
+            raise ValueError('Policy and executed-target masks must retain native suffix slots')
+        if policy.dtype != torch.bool or target.dtype != torch.bool:
+            raise ValueError('Native policy and target masks must be boolean')
+        attention = attention.bool()
+        suffix_attention = attention[-width:]
+        if bool((policy & ~suffix_attention).any()) or bool((target & ~policy).any()):
+            raise ValueError('Executed targets must be policy actions, and padding is not an action')
+        prompt_width = ids.numel() - width
+        prompt_length = int(attention[:prompt_width].sum())
+        if prompt_length < 1:
+            raise ValueError('The official target predictor requires a nonempty native prompt')
+        valid_positions = attention.nonzero().flatten()
+        selected = ids[valid_positions]
+        suffix_positions = suffix_attention.nonzero().flatten()
+        valid_policy, valid_target = policy[suffix_positions], target[suffix_positions]
+        target_offsets = valid_target.nonzero().flatten().tolist()
+        prior = policy & ~target
+        if bool(target.any()):
+            prior = prior & (torch.arange(width) < int(target.nonzero()[-1]))
+        else:
+            prior = torch.zeros_like(policy)
+        value = float(row['dt_direct_reward'])
+        if not math.isfinite(value):
+            raise ValueError('The original terminal reward must be finite')
+        return dict(index=index, row=row, width=width, selected=selected,
+                    suffix_positions=suffix_positions, prompt_length=prompt_length,
+                    policy=policy, target=target, prior=prior,
+                    valid_policy=valid_policy, valid_target=valid_target,
+                    target_offsets=target_offsets, reward=value,
+                    ratios=torch.zeros(width, dtype=torch.float32),
+                    case={'target_ids': selected[prompt_length:], 'prompt_length': prompt_length})
+
+    @staticmethod
+    def _add_group_stats(stats, values):
+        value = values.double()
+        stats['tokens'] += value.numel()
+        if value.numel():
+            stats['sum'] += float(value.sum())
+            stats['sumsq'] += float(value.square().sum())
+            stats['max'] = max(stats['max'], float(value.max()))
+            stats['min'] = min(stats['min'], float(value.min()))
+            stats['max_abs'] = max(stats['max_abs'], float(value.abs().max()))
+
+    @torch.no_grad()
+    def trajectories(self, rows: list[dict[str, Any]]) -> list[dict[str, torch.Tensor]]:
+        started = time.perf_counter()
+        prepared = [self._prepare_row(row, i) for i, row in enumerate(rows)]
+        requests = [item for item in prepared if item['reward'] != 0
+                    and item['target_offsets'] and bool(item['prior'].any())]
+        for item in prepared:
+            if item['selected'].numel() > self.max_length:
+                raise ValueError(f'Native direct-target context {item["selected"].numel()} exceeds '
+                                 f'cap {self.max_length}; no truncation or auxiliary target is added')
+        requests.sort(key=lambda item: item['selected'].numel())
+        report = dict(task=self.task, target_semantics='real_executed_action_joint',
+                      target_normalization='original_full_vocabulary',
+                      reward_events=len(rows), trajectories=len(rows),
+                      finite_trace_calls=0, joint_target_requests=len(requests),
+                      minibatch_size=self.minibatch_size, query_tokens=0, synthetic_labels=0,
+                      reference_token_samples=0, per_token_probability_queries=0,
+                      prefix_lease_used=False,
+                      target_self_tokens=sum(int(item['target'].sum()) for item in prepared),
+                      prior_source_tokens=sum(int(item['prior'].sum()) for item in prepared),
+                      policy_tokens=sum(int(item['policy'].sum()) for item in prepared),
+                      empty_joint_targets=sum(not item['target_offsets'] for item in prepared),
+                      zero_reward_trajectories=sum(item['reward'] == 0 for item in prepared),
+                      actual_context_lengths=[item['selected'].numel() for item in prepared],
+                      original_response_rows=[row.get('dt_direct_response_count') for row in rows],
+                      traces=[])
+        device = getattr(self.runner.model, 'execution_device', self.runner.model.lm_head.weight.device)
+        planned = (len(requests) + self.minibatch_size - 1) // self.minibatch_size
+        for offset in range(0, len(requests), self.minibatch_size):
+            batch = requests[offset:offset+self.minibatch_size]
+            length = max(item['selected'].numel() for item in batch)
+            factual = torch.full((len(batch), length), self.tokenizer.eos_token_id,
+                                 dtype=torch.long, device=device)
+            reference = factual.clone()
+            for b, item in enumerate(batch):
+                end = item['selected'].numel()
+                factual[b, :end] = item['selected'].to(device)
+                reference[b, :end] = factual[b, :end]
+                # Later source positions cannot affect an earlier causal
+                # target predictor. Keep them factual and use their known d=0.
+                sources = item['prior'][item['suffix_positions']].nonzero().flatten()
+                reference[b, sources.to(device)+item['prompt_length']] = self.tokenizer.eos_token_id
+            signed, _, detail = trace_token_attribution(
+                self.runner, reference, factual, [item['case'] for item in batch],
+                [item['target_offsets'] for item in batch],
+                packed_answer_targets=self.packed_answer_targets,
+            )
+            report['finite_trace_calls'] += 1
+            for b, item in enumerate(batch):
+                values = signed[b, item['prompt_length']:item['selected'].numel()].cpu()
+                prior = item['prior'][item['suffix_positions']]
+                item['ratios'][item['suffix_positions'][prior]] = values[prior]
+                audit = detail['per_sample'][b] if len(batch) > 1 else detail
+                report['traces'].append(dict(
+                    trajectory_index=item['index'], traj_uid=str(item['row'].get('traj_uid', '')),
+                    reward=item['reward'], target_tokens=len(item['target_offsets']),
+                    actual_context_tokens=item['selected'].numel(), compute_tokens=length,
+                    target_self_tokens=int(item['target'].sum()),
+                    prior_source_tokens=int(item['prior'].sum()),
+                    root_effect=audit['root_effect'], signed_sum=audit['policy_credit_signed_sum'],
+                    conservation_residual=audit['conservation_residual'],
+                    factual_target_logp=audit.get('factual_target_logp'),
+                    reference_target_logp=audit.get('reference_target_logp'),
+                ))
+            print(f'[DT direct joint minibatch] trajectories={len(batch)} length={length} '
+                  f'batch={report["finite_trace_calls"]}/{planned} '
+                  f'seconds={detail.get("complete_attribution_seconds_with_diagnostics")}', flush=True)
+        output = []
+        groups = {name: dict(tokens=0, sum=0.0, sumsq=0.0, max=float('-inf'),
+                             min=float('inf'), max_abs=0.0)
+                  for name in ('self_target', 'prior_source', 'other_policy')}
+        for item in prepared:
+            width = item['width']
+            credit = reward_event_token_credit(
+                item['ratios'][None, None, :],
+                torch.tensor([[item['reward']]], dtype=torch.float32),
+                torch.ones((1, 1, width), dtype=torch.bool), item['policy'][None, :],
+                self_target_mask=item['target'][None, None, :],
+            )
+            result = dict(dt_token_advantages=credit.advantages[0],
+                          dt_q_estimates=credit.q_estimates[0], dt_v_estimates=credit.v_estimates[0])
+            output.append(result)
+            masks = dict(self_target=item['target'], prior_source=item['prior'],
+                         other_policy=item['policy'] & ~item['target'] & ~item['prior'])
+            for name, mask in masks.items():
+                self._add_group_stats(groups[name], result['dt_token_advantages'][mask])
+        for stats in groups.values():
+            if not stats['tokens']:
+                stats['max'] = stats['min'] = None
+        report['raw_advantage_groups'] = groups
+        report['seconds'] = time.perf_counter() - started
+        self.last_report = report
+        return output

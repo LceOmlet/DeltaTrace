@@ -81,6 +81,8 @@ class TextCraftOwner:
         handlers = []
         module = self.module
         original_handler = module.RolloutHandler
+        original_client = module.init_env_client
+        execution_clients = []
 
         class RecordedHandler(original_handler):
             def __init__(self, *args, **kwargs):
@@ -96,7 +98,24 @@ class TextCraftOwner:
                 start, end = positions[0], positions[-1]+1
                 records[self.transport_index][-1].update(start=start, end=end,
                     native_prompt_ids=self.input_ids[:start].copy(),
-                    native_response_ids=self.input_ids[start:end].copy())
+                    native_response_ids=self.input_ids[start:end].copy(),
+                    native_content=(args[1] if len(args) > 1 else kwargs['content']))
+
+            def truncate_output_ids(self):
+                self.dt_full_input_ids = self.input_ids.copy()
+                self.dt_full_policy_mask = self.loss_mask.copy()
+                return super().truncate_output_ids()
+
+        def recorded_client(*args, **kwargs):
+            client = original_client(*args, **kwargs)
+            index = len(execution_clients)
+            execution_clients.append(client)
+            def record_payload(metadata):
+                records[index][-1]['executed_payload_metadata'] = metadata
+            # The pinned owner's step calls this optional sink only after its
+            # own parser and original POST have actually returned.
+            client._executed_payload_sink = record_payload
+            return client
 
         class EngineTransport:
             # VERL's existing RPC manages wake/sync/sleep for each generation.
@@ -130,12 +149,14 @@ class TextCraftOwner:
                 return (output.batch['responses'],)
 
         module.RolloutHandler = RecordedHandler
+        module.init_env_client = recorded_client
         try:
             runner = module.vLLMRollout(None, OmegaConf.create(rollout_config), env_config,
                 self.tokenizer, None, inference_engine=EngineTransport())
             native_output = runner.generate_sequences(prompts)
         finally:
             module.RolloutHandler = original_handler
+            module.init_env_client = original_client
         self.handlers, self.records = handlers, records
         output = native_output
         # VERL uses rm_scores for a native reward tensor. All token arrays are
@@ -151,6 +172,37 @@ class TextCraftOwner:
         output.meta_info['multi_turn'] = True
         if self.config.algorithm.adv_estimator != 'deltatrace':
             return output
+        from executed_target_spans import encoded_payload_mask, full_trajectory_artifact
+        direct_artifacts = []
+        for h, turns in zip(handlers, records):
+            full_ids, full_policy = h.dt_full_input_ids, h.dt_full_policy_mask
+            target_mask = [False] * len(full_ids)
+            parser_metadata = []
+            suffix_ids = self.tokenizer.encode(h.format_config['qwen']['assistat_suffix_msg'],
+                                               add_special_tokens=False)
+            for turn in turns:
+                metadata = turn.get('executed_payload_metadata')
+                if metadata is None:
+                    continue  # The original owner rejected/failed this execution.
+                content = turn['native_content']
+                if turn['native_response_ids'][-len(suffix_ids):] != suffix_ids:
+                    raise ValueError('Original TextCraft assistant suffix differs from its owner format')
+                content_ids = turn['native_response_ids'][:-len(suffix_ids)]
+                mask, mapping = encoded_payload_mask(self.tokenizer, content, content_ids,
+                                                     metadata['source_spans'])
+                start = turn['start']
+                for offset, selected in enumerate(mask):
+                    target_mask[start + offset] = selected
+                parser_metadata.append(dict(start=start, **metadata, token_mapping=mapping))
+            artifact = full_trajectory_artifact(h.prompt_ids, full_ids, full_policy, target_mask,
+                                                h.response_ids)
+            artifact['retained_response_positions'] += [-1] * (
+                output.batch['responses'].shape[1] - len(h.response_ids))
+            artifact['payload_metadata'] = parser_metadata
+            direct_artifacts.append(artifact)
+        direct_array = np.empty(len(direct_artifacts), dtype=object)
+        direct_array[:] = direct_artifacts
+        output.non_tensor_batch['dt_direct_target_artifact'] = direct_array
         sources, maps = [], []
         for index, (h, turns) in enumerate(zip(handlers, records)):
             mapping = []

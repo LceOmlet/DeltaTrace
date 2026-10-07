@@ -173,3 +173,45 @@ def test_32k_minibatch_four_tensor_boundary():
     assert result.advantages.shape == (4, 32768)
     assert_token_advantage_contract(result.advantages, policy)
     torch.testing.assert_close(result.advantages[policy], torch.full_like(result.advantages[policy], -0.75))
+
+
+def test_literal_self_target_replaces_same_event_dt_term():
+    d = torch.tensor([[[math.log(2), float('nan'), float('inf'), -math.log(2)]]],
+                     dtype=torch.float64)
+    target = torch.tensor([[[False, True, True, False]]])
+    result = reward_event_token_credit(d, torch.tensor([[2.]], dtype=torch.float64),
+        torch.ones_like(target), torch.ones(1, 4, dtype=torch.bool), self_target_mask=target)
+    torch.testing.assert_close(result.advantages, torch.tensor([[1., 2., 2., -2.]], dtype=torch.float64))
+    torch.testing.assert_close(result.q_estimates, torch.full((1, 4), 2., dtype=torch.float64))
+    torch.testing.assert_close(result.v_estimates, torch.tensor([[1., 0., 0., 4.]], dtype=torch.float64))
+
+
+def test_self_target_still_respects_policy_event_and_discount_masks():
+    d = torch.full((1, 2, 4), float('nan'), dtype=torch.float64)
+    target = torch.ones_like(d, dtype=torch.bool)
+    future = torch.tensor([[[True, True, False, True], [True, True, True, True]]])
+    policy = torch.tensor([[True, False, True, True]])
+    discounts = torch.tensor([[[1., 1., 1., 0.], [.5, .5, .5, .5]]], dtype=torch.float64)
+    result = reward_event_token_credit(d, torch.tensor([[-2., 0.]], dtype=torch.float64),
+        future, policy, discounts=discounts, self_target_mask=target)
+    torch.testing.assert_close(result.advantages, torch.tensor([[-2., 0., 0., 0.]], dtype=torch.float64))
+    torch.testing.assert_close(result.q_estimates, result.advantages)
+    assert not result.v_estimates.count_nonzero()
+
+
+def test_self_term_and_different_future_event_are_composed_once_each():
+    d = torch.tensor([[[float('nan')], [math.log(2)]]], dtype=torch.float64)
+    target = torch.tensor([[[True], [False]]])
+    result = reward_event_token_credit(d, torch.tensor([[1., 4.]], dtype=torch.float64),
+        torch.ones_like(target), torch.ones(1, 1, dtype=torch.bool), self_target_mask=target)
+    torch.testing.assert_close(result.advantages, torch.tensor([[3.]], dtype=torch.float64))
+    torch.testing.assert_close(result.q_estimates, torch.tensor([[5.]], dtype=torch.float64))
+    torch.testing.assert_close(result.v_estimates, torch.tensor([[2.]], dtype=torch.float64))
+
+
+def test_self_target_mask_does_not_hide_invalid_source_ratio():
+    d = torch.tensor([[[float('nan'), float('nan')]]])
+    target = torch.tensor([[[True, False]]])
+    with pytest.raises(ValueError, match='active event'):
+        reward_event_token_credit(d, torch.ones(1, 1), torch.ones_like(target),
+            torch.ones(1, 2, dtype=torch.bool), self_target_mask=target)

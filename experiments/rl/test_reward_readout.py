@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from reward_readout import RewardAlphabet, EventRatioReadout
+from reward_readout import RewardAlphabet, EventRatioReadout, DirectActionTargetReadout
 from deltatrace_rollout import DeltaTraceRolloutProducer
 
 
@@ -418,3 +418,102 @@ def test_reward_label_or_horizon_mismatch_is_not_silently_repaired():
         RewardAlphabet.for_task('Sokoban').query_ids(Tokenizer(), current_step=15, max_steps=15)
     with pytest.raises(ValueError, match='No approved'):
         RewardAlphabet.for_task('invented')
+
+
+class NoTraceRunner:
+    """No simulated DT values: the analytic branches must not call a model."""
+    model = SimpleNamespace(execution_device=torch.device('cpu'),
+                            lm_head=SimpleNamespace(weight=torch.empty(0)))
+
+    def attribute(self, *args, **kwargs):
+        raise AssertionError('An analytically zero/target-self branch must not call DT')
+
+
+def direct_row(*, reward=.5, target=(True, False, True)):
+    # Small CPU transport inputs, not task/model/DT numerical evidence.
+    return dict(input_ids=torch.tensor([0, 10, 11, 12, 13, 14, 0]),
+                attention_mask=torch.tensor([0, 1, 1, 1, 1, 1, 0]),
+                responses=torch.tensor([12, 13, 14, 0]),
+                policy_mask=torch.tensor([True, False, True, False]),
+                target_mask=torch.tensor([*target, False]), dt_direct_reward=reward,
+                traj_uid='cpu-interface', dt_direct_response_count=2)
+
+
+@pytest.mark.parametrize('reward,target,expected', [
+    (.5, (True, False, True), [.5, 0., .5, 0.]),
+    (.5, (False, False, False), [0., 0., 0., 0.]),
+    (0., (False, False, True), [0., 0., 0., 0.]),
+])
+def test_direct_analytic_cases_use_real_composition_without_dt(reward, target, expected):
+    dt = DirectActionTargetReadout(NoTraceRunner(), Tokenizer(), task='TextCraft',
+                                  packed_answer_targets=None)
+    result = dt.trajectories([direct_row(reward=reward, target=target)])[0]
+    assert result['dt_token_advantages'].tolist() == expected
+    torch.testing.assert_close(result['dt_token_advantages'],
+                               result['dt_q_estimates'] - result['dt_v_estimates'])
+    assert dt.last_report['finite_trace_calls'] == 0
+    assert dt.last_report['query_tokens'] == dt.last_report['synthetic_labels'] == 0
+    assert dt.last_report['original_response_rows'] == [2]
+    if not any(target):
+        assert result['dt_q_estimates'].tolist() == [.5, 0., .5, 0.]
+        assert torch.equal(result['dt_q_estimates'], result['dt_v_estimates'])
+
+
+def test_direct_joint_selection_preserves_gaps_and_original_suffix_ids():
+    from pathlib import Path
+    import ast
+    import copy
+    # Execute the unchanged owner's selection class only. This checks its CPU
+    # packing ABI, not its head, finite propagation, or official tolerances.
+    path = Path(__file__).resolve().parents[2]/'deltatrace/clean/qwen35/qwen35_answer_finite.py'
+    source = ast.parse(path.read_bytes())
+    definition = next(n for n in source.body if isinstance(n, ast.ClassDef)
+                      and n.name == 'PackedAnswerTargets')
+    namespace = dict(torch=torch, copy=copy)
+    exec(compile(ast.fix_missing_locations(ast.Module(body=[definition], type_ignores=[])),
+                 str(path), 'exec'), namespace)
+    item = DirectActionTargetReadout._prepare_row(direct_row(), 0)
+    selection = namespace['PackedAnswerTargets']([item['case']], [item['target_offsets']],
+                                                item['selected'].numel(), 'cpu')
+    assert item['selected'].tolist() == [10, 11, 12, 13, 14]
+    assert item['target_offsets'] == [0, 2]
+    assert selection.labels.tolist() == [12, 14]  # The intervening O is not a target.
+    assert selection.positions.tolist() == [1, 3]
+    assert selection.outcome_token_ids is None
+
+
+def test_direct_observation_cannot_be_marked_as_an_executed_target():
+    value = direct_row(target=(True, True, True))
+    with pytest.raises(ValueError, match='Executed targets must be policy actions'):
+        DirectActionTargetReadout._prepare_row(value, 0)
+
+
+def test_direct_reference_and_scatter_keep_causally_later_source_factual(monkeypatch):
+    # A transport-only stub records the endpoint IDs. Its marker values are
+    # deliberately not model estimates or a numerical attribution reference.
+    import reward_readout
+    seen = []
+
+    def trace_transport(runner, reference, factual, cases, offsets, **kwargs):
+        seen.append((reference.clone(), factual.clone(), offsets))
+        assert factual.tolist() == [[10, 11, 12, 13, 14, 15, 16]]
+        assert reference.tolist() == [[10, 11, 99, 13, 14, 15, 16]]
+        assert offsets == [[1, 3]]
+        marker = torch.ones_like(factual, dtype=torch.float32)
+        marker[:, 2] = 0.  # Only the prior source is retained from this stub.
+        return marker, None, dict(root_effect=0., policy_credit_signed_sum=0.,
+                                  conservation_residual=0.)
+
+    monkeypatch.setattr(reward_readout, 'trace_token_attribution', trace_transport)
+    value = dict(input_ids=torch.tensor([0, 10, 11, 12, 13, 14, 15, 16, 0]),
+                 attention_mask=torch.tensor([0, 1, 1, 1, 1, 1, 1, 1, 0]),
+                 responses=torch.tensor([12, 13, 14, 15, 16, 0]),
+                 policy_mask=torch.tensor([True, True, False, True, True, False]),
+                 target_mask=torch.tensor([False, True, False, True, False, False]),
+                 dt_direct_reward=.5)
+    dt = DirectActionTargetReadout(NoTraceRunner(), Tokenizer(), task='TextCraft',
+                                  packed_answer_targets=None)
+    result = dt.trajectories([value])[0]
+    assert len(seen) == 1
+    assert result['dt_token_advantages'].tolist() == [0., .5, 0., .5, 0., 0.]
+    assert result['dt_q_estimates'][4].item() == result['dt_v_estimates'][4].item() == .5

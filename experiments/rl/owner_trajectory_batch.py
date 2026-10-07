@@ -102,6 +102,14 @@ def sql_trajectory_batch(manager, collector, **collected):
 def trajectory_credit(data, response_data, worker_group, *, eos_token_id, pad_token_id):
     from verl import DataProto
     from dt_training_batch import CREDIT_KEYS, compute_training_credit
+    import os
+
+    if 'dt_direct_target_artifact' in data.non_tensor_batch:
+        from dt_training_batch import compute_direct_target_credit
+        return compute_direct_target_credit(data, worker_group,
+            eos_token_id=eos_token_id, pad_token_id=pad_token_id)
+    if os.environ.get('DT_TARGET_SEMANTICS') == 'native_joint_action_target':
+        raise RuntimeError('The native rollout did not retain its real action target artifact')
 
     result = {key: torch.zeros_like(data.batch['responses'], dtype=torch.float32) for key in CREDIT_KEYS}
     if response_data is None:
