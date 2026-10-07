@@ -1,5 +1,20 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 17:14 AppWorld首次正式DT推进，末批尚待实际完成
+
+本goal turn为verified wait：重新核对同一存活PID/birth/source，而非依据旧清单推断。
+AppWorld原PID2001805/source24b9两rank8/29个B4完成，最新length10080/10106、
+单批36.0134/36.0091秒。原采样保留232条、3748 responses、671515 policy tokens，
+max_context27290；231个非零请求不能当作成功率。旧失败在末批，本次尚未到末批，
+完整DT/PPO和当前联合目标32k容量仍未验证，不把阶段推进称为已修复。
+原reward相关7文件SHA与此前cached-rm_scores官方路径审计相同；原可选metadata
+fallback未改变，没有新缺奖证据。当前回报分布未落盘，留缺失，不从DT计数推断。
+17:14物理GPU4/5=31060/30858MiB，容器约235.60GiB，均为阶段快照非峰值。
+TextCraft原PID110053/source5013仍第8轮采样，17:14完成13/30交互、进入14/30，
+active123；最新完整仍7轮。未重复旧metric冒充新更新，未新测试/部署/恢复/改参数。
+最新原只读phase及来源SHA绑定在current-formal-phase-observation-1791364455.json、
+current_runtime和结果索引。原模型/LoRA8/16/actor与DT每卡B4保持。
+
 ## 2026-10-07 17:01 TextCraft第七次完整更新与信用尾部计量
 
 前一goal turn为progress（真实MLP对照、AppWorld正式提交及版本绑定）；本次同PID/source
