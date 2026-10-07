@@ -24,6 +24,7 @@ kind.add_argument('--subops', action='store_true', help='Observe decoder31/30 br
 kind.add_argument('--gdn', action='store_true', help='Observe the original decoder30 norm/gate and finite FLA calls; save actual finite operands')
 kind.add_argument('--memory', action='store_true', help='Compare the existing averaged/forward memory callbacks; other rules unchanged')
 kind.add_argument('--memory-curve', action='store_true', help='Original author curves for the completed memory callback comparison')
+kind.add_argument('--code-fence-only', action='store_true', help='One bounded original DT isolating the actual next code-fence score; unchanged original reference inputs')
 parser.add_argument('--revision',type=int,default=1,help='Distinct receipt directory for a corrected GDN diagnostic')
 args = parser.parse_args()
 if args.revision != 1 and not args.gdn:parser.error('revision is only used for GDN diagnostics')
@@ -38,6 +39,8 @@ elif args.layer or args.subops or args.gdn:
              AUDIT / 'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
 elif args.memory:
     OUT += '-memory'
+elif args.code_fence_only:
+    OUT += '-code-fence'
 if args.gdn and args.revision != 1:OUT += '-v' + str(args.revision)
 for p in files:
     compile(p.read_bytes(), str(p), 'exec')
@@ -99,6 +102,10 @@ for item in sorted(d['rows'],key=lambda x:x['batch_row']):
  p=DirectActionTargetReadout._prepare_row(item['row'],0)
  assert torch.equal(p['selected'],item['selected']) and torch.equal(p['case']['target_ids'],item['case']['target_ids']) and p['target_offsets']==item['target_offsets']
  result.append(dict(uid=item['traj_uid'],length=p['selected'].numel(),targets=len(p['target_offsets'])))
+ if @FENCE@ and item['batch_row']==3:
+  first=p['target_offsets'][0]
+  assert p['prompt_length']+first-1==2883 and int(p['case']['target_ids'][first])==71093
+  result[-1].update(isolated_actual_target_id=71093,isolated_actual_predictor_position=2883)
 print(json.dumps(dict(rows=result,cuda_initialized=torch.cuda.is_initialized(),scope='CPU input identity only, no model/DT/update')))
 '''.replace('NATIVE',repr(str(native)))
  if @LAYER@:
@@ -123,6 +130,7 @@ else:
  program='inspect_layer_effect.py' if @LAYER@ else ('compare_existing_pv_curves.py' if @CURVE@ else 'compare_existing_pv_rule.py')
  argv=[env['VENV_PYTHON'],str(out/program),'--source',str(source_path)]
  if @MEMORY@:argv+=['--memory']
+ if @FENCE@:argv+=['--code-fence-only']
  if @LAYER@:argv+=['--case',str(out/'case.json')]
  elif not @CURVE@:argv+=['--native',str(native)]
  argv+=['--output',str(out/'results')]
@@ -130,14 +138,16 @@ else:
  record=dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),launched_unix=time.time(),code_commit=@COMMIT@,argv=argv,scripts=hashes,source_sha256=source_sha,native_sha256=hashlib.sha256(native.read_bytes()).hexdigest(),memory_candidate=candidate,devices=[4,5],DT_calls_per_rank=0 if @CURVE@ else 2,native_forwards_per_rank=42 if @CURVE@ else 0,scope=('Original passive single/joint layer comparison, current largest negative token' if @LAYER@ else ('Existing averaged/forward memory diagnostic only' if @MEMORY@ or @MEMORY_CURVE@ else 'Existing content1/content0 diagnostic only'))+'; no profile deployment, no parameter/optimizer/scheduler updates, no rollout or checkpoint restore',formal_restart=False,credit_repaired=False,text_update_released=False)
  if @LAYER@:record['case_binding']=dict(path=str(out/'case.json'),sha256=hashlib.sha256((out/'case.json').read_bytes()).hexdigest(),value=json.loads((out/'case.json').read_bytes()))
  if @SUBOPS@:record.update(partial_DT_only=True,stop_after_decoder=30,full_signed_vector_produced=False)
+ if @FENCE@:record.update(DT_calls_per_rank=1,scope='Same original real B4 and original original-profile DT; isolate the next actual code-fence score only, without changing reference IDs or retained target input tokens; diagnostic-only, no complete-event QVA export, profile switch, update, rollout or restore')
  (out/'launch.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
 """
 commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
+for k, v in dict(ROOT=transport.ROOT, OUT=OUT, HASHES={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, LAUNCH=args.launch, CURVE=args.curve or args.memory_curve, MEMORY=args.memory, MEMORY_CURVE=args.memory_curve, FENCE=args.code_fence_only, LAYER=args.layer or args.subops or args.gdn, SUBOPS=args.subops or args.gdn, GDN=args.gdn, COMMIT=commit).items():
     code = code.replace('@' + k + '@', repr(v))
 command = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 prefix = 'gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else ('curve-' if args.curve else '')))
 if args.memory or args.memory_curve:prefix='memory-curve-' if args.memory_curve else 'memory-'
+if args.code_fence_only:prefix='code-fence-'
 if args.gdn and args.revision != 1:prefix = 'gdn-v' + str(args.revision) + '-'
 phase = prefix + ('launch' if args.launch else 'prepare')
 (HERE / (phase + '-command.sh')).write_text(command, encoding='utf8', newline='\n')

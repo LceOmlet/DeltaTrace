@@ -4,6 +4,9 @@ Calls the unchanged producer/runner and its existing rule-selection options.
 This is a diagnostic comparison, never a production profile or credit repair.
 Default compares attention PV; --memory compares averaged/forward memory only.
 Source, target, reward, norm/gate, head, Q/V/A and PPO parameters persist.
+--code-fence-only isolates one actual target score diagnostically, retaining
+all original target INPUT tokens and original reference IDs. It never exports
+partial-score contributions as complete-event Q/V/A or changes training.
 """
 import inspect
 import json
@@ -17,8 +20,9 @@ import profile_existing_offload as diagnostic_owner
 from inspect_extreme_endpoint import check_imports, sha, CASES
 
 
-def make_worker(with_vllm=False, *, compare_memory=False):
+def make_worker(with_vllm=False, *, compare_memory=False, code_fence_only=False):
     assert not with_vllm
+    assert not (compare_memory and code_fence_only)
     import ray
     from verl.single_controller.base.decorator import Dispatch, register
     from verl.workers.fsdp_workers import ActorRolloutRefWorker
@@ -48,7 +52,7 @@ def make_worker(with_vllm=False, *, compare_memory=False):
             record = dict(rank=self.rank, pid=os.getpid(), birth=psutil.Process().create_time(),
                           source_sha256=sha(source_path), native_path=native_path,
                           native_sha256=sha(native_path), owners=owners,
-                          operations=dict(DT=2, optimizer=0, backward=0, rollout=0, checkpoint_restore=0),
+                          operations=dict(DT=1 if code_fence_only else 2, optimizer=0, backward=0, rollout=0, checkpoint_restore=0),
                           modes={})
             log = (root / f'rank{self.rank}-phases.jsonl').open('a', buffering=1)
 
@@ -96,13 +100,46 @@ def make_worker(with_vllm=False, *, compare_memory=False):
                 if compare_memory:
                     assert sorted(original_memory) == [i for i, layer in enumerate(layers)
                         if layer.block_type == 'linear_attention']
+                prepared_inputs = []
                 for i, row in enumerate(rows):
                     actual = producer.direct_readout._prepare_row(row, 0)
                     assert torch.equal(actual['selected'], prepared[i]['selected'])
                     assert torch.equal(actual['case']['target_ids'], prepared[i]['case']['target_ids'])
                     assert actual['target_offsets'] == prepared[i]['target_offsets']
+                    prepared_inputs.append(actual)
 
                 def trace(*args, **kwargs):
+                    if code_fence_only:
+                        # Diagnostic target isolation only. The producer has
+                        # already constructed the original complete-reference
+                        # input. Keep it and every actual target input token;
+                        # select just the observed next code-fence score at the
+                        # existing PackedAnswerTargets boundary, not a new Y
+                        # for training or a new reference-construction rule.
+                        trace_runner, reference, factual, cases, offsets, *rest = args
+                        assert len(cases) == 4 and not rest
+                        chosen = offsets[3][0]
+                        assert cases[3]['prompt_length'] + chosen - 1 == 2883
+                        assert int(cases[3]['target_ids'][chosen]) == 71093
+                        source_slots = (prepared_inputs[3]['prior'][prepared_inputs[3]['suffix_positions']]
+                                        .nonzero().flatten() + prepared_inputs[3]['prompt_length'])
+                        observed = (reference[3] != factual[3]).nonzero().flatten().cpu()
+                        expected = source_slots[factual[3, source_slots.to(factual.device)].cpu()
+                                                != self.tokenizer.eos_token_id]
+                        assert torch.equal(observed, expected)
+                        targets = torch.tensor(offsets[3], device=factual.device) + cases[3]['prompt_length']
+                        assert torch.equal(reference[3, targets], factual[3, targets])
+                        selected = [list(value) for value in offsets]
+                        selected[3] = [chosen]
+                        record['diagnostic_target_selection'] = dict(
+                            row=3, predictor_position=2883, target_position=2884,
+                            target_token_id=71093, original_target_counts=list(map(len, offsets)),
+                            score_target_counts=list(map(len, selected)),
+                            reference_changed_positions=observed.tolist(),
+                            original_reference_sources_exact=True,
+                            original_target_input_tokens_retained=True,
+                            training_target_changed=False)
+                        args = (trace_runner, reference, factual, cases, selected)
                     value = trace_owner(*args, **kwargs)
                     traces.append(value[0].detach().cpu())
                     details.append(value[2])
@@ -121,7 +158,7 @@ def make_worker(with_vllm=False, *, compare_memory=False):
                 record.update(runner=dict(path=path, sha256=sha(path)),
                               existing_offload=True, original_attention_pv_rules=original_pv,
                               original_GDN_rules=runner.norm_gate_rules,
-                              comparison_kind='memory_endpoint_order' if compare_memory else 'attention_PV',
+                              comparison_kind='actual_next_code_fence_score_only' if code_fence_only else ('memory_endpoint_order' if compare_memory else 'attention_PV'),
                               original_memory_override_layers=sorted(original_memory),
                               geometry=dict(selected_lengths=[row['selected'].numel() for row in prepared],
                                   uids=[row['traj_uid'] for row in prepared],
@@ -131,6 +168,8 @@ def make_worker(with_vllm=False, *, compare_memory=False):
                          ('existing_forward_memory', {})] if compare_memory else [
                          ('original_content1', original_pv),
                          ('existing_content0', {i: 'content0' for i in full})]
+                if code_fence_only:
+                    modes = [('original_next_code_fence_score_only', original_pv)]
                 for name, rules in modes:
                     mode[0] = name
                     if compare_memory:
@@ -152,18 +191,24 @@ def make_worker(with_vllm=False, *, compare_memory=False):
                     torch.cuda.synchronize()
                     assert len(traces) == before + 1
                     artifact = root / f'rank{self.rank}-{name}.pt'
-                    torch.save(dict(signed=traces[-1], detail=details[-1], values=values,
-                                    report=producer.direct_readout.last_report,
+                    saved_values = dict(values=values, report=producer.direct_readout.last_report)
+                    if code_fence_only:
+                        # Partial-score contributions are not the PLAN's
+                        # complete-event Q/V/A and must not be saved as such.
+                        saved_values = dict(diagnostic_only=True,
+                            target_selection=record['diagnostic_target_selection'])
+                    torch.save(dict(signed=traces[-1], detail=details[-1], **saved_values,
                                     **descriptor, source_sha256=sha(source_path),
                                     native_sha256=sha(native_path)), artifact)
                     record['modes'][name] = dict(seconds=time.perf_counter() - tick,
                         artifact=str(artifact), sha256=sha(artifact), **descriptor,
                         signed_all_finite=bool(torch.isfinite(traces[-1]).all()),
-                        QVA_all_finite=all(bool(torch.isfinite(t).all()) for item in values for t in item.values()),
                         saved_worst_token=dict(row=3, packed_slot=2883, token_id=198,
                                               signed=float(traces[-1][3, 2883])),
                         peak_torch_allocated_bytes=torch.cuda.max_memory_allocated(),
                         peak_torch_reserved_bytes=torch.cuda.max_memory_reserved())
+                    if not code_fence_only:
+                        record['modes'][name]['QVA_all_finite']=all(bool(torch.isfinite(t).all()) for item in values for t in item.values())
                     emit('DT_complete', mode=name, **record['modes'][name])
                     save('DT_complete', active_mode=name)
                 runner.attention_pv_rules = original_pv
@@ -198,5 +243,7 @@ if __name__ == '__main__':
     from functools import partial
     memory = '--memory' in sys.argv
     if memory:sys.argv.remove('--memory')
-    diagnostic_owner.make_worker = partial(make_worker, compare_memory=memory)
+    code_fence = '--code-fence-only' in sys.argv
+    if code_fence:sys.argv.remove('--code-fence-only')
+    diagnostic_owner.make_worker = partial(make_worker, compare_memory=memory, code_fence_only=code_fence)
     diagnostic_owner.main()
