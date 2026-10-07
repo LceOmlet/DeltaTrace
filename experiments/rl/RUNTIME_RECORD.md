@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 12:06 v3 正式采样继续；尚无首个新更新
+
+已重新核对两组当前PID出生时间和冻结source SHA，仍为下节的f29cc7c0版本。
+TextCraft已完成22/30次交互，进入23，原中央256条中90条仍活跃；该计数不是每卡256条，
+也不把已结束轨迹数称为成功数。AppWorld原collector最近分别完成74/120、92/120；
+原transport累计580032 token/933.7秒，约621 token/s，含调度、prefill与decode。
+官方停止条件仍是全局至少216且40个任务组各至少4条，之后原取消/收尾；不是每卡108。
+两组仍0/330与0/200，完整DT/PPO、梯度及学习效果尚未观察，保持运行，不重复提交。
+
+物理2/3显存50152/49934MiB，4/5为55260/55284MiB；容器cgroup218.93GiB。
+采样计数持续增加，当前无具体停滞或新增OOM证据。新阶段回执
+`direct-target-semantics-20261007/fresh-v3-pair-phase-1791345961.json`，
+SHA c0706fe75bdbea00de254227e908fde5d80684971b24f29d9160f33cdc64cc43；
+摘要与已有监测字段见`results_direct_action_target_observation_20261007.json`。
+只读阶段采集器原来仅筛旧DT EOS标记，现补上现有direct-target/readout日志标记；
+旧采集器8e3f2300…按原字节保留v1，新采集器ecdf981f…，未改训练日志或训练代码。
+不能用筛选缺标记断言DT未执行，也不能用此前单response回执证明完整多轮joint容量。
+现有原runner detail含head形状/字节/phase计时，但readout最终摘要未转发这些字段；
+当前仅记录该观察范围，不因尚无完整轨迹数据新增仪表、测试、优化或容量结论。
+SQL和GRPO继续停止；未恢复检查点、改变资源/任务配置、启动额外GPU任务或备份。
+
 ## 2026-10-07 真实动作目标 v3：两组正式 fresh 已提交
 
 当前方法代码为 `f29cc7c055fcd4e5a055639c48aaf8d913bac180`（含 a317575e 的
