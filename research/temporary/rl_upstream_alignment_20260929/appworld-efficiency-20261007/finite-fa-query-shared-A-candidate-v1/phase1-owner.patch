@@ -1,0 +1,25 @@
+--- current-4f42-owner
++++ isolated-Phase1-original-shared-A
+@@ -142,7 +142,7 @@
+     auto owner0=make_fragment_like(regA);
+     auto owner1=make_fragment_like(regA);
+     auto ownerU=make_fragment_like(regA);
+-    if constexpr(Phase!=0) {
++    if constexpr(Phase==2) {
+         auto load_owner=[&](const E *left,auto &reg) {
+             __syncthreads();
+             auto gA=make_tensor(make_gmem_ptr(left+pair_left_offset+int64_t(row0)*D),
+@@ -168,11 +168,11 @@
+                                Shape<Int<N>,Int<D>>{},Stride<Int<D>,_1>{});
+             auto fromGA=global_thread.partition_S(gA);
+             auto fromGB=global_thread.partition_S(gB);
+-            if constexpr(Phase==0) flash::copy<false,true,true>(global_copy,fromGA,toA,coordsA,predA,valid-row0);
++            if constexpr(Phase!=2) flash::copy<false,true,true>(global_copy,fromGA,toA,coordsA,predA,valid-row0);
+             flash::copy<false,true,true>(global_copy,fromGB,toB,coordsB,predB,valid-col0);
+             __syncthreads();
+             clear(acc);
+-            if constexpr(Phase==0) flash::gemm_opt(acc,regA,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
++            if constexpr(Phase!=2) flash::gemm_opt(acc,regA,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+             else if(endpoint==0) flash::gemm_opt<true,false>(acc,owner0,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+             else if(endpoint==1) flash::gemm_opt<true,false>(acc,owner1,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);
+             else flash::gemm_opt<true,false>(acc,ownerU,regB,fromA,fromB,mma,copyA,copyB,threadA,threadB);

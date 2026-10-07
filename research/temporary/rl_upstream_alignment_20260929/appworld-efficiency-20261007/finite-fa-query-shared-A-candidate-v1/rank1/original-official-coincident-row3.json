@@ -1,0 +1,102 @@
+{
+  "scope": "Apply pinned FA references and unmodified assertions to recorded DT operands.\n\nThe finite comparison uses coincident factual endpoints and only the coefficient\nsuffix computed by the deployed owner. It is not a nonzero-finite-error bound.\n",
+  "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/finite-fa-query-shared-A-candidate-20261007-v1/saved-operand-checks-v1/rank1-original-rows/actual-complete-row3.pt",
+  "query_shape": [
+    1,
+    558,
+    16,
+    256
+  ],
+  "key_shape": [
+    1,
+    13230,
+    4,
+    256
+  ],
+  "operand_dtypes": {
+    "q": "torch.bfloat16",
+    "k": "torch.bfloat16",
+    "v": "torch.bfloat16",
+    "upstream": "torch.float32",
+    "lse": "torch.float32"
+  },
+  "native_kernel_upstream_dtype": "torch.bfloat16",
+  "finite_kernel_upstream_dtype": "torch.bfloat16",
+  "reference": "pinned attention_ref, FP32 upcast; original reordered low precision baseline",
+  "assertions": {
+    "out": "(out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()",
+    "dq": "(dq - dq_ref).abs().max().item() <= 3 * (dq_pt - dq_ref).abs().max().item()",
+    "dk": "(dk - dk_ref).abs().max().item() <= 3 * (dk_pt - dk_ref).abs().max().item()",
+    "dv": "(dv - dv_ref).abs().max().item() <= 3 * (dv_pt - dv_ref).abs().max().item()"
+  },
+  "query_start": 12672,
+  "coefficient_starts": [
+    12728
+  ],
+  "checks": [
+    {
+      "name": "out",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.015625,
+      "baseline_max_abs": 0.1015625,
+      "status": "passed"
+    },
+    {
+      "name": "dq",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.000244140625,
+      "baseline_max_abs": 0.0003662109375,
+      "status": "passed"
+    },
+    {
+      "name": "dq",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.000244140625,
+      "baseline_max_abs": 0.0003662109375,
+      "status": "passed"
+    },
+    {
+      "name": "dk",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.000244140625,
+      "baseline_max_abs": 0.000732421875,
+      "status": "passed"
+    },
+    {
+      "name": "dk",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.000244140625,
+      "baseline_max_abs": 0.000732421875,
+      "status": "passed"
+    },
+    {
+      "name": "dv",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.000732421875,
+      "status": "passed"
+    },
+    {
+      "name": "dv",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.000732421875,
+      "status": "passed"
+    }
+  ],
+  "status": "passed"
+}

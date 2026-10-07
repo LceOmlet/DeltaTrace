@@ -1,5 +1,41 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 08:40 有界有限FA算子trace定位dQ；原shared-A候选更慢，未部署
+
+同一fresh driver2360541/birth1791325655.01、source c83b96de、worker2367855/2369144
+继续GPU4/5，正式4f42库与3e0c/5f14入口不变。第二次原LOOP采样已完成：219轨迹、
+3234实际responses、600234 policy tokens、最长context27448；08:40进入原DT，当前
+一组两rank均76/83个B4。该组进度不是整轮完成率。当前worker PSS57.0/57.7GiB、
+cgroup255.5GiB是相位观测，不作峰值。没有旧检查点恢复、手工导出或生产profiler attach。
+
+在空闲GPU2串行使用已保存的真实decoder3第8次FA操作数，两rank各一次原4f42调用，
+用原torch profiler采到三个有限kernel与7次转换/contiguous；不是整DT或32kprofile。
+rank0/1 kernel累计90.323/77.222ms，其中Phase1 dQ58.968/49.981ms（65.29/64.72%），
+Phase0 center26.565/22.710ms（约29.41%），Phase2 dK/dV3.038/2.816ms（约3–4%），
+转换1.753/1.714ms。不能把wrapper嵌套self_device或CPU同步再重复相加。
+原profiler只用于观察；model/CP/生产变更均0。源/trace绑定profile-analysis SHAa5868fa5。
+
+复用原352415的shared-A gemm_opt调用，只改变当前CUDA Phase1三处条件，P0/P2、
+tile、dtype、有限公式和ABI不动。候选CUDA0f4a3add、库a1288cf0，原675d builder
+49.45秒编译，PSS峰值0.944GiB；隔离8完整真实B1×7条原FA断言全部通过，实际非零
+B4的dq/dk/dv/tau/center五输出与4f42逐位相同。原7ff/e32/a290源及容差未改；仍仅
+原coincident derivative-limit范围，不扩大为全DT精度。2warm+5中位数rank0
+90.295→97.369ms（慢7.83%）、rank1 77.421→84.002ms（慢8.50%）。原公共
+mcFuncGetAttributes每库独立进程确认P1 localSize160→20字节、numRegs仍256；
+静态local减少不能代表动态spill流量或加速。明确rejected_performance_not_deployed，
+不扫tile/warp参数、不把该候选混入默认入口。全部源和失败收益证据保留在
+finite-fa-query-shared-A-candidate-v1，决策回执SHA7b16f208。
+
+原actor update_policy AST仍与VERL20bd331相同，无新增forward/optimizer循环；旧LP
+在actor计时之外。作者LOOP同样epochs2/globalmini32，但其4学习+4推理、B1累积、
+可选CPU卸载及标量优势过滤，与当前两卡共享、固定B4和原VERL不等同。当前31.1分
+更新超过21.5分采样本身不构成错误，也不证明官方吞吐达标；未改actor/采样配置或
+导入LOOP训练器。具体原路径/hash见actor-official-workload-scope SHA394c244b。
+当前整批白化的完整首轮执行与非零更新证据沿用下段，不宣称学习质量已恢复。
+当前逐行root/replay的算子/搬运trace仍缺；旧scalar H2D计量和旧19%root-tape收益
+不能代替它。该测量缺口是后续具体工作，不通过重复整轮或无依据参数扫描解决。
+
+
 ## 2026-10-07 08:13 同一fresh首轮完成：原采样/DT/更新计时与整批白化执行
 
 同一driver2360541/birth1791325655.01、source c83b96de、worker2367855/2369144、

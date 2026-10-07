@@ -1,0 +1,81 @@
+{
+  "scope": "Read-only current actor source and existing source receipts; no new actor test, profiler, model, checkpoint, production patch or throughput standard.",
+  "status": "no_extra_update_loop_found_not_a_throughput_acceptance",
+  "current_actor_receipt": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\continuation-1791314906\\current-actor-offload-owner-review-readonly.json",
+    "sha256": "258707607830eca4b09c7b487ed3091e79c716902ff17a2c0237cc91c05aa81d"
+  },
+  "native_same_iteration": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\row-prefix-owner-fresh-v1\\native-first-iteration-metrics-readonly.json",
+    "sha256": "8fcefb9c24c4a9e607633f5f479d2eb16e27f32592efeaa20499b61bb6e54986"
+  },
+  "findings": [
+    {
+      "operation": "update_policy",
+      "evidence": "Actual 3a65 owner complete AST equals original VERL20bd331 update_policy AST cc9e4bfd. Original loop calls one forward/backward per microbatch and one optimizer boundary per minibatch.",
+      "lines": [
+        387,
+        391,
+        451,
+        496,
+        506
+      ]
+    },
+    {
+      "operation": "old_log_prob",
+      "evidence": "Native265.116s is separate from1866.647s update_actor; actor does not select rollout_log_probs to run sampling or old-policy scoring again."
+    },
+    {
+      "operation": "fused head backward",
+      "evidence": "Original VERL recomputes logits/softmax in backward; not an added full-model forward."
+    },
+    {
+      "operation": "activation/parameter offload",
+      "evidence": "Original activation offload disables HF checkpoint before applying its own wrapper. CPUOffloadPolicy disables worker manual param/optimizer offload; existing owner review found no duplicated wrapper or parallel offload policy."
+    }
+  ],
+  "author_workload_scope": [
+    {
+      "source": "recipe-sources/ml-loop/phi_agents/rl/conf/rl/params/default.yaml",
+      "lines": [
+        2,
+        5
+      ],
+      "finding": "Original LOOP epochs2/global minibatch32 match current.",
+      "sha256": "2cd803395b5300ecc9b940575a7af11c694d9b5ef75b11ee9eedd74e41f7be4b"
+    },
+    {
+      "source": "recipe-sources/ml-loop/phi_agents/rl/conf/rl/gpu_allocation/four_learn_four_infer.yaml",
+      "finding": "Author uses4 learner and4 inference cards; current2 shared cards.",
+      "sha256": "c9cb46141c842fa94f760b0e0d0df3c9545fc09dcd2dcf9cdf8a56412ba781b8"
+    },
+    {
+      "source": "recipe-sources/ml-loop/phi_agents/rl/conf/accelerate_config.yaml",
+      "lines": [
+        15,
+        18
+      ],
+      "finding": "CPU param offload is an optional OOM setting in author configuration; currentVERL explicitly enables official CPU/activation offload.",
+      "sha256": "e7ae540503417a32d105acee6558780fac9f2dc0ad0153f049d13b83bd91a67e"
+    },
+    {
+      "source": "recipe-sources/ml-loop/phi_agents/rl/train.py",
+      "lines": [
+        648,
+        687
+      ],
+      "finding": "Author scalar advantage threshold .01 filters trajectories. Current DT uses originalVERL and does not import this scalar filter.",
+      "sha256": "e9bc81dc8008fd8727cc34cb71593ac6efed6c7ebb75f2514f71e5ccbc85174f"
+    },
+    {
+      "source": "recipe-sources/ml-loop/phi_agents/rl/train.py",
+      "lines": [
+        1092,
+        1118
+      ],
+      "finding": "Author learner accumulates per-trajectory B1. Current user-required per-cardB4 has batch padding; same globalmini is not same tensor workload.",
+      "sha256": "e9bc81dc8008fd8727cc34cb71593ac6efed6c7ebb75f2514f71e5ccbc85174f"
+    }
+  ],
+  "conclusion": "Actor time longer than generation is not by itself an error; these observations rule out specific duplicate loops, not prove official hardware throughput. Full current kernel/transport fractions remain unmeasured; do not transplant another trainer or change fixed microbatch to get a favorable number."
+}
