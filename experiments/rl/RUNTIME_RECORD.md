@@ -1,5 +1,16 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 13:14 TextCraft 第二轮完成，AppWorld 正式采样推进
+
+两组PID/birth/source仍为下节记录。TextCraft已完成step2并进入第三次采样；原整轮
+2624.925秒（43.75分），gen1807.604、old_log_prob117.072、ref102.251、adv169.113、
+update_actor428.475秒；原grad_norm0.039、entropy0.644、reward均值0.629。
+该reward来自第二批更新前采样；与第一批0.664仅两点，不报告改善或退化趋势。
+AppWorld原native_async累计157873生成token/284.9秒，尚未完成首个新DT/PPO更新。
+整个容器cgroup237520596992字节。原阶段回执active-head-v2-pair-phase-1791350061.json，
+SHA8d51c39b…407d1，完整指标见results_direct_action_target_textcraft_step2_20261007.json。
+保留实际输出中的allocator虚拟计数，不将其冒充物理VRAM峰值。未重启两组或增加测试。
+
 ## 2026-10-07 13:11 AppWorld 输出层内存修复已对拍并正式提交；TextCraft 第二轮更新中
 
 AppWorld 已由原提交器重新启动，PID670069/birth1791349552.74/source SHA42bb0eb9…，
