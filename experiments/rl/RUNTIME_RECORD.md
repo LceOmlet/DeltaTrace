@@ -1,5 +1,29 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 16:00 两组正式DT推进，未重启或改参
+
+前一goal turn为progress：原AppWorld完成前6个真实B4，原信用工作量与版本记录已提交。
+本次为verified wait：按原PID创建时间/source SHA连续确认两组活跃，未把观察窗口
+到点当成失败，也未重新提交任务或扩大测试。
+AppWorld15:59两rank各20/29B4，length14360/14554、60.8726/60.8847秒；
+16:00同源原日志已见21/29（最新rank1 length15234、65.7209秒）。
+新完成13–20批原长度约11.7k–14.6k、45.1–60.9秒，未见新fatal/OOM；
+15:59物理GPU4/5=43128/44388MiB，cgroup观测236.66–236.85GiB，
+worker PSS约8.05/8.21GiB。不是连续峰值或最后长批次容量保证。
+
+TextCraft第6轮30次原采样结束并经过原old log-prob；16:00两rank各完成DT4/22，
+原工作量256轨迹、171个非零请求、19476个target token、658969个source token。
+仍无step6完整metric，不把step5当新更新或把非零请求数直接当成功率。
+同源16:00物理GPU2/3=17347/17027MiB，容器236.666GiB，均为阶段快照。
+原缓存奖励metadata提示后已继续进入DT，未新增重评分、奖励替代或容差。
+
+15:53原文件系统剩余353658470400字节（约329.37GiB），两组均尚无完成保存标记；
+现有启动配置max_actor_ckpt_to_keep=2，TextCraft save_freq25/AppWorld save_freq1未变。
+未恢复任何检查点，也未启动备份或旧SQL/GRPO。
+来源：readonly-DT-batches-watch-1791359542.json、
+textcraft-step6-observation-window-1791360034.json、formal-phase-1791360034.json、
+formal-disk-and-checkpoints-1791359589.json；完整SHA保存在current_runtime及结果索引。
+
 ## 2026-10-07 15:48 AppWorld前六个真实B4完成
 
 同一AppWorld PID/birth/source942已在两rank各完成6/29个联合目标B4。
