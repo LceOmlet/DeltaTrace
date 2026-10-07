@@ -1,5 +1,21 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 14:08 TextCraft前三轮原轨迹与DT工作量已核对
+
+原PID110053/birth1791344324.6/source5013ebc8不变。原rollouts1/2/3.jsonl各256行，
+成功170/161/178，精确均值0.6640625/0.62890625/0.6953125，与原actor完整metrics一致。
+两rank DT unique traj_uid恰为170/161/178；DP分别补6/7/6至176/168/184，未将
+response展开成新轨迹或重复奖励。raw self信用全1，prior两rank均值约0.055-0.065，
+RMS0.144-0.173；raw prior极小值逐轮-23.0554/-19.0920/-5.6769，other_policy全0。
+这些raw统计只覆盖非零奖励DT请求并含DP复制，不冒充原整批raw分布。
+官方整批白化后原actor优势范围依次[-141.923,5.905]/[-127.002,6.421]/[-36.775,6.195]。
+原熵0.677/0.644/0.675、梯度范数0.037/0.039/0.036；三轮不显示持续下降，仍不足以
+判断改进有效。负信用频率、逐token原始/白化配对、原动作validity与终止原因未保存，
+不重解析文本补造。DT报告无global_step，按持久worker顺序及unique数量对应前三轮；
+不是逐token join。回执direct-target-causal-prefix-20261007/v3/textcraft-observations.json
+SHA55341018…d1331。README仅更正旧任务范围/旧head的当前说明，没有新方法规范。
+
+
 ## 2026-10-07 14:02 两组原正式任务在运行
 
 AppWorld PID996278/birth1791352696.13/sourceed3fdf7b已进入原native_async真实采样，
