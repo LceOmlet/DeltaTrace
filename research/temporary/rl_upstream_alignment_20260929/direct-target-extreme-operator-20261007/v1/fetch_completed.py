@@ -25,6 +25,9 @@ shell = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTH
 response = subprocess.run(transport.SSH + ['bash', '-s'], input=shell.encode(), capture_output=True, check=True)
 rows = json.loads(response.stdout)
 for row in rows:
+    if row['bytes']>20_000_000:
+        row['retained_remote_only']=True
+        continue
     target = destination / Path(*PurePosixPath(row['relative']).parts)
     target.parent.mkdir(parents=True, exist_ok=True)
     if not target.exists() or hashlib.sha256(target.read_bytes()).hexdigest() != row['sha256']:

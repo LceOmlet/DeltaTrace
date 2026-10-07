@@ -16,7 +16,7 @@ r=dict(unix=time.time(),driver=dict(pid=a['pid'],birth=a['birth'],same_birth=p i
 for i in (0,1):
  f=out/'results'/('rank'+str(i)+'.json')
  if f.exists():
-  d=json.loads(f.read_bytes());v={k:d[k] for k in ('rank','pid','birth','phase','active_mode','traceback') if k in d};v['modes']=list(d['phases']);v['cross_boundaries']=len(d.get('cross_boundary_contractions',{}));r['ranks'].append(v)
+  d=json.loads(f.read_bytes());v={k:d[k] for k in ('rank','pid','birth','phase','active_mode','traceback') if k in d};v['modes']=list(d.get('modes',d.get('phases',{})));v['cross_boundaries']=len(d.get('cross_boundary_contractions',{}));r['ranks'].append(v)
  f=out/'results'/('rank'+str(i)+'-phases.jsonl')
  if f.exists():r['ranks'][-1]['last_phase']=json.loads(f.read_text().splitlines()[-1])
 r['physical_mx_smi']=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout
@@ -27,6 +27,8 @@ if not r['ranks'] or not r['driver']['same_birth']:r['log_tail']=(out/'driver.lo
 print(json.dumps(r))
 '''
 shell='set -eu\nsource '+transport.ENTRY+'/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n'+code+'\nPY\n'
-r=subprocess.run(transport.SSH+['bash','-s'],input=shell.encode(),capture_output=True,check=True)
+r=subprocess.run(transport.SSH+['bash','-s'],input=shell.encode(),capture_output=True)
+if r.returncode:print(r.stderr.decode(errors='replace'))
+r.check_returncode()
 record=json.loads(r.stdout);(HERE/('observation-'+str(int(record['unix']))+'.json')).write_text(json.dumps(record,indent=2)+'\n')
 record.pop('physical_mx_smi');record.pop('memory.stat');print(json.dumps(record))

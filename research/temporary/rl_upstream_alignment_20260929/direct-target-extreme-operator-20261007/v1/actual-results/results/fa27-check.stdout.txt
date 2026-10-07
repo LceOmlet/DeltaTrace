@@ -1,0 +1,109 @@
+Current Triton version 3.0.0 is below the recommended 3.2.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+phase=native_and_reference shape=[1, 6815, 16, 256]
+/opt/conda/lib/python3.12/site-packages/torch/autograd/graph.py:829: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at /workspace/framework/mcPytorch/aten/src/ATen/cuda/CublasHandlePool.cpp:183.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v4/verify_saved_fa_dtypes.py:74: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /workspace/framework/mcPytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  max_abs=float((actual-expected).abs().max()),baseline_max_abs=float((baseline-expected).abs().max()))
+{
+  "scope": "Apply pinned FA references and unmodified assertions to recorded DT operands.\n\nThe finite comparison uses coincident factual endpoints and only the coefficient\nsuffix computed by the deployed owner. It is not a nonzero-finite-error bound.\n",
+  "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/actual-reference-fa27-row0.pt",
+  "query_shape": [
+    1,
+    6815,
+    16,
+    256
+  ],
+  "key_shape": [
+    1,
+    9567,
+    4,
+    256
+  ],
+  "operand_dtypes": {
+    "q": "torch.bfloat16",
+    "k": "torch.bfloat16",
+    "v": "torch.bfloat16",
+    "upstream": "torch.float32",
+    "lse": "torch.float32"
+  },
+  "native_kernel_upstream_dtype": "torch.bfloat16",
+  "finite_kernel_upstream_dtype": "torch.bfloat16",
+  "reference": "pinned attention_ref, FP32 upcast; original reordered low precision baseline",
+  "assertions": {
+    "out": "(out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()",
+    "dq": "(dq - dq_ref).abs().max().item() <= 3 * (dq_pt - dq_ref).abs().max().item()",
+    "dk": "(dk - dk_ref).abs().max().item() <= 3 * (dk_pt - dk_ref).abs().max().item()",
+    "dv": "(dv - dv_ref).abs().max().item() <= 3 * (dv_pt - dv_ref).abs().max().item()"
+  },
+  "query_start": 2752,
+  "coefficient_starts": [
+    2762
+  ],
+  "checks": [
+    {
+      "name": "out",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.5,
+      "baseline_max_abs": 0.5,
+      "status": "passed"
+    },
+    {
+      "name": "dq",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.00146484375,
+      "status": "passed"
+    },
+    {
+      "name": "dq",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.00048828125,
+      "baseline_max_abs": 0.00146484375,
+      "status": "passed"
+    },
+    {
+      "name": "dk",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.001953125,
+      "baseline_max_abs": 0.00390625,
+      "status": "passed"
+    },
+    {
+      "name": "dk",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.001953125,
+      "baseline_max_abs": 0.00390625,
+      "status": "passed"
+    },
+    {
+      "name": "dv",
+      "owner": "native",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.000244140625,
+      "baseline_max_abs": 0.00146484375,
+      "status": "passed"
+    },
+    {
+      "name": "dv",
+      "owner": "finite",
+      "actual_dtype": "torch.bfloat16",
+      "reference_dtype": "torch.bfloat16",
+      "max_abs": 0.000244140625,
+      "baseline_max_abs": 0.00146484375,
+      "status": "passed"
+    }
+  ],
+  "status": "passed"
+}

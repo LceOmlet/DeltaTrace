@@ -1,0 +1,151 @@
+{
+  "unix": 1791385878.9561222,
+  "pid": 254073,
+  "same_birth": false,
+  "results": {
+    "fa27-check-packaging.json": {
+      "scope": "Package one complete real causal FA row for the unchanged existing checker.\nReference endpoint q0/k0/v0 is explicitly selected: factual v1 was not retained.\nUniform actual query starts are rebased to the checker's scalar representation.\nNo attention equation, tolerance, model forward, backward update or credit changes.\n",
+      "source": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/rank0-decoder27-fa.pt",
+        "sha256": "ed804b5cd725cd027d697b97897a076170a2b7df64bf1347cd1e6297f68bad92"
+      },
+      "packaged": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/actual-reference-fa27-row0.pt",
+        "sha256": "a40f7a111d19581927a3874648b319cf10f0544a0dc9ba6234b150dffd6e39e0"
+      },
+      "sample": 0,
+      "query_start": 2752,
+      "valid_suffix": 6815,
+      "context_length": 9567,
+      "original_batch": 4,
+      "actual_qkv_dtype": "BF16",
+      "actual_upstream_dtype": "FP32",
+      "endpoint": "reference q0/k0/v0; not factual v1",
+      "checker": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v4/verify_saved_fa_dtypes.py",
+        "sha256": "7ff11d9d800a2c233b019213ae0fa9a5b603dfea51dfffabe6b9296a74aab9a9"
+      },
+      "command": [
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v4/verify_saved_fa_dtypes.py",
+        "--operands",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/actual-reference-fa27-row0.pt",
+        "--sources",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v4",
+        "--output",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/fa27-official-check.json"
+      ],
+      "started_unix": 1791385733.194949,
+      "optimizer_steps": 0,
+      "model_forwards": 0,
+      "DT_calls": 0,
+      "returncode": 0,
+      "completed_unix": 1791385748.1904302
+    },
+    "fa27-official-check.json": {
+      "scope": "Apply pinned FA references and unmodified assertions to recorded DT operands.\n\nThe finite comparison uses coincident factual endpoints and only the coefficient\nsuffix computed by the deployed owner. It is not a nonzero-finite-error bound.\n",
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/actual-reference-fa27-row0.pt",
+      "query_shape": [
+        1,
+        6815,
+        16,
+        256
+      ],
+      "key_shape": [
+        1,
+        9567,
+        4,
+        256
+      ],
+      "operand_dtypes": {
+        "q": "torch.bfloat16",
+        "k": "torch.bfloat16",
+        "v": "torch.bfloat16",
+        "upstream": "torch.float32",
+        "lse": "torch.float32"
+      },
+      "native_kernel_upstream_dtype": "torch.bfloat16",
+      "finite_kernel_upstream_dtype": "torch.bfloat16",
+      "reference": "pinned attention_ref, FP32 upcast; original reordered low precision baseline",
+      "assertions": {
+        "out": "(out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()",
+        "dq": "(dq - dq_ref).abs().max().item() <= 3 * (dq_pt - dq_ref).abs().max().item()",
+        "dk": "(dk - dk_ref).abs().max().item() <= 3 * (dk_pt - dk_ref).abs().max().item()",
+        "dv": "(dv - dv_ref).abs().max().item() <= 3 * (dv_pt - dv_ref).abs().max().item()"
+      },
+      "query_start": 2752,
+      "coefficient_starts": [
+        2762
+      ],
+      "checks": [
+        {
+          "name": "out",
+          "owner": "native",
+          "actual_dtype": "torch.bfloat16",
+          "reference_dtype": "torch.bfloat16",
+          "max_abs": 0.5,
+          "baseline_max_abs": 0.5,
+          "status": "passed"
+        },
+        {
+          "name": "dq",
+          "owner": "native",
+          "actual_dtype": "torch.bfloat16",
+          "reference_dtype": "torch.bfloat16",
+          "max_abs": 0.00048828125,
+          "baseline_max_abs": 0.00146484375,
+          "status": "passed"
+        },
+        {
+          "name": "dq",
+          "owner": "finite",
+          "actual_dtype": "torch.bfloat16",
+          "reference_dtype": "torch.bfloat16",
+          "max_abs": 0.00048828125,
+          "baseline_max_abs": 0.00146484375,
+          "status": "passed"
+        },
+        {
+          "name": "dk",
+          "owner": "native",
+          "actual_dtype": "torch.bfloat16",
+          "reference_dtype": "torch.bfloat16",
+          "max_abs": 0.001953125,
+          "baseline_max_abs": 0.00390625,
+          "status": "passed"
+        },
+        {
+          "name": "dk",
+          "owner": "finite",
+          "actual_dtype": "torch.bfloat16",
+          "reference_dtype": "torch.bfloat16",
+          "max_abs": 0.001953125,
+          "baseline_max_abs": 0.00390625,
+          "status": "passed"
+        },
+        {
+          "name": "dv",
+          "owner": "native",
+          "actual_dtype": "torch.bfloat16",
+          "reference_dtype": "torch.bfloat16",
+          "max_abs": 0.000244140625,
+          "baseline_max_abs": 0.00146484375,
+          "status": "passed"
+        },
+        {
+          "name": "dv",
+          "owner": "finite",
+          "actual_dtype": "torch.bfloat16",
+          "reference_dtype": "torch.bfloat16",
+          "max_abs": 0.000244140625,
+          "baseline_max_abs": 0.00146484375,
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  },
+  "stdout_tail": "tatrace_rl_20260922/receipts/direct-target-numerics-20261007-v4/verify_saved_fa_dtypes.py:74: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.\nConsider using tensor.detach() first. (Triggered internally at /workspace/framework/mcPytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)\n  max_abs=float((actual-expected).abs().max()),baseline_max_abs=float((baseline-expected).abs().max()))\n{\n  \"scope\": \"Apply pinned FA references and unmodified assertions to recorded DT operands.\\n\\nThe finite comparison uses coincident factual endpoints and only the coefficient\\nsuffix computed by the deployed owner. It is not a nonzero-finite-error bound.\\n\",\n  \"source\": \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/actual-reference-fa27-row0.pt\",\n  \"query_shape\": [\n    1,\n    6815,\n    16,\n    256\n  ],\n  \"key_shape\": [\n    1,\n    9567,\n    4,\n    256\n  ],\n  \"operand_dtypes\": {\n    \"q\": \"torch.bfloat16\",\n    \"k\": \"torch.bfloat16\",\n    \"v\": \"torch.bfloat16\",\n    \"upstream\": \"torch.float32\",\n    \"lse\": \"torch.float32\"\n  },\n  \"native_kernel_upstream_dtype\": \"torch.bfloat16\",\n  \"finite_kernel_upstream_dtype\": \"torch.bfloat16\",\n  \"reference\": \"pinned attention_ref, FP32 upcast; original reordered low precision baseline\",\n  \"assertions\": {\n    \"out\": \"(out - out_ref).abs().max().item() <= 2 * (out_pt - out_ref).abs().max().item()\",\n    \"dq\": \"(dq - dq_ref).abs().max().item() <= 3 * (dq_pt - dq_ref).abs().max().item()\",\n    \"dk\": \"(dk - dk_ref).abs().max().item() <= 3 * (dk_pt - dk_ref).abs().max().item()\",\n    \"dv\": \"(dv - dv_ref).abs().max().item() <= 3 * (dv_pt - dv_ref).abs().max().item()\"\n  },\n  \"query_start\": 2752,\n  \"coefficient_starts\": [\n    2762\n  ],\n  \"checks\": [\n    {\n      \"name\": \"out\",\n      \"owner\": \"native\",\n      \"actual_dtype\": \"torch.bfloat16\",\n      \"reference_dtype\": \"torch.bfloat16\",\n      \"max_abs\": 0.5,\n      \"baseline_max_abs\": 0.5,\n      \"status\": \"passed\"\n    },\n    {\n      \"name\": \"dq\",\n      \"owner\": \"native\",\n      \"actual_dtype\": \"torch.bfloat16\",\n      \"reference_dtype\": \"torch.bfloat16\",\n      \"max_abs\": 0.00048828125,\n      \"baseline_max_abs\": 0.00146484375,\n      \"status\": \"passed\"\n    },\n    {\n      \"name\": \"dq\",\n      \"owner\": \"finite\",\n      \"actual_dtype\": \"torch.bfloat16\",\n      \"reference_dtype\": \"torch.bfloat16\",\n      \"max_abs\": 0.00048828125,\n      \"baseline_max_abs\": 0.00146484375,\n      \"status\": \"passed\"\n    },\n    {\n      \"name\": \"dk\",\n      \"owner\": \"native\",\n      \"actual_dtype\": \"torch.bfloat16\",\n      \"reference_dtype\": \"torch.bfloat16\",\n      \"max_abs\": 0.001953125,\n      \"baseline_max_abs\": 0.00390625,\n      \"status\": \"passed\"\n    },\n    {\n      \"name\": \"dk\",\n      \"owner\": \"finite\",\n      \"actual_dtype\": \"torch.bfloat16\",\n      \"reference_dtype\": \"torch.bfloat16\",\n      \"max_abs\": 0.001953125,\n      \"baseline_max_abs\": 0.00390625,\n      \"status\": \"passed\"\n    },\n    {\n      \"name\": \"dv\",\n      \"owner\": \"native\",\n      \"actual_dtype\": \"torch.bfloat16\",\n      \"reference_dtype\": \"torch.bfloat16\",\n      \"max_abs\": 0.000244140625,\n      \"baseline_max_abs\": 0.00146484375,\n      \"status\": \"passed\"\n    },\n    {\n      \"name\": \"dv\",\n      \"owner\": \"finite\",\n      \"actual_dtype\": \"torch.bfloat16\",\n      \"reference_dtype\": \"torch.bfloat16\",\n      \"max_abs\": 0.000244140625,\n      \"baseline_max_abs\": 0.00146484375,\n      \"status\": \"passed\"\n    }\n  ],\n  \"status\": \"passed\"\n}\n",
+  "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Wed Oct  7 23:11:18 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 117W / 450W      | 47C          P9 | 30305/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 119W / 450W      | 47C          P9 | 36447/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                  2838967         ray::WorkerDict              29384          |\n|  3                  2840776         ray::WorkerDict              35526          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+  "memory.usage_in_bytes": "152087420928\n"
+}
