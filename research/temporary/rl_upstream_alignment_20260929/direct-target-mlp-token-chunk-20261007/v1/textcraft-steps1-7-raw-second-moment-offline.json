@@ -1,0 +1,653 @@
+{
+  "scope": "Offline analysis using existing local current-run original receipts only; no new remote access, model/RPC/environment/optimizer/checkpoint call, test, source/parameter change, clipping or correction.",
+  "created_utc": "2026-10-07T09:03:49.929795+00:00",
+  "runtime_binding": {
+    "task": "TextCraft",
+    "pid": 110053,
+    "birth": 1791344324.6,
+    "source_sha256": "5013ebc878b972a5f52817f7c7de7ae55ddae7f1d61609e943e1ab55bf59b993"
+  },
+  "input_receipts": {
+    "reports1to4": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-causal-prefix-20261007\\v3\\textcraft-current-original-1791357003.json",
+      "sha256": "26a1526100e7960a6e39f9de6a595febab4da5255bae0ee1314d20007a01ec0d"
+    },
+    "alignment1to3": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-causal-prefix-20261007\\v3\\textcraft-observations.json",
+      "sha256": "553410181128b90bdb0bba08ac958d79cf1106700c37cefb4cd086ab5e4d1331"
+    },
+    "step5": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-gpu-lifetime-20261007\\v1\\textcraft-step5-original-1791358084.json",
+      "sha256": "9a1cb0761f77aee1edd1d76a97096570ff9b80f2be59de082219be11040e79fa"
+    },
+    "step6": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-gpu-lifetime-20261007\\v1\\textcraft-step6-original-1791360668.json",
+      "sha256": "5036ed577ab9d78853f41e23891a62620636473c5621f6241257052bbab772fe"
+    },
+    "step7DT": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-mlp-token-chunk-20261007\\v1\\textcraft-step7-original-1791363316.json",
+      "sha256": "db94d16276d3e490a5317984ac9ba1d348113516eed414de290aa2e66561a738"
+    },
+    "step7complete": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-mlp-token-chunk-20261007\\v1\\textcraft-step7-complete-original-1791363676.json",
+      "sha256": "df58c3c69442d2f8d1c5b8bfbe29ea5dc3a048c2b8dc1ff22023e950245230c0"
+    }
+  },
+  "taskrunner_original_source": {
+    "path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-f267bf740750cb67e80c1bfac3fdcc46c7eca863cf7df85e23c27496-01000000-113691.out",
+    "bytes": 34843,
+    "sha256": "ddf99cbd7093c256b90a73d579f9331bedf72a583c4b041167d1d0621e7f0a6b",
+    "mtime": 1791363328.5651972,
+    "read_offset": 0
+  },
+  "ordinal_mapping": {
+    "embedded_global_step_in_DT_reports": false,
+    "basis": [
+      "Same PID/birth/source and unchanged persistent worker log paths for both ranks.",
+      "Full four-report sequences retained in the existing 1-4 receipt; first three line hashes and group values independently match the existing step1-3 alignment receipt.",
+      "Existing step5 report is captured with complete step5; step6 and step7 receipts explicitly record full-file report ordinals 6 and 7.",
+      "The locally saved full original TaskRunner text contains exactly seven native DT workload records, each followed by complete original metric step1 through step7 in matching order.",
+      "For every step, union of original trace traj_uid across the two corresponding reports exactly matches that step workload nonzero_requests. This confirms workload association, not reward success."
+    ],
+    "step4_line_number": "Not recorded in the complete-line receipt; exact original report line SHA and stored ordered position are supplied without guessing a line number."
+  },
+  "ratio_definition": {
+    "numerator": "Square of largest original max_abs across both ranks and all three raw groups; one occurrence only.",
+    "denominator_total": "Sum of both ranks original self_target/prior_source/other_policy sumsq.",
+    "denominator_prior": "Sum of both ranks original prior_source sumsq.",
+    "interpretation": "A lower bound on second-moment mass associated with extreme-value occurrences: at least one work-row token attains max_abs; ties or DP-duplicated occurrences are not added to the numerator. These are raw uncentered second moments from DP-padded DT work rows, not shares of actual actor whitening, variance after centering, PPO gradient, parameter update or unique real-trajectory token mass."
+  },
+  "steps": [
+    {
+      "step": 1,
+      "original_complete_metric": {
+        "line_number": 298,
+        "line_sha256": "dc0ce6e053bff6650606c36d9907b0141456ccbda9dcae6df0db9203c53c1b61"
+      },
+      "original_workload": {
+        "line_number": 295,
+        "line_sha256": "c311d49e90f9537a415548c1018dca07eaa4819bbc45b16d747f4e7b47ea625e",
+        "counts": {
+          "trajectories": 256,
+          "nonzero_requests": 170,
+          "target_tokens": 18941,
+          "source_tokens": 727367
+        },
+        "workload_ordinal": 1
+      },
+      "report_binding": [
+        {
+          "source_id": "reports1to4",
+          "rank": 0,
+          "ordinal": 1,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-6cd0bd2726de211c0e826de535a18346fe5a107c3fca4fed36b920e3-01000000-115709.out",
+          "source_read_bytes": 172286,
+          "source_read_sha256": "47a29111eb765d5433ebafae4ffa25b7a065410833afead36283cf9120e37b5d",
+          "line_sha256": "ccfbb992a43ff95491e614bf78309074a2bdfd347fc9614f35e43fd99415788b",
+          "line_number": 179
+        },
+        {
+          "source_id": "reports1to4",
+          "rank": 1,
+          "ordinal": 1,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-c42d1611ac22f99293d5b5b387dfc406e618eaa945f674e6bee2de20-01000000-117229.out",
+          "source_read_bytes": 169413,
+          "source_read_sha256": "3e0cc55988e52d402a62d0126e52f6a96c3413195c6ada9a4f5ad1b877ad00ce",
+          "line_sha256": "7dd77a6c71c8e218bce4a1a0c674ef55c9a0cbf1bc6505ab854f4073a7b68383",
+          "line_number": 67
+        }
+      ],
+      "DP_work_rows": 176,
+      "unique_DT_trajectory_UIDs": 170,
+      "duplicate_DP_work_rows": 6,
+      "combined_raw_groups": {
+        "self_target": {
+          "tokens": 14117,
+          "sum": 14117.0,
+          "sumsq": 14117.0,
+          "min": 1.0,
+          "max": 1.0,
+          "max_abs": 1.0
+        },
+        "prior_source": {
+          "tokens": 220380,
+          "sum": 14059.59421493725,
+          "sumsq": 6051.626120795346,
+          "min": -23.055397033691406,
+          "max": 1.0,
+          "max_abs": 23.055397033691406
+        },
+        "other_policy": {
+          "tokens": 176,
+          "sum": 0.0,
+          "sumsq": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "max_abs": 0.0
+        }
+      },
+      "combined_raw_total_sumsq": 20168.626120795347,
+      "largest_abs_raw_token": 23.055397033691406,
+      "one_maximum_occurrence_squared": 531.5513323811465,
+      "max_abs_squared_over_combined_raw_total_sumsq": 0.026355356542262325,
+      "max_abs_squared_over_combined_prior_sumsq": 0.08783611574326512,
+      "rank_prior_max_abs": [
+        12.669660568237305,
+        23.055397033691406
+      ],
+      "rank_prior_sumsq": [
+        2780.7488943624485,
+        3270.8772264328973
+      ]
+    },
+    {
+      "step": 2,
+      "original_complete_metric": {
+        "line_number": 305,
+        "line_sha256": "840339114c8f5cb5669ff189b8be05cd9020be7c96d4dd6c3697e6a3fe0fd02a"
+      },
+      "original_workload": {
+        "line_number": 302,
+        "line_sha256": "6781ea8d187aac0805a80a6ec8c22547640ef7640fd6cc34e092e9b15110f271",
+        "counts": {
+          "trajectories": 256,
+          "nonzero_requests": 161,
+          "target_tokens": 19011,
+          "source_tokens": 689697
+        },
+        "workload_ordinal": 2
+      },
+      "report_binding": [
+        {
+          "source_id": "reports1to4",
+          "rank": 0,
+          "ordinal": 2,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-6cd0bd2726de211c0e826de535a18346fe5a107c3fca4fed36b920e3-01000000-115709.out",
+          "source_read_bytes": 172286,
+          "source_read_sha256": "47a29111eb765d5433ebafae4ffa25b7a065410833afead36283cf9120e37b5d",
+          "line_sha256": "f32fd7ad15220ca40c0e5be715714f55d1e6119732c104e8a5973575b36af57a",
+          "line_number": 203
+        },
+        {
+          "source_id": "reports1to4",
+          "rank": 1,
+          "ordinal": 2,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-c42d1611ac22f99293d5b5b387dfc406e618eaa945f674e6bee2de20-01000000-117229.out",
+          "source_read_bytes": 169413,
+          "source_read_sha256": "3e0cc55988e52d402a62d0126e52f6a96c3413195c6ada9a4f5ad1b877ad00ce",
+          "line_sha256": "cbf474f93336c78964df3b326968f2441dffe0961cd6bbcbfa3d5078bbeff5a1",
+          "line_number": 91
+        }
+      ],
+      "DP_work_rows": 168,
+      "unique_DT_trajectory_UIDs": 161,
+      "duplicate_DP_work_rows": 7,
+      "combined_raw_groups": {
+        "self_target": {
+          "tokens": 11121,
+          "sum": 11121.0,
+          "sumsq": 11121.0,
+          "min": 1.0,
+          "max": 1.0,
+          "max_abs": 1.0
+        },
+        "prior_source": {
+          "tokens": 207855,
+          "sum": 11889.458125094858,
+          "sumsq": 5423.310400478542,
+          "min": -19.092012405395508,
+          "max": 1.0,
+          "max_abs": 19.092012405395508
+        },
+        "other_policy": {
+          "tokens": 168,
+          "sum": 0.0,
+          "sumsq": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "max_abs": 0.0
+        }
+      },
+      "combined_raw_total_sumsq": 16544.310400478542,
+      "largest_abs_raw_token": 19.092012405395508,
+      "one_maximum_occurrence_squared": 364.50493768777596,
+      "max_abs_squared_over_combined_raw_total_sumsq": 0.0220320417632658,
+      "max_abs_squared_over_combined_prior_sumsq": 0.06721078285609704,
+      "rank_prior_max_abs": [
+        11.37240219116211,
+        19.092012405395508
+      ],
+      "rank_prior_sumsq": [
+        2421.3051227456294,
+        3002.0052777329124
+      ]
+    },
+    {
+      "step": 3,
+      "original_complete_metric": {
+        "line_number": 312,
+        "line_sha256": "fb581983c8330f693e98d4f5ffd01bdb5c8a9cd6b090cedf24363d4bd25683ea"
+      },
+      "original_workload": {
+        "line_number": 309,
+        "line_sha256": "2abfae0d6ec48823ac83448d73a989ed93c4d213304db805f35c382136923ebd",
+        "counts": {
+          "trajectories": 256,
+          "nonzero_requests": 178,
+          "target_tokens": 16504,
+          "source_tokens": 649307
+        },
+        "workload_ordinal": 3
+      },
+      "report_binding": [
+        {
+          "source_id": "reports1to4",
+          "rank": 0,
+          "ordinal": 3,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-6cd0bd2726de211c0e826de535a18346fe5a107c3fca4fed36b920e3-01000000-115709.out",
+          "source_read_bytes": 172286,
+          "source_read_sha256": "47a29111eb765d5433ebafae4ffa25b7a065410833afead36283cf9120e37b5d",
+          "line_sha256": "e525d0f3c76ea69c819de1d7dab33d584ea2c0dd0d17633bda9af981a9bac7b3",
+          "line_number": 229
+        },
+        {
+          "source_id": "reports1to4",
+          "rank": 1,
+          "ordinal": 3,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-c42d1611ac22f99293d5b5b387dfc406e618eaa945f674e6bee2de20-01000000-117229.out",
+          "source_read_bytes": 169413,
+          "source_read_sha256": "3e0cc55988e52d402a62d0126e52f6a96c3413195c6ada9a4f5ad1b877ad00ce",
+          "line_sha256": "d0be9f4356700ef39bb73f9d44fea8692190d4369881ce700ed337b445f870c3",
+          "line_number": 117
+        }
+      ],
+      "DP_work_rows": 184,
+      "unique_DT_trajectory_UIDs": 178,
+      "duplicate_DP_work_rows": 6,
+      "combined_raw_groups": {
+        "self_target": {
+          "tokens": 12095,
+          "sum": 12095.0,
+          "sumsq": 12095.0,
+          "min": 1.0,
+          "max": 1.0,
+          "max_abs": 1.0
+        },
+        "prior_source": {
+          "tokens": 206420,
+          "sum": 12264.254103872743,
+          "sumsq": 4584.625563218308,
+          "min": -5.676894664764404,
+          "max": 1.0,
+          "max_abs": 5.676894664764404
+        },
+        "other_policy": {
+          "tokens": 184,
+          "sum": 0.0,
+          "sumsq": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "max_abs": 0.0
+        }
+      },
+      "combined_raw_total_sumsq": 16679.62556321831,
+      "largest_abs_raw_token": 5.676894664764404,
+      "one_maximum_occurrence_squared": 32.22713303483056,
+      "max_abs_squared_over_combined_raw_total_sumsq": 0.0019321256890740645,
+      "max_abs_squared_over_combined_prior_sumsq": 0.0070293926058833485,
+      "rank_prior_max_abs": [
+        5.676894664764404,
+        5.2421441078186035
+      ],
+      "rank_prior_sumsq": [
+        2163.6530984671863,
+        2420.972464751122
+      ]
+    },
+    {
+      "step": 4,
+      "original_complete_metric": {
+        "line_number": 319,
+        "line_sha256": "6a7034ff9cd4c562489c0513e4d940df5571dd636c7705744941063a85a8165e"
+      },
+      "original_workload": {
+        "line_number": 316,
+        "line_sha256": "f7e5e45d4b1ed2b53e2eb1a68e4252e47dbd5a1d01c92b13b5dbb4dcaa9d1839",
+        "counts": {
+          "trajectories": 256,
+          "nonzero_requests": 156,
+          "target_tokens": 18271,
+          "source_tokens": 764760
+        },
+        "workload_ordinal": 4
+      },
+      "report_binding": [
+        {
+          "source_id": "reports1to4",
+          "rank": 0,
+          "ordinal": 4,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-6cd0bd2726de211c0e826de535a18346fe5a107c3fca4fed36b920e3-01000000-115709.out",
+          "source_read_bytes": 172286,
+          "source_read_sha256": "47a29111eb765d5433ebafae4ffa25b7a065410833afead36283cf9120e37b5d",
+          "line_sha256": "3e44a4856ba42dc0a1d83dc61c6c12eb038f1fd86ffe9e7760e961efee46fc9b",
+          "line_number": null
+        },
+        {
+          "source_id": "reports1to4",
+          "rank": 1,
+          "ordinal": 4,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-c42d1611ac22f99293d5b5b387dfc406e618eaa945f674e6bee2de20-01000000-117229.out",
+          "source_read_bytes": 169413,
+          "source_read_sha256": "3e0cc55988e52d402a62d0126e52f6a96c3413195c6ada9a4f5ad1b877ad00ce",
+          "line_sha256": "27164904b1a6ac3f54f1748e8ddd6fecdb1e7c0cb585adb6fc34478a70df4b5b",
+          "line_number": null
+        }
+      ],
+      "DP_work_rows": 160,
+      "unique_DT_trajectory_UIDs": 156,
+      "duplicate_DP_work_rows": 4,
+      "combined_raw_groups": {
+        "self_target": {
+          "tokens": 12224,
+          "sum": 12224.0,
+          "sumsq": 12224.0,
+          "min": 1.0,
+          "max": 1.0,
+          "max_abs": 1.0
+        },
+        "prior_source": {
+          "tokens": 205491,
+          "sum": 12294.658513266331,
+          "sumsq": 5050.4844614200465,
+          "min": -17.013137817382812,
+          "max": 1.0,
+          "max_abs": 17.013137817382812
+        },
+        "other_policy": {
+          "tokens": 160,
+          "sum": 0.0,
+          "sumsq": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "max_abs": 0.0
+        }
+      },
+      "combined_raw_total_sumsq": 17274.48446142005,
+      "largest_abs_raw_token": 17.013137817382812,
+      "one_maximum_occurrence_squared": 289.4468583932612,
+      "max_abs_squared_over_combined_raw_total_sumsq": 0.016755745101377527,
+      "max_abs_squared_over_combined_prior_sumsq": 0.057310711596938034,
+      "rank_prior_max_abs": [
+        5.991710186004639,
+        17.013137817382812
+      ],
+      "rank_prior_sumsq": [
+        2210.853874244948,
+        2839.6305871750988
+      ]
+    },
+    {
+      "step": 5,
+      "original_complete_metric": {
+        "line_number": 326,
+        "line_sha256": "e5399786bc2ef758af9986995420acf90f45b379710a20ec1d46f86b32466038"
+      },
+      "original_workload": {
+        "line_number": 323,
+        "line_sha256": "92e3a6f20615b487775e27dea4656f8eaa7eeac1a73e64882d7cdbf4e32ab3b6",
+        "counts": {
+          "trajectories": 256,
+          "nonzero_requests": 137,
+          "target_tokens": 17910,
+          "source_tokens": 746220
+        },
+        "workload_ordinal": 5
+      },
+      "report_binding": [
+        {
+          "source_id": "step5",
+          "rank": 0,
+          "ordinal": 5,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-6cd0bd2726de211c0e826de535a18346fe5a107c3fca4fed36b920e3-01000000-115709.out",
+          "source_read_bytes": 206826,
+          "source_read_sha256": "d9f1165192767a998369531e081f2001a4dc1e123bca536d3cafc30710631bf6",
+          "line_sha256": "9eb526cf77af8975650a2d90d23c6559557880b887be37235b6f8b6e8a1e4188",
+          "line_number": null
+        },
+        {
+          "source_id": "step5",
+          "rank": 1,
+          "ordinal": 5,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-c42d1611ac22f99293d5b5b387dfc406e618eaa945f674e6bee2de20-01000000-117229.out",
+          "source_read_bytes": 203954,
+          "source_read_sha256": "57cdafa353026a7909105491feed1c9f3985085498b04d624d6596c0ca6c921f",
+          "line_sha256": "0e23efd2114fa667ae76067cb429c3cd9022d7ed6c9d751cb26605032abdd758",
+          "line_number": null
+        }
+      ],
+      "DP_work_rows": 144,
+      "unique_DT_trajectory_UIDs": 137,
+      "duplicate_DP_work_rows": 7,
+      "combined_raw_groups": {
+        "self_target": {
+          "tokens": 10872,
+          "sum": 10872.0,
+          "sumsq": 10872.0,
+          "min": 1.0,
+          "max": 1.0,
+          "max_abs": 1.0
+        },
+        "prior_source": {
+          "tokens": 176340,
+          "sum": 11181.06258527307,
+          "sumsq": 4828.618565000323,
+          "min": -23.01699447631836,
+          "max": 1.0,
+          "max_abs": 23.01699447631836
+        },
+        "other_policy": {
+          "tokens": 144,
+          "sum": 0.0,
+          "sumsq": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "max_abs": 0.0
+        }
+      },
+      "combined_raw_total_sumsq": 15700.618565000323,
+      "largest_abs_raw_token": 23.01699447631836,
+      "one_maximum_occurrence_squared": 529.7820347228699,
+      "max_abs_squared_over_combined_raw_total_sumsq": 0.033742749212687405,
+      "max_abs_squared_over_combined_prior_sumsq": 0.10971710181519266,
+      "rank_prior_max_abs": [
+        7.264586925506592,
+        23.01699447631836
+      ],
+      "rank_prior_sumsq": [
+        2114.444111699562,
+        2714.1744533007604
+      ]
+    },
+    {
+      "step": 6,
+      "original_complete_metric": {
+        "line_number": 333,
+        "line_sha256": "ae7c2dcc3b38c9d3a660fbe2aa7748d594aa0b213c35ec50af883ee52a50b064"
+      },
+      "original_workload": {
+        "line_number": 330,
+        "line_sha256": "c7423c5a4aa68eb5daf8d4277db768a2fc2ed45bc1624a9b7adfd53698c12c47",
+        "counts": {
+          "trajectories": 256,
+          "nonzero_requests": 171,
+          "target_tokens": 19476,
+          "source_tokens": 658969
+        },
+        "workload_ordinal": 6
+      },
+      "report_binding": [
+        {
+          "source_id": "step6",
+          "rank": 0,
+          "ordinal": 6,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-6cd0bd2726de211c0e826de535a18346fe5a107c3fca4fed36b920e3-01000000-115709.out",
+          "source_read_bytes": 248788,
+          "source_read_sha256": "4862c73db304b1b435e96f63f7455853e7ff9c27c3aa9bb0724badb152d01812",
+          "line_sha256": "9ce4c5ea46e6b1969a8f4254464b64c259c792f43c36c4af9dde70e149d8c472",
+          "line_number": 298
+        },
+        {
+          "source_id": "step6",
+          "rank": 1,
+          "ordinal": 6,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-c42d1611ac22f99293d5b5b387dfc406e618eaa945f674e6bee2de20-01000000-117229.out",
+          "source_read_bytes": 245924,
+          "source_read_sha256": "9b97ba4a66aafc4d4662976f84123b536d9747ce525f1323dd4de4bb93438850",
+          "line_sha256": "b4e27e1088f89d5d61f8c1833a5d56d1b4b2ada6af88f8afe7f05fac3b13adeb",
+          "line_number": 186
+        }
+      ],
+      "DP_work_rows": 176,
+      "unique_DT_trajectory_UIDs": 171,
+      "duplicate_DP_work_rows": 5,
+      "combined_raw_groups": {
+        "self_target": {
+          "tokens": 13153,
+          "sum": 13153.0,
+          "sumsq": 13153.0,
+          "min": 1.0,
+          "max": 1.0,
+          "max_abs": 1.0
+        },
+        "prior_source": {
+          "tokens": 202167,
+          "sum": 12880.690349798151,
+          "sumsq": 4889.343579394489,
+          "min": -10.205622673034668,
+          "max": 1.0,
+          "max_abs": 10.205622673034668
+        },
+        "other_policy": {
+          "tokens": 176,
+          "sum": 0.0,
+          "sumsq": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "max_abs": 0.0
+        }
+      },
+      "combined_raw_total_sumsq": 18042.34357939449,
+      "largest_abs_raw_token": 10.205622673034668,
+      "one_maximum_occurrence_squared": 104.15473414435928,
+      "max_abs_squared_over_combined_raw_total_sumsq": 0.005772794076669211,
+      "max_abs_squared_over_combined_prior_sumsq": 0.021302396211897653,
+      "rank_prior_max_abs": [
+        3.0692665576934814,
+        10.205622673034668
+      ],
+      "rank_prior_sumsq": [
+        2302.619905024375,
+        2586.723674370114
+      ]
+    },
+    {
+      "step": 7,
+      "original_complete_metric": {
+        "line_number": 340,
+        "line_sha256": "bbebfbf1266291ed928921490a9f57a219121cdb5de73f68fc3b34f938f8c0f4"
+      },
+      "original_workload": {
+        "line_number": 337,
+        "line_sha256": "f7b11d0ce383d47045c0a548212eeb5648651eefd86798e1bd72a8519da48095",
+        "counts": {
+          "trajectories": 256,
+          "nonzero_requests": 166,
+          "target_tokens": 19357,
+          "source_tokens": 730141
+        },
+        "workload_ordinal": 7
+      },
+      "report_binding": [
+        {
+          "source_id": "step7DT",
+          "rank": 0,
+          "ordinal": 7,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-6cd0bd2726de211c0e826de535a18346fe5a107c3fca4fed36b920e3-01000000-115709.out",
+          "source_read_bytes": 288816,
+          "source_read_sha256": "527e8cb169c3c1338dcc4065818b60216107bee9a60b1e4c7eb24eac83ced92f",
+          "line_sha256": "2bae0124adfa9916c0c79e89505a96a4db78f1beeb0efe5fadf4b4da637ee9c4",
+          "line_number": 322
+        },
+        {
+          "source_id": "step7DT",
+          "rank": 1,
+          "ordinal": 7,
+          "source_path": "/tmp/ray/session_2026-10-07_11-39-00_016748_110053/logs/worker-c42d1611ac22f99293d5b5b387dfc406e618eaa945f674e6bee2de20-01000000-117229.out",
+          "source_read_bytes": 285915,
+          "source_read_sha256": "0f58c48af00d9b659659b51feba680a951844dd97a1b449f789764ae65fdcff6",
+          "line_sha256": "46e8f4f39fb51653b0ca7df1f6c23d1f7cbe4a1b23bbdf2caa6a3b11ec4534bc",
+          "line_number": 210
+        }
+      ],
+      "DP_work_rows": 168,
+      "unique_DT_trajectory_UIDs": 166,
+      "duplicate_DP_work_rows": 2,
+      "combined_raw_groups": {
+        "self_target": {
+          "tokens": 12024,
+          "sum": 12024.0,
+          "sumsq": 12024.0,
+          "min": 1.0,
+          "max": 1.0,
+          "max_abs": 1.0
+        },
+        "prior_source": {
+          "tokens": 221285,
+          "sum": 12255.675450727627,
+          "sumsq": 17504.786402886144,
+          "min": -110.06127166748047,
+          "max": 1.0,
+          "max_abs": 110.06127166748047
+        },
+        "other_policy": {
+          "tokens": 168,
+          "sum": 0.0,
+          "sumsq": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "max_abs": 0.0
+        }
+      },
+      "combined_raw_total_sumsq": 29528.786402886144,
+      "largest_abs_raw_token": 110.06127166748047,
+      "one_maximum_occurrence_squared": 12113.483521062939,
+      "max_abs_squared_over_combined_raw_total_sumsq": 0.41022625704248267,
+      "max_abs_squared_over_combined_prior_sumsq": 0.6920097876238981,
+      "rank_prior_max_abs": [
+        2.803487539291382,
+        110.06127166748047
+      ],
+      "rank_prior_sumsq": [
+        2184.1514622687114,
+        15320.634940617434
+      ]
+    }
+  ],
+  "step7_vs_previous": {
+    "largest_previous_max_abs": 23.055397033691406,
+    "largest_previous_total_fraction": 0.033742749212687405,
+    "largest_previous_prior_fraction": 0.10971710181519266,
+    "step7_max_abs_factor_over_previous_largest": 4.7737747264402035,
+    "step7_total_fraction_factor_over_previous_largest": 12.157463947491154,
+    "statement": "Step7 is more concentrated by these observed raw second-moment ratios. This does not establish an interface bug, degradation, or a need for clipping/correction."
+  },
+  "step7_metric_state": {
+    "at_saved_DT_observation_1791363316": "Actor update in progress, complete metric and rollout7 absent.",
+    "at_actual_followup_1791363676": "Complete metric step7 and original rollout7 are now present in the bound followup receipt; eighth native sampling has begun.",
+    "reported_postprocessing_advantage_extrema": {
+      "min": -553.449,
+      "max": 4.859
+    },
+    "inference_limit": "Those observed metric extrema are retained as separate evidence; the raw ratios do not prove their causal effect on whitening or gradients."
+  }
+}

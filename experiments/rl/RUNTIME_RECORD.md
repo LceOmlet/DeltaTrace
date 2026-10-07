@@ -1,5 +1,22 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 17:01 TextCraft第七次完整更新与信用尾部计量
+
+前一goal turn为progress（真实MLP对照、AppWorld正式提交及版本绑定）；本次同PID/source
+只读核对产生新完整step7指标，未重新提交或改生产代码/参数。TextCraft实际rollout7为
+166个1分/90个0分、256条，训练成功率0.6484375；entropy0.651、grad0.034、PG−0.097。
+原gen1839.132/oldprob125.917/ref109.901/DT175.327/actor457.612/完整2708.344秒，已进入第8轮采样。
+7点曲线已用原plot_training_progress解析/绘制；只有step7的成功率来自实际保存score1/总数，
+其他缺失成功率未补造；平均回报曲线仍为原console值，未混入独立评估。
+
+step7原prior最小−110.061，原框架白化后最小−553.449，均有限。离线合并DP补齐DT
+工作行的raw self/prior/other原始二阶量：最大单项占比41.023%，前6次最高3.374%；
+这是原始工作行的统计，不是白化后或梯度占比，不从极值判定bug或退化，未做裁剪/纠偏。
+目前成功率波动且熵稳定，未证明学习改善或长期稳定。AppWorld17:00原采集198/240条，
+transport3637请求/664929生成token/1087.0秒；仍无首轮完整DT/PPO。容器229.134GiB为阶段快照。
+来源current-formal-observation-1791363676.json、step7-complete原回执及steps1-7原始二阶量分析；
+完整路径/SHA和图表在current_runtime及结果索引。范围仍只有两组DTPO，SQL/GRPO未启动。
+
 ## 2026-10-07 16:43 AppWorld有限MLP分块版本已提交，原生采样中
 
 AppWorld新PID2001805/birth1791362313.39/source24b9e671已由原bind/submit入口
