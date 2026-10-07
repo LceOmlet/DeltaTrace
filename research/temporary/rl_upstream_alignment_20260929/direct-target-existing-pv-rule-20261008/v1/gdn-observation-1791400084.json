@@ -1,0 +1,268 @@
+{
+  "unix": 1791400084.6428878,
+  "driver": {
+    "pid": 1732100,
+    "birth": 1791399903.96,
+    "same_birth": false
+  },
+  "completed": false,
+  "ranks": [
+    {
+      "rank": 0,
+      "pid": 1737048,
+      "birth": 1791399932.95,
+      "phase": "failed",
+      "active_mode": "original_joint_EOS",
+      "active_decoder": 30,
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 275, in inspect_layer_effect\n    try:producer.attribute_episodes([[row['row'] for row in rows]],[0.0])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/deltatrace_rollout.py\", line 471, in attribute_episodes\n    result = [self.direct_readout.trajectories(rows) for rows in episodes]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/reward_readout.py\", line 526, in trajectories\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 265, in trace\n    returned=trace_owner(*args,**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/experiments/rl/deltatrace_credit.py\", line 60, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 497, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=consume_captures))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 267, in timed\n    begin.record();tick=time.perf_counter();value=fn();end.record()\n                                                  ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 497, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=consume_captures))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 175, in decoder\n    try:returned=decoder_owner(*wrapped,**kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py\", line 267, in decoder_finite_pullback\n    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)\n                                   ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 171, in mixer\n    value=mixer_owner(upstream)\n          ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 490, in mixer\n    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 208, in gdn\n    maxabs=float((a[1].float()-value[1].float()).abs().max()),shape=list(a.shape),dtype=str(a.dtype))\n                  ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\nRuntimeError: The size of tensor a (9723) must match the size of tensor b (9851) at non-singleton dimension 0\n",
+      "decoder_subops": {
+        "31": {
+          "points": [
+            {
+              "name": "before_MLP_residual",
+              "coefficient_times_single_delta": 27.714939725986873
+            },
+            {
+              "name": "after_MLP_before_post_RMSNorm",
+              "coefficient_times_single_delta": 30.647513928101315
+            },
+            {
+              "name": "after_post_RMSNorm_residual",
+              "coefficient_times_single_delta": 29.959392165759375
+            },
+            {
+              "name": "after_mixer_before_input_RMSNorm",
+              "coefficient_times_single_delta": 5.272493303162529
+            },
+            {
+              "name": "after_input_RMSNorm_residual",
+              "coefficient_times_single_delta": 4.78742173004925
+            }
+          ],
+          "factual_endpoint_checks": {
+            "input_norm_input": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "input_norm_output": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "post_norm_input": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "post_norm_output": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "decoder_output": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            }
+          }
+        },
+        "30": {
+          "points": [
+            {
+              "name": "before_MLP_residual",
+              "coefficient_times_single_delta": 4.78742173004925
+            },
+            {
+              "name": "after_MLP_before_post_RMSNorm",
+              "coefficient_times_single_delta": 5.251863632250978
+            },
+            {
+              "name": "after_post_RMSNorm_residual",
+              "coefficient_times_single_delta": 5.390044353545909
+            }
+          ],
+          "factual_endpoint_checks": {}
+        }
+      },
+      "gdn_subops": {},
+      "views": {},
+      "layer_modes": {
+        "single_EOS": {
+          "seconds": 49.77635414300312,
+          "remaining_snapshot_bytes": 484196352
+        }
+      },
+      "layer_contractions": {
+        "32": {
+          "joint_coefficient_times_single_deletion_delta": 27.714939725986873,
+          "factual_endpoints_equal": true,
+          "factual_endpoint_maxabs": 0.0
+        },
+        "31": {
+          "joint_coefficient_times_single_deletion_delta": 4.78742173004925,
+          "factual_endpoints_equal": true,
+          "factual_endpoint_maxabs": 0.0
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "pid": 1738575,
+      "birth": 1791399946.51,
+      "phase": "failed",
+      "active_mode": "original_joint_EOS",
+      "active_decoder": 30,
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 275, in inspect_layer_effect\n    try:producer.attribute_episodes([[row['row'] for row in rows]],[0.0])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/deltatrace_rollout.py\", line 471, in attribute_episodes\n    result = [self.direct_readout.trajectories(rows) for rows in episodes]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/reward_readout.py\", line 526, in trajectories\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 265, in trace\n    returned=trace_owner(*args,**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/experiments/rl/deltatrace_credit.py\", line 60, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 497, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=consume_captures))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 267, in timed\n    begin.record();tick=time.perf_counter();value=fn();end.record()\n                                                  ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 497, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=consume_captures))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 175, in decoder\n    try:returned=decoder_owner(*wrapped,**kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py\", line 267, in decoder_finite_pullback\n    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)\n                                   ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 171, in mixer\n    value=mixer_owner(upstream)\n          ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 490, in mixer\n    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 208, in gdn\n    maxabs=float((a[1].float()-value[1].float()).abs().max()),shape=list(a.shape),dtype=str(a.dtype))\n                  ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\nRuntimeError: The size of tensor a (9723) must match the size of tensor b (9851) at non-singleton dimension 0\n",
+      "decoder_subops": {
+        "31": {
+          "points": [
+            {
+              "name": "before_MLP_residual",
+              "coefficient_times_single_delta": 27.714939725986873
+            },
+            {
+              "name": "after_MLP_before_post_RMSNorm",
+              "coefficient_times_single_delta": 30.647513928101315
+            },
+            {
+              "name": "after_post_RMSNorm_residual",
+              "coefficient_times_single_delta": 29.959392165759375
+            },
+            {
+              "name": "after_mixer_before_input_RMSNorm",
+              "coefficient_times_single_delta": 5.272493303162529
+            },
+            {
+              "name": "after_input_RMSNorm_residual",
+              "coefficient_times_single_delta": 4.78742173004925
+            }
+          ],
+          "factual_endpoint_checks": {
+            "input_norm_input": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "input_norm_output": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "post_norm_input": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "post_norm_output": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            },
+            "decoder_output": {
+              "equal": true,
+              "maxabs": 0.0,
+              "shape": [
+                2,
+                9851,
+                4096
+              ],
+              "dtype": "torch.bfloat16"
+            }
+          }
+        },
+        "30": {
+          "points": [
+            {
+              "name": "before_MLP_residual",
+              "coefficient_times_single_delta": 4.78742173004925
+            },
+            {
+              "name": "after_MLP_before_post_RMSNorm",
+              "coefficient_times_single_delta": 5.251863632250978
+            },
+            {
+              "name": "after_post_RMSNorm_residual",
+              "coefficient_times_single_delta": 5.390044353545909
+            }
+          ],
+          "factual_endpoint_checks": {}
+        }
+      },
+      "gdn_subops": {},
+      "views": {},
+      "layer_modes": {
+        "single_EOS": {
+          "seconds": 49.771359612001106,
+          "remaining_snapshot_bytes": 484196352
+        }
+      },
+      "layer_contractions": {
+        "32": {
+          "joint_coefficient_times_single_deletion_delta": 27.714939725986873,
+          "factual_endpoints_equal": true,
+          "factual_endpoint_maxabs": 0.0
+        },
+        "31": {
+          "joint_coefficient_times_single_deletion_delta": 4.78742173004925,
+          "factual_endpoints_equal": true,
+          "factual_endpoint_maxabs": 0.0
+        }
+      }
+    }
+  ],
+  "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Thu Oct  8 03:08:04 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 117W / 450W      | 47C          P9 | 30305/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 119W / 450W      | 47C          P9 | 36447/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  2                  2838967         ray::WorkerDict              29384          |\n|  3                  2840776         ray::WorkerDict              35526          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+  "memory.usage_in_bytes": "152244744192\n",
+  "memory.stat": "cache 91337072640\nrss 60706426880\nrss_huge 37786484736\nshmem 477954048\nmapped_file 488767488\ndirty 1486848\nwriteback 0\nswap 0\npgpgin 1568149176\npgpgout 1540622474\npgfault 1385732205\npgmajfault 552783\ninactive_anon 49585131520\nactive_anon 11799818240\ninactive_file 47486816256\nactive_file 43365408768\nunevictable 0\nhierarchical_memory_limit 966367641600\nhierarchical_memsw_limit 966367641600\ntotal_cache 91337072640\ntotal_rss 60706426880\ntotal_rss_huge 37786484736\ntotal_shmem 477954048\ntotal_mapped_file 488767488\ntotal_dirty 1486848\ntotal_writeback 0\ntotal_swap 0\ntotal_pgpgin 1568149176\ntotal_pgpgout 1540622474\ntotal_pgfault 1385732205\ntotal_pgmajfault 552783\ntotal_inactive_anon 49585131520\ntotal_active_anon 11799818240\ntotal_inactive_file 47486816256\ntotal_active_file 43365408768\ntotal_unevictable 0\n",
+  "textcraft_same_birth": true,
+  "textcraft_release_present": [
+    false,
+    false
+  ],
+  "driver_log_tail": "_hook.py\", line 22, in auto_init_wrapper\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/client_mode_hook.py\", line 104, in wrapper\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py\", line 2967, in get\n    values, debugger_breakpoint = worker.get_objects(\n                                  ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py\", line 1015, in get_objects\n    raise value.as_instanceof_cause()\nray.exceptions.RayTaskError(RuntimeError): \u001b[36mray::LayerEffectWorker.inspect_layer_effect()\u001b[39m (pid=1738575, ip=10.200.112.15, actor_id=249fbe4f55f49d895c7e06d901000000, repr=<inspect_layer_effect.LayerEffectWorker object at 0x7ed88da34d40>)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/verl/single_controller/base/decorator.py\", line 534, in inner\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 275, in inspect_layer_effect\n    try:producer.attribute_episodes([[row['row'] for row in rows]],[0.0])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/deltatrace_rollout.py\", line 471, in attribute_episodes\n    result = [self.direct_readout.trajectories(rows) for rows in episodes]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/reward_readout.py\", line 526, in trajectories\n    signed, _, detail = trace_token_attribution(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 265, in trace\n    returned=trace_owner(*args,**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/experiments/rl/deltatrace_credit.py\", line 60, in trace_token_attribution\n    signed, detail = dt_runner.attribute(\n                     ^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 497, in attribute\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=consume_captures))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 267, in timed\n    begin.record();tick=time.perf_counter();value=fn();end.record()\n                                                  ^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 497, in <lambda>\n    with torch.no_grad():new,terms=timed('finite_decoder_'+str(i),lambda:decoder_finite_pullback(layer,d,m,mixer,self.boundaries,focused,consume_captures=consume_captures))\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 175, in decoder\n    try:returned=decoder_owner(*wrapped,**kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py\", line 267, in decoder_finite_pullback\n    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)\n                                   ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 171, in mixer\n    value=mixer_owner(upstream)\n          ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\", line 490, in mixer\n    return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-existing-pv-rule-20261008-v1-gdn/inspect_layer_effect.py\", line 208, in gdn\n    maxabs=float((a[1].float()-value[1].float()).abs().max()),shape=list(a.shape),dtype=str(a.dtype))\n                  ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\nRuntimeError: The size of tensor a (9723) must match the size of tensor b (9851) at non-singleton dimension 0\n"
+}

@@ -195,31 +195,20 @@ def make_worker():
                     row=case['row']
                     current={name:(c if name=='z' else e)[name][2*row:2*row+2].detach().to('cpu',copy=True)
                              for name in ('o','z','q','k','v','raw_g','beta')}
-                    current_start=int(kwargs.get('capture_start',0))
                     if state['mode']=='single_EOS':
-                        gdn_single[i]=dict(start=current_start,values=current)
+                        gdn_single[i]=current
                         return gdn_owner(*args,**kwargs)
-                    actual=gdn_single[i]['values'];actual_start=gdn_single[i]['start']
+                    actual=gdn_single[i]
                     probe=dict(points=[],factual_endpoint_checks={},fla_groups=[],operand_artifacts=[],
                         owner=dict(path=inspect.getsourcefile(gdn_owner),sha256=sha(inspect.getsourcefile(gdn_owner))),
-                        effective_options={k:v for k,v in kwargs.items() if k not in ('norm_gate_pullback','conv_silu_pullback','key_norm_pullback')},
-                        single_capture_start=actual_start,joint_capture_start=current_start,
-                        contraction_scope='Original owner-retained single-deletion range; the omitted causal prefix precedes the only deleted token. No endpoint padding or synthetic values.')
+                        effective_options={k:v for k,v in kwargs.items() if k not in ('norm_gate_pullback','conv_silu_pullback','key_norm_pullback')})
                     for name,value in current.items():
                         a=actual[name]
-                        assert actual_start+a.shape[1]==current_start+value.shape[1]
-                        start=max(actual_start,current_start)
-                        left=a[:,start-actual_start:];right=value[:,start-current_start:]
-                        probe['factual_endpoint_checks'][name]=dict(equal=torch.equal(left[1],right[1]),
-                            maxabs=float((left[1].float()-right[1].float()).abs().max()),shape=list(left.shape),dtype=str(a.dtype),time_start=start)
+                        probe['factual_endpoint_checks'][name]=dict(equal=torch.equal(a[1],value[1]),
+                            maxabs=float((a[1].float()-value[1].float()).abs().max()),shape=list(a.shape),dtype=str(a.dtype))
                     del current
                     def dot(coefficients,endpoints):
                         return float(effect_owner(coefficients[row:row+1],endpoints.to(coefficients.device)).sum())
-                    def retained_dot(coefficients,endpoints,coefficient_start=current_start):
-                        start=max(actual_start,coefficient_start)
-                        x=endpoints[:,start-actual_start:]
-                        m=coefficients[row:row+1,start-coefficient_start:start-coefficient_start+x.shape[1]]
-                        return float(effect_owner(m,x.to(coefficients.device)).sum())
                     skip=dot(upstream,native_sub['single_EOS'][i,'input_norm_input'])
                     context=dict(z_credit=None,head_start=0,fla_credit=0.0)
                     def point(name,value):
@@ -229,14 +218,14 @@ def make_worker():
                     gate_owner=kwargs.get('norm_gate_pullback') or gdn_owner.__globals__['_norm_gate_finite_rule']
                     def gate(*operands,**options):
                         returned=gate_owner(*operands,**options)
-                        context['z_credit']=retained_dot(returned[1],actual['z'])
-                        point('after_gdn_norm_and_silu_gate',skip+context['z_credit']+retained_dot(returned[0],actual['o']))
+                        context['z_credit']=dot(returned[1],actual['z'])
+                        point('after_gdn_norm_and_silu_gate',skip+context['z_credit']+dot(returned[0],actual['o']))
                         return returned
                     def fla(endpoints,do,scale):
                         returned=fla_owner(endpoints,do,scale)
-                        start=current_start+e['q'].shape[1]-endpoints['q'].shape[1]
+                        start=actual['q'].shape[1]-endpoints['q'].shape[1]
                         head=context['head_start'];heads=endpoints['q'].shape[2]
-                        terms={name:retained_dot(returned[name],actual['raw_g' if name=='g' else name][:,:,head:head+heads],start)
+                        terms={name:dot(returned[name],actual['raw_g' if name=='g' else name][:,start:,head:head+heads])
                                for name in ('q','k','v','g','beta')}
                         context['fla_credit']+=sum(terms.values());context['head_start']+=heads
                         probe['fla_groups'].append(dict(head_start=head,heads=heads,time_start=start,
@@ -249,8 +238,8 @@ def make_worker():
                             payload=dict(endpoints={k:v[2*row:2*row+2].detach().to('cpu',copy=True) for k,v in endpoints.items()},
                                 do=do[row:row+1].detach().to('cpu',copy=True),scale=scale,
                                 outputs={k:v[row:row+1].detach().to('cpu',copy=True) for k,v in returned.items()},
-                                actual_single={k:actual['raw_g' if k=='g' else k][:,:,head:head+heads] for k in terms},
-                                row=row,head_start=head,time_start=start,actual_single_time_start=actual_start,
+                                actual_single={k:actual['raw_g' if k=='g' else k][:,start:,head:head+heads] for k in terms},
+                                row=row,head_start=head,time_start=start,
                                 scope='Selected original B4 finite operator inputs and outputs, not a new B1 execution')
                             torch.save(payload,path)
                             probe['operand_artifacts'].append(dict(path=str(path),bytes=path.stat().st_size,sha256=sha(path)))

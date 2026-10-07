@@ -1,5 +1,18 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 GDN细分v1失败保留；修正旁观capture_start对齐，v2准备
+
+6f712988、PID1732100/birth1791399903.96退出，未完成。新增旁观器错误地直接
+比较原single compact捕获9723与joint9851的位置维；错误在旁观比较、尚未进入
+joint GDN算子。不把此错误归于生产DT或OOM。完整栈/原源/launch/config已按SHA
+保存到gdn-results；4/5回859MiB。此前31/30子操作结果仍成立，没有被覆盖。
+
+v2仅使用原GDN capture_start把两次实际保留区间对齐，在公共时间坐标收缩；
+不pad、不伪造端点、不中途改原capture范围。被省略区间在唯一删除token之前，
+沿用原因果前缀语义。所有原callback输入/返回值仍不变。v2独立-v2目录，CPU原
+输入身份验证完成，尚未GPU启动。Text仍hold、App正式不重启、参数与信用未变。
+
+
 ## 2026-10-08 GDN30 norm/gate 与 FLA 细分诊断已准备
 
 沿用同一真实B4与原两partial DT到decoder30；只把现有GDN norm_gate_pullback

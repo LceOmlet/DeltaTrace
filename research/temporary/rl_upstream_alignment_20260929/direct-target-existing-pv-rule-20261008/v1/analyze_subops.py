@@ -2,12 +2,18 @@
 
 No attribution, model operation, repair, or acceptance tolerance is defined here.
 """
+import argparse
 import hashlib
 import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[4]
+parser = argparse.ArgumentParser()
+parser.add_argument('--gdn', action='store_true')
+parser.add_argument('--revision',type=int,default=1)
+args = parser.parse_args()
+folder = ('gdn-v'+str(args.revision)+'-results' if args.revision!=1 else 'gdn-results') if args.gdn else 'subops-results'
 
 
 def artifact(path):
@@ -15,11 +21,11 @@ def artifact(path):
                 sha256=hashlib.sha256(path.read_bytes()).hexdigest())
 
 
-launch = json.loads((HERE / 'subops-results/launch.json').read_bytes())
+launch = json.loads((HERE / folder / 'launch.json').read_bytes())
 assert launch['partial_DT_only'] and not launch['full_signed_vector_produced']
 records = []
 for rank in (0, 1):
-    path = HERE / 'subops-results/results' / f'rank{rank}.json'
+    path = HERE / folder / 'results' / f'rank{rank}.json'
     current = json.loads(path.read_bytes())
     previous = json.loads((HERE / 'layer-results/results' / f'rank{rank}.json').read_bytes())
     assert current['phase'] == 'complete'
@@ -48,6 +54,7 @@ for rank in (0, 1):
     phases = [json.loads(line) for line in path.with_name(f'rank{rank}-phases.jsonl').read_text().splitlines()]
     records.append(dict(rank=rank, worker_pid=current['pid'], worker_birth=current['birth'],
         points=points, factual_endpoint_checks=checks, boundary_comparison=boundary_comparison,
+        gdn_subops=current.get('gdn_subops', {}),
         phases=current['phases'], max_recorded_pss_bytes=max(v['pss_bytes'] for v in phases),
         completed_unix=current['unix'], source=artifact(path), finite_owner=current['finite_owner']))
 
@@ -56,8 +63,8 @@ out = dict(status='Completed passive decoder31/30 branch diagnosis; no credit re
     native_sha256=launch['native_sha256'], case_binding=launch['case_binding'],
     ranks=records, points_equal_across_ranks=records[0]['points'] == records[1]['points'],
     elapsed_launch_to_last_worker_complete_seconds=max(v['completed_unix'] for v in records) - launch['launched_unix'],
-    sources=[artifact(HERE / 'subops-results/transport.json'),
-             artifact(HERE / 'subops-results/results/effective-config.yaml'),
+    sources=[artifact(HERE / folder / 'transport.json'),
+             artifact(HERE / folder / 'results/effective-config.yaml'),
              artifact(HERE / 'subops-producer-owner.json')],
     scope='Two partial original producer DT calls per rank, stopped after decoder30. Original native endpoint hooks and original token-effect contractions only. No full signed vector or advantages produced.',
     operations=dict(partial_DT_calls_per_rank=2, backward=0, optimizer=0, rollout=0, checkpoint_restore=0),
@@ -69,8 +76,14 @@ out = dict(status='Completed passive decoder31/30 branch diagnosis; no credit re
     ],
     credit_repaired=False, production_profile_changed=False, official_tolerance_claim=False,
     formal_restart=False, text_update_released=False)
-target = REPO / 'experiments/rl/results_current_extreme_subops_20261008.json'
+if args.gdn:
+    out['status'] = 'Completed original GDN30 norm/gate and finite FLA passive diagnosis; no credit repair deployed'
+    out['gdn_points_equal_across_ranks'] = records[0]['gdn_subops']['30']['points'] == records[1]['gdn_subops']['30']['points']
+    out['gdn_group_terms_equal_across_ranks'] = records[0]['gdn_subops']['30']['fla_groups'] == records[1]['gdn_subops']['30']['fla_groups']
+    out['scope'] += ' GDN norm/gate and FLA callbacks return original owner outputs. Rank0 selected original finite operands stay remotely saved; no independent numerical replay was run in this job.'
+target = REPO / ('experiments/rl/results_current_extreme_gdn_20261008.json' if args.gdn else 'experiments/rl/results_current_extreme_subops_20261008.json')
 target.write_text(json.dumps(out, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
 print(json.dumps(dict(receipt=artifact(target), ranks=[dict(rank=v['rank'], points=v['points'],
+    gdn_points=v['gdn_subops'].get('30', {}).get('points'),
     boundary_comparison=[dict(boundary=b['boundary'], equal=b['equal_to_previous'], differences=b['differences'])
                          for b in v['boundary_comparison']]) for v in records]), indent=2))

@@ -13,11 +13,13 @@ spec.loader.exec_module(transport)
 parser = argparse.ArgumentParser()
 group=parser.add_mutually_exclusive_group();group.add_argument('--layer', action='store_true');group.add_argument('--subops',action='store_true')
 group.add_argument('--gdn',action='store_true')
+parser.add_argument('--revision',type=int,default=1)
 args = parser.parse_args()
 code = r'''
 import json,psutil,subprocess,time
 from pathlib import Path
 root=Path(ROOT);out=root/('receipts/direct-target-existing-pv-rule-20261008-v1-'+('gdn' if GDN else ('subops' if SUBOPS else ('layers' if LAYER else 'curves'))))
+if GDN and REVISION!=1:out=out.with_name(out.name+'-v'+str(REVISION))
 a=json.loads((out/'launch.json').read_bytes())
 p=psutil.Process(a['pid']) if psutil.pid_exists(a['pid']) else None
 r=dict(unix=time.time(),driver=dict(pid=a['pid'],birth=a['birth'],same_birth=p is not None and p.create_time()==a['birth']),completed=(out/'results/completed.json').exists(),ranks=[])
@@ -39,14 +41,15 @@ r['textcraft_same_birth']=psutil.Process(2833207).create_time()==1791370325.16
 r['textcraft_release_present']=[(root/'receipts/direct-target-prefix-runtime-20261007-v1/textcraft-first-dt'/('rank'+str(i)+'-release-update')).exists() for i in (0,1)]
 if not r['ranks'] or not r['driver']['same_birth']:r['driver_log_tail']=(out/'driver.log').read_text(errors='replace')[-6000:]
 print(json.dumps(r))
-'''.replace('ROOT', repr(transport.ROOT)).replace('LAYER', repr(args.layer)).replace('SUBOPS',repr(args.subops)).replace('GDN',repr(args.gdn))
+'''.replace('ROOT', repr(transport.ROOT)).replace('LAYER', repr(args.layer)).replace('SUBOPS',repr(args.subops)).replace('GDN',repr(args.gdn)).replace('REVISION',repr(args.revision))
 shell = 'set -eu\nsource ' + transport.ENTRY + '/metax-entry.env.sh\n"$VENV_PYTHON" - <<\'PY\'\n' + code + '\nPY\n'
 r = subprocess.run(transport.SSH + ['bash', '-s'], input=shell.encode(), capture_output=True)
 if r.returncode:
     print(r.stderr.decode(errors='replace'))
 r.check_returncode()
 record = json.loads(r.stdout)
-(HERE / (('gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else 'curve-'))) + 'observation-' + str(int(record['unix'])) + '.json')).write_text(json.dumps(record, indent=2) + '\n')
+prefix=('gdn-v'+str(args.revision)+'-') if args.gdn and args.revision!=1 else None
+(HERE / ((prefix or ('gdn-' if args.gdn else ('subops-' if args.subops else ('layer-' if args.layer else 'curve-')))) + 'observation-' + str(int(record['unix'])) + '.json')).write_text(json.dumps(record, indent=2) + '\n')
 # Exact positions remain in the saved receipt; keep the live report compact.
 for entry in record['ranks']:
     if 'last_point' in entry:
