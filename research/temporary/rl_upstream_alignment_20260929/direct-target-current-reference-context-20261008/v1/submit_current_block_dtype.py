@@ -13,9 +13,9 @@ remote = transport.ROOT+'/receipts/current-extreme-official-block-dtype-20261008
 helper = HERE/'check_current_block_official_dtypes.py'
 digest = hashlib.sha256(helper.read_bytes()).hexdigest()
 commit = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
-subprocess.run(transport.SSH+['mkdir',remote],check=True)
+subprocess.run(transport.SSH+['mkdir','-p',remote],check=True)
 subprocess.run(transport.SCP+[str(helper),transport.SSH[-1]+':'+remote+'/'+helper.name],check=True)
-script = f'''set -eu
+script = fr'''set -eu
 source {transport.ENTRY}/metax-entry.env.sh
 "$VENV_PYTHON" - <<'PYCODE'
 import hashlib,json,os,re,subprocess,time,psutil
