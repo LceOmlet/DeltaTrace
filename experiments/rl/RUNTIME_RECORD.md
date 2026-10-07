@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 GDN30 首次反号在有限FLA；原算子输入已留存
+
+e1bc175d、PID1788375/birth1791400430.70完成退出。原B4/两rank/31与30边界
+逐值等于此前完整旁观；内层七类事实端点在原保留区间逐值相同。single原
+capture_start=128、joint=0，按原坐标对齐，无pad/伪造端点。GDN进入5.39004，
+norm/gate后仍+0.543606，有限FLA后-5.624335，完整GDN后-5.598628。因此
+首次反号已缩小到有限FLA；还不是FLA数值内核出错的证明，未部署任何纠偏。
+实际原profile同时有symmetric norm/gate与两端平均memory callback，已核对
+实际constructor回退到top-level profiles及该源SHA dd6bbfff，不能重做已有对称化。
+
+每rank两partial DT；single49.59秒，joint rank0含3.712GB原算子输入/输出落盘
+45.23秒，rank1无落盘19.74秒；总启动至最后worker完成165.54秒。记录PSS最大
+13.213/12.715GB，终态4/5各859MiB。原张量分四个8-head文件留在远端，SHA/字节
+见results_current_extreme_gdn_20261008.json，后续可直接重放原算子，避免模型重跑。
+没有full signed/QVA、rollout、PPO更新或恢复。Text同birth hold、App正式不重启。
+
+下一有界诊断已准备：用保存的原算子张量直接调用原eager finite_fla+原两端平均，
+与只取消中间GEMM的FP16操作数舍入作FP32对照；FLA adjoint阶段/原捕获值不变。
+这是部分精度来源诊断，不能标成完整FP32参考或官方容差通过，不是生产后端。
+
+
 ## 2026-10-08 GDN细分v1失败保留；修正旁观capture_start对齐，v2准备
 
 6f712988、PID1732100/birth1791399903.96退出，未完成。新增旁观器错误地直接
