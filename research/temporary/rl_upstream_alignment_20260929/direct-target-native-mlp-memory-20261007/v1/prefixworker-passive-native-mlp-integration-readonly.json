@@ -1,0 +1,165 @@
+{
+  "kind": "Local read-only integration map; no callback/launcher written or executed",
+  "observed_utc": "2026-10-07T10:33:50.923442+00:00",
+  "actual_target": {
+    "appworld_pid": 2001805,
+    "birth": 1791362313.39,
+    "source_sha256": "24b9e671f3533d88047fead3c709bbfddbf5200053f3cd8f3d308cb30f179f11",
+    "runner_sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f",
+    "decoder_sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234"
+  },
+  "sources": {
+    "worker": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/verify_native_prefix_artifacts.py",
+      "sha256": "22bc698c7ae848581c1572095029c17e3542209589a8faa8d12109b3337ec7e8",
+      "lines": [
+        [
+          34,
+          60
+        ],
+        [
+          108,
+          123
+        ],
+        [
+          167,
+          177
+        ],
+        [
+          247,
+          265
+        ]
+      ]
+    },
+    "runpy_entry": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-numerics-20261007/v4/run_direct_target_numeric_owner.py",
+      "sha256": "b3bc0d6ff787f79d3c5a88b554e7245ca37cda07edabf71550d1f1b8d13c198c",
+      "lines": [
+        [
+          1,
+          6
+        ]
+      ]
+    },
+    "diagnostic_dispatch": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-numerics-20261007/v4/diagnose_native_prefix_leases.py",
+      "sha256": "c4a90e7f0dfe5bd31ed233d4a16c7a350dc09ec37ba352f7cf2bf718bb8f1c9e",
+      "lines": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "real_rows_loader": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-numerics-20261007/v4/diagnose_direct_target.py",
+      "sha256": "0346a466ccf4e7d8d05a67e14fa32f09824d23bcda304c5e3d87457886549a1d",
+      "lines": [
+        [
+          81,
+          120
+        ],
+        [
+          158,
+          193
+        ],
+        [
+          195,
+          227
+        ]
+      ]
+    },
+    "passive_native_mlp": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-native-mlp-memory-20261007/v1/passive_native_mlp.py",
+      "sha256": "65a8fa2a09f264d52d6c68fafcbd1826775e8ff476cd3907ec19349bc4224993",
+      "lines": []
+    },
+    "frozen_runner": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/candidate/qwen35_dense_finite_runner.py",
+      "sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f",
+      "lines": [
+        [
+          239,
+          239
+        ],
+        [
+          276,
+          322
+        ],
+        [
+          395,
+          429
+        ],
+        [
+          559,
+          559
+        ]
+      ]
+    },
+    "frozen_producer_owner": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/old-new-source-audit/new-producer.py",
+      "sha256": "494b53b0f40831f379a427b9e47df879487e55d8bbddb4541ad0be6f3a47cace",
+      "lines": [
+        [
+          126,
+          157
+        ]
+      ]
+    },
+    "input_source_receipt": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/runtime-metadata/verification.json",
+      "sha256": "57881e21bbfd58593710d5ee3ee3e42dcdf96221638bf0525c8e650b657eff3b",
+      "lines": []
+    }
+  },
+  "existing_seam": [
+    "Original runpy entry delegates to verify_native_prefix_artifacts __main__.",
+    "Original PrefixWorker.check_prefix calls diagnose_native_prefix_leases.diagnose(runner,producer,OUT,save,cache_tensors=tensors) in existing no_grad/native precision scope. That dispatch module imports diagnose_direct_target.diagnose.",
+    "A diagnostic callback can compose original real-row load_rows(path,rank), with passive_native_mlp(runner.model, rank_jsonl, source_identity=...), then producer.direct_readout.trajectories(rows) exactly once. No public runner observer, capture_backend replacement, reference arithmetic, or prefix/offload override.",
+    "Worker original finally restores attention implementation/training, releases owner params and applies its original parameter offload. Driver makes one check_prefix call then ray.shutdown in finally."
+  ],
+  "reuse_without_changes": [
+    "Original PrefixWorker/FSDP/tokenizer/model setup and fixed B4/LoRA8/16.",
+    "Original real-ID loader and already saved actual-direct-target-inputs.json.",
+    "Original frozen source24b9/runner628/decoder1c58/native precision/replay offload/prefix flags.",
+    "Submitted passive_native_mlp helper instance replay wrapper and hook restoration."
+  ],
+  "do_not_invoke_as_is": [
+    "v4 diagnose_direct_target observed variant replaces capture_backend and saves full GDN/FA operands; it is not metadata-only memory observation.",
+    "Existing finite MLP diagnostic runs extra baseline arithmetic and sets reuse_native_prefix=False; it changes workload.",
+    "Previous lifetime diagnostic duplicates GDN finite operations."
+  ],
+  "saved_input": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-mlp-token-chunk-20261007-v1/actual-direct-target-inputs.json",
+    "sha256": "f98f93a77c18d2fb8a62dace02ec0dbf61136764ccb4e061c1f576d7dc75048c",
+    "scope": "Saved actual B4/rank response rows, not terminal AppWorld batch29; no synthetic rows.",
+    "geometry": "Original prior diagnostic exercised full widths13152/12901 with prefix override; this observation must retain prefix settings, so actual replay suffix geometry comes from native hooks, not those prior widths."
+  },
+  "first_metadata": {
+    "position": "First model.replay_finite_layer call in runner reverse loop: layer31 for this fixed 32-layer model, not initial root-forward layer0.",
+    "records": "Original MLP/up_proj base_layer/lora_A/lora_B pre/post metadata are immediately flushed before the original scaling/add; exception event preserves original failure.",
+    "no_tensor_snapshot": true,
+    "allocator_not_physical": true
+  },
+  "stop_interface": {
+    "first_native_only_available": false,
+    "evidence": "No early-return/break/stop parameter in frozen attribute; the worker diagnostic seam returns only when callback returns. Passive helper neither stops nor modifies the call.",
+    "available_existing_bound": "One complete native B4/rank trajectory readout, then diagnostic return and original worker/driver cleanup; original OOM unwinds through same finally.",
+    "unavailable": "Stopping immediately after first native MLP would require an additional explicit diagnostic stop mechanism, not an existing interface. No SIGSTOP, replay exception sentinel or new policy was implemented."
+  },
+  "operations": {
+    "remote": 0,
+    "model": 0,
+    "tests": 0,
+    "callback_written": 0,
+    "production_edits": 0,
+    "launch": 0
+  },
+  "not_claimed": [
+    "Reproduced failed29 allocation",
+    "32k capacity",
+    "Numerical tolerance",
+    "Physical peak VRAM",
+    "Formal health"
+  ]
+}
