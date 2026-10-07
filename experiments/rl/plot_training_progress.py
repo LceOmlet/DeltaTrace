@@ -109,6 +109,8 @@ def completed(job):
 
 
 def phase_label(job):
+    if job.get('phase_label'):
+        return job['phase_label']
     if job['exit_code'] is not None:
         return '已退出，代码 ' + job['exit_code']
     if not job['phases']:
@@ -131,11 +133,14 @@ def render(snapshot, history, output):
                          'axes.titleweight': 'bold', 'axes.labelcolor': '#475569',
                          'text.color': '#0f172a', 'axes.edgecolor': '#cbd5e1',
                          'figure.facecolor': '#f8fafc', 'axes.facecolor': 'white'})
-    colors = {'Sokoban': '#b45309', 'Webshop': '#2563eb', 'AppWorld': '#0f766e'}
-    jobs = sorted(snapshot['jobs'], key=lambda j: ['Webshop', 'Sokoban', 'AppWorld'].index(j['task']))
+    colors = {'Sokoban': '#b45309', 'Webshop': '#2563eb', 'AppWorld': '#0f766e',
+              'TextCraft': '#2563eb'}
+    jobs = snapshot['jobs']
+    for job in jobs:
+        colors.setdefault(job['task'], '#64748b')
     now = dt.datetime.fromtimestamp(snapshot['collected_at'], dt.timezone(dt.timedelta(hours=8)))
     stamp = now.strftime('%Y%m%d-%H%M%S')
-    header = now.strftime('%Y-%m-%d %H:%M:%S UTC+8') + '  ·  ' + snapshot['source_commit'][:7]
+    header = now.strftime('%Y-%m-%d %H:%M:%S UTC+8') + '  ·  ' + snapshot.get('source_label', snapshot['source_commit'][:7])
 
     def setup(ax, title, x, y):
         ax.set_title(title, loc='left', pad=12)
@@ -180,8 +185,16 @@ def render(snapshot, history, output):
         ends = [p for p in job['phases'] if p['phase'] == 'generation_end']
         line(axes[0, 1], range(1, len(ends) + 1), [float(p['tokens_per_second']) for p in ends], task, color)
         line(axes[1, 0], range(1, len(ends) + 1), [float(p['seconds']) / 60 for p in ends], task + ' 生成', color)
+        if not ends:
+            observed = [m for m in job['metrics'] if 'timing_s/gen' in m['values']]
+            line(axes[1, 0], [m['step'] for m in observed],
+                 [m['values']['timing_s/gen'] / 60 for m in observed], task + ' 整批采样', color)
         dt_ends = [p for p in job['phases'] if p['phase'] == 'dt_rpc_end']
         line(axes[1, 0], range(1, len(dt_ends) + 1), [float(p['seconds']) / 60 for p in dt_ends], task + ' DT', color, linestyle='--')
+        if not dt_ends:
+            observed = [m for m in job['metrics'] if 'timing_s/adv' in m['values']]
+            line(axes[1, 0], [m['step'] for m in observed],
+                 [m['values']['timing_s/adv'] / 60 for m in observed], task + ' 优势计算', color, linestyle='--')
         updates = [m for m in job['metrics'] if 'timing_s/update_actor' in m['values']]
         line(axes[1, 0], [m['step'] for m in updates], [m['values']['timing_s/update_actor'] / 60 for m in updates], task + ' PPO', color, linestyle=':')
         starts = [p for p in job['phases'] if p['phase'] == 'generation_start']
@@ -191,13 +204,17 @@ def render(snapshot, history, output):
     hours = [(s['collected_at'] - s['started']) / 3600 for s in history]
     setup(axes[2, 0], '容器内存（定时快照）', '距本次正式启动 / 小时', 'GiB')
     line(axes[2, 0], hours, [s['memory_gib'] for s in history], '当前内存', '#475569')
-    axes[2, 0].axhline(snapshot['memory_limit_gib'], color='#dc2626', ls='--', lw=1, label='容器上限')
+    if snapshot.get('memory_limit_gib') is not None:
+        axes[2, 0].axhline(snapshot['memory_limit_gib'], color='#dc2626', ls='--', lw=1, label='容器上限')
     axes[2, 0].set_ylim(bottom=0); finish(axes[2, 0])
     setup(axes[2, 1], '物理显存（定时快照，非连续峰值）', '距本次正式启动 / 小时', 'GiB')
     for job in jobs:
-        gpu = str(job['gpu'])
-        line(axes[2, 1], hours, [s['gpus'].get(gpu, {}).get('used_gib') for s in history], job['task'], colors[job['task']])
-    limits = [snapshot['gpus'][str(j['gpu'])]['total_gib'] for j in jobs if str(j['gpu']) in snapshot['gpus']]
+        for gpu in job.get('devices', [job.get('gpu')]):
+            gpu = str(gpu)
+            line(axes[2, 1], hours, [s['gpus'].get(gpu, {}).get('used_gib') for s in history],
+                 job['task'] + ' GPU' + gpu, colors[job['task']])
+    limits = [snapshot['gpus'][str(gpu)]['total_gib'] for j in jobs
+              for gpu in j.get('devices', [j.get('gpu')]) if str(gpu) in snapshot['gpus']]
     if limits:
         axes[2, 1].axhline(min(limits), color='#dc2626', ls='--', lw=1, label='物理容量')
     axes[2, 1].set_ylim(bottom=0); finish(axes[2, 1])
@@ -210,7 +227,7 @@ def render(snapshot, history, output):
         fig.savefig(output / name, dpi=150); files.append(output / name)
     plt.close(fig)
 
-    fig, axes = plt.subplots(3, 3, figsize=(14, 10))
+    fig, axes = plt.subplots(4, max(1, len(jobs)), figsize=(14, 12), squeeze=False)
     fig.suptitle('DeltaTrace · 训练效果与更新', x=.065, y=.985, ha='left', fontsize=21, weight='bold')
     fig.text(.065, .945, header + '  ·  训练集与独立评估分别标注', color='#64748b')
     for column, job in enumerate(jobs):
@@ -218,6 +235,7 @@ def render(snapshot, history, output):
         for row, (key, title, unit) in enumerate([
                 ('episode/success_rate', '成功率', '%'),
                 ('episode/reward/mean', '平均轨迹回报', '原环境奖励单位'),
+                ('actor/entropy_loss', '策略熵', '原框架日志单位'),
                 ('actor/grad_norm', 'PPO 梯度范数', '范数')]):
             ax = axes[row, column]; setup(ax, task + ' · ' + title, '训练迭代', unit)
             metrics = job['metrics']

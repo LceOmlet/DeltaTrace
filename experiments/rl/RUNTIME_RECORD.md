@@ -1,5 +1,30 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 15:27 TextCraft第五次完整更新，AppWorld新源码绑定核对
+
+TextCraft原PID110053/birth1791344324.6/source5013ebc8不变，完整step5已返回，
+随后进入第6轮原采样。原rollouts/5.jsonl为256条、137个1分/119个0分，平均
+0.53515625；原console reward0.535、entropy0.665、grad_norm0.034。
+整轮2726.901秒，gen1888.977、oldprob125.779、ref109.726、优势计算142.329、
+actor459.605。白化优势[-164.145,6.917]、raw prior最低-23.01699如实保留；
+没有裁剪或补倍率，也不能由五个训练批次宣称学习效果改善。
+完整原日志行SHA e5399786bc2ef758af9986995420acf90f45b379710a20ec1d46f86b32466038，
+textcraft-step5-original-1791358084.json SHA9a1cb076…e79fa。
+
+AppWorld仍为PID1468126/birth1791357190.77/source942c2d68，原LOOP采样中，
+尚无完整DT/PPO结果。两个实际WorkerDict的DT/VERL/entry/LOOP路径全部匹配；
+45项当前文件SHA、15项已保存CPU导入记录对应当前冻结文件。仅runner/GDN
+生命周期修复，FA/FLA、PPO、head/readout未变；B4/卡、rank8/alpha16、32768、
+resume disable保持。审计readonly-source-audit-1791358028.json SHAac2c14ac…51a7c5。
+源码绑定不扩大已保存数值验证和新joint target32k容量的范围。
+
+15:27原物理显存2/3=50246/50234MiB、4/5=55312/55290MiB，容器226.81GiB；
+均为阶段快照，不是峰值。原图脚本修复了旧任务名硬编码和双卡显示，新增原
+actor/entropy_loss曲线；两项原日志解析测试通过，实际当前两组快照已渲染。
+原日志未提供episode/success_rate时保留缺失，AppWorld完整指标也不补零。
+图表/CSV/快照位于direct-target-gpu-lifetime-20261007/v1/plots/textcraft-1791344324；
+仅观察和显示改动，未改训练，也未恢复旧检查点或SQL/GRPO。
+
 ## 2026-10-07 15:13 AppWorld生命周期修复正式提交，TextCraft继续
 
 AppWorld由原submit_prepared_direct_targets从base新开，PID1468126/birth1791357190.77，

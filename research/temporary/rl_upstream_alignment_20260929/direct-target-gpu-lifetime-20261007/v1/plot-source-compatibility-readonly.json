@@ -1,0 +1,96 @@
+{
+  "observed_local_unix": 1791357936.9811633,
+  "scope": "Read-only source inspection only; plot script not run, imported, modified or published. No training or environment calls.",
+  "source": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\plot_training_progress.py",
+    "sha256": "6b3a773280d18d8ddc4d29ae2d6df017eced6f40b19bc249fb541fb4728e88a4"
+  },
+  "collector_current_schema_mismatch": {
+    "current": "manifest jobs devices/output/budget/checkpoints/source_receipt; per-job source-bound run identity",
+    "expected": "manifest started/source_commit, jobs gpu/run_dir/paper_budget.iterations/checkpoint_dir/exit_file/log/ray_session/pid/task",
+    "lines": [
+      66,
+      70,
+      74,
+      77
+    ]
+  },
+  "required_snapshot_schema": {
+    "top": [
+      "collected_at",
+      "started",
+      "source_commit",
+      "root",
+      "jobs",
+      "memory_gib",
+      "memory_limit_gib",
+      "gpus"
+    ],
+    "job": [
+      "task",
+      "gpu",
+      "run_dir",
+      "budget",
+      "pid_alive",
+      "exit_code",
+      "checkpoint_step",
+      "metrics",
+      "phases"
+    ],
+    "metrics": "Original parse_logs records -> [{step,values,sources}], lines25-40; retains official names and file/line provenance",
+    "phases": "Legacy [DT rollout] phase markers only; current native_async/direct_joint logs do not automatically become this schema",
+    "gpus": "Map string physical GPU index -> used_gib,total_gib"
+  },
+  "renderer_findings": [
+    {
+      "lines": [
+        134,
+        135
+      ],
+      "status": "cannot_run_for_TextCraft_as_is",
+      "reason": "Hardcoded colors/order supports Sokoban/Webshop/AppWorld only. TextCraft sorting .index raises ValueError before plotting."
+    },
+    {
+      "lines": [
+        158,
+        213
+      ],
+      "status": "supports_two_jobs_with_unused_axes",
+      "reason": "Fixed progress3x2 and effects3x3; two jobs leave third effects column unused, no third fake task required."
+    },
+    {
+      "lines": [
+        152,
+        155,
+        219
+      ],
+      "status": "missing_metrics_are_not_filled_with_zero",
+      "reason": "line() only plots finite observations. Empty AppWorld metrics yields blank curves. episode/success_rate absent in current TextCraft means success plot blank; original reward metric still plots."
+    },
+    {
+      "lines": [
+        174,
+        200
+      ],
+      "status": "single_gpu_per_job_only",
+      "reason": "gpu scalar is used for VRAM history; cannot represent both per-job devices without explicit device-series adaptation. Do not silently claim one card is both-card peak."
+    },
+    {
+      "lines": [
+        253,
+        260
+      ],
+      "status": "explicit_31146_supported",
+      "reason": "--port accepts31146, default32036 is stale. Script SSH list does not use existing stage HostKeyAlias; current connection compatibility must preserve recorded alias, not assume."
+    },
+    {
+      "lines": [
+        177,
+        190
+      ],
+      "status": "generation_DT_phase_plot_not_current",
+      "reason": "Uses old generation_end/dt_rpc_end phase events. Original current timing_s/gen/timing_s/adv exist in complete metrics; parser retains them but render does not use them for these phase series."
+    }
+  ],
+  "current_metric_scope": "TextCraft complete training metrics have original episode/reward/mean, actor/entropy_loss, actor/grad_norm and timing fields. AppWorld current fresh run has no complete update metrics; sampling transport counters are not success/gradient or complete iteration."
+}
