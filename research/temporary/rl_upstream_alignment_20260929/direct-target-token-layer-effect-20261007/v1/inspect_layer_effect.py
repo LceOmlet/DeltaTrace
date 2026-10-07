@@ -46,6 +46,7 @@ def make_worker():
             binding=json.loads(Path(case_path).read_bytes()) if case_path is not None else None
             case=CASES['appworld'] if binding is None else binding['case']
             probe_layers=set(() if binding is None else binding.get('probe_decoder_layers',()))
+            probe_gdn=set(() if binding is None else binding.get('probe_gdn_layers',()))
             stop_after=None if binding is None else binding.get('stop_after_decoder')
             class ProbeBoundaryReached(Exception):
                 """Stop a diagnostic after the explicitly requested boundary."""
@@ -63,8 +64,9 @@ def make_worker():
             producer=None;globals_=None;handles=[]
             trace_owner=reward_readout.trace_token_attribution
             state=dict(mode='unset',root=False,token_effect_calls=0)
-            single={};cross={};index={};native_sub={'single_EOS':{},'original_joint_EOS':{}}
+            single={};cross={};index={};native_sub={'single_EOS':{},'original_joint_EOS':{}};gdn_single={};mixer_index={}
             result['decoder_subops']={}
+            result['gdn_subops']={}
             try:
                 assert self.actor.config.ppo_micro_batch_size_per_gpu==4
                 assert (self.config.model.lora_rank,self.config.model.lora_alpha)==(8,16)
@@ -80,6 +82,7 @@ def make_worker():
                 runner=producer.runner;model=runner.model
                 globals_=runner.attribute.__func__.__globals__
                 decoder_owner=globals_['decoder_finite_pullback'];effect_owner=globals_['_token_effect']
+                gdn_owner=globals_['gdn_finite_pullback']
                 forward_owner=model.forward_root
                 result['finite_owner']=dict(path=inspect.getsourcefile(runner.attribute),sha256=sha(inspect.getsourcefile(runner.attribute)),
                     decoder_path=inspect.getsourcefile(decoder_owner),decoder_sha256=sha(inspect.getsourcefile(decoder_owner)),
@@ -89,6 +92,7 @@ def make_worker():
                 result['case_binding']=binding
                 for i,layer in enumerate(model.model.language_model.layers):
                     index[id(layer)]=i
+                    if hasattr(layer,'linear_attn'):mixer_index[id(layer.linear_attn)]=i
                     def before(module,args,kwargs,i=i):
                         if not state['root']:return
                         x=args[0] if args else kwargs['hidden_states']
@@ -184,6 +188,75 @@ def make_worker():
                     state['token_effect_calls']+=1
                     return returned
                 globals_['decoder_finite_pullback']=decoder;globals_['_token_effect']=effect
+                def gdn(*args,**kwargs):
+                    module,c,e,upstream,scale,fla_owner,*rest=args
+                    i=mixer_index[id(module)]
+                    if i not in probe_gdn:return gdn_owner(*args,**kwargs)
+                    row=case['row']
+                    current={name:(c if name=='z' else e)[name][2*row:2*row+2].detach().to('cpu',copy=True)
+                             for name in ('o','z','q','k','v','raw_g','beta')}
+                    if state['mode']=='single_EOS':
+                        gdn_single[i]=current
+                        return gdn_owner(*args,**kwargs)
+                    actual=gdn_single[i]
+                    probe=dict(points=[],factual_endpoint_checks={},fla_groups=[],operand_artifacts=[],
+                        owner=dict(path=inspect.getsourcefile(gdn_owner),sha256=sha(inspect.getsourcefile(gdn_owner))),
+                        effective_options={k:v for k,v in kwargs.items() if k not in ('norm_gate_pullback','conv_silu_pullback','key_norm_pullback')})
+                    for name,value in current.items():
+                        a=actual[name]
+                        probe['factual_endpoint_checks'][name]=dict(equal=torch.equal(a[1],value[1]),
+                            maxabs=float((a[1].float()-value[1].float()).abs().max()),shape=list(a.shape),dtype=str(a.dtype))
+                    del current
+                    def dot(coefficients,endpoints):
+                        return float(effect_owner(coefficients[row:row+1],endpoints.to(coefficients.device)).sum())
+                    skip=dot(upstream,native_sub['single_EOS'][i,'input_norm_input'])
+                    context=dict(z_credit=None,head_start=0,fla_credit=0.0)
+                    def point(name,value):
+                        probe['points'].append(dict(name=name,coefficient_times_single_delta=value))
+                        result['gdn_subops'][str(i)]=probe
+                        save('gdn_subop_complete',active_mode=state['mode'],active_decoder=i)
+                    gate_owner=kwargs.get('norm_gate_pullback') or gdn_owner.__globals__['_norm_gate_finite_rule']
+                    def gate(*operands,**options):
+                        returned=gate_owner(*operands,**options)
+                        context['z_credit']=dot(returned[1],actual['z'])
+                        point('after_gdn_norm_and_silu_gate',skip+context['z_credit']+dot(returned[0],actual['o']))
+                        return returned
+                    def fla(endpoints,do,scale):
+                        returned=fla_owner(endpoints,do,scale)
+                        start=actual['q'].shape[1]-endpoints['q'].shape[1]
+                        head=context['head_start'];heads=endpoints['q'].shape[2]
+                        terms={name:dot(returned[name],actual['raw_g' if name=='g' else name][:,start:,head:head+heads])
+                               for name in ('q','k','v','g','beta')}
+                        context['fla_credit']+=sum(terms.values());context['head_start']+=heads
+                        probe['fla_groups'].append(dict(head_start=head,heads=heads,time_start=start,
+                            terms=terms,input_dtype=str(endpoints['q'].dtype),do_dtype=str(do.dtype),
+                            output_dtypes={k:str(v.dtype) for k,v in returned.items()}))
+                        if self.rank==0:
+                            # Exact original finite-op operands, selected rows only,
+                            # allow a later numerical replay without another model run.
+                            path=out/f'rank0-decoder{i}-finite-fla-head{head}.pt'
+                            payload=dict(endpoints={k:v[2*row:2*row+2].detach().to('cpu',copy=True) for k,v in endpoints.items()},
+                                do=do[row:row+1].detach().to('cpu',copy=True),scale=scale,
+                                outputs={k:v[row:row+1].detach().to('cpu',copy=True) for k,v in returned.items()},
+                                actual_single={k:actual['raw_g' if k=='g' else k][:,start:,head:head+heads] for k in terms},
+                                row=row,head_start=head,time_start=start,
+                                scope='Selected original B4 finite operator inputs and outputs, not a new B1 execution')
+                            torch.save(payload,path)
+                            probe['operand_artifacts'].append(dict(path=str(path),bytes=path.stat().st_size,sha256=sha(path)))
+                            del payload
+                        save('gdn_finite_fla_group_complete',active_mode=state['mode'],active_decoder=i)
+                        emit('gdn_finite_fla_group_complete',decoder=i,head_start=head,heads=heads)
+                        return returned
+                    wrapped=list(args);wrapped[5]=fla
+                    returned=gdn_owner(*wrapped,**dict(kwargs,norm_gate_pullback=gate))
+                    assert context['head_start']==actual['q'].shape[2]
+                    point('after_finite_fla_before_qk_l2',skip+context['z_credit']+context['fla_credit'])
+                    probe['residual_skip_single_delta']=skip
+                    probe['z_branch_single_delta']=context['z_credit']
+                    del gdn_single[i]
+                    result['gdn_subops'][str(i)]=probe
+                    return returned
+                if probe_gdn:globals_['gdn_finite_pullback']=gdn
                 def trace(*args,**kwargs):
                     if state['mode']=='single_EOS':
                         owner,reference,factual,*rest=args
@@ -212,6 +285,7 @@ def make_worker():
                     save('DT_complete',active_mode=mode,cross_boundary_contractions=cross)
                 assert not single and len(cross)==(33 if stop_after is None else 33-stop_after)
                 if probe_layers:assert not any(native_sub.values())
+                assert not gdn_single
                 save('complete',cross_boundary_contractions=cross,
                     scope='Passive diagnostics of original coefficients and actual single-deletion hidden differences. No new learning signal, acceptance tolerance, observer-mode path, credit change or update.')
                 return dict(rank=self.rank,completed=True,optimizer_steps=0)
@@ -222,9 +296,11 @@ def make_worker():
                 reward_readout.trace_token_attribution=trace_owner
                 if globals_ is not None:
                     globals_['decoder_finite_pullback']=decoder_owner;globals_['_token_effect']=effect_owner
+                    if probe_gdn:globals_['gdn_finite_pullback']=gdn_owner
                 for handle in handles:handle.remove()
                 single.clear()
                 for values in native_sub.values():values.clear()
+                gdn_single.clear()
                 if producer is not None:
                     producer.runner.model.forward_root=forward_owner
                     producer.runner.model.release_owner_params()

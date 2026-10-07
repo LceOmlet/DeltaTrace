@@ -1,5 +1,16 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 GDN30 norm/gate 与 FLA 细分诊断已准备
+
+沿用同一真实B4与原两partial DT到decoder30；只把现有GDN norm_gate_pullback
+及finite_fla callback套上返回原值的旁观器。记录原mo/mz及q/k/v/raw_g/beta
+系数与真实single端点差的收缩，分清反号是否在norm/gate或FLA。rank0保存
+实际finite FLA输入/输出的选定行原张量，留在远端用于原算子数值重放，避免
+再次全模型前向；不改kernel/规则/精度/学习信号。未运行任何新精度判据。
+CPU原输入身份与CUDA未初始化检查已完成；尚未GPU启动、尚未信用修复。
+Text仍hold，App正式不重启；memory候选的有界容量验证状态不变。
+
+
 ## 2026-10-08 当前极值首次反号已缩小到 GDN mixer 内部
 
 2ce604be、PID1645795/birth1791399078.23完成退出；本次仅到decoder30，
@@ -12,7 +23,7 @@ input RMSNorm后-6.81460。因此MLP/外层RMSNorm没有制造首次反号；首
 32/31/30分别700.203/700.346/700.230；不能把整体守恒当作该token精确。
 
 原两partial DT约50.74/17.73秒，CPU边界快照最终0；无optimizer/rollout/恢复。
-本次完整启动至结束约139秒，physical终态4/5各859MiB。结果见
+本次启动至最后worker完成141.27秒，physical终态4/5各859MiB。结果见
 results_current_extreme_subops_20261008.json及subops-results原SHA回执。
 尚不把定位称作GDN内核数值错误或信用修复；需继续分清原norm/gate与FLA。
 Text同birth hold，release不存在；App正式不重启，memory候选尚未正式部署。
