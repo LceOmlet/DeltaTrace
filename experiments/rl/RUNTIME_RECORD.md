@@ -1,5 +1,44 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 23:49 保存信用全量统计及高影响B4单删除完成；未放行更新
+
+诊断代码34d4c390，results_credit_sample_20261007.json绑定原source、实际owner
+导入路径/SHA、原TaskRunner scheduler标量、有效配置、PID出生、运输SHA及原始结果。
+App诊断431317/birth1791387446.35、Text诊断457448/birth1791387673.50均完成退出；
+4/5最终各859MiB。Text原2833207同出生时间仍hold，两rank无release、零更新；
+App正式任务保持终止，不恢复检查点，不重启正式训练。
+
+CPU统计调用原counterfactual owner SHA0d3412b8，未初始化CUDA，无DT/更新。
+Text44个保存native批次176行170UID，含6重复行；App54批216行216UID，
+不包含未完成native批次。统计按保存请求位置计数，不称独立轨迹总体频率。
+Text prior A<=-5有6位置，平方和占prior总14.98%、all-policy总4.51%；App有2位置，
+分别34.26%、2.50%。都是原始系数平方占比，不是参数梯度或白化后占比。
+
+新发现App rank1/batch16、UIDf0f85f5c、response125/packed2883，token198为
+Code:之后换行。r=.75，joint d=-4.29009095，预计A=-53.97983551；单个位置占
+保存prior平方和29.58%、all-policy2.16%。原HF单EOS d=+23.08903143、同公式A=.75。
+主导紧邻target71093为```，p由事实.998526126降至单EOS7.3486e-10；该token有
+强影响潜力，但原joint负方向与事实single删除不符，不能用格式解释掩盖方向。
+Text Format旧极值原joint A=-22.81693；native=-8.15750，方向有据而幅度夸大。
+
+各任务选负prior系数平方和最大一个真实B4，检查每行最负/最正/负中位位置，
+12位置各任务，共4次native paired B8前向/rank；未改原模型/scorer/ids/targets。
+两个rank所有target向量逐值相同，恒等对照0、所有更早target差0、事实端点跨模式
+逐值相同。Text6/12、App4/12方向差异只描述刻意选择的样本，不是总体错误率。
+所选各行最负点覆盖保存负prior平方和44.12%/77.41%；并非任意抽例。
+新native与保存formal事实端点的漂移完整保留；不以rank一致/恒等控制冒充官方
+FA/FLA容差或个体反事实精度验收。作者累计删除/RISE/MAS证据仍保留、未被替代。
+
+无新参考token、标签、clip/倍率/公式/PPO/白化改动。原OOM候选79922486保持
+故障B4+原async-vLLM共存验证，物理55.716/55.290GiB、signed/QVA逐值一致；
+未正式部署，未扩称精确32768/整轮28批通过。信用方向/幅度问题仍未修复，更新继续hold。
+
+一次Text提交检查误用了App runner SHA，启动前即拒绝；改为核对每任务自身原source
+绑定后启动，没有换Text的runner。保存失败命令/错误，不混成模型/环境失败。
+函数inspect.getsourcefile读到no_grad装饰器Torch contextlib的元数据原样保留；
+另用同原环境import模块及inspect.unwrap绑定真实counterfactual0d3412b8，未改计算。
+
+
 ## 2026-10-07 23:16 实际输出端/decoder27拆查完成；FA原断言通过，未放行训练
 
 诊断代码aeaa1352，results_extreme_operator_20261007.json绑定原source58209daa、
