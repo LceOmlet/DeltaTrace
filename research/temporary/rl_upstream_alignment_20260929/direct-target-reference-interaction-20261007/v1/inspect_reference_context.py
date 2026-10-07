@@ -48,7 +48,7 @@ def make_worker():
             record = dict(rank=self.rank, pid=os.getpid(), birth=psutil.Process().create_time(),
                 owners=check_imports(source), source_sha256=sha(source_path),
                 native_sha256=sha(spec['native']), geometry=geometry(source,native,rows,spec),
-                intervention='Row0: both endpoints mask every original prior-source token with EOS; factual endpoint restores only original token198 at7260. Other three rows remain identity controls.',
+                intervention=f"Row{spec['row']}: both endpoints mask every original prior-source token with EOS; second endpoint restores only original token{spec['token_id']} at{spec['packed_slot']}. Other three rows remain identity controls.",
                 operations=dict(native_paired_forward=1, DT=0, backward=0, optimizer=0,
                     checkpoint_restore=0, rollout=0))
             def save(phase, **values):
