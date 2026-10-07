@@ -1,0 +1,37 @@
+--- research\temporary\rl_upstream_alignment_20260929\direct-target-head-memory-20261007\v1\prepare_appworld_head_memory.py
++++ research\temporary\rl_upstream_alignment_20260929\direct-target-head-memory-20261007\v2\prepare_appworld_head_memory.py
+@@ -65,7 +65,9 @@
+  relative=original.relative_to(old_dt)
+  if '__pycache__' in relative.parts or '.git' in relative.parts:continue
+  path=dt/relative
+- if original.is_dir():path.mkdir(exist_ok=True,parents=True)
++ if original.is_dir() and original.is_symlink():
++  path.symlink_to(original.resolve(),target_is_directory=True)
++ elif original.is_dir():path.mkdir(exist_ok=True,parents=True)
+  elif original.is_file():
+   path.parent.mkdir(exist_ok=True,parents=True);path.symlink_to(original.resolve())
+ answer=dt/answer_relative
+@@ -75,7 +77,7 @@
+ changed=[name for name,digest in dt_hashes.items() if digest!=prior['dt_source_sha256'][name]]
+ assert changed==[answer_relative],changed
+ base.mkdir()
+-output=R/'runs/direct-target-head-memory-20261007-v1/appworld/appworld-dt'
++output=R/'runs/direct-target-head-memory-20261007-v2/appworld/appworld-dt'
+ assert not output.exists(),'No working output is created during preparation'
+ env=copy.deepcopy(prior['environment'])
+ def remap(path):
+@@ -197,12 +199,12 @@
+     args = parser.parse_args()
+     if not re.fullmatch(r'[0-9a-f]{40}', args.commit):
+         parser.error('--commit must be the actual 40-character code commit')
+-    candidate = HERE / 'candidate/qwen35_answer_finite.py'
++    candidate = HERE.parent / 'v1/candidate/qwen35_answer_finite.py'
+     assert hashlib.sha256(candidate.read_bytes()).hexdigest() == ANSWER_SHA
+     submit = AUDIT / 'direct-target-semantics-20261007/submit_prepared_direct_targets.py'
+     assert hashlib.sha256(submit.read_bytes()).hexdigest() == '8066517300717a55ca340f70a284cfc0051091c77291a72ba1fb029c0518a8f4'
+     original = AUDIT / 'direct-action-target-20261007/prepare_direct_entries.py'
+-    out = stage.ROOT + '/candidates/direct-target-head-memory-20261007-v1'
++    out = stage.ROOT + '/candidates/direct-target-head-memory-20261007-v2'
+     bundle = HERE / 'setup-source.tar'
+     with tarfile.open(bundle, 'w') as archive:
+         for path, name in [(candidate, 'qwen35_answer_finite.py'),
