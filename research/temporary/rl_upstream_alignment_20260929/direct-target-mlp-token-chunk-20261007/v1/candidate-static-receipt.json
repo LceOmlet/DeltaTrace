@@ -1,0 +1,67 @@
+{
+  "status": "isolated_candidate_static_checks_passed_not_deployed_not_numerically_verified",
+  "observed_unix": 1791361195.983538,
+  "baseline": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-causal-prefix-20261007\\v3\\memory-source\\clean\\qwen35\\qwen35_decoder_finite.py",
+    "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197"
+  },
+  "candidate": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-mlp-token-chunk-20261007\\v1\\candidate\\qwen35_decoder_finite.py",
+    "sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234"
+  },
+  "patch": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-mlp-token-chunk-20261007\\v1\\candidate.patch",
+    "sha256": "4fef63e10cda08b648b645227ff3b3dc173dc52c342f04d380d1e11b66bfe922"
+  },
+  "checks": {
+    "frozen_owner_SHA_matches": true,
+    "syntax_compile_CPU_only": true,
+    "all_original_top_level_functions_and_capture_class_unchanged": true,
+    "new_option_default_None": true,
+    "existing_compile_dynamic_path_and_setattr_unchanged": true,
+    "only_MLP_option_wraps_owner": true,
+    "decoder_call_and_formulas_unchanged": true,
+    "helper_has_no_alternate_MLP_math_or_dtype_conversion": true,
+    "split_only_token_dimension": true,
+    "original_weights_pass_through": true
+  },
+  "owner_search": {
+    "current_HF_owner": "memory-source/installed/modeling_qwen3_5.py SHA59f9c339; Qwen3_5MLP has no chunk option",
+    "existing_finite_owner": "Frozen FiniteBoundaryOps.mlp is existing torch.compile dynamic _mlp_input_rule; no token chunk interface",
+    "official_HF_helper": "https://github.com/huggingface/transformers/blob/v5.13.0/src/transformers/pytorch_utils.py ; apply_chunking_to_forward requires divisible token axis and gathers all outputs for cat; no padding introduced",
+    "official_PyTorch_split": "https://docs.pytorch.org/docs/2.8/generated/torch.split.html; native views include non-divisible last chunk"
+  },
+  "interface": {
+    "constructor_option": "FiniteBoundaryOps(..., mlp_token_chunk_size=2048)",
+    "default": "None; original op and default dispatch remain unchanged",
+    "dimension": "time axis1 only; batch dimension unchanged",
+    "inputs": "same7 endpoints/upstream, same3 original weight objects including LoRA tuples",
+    "output": "same shape/dtype/device as first original op output; chunk outputs copied once into original full output extent",
+    "dynamic": "original varying wrapper reused; per-chunk contiguous removes originalT-dependent batch strides; 0/1 tails still handled by original dynamic owner"
+  },
+  "verification_scope": "CPU Python AST/compile checks only. No torch package on local interpreter; no fake tensor/numerical substitute, GPU/model/import or remote call executed. Real same-capture compiled-owner numeric/resources/compile-count checks are pending root diagnostics.",
+  "actual_failure_basis": "Current source942 compiled buf7 BF16 mg gate operand OOM2.35/2.37GiB after28/29; chunking limits whole-token MLP temporary extent, not retained endpoint storage.",
+  "no_training_changes": [
+    "B4",
+    "rank8",
+    "alpha16",
+    "Q/V/A",
+    "target/mask",
+    "PPO",
+    "FA/FLA",
+    "model dtype",
+    "original finite formulas"
+  ],
+  "validation_plan": [
+    "Compare one actual same-capture MLP T>2048 with actual unchunked original op and chunked interface using already chosen original torch.assert_close; no new tolerance.",
+    "Include actual non-divisible tail and B4 paired noncontiguous endpoints; record shape/dtype before numeric comparison.",
+    "Observe actual compile invocation reuse across real varied lengths including singleton tail; do not assert no recompiles from AST only.",
+    "Measure original full formal batch29 resource and elapsed phases through unchanged owner, then formal execution only after accepted diagnostics."
+  ],
+  "memory_bounds_not_measurements": {
+    "compiled_original_MLP_temporaries_B4_C2048_GiB": 1.125,
+    "worst_case_block_contiguous_inputs_GiB": 1.25,
+    "retained": "Original full paired endpoints and full FP32 mnorm output remain. These arithmetic terms are not a complete physical peak guarantee.",
+    "speed_scope": "No runtime speed or compiler reuse claim from AST. Actual owner diagnostics required; no threshold added."
+  }
+}

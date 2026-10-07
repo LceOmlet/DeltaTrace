@@ -1,0 +1,51 @@
+--- frozen-047c/qwen35_decoder_finite.py
++++ candidate/qwen35_decoder_finite.py
+@@ -133,6 +133,30 @@
+             +_linear_transpose(mv,vproj_weight))
+ 
+ 
++def _chunk_mlp_tokens(op,chunk_size):
++    """Bound token-local finite temporaries; keep the existing MLP owner."""
++    def chunked(*args):
++        tokens=args[0].shape[1]
++        if tokens<=chunk_size:
++            return op(*args)
++        sources,weights=args[:7],args[7:]
++        result=None;start=0
++        for chunks in zip(*(value.split(chunk_size,dim=1) for value in sources)):
++            # Captured paired endpoints have original-T batch strides. Give
++            # the same dynamic owner compact chunk strides, not one guard
++            # variant for every trajectory length. Dtype and B are unchanged.
++            chunks=tuple(value.contiguous() for value in chunks)
++            part=op(*chunks,*weights)
++            if result is None:
++                result=part.new_empty((part.shape[0],tokens,part.shape[2]))
++            stop=start+part.shape[1]
++            result[:,start:stop].copy_(part)
++            start=stop
++            del part
++        return result
++    return chunked
++
++
+ class FiniteBoundaryOps:
+     """Composite finite graphs; native/vendor operations stay externally visible.
+ 
+@@ -140,7 +164,7 @@
+     be counted; disabling max_autotune does not disable all compiler tuning.
+     No hidden eager fallback is installed when a graph fails to compile.
+     """
+-    def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):
++    def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None,mlp_token_chunk_size=None):
+         from qwen35_gdn_finite import _norm_gate_finite_rule,_conv_silu_finite_rule
+         self.compiled=compiled
+         varying_dimensions={
+@@ -171,6 +195,8 @@
+                             torch._dynamo.mark_dynamic(args[index],dimension)
+                     return _op(*args)
+                 op=varying
++            if name=='mlp' and mlp_token_chunk_size is not None:
++                op=_chunk_mlp_tokens(op,mlp_token_chunk_size)
+             setattr(self,name,op)
+ 
+ 

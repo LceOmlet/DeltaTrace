@@ -1,0 +1,166 @@
+{
+  "scope": "Static source and saved original-receipt review. Only this review JSON is written; no source modification, Torch/model/GPU call, test, deployment, or launch.",
+  "recorded_utc": "2026-10-07T08:23:54.173729+00:00",
+  "method_preserved": "experiments/rl/PLAN.md; FA/FLA, PPO, microbatch 4, LoRA rank 8 alpha 16, original finite formulas and operand precision are unchanged by this review.",
+  "bindings": {
+    "runtime_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-gpu-lifetime-20261007-v1/deltatrace",
+    "source_receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-gpu-lifetime-20261007\\v1\\received\\source.json",
+      "sha256": "942c2d686a701317e8441f5b299dd86dfb55deb7356c7427e62bc4cbdcd36488"
+    },
+    "original_oom_receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-gpu-lifetime-20261007\\v1\\readonly-DT-final-batches-1791360485.json",
+      "sha256": "3f59488ada28abcadd2118586f2340a295be12a965792d9722dd59ded49fe0e9"
+    },
+    "frozen_decoder": {
+      "local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-causal-prefix-20261007\\v3\\memory-source\\clean\\qwen35\\qwen35_decoder_finite.py",
+      "runtime_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-gpu-lifetime-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+      "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197"
+    },
+    "compiled_original": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor/wa/cwa3bdor4xgz6vdidgi35hh2pskovjku6l4dgo7vf3y5735jtlna.py",
+      "sha256": "842d228428fa9cfa1b05eb89d1195c2b2006ad00b4bb30eb38da9cac23b796a8",
+      "access": "Read original existing cache source through recorded SSH, without importing or executing it."
+    },
+    "lifetime_runner": {
+      "local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-gpu-lifetime-20261007\\v1\\candidate\\qwen35_dense_finite_runner.py",
+      "sha256": "ba639b2876827cc250f4806af278065181ef78d28c8b22da97377c34b9e168d7"
+    },
+    "candidate_decoder": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-mlp-token-chunk-20261007\\v1\\candidate\\qwen35_decoder_finite.py",
+      "sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234"
+    }
+  },
+  "actual_failure": {
+    "chain": "runner497 -> frozen decoder228 boundaries.mlp -> decoder95 _mlp_input_rule -> original compiled call286 buf7 allocation",
+    "allocation": "empty_strided_cuda((1,s12*s25,12288),(...),torch.bfloat16)",
+    "reported_request_GiB_by_rank": [
+      2.35,
+      2.37
+    ],
+    "last_completed_batch": 28,
+    "failed_batch": 29,
+    "failed_batch_raw_length": null,
+    "actual_layer_replay_T": null,
+    "failed_layer_index": null,
+    "limits": "Original failure receipt does not record failed batch length or layer. Do not infer either from preceding batch or generated benchmark defaults."
+  },
+  "mlp_workset": {
+    "symbols": {
+      "B": "Number of contrasts; preserved as 4 for the present B4 path. Paired captures have 2B rows.",
+      "T": "Actual current-layer replay time extent, unknown for this failure.",
+      "S": "2*B*T*12288 bytes, one B*T*12288 BF16 tensor."
+    },
+    "failed_buf7": {
+      "role": "BF16 operand for the finite gate multiplier mg; not a model-forward projection result.",
+      "lines": [
+        285,
+        286,
+        287,
+        290,
+        310,
+        314
+      ],
+      "bytes": "S",
+      "evidence": "Fused scalar kernel writes mg to buf7; compiled310/314 use it for gate base and LoRA projection GEMMs."
+    },
+    "compiled_temporaries": [
+      {
+        "object": "buf1",
+        "role": "down projection base-map FP32 product",
+        "lines": [
+          275,
+          277,
+          297
+        ],
+        "bytes": "2S"
+      },
+      {
+        "object": "buf2",
+        "role": "down projection LoRA-map FP32 product",
+        "lines": [
+          279,
+          281,
+          298
+        ],
+        "bytes": "2S"
+      },
+      {
+        "object": "buf3",
+        "role": "BF16 mu GEMM operand",
+        "lines": [
+          285,
+          290,
+          301,
+          305,
+          307
+        ],
+        "bytes": "S"
+      },
+      {
+        "object": "buf7",
+        "role": "BF16 mg GEMM operand",
+        "lines": [
+          286,
+          290,
+          310,
+          314,
+          316
+        ],
+        "bytes": "S"
+      }
+    ],
+    "compiled_phase_bytes": "5S already resident immediately before the failed allocation; 6S if buf7 succeeds. The shared hidden-width input buf0 was deleted at283.",
+    "original_endpoint_bank": {
+      "objects": [
+        "gate_output",
+        "up_output",
+        "silu_output"
+      ],
+      "shape_each": "[2B,T,12288]",
+      "dtype": "BF16",
+      "bytes_each": "2S",
+      "bytes_total": "6S",
+      "evidence": "Runner407-408 retains these original native GPU outputs, and frozen decoder228-230 passes their 0::2/1::2 views to the existing MLP owner. Decoder233-235 deletes them only after their final consumer returns. Each paired backing storage is counted once; six endpoint views do not imply six independent paired tensors."
+    },
+    "combined_identified_phase_bytes": "Original three paired captures plus the four compiled buffers require 12S if buf7 succeeds, excluding other live tensors. Rounded log allocations imply approximately 28.2/28.44 GiB for these two sets only; this does not infer T.",
+    "other_hidden_width_bytes": "upstream [B,T,4096] FP32 plus input_norm_input and post_norm_input [2B,T,4096] BF16 together contribute 2S, before mixer/cache/weight objects. Native decoder795-824 establishes the separate residual inputs.",
+    "release_finding": "No already-consumed MLP endpoint is proven available for release before this call. This failure demonstrates the entire-T finite working set exceeding available capacity, not a proven across-layer capture leak."
+  },
+  "cpu_vs_gpu_lifetime": {
+    "all_layer_root_bank": "Runner330-337 copies each decoder root input, kwargs, and final norm input to CPU; actual pin_root_host is true. This is not an all-model GPU capture bank.",
+    "gpu_live_at_mlp": "Current-layer borrowed d/c/e capture storage, upstream m, replay prefix cache where present, active FSDP/root-owned weights, current kwargs/LSE where present, and compiled finite temporaries.",
+    "dead_before_mlp": "Runner358 deletes native output logits owner; runner382 deletes z/seed/mnorm; runner441 deletes replay output y and temporary expected/x references. Aliased input_norm_input backing storage remains intentionally held by d.",
+    "unknown_total": "No exact unique-storage byte inventory was captured for the failed layer, so mixer aliases, prefix-cache extent and full total GPU peak are not inferred."
+  },
+  "candidate_static_review": {
+    "helper_lines": [
+      136,
+      156
+    ],
+    "owner_wrapper_lines": [
+      198,
+      199
+    ],
+    "result": "No actionable semantic defect found for the intended positive token chunk size and existing equal-time owner inputs.",
+    "preservation": "Only dim1 is split for the six endpoint inputs and upstream; B is unchanged. contiguous preserves dtype/device. The three original weight objects, including base/LoRA tuples, pass unchanged to the existing compiled owner. Original _mlp_input_rule, SwiGLU rule, _linear_transpose and finite precision have no formula changes.",
+    "tail": "split includes every nonempty final remainder; slice copy covers the full original time axis in order. A singleton tail uses the existing varying wrapper, which does not force time=1 dynamic. Total time <= chunk size directly uses the original owner. Default None leaves the original path unchanged.",
+    "token_locality": "Native MLP and finite SwiGLU are token-local; GEMMs flatten B*T without a reduction across tokens. This permits token slicing around the existing owner, without replacing the owner formula.",
+    "memory_accounting": {
+      "C": "Maximum chunk time extent.",
+      "corresponding_original_compiled_phase": "12*B*C*12288 bytes for the two FP32 down products and two BF16 branch operands; this bounds that identified phase, not an unmeasured new compiled total peak.",
+      "contiguous_input_copies_upper_bound": "12*B*C*12288 + 4*B*C*4096 bytes for six BF16 endpoint chunks and one FP32 upstream chunk, in addition to original full captures.",
+      "complete_result": "4*B*T*4096 bytes, inherited FP32 dtype/device from the owner output; one result buffer is allocated using first part.new_empty.",
+      "local_part": "An additional [B,C,4096] FP32 part exists until slice copy completes and del part executes; loop rebinding replaces prior compact chunk inputs before constructing next compact tuple.",
+      "unchanged_resident_inputs": "Original full paired gate/up/silu captures remain 6S until the whole MLP call returns; norm inputs, mixer captures, cache and weights remain relevant."
+    },
+    "not_verified": [
+      "Actual numerical/reference error for chunked GEMM shapes",
+      "Actual dynamic compile count including singleton tail",
+      "New generated graph total peak and full long-batch capacity",
+      "Full AppWorld runtime completion"
+    ],
+    "validation_owner": "Root handles owner orchestration and validation; this static review did not call Torch or GPU."
+  },
+  "secondary_observation": "GDN endpoints q/k/v/g/A/w/v_new/h remain after all FLA groups return until e.clear at current GDN285; only beta/raw_g are read in the intervening scalar stage. This is a separate intra-layer residency window, not the direct cause of the present MLP buf7 failure."
+}
