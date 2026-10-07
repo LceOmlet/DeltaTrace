@@ -1,0 +1,580 @@
+"""Complete-return targets traced by the official EOS DeltaTrace runner.
+
+This module does not score environments, reconstruct generated tokens, train a
+critic, or implement model/cache transitions. Qwen's original head estimates
+declared return categories; the official DT runner owns endpoint evaluation.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+import json
+import math
+import string
+import time
+from typing import Any
+
+import torch
+
+from counterfactual import episode_returns, return_credit_for_rows, reward_event_token_credit
+from deltatrace_credit import trace_token_attribution
+
+
+@dataclass(frozen=True)
+class RewardAlphabet:
+    task: str
+    values: tuple[float, ...]
+    meanings: tuple[str, ...]
+    invalid_action_penalty_coef: float = 0.0
+
+    @classmethod
+    def for_task(cls, task: str, max_steps: int = 15,
+                 invalid_action_penalty_coef: float = 0.0, *,
+                 appworld_num_tests: int | None = None) -> 'RewardAlphabet':
+        if task == 'AppWorld':
+            # The selected LOOP training benchmark returns a test-pass fraction.
+            # Read the denominator from its native eval_result.num_tests; never
+            # turn its return into the retired VERL success-only 0/10 reward.
+            if appworld_num_tests is None or appworld_num_tests < 1:
+                raise ValueError('LOOP AppWorld credit requires native eval_result.num_tests')
+            if invalid_action_penalty_coef:
+                raise ValueError('LOOP training benchmark has no VERL invalid-action penalty')
+            return cls(task, tuple(k / appworld_num_tests for k in range(appworld_num_tests + 1)),
+                       tuple(f'{k}/{appworld_num_tests} (fraction of official tests passed at episode end)'
+                             for k in range(appworld_num_tests + 1)))
+        if invalid_action_penalty_coef:
+            original = cls.for_task(task, max_steps)
+            values = tuple(sorted({round(v - penalty, 10) for v in original.values
+                                   for penalty in (0.0, invalid_action_penalty_coef)}))
+            return cls(task, values, tuple(f'{value:g}' for value in values),
+                       invalid_action_penalty_coef)
+        if task == 'Webshop':
+            return cls(task, (0.0, 10.0), (
+                '0 (no subsequent successful completion)',
+                '10 (subsequent successful task completion)',
+            ))
+        if task == 'SkyRL-SQL':
+            return cls(task, (-1.0, 0.0, 1.0), (
+                '-1 (official SQL final format check fails)',
+                '0 (incorrect SQL result or budget ends before scored submission)',
+                '1 (official SQL result matches the ground truth)',
+            ))
+        if task == 'TextCraft':
+            return cls(task, (0.0, 1.0), (
+                '0 (goal not achieved before the episode ends)',
+                '1 (official crafting environment reports goal achieved)',
+            ))
+        if task == 'Sokoban':
+            values = (0.0,) + tuple(-n / 10 for n in range(1, max_steps + 1)) + tuple(
+                11 - n / 10 for n in range(1, max_steps + 1))
+            return cls(task, values, tuple(f'{value:g}' for value in values))
+        raise ValueError(f'No approved official reward alphabet for {task}')
+
+    def observed_index(self, reward: float) -> int:
+        matches = [i for i, value in enumerate(self.values)
+                   if math.isclose(reward, value, rel_tol=0.0, abs_tol=1e-6)]
+        if len(matches) != 1:
+            raise ValueError(f'Official cumulative return {reward} outside {self.task} alphabet {self.values}')
+        return matches[0]
+
+    def labels(self) -> str:
+        # Qwen splits numbers >=10; each category must still be ONE target token.
+        labels = string.digits + string.ascii_uppercase + string.ascii_lowercase
+        if len(self.values) > len(labels):
+            raise ValueError('Return alphabet exceeds the available distinct single-token labels')
+        return labels[:len(self.values)]
+
+    def label_ids(self, tokenizer: Any) -> list[int]:
+        ids = [tokenizer.encode(label, add_special_tokens=False) for label in self.labels()]
+        if any(len(value) != 1 for value in ids) or len({value[0] for value in ids}) != len(ids):
+            raise ValueError('Return readout requires distinct single-token labels')
+        return [value[0] for value in ids]
+
+    def query_ids(self, tokenizer: Any, *, current_step: int,
+                  max_steps: int, sampling: dict | None = None) -> list[int]:
+        if not 0 <= current_step < max_steps:
+            raise ValueError('Return query must refer to a current step inside the rollout horizon')
+        legend = '; '.join(f'{label}: {meaning}' for label, meaning in zip(self.labels(), self.meanings))
+        reward_rule = ('Each executed interaction costs -0.1; solving the single-box puzzle adds 11 '
+                       'on that interaction and ends the episode. ' if self.task == 'Sokoban' else
+                       'Successful completion gives 10 once; all other interactions give 0. ')
+        if self.task == 'AppWorld':
+            reward_rule = (
+                'At the actual episode end, the native LOOP task evaluator returns the fraction '
+                'of official tests that pass, including when the interaction or context budget '
+                'ends the episode. Earlier interactions give no intermediate reward. '
+                'The training benchmark has no missing-code or execution-error reward penalty. '
+            )
+        elif self.task == 'SkyRL-SQL':
+            reward_rule = (
+                'The native SQL environment gives no intermediate reward. At its final '
+                'submission or interaction limit it gives -1 for invalid answer format, '
+                '0 for an incorrect query result, or 1 for a query result matching the ground truth. '
+                'Exhausting the input budget before that scored step adds no reward. '
+            )
+        elif self.task == 'TextCraft':
+            reward_rule = (
+                'The native crafting environment gives 1 when the requested goal is achieved '
+                'and ends the episode; all earlier interactions give 0. '
+            )
+        if self.invalid_action_penalty_coef:
+            reward_rule += (
+                f'The trainer additionally subtracts {self.invalid_action_penalty_coef:g} '
+                'if this CURRENT response is an invalid action under the task parser. '
+                'Subtract that current-response penalty once. Do not subtract penalties '
+                'for past or future responses. '
+            )
+        # Deliberately contains no sampled future observation, action, reward or
+        # stopping time. The same query is appended at both token endpoints.
+        policy = 'sampling tokens at temperature 1 with no top-k or top-p truncation. '
+        if sampling is not None:
+            policy = ('using these actual vLLM sampling parameters: '
+                      + json.dumps(sampling, sort_keys=True, separators=(',', ':')) + '. ')
+        query = (
+            '<|im_end|>\n<|im_start|>user\n'
+            f'Future cumulative return forecast for {self.task}. The preceding text is the exact agent prefix, '
+            'after generation of the current response has ended, possibly at its token limit. Do not treat this forecast request '
+            'as an environment action. Imagine the environment immediately processing that response as emitted and then continuing with '
+            'this same policy, ' + policy +
+            f'The current interaction is {current_step + 1}; the episode allows {max_steps} interactions. '
+            'Predict the SUM of all official rewards from the current interaction through the end '
+            'of this episode, with discount 1. Exclude earlier rewards. '
+            + reward_rule + 'Early stopping or exhaustion of the interaction/context budget adds no '
+            'extra reward; interactions that never occur contribute zero. '
+            f'Categories (label: cumulative return): {legend}. Return only the category label.'
+            '<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+        )
+        return tokenizer.encode(query, add_special_tokens=False)
+
+    def readout_token_budget(self, tokenizer: Any, max_steps: int,
+                             sampling: dict | None = None) -> int:
+        """Exact worst-case query plus target length, without a model call."""
+        return 1 + max(len(self.query_ids(tokenizer, current_step=i,
+                                          max_steps=max_steps, sampling=sampling))
+                       for i in range(max_steps))
+
+
+class EventRatioReadout:
+    """One complete-return contrast per response through the official runner.
+
+    DT's signed vector estimates the individual deletion log-prob effects in
+    PLAN.md. It is not a measured collection of leave-one-out forward passes.
+    All tokens keep their own signed entries; no span broadcast or O routing.
+    """
+
+    def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,
+                 packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4,
+                 invalid_action_penalty_coef: float = 0.0,
+                 appworld_num_tests: int | None = None, sampling: dict | None = None,
+                 prefix_lease_factory: Any = None):
+        if max_steps < 1:
+            raise ValueError('Horizon must be positive')
+        if tokenizer.eos_token_id is None:
+            raise ValueError('EOS attribution requires the checkpoint EOS token')
+        if minibatch_size < 1:
+            raise ValueError('DT minibatch_size must be positive')
+        self.minibatch_size = minibatch_size
+        self.runner, self.tokenizer = runner, tokenizer
+        self.sampling = sampling
+        self.alphabet = RewardAlphabet.for_task(task, max_steps, invalid_action_penalty_coef,
+                                              appworld_num_tests=appworld_num_tests)
+        self.max_steps, self.max_length = max_steps, max_length
+        self.packed_answer_targets = packed_answer_targets
+        self.prefix_lease_factory = prefix_lease_factory
+        self.last_report: dict[str, Any] = {}
+
+    def _prepare_episode(self, rows, report, returns):
+        events = [row for row in rows if bool(row['active_masks'])]
+        labels = self.alphabet.label_ids(self.tokenizer)
+        log_ratios = []
+        requests = []
+        report['nonzero_reward_events'] += sum(float(r['rewards']) != 0 for r in events)
+
+        for row_index, (row, value) in enumerate(zip(rows, returns)):
+            response = row['responses']
+            width = response.numel()
+            vector = torch.zeros(width, dtype=torch.float32)
+            log_ratios.append(vector)
+            if not bool(row['active_masks']):
+                continue
+            attention = row['attention_mask'].bool()
+            positions = attention[-width:].nonzero().flatten().tolist()
+            if positions != list(range(len(positions))):
+                raise ValueError('Original generated response must have right padding only')
+            prompt = row['input_ids'][:-width][attention[:-width]].cpu()
+            actions = response[:len(positions)].cpu()
+            if not torch.equal(row['input_ids'][-width:].cpu(), response.cpu()):
+                raise ValueError('Original rollout input and response token identities differ')
+            report['policy_tokens'] += len(positions)
+            report['actual_row_lengths'].append(prompt.numel() + actions.numel())
+            observed = self.alphabet.observed_index(value)
+            if not positions or value == 0:
+                continue
+            query = torch.tensor(self.alphabet.query_ids(
+                self.tokenizer, current_step=int(row['env_step']), max_steps=self.max_steps,
+                sampling=self.sampling,
+            ), device='cpu', dtype=torch.long)
+            target = torch.tensor([labels[observed]], device='cpu', dtype=torch.long)
+            length = prompt.numel() + actions.numel() + query.numel() + target.numel()
+            if length > self.max_length:
+                raise ValueError(f'Reward readout context {length} exceeds cap {self.max_length}; no silent truncation')
+            start, end = prompt.numel(), prompt.numel() + actions.numel()
+            # Only original current actions become EOS. Future observations,
+            # actions and actual stopping time never enter either prefix.
+            requests.append(dict(prompt=prompt, actions=actions, query=query, target=target,
+                case={'target_ids': target, 'prompt_length': length - 1},
+                start=start, end=end, vector=vector,
+                source_step=int(row['env_step']),
+                traj_uid=str(row['traj_uid']), observed_return=value,
+                context_tokens=length, query_tokens=query.numel(), row_index=row_index))
+        return log_ratios, requests
+
+    @torch.no_grad()
+    def episodes(self, episodes: list[list[dict[str, Any]]], *, complete_returns=None) -> list[list[dict[str, torch.Tensor]]]:
+        if complete_returns is None:
+            complete_returns = [episode_returns(rows) for rows in episodes]
+        if len(complete_returns) != len(episodes) or any(
+            len(rows) != len(values) for rows, values in zip(episodes, complete_returns)
+        ):
+            raise ValueError('complete returns must align with every input row')
+        started = time.perf_counter()
+        device = getattr(self.runner.model, 'execution_device', self.runner.model.lm_head.weight.device)
+        report = dict(task=self.alphabet.task, policy_tokens=0, nonzero_reward_events=0,
+                      finite_trace_calls=0, event_contrasts=0, minibatch_size=self.minibatch_size,
+                      max_readout_length=0, actual_row_lengths=[], traces=[], max_length=self.max_length,
+                      ratio_source='official_eos_dt_complete_return_signed_attribution_estimate',
+                      target_semantics='complete_future_return',
+                      reference_token_samples=0, per_token_probability_queries=0)
+        vectors, requests = [], []
+        for episode_index, rows in enumerate(episodes):
+            values, pending = self._prepare_episode(rows, report, complete_returns[episode_index])
+            vectors.append(values)
+            for request in pending:
+                request['episode_index'] = episode_index
+            requests.extend(pending)
+        # Right extension comes strictly after the scored target. Causality
+        # leaves every real prefix and predictor unchanged; it is compute
+        # padding, not task history or a masked model/finite implementation.
+        # The official runner receives its existing dense interleaved ABI.
+        requests.sort(key=lambda request: request['context_tokens'])
+        labels = self.alphabet.label_ids(self.tokenizer)
+        planned_batches = (len(requests) + self.minibatch_size - 1) // self.minibatch_size
+        print(f"[DT EOS plan] events={report['nonzero_reward_events']} "
+              f"contrasts={len(requests)} batches={planned_batches}", flush=True)
+        leases = None
+        if self.prefix_lease_factory is not None:
+            leases, prefix_report = self.prefix_lease_factory(
+                self.runner, requests, minibatch_size=self.minibatch_size,
+                eos_token_id=self.tokenizer.eos_token_id)
+            report['shared_native_prefix'] = prefix_report
+        minimum_log_ratio = float('inf')
+        minimum_batch = None
+        for offset in range(0, len(requests), self.minibatch_size):
+            batch = requests[offset:offset + self.minibatch_size]
+            length = max(request['context_tokens'] for request in batch)
+            selected = torch.full((len(batch), length), self.tokenizer.eos_token_id,
+                                  device=device, dtype=torch.long)
+            reference = selected.clone()
+            for index, request in enumerate(batch):
+                end = request['context_tokens']
+                selected[index, :end] = torch.cat(tuple(request[name] for name in
+                    ('prompt', 'actions', 'query', 'target'))).to(device)
+                reference[index, :end] = selected[index, :end]
+                reference[index, request['start']:request['end']] = self.tokenizer.eos_token_id
+            try:
+                signed, _, detail = trace_token_attribution(
+                    self.runner, reference, selected, [request['case'] for request in batch],
+                    [[0] for _ in batch], packed_answer_targets=self.packed_answer_targets,
+                    outcome_token_ids=labels,
+                    **({} if leases is None else {
+                        'prefix_cache_provider': leases[offset // self.minibatch_size]}),
+                )
+            except ValueError as exc:
+                if 'Nonfinite DT coefficients' in str(exc):
+                    # The former deferred failure discarded the offending
+                    # batch. Retain exact replay inputs only on this observed
+                    # failure; never clip, retry or substitute token credit.
+                    print('[DT EOS failed minibatch] ' + json.dumps(dict(
+                        error=str(exc), batch=offset // self.minibatch_size + 1,
+                        eos_token_id=self.tokenizer.eos_token_id, outcome_token_ids=labels,
+                        selected_input_ids=selected.cpu().tolist(),
+                        reference_input_ids=reference.cpu().tolist(),
+                        samples=[dict(traj_uid=r['traj_uid'], source_step=r['source_step'],
+                            source_start=r['start'], source_end=r['end'],
+                            context_tokens=r['context_tokens'], observed_return=r['observed_return'])
+                            for r in batch],
+                    )), flush=True)
+                raise
+            report['finite_trace_calls'] += 1
+            report['event_contrasts'] += len(batch)
+            report['max_readout_length'] = max(report['max_readout_length'], length)
+            batch_traces, batch_values = [], []
+            for index, request in enumerate(batch):
+                values = signed[index, request['start']:request['end']].cpu()
+                request['vector'][:len(values)] = values
+                item = detail['per_sample'][index] if len(batch) > 1 else detail
+                trace = dict(
+                    episode_index=request['episode_index'], source_step=request['source_step'],
+                    observed_return=request['observed_return'], context_tokens=request['context_tokens'],
+                    compute_tokens=length, query_tokens=request['query_tokens'],
+                    root_effect=item['root_effect'], signed_sum=item['policy_credit_signed_sum'],
+                    conservation_residual=item['conservation_residual'],
+                    conservation_tolerance=item['conservation_tolerance'],
+                    conservation_verified=item['conservation_verified'],
+                    owner_batch_index=report['finite_trace_calls'] - 1,
+                    source_log_ratio_min=float(values.min()), source_log_ratio_max=float(values.max()),
+                    source_log_ratio_min_index=int(values.argmin()),
+                    source_log_ratio_max_index=int(values.argmax()),
+                    factual_target_logp=item.get('factual_target_logp'),
+                    reference_target_logp=item.get('reference_target_logp'),
+                )
+                report['traces'].append(trace)
+                batch_traces.append(trace)
+                batch_values.append(values)
+            batch_minimum = min(trace['source_log_ratio_min'] for trace in batch_traces)
+            if batch_minimum < minimum_log_ratio:
+                minimum_log_ratio = batch_minimum
+                # Persist a new minimum through the existing owner stdout now:
+                # a later failure must not lose the only exact replay input.
+                # The final report still retains just the most-negative batch.
+                # No thresholds, extra model calls, clipping or credit changes.
+                minimum_batch = dict(
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    outcome_token_ids=labels,
+                    samples=[dict(
+                        trace=trace, traj_uid=request['traj_uid'], observed_return=request['observed_return'],
+                        source_start=request['start'], source_end=request['end'],
+                        selected_input_ids=torch.cat(tuple(request[name] for name in
+                            ('prompt', 'actions', 'query', 'target'))).tolist(),
+                        source_signed=value.tolist(),
+                    ) for request, trace, value in zip(batch, batch_traces, batch_values)],
+                )
+                print('[DT EOS minimum] ' + json.dumps(minimum_batch), flush=True)
+            print(f"[DT EOS minibatch] contrasts={len(batch)} length={length} "
+                  f"seconds={detail.get('complete_attribution_seconds_with_diagnostics')} "
+                  f"batch={report['finite_trace_calls']}/{planned_batches} "
+                  f"d_min={batch_minimum} "
+                  f"d_max={max(trace['source_log_ratio_max'] for trace in batch_traces)}", flush=True)
+        result = [return_credit_for_rows(rows, values, returns)
+                  for rows, values, returns in zip(episodes, vectors, complete_returns)]
+        report['seconds'] = time.perf_counter() - started
+        report['nonzero_advantages'] = sum(int(row['dt_token_advantages'].count_nonzero())
+                                          for episode in result for row in episode)
+        report['conservation_failures'] = sum(not trace['conservation_verified'] for trace in report['traces'])
+        if minimum_batch is not None:
+            report['minimum_log_ratio_batch'] = minimum_batch
+        self.last_report = report
+        return result
+
+    def episode(self, rows: list[dict[str, Any]]) -> list[dict[str, torch.Tensor]]:
+        return self.episodes([rows])[0]
+
+
+class DirectActionTargetReadout:
+    """One genuine executed-action joint target per native trajectory.
+
+    The environment/rollout owner supplies exact IDs, payload masks and the
+    terminal reward. This adapter selects those existing target rows, calls
+    the formal DT interface and restores its vector to native suffix slots.
+    It does not parse actions, score environments or construct reward labels.
+    """
+
+    def __init__(self, runner: Any, tokenizer: Any, *, task: str,
+                 packed_answer_targets: Any, max_length: int = 32768,
+                 minibatch_size: int = 4, prefix_lease_factory: Any = None):
+        if task not in ('TextCraft', 'AppWorld'):
+            raise ValueError('Direct action targets are enabled only for TextCraft and AppWorld')
+        if tokenizer.eos_token_id is None or minibatch_size < 1:
+            raise ValueError('The native EOS token and a positive DT minibatch are required')
+        self.runner, self.tokenizer = runner, tokenizer
+        self.task, self.max_length = task, max_length
+        self.minibatch_size = minibatch_size
+        self.packed_answer_targets = packed_answer_targets
+        # A joint target can contain predictors before a later source span.
+        # Keep the existing lease boundary before both predictors and changes.
+        self.prefix_lease_factory = prefix_lease_factory
+        self.last_report: dict[str, Any] = {}
+
+    @staticmethod
+    def _prepare_row(row, index):
+        ids, attention, response = (row[key].detach().cpu() for key in
+                                    ('input_ids', 'attention_mask', 'responses'))
+        policy, target = (row[key].detach().cpu() for key in ('policy_mask', 'target_mask'))
+        if ids.ndim != 1 or attention.shape != ids.shape or response.ndim != 1:
+            raise ValueError('A native trajectory requires one-dimensional IDs, attention and suffix')
+        width = response.numel()
+        if not width or width >= ids.numel() or not torch.equal(ids[-width:], response):
+            raise ValueError('Native responses must be the unchanged full input suffix')
+        if policy.shape != response.shape or target.shape != response.shape:
+            raise ValueError('Policy and executed-target masks must retain native suffix slots')
+        if policy.dtype != torch.bool or target.dtype != torch.bool:
+            raise ValueError('Native policy and target masks must be boolean')
+        attention = attention.bool()
+        suffix_attention = attention[-width:]
+        if bool((policy & ~suffix_attention).any()) or bool((target & ~policy).any()):
+            raise ValueError('Executed targets must be policy actions, and padding is not an action')
+        prompt_width = ids.numel() - width
+        prompt_length = int(attention[:prompt_width].sum())
+        if prompt_length < 1:
+            raise ValueError('The official target predictor requires a nonempty native prompt')
+        valid_positions = attention.nonzero().flatten()
+        selected = ids[valid_positions]
+        suffix_positions = suffix_attention.nonzero().flatten()
+        valid_policy, valid_target = policy[suffix_positions], target[suffix_positions]
+        target_offsets = valid_target.nonzero().flatten().tolist()
+        full_context_length = selected.numel()
+        # The owner may append terminal observations after its final action.
+        # Retain that complete row for reward/scatter, but a causal target
+        # cannot depend on input to its right. Pack only the required prefix;
+        # later policy positions already have the existing known d=0 below.
+        if target_offsets:
+            causal_suffix_length = target_offsets[-1] + 1
+            selected = selected[:prompt_length + causal_suffix_length]
+            suffix_positions = suffix_positions[:causal_suffix_length]
+            valid_policy, valid_target = policy[suffix_positions], target[suffix_positions]
+        prior = policy & ~target
+        if bool(target.any()):
+            prior = prior & (torch.arange(width) < int(target.nonzero()[-1]))
+        else:
+            prior = torch.zeros_like(policy)
+        value = float(row['dt_direct_reward'])
+        if not math.isfinite(value):
+            raise ValueError('The original terminal reward must be finite')
+        return dict(index=index, row=row, width=width, selected=selected,
+                    full_context_length=full_context_length,
+                    suffix_positions=suffix_positions, prompt_length=prompt_length,
+                    policy=policy, target=target, prior=prior,
+                    valid_policy=valid_policy, valid_target=valid_target,
+                    target_offsets=target_offsets, reward=value,
+                    ratios=torch.zeros(width, dtype=torch.float32),
+                    case={'target_ids': selected[prompt_length:], 'prompt_length': prompt_length})
+
+    @staticmethod
+    def _add_group_stats(stats, values):
+        value = values.double()
+        stats['tokens'] += value.numel()
+        if value.numel():
+            stats['sum'] += float(value.sum())
+            stats['sumsq'] += float(value.square().sum())
+            stats['max'] = max(stats['max'], float(value.max()))
+            stats['min'] = min(stats['min'], float(value.min()))
+            stats['max_abs'] = max(stats['max_abs'], float(value.abs().max()))
+
+    @torch.no_grad()
+    def trajectories(self, rows: list[dict[str, Any]]) -> list[dict[str, torch.Tensor]]:
+        started = time.perf_counter()
+        prepared = [self._prepare_row(row, i) for i, row in enumerate(rows)]
+        requests = [item for item in prepared if item['reward'] != 0
+                    and item['target_offsets'] and bool(item['prior'].any())]
+        for item in prepared:
+            if item['selected'].numel() > self.max_length:
+                raise ValueError(f'Native direct-target context {item["selected"].numel()} exceeds '
+                                 f'cap {self.max_length}; required causal prefix, '
+                                 f'full history={item["full_context_length"]}, '
+                                 f'traj_uid={item["row"].get("traj_uid", "")}; '
+                                 f'no truncation or auxiliary target is added')
+        requests.sort(key=lambda item: item['selected'].numel())
+        report = dict(task=self.task, target_semantics='real_executed_action_joint',
+                      target_normalization='original_full_vocabulary',
+                      reward_events=len(rows), trajectories=len(rows),
+                      finite_trace_calls=0, joint_target_requests=len(requests),
+                      minibatch_size=self.minibatch_size, query_tokens=0, synthetic_labels=0,
+                      reference_token_samples=0, per_token_probability_queries=0,
+                      prefix_lease_used=False,
+                      target_self_tokens=sum(int(item['target'].sum()) for item in prepared),
+                      prior_source_tokens=sum(int(item['prior'].sum()) for item in prepared),
+                      policy_tokens=sum(int(item['policy'].sum()) for item in prepared),
+                      empty_joint_targets=sum(not item['target_offsets'] for item in prepared),
+                      zero_reward_trajectories=sum(item['reward'] == 0 for item in prepared),
+                      actual_context_lengths=[item['full_context_length'] for item in prepared],
+                      causal_context_lengths=[item['selected'].numel() for item in prepared],
+                      causal_suffix_tokens_omitted=sum(item['full_context_length'] -
+                          item['selected'].numel() for item in prepared),
+                      original_response_rows=[row.get('dt_direct_response_count') for row in rows],
+                      traces=[])
+        device = getattr(self.runner.model, 'execution_device', self.runner.model.lm_head.weight.device)
+        planned = (len(requests) + self.minibatch_size - 1) // self.minibatch_size
+        leases = None
+        if self.prefix_lease_factory is not None and requests:
+            for item in requests:
+                sources = item['prior'][item['suffix_positions']].nonzero().flatten()
+                sources = sources + item['prompt_length']
+                changed = sources[item['selected'][sources] != self.tokenizer.eos_token_id]
+                first_change = int(changed[0]) if changed.numel() else item['selected'].numel()
+                first_predictor = item['prompt_length'] + item['target_offsets'][0] - 1
+                item.update(start=min(first_change, first_predictor),
+                            prompt=item['selected'], traj_uid=str(item['row']['traj_uid']),
+                            context_tokens=item['selected'].numel())
+            leases, prefix_report = self.prefix_lease_factory(
+                self.runner, requests, minibatch_size=self.minibatch_size,
+                eos_token_id=self.tokenizer.eos_token_id)
+            report['shared_native_prefix'] = prefix_report
+            report['prefix_lease_used'] = any(lease is not None for lease in leases)
+        for offset in range(0, len(requests), self.minibatch_size):
+            batch = requests[offset:offset+self.minibatch_size]
+            length = max(item['selected'].numel() for item in batch)
+            factual = torch.full((len(batch), length), self.tokenizer.eos_token_id,
+                                 dtype=torch.long, device=device)
+            reference = factual.clone()
+            for b, item in enumerate(batch):
+                end = item['selected'].numel()
+                factual[b, :end] = item['selected'].to(device)
+                reference[b, :end] = factual[b, :end]
+                # Later source positions cannot affect an earlier causal
+                # target predictor. Keep them factual and use their known d=0.
+                sources = item['prior'][item['suffix_positions']].nonzero().flatten()
+                reference[b, sources.to(device)+item['prompt_length']] = self.tokenizer.eos_token_id
+            signed, _, detail = trace_token_attribution(
+                self.runner, reference, factual, [item['case'] for item in batch],
+                [item['target_offsets'] for item in batch],
+                packed_answer_targets=self.packed_answer_targets,
+                **({} if leases is None else {
+                    'prefix_cache_provider': leases[offset // self.minibatch_size]}),
+            )
+            report['finite_trace_calls'] += 1
+            for b, item in enumerate(batch):
+                values = signed[b, item['prompt_length']:item['selected'].numel()].cpu()
+                prior = item['prior'][item['suffix_positions']]
+                item['ratios'][item['suffix_positions'][prior]] = values[prior].to(
+                    dtype=item['ratios'].dtype)
+                audit = detail['per_sample'][b] if len(batch) > 1 else detail
+                report['traces'].append(dict(
+                    trajectory_index=item['index'], traj_uid=str(item['row'].get('traj_uid', '')),
+                    reward=item['reward'], target_tokens=len(item['target_offsets']),
+                    actual_context_tokens=item['full_context_length'],
+                    causal_context_tokens=item['selected'].numel(), compute_tokens=length,
+                    target_self_tokens=int(item['target'].sum()),
+                    prior_source_tokens=int(item['prior'].sum()),
+                    root_effect=audit['root_effect'], signed_sum=audit['policy_credit_signed_sum'],
+                    conservation_residual=audit['conservation_residual'],
+                    factual_target_logp=audit.get('factual_target_logp'),
+                    reference_target_logp=audit.get('reference_target_logp'),
+                ))
+            print(f'[DT direct joint minibatch] trajectories={len(batch)} length={length} '
+                  f'batch={report["finite_trace_calls"]}/{planned} '
+                  f'seconds={detail.get("complete_attribution_seconds_with_diagnostics")}', flush=True)
+        output = []
+        groups = {name: dict(tokens=0, sum=0.0, sumsq=0.0, max=float('-inf'),
+                             min=float('inf'), max_abs=0.0)
+                  for name in ('self_target', 'prior_source', 'other_policy')}
+        for item in prepared:
+            width = item['width']
+            credit = reward_event_token_credit(
+                item['ratios'][None, None, :],
+                torch.tensor([[item['reward']]], dtype=torch.float32),
+                torch.ones((1, 1, width), dtype=torch.bool), item['policy'][None, :],
+                self_target_mask=item['target'][None, None, :],
+            )
+            result = dict(dt_token_advantages=credit.advantages[0],
+                          dt_q_estimates=credit.q_estimates[0], dt_v_estimates=credit.v_estimates[0])
+            output.append(result)
+            masks = dict(self_target=item['target'], prior_source=item['prior'],
+                         other_policy=item['policy'] & ~item['target'] & ~item['prior'])
+            for name, mask in masks.items():
+                self._add_group_stats(groups[name], result['dt_token_advantages'][mask])
+        for stats in groups.values():
+            if not stats['tokens']:
+                stats['max'] = stats['min'] = None
+        report['raw_advantage_groups'] = groups
+        report['seconds'] = time.perf_counter() - started
+        self.last_report = report
+        return output

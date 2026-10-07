@@ -1,0 +1,55 @@
+--- a/reward_readout.py
++++ b/reward_readout.py
+@@ -390,7 +390,7 @@
+         self.minibatch_size = minibatch_size
+         self.packed_answer_targets = packed_answer_targets
+         # A joint target can contain predictors before a later source span.
+-        # Do not feed those targets to the old response-prefix lease boundary.
++        # Keep the existing lease boundary before both predictors and changes.
+         self.prefix_lease_factory = prefix_lease_factory
+         self.last_report: dict[str, Any] = {}
+ 
+@@ -493,6 +493,22 @@
+                       traces=[])
+         device = getattr(self.runner.model, 'execution_device', self.runner.model.lm_head.weight.device)
+         planned = (len(requests) + self.minibatch_size - 1) // self.minibatch_size
++        leases = None
++        if self.prefix_lease_factory is not None and requests:
++            for item in requests:
++                sources = item['prior'][item['suffix_positions']].nonzero().flatten()
++                sources = sources + item['prompt_length']
++                changed = sources[item['selected'][sources] != self.tokenizer.eos_token_id]
++                first_change = int(changed[0]) if changed.numel() else item['selected'].numel()
++                first_predictor = item['prompt_length'] + item['target_offsets'][0] - 1
++                item.update(start=min(first_change, first_predictor),
++                            prompt=item['selected'], traj_uid=str(item['row']['traj_uid']),
++                            context_tokens=item['selected'].numel())
++            leases, prefix_report = self.prefix_lease_factory(
++                self.runner, requests, minibatch_size=self.minibatch_size,
++                eos_token_id=self.tokenizer.eos_token_id)
++            report['shared_native_prefix'] = prefix_report
++            report['prefix_lease_used'] = any(lease is not None for lease in leases)
+         for offset in range(0, len(requests), self.minibatch_size):
+             batch = requests[offset:offset+self.minibatch_size]
+             length = max(item['selected'].numel() for item in batch)
+@@ -511,6 +527,8 @@
+                 self.runner, reference, factual, [item['case'] for item in batch],
+                 [item['target_offsets'] for item in batch],
+                 packed_answer_targets=self.packed_answer_targets,
++                **({} if leases is None else {
++                    'prefix_cache_provider': leases[offset // self.minibatch_size]}),
+             )
+             report['finite_trace_calls'] += 1
+             for b, item in enumerate(batch):
+--- a/deltatrace_rollout.py
++++ b/deltatrace_rollout.py
+@@ -410,7 +410,8 @@
+             self.direct_readout = DirectActionTargetReadout(
+                 self.runner, self.readout_tokenizer, task=self.readout_options['task'],
+                 packed_answer_targets=self.packed_answer_targets,
+-                max_length=self.readout_options['max_length'], minibatch_size=4)
++                max_length=self.readout_options['max_length'], minibatch_size=4,
++                prefix_lease_factory=self.readout_options['prefix_lease_factory'])
+ 
+     def attribute_prepared_batch(self, data):
+         """Consume native DP rows whose complete returns were prepared globally."""

@@ -1,0 +1,228 @@
+{
+  "kind": "Read-only design from exact frozen actual sources; no candidate implemented",
+  "observed_utc": "2026-10-07T10:13:36.926257+00:00",
+  "identity": {
+    "pid": 2001805,
+    "birth": 1791362313.39,
+    "source_sha256": "24b9e671f3533d88047fead3c709bbfddbf5200053f3cd8f3d308cb30f179f11",
+    "implementation_commit": "d5b879d7acd49a5e7ba7550a52cb53a0f993d0d5",
+    "state": "terminal native HF/PEFT replay OOM"
+  },
+  "sources": {
+    "runner": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/candidate/qwen35_dense_finite_runner.py",
+      "sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f",
+      "lines": [
+        [
+          395,
+          429
+        ],
+        [
+          497,
+          504
+        ]
+      ]
+    },
+    "finite_decoder": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/candidate/qwen35_decoder_finite.py",
+      "sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234",
+      "lines": [
+        [
+          13,
+          43
+        ],
+        [
+          136,
+          156
+        ],
+        [
+          247,
+          269
+        ]
+      ]
+    },
+    "native_qwen": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/memory-source/installed/modeling_qwen3_5.py",
+      "sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+      "lines": [
+        [
+          736,
+          749
+        ],
+        [
+          818,
+          824
+        ]
+      ]
+    },
+    "native_peft": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/native-torch-sac-20261004/peft_lora_layer.py",
+      "sha256": "e8a47a49cf69f92ded68bf7ab286aeaf068f0ac809ab3465ad16f78a8f9f8b63",
+      "lines": [
+        [
+          779,
+          807
+        ]
+      ]
+    },
+    "producer_owner": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/old-new-source-audit/new-producer.py",
+      "sha256": "494b53b0f40831f379a427b9e47df879487e55d8bbddb4541ad0be6f3a47cace",
+      "lines": [
+        [
+          126,
+          157
+        ]
+      ]
+    },
+    "retained_capture": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/old-new-source-audit/actual-retained-capture.py",
+      "sha256": "c02ce3a54147dcf37e3f97d1d26cd38423ee1faaa3566ecc2999a2fe8ee59870",
+      "lines": [
+        [
+          22,
+          29
+        ],
+        [
+          47,
+          50
+        ]
+      ]
+    },
+    "copy_owner": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/memory-source/clean/qwen35/native_attention_capture.py",
+      "sha256": "2a226ac35302e933920aa096fe962db7ed724c1a478c247ef5700b253461ab74",
+      "lines": [
+        [
+          10,
+          26
+        ]
+      ]
+    },
+    "checkpoint_config": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-causal-prefix-20261007/v3/memory-source/checkpoint-config.json",
+      "sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05",
+      "lines": []
+    },
+    "original_terminal": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/appworld-terminal-summary-1791366096.json",
+      "sha256": "8708cdd38af2f25c1ff37b6e42dc1607da4c0e3de6b1dad24417835e20da062f",
+      "lines": []
+    }
+  },
+  "original_failure": {
+    "stage": "native_replay before finite MLP",
+    "source": "HF823/748 -> PEFT807",
+    "attempt_gib": 4.49,
+    "reported_free_gib": 3.03,
+    "failed_batch": 29,
+    "failed_length": null,
+    "failed_layer": null,
+    "failed_tensor_shape": null,
+    "failed_tensor_dtype": null,
+    "allocator_not_physical": true
+  },
+  "native_lifetimes": [
+    "HF MLP evaluates gate_proj then act_fn, retains the silu value while evaluating up_proj, multiplies and calls down_proj.",
+    "Passive GPU capture borrows gate/up/silu storage and extends each original output lifetime until finite_decoder consumes all three; this differs from ordinary native eval where gate may die after act_fn.",
+    "PEFT keeps base result, casts x to LoRA_A dtype, and evaluates LoRA_A/LoRA_B/scaling/add. Scaling allocation happens before outer up_proj hook can capture its completed result; hooks on original LoRA_B can expose shape/dtype first.",
+    "Current finite token chunk2048 starts after native replay and cannot bound this native temporary. It only bounds finite intermediate arithmetic."
+  ],
+  "offload_scope": {
+    "original_fsdp": "Existing replay_finite_layer temporarily retains this layer gathered weights for finite consumer, then original release_finite_layer reshards.",
+    "original_activation_offload": "Existing eval branch calls original forward; actor training saved-tensor offload does not remove eval native MLP transients.",
+    "root_capture": "Already CPU/pinned layer checkpoints; not a GPU bank.",
+    "mixer_capture": "Optional mixer destination/offload is separate and does not cover decoder gate/up/silu.",
+    "decoder_capture": "runner416 forces cuda; existing NativeDecoderCapture destination/copy_capture_tensor supports CPU representation but no complete chunk consumer/bank interface.",
+    "measurement": "Do not pass runner observer: runner402-405 forces copy_captures and disables mixer offload."
+  },
+  "minimal_owner_boundaries_for_native_chunk": [
+    {
+      "owner": "Original producer replay_finite_layer(layer,replay), lines126-145",
+      "change": "Replay-local context composes original mlp.forward over token dim1 chunks, calls the same bound original forward for every chunk, allocates one original full output and fills original token slices. All original PEFT projection modules and arithmetic remain owners.",
+      "preserve": "Call layer.mlp once from HF layer823; its outer pre/post hooks and mlp callcount stay1. Call original bound forward inside wrapper rather than layer.mlp(chunk), so no recursive outer call or duplicate outer hooks. Keep existing FSDP set_reshard_after_forward(False) context and restore it."
+    },
+    {
+      "owner": "Existing NativeDecoderCapture/retained subclass, decoder13-43 and retained47-50",
+      "change": "Capture per-chunk gate/up/silu into single preallocated full-T buffers by exact token offsets, preserving paired row dimension/dtype. Read actual output dtype/width from first chunk; do not concatenate an extra full set. For complete copied-diagnostic capture mode, down_input also needs full assembly; input/post norm and whole mlp/output remain original single calls.",
+      "preserve": "Original gate/up/silu/down module hooks run once per actual native chunk, and raw calls accurately report N. Never reset N to1 or retain only last chunk. Final capture values retain original [2B,T,I] schema for existing finite consumer."
+    },
+    {
+      "owner": "runner capture construction/coverage check, lines416/429",
+      "change": "Pass original full token geometry/capture chunk context and derive expected projection/activation calls=N, normalizations/outerMLP/decoder=1. No change to finite MLP, FA/FLA, Q/V/A, PPO, rank/alpha/microbatch.",
+      "preserve": "Current complete-capture coverage contract remains truthful. Repeating whole layer is prohibited: only MLP uses chunks; attention/GDN executes once."
+    }
+  ],
+  "exception_and_hook_restore": [
+    "Snapshot exact original instance forward binding, including any installed owner/offload wrapper; if no instance attribute existed, remove temporary instance override on exit instead of installing a different class/bound method.",
+    "Restore temporary forward and chunk-capture context in finally, including OOM; original NativeDecoderCapture removes its own hook handles in __exit__. Do not retry, suppress OOM, or fall back to different arithmetic.",
+    "Do not call individual projection .forward directly: original module __call__ must preserve PEFT/FSDP/module hooks. No parameter/adapters/dtypes/scaling/training state changes."
+  ],
+  "pointwise_and_limits": {
+    "equivalence": "Same weights and eval/no_grad/dropout-disabled original MLP acts independently along token dim; changing GEMM token shape may change low precision reduction paths and requires actual owner numerical comparison, not an invented correction.",
+    "remaining_full_gpu_buffers": "One complete gate, up, silu plus complete hidden output remain. Native temporary scales with token chunk. This is not proof the entire joint32k path fits.",
+    "conditional_bound": {
+      "not_failed_actual_shape": true,
+      "hidden_size": 4096,
+      "intermediate_size": 12288,
+      "paired_rows": 8,
+      "tokens": 32768,
+      "bf16_one_intermediate_gib": 6.0,
+      "bf16_gate_up_silu_gib": 18.0,
+      "bf16_one_2048_chunk_gib": 0.375,
+      "fp32_one_2048_chunk_gib": 0.75,
+      "note": "Dimensions from saved checkpoint config; batch/time hypothetical bound, not actual failed batch or dtype."
+    }
+  },
+  "existing_cpu_option": {
+    "api": "NativeDecoderCapture destination plus existing copy_capture_tensor CPU/pinned primitive",
+    "current_gap": "No existing decoder per-token chunk bank/consumer found; existing finite consumer assumes complete same-device captures.",
+    "option": "MLP-only CPU capture storage plus existing finite chunk consume/restore may remove complete paired GPU capture retention, without copying MLP arithmetic.",
+    "limits": [
+      "Original full native PEFT transient remains unless native calls also chunk.",
+      "Extra D2H/H2D traffic and host storage must be measured before selecting this over native-only chunk capture.",
+      "Do not use GDN bank success as proof of decoder MLP coverage."
+    ]
+  },
+  "minimal_passive_diagnostic": {
+    "reuse": "Existing PrefixWorker + real-ID loader/diagnose entry; no sampled/synthetic replacement",
+    "scope": "Temporary passive hooks inside original replay_finite_layer, not runner attribute observer",
+    "reason": "Runner observer changes capture copying and mixer offload, contaminating memory measurement.",
+    "fields": [
+      "layer index",
+      "actual MLP input batch/token/hidden shape and dtype",
+      "gate/up/base_layer/lora_A/lora_B output shape/dtype/stride/storage bytes",
+      "active LoRA weight dtype and actual scaling",
+      "capture live storage references and memory phase before/after native call"
+    ],
+    "failure_localization": "lora_B post-hook records branch output metadata before the original scaling/add OOM; no tensor retention or copied forward formula.",
+    "available_inputs": "Previously saved real B8 response rows are reusable for bounded diagnostics, but the terminal29 full-joint input was not persisted.",
+    "no_new_gate": true
+  },
+  "official_chunk_search": {
+    "scope": "Exact saved installed Qwen/PEFT source, local repository and local miniconda3 package-file inventory only",
+    "qwen_class_chunk_api_found": false,
+    "local_saved_transformers_pytorch_utils_found": false,
+    "conclusion": "No direct Qwen MLP chunk switch established. Do not claim a generic HF helper is installed or suitable without its pinned source."
+  },
+  "prior_source_only_receipt": {
+    "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/native-mlp-owner-composition-readonly-20261007.json",
+    "sha256": "e6a03014c97210e9c0cd59870e21981bae8e89a57378bfc2dc00d9176ee6f15f"
+  },
+  "operations": {
+    "remote": 0,
+    "model": 0,
+    "tests": 0,
+    "production_edits": 0,
+    "deployment": 0,
+    "restart": 0,
+    "checkpoint": 0
+  },
+  "not_claimed": [
+    "Failed29 dtype/shape recovered",
+    "32k joint capacity passed",
+    "Formal first update healthy",
+    "FA/FLA or PPO whole-chain certification",
+    "Numerical tolerance changed"
+  ]
+}
