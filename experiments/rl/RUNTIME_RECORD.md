@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 01:12 原首个PPO minibatch的极值token梯度已量出；正式更新保持hold
+
+results_update_gradient_20261008.json绑定诊断5fba8de4、Text source2796233e、原actor
+3a65e173/core fc2f992b导入路径SHA、原两rank pre-update SHA和完整配置。使用原第一
+global64/local32、每卡实际B4×8，203153有效token；未在此minibatch重新白化。
+原VERL update_policy运行两次PG诊断，保留原前后向/累积/clip，optimizer/scheduler
+写入关闭；496个可训练参数张量/rank逐值不变。没有DT、rollout、恢复或正式重启。
+原observer历史字段grpo_pg仅承载已存在的Format单token系数，不是GRPO算法对照。
+
+全PG范数.04516558，Format单项.00977713，范数比21.6473%；这不是可相加的占比。
+其在全梯度方向的投影约4.0002%；两份实测梯度相减，方向变化12.4954度。
+不能据此声称单项主导，更不能把首次minibatch诊断当旧发散训练的完整因果证明。
+各pass/rank原8个microbatch的ppo_kl和上下clip fraction为0；未保存逐token ratio，
+不将这些scalar观察冒称逐token ratio逐值验收。没有发明梯度或数值容差。
+两pass每rank约129.0/115.2秒，诊断PID952923/birth1791392443.42已完成退出，
+4/5回到各859MiB。原Ray指标exporter不可用告警已保留，不影响已完成的梯度回执。
+Text2833207仍同birth，两个release不存在、零正式更新；App正式终止、未重启。
+信用误差未修复；显存候选仍为单独有界验证，不混称正式部署或训练健康。
+
+
 ## 2026-10-08 00:49 真实非零FA端点两种接口逐值一致；信用仍未修复
 
 results_nonzero_fa_layout_20261008.json记录原App source58209daa、decoder27真实

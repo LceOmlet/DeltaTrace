@@ -1,0 +1,444 @@
+{
+  "observed_unix": 1791393137.3542361,
+  "observed_utc": "2026-10-07T17:12:17.354236+00:00",
+  "status": "Native first-minibatch gradient contribution measured; credit not repaired; formal update held",
+  "scope": "Actual first global64/local32/B4 TextCraft optimizer minibatch at untouched base LoRA weights; two native PG backward passes without optimizer/scheduler writes. No GRPO algorithm was run.",
+  "code_commit": "5fba8de4",
+  "upstream_lock": {
+    "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/upstream.lock",
+    "bytes": 242,
+    "sha256": "505dae9462a1a26df5169a0e41355110cb3c6c45ca85a985db6d3e0f188b9901"
+  },
+  "imported_sources": {
+    "actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+    },
+    "core": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py",
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+    },
+    "diagnostic": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-update-gradient-20261008-v1/observe_native_optimizer_minibatch.py",
+      "sha256": "022466b2bac94617b8e627ea027fb3afdf4490dc4bc2bcaa11944ab444e36214"
+    },
+    "gradient_statistics": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-update-gradient-20261008-v1/observe_native_actor_loss_gradients.py",
+      "sha256": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047"
+    }
+  },
+  "diagnostic_adapter": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-update-gradient-20261008-v1/inspect_actual_token_gradient_v2.py",
+    "sha256": "513229b4046cb91662e944e8201b6195616cfcd1a221b52f61e1333ff4e8f624"
+  },
+  "original_held_source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+  "input_inspection": {
+    "scope": "One real first TextCraft optimizer minibatch, no optimizer/scheduler update.\n\nThe unchanged existing native observer calls original VERL update_policy twice.\nIts legacy diagnostic_grpo_advantages/grpo_pg names carry ONLY the isolated\nactual Format-token DT coefficient in this diagnostic, never a GRPO method.\nAll other original coefficients/masks/IDs and native loss/accumulation persist.\n",
+    "source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+    "inputs": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-prefix-runtime-20261007-v1/textcraft-first-dt/rank0-pre-update.pt",
+        "sha256": "1563ce74f298769893b360398fd1bacf16c376439b1d462e56ef9dc6f905be59"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-prefix-runtime-20261007-v1/textcraft-first-dt/rank1-pre-update.pt",
+        "sha256": "a1970da0bbf462b203314cbf29cc8ecd8c81e526fe1b6ee944978a76bbadd34e"
+      }
+    ],
+    "selected_rows": "First32 original rows of each held rank; actual first global64 optimizer minibatch",
+    "position_owner": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/model.py",
+      "sha256": "3be21963e591897238937fe4e149c41d28e3ebb83468f582da2c60ac00b329dc"
+    },
+    "native_position_checks": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+    },
+    "core": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py",
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+    },
+    "observer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-update-gradient-20261008-v1/observe_native_optimizer_minibatch.py",
+      "sha256": "022466b2bac94617b8e627ea027fb3afdf4490dc4bc2bcaa11944ab444e36214"
+    },
+    "isolated_positions": [
+      {
+        "global_row": 5,
+        "rank": 0,
+        "local_row": 5,
+        "slot": 351,
+        "token_id": 14606,
+        "coefficient": -140.34095764160156
+      }
+    ],
+    "rows": 64,
+    "valid_tokens": 203153,
+    "cuda_initialized": true,
+    "gradient_input_fields": {
+      "dt_token_advantages": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.float32"
+      },
+      "dt_q_estimates": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.float32"
+      },
+      "dt_v_estimates": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.float32"
+      },
+      "advantages": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.float32"
+      },
+      "loss_mask": {
+        "shape": [
+          64,
+          10752
+        ],
+        "dtype": "torch.int64"
+      },
+      "response_mask": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.int64"
+      },
+      "input_ids": {
+        "shape": [
+          64,
+          10752
+        ],
+        "dtype": "torch.int64"
+      },
+      "responses": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.int32"
+      },
+      "attention_mask": {
+        "shape": [
+          64,
+          10752
+        ],
+        "dtype": "torch.int64"
+      },
+      "token_level_rewards": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.float32"
+      },
+      "position_ids": {
+        "shape": [
+          64,
+          10752
+        ],
+        "dtype": "torch.int64"
+      },
+      "diagnostic_grpo_advantages": {
+        "shape": [
+          64,
+          10240
+        ],
+        "dtype": "torch.float32"
+      }
+    },
+    "checkpoint_restore": 0,
+    "DT": 0,
+    "rollout": 0,
+    "optimizer_steps": 0,
+    "import_scope": "Original owner imports may initialize CUDA; no model/forward/backward/update is created during --inspect-only."
+  },
+  "sources": [
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/phase.json",
+      "bytes": 110,
+      "sha256": "48e2038b2e7a9de11d26f8b116c979977a60ddc8f79cc731c95d172fba45fc91"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/completed.json",
+      "bytes": 697,
+      "sha256": "09afc96c4c070d811eeaa4fcec8ae4daaf12e65cb0c7e6f8003dda03ec4e5ec9"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/input-inspection.json",
+      "bytes": 4170,
+      "sha256": "0d38f8c00c63d98ad2c92879bc3270bc71ff8d0f3f0484aa92d502ac3726a81c"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/rank0-gradients.json",
+      "bytes": 666771,
+      "sha256": "659f6df8357b5655c318d50525f465744c68de72ddf67652bc020db5705b9ce4"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/rank1-gradients.json",
+      "bytes": 666737,
+      "sha256": "16bcf22d6b6e8162b2ad959281258dbb211b4df1b852bb747984c4257a5748e9"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/rank0-raw-observer.json",
+      "bytes": 623279,
+      "sha256": "d0d733430b6e34aca01af80b731fe6f87c40ee81b43a1e4d2a45f38640351e36"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/rank1-raw-observer.json",
+      "bytes": 623245,
+      "sha256": "f289ada269ccb5fa1985663c29f0bcd6df993316cb7caa31101098bd635fa88c"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/effective-config.yaml",
+      "bytes": 9372,
+      "sha256": "2454327d57555965d3d04a5ccf9c1ac8482987cd6eb6ddb7bcbbc61d19441396"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/gradient-driver.log",
+      "bytes": 19447,
+      "sha256": "4d89944ece5b4cee355180eb572f836fde5b1eaea31d9a5b2aa58419c5d8958a"
+    },
+    {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/gradient-launch.json",
+      "bytes": 1483,
+      "sha256": "0967c9bf61bb69e862f0eee4f2eaac486175205ff879b007303d926af2644da6"
+    }
+  ],
+  "label_meanings": {
+    "dt_pg": "Full original saved DT actor coefficient vector",
+    "grpo_pg": "Isolated existing Format-token DT coefficient; legacy observer alias only, no GRPO computation"
+  },
+  "effective_config": {
+    "ppo_mini_batch_size": 32,
+    "ppo_micro_batch_size_per_gpu": 4,
+    "ppo_epochs": 1,
+    "gradient_accumulation": 8,
+    "native_backward_scale": 0.125,
+    "temperature": 1.0,
+    "multi_turn": true,
+    "entropy_coeff": 0.001,
+    "use_kl_loss": true,
+    "kl_loss_coef": 0.001,
+    "kl_loss_type": "low_var_kl",
+    "loss_agg_mode": "token-mean",
+    "grad_clip": 1.0
+  },
+  "gradient": {
+    "full_DT_PG_norm": 0.045165578933231657,
+    "isolated_Format_token_norm": 0.009777128846399917,
+    "norm_ratio": 0.21647301058298093,
+    "cosine_with_full": 0.18479087885457715,
+    "projection_on_full_fraction": 0.04000223787392522,
+    "full_minus_isolated_norm": 0.04441079009669835,
+    "full_vs_without_token_cosine": 0.9763135176524237,
+    "full_vs_without_token_angle_degrees": 12.495363775046165,
+    "statistics": {
+      "measurement_dtype": "torch.float64",
+      "ownership_buckets": [
+        [
+          "sharded",
+          "cuda",
+          [
+            0,
+            1
+          ]
+        ]
+      ],
+      "norm_scope": "Pre-clip complete local32 minibatch gradients from native backward; sharded DTensor scalar statistics SUM on its original mesh; replicated/plain contributions remain local.",
+      "inner_products": {
+        "dt_pg:dt_pg": 0.0020399295203739794,
+        "dt_pg:grpo_pg": 8.16017459200421e-05,
+        "grpo_pg:grpo_pg": 9.559224847910535e-05
+      },
+      "norms": {
+        "dt_pg": 0.045165578933231657,
+        "grpo_pg": 0.009777128846399917
+      }
+    }
+  },
+  "native_clip_returns_by_rank": [
+    {
+      "dt_pg": 0.02913524955511093,
+      "grpo_pg": 0.006693297065794468
+    },
+    {
+      "dt_pg": 0.034511830657720566,
+      "grpo_pg": 0.007126842625439167
+    }
+  ],
+  "elapsed_seconds_by_rank": [
+    {
+      "dt_pg": 128.99621819799358,
+      "grpo_pg": 115.20239855399996
+    },
+    {
+      "dt_pg": 128.97679730699747,
+      "grpo_pg": 115.20303962800244
+    }
+  ],
+  "parameters_exact_unchanged_by_rank": [
+    true,
+    true
+  ],
+  "parameter_tensor_count_by_rank": [
+    496,
+    496
+  ],
+  "job": {
+    "launch": {
+      "code_commit": "5fba8de4",
+      "pid": 952923,
+      "birth": 1791392443.42,
+      "launched_unix": 1791392443.7860928,
+      "devices": [
+        4,
+        5
+      ],
+      "argv": [
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-update-gradient-20261008-v1/inspect_actual_token_gradient_v2.py"
+      ],
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/source.json",
+      "source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+      "script_hashes": {
+        "inspect_actual_token_gradient_v2.py": "513229b4046cb91662e944e8201b6195616cfcd1a221b52f61e1333ff4e8f624",
+        "observe_native_optimizer_minibatch.py": "022466b2bac94617b8e627ea027fb3afdf4490dc4bc2bcaa11944ab444e36214",
+        "observe_native_actor_loss_gradients.py": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047",
+        "inspect_extreme_endpoint.py": "8a72887a32bd11533486ddee6dc0d36b4980bfb77ed94eadc7a9a13f031b36d5"
+      },
+      "scope": "Actual first global64/local32/B4 PPO minibatch; original full DT PG and one isolated Format-token contribution; no optimizer/scheduler write",
+      "planned_native_backward_passes_per_rank": 2,
+      "optimizer_steps": 0,
+      "checkpoint_restore": 0,
+      "DT_calls": 0,
+      "rollout_calls": 0,
+      "text_update_released": false,
+      "formal_restart": false
+    },
+    "completed": {
+      "completed_unix": 1791392844.5886087,
+      "source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+      "scope": "One real first TextCraft optimizer minibatch, no optimizer/scheduler update.\n\nThe unchanged existing native observer calls original VERL update_policy twice.\nIts legacy diagnostic_grpo_advantages/grpo_pg names carry ONLY the isolated\nactual Format-token DT coefficient in this diagnostic, never a GRPO method.\nAll other original coefficients/masks/IDs and native loss/accumulation persist.\n",
+      "rows": 64,
+      "native_backward_passes_per_rank": 2,
+      "optimizer_steps": 0,
+      "scheduler_steps": 0,
+      "checkpoint_restore": 0,
+      "DT": 0,
+      "rollout": 0
+    },
+    "final_observation": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-update-gradient-20261008/v1/gradient-observation-1791393137.json",
+      "bytes": 798452,
+      "sha256": "7181fb966762cf9c4b97f3c0352fcf7db7a6e3fc3d17d34a17a2e9d9d03290fe"
+    },
+    "driver_same_birth": false,
+    "observations": [
+      {
+        "unix": 1791392487.0595522,
+        "driver_same_birth": true,
+        "process_count": 50,
+        "process_tree_pss_bytes": 21066911744,
+        "text_same_birth": true,
+        "releases": [
+          false,
+          false
+        ]
+      },
+      {
+        "unix": 1791392538.7913845,
+        "driver_same_birth": true,
+        "process_count": 116,
+        "process_tree_pss_bytes": 41729816576,
+        "text_same_birth": true,
+        "releases": [
+          false,
+          false
+        ]
+      },
+      {
+        "unix": 1791392761.8651593,
+        "driver_same_birth": true,
+        "process_count": 116,
+        "process_tree_pss_bytes": 42039624704,
+        "text_same_birth": true,
+        "releases": [
+          false,
+          false
+        ]
+      },
+      {
+        "unix": 1791392860.99935,
+        "driver_same_birth": true,
+        "process_count": 2,
+        "process_tree_pss_bytes": 3579547648,
+        "text_same_birth": true,
+        "releases": [
+          false,
+          false
+        ]
+      },
+      {
+        "unix": 1791393137.3542361,
+        "driver_same_birth": false,
+        "process_count": 0,
+        "process_tree_pss_bytes": 0,
+        "text_same_birth": true,
+        "releases": [
+          false,
+          false
+        ]
+      }
+    ]
+  },
+  "formal_state": {
+    "text_same_birth": true,
+    "text_release_present": [
+      false,
+      false
+    ],
+    "text_optimizer_updates": 0,
+    "appworld_formal_terminal": true,
+    "formal_restart": false,
+    "checkpoint_restore": false
+  },
+  "interpretation": [
+    "The Format token has a measurable contribution. A 21.65% norm ratio is not an additive percentage of the gradient, nor proof that it dominates the minibatch.",
+    "Its projection on the full gradient is about 4.00%; subtracting the measured isolated vector from the measured full vector changes the pre-clip PG direction by about 12.50 degrees. No removed-token update was executed.",
+    "Observed native ppo_kl and both clipping fractions were zero in all eight microbatches of each pass/rank at unchanged initial weights. These scalar observations are not a saved per-token ratio equality test.",
+    "The same official whole-batch whitening coefficients and original token-mean/microbatch accumulation were used. No new whitening, learned critic, alternative objective, coefficient correction, clipping, or parameter change occurred."
+  ],
+  "limitations": [
+    "One real minibatch at initial weights is not the old divergent run or evidence of its complete cause.",
+    "The isolated coefficient keeps the original already-whitened vector. Subtracting it is a diagnostic decomposition, not a proposed algorithm or a re-whitened counterfactual batch.",
+    "The vector subtraction uses the separately measured native low-precision backward results, so the angle describes those measurements rather than an exact-arithmetic identity or actual optimizer update.",
+    "No scalar-gradient norm or direction threshold has been invented; this is measurement, not an official numerical tolerance test.",
+    "Scalar branch hooks suppress other original PG/entropy/KL output gradients while their native bodies still execute. Entropy and KL parameters are unchanged; their contributions are not included in the reported PG vectors.",
+    "Raw observer legacy grpo_pg/diagnostic_grpo_advantages names mean the isolated Format DT component here. The observer historical provenance text is superseded by the explicit wrapper alias binding; it is not a GRPO baseline.",
+    "PSS comes from sampled process trees, including original Ray children. mx-smi samples are retained separately; no physical peak was inferred from the Torch virtual allocator.",
+    "Cumulative deletion/RISE/MAS evidence remains separately recorded. This gradient observation cannot replace that attribution assessment."
+  ],
+  "credit_repaired": false,
+  "memory_candidate_formally_deployed": false
+}
