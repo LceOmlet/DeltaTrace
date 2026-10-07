@@ -1,5 +1,49 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 14:52 AppWorld第29个DT批次GDN OOM；未重启
+
+AppWorld PID996278/birth1791352696.13/sourceed3fdf7b已NoSuchProcess，物理4/5均释放至859MiB。
+本次未完成首个新DT/PPO更新，rollouts/1.jsonl不存在。最后成功两rank28/29、length19511/
+19340、99.735/99.709秒；失败第29批没有完成行，不能把前一批长度当失败批长度。
+rank1003748在GDN253→原symmetric反向→finite_fla编译临时FP16 buf77申请174MiB失败；
+rank1002185在GDN301→原decoder._linear_transpose72的BF16 cast申请1.18GiB失败。
+这是GDN传播峰值，不是head；runner382在进入finite decoder前已删除out/z/seed/mnorm。
+原OOM103-104GiB为虚拟allocator数字，不是物理占用；终态cgroup140802150400字节。
+原栈/解析symlink/关键SHA见appworld-terminal-oom-original.json SHA
+2ed338b9cbaf7bd088f2a7feaf56d315e5a30851c351f4c080855dd4614ea2ef。
+
+发现当前dt_offload_replay_mixer=false把已有consume_captures也关掉，GDN最后消费者后
+释放分支同样仅绑定offload_endpoints，GPU常驻路径把已用完的MLP/GDN捕获留到函数末。
+只准备隔离生命周期候选direct-target-gpu-lifetime-20261007/v1/candidate：复用decoder/FA
+已有consume接口，GDN消费释放与搬运开关分离；不改算子、公式、目标、B4、LoRA、任务或PPO。
+runner ba639b28、GDN448ef32c仅AST语法检查，尚未完成数值/容量对照、未部署或提交任务。
+当前正式TextCraft原PID110053继续第五次采样，已有四次更新；SQL/GRPO保持停止。
+本节所有原终态与源副本回执位于direct-target-causal-prefix-20261007/v3，候选不属于
+当前可启动/已验证版本。没有恢复检查点或为OOM直接更改内存/计算参数。
+
+## 2026-10-07 14:41 TextCraft第四次更新返回，数值来源仍匹配
+
+TextCraft原PID110053/birth1791344324.6/source5013ebc8完整step4已返回并进入第五次原采样。
+整轮2808.834秒，gen1879.989、oldprob135.719、ref118.353、DT180.260、actor494.122、
+dump0.383；reward0.609、entropy0.658、grad_norm0.049、白化优势[-115.301,6.544]。
+actor实际954558 token、每token0.518ms（step3为0.508ms），不把总耗时增长判为计算异常。
+四批采样reward0.664/0.629/0.695/0.609、entropy0.677/0.644/0.675/0.658，没有复现
+旧实验的连续熵上升；这仍不是独立评估或学习改进结论。原完整metrics行SHA
+7e453a6b3637cd76897109e17a9637a3c9d1bd2bd98934a1e67e5cab96f08ae1，回执
+textcraft-step4-original-1791355304.json SHA4283b701d4a2ba2cd31b2cd19967b50277c61fd8502cb83aaa595ecfcc3e0aa6。
+同窗口AppWorld原PID996278两rank为DT21/29，未完成首个更新；物理4/5为53812/54132MiB，
+全容器235.31GiB，来源original-phase-1791355322.json SHAf49c585f…ef280；非峰值。
+
+14:37:48只读核对两组PID/source/实际CPU导入回执、11个VERL owner文件、7个DT关键文件、
+安装补丁和有限.so，当前字节均匹配各自source。runner5f14/vendorFA3e1d/GDNef55未变；
+Text head d473与App head1e209明确区分，App readout7900只包含已记录因果前缀修复。
+原FA v2.6.3断言仍out2×、dq/dk/dv3×参考基线误差；FLA v0.4.1的o/ht仍0.005，
+没有放宽或纠偏。已有v4的56FA/4FLA仅覆盖原记录实际算子；head1e209为真实B4的
+PyTorch FP32默认assert_close对照，不称FA/FLA/VERL整网容差；历史失败回执不当通过证书。
+核对不是live Python方法反射或整网健康证明。source-bound-tolerance-audit.json SHA
+ef67413ab8d1a1874c8aa1dd357d63b39ba66cc1419247aa6ca9ec58ffd8f221，均在
+direct-target-causal-prefix-20261007/v3。生产、参数与任务范围没有修改。
+
 ## 2026-10-07 14:30 两组正式DT推进，原奖励缓存路径已核对
 
 AppWorld原PID996278/birth1791352696.13/sourceed3fdf7b未变。原采样实际返回231条轨迹、
