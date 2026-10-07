@@ -1,5 +1,39 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 17:56 数值检查优先；TextCraft错误暂停导致终止，AppWorld新原生重放OOM
+
+用户要求先查极端信用，不继续拿训练进展替代逐token证据。TextCraft原PID110053/
+source5013完成7次更新；第8次在ref阶段尚无DT/actor更新。父代理17:31对原进程树
+SIGSTOP，17:37仅恢复基础设施/workers，仍暂停driver/TaskRunner。这是错误的调试暂停：
+原GCS17:40:04判停止的driver控制连接不可用并销毁TaskRunner，raylet17:40:09
+SIGKILL并级联回收两rank。原区间日志已保存；不是DT OOM，不能称仍安全暂停。
+观测器安装前检查即因TaskRunner已不存在退出，未在worker导入或改变数值。
+17:55仅恢复已失败driver接收原Ray错误/清理；17:55:52全部原进程已无，未重新提交。
+旧−23/−110等汇总极值缺少原位置/d，不能恢复配对；第8批未保存现场也已丢失。
+
+新增被动观测v2仅prepared，CPU8/8接口测试通过，未部署/未证明实际Ray心跳或DT精度。
+每个原trace成功返回立即保存FP64 signed、case/UID/原IDs/位置/原detail；完整读出再保存
+实际FP32 d与原Q/V/A；原actor更新入口保存scatter及整批官方白化后的DataProto。
+显式释放文件前Event.wait等待，不再SIGSTOP Ray进程；原公式/返回/exception/参数不变。
+v1错误暂停候选及失败安装记录保留，不在默认启动路径。没有模型重放、额外采样、
+信用裁剪/纠偏、检查点导出/恢复或新增数值验收标准；真实向量采集尚未完成。
+
+AppWorld原PID2001805/source24b9本次在第29/29批原HF/PEFT MLP重放up_proj LoRA
+乘scaling申请4.49GiB时仅余3.03GiB，完整DT/PPO未完成；失败批length/layer/dtype未记。
+此前有限MLP分块628006/1c58仍是该有限边界的已对照实现，不覆盖此次原native MLP。
+与旧稳定sourceaa8fac/checkpoint28比对：B4、LoRA8/16、FSDP参数/优化器卸载、
+activation_offload与vLLM资源配置相同；官方offload及worker文件SHA未变且sleep有原日志。
+旧为辅助类别标签EventRatioReadout，新为真实joint action target；旧显式lease工厂/provider
+未接入新DirectActionTargetReadout，但runner自动common-prefix仍存在，不能说前缀全部关闭。
+该遗漏和新增原生重放峰值分别调查；未证明仅接lease就能修峰值。错误早于优势白化。
+官方activation_offload原eval分支直接原forward，不等于能消除DT eval前向的MLP临时量。
+不能用旧标签长期运行、旧短target32k或有限MLP对照宣称新joint整链容量已验收。
+
+本次完整来源/SHA、源码行号、prepared状态和终态见results_token_credit_debug_20261007.json
+及old-stable-to-joint-memory-path-audit-20261007.json。17:55:52物理所有GPU858MiB/no processes，
+是退出后快照非峰值；两组均未重启，SQL/GRPO未启动，方法PLAN未改。
+
+
 ## 2026-10-07 17:14 AppWorld首次正式DT推进，末批尚待实际完成
 
 本goal turn为verified wait：重新核对同一存活PID/birth/source，而非依据旧清单推断。

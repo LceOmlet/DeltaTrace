@@ -1,0 +1,9 @@
+from pathlib import Path
+import json,hashlib,time,base64
+paths={'old-producer': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-eval-client-routing-resume-20261005-v1/entry/deltatrace_rollout.py', 'new-producer': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-causal-prefix-20261007-v2/appworld/entry/deltatrace_rollout.py', 'old-readout': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-eval-client-routing-resume-20261005-v1/entry/reward_readout.py', 'new-readout': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-causal-prefix-20261007-v2/appworld/entry/reward_readout.py', 'old-runner': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py', 'new-environment': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/environment.json', 'actual-retained-capture': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/accelerated/qwen35/qwen35_retained_capture.py'}
+files={}
+for k,v in paths.items():
+ p=Path(v);size=p.stat().st_size
+ if size>262144:raise RuntimeError('Unexpected >256k source: '+k)
+ raw=p.read_bytes();files[k]=dict(path=v,resolved_path=str(p.resolve()),bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),raw_base64=base64.b64encode(raw).decode())
+print(json.dumps(dict(observed_unix=time.time(),readonly=True,files=files,scope='Exact7 frozen small source/config files only. No model, RPC, tests, mutation, checkpoint access or TextCraft access.')))

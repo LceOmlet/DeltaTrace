@@ -1,13 +1,15 @@
 {
-  "observed_unix": 1791364455.4544537,
-  "observed_utc": "2026-10-07T09:14:15.454454+00:00",
+  "observed_unix": 1791366952.095608,
+  "observed_utc": "2026-10-07T09:55:52.095608+00:00",
   "latest_readonly_observation": {
     "receipt": {
-      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/current-formal-phase-observation-1791364455.json",
-      "sha256": "6843db018e084f4ac5152414c978861c072925bda4396cfe0964231034d4ad02"
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/results_token_credit_debug_20261007.json",
+      "sha256": "f7ca78cea00a569a07af8833fbb5654a82aa7f259441c8c16a8d7eb21a5844fe",
+      "bytes": 8122
     },
-    "textcraft": "eighth native sampling, 13/30 interactions complete, starting14/30,active123; latest complete update7",
-    "appworld": "First original DT: both ranks8/29; full DT/PPO pending"
+    "textcraft": "Terminal after incorrect OS debug pause: original driver/TaskRunner/workers absent; completed update7 only; raw token observer not installed",
+    "appworld": "Terminal first DT batch29 native HF/PEFT LoRA MLP OOM, no full DT/PPO update; no restart",
+    "physical_resources": "17:55:52 all physical GPUs858MiB/no processes; phase snapshot only"
   },
   "role": "Read-only snapshot, not a launcher or a replacement for remote active-training.json; never infer current execution from old receipts alone",
   "authoritative_remote": {
@@ -913,7 +915,7 @@
         "actor_microbatch": 4,
         "log_prob_micro_batch_size_per_gpu": 4
       },
-      "declared_job_status": "fresh_formal_submitted_not_yet_verified",
+      "declared_job_status": "terminal_after_incorrect_parent_OS_debug_pause",
       "startup_provenance": {
         "local_patch_commit": "f29cc7c055fcd4e5a055639c48aaf8d913bac180",
         "target_semantics": "native_joint_action_target",
@@ -1788,6 +1790,86 @@
         "birth": 1791344324.6,
         "source_sha256": "5013ebc878b972a5f52817f7c7de7ae55ddae7f1d61609e943e1ab55bf59b993",
         "completed_updates": 7,
+        "eighth_update_completed": false,
+        "status": "terminal_after_incorrect_OS_debug_pause",
+        "chronology": [
+          {
+            "unix": 1791365495.869284,
+            "event": "Parent SIGSTOP paused exact TextCraft tree before DT8/actor8"
+          },
+          {
+            "unix": 1791365862.1221607,
+            "event": "Infrastructure/workers resumed; driver/TaskRunner still SIGSTOP"
+          },
+          {
+            "local_time": "2026-10-07 17:40:04.101 +08:00",
+            "event": "GCS declared stopped driver unavailable and destroyed TaskRunner"
+          },
+          {
+            "local_time": "2026-10-07 17:40:09.101 +08:00",
+            "event": "Raylet SIGKILL TaskRunner and cascaded owner death to workers"
+          },
+          {
+            "unix": 1791366938.4662642,
+            "event": "Only failed driver resumed to receive native Ray terminal exception/cleanup; all actors already absent"
+          }
+        ],
+        "cause": "Incorrect parent OS pause stopped Ray driver control threads; original GCS/raylet interval records owner-death cleanup. Not a DT OOM; observer never installed.",
+        "missing_evidence": "Old extreme values cannot be paired to raw d/token positions; eighth in-memory batch lost before observer installation. No saved raw vectors exist.",
+        "original_terminal": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v1/paused-terminal-1791366952.json",
+          "sha256": "4825eb1136e5d1f96e2065b54718a94f421d588a585fd548e6de53fc673682e1",
+          "bytes": 222396
+        },
+        "owner_death": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v1/owner-death-1791366654.json",
+          "sha256": "72492cff63a87961f6a6782663c735679d2086e4bf881f3631a0e92f941d7a13",
+          "bytes": 104440
+        },
+        "pause": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v1/pause-1791365495.json",
+          "sha256": "26efc69a1034113287cacb1f78759b3a34ca5c284e29c78c1efe5b9041cd5534",
+          "bytes": 18819
+        },
+        "resume_infrastructure": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v1/rpc-ready-1791365862.json",
+          "sha256": "be332d66b5c69c0e242ba23857799ec8b516b2b87c5e1e98924aef9c43b26145",
+          "bytes": 14721
+        },
+        "failed_driver_cleanup": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v1/failed-driver-release.json",
+          "sha256": "9cd9e7ebc35ee47f8870b0b49bb6d4b3ad08f5ba63214ccd54b922995c0cfb21",
+          "bytes": 492
+        }
+      },
+      "debug_observer": {
+        "status": "v2_prepared_only_not_deployed_or_imported_in_any_training_worker",
+        "source": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v2/observe_token_credit.py",
+          "sha256": "81d087ddef613aa5ee6dd64a952e29fd14071fade8245289f5442123c9d45215",
+          "bytes": 16458
+        },
+        "tests": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v2/test_observe_token_credit.py",
+          "sha256": "9e7d1cf7df1df0e1f13195c354f6a18481660f47736fb151f6f8e78cdee20160",
+          "bytes": 17983
+        },
+        "local_verification": {
+          "command": "C:/Users/Administrator/miniconda3/envs/pytorch/python.exe -X utf8 D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/textcraft-token-credit-debug-20261007/v2/test_observe_token_credit.py",
+          "returncode": 0,
+          "unittest_passed": 8,
+          "observed_test_seconds": 2.179,
+          "scope": "Original frozen CPU readout interface transport, binding/exception restoration, native FP64 preservation, slot identity, release-file thread hold, partial batch persistence; not DT accuracy, FA/FLA/PPO tolerance, Ray heartbeat or training verification"
+        },
+        "design": "Native trace saved after each completed owner batch; consumed FP32 d and original Q/V/A at unchanged return; original post-scatter/post-whitening actor DataProto saved before original update; explicit file release wait without OS SIGSTOP",
+        "v1_status": "Retained unaccepted candidate; install rejected on missing TaskRunner before any RPC/module import; do not use SIGSTOP hold",
+        "actual_numeric_capture_completed": false
+      },
+      "last_observation_before_debug_pause": {
+        "pid": 110053,
+        "birth": 1791344324.6,
+        "source_sha256": "5013ebc878b972a5f52817f7c7de7ae55ddae7f1d61609e943e1ab55bf59b993",
+        "completed_updates": 7,
         "phase": "eighth native sampling, 13/30 interactions complete, starting14/30,active123",
         "new_complete_step8": false,
         "observed_unix": 1791364455.4544537,
@@ -2157,50 +2239,45 @@
         "pid": 2001805,
         "birth": 1791362313.39,
         "source_sha256": "24b9e671f3533d88047fead3c709bbfddbf5200053f3cd8f3d308cb30f179f11",
-        "phase": "first original DT",
-        "completed_DT_B4_per_rank": 8,
-        "total_DT_B4_per_rank": 29,
-        "latest_original_batches": [
-          {
-            "path": "/tmp/ray/session_2026-10-07_16-38-53_058398_2001805/logs/worker-0e4bdd215f9028b459bb3afe10e7f98d507dc806f059a349dba4a002-01000000-2009189.out",
-            "latest": {
-              "trajectories": 4,
-              "length": 10106,
-              "completed_batch": 8,
-              "total_batches": 29,
-              "seconds": 36.009132132996456
-            }
-          },
-          {
-            "path": "/tmp/ray/session_2026-10-07_16-38-53_058398_2001805/logs/worker-48c1c4748d824bef98308e9a6df96b81ccbfacc60107e9c1e43ff744-01000000-2007490.out",
-            "latest": {
-              "trajectories": 4,
-              "length": 10080,
-              "completed_batch": 8,
-              "total_batches": 29,
-              "seconds": 36.01338805800333
-            }
-          }
-        ],
-        "actual_trajectories": 232,
-        "original_policy_tokens": 671515,
-        "max_actual_context": 27290,
-        "nonzero_DT_requests": 231,
-        "actual_target_tokens": 190563,
-        "actual_source_tokens": 480952,
-        "complete_DT_or_PPO_update": false,
-        "official_reward_distribution": null,
-        "reward_metadata_fallback": "Seven actual files unchanged from previously audited official cached-rm_scores path; no new missing-reward evidence. Nonzero DT request count is not a success rate.",
-        "observed_unix": 1791364455.4544537,
-        "receipt": {
-          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/current-formal-phase-observation-1791364455.json",
-          "sha256": "6843db018e084f4ac5152414c978861c072925bda4396cfe0964231034d4ad02"
-        }
+        "status": "terminated_native_layer_replay_MLP_LoRA_OOM_before_full_DT",
+        "completed_updates": 0,
+        "failed_batch": 29,
+        "failed_batch_length": null,
+        "failed_layer_index": null,
+        "error": {
+          "exception": "torch.OutOfMemoryError",
+          "requested_GiB_reported": 4.49,
+          "logical_GPU_index_reported": 0,
+          "total_capacity_GiB_reported": 63.59,
+          "free_GiB_reported": 3.03,
+          "torch_allocated_GiB_reported": 99.97,
+          "torch_private_pool_MiB_reported": 21.86,
+          "torch_reserved_unallocated_MiB_reported": 331.07,
+          "scope": "Rounded sizes from the original OOM text; exact requested tensor dimensions/bytes and failed layer index were not printed. PyTorch allocated/virtual statistics are not physical mx-smi usage."
+        },
+        "original_terminal": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/appworld-terminal-original-1791366096.json",
+          "sha256": "491b1c175438f3ccb251d43ac0775fb8bcbdff291543a4c9670d4535266158c4",
+          "bytes": 567350
+        },
+        "terminal_summary": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/appworld-terminal-summary-1791366096.json",
+          "sha256": "8708cdd38af2f25c1ff37b6e42dc1607da4c0e3de6b1dad24417835e20da062f",
+          "bytes": 20515
+        },
+        "old_to_new_path_audit": {
+          "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/direct-target-mlp-token-chunk-20261007/v1/old-stable-to-joint-memory-path-audit-20261007.json",
+          "sha256": "e89c43f8d09b66e24d6fd0a1f293b7a31ffd3388a7d08bd8723e7d4d6d22a88d",
+          "bytes": 31480
+        },
+        "cause_scope": "Failure before whitening, in native HF/PEFT replay. Resource/offload configuration unchanged from old stable label run; new direct target omits explicit prefix lease wiring; automatic common-prefix remains. Finite MLP chunk does not cover original HF/PEFT MLP temporary. Exact failed shape/dtype/live allocation breakdown absent; omitted lease alone not proven cause.",
+        "no_restart": true
       },
       "runtime_overrides": [],
       "pending_runtime_operations": [],
       "native_training_progress": [],
-      "completed_checkpoints": []
+      "completed_checkpoints": [],
+      "declared_job_status": "terminal_native_replay_lora_oom_before_first_full_DT"
     }
   ],
   "pending_checkpoint_deployments": [
