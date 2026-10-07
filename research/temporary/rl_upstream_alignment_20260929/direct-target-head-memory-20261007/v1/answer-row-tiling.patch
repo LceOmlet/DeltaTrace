@@ -1,0 +1,48 @@
+--- research\temporary\rl_upstream_alignment_20260929\appworld-efficiency-20261007\individual-prefix-owner-candidate-v1\native-representation-candidate\candidate\qwen35_answer_finite.py
++++ research\temporary\rl_upstream_alignment_20260929\direct-target-head-memory-20261007\v1\candidate\qwen35_answer_finite.py
+@@ -10,6 +10,9 @@
+ import torch
+ from compiled_logprob_seed import seed_with_checks
+ from qwen35_decoder_finite import _linear_transpose
++
++# Bound only full-vocabulary target-row temporaries; original rules stay intact.
++_TEXT_TARGET_ROW_LIMIT=128
+ 
+ 
+ class PackedAnswerTargets:
+@@ -171,7 +174,18 @@
+             with torch.autocast(device_type=z0.device.type,enabled=False):
+                 result=self.categorical_seed(z0,z1,target,weight)
+         else:
+-            result=self.seed(z0,z1,target,weight)
++            if len(target)<=_TEXT_TARGET_ROW_LIMIT:
++                result=self.seed(z0,z1,target,weight)
++            else:
++                parts=[self.seed(z0[start:start+_TEXT_TARGET_ROW_LIMIT],
++                                 z1[start:start+_TEXT_TARGET_ROW_LIMIT],
++                                 target[start:start+_TEXT_TARGET_ROW_LIMIT],weight)
++                       for start in range(0,len(target),_TEXT_TARGET_ROW_LIMIT)]
++                result=(torch.cat([part[0] for part in parts],dim=0),
++                        torch.stack([part[1] for part in parts]).all(),
++                        *(torch.cat([part[index] for part in parts],dim=0)
++                          for index in range(2,len(parts[0]))))
++                del parts
+         hidden,valid,*diagnostics=result
+         if not bool(valid):raise ValueError('Finite answer seed invalid.')
+         return selection.scatter_hidden(hidden),{'packed_hidden':hidden,'logp0':diagnostics[0],
+@@ -187,6 +201,15 @@
+     outcomes=getattr(selection,'outcome_token_ids',None)
+     labels=selection.labels
+     if outcomes is None:
++        if len(labels)>_TEXT_TARGET_ROW_LIMIT:
++            paired_labels=labels.repeat_interleave(2)
++            parts=[]
++            for start in range(0,len(labels),_TEXT_TARGET_ROW_LIMIT):
++                first=2*start;last=2*(start+_TEXT_TARGET_ROW_LIMIT)
++                logp=original_logits[first:last].float().log_softmax(-1)
++                parts.append(logp.gather(-1,paired_labels[first:last,None]).squeeze(-1))
++                del logp
++            return torch.cat(parts,dim=0)
+         logp=original_logits.float().log_softmax(-1)
+     else:
+         logp=(outcome_log_probs(original_logits,outcomes) if outcome_logits is None

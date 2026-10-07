@@ -1,0 +1,588 @@
+{
+  "observed_unix": 1791346520.8425725,
+  "jobs": [
+    {
+      "task": "TextCraft",
+      "pid": 110053,
+      "pid_birth": 1791344324.6,
+      "source_sha256": "5013ebc878b972a5f52817f7c7de7ae55ddae7f1d61609e943e1ab55bf59b993",
+      "files": [
+        {
+          "relative": "verl/trainer/ppo/reward.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/reward.py",
+          "sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+          "binding_matches": true,
+          "lines": [
+            {
+              "line": 103,
+              "text": "def compute_reward(data: DataProto, reward_fn):"
+            },
+            {
+              "line": 104,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 105,
+              "text": "    Compute reward for a batch of data."
+            },
+            {
+              "line": 106,
+              "text": "    Args:"
+            },
+            {
+              "line": 107,
+              "text": "        data: DataProto object containing the input data."
+            },
+            {
+              "line": 108,
+              "text": "        reward_fn: Reward function to compute the reward."
+            },
+            {
+              "line": 109,
+              "text": "    Returns:"
+            },
+            {
+              "line": 110,
+              "text": "        Tuple of reward tensor and extra info dictionary."
+            },
+            {
+              "line": 111,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 112,
+              "text": "    try:"
+            },
+            {
+              "line": 113,
+              "text": "        reward_result = reward_fn(data, return_dict=True)"
+            },
+            {
+              "line": 114,
+              "text": "        reward_tensor = reward_result[\"reward_tensor\"]"
+            },
+            {
+              "line": 115,
+              "text": "        reward_extra_infos_dict = reward_result[\"reward_extra_info\"]"
+            },
+            {
+              "line": 116,
+              "text": "    except Exception as e:"
+            },
+            {
+              "line": 117,
+              "text": "        print(f\"Error in reward_fn: {e}\")"
+            },
+            {
+              "line": 118,
+              "text": "        reward_tensor = reward_fn(data)"
+            },
+            {
+              "line": 119,
+              "text": "        reward_extra_infos_dict = {}"
+            },
+            {
+              "line": 120,
+              "text": ""
+            },
+            {
+              "line": 121,
+              "text": "    return reward_tensor, reward_extra_infos_dict"
+            },
+            {
+              "line": 122,
+              "text": ""
+            },
+            {
+              "line": 123,
+              "text": ""
+            },
+            {
+              "line": 124,
+              "text": "@ray.remote(num_cpus=1)"
+            },
+            {
+              "line": 125,
+              "text": "def compute_reward_async(data: DataProto, config, tokenizer):"
+            },
+            {
+              "line": 126,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 127,
+              "text": "    Load the reward manager and compute the reward for a batch of data."
+            },
+            {
+              "line": 128,
+              "text": "    This is meant to be run in a separate Ray worker."
+            },
+            {
+              "line": 129,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 130,
+              "text": "    reward_fn = load_reward_manager(config, tokenizer, num_examine=0, **config.reward_model.get(\"reward_kwargs\", {}))"
+            },
+            {
+              "line": 131,
+              "text": "    return compute_reward(data, reward_fn)"
+            }
+          ],
+          "pinned_local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\reward.py",
+          "pinned_sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+          "whole_file_matches_pinned": true
+        },
+        {
+          "relative": "agent_system/reward_manager/episode.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/agent_system/reward_manager/episode.py",
+          "sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+          "binding_matches": true,
+          "lines": [
+            {
+              "line": 24,
+              "text": "    def __init__(self, tokenizer, num_examine, normalize_by_length=False) -> None:"
+            },
+            {
+              "line": 25,
+              "text": "        self.tokenizer = tokenizer"
+            },
+            {
+              "line": 26,
+              "text": "        self.num_examine = num_examine  # the number of batches of decoded responses to print to the console"
+            },
+            {
+              "line": 27,
+              "text": "        self.normalize_by_length = normalize_by_length"
+            },
+            {
+              "line": 28,
+              "text": ""
+            },
+            {
+              "line": 29,
+              "text": "    def __call__(self, data: DataProto, return_dict=False):"
+            },
+            {
+              "line": 30,
+              "text": "        \"\"\"We will expand this function gradually based on the available datasets\"\"\""
+            },
+            {
+              "line": 31,
+              "text": ""
+            },
+            {
+              "line": 32,
+              "text": "        # If there is rm score, we directly return rm score. Otherwise, we compute via rm_score_fn"
+            },
+            {
+              "line": 33,
+              "text": "        if \"rm_scores\" in data.batch.keys():"
+            },
+            {
+              "line": 34,
+              "text": "            if return_dict:"
+            },
+            {
+              "line": 35,
+              "text": "                return {\"reward_tensor\": data.batch[\"rm_scores\"]}"
+            },
+            {
+              "line": 36,
+              "text": "            else:"
+            },
+            {
+              "line": 37,
+              "text": "                return data.batch[\"rm_scores\"]"
+            },
+            {
+              "line": 38,
+              "text": ""
+            }
+          ],
+          "pinned_local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\agent_system\\reward_manager\\episode.py",
+          "pinned_sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+          "whole_file_matches_pinned": true
+        },
+        {
+          "relative": "verl/trainer/ppo/ray_trainer.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/ray_trainer.py",
+          "sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+          "binding_matches": true,
+          "lines": [
+            {
+              "line": 1152,
+              "text": ""
+            },
+            {
+              "line": 1153,
+              "text": "                        if self.config.reward_model.launch_reward_fn_async:"
+            },
+            {
+              "line": 1154,
+              "text": "                            future_reward = compute_reward_async.remote(batch, self.config, self.tokenizer)"
+            },
+            {
+              "line": 1155,
+              "text": "                        else:"
+            },
+            {
+              "line": 1156,
+              "text": "                            reward_tensor, reward_extra_infos_dict = compute_reward(batch, self.reward_fn)"
+            },
+            {
+              "line": 1157,
+              "text": ""
+            },
+            {
+              "line": 1158,
+              "text": "                    # recompute old_log_probs"
+            },
+            {
+              "line": 1159,
+              "text": "                    with _timer(\"old_log_prob\", timing_raw):"
+            },
+            {
+              "line": 1160,
+              "text": "                        old_log_prob = self.actor_rollout_wg.compute_log_prob(batch)"
+            },
+            {
+              "line": 1161,
+              "text": "                        entropys = old_log_prob.batch[\"entropys\"]"
+            },
+            {
+              "line": 1162,
+              "text": "                        response_masks = batch.batch[\"response_mask\"]"
+            },
+            {
+              "line": 1163,
+              "text": "                        loss_agg_mode = self.config.actor_rollout_ref.actor.loss_agg_mode"
+            },
+            {
+              "line": 1164,
+              "text": "                        entropy_loss = agg_loss(loss_mat=entropys, loss_mask=response_masks, loss_agg_mode=loss_agg_mode)"
+            },
+            {
+              "line": 1165,
+              "text": "                        old_log_prob_metrics = {\"actor/entropy_loss\": entropy_loss.detach().item()}"
+            },
+            {
+              "line": 1166,
+              "text": "                        metrics.update(old_log_prob_metrics)"
+            }
+          ],
+          "pinned_local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\ray_trainer.py",
+          "pinned_sha256": "69dab6ef8a0521704468c8158c6b19c782d5455da49a3a1582d4bcd6a2a51e30",
+          "whole_file_matches_pinned": false
+        }
+      ],
+      "workers": [
+        {
+          "pid": 115709,
+          "birth": 1791344364.66,
+          "name": "ray::WorkerDict.actor_rollout_compute_ref_log_prob",
+          "status": "sleeping"
+        },
+        {
+          "pid": 117229,
+          "birth": 1791344378.91,
+          "name": "ray::WorkerDict.actor_rollout_compute_ref_log_prob",
+          "status": "running"
+        }
+      ]
+    },
+    {
+      "task": "AppWorld",
+      "pid": 167065,
+      "pid_birth": 1791344807.34,
+      "source_sha256": "70ffdcfd05fccb94c0cec70e5b1d83d8728e3335bb9f1a4e6bbec9299f53847b",
+      "files": [
+        {
+          "relative": "verl/trainer/ppo/reward.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/verl/trainer/ppo/reward.py",
+          "sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+          "binding_matches": true,
+          "lines": [
+            {
+              "line": 103,
+              "text": "def compute_reward(data: DataProto, reward_fn):"
+            },
+            {
+              "line": 104,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 105,
+              "text": "    Compute reward for a batch of data."
+            },
+            {
+              "line": 106,
+              "text": "    Args:"
+            },
+            {
+              "line": 107,
+              "text": "        data: DataProto object containing the input data."
+            },
+            {
+              "line": 108,
+              "text": "        reward_fn: Reward function to compute the reward."
+            },
+            {
+              "line": 109,
+              "text": "    Returns:"
+            },
+            {
+              "line": 110,
+              "text": "        Tuple of reward tensor and extra info dictionary."
+            },
+            {
+              "line": 111,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 112,
+              "text": "    try:"
+            },
+            {
+              "line": 113,
+              "text": "        reward_result = reward_fn(data, return_dict=True)"
+            },
+            {
+              "line": 114,
+              "text": "        reward_tensor = reward_result[\"reward_tensor\"]"
+            },
+            {
+              "line": 115,
+              "text": "        reward_extra_infos_dict = reward_result[\"reward_extra_info\"]"
+            },
+            {
+              "line": 116,
+              "text": "    except Exception as e:"
+            },
+            {
+              "line": 117,
+              "text": "        print(f\"Error in reward_fn: {e}\")"
+            },
+            {
+              "line": 118,
+              "text": "        reward_tensor = reward_fn(data)"
+            },
+            {
+              "line": 119,
+              "text": "        reward_extra_infos_dict = {}"
+            },
+            {
+              "line": 120,
+              "text": ""
+            },
+            {
+              "line": 121,
+              "text": "    return reward_tensor, reward_extra_infos_dict"
+            },
+            {
+              "line": 122,
+              "text": ""
+            },
+            {
+              "line": 123,
+              "text": ""
+            },
+            {
+              "line": 124,
+              "text": "@ray.remote(num_cpus=1)"
+            },
+            {
+              "line": 125,
+              "text": "def compute_reward_async(data: DataProto, config, tokenizer):"
+            },
+            {
+              "line": 126,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 127,
+              "text": "    Load the reward manager and compute the reward for a batch of data."
+            },
+            {
+              "line": 128,
+              "text": "    This is meant to be run in a separate Ray worker."
+            },
+            {
+              "line": 129,
+              "text": "    \"\"\""
+            },
+            {
+              "line": 130,
+              "text": "    reward_fn = load_reward_manager(config, tokenizer, num_examine=0, **config.reward_model.get(\"reward_kwargs\", {}))"
+            },
+            {
+              "line": 131,
+              "text": "    return compute_reward(data, reward_fn)"
+            }
+          ],
+          "pinned_local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\reward.py",
+          "pinned_sha256": "37686e6aa837a32c00609cc94dc69467e2d55a598f432985a6bccfe50f6a1515",
+          "whole_file_matches_pinned": true
+        },
+        {
+          "relative": "agent_system/reward_manager/episode.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/agent_system/reward_manager/episode.py",
+          "sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+          "binding_matches": true,
+          "lines": [
+            {
+              "line": 24,
+              "text": "    def __init__(self, tokenizer, num_examine, normalize_by_length=False) -> None:"
+            },
+            {
+              "line": 25,
+              "text": "        self.tokenizer = tokenizer"
+            },
+            {
+              "line": 26,
+              "text": "        self.num_examine = num_examine  # the number of batches of decoded responses to print to the console"
+            },
+            {
+              "line": 27,
+              "text": "        self.normalize_by_length = normalize_by_length"
+            },
+            {
+              "line": 28,
+              "text": ""
+            },
+            {
+              "line": 29,
+              "text": "    def __call__(self, data: DataProto, return_dict=False):"
+            },
+            {
+              "line": 30,
+              "text": "        \"\"\"We will expand this function gradually based on the available datasets\"\"\""
+            },
+            {
+              "line": 31,
+              "text": ""
+            },
+            {
+              "line": 32,
+              "text": "        # If there is rm score, we directly return rm score. Otherwise, we compute via rm_score_fn"
+            },
+            {
+              "line": 33,
+              "text": "        if \"rm_scores\" in data.batch.keys():"
+            },
+            {
+              "line": 34,
+              "text": "            if return_dict:"
+            },
+            {
+              "line": 35,
+              "text": "                return {\"reward_tensor\": data.batch[\"rm_scores\"]}"
+            },
+            {
+              "line": 36,
+              "text": "            else:"
+            },
+            {
+              "line": 37,
+              "text": "                return data.batch[\"rm_scores\"]"
+            },
+            {
+              "line": 38,
+              "text": ""
+            }
+          ],
+          "pinned_local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\agent_system\\reward_manager\\episode.py",
+          "pinned_sha256": "bb7e5f853239680018d295fc879a6a6f8a733a308eda4e62703ca6dca5c6708c",
+          "whole_file_matches_pinned": true
+        },
+        {
+          "relative": "verl/trainer/ppo/ray_trainer.py",
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/verl/verl/trainer/ppo/ray_trainer.py",
+          "sha256": "d35ddd26b7497b153cec22f22e92eb1a08ef70385428dcbdcc37e879d9f16a4f",
+          "binding_matches": true,
+          "lines": [
+            {
+              "line": 1153,
+              "text": ""
+            },
+            {
+              "line": 1154,
+              "text": "                        if self.config.reward_model.launch_reward_fn_async:"
+            },
+            {
+              "line": 1155,
+              "text": "                            future_reward = compute_reward_async.remote(batch, self.config, self.tokenizer)"
+            },
+            {
+              "line": 1156,
+              "text": "                        else:"
+            },
+            {
+              "line": 1157,
+              "text": "                            reward_tensor, reward_extra_infos_dict = compute_reward(batch, self.reward_fn)"
+            },
+            {
+              "line": 1158,
+              "text": ""
+            },
+            {
+              "line": 1159,
+              "text": "                    # recompute old_log_probs"
+            },
+            {
+              "line": 1160,
+              "text": "                    with _timer(\"old_log_prob\", timing_raw):"
+            },
+            {
+              "line": 1161,
+              "text": "                        old_log_prob = self.actor_rollout_wg.compute_log_prob(batch)"
+            },
+            {
+              "line": 1162,
+              "text": "                        entropys = old_log_prob.batch[\"entropys\"]"
+            },
+            {
+              "line": 1163,
+              "text": "                        response_masks = batch.batch[\"response_mask\"]"
+            },
+            {
+              "line": 1164,
+              "text": "                        loss_agg_mode = self.config.actor_rollout_ref.actor.loss_agg_mode"
+            },
+            {
+              "line": 1165,
+              "text": "                        entropy_loss = agg_loss(loss_mat=entropys, loss_mask=response_masks, loss_agg_mode=loss_agg_mode)"
+            },
+            {
+              "line": 1166,
+              "text": "                        old_log_prob_metrics = {\"actor/entropy_loss\": entropy_loss.detach().item()}"
+            },
+            {
+              "line": 1167,
+              "text": "                        metrics.update(old_log_prob_metrics)"
+            }
+          ],
+          "pinned_local_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\ray_trainer.py",
+          "pinned_sha256": "69dab6ef8a0521704468c8158c6b19c782d5455da49a3a1582d4bcd6a2a51e30",
+          "whole_file_matches_pinned": false
+        }
+      ],
+      "workers": [
+        {
+          "pid": 172879,
+          "birth": 1791344851.53,
+          "name": "ray::WorkerDict.actor_rollout_compute_dt_token_advantages",
+          "status": "sleeping"
+        },
+        {
+          "pid": 174360,
+          "birth": 1791344866.23,
+          "name": "ray::WorkerDict.actor_rollout_compute_dt_token_advantages",
+          "status": "sleeping"
+        }
+      ]
+    }
+  ],
+  "scope": "Current exact source file SHA/binding and reward-manager/helper/caller excerpt reads; process stage names only. No reward invocation, tensors/model/RPC/checkpoint or production changes. Return object identity is a source-control-flow property, not a runtime tensor probe."
+}

@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-07 12:38 真实动作目标：TextCraft首轮完成；AppWorld有限输出层OOM
+
+TextCraft仍为f29cc7c0/PID110053/birth1791344324.6/source5013ebc8…、物理2/3，
+已完成step1并开始下一轮原生成。原整轮2804.125秒：gen1825.958、old_log_prob148.132、
+ref117.135、adv213.580、update_actor498.869；原grad_norm0.037、entropy0.677，
+本批reward均值0.664来自更新前采样，不能当作更新后改善。原save_freq25，step1没有
+checkpoint不是保存失败。原指标完整行/来源见results_direct_action_target_textcraft_step1_20261007.json。
+完整DT两个rank210.289/210.421秒，各22个B4；170唯一非零奖励轨迹由原DP补至176。
+raw prior credit范围−23.0554至1、self credit=1；这些是DT子集/补齐行的未白化统计，
+不是原整批actor优势，也不能仅据极值判定归因质量或训练退化。
+
+AppWorld同一v3 PID167065/birth1791344807.34/source70ffdcfd…已退出，未完成新更新。
+两rank均完成21/27个B4；第22个在正式FiniteAnswerOps全词表finite_seed内，
+logarithmic_mean_with_checks的torch.where申请5.43GiB失败，原physical free1008.18MiB。
+原日志没有失败批次的准确N/U/context，不能拿v4短输入几何替代或据此声称32k越界。
+12:38原mx-smi确认4/5已释放至各859MiB；2/3仍只有原TextCraft。终态原日志回执
+direct-target-semantics-20261007/fresh-v3-terminal-check-1791347887.json SHAee6aad2a…fc970，
+逐行OOM审计appworld-finite-seed-oom-1791347887-readonly.json SHA9d89c3ca…03ec0。
+未恢复检查点、缩小B4、更改LoRA或提交SQL/GRPO。
+
+仅准备隔离head内存候选：从实际d47333ea…复制，128个target row一片调用原self.seed，
+原checks合取并按原顺序拼接，最后一次原scatter；root诊断同样按row调用原log_softmax。
+它不重跑模型/32层、不分奖、不改变DT/PPO公式；候选源码1e20956a…3541e，尚未部署。
+实际dtype/原head逐值对照与大联合目标容量须分别确认，不以语法检查宣称修复成功。
+
+两组先前reward_extra_info提示已核对固定VERL20bd331原EpisodeRewardManager和compute_reward
+的字节及原兼容fallback：原rm_scores张量不变、没有重算环境或丢奖，随后均进入DT。
+该提示不是本次OOM原因，未为它增加包装或修复。
+
 ## 2026-10-07 12:06 v3 正式采样继续；尚无首个新更新
 
 已重新核对两组当前PID出生时间和冻结source SHA，仍为下节的f29cc7c0版本。
