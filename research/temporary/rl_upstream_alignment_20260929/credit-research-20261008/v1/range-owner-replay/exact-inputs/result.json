@@ -1,0 +1,294 @@
+{
+  "scope": "Check the real overflow block with original FLA reference and assertions.\n\nOnly the incoming cotangent's power-of-two representation changes. The saved\nnative operands and original recurrence/reference/assert_close are reused.\nCoincident endpoints check the derivative limit, not nonzero DT accuracy.\n",
+  "script": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-range-official-20261009-v1/check_fla_range_official.py",
+    "sha256": "36657162a82b2ae9edd3ca13097d4e23d6c9d11710672adf3e3a20c31baf79bb"
+  },
+  "original_test": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v3/official-check-setup/test_gated_delta_v041.py",
+    "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+    "thresholds": {
+      "o": 0.005,
+      "ht": 0.005,
+      "dq": 0.008,
+      "dk": 0.008,
+      "dv": 0.008,
+      "db": 0.02,
+      "dg": 0.02,
+      "dh0": 0.008
+    }
+  },
+  "source_operands": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v2/results/rank0-first-nonfinite.pt",
+    "sha256": "9cd75ef2ca64793cf6c84713c32c3b925841e2e4363aba3465cac6e39f9f7e03"
+  },
+  "source_precast": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v3/results/rank0-precast-seed.pt",
+    "sha256": "f5cdf28299d50469653c2e214a102c54c01d363990715f3bc68e69a8e23c996e"
+  },
+  "capture_local_block_start": 3712,
+  "block_tokens": 64,
+  "overflow_position": [
+    0,
+    3735,
+    4,
+    79
+  ],
+  "exponents": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "reference_input_precision": "FP32 copies of the exact native low-precision operands; avoids gradient output cast overflow",
+  "reference_seed_precision": "Original BF16 norm-output values converted to FP32",
+  "cases": [
+    {
+      "dtype": "torch.float16",
+      "native_seed_dtype": "torch.float16",
+      "seed_maxabs": 64512.0,
+      "native_seed_nonfinite": 0,
+      "input_dtypes": [
+        "torch.float16",
+        "torch.float16",
+        "torch.float16",
+        "torch.float16",
+        "torch.float32"
+      ],
+      "initial_state_nonzero": true,
+      "checks": [
+        {
+          "name": "native o",
+          "threshold": 0.005,
+          "normalized_error": 0.00022789223830102693,
+          "max_abs": 8.210539817810059e-06,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dq",
+          "threshold": 0.008,
+          "normalized_error": 0.0002470252067222259,
+          "max_abs": 0.01415252685546875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dq",
+          "threshold": 0.008,
+          "normalized_error": 0.00031139881883223086,
+          "max_abs": 0.0194549560546875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dk",
+          "threshold": 0.008,
+          "normalized_error": 0.0003850449704699718,
+          "max_abs": 0.022003173828125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dk",
+          "threshold": 0.008,
+          "normalized_error": 0.0005830223159941338,
+          "max_abs": 0.038005828857421875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dv",
+          "threshold": 0.008,
+          "normalized_error": 0.0003667927111139564,
+          "max_abs": 0.2333984375,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dv",
+          "threshold": 0.008,
+          "normalized_error": 0.00031349558155111223,
+          "max_abs": 0.17962646484375,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.00029802334484634025,
+          "max_abs": 0.0050296783447265625,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.00031695629830155676,
+          "max_abs": 0.007251739501953125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dg",
+          "threshold": 0.02,
+          "normalized_error": 0.00011779266864449952,
+          "max_abs": 0.0008518695831298828,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dg",
+          "threshold": 0.02,
+          "normalized_error": 8.660192949153904e-05,
+          "max_abs": 0.00041174888610839844,
+          "nonfinite": 0,
+          "status": "passed"
+        }
+      ],
+      "seconds": 83.12349101001746,
+      "status": "passed"
+    },
+    {
+      "dtype": "torch.bfloat16",
+      "native_seed_dtype": "torch.bfloat16",
+      "seed_maxabs": 76800.0,
+      "native_seed_nonfinite": 0,
+      "input_dtypes": [
+        "torch.bfloat16",
+        "torch.bfloat16",
+        "torch.bfloat16",
+        "torch.bfloat16",
+        "torch.float32"
+      ],
+      "initial_state_nonzero": true,
+      "checks": [
+        {
+          "name": "native o",
+          "threshold": 0.005,
+          "normalized_error": 0.0019487464919888855,
+          "max_abs": 7.625296711921692e-05,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dq",
+          "threshold": 0.008,
+          "normalized_error": 0.0023091739441649063,
+          "max_abs": 0.15185928344726562,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dq",
+          "threshold": 0.008,
+          "normalized_error": 0.001744404902377861,
+          "max_abs": 0.1217498779296875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dk",
+          "threshold": 0.008,
+          "normalized_error": 0.0021584941659220152,
+          "max_abs": 0.0834197998046875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dk",
+          "threshold": 0.008,
+          "normalized_error": 0.0020835839126175995,
+          "max_abs": 0.07831573486328125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dv",
+          "threshold": 0.008,
+          "normalized_error": 0.0038821202979212287,
+          "max_abs": 2.5078125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dv",
+          "threshold": 0.008,
+          "normalized_error": 0.002836394451703175,
+          "max_abs": 1.884033203125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.00194045977912555,
+          "max_abs": 0.038036346435546875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.0013179623763996259,
+          "max_abs": 0.02179718017578125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range native dg",
+          "threshold": 0.02,
+          "normalized_error": 0.004525598638366348,
+          "max_abs": 0.022608280181884766,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "range finite dg",
+          "threshold": 0.02,
+          "normalized_error": 0.0029315931211099542,
+          "max_abs": 0.015793800354003906,
+          "nonfinite": 0,
+          "status": "passed"
+        }
+      ],
+      "seconds": 33.224206785991555,
+      "status": "passed"
+    }
+  ],
+  "production_modified": false,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer": 0,
+  "status": "completed_real_overflow_block_checks",
+  "peak_allocated": 557404672,
+  "peak_reserved": 864026624
+}

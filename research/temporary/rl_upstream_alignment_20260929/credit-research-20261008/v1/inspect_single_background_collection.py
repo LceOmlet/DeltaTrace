@@ -64,6 +64,8 @@ def make_worker():
                 (out/f'rank{self.rank}.json').write_text(json.dumps(record,indent=2)+'\n')
 
             producer = None
+            original_gdn = None
+            runner_namespace = None
             previous_training = self.actor_module_fsdp.training
             original_trace = reward_readout.trace_token_attribution
             try:
@@ -86,9 +88,27 @@ def make_worker():
                 runner_path = inspect.getsourcefile(producer.runner.attribute)
                 assert sha(runner_path) == source['actual_CPU_imports']['qwen35_dense_finite_runner']['sha256']
                 record['finite_runner'] = dict(path=runner_path,sha256=sha(runner_path))
+                range_owner_path = os.environ.get('DT_DIAGNOSTIC_FLA_RANGE_OWNER')
+                if range_owner_path:
+                    import importlib.util
+                    assert case_name == 'appworld'
+                    assert sha(range_owner_path) == '33b169b3fb660eb8ce57a6bda6ecb04c7f7235a029aa04038ff447b2faddf6fd'
+                    runner_namespace = producer.runner.attribute.__func__.__globals__
+                    original_gdn = runner_namespace['gdn_finite_pullback']
+                    original_path = inspect.getsourcefile(original_gdn)
+                    assert sha(original_path) == '448ef32c773f8cda20be56c75fc181944e7efd18db69061928dedeed6d73ab72'
+                    owner_spec = importlib.util.spec_from_file_location('diagnostic_original_gdn_range_owner', range_owner_path)
+                    owner_module = importlib.util.module_from_spec(owner_spec)
+                    owner_spec.loader.exec_module(owner_module)
+                    runner_namespace['gdn_finite_pullback'] = owner_module.gdn_finite_pullback
+                    record['isolated_range_owner'] = dict(path=range_owner_path, sha256=sha(range_owner_path),
+                        replaces=dict(path=original_path, sha256=sha(original_path)), production_modified=False)
                 entries_by_uid = {entry['traj_uid']:entry for entry in spec['entries']}
                 replay = os.environ.get('DT_SINGLE_BACKGROUND_NONFINITE_REPLAY') == '1'
-                for pair_index in ([6] if replay else range(0,len(spec['batches']),2)):
+                resume_from = int(os.environ.get('DT_SINGLE_BACKGROUND_RESUME_PAIR', '0'))
+                resume_round = int(os.environ.get('DT_SINGLE_BACKGROUND_RESUME_ROUND', '0'))
+                assert resume_from % 2 == 0
+                for pair_index in ([6] if replay else range(resume_from,len(spec['batches']),2)):
                     batch_index = pair_index+self.rank
                     batch_spec = spec['batches'][batch_index]
                     entries = [entries_by_uid[uid] for uid in batch_spec['uids']]
@@ -103,7 +123,8 @@ def make_worker():
                     batch = dict(index=batch_index,uids=batch_spec['uids'],points=[],rounds=[])
                     record['batches'].append(batch)
                     rounds = max(spec['batches'][i]['native_paired_forwards'] for i in (pair_index,pair_index+1))
-                    for round_index in ([0] if replay else range(rounds)):
+                    first_round = resume_round if pair_index == resume_from else 0
+                    for round_index in ([0] if replay else range(first_round, rounds)):
                         if time.perf_counter()-started > record['diagnostic_wall_budget_seconds']:
                             raise RuntimeError('Existing 1800-second diagnostic budget reached; preserve partial data, no automatic retry.')
                         queries = [entry['queries'][round_index] if row < batch_spec['actual_rows'] and round_index < len(entry['queries']) else None
@@ -129,7 +150,7 @@ def make_worker():
                         reward_readout.trace_token_attribution = trace
                         try:
                             scope=nullcontext()
-                            if replay:
+                            if replay and not range_owner_path:
                                 from passive_nonfinite import PassiveNonfinite
                                 scope=PassiveNonfinite(producer.runner,out,self.rank)
                             with scope:producer.attribute_episodes([[row['row'] for row in rows]],[0.0])
@@ -172,6 +193,8 @@ def make_worker():
                 raise
             finally:
                 reward_readout.trace_token_attribution = original_trace
+                if original_gdn is not None:
+                    runner_namespace['gdn_finite_pullback'] = original_gdn
                 self.actor_module_fsdp.train(previous_training)
                 if producer is not None:
                     producer.runner.model.release_owner_params()

@@ -75,6 +75,7 @@ if __name__=='__main__':
     parser.add_argument('--single-background-task',choices=('textcraft','appworld'))
     parser.add_argument('--nonfinite-replay',action='store_true')
     parser.add_argument('--fla-seed-range',action='store_true')
+    parser.add_argument('--range-owner', choices=('replay', 'resume'))
     parser.add_argument('--factual-controls', action='store_true',
                         help='Observe the separately staged passive factual-control run')
     parser.add_argument('--suboperations', action='store_true',
@@ -87,6 +88,14 @@ if __name__=='__main__':
     args=parser.parse_args()
     target=ROOT+'/receipts/credit-author-development-collection-20261008-v1'
     prefix='author-collection'
+    if args.range_owner:
+        assert not args.single_background_task and not args.layer_task and not args.endpoint_head_task
+        if args.range_owner == 'replay':
+            target=ROOT+'/receipts/credit-range-owner-replay-appworld-20261009-v1'
+            prefix='range-owner-replay'
+        else:
+            target=ROOT+'/receipts/credit-single-background-range-resume-appworld-20261009-v1'
+            prefix='single-background-range-resume'
     if args.fla_seed_range:
         target=ROOT+'/receipts/fla-seed-range-20261009-'+args.revision
         prefix='fla-seed-range'+('' if args.revision=='v1' else '-'+args.revision)

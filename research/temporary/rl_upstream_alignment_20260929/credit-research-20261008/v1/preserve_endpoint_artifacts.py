@@ -14,10 +14,13 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--single-background-task',choices=('textcraft','appworld'))
 parser.add_argument('--terminal-failure',action='store_true',help='Preserve a stopped, failed single-background diagnostic, including partial results.')
 parser.add_argument('--nonfinite-replay',action='store_true')
+parser.add_argument('--range-owner', choices=('replay', 'resume'),
+                    help='Preserve the separately isolated numerical range diagnostic.')
 parser.add_argument('--revision',choices=('v1','v2','v3'),default='v1')
 args=parser.parse_args()
 assert not args.terminal_failure or args.single_background_task
 assert not args.nonfinite_replay or args.single_background_task
+assert not args.range_owner or args.single_background_task == 'appworld'
 remote=(transport.ROOT+'/receipts/credit-single-background-'+args.single_background_task+'-20261009-v1'
         if args.single_background_task else transport.ROOT+'/receipts/endpoint-head-collection-textcraft-20261009-v1')
 folder=(HERE/('single-background-'+args.single_background_task)/'preserved-artifacts'
@@ -25,6 +28,10 @@ folder=(HERE/('single-background-'+args.single_background_task)/'preserved-artif
 if args.nonfinite_replay:
  remote=transport.ROOT+'/receipts/credit-single-background-nonfinite-'+args.single_background_task+'-20261009-'+args.revision
  folder=HERE/('single-background-nonfinite-'+args.single_background_task+'-'+args.revision)/'preserved-artifacts'
+if args.range_owner:
+ remote=transport.ROOT+('/receipts/credit-range-owner-replay-appworld-20261009-v1' if args.range_owner=='replay'
+                       else '/receipts/credit-single-background-range-resume-appworld-20261009-v1')
+ folder=HERE/('range-owner-'+args.range_owner)/'preserved-artifacts'
 folder.mkdir(parents=True,exist_ok=True)
 body=r'''
 import hashlib,json,tarfile,psutil

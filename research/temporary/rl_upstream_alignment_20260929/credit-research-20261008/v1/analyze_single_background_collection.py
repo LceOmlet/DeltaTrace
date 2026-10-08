@@ -24,6 +24,8 @@ def ref(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--task',choices=('textcraft','appworld'),required=True)
+    parser.add_argument('--range-resume', action='store_true',
+                        help='Combine the preserved original partial run with its isolated numerical replay and missing-query continuation.')
     args = parser.parse_args()
     stable_path = REPO/'experiments/rl/results_stable_negative_credit_20261008.json'
     stable = json.loads(stable_path.read_bytes())['tasks'][args.task]
@@ -31,11 +33,20 @@ def main():
     baseline = {(p['traj_uid'],p['packed_slot']):p
                 for cohort in stable['cohorts'].values() for p in cohort['points_with_identity']}
     folder = HERE/f'single-background-{args.task}-observations'
-    reports = [json.loads((folder/f'rank{rank}.json').read_bytes()) for rank in (0,1)]
+    folders = [folder]
+    if args.range_resume:
+        assert args.task == 'appworld'
+        folders += [HERE/'range-owner-replay-observations', HERE/'single-background-range-resume-observations']
+    report_paths = [part/f'rank{rank}.json' for part in folders for rank in (0, 1)]
+    reports = [json.loads(path.read_bytes()) for path in report_paths]
     points = []
-    for report in reports:
+    identities = set()
+    for report_path, report in zip(report_paths, reports):
         for batch in report['batches']:
             for p in batch['points']:
+                identity = p['traj_uid'], p['packed_slot']
+                assert identity not in identities, 'Do not repeat or silently overwrite an already measured frozen query.'
+                identities.add(identity)
                 base = baseline[p['traj_uid'],p['packed_slot']]
                 joint, single, root = base['fresh_DT_d'],p['single_background_DT_d'],p['single_background_root']
                 low, high = base['native_d_interval']
@@ -58,6 +69,8 @@ def main():
                     telescoping_roundoff=sum(components.values())-(joint-native),
                     single_factual_logp=p['single_background_factual_logp'],
                     single_deleted_logp=p['single_background_deleted_logp'],
+                    diagnostic_part=str(report_path),
+                    isolated_range_owner=report.get('isolated_range_owner'),
                     artifact=p['artifact'])
                 points.append(point)
     cells = {}
@@ -83,8 +96,14 @@ def main():
                 for field in points[0]['components']},
             joint_distance_median=statistics.median(p['joint_distance_to_reference_interval'] for p in rows),
             single_distance_median=statistics.median(p['single_distance_to_reference_interval'] for p in rows))
-    result = dict(scope=__doc__,task=args.task,complete=all(r['phase']=='complete' for r in reports),
-        inputs=[ref(stable_path)]+[ref(folder/f'rank{rank}.json') for rank in (0,1)],points=points,cells=summaries,
+    expected = {(entry['traj_uid'],query['packed_slot'])
+                for entry in json.loads((HERE/'layer-collection-inputs.json').read_bytes())['tasks'][args.task]['entries']
+                for query in entry['queries']}
+    assert identities <= expected
+    result = dict(scope=__doc__,task=args.task,complete=identities==expected,
+        expected_points=len(expected), missing_points=[list(v) for v in sorted(expected-identities)],
+        part_phases=[r['phase'] for r in reports],
+        inputs=[ref(stable_path)]+[ref(path) for path in report_paths],points=points,cells=summaries,
         point_count=len(points),original_spurious_tail=sum(p['original_spurious_tail'] for p in points),
         original_spurious_tail_still_spurious=sum(p['original_spurious_tail'] and p['single_still_spurious_tail'] for p in points),
         max_telescoping_roundoff=max(abs(p['telescoping_roundoff']) for p in points),
@@ -92,7 +111,8 @@ def main():
         production_modified=False,credit_repaired=False,official_tolerance_claim=False,
         weighting='Within each task/cohort/exposure/prediction-reference cross-cell only: source mean per trajectory, trajectory mean per initial state, equal state mean. Tail and body raw moments never pooled.',
         interpretation='Diagnostic reference changes do not provide a cost-compliant training repair, new estimator, whole-method faithfulness claim, or evidence of training degradation.')
-    path = HERE/f'single-background-{args.task}-analysis.json'
+    suffix = '-range-merged' if args.range_resume else ''
+    path = HERE/f'single-background-{args.task}{suffix}-analysis.json'
     path.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
     print(json.dumps({k:v for k,v in result.items() if k not in ['points','cells','inputs']},ensure_ascii=False))
 
