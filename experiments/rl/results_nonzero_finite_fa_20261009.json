@@ -1,0 +1,117 @@
+{
+  "status": "completed_descriptive_nonzero_reference",
+  "scope": "Diagnose a saved nonzero finite-FA call by composing existing DT owners.\n\nNo model, rollout, backward, optimizer or kernel changes. The original DT\nsoftmax/matmul finite rules and FA's original causal mask provide the dense\nreference, evaluated in FP32 and FP64. This is not an invented FA tolerance:\nofficial FA assertions cover ordinary attention/backward, not this finite map.\nAll rows and heads of the one previously saved B4 call are used. This operator\ndiagnostic does not substitute for the frozen trajectory faithfulness study.\n",
+  "launch": {
+    "unix": 1791477674.1979792,
+    "pid": 1467448,
+    "birth": 1791477673.83,
+    "command": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/nonzero-fa-owner-composition-20261009-v1/check_nonzero_fa_owner_composition.py",
+      "--root",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/nonzero-fa-owner-composition-20261009-v1/results"
+    ],
+    "script_sha256": "bb2fc6cd4e1c407da9fcad4d781c1c05ca28ec15c65b7bef54665845b7672bf3",
+    "local_base_commit": "e1ff6b7ddb5f85528ab677cf2136f2a5909409a0",
+    "role": "operator diagnostic only; zero model/DT/PPO calls",
+    "gpu": 4,
+    "physical_before": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Fri Oct  9 00:41:13 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+  },
+  "source_files": {
+    "rules": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen3/signed_secant_rules.py",
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d"
+    },
+    "finite": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/vendor_fa_finite_bf16_d256.py",
+      "sha256": "3e1d61037be22a1cc826b004d49f854e3c246a149642a4f9167c204181f34089"
+    },
+    "official_FA": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/training-setup/official-kernel-tests/test_flash_attn_v263.py",
+      "sha256": "a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9"
+    },
+    "operands": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-extreme-operator-20261007-v1/results/rank0-decoder27-fa.pt",
+      "sha256": "ed804b5cd725cd027d697b97897a076170a2b7df64bf1347cd1e6297f68bad92"
+    }
+  },
+  "reference": "Original softmax_secant_pullback + matmul_secant_pullback; content-P1 PV rule; original FA causal mask",
+  "upstream": "Original FP32 U explicitly rounded to BF16, as the active finite wrapper does",
+  "library": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/libfinite_row_query_starts.so",
+    "sha256": "4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157"
+  },
+  "summary": {
+    "dq": {
+      "max_abs": 0.0010762312184749573,
+      "relative_l2": 0.0043838216371306455,
+      "fp32_reference_maxabs": 4.435749654820541e-07,
+      "max_per_head_token_delta_contribution_error": 0.0015511071456226766
+    },
+    "dk": {
+      "max_abs": 0.0009682595936897354,
+      "relative_l2": 0.003532840385086978,
+      "fp32_reference_maxabs": 1.797503640654785e-07,
+      "max_per_head_token_delta_contribution_error": 0.003546468643644829
+    },
+    "dv": {
+      "max_abs": 0.0002815641870022867,
+      "relative_l2": 0.0027262964312744892,
+      "fp32_reference_maxabs": 1.712956366403673e-07
+    },
+    "tau": {
+      "max_abs": 9.442764164036e-06,
+      "relative_l2": 1.3561401372813657e-06,
+      "fp32_reference_maxabs": 1.0001397923176114e-06
+    },
+    "center": {
+      "max_abs": 2.199615687814571e-06,
+      "relative_l2": 1.958431026736347e-06,
+      "fp32_reference_maxabs": 1.0551108634293538e-06
+    }
+  },
+  "rows": 4,
+  "heads": 64,
+  "elapsed_seconds": 32.614073652017396,
+  "peak_allocated": 1682224128,
+  "peak_reserved": 3072327680,
+  "alive": false,
+  "physical": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Fri Oct  9 00:42:46 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+  "host": {
+    "total": 1081000480768,
+    "available": 1034163961856,
+    "percent": 4.3,
+    "used": 46836518912,
+    "free": 877368508416,
+    "active": 59748806656,
+    "inactive": 102212038656,
+    "buffers": 338317312,
+    "cached": 162481479680,
+    "shared": 14467072,
+    "slab": 7887630336
+  },
+  "observer": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\nonzero-fa-owner-composition\\observation.json",
+    "sha256": "2a41a90e4f99e1a1e819eb4979c65856f93d12bcf8f300d9656fd99b711da294",
+    "bytes": 797679
+  },
+  "local_result": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\nonzero-fa-owner-composition\\result.json",
+    "sha256": "a1b89d0fb9fd6a28f2e1d3b38067606eac5873ed696c903c2c2ad7612ebfd2cb",
+    "bytes": 689656
+  },
+  "remote_raw_result_sha256": "5fea81ced7a491e858232bb2ae7a43cd73915841e8faf98edbf200ba4eb24635",
+  "remote_phases_sha256": "63ba85d0fd3515955dbaf9727dddab26bc243c5fe2924ea977a87436c5900460",
+  "script": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\check_nonzero_fa_owner_composition.py",
+    "sha256": "bb2fc6cd4e1c407da9fcad4d781c1c05ca28ec15c65b7bef54665845b7672bf3",
+    "bytes": 11940
+  },
+  "official_tolerance_claim": false,
+  "acceptance_threshold": null,
+  "production_modified": false,
+  "credit_repaired": false,
+  "interpretation": "Composes original DT rules on one actual saved nonzero B4 operator. The recorded coefficient errors do not establish an explanation for the collection-level extreme credit errors. No kernel modification or broad numerical/faithfulness certificate follows."
+}
