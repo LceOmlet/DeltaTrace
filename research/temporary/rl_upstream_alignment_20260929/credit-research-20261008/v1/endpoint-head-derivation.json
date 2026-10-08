@@ -1,0 +1,119 @@
+{
+  "scope": "Algebra review of an isolated DT log-softmax finite-rule hypothesis.\n\nNo model/DT calls. These identities are not attribution-quality evidence,\nan official tolerance, or permission to deploy an untested rule.\n",
+  "status": "derived_only_unaccepted",
+  "owner": {
+    "module": "compiled_logprob_seed",
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/compiled_logprob_seed.py",
+    "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/compiled_logprob_seed.py",
+    "sha256": "757edb728aa57e2e802ab83dc59297ec32bbbb4eb9b2ecae6ca42fea5ed1a651"
+  },
+  "evidence": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\layer-suboperations-textcraft-v2-analysis.json",
+      "sha256": "4f294fcf770c125357510f78437c7457272765ca3ae9a90cff43a98e92c1aa1c",
+      "bytes": 1331958
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\layer-suboperations-appworld-v2-analysis.json",
+      "sha256": "422aa0bdaadcb1ea2920f4d0556969b6352dc7dd74367213d40aa83542d3ea82",
+      "bytes": 1278158
+    }
+  ],
+  "observed_need": "On both fixed collections, the nonlinear log-softmax background residual is a major head term, while seed recomputation and linear projection differences are small. This does not establish that replacing this rule alone fixes attribution.",
+  "original_rule": "q_j=LogMean(p0_j,p1_j)/sum_k LogMean(p0_k,p1_k). This is a valid conservative finite rule, not a missing-normalization bug.",
+  "hypothesis": "When endpoints differ, the sum of unnormalized logarithmic means is below one. Normalizing can increase even a class with unchanged endpoint probability. Test a conservative rule whose class weights stay within actual endpoint probabilities.",
+  "proposed_rule": {
+    "p0": "softmax(z0)",
+    "p1": "softmax(z1)",
+    "D0": "KL(p0||p1)",
+    "D1": "KL(p1||p0)",
+    "mixture_weight": "D0/(D0+D1); 1/2 at equal endpoint distributions",
+    "q": "(1-mixture_weight)*p0+mixture_weight*p1",
+    "seed": "one_hot(actual_target)-q"
+  },
+  "algebra": {
+    "endpoint_identity": "0",
+    "pair_symmetry": "0",
+    "derivation": [
+      "D0=deltaLSE-p0.dot(delta_z)",
+      "D1=p1.dot(delta_z)-deltaLSE",
+      "q.dot(delta_z)=deltaLSE",
+      "seed.dot(delta_z)=delta log p(target)"
+    ],
+    "properties": [
+      "q is a probability distribution",
+      "each q_j lies between p0_j and p1_j",
+      "competing logits have nonpositive seed",
+      "sum(seed)=0",
+      "endpoint exchange symmetry",
+      "class permutation equivariance",
+      "coincident limit equals native log-softmax gradient"
+    ],
+    "uniqueness": "Unique on the line segment between p0 and p1 when they differ. No claim of globally optimal token deletion attribution.",
+    "exact_token_oracle_premise_unchanged": true
+  },
+  "stable_evaluation": {
+    "u": "logp1-logp0",
+    "a": "abs(u)",
+    "J": "exp(max(logp0,logp1))*a*(-expm1(-a))",
+    "fraction": "1/a-exp(-a)/(-expm1(-a))",
+    "small_fraction": "1/2 - a/12 + a**3/720 - a**5/30240 + a**7/1209600 - a**9/47900160 + O(a**10)",
+    "small_domain": "a<=1/2",
+    "first_omitted_at_half": "1/24524881920",
+    "D0_terms": "J*fraction if u>=0; J*(1-fraction) otherwise",
+    "D1_terms": "J*(1-fraction) if u>=0; J*fraction otherwise",
+    "numerics": "Sum nonnegative terms; no signed KL cancellation, exp(+abs(u)), credit clipping, or residual-dependent multiplier."
+  },
+  "prior_coordinate_group_candidate": {
+    "status": "rejected_before_GPU",
+    "counterexample": {
+      "z0": [
+        "0.0",
+        "0.0",
+        "0.0",
+        "-100.0"
+      ],
+      "z1": [
+        "16.0",
+        "-8.0",
+        "-8.0",
+        "-100.0"
+      ],
+      "target": 0,
+      "competing_class": 3,
+      "centered_seed": "0.008567194241760575785378944016302669584677340833839563436501842386921437",
+      "conclusion": "Our centered coordinate-group composition can assign a positive coefficient to a competing logit; reject this hypothesis without GPU testing.",
+      "scope": "Refutes a universal local monotonicity claim; not a benchmark or overall attribution claim."
+    },
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\conditioned-head-derivation.json",
+      "sha256": "13b65dd106f031c7f9d036ea627cdbbd3fc1cf717ca537d9987b5f57daddcc65",
+      "bytes": 7431
+    }
+  },
+  "cost": {
+    "DT_calls_per_trajectory": 1,
+    "extra_model_forwards": 0,
+    "head_reverse_GEMMs": 1,
+    "scalar_work": "O(number_of_actual_target_rows * vocabulary); constant factor, not source-by-target calls",
+    "bounded_row_temporary": 128,
+    "not_a_measured_speed_or_capacity_claim": true
+  },
+  "limits": [
+    "Head change must propagate through the complete original reverse computation.",
+    "Decoder/head residuals interact; no subtraction of diagnostic terms.",
+    "Mathematical identities do not predict whole-collection RISE/MAS improvement.",
+    "No FA/FLA kernel change, no new tolerance, no Q/V/A or PPO change."
+  ],
+  "quality_set": "Same frozen TextCraft32 trajectories/16 states, original author cumulative deletion/signed RISE/positive MAS; same uniform/tail cells separately. No held-out tuning.",
+  "production_modified": false,
+  "formal_restart": false,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "accepted_candidate": false,
+  "recorder": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\derive_endpoint_head_seed.py",
+    "sha256": "50d04a2f5447d326a92e80c102e07d4c9454e89cc37d6dbd5c5a42bb43250f97",
+    "bytes": 7566
+  }
+}

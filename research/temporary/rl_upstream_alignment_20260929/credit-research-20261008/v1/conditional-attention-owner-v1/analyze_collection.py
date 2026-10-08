@@ -34,6 +34,7 @@ def ratio_bin(d):
 def analyze(plan, records):
     task = next(iter(plan['tasks']))
     data = plan['tasks'][task]
+    candidate_label = data.get('candidate_label', 'conditional')
     expected = {uid for b in data['batches'] if b['primary'] for uid in b['uids']}
     entries = {entry['traj_uid']:entry for entry in data['entries']}
     rows = {}
@@ -56,7 +57,7 @@ def analyze(plan, records):
         paired = []
         missing, nonfinite = [], []
         for uid in sorted(expected):
-            before, after = rows.get((uid,'original',view)), rows.get((uid,'conditional',view))
+            before, after = rows.get((uid,'original',view)), rows.get((uid,candidate_label,view))
             if before is None or after is None:
                 missing.append(uid)
                 continue
@@ -91,17 +92,19 @@ def analyze(plan, records):
             cells=[dict(original_ratio_bin=cell[0],native_ratio_bin=cell[1],points=len(values),
                 initial_states=len({q['state'] for q in values}),
                 original_abs_d_error=quantiles([abs(q['fresh_original_d']-q['fresh_native_single_d']) for q in values]),
-                conditional_abs_d_error=quantiles([abs(q['fresh_conditional_d']-q['fresh_native_single_d']) for q in values]),
+                conditional_abs_d_error=quantiles([abs(q['fresh_'+candidate_label+'_d']-q['fresh_native_single_d']) for q in values]),
                 original_abs_A_over_r_error=quantiles([advantage_error(q,'original') for q in values]),
-                conditional_abs_A_over_r_error=quantiles([advantage_error(q,'conditional') for q in values]),
+                conditional_abs_A_over_r_error=quantiles([advantage_error(q,candidate_label) for q in values]),
                 original_sign_crossings=sum((q['fresh_original_d']<0)!=(q['fresh_native_single_d']<0) for q in values),
-                conditional_sign_crossings=sum((q['fresh_conditional_d']<0)!=(q['fresh_native_single_d']<0) for q in values))
+                conditional_sign_crossings=sum((q['fresh_'+candidate_label+'_d']<0)!=(q['fresh_native_single_d']<0) for q in values))
                 for cell,values in cells.items()], points_with_identity=points)
     return dict(task=task,complete=all(r['phase']=='complete' for r in records)
         and len(records)==2,primary_metrics=metrics,cohorts=cohorts,
         metric_owner=dict(plan['metric_owner'],direction='lower_is_better',
             owner_return='auc(normalized_model_response), auc(corrected_scores), auc(normalized_model_response + alignment_penalty)'),
         interpretation='Original-author per-trajectory scores, then equal initial-state means. Tail and uniform denominators separate. Only original/native joint cells aggregate conditional magnitude. No pooled tail/bulk moment or training-effect claim.',
+        candidate_label=candidate_label,
+        baseline_reused='original_baseline' in data,
         candidate_deployed=False,selection_or_tuning_performed=False)
 
 

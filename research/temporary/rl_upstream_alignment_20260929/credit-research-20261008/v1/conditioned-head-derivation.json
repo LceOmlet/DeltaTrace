@@ -1,0 +1,115 @@
+{
+  "scope": "Research derivation only: condition the existing finite log-softmax seed.\n\nNo new training plan, model call, kernel, deployment or claimed accuracy gain.\nThis composition is not an official DeepLIFT implementation. The owning DT\nseed remains the primitive; RevealCancel motivates averaging two group orders.\n",
+  "status": "rejected_before_GPU",
+  "evidence": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\layer-suboperations-textcraft-v2-analysis.json",
+      "sha256": "4f294fcf770c125357510f78437c7457272765ca3ae9a90cff43a98e92c1aa1c",
+      "bytes": 1331958
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\suboperation-protocol.json",
+      "sha256": "d9858b432ec1a36ec2031452acbc22e3085844a81af8f7d13e62b4665bbd3302",
+      "bytes": 13640
+    }
+  ],
+  "owners": {
+    "seed": {
+      "module": "compiled_logprob_seed",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/compiled_logprob_seed.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/compiled_logprob_seed.py",
+      "sha256": "757edb728aa57e2e802ab83dc59297ec32bbbb4eb9b2ecae6ca42fea5ed1a651"
+    },
+    "existing_group_rule": {
+      "module": "signed_secant_rules",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d"
+    }
+  },
+  "references": [
+    {
+      "url": "https://proceedings.mlr.press/v70/shrikumar17a/shrikumar17a.pdf",
+      "scope": "Section3.5.3: average positive/negative contributions in two orders; not a theorem about token deletion or this vector seed"
+    },
+    {
+      "url": "https://github.com/kundajelab/deeplift/blob/master/README.md",
+      "scope": "Official implementation distinguishes RevealCancel from Rescale; its Keras framework is not imported or recreated"
+    }
+  ],
+  "observed_need": "Measured opposite large FA/head terms on the frozen collection, with head background residuals much larger than projection rounding. A consistent new finite seed must be propagated through the entire original reverse computation; never subtract the measured residual.",
+  "composition": {
+    "target": "Same log_softmax(z)[actual_target] and same original paired logits",
+    "canonical_coordinates": "x0=z0-mean(z0), x1=z1-mean(z1); linear projection removes the common-logit null direction",
+    "intermediate_states": "xPlus=maximum(x0,x1), xMinus=minimum(x0,x1); only local scalar-rule evaluations, no model forward",
+    "positive_coordinates": "0.5*(seed(x0,xPlus)+seed(xMinus,x1))",
+    "negative_coordinates": "0.5*(seed(x0,xMinus)+seed(xPlus,x1))",
+    "joined_seed": "Select each coordinate by sign(x1-x0), then transpose the explicit centering map: m=mJoined-mean(mJoined)",
+    "pullback": "Original _linear_transpose exactly once, followed by original DT propagation",
+    "probabilities": "Do not alter native logits, target labels, event probability, reward, d-to-Q/V/A map or PPO"
+  },
+  "algebra": {
+    "two_group_endpoint_identity": "0",
+    "centering_transpose_identity": "0",
+    "general_centering_identity": "sum((m-mean(m))*delta)=sum(m*(delta-mean(delta))) for any dimension",
+    "endpoint_completeness": "The two masked group contractions add to f(x1)-f(x0)=f(z1)-f(z0); no multiplier is fitted to an observed residual",
+    "shift_invariance": "Both endpoints are first projected to the same zero-mean-logit space and the covector is pulled back through that exact linear map",
+    "pair_symmetry": "Exchanging endpoints swaps Plus/Minus and reverses paths; the existing symmetric seed yields the same covector",
+    "coincident_limit": "All four owner seeds approach the original log-softmax gradient; its mean is zero",
+    "class_permutation_equivariance": "Mean, maximum/minimum and the original seed commute with a common class permutation"
+  },
+  "rejected_naive_design": "Uncentered coordinate group composition need not have sum(seed)=0 and can attribute an irrelevant common-logit translation. Do not implement that version or repair token credits afterward.",
+  "work": {
+    "existing_DT_calls": 1,
+    "additional_DT_calls": 0,
+    "additional_native_forwards": 0,
+    "finite_logsoftmax_seed_evaluations": 4,
+    "original_head_reverse_GEMMs": 1,
+    "row_readout_chunk": 128,
+    "scope": "Constant extra scalar-head operations. No source-by-source model replay or source-times-target DT requests.",
+    "per_chunk_vocabulary_FP32_bytes": 127139840,
+    "memory": "Sequentially consume seed pairs; observe actual memory before any deployment. This derivation is not a capacity test."
+  },
+  "research_decision": {
+    "candidate_not_ready": true,
+    "prerequisite": "Bind completed AppWorld suboperation results, then review whether the same measured head mismatch supports this one hypothesis",
+    "first_quality_set": "Unchanged frozen32 TextCraft trajectories/16 states, original cumulative deletion, signed RISE and positive MAS; separate frozen uniform/tail cells",
+    "avoid": "No hand-selected examples as method evidence, no held-out tuning, no retry of rejected FA candidate, no extra top-k deletion rescue",
+    "rejection": "A mathematically conservative seed is not sufficient. If whole-collection author quality worsens, discard this hypothesis rather than compensate or change the credit formula"
+  },
+  "exact_oracle_premise_unchanged": true,
+  "global_token_accuracy_proved": false,
+  "original_tolerance_unchanged": true,
+  "official_tolerance_test": false,
+  "accepted_candidate": false,
+  "production_modified": false,
+  "formal_restart": false,
+  "CUDA_initialized": false,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "recorder": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\derive_conditioned_head_seed.py",
+    "sha256": "76d69c5365e4d843b431dacb88286472146708a806abcb927196a59649840898",
+    "bytes": 6704
+  },
+  "rejection": {
+    "z0": [
+      "0.0",
+      "0.0",
+      "0.0",
+      "-100.0"
+    ],
+    "z1": [
+      "16.0",
+      "-8.0",
+      "-8.0",
+      "-100.0"
+    ],
+    "target": 0,
+    "competing_class": 3,
+    "centered_seed": "0.008567194241760575785378944016302669584677340833839563436501842386921437",
+    "conclusion": "Our centered coordinate-group composition can assign a positive coefficient to a competing logit; reject this hypothesis without GPU testing.",
+    "scope": "Refutes a universal local monotonicity claim; not a benchmark or overall attribution claim."
+  },
+  "candidate_ready": false
+}

@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "module": "compiled_logprob_seed",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/compiled_logprob_seed.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/compiled_logprob_seed.py",
+      "sha256": "757edb728aa57e2e802ab83dc59297ec32bbbb4eb9b2ecae6ca42fea5ed1a651",
+      "source": "\"\"\"Fuse the existing finite log-probability seed with installed Inductor.\n\nOnly explicit attribution mathematics is compiled. The model and its ordinary\nforward/backward remain native. Output and checks retain FP32 calculation.\n\"\"\"\nimport torch\nfrom compiled_finite_rules import logarithmic_mean_with_checks\n\n\ndef seed_with_checks(z0,z1,target):\n    mean,checks=logarithmic_mean_with_checks(z0,z1)\n    seed=-mean/mean.sum(-1,keepdim=True)\n    seed=seed.clone()\n    seed.scatter_add_(-1,target.unsqueeze(-1),seed.new_ones((*target.shape,1)))\n    return seed,checks\n\n\ncompiled_seed=torch.compile(seed_with_checks,fullgraph=True,dynamic=True,backend='inductor')\n\n\ndef logprob_secant_seed(z0,z1,target):\n    seed,checks=compiled_seed(z0,z1,target)\n    assert bool(checks),'Finite logprob seed validation failed'\n    return seed\n"
+    },
+    {
+      "module": "compiled_finite_rules",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/compiled_finite_rules.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/compiled_finite_rules.py",
+      "sha256": "e1cc970f15e23a58c2001173220a9826cb3257464a163c1fd722c705e2a2c144",
+      "source": "\"\"\"Existing Inductor on explicit finite attribution rules, never on the model.\n\nThe original mathematical expressions and FP32 analysis inputs are retained.\nThe softmax validation predicates are reduced by the compiled graph and checked\nby the wrapper; no eager fallback is allowed through fullgraph=True.\n\"\"\"\nimport torch\nfrom signed_secant_rules import rmsnorm_secant_pullback as original_rmsnorm\n\n\ndef logarithmic_mean_with_checks(z0,z1):\n    lp0=z0.log_softmax(-1)\n    lp1=z1.log_softmax(-1)\n    valid=torch.isfinite(lp0)&torch.isfinite(lp1)\n    same_mask=(torch.isfinite(lp0)==torch.isfinite(lp1)).all()\n    distance=torch.where(valid,(lp1-lp0).abs(),torch.zeros_like(lp0))\n    denominator=torch.where(distance>0,distance,torch.ones_like(distance))\n    ratio=-torch.expm1(-distance)/denominator\n    ratio=torch.where(distance==0,torch.ones_like(ratio),ratio)\n    mean=torch.where(valid,torch.maximum(lp0,lp1).exp()*ratio,torch.zeros_like(lp0))\n    checks=same_mask & torch.isfinite(mean).all() & (mean>=0).all() & (mean.sum(-1)>0).all()\n    return mean,checks\n\n\ndef softmax_pullback_with_checks(z0,z1,upstream):\n    mean,checks=logarithmic_mean_with_checks(z0,z1)\n    center=(mean*upstream).sum(-1,keepdim=True)/mean.sum(-1,keepdim=True)\n    return mean*(upstream-center),checks\n\n\ncompiled_softmax=torch.compile(softmax_pullback_with_checks,fullgraph=True,dynamic=True,backend='inductor')\ncompiled_rmsnorm=torch.compile(original_rmsnorm,fullgraph=True,dynamic=True,backend='inductor')\n\n\ndef softmax_secant_pullback(z0,z1,upstream):\n    result,checks=compiled_softmax(z0,z1,upstream)\n    assert bool(checks),'Finite softmax validation failed'\n    return result\n\n\ndef rmsnorm_secant_pullback(x0,x1,weight,upstream,eps):\n    return compiled_rmsnorm(x0,x1,weight,upstream,eps)\n"
+    },
+    {
+      "module": "signed_secant_rules",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d",
+      "source": "\"\"\"Candidate local finite-difference rules, independent of FlashTrace scores.\n\nThese are attribution operators, not the model's native Jacobians and not yet\nan end-to-end Qwen attribution method. No rule clips negative contributions.\nInput tensors should already be in the chosen analysis precision.\n\"\"\"\n\ndef softmax_logarithmic_mean(z0,z1):\n    import torch\n    lp0=z0.log_softmax(-1)\n    lp1=z1.log_softmax(-1)\n    valid=torch.isfinite(lp0)&torch.isfinite(lp1)\n    assert torch.equal(torch.isfinite(lp0),torch.isfinite(lp1))\n    distance=torch.where(valid,(lp1-lp0).abs(),torch.zeros_like(lp0))\n    denominator=torch.where(distance>0,distance,torch.ones_like(distance))\n    ratio=-torch.expm1(-distance)/denominator\n    ratio=torch.where(distance==0,torch.ones_like(ratio),ratio)\n    mean=torch.where(valid,torch.maximum(lp0,lp1).exp()*ratio,torch.zeros_like(lp0))\n    assert torch.isfinite(mean).all() and (mean>=0).all() and (mean.sum(-1)>0).all()\n    return mean\n\n\ndef softmax_secant_pullback(z0,z1,upstream):\n    \"\"\"Symmetric PSD finite secant: diag(L)-L L^T/sum(L), applied without a matrix.\"\"\"\n    mean=softmax_logarithmic_mean(z0,z1)\n    center=(mean*upstream).sum(-1,keepdim=True)/mean.sum(-1,keepdim=True)\n    return mean*(upstream-center)\n\n\ndef logprob_secant_seed(z0,z1,target):\n    \"\"\"Exact-real-arithmetic finite seed for log softmax(z)[target].\"\"\"\n    mean=softmax_logarithmic_mean(z0,z1)\n    seed=-mean/mean.sum(-1,keepdim=True)\n    seed=seed.clone()\n    seed.scatter_add_(-1,target.unsqueeze(-1),seed.new_ones((*target.shape,1)))\n    return seed\n\n\ndef matmul_secant_pullback(a0,a1,b0,b1,upstream):\n    \"\"\"Transpose action of \u0394(AB)=\u0394A\u00b7mean(B)+mean(A)\u00b7\u0394B.\"\"\"\n    abar=(a0+a1)*.5\n    bbar=(b0+b1)*.5\n    return upstream@bbar.transpose(-1,-2),abar.transpose(-1,-2)@upstream\n\n\ndef rmsnorm_secant_pullback(x0,x1,weight,upstream,eps):\n    \"\"\"Analytical finite secant for weight*x/sqrt(mean(x\u00b2)+eps).\"\"\"\n    r0=(x0.square().mean(-1,keepdim=True)+eps).sqrt()\n    r1=(x1.square().mean(-1,keepdim=True)+eps).sqrt()\n    inverse_mean=(1/r0+1/r1)*.5\n    inverse_secant=-1/(r0*r1*(r0+r1))\n    xbar=(x0+x1)*.5\n    weighted=upstream*weight\n    coefficient=2*inverse_secant/x0.shape[-1]\n    return inverse_mean*weighted+xbar*coefficient*(xbar*weighted).sum(-1,keepdim=True)\n\n\ndef nonlinear_reveal_cancel(function,base,positive_incoming,negative_incoming):\n    \"\"\"Two-group conditional allocation; incoming signs need not be output signs.\n\n    Local evaluations are values of the attribution rule, not extra native\n    whole-model counterfactual forwards. This is not global input Shapley.\n    \"\"\"\n    assert (positive_incoming>=0).all() and (negative_incoming<=0).all()\n    base_value=function(base)\n    plus_value=function(base+positive_incoming)\n    minus_value=function(base+negative_incoming)\n    joint_value=function(base+positive_incoming+negative_incoming)\n    positive_credit=.5*((plus_value-base_value)+(joint_value-minus_value))\n    negative_credit=.5*((minus_value-base_value)+(joint_value-plus_value))\n    return positive_credit,negative_credit\n"
+    }
+  ],
+  "head_owner": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_answer_finite.py",
+    "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e"
+  },
+  "import_paths": [
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/flashtrace_paper",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/agentenv-owner",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/skyrl-gym-7d94cc",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/AgentGym-d014732d9fe39b975c368c03749bfd50950067f6/agentenv",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/ml-loop-f14107a976e5793990329d3193df4742076c5a1d",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-env-entry-20260930",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/experiments/rl",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/SkyRL-7d94cc-owner-generator",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/environments/skyrl-owner-leaves-7d94cc",
+    "",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/repo/research/third_party/flashtrace_qwen35_e81b3be",
+    "",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/skyrl-gym-7d94cc",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/AgentGym-d014732d9fe39b975c368c03749bfd50950067f6/agentenv",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/ml-loop-f14107a976e5793990329d3193df4742076c5a1d",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-env-entry-20260930",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147/experiments/rl",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/c9cd147",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/SkyRL-7d94cc-owner-generator",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/environments/skyrl-owner-leaves-7d94cc",
+    "/root",
+    "/opt/conda/lib/python312.zip",
+    "/opt/conda/lib/python3.12",
+    "/opt/conda/lib/python3.12/lib-dynload",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/verl-agent2-732f37acd7684b8c24d14ba3ededfe9fab1ed472",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/appworld-42b5bcf3cd334fee33f0c37c02070a9f5807add5/src",
+    "/opt/conda/lib/python3.12/site-packages",
+    "/opt/conda/lib/python3.12/site-packages/nvidia_cutlass_dsl/python_packages",
+    "/opt/conda/lib/python3.12/site-packages/setuptools/_vendor",
+    "/tmp/tmpt9dz_j0w"
+  ],
+  "source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+  "CUDA_initialized": false,
+  "model_calls": 0,
+  "DT_calls": 0
+}

@@ -33,6 +33,11 @@ def make_candidate(original, spec, environment):
     """Load explicit patched owner modules; keep the original model and GDN."""
     for item in spec['files']:
         assert sha(item['path']) == item['sha256']
+    if spec.get('kind') == 'endpoint_head':
+        # Only the new finite seed is local. The actual head, runner, FA/FLA,
+        # model, author metric and all native execution remain their owners.
+        module = load_module('research_endpoint_seed', spec['seed'])
+        return module.make_candidate(original, spec, environment)
     decoder = load_module('research_conditional_decoder', spec['decoder'])
     previous = sys.modules['qwen35_decoder_finite']
     try:
@@ -139,7 +144,17 @@ def make_worker():
                 assert sha(inspect.getsourcefile(original.attribute)) == source['actual_CPU_imports']['qwen35_dense_finite_runner']['sha256']
                 environment = json.loads(Path(source['environment']['DT_ENVIRONMENT_JSON']).read_bytes())['qwen35']
                 candidate, record['candidate'] = make_candidate(original, spec['candidate'], environment)
-                runners = dict(original=original, conditional=candidate)
+                candidate_label = spec.get('candidate_label', 'conditional')
+                cached_batches = None
+                if 'original_baseline' in spec:
+                    baseline = spec['original_baseline'][self.rank]
+                    assert sha(baseline['path']) == baseline['sha256']
+                    cached = json.loads(Path(baseline['path']).read_bytes())
+                    assert cached['phase'] == 'complete' and cached['source_sha256'] == sha(source_path)
+                    cached_batches = {b['index']: b for b in cached['batches']}
+                    record['original_baseline'] = baseline
+                runners = ({candidate_label: candidate} if cached_batches is not None
+                           else dict(original=original, **{candidate_label: candidate}))
                 text = original.model.model.language_model
                 attention = text.config._attn_implementation
                 function = ft_ifr_improve.faithfulness_test_skip_tokens
@@ -180,6 +195,15 @@ def make_worker():
                             first_stage=entry['first_stage'], previously_examined=entry['previously_examined'],
                             views={}, single_deletions=[]) for entry in entries])
                     record['batches'].append(batch)
+                    if cached_batches is not None:
+                        cached_rows = {r['traj_uid']: r for r in cached_batches[batch_index]['trajectories']}
+                        for row in batch['trajectories']:
+                            old = cached_rows[row['traj_uid']]
+                            assert old['initial_state_sha256'] == row['initial_state_sha256']
+                            if 'original' in old['views']:
+                                row['views']['original'] = old['views']['original']
+                            row['single_deletions'] = [dict(q) for q in old['single_deletions']]
+                        batch['original_baseline_reused'] = True
                     signed = {}
                     for label, runner in runners.items():
                         budget()
@@ -250,7 +274,21 @@ def make_worker():
                                 for (slot, view), result in curves.items():
                                     batch['trajectories'][slot]['views'].setdefault(label, {})[
                                         'signed_RISE' if view == 0 else 'positive_MAS'] = result
+                                    if cached_batches is not None and view == 0:
+                                        old = batch['trajectories'][slot]['views']['original']['signed_RISE']
+                                        batch['trajectories'][slot]['reused_baseline_factual_difference'] = (
+                                            result['score_points'][0]['logp']-old['score_points'][0]['logp'])
                                 save('author_curves_complete', batch=batch_index, variant=label)
+                        if cached_batches is not None:
+                            # Exact saved native queries stay diagnostic data;
+                            # do not repeat their model calls or retry old FA.
+                            for slot, row in enumerate(rows):
+                                for q in batch['trajectories'][slot]['single_deletions']:
+                                    index = positions[slot].index(q['packed_slot'])
+                                    q['fresh_'+candidate_label+'_d'] = float(signed[candidate_label][slot][index])
+                            del selection, selector, signed, rows
+                            save('paired_batch_complete', batch=batch_index)
+                            continue
                         if not chosen['primary']:
                             batch['native_factual_scores'] = forward(
                                 [row['selected'] for row in rows for _ in range(2)],
@@ -284,7 +322,7 @@ def make_worker():
                                         fresh_factual_target_logp=factual, fresh_deleted_target_logp=float(values[2*slot+j]),
                                         fresh_native_single_d=factual-float(values[2*slot+j]),
                                         fresh_original_d=float(signed['original'][slot][source_index]),
-                                        fresh_conditional_d=float(signed['conditional'][slot][source_index])))
+                                        **{'fresh_'+candidate_label+'_d':float(signed[candidate_label][slot][source_index])}))
                     del selection, selector, signed, rows
                     save('paired_batch_complete', batch=batch_index)
                 save('complete', scope='Complete frozen development comparison; no training, production repair or learning-effect claim.')
