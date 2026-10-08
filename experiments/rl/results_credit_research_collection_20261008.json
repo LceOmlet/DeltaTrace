@@ -1,0 +1,266 @@
+{
+  "status": "Collection/split groundwork verified on CPU; output-refinement candidate rejected before GPU launch",
+  "unix": 1791422784.6911123,
+  "scope": "Research infrastructure and existing-evidence derivation, not an attribution repair or collection-quality result",
+  "tasks": {
+    "textcraft": {
+      "counts": {
+        "development": {
+          "groups": 16,
+          "trajectories": 85,
+          "first_stage_trajectories": 32,
+          "completed_native": 85,
+          "missing_native": 0,
+          "context_tokens": {
+            "min": 495,
+            "median": 2055,
+            "max": 6013
+          },
+          "reward_range": [
+            1.0,
+            1.0
+          ],
+          "first_stage_B4_requests": 8
+        },
+        "test": {
+          "groups": 16,
+          "trajectories": 85,
+          "first_stage_trajectories": 31,
+          "completed_native": 85,
+          "missing_native": 0,
+          "context_tokens": {
+            "min": 537,
+            "median": 1559,
+            "max": 7459
+          },
+          "reward_range": [
+            1.0,
+            1.0
+          ],
+          "first_stage_B4_requests": 8
+        }
+      },
+      "source": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/source.json",
+        "sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+        "bytes": 744032
+      }
+    },
+    "appworld": {
+      "counts": {
+        "development": {
+          "groups": 16,
+          "trajectories": 124,
+          "first_stage_trajectories": 32,
+          "completed_native": 122,
+          "missing_native": 2,
+          "context_tokens": {
+            "min": 6308,
+            "median": 10935.5,
+            "max": 27334
+          },
+          "reward_range": [
+            0.375,
+            1.0
+          ],
+          "first_stage_B4_requests": 8
+        },
+        "test": {
+          "groups": 17,
+          "trajectories": 100,
+          "first_stage_trajectories": 34,
+          "completed_native": 94,
+          "missing_native": 6,
+          "context_tokens": {
+            "min": 6752,
+            "median": 14375.0,
+            "max": 23343
+          },
+          "reward_range": [
+            0.25,
+            1.0
+          ],
+          "first_stage_B4_requests": 9
+        }
+      },
+      "source": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/appworld/appworld-dt/source.json",
+        "sha256": "58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0",
+        "bytes": 771635
+      }
+    }
+  },
+  "corpus_runtime": {
+    "unix": 1791421676.2618933,
+    "seconds": 1.3634300870035077,
+    "peak_rss_bytes": 678866944,
+    "cuda_initialized": false,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "optimizer_steps": 0
+  },
+  "aggregation": "Per-environment equal-initial-state means of trajectory means, with trajectory arithmetic means also reported; paired same-UID differences. Report state-cluster uncertainty; no pooled task scalar, token weighting, reward weighting or replacing missing scores with zero.",
+  "evaluation_owner": {
+    "function": "ft_ifr_improve.faithfulness_test_skip_tokens",
+    "sha256": "583f4b7d0426407eb9a517f173365762860a1f4382f472dffb5c07de7d3e94a1",
+    "k": 20,
+    "rise_view": "signed d cast FP32",
+    "mas_view": "d cast FP32 then clamp_min(0), evaluation only"
+  },
+  "current_research_direction": {
+    "observed": "At the saved current GDN30 case, the original finite rule matches its own endpoint pair. The measured discrepancy is joint-pair coefficients applied to the actual single-intervention displacement. This locates an approximation-context error at that sub-operation, not an all-token error rate or an official kernel failure.",
+    "measured_context_difference": {
+      "original_finite": 9.671126213038166,
+      "native_actual_single": 15.82750419616082,
+      "difference": -6.156377983122654
+    },
+    "factual_gradient_is_not_a_finite_repair": {
+      "native_single_deletion_output_effect": 15.82750419616082,
+      "factual_native_VJP_times_actual_delta": 20.063133740240264,
+      "local_linearization_minus_native": 4.235629544079446,
+      "factual_native_VJP_terms": {
+        "q": 2.5397175223165895,
+        "k": 1.6353686000176957,
+        "v": 14.113469915872436,
+        "g": -0.0686485884833522,
+        "beta": 1.8432262905168955
+      },
+      "previous_original_finite_on_same_single_endpoints": 15.825014309245729,
+      "previous_joint_coefficients_times_same_single_delta": 9.671126213038166,
+      "previous_single_finite_minus_native": -0.0024898869150913328
+    },
+    "exact_coupled_identities_to_preserve": {
+      "state": "H_t = M_t H_(t-1) + B_t; for GDN, M_t = alpha_t (I - beta_t k_t k_t^T), B_t = beta_t k_t v_t^T.",
+      "finite_state_difference": "Delta_i H_t = M_t^F Delta_i H_(t-1) + Delta_i M_t H_(t-1)^F - Delta_i M_t Delta_i H_(t-1) + Delta_i B_t.",
+      "readout": "Delta_i o_t = (q_t^F)^T Delta_i H_t + (Delta_i q_t)^T H_t^F - (Delta_i q_t)^T Delta_i H_t, with the original scale retained.",
+      "meaning": "Delta_i is factual minus the same single intervention, not the all-sources endpoint difference. These are algebraic identities identifying coupled terms, not an implemented estimator or a claim of a new one-DT exact algorithm."
+    },
+    "next_mathematical_question": "Determine how the existing finite owner can approximate these coupled single-source terms within one batched reverse computation, without an all-source intervention-state bank or extra whole-model query layer.",
+    "implementation_ready": false,
+    "forbidden_shortcuts": [
+      "selected extreme-output replacement",
+      "V-only substitution",
+      "factual VJP presented as exact finite effect",
+      "forced conservation/sign/scaling"
+    ]
+  },
+  "withdrawn_candidate": {
+    "unix": 1791422668.4965587,
+    "status": "User rejected top-four source refinement; withdrawn before any added model forward",
+    "reason": "It replaces selected output symptoms and adds whole-model passes instead of repairing the measured finite-propagation context error.",
+    "withdrawn_artifacts": [
+      "development-queries.json",
+      "prepare_queries.py",
+      "fetch_queries.py",
+      "inspect_collection.py"
+    ],
+    "withdrawn_entrypoints_disabled": true,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "optimizer_steps": 0,
+    "production_modified": false,
+    "new_GPU_job_started": false,
+    "artifacts": {
+      "manifest.json": {
+        "sha256": "2096e03e90722aa4fc6272209e22c5c820f88fd8da018e8b732e2f84d68489b4",
+        "bytes": 53910
+      },
+      "corpus.json": {
+        "sha256": "e798a36c0e69beea77abb6a1ee14c2b7fecf07ea8dcc8f4402e2721655bc0fba",
+        "bytes": 629484
+      },
+      "development-queries.json": {
+        "sha256": "58d75fd9bf957ee4d4cf7524568e0159026f2c0d25c775ab8b987f7996d1eea5",
+        "bytes": 339347
+      },
+      "inspect_collection.py": {
+        "sha256": "4d6224a454d3f17223448586a21c25b210f49dff3e0eae0565bbc05214951c8d",
+        "bytes": 11141
+      },
+      "prepare_queries.py": {
+        "sha256": "d73b9b705cb621b24872df7ab4fbe8217d0626bd934e46c984b8fe28817bf63a",
+        "bytes": 5680
+      },
+      "fetch_queries.py": {
+        "sha256": "5356fc7e094eb125bbf159cda419a79029cee3ae0664ce229e4e851f7fe46af8",
+        "bytes": 1387
+      }
+    },
+    "retained_research_data": [
+      "corpus.json",
+      "manifest.json",
+      "score_summary.py",
+      "cpu-verification.json"
+    ]
+  },
+  "cpu_contract_checks": {
+    "passed": 28,
+    "failed": 0,
+    "scope": "Actual stored corpus split, duplicate/missing handling and owner-score aggregation only"
+  },
+  "artifacts": {
+    "corpus.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/corpus.json",
+      "sha256": "e798a36c0e69beea77abb6a1ee14c2b7fecf07ea8dcc8f4402e2721655bc0fba",
+      "bytes": 629484
+    },
+    "manifest.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/manifest.json",
+      "sha256": "2096e03e90722aa4fc6272209e22c5c820f88fd8da018e8b732e2f84d68489b4",
+      "bytes": 53910
+    },
+    "cpu-verification.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/cpu-verification.json",
+      "sha256": "6b5902c8d94c90ca26093b05a5ab48bd82976cc113c55ed321657324e22fd19d",
+      "bytes": 2379
+    },
+    "candidate-status.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/candidate-status.json",
+      "sha256": "4bada214515e438ab9d296d516a52ef95c1eeb163768512bdc076c539d3266e2",
+      "bytes": 1620
+    },
+    "collect_corpus.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/collect_corpus.py",
+      "sha256": "6af9254637f651b405a06e6780cdc8a3202aee8b59b876b3532c6d71998a425d",
+      "bytes": 7876
+    },
+    "freeze_manifest.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/freeze_manifest.py",
+      "sha256": "d413724c49506a5493e15482979d1a43ca918abf486b55a778b02bcd4086abc3",
+      "bytes": 5020
+    },
+    "score_summary.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/score_summary.py",
+      "sha256": "1d0c8ce3cfbc357b28f8d70e77aa8f96bb99807702b7f935ce54ed6c5db085c1",
+      "bytes": 3525
+    },
+    "verify_protocol.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/verify_protocol.py",
+      "sha256": "133ad3a04c956cf62b1d0da70fc1acfd819de35cad3dbe631dfe8465b6e5a33f",
+      "bytes": 4674
+    }
+  },
+  "evidence": {
+    "results_gdn_context_composition_20261008.json": {
+      "path": "experiments/rl/results_gdn_context_composition_20261008.json",
+      "sha256": "d6a2cc82928f0b31edd9e893d086692478c359e59fc87d3853d08a2273878a87",
+      "bytes": 8193
+    },
+    "results_native_factual_jacobian_20261008.json": {
+      "path": "experiments/rl/results_native_factual_jacobian_20261008.json",
+      "sha256": "07185492be0348055db90ae166ac6bd8d10428bd5db87b9dc1e6d421bbbacba2",
+      "bytes": 15664
+    }
+  },
+  "operations": {
+    "new_model_calls": 0,
+    "new_DT_calls": 0,
+    "new_optimizer_steps": 0,
+    "new_GPU_job_started": false,
+    "production_modified": false,
+    "formal_restart": false,
+    "checkpoint_restore": false,
+    "TextCraft_update_released": false,
+    "credit_repaired": false
+  }
+}
