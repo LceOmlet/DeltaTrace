@@ -31,6 +31,27 @@ def geometry(stats, label):
         interpretation='Geometric addition of a fixed-original-scale coefficient difference. Not a corrected/rewhitened update, parameter update, full-bulk estimate or evidence of a GDN cause.')
 
 
+def measured_sum_geometry(stats, labels):
+    """Sum disjoint selected-position loss vectors, not statistical stratum means."""
+    def dot(a, b):
+        return stats['inner_products'].get(a + ':' + b,
+                                          stats['inner_products'].get(b + ':' + a))
+
+    full = stats['norms']['full_pg']
+    delta_squared = sum(dot(a, b) for a in labels for b in labels)
+    delta = math.sqrt(max(0., delta_squared))
+    full_dot_delta = sum(dot('full_pg', label) for label in labels)
+    combined = math.sqrt(max(0., full * full + delta_squared + 2 * full_dot_delta))
+    cosine = ((full * full + full_dot_delta) / (full * combined)
+              if full and combined else None)
+    return dict(labels=labels, delta_norm=delta, norm_ratio=delta / full if full else None,
+        delta_projection_on_full=full_dot_delta / (full * full) if full else None,
+        full_plus_selected_deltas_norm=combined,
+        full_plus_selected_deltas_angle_degrees=math.degrees(math.acos(max(-1., min(1., cosine))))
+            if cosine is not None else None,
+        interpretation='Exact vector geometry from the measured native pairwise inner products and original loss denominators. Strata remain separate above. This sums only selected-position errors; it is neither a pooled raw mean nor an estimate of all unmeasured bulk errors or a corrected/rewhitened training update.')
+
+
 def main():
     paths = list(HERE.glob('collection-error-gradient-observation-*.json'))
     assert paths
@@ -66,9 +87,15 @@ def main():
         assert all(math.isfinite(v) for v in stats['inner_products'].values())
         minibatches.append(dict(index=index, full_pg_norm=stats['norms']['full_pg'], counts=counts,
             components={label:dict(points=counts[label], states=len({p['initial_state_sha256']
-                for p in points if family(p)==label}), geometry=geometry(stats,label))
+                for p in points if family(p)==label}),
+                original_actor_slots=sum(sum(m['optimizer_minibatch'] == index
+                    for m in p['actor_matches']) for p in points if family(p)==label),
+                state_counts={state:sum(p['initial_state_sha256'] == state and family(p)==label
+                    for p in points) for state in sorted({p['initial_state_sha256']
+                    for p in points if family(p)==label})}, geometry=geometry(stats,label))
                 if label in labels else dict(points=0,status='Structurally absent; no native numerical pass claimed')
                 for label in LABELS[1:]}, statistics=stats,
+            selected_error_vector_sum=measured_sum_geometry(stats, labels[1:]),
             elapsed_seconds_by_rank=[{k:v['elapsed_seconds'] for k,v in rank['passes'].items()} for rank in ranks]))
     phase = files.get('phase.json', {})
     all_returns = len(minibatches) == 4 and phase.get('phase') == 'original_minibatch_gradients_complete' and phase.get('minibatch') == 3
