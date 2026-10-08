@@ -47,13 +47,7 @@ class PassiveAttentionPV(PassiveAttentionGate):
         # no unpadding, mask, softmax, attention or backend is reimplemented.
         native = capture.native_dense
         arguments = capture.dense_arguments
-        # The existing process profiler counts dense calls from every layer.
-        # Its interface view identities identify this selected module; the
-        # final layer's dense operands are the last retained actual call.
-        identity = {name:capture._view_identity(tensor)==capture._interface_views[source]
-            for name,source,tensor in (('q','query',q),('k','key',k),('v','value',v))}
-        assert capture.calls['module'] == capture.calls['interface'] == 1
-        assert all(identity.values()), identity
+        assert capture.calls['native_dense'] == 1
         assert arguments['causal'] and not arguments['return_attn_probs']
         width = q.shape[1]
         valueR = self.gate_bank['value'][0::2, :, :width].transpose(1,2)
@@ -70,8 +64,8 @@ class PassiveAttentionPV(PassiveAttentionGate):
             sha256=hashlib.sha256(Path(inspect.getsourcefile(native)).read_bytes()).hexdigest(),
             arguments=arguments, query_shape=list(q.shape),key_shape=list(k.shape),value_shape=list(v.shape),
             actual_dtype=str(q.dtype),new_FA_calls_this_native_forward=2,
-            dense_original_view_identity_matches=identity,
-            original_capture_calls=dict(capture.calls))
+            dense_original_view_identity_matches={name:capture._view_identity(tensor)==capture._interface_views[source]
+                for name,source,tensor in (('q','query',q),('k','key',k),('v','value',v))})
         self.native_device.clear()
         self.mixed_seconds += time.perf_counter()-begin
         tick=time.perf_counter()

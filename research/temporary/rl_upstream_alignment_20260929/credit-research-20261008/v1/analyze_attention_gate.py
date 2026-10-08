@@ -15,9 +15,12 @@ TERMS = ('coefficient_recompute', 'product_background', 'sigmoid_rounded_secant'
          'sigmoid_background', 'native_sigmoid_rounding', 'native_product_rounding')
 BRANCHES = ('core_and_input_residual', 'gate_residual', 'projection_residual')
 INPUT_TERMS = ('input_projection_norm_RoPE_residual', 'finite_FA_core_residual')
+PV_TERMS = ('joint_QK_softmax_residual','factual_P_value_residual','PV_background_residual')
 
 
 def term_value(point, name):
+    if name in PV_TERMS:
+        return point['final_FA_PV_ledger'][name]
     return point['final_FA_input_ledger'][name] if name in INPUT_TERMS else point['final_FA_gate_ledger'][name]
 
 
@@ -32,7 +35,7 @@ def state_frequency(points, predicate):
 def summarize(points):
     if not points:
         return dict(points=0, states=0, status='Empty cell; no imputation')
-    names = TERMS + BRANCHES + (INPUT_TERMS if 'final_FA_input_ledger' in points[0] else ())
+    names = TERMS + BRANCHES + (INPUT_TERMS if 'final_FA_input_ledger' in points[0] else ()) + (PV_TERMS if 'final_FA_PV_ledger' in points[0] else ())
     result = dict(points=len(points), trajectories=len({p['traj_uid'] for p in points}),
                   states=len({p['initial_state_sha256'] for p in points}))
     result['conditional_finite_sample_values'] = {
@@ -57,6 +60,12 @@ def summarize(points):
                 key=lambda n: abs(term_value(p, n)))) for name in INPUT_TERMS}
         result['input_decomposition_roundoff'] = quantiles([
             p['final_FA_input_ledger']['decomposition_roundoff'] for p in points])
+    if 'final_FA_PV_ledger' in points[0]:
+        result['state_equal_largest_absolute_PV_term_frequency']={
+            name:state_frequency(points,lambda p:name==max(PV_TERMS,key=lambda n:abs(term_value(p,n))))
+            for name in PV_TERMS}
+        result['PV_controls']={name:quantiles([p['final_FA_PV_ledger'][name] for p in points]) for name in
+            ('decomposition_roundoff','original_FA_factual_replay_maxabs','matched_minus_native_endpoint_residual')}
     return result
 
 
@@ -64,8 +73,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--task', required=True, choices=('textcraft', 'appworld'))
     parser.add_argument('--attention-input', action='store_true')
+    parser.add_argument('--attention-pv', action='store_true')
+    parser.add_argument('--revision', default='v1', choices=('v1','v2'))
     args = parser.parse_args()
-    folder = HERE/(('attention-input-' if args.attention_input else 'attention-gate-')+args.task)
+    assert not args.attention_pv or args.attention_input
+    folder = HERE/(('attention-pv-' if args.attention_pv else ('attention-input-' if args.attention_input else 'attention-gate-'))+args.task)
+    if args.revision != 'v1':
+        folder = folder.with_name(folder.name+'-'+args.revision)
     paths = [folder/f'rank{r}.json' for r in (0, 1)]
     ranks = [json.loads(p.read_bytes()) for p in paths]
     assert all(r['phase'] == 'complete' for r in ranks)
@@ -113,7 +127,7 @@ def main():
                     for cell, items in cells.items()})
             for flag in next(iter(points))['stable_flags']})
     result = dict(scope=__doc__, task=args.task, complete=True, inputs=[ref(p) for p in paths+baseline_paths+[stable_path]],
-        launch=ref(folder/'launch.json'), protocol=ref(HERE/('attention-input-protocol.json' if args.attention_input else 'attention-gate-protocol.json')),
+        launch=ref(folder/'launch.json'), protocol=ref(HERE/('attention-pv-protocol.json' if args.attention_pv else ('attention-input-protocol.json' if args.attention_input else 'attention-gate-protocol.json'))),
         unique_points=len(points), cohorts=cohorts, unchanged_output_comparisons=comparisons,
         points=points, operations=[r['operations'] for r in ranks], elapsed_seconds=[r['elapsed_seconds'] for r in ranks],
         gate_readouts=[[b['attention_branch_readout'] for b in r['batches']] for r in ranks],
@@ -128,14 +142,24 @@ def main():
         official_tolerance_test=False, candidate=False, production_modified=False, credit_repaired=False,
         interpretation='Core/input contains finite FA routing, Q/K normalization, RoPE and input projections; it is not a claim that routing alone causes the error. .25 is a smooth sigmoid bound, not a BF16 tolerance. Joint gate element counts repeat across queries and must not be summed as independent occurrences. Original robust flags identify frozen original-run subsets, not newly repeated confidence bounds. Changed runs remain explicitly separate in repeatability_strata; do not claim full unchanged DT parity or a new official whole-model threshold. No ledger term is subtracted from credit.')
     if args.attention_input:
-        prior_paths = [HERE/('attention-gate-'+args.task)/f'rank{r}.json' for r in (0, 1)]
+        prior_paths = [HERE/(('attention-input-' if args.attention_pv else 'attention-gate-')+args.task)/f'rank{r}.json' for r in (0, 1)]
         prior = {(p['traj_uid'], p['packed_slot']): p for f in prior_paths
                  for b in json.loads(f.read_bytes())['batches'] for p in b['points']}
         result['inputs'] += [ref(p) for p in prior_paths]
-        result['comparison_with_previous_gate_readout'] = [dict(traj_uid=p['traj_uid'], packed_slot=p['packed_slot'],
+        result['comparison_with_previous_input_readout' if args.attention_pv else 'comparison_with_previous_gate_readout'] = [dict(traj_uid=p['traj_uid'], packed_slot=p['packed_slot'],
             DT_difference=p['fresh_DT_d']-prior[p['traj_uid'], p['packed_slot']]['fresh_DT_d'],
             native_difference=p['native_single_d']-prior[p['traj_uid'], p['packed_slot']]['native_single_d']) for p in points]
         result['comparison_scope'] = 'Both fixed prior references are reported; no per-token selection of whichever baseline is closest.'
+    if args.attention_pv:
+        result['PV_readouts']=[[b['attention_PV_readout'] for b in r['batches']] for r in ranks]
+        result['extra_public_FA_calls_per_rank']=[sum(b['attention_PV_readout']['extra_public_FA_calls'] for b in r['batches']) for r in ranks]
+        result['original_operator_artifacts']=[a for r in ranks for b in r['batches'] for a in b['attention_PV_readout']['original_operand_artifacts']]
+        result['original_operator_artifact_bytes']=sum(a['bytes'] for a in result['original_operator_artifacts'])
+        result['interpretation']=('PV decomposition uses the same native F/D pair, original joint-reference V, and original public FA. '
+            'QK/softmax, factual-P value, PV background and native arithmetic are kept separate. '
+            'The DT/native factual drift is explicit, not corrected; no term replaces credit. '
+            'Historical flags remain descriptive fixed subsets, not new confidence bounds or evidence of a repair. '
+            'This readout does not replace original author RISE/MAS or official kernel tolerance tests.')
     output = folder/'analysis.json'
     output.write_text(json.dumps(result, indent=2)+'\n', encoding='utf-8')
     print(json.dumps(dict(output=ref(output), points=len(points), identical_DT=result['original_DT_exact_equal_points'],
