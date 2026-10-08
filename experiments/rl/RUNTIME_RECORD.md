@@ -1,6 +1,47 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-08 冻结集合逐层定位实测记录：TextCraft完成、AppWorld进行中
+
+执行源码2951f70e，脚本SHA8e9b1c8b…，固定输入SHAe835680d…。
+未改正式DT/FA/FLA、PPO或训练配置；不传observer，不替换任何有限规则/返回张量。
+TextCraft PID1576668/birth1791438687.36已正常完成并退出；AppWorld
+PID1622404/birth1791439120.18接着在已空出的物理GPU4/5启动同一协议。
+TextCraft原训练PID2833207/birth1791370325.16仍hold、release false/false。
+本次均零optimizer/scheduler/rollout/restore；不是恢复或启动正式训练。
+
+TextCraft45条轨迹，原均匀128source及预测尾部全数37source全部返回，
+共165个独立位置；每rank6个B4 DT、30个paired8 native forward。
+worker实测220.01/220.13秒，包含初始化的launch到完成约308秒。
+阶段采样PSS最大22.34/24.11GiB，实际单批bank最大14.72/16.23GiB，
+batch结束全部清空；没有保留所有查询的整网hidden states。
+这不是连续峰值或32k容量验收；最新TextCraft只读快照里的物理GPU已属于
+随后AppWorld诊断，不能误记作TextCraft显存。
+
+全部165位置的输入层乘积与本次fresh DT d观测差为0；仅验证本次
+层轴/source映射，不冒充官方核容差。新旧DT/native批形差与native/DT事实
+端点差分别记录，没有把这些差额补回或缩放训练信用。
+
+逐层项有明显相消，不能按“绝对值最大层”选择修法。例如均匀样本的
+原预测/原native都c<=1交叉单元有95点、16状态，fresh |d误差|中位数
+0.04267，而最终norm+head项绝对值中位数3.1710，其他层有相反项。
+预测c在(2,10]、原native c<=1的单元23点/6状态，fresh |d误差|中位数
+1.04443；原native c在(1,2]的单元11点/7状态为0.95128。
+两漏估native负尾仍来自同一状态，fresh差额为2.5503/2.8022；
+不把它们合成两个独立样本。原始层值、跨层相消与事实漂移全部保留。
+这些量没有证明GDN、输出层或FA为整体主因，也不替代原累计删除/RISE/MAS。
+
+AppWorld观察1791439295.849：同出生driver存活，两个首B4 DT已完成，
+均在原native forward round4；已返回23/165点（均匀14、预测尾部9）。
+物理GPU4/5为32886/36314MiB，host available约710.6GiB；
+阶段PSS约26.1/27.0GiB，尚无完成/修复结论。按同一1800秒预算继续，
+仅读取这一现有PID与phase；不重启、不扩样、不自动追加GPU候选。
+
+完整命令、导入路径/SHA、source、本次两rank操作计数及原记录见
+results_credit_layer_localization_20261008.json与current_runtime对应条目。
+后续只运行observe_author_collection.py --layer-task appworld及
+analyze_layer_collection.py --task appworld跟进同一作业。
+
 ## 2026-10-08 集合逐层定位准备完成；不是GDN候选或正式训练
 
 沿用同一冻结查询，TextCraft45条/AppWorld48条轨迹，均包含原32条均匀

@@ -1,5 +1,6 @@
 """Read the bounded collection's actual PID, phase and resources; no job mutation."""
 import json
+import argparse
 from pathlib import Path
 import subprocess
 import sys
@@ -11,7 +12,7 @@ from stage_environment_entry import ENTRY,ROOT,SSH
 BODY=r'''
 import hashlib,json,os,psutil,subprocess,time
 from pathlib import Path
-root=Path(ROOT)/'receipts/credit-author-development-collection-20261008-v1'
+root=Path(TARGET)
 data={'unix':time.time(),'files':{},'processes':[]}
 for name in ('launch.json','batching-cpu-replay.json','results/actor-initialization.json','results/completed.json',
              'results/rank0.json','results/rank1.json'):
@@ -43,6 +44,8 @@ for rank in (0,1):
    try:events.append(json.loads(line))
    except json.JSONDecodeError:pass
   data[f'rank{rank}_last_phases']=events
+  if INCLUDE_PHASES:
+   data[f'rank{rank}_all_phases']=[json.loads(line) for line in lines if line]
 p=root/'driver.log'
 if p.exists():data['driver_log_tail']='\n'.join(p.read_text(errors='replace').splitlines()[-80:])
 data['physical']=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout
@@ -60,12 +63,20 @@ print(json.dumps(data))
 '''
 
 if __name__=='__main__':
-    body='ROOT='+repr(ROOT)+'\n'+BODY
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--layer-task',choices=('textcraft','appworld'))
+    args=parser.parse_args()
+    target=ROOT+'/receipts/credit-author-development-collection-20261008-v1'
+    prefix='author-collection'
+    if args.layer_task:
+        target=ROOT+'/receipts/credit-layer-development-'+args.layer_task+'-20261008-v1'
+        prefix='layer-'+args.layer_task
+    body='ROOT='+repr(ROOT)+'\nTARGET='+repr(target)+'\nINCLUDE_PHASES='+repr(bool(args.layer_task))+'\n'+BODY
     shell='source '+ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+body+'\nPY\n'
     run=subprocess.run(SSH+['bash','-s'],input=shell.encode(),capture_output=True,timeout=45)
-    (HERE/'author-collection-observation.stderr.txt').write_bytes(run.stderr);run.check_returncode()
+    (HERE/(prefix+'-observation.stderr.txt')).write_bytes(run.stderr);run.check_returncode()
     data=json.loads(run.stdout)
-    out=HERE/'author-collection-observations';out.mkdir(exist_ok=True)
+    out=HERE/(prefix+'-observations');out.mkdir(exist_ok=True)
     path=out/(str(int(data['unix']))+'.json');path.write_text(json.dumps(data,indent=2)+'\n',encoding='utf-8')
     for name,binding in data['files'].items():
         if name.startswith('results/rank') and not binding['value'].get('read_during_write'):
