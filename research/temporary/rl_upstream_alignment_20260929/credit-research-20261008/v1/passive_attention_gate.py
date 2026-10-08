@@ -122,15 +122,25 @@ class PassiveAttentionGate(PassiveSuboperations):
                 elif name in ('attention_output', 'o_proj_input', 'output') or (
                         observer.read_input and name in ('query', 'key', 'value')):
                     super().retain(name, value)
-        capture = ReadGate(self.text.layers[31].self_attn, self.globals['flash_attention_forward'],
+        capture = self.native_capture_type(ReadGate)(self.text.layers[31].self_attn, self.globals['flash_attention_forward'],
             self.globals['flash_attn_varlen_func'], self.globals['flash_attn_func'],
             destination='cpu', copy_tensors=True,
             retained_names={'q_proj_output', 'attention_output', 'o_proj_input', 'output'} |
-                ({'query', 'key', 'value'} if self.read_input else set()))
+                ({'query', 'key', 'value'} if self.read_input else set()) | self.extra_native_names())
         with capture:
             yield
         self.native_gate = capture.values
         self.native_capture_calls = capture.calls
+        self.native_capture_finished(capture)
+
+    def native_capture_type(self, capture_type):
+        return capture_type
+
+    def extra_native_names(self):
+        return set()
+
+    def native_capture_finished(self, capture):
+        pass
 
     def finish_point(self, point, data):
         super().finish_point(point, data)

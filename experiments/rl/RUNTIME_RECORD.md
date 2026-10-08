@@ -1,5 +1,18 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 有限FA的QK/softmax与PV背景被动拆分准备
+
+在同165位置、原6DT/30native每rank上，每个native另调用原public dense FA两次，
+分开QK/softmax、事实P下value传播和PV背景；保留DT/native事实端点漂移，
+不改变原系数或归因。代数分解闭合不是容差或修复。只准备TextCraft；AppWorld不启动。
+新的observer复用原capture实际dense参数，默认原observer路径保持；没有重写FA、mask、
+unpadding或模型。新protocol绑定实际源码，启动前需要原launcher再核对4/5空闲。
+预检磁盘剩316.60GB；全部冻结operator原输入保存的形状上界47.68GB，不是权重或
+检查点。新增device上界1.576GB、host mixed输出0.788GB，均不是已测峰值；额外FA、
+复制、保存与哈希时间分开记录。原1800/2100秒诊断预算不变，无新增正式训练。
+本条为prepared-only；既定Q/V/A、白化、PPO与原FA/FLA容差未改，无新数值候选。
+
+
 ## 2026-10-09 末层有限FA核心已由集合残差隔离；原现场完整保存
 
 被动输入诊断PID3901349已结束，实际7文件绑定af05de9d；每rank6原DT/30原native、

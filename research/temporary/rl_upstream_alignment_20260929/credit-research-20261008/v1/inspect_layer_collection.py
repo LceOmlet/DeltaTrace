@@ -162,11 +162,17 @@ def make_worker():
                         if attention_branches:
                             from passive_attention_gate import PassiveAttentionGate
                             observer_type = PassiveAttentionGate
+                            if os.environ.get('DT_ATTENTION_PV') == '1':
+                                from passive_attention_pv import PassiveAttentionPV
+                                observer_type = PassiveAttentionPV
                             record['attention_branch_source_sha256'] = sha(inspect.getsourcefile(observer_type))
                         record['suboperation_source_sha256'] = sha(inspect.getsourcefile(PassiveSuboperations))
                         record['suboperation_protocol_sha256'] = sha(protocol_path)
                         subobserver = observer_type(runner, protocol['selected_decoder_layers'],
                             effect_owner, bank, active, None, rows, None)
+                        if os.environ.get('DT_ATTENTION_PV') == '1':
+                            subobserver.artifact_root=out/'FA-operator-inputs'
+                            subobserver.batch_index=batch_index
                         subobserver.__enter__()
                     globals_['_token_effect'], globals_['decoder_finite_pullback'] = effect, decoder
                     reward_readout.trace_token_attribution = trace
@@ -319,6 +325,11 @@ def make_worker():
                                 seconds=subobserver.gate_readout_seconds,
                                 linear_owner_path=subobserver.linear_readout_owner,
                                 linear_owner_sha256=sha(subobserver.linear_readout_owner))
+                            if os.environ.get('DT_ATTENTION_PV') == '1':
+                                batch['attention_PV_readout'] = dict(extra_public_FA_calls=subobserver.mixed_calls,
+                                    seconds=subobserver.mixed_seconds,actual_owner=subobserver.mixed_owner,
+                                    original_operand_artifacts=subobserver.artifacts,
+                                    artifact_write_and_hash_seconds=subobserver.artifact_seconds)
                         subobserver.__exit__(None, None, None)
                         subobserver = None
                     bank.clear()

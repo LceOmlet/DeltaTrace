@@ -14,11 +14,13 @@ assert task in ('textcraft','appworld')
 suboperations='--suboperations' in sys.argv[2:]
 attention_branches='--attention-branches' in sys.argv[2:]
 attention_input='--attention-input' in sys.argv[2:]
+attention_pv='--attention-pv' in sys.argv[2:]
 assert not attention_branches or suboperations
 assert not attention_input or attention_branches
+assert not attention_pv or attention_input
 revision=next((v.split('=',1)[1] for v in sys.argv[2:] if v.startswith('--revision=')), 'v1')
 assert revision in ('v1','v2')
-tag='attention-input' if attention_input else ('attention-gate' if attention_branches else ('layer-suboperations' if suboperations else 'layer-factual-controls'))
+tag='attention-pv' if attention_pv else ('attention-input' if attention_input else ('attention-gate' if attention_branches else ('layer-suboperations' if suboperations else 'layer-factual-controls')))
 folder=HERE/(f'{tag}-{task}'+('-'+revision if revision!='v1' else ''))
 prepared=json.loads((folder/'preparation.json').read_bytes())
 code=r'''
@@ -44,6 +46,7 @@ env['CUDA_VISIBLE_DEVICES']='4,5';env['DT_LAYER_FACTUAL_CONTROL']='1'
 if SUBOPERATIONS:env['DT_LAYER_SUBOPERATIONS']='1'
 if ATTENTION_BRANCHES:env['DT_ATTENTION_BRANCHES']='1'
 if ATTENTION_INPUT:env['DT_ATTENTION_CORE_INPUT']='1'
+if ATTENTION_PV:env['DT_ATTENTION_PV']='1'
 env['DT_TASK']=source['startup_options']['env.env_name'];env['DT_MAX_STEPS']=str(source['startup_options']['env.max_steps'])
 dt=Path(source['dt_root']);q=json.loads(Path(env['DT_ENVIRONMENT_JSON']).read_bytes())['qwen35']
 env['PYTHONPATH']=':'.join([str(out),str(dt),env.get('DT_OFFICIAL_ROOT') or q['official_root'],str(dt/'clean/qwen35'),source['pythonpath'],q['ft_extension_root']])
@@ -66,12 +69,13 @@ receipt=dict(task=TASK,pid=process.pid,birth=psutil.Process(process.pid).create_
  suboperations=SUBOPERATIONS,
  attention_branches=ATTENTION_BRANCHES,
  attention_input=ATTENTION_INPUT,
+ attention_pv=ATTENTION_PV,
  purpose=('Read unchanged native/DT suboperation contractions on all frozen queries, including residual-add rounding and actual versus recomputed head coefficient.' if SUBOPERATIONS else
           'Measure same-call factual-state contraction controls on all frozen queries; not a credit correction, new sample, or candidate rule.'))
 (out/'launch.json').write_text(json.dumps(receipt,indent=2)+'\n');(out/'before-physical.txt').write_text(physical)
 print(json.dumps(receipt))
 '''
-header='OUT='+repr(prepared['remote'])+'\nROOT='+repr(transport.ROOT)+'\nTASK='+repr(task)+'\nSUBOPERATIONS='+repr(suboperations)+'\nATTENTION_BRANCHES='+repr(attention_branches)+'\nATTENTION_INPUT='+repr(attention_input)+'\nCOMMIT='+repr(subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip())+'\n'
+header='OUT='+repr(prepared['remote'])+'\nROOT='+repr(transport.ROOT)+'\nTASK='+repr(task)+'\nSUBOPERATIONS='+repr(suboperations)+'\nATTENTION_BRANCHES='+repr(attention_branches)+'\nATTENTION_INPUT='+repr(attention_input)+'\nATTENTION_PV='+repr(attention_pv)+'\nCOMMIT='+repr(subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip())+'\n'
 script='source '+transport.ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+header+code+'\nPY\n'
 (folder/'launch-command.sh').write_text(script,encoding='utf-8')
 result=subprocess.run(transport.SSH+['bash','-s'],input=script.encode(),capture_output=True,timeout=55)
