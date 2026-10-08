@@ -38,7 +38,10 @@ def main():
             local=ref(folder/f'rank{rank}.json') if (folder/f'rank{rank}.json').exists() else None,
             completed_points=sum(len(b['points']) for b in value.get('batches',[]))))
     complete = all(r['phase']=='complete' for r in ranks)
-    result = dict(scope=__doc__,task=args.task,status='completed_diagnostic' if complete else 'running_diagnostic',
+    failed = any(r['phase']=='failed' for r in ranks)
+    status = ('completed_diagnostic' if complete else 'failed_partial_diagnostic' if failed else
+              'terminal_incomplete_diagnostic' if snapshot.get('driver_alive') is False else 'running_diagnostic')
+    result = dict(scope=__doc__,task=args.task,status=status,
         launch=launch,launch_artifact=ref(HERE/f'single-background-{args.task}-launch.json'),
         observation=ref(observation),ranks=ranks,physical=snapshot.get('physical'),host=snapshot.get('host_memory'),
         driver_alive=snapshot.get('driver_alive'),plan=ref(HERE/'layer-collection-inputs.json'),

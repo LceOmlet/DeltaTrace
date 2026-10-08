@@ -14,8 +14,9 @@ import hashlib,json,os,psutil,subprocess,time
 from pathlib import Path
 root=Path(TARGET)
 data={'unix':time.time(),'files':{},'processes':[]}
-for name in ('launch.json','batching-cpu-replay.json','results/actor-initialization.json','results/completed.json',
-             'results/rank0.json','results/rank1.json'):
+for name in ('launch.json','result.json','batching-cpu-replay.json','results/actor-initialization.json','results/completed.json',
+             'results/rank0.json','results/rank1.json','results/rank0-first-nonfinite.json','results/rank1-first-nonfinite.json',
+             'results/rank0-precast-seed.json','results/rank1-precast-seed.json'):
  p=root/name
  if p.exists():
   raw=p.read_bytes()
@@ -72,11 +73,13 @@ if __name__=='__main__':
     parser.add_argument('--layer-task',choices=('textcraft','appworld'))
     parser.add_argument('--endpoint-head-task',choices=('textcraft','appworld'))
     parser.add_argument('--single-background-task',choices=('textcraft','appworld'))
+    parser.add_argument('--nonfinite-replay',action='store_true')
+    parser.add_argument('--fla-seed-range',action='store_true')
     parser.add_argument('--factual-controls', action='store_true',
                         help='Observe the separately staged passive factual-control run')
     parser.add_argument('--suboperations', action='store_true',
                         help='Observe the separately staged passive suboperation readout')
-    parser.add_argument('--revision',choices=('v1','v2'),default='v1')
+    parser.add_argument('--revision',choices=('v1','v2','v3'),default='v1')
     parser.add_argument('--summary-only', action='store_true',
                         help='Read phases/resources without retransferring growing point ledgers')
     parser.add_argument('--phase-only', action='store_true',
@@ -84,10 +87,17 @@ if __name__=='__main__':
     args=parser.parse_args()
     target=ROOT+'/receipts/credit-author-development-collection-20261008-v1'
     prefix='author-collection'
+    if args.fla_seed_range:
+        target=ROOT+'/receipts/fla-seed-range-20261009-'+args.revision
+        prefix='fla-seed-range'+('' if args.revision=='v1' else '-'+args.revision)
     if args.single_background_task:
         assert not args.layer_task and not args.endpoint_head_task and not args.suboperations and not args.factual_controls
         target=ROOT+'/receipts/credit-single-background-'+args.single_background_task+'-20261009-v1'
         prefix='single-background-'+args.single_background_task
+        if args.nonfinite_replay:
+            target=ROOT+'/receipts/credit-single-background-nonfinite-'+args.single_background_task+'-20261009-'+args.revision
+            prefix='single-background-nonfinite-'+args.single_background_task
+            if args.revision!='v1':prefix+='-'+args.revision
     if args.endpoint_head_task:
         assert not args.layer_task and not args.suboperations and not args.factual_controls
         target=ROOT+'/receipts/endpoint-head-collection-'+args.endpoint_head_task+'-20261009-v1'

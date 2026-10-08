@@ -1,0 +1,183 @@
+{
+  "scope": "Diagnose the saved real FP16 seed overflow with unchanged original FLA calls.\n\nThe numerical identity is F_E(2**e*u)=2**e*F_E(u): each original\nadjoint/coefficient stage is linear in its incoming cotangent for fixed\nendpoints, including the symmetric average. This is a range representation\nexperiment, not credit correction, clipping, a changed finite allocation,\nan official tolerance certificate, or a deployed owner patch.\n",
+  "source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/appworld/appworld-dt/source.json",
+    "sha256": "58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0"
+  },
+  "operands": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v2/results/rank0-first-nonfinite.pt",
+    "sha256": "9cd75ef2ca64793cf6c84713c32c3b925841e2e4363aba3465cac6e39f9f7e03"
+  },
+  "precast": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v3/results/rank0-precast-seed.pt",
+    "sha256": "f5cdf28299d50469653c2e214a102c54c01d363990715f3bc68e69a8e23c996e"
+  },
+  "script": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-seed-range-20261009-v1/check_fla_seed_range.py",
+    "sha256": "603f290d56a0bfd57ce51e2e3e65a1d0650c7786ce16fae60e0b43f501e7c32b"
+  },
+  "production_modified": false,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer": 0,
+  "official_tolerance_claim": false,
+  "precast_identity": {
+    "exactly_matches_saved_FP16_seed": true,
+    "differing_elements": 0,
+    "precast_nonfinite": 0,
+    "FP16_nonfinite": 1,
+    "maxabs": 76800.0
+  },
+  "overflow_values": [
+    {
+      "position": [
+        0,
+        3735,
+        4,
+        79
+      ],
+      "precast": -76800.0,
+      "FP16": -Infinity
+    }
+  ],
+  "finite_fla_gpu": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/finite_fla_gpu.py",
+    "sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6"
+  },
+  "symmetric": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/profiles/qwen35_gdn_symmetric.py",
+    "sha256": "dd6bbfff9aae4c679439af113a160e0bd8c4cf1b19bb17cab47a04ff7b0831d0"
+  },
+  "normalization": {
+    "exponents": [
+      13,
+      13,
+      12,
+      11,
+      17,
+      16,
+      12,
+      15,
+      9,
+      9,
+      9,
+      10,
+      12,
+      11,
+      9,
+      10,
+      10,
+      11,
+      12,
+      10,
+      14,
+      14,
+      10,
+      12,
+      9,
+      10,
+      9,
+      9,
+      13,
+      14,
+      9,
+      12
+    ],
+    "maxabs": 0.984375,
+    "nonfinite": 0
+  },
+  "calls": [
+    {
+      "seconds": 64.77889086899813,
+      "outputs": {
+        "q": {
+          "nonfinite": 0,
+          "maxabs": 54.69731903076172
+        },
+        "k": {
+          "nonfinite": 0,
+          "maxabs": 64.70677185058594
+        },
+        "v": {
+          "nonfinite": 0,
+          "maxabs": 521.426025390625
+        },
+        "beta": {
+          "nonfinite": 0,
+          "maxabs": 23.113243103027344
+        },
+        "alpha": {
+          "nonfinite": 0,
+          "maxabs": 4.906634330749512
+        },
+        "g": {
+          "nonfinite": 0,
+          "maxabs": 4.90601921081543
+        }
+      }
+    },
+    {
+      "seconds": 0.06909378699492663,
+      "outputs": {
+        "q": {
+          "nonfinite": 0,
+          "maxabs": 54.69734191894531
+        },
+        "k": {
+          "nonfinite": 0,
+          "maxabs": 64.70548248291016
+        },
+        "v": {
+          "nonfinite": 0,
+          "maxabs": 521.4261474609375
+        },
+        "beta": {
+          "nonfinite": 0,
+          "maxabs": 23.115070343017578
+        },
+        "alpha": {
+          "nonfinite": 0,
+          "maxabs": 4.914458274841309
+        },
+        "g": {
+          "nonfinite": 0,
+          "maxabs": 4.91384220123291
+        }
+      }
+    }
+  ],
+  "power_two_linearity": {
+    "q": {
+      "maxabs_difference": 0.004911990370601416,
+      "relative_l2": 0.0009041354318938195
+    },
+    "k": {
+      "maxabs_difference": 0.051668401807546616,
+      "relative_l2": 0.005473179949511891
+    },
+    "v": {
+      "maxabs_difference": 0.030757904052734375,
+      "relative_l2": 0.00161896879838094
+    },
+    "beta": {
+      "maxabs_difference": 0.011933878064155579,
+      "relative_l2": 0.0023048955006793365
+    },
+    "alpha": {
+      "maxabs_difference": 0.020313650369644165,
+      "relative_l2": 0.00627333694708691
+    },
+    "g": {
+      "maxabs_difference": 0.020277902483940125,
+      "relative_l2": 0.006262908882457971
+    }
+  },
+  "artifact": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-seed-range-20261009-v1/result.pt",
+    "sha256": "50339134c66fd892fc34722be527773840f28dded38fef83460f0e189f418341",
+    "bytes": 792481001
+  },
+  "peak_allocated": 5141136384,
+  "peak_reserved": 5555355648,
+  "status": "diagnostic_complete_not_accepted"
+}

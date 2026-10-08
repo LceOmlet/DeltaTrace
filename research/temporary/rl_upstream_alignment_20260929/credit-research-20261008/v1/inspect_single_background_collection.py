@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import time
+from contextlib import nullcontext
 
 import torch
 import inspect_action_curve as initializer
@@ -86,7 +87,8 @@ def make_worker():
                 assert sha(runner_path) == source['actual_CPU_imports']['qwen35_dense_finite_runner']['sha256']
                 record['finite_runner'] = dict(path=runner_path,sha256=sha(runner_path))
                 entries_by_uid = {entry['traj_uid']:entry for entry in spec['entries']}
-                for pair_index in range(0,len(spec['batches']),2):
+                replay = os.environ.get('DT_SINGLE_BACKGROUND_NONFINITE_REPLAY') == '1'
+                for pair_index in ([6] if replay else range(0,len(spec['batches']),2)):
                     batch_index = pair_index+self.rank
                     batch_spec = spec['batches'][batch_index]
                     entries = [entries_by_uid[uid] for uid in batch_spec['uids']]
@@ -101,7 +103,7 @@ def make_worker():
                     batch = dict(index=batch_index,uids=batch_spec['uids'],points=[],rounds=[])
                     record['batches'].append(batch)
                     rounds = max(spec['batches'][i]['native_paired_forwards'] for i in (pair_index,pair_index+1))
-                    for round_index in range(rounds):
+                    for round_index in ([0] if replay else range(rounds)):
                         if time.perf_counter()-started > record['diagnostic_wall_budget_seconds']:
                             raise RuntimeError('Existing 1800-second diagnostic budget reached; preserve partial data, no automatic retry.')
                         queries = [entry['queries'][round_index] if row < batch_spec['actual_rows'] and round_index < len(entry['queries']) else None
@@ -111,6 +113,13 @@ def make_worker():
                         def trace(owner, reference, factual, *args, **kwargs):
                             assert owner is producer.runner and factual.shape[0] == 4 and not captured
                             reference = single_reference(factual,queries,self.tokenizer.eos_token_id)
+                            if replay:
+                                from passive_nonfinite import PassiveNonfinite
+                                artifact=out/f'rank{self.rank}-exact-input.pt'
+                                torch.save(dict(reference=reference.cpu(),factual=factual.cpu(),
+                                    args=PassiveNonfinite.freeze(args),kwargs=PassiveNonfinite.freeze(kwargs),
+                                    queries=queries,uids=batch_spec['uids']),artifact)
+                                record['exact_input']=dict(path=str(artifact),sha256=sha(artifact))
                             signed, roots, detail = original_trace(owner,reference,factual,*args,**kwargs)
                             captured.update(signed=signed.detach().cpu(),roots=roots.detach().cpu(),detail=detail)
                             return signed,roots,detail
@@ -119,7 +128,11 @@ def make_worker():
                         tick = time.perf_counter()
                         reward_readout.trace_token_attribution = trace
                         try:
-                            producer.attribute_episodes([[row['row'] for row in rows]],[0.0])
+                            scope=nullcontext()
+                            if replay:
+                                from passive_nonfinite import PassiveNonfinite
+                                scope=PassiveNonfinite(producer.runner,out,self.rank)
+                            with scope:producer.attribute_episodes([[row['row'] for row in rows]],[0.0])
                         finally:
                             reward_readout.trace_token_attribution = original_trace
                         assert captured
@@ -148,8 +161,13 @@ def make_worker():
                     del rows
                 save('complete',completed_points=sum(len(b['points']) for b in record['batches']))
                 return dict(rank=self.rank,completed=True,optimizer_steps=0)
-            except BaseException:
+            except BaseException as error:
                 import traceback
+                if os.environ.get('DT_CAPTURE_FLA_PRECAST')=='1':
+                    from passive_nonfinite import SeedCaptured
+                    if isinstance(error,SeedCaptured):
+                        save('diagnostic_capture_complete',scope='Requested precast tensor saved; intentional early stop, not a completed DT.')
+                        return dict(rank=self.rank,precast_capture_complete=True,optimizer_steps=0)
                 save('failed',traceback=traceback.format_exc())
                 raise
             finally:

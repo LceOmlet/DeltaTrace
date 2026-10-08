@@ -1,42 +1,13 @@
-"""Launch only the frozen single-background diagnostic, never formal training."""
-import argparse
-import hashlib
-import json
-from pathlib import Path
-import subprocess
-import sys
-
-HERE = Path(__file__).resolve().parent
-AUDIT = HERE.parents[1]
-sys.path.insert(0,str(AUDIT))
-from stage_environment_entry import ROOT, ENTRY, SSH, SCP
-
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--task',choices=('textcraft','appworld'),required=True)
-    parser.add_argument('--nonfinite-replay',action='store_true')
-    parser.add_argument('--revision',choices=('v1','v2','v3'),default='v1')
-    parser.add_argument('--capture-fla-seed',action='store_true')
-    args = parser.parse_args()
-    task = args.task
-    assert not args.nonfinite_replay or task=='appworld'
-    assert not args.capture_fla_seed or args.nonfinite_replay
-    label=('single-background-nonfinite-'+task if args.nonfinite_replay else 'single-background-'+task)
-    target = ROOT+'/receipts/credit-'+label+'-20261009-'+args.revision
-    if args.revision!='v1':label+='-'+args.revision
-    files = [HERE/'inspect_single_background_collection.py',HERE/'layer-collection-inputs.json',
-        AUDIT/'direct-target-action-author-curve-20261007/v1/inspect_action_curve.py',
-        AUDIT/'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
-    if args.nonfinite_replay:files.append(HERE/'passive_nonfinite.py')
-    hashes = {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
-    assert hashes['inspect_action_curve.py'] == '7277fade4e9b1cb49f825e4cb2fc54453c9ff3ce4859b20350aa2bd67ffaf3a6'
-    assert hashes['inspect_extreme_endpoint.py'] == '8a72887a32bd11533486ddee6dc0d36b4980bfb77ed94eadc7a9a13f031b36d5'
-    subprocess.run(SSH+['bash','-s'],input=('test ! -e '+target+' && mkdir '+target+'\n').encode(),check=True,timeout=30)
-    for path in files:
-        subprocess.run(SCP+[str(path),SSH[-1]+':'+target+'/'+path.name],check=True,timeout=45)
-    commit = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
-    body = r'''import ast,hashlib,json,os,psutil,re,subprocess,time
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+ROOT='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922'
+OUT='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v3'
+TASK='appworld'
+HASHES={'inspect_single_background_collection.py': 'bd3a6fe31b77461ed2868bac07cb62872476716374152251eb3779af98838e25', 'layer-collection-inputs.json': 'e835680d4b527829fae2b2c116c58b198fb3eda7bf12da137e11871e411f87a5', 'inspect_action_curve.py': '7277fade4e9b1cb49f825e4cb2fc54453c9ff3ce4859b20350aa2bd67ffaf3a6', 'inspect_extreme_endpoint.py': '8a72887a32bd11533486ddee6dc0d36b4980bfb77ed94eadc7a9a13f031b36d5', 'passive_nonfinite.py': '3dc34ed90d7ad5d23e28c760fa3941171cb84b59f1f3bebe555c115754d2a8ce'}
+COMMIT='b47b713332053e6b12a7287222165244aba7fb60'
+NONFINITE_REPLAY=True
+CAPTURE_FLA_SEED=True
+import ast,hashlib,json,os,psutil,re,subprocess,time
 from pathlib import Path
 root=Path(ROOT);out=Path(OUT)
 for name,h in HASHES.items():
@@ -97,17 +68,5 @@ receipt=dict(task=TASK,pid=process.pid,birth=psutil.Process(process.pid).create_
  diagnostic_DT_B4_calls_per_rank=calls_per_rank,wall_budget_per_worker_seconds=1800,formal_release=False,
  scope='Every frozen source query with original single-EOS reference, not a replacement training estimator or quality candidate.',physical_before=physical)
 (out/'launch.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt))
-'''
-    body = ('ROOT='+repr(ROOT)+'\nOUT='+repr(target)+'\nTASK='+repr(task)+'\nHASHES='+repr(hashes)+'\nCOMMIT='+repr(commit)+'\nNONFINITE_REPLAY='+repr(args.nonfinite_replay)+'\nCAPTURE_FLA_SEED='+repr(args.capture_fla_seed)+'\n'+body)
-    shell = 'source '+ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+body+'\nPY\n'
-    (HERE/(label+'-launch-command.sh')).write_text(shell,encoding='utf8',newline='\n')
-    run = subprocess.run(SSH+['bash','-s'],input=shell.encode(),capture_output=True,timeout=120)
-    (HERE/(label+'-launch.stderr.txt')).write_bytes(run.stderr)
-    run.check_returncode()
-    value = json.loads(run.stdout)
-    (HERE/(label+'-launch.json')).write_text(json.dumps(value,indent=2)+'\n')
-    print(json.dumps({k:v for k,v in value.items() if k!='physical_before'}))
 
-
-if __name__ == '__main__':
-    main()
+PY
