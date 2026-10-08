@@ -185,5 +185,27 @@
     "peak_working_set_bytes": 66969600,
     "torch_imported": false,
     "model_or_FLA_imported": false
+  },
+  "native_readout_API_mapping_20261009": {
+    "status": "Read-only mapping and exact local algebra, not an implemented or accepted full-model repair",
+    "source": {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\native-chunk-readout-source.json",
+      "sha256": "fa8c68979cc66d284f74934e9c6a7b8ca965c31c8163b5133044d97fe0a4e928",
+      "native_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/ops/common/chunk_o.py",
+      "native_sha256": "548cd026c316d61d74e691c82c82165b7d12bc437f47ec2ac1e1f50bb48396be"
+    },
+    "observable_need": "The completed frozen TextCraft and AppWorld diagnostics identify joint-background allocation, rather than only a single GDN point. This mapping explores one existing primitive for conditional memory propagation; it does not establish GDN dominance or a full-model fix.",
+    "owner_behavior": "Original chunk_fwd_kernel_o reads supplied q,k,v,h,cumulative g directly, applies the causal tile mask, and returns q^T H_start exp(g) plus the causal q-k-v contraction. It does not require q to be the original model query for this primitive.",
+    "past_query": "For any a_j, use original chunk_fwd_o with the factual k/v_new/h/g, put a_j at position j-1, shift outputs back to j, and evaluate j=0 directly against the original chunk-start state. This queries H_(j-1)^T a_j without storing a dense state at every position. Boundary/padding handling must follow the original captured chunk identity.",
+    "transposed_query": "The same kernel can query H_j b_j by supplying contiguous transposed h and swapped factual rank-update factors (v_new as key, k as value), because the primitive is a linear readout, not the native state-transition solver. This is an API/algebra mapping only; actual dtype and saved-operand tests are still required.",
+    "future_query": "Let W_i=beta_i L_i and L_i=P_i^T k_i from the original native adjoints. Within a chunk, P_j^T a_j = exp(G_end-G_j) D_end^T a_j + scale*sum_(i>=j) exp(G_i-G_j)(q_i^T a_j)do_i - sum_(i>j) exp(G_i-G_j)(k_i^T a_j)W_i. Two reversed original chunk_fwd_o calls express the inclusive sums; restore the omitted diagonal k-W term explicitly. Reverse cumulative g is G_end-G_j. No copied native recurrence is needed.",
+    "conditional_window_identity": "For fixed incoming do and factual reverse P, J_f-J_cf = sum_(j in window) scale*(q_f-q_cf)^T H_cf_j do_j + <P_f_j, (M_f_j-M_cf_j)H_cf_(j-1)+B_f_j-B_cf_j>. Keep the conditional past throughout all four conv-affected positions; separate-position shortcuts omit interactions.",
+    "first_alpha_term": "At the first affected position the past state is still factual. M_f-M_cf = (alpha_f-alpha_cf)(I-beta_f k_f k_f^T)+alpha_cf(beta_cf k_cf k_cf^T-beta_f k_f k_f^T). The full-state scalar in the first term is the original coincident-endpoint mixed_coefficients alpha output, already computed without division by alpha. Other terms are low-rank state/adjoint queries.",
+    "cost_scope": "Window width4 is the recorded native causal-conv width, not a new parameter. Fixed-width query layouts are linear in trajectory length; native chunk states are reused, with no source-by-time dense state bank and no extra LLM forward per source. Actual query count, tensor lifetimes and timing remain unresolved; no GPU candidate is authorized by this note alone.",
+    "unproven": "This does not provide exact original-token attribution through all nonlinear LLM layers. Coupled coefficients, norm-gate composition, actual dtype owner assertions, all frozen primary author metrics and measured one-DT cost remain required before any production change.",
+    "model_calls": 0,
+    "DT_calls": 0,
+    "optimizer": 0,
+    "production_modified": false
   }
 }
