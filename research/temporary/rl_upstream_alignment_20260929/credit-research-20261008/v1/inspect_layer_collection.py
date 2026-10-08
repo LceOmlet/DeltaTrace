@@ -41,10 +41,12 @@ def make_worker():
             source = json.loads(Path(source_path).read_bytes())
             task = case_name
             spec = plan['tasks'][task]
+            factual_controls = os.environ.get('DT_LAYER_FACTUAL_CONTROL') == '1'
             record = dict(scope=__doc__, task=task, rank=self.rank, pid=os.getpid(),
                 birth=psutil.Process().create_time(), source_sha256=sha(source_path),
                 input_plan_sha256=sha(plan_path), script_sha256=sha(__file__),
                 owners=check_imports(source), batches=[], diagnostic_wall_budget_seconds=1800,
+                factual_controls=factual_controls,
                 operations=dict(DT=0, native_forward=0, backward=0, optimizer=0,
                                 scheduler=0, rollout=0, checkpoint_restore=0))
             phases = (out/f'rank{self.rank}-phases.jsonl').open('a', buffering=1)
@@ -172,6 +174,14 @@ def make_worker():
                                 factual_endpoint_maxabs=float((original_factual.float()-current_factual.float()).abs().max()),
                                 coefficient_dtype=str(m.dtype), endpoint_dtype=str(pair.dtype),
                                 time_start=start, tokens=length)
+                            if factual_controls:
+                                # A diagnostic contraction through the same
+                                # owner, not a subtraction from token credit.
+                                control_pair = torch.stack((current_factual, original_factual))
+                                control = float(effect_owner(m, control_pair).sum())
+                                active['contractions'][row][str(index)].update(
+                                    DT_factual_minus_native_factual_effect=control,
+                                    DT_factual_minus_native_deleted_effect=value+control)
                     for index, layer in enumerate(text.layers):
                         def before(_module, args, kwargs, index=index):
                             hook(index, args[0] if args else kwargs['hidden_states'])
@@ -220,13 +230,26 @@ def make_worker():
                                 values = [contractions[str(i)]['value'] for i in range(33)]
                                 native_d = float(factual[row]-deleted[row])
                                 residuals = [values[i]-values[i+1] for i in range(32)]+[values[32]-native_d]
-                                batch['points'].append(dict(query, traj_uid=entries[row]['traj_uid'],
+                                point = dict(query, traj_uid=entries[row]['traj_uid'],
                                     initial_state_sha256=entries[row]['initial_state_sha256'],
                                     previously_examined=entries[row]['previously_examined'],
                                     fresh_DT_d=float(captured['signed'][row, query['packed_slot']]),
                                     factual_target_logp=float(factual[row]), deleted_target_logp=float(deleted[row]),
                                     native_single_d=native_d, boundaries=contractions,
-                                    residuals=residuals, telescoping_roundoff=sum(residuals)-(values[0]-native_d)))
+                                    residuals=residuals, telescoping_roundoff=sum(residuals)-(values[0]-native_d))
+                                if factual_controls:
+                                    DT_factual = detail['per_sample'][row]['factual_target_logp']
+                                    score_drift = DT_factual-float(factual[row])
+                                    matched = [contractions[str(i)][
+                                        'DT_factual_minus_native_deleted_effect'] for i in range(33)]
+                                    matched_residuals = [matched[i]-matched[i+1] for i in range(32)]
+                                    matched_residuals.append(matched[32]-native_d-score_drift)
+                                    point.update(DT_factual_target_logp=DT_factual,
+                                        DT_minus_native_factual_score=score_drift,
+                                        matched_factual_residuals=matched_residuals,
+                                        matched_telescoping_roundoff=sum(matched_residuals)-(
+                                            matched[0]-native_d-score_drift))
+                                batch['points'].append(point)
                             batch['native_phases'].append(dict(round=round_index, seconds=time.perf_counter()-tick,
                                 measured_queries=sum(q is not None for q in queries)))
                             save('native_forward_complete', batch=batch_index, round=round_index)
