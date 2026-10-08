@@ -20806,7 +20806,7 @@
     "scope": "TextCraft actual coefficients only; AppWorld has only the already measured native endpoint/likelihood-bound analysis. No full-native rewhitening, correction, pooled tail mean, new tolerance, or training."
   },
   "latest_credit_collection_error_gradients": {
-    "status": "Partial native error-gradient measurement: two of four original optimizer minibatches returned; same job continues",
+    "status": "Complete original-owner error-gradient measurement: four original optimizer minibatches; normal completion and diagnostic process exit verified",
     "observed_unix": 1791435098.4312122,
     "observed_utc": "2026-10-08T04:51:38.431212+00:00",
     "launch": {
@@ -20880,49 +20880,83 @@
     "analysis_command": "C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/analyze_collection_error_gradients.py",
     "observation_command": "C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/read_collection_gradients.py --error-gradients",
     "latest_observation": {
-      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/collection-error-gradient-observation-1791436488.json",
-      "sha256": "645be9ab9c4d2017682065f6ca970b36eb430e2e7b6ae221c8a44b1f1c4e499e",
-      "bytes": 2329771
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/collection-error-gradient-observation-1791437177.json",
+      "sha256": "8d379fa9e76b26ea5bb1f7fe819616ee5adf87d14a28533ec8dd3d25d5b5738a",
+      "bytes": 4890707
     },
-    "driver_same_birth": true,
+    "driver_same_birth": false,
     "latest_phase": {
-      "phase": "original_minibatch_gradients_begin",
-      "unix": 1791436197.6617918,
+      "phase": "original_minibatch_gradients_complete",
+      "unix": 1791437013.8574371,
       "pid": 1202123,
-      "minibatch": 2,
+      "minibatch": 3,
       "labels": [
         "full_pg",
         "predicted_tail_error",
-        "uniform_bounded_error"
+        "uniform_bounded_error",
+        "uniform_missed_native_tail_error"
       ],
-      "elapsed_seconds": 1080.7813384870242
+      "measured_native_passes_per_rank": 13,
+      "elapsed_seconds": 1896.9769836520136
     },
-    "host_available_bytes": 781102493696,
-    "process_tree_pss_bytes": 44097270784,
+    "host_available_bytes": 907010379776,
+    "process_tree_pss_bytes": 0,
     "formal_releases": [
       false,
       false
     ],
-    "partial_analysis": {
-      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/collection-error-gradient-analysis.json",
-      "sha256": "fb5fc2300bb10d28ba3787ce62d197a64172b1707968264d9b6236fc12d34123",
-      "bytes": 69148
-    },
-    "latest_observed_unix": 1791436488.7767828,
-    "latest_observed_utc": "2026-10-08T05:14:48.776783+00:00",
+    "latest_observed_unix": 1791437177.3639963,
+    "latest_observed_utc": "2026-10-08T05:26:17.363996+00:00",
     "analysis_source": {
       "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/analyze_collection_error_gradients.py",
-      "sha256": "7b723fb0982b5365ab4916664963179667fc5df5c79aa38db95c06277f1c6768",
-      "bytes": 8753
+      "sha256": "3abc53db359c90d264b2338e3f53d9f2d613bf7d2c3bf7c515323fd254c951e6",
+      "bytes": 10075
     },
-    "completed_optimizer_minibatches": 2,
-    "partial_findings": [
+    "completed_optimizer_minibatches": 4,
+    "interpretation": "Measured coefficient-error gradients differ substantially between original minibatches. Predicted-tail errors are not the only relevant errors: two uniformly sampled missed-native-tail positions in one previously unexamined state affect minibatch 3. Separate cohorts are not pooled raw means; no whole-bulk extrapolation, GDN cause or historical degradation cause is established.",
+    "analysis": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/collection-error-gradient-analysis.json",
+      "sha256": "08c0083c8a1e4c62c948e0f0d9a996fbdef967949232db5cdf5662a63b3fd4e5",
+      "bytes": 85385
+    },
+    "result": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/results_credit_collection_error_gradients_20261008.json",
+      "sha256": "08c0083c8a1e4c62c948e0f0d9a996fbdef967949232db5cdf5662a63b3fd4e5",
+      "bytes": 85385
+    },
+    "normal_completed_receipt": {
+      "completed_unix": 1791437013.8629909,
+      "elapsed_seconds": 1896.982539499004,
+      "source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+      "rows": 256,
+      "original_minibatches": 4,
+      "native_backward_passes_per_rank": 13,
+      "optimizer_steps": 0,
+      "scheduler_steps": 0,
+      "DT": 0,
+      "rollout": 0,
+      "checkpoint_restore": 0,
+      "scope": "Four original optimizer minibatches at unchanged base LoRA. Full saved PG plus separate fixed-original-scale native-minus-DT errors: predicted-tail development census, bounded uniform sample, and native tails missed by DT. No inverse-inclusion weighting, no extrapolation of sampled errors to the whole bulk, no new whitening, corrected training or GDN candidate."
+    },
+    "diagnostic_devices_released": true,
+    "findings": [
       {
         "index": 0,
+        "full_pg_norm": 0.04468849846764565,
+        "counts": {
+          "predicted_tail_error": 19,
+          "uniform_bounded_error": 32,
+          "uniform_missed_native_tail_error": 0
+        },
         "components": {
           "predicted_tail_error": {
             "points": 19,
             "states": 4,
+            "trajectories": 10,
+            "previously_examined_point_counts": {
+              "False": 8,
+              "True": 11
+            },
             "original_actor_slots": 19,
             "state_counts": {
               "09e6c592a0aa5f67c22ed279ece497e9499dc12e91dc4d1c484701df0b213e24": 2,
@@ -20943,6 +20977,11 @@
           "uniform_bounded_error": {
             "points": 32,
             "states": 5,
+            "trajectories": 8,
+            "previously_examined_point_counts": {
+              "False": 16,
+              "True": 16
+            },
             "original_actor_slots": 32,
             "state_counts": {
               "09e6c592a0aa5f67c22ed279ece497e9499dc12e91dc4d1c484701df0b213e24": 4,
@@ -21003,10 +21042,21 @@
       },
       {
         "index": 1,
+        "full_pg_norm": 0.06497443216276665,
+        "counts": {
+          "predicted_tail_error": 10,
+          "uniform_bounded_error": 36,
+          "uniform_missed_native_tail_error": 0
+        },
         "components": {
           "predicted_tail_error": {
             "points": 10,
             "states": 2,
+            "trajectories": 5,
+            "previously_examined_point_counts": {
+              "False": 6,
+              "True": 4
+            },
             "original_actor_slots": 10,
             "state_counts": {
               "8790636cc0893ab464ba071ffa92dfc5a145a912255e87aece0d17ddda8c5e29": 6,
@@ -21025,6 +21075,11 @@
           "uniform_bounded_error": {
             "points": 36,
             "states": 6,
+            "trajectories": 9,
+            "previously_examined_point_counts": {
+              "False": 28,
+              "True": 8
+            },
             "original_actor_slots": 36,
             "state_counts": {
               "09e6c592a0aa5f67c22ed279ece497e9499dc12e91dc4d1c484701df0b213e24": 4,
@@ -21083,8 +21138,236 @@
           },
           "scope": "Retain the actual original returns. They differ by rank in this runtime; do not present one rank return as the mesh-wide FP64 pre-clip norm. The Euclidean sums above are descriptive comparisons, without a new numerical pass threshold or alteration of native clipping."
         }
+      },
+      {
+        "index": 2,
+        "full_pg_norm": 0.039795881411204125,
+        "counts": {
+          "predicted_tail_error": 3,
+          "uniform_bounded_error": 20,
+          "uniform_missed_native_tail_error": 0
+        },
+        "components": {
+          "predicted_tail_error": {
+            "points": 3,
+            "states": 1,
+            "trajectories": 2,
+            "previously_examined_point_counts": {
+              "False": 3,
+              "True": 0
+            },
+            "original_actor_slots": 3,
+            "state_counts": {
+              "bfc51f07a72fb25d5dad98cc3028b5fd27dbbd5ddae15a46e072b95aec206f57": 3
+            },
+            "geometry": {
+              "delta_norm": 3.6273466603637035e-06,
+              "norm_ratio": 9.114879559728663e-05,
+              "delta_projection_on_full": 1.2806686934765637e-06,
+              "cosine_delta_with_full": 0.014050308455361392,
+              "full_plus_delta_norm": 0.03979593254182487,
+              "full_plus_delta_angle_degrees": 0.005221919025198735,
+              "interpretation": "Geometric addition of a fixed-original-scale coefficient difference. Not a corrected/rewhitened update, parameter update, full-bulk estimate or evidence of a GDN cause."
+            }
+          },
+          "uniform_bounded_error": {
+            "points": 20,
+            "states": 4,
+            "trajectories": 5,
+            "previously_examined_point_counts": {
+              "False": 20,
+              "True": 0
+            },
+            "original_actor_slots": 20,
+            "state_counts": {
+              "5730ad26a109c832689cc27ba732edda4e0008eab9df00c91e5b0e7e02c5a9b7": 8,
+              "73d92acb203e6677a649d63ea3004bee9b5ce589359e1f6e634ab6be90892ecd": 4,
+              "9e08707fd49c082c1f27fc876d50aa73aa258c23042cc8567fcd947f65d6c557": 4,
+              "bfc51f07a72fb25d5dad98cc3028b5fd27dbbd5ddae15a46e072b95aec206f57": 4
+            },
+            "geometry": {
+              "delta_norm": 6.154616873822706e-05,
+              "norm_ratio": 0.0015465461890963258,
+              "delta_projection_on_full": -6.032627338740925e-05,
+              "cosine_delta_with_full": -0.03900709452632576,
+              "full_plus_delta_norm": 0.039793528196403485,
+              "full_plus_delta_angle_degrees": 0.0885484022376117,
+              "interpretation": "Geometric addition of a fixed-original-scale coefficient difference. Not a corrected/rewhitened update, parameter update, full-bulk estimate or evidence of a GDN cause."
+            }
+          },
+          "uniform_missed_native_tail_error": {
+            "points": 0,
+            "status": "Structurally absent; no native numerical pass claimed"
+          }
+        },
+        "selected_error_vector_sum": {
+          "labels": [
+            "predicted_tail_error",
+            "uniform_bounded_error"
+          ],
+          "delta_norm": 6.12444209772946e-05,
+          "norm_ratio": 0.0015389638024213192,
+          "delta_projection_on_full": -5.904560469393269e-05,
+          "full_plus_selected_deltas_norm": 0.03979357869917437,
+          "full_plus_selected_deltas_angle_degrees": 0.08811634101446685,
+          "interpretation": "Exact vector geometry from the measured native pairwise inner products and original loss denominators. Strata remain separate above. This sums only selected-position errors; it is neither a pooled raw mean nor an estimate of all unmeasured bulk errors or a corrected/rewhitened training update."
+        },
+        "native_clip_returns": {
+          "by_rank": {
+            "full_pg": [
+              0.026017116382718086,
+              0.030113480985164642
+            ],
+            "predicted_tail_error": [
+              2.4693117666174658e-06,
+              2.6570889986032853e-06
+            ],
+            "uniform_bounded_error": [
+              4.264528615749441e-05,
+              4.4376902224030346e-05
+            ]
+          },
+          "observed_euclidean_sum_of_rank_returns": {
+            "full_pg": 0.03979588021285332,
+            "predicted_tail_error": 3.627343731610513e-06,
+            "uniform_bounded_error": 6.154616058257195e-05
+          },
+          "scope": "Retain the actual original returns. They differ by rank in this runtime; do not present one rank return as the mesh-wide FP64 pre-clip norm. The Euclidean sums above are descriptive comparisons, without a new numerical pass threshold or alteration of native clipping."
+        }
+      },
+      {
+        "index": 3,
+        "full_pg_norm": 0.07163870757840701,
+        "counts": {
+          "predicted_tail_error": 5,
+          "uniform_bounded_error": 38,
+          "uniform_missed_native_tail_error": 2
+        },
+        "components": {
+          "predicted_tail_error": {
+            "points": 5,
+            "states": 2,
+            "trajectories": 4,
+            "previously_examined_point_counts": {
+              "False": 5,
+              "True": 0
+            },
+            "original_actor_slots": 5,
+            "state_counts": {
+              "a819e08dae32bc8ae6ae562e84a5b3bc509b6903e8ebcc251cf1a2a8a559132b": 1,
+              "bfc51f07a72fb25d5dad98cc3028b5fd27dbbd5ddae15a46e072b95aec206f57": 4
+            },
+            "geometry": {
+              "delta_norm": 0.0024115771666445205,
+              "norm_ratio": 0.033663046810344835,
+              "delta_projection_on_full": -1.5794438572464456e-05,
+              "cosine_delta_with_full": -0.0004691921875476447,
+              "full_plus_delta_norm": 0.07167815574161394,
+              "full_plus_delta_angle_degrees": 1.9280526663880422,
+              "interpretation": "Geometric addition of a fixed-original-scale coefficient difference. Not a corrected/rewhitened update, parameter update, full-bulk estimate or evidence of a GDN cause."
+            }
+          },
+          "uniform_bounded_error": {
+            "points": 38,
+            "states": 6,
+            "trajectories": 10,
+            "previously_examined_point_counts": {
+              "False": 38,
+              "True": 0
+            },
+            "original_actor_slots": 38,
+            "state_counts": {
+              "5aa45dfd18aa429b8252fe92d72923346c5f268ea7a021f1401f5cd5fede8a77": 6,
+              "63ae2b4a5f62b4ea1cceb90c4b278fad14d8b6e64c3e461a5ee51c8398414945": 8,
+              "9e08707fd49c082c1f27fc876d50aa73aa258c23042cc8567fcd947f65d6c557": 4,
+              "a819e08dae32bc8ae6ae562e84a5b3bc509b6903e8ebcc251cf1a2a8a559132b": 8,
+              "bb8573f432fbedb99f156377e5543fc050d1a7d5de3b2ef1db2f10f9a0262c05": 8,
+              "bfc51f07a72fb25d5dad98cc3028b5fd27dbbd5ddae15a46e072b95aec206f57": 4
+            },
+            "geometry": {
+              "delta_norm": 0.00023446968431251,
+              "norm_ratio": 0.0032729468779973177,
+              "delta_projection_on_full": 6.1900660173763004e-06,
+              "cosine_delta_with_full": 0.0018912821527870128,
+              "full_plus_delta_norm": 0.0716395347253718,
+              "full_plus_delta_angle_degrees": 0.18752387692066722,
+              "interpretation": "Geometric addition of a fixed-original-scale coefficient difference. Not a corrected/rewhitened update, parameter update, full-bulk estimate or evidence of a GDN cause."
+            }
+          },
+          "uniform_missed_native_tail_error": {
+            "points": 2,
+            "states": 1,
+            "trajectories": 1,
+            "previously_examined_point_counts": {
+              "False": 2,
+              "True": 0
+            },
+            "original_actor_slots": 2,
+            "state_counts": {
+              "5aa45dfd18aa429b8252fe92d72923346c5f268ea7a021f1401f5cd5fede8a77": 2
+            },
+            "geometry": {
+              "delta_norm": 0.004268474952794223,
+              "norm_ratio": 0.059583360686992715,
+              "delta_projection_on_full": 0.0015827954996815207,
+              "cosine_delta_with_full": 0.026564387799412115,
+              "full_plus_delta_norm": 0.07187885951723204,
+              "full_plus_delta_angle_degrees": 3.4032692575316013,
+              "interpretation": "Geometric addition of a fixed-original-scale coefficient difference. Not a corrected/rewhitened update, parameter update, full-bulk estimate or evidence of a GDN cause."
+            }
+          }
+        },
+        "selected_error_vector_sum": {
+          "labels": [
+            "predicted_tail_error",
+            "uniform_bounded_error",
+            "uniform_missed_native_tail_error"
+          ],
+          "delta_norm": 0.00488288400496218,
+          "norm_ratio": 0.068159856172977,
+          "delta_projection_on_full": 0.0015731911271264325,
+          "full_plus_selected_deltas_norm": 0.07191727568530049,
+          "full_plus_selected_deltas_angle_degrees": 3.8921015232886615,
+          "interpretation": "Exact vector geometry from the measured native pairwise inner products and original loss denominators. Strata remain separate above. This sums only selected-position errors; it is neither a pooled raw mean nor an estimate of all unmeasured bulk errors or a corrected/rewhitened training update."
+        },
+        "native_clip_returns": {
+          "by_rank": {
+            "full_pg": [
+              0.04730026423931122,
+              0.05380323529243469
+            ],
+            "predicted_tail_error": [
+              0.0016546017723158002,
+              0.0017544215079396963
+            ],
+            "uniform_bounded_error": [
+              0.00016034726286306977,
+              0.00017106950690504164
+            ],
+            "uniform_missed_native_tail_error": [
+              0.0028967014513909817,
+              0.0031351190991699696
+            ]
+          },
+          "observed_euclidean_sum_of_rank_returns": {
+            "full_pg": 0.0716386985158284,
+            "predicted_tail_error": 0.0024115766320961032,
+            "uniform_bounded_error": 0.00023446965880559575,
+            "uniform_missed_native_tail_error": 0.004268471748116759
+          },
+          "scope": "Retain the actual original returns. They differ by rank in this runtime; do not present one rank return as the mesh-wide FP64 pre-clip norm. The Euclidean sums above are descriptive comparisons, without a new numerical pass threshold or alteration of native clipping."
+        }
       }
     ],
-    "interpretation": "Only selected-position errors at the original whitening scale. Native single-deletion model endpoints are the comparison. A partial minibatch and unweighted uniform sample cannot establish all-bulk effects, world truth, GDN causality or historical degradation cause. No candidate, corrected training value or formal release."
+    "exact_runner_interface_inspection": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/existing-owner-observer-interface.json",
+      "sha256": "ecc7502447ccaf153afd8b0014b7917ba696e5ae573fb9d271420d7415da4b0a",
+      "bytes": 5076
+    },
+    "existing_native_capture_schema": {
+      "path": "D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/existing-native-artifact-schema.json",
+      "sha256": "07d0839463dfcad852abc650b471b1080d29966820bd17185501fd6e1cf4cc09",
+      "bytes": 3879
+    }
   }
 }

@@ -58,6 +58,9 @@ def main():
     latest = max(paths, key=lambda p:json.loads(p.read_bytes())['unix'])
     observed = json.loads(latest.read_bytes())
     coefficients = json.loads((HERE / 'collection-coefficients.json').read_bytes())
+    manifest = json.loads((HERE / 'manifest.json').read_bytes())
+    state_by_uid = {uid:group for task in manifest['tasks'].values()
+                    for group in task['groups'] for uid in group['trajectory_uids']}
     files = observed['files']
     inspection = files['input-inspection.json']
     assert receipt(HERE / 'collection-coefficients.json')['sha256'] == inspection['coefficient_errors']['receipt']['sha256']
@@ -90,6 +93,10 @@ def main():
         minibatches.append(dict(index=index, full_pg_norm=stats['norms']['full_pg'], counts=counts,
             components={label:dict(points=counts[label], states=len({p['initial_state_sha256']
                 for p in points if family(p)==label}),
+                trajectories=len({p['traj_uid'] for p in points if family(p)==label}),
+                previously_examined_point_counts={str(seen):sum(family(p)==label and
+                    state_by_uid[p['traj_uid']]['previously_examined']==seen for p in points)
+                    for seen in (False,True)},
                 original_actor_slots=sum(sum(m['optimizer_minibatch'] == index
                     for m in p['actor_matches']) for p in points if family(p)==label),
                 state_counts={state:sum(p['initial_state_sha256'] == state and family(p)==label
@@ -114,6 +121,15 @@ def main():
         completed=files.get('completed.json'), post_measurement_budget_exit=budget_exit,
         driver_same_birth=observed['driver_same_birth'], formal_releases=observed['text_releases'],
         coefficient_receipt=receipt(HERE / 'collection-coefficients.json'),
+        frozen_manifest=receipt(HERE / 'manifest.json'),
+        author_collection_baseline=receipt(REPO / 'experiments/rl/results_credit_author_collection_20261008.json'),
+        resources=dict(host_available_bytes=observed['host_available'],
+            diagnostic_process_tree_pss_bytes=sum(p['pss_bytes'] for p in observed['processes']),
+            physical_GPU_source='Original mx-smi output in the linked observation',
+            scope='Point-in-time observations, not continuous memory peaks or a 32k capacity/throughput acceptance test.'),
+        formal_state=dict(text_same_birth=observed['text_same_birth'],
+            releases=observed['text_releases'],new_GDN_candidate=False,
+            optimizer_steps=0,scheduler_steps=0,checkpoint_restore=False,formal_restart=False),
         scope_limits=['Predicted-tail census and uniform bounded/missed-tail samples remain separate.',
             'Uniform sample errors have no inverse-inclusion weights: these are selected-position contributions, not a whole-bulk estimate.',
             'All four minibatches use unchanged base LoRA, not sequential updates or the historical degradation window.',
