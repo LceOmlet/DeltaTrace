@@ -1,5 +1,20 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 末层FA输入/QKV被动拆分已启动（结果待核实）
+
+延续已量出的core/input余项，仅保存原attention_input已返回的dq/dk/dv与原
+Q/K/V端点；按原cache坐标和GQA布局在CPU作FP64标量收缩，不替换任何系数。
+core=input_projection_norm_RoPE+finite_FA_core的恒等分解在符号层闭合，
+不是新的容差或修复。原64冻结capture的本机无损副本及PPO现场保持保存。
+
+物理GPU4/5已由原launcher重新检查空闲。隔离诊断PID3901349/出生1791501017.28，
+实际7文件绑定af05de9d的Git blob；同165位置、每rank6DT/30native、零参数更新。
+原1800秒worker及2100秒总进程预算不变；未启动AppWorld或正式训练。
+TextCraft额外QKV host bank/原native复制形状上界5.32/4.73GB，属于诊断成本；
+无额外device模型/内核调用，实际阶段/成本待结果核实。新增protocol及launch在
+credit-research-20261008/v1/attention-input-textcraft；current_runtime标为初始化。
+
+
 ## 2026-10-09 PPO现场与冻结输入保存；末层FA门控拆分完成
 
 原PPO44文件/无损归档保持保存，不再回放，原NaN未称修复。另将本次研究使用的
