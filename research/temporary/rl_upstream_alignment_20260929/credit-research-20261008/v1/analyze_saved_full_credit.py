@@ -19,6 +19,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--records',nargs='+',required=True)
     parser.add_argument('--output',required=True)
+    parser.add_argument('--include-endpoint-ledger',action='store_true')
     args=parser.parse_args()
     assert not torch.cuda.is_initialized()
     torch.set_num_threads(2)
@@ -57,6 +58,23 @@ def main():
                             token_id=int(selected[position[index]]),
                             implied_deleted_logp=float(implied[index])),
                         original_vector=dict(path=str(artifact),sha256=item['sha256']))
+                    if args.include_endpoint_ledger:
+                        detail=saved['detail']['per_sample'][i]
+                        reference=detail['reference_target_logp']
+                        delta=factual-reference
+                        source_sum=float(d.sum())
+                        values['endpoint_ledger']=dict(
+                            factual_target_logp=factual,reference_target_logp=reference,
+                            joint_target_difference=delta,
+                            owner_root_effect=detail['root_effect'],
+                            recomputed_source_sum_FP64=source_sum,
+                            full_signed_row_sum_FP64=float(saved['signed'][i].double().sum()),
+                            owner_policy_credit_signed_sum=detail['policy_credit_signed_sum'],
+                            source_sum_minus_joint_difference=source_sum-delta,
+                            positive_source_count=int((d>0).sum()),
+                            negative_source_count=int((d<0).sum()),
+                            positive_source_sum=float(d[d>0].sum()),
+                            negative_source_sum=float(d[d<0].sum()))
                     key=(label,uid)
                     assert key not in rows,'Do not silently double-weight duplicate trajectories'
                     rows[key]=values
@@ -79,6 +97,13 @@ def main():
         aggregation='Primary frozen trajectories and extra tail trajectories remain separate. Report counts and state-equal bounded violation frequencies; no pooled raw advantage/exp moments.',
         groups=groups,rows=list(rows.values()),operations=dict(model_forward=0,DT=0,optimizer=0),
         all_CPU=True,production_modified=False)
+    if args.include_endpoint_ledger:
+        result['endpoint_ledger_interpretation']=(
+            'The joint endpoint difference and the sum of individual deletion effects are different mathematical quantities. '
+            'This ledger describes how the existing shared finite endpoint identity changes under the already-rejected '
+            'conditional candidates; it is not an added conservation acceptance test, an official tolerance, a cause share '
+            'or a correction. No coefficient is rescaled. Trajectory sums are finite recorded quantities, not population '
+            'moments of an unbounded tail. Probability-bound, native deletion and author quality diagnostics remain separate.')
     Path(args.output).write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps({k:{n:v for n,v in g.items() if n!='largest_negative'} for k,g in groups.items()}))
 
