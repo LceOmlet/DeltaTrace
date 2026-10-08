@@ -1,5 +1,63 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 TextCraft NaN：完整原首轮诊断与原输入一致性核查
+
+原故障保存的256行actor输入，与对应原环境轨迹保留的830,939个response ID及
+policy mask逐值一致；prompt也一致，无未映射policy token。原owner位置构造与
+此前诊断重建的有效位置一致，差别仅右padding；原实际position_ids未保存，
+不能将重建扩大为原整个输入完全相同。原startup_options的multi_turn.enable=True，
+与trainer更新时写入的开关一致，未发现观测loss mask在该处被关闭。
+结果original-actor-artifact-audit.json，CPU观察不构成数值容差验收。
+
+为保留此前缺失的现场，新增一次完整原环境首轮诊断：原TaskRunner/采样/old/ref/
+DT/全批白化/PPO不变，原330预算及scheduler不变；仅诊断输出目录、GPU4/5与
+完成原step1日志后的停止点不同。记录实际update DataProto全部字段、初始LoRA/
+RNG、每个原optimizer minibatch的未裁剪梯度、logprob/entropy及其反向梯度。
+不启用detect_anomaly，不在各B4间新增item/CPU数值检查；原norm检查处落盘，
+保留native非有限时跳过更新的行为。观察仍有克隆/落盘成本，不宣称完全不扰动。
+
+v4诊断233497/birth1791465895.67因替换worker类造成Ray序列化super绑定错误，
+在原init_model前退出，零模型/DT/PPO计算。失败源及日志完整保留，不算原NaN。
+v5保留原worker类，通过原execute_with_func_generator安装实例观察；CPU已核对
+native worker cloudpickle身份。新driver258568/birth1791466135.87，SHA078df501…，
+启动基线78dd0d97；原source2796233e…、actor3a65e173…、core fc2f992b…不变。
+启动不代表已复现或已修好，当前正式TextCraft/AppWorld均停止，不恢复检查点。
+诊断文件在actor-nonfinite-20261008/v5；最新阶段以current_runtime.json及观察为准。
+
+## 2026-10-08 TextCraft NaN 继续定位：补入一次原 vLLM 交接，四次更新仍有限
+
+新增诊断 driver8327/birth1791463785.66、实际Python8328，仅物理GPU4/5；
+启动基线78dd0d97，脚本启动时未提交，SHA ef2cf1f0…单独记录。沿用原source
+2796233e…、VERL20bd331和原参数。复用上一诊断的原更新观察方法，新增原
+actor_rollout初始化、一次原LoRA同步/生成/休眠；输入为原保存的32条初始prompt。
+生成结果仅用于交接诊断，不充当环境轨迹或训练样本。随后原176条DT carrier
+与256条actor carrier分别保持原顺序及原优势，执行原四次连续PPO更新。
+不启动正式任务、不恢复检查点、不部署修复，不把诊断耗时当正式吞吐。
+
+目前原vLLM交接已完成，前后全部本地LoRA张量SHA相同，dtype/精度标志未变；
+FSDP记录的变化仅为原出口train()引起的子层模式变化。CPU只读核对当前
+PyTorch2.8.0+metax3.5.3.9的FSDP2 offload已有梯度搬运event等待，尚无缺失
+等待的故障证据，不据假设改它。
+
+1791465038.22诊断完成，两rank各32个B4、4次原optimizer step及所观察输出/
+梯度全部有限，无原PyTorch异常栈；未复现NaN，因此没有可部署修复。阶段耗时
+init109.07、生成24.49、old150.23、ref119.48、DT219.71、update604.50秒；
+这是带原异常检测及同步观察的诊断，不是正式吞吐。观察最大进程树PSS56.85GB，
+物理单卡37,218MiB；1791465111.50原进程树已退出，GPU释放。此次只含一次原
+VERL/vLLM基础采样调用，非原30轮完整环境采样；没有拿32条诊断生成代替任务评测。
+
+补回原TaskRunner日志：故障首轮原汇总ppo_kl=0.288，而上一轮完整诊断按
+同口径汇总约-0.00004174，本轮约+0.00004011。这说明原概率变化尚未被重现，
+不代表KL已定位为根因。原old/ref、actor position_ids和初始LoRA未保存的限制
+保留；本次position_ids通过原helper重建。参数SHA只检查trainable本地shard，
+不能扩大成全部frozen base权重校验。原22小时update计时包含首更新
+hold，不能当实际PPO计算耗时。详细回执在actor-nonfinite-20261008/v3，最新状态
+见current_runtime.json的latest_native_actor_nonfinite_rollout_lifecycle_20261008。
+汇总results_rollout_dt_to_native_actor_nonfinite_20261008.json；正式两组继续停止，
+未恢复检查点、未改DT/PPO/训练参数/容差。下一步需要在完整原采样→DT→更新
+链路保留首个故障的old/ref、位置、初始/更新前LoRA及未裁剪梯度，减少同步观察
+对时序的影响；不继续用相同的重放有限结果冒充根因定位或修复。
+
 ## 2026-10-08 优先 debug TextCraft PPO NaN：真实 DT 后完整四次原更新有限，根因未定位
 
 按用户最新指令暂停新增极端归因研究，先查独立的原 actor 非有限梯度。
