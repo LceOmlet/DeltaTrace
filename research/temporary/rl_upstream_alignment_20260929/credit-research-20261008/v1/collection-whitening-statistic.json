@@ -1,0 +1,53 @@
+{
+  "scope": "Finite original saved whitening statistic contribution, not population moments or gradient share. Reuses exact actor coefficients from current mapping and whole-batch scalar from prior original-owner receipt; no new model/normalization computation.",
+  "source_mapping_sha256": "c4f4bfa9771291e73c1fd68c36b1bc5ea4818e24ade881ec4a2fc00b7fc1d7c5",
+  "denominator_receipt": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-update-gradient-20261008\\v1\\actual-actor-mapping.json",
+    "sha256": "a21216298358d4961b54665c4937ecde6f8bf6452518221142cc9c103e350465",
+    "owner": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/torch_functional.py",
+      "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+      "masked_whiten_source": "def masked_whiten(values, mask, shift_mean=True):\n    \"\"\"\n    Whiten `values` by normalizing with mean and variance computed over `mask`.\n\n    Args:\n        values (torch.Tensor): Input tensor.\n        mask (torch.Tensor): Boolean tensor of same shape, selects elements for stats.\n        shift_mean (bool): If True (default), output is zero-mean;\n                           if False, the original mean is re-added after scaling.\n\n    Returns:\n        torch.Tensor: Whitened tensor of same shape as `values`.\n    \"\"\"\n    mean, var = masked_mean(values, mask), masked_var(values, mask)\n    whitened = (values - mean) * torch.rsqrt(var + 1e-8)\n    if not shift_mean:\n        whitened += mean\n    return whitened\n"
+    }
+  },
+  "preupdate_sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-prefix-runtime-20261007-v1/textcraft-first-dt/rank0-pre-update.pt",
+      "sha256": "1563ce74f298769893b360398fd1bacf16c376439b1d462e56ef9dc6f905be59"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-prefix-runtime-20261007-v1/textcraft-first-dt/rank1-pre-update.pt",
+      "sha256": "a1970da0bbf462b203314cbf29cc8ecd8c81e526fe1b6ee944978a76bbadd34e"
+    }
+  ],
+  "whole_batch_saved_white_sumsq": 713537.7686486043,
+  "valid_tokens": 713539,
+  "strata": {
+    "predicted_ratio_2_to_10": {
+      "points": 35,
+      "states": 7,
+      "saved_white_sumsq": 7361.841629163409,
+      "fraction_of_existing_centered_sumsq": 0.010317381857874567
+    },
+    "predicted_ratio_10_to_100": {
+      "points": 2,
+      "states": 2,
+      "saved_white_sumsq": 27073.267469154962,
+      "fraction_of_existing_centered_sumsq": 0.03794230475063714
+    },
+    "raw_native_sign_flip_subset": {
+      "points": 24,
+      "states": 6,
+      "saved_white_sumsq": 9568.00659134516,
+      "fraction_of_existing_centered_sumsq": 0.013409250374323372
+    }
+  },
+  "new_model_calls": 0,
+  "new_normalization_calls": 0,
+  "failed_unnecessary_cpu_check": {
+    "source": "collection-whitening-statistic-command-unaccepted-failed.sh",
+    "issue": "Extra FP32 normalization recomputation with explicitly changed CPU thread count was needlessly required to be bitwise equal. It is not required for this saved-vector statistic and does not demonstrate a production defect. The failed CPU-only check changed no training state; it is not repeated.",
+    "sha256": "1c0b4a323b2d248c3c08cab06d645c0c305b8f8036c9fe1db1f5e707a2b02b33",
+    "status": "Unaccepted CPU diagnostic; not imported by any launcher or training code."
+  }
+}

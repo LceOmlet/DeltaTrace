@@ -10,15 +10,19 @@ from stage_environment_entry import ROOT, ENTRY, SSH
 
 REMOTE = ROOT + '/receipts/credit-collection-gradients-20261008-v1'
 body = r'''
-import json,psutil,subprocess,time
+import json,os,psutil,subprocess,time
 from pathlib import Path
 out=Path(OUT);launch=json.loads((out/'launch.json').read_bytes())
 r={'unix':time.time(),'launch':launch,'host_available':psutil.virtual_memory().available}
 p=psutil.Process(launch['pid']) if psutil.pid_exists(launch['pid']) else None
-r['driver_same_birth']=p is not None and p.create_time()==launch['birth'];r['processes']=[]
+r['driver_same_birth']=p is not None and p.create_time()==launch['birth'];r['processes']=[];r['native_worker_logs']={}
 if r['driver_same_birth']:
  for process in [p,*p.children(recursive=True)]:
-  try:r['processes'].append({'pid':process.pid,'birth':process.create_time(),'name':process.name(),'status':process.status(),'pss_bytes':process.memory_full_info().pss})
+  try:
+   name=process.name();r['processes'].append({'pid':process.pid,'birth':process.create_time(),'name':name,'status':process.status(),'pss_bytes':process.memory_full_info().pss})
+   if 'CollectionGradientWorker' in name:
+    path=Path(os.readlink(f'/proc/{process.pid}/fd/1'))
+    if path.is_file():r['native_worker_logs'][str(process.pid)]={'path':str(path),'tail':path.read_text(errors='replace')[-7000:]}
   except(psutil.NoSuchProcess,psutil.AccessDenied):pass
 r['files']={}
 for path in [out/'phase.json',out/'completed.json',out/'input-inspection.json',*sorted(out.glob('minibatch*-rank*.json'))]:
@@ -42,5 +46,7 @@ print(json.dumps({k: value[k] for k in ('unix', 'driver_same_birth', 'host_avail
 print(json.dumps({'phase':value['files'].get('phase.json'),
                   'completed_minibatch_rank_files':[k for k in value['files'] if k.startswith('minibatch')],
                   'process_tree_pss_bytes':sum(p['pss_bytes'] for p in value['processes'])}))
-print(value['log_tail'][-4500:])
-print(value['physical'])
+for pid,record in value['native_worker_logs'].items():
+    print(json.dumps({'pid':pid,'native_progress':[line for line in record['tail'].splitlines() if 'native_minibatch_diagnostic' in line][-5:]}))
+if '--physical' in sys.argv:
+    print(value['physical'])

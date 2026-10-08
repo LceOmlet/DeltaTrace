@@ -71,8 +71,9 @@ def main():
             statistics=stats,
             elapsed_seconds_by_rank=[{k: v['elapsed_seconds'] for k, v in r['passes'].items()} for r in ranks],
             native_clip_returns_by_rank=[{k:v['optimizer_boundary']['native_clip_return'] for k,v in r['passes'].items()} for r in ranks]))
-    # A baseline seam regression, not a new numerical tolerance: same original
-    # first minibatch and owner as the earlier two-pass Format diagnostic.
+    # The earlier run did not store initial LoRA_A hashes. The policy is at
+    # LoRA_B=0 in both runs, but identical gradient parameterization is unproven.
+    # Do not turn this cross-run observation into a tolerance or regression test.
     prior = json.loads((HERE.parents[1] / 'direct-target-update-gradient-20261008/v1/rank0-gradients.json').read_bytes())
     first = files.get('minibatch0-rank0.json')
     parity = None
@@ -85,12 +86,34 @@ def main():
         parity = dict(previous_norm=old_norm, current_norm=new_norm,
                       norm_absolute_difference=abs(old_norm - new_norm),
                       max_pg_scalar_absolute_difference=max(scalar_diffs),
-                      scope='Same original first-minibatch PG with optional diagnostic views. Descriptive seam comparison; not FA/FLA or VERL numerical-tolerance certification.')
-    result = dict(scope=__doc__, status='Complete bounded collection gradient measurement' if len(minibatches)==4 and 'completed.json' in files else 'Partial measurement; no complete collection claim',
+                      initial_LoRA_A_cross_run_identity='Unverified; prior run did not retain initial parameter hashes.',
+                      scope='Same original first-minibatch coefficients and policy at LoRA_B=0. Cross-run gradients have unverified parameter identity; neither a tolerance pass/failure nor evidence about the optional seam. Within-run component comparisons retain identical parameters.')
+    phase = files.get('phase.json', {})
+    all_native_returns = (len(minibatches) == 4 and phase.get('phase') == 'original_minibatch_gradients_complete'
+                          and phase.get('minibatch') == 3)
+    budget_exit = (all_native_returns and 'completed.json' not in files
+                   and 'Bounded collection gradient diagnostic exceeded 1800 seconds' in observed['log_tail'])
+    complete = all_native_returns and ('completed.json' in files or
+                                      (budget_exit and not observed['driver_same_birth']))
+    status = ('Complete native measurement; driver budget exit after all four minibatches returned'
+              if complete and budget_exit else 'Complete bounded collection gradient measurement'
+              if complete else 'Partial measurement; no complete collection claim')
+    result = dict(scope=__doc__, status=status,
         observed_unix=observed['unix'], observed_utc=datetime.datetime.fromtimestamp(observed['unix'], datetime.timezone.utc).isoformat(),
         launch=observed['launch'], observation=receipt(latest), inspection=inspection,
-        minibatches=minibatches, original_first_minibatch_seam_comparison=parity,
+        minibatches=minibatches, first_minibatch_cross_run_observation=parity,
         completed=files.get('completed.json'),
+        driver_completion=dict(final_native_phase=phase, driver_same_birth=observed['driver_same_birth'],
+            completed_json_present='completed.json' in files,
+            post_measurement_budget_exit=budget_exit,
+            native_elapsed_seconds=phase.get('elapsed_seconds'),
+            planned_budget_seconds=1800,
+            budget_overrun_seconds=max(0., phase.get('elapsed_seconds', 0.) - 1800.) if budget_exit else None,
+            scope='All original actor-group calls and both rank parameter checks returned before the diagnostic-only budget check. The missing completed.json is not fabricated; the driver budget exception remains recorded.'),
+        whitening_statistic=json.loads((HERE / 'collection-whitening-statistic.json').read_bytes()),
+        effective_configuration=receipt(HERE / 'collection-gradient-effective-config.yaml'),
+        frozen_manifest=receipt(HERE / 'manifest.json'),
+        baseline_forward_collection=receipt(REPO / 'experiments/rl/results_credit_author_collection_20261008.json'),
         interpretation=[
             'These are gradients of the exact saved actor coefficients through the original owner; no native d/A replaces training credit.',
             'The tail census includes 35 predicted c in (2,10] and 2 in (10,100]; it excludes the bounded bulk. Its vector sum is the real loss contribution, not a statistical mean or moment estimate.',
@@ -105,7 +128,7 @@ def main():
                           new_GDN_candidate=False, optimizer_steps=0, checkpoint_restore=False, formal_restart=False))
     path = HERE / 'collection-gradient-analysis.json'
     path.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
-    if len(minibatches)==4 and 'completed.json' in files:
+    if complete:
         (REPO / 'experiments/rl/results_credit_collection_gradients_20261008.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(dict(status=result['status'], minibatches=[{k:v for k,v in m.items() if k not in ('statistics','elapsed_seconds_by_rank','native_clip_returns_by_rank')} for m in minibatches], parity=parity), ensure_ascii=False))
 
