@@ -1,5 +1,47 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 优先 debug TextCraft PPO NaN：真实 DT 后完整四次原更新有限，根因未定位
+
+按用户最新指令暂停新增极端归因研究，先查独立的原 actor 非有限梯度。
+先澄清旧回执：前三次更新有限、第四次未完成是 900 秒诊断上限触发，不是第四次
+复现 NaN。原正式两 rank 各记录一次非有限 norm；具体 optimizer minibatch 未保存。
+原 VERL 遇到该值清梯度并跳过对应 step，不能称全部四次都失败或全部都健康。
+
+本次源绑定诊断 driver3979707/birth1791461643.35，实际 Python driver3979708；
+基线提交89776c46，观察脚本启动时尚未提交、SHA998698ec…单独绑定。仅GPU4/5。
+原 source SHA2796233e…、actor3a65e173…、core fc2f992b…及真实 DT producer
+2aa5f552…不变。核对固定 VERL20bd331：policy loss、KL、update_policy、
+optimizer_step 和 fsdp2_clip_grad_norm_ 五个函数 AST 相同；输出头和调度文件也
+与原 source 的已记录 SHA 相同。这是版本/函数身份核查，不是新数值容差验收。
+
+复用原保存的完整176条 DT carrier，经原 compute_dt_token_advantages；随后用原
+256条 actor carrier 与原全批白化优势做完整四次连续更新。DT/actor 的行数、顺序、
+padding本来不同，分别保持原 artifact，不人为重建配对。首次 CPU 准备误把两者
+行数当成相同，断言在 GPU/model/optimizer 初始化前失败；失败源码/日志另存。
+修正的是这个诊断断言，没有改变实际训练输入、DT 或 PPO。原 B4、全局optimizer
+minibatch64、LoRA8/16、损失、dtype、scheduler 均不改，未替换 actor 保存优势。
+
+原 DT 完成；两卡各32个B4、4次optimizer step全部完成，裁剪前各496个梯度张量
+及原生norm均有限。rank0 norm为0.0307812/0.0501252/0.0302992/0.0488105；
+rank1为0.0352183/0.0585729/0.0349105/0.0554691（完整精确值以JSON为准）。
+DT 前后已记录的训练模式、FSDP状态、精度标志一致。原 PyTorch detect_anomaly
+未报错；没有修核、改公式、加倍率/裁剪、扩大容差或部署研究候选。
+
+old/ref/DT/update阶段分别149.94/117.64/218.74/601.88秒，异常检测和同步观察
+有额外开销，不作为正式吞吐。进程树观察PSS最大56,442,462,208字节；物理单卡
+显存观察最大38,544MiB，无OOM。1791462836.64确认本诊断进程树已退出。
+本次保留初始本地LoRA/RNG张量和真实old/ref输入供后续重放，不作为训练检查点。
+原native ECC计数读出全8卡为0且启用；这不证明硬件计算完全正确。
+
+本次补齐了旧诊断缺失的 DT→完整四次更新，仍没有复现原 NaN，不能称修复。
+历史初始LoRA A和old/ref未保存，且本次没有重放前置vLLM采样；原故障GPU2/3、
+本次4/5，这些证据限制明确保留。未重启正式训练、未恢复检查点，目标未完成。
+原旁路观察/hold代码另作CPU审查，不因其存在就断言其导致NaN。
+
+结果：experiments/rl/results_dt_to_native_actor_nonfinite_20261008.json。
+具体输入、源码、PID/birth、有效配置和原始阶段观察：
+research/temporary/rl_upstream_alignment_20260929/actor-nonfinite-20261008/v2。
+
 ## 2026-10-08 极端归因：330点参考精度复核与45轨迹状态隔离完成，尚未修复
 
 本轮只分析极端归因，不把它改称旧熵主导退化的原因。冻结集合不变：每任务128个
