@@ -1,5 +1,37 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 用户要求保存 debug 现场并返回极端负信用修复
+
+优先级已按用户最新指令写入 PLAN 顶部，Q/V/A、白化、PPO、官方参数及入口不变。
+两组正式作业仍停止；GPU4/5只保留已有 v5 首轮诊断，不再新增有限 PPO 回放。
+原 NaN 未定位、未部署修复。原事故缺失的 old/ref、位置及初始 LoRA 不能补造。
+
+检查实际落盘发现 v5 trainer 观察并未安装，初始状态文件缺失；复用该进程的
+原 worker generic RPC 在首轮 rollout 中补挂，没有重新采样或重启。两个原
+worker264116/265959均已保存首更新前 LoRA/RNG。安装 RPC 完成后，客户端写
+receipt 时因 Ray ActorDeathCause 无法 JSON 序列化退出；错误和实际部署的
+attach 源已保存，不能据客户端失败重复安装。当前源有安装后捕获原 update
+并停止诊断的边界；原更新实现、optimizer、credit 不变。修正的本机 receipt
+序列化代码尚未重新部署，不冒充已运行版本。
+
+本机 preserved-debug/1791467516 已保存18项、87,730,454字节，逐文件 SHA256
+验证通过：两卡初始 LoRA/RNG、有效配置、原 source、诊断源码、阶段日志及
+安装错误。清单 preserved-debug-latest.json 明确实际 update 输入和梯度尚未
+产生；不能称完整故障复现现场已齐。v5 driver258568/birth1791466135.87，
+观察1791467905.60仍在原 rollout 第25/30交互，尚无 actor update 文件。
+新观察器会保存实际 DataProto（old/ref/position/masks）、各原 minibatch 的
+未裁剪梯度、logprob/entropy及其反向梯度；以实际 sidecar 发布为准。
+
+归因研究已返回冻结集合的330个既有点，无新增模型调用：合并原 native、
+逐层 native、重测 native 与同 hidden 的 FP32 head 对照，保留任务/状态/
+cohort/预测与对照负尾分组。在37个预测负尾位置中，TextCraft18点/13轨迹/
+6状态、AppWorld11点/7轨迹/6状态在DT重算仍属负尾，而所有保存对照均非负。
+TextCraft的该37点中另有5点跨全部保存端点仍违反 p_deleted<=1 的必要界。均匀样本
+中另有2/128、4/128个漏估负尾。以上不是总体错误率或官方容差验收，也不是
+训练退化判断；FP32 head不是全FP32模型。来源及逐点身份见
+results_stable_negative_credit_20261008.json。该复核确认仍有待修的估计误差，
+未证明某一层为集合主因，不据此部署候选、裁剪信用或改下游Q/V/PPO。
+
 ## 2026-10-08 TextCraft NaN：完整原首轮诊断与原输入一致性核查
 
 原故障保存的256行actor输入，与对应原环境轨迹保留的830,939个response ID及
