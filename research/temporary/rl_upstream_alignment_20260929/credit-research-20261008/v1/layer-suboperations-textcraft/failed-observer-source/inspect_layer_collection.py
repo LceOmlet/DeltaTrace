@@ -287,13 +287,8 @@ def make_worker():
                                         matched_telescoping_roundoff=(sum(matched_residuals)-(
                                             matched[0]-native_d-score_drift) if not suboperations else None))
                                 if subobserver is not None:
-                                    # Persist the actual contractions even if
-                                    # optional report formatting fails.
-                                    point['suboperations'] = active['suboperations'][row]
-                                    batch['points'].append(point)
                                     subobserver.finish_point(point, active['suboperations'][row])
-                                else:
-                                    batch['points'].append(point)
+                                batch['points'].append(point)
                             batch['native_phases'].append(dict(round=round_index, seconds=time.perf_counter()-tick,
                                 measured_queries=sum(q is not None for q in queries)))
                             save('native_forward_complete', batch=batch_index, round=round_index)

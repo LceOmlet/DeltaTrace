@@ -72,6 +72,9 @@ if __name__=='__main__':
     parser.add_argument('--layer-task',choices=('textcraft','appworld'))
     parser.add_argument('--factual-controls', action='store_true',
                         help='Observe the separately staged passive factual-control run')
+    parser.add_argument('--suboperations', action='store_true',
+                        help='Observe the separately staged passive suboperation readout')
+    parser.add_argument('--revision',choices=('v1','v2'),default='v1')
     parser.add_argument('--summary-only', action='store_true',
                         help='Read phases/resources without retransferring growing point ledgers')
     parser.add_argument('--phase-only', action='store_true',
@@ -85,8 +88,13 @@ if __name__=='__main__':
         if args.factual_controls:
             target=ROOT+'/receipts/credit-layer-factual-controls-'+args.layer_task+'-20261008-v1'
             prefix='layer-factual-controls-'+args.layer_task
+        if args.suboperations:
+            target=ROOT+'/receipts/credit-layer-suboperations-'+args.layer_task+'-20261008-'+args.revision
+            prefix='layer-suboperations-'+args.layer_task+('-'+args.revision if args.revision!='v1' else '')
     elif args.factual_controls:
         parser.error('--factual-controls requires --layer-task')
+    elif args.suboperations:
+        parser.error('--suboperations requires --layer-task')
     body=('ROOT='+repr(ROOT)+'\nTARGET='+repr(target)+'\nINCLUDE_PHASES='+repr(bool(args.layer_task))
           +'\nSUMMARY_ONLY='+repr(args.summary_only)+'\n'+BODY)
     body='PHASE_ONLY='+repr(args.phase_only)+'\n'+body

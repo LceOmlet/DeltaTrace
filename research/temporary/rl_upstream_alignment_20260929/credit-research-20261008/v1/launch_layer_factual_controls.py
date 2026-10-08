@@ -11,7 +11,11 @@ transport=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(transport)
 task=sys.argv[1]
 assert task in ('textcraft','appworld')
-folder=HERE/f'layer-factual-controls-{task}'
+suboperations='--suboperations' in sys.argv[2:]
+revision=next((v.split('=',1)[1] for v in sys.argv[2:] if v.startswith('--revision=')), 'v1')
+assert revision in ('v1','v2')
+tag='layer-suboperations' if suboperations else 'layer-factual-controls'
+folder=HERE/(f'{tag}-{task}'+('-'+revision if revision!='v1' else ''))
 prepared=json.loads((folder/'preparation.json').read_bytes())
 code=r'''
 import ast,hashlib,json,os,psutil,re,subprocess,time
@@ -33,6 +37,7 @@ physical=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).std
 assert not re.search(r'^\|\s*[45]\s+\d+\s+\S',physical,re.M),'GPU4/5 occupied; do not launch or displace their work'
 env=dict(os.environ,**source['environment']);env.pop('MACA_VISIBLE_DEVICES',None);env.pop('RAY_ADDRESS',None)
 env['CUDA_VISIBLE_DEVICES']='4,5';env['DT_LAYER_FACTUAL_CONTROL']='1'
+if SUBOPERATIONS:env['DT_LAYER_SUBOPERATIONS']='1'
 env['DT_TASK']=source['startup_options']['env.env_name'];env['DT_MAX_STEPS']=str(source['startup_options']['env.max_steps'])
 dt=Path(source['dt_root']);q=json.loads(Path(env['DT_ENVIRONMENT_JSON']).read_bytes())['qwen35']
 env['PYTHONPATH']=':'.join([str(out),str(dt),env.get('DT_OFFICIAL_ROOT') or q['official_root'],str(dt/'clean/qwen35'),source['pythonpath'],q['ft_extension_root']])
@@ -51,11 +56,13 @@ receipt=dict(task=TASK,pid=process.pid,birth=psutil.Process(process.pid).create_
  coefficient_change=False,production_modified=False,optimizer=0,rollout=0,checkpoint_restore=0,
  wall_budget_per_worker_seconds=1800,hard_process_limit_seconds=2100,
  host_available_bytes=psutil.virtual_memory().available,
- purpose='Measure same-call factual-state contraction controls on all frozen queries; not a credit correction, new sample, or candidate rule.')
+ suboperations=SUBOPERATIONS,
+ purpose=('Read unchanged native/DT suboperation contractions on all frozen queries, including residual-add rounding and actual versus recomputed head coefficient.' if SUBOPERATIONS else
+          'Measure same-call factual-state contraction controls on all frozen queries; not a credit correction, new sample, or candidate rule.'))
 (out/'launch.json').write_text(json.dumps(receipt,indent=2)+'\n');(out/'before-physical.txt').write_text(physical)
 print(json.dumps(receipt))
 '''
-header='OUT='+repr(prepared['remote'])+'\nROOT='+repr(transport.ROOT)+'\nTASK='+repr(task)+'\nCOMMIT='+repr(subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip())+'\n'
+header='OUT='+repr(prepared['remote'])+'\nROOT='+repr(transport.ROOT)+'\nTASK='+repr(task)+'\nSUBOPERATIONS='+repr(suboperations)+'\nCOMMIT='+repr(subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip())+'\n'
 script='source '+transport.ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+header+code+'\nPY\n'
 (folder/'launch-command.sh').write_text(script,encoding='utf-8')
 result=subprocess.run(transport.SSH+['bash','-s'],input=script.encode(),capture_output=True,timeout=55)

@@ -1,5 +1,41 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 已保存 PPO 现场，继续极端负信用的算子分解
+
+PPO debug 的44项本机现场及其逐文件SHA校验已完成，继续使用下节的
+results_preserved_actor_debug_20261008.json；原NaN未定位，不再重复有限回放。
+正式TextCraft/AppWorld均停止，无检查点恢复。当前只诊断原冻结的各165位置，
+Q/V/A、整批白化、PPO、LoRA8/16、每卡B4及所有核均未改。
+
+新观察器仍调用原decoder/answer/norm owner并返回原对象。按此前各任务、cohort、
+状态等权的定位频率，取层18/30/31；不重选token。分别观察norm/mixer/MLP、
+两次BF16残差相加，以及最终norm、原seed的独立重算、线性投影、log-softmax。
+残差相加与seed重算差异显式保留，不假定它们为零，不扣除任何项作信用修复。
+原consume_captures保持启用，没有因观察而保留原MLP宽张量的诊断分支。
+
+TextCraft v1观察器在首个DT及native前向之后，报表遍历误读已格式化的字典，
+触发KeyError('matched')；这是本地观察代码错误，不是DT/PPO非有限或OOM。
+原源码从发布tar单独保存，失败PID924321/birth1791472490.78已退出。
+v2修正该遍历，并在可选格式化前保存原始point；CPU报表检查不冒充方法质量测试。
+
+v2基于f7381669和显式源码SHA发布：inspect_layer_collection为5f946fab78b0，
+passive_suboperations为2933cb5f7b13。TextCraft PID951632/birth1791472744.49，
+12次DT、每卡30次native配对前向已完成，各165位置DT及native值均与旧记录
+逐值相同；约220.7秒，额外读出每卡约3.5秒，最大保留CPU bank约9.58GiB。
+这是实际集合的被动诊断，不是新的官方容差、32k容量或候选质量验收。
+
+原稳定误报中的17点/6状态落在预测2<c<=10、对照c<=1同一交叉单元：最后一层
+attention mixer的匹配残差中位数-3.4403，输出log-softmax +3.2587，最终norm
+-1.2022，输出线性投影-0.1043；大项相互抵消。不能只改输出层或把某项扣掉。
+其余尾部交叉单元单独报告，未把主体/尾部、任务和cohort合成原始均值。
+
+AppWorld同一v2观察器在物理GPU4/5运行，PID990446/birth1791473090.64，
+远端receipts/credit-layer-suboperations-appworld-20261008-v2；当前尚未完成，
+不宣称已经修复极端信用。launch保存实际source路径/SHA与环境，完成后再绑定
+两卡实际import和完整集合结果。状态、失败版本、协议、原始逐位置结果及已完成
+分析见results_suboperations_20261008.json和current_runtime的latest_suboperations。
+没有新PPO回放、rollout、optimizer、正式恢复或核改动。
+
 ## 2026-10-08 PPO debug 现场已本机保存，归因研究完成事实端点控制
 
 按用户“保存 debug 信息，随后返回极端负信用准确性修复”的指令，v5 原首轮
