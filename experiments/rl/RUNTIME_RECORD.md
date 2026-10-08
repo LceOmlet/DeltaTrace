@@ -1,5 +1,23 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 原作者集合诊断已启动；训练未放行
+
+诊断代码7f8f53e8，PID432447/birth1791427765.32，物理GPU4/5。复用最新已测
+helper7277fade、endpoint8a72887a、原作者metric583f4b7d，正式source58209daa
+与冻结manifest2096e03e不变。CPU以旧原生实测分数回放21批/168回调，全部
+IDs与原owner的RISE/MAS返回值逐值一致，约0.807秒；它只验证边界，不是模型
+容差或集合质量结果。第一次本机哈希错误未产生上传/远端调用，记录见下。
+
+原VERL双卡actor初始化后，真实native B4配对前向首调用约19.49/19.26秒，
+后续同批约3.38秒。1791428028观察两rank各完成47次native forward，已完成
+16/32条TextCraft曲线与64/128个均匀单删；AppWorld和全数尾部尚未开始。
+这是阶段进展，不能将半个集合写成全方法结论。原SHA/导入路径、PID、预算、
+CPU回放和阶段PSS/allocated/reserved等见current_runtime.json的
+latest_credit_stratified_collection及author-collection-launch.json。
+原source中的路径别名与实际target reader路径不同但SHA一致，两者均保留。
+没有新GDN候选、DT/backward/optimizer/rollout/恢复；TextCraft hold，AppWorld不重启。
+每rank194次native forward的固定诊断与1800秒预算保留，不增加训练查询。
+
 ## 2026-10-08 开发主体与负尾部分层；原作者集合诊断 prepared-only
 
 用户要求将长尾与主体分别聚合。只读完整冻结开发capture，以c=exp(-d)分为
