@@ -1,5 +1,29 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 原actor有界诊断部分完成：未复现NaN，不构成修复
+
+仅在研究GPU4/5启动一次原VERL观察作业，driver包装PID3316643/birth1791455383.0，
+原source SHA2796233e…、actor SHA3a65e173…；具体观察脚本SHA9dab61c1…，
+基于提交36263569但脚本当时未提交，实际文件SHA另行绑定，不冒充正式部署。
+原256行输入/优势、全局optimizer minibatch64、每卡microbatch4、LoRA8/16、原损失
+及连续optimizer更新不变。只增加PyTorch原detect_anomaly和返回原梯度的被动记录，
+零DT、采样、检查点恢复。两rank各完成3/4次optimizer step，step前梯度元素均有限；
+第四次仅启动第29/32个microbatch，没有整批完成或正式健康更新结论。
+
+原900秒诊断上限触发SIGTERM；1791456457.52观察本树进程0、两卡各858MiB。
+观察到全树PSS最大45,893,045,248字节，物理单卡显存最大30,632MiB，未见OOM。
+old/ref logprob阶段150.118/116.595秒；异常检测与同步记录有额外开销，不能用作正式
+训练吞吐。原进程的初始LoRA A与old/ref输出未保存，本次fresh actor没有经历前置DT，
+所以不是历史逐位重放；不能据前三次有限便宣称NaN已修复或完整DT→PPO接线正确。
+TextCraft正式作业继续保持停止；不为扩大计数自动重跑相同整批诊断。
+结果：experiments/rl/results_native_actor_nonfinite_20261008.json。
+
+另用现有两任务各165个配对点，分任务/主体抽样/尾部普查/预测与对照区间，记录DT
+cached-prefix事实target分数与native完整前向事实分数的漂移。两侧已有相同 scoped
+FA/FLA精度与target读出，但调用形状/前缀重用不同；不把漂移称为核超差或归因主因，
+不减残差、不加纠偏、不改容差。新增模型调用0。
+结果：experiments/rl/results_extreme_attribution_endpoint_drift_20261008.json。
+
 ## 2026-10-08 固定集合完成：条件注意力候选被否决，未部署
 
 TextCraft v3已完成32条主评测轨迹/16个初始状态、128个均匀source与37个原预测尾部
