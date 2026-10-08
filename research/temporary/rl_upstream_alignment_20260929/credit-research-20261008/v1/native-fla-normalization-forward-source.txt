@@ -1,0 +1,76 @@
+    dg = chunk_local_cumsum(dg, chunk_size=64, reverse=True, cu_seqlens=cu_seqlens)
+    return dq, dk, dv, db, dg, dh0
+
+
+class ChunkGatedDeltaRuleFunction(torch.autograd.Function):
+
+    @staticmethod
+    @input_guard
+    @autocast_custom_fwd
+    def forward(
+        ctx,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        g: torch.Tensor,
+        beta: torch.Tensor,
+        scale: float,
+        initial_state: torch.Tensor,
+        output_final_state: bool,
+        cu_seqlens: torch.LongTensor | None = None,
+        use_qk_l2norm_in_kernel: bool = False,
+    ):
+        q_rstd, k_rstd = None, None
+        if use_qk_l2norm_in_kernel:
+            q, q_rstd = l2norm_fwd(q)
+            k, k_rstd = l2norm_fwd(k)
+
+        g, o, A, final_state = chunk_gated_delta_rule_fwd(
+            q=q,
+            k=k,
+            v=v,
+            g=g,
+            beta=beta,
+            scale=scale,
+            initial_state=initial_state,
+            output_final_state=output_final_state,
+            cu_seqlens=cu_seqlens,
+        )
+        ctx.save_for_backward(q, q_rstd, k, k_rstd, v, g, beta, A, initial_state, cu_seqlens)
+        ctx.scale = scale
+        ctx.use_qk_l2norm_in_kernel = use_qk_l2norm_in_kernel
+        return o.to(q.dtype), final_state
+
+    @staticmethod
+    @input_guard
+    @autocast_custom_bwd
+    def backward(
+        ctx,
+        do: torch.Tensor,
+        dht: torch.Tensor,
+    ):
+        q, q_rstd, k, k_rstd, v, g, beta, A, initial_state, cu_seqlens = ctx.saved_tensors
+        dq, dk, dv, db, dg, dh0 = chunk_gated_delta_rule_bwd(
+            q=q,
+            k=k,
+            v=v,
+            g=g,
+            beta=beta,
+            A=A,
+            scale=ctx.scale,
+            initial_state=initial_state,
+            do=do,
+            dht=dht,
+            cu_seqlens=cu_seqlens,
+        )
+        if ctx.use_qk_l2norm_in_kernel:
+            dq = l2norm_bwd(q, q_rstd, dq)
+            dk = l2norm_bwd(k, k_rstd, dk)
+        return dq.to(q), dk.to(k), dv.to(v), dg.to(g), db.to(beta), None, dh0, None, None, None
+
+
+@torch.compiler.disable
+def chunk_gated_delta_rule(
+    q: torch.Tensor,
+    k: torch.Tensor,
+    v: torch.Tensor,

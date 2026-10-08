@@ -17,7 +17,7 @@ parser.add_argument('--nonfinite-replay',action='store_true')
 parser.add_argument('--range-owner', choices=('replay', 'resume'),
                     help='Preserve the separately isolated numerical range diagnostic.')
 parser.add_argument('--revision',choices=('v1','v2','v3'),default='v1')
-parser.add_argument('--native-context', choices=('v1','v2','v3','v4','v5','profile','queries','memory-limit','memory-finite'),
+parser.add_argument('--native-context', choices=('v1','v2','v3','v4','v5','profile','queries','memory-limit','memory-finite','conv-windows'),
                     help='Preserve terminal native context operator/API diagnostics.')
 parser.add_argument('--metadata-only',action='store_true',
                     help='Preserve remote hashes/archive identity without claiming a completed local archive copy.')
@@ -41,7 +41,8 @@ if args.native_context:
  names={'profile':'/receipts/native-context-profile-20261009-v1',
         'queries':'/receipts/native-conditional-queries-20261009-v1',
         'memory-limit':'/receipts/conditional-memory-limit-20261009-v1',
-        'memory-finite':'/receipts/conditional-memory-finite-20261009-v1'}
+        'memory-finite':'/receipts/conditional-memory-finite-20261009-v1',
+        'conv-windows':'/receipts/conditional-conv-windows-20261009-v1'}
  remote=transport.ROOT+names.get(args.native_context,'/receipts/native-context-readouts-20261009-'+args.native_context)
  folder=HERE/('native-context-'+args.native_context)/'preserved-artifacts'
 folder.mkdir(parents=True,exist_ok=True)
