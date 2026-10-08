@@ -1,5 +1,43 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 极端归因：330点参考精度复核与45轨迹状态隔离完成，尚未修复
+
+本轮只分析极端归因，不把它改称旧熵主导退化的原因。冻结集合不变：每任务128个
+均匀source、37个原预测尾部source，共330点；主体与尾部、任务与状态分别记录。
+新增三次有界原模型诊断，不训练、不采样、不恢复检查点、不改默认入口或PLAN。
+VERL owner为20bd331，启动基线提交1a7676c6；新增脚本启动时未提交，实际SHA、
+原source SHA、实际导入路径、有效配置、driver PID/birth、完成标记一并绑定。
+
+| 问题 | 本轮证据 | 能支持的判断 |
+| --- | --- | --- |
+| 输出层舍入能否解释尾部 | 同一原生hidden/weight，FP32投影再舍入为BF16；全330点 | TextCraft主体d差中位数0.00543、最大0.13648；AppWorld为0.11302、1.09253。部分AppWorld判定敏感，不能把旧BF16对照直接称为稳定真值 |
+| 先前漏报点是否保留 | 对原先TextCraft2点、AppWorld11点逐身份复核 | TextCraft仍2点；AppWorld在本次native为7点，FP32输出层为4点。这是原漏报子集的复核，不是新的总体发生率 |
+| 稳定负尾的实际幅度 | TextCraft同一状态两个冻结位置765/800 | FP32输出层d为−2.44143/−2.53597，A/r为−10.4895/−11.6287，原DT却为正；该处舍入d仅−0.09520/−0.03215，不能解释反号 |
+| source位置接错 | 330点的原DT source contraction与所选embedding边界对照 | 全部逐值相同，只排除该边界的错位，不扩大成整条actor接口验收 |
+| DT或原观察钩子污染状态 | TextCraft全部45条冻结UID、16状态、12个B4；DT前两次、DT后、原钩子启用及移除 | 所测事实分数与单删d全部逐值相同，记录精度标志未变；在此范围未复现污染，不修改状态恢复模块 |
+
+输出层FP32参考不是完整FP32模型，也不是FA/FLA/VERL官方容差验收；没有添加容差、
+倍率、剪裁或残差纠偏。AppWorld实际answer owner SHA1e20956a…与TextCraft
+d47333ea…分别保留，不因同名文件而混成同一运行版本。旧TextCraft layer对照与
+此次native存在的差异仍未定位；本次状态隔离没有解释它，不能随意归因为batch形状。
+
+三个诊断driver分别3616016/birth1791458234.81、3650124/birth1791458528.17、
+3752986/birth1791459490.25，均仅GPU4/5；最大rank测量阶段分别114.79、467.41、
+205.26秒，初始化不计入这些阶段数。head诊断每rank分别30/37次原生paired B8，
+零DT；状态隔离每rank6次原DT与30次原生paired B8。三项均完成、无optimizer。
+head最大单rankallocated分别10,713,222,144与32,251,317,248字节；状态隔离观察
+进程树PSS最大46,327,587,840字节，未见OOM。这些不是32k训练容量结论。
+
+远端1791460203.9453628终态观察：8卡均858/65536MiB、0%、无GPU进程。
+TextCraft正式仍因原actor非有限梯度停止，AppWorld正式仍停止；没有恢复或重启。
+极端归因有限传播的集合主因尚未确定，没有可部署修复。已否决的条件注意力候选
+仍不部署；此前RISE/MAS结果保持原判定。本条覆盖下方较早的运行阶段，不改历史。
+
+汇总：experiments/rl/results_extreme_attribution_evidence_20261008.json。
+分项：results_native_reference_drift_20261008.json、results_native_reference_repeat_20261008.json、
+results_native_head_textcraft_20261008.json、results_native_head_appworld_20261008.json、
+results_native_dt_lifecycle_20261008.json。原始身份、分组、分位数、配置和资源观察均保留。
+
 ## 2026-10-08 原actor有界诊断部分完成：未复现NaN，不构成修复
 
 仅在研究GPU4/5启动一次原VERL观察作业，driver包装PID3316643/birth1791455383.0，

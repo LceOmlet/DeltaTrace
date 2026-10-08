@@ -1,0 +1,6 @@
+{
+  "observed_unix": 1791457429.7424977,
+  "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/compiled_logprob_seed.py",
+  "sha256": "757edb728aa57e2e802ab83dc59297ec32bbbb4eb9b2ecae6ca42fea5ed1a651",
+  "source": "\"\"\"Fuse the existing finite log-probability seed with installed Inductor.\n\nOnly explicit attribution mathematics is compiled. The model and its ordinary\nforward/backward remain native. Output and checks retain FP32 calculation.\n\"\"\"\nimport torch\nfrom compiled_finite_rules import logarithmic_mean_with_checks\n\n\ndef seed_with_checks(z0,z1,target):\n    mean,checks=logarithmic_mean_with_checks(z0,z1)\n    seed=-mean/mean.sum(-1,keepdim=True)\n    seed=seed.clone()\n    seed.scatter_add_(-1,target.unsqueeze(-1),seed.new_ones((*target.shape,1)))\n    return seed,checks\n\n\ncompiled_seed=torch.compile(seed_with_checks,fullgraph=True,dynamic=True,backend='inductor')\n\n\ndef logprob_secant_seed(z0,z1,target):\n    seed,checks=compiled_seed(z0,z1,target)\n    assert bool(checks),'Finite logprob seed validation failed'\n    return seed\n"
+}
