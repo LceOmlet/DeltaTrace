@@ -1,6 +1,33 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-08 集合逐层定位准备完成；不是GDN候选或正式训练
+
+沿用同一冻结查询，TextCraft45条/AppWorld48条轨迹，均包含原32条均匀
+样本和完整预测尾部的额外轨迹；每任务128个均匀source、37个尾部source。
+CPU调用各任务实际import的原DirectActionTargetReadout._prepare_row，
+全部selected IDs、target offsets、suffix/prior/target掩码与保存值相同，
+0.338/0.552秒，CUDA未初始化。未重新抽样、未读取独立测试侧。
+
+复用原readout的长度顺序按B4测量，每任务12个原DT调用；各rank6个，
+随后原native paired8单删除前向。为匹配FSDP调用数，两卡按相邻批次
+最大查询次数同步，TextCraft30/AppWorld37个native forward/rank；
+耗尽的行只是显式identity控制，不额外计作样本。不是逐token重跑DT。
+
+只旁观原decoder_finite_pullback返回系数及原_token_effect的顶层输入，
+返回对象保持不变；不传observer参数，保留原prefix/capture/offload设置。
+逐层单删状态与联合有限系数的乘积用于分解差额；整decoder残差不冒充
+GDN-only或FA/FLA核误差。头部/最终norm另列，事实端点漂移及批形变化另记，
+不补偿、不更改训练信用。主体、预测尾部、漏估尾部和状态/查看身份仍分开，
+原作者累计删除/RISE/MAS不被替代。
+
+只保留一个B4的CPU系数及事实端点bank，不保存每个查询的整网隐藏状态。
+按实际最长6013/17994、H4096、33边界计算的保守FP64+BF16 bank上界
+30.28/90.61GiB每rank，实际可更少；这不是实测峰值。已有torch虚拟allocated
+历史值甚至超过卡容量，不把它当物理VRAM；新诊断必须读mx-smi与phase/PSS。
+脚本已准备、语法检查，尚未运行GPU。worker墙钟预算1800秒，不自动重试，
+不启动候选、更新或恢复。源码与CPU回执见current_runtime对应准备记录。
+
 ## 2026-10-08 分组误差梯度四组完成；不据首组锁定GDN或全方法主因
 
 同一PID1202123/birth1791435098.07完成原13pass/rank诊断，normal completed.json
