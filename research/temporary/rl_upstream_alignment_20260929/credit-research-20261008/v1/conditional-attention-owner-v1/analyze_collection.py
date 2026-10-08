@@ -66,37 +66,43 @@ def analyze(plan, records):
                 nonfinite.append(uid)
                 continue
             paired.append(dict(traj_uid=uid,state=entries[uid]['initial_state_sha256'],
-                original=before,conditional=after,delta=after-before))
+                original=before,delta=after-before,**{candidate_label:after}))
         states = {}
         for row in paired:
             states.setdefault(row['state'],[]).append(row)
         state_means = {state:{name:statistics.mean(row[name] for row in values)
-            for name in ('original','conditional','delta')} for state,values in states.items()}
+            for name in ('original',candidate_label,'delta')} for state,values in states.items()}
         deltas = [value['delta'] for value in state_means.values()]
         metrics[view] = dict(expected=len(expected),paired_finite=len(paired),missing_uids=missing,
             nonfinite_uids=nonfinite,complete=not missing and not nonfinite,
             available_equal_state_means={name:statistics.mean(v[name] for v in state_means.values())
-                for name in ('original','conditional','delta')} if state_means else None,
+                for name in ('original',candidate_label,'delta')} if state_means else None,
             state_delta_standard_error=statistics.stdev(deltas)/math.sqrt(len(deltas)) if len(deltas)>1 else None,
             state_means=state_means,paired_trajectories=paired)
     cohorts = {}
     for cohort in ('uniform','predicted_tail_census'):
         points = [dict(q,traj_uid=uid,state=entries[uid]['initial_state_sha256'])
             for (uid,_),q in queries.items() if cohort in q['cohorts']]
+        if candidate_label != 'conditional':
+            for q in points:
+                q['previously_examined'] = entries[q['traj_uid']]['previously_examined']
         cells = {}
         for q in points:
             cell = (ratio_bin(q['fresh_original_d']),ratio_bin(q['fresh_native_single_d']))
+            if candidate_label != 'conditional':
+                cell += (q['previously_examined'],)
             cells.setdefault(cell,[]).append(q)
         cohorts[cohort] = dict(measured_points=len(points),
             expected_points=sum(cohort in q['cohorts'] for e in data['entries'] for q in e['queries']),
             cells=[dict(original_ratio_bin=cell[0],native_ratio_bin=cell[1],points=len(values),
+                **({'previously_examined':cell[2]} if len(cell)>2 else {}),
                 initial_states=len({q['state'] for q in values}),
                 original_abs_d_error=quantiles([abs(q['fresh_original_d']-q['fresh_native_single_d']) for q in values]),
-                conditional_abs_d_error=quantiles([abs(q['fresh_'+candidate_label+'_d']-q['fresh_native_single_d']) for q in values]),
+                **{candidate_label+'_abs_d_error':quantiles([abs(q['fresh_'+candidate_label+'_d']-q['fresh_native_single_d']) for q in values])},
                 original_abs_A_over_r_error=quantiles([advantage_error(q,'original') for q in values]),
-                conditional_abs_A_over_r_error=quantiles([advantage_error(q,candidate_label) for q in values]),
+                **{candidate_label+'_abs_A_over_r_error':quantiles([advantage_error(q,candidate_label) for q in values])},
                 original_sign_crossings=sum((q['fresh_original_d']<0)!=(q['fresh_native_single_d']<0) for q in values),
-                conditional_sign_crossings=sum((q['fresh_'+candidate_label+'_d']<0)!=(q['fresh_native_single_d']<0) for q in values))
+                **{candidate_label+'_sign_crossings':sum((q['fresh_'+candidate_label+'_d']<0)!=(q['fresh_native_single_d']<0) for q in values)})
                 for cell,values in cells.items()], points_with_identity=points)
     return dict(task=task,complete=all(r['phase']=='complete' for r in records)
         and len(records)==2,primary_metrics=metrics,cohorts=cohorts,
