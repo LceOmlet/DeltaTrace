@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 集合尾部的原PPO梯度诊断 prepared-only
+
+冻结TextCraft开发集合37个c>2位置、其中native单删d>=0的24个位置，全部通过
+原token ID、native suffix位置与actor retained_response_positions绑定，无缺失/
+重复；37个位置在四个原global64/local32 optimizer minibatch中为19/10/3/5个。
+新诊断只将原整批白化系数做只读视图，原分母、掩码、B4、loss与反向保留。
+每个minibatch测原完整PG、37点对应贡献、24点对应贡献；不重新白化子集，
+不将native单删回填训练，不把稀疏主体/漏估尾部与全数尾部相加成总体均值。
+四个minibatch均在同一未更新基础LoRA上测，不冒称连续四次真实更新回放。
+
+observe_native_optimizer_minibatch.py增加默认不启用的named coefficient views，
+继续调用原VERL update_policy/loss/backward/reducer；默认GRPO诊断入口保留。
+prepared observer SHA6ed5cd29、driver cfe1cc2f、原梯度统计94219328、endpoint
+8a72887a；原正式actor3a65e173/core fc2f992b及训练入口未改。
+本次准备时HEAD fc1dd9e7是父提交，诊断patch当时未提交；源以记录的实际SHA为准，
+不能把父提交称为包含新代码的部署版本。启动后另记实际提交与PID/birth。
+原owner导入初始化了CUDA，但此准备未创建模型、前向、反向或更新，不能称为
+纯CPU零CUDA检查。GPU4/5准备前空闲，TextCraft仍hold、AppWorld不重启。
+AppWorld无完整pre-update，不能推造其PPO梯度。完整准备回执为
+credit-research-20261008/v1/collection-gradient-prepare.json；尚未完成native验收。
+
 ## 2026-10-08 冻结集合基线全部完成；主体与两侧尾部交叉分层，信用尚未修复
 
 7f8f53e8/PID432447/birth1791427765.32的GPU4/5诊断完成并退出，原actor group

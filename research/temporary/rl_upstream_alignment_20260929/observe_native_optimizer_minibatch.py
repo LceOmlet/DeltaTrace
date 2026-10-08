@@ -56,12 +56,14 @@ class NativeLossHooks:
     This helper does not implement a policy loss or aggregate token losses.
     """
 
-    def __init__(self, actor_owner, *, label, entropy_coeff, use_kl_loss, kl_coef):
+    def __init__(self, actor_owner, *, label, entropy_coeff, use_kl_loss, kl_coef,
+                 policy_component=False):
         self.owner = actor_owner
         self.label = label
         self.entropy_coeff = entropy_coeff
         self.use_kl_loss = use_kl_loss
         self.kl_coef = kl_coef
+        self.policy_component = policy_component
         self.policy_loss = actor_owner.compute_policy_loss
         self.aggregate = actor_owner.agg_loss
         self.records = []
@@ -71,7 +73,8 @@ class NativeLossHooks:
     def _scalar(self, value, component, coefficient):
         import torch
 
-        selected = component == self.label or (component == "dt_pg" and self.label == "grpo_pg")
+        selected = component == self.label or (component == "dt_pg" and
+                   (self.label == "grpo_pg" or self.policy_component))
         self.records[-1][component] = {
             "value": value.detach().item(), "dtype": str(value.dtype),
             "native_coefficient": coefficient, "selected_backward": selected,
@@ -126,7 +129,8 @@ def _grpo_snapshot(data):
     return snapshot
 
 
-def observe_native_optimizer_minibatch(actor, data, *, output_path, rank):
+def observe_native_optimizer_minibatch(actor, data, *, output_path, rank,
+                                      policy_advantages=None):
     """Write complete minibatch statistics; return the last original metrics.
 
     Invoke collectively on the original FSDP ranks, with a separate output_path
@@ -161,10 +165,12 @@ def observe_native_optimizer_minibatch(actor, data, *, output_path, rank):
                 "ref_log_prob", "advantages", "diagnostic_grpo_advantages")
     if data.meta_info.get("multi_turn", False):
         required += ("loss_mask",)
+    if policy_advantages is not None:
+        required = tuple(key for key in required if key != "diagnostic_grpo_advantages")
     for key in required:
         if key not in data.batch:
             raise ValueError(f"Missing original minibatch field: {key}")
-    if data.batch["diagnostic_grpo_advantages"].shape != data.batch["advantages"].shape:
+    if policy_advantages is None and data.batch["diagnostic_grpo_advantages"].shape != data.batch["advantages"].shape:
         raise ValueError("Externally computed official GRPO advantages must bind the same complete rows/tokens.")
     temperature = data.meta_info["temperature"]
     model = actor.actor_module
@@ -180,14 +186,29 @@ def observe_native_optimizer_minibatch(actor, data, *, output_path, rank):
     snapshots, parameter_records, groups, pass_records = {}, {}, {}, {}
     optimizer = actor.actor_optimizer
     last_metrics = None
-    grpo_data = _grpo_snapshot(data)
+    if policy_advantages is None:
+        labels = LABELS
+        pass_data = {label: _grpo_snapshot(data) if label == "grpo_pg" else data
+                     for label in labels}
+    else:
+        # Diagnostic coefficient views only. The original update_policy still
+        # owns every loss, denominator, B4 accumulation and gradient reduction.
+        labels = tuple(policy_advantages)
+        pass_data = {}
+        for label, advantages in policy_advantages.items():
+            if advantages.shape != data.batch["advantages"].shape:
+                raise ValueError("Diagnostic coefficient views must retain complete original rows/tokens.")
+            snapshot = data.select(deepcopy=True)
+            snapshot.batch = data.batch.clone(recurse=False)
+            snapshot.batch["advantages"] = advantages
+            pass_data[label] = snapshot
     python_rng = random.getstate()
     numpy_rng = np.random.get_state()
     try:
         with torch.random.fork_rng(devices=cuda_devices):
             cpu_rng = torch.get_rng_state()
             cuda_rng = {device: torch.cuda.get_rng_state(device) for device in cuda_devices}
-            for label in LABELS:
+            for label in labels:
                 pass_started = time.monotonic()
                 print(f"native_minibatch_diagnostic rank={rank} label={label} phase=pass_start", flush=True)
                 random.setstate(python_rng)
@@ -196,7 +217,8 @@ def observe_native_optimizer_minibatch(actor, data, *, output_path, rank):
                 for device, state in cuda_rng.items():
                     torch.cuda.set_rng_state(state, device)
                 hooks = NativeLossHooks(actor_owner, label=label, entropy_coeff=config.entropy_coeff,
-                                        use_kl_loss=config.use_kl_loss, kl_coef=config.kl_loss_coef)
+                                        use_kl_loss=config.use_kl_loss, kl_coef=config.kl_loss_coef,
+                                        policy_component=policy_advantages is not None)
                 step_records = []
                 no_op_calls = []
 
@@ -228,7 +250,7 @@ def observe_native_optimizer_minibatch(actor, data, *, output_path, rank):
                 with hooks.installed():
                     with _temporary_attribute(optimizer, "step", no_op_optimizer_step):
                         with _temporary_attribute(actor, "_optimizer_step", observed_optimizer_step):
-                            last_metrics = original_update(data=grpo_data if label == "grpo_pg" else data)
+                            last_metrics = original_update(data=pass_data[label])
                 if len(step_records) != 1:
                     raise RuntimeError("The complete original minibatch did not reach its optimizer boundary.")
                 pass_records[label] = {"microbatch_losses": hooks.records,
@@ -236,11 +258,11 @@ def observe_native_optimizer_minibatch(actor, data, *, output_path, rank):
                                        "elapsed_seconds": time.monotonic() - pass_started}
                 print(f"native_minibatch_diagnostic rank={rank} label={label} phase=pass_complete elapsed={time.monotonic() - pass_started:.3f}s", flush=True)
             statistics = native_gradient_statistics(
-                trainable, snapshots, groups, data.batch["input_ids"].device, LABELS,
+                trainable, snapshots, groups, data.batch["input_ids"].device, labels,
                 norm_scope="Pre-clip complete local32 minibatch gradients from native backward; sharded DTensor scalar statistics SUM on its original mesh; replicated/plain contributions remain local.")
             result = {
-                "scope": "One checkpoint-local complete original global64/local32 optimizer minibatch; four diagnostic passes, no parameter or optimizer-state update.",
-                "rank": rank, "labels": list(LABELS), "optimizer_step_executed": False,
+                "scope": "One checkpoint-local complete original global64/local32 optimizer minibatch; diagnostic passes, no parameter or optimizer-state update.",
+                "rank": rank, "labels": list(labels), "optimizer_step_executed": False,
                 "native_gradient_clipping_executed": True, "scheduler_step_control": "Caller must no-op and restore the original worker scheduler step.",
                 "sources": {"actor": actor_identity, "core": core_identity,
                             "diagnostic": _source_identity(observe_native_optimizer_minibatch),
@@ -254,7 +276,7 @@ def observe_native_optimizer_minibatch(actor, data, *, output_path, rank):
                                      "loss_agg_mode": config.loss_agg_mode, "grad_clip": config.grad_clip},
                 "input_fields": {key: {"shape": list(data.batch[key].shape), "dtype": str(data.batch[key].dtype)}
                                  for key in required},
-                "grpo_advantage_provenance": "Provided by driver through official global-UID compute_advantage; not recomputed here.",
+                "coefficient_provenance": "Externally supplied diagnostic views of original saved coefficients; no normalization here." if policy_advantages is not None else "Provided by driver through official global-UID compute_advantage; not recomputed here.",
                 "suppressed_backward_scope": "Scalar hooks return zero upstream gradients for other original branches; their forward/backward bodies still execute, including nonfinite intermediates.",
                 "passes": pass_records, "parameters": parameter_records, "gradient_statistics": statistics,
             }
