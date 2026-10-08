@@ -1,0 +1,220 @@
+{
+  "scope": "Test original FLA readout composition on the saved real overflow block.\n\nThis is an operator/API test, not a DT estimator or a faithfulness test. The\noriginal chunk readout, reverse-state stages, FP32 recurrence, and assert_close\nown all numerical calculations and thresholds. No model forward is executed.\n",
+  "script": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-context-readouts-20261009-v1/check_native_context_readouts.py",
+    "sha256": "4f7b392199728073daeacf2103a7d27cb3003a7f42b2dc0c9cf901405733a0a7"
+  },
+  "original_test": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v3/official-check-setup/test_gated_delta_v041.py",
+    "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+    "thresholds": {
+      "o": 0.005,
+      "ht": 0.005,
+      "dq": 0.008,
+      "dk": 0.008,
+      "dv": 0.008,
+      "db": 0.02,
+      "dg": 0.02,
+      "dh0": 0.008
+    }
+  },
+  "original_readout": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/ops/common/chunk_o.py",
+    "sha256": "548cd026c316d61d74e691c82c82165b7d12bc437f47ec2ac1e1f50bb48396be"
+  },
+  "operands": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v2/results/rank0-first-nonfinite.pt",
+    "sha256": "9cd75ef2ca64793cf6c84713c32c3b925841e2e4363aba3465cac6e39f9f7e03"
+  },
+  "precast": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v3/results/rank0-precast-seed.pt",
+    "sha256": "f5cdf28299d50469653c2e214a102c54c01d363990715f3bc68e69a8e23c996e"
+  },
+  "block": [
+    3712,
+    3840
+  ],
+  "cases": [
+    {
+      "dtype": "torch.float16",
+      "shape": [
+        4,
+        128,
+        8,
+        128
+      ],
+      "initial_state_nonzero": true,
+      "reverse_boundary_nonzero": true,
+      "seed_exponents": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "checks": [
+        {
+          "name": "native o",
+          "official_quantity": "o",
+          "threshold": 0.005,
+          "normalized_error": 0.0002355845576845792,
+          "max_abs": 8.594244718551636e-06,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native shifted-query o",
+          "official_quantity": "o",
+          "threshold": 0.005,
+          "normalized_error": 0.5167187305462817,
+          "max_abs": 0.08939553797245026,
+          "nonfinite": 0,
+          "status": "failed",
+          "error": "native shifted-query o diff: 0.089396 ratio: 0.516719"
+        },
+        {
+          "name": "transposed state readout dq",
+          "official_quantity": "dq",
+          "threshold": 0.008,
+          "normalized_error": 0.00038378133376741456,
+          "max_abs": 0.009915351867675781,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "reversed readout dv",
+          "official_quantity": "dv",
+          "threshold": 0.008,
+          "normalized_error": 0.0005195786950334399,
+          "max_abs": 0.384979248046875,
+          "nonfinite": 0,
+          "status": "passed"
+        }
+      ],
+      "seconds": 11.407117631984875,
+      "status": "failed"
+    },
+    {
+      "dtype": "torch.bfloat16",
+      "shape": [
+        4,
+        128,
+        8,
+        128
+      ],
+      "initial_state_nonzero": true,
+      "reverse_boundary_nonzero": true,
+      "seed_exponents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "checks": [
+        {
+          "name": "native o",
+          "official_quantity": "o",
+          "threshold": 0.005,
+          "normalized_error": 0.0020022889451459655,
+          "max_abs": 7.625296711921692e-05,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native shifted-query o",
+          "official_quantity": "o",
+          "threshold": 0.005,
+          "normalized_error": 0.5162410955265977,
+          "max_abs": 0.08909109234809875,
+          "nonfinite": 0,
+          "status": "failed",
+          "error": "native shifted-query o diff: 0.089091 ratio: 0.516241"
+        },
+        {
+          "name": "transposed state readout dq",
+          "official_quantity": "dq",
+          "threshold": 0.008,
+          "normalized_error": 0.002341125757893273,
+          "max_abs": 0.15185928344726562,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "reversed readout dv",
+          "official_quantity": "dv",
+          "threshold": 0.008,
+          "normalized_error": 0.0026590666888008808,
+          "max_abs": 1.562744140625,
+          "nonfinite": 0,
+          "status": "passed"
+        }
+      ],
+      "seconds": 9.557387050997932,
+      "status": "failed"
+    }
+  ],
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer": 0,
+  "production_modified": false,
+  "attribution_accuracy_repaired": false,
+  "status": "complete_operator_API_diagnostic",
+  "peak_allocated_bytes": 1037369856,
+  "peak_reserved_bytes": 1520435200,
+  "limits": "Original o/dq/dv quantities only. No claim of arbitrary-query, full conditional-window coefficients, whole-method faithfulness, or training speed."
+}

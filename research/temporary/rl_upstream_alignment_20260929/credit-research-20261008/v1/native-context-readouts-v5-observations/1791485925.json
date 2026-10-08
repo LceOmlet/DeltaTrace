@@ -1,0 +1,836 @@
+{
+  "unix": 1791485925.8514483,
+  "driver_alive": false,
+  "processes": [],
+  "physical": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Fri Oct  9 02:58:45 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+  "host": {
+    "total": 1081000480768,
+    "available": 1033757655040,
+    "percent": 4.4,
+    "used": 47242825728,
+    "free": 868039606272,
+    "active": 67564462080,
+    "inactive": 103287320576,
+    "buffers": 339222528,
+    "cached": 171403509760,
+    "shared": 14827520,
+    "slab": 7957766144
+  },
+  "log": "Current Triton version 3.0.0 is below the recommended 3.2.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.\n/opt/conda/lib/python3.12/site-packages/torch/autograd/graph.py:829: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at /workspace/framework/mcPytorch/aten/src/ATen/cuda/CublasHandlePool.cpp:183.)\n  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass\n{\"dtype\": \"torch.float16\", \"shape\": [4, 128, 8, 128], \"initial_state_nonzero\": true, \"reverse_boundary_nonzero\": true, \"actual_layouts\": {\"q\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.float16\"}, \"k\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.float16\"}, \"v\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.float16\"}, \"g\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float32\"}, \"beta\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float16\"}, \"A\": {\"shape\": [4, 128, 8, 64], \"stride\": [65536, 512, 64, 1], \"dtype\": \"torch.float16\"}, \"w\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.float16\"}, \"v_new\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.float16\"}, \"h\": {\"shape\": [4, 2, 8, 128, 128], \"stride\": [262144, 131072, 16384, 128, 1], \"dtype\": \"torch.float16\"}, \"raw_g\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float32\"}}, \"external_layouts\": {\"q\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1, 16384, 128], \"dtype\": \"torch.float16\", \"contiguous\": false, \"contiguous_same_ptr\": false, \"captured_same_ptr\": false}, \"k\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1, 16384, 128], \"dtype\": \"torch.float16\", \"contiguous\": false, \"contiguous_same_ptr\": false, \"captured_same_ptr\": false}, \"v\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1, 16384, 128], \"dtype\": \"torch.float16\", \"contiguous\": false, \"contiguous_same_ptr\": false, \"captured_same_ptr\": false}, \"beta\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float16\", \"contiguous\": true, \"contiguous_same_ptr\": true, \"captured_same_ptr\": true}, \"raw_g\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float32\", \"contiguous\": true, \"contiguous_same_ptr\": true, \"captured_same_ptr\": true}}, \"unchanged_inputs\": {\"q\": true, \"k\": true, \"v\": true, \"beta\": true, \"raw_g\": true}, \"captured_query_matches_input\": true, \"contiguous_identity\": {\"q\": true, \"k\": true, \"v\": true, \"g\": true, \"beta\": true, \"A\": true, \"w\": true, \"v_new\": true, \"h\": true, \"raw_g\": true}, \"exact_artifact\": {\"path\": \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-context-readouts-20261009-v5/operands-float16.pt\", \"sha256\": \"dd93d81d0993e5541f55a794a058cc51adfdc8e124b73dfdc85df78aee1985db\", \"bytes\": 32056647}, \"seed_exponents\": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"checks\": [{\"name\": \"native o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0002355845576845792, \"max_abs\": 8.594244718551636e-06, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"original readout replay o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0002355845576845792, \"max_abs\": 8.594244718551636e-06, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"raw shifted-query first o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.5167187305462817, \"max_abs\": 0.08939553797245026, \"nonfinite\": 0, \"status\": \"failed\", \"error\": \"raw shifted-query first o diff: 0.089396 ratio: 0.516719\"}, {\"name\": \"native shifted-query o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0002374920368792629, \"max_abs\": 8.884817361831665e-06, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"raw shifted-query after replay o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.5167187305462817, \"max_abs\": 0.08939553797245026, \"nonfinite\": 0, \"status\": \"failed\", \"error\": \"raw shifted-query after replay o diff: 0.089396 ratio: 0.516719\"}, {\"name\": \"raw captured-key shifted-query o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0002374920368792629, \"max_abs\": 8.884817361831665e-06, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"transposed state readout dq\", \"official_quantity\": \"dq\", \"threshold\": 0.008, \"normalized_error\": 0.00038378133376741456, \"max_abs\": 0.009915351867675781, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"reversed readout dv\", \"official_quantity\": \"dv\", \"threshold\": 0.008, \"normalized_error\": 0.0005195786950334399, \"max_abs\": 0.384979248046875, \"nonfinite\": 0, \"status\": \"passed\"}], \"seconds\": 11.749642189999577, \"status\": \"failed\"}\n{\"dtype\": \"torch.bfloat16\", \"shape\": [4, 128, 8, 128], \"initial_state_nonzero\": true, \"reverse_boundary_nonzero\": true, \"actual_layouts\": {\"q\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.bfloat16\"}, \"k\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.bfloat16\"}, \"v\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.bfloat16\"}, \"g\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float32\"}, \"beta\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.bfloat16\"}, \"A\": {\"shape\": [4, 128, 8, 64], \"stride\": [65536, 512, 64, 1], \"dtype\": \"torch.bfloat16\"}, \"w\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.bfloat16\"}, \"v_new\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1024, 128, 1], \"dtype\": \"torch.bfloat16\"}, \"h\": {\"shape\": [4, 2, 8, 128, 128], \"stride\": [262144, 131072, 16384, 128, 1], \"dtype\": \"torch.bfloat16\"}, \"raw_g\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float32\"}}, \"external_layouts\": {\"q\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1, 16384, 128], \"dtype\": \"torch.bfloat16\", \"contiguous\": false, \"contiguous_same_ptr\": false, \"captured_same_ptr\": false}, \"k\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1, 16384, 128], \"dtype\": \"torch.bfloat16\", \"contiguous\": false, \"contiguous_same_ptr\": false, \"captured_same_ptr\": false}, \"v\": {\"shape\": [4, 128, 8, 128], \"stride\": [131072, 1, 16384, 128], \"dtype\": \"torch.bfloat16\", \"contiguous\": false, \"contiguous_same_ptr\": false, \"captured_same_ptr\": false}, \"beta\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.bfloat16\", \"contiguous\": true, \"contiguous_same_ptr\": true, \"captured_same_ptr\": true}, \"raw_g\": {\"shape\": [4, 128, 8], \"stride\": [1024, 8, 1], \"dtype\": \"torch.float32\", \"contiguous\": true, \"contiguous_same_ptr\": true, \"captured_same_ptr\": true}}, \"unchanged_inputs\": {\"q\": true, \"k\": true, \"v\": true, \"beta\": true, \"raw_g\": true}, \"captured_query_matches_input\": true, \"contiguous_identity\": {\"q\": true, \"k\": true, \"v\": true, \"g\": true, \"beta\": true, \"A\": true, \"w\": true, \"v_new\": true, \"h\": true, \"raw_g\": true}, \"exact_artifact\": {\"path\": \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-context-readouts-20261009-v5/operands-bfloat16.pt\", \"sha256\": \"050e231cc60e3939e2ccdf0fe78bfdcf6995938457c8297ced5556c3b8e11acd\", \"bytes\": 32056746}, \"seed_exponents\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"checks\": [{\"name\": \"native o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0020022889451459655, \"max_abs\": 7.625296711921692e-05, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"original readout replay o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0020022889451459655, \"max_abs\": 7.625296711921692e-05, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"raw shifted-query first o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.5162410955265977, \"max_abs\": 0.08909109234809875, \"nonfinite\": 0, \"status\": \"failed\", \"error\": \"raw shifted-query first o diff: 0.089091 ratio: 0.516241\"}, {\"name\": \"native shifted-query o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0019639267465982073, \"max_abs\": 7.211603224277496e-05, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"raw shifted-query after replay o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.5162410955265977, \"max_abs\": 0.08909109234809875, \"nonfinite\": 0, \"status\": \"failed\", \"error\": \"raw shifted-query after replay o diff: 0.089091 ratio: 0.516241\"}, {\"name\": \"raw captured-key shifted-query o\", \"official_quantity\": \"o\", \"threshold\": 0.005, \"normalized_error\": 0.0019639267465982073, \"max_abs\": 7.211603224277496e-05, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"transposed state readout dq\", \"official_quantity\": \"dq\", \"threshold\": 0.008, \"normalized_error\": 0.002341125757893273, \"max_abs\": 0.15185928344726562, \"nonfinite\": 0, \"status\": \"passed\"}, {\"name\": \"reversed readout dv\", \"official_quantity\": \"dv\", \"threshold\": 0.008, \"normalized_error\": 0.0026590666888008808, \"max_abs\": 1.562744140625, \"nonfinite\": 0, \"status\": \"passed\"}], \"seconds\": 9.483544629998505, \"status\": \"failed\"}\n",
+  "result": {
+    "scope": "Test original FLA readout composition on the saved real overflow block.\n\nThis is an operator/API test, not a DT estimator or a faithfulness test. The\noriginal chunk readout, reverse-state stages, FP32 recurrence, and assert_close\nown all numerical calculations and thresholds. No model forward is executed.\n",
+    "script": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-context-readouts-20261009-v5/check_native_context_readouts.py",
+      "sha256": "a18cef2d7f21e881c758b8d5bc67bd94ff0cf106bbfdeb9a0f700a0b5f8eef0b"
+    },
+    "original_test": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v3/official-check-setup/test_gated_delta_v041.py",
+      "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813",
+      "thresholds": {
+        "o": 0.005,
+        "ht": 0.005,
+        "dq": 0.008,
+        "dk": 0.008,
+        "dv": 0.008,
+        "db": 0.02,
+        "dg": 0.02,
+        "dh0": 0.008
+      }
+    },
+    "original_readout": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/fla/ops/common/chunk_o.py",
+      "sha256": "548cd026c316d61d74e691c82c82165b7d12bc437f47ec2ac1e1f50bb48396be"
+    },
+    "operands": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v2/results/rank0-first-nonfinite.pt",
+      "sha256": "9cd75ef2ca64793cf6c84713c32c3b925841e2e4363aba3465cac6e39f9f7e03"
+    },
+    "precast": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v3/results/rank0-precast-seed.pt",
+      "sha256": "f5cdf28299d50469653c2e214a102c54c01d363990715f3bc68e69a8e23c996e"
+    },
+    "block": [
+      3712,
+      3840
+    ],
+    "cases": [
+      {
+        "dtype": "torch.float16",
+        "shape": [
+          4,
+          128,
+          8,
+          128
+        ],
+        "initial_state_nonzero": true,
+        "reverse_boundary_nonzero": true,
+        "actual_layouts": {
+          "q": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "k": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "v": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "g": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          "beta": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "A": {
+            "shape": [
+              4,
+              128,
+              8,
+              64
+            ],
+            "stride": [
+              65536,
+              512,
+              64,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "w": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "v_new": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "h": {
+            "shape": [
+              4,
+              2,
+              8,
+              128,
+              128
+            ],
+            "stride": [
+              262144,
+              131072,
+              16384,
+              128,
+              1
+            ],
+            "dtype": "torch.float16"
+          },
+          "raw_g": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float32"
+          }
+        },
+        "external_layouts": {
+          "q": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1,
+              16384,
+              128
+            ],
+            "dtype": "torch.float16",
+            "contiguous": false,
+            "contiguous_same_ptr": false,
+            "captured_same_ptr": false
+          },
+          "k": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1,
+              16384,
+              128
+            ],
+            "dtype": "torch.float16",
+            "contiguous": false,
+            "contiguous_same_ptr": false,
+            "captured_same_ptr": false
+          },
+          "v": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1,
+              16384,
+              128
+            ],
+            "dtype": "torch.float16",
+            "contiguous": false,
+            "contiguous_same_ptr": false,
+            "captured_same_ptr": false
+          },
+          "beta": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float16",
+            "contiguous": true,
+            "contiguous_same_ptr": true,
+            "captured_same_ptr": true
+          },
+          "raw_g": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float32",
+            "contiguous": true,
+            "contiguous_same_ptr": true,
+            "captured_same_ptr": true
+          }
+        },
+        "unchanged_inputs": {
+          "q": true,
+          "k": true,
+          "v": true,
+          "beta": true,
+          "raw_g": true
+        },
+        "captured_query_matches_input": true,
+        "contiguous_identity": {
+          "q": true,
+          "k": true,
+          "v": true,
+          "g": true,
+          "beta": true,
+          "A": true,
+          "w": true,
+          "v_new": true,
+          "h": true,
+          "raw_g": true
+        },
+        "exact_artifact": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-context-readouts-20261009-v5/operands-float16.pt",
+          "sha256": "dd93d81d0993e5541f55a794a058cc51adfdc8e124b73dfdc85df78aee1985db",
+          "bytes": 32056647
+        },
+        "seed_exponents": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "checks": [
+          {
+            "name": "native o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0002355845576845792,
+            "max_abs": 8.594244718551636e-06,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "original readout replay o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0002355845576845792,
+            "max_abs": 8.594244718551636e-06,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "raw shifted-query first o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.5167187305462817,
+            "max_abs": 0.08939553797245026,
+            "nonfinite": 0,
+            "status": "failed",
+            "error": "raw shifted-query first o diff: 0.089396 ratio: 0.516719"
+          },
+          {
+            "name": "native shifted-query o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0002374920368792629,
+            "max_abs": 8.884817361831665e-06,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "raw shifted-query after replay o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.5167187305462817,
+            "max_abs": 0.08939553797245026,
+            "nonfinite": 0,
+            "status": "failed",
+            "error": "raw shifted-query after replay o diff: 0.089396 ratio: 0.516719"
+          },
+          {
+            "name": "raw captured-key shifted-query o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0002374920368792629,
+            "max_abs": 8.884817361831665e-06,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "transposed state readout dq",
+            "official_quantity": "dq",
+            "threshold": 0.008,
+            "normalized_error": 0.00038378133376741456,
+            "max_abs": 0.009915351867675781,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "reversed readout dv",
+            "official_quantity": "dv",
+            "threshold": 0.008,
+            "normalized_error": 0.0005195786950334399,
+            "max_abs": 0.384979248046875,
+            "nonfinite": 0,
+            "status": "passed"
+          }
+        ],
+        "seconds": 11.749642189999577,
+        "status": "failed"
+      },
+      {
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4,
+          128,
+          8,
+          128
+        ],
+        "initial_state_nonzero": true,
+        "reverse_boundary_nonzero": true,
+        "actual_layouts": {
+          "q": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "k": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "v": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "g": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          "beta": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "A": {
+            "shape": [
+              4,
+              128,
+              8,
+              64
+            ],
+            "stride": [
+              65536,
+              512,
+              64,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "w": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "v_new": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1024,
+              128,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "h": {
+            "shape": [
+              4,
+              2,
+              8,
+              128,
+              128
+            ],
+            "stride": [
+              262144,
+              131072,
+              16384,
+              128,
+              1
+            ],
+            "dtype": "torch.bfloat16"
+          },
+          "raw_g": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float32"
+          }
+        },
+        "external_layouts": {
+          "q": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1,
+              16384,
+              128
+            ],
+            "dtype": "torch.bfloat16",
+            "contiguous": false,
+            "contiguous_same_ptr": false,
+            "captured_same_ptr": false
+          },
+          "k": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1,
+              16384,
+              128
+            ],
+            "dtype": "torch.bfloat16",
+            "contiguous": false,
+            "contiguous_same_ptr": false,
+            "captured_same_ptr": false
+          },
+          "v": {
+            "shape": [
+              4,
+              128,
+              8,
+              128
+            ],
+            "stride": [
+              131072,
+              1,
+              16384,
+              128
+            ],
+            "dtype": "torch.bfloat16",
+            "contiguous": false,
+            "contiguous_same_ptr": false,
+            "captured_same_ptr": false
+          },
+          "beta": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.bfloat16",
+            "contiguous": true,
+            "contiguous_same_ptr": true,
+            "captured_same_ptr": true
+          },
+          "raw_g": {
+            "shape": [
+              4,
+              128,
+              8
+            ],
+            "stride": [
+              1024,
+              8,
+              1
+            ],
+            "dtype": "torch.float32",
+            "contiguous": true,
+            "contiguous_same_ptr": true,
+            "captured_same_ptr": true
+          }
+        },
+        "unchanged_inputs": {
+          "q": true,
+          "k": true,
+          "v": true,
+          "beta": true,
+          "raw_g": true
+        },
+        "captured_query_matches_input": true,
+        "contiguous_identity": {
+          "q": true,
+          "k": true,
+          "v": true,
+          "g": true,
+          "beta": true,
+          "A": true,
+          "w": true,
+          "v_new": true,
+          "h": true,
+          "raw_g": true
+        },
+        "exact_artifact": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-context-readouts-20261009-v5/operands-bfloat16.pt",
+          "sha256": "050e231cc60e3939e2ccdf0fe78bfdcf6995938457c8297ced5556c3b8e11acd",
+          "bytes": 32056746
+        },
+        "seed_exponents": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "checks": [
+          {
+            "name": "native o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0020022889451459655,
+            "max_abs": 7.625296711921692e-05,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "original readout replay o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0020022889451459655,
+            "max_abs": 7.625296711921692e-05,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "raw shifted-query first o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.5162410955265977,
+            "max_abs": 0.08909109234809875,
+            "nonfinite": 0,
+            "status": "failed",
+            "error": "raw shifted-query first o diff: 0.089091 ratio: 0.516241"
+          },
+          {
+            "name": "native shifted-query o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0019639267465982073,
+            "max_abs": 7.211603224277496e-05,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "raw shifted-query after replay o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.5162410955265977,
+            "max_abs": 0.08909109234809875,
+            "nonfinite": 0,
+            "status": "failed",
+            "error": "raw shifted-query after replay o diff: 0.089091 ratio: 0.516241"
+          },
+          {
+            "name": "raw captured-key shifted-query o",
+            "official_quantity": "o",
+            "threshold": 0.005,
+            "normalized_error": 0.0019639267465982073,
+            "max_abs": 7.211603224277496e-05,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "transposed state readout dq",
+            "official_quantity": "dq",
+            "threshold": 0.008,
+            "normalized_error": 0.002341125757893273,
+            "max_abs": 0.15185928344726562,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "reversed readout dv",
+            "official_quantity": "dv",
+            "threshold": 0.008,
+            "normalized_error": 0.0026590666888008808,
+            "max_abs": 1.562744140625,
+            "nonfinite": 0,
+            "status": "passed"
+          }
+        ],
+        "seconds": 9.483544629998505,
+        "status": "failed"
+      }
+    ],
+    "model_calls": 0,
+    "DT_calls": 0,
+    "optimizer": 0,
+    "production_modified": false,
+    "attribution_accuracy_repaired": false,
+    "status": "complete_operator_API_diagnostic",
+    "peak_allocated_bytes": 1041564160,
+    "peak_reserved_bytes": 1524629504,
+    "limits": "Original o/dq/dv quantities only. No claim of arbitrary-query, full conditional-window coefficients, whole-method faithfulness, or training speed."
+  }
+}

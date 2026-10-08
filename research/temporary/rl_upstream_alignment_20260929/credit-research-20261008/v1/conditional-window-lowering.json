@@ -1,0 +1,283 @@
+{
+  "status": "conditional_memory_core_prepared_not_full_credit_repair_or_accepted",
+  "source": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\derive_conditional_window_lowering.py",
+    "bytes": 13135,
+    "sha256": "e59997bf8a4410747de1521cdd88dcd1779dc31614d197b5855bd3948e97bf32"
+  },
+  "previous_algebra": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\gdn-context-algebra-cost.json",
+    "bytes": 18121,
+    "sha256": "f2b050cf06f162486835697f55808620e6f1b9130f0e49cec18af68e297192ac"
+  },
+  "owner": {
+    "model_config": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/config.json",
+    "model_config_sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05",
+    "modeling_sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+    "fla_chunk_sha256": "fe10b455f8c71f4f845415f60a4385ff4f630336e5e46c592611765dfd8cce97",
+    "fla_state_sha256": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba",
+    "finite_fla_sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6",
+    "conv_width": 4,
+    "head_key_dim": 128,
+    "head_value_dim": 128,
+    "value_heads": 32
+  },
+  "original_readout_evidence": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_native_context_readouts_20261009.json",
+    "bytes": 20402,
+    "sha256": "dafeaab629abaaabcff6c8b9987b174fe1b146b6c2b25bc5c44032123bc0368a"
+  },
+  "prepared_core": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\conditional_window_memory.py",
+    "bytes": 6419,
+    "sha256": "8e4c0502c2f89ce2074b5ed0a92dbd0725f2ba4ea9dd86d822f4b0807d73e4d1"
+  },
+  "native_query_composition": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\native_conditional_queries.py",
+    "bytes": 4802,
+    "sha256": "9f8e8c59ee372cdb5e58e835c0de351fa3c9f7829cbdcb3af45c9057e9254aa5"
+  },
+  "algebra": {
+    "sympy_version": "1.14.0",
+    "checks": [
+      {
+        "name": "Conditional minus factual state, through position 0",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Conditional minus factual state, through position 1",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Conditional minus factual state, through position 2",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Conditional minus factual state, through position 3",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Conditional reverse state at last window position",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Conditional reverse difference at position 2",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Conditional reverse difference at position 1",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Conditional reverse difference at position 0",
+        "expanded_residual": "0"
+      }
+    ],
+    "state_difference": "Hc_j-Hf_j = dc_j*H0 + sum_m U_jm V_jm^T",
+    "state_rank_by_position": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "state_scalar": "dc_0=ac_0-af_0; dc_j=af_j*dc_(j-1), j>0",
+    "reverse_difference": "Pc_j-Pf_j = sum_m U_jm V_jm^T",
+    "reverse_rank_by_position": [
+      10,
+      7,
+      4,
+      1
+    ],
+    "reverse_basis": [
+      "qc0-qf0",
+      "qc1-qf1",
+      "qc2-qf2",
+      "qc3-qf3",
+      "kf1",
+      "kf2",
+      "kf3",
+      "kc1",
+      "kc2",
+      "kc3"
+    ],
+    "reverse_first_full_rank_term": false,
+    "small_decay_divisions": 0,
+    "proof_scope": "Arbitrary noncommuting symbols; not native dtype accuracy, a whole-model single-deletion oracle, or an accepted credit repair."
+  },
+  "conditional_state_evaluation": "Evaluate uc sequentially through the four positions from H0^T kc_l and already formed rank updates; retain cross-position interactions. Do not treat the four changed positions as independent interventions.",
+  "ordered_finite_coefficients": {
+    "premise": "Within one conditional window, endpoint0 changes only the selected layer-input row and its width4 conv consequences; endpoint1 is factual. All other layer-input rows and the incoming state are factual. A fixed memory-output cotangent do is supplied by the existing DT consumer.",
+    "shared_adjoint": "P_j^1=Lambda_j^1+scale*q_j^1*do_j^T, L_j=(P_j^1)^T k_j^1; Lambda_(j-1)^1=(M_j^1)^T P_j^1.",
+    "reference_state": "H_j^0=alpha_j^0 H_(j-1)^0+k_j^0 (u_j^0)^T; u_j^0=beta_j^0 (v_j^0-alpha_j^0 (H_(j-1)^0)^T k_j^0). H^0 is the conditional window state, not the global all-EOS state.",
+    "q": "m_q_j=scale*H_j^0*do_j",
+    "v": "m_v_j=beta_j^1*L_j",
+    "k": "m_k_j=P_j^1*u_j^0-alpha_j^1*beta_j^1*H_(j-1)^0*L_j",
+    "beta": "m_beta_j=(v_j^0-alpha_j^0*(H_(j-1)^0)^T*k_j^0)^T*L_j",
+    "alpha": "m_alpha_j=<P_j^1,H_(j-1)^0>-beta_j^1*L_j^T*(H_(j-1)^0)^T*k_j^0",
+    "meaning": "These are obtained by contracting the symbolically checked complete finite state difference. They are not ordinary derivatives and do not require dividing a small hidden change or rescaling output credit. Original exp/log-gate, Q/K normalization and conv/SiLU finite rules remain needed at their owner boundaries.",
+    "endpoint_order": "The ordered rule is an algebraic intermediate. Preserve the existing symmetric endpoint convention by also evaluating the reversed conditional window. Both orientations share the factual future adjoint after the last changed operand: all later memory operators and fixed do are the same. The reversed orientation needs only the conditional reverse within width4, not an extra whole-sequence/world backward.",
+    "limitation": "Exactness here is the weighted finite memory effect for the specified local conditional window. It does not turn a finite-chain approximation across all hidden/model layers into an exact original-token counterfactual."
+  },
+  "native_readout_ledger": [
+    {
+      "orientation": "factual future / conditional past",
+      "quantity": "H0^T kc_(i+l)",
+      "lags": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "calls": 4,
+      "owner": "past native chunk_fwd_o"
+    },
+    {
+      "orientation": "factual future / conditional past",
+      "quantity": "H0 do_(i+l)",
+      "lags": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "calls": 4,
+      "owner": "transposed past native chunk_fwd_o"
+    },
+    {
+      "orientation": "factual future / conditional past",
+      "quantity": "H0 Lf_(i+l)",
+      "lags": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "calls": 4,
+      "owner": "transposed past native chunk_fwd_o"
+    },
+    {
+      "orientation": "factual future / conditional past",
+      "quantity": "Pf_(i+l) uc_(i+l)",
+      "lags": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "calls": 8,
+      "owner": "two transposed reversed native chunk_fwd_o per lag"
+    },
+    {
+      "orientation": "conditional future / factual past",
+      "quantity": "Pf_(i+l)^T kc_(i+l)",
+      "lags": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "calls": 8,
+      "owner": "two reversed native chunk_fwd_o per lag"
+    },
+    {
+      "orientation": "conditional future / factual past",
+      "quantity": "Hf_(j-1) Wf_j to recover Pf_j uf_j from original dk",
+      "lags": "all factual positions once",
+      "calls": 1,
+      "owner": "transposed past native chunk_fwd_o; original coincident mixed dk"
+    },
+    {
+      "orientation": "conditional future / factual past",
+      "quantity": "Hf_(i+l-1) Lc_(i+l)",
+      "lags": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "calls": 4,
+      "owner": "transposed past native chunk_fwd_o"
+    },
+    {
+      "orientation": "conditional future / factual past",
+      "quantity": "H0^T kf_(i+l)",
+      "lags": [
+        1,
+        2,
+        3
+      ],
+      "calls": 3,
+      "owner": "past native chunk_fwd_o"
+    },
+    {
+      "orientation": "conditional future / factual past",
+      "quantity": "H0^T (qc_(i+l)-qf_(i+l))",
+      "lags": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "calls": 4,
+      "owner": "past native chunk_fwd_o"
+    }
+  ],
+  "readouts_per_source_tile_per_head_group": 40,
+  "proposed_readouts_per_layer_at_32768": 1280,
+  "coincident_original_mixed_owner_calls": 1,
+  "coincident_original_adjoint_owner_calls": 1,
+  "first_alpha": {
+    "forward": "alpha_finite_f = alpha_coincident_f + beta_f*(kf-kc)^T*H0*Lf",
+    "reverse": "alpha_finite_rev = alpha_coincident_f + beta_f*kf^T*H0*Lf - beta_c*kf^T*H0*Lc + trace((Pc-Pf)^T H0)",
+    "trace": "Use the reverse low-rank basis and the already required H0^T kc queries plus H0^T kf_(i+1:i+4) and H0^T delta_q_(i:i+4). Never divide original r0 by alpha."
+  },
+  "memory_arithmetic": {
+    "scope": "Conservative tensor arithmetic for the proposed head8 lowering, not measured total GPU/host peak. No lifetime reuse credited.",
+    "geometry": {
+      "batch": 4,
+      "total_length": 32768,
+      "head_group": 8,
+      "dimension": 128,
+      "source_tile": 4096,
+      "native_chunk_halo": 64
+    },
+    "full_sequence_FP32_vector_bytes": 536870912,
+    "rejected_full_sequence_query_and_rank_bank_bytes": 41875931136,
+    "proposed_FP32_tile_vector_bytes": 68157440,
+    "proposed_vector_terms": {
+      "all_40_readout_results": 40,
+      "conditional_state_factors_and_reverse_triples": 38,
+      "conditional_q_k_v_all_four_positions": 12,
+      "finite_q_k_v_outputs_all_four_positions": 12,
+      "temporary_native_vector_inputs_and_outputs": 8
+    },
+    "proposed_vector_bytes": 7497318400,
+    "proposed_h_and_dh_FP32_bytes": 272629760,
+    "excluded": "Existing model, all original endpoint captures, original coincident finite owner temporaries, norm/gate, linear projections, allocator reserve and host offload. Must measure actual combined residency before capacity/efficiency acceptance."
+  },
+  "boundary_rules": [
+    "All source positions including native 64-token boundaries remain in the same frozen evaluation.",
+    "Past queries refer to H_(i-1), including captured chunk-start h for the first position.",
+    "Future queries refer to Pf_(i+l); shifted queries crossing a chunk consume the next original chunk and dh_end, not zero future.",
+    "The final incomplete chunk uses the original finite owner identity padding: zero q/k/v/beta/do/raw_g, carry last cumulative g.",
+    "An end-of-sequence window has only the existing positions, with no fabricated action or observation."
+  ],
+  "remaining_owner_composition": [
+    "Conditional q/k/v must come from the same selected layer-input row through the original linear projection and width4 convolution, with existing finite SiLU/L2 owners.",
+    "A shared ordinary conv backward is insufficient when finite coefficients depend on both source and lag. Accumulate the four original linear conv weights with the corresponding conditional coefficients inside the existing DT owner; do not copy the native conv state machine.",
+    "Original norm/gate finite propagation and upstream hidden-layer approximation remain separate. This memory identity alone cannot establish full original-token exactness.",
+    "The research-only memory core and native query composition are prepared; the measured derivative-limit call count is40. The complete GDN owner composition, real live allocations, nonzero finite effects and unchanged frozen author cumulative deletion/RISE/MAS remain required before acceptance or deployment."
+  ],
+  "evidence_limits": "The collection supports joint-background allocation error, not GDN dominance. The 0.9ms original readout and 46.5ms original symmetric FLA primitive timings do not measure this complete 40-readout composition.",
+  "operations": {
+    "new_model": 0,
+    "new_DT": 0,
+    "new_native_operator": 0,
+    "new_backward": 0,
+    "new_optimizer": 0,
+    "production_modified": false,
+    "training_restarted": false,
+    "credit_repair_accepted": false
+  },
+  "cpu_seconds": 0.20075839999481104
+}

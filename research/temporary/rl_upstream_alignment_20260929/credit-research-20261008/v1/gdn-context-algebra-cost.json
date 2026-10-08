@@ -206,6 +206,51 @@
     "model_calls": 0,
     "DT_calls": 0,
     "optimizer": 0,
-    "production_modified": false
+    "production_modified": false,
+    "actual_dtype_operator_checks": {
+      "receipt": "native-context-readouts-v5-result.json",
+      "scope": "Saved real B4 x 128 tokens x 8 heads; nonzero initial and reverse chunk boundary; original o/dq/dv quantities only.",
+      "readout_owner_sha256": "548cd026c316d61d74e691c82c82165b7d12bc437f47ec2ac1e1f50bb48396be",
+      "correct_owner_compositions_passed": 12,
+      "deliberately_retained_invalid_layout_controls_failed": 4,
+      "layout_defect": "GPU q/k/v arrived with stride [131072,1,16384,128]. Original public FLA input_guard materializes native [131072,1024,128,1]. Direct low-level readout must consume those captured contiguous operands; logical shape/equality alone is insufficient.",
+      "formal_training_defect_claim": false,
+      "official_tolerances_changed": false
+    },
+    "measured_primitive_profile": {
+      "receipt": "native-context-profile-result.json",
+      "actual_shape": [
+        4,
+        7999,
+        8,
+        128
+      ],
+      "dtype": "torch.float16",
+      "symmetric_finite_FLA_warm_seconds": [
+        0.04649268600041978,
+        0.04641873302171007,
+        0.046499307005433366
+      ],
+      "native_readout_warm_seconds": [
+        0.0009297380165662616,
+        0.0008872229955159128,
+        0.0009012910013552755
+      ],
+      "transposed_readout_warm_seconds": [
+        0.0008878119988366961,
+        0.0008887129952199757,
+        0.0008887900039553642
+      ],
+      "peak_allocated_bytes": 5639348736,
+      "peak_reserved_bytes": 6224347136,
+      "scope": "Resident original saved operator inputs only. Full conditional-window live tensors, query count, projections, replay, faithfulness and 32768 capacity are unmeasured."
+    },
+    "remaining_derivation": {
+      "reverse_window": "For the affected width4 window, alpha/beta change only at its first layer-input row; later conv positions change q/k/v only. P_i excludes the first transition M_i. Therefore P_conditional_i-P_factual_i has a low-rank representation: propagate later key changes and q changes backward within width4, sharing the unchanged factual future adjoint beyond the window. This avoids an inverse transition or division by tiny alpha.",
+      "initial_alpha": "At the first changed position the incoming state is factual. Reuse the original coincident mixed alpha scalar for its full-state contraction; other terms are conditional low-rank state/adjoint queries.",
+      "composition": "Both finite endpoint orientations, coupled q/k/v conv window, original norm/gate and projection ownership remain required. This is not yet an implemented or verified conditional finite coefficient function.",
+      "memory": "Do not materialize all per-source dense states or all whole-sequence rank factors. Lower through original captured 64-token chunk states and future adjoints; exact live layouts and launch count must be enumerated before candidate implementation.",
+      "quality": "The collection establishes a joint-background allocation contribution, not GDN dominance. Primitive checks do not justify whole-model repair acceptance; the frozen collection and original author cumulative deletion/RISE/MAS remain unchanged."
+    }
   }
 }
