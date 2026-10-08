@@ -1,0 +1,31 @@
+--- original-finite-FLA-f1555736
++++ shared-original-exp-secant
+@@ -99,6 +99,14 @@
+ 
+ def _dot(x, y):
+     return (x*y).sum(-1)
++
++
++def exp_secant_factors(g0, raw1):
++    """Existing stable exponential secant, shared with the GDN owner seam."""
++    distance=(raw1-g0).abs()
++    denominator=torch.where(distance==0,torch.ones_like(distance),distance)
++    ratio=torch.where(distance==0,torch.ones_like(distance),-torch.expm1(-distance)/denominator)
++    return torch.exp(torch.maximum(g0,raw1)),ratio
+ 
+ 
+ def mixed_coefficients(endpoints, adjoints, scale, reuse_scalar_products=False, *, diagnostics=False):
+@@ -170,10 +178,9 @@
+     M=scale*K0Q*UZ-K0K1*UW
+     dalpha=torch.empty_like(g0)
+     _finite_decay_scan[(count,)](M,g0,G0,G1,b,d,S,dalpha,C=C,num_warps=4,num_stages=1)
+-    raw1=token('raw_g',1).float();distance=(raw1-g0).abs()
+-    denominator=torch.where(distance==0,torch.ones_like(distance),distance)
+-    ratio=torch.where(distance==0,torch.ones_like(distance),-torch.expm1(-distance)/denominator)
+-    dg=dalpha*torch.exp(torch.maximum(g0,raw1))*ratio
++    raw1=token('raw_g',1).float()
++    exponential,ratio=exp_secant_factors(g0,raw1)
++    dg=dalpha*exponential*ratio
+     def unpack(x):
+         if x.ndim==3:
+             return x.reshape(B,H,N*C,K)[:,:,:T].permute(0,2,1,3).contiguous()

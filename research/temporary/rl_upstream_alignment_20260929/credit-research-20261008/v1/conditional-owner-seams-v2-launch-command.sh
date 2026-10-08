@@ -1,0 +1,33 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+ROOT='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922'
+OUT='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/conditional-owner-seams-20261009-v2'
+FILES={'check_conditional_owner_seams.py': '76e16663c2086c44c07b5cb9e61fc23a0bb6db7934f08d14ce5f137e032145df', 'conditional_gdn_context.py': '4c6e3669aae655bb9eb468f0cf8e53edc74830fe75f3de133f35552078450148', 'conditional_conv_windows.py': 'cf768ac362defb30b44ac0a5f1a2c63c0619ff07b6a2575e66ad7bc2eb1543ca', 'check_conditional_conv_windows.py': 'f820fbc3099a77a9db98ab3212634feefa88da495004d94bedec34077409cfa4', 'tiled_conditional_memory.py': '57a097e2ac007b72791af836521af83d163e6ecf96d47dcf33318762df4e776e', 'conditional_window_memory.py': '8e4c0502c2f89ce2074b5ed0a92dbd0725f2ba4ea9dd86d822f4b0807d73e4d1', 'native_conditional_queries.py': '9f8e8c59ee372cdb5e58e835c0de351fa3c9f7829cbdcb3af45c9057e9254aa5', 'qwen35_gdn_finite.py': 'ed7cb669f80d39b169d0c7a31bfaa18c4565d3823f3d8595363e4d6eb46e9c10', 'finite_fla_gpu.py': '0374121a8057abe08617cf7822ae48d3329237b1f48533e7886256cdf59166a5'}
+COMMIT='354ad33d9c58714ec49d4151cbfc5b614b0b9b82'
+import hashlib,json,os,psutil,re,subprocess,time
+from pathlib import Path
+out=Path(OUT)
+for name,digest in FILES.items():
+ assert hashlib.sha256((out/name).read_bytes()).hexdigest()==digest
+assert not (out/'launch.json').exists(), 'Inspect the original job; do not duplicate it'
+physical=subprocess.run(['mx-smi'],text=True,capture_output=True,check=True).stdout
+device=next(i for i in (4,5) if not re.search(r'^\|\s*'+str(i)+r'\s+\d+\s+\S',physical,re.M))
+source=Path(ROOT)/'runs/direct-target-prefix-runtime-20261007-v1/appworld/appworld-dt/source.json'
+assert hashlib.sha256(source.read_bytes()).hexdigest()=='58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0'
+s=json.loads(source.read_bytes())
+env=dict(os.environ,**s['environment']);env.pop('MACA_VISIBLE_DEVICES',None);env['CUDA_VISIBLE_DEVICES']=str(device)
+env['PYTHONPATH']=':'.join([str(out),s['pythonpath'],str(Path(s['dt_root'])/'clean/qwen35')])
+argv=['timeout','--signal=TERM','240',env['VENV_PYTHON'],str(out/'check_conditional_owner_seams.py'),
+ '--original_fla',str(Path(s['dt_root'])/'clean/qwen35/finite_fla_gpu.py'),
+ '--original_query',ROOT+'/receipts/native-conditional-queries-20261009-v1',
+ '--original_conv',ROOT+'/receipts/conditional-conv-windows-20261009-v1',
+ '--output',str(out/'result.json')]
+with (out/'driver.log').open('xb') as log:
+ p=subprocess.Popen(argv,env=env,cwd=out,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+r=dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),argv=argv,script_sha256=FILES,
+ base_commit=COMMIT,source_json_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+ devices=[device],launched_unix=time.time(),wall_bound_seconds=240,
+ model_calls=0,DT_calls=0,optimizer=0,formal_restart=False,production_modified=False,physical_before=physical)
+(out/'launch.json').write_text(json.dumps(r,indent=2)+'\n');print(json.dumps(r))
+
+PY

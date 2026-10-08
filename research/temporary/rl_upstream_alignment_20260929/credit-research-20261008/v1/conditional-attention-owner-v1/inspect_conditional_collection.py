@@ -38,6 +38,9 @@ def make_candidate(original, spec, environment):
         # model, author metric and all native execution remain their owners.
         module = load_module('research_endpoint_seed', spec['seed'])
         return module.make_candidate(original, spec, environment)
+    if spec.get('kind') == 'conditional_gdn':
+        module = load_module('research_conditional_gdn_builder', spec['builder'])
+        return module.make_candidate(original, spec, environment)
     decoder = load_module('research_conditional_decoder', spec['decoder'])
     previous = sys.modules['qwen35_decoder_finite']
     try:

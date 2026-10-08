@@ -21,15 +21,17 @@ def sha(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', choices=('textcraft', 'appworld'), required=True)
-    parser.add_argument('--candidate-kind', choices=('conditional_attention','endpoint_head'), default='conditional_attention')
+    parser.add_argument('--candidate-kind', choices=('conditional_attention','endpoint_head','conditional_gdn'), default='conditional_attention')
     args = parser.parse_args()
     task = args.task
     endpoint = args.candidate_kind == 'endpoint_head'
-    output_folder = COLLECTION/'endpoint-head-owner-v1' if endpoint else HERE
+    gdn = args.candidate_kind == 'conditional_gdn'
+    cached = endpoint or gdn
+    output_folder = COLLECTION/'conditional-gdn-collection-v1' if gdn else COLLECTION/'endpoint-head-owner-v1' if endpoint else HERE
     output_folder.mkdir(exist_ok=True)
-    remote = ROOT + ('/receipts/endpoint-head-collection-'+task+'-20261009-v1' if endpoint
+    remote = ROOT + ('/receipts/conditional-gdn-collection-'+task+'-20261009-v1' if gdn else '/receipts/endpoint-head-collection-'+task+'-20261009-v1' if endpoint
                      else '/receipts/conditional-collection-'+task+'-20261008-v3')
-    if not endpoint:
+    if not cached:
         compiled = json.loads((HERE/'compiled-owner.json').read_bytes())
         composition = json.loads((HERE/'composition-prepared.json').read_bytes())
     manifest = json.loads((COLLECTION/'manifest.json').read_bytes())
@@ -50,12 +52,19 @@ def main():
         count = max(len(entries[uid]['queries']) for b in batches[offset:offset+2] for uid in b['uids'])
         for b in batches[offset:offset+2]:
             b['query_rounds'] = (count+1)//2
-    generated = None if endpoint else HERE/'composition-prepared'/task
+    generated = COLLECTION/'conditional-gdn-owner-prepared' if gdn else None if endpoint else HERE/'composition-prepared'/task
     files = [HERE/'inspect_conditional_collection.py',
         COLLECTION/'inspect_author_collection.py',
         AUDIT/'direct-target-action-author-curve-20261007/v1/inspect_action_curve.py',
         AUDIT/'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
-    if endpoint:
+    if gdn:
+        assert task=='textcraft', 'First frozen whole-candidate comparison; AppWorld baseline remains separate'
+        files += [COLLECTION/name for name in ('conditional_gdn_candidate.py',
+            'conditional_gdn_context.py','conditional_conv_windows.py','tiled_conditional_memory.py',
+            'conditional_window_memory.py','native_conditional_queries.py')]
+        files += [generated/'qwen35_gdn_finite.py',generated/'finite_fla_gpu.py',
+                  HERE/'textcraft-v3-rank0.json',HERE/'textcraft-v3-rank1.json']
+    elif endpoint:
         assert task=='textcraft', 'First fixed comparison only; no automatic second-task launch'
         derivation=json.loads((COLLECTION/'endpoint-head-derivation.json').read_bytes())
         assert derivation['status']=='derived_only_unaccepted'
@@ -64,13 +73,23 @@ def main():
         files += [HERE/'conditional_attention_endpoints.py', generated/'qwen35_decoder_finite.py', generated/'qwen35_dense_finite_runner.py']
     for p in files:
         if p.suffix=='.py': ast.parse(p.read_text(encoding='utf8'))
-    if not endpoint:
+    if not cached:
         for item in composition['tasks'][task]:
             assert sha(generated/item['generated_name']) == item['generated_sha256']
     hashes = {p.name: sha(p) for p in files}
     assert hashes['inspect_action_curve.py'] == '7277fade4e9b1cb49f825e4cb2fc54453c9ff3ce4859b20350aa2bd67ffaf3a6'
     assert hashes['inspect_extreme_endpoint.py'] == '8a72887a32bd11533486ddee6dc0d36b4980bfb77ed94eadc7a9a13f031b36d5'
-    if endpoint:
+    if gdn:
+        candidate=dict(kind='conditional_gdn',builder=remote+'/conditional_gdn_candidate.py',
+            gdn=remote+'/candidate/qwen35_gdn_finite.py',fla=remote+'/candidate/finite_fla_gpu.py',
+            context=remote+'/conditional_gdn_context.py',phase_directory=remote+'/results',
+            baseline_gdn_sha256='ef55ce08dec9374304018b43b9f85510fca36054408c439ab1109dca8ac23ca9',
+            files=[dict(path=remote+('/candidate/' if p.parent==generated else '/')+p.name,
+                        sha256=hashes[p.name]) for p in files if p.name in
+                ('conditional_gdn_candidate.py','conditional_gdn_context.py','conditional_conv_windows.py',
+                 'tiled_conditional_memory.py','conditional_window_memory.py','native_conditional_queries.py',
+                 'qwen35_gdn_finite.py','finite_fla_gpu.py')])
+    elif endpoint:
         head=json.loads((COLLECTION/'layer-suboperations-textcraft-v2-observations/rank0.json').read_bytes())['owners']['qwen35_answer_finite']
         candidate=dict(kind='endpoint_head', seed=remote+'/endpoint_head_seed.py', head_owner=head,
             files=[dict(path=remote+'/endpoint_head_seed.py',sha256=hashes['endpoint_head_seed.py'])])
@@ -88,17 +107,17 @@ def main():
             dict(path=wrapper, sha256=verified['launch']['candidate']['vendor_fa_finite_bf16_d256.py'])]
     task_spec=dict(entries=data['entries'],batches=batches,candidate=candidate,
                    wall_budget_seconds=1800 if task=='textcraft' else 4200)
-    if endpoint:
-        task_spec.update(candidate_label='endpoint_head',original_baseline=[
+    if cached:
+        task_spec.update(candidate_label=args.candidate_kind,original_baseline=[
             dict(path=remote+'/textcraft-v3-rank'+str(i)+'.json',sha256=hashes['textcraft-v3-rank'+str(i)+'.json']) for i in range(2)])
     plan = dict(scope=__doc__, frozen_manifest_sha256=sha(COLLECTION/'manifest.json'),
         frozen_layer_inputs_sha256=sha(COLLECTION/'layer-collection-inputs.json'),
         metric_owner=manifest['metric_owner'], tasks={task:task_spec},
         controls='Original fresh actor and task-specific actual owners; B4, LoRA8/16, same dtype, same Y and identities. No optimizer, rollout, checkpoint restore, credit replacement or test-set tuning.',
         primary_trajectories=32, initial_states=16, extra_tail_trajectories=len(extras),
-        native_calls_per_rank=[sum((21 if b['primary'] else 0) if endpoint else
+        native_calls_per_rank=[sum((21 if b['primary'] else 0) if cached else
             ((42 if b['primary'] else 1)+b['query_rounds']) for b in batches[rank::2]) for rank in range(2)],
-        DT_calls_per_rank=6 if endpoint else 12,
+        DT_calls_per_rank=6 if cached else 12,
         candidate_kind=args.candidate_kind,
         derivation_sha256=sha(COLLECTION/'endpoint-head-derivation.json') if endpoint else None)
     (output_folder/('comparison-inputs-'+task+'.json')).write_text(json.dumps(plan,indent=2)+'\n',encoding='utf8')
@@ -116,7 +135,7 @@ root=Path(ROOT);out=Path(OUT)
 assert not (out/'launch.json').exists(),'Do not duplicate this comparison launch'
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 for name,h in HASHES.items():
- p=out/('candidate' if name in ('qwen35_decoder_finite.py','qwen35_dense_finite_runner.py') else '')/name
+ p=out/('candidate' if name in ('qwen35_decoder_finite.py','qwen35_dense_finite_runner.py','qwen35_gdn_finite.py','finite_fla_gpu.py') else '')/name
  assert sha(p)==h
  if p.suffix=='.py':ast.parse(p.read_text())
 plan=json.loads((out/'comparison-inputs.json').read_bytes())

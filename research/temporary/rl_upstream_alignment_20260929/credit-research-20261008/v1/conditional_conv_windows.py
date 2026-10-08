@@ -9,7 +9,7 @@ from fla.modules.l2norm import l2norm_fwd
 
 
 def conditional_conv_windows(conv, factual, replacement, weight, *, initial=None,
-                             bias=None, start=0, stop=None):
+                             bias=None, start=0, stop=None, retain_pre_graph=False):
     """Return original preactivation and fused output as [width,B,S,channels].
 
     factual/replacement: actual projected QKV endpoint tensors [B,D,T]. Only
@@ -30,15 +30,26 @@ def conditional_conv_windows(conv, factual, replacement, weight, *, initial=None
     x = x.permute(0, 2, 3, 1).contiguous().view(B*S, width, D).transpose(1, 2)
     history = history.permute(0, 2, 3, 1).contiguous().view(B*S, width-1, D).transpose(1, 2)
     x[:, :, 0] = replacement[:, :, start:stop].transpose(1, 2).reshape(B*S, D)
-    pre = conv(x, weight, bias=bias, initial_states=history, activation=None)
+    if retain_pre_graph:
+        x.requires_grad_(True)
+        with torch.enable_grad():
+            pre = conv(x, weight, bias=bias, initial_states=history, activation=None)
+    else:
+        pre = conv(x, weight, bias=bias, initial_states=history, activation=None)
     output = conv(x, weight, bias=bias, initial_states=history, activation='silu')
     unpack = lambda value:value.view(B, S, D, width).permute(3, 0, 1, 2).contiguous()
     valid = (torch.arange(start, stop, device=factual.device)[None, :]
              +torch.arange(width, device=factual.device)[:, None] < T)
-    return dict(pre=unpack(pre), output=unpack(output), valid=valid)
+    result = dict(pre=unpack(pre), output=unpack(output), valid=valid)
+    if retain_pre_graph:
+        # Keep the actual public operator graph, rather than copying its
+        # transpose algorithm into this bridge.
+        result.update(native_pre=pre, native_input=x)
+    return result
 
 
-def native_qkv(output, *, key_heads, value_heads, key_dim, value_dim):
+def native_qkv(output, *, key_heads, value_heads, key_dim, value_dim,
+               operand_dtype=None, return_raw=False):
     """Reuse Qwen's split/repeat layout and original FLA normalization."""
     q, k, v = output.split((key_heads*key_dim, key_heads*key_dim,
                            value_heads*value_dim), dim=-1)
@@ -48,6 +59,10 @@ def native_qkv(output, *, key_heads, value_heads, key_dim, value_dim):
     repeat = value_heads//key_heads
     q = q.repeat_interleave(repeat, dim=-2).contiguous()
     k = k.repeat_interleave(repeat, dim=-2).contiguous()
+    if operand_dtype is not None:
+        q,k,v = q.to(operand_dtype),k.to(operand_dtype),v.to(operand_dtype)
+    raw = dict(q=q, k=k, v=v.contiguous()) if return_raw else None
     q, _ = l2norm_fwd(q)
     k, _ = l2norm_fwd(k)
-    return dict(q=q, k=k, v=v.contiguous())
+    result = dict(q=q, k=k, v=v.contiguous())
+    return (result, raw) if return_raw else result
