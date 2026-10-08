@@ -1,6 +1,42 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-08 分组残差与完整开发集概率边界：CPU研究完成，未选择修法
+
+只分析原冻结集合，未新增GPU/model/DT/gradient/update/rollout/restore。
+TextCraft原PID2833207/birth1791370325.16再次核对同出生，release仍false/false；
+AppWorld未恢复，正式路径及Q/V/A、self-target、observation mask、白化和PPO未改。
+实际decoder、有限FA库、公共FA接口的路径/SHA与原测量绑定一致；本次研究源码
+按SHA绑定，记录提交不代表重新部署。原GPU诊断执行源码仍2951f70e。
+
+逐层项按模型原配置分成24个线性注意力整decoder、8个完整注意力整decoder、
+最终norm+head，仍保留任务、cohort、DT/native交叉区间、状态及查看身份。
+这些是包含MLP/norm/残差等的整层，不称作FA/FLA核误差，不按最大项选主因。
+两个任务的完整注意力层与最终norm/head均可出现大幅相反项，GDN单点结论
+不能上升为共同修法；分组只描述，不是组件干预。原累计删除/RISE/MAS仍为主指标。
+
+完整开发侧已存capture：TextCraft85条、121248个source位置；
+AppWorld124条中122条已存、204865个位置，2条缺失不补0。
+TextCraft推算删除后logp>0的位置229个/14状态：223/22263位于1<c<=2，
+6/35位于2<c<=10；其他区间0。AppWorld已存位置未出现此越界。
+各区间、状态、查看身份单列；不能解释两任务共同退化，也不把有限集合
+上观察的频率称总体发生率。正logp差额完整保留，不设裁剪、门禁或新容差。
+已有复测包含上述6个较大负信用位置：fresh DT有5个仍越界、1个近边界消失；
+另1个均匀样本的轻微越界也消失。原actor位置/系数与批形漂移分别保留，
+不能把系数大小或平方质量当作未测过的单点梯度。
+
+条件注意力仅推导内部完整Q/K/V、对角交互与gate要求，代数恒等式已核验。
+公共FA源码确认bottom-right mask与dropout0下可返回LSE而不请求概率大矩阵，
+但未作新GPU调用、packed/suffix映射或官方容差验收。B4/32k单个BF16注意力
+输出为1GiB，FP32全注意力矩阵为256GiB，禁止构造；完整tile成本、活跃张量
+与整网组合行为仍未实现，因此没有新候选、质量改进或修复成功的宣称。
+不得只改KV而留下query/gate背景，或把条件效应缩放回联合端点差。
+
+完整来源、分组、旧/新绑定和执行范围见
+results_credit_background_research_20261008.json及current_runtime对应字段。
+独立测试侧未调参/评分，不自动扩样或追加GPU；不恢复单点GDN候选，
+不增加top-k重算/信用纠偏，不变更官方容差。
+
 ## 2026-10-08 冻结集合逐层定位实测记录：两任务全部完成、正式训练仍hold
 
 执行源码2951f70e，脚本SHA8e9b1c8b…，固定输入SHAe835680d…。

@@ -1,0 +1,128 @@
+{
+  "scope": "Conditional attention identities and owner-interface/cost audit, on CPU.\n\nThis derives a possible internal finite rule. It does not implement it, choose\na component from one token, change Q/V/A, or score a candidate's quality.\n",
+  "checks": {
+    "conditional_KV_output": "0",
+    "content1_with_conditional_softmax": "0",
+    "conditional_probability_normalization": "0",
+    "conditional_query_centering_for_arbitrary_support": "0"
+  },
+  "owners": {
+    "textcraft": {
+      "decoder_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+      "decoder_sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197",
+      "recorded_decoder_match": true,
+      "pullback_signature": "module, values, lse, cos, sin, upstream, finite_fa, layout, boundaries, diagnostics=False, *, pv_rule='content1', consume_captures=False, input_shape=None",
+      "gate_rule": "def _attention_gate_rule(qproj0, qproj1, attention0, upstream, out_weight, heads, dim):\n    b, t, _ = upstream.shape\n    g0 = qproj0.view(b, t, heads, 2 * dim)[..., dim:]\n    g1 = qproj1.view(b, t, heads, 2 * dim)[..., dim:]\n    s0 = g0.sigmoid().float()\n    s1 = g1.sigmoid().float()\n    g0f = g0.float()\n    g1f = g1.float()\n    derivative = g0f.sigmoid()\n    multiplier = _linear_transpose(upstream, out_weight).view(b, t, heads, dim)\n    mcontent = multiplier * s1\n    mgate = multiplier * attention0.float() * _secant(g0f, g1f, s0, s1, derivative * (1 - derivative))\n    return (mcontent.transpose(1, 2).contiguous(), mgate)",
+      "finite_library": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/libfinite_row_query_starts.so",
+        "sha256": "4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157",
+        "expected_sha256": "4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157"
+      }
+    },
+    "appworld": {
+      "decoder_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+      "decoder_sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234",
+      "recorded_decoder_match": true,
+      "pullback_signature": "module, values, lse, cos, sin, upstream, finite_fa, layout, boundaries, diagnostics=False, *, pv_rule='content1', consume_captures=False, input_shape=None",
+      "gate_rule": "def _attention_gate_rule(qproj0, qproj1, attention0, upstream, out_weight, heads, dim):\n    b, t, _ = upstream.shape\n    g0 = qproj0.view(b, t, heads, 2 * dim)[..., dim:]\n    g1 = qproj1.view(b, t, heads, 2 * dim)[..., dim:]\n    s0 = g0.sigmoid().float()\n    s1 = g1.sigmoid().float()\n    g0f = g0.float()\n    g1f = g1.float()\n    derivative = g0f.sigmoid()\n    multiplier = _linear_transpose(upstream, out_weight).view(b, t, heads, dim)\n    mcontent = multiplier * s1\n    mgate = multiplier * attention0.float() * _secant(g0f, g1f, s0, s1, derivative * (1 - derivative))\n    return (mcontent.transpose(1, 2).contiguous(), mgate)",
+      "finite_library": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/libfinite_row_query_starts.so",
+        "sha256": "4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157",
+        "expected_sha256": "4f42c391055afec0a0fee9ee698c0820163ff413e42f1c4909b2961ce81e5157"
+      }
+    }
+  },
+  "evidence": {
+    "attention-owner-sources.json": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\attention-owner-sources.json",
+      "sha256": "1d9fa83cdb36c0e9ad1c6f276228a23738fa29c977f29bbe39edf848414ed86c"
+    },
+    "decoder-group-analysis.json": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\decoder-group-analysis.json",
+      "sha256": "7a9e0b6b84181d55c00e120abd573a9dc16124aba407c7b601af773fb66cf1b0"
+    },
+    "credit-probability-bounds.json": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\credit-probability-bounds.json",
+      "sha256": "4166c8d36485369abf1b21107864de4b2277944b9c49d9c443156d92424010e0"
+    }
+  },
+  "conditional_KV": {
+    "definition": "Other query/key/value rows are factual; only key/value row i is at its captured reference.",
+    "u": "exp(s_CF_i-s_F_i)=exp(-delta_s_i)",
+    "denominator": "D_i=1-p_i+p_i*u_i",
+    "output": "O_CF=(O_F-p_i*V_F_i+p_i*u_i*V_CF_i)/D_i",
+    "ordered_rule": "Delta O=p_i*Delta V_i + [p_i*(1-u_i)/D_i]*(V_CF_i-O_F+p_i*Delta V_i)",
+    "coefficients": "Value coefficient retains factual p_i. Key coefficient uses exprel(-delta_s_i), factual Q and the conditional normalization above; it is a finite rule, not the factual derivative or a change of joint P0/P1 split."
+  },
+  "conditional_query": {
+    "definition": "At query row i use factual keys/values except its own reference K_i,V_i. Both Q endpoints use that same conditional key/value background.",
+    "lambda_definition": "lambda_j=(p1_j-p0_j)/(log p1_j-log p0_j), continuous at equal endpoints",
+    "coefficients": "C=sum_j(lambda_j*V_cond_j)/sum_j lambda_j; m_s_j=lambda_j*upstream dot(V_cond_j-C); m_Q=scale*sum_j m_s_j*K_cond_j",
+    "self_interaction": "Do not use independently factual Q and K references at the diagonal: the same hidden-row deletion changes both.",
+    "gate": "The original content1 gate decomposition needs this same conditional O_CF_i for its gate branch, rather than the global all-reference O0_i."
+  },
+  "numerical_scope": {
+    "concern": "Do not evaluate 1-p by subtracting a nearly certain factual key and infer a stable counterfactual from a rounded p=1.",
+    "stable_partition": "For KV replacements a streaming max/argmax and log-partition excluding the largest key can retain the previously tiny other-key mass. Non-maximum keys have p<=1/2; their exclusive partition does not have this dominant-key cancellation.",
+    "query_reuse": "In causal attention, excluding query i's own key leaves the strict past. The pinned public FA documentation confirms bottom-right alignment: preserving each original Q extent and shortening its K/V extent by one shifts the last permitted key to the strict past. This is a contract derivation, not a runtime packed/suffix mapping test. Any implementation must use the original unpadding owner and exact cu_seqlens, not a copied parser or mask implementation.",
+    "current_status": "No primitive, library or official tolerance test was changed or executed by this derivation."
+  },
+  "pinned_native_FA_contract": {
+    "path": "/opt/conda/lib/python3.12/site-packages/flash_attn/flash_attn_interface.py",
+    "sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+    "functions": {
+      "flash_attn_func": {
+        "signature": "q, k, v, dropout_p=0.0, softmax_scale=None, causal=False, window_size=(-1, -1), alibi_slopes=None, deterministic=False, return_attn_probs=False, attn_mask=None, softcap=0.0, s_aux=None, return_max_logit=False",
+        "documentation": "dropout_p should be set to 0.0 during evaluation\nSupports multi-query and grouped-query attention (MQA/GQA) by passing in KV with fewer heads\nthan Q. Note that the number of heads in Q must be divisible by the number of heads in KV.\nFor example, if Q has 6 heads and K, V have 2 heads, head 0, 1, 2 of Q will attention to head\n0 of K, V, and head 3, 4, 5 of Q will attention to head 1 of K, V.\n\nIf causal=True, the causal mask is aligned to the bottom right corner of the attention matrix.\nFor example, if seqlen_q = 2 and seqlen_k = 5, the causal mask (1 = keep, 0 = masked out) is:\n    1 1 1 1 0\n    1 1 1 1 1\nIf seqlen_q = 5 and seqlen_k = 2, the causal mask is:\n    0 0\n    0 0\n    0 0\n    1 0\n    1 1\nIf the row of the mask is all zero, the output will be zero.\n\nIf window_size != (-1, -1), implements sliding window local attention. Query at position i\nwill only attend to keys between\n[i + seqlen_k - seqlen_q - window_size[0], i + seqlen_k - seqlen_q + window_size[1]] inclusive.\n\nArguments:\n    q: (batch_size, seqlen, nheads, headdim)\n    k: (batch_size, seqlen, nheads_k, headdim)\n    v: (batch_size, seqlen, nheads_k, headdim)\n    dropout_p: float. Dropout probability.\n    softmax_scale: float. The scaling of QK^T before applying softmax.\n        Default to 1 / sqrt(headdim).\n    causal: bool. Whether to apply causal attention mask (e.g., for auto-regressive modeling).\n    window_size: (left, right). If not (-1, -1), implements sliding window local attention.\n    alibi_slopes: (nheads,) or (batch_size, nheads), fp32. A bias of\n        (-alibi_slope * |i + seqlen_k - seqlen_q - j|)\n        is added to the attention score of query i and key j.\n    deterministic: bool. Whether to use the deterministic implementation of the backward pass,\n        which is slightly slower and uses more memory. The forward pass is always deterministic.\n    return_attn_probs: bool. Whether to return the attention probabilities. This option is for\n       testing only. The returned probabilities are not guaranteed to be correct\n       (they might not have the right scaling).\n    softcap: float. Anything > 0 activates softcapping attention.\n    s_aux [optional]: (nheads) bf16 tensor. A attention sink value per head that is appended as an\n       additional attention logit to each query's attention scores before softmax.\n    return_max_logit: bool.Whether to return the attention max logit.\nReturn:\n    out: (batch_size, seqlen, nheads, headdim).\n    max_logit: [optional, if return_max_logit=True]: (nheads).fp32 tensor The max of\n        per-head the matrix QK^T * scaling.\n    softmax_lse [optional, if return_attn_probs=True]: (batch_size, nheads, seqlen). The\n        logsumexp of each row of the matrix QK^T * scaling (e.g., log of the softmax\n        normalization factor).\n    S_dmask [optional, if return_attn_probs=True]: (batch_size, nheads, seqlen, seqlen).\n        The output of softmax (possibly with different scaling). It also encodes the dropout\n        pattern (negative means that location was dropped, nonnegative means it was kept).",
+        "forward_source": "@staticmethod\ndef forward(ctx, q, k, v, dropout_p, softmax_scale, causal, window_size, softcap, alibi_slopes, attn_mask, deterministic, return_softmax, s_aux, return_max_logit):\n    if softmax_scale is None:\n        softmax_scale = q.shape[-1] ** (-0.5)\n    ctx.qk_headdim = q.shape[-1]\n    results = _flash_attn_forward(q, k, v, dropout_p, softmax_scale, causal=causal, window_size=window_size, softcap=softcap, alibi_slopes=alibi_slopes, attn_mask=attn_mask, return_softmax=return_softmax and dropout_p > 0, s_aux=s_aux, return_max_logit=return_max_logit)\n    if return_max_logit:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state, attn_mask, max_logit = results\n    else:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state, attn_mask = results\n    ctx.save_for_backward(q, k, v, out_padded, softmax_lse, rng_state)\n    ctx.dropout_p = dropout_p\n    ctx.softmax_scale = softmax_scale\n    ctx.causal = causal\n    ctx.window_size = window_size\n    ctx.softcap = softcap\n    ctx.alibi_slopes = alibi_slopes\n    ctx.attn_mask = attn_mask\n    ctx.deterministic = deterministic\n    if not return_softmax:\n        if return_max_logit:\n            return (out, max_logit)\n        else:\n            return out\n    else:\n        return (out, softmax_lse, S_dmask)",
+        "lower_level_return_softmax": "return_softmax and dropout_p > 0"
+      },
+      "flash_attn_varlen_func": {
+        "signature": "q, k, v, cu_seqlens_q, cu_seqlens_k, max_seqlen_q, max_seqlen_k, dropout_p=0.0, softmax_scale=None, causal=False, window_size=(-1, -1), alibi_slopes=None, deterministic=False, return_attn_probs=False, softcap=0.0, block_table=None, s_aux=None, return_max_logit=False",
+        "documentation": "dropout_p should be set to 0.0 during evaluation\nSupports multi-query and grouped-query attention (MQA/GQA) by passing in K, V with fewer heads\nthan Q. Note that the number of heads in Q must be divisible by the number of heads in KV.\nFor example, if Q has 6 heads and K, V have 2 heads, head 0, 1, 2 of Q will attention to head\n0 of K, V, and head 3, 4, 5 of Q will attention to head 1 of K, V.\n\nIf causal=True, the causal mask is aligned to the bottom right corner of the attention matrix.\nFor example, if seqlen_q = 2 and seqlen_k = 5, the causal mask (1 = keep, 0 = masked out) is:\n    1 1 1 1 0\n    1 1 1 1 1\nIf seqlen_q = 5 and seqlen_k = 2, the causal mask is:\n    0 0\n    0 0\n    0 0\n    1 0\n    1 1\nIf the row of the mask is all zero, the output will be zero.\n\nIf window_size != (-1, -1), implements sliding window local attention. Query at position i\nwill only attend to keys between\n[i + seqlen_k - seqlen_q - window_size[0], i + seqlen_k - seqlen_q + window_size[1]] inclusive.\n\nArguments:\n    q: (total_q, nheads, headdim), where total_q = total number of query tokens in the batch.\n    k: (total_k, nheads_k, headdim), where total_k = total number of key tokens in the batch.\n    If block_table is not none, the shape changes to (num_blocks, page_block_size, nheads_k, headdim)\n    v: (total_k, nheads_k, headdim), where total_k = total number of key tokens in the batch.\n    If block_table is not none, the shape changes to (num_blocks, page_block_size, nheads_k, headdim)\n    cu_seqlens_q: (batch_size + 1,), dtype torch.int32. The cumulative sequence lengths\n       of the sequences in the batch, used to index into q.\n    cu_seqlens_k: (batch_size + 1,), dtype torch.int32. The cumulative sequence lengths\n       of the sequences in the batch, used to index into kv.\n    max_seqlen_q: int. Maximum query sequence length in the batch.\n    max_seqlen_k: int. Maximum key sequence length in the batch.\n    dropout_p: float. Dropout probability.\n    softmax_scale: float. The scaling of QK^T before applying softmax.\n        Default to 1 / sqrt(headdim).\n    causal: bool. Whether to apply causal attention mask (e.g., for auto-regressive modeling).\n    window_size: (left, right). If not (-1, -1), implements sliding window local attention.\n    alibi_slopes: (nheads,) or (batch_size, nheads), fp32. A bias of\n        (-alibi_slope * |i + seqlen_k - seqlen_q - j|)\n        is added to the attention score of query i and key j.\n    deterministic: bool. Whether to use the deterministic implementation of the backward pass,\n        which is slightly slower and uses more memory. The forward pass is always deterministic.\n    return_attn_probs: bool. Whether to return the attention probabilities. This option is for\n       testing only. The returned probabilities are not guaranteed to be correct\n       (they might not have the right scaling).\n    softcap: float. Anything > 0 activates softcapping attention.\n    block_table: Optional block_table of dtype int32 and shape [batch_size, num_blocks_per_seq] used for paged attention.\n    s_aux [optional]: (nheads) bf16 tensor. A attention sink value per head that is appended as an\n       additional attention logit to each query's attention scores before softmax.\n    return_max_logit: bool.Whether to return the attention max logit.\nReturn:\n    out: (total, nheads, headdim).\n    max_logit: [optional, if return_max_logit=True]: (nheads).fp32 tensor The max of\n        per-head the matrix QK^T * scaling.\n    softmax_lse [optional, if return_attn_probs=True]: (batch_size, nheads, seqlen). The\n        logsumexp of each row of the matrix QK^T * scaling (e.g., log of the softmax\n        normalization factor).\n    S_dmask [optional, if return_attn_probs=True]: (batch_size, nheads, seqlen, seqlen).\n        The output of softmax (possibly with different scaling). It also encodes the dropout\n        pattern (negative means that location was dropped, nonnegative means it was kept).",
+        "forward_source": "@staticmethod\ndef forward(ctx, q, k, v, cu_seqlens_q, cu_seqlens_k, max_seqlen_q, max_seqlen_k, dropout_p, softmax_scale, causal, window_size, softcap, alibi_slopes, deterministic, return_softmax, block_table, s_aux, return_max_logit):\n    if softmax_scale is None:\n        softmax_scale = q.shape[-1] ** (-0.5)\n    ctx.qk_headdim = q.shape[-1]\n    results = _flash_attn_varlen_forward(q, k, v, cu_seqlens_q, cu_seqlens_k, max_seqlen_q, max_seqlen_k, dropout_p, softmax_scale, causal=causal, window_size=window_size, softcap=softcap, alibi_slopes=alibi_slopes, return_softmax=return_softmax and dropout_p > 0, block_table=block_table, s_aux=s_aux, return_max_logit=return_max_logit)\n    if return_max_logit:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state, max_logit = results\n    else:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state = results\n    ctx.save_for_backward(q, k, v, out_padded, softmax_lse, cu_seqlens_q, cu_seqlens_k, rng_state)\n    ctx.dropout_p = dropout_p\n    ctx.max_seqlen_q = max_seqlen_q\n    ctx.max_seqlen_k = max_seqlen_k\n    ctx.softmax_scale = softmax_scale\n    ctx.causal = causal\n    ctx.window_size = window_size\n    ctx.softcap = softcap\n    ctx.alibi_slopes = alibi_slopes\n    ctx.deterministic = deterministic\n    if not return_softmax:\n        if return_max_logit:\n            return (out, max_logit)\n        else:\n            return out\n    else:\n        return (out, softmax_lse, S_dmask)",
+        "lower_level_return_softmax": "return_softmax and dropout_p > 0"
+      }
+    },
+    "LSE_access": "Public return_attn_probs=True exposes the row log-partition. With dropout_p=0 the pinned forward passes return_softmax=False to the lower-level kernel; requesting LSE therefore does not request the quadratic returned probability matrix at this Python dispatch.",
+    "limits": "This source audit does not measure lower-level allocation, kernel numerical error, zero-key-row behavior, packed suffix correctness or wall time. Those are not claimed as tested. Returned attention probabilities are documented as testing-only and potentially rescaled; they are not used here."
+  },
+  "interface_gap": {
+    "existing": "The measured owner passes paired global endpoints, V0 and global LSE0/LSE1 into its finite FA callback. The gate branch also uses the globally paired attention O0.",
+    "required": "A conditional rule would need factual V1/O1, exact own-row conditional partitions and conditional gate O0. These values belong in the original finite-attention owner; content0 is not that interface.",
+    "conservation": "For interacting rows, sum of exact local leave-one-row effects need not equal the joint endpoint difference: the symbolic bilinear gap is w*(x1-x0)*(y1-y0). Retain that distinction; do not force closure with a credit multiplier or treat a different result as passing the original joint-conservation diagnostic.",
+    "composition": "The local conditional rule's composition with current whole-model finite coefficients remains an unimplemented research question. The accepted downstream Q/V/A, self-target, observation mask, whitening and PPO formulas do not change."
+  },
+  "cost_geometry": {
+    "batch": 4,
+    "length": 32768,
+    "heads": 16,
+    "head_dim": 256,
+    "one_BF16_attention_output_bytes": 1073741824,
+    "one_FP32_per_query_scalar_bytes": 8388608,
+    "global_FP32_attention_matrix_bytes": 274877906944,
+    "possible_native_work": "Two strict-past native FA forward calls per full-attention layer, plus conditional finite tiles in the owner. This is operator work, not two extra whole-model passes or per-token DT calls.",
+    "required_cost_accounting": "Derive and count the complete conditional query and KV tile implementation and live tensors before any GPU candidate. Do not promise that two FA forwards are free or convert FLOPs into wall-clock speed.",
+    "forbidden": "No full attention matrix, source-by-time hidden-state bank, additional per-source model forward, sign correction or extreme-source replacement."
+  },
+  "decisions": [
+    "Do not return to the single-point GDN candidate.",
+    "Do not implement a conditional KV-only patch while leaving query/gate/self-interaction on the global background.",
+    "No GPU candidate is launched: the complete owner implementation, combination behavior and tile/live-memory accounting are not yet supplied."
+  ],
+  "source": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\derive_conditional_attention.py",
+    "sha256": "7540f982020e4c5ee372209b3fe80e63c482d67082f0a0ef73d59f3a6947f4a5"
+  },
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "GPU": 0,
+    "update": 0,
+    "production_modified": false
+  },
+  "elapsed_seconds": 0.2542785000114236,
+  "local_rss_bytes": 68653056,
+  "local_python": "C:\\Users\\Administrator\\miniconda3\\envs\\pytorch\\python.exe",
+  "local_python_version": "3.11.15 | packaged by Anaconda, Inc. | (main, Jun 11 2026, 15:12:53) [MSC v.1942 64 bit (AMD64)]"
+}
