@@ -31,11 +31,12 @@ batch结束全部清空；没有保留所有查询的整网hidden states。
 不把它们合成两个独立样本。原始层值、跨层相消与事实漂移全部保留。
 这些量没有证明GDN、输出层或FA为整体主因，也不替代原累计删除/RISE/MAS。
 
-AppWorld观察1791439295.849：同出生driver存活，两个首B4 DT已完成，
-均在原native forward round4；已返回23/165点（均匀14、预测尾部9）。
-物理GPU4/5为32886/36314MiB，host available约710.6GiB；
-阶段PSS约26.1/27.0GiB，尚无完成/修复结论。按同一1800秒预算继续，
-仅读取这一现有PID与phase；不重启、不扩样、不自动追加GPU候选。
+AppWorld观察1791439512.499：同出生driver存活，前6个B4 DT及其单删
+forward已返回，两rank开始batch6/7的DT；已返回74/165位置
+（均匀56、预测尾部18），worker elapsed约311秒。原训练release仍false。
+没有OOM或更新，完整任务仍未完成。按同一1800秒预算读取现有PID与phase，
+不重启、不扩样、不自动追加GPU候选。实际物理显存、phase/PSS及余量
+以最新原始快照为准，不把allocator保留量当物理占用。
 
 完整命令、导入路径/SHA、source、本次两rank操作计数及原记录见
 results_credit_layer_localization_20261008.json与current_runtime对应条目。
