@@ -18,7 +18,14 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--operands', type=Path, required=True)
 parser.add_argument('--sources', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
+parser.add_argument('--finite-library', type=Path)
+parser.add_argument('--finite-library-sha256')
+parser.add_argument('--finite-rule', choices=('joint', 'conditional'), default='joint')
 args = parser.parse_args()
+if (args.finite_library is None) != (args.finite_library_sha256 is None):
+    parser.error('An explicit finite library requires its exact SHA256.')
+if args.finite_rule == 'conditional' and args.finite_library is None:
+    parser.error('The research rule requires an explicit isolated finite library.')
 torch.set_num_threads(8)
 source = args.sources/'test_flash_attn_v263.py'
 assert hashlib.sha256(source.read_bytes()).hexdigest() == 'a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9'
@@ -46,14 +53,38 @@ native_grads = torch.autograd.grad(out,(q,k,v),g)
 ref_grads = torch.autograd.grad(ref,(q,k,v),g)
 pt_grads = torch.autograd.grad(pt,(q,k,v),g)
 env = json.loads(Path(os.environ['DT_ENVIRONMENT_JSON']).read_text())['qwen35']
-owner = VendorFAFiniteP1BF16D256(env['finite_library'],env['finite_library_sha256'])
+owner = VendorFAFiniteP1BF16D256(args.finite_library or env['finite_library'],
+    args.finite_library_sha256 or env['finite_library_sha256'])
 layout = RightPaddedLengths(list(fa['lengths']),fa['padded_length'],q.device,
     coefficient_starts=list(fa['coefficient_starts']) if fa['coefficient_starts'] is not None else None,
     query_start=fa['query_start'])
 ops = dict(q0=q.transpose(1,2),q1=q.transpose(1,2),k0=k.transpose(1,2),k1=k.transpose(1,2),
            v0=v.transpose(1,2),u=g.transpose(1,2),lse0=lse,lse1=lse)
+unchanged_default = None
 with torch.no_grad():
-    finite = owner(ops,fa['scale'],layout)
+    if args.finite_rule == 'conditional':
+        print('phase=unchanged_default_finite_owner',flush=True)
+        baseline = VendorFAFiniteP1BF16D256(env['finite_library'],env['finite_library_sha256'])
+        original = baseline(ops,fa['scale'],layout)
+        default = owner(ops,fa['scale'],layout)
+        torch.cuda.synchronize()
+        unchanged_default = {name:torch.equal(default[name],original[name])
+                             for name in ('dq','dk','dv','tau','center')}
+        assert all(unchanged_default.values()), unchanged_default
+        # Coincident endpoints: conditional Q0/K_i0/V_i0 equal factual values.
+        # Compute only diagonal scalars, retaining compact GQA K/V operands.
+        own_k = k[:,fa['query_start']:fa['query_start']+q.shape[1]]
+        own_v = v[:,fa['query_start']:fa['query_start']+q.shape[1]]
+        grouped_q = q.float().reshape(q.shape[0],q.shape[1],k.shape[2],-1,q.shape[-1])
+        grouped_u = g.to(q.dtype).float().reshape_as(grouped_q)
+        score = (grouped_q*own_k.float().unsqueeze(3)).sum(-1).reshape(*q.shape[:3])*fa['scale']
+        uv = (grouped_u*own_v.float().unsqueeze(3)).sum(-1).reshape(*q.shape[:3])
+        conditional_ops = dict(ops,v1=ops['v0'],own_q0k0=score.transpose(1,2),
+            own_q1k0=score.transpose(1,2),own_uv0=uv.transpose(1,2))
+        print('phase=conditional_coincident_derivative',flush=True)
+        finite = owner(conditional_ops,fa['scale'],layout,conditional=True)
+    else:
+        finite = owner(ops,fa['scale'],layout)
 batch,heads,time,dim = finite['dq'].shape
 kv_heads = k.shape[2]
 def reduced(name):
@@ -68,6 +99,27 @@ result = dict(scope=__doc__,source=str(args.operands),query_shape=list(q.shape),
     reference='pinned attention_ref, FP32 upcast; original reordered low precision baseline',
     assertions={name:item[1] for name,item in assertions.items()},query_start=fa['query_start'],
     coefficient_starts=fa['coefficient_starts'],checks=[])
+if args.finite_library is not None:
+    result.update(finite_library=str(args.finite_library),finite_library_sha256=args.finite_library_sha256,
+        finite_rule=args.finite_rule,unchanged_default=unchanged_default,
+        candidate_scope='Primitive coincident-endpoint derivative only; not nonzero finite attribution, whole-model quality, 32k capacity or a training release.')
+    result.update(peak_allocated_bytes=torch.cuda.max_memory_allocated(),
+                  peak_reserved_bytes=torch.cuda.max_memory_reserved())
+    if args.finite_rule == 'conditional':
+        result['finite_nonfinite_debug'] = {}
+        for name,value in finite.items():
+            value=value.detach()
+            invalid=(~torch.isfinite(value)).nonzero()
+            entry=dict(nan=int(value.isnan().sum()),positive_inf=int(value.isposinf().sum()),
+                       negative_inf=int(value.isneginf().sum()))
+            if invalid.numel():
+                index=tuple(invalid[0].tolist())
+                entry['first_nonfinite_index']=index
+                row=index[:3]
+                entry['row_scalars']={key:float(v[row]) for key,v in finite.items() if v.ndim==3}
+                entry['input_lse0']=float(conditional_ops['lse0'][row])
+                entry['input_own_q1k0']=float(conditional_ops['own_q1k0'][row])
+            result['finite_nonfinite_debug'][name]=entry
 def check(name,actual,expected,baseline,kind):
     context={name:actual,name+'_ref':expected,name+'_pt':baseline}
     row=dict(name=name,owner=kind,actual_dtype=str(actual.dtype),reference_dtype=str(expected.dtype),
