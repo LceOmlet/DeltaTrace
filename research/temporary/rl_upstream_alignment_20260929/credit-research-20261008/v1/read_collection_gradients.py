@@ -9,6 +9,10 @@ sys.path.insert(0, str(HERE.parents[1]))
 from stage_environment_entry import ROOT, ENTRY, SSH
 
 REMOTE = ROOT + '/receipts/credit-collection-gradients-20261008-v1'
+PREFIX = 'collection-gradient'
+if '--error-gradients' in sys.argv:
+    REMOTE = ROOT + '/receipts/credit-collection-error-gradients-20261008-v1'
+    PREFIX = 'collection-error-gradient'
 body = r'''
 import json,os,psutil,subprocess,time
 from pathlib import Path
@@ -41,7 +45,7 @@ run = subprocess.run(SSH + ['bash', '-s'], input=shell.encode(), capture_output=
 if run.returncode:
     print(run.stderr.decode(errors='replace')[-3000:]);run.check_returncode()
 value = json.loads(run.stdout)
-(HERE / f"collection-gradient-observation-{int(value['unix'])}.json").write_bytes(run.stdout)
+(HERE / f"{PREFIX}-observation-{int(value['unix'])}.json").write_bytes(run.stdout)
 print(json.dumps({k: value[k] for k in ('unix', 'driver_same_birth', 'host_available', 'text_same_birth', 'text_releases')}))
 print(json.dumps({'phase':value['files'].get('phase.json'),
                   'completed_minibatch_rank_files':[k for k in value['files'] if k.startswith('minibatch')],

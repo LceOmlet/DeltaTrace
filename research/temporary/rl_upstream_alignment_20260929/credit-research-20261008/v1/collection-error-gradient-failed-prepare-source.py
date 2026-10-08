@@ -208,7 +208,6 @@ def prepare():
         OmegaConf.update(cfg, key.lstrip('+'), value, force_add=True)
     cfg.actor_rollout_ref.actor.optim.total_training_steps = actor_initialization_steps(
         cfg.trainer.total_training_steps, 330)
-    uids = [str(u) for s in saved for u in s['non_tensors']['traj_uid']]
     data = DataProto.from_dict(tensors=tensors, non_tensors={'traj_uid': uids},
         meta_info={'temperature': cfg.actor_rollout_ref.rollout.temperature,
                    'multi_turn': True,
@@ -235,41 +234,14 @@ def prepare():
     return cfg, data
 
 
-def diagnostic_minibatch(data, minibatch):
-    """Keep original rank-local row groups and owner-isolated per-call metadata."""
-    indices = torch.cat([torch.arange(rank * 128 + minibatch * 32,
-                                     rank * 128 + (minibatch + 1) * 32)
-                         for rank in (0, 1)])
-    # Original select_idxs shares meta_info. The owner select(deepcopy=True)
-    # prevents omitting an empty stratum here from dropping it in later calls.
-    mini = data[indices].select(deepcopy=True)
-    mini.meta_info['collection_minibatch'] = minibatch
-    mini.meta_info['global_token_num'] = mini.batch['attention_mask'].sum(-1).tolist()
-    if 'collection_coefficient_views' in mini.meta_info:
-        views = mini.meta_info['collection_coefficient_views']
-        mini.meta_info['collection_coefficient_views'] = {
-            label:key for label,key in views.items()
-            if label == 'full_pg' or bool(torch.count_nonzero(mini.batch[key]))}
-        selected_labels = list(mini.meta_info['collection_coefficient_views'])
-    else:
-        selected_labels = list(LABELS)
-    return mini, selected_labels
-
-
 def main():
     cfg, data = prepare()
     if '--inspect-only' in sys.argv:
-        original_views = data.meta_info.get('collection_coefficient_views')
-        labels_by_minibatch = [diagnostic_minibatch(data, i)[1] for i in range(4)]
-        assert data.meta_info.get('collection_coefficient_views') == original_views
-        print(json.dumps(dict(scope=data.meta_info.get('collection_scope', __doc__), rows=len(data),
-                              status='input-mapping-only', labels_by_minibatch=labels_by_minibatch,
-                              base_metadata_preserved=True)))
+        print(json.dumps(dict(scope=__doc__, rows=len(data), status='input-mapping-only')))
         return
     started = time.monotonic()
     plan = json.loads((OUT / 'gradient-inputs.json').read_bytes())
     budget = plan.get('wall_budget_seconds', 1800)
-    measured_passes = 0
     ray.init(num_cpus=8, include_dashboard=False)
     try:
         phase('native_actor_init_begin')
@@ -285,21 +257,23 @@ def main():
         phase('original_ref_log_prob_complete')
         for minibatch in range(4):
             # Retain the exact original local row order on both DP ranks.
-            mini, selected_labels = diagnostic_minibatch(data, minibatch)
+            indices = torch.cat([torch.arange(rank * 128 + minibatch * 32,
+                                             rank * 128 + (minibatch + 1) * 32)
+                                 for rank in (0, 1)])
+            mini = data[indices]
+            mini.meta_info['collection_minibatch'] = minibatch
+            mini.meta_info['global_token_num'] = mini.batch['attention_mask'].sum(-1).tolist()
             phase('original_minibatch_gradients_begin', minibatch=minibatch,
-                  labels=selected_labels,
                   elapsed_seconds=time.monotonic() - started)
             group.observe_collection_minibatch(mini)
-            measured_passes += len(selected_labels)
             phase('original_minibatch_gradients_complete', minibatch=minibatch,
-                  labels=selected_labels, measured_native_passes_per_rank=measured_passes,
                   elapsed_seconds=time.monotonic() - started)
             if time.monotonic() - started > budget:
                 raise TimeoutError(f'Bounded collection gradient diagnostic exceeded {budget} seconds; no training released')
         (OUT / 'completed.json').write_text(json.dumps(dict(
             completed_unix=time.time(), elapsed_seconds=time.monotonic() - started,
             source_sha256=sha(SOURCE), rows=256, original_minibatches=4,
-            native_backward_passes_per_rank=measured_passes,
+            native_backward_passes_per_rank=plan.get('planned_native_backward_passes_per_rank',12),
             optimizer_steps=0, scheduler_steps=0,
             DT=0, rollout=0, checkpoint_restore=0, scope=plan['scope']), indent=2) + '\n')
     finally:
