@@ -71,7 +71,7 @@ if __name__=='__main__':
         if name.startswith('results/rank') and not binding['value'].get('read_during_write'):
             (out/Path(name).name).write_text(json.dumps(binding['value'],indent=2)+'\n',encoding='utf-8')
     print(json.dumps({'receipt':str(path),'unix':data['unix'],'driver_alive':data.get('driver_alive'),
-        'cpu_replay':data['files'].get('batching-cpu-replay.json',{}).get('value'),
+        'cpu_replay_receipt':data['files'].get('batching-cpu-replay.json',{}).get('sha256'),
         'ranks':{str(r):data.get(f'rank{r}_last_phases',[])[-1:] for r in (0,1)},
         'completed':data['files'].get('results/completed.json',{}).get('value'),
         'host_available':data['host_memory']['available'],'textcraft_hold':data['textcraft_hold']},ensure_ascii=False))

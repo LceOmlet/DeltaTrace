@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 冻结集合基线全部完成；主体与两侧尾部交叉分层，信用尚未修复
+
+7f8f53e8/PID432447/birth1791427765.32的GPU4/5诊断完成并退出，原actor group
+两rank都返回completed。每rank194次原native forward，1750.15/1750.83秒；
+零DT/backward/optimizer/rollout/恢复，未放行正式训练。TextCraft原PID2833207
+出生未变、两release仍不存在；AppWorld未重启。没有新增GDN或信用候选。
+
+冻结32+32条、各16状态组的原作者k20累计删除/RISE/MAS与256个均匀单删完成；
+完整开发已保存capture中的c>2尾部74个位置全数完成，不回填训练。误差按
+预测c与native单删c的相同五档交叉分层，漏估尾部独立；不将它混入有界主体，
+不把尾部全数与主体抽样直接合并，不用总均值或有限样本推断总体矩。
+
+DT预测A/r<-1的37个尾部位置中，TextCraft24个、AppWorld14个的native单删
+对照A/r>=0，分别覆盖6/7个状态组，含各3个此前未查看的状态组。这证明当前
+开发集合问题超出原单点，不证明这些误差都源于GDN或导致旧训练退化。
+均匀128点/任务中另有2/11个native c>2而DT c<=2的漏估尾部，与上述全数
+集合分别报告，不能把预测极端点精化当成覆盖全部误差的方法。
+原作者状态组等权RISE/MAS为TextCraft0.381832/0.637945、AppWorld
+0.305489/0.473539；这是当前集合基线，不是修复通过阈值或总体质量结论。
+集合误差的实际PPO梯度影响尚未量化，暂停新增GDN候选的决定保持。
+
+实际有效配置SHA5f7a9026与此前AppWorld原owner配置一致；冻结输入SHA86186d74，
+原作者/target reader/VERL的实际导入路径及SHA、完整逐前向phase、尾部逐token
+原始d和native对照、缺失capture与已查看/未查看分组均保存。诊断无OOM，
+阶段worker PSS约7.8/8.7GB，结束主机available907361386496B；不把阶段观察
+称连续物理显存峰值或正式DT/PPO容量验收。完整回执见
+results_credit_author_collection_20261008.json及current_runtime.json的
+latest_credit_stratified_collection；保留原Q/V/A、PPO、LoRA8/16与每卡B4。
+
 ## 2026-10-08 原作者集合诊断已启动；训练未放行
 
 诊断代码7f8f53e8，PID432447/birth1791427765.32，物理GPU4/5。复用最新已测

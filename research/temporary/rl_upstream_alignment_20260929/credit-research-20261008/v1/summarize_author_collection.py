@@ -42,30 +42,34 @@ def diagnostics(points):
     output={}
     for name,items in groups.items():
         transitions={n:sum(p['native_stratum']==n for p in items) for n in NAMES}
-        by_state={}
-        for p in items:by_state.setdefault(p['initial_state_sha256'],[]).append(p)
-        states=[]
-        for state,rows in by_state.items():
-            states.append({'initial_state_sha256':state,'points':len(rows),
-                'sign_crossings':sum((p['saved_d']<0)!=(p['native_single_d']<0) for p in rows),
-                'abs_d_error':quantiles([abs(p['saved_d']-p['native_single_d']) for p in rows])})
-        normalized_errors=[];nonfinite_transforms=[]
-        for p in items:
-            try:
-                a=-math.expm1(-p['saved_d']);ref=-math.expm1(-p['native_single_d'])
-                error=abs(a-ref)
-                if math.isfinite(error):normalized_errors.append(error)
-                else:nonfinite_transforms.append([p['traj_uid'],p['packed_slot']])
-            except OverflowError:nonfinite_transforms.append([p['traj_uid'],p['packed_slot']])
-        output[name]={'points':len(items),'trajectories':len({p['traj_uid'] for p in items}),
-            'initial_states':len(by_state),'native_stratum_transitions':transitions,
-            'sign_crossings':sum((p['saved_d']<0)!=(p['native_single_d']<0) for p in items),
-            'abs_d_error':quantiles([abs(p['saved_d']-p['native_single_d']) for p in items]),
-            'abs_A_over_r_error':quantiles(normalized_errors),'nonfinite_transforms':nonfinite_transforms,
-            'state_groups':states}
+        cells={}
+        for native_name in NAMES:
+            cell=[p for p in items if p['native_stratum']==native_name]
+            by_state={}
+            for p in cell:by_state.setdefault(p['initial_state_sha256'],[]).append(p)
+            states=[]
+            for state,rows in by_state.items():
+                states.append({'initial_state_sha256':state,'points':len(rows),
+                    'sign_crossings':sum((p['saved_d']<0)!=(p['native_single_d']<0) for p in rows),
+                    'abs_d_error':quantiles([abs(p['saved_d']-p['native_single_d']) for p in rows])})
+            normalized_errors=[];nonfinite_transforms=[]
+            for p in cell:
+                try:
+                    a=-math.expm1(-p['saved_d']);ref=-math.expm1(-p['native_single_d'])
+                    error=abs(a-ref)
+                    if math.isfinite(error):normalized_errors.append(error)
+                    else:nonfinite_transforms.append([p['traj_uid'],p['packed_slot']])
+                except OverflowError:nonfinite_transforms.append([p['traj_uid'],p['packed_slot']])
+            cells[native_name]={'points':len(cell),'trajectories':len({p['traj_uid'] for p in cell}),
+                'initial_states':len(by_state),
+                'sign_crossings':sum((p['saved_d']<0)!=(p['native_single_d']<0) for p in cell),
+                'abs_d_error':quantiles([abs(p['saved_d']-p['native_single_d']) for p in cell]),
+                'abs_A_over_r_error':quantiles(normalized_errors),'nonfinite_transforms':nonfinite_transforms,
+                'state_groups':states}
+        output[name]={'points':len(items),'native_stratum_transitions':transitions,'native_strata':cells}
     return {'strata':output,'nonfinite_points':nonfinite,
         'sign_scope':'Descriptive crossing of zero, not an official numerical-tolerance failure.',
-        'aggregation_scope':'Conditional empirical quantiles/counts per DT-ratio stratum. No cross-stratum raw mean or population-moment claim.'}
+        'aggregation_scope':'Error quantiles/counts are conditional on the joint DT-ratio and native-single-ratio stratum. Native tails missed by DT never enter the bounded-bulk error summary. No cross-stratum raw mean or population-moment claim.'}
 
 
 if __name__=='__main__':
