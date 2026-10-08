@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 原PPO系数误差梯度诊断启动；不是正式训练或GDN修复
+
+代码7f948141、脚本SHAa8b25a4c…，PID1202123/birth1791435098.07，
+物理GPU4/5，目录credit-collection-error-gradients-20261008-v1。
+复用原固定权重、actor/core/worker与观察器；原B4、LoRA8/16、掩码、
+分母、累积、裁剪调用不变。参数/optimizer/scheduler不写，DT/rollout/恢复0。
+
+原完整PG与三种native-minus-DT系数差分开反向：预测尾部37点全数、
+均匀主体126点、均匀抽样漏估native尾部2点。保持原整批白化尺度；
+不重白化、不覆盖训练值，不加逆抽样权重，不从抽样梯度外推全主体。
+原四个global64/local32按原行序；首三组无漏估尾部，跳过结构上空的分量，
+不把未查询的零当数值验收。各组3/3/3/4，共每卡13个native pass，预算2700秒。
+这是误差梯度测量，与先前现有尾部的贡献梯度不同；尚无完成或GDN主因结论。
+
+准备时诊断函数抽取引入NameError(uids)，在CPU、加载模型前拦住；
+已补回UID，保留失败源/命令/回执，未影响原训练版本。初次准备可见GPU
+导致CUDA上下文初始化，CPU检查已用不可见配置，未修改官方导入或模型。
+另外直接检查原DataProto.select_idxs源码确认它共享meta_info，薄诊断接口
+改用原select(deepcopy=True)保留各组元数据；真实四组CPU检查确认末组
+两个漏估尾部未被前三组过滤丢失。两条真实DataProto准备路径均通过，
+完整37位置仍与旧回执一致，未以映射测试冒充PPO/归因/核容差通过。
+
+精确launch/PID创建时刻、源码SHA、两条CPU回执及失败范围见current_runtime。
+TextCraft原两release仍false、AppWorld不重启；完整反向/有限值与资源尚待原日志。
+用read_collection_gradients.py --error-gradients读取同一PID，不重启/重复提交。
+用analyze_collection_error_gradients.py分别分析三组原loss梯度，不合并尾部均值。
+
 ## 2026-10-08 冻结集合信用误差已绑定原训练系数；只读CPU、不放行训练
 
 本次诊断代码发布3c5157f3；实际执行时为ec0a0e69上的未提交诊断补丁，
