@@ -1,7 +1,7 @@
 # 当前运行版本与修复记录
 
 
-## 2026-10-08 冻结集合逐层定位实测记录：TextCraft完成、AppWorld进行中
+## 2026-10-08 冻结集合逐层定位实测记录：两任务全部完成、正式训练仍hold
 
 执行源码2951f70e，脚本SHA8e9b1c8b…，固定输入SHAe835680d…。
 未改正式DT/FA/FLA、PPO或训练配置；不传observer，不替换任何有限规则/返回张量。
@@ -11,7 +11,7 @@ TextCraft原训练PID2833207/birth1791370325.16仍hold、release false/false。
 本次均零optimizer/scheduler/rollout/restore；不是恢复或启动正式训练。
 
 TextCraft45条轨迹，原均匀128source及预测尾部全数37source全部返回，
-共165个独立位置；每rank6个B4 DT、30个paired8 native forward。
+共165个不同位置；每rank6个B4 DT、30个paired8 native forward。
 worker实测220.01/220.13秒，包含初始化的launch到完成约308秒。
 阶段采样PSS最大22.34/24.11GiB，实际单批bank最大14.72/16.23GiB，
 batch结束全部清空；没有保留所有查询的整网hidden states。
@@ -31,17 +31,22 @@ batch结束全部清空；没有保留所有查询的整网hidden states。
 不把它们合成两个独立样本。原始层值、跨层相消与事实漂移全部保留。
 这些量没有证明GDN、输出层或FA为整体主因，也不替代原累计删除/RISE/MAS。
 
-AppWorld观察1791439512.499：同出生driver存活，前6个B4 DT及其单删
-forward已返回，两rank开始batch6/7的DT；已返回74/165位置
-（均匀56、预测尾部18），worker elapsed约311秒。原训练release仍false。
-没有OOM或更新，完整任务仍未完成。按同一1800秒预算读取现有PID与phase，
-不重启、不扩样、不自动追加GPU候选。实际物理显存、phase/PSS及余量
-以最新原始快照为准，不把allocator保留量当物理占用。
+AppWorld48条轨迹，均匀128source及预测尾部37source全部返回，共165位置。
+每rank6个B4 DT、37个paired8 native forward，worker实测846.70/847.24秒；
+launch至完成约920秒。原completed标记及两rank complete均已核对，
+观察1791440122.734确认同出生driver已退出、GPU4/5已释放。
+阶段采样PSS最大47.63/53.86GiB、单批bank最大39.09/46.05GiB，
+批后释放；无OOM，无backward/optimizer/scheduler/rollout/restore。
+原训练仍hold、release false/false；未新增GDN候选或信用纠偏。
+
+AppWorld原均匀样本漏估的native c>2有11位置、8状态，独立保留；
+预测c在(2,10]、原native c<=1的12位置/6状态，fresh |d误差|中位数3.63515。
+各分组保留新旧批形漂移和native/DT事实端点差，不混算重尾信用均值。
+这仍是条件描述，不能证明总体期望存在，也不能把最大层项当作GDN主因。
 
 完整命令、导入路径/SHA、source、本次两rank操作计数及原记录见
 results_credit_layer_localization_20261008.json与current_runtime对应条目。
-后续只运行observe_author_collection.py --layer-task appworld及
-analyze_layer_collection.py --task appworld跟进同一作业。
+两任务本次测量均已终止；不自动扩样、重跑或追加GPU候选。
 
 ## 2026-10-08 集合逐层定位准备完成；不是GDN候选或正式训练
 
