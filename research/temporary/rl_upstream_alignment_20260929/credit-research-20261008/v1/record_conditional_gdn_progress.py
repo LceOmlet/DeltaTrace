@@ -90,6 +90,9 @@ def main():
             AppWorld_candidate_run=False,heldout_candidate_run=False)
         preserved=folder/'textcraft-preserved.json'
         if preserved.is_file():result['collection']['preserved_vectors_and_phase_logs']=file(preserved)
+    for name in ('textcraft-staged-source-identity.json','full-credit-bounds.json','full-credit-bounds-preserved.json'):
+        path=folder/name
+        if path.is_file():result['collection'][name.removesuffix('.json')]=file(path)
     receipt=REPO/('experiments/rl/results_'+label+'_20261009.json')
     receipt.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
     snapshot=REPO/'experiments/rl/current_runtime.json'

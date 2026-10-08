@@ -1,0 +1,305 @@
+"""Finite attribution for original Qwen3.5 attention boundaries and decoders.
+
+No model forward/backward is replaced. Consume actual paired endpoint captures;
+reuse the vendor FA finite core, existing GDN finite callback, native BF16 GEMMs,
+the established symmetric RMS/SwiGLU rules and the official Torch compiler.
+"""
+import torch
+from signed_secant_rules import rmsnorm_secant_pullback
+from compiled_swiglu_secant import swiglu_finite_rule
+from finite_fla_gpu import _mm
+
+
+class NativeDecoderCapture:
+    """Module hooks only, so the mixer can use its existing passive observer."""
+    def __init__(self, layer, destination='cpu', *, copy_tensors=True, retained_names=None):
+        self.layer=layer;self.destination=destination;self.values={};self.handles=[];self.calls={}
+        self.copy_tensors=copy_tensors;self.retained_names=retained_names
+
+    def retain(self,name,value):
+        if self.retained_names is None or name in self.retained_names:
+            self.values[name]=value.detach().to(self.destination,copy=self.copy_tensors)
+
+    def __enter__(self):
+        targets={'input_norm':self.layer.input_layernorm,'post_norm':self.layer.post_attention_layernorm,
+            'gate':self.layer.mlp.gate_proj,'up':self.layer.mlp.up_proj,'silu':self.layer.mlp.act_fn,
+            'down':self.layer.mlp.down_proj,'mlp':self.layer.mlp}
+        assert all(isinstance(module,torch.nn.Module) for module in targets.values())
+        for name,module in targets.items():
+            def observe(_module,args,output,name=name):
+                self.calls[name]=self.calls.get(name,0)+1
+                # Shared inputs already have a retained norm/gate endpoint;
+                # avoid copying them once again at every projection.
+                if name in ('input_norm','post_norm','down'):self.retain(name+'_input',args[0])
+                if name!='down':self.retain(name+'_output',output)
+            self.handles.append(module.register_forward_hook(observe))
+        def output(_module,_args,value):
+            self.calls['decoder']=self.calls.get('decoder',0)+1;self.retain('output',value)
+        self.handles.append(self.layer.register_forward_hook(output))
+        return self
+
+    def __exit__(self,*_exc):
+        for handle in self.handles:handle.remove()
+        self.handles.clear()
+
+
+def _linear_weights(module):
+    """Read the active linear map through PEFT's existing delta-weight API.
+
+    PEFT exposes the base weight as ``.weight`` even while its unmerged
+    forward uses adapters. Keep their weights separate: adding a small LoRA
+    update to a BF16 base first can round the update away entirely. No actor
+    parameter is merged, copied back or mutated by this readout.
+    """
+    weight=module.weight
+    if not hasattr(module,'get_delta_weight'):
+        return weight
+    if module.disable_adapters or module.merged:
+        return weight
+    weights=[weight]
+    for adapter in module.active_adapters:
+        if adapter in module.lora_A:
+            weights.append(module.get_delta_weight(adapter))
+    return tuple(weights) if len(weights)>1 else weight
+
+
+def _linear_transpose(upstream,weight):
+    if isinstance(weight,tuple):
+        # Base and adapter maps consume the same BF16 operand. Construct it
+        # once: Inductor otherwise retains duplicate full-width casts for
+        # every adapter matmul (several GiB each at batch4/32k).
+        shape=upstream.shape
+        operand=upstream.reshape(1,-1,shape[-1]).to(torch.bfloat16)
+        result=_mm(operand,weight[0].unsqueeze(0))
+        for delta in weight[1:]:
+            result=result+_mm(operand,delta.unsqueeze(0))
+        return result.reshape(*shape[:-1],weight[0].shape[-1])
+    shape=upstream.shape
+    return _mm(upstream.reshape(1,-1,shape[-1]),weight.unsqueeze(0)).reshape(*shape[:-1],weight.shape[-1])
+
+
+def _secant(x0,x1,y0,y1,derivative):
+    delta=x1-x0;nonzero=delta!=0
+    return torch.where(nonzero,(y1-y0)/torch.where(nonzero,delta,torch.ones_like(delta)),derivative)
+
+
+def _partial_rotation_transpose(multiplier,cos,sin):
+    # Native Qwen applies RoPE only to the first rotary_dim coordinates.
+    # R^T m = m*cos - rotate_half(m*sin); remaining coordinates pass through.
+    d=cos.shape[-1];rot=multiplier[...,:d];rest=multiplier[...,d:]
+    c=cos.float().unsqueeze(1);s=sin.float().unsqueeze(1)
+    first,second=(rot*s).chunk(2,dim=-1)
+    return torch.cat((rot*c-torch.cat((-second,first),dim=-1),rest),dim=-1)
+
+
+def _mlp_input_rule(g0,g1,u0,u1,s0,s1,upstream,down_weight,up_weight,gate_weight):
+    product=_linear_transpose(upstream,down_weight)
+    mu,mg=swiglu_finite_rule(g0,g1,u0,u1,s0.float(),s1.float(),product)
+    return _linear_transpose(mu,up_weight)+_linear_transpose(mg,gate_weight)
+
+
+def _norm_residual_rule(x0,x1,raw_weight,upstream,residual,eps):
+    return residual+rmsnorm_secant_pullback(x0.float(),x1.float(),1+raw_weight.float(),upstream,eps)
+
+
+def _attention_gate_rule(qproj0,qproj1,attention0,upstream,out_weight,heads,dim):
+    b,t,_=upstream.shape
+    g0=qproj0.view(b,t,heads,2*dim)[...,dim:]
+    g1=qproj1.view(b,t,heads,2*dim)[...,dim:]
+    # Same installed elementwise sigmoid as the native module, at its native
+    # BF16 operand/output dtype. This is a finite-rule scalar evaluation.
+    s0=g0.sigmoid().float();s1=g1.sigmoid().float()
+    g0f=g0.float();g1f=g1.float();derivative=g0f.sigmoid()
+    multiplier=_linear_transpose(upstream,out_weight).view(b,t,heads,dim)
+    # content1: Δ(n*s)=s1*Δn+n0*Δs; gate remains a separate signed branch.
+    mcontent=multiplier*s1
+    mgate=multiplier*attention0.float()*_secant(g0f,g1f,s0,s1,derivative*(1-derivative))
+    return mcontent.transpose(1,2).contiguous(),mgate
+
+
+def _attention_input_rule(dq,dk,dv,mgate,q0,q1,k0,k1,qweight,kweight,cos,sin,
+                          qproj_weight,kproj_weight,vproj_weight,eps,groups):
+    b,h,t,d=dq.shape;kh=dk.shape[1]//groups
+    mq=dq.float();mk=dk.float().reshape(b,kh,groups,t,d).sum(2)
+    mv=dv.float().reshape(b,kh,groups,t,d).sum(2).transpose(1,2).reshape(b,t,kh*d)
+    mq=_partial_rotation_transpose(mq,cos,sin).transpose(1,2)
+    mk=_partial_rotation_transpose(mk,cos,sin).transpose(1,2)
+    mq=rmsnorm_secant_pullback(q0.float(),q1.float(),1+qweight.float(),mq,eps)
+    mk=rmsnorm_secant_pullback(k0.float(),k1.float(),1+kweight.float(),mk,eps)
+    # q_proj interleaves query and gate WITHIN each head, not globally.
+    q_and_gate=torch.cat((mq,mgate),dim=-1).reshape(b,t,h*2*d)
+    return (_linear_transpose(q_and_gate,qproj_weight)
+            +_linear_transpose(mk.reshape(b,t,kh*d),kproj_weight)
+            +_linear_transpose(mv,vproj_weight))
+
+
+
+def _attention_own_kv(value,starts,time):
+    b,heads,length,dim=value.shape
+    positions=starts[:,None]+torch.arange(time,device=value.device)[None,:]
+    # Only padding indices exceed length. They never enter the public query
+    # mask or a valid finite coefficient. This is indexing, not credit clipping.
+    positions=positions.clamp_max(length-1)
+    return value.gather(2,positions[:,None,:,None].expand(b,heads,time,dim))
+
+
+def _attention_own_scores_rule(q0,q1,k0,starts,scale):
+    b,heads,time,dim=q0.shape;kh=k0.shape[1];groups=heads//kh
+    own=_attention_own_kv(k0,starts,time).float().unsqueeze(2)
+    score0=(q0.float().reshape(b,kh,groups,time,dim)*own).sum(-1).reshape(b,heads,time)*scale
+    score1=(q1.float().reshape(b,kh,groups,time,dim)*own).sum(-1).reshape(b,heads,time)*scale
+    return score0,score1
+
+
+def _attention_own_uv_rule(upstream,v0,starts):
+    b,heads,time,dim=upstream.shape;kh=v0.shape[1];groups=heads//kh
+    own=_attention_own_kv(v0,starts,time).float().unsqueeze(2)
+    # The existing finite FA ABI stores U in BF16 before contraction.
+    u=upstream.to(torch.bfloat16).float().reshape(b,kh,groups,time,dim)
+    return (u*own).sum(-1).reshape(b,heads,time)
+
+
+def _attention_own_endpoint_rule(past,lse,own_score,v0,starts):
+    b,time,heads,dim=past.shape;kh=v0.shape[1];groups=heads//kh
+    logz=torch.logaddexp(lse,own_score)
+    old_weight=torch.exp(lse-logz).transpose(1,2).unsqueeze(-1)
+    own_weight=torch.exp(own_score-logz).reshape(b,kh,groups,time,1)
+    own=_attention_own_kv(v0,starts,time).float().unsqueeze(2)
+    own=(own*own_weight).reshape(b,heads,time,dim).transpose(1,2)
+    # Keep the combined finite-rule value in FP32; do not add a second BF16
+    # rounding after the native strict-past output has already been stored.
+    return past.float()*old_weight+own,logz
+
+
+class FiniteBoundaryOps:
+    """Composite finite graphs; native/vendor operations stay externally visible.
+
+    Compiles only finite attribution. Cold compiler/default tuning costs must
+    be counted; disabling max_autotune does not disable all compiler tuning.
+    No hidden eager fallback is installed when a graph fails to compile.
+    """
+    def __init__(self,compiled=True,*,dynamic_shapes=False,compiler_options=None):
+        from qwen35_gdn_finite import _norm_gate_finite_rule,_conv_silu_finite_rule
+        self.compiled=compiled
+        varying_dimensions={
+            'mlp':[(i,1) for i in range(7)],
+            'norm_residual':[(i,1) for i in (0,1,3,4)],
+            'attention_gate':[(i,1) for i in range(4)],
+            'attention_own_scores':[(0,2),(1,2),(2,2),(3,0)],
+            'attention_own_uv':[(0,2),(1,2),(2,0)],
+            'attention_own_endpoint':[(0,1),(1,2),(2,2),(3,2),(4,0)],
+            'gdn_norm_gate':[(i,1) for i in range(3)],
+            'gdn_conv_silu':[(i,2) for i in range(3)],
+            'attention_input':[(i,2) for i in range(3)]+[(i,1) for i in (3,4,5,6,7,10,11)],
+        }
+        for name,fn in [('mlp',_mlp_input_rule),('norm_residual',_norm_residual_rule),
+                        ('attention_gate',_attention_gate_rule),('attention_input',_attention_input_rule),
+                        ('attention_own_scores',_attention_own_scores_rule),
+                        ('attention_own_uv',_attention_own_uv_rule),
+                        ('attention_own_endpoint',_attention_own_endpoint_rule),
+                        ('gdn_norm_gate',_norm_gate_finite_rule),('gdn_conv_silu',_conv_silu_finite_rule)]:
+            op=torch.compile(fn,fullgraph=True,dynamic=None if dynamic_shapes else False,
+                options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else fn
+            if compiled and dynamic_shapes:
+                def varying(*args,_op=op,_dimensions=varying_dimensions[name]):
+                    for index,dimension in _dimensions:
+                        # The last RL minibatch can contain 1-3 contrasts.
+                        # Mark batch before its first compilation as well as
+                        # time; otherwise B4 -> B2 recompiles every boundary.
+                        if args[index].shape[0]>1:
+                            # A singleton contrast has paired batch 2 and
+                            # singleton adjoints. Dynamo must specialize that
+                            # 0/1 case instead of rejecting a forced symbol.
+                            torch._dynamo.maybe_mark_dynamic(args[index],0)
+                        if args[index].shape[dimension]>1:
+                            torch._dynamo.mark_dynamic(args[index],dimension)
+                    return _op(*args)
+                op=varying
+            setattr(self,name,op)
+
+
+def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False,input_shape=None,conditional=False):
+    """Input coefficients for the actual standard-attention module.
+
+    lse is the publicly returned paired FA LSE, [2B,H,T]. Endpoints share
+    positions and mask; the caller validates that contract once when captured.
+    content0 changes only the finite FA pair orientation and value reference;
+    original gate and attention-input boundary operands retain their order.
+    """
+    if not isinstance(pv_rule,str) or pv_rule not in ('content1','content0'):
+        raise ValueError(f'Unsupported attention PV rule: {pv_rule!r}')
+    c=values;b,t,width=upstream.shape;heads=module.config.num_attention_heads;dim=module.head_dim
+    if input_shape is None:input_shape=c['input'].shape
+    assert tuple(input_shape)==(2*b,t,width)
+    if not conditional:assert lse.shape==(2*b,heads,t)
+    assert cos.shape==sin.shape and cos.shape[0]==2*b and cos.shape[1]==t
+    assert module.q_norm.eps==module.k_norm.eps and module.attention_dropout==0
+    endpoints=None
+    if conditional:
+        if pv_rule!='content1':raise ValueError('Conditional identity uses the fixed content1 gate ordering.')
+        from conditional_attention_endpoints import prepare_conditional_endpoints
+        endpoints=prepare_conditional_endpoints(c,layout,module.scaling,boundaries)
+    attention0=c['attention_output'][0::2] if endpoints is None else endpoints['attention0']
+    mcontent,mgate=boundaries.attention_gate(c['q_proj_output'][0::2],c['q_proj_output'][1::2],
+        attention0,upstream,_linear_weights(module.o_proj),heads,dim)
+    del attention0
+    if consume_captures:
+        c.pop('input',None)
+        del c['q_proj_output']
+        if conditional:c.pop('attention_output',None)
+        else:del c['attention_output']
+    ops={'q0':c['query'][0::2],'q1':c['query'][1::2],'k0':c['key'][0::2],'k1':c['key'][1::2],
+         'v0':c['value'][0::2],'u':mcontent,
+         'lse0':lse[0::2] if endpoints is None else endpoints['lse0'],
+         'lse1':lse[1::2] if endpoints is None else endpoints['lse0']}
+    if endpoints is not None:
+        ops.update(v1=c['value'][1::2],own_q0k0=endpoints['own_q0k0'],own_q1k0=endpoints['own_q1k0'],
+            own_uv0=boundaries.attention_own_uv(mcontent,c['value'][0::2],endpoints['query_starts']))
+        del endpoints
+    if pv_rule=='content0':
+        # Reversing the finite pair selects P0 for the value coefficient and
+        # V1 for routing. Returned coefficients need no sign reversal.
+        ops['q0'],ops['q1']=ops['q1'],ops['q0']
+        ops['k0'],ops['k1']=ops['k1'],ops['k0']
+        ops['lse0'],ops['lse1']=ops['lse1'],ops['lse0']
+        ops['v0']=c['value'][1::2]
+    activity={} if diagnostics else None
+    coeff=(finite_fa(ops,module.scaling,layout,activity,conditional=True) if conditional
+           else finite_fa(ops,module.scaling,layout,activity))
+    if consume_captures:
+        del ops,mcontent
+        for name in ('query','key','value'):
+            del c[name]
+    mx=boundaries.attention_input(coeff['dq'],coeff['dk'],coeff['dv'],mgate,
+        c['q_norm_input'][0::2],c['q_norm_input'][1::2],c['k_norm_input'][0::2],c['k_norm_input'][1::2],
+        module.q_norm.weight,module.k_norm.weight,cos[1::2],sin[1::2],
+        _linear_weights(module.q_proj),_linear_weights(module.k_proj),_linear_weights(module.v_proj),module.q_norm.eps,module.num_key_value_groups)
+    diagnostics_out={'mcontent':mcontent,'mgate':mgate,'coeff':coeff,'finite_FA_activity':activity} if diagnostics else {}
+    return mx,diagnostics_out
+
+
+def decoder_finite_pullback(layer,values,upstream,mixer_pullback,boundaries,diagnostics=False,*,consume_captures=False):
+    """Both original decoder families: symmetric MLP + two residual/norm paths.
+
+    mixer_pullback receives the actual mixer-output cotangent and returns its
+    input coefficients, using the traceable FA or GDN finite implementation.
+    """
+    c=values
+    mnorm=boundaries.mlp(c['gate_output'][0::2],c['gate_output'][1::2],
+        c['up_output'][0::2],c['up_output'][1::2],c['silu_output'][0::2],c['silu_output'][1::2],
+        upstream,_linear_weights(layer.mlp.down_proj),_linear_weights(layer.mlp.up_proj),_linear_weights(layer.mlp.gate_proj))
+    # The owner consumes these operands exactly once. Production replay can
+    # release them before restoring mixer captures; observers keep all values.
+    if consume_captures:
+        for name in ('gate_output','up_output','silu_output'):
+            del c[name]
+    mmixer=boundaries.norm_residual(c['post_norm_input'][0::2],c['post_norm_input'][1::2],
+        layer.post_attention_layernorm.weight,mnorm,upstream,layer.post_attention_layernorm.eps)
+    if consume_captures:
+        del c['post_norm_input']
+        del mnorm
+    mmixer_input,mixer_diagnostics=mixer_pullback(mmixer)
+    mx=boundaries.norm_residual(c['input_norm_input'][0::2],c['input_norm_input'][1::2],
+        layer.input_layernorm.weight,mmixer_input,mmixer,layer.input_layernorm.eps)
+    return mx,({'m_mlp_norm_output':mnorm,'m_mixer_output':mmixer,'m_mixer_input':mmixer_input,
+                'mixer':mixer_diagnostics} if diagnostics else {})
