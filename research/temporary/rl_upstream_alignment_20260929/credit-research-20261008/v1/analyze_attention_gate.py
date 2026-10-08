@@ -67,15 +67,22 @@ def main():
     stable = json.loads(stable_path.read_bytes())['tasks'][args.task]['cohorts']
     flags = {(p['traj_uid'], p['packed_slot']): p for c in stable.values() for p in c['points_with_identity']}
     comparisons = []
+    parity_groups = {'unchanged_DT_native_mixer': [], 'changed_DT_native_or_mixer': []}
     for p in points:
         old = baseline[p['traj_uid'], p['packed_slot']]
-        comparisons.append(dict(traj_uid=p['traj_uid'], packed_slot=p['packed_slot'],
+        comparison = dict(traj_uid=p['traj_uid'], packed_slot=p['packed_slot'],
             DT_difference=p['fresh_DT_d']-old['fresh_DT_d'],
             native_difference=p['native_single_d']-old['native_single_d'],
             original_mixer_difference=p['suboperations']['31']['matched_terms']['mixer']-
-                old['suboperations']['31']['matched_terms']['mixer']))
+                old['suboperations']['31']['matched_terms']['mixer'],
+            DT_factual_target_logp_difference=p['DT_factual_target_logp']-old['DT_factual_target_logp'],
+            native_factual_target_logp_difference=p['factual_target_logp']-old['factual_target_logp'])
+        comparisons.append(comparison)
         p['stable_flags'] = {name: flags[p['traj_uid'], p['packed_slot']][name] for name in
             ('spurious_DT_tail_all_references', 'missed_native_tail_all_references', 'probability_bound_violated_all_references')}
+        name = ('unchanged_DT_native_mixer' if all(comparison[k] == 0 for k in
+            ('DT_difference', 'native_difference', 'original_mixer_difference')) else 'changed_DT_native_or_mixer')
+        parity_groups[name].append(p)
     cohorts = {}
     for cohort in ('uniform', 'predicted_tail_census'):
         rows = [p for p in points if any(c['cohort'] == cohort for c in p['previous_comparisons'])]
@@ -102,8 +109,12 @@ def main():
         original_DT_exact_equal_points=sum(c['DT_difference'] == 0 for c in comparisons),
         native_max_abs_difference=max(abs(c['native_difference']) for c in comparisons),
         original_mixer_max_abs_difference=max(abs(c['original_mixer_difference']) for c in comparisons),
+        repeatability_strata={name: dict(points=len(items),
+            robust_spurious_tail_from_original_run=summarize([p for p in items if p['stable_flags']['spurious_DT_tail_all_references']]))
+            for name, items in parity_groups.items()},
+        original_run_flags_revalidated_for_this_run=False,
         official_tolerance_test=False, candidate=False, production_modified=False, credit_repaired=False,
-        interpretation='Core/input contains finite FA routing, Q/K normalization, RoPE and input projections; it is not a claim that routing alone causes the error. .25 is a smooth sigmoid bound, not a BF16 tolerance. Joint gate element counts repeat across queries and must not be summed as independent occurrences. No ledger term is subtracted from credit.')
+        interpretation='Core/input contains finite FA routing, Q/K normalization, RoPE and input projections; it is not a claim that routing alone causes the error. .25 is a smooth sigmoid bound, not a BF16 tolerance. Joint gate element counts repeat across queries and must not be summed as independent occurrences. Original robust flags identify frozen original-run subsets, not newly repeated confidence bounds. Changed runs remain explicitly separate in repeatability_strata; do not claim full unchanged DT parity or a new official whole-model threshold. No ledger term is subtracted from credit.')
     output = folder/'analysis.json'
     output.write_text(json.dumps(result, indent=2)+'\n', encoding='utf-8')
     print(json.dumps(dict(output=ref(output), points=len(points), identical_DT=result['original_DT_exact_equal_points'],
