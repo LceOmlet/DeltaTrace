@@ -99,30 +99,13 @@ class CollectionGradientWorker(ActorRolloutRefWorker):
         return output
 
 
-def prepare():
-    torch.set_num_threads(4)
-    source = json.loads(SOURCE.read_bytes())
-    assert sha(SOURCE) == '2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52'
-    check_imports(source)
-    plan = json.loads((OUT / 'gradient-inputs.json').read_bytes())
-    from verl.workers.actor.dp_actor import DataParallelPPOActor
-    from verl.trainer.ppo.core_algos import compute_policy_loss
-    assert identity(DataParallelPPOActor)['sha256'] == ACTOR
-    assert identity(compute_policy_loss)['sha256'] == observer.CORE_SHA256
-    paths = [CAPTURE / f'rank{i}-pre-update.pt' for i in (0, 1)]
-    expected = ['1563ce74f298769893b360398fd1bacf16c376439b1d462e56ef9dc6f905be59',
-                'a1970da0bbf462b203314cbf29cc8ecd8c81e526fe1b6ee944978a76bbadd34e']
-    assert [sha(p) for p in paths] == expected
-    saved = [torch.load(p, map_location='cpu', weights_only=False) for p in paths]
-    tensors = {k: torch.cat([s['tensors'][k] for s in saved])
-               for k in saved[0]['tensors']}
-    tensors['position_ids'] = compute_position_id_with_mask(tensors['attention_mask'])
+def bind_saved_source_points(points, saved, tensors):
+    """Bind frozen diagnostic source identities to original retained actor slots."""
     uids = [str(u) for s in saved for u in s['non_tensors']['traj_uid']]
-    tail = torch.zeros_like(tensors['advantages'])
-    sign_flip = torch.zeros_like(tail)
+    occupied = set()
     mapped = []
     native_cache = {}
-    for point in plan['tail_points']:
+    for point in points:
         key = point['native']['path']
         if key not in native_cache:
             assert sha(key) == point['native']['sha256']
@@ -148,17 +131,44 @@ def prepare():
                 assert tensors['response_mask'][global_row, slot]
                 assert not artifact['target_mask'][response_position]
                 assert artifact['policy_mask'][response_position]
-                assert not tail[global_row, slot], 'Duplicate point in frozen tail census'
-                tail[global_row, slot] = tensors['advantages'][global_row, slot]
-                flip = point['native_single_d'] >= 0
-                if flip:
-                    sign_flip[global_row, slot] = tensors['advantages'][global_row, slot]
+                assert (global_row, slot) not in occupied, 'Duplicate frozen source position'
+                occupied.add((global_row, slot))
                 matches.append(dict(rank=rank, local_row=local_row, global_row=global_row,
                                     optimizer_minibatch=local_row // 32, actor_slot=slot,
                                     actual_raw_A=float(tensors['dt_token_advantages'][global_row, slot]),
-                                    saved_whitened_A=float(tail[global_row, slot])))
+                                    saved_whitened_A=float(tensors['advantages'][global_row, slot])))
         assert matches, 'Frozen tail point did not bind the actual owner actor artifact'
         mapped.append(dict(**point, original_response_position=response_position, actor_matches=matches))
+    return mapped
+
+
+def prepare():
+    torch.set_num_threads(4)
+    source = json.loads(SOURCE.read_bytes())
+    assert sha(SOURCE) == '2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52'
+    check_imports(source)
+    plan = json.loads((OUT / 'gradient-inputs.json').read_bytes())
+    from verl.workers.actor.dp_actor import DataParallelPPOActor
+    from verl.trainer.ppo.core_algos import compute_policy_loss
+    assert identity(DataParallelPPOActor)['sha256'] == ACTOR
+    assert identity(compute_policy_loss)['sha256'] == observer.CORE_SHA256
+    paths = [CAPTURE / f'rank{i}-pre-update.pt' for i in (0, 1)]
+    expected = ['1563ce74f298769893b360398fd1bacf16c376439b1d462e56ef9dc6f905be59',
+                'a1970da0bbf462b203314cbf29cc8ecd8c81e526fe1b6ee944978a76bbadd34e']
+    assert [sha(p) for p in paths] == expected
+    saved = [torch.load(p, map_location='cpu', weights_only=False) for p in paths]
+    tensors = {k: torch.cat([s['tensors'][k] for s in saved])
+               for k in saved[0]['tensors']}
+    tensors['position_ids'] = compute_position_id_with_mask(tensors['attention_mask'])
+    mapped = bind_saved_source_points(plan['tail_points'], saved, tensors)
+    tail = torch.zeros_like(tensors['advantages'])
+    sign_flip = torch.zeros_like(tail)
+    for point in mapped:
+        for match in point['actor_matches']:
+            index = (match['global_row'], match['actor_slot'])
+            tail[index] = tensors['advantages'][index]
+            if point['native_single_d'] >= 0:
+                sign_flip[index] = tensors['advantages'][index]
     tensors['diagnostic_development_tail'] = tail
     tensors['diagnostic_development_sign_flip'] = sign_flip
     cfg = OmegaConf.load(Path(source['verl_root']) / 'verl/trainer/config/ppo_trainer.yaml')
