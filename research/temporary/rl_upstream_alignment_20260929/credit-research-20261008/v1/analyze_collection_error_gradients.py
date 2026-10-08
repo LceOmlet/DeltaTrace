@@ -85,6 +85,8 @@ def main():
                            for m in passed['microbatch_losses'])
         stats = ranks[0]['gradient_statistics']
         assert all(math.isfinite(v) for v in stats['inner_products'].values())
+        clip_returns = {label:[rank['passes'][label]['optimizer_boundary']['native_clip_return']
+                              for rank in ranks] for label in labels}
         minibatches.append(dict(index=index, full_pg_norm=stats['norms']['full_pg'], counts=counts,
             components={label:dict(points=counts[label], states=len({p['initial_state_sha256']
                 for p in points if family(p)==label}),
@@ -96,6 +98,10 @@ def main():
                 if label in labels else dict(points=0,status='Structurally absent; no native numerical pass claimed')
                 for label in LABELS[1:]}, statistics=stats,
             selected_error_vector_sum=measured_sum_geometry(stats, labels[1:]),
+            native_clip_returns=dict(by_rank=clip_returns,
+                observed_euclidean_sum_of_rank_returns={label:math.hypot(*values)
+                    for label,values in clip_returns.items()},
+                scope='Retain the actual original returns. They differ by rank in this runtime; do not present one rank return as the mesh-wide FP64 pre-clip norm. The Euclidean sums above are descriptive comparisons, without a new numerical pass threshold or alteration of native clipping.'),
             elapsed_seconds_by_rank=[{k:v['elapsed_seconds'] for k,v in rank['passes'].items()} for rank in ranks]))
     phase = files.get('phase.json', {})
     all_returns = len(minibatches) == 4 and phase.get('phase') == 'original_minibatch_gradients_complete' and phase.get('minibatch') == 3
