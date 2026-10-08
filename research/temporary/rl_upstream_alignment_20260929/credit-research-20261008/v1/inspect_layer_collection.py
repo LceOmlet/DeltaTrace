@@ -43,6 +43,8 @@ def make_worker():
             spec = plan['tasks'][task]
             factual_controls = os.environ.get('DT_LAYER_FACTUAL_CONTROL') == '1'
             suboperations = os.environ.get('DT_LAYER_SUBOPERATIONS') == '1'
+            attention_branches = os.environ.get('DT_ATTENTION_BRANCHES') == '1'
+            assert not attention_branches or suboperations
             subobserver = None
             needed = set(range(33))
             if suboperations:
@@ -156,9 +158,14 @@ def make_worker():
                     save('DT_begin', batch=batch_index, original_readout=True, observer_argument=False)
                     if suboperations:
                         from passive_suboperations import PassiveSuboperations
+                        observer_type = PassiveSuboperations
+                        if attention_branches:
+                            from passive_attention_gate import PassiveAttentionGate
+                            observer_type = PassiveAttentionGate
+                            record['attention_branch_source_sha256'] = sha(inspect.getsourcefile(observer_type))
                         record['suboperation_source_sha256'] = sha(inspect.getsourcefile(PassiveSuboperations))
                         record['suboperation_protocol_sha256'] = sha(protocol_path)
-                        subobserver = PassiveSuboperations(runner, protocol['selected_decoder_layers'],
+                        subobserver = observer_type(runner, protocol['selected_decoder_layers'],
                             effect_owner, bank, active, None, rows, None)
                         subobserver.__enter__()
                     globals_['_token_effect'], globals_['decoder_finite_pullback'] = effect, decoder
@@ -244,8 +251,9 @@ def make_worker():
                                           suboperations=[{} for _ in range(4)])
                             save('native_forward_begin', batch=batch_index, round=round_index, paired_shape=[8, width])
                             tick = time.perf_counter()
-                            result = runner.model.forward_root(input_ids=packed, attention_mask=torch.ones_like(packed),
-                                use_cache=False, logits_to_keep=selector.rows)
+                            with subobserver.native_scope() if attention_branches else nullcontext():
+                                result = runner.model.forward_root(input_ids=packed, attention_mask=torch.ones_like(packed),
+                                    use_cache=False, logits_to_keep=selector.rows)
                             logits = selector.pack_logits(result.logits)
                             del result, packed
                             if subobserver is not None:
@@ -296,12 +304,21 @@ def make_worker():
                                     batch['points'].append(point)
                             batch['native_phases'].append(dict(round=round_index, seconds=time.perf_counter()-tick,
                                 measured_queries=sum(q is not None for q in queries)))
+                            if attention_branches:
+                                subobserver.native_gate.clear()
                             save('native_forward_complete', batch=batch_index, round=round_index)
                     for handle in handles:
                         handle.remove()
                     handles.clear()
                     if subobserver is not None:
                         batch['additional_suboperation_readout_seconds'] = subobserver.readout_seconds
+                        if attention_branches:
+                            batch['attention_branch_readout'] = dict(
+                                extra_projection_calls=subobserver.extra_projection_calls,
+                                extra_sigmoid_slice_calls=subobserver.extra_sigmoid_calls,
+                                seconds=subobserver.gate_readout_seconds,
+                                linear_owner_path=subobserver.linear_readout_owner,
+                                linear_owner_sha256=sha(subobserver.linear_readout_owner))
                         subobserver.__exit__(None, None, None)
                         subobserver = None
                     bank.clear()

@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 极端负信用：原 source mask CPU 复核与末层 FA 被动拆分准备
+
+复用实际已部署 readout 的原 _prepare_row，CPU读取64个已SHA核验的保存capture。
+TextCraft45条、AppWorld48条主/额外尾轨迹分别核对；打包位置、target/source mask
+及target offset与原capture逐值相同，原完整signed向量在非source位置无非零项。
+原reference输入未在capture保存，不能据此宣称实际reference参数已回放或DT准确。
+本次CPU1.012秒、采样PSS558,877,696字节，CUDA未初始化；没有新模型/DT/PPO调用。
+
+已有冻结集合的末层mixer残差不能区分门控、路由与投影。本次只准备原FA门控
+的被动分解，保留原返回对象，以原线性转置在128位置切片读出；不提供新系数、
+不替换FA/FLA、不校正信用。六项门控误差的符号恒等式已闭合，但这不是数值
+或归因准确性验收；BF16 sigmoid的secant与连续导数比较不冒充官方容差。
+计划只先执行TextCraft同165个冻结位置、原每rank6DT/30native，新增整网调用0；
+原观察约221秒不是新运行时承诺。明确host/device张量上界及1800秒worker预算，
+AppWorld是否需要采集以此真实阶段数据为依据。尚未启动GPU诊断或部署候选。
+
+原PPO NaN的44文件及无损归档保持保存，事故与极端归因均未称修复；正式训练
+继续停止。源码/有效owner SHA、分组数量、CPU命令及准备协议见
+results_source_mask_and_gate_preparation_20261009.json；current_runtime仅追加准备状态。
+
+
 ## 2026-10-09 极端负信用：完整向量端点账本与跨层耦合审核
 
 本次只用既有运行时CPU读取保存的完整向量，CUDA_VISIBLE_DEVICES=-1，零新增
