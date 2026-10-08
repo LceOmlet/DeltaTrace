@@ -27,7 +27,9 @@ if __name__=='__main__':
     assert strata['provenance']['manifest.json']==hashlib.sha256((HERE/'manifest.json').read_bytes()).hexdigest()
     assert strata['provenance']['corpus.json']==hashlib.sha256((HERE/'corpus.json').read_bytes()).hexdigest()
     hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in FILES}
-    assert hashes['inspect_action_curve.py']=='55f88c760cd8d4317ef9ac07142e5c9ecfa4f0f53f1194d6e673f5f4ba8aa469'
+    # The later TextCraft-tested helper preserves the same metric/carrier and
+    # additionally passes original TaskRunner-resolved scheduler steps.
+    assert hashes['inspect_action_curve.py']=='7277fade4e9b1cb49f825e4cb2fc54453c9ff3ce4859b20350aa2bd67ffaf3a6'
     assert hashes['inspect_extreme_endpoint.py']=='8a72887a32bd11533486ddee6dc0d36b4980bfb77ed94eadc7a9a13f031b36d5'
     plan={'scope':__doc__,'seed':manifest['seed'],'metric_owner':manifest['metric_owner'],
           'diagnostic_code_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),

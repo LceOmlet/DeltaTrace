@@ -17,6 +17,10 @@ callback的真实IDs合为B4配对前向，排序、删除、归一化和指标�
 训练源、Q/V/A/PPO与LoRA8/16、每卡B4均未改，TextCraft仍hold，AppWorld不重启。
 来源为credit-research-20261008/v1/{manifest,corpus,credit-strata}.json；
 候选GDN实现仍暂停，本项是集合级基线诊断，不能证明整体退化原因已定位。
+首次本机提交在上传前发现helper哈希仍指旧AppWorld单点版本55f88c76，零远端
+调用。逐项diff确认实际复用的是已测TextCraft版本7277fade（回执
+results_textcraft_actual_author_curves_20261008.json），metric/carrier未变，
+新增的是原TaskRunner步骤标量传递与case选择；已纠正绑定，未回退旧helper。
 
 ## 2026-10-08 回查确认以点带面的优先级错误；暂停新增GDN候选实现
 
