@@ -21,10 +21,12 @@ task = sys.argv[1]
 assert task in ('textcraft','appworld')
 suboperations = '--suboperations' in sys.argv[2:]
 attention_branches = '--attention-branches' in sys.argv[2:]
+attention_input = '--attention-input' in sys.argv[2:]
 assert not attention_branches or suboperations
+assert not attention_input or attention_branches
 revision = next((v.split('=',1)[1] for v in sys.argv[2:] if v.startswith('--revision=')), 'v1')
 assert revision in ('v1','v2')
-tag = 'attention-gate' if attention_branches else ('layer-suboperations' if suboperations else 'layer-factual-controls')
+tag = 'attention-input' if attention_input else ('attention-gate' if attention_branches else ('layer-suboperations' if suboperations else 'layer-factual-controls'))
 date = '20261009' if attention_branches else '20261008'
 out = transport.ROOT+f'/receipts/credit-{tag}-{task}-{date}-{revision}'
 folder = HERE/(f'{tag}-{task}'+('-'+revision if revision!='v1' else ''))
@@ -33,11 +35,16 @@ files = [HERE/'inspect_layer_collection.py',HERE/'layer-collection-inputs.json',
     AUDIT/'direct-target-textcraft-author-curve-20261008/v1/actual-results/inspect_action_curve.py',
     AUDIT/'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
 if suboperations:
-    files += [HERE/'passive_suboperations.py',HERE/('attention-gate-protocol.json' if attention_branches else 'suboperation-protocol.json')]
+    files += [HERE/'passive_suboperations.py',HERE/('attention-input-protocol.json' if attention_input else ('attention-gate-protocol.json' if attention_branches else 'suboperation-protocol.json'))]
 if attention_branches:
     files += [HERE/'passive_attention_gate.py']
-names = {p: ('suboperation-protocol.json' if p.name == 'attention-gate-protocol.json' else p.name) for p in files}
+names = {p: ('suboperation-protocol.json' if p.name in ('attention-gate-protocol.json','attention-input-protocol.json') else p.name) for p in files}
 hashes = {names[p]:hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
+if attention_branches:
+    protocol = json.loads(next(p for p in files if p.name.endswith('protocol.json')).read_bytes())
+    assert bool(protocol.get('read_attention_input')) == attention_input
+    for item in protocol['inputs']:
+        assert hashlib.sha256(Path(item['path']).read_bytes()).hexdigest() == item['sha256'], item['path']
 commit = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
 git_blobs = {}
 if attention_branches:
@@ -68,7 +75,7 @@ value=dict(unix=time.time(),task=TASK,remote=str(out),files=HASHES,
  extension=('Passive suboperation readout of unchanged callbacks; no coefficient or credit replacement.' if SUBOPERATIONS else
             'Original hook additionally contracts m*(captured_DT_factual-native_factual). No coefficient or credit replacement.'),
  suboperations=SUBOPERATIONS,
- attention_branches=ATTENTION_BRANCHES,source_git_blobs=GIT_BLOBS,
+ attention_branches=ATTENTION_BRANCHES,attention_input=ATTENTION_INPUT,source_git_blobs=GIT_BLOBS,
  frozen_input_sha256=HASHES['layer-collection-inputs.json'],
  model_calls=0,DT_calls=0,updates=0,production_modified=False)
 (out/'preparation.json').write_text(json.dumps(value,indent=2)+'\n');print(json.dumps(value))
@@ -76,6 +83,7 @@ value=dict(unix=time.time(),task=TASK,remote=str(out),files=HASHES,
 header = ('OUT='+repr(out)+'\nTASK='+repr(task)+'\nHASHES='+repr(hashes)
           +'\nSUBOPERATIONS='+repr(suboperations)
           +'\nATTENTION_BRANCHES='+repr(attention_branches)+'\nGIT_BLOBS='+repr(git_blobs)
+          +'\nATTENTION_INPUT='+repr(attention_input)
           +'\nCOMMIT='+repr(commit)+'\n')
 script = 'source '+transport.ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+header+code+'\nPY\n'
 result = subprocess.run(transport.SSH+['bash','-s'],input=script.encode(),capture_output=True,timeout=45)

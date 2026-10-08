@@ -5,6 +5,7 @@ product background mismatch and attention routing. This protocol adds those
 readouts on the same frozen queries; it introduces no training candidate.
 """
 import hashlib
+import argparse
 import json
 from pathlib import Path
 
@@ -20,6 +21,9 @@ def ref(path):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--attention-input', action='store_true')
+    args = parser.parse_args()
     oF, oR, oD, sF, sD, dg, do, pF, pD, mc, mg, mp, cBF, cSmooth, dsSmooth = sp.symbols(
         'o_F o_R o_D s_F s_D delta_g delta_o p_F p_D m_content m_gate m_product c_BF c_smooth delta_s_smooth')
     ds = sF-sD
@@ -67,6 +71,14 @@ def main():
             additional_DT_calls_beyond_same_original_protocol=0,
             added_scalar_work='Native sigmoid re-evaluation on actual operands and CPU FP64 ledger in128-position slices.',
             cost_scope='Conservative tensor-shape bounds and earlier measurements, not observed new peak or promised speed.')
+        if args.attention_input:
+            costs[task].update(additional_QKV_host_bank_upper_bytes=54*bh,
+                additional_native_QKV_host_upper_bytes=48*bh,
+                additional_device_model_or_kernel_calls_for_input_ledger=0,
+                input_readout_scope='CPU copies of original endpoints and original dq/dk/dv; FP64 contractions in128-position slices. '
+                    'Bounds assume compact KV width no greater than Q width, and include the original full-context cached K/V.')
+    if args.attention_input:
+        sources += [HERE/'attention-gate-textcraft/analysis.json', HERE/'attention-gate-textcraft/launch.json']
     result = dict(scope=__doc__, inputs=[ref(p) for p in sources],
         unchanged_queries_plan_sha256=ref(plan_path)['sha256'], selected_decoder_layers=[31],
         required_original_boundaries=[31,32], costs=costs,
@@ -87,7 +99,17 @@ def main():
         scope_limit='No kernel was changed. Algebraic closure and native product equality do not establish DT quality. '
             'Original author cumulative deletion/RISE/MAS remains the independent candidate quality check.',
         prepared_only=True, launched=False, wall_budget_per_worker_seconds=1800)
-    path = HERE/'attention-gate-protocol.json'
+    if args.attention_input:
+        n, g, qkv, content = sp.symbols('input_contraction gate_contraction QKV_contraction content_contraction')
+        closure = sp.expand((n-g-qkv)+(qkv-content)-(n-g-content))
+        assert closure == 0
+        result.update(read_attention_input=True,
+            core_decomposition=dict(input_projection_QKnorm_RoPE=str(n-g-qkv), finite_FA_core=str(qkv-content), symbolic_residual=str(closure)),
+            reason='The previous passive run left core/input largest at nine paired-unchanged robust spurious positions across five states. '
+                'Read actual original dq/dk/dv and endpoints to separate that measured remainder; no new numerical candidate.',
+            prior_diagnostic_drift='Rank1 prior cross-process endpoint drift is preserved, unresolved and not erased. '
+                'This ledger diagnoses same-call contractions; comparison with prior results must separate exact unchanged and changed points.')
+    path = HERE/('attention-input-protocol.json' if args.attention_input else 'attention-gate-protocol.json')
     path.write_text(json.dumps(result, indent=2)+'\n')
     print(json.dumps(dict(output=ref(path), symbolic_residual=str(residual), costs=costs)))
 

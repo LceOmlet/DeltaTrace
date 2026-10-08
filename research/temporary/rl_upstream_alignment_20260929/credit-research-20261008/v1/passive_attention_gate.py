@@ -7,6 +7,7 @@ a causal share, a new tolerance, or evidence of improved attribution quality.
 """
 from contextlib import contextmanager
 import inspect
+import os
 import time
 
 import torch
@@ -25,6 +26,8 @@ class PassiveAttentionGate(PassiveSuboperations):
         self.extra_projection_calls = 0
         self.extra_sigmoid_calls = 0
         self.gate_readout_seconds = 0.
+        self.read_input = os.environ.get('DT_ATTENTION_CORE_INPUT') == '1'
+        self.input_owner = self.runner.boundaries.attention_input
 
     def __enter__(self):
         super().__enter__()
@@ -42,11 +45,14 @@ class PassiveAttentionGate(PassiveSuboperations):
         self.handles.append(module.o_proj.register_forward_pre_hook(product))
         self.runner.boundaries.attention_gate = self.gate
         self.globals['attention_finite_pullback'] = self.attention
+        if self.read_input:
+            self.runner.boundaries.attention_input = self.input
         return self
 
     def __exit__(self, *args):
         self.runner.boundaries.attention_gate = self.gate_owner
         self.globals['attention_finite_pullback'] = self.attention_owner
+        self.runner.boundaries.attention_input = self.input_owner
         return super().__exit__(*args)
 
     def gate_endpoints(self, g):
@@ -64,7 +70,17 @@ class PassiveAttentionGate(PassiveSuboperations):
         if self.current_layer == 31:
             assert kwargs.get('pv_rule', 'content1') == 'content1'
             self.gate_bank['o'] = self.cpu(args[1]['attention_output'])
+            if self.read_input:
+                for name in ('query', 'key', 'value'):
+                    self.gate_bank[name] = self.cpu(args[1][name])
         return self.attention_owner(*args, **kwargs)
+
+    def input(self, *args, **kwargs):
+        value = self.input_owner(*args, **kwargs)
+        if self.current_layer == 31:
+            for name, operand in zip(('dq', 'dk', 'dv'), args[:3]):
+                self.gate_bank[name] = self.cpu(operand)
+        return value
 
     def gate(self, *args, **kwargs):
         value = self.gate_owner(*args, **kwargs)
@@ -103,12 +119,14 @@ class PassiveAttentionGate(PassiveSuboperations):
                     g = value.reshape(*value.shape[:2], module.config.num_attention_heads,
                                       2*module.head_dim)[..., module.head_dim:]
                     self.values['g'], self.values['s'] = observer.gate_endpoints(g)
-                elif name in ('attention_output', 'o_proj_input', 'output'):
+                elif name in ('attention_output', 'o_proj_input', 'output') or (
+                        observer.read_input and name in ('query', 'key', 'value')):
                     super().retain(name, value)
         capture = ReadGate(self.text.layers[31].self_attn, self.globals['flash_attention_forward'],
             self.globals['flash_attn_varlen_func'], self.globals['flash_attn_func'],
             destination='cpu', copy_tensors=True,
-            retained_names={'q_proj_output', 'attention_output', 'o_proj_input', 'output'})
+            retained_names={'q_proj_output', 'attention_output', 'o_proj_input', 'output'} |
+                ({'query', 'key', 'value'} if self.read_input else set()))
         with capture:
             yield
         self.native_gate = capture.values
@@ -182,6 +200,39 @@ class PassiveAttentionGate(PassiveSuboperations):
                 'Quantized secants may exceed it; counts alone do not establish attribution error or a repair.',
             native_capture_calls=self.native_capture_calls)
         point['final_FA_gate_ledger'] = totals
+        if self.read_input:
+            contractions = {}
+            shapes = {}
+            for operand, coefficient in (('query', 'dq'), ('key', 'dk'), ('value', 'dv')):
+                m, factual, deleted = bank[coefficient], bank[operand], native[operand]
+                shapes[operand] = dict(coefficient=list(m.shape), DT_endpoint=list(factual.shape),
+                                       native_endpoint=list(deleted.shape))
+                assert m.shape[1] % deleted.shape[1] == 0
+                assert factual.shape[1] == deleted.shape[1]
+                total = 0.
+                for first in range(0, length, 128):
+                    last = min(first+128, length)
+                    # Cached Q is suffix-local; compact K/V use original
+                    # context coordinates. The actual owner provides both.
+                    offset = first if operand == 'query' else start+first
+                    f = factual[2*row+1, :, offset:offset+last-first].double()
+                    d = deleted[2*row, :, start+first:start+last].double()
+                    c = m[row, :, first:last].double()
+                    c = c.reshape(deleted.shape[1], -1, last-first, c.shape[-1]).sum(1)
+                    assert f.shape == d.shape == c.shape
+                    total += float((c*(f-d)).sum())
+                contractions[operand] = total
+            qkv = sum(contractions.values())
+            input_error = data['31']['mn1_n1']['matched']-totals['gate_coefficient']-qkv
+            FA_error = qkv-totals['content_coefficient']
+            point['final_FA_input_ledger'] = dict(operand_shapes=shapes, contractions=contractions,
+                QKV_total=qkv, input_projection_norm_RoPE_residual=input_error,
+                finite_FA_core_residual=FA_error,
+                decomposition_roundoff=input_error+FA_error-totals['core_and_input_residual'],
+                interpretation='Actual original dq/dk/dv contractions; GQA heads are reduced for the observed native operand. '
+                    'Input residual includes original projection, QK normalization, RoPE and their rounding. '
+                    'Core residual includes finite FA propagation and native attention arithmetic. '
+                    'Neither contraction is a log probability or an isolated kernel error. No coefficient is replaced.')
         self.gate_readout_seconds += time.perf_counter()-tick
 
     def bytes(self):
