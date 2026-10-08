@@ -1,0 +1,2114 @@
+{
+  "scope": "Complete conditional attention algebra, existing-owner work and storage audit.\n\nResearch derivation on original receipts only; no candidate code, model call,\nGPU allocation, new numerical tolerance or training change is performed here.\n",
+  "source": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\complete_conditional_attention_feasibility.py",
+    "sha256": "cb5a21a9e0b96a41587bd5d308b8b3e8cfe203743356525522b5fbbd14d0f08c",
+    "bytes": 18567
+  },
+  "inputs": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\conditional-owner-lifetime.json",
+      "sha256": "04880510ed9171db6e4d2a9fa658da51c6b5aefa7078ef3c0cf256f203dad834",
+      "bytes": 148088
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\conditional-owner-lifetime-command.sh",
+      "sha256": "5ed1594bab32b0011f8bdc99c5e6eabd6260dd93fe6f2f952517f977e0a61062",
+      "bytes": 4084
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\conditional-attention-algebra.json",
+      "sha256": "9c871369ff1006bcedba9ff64944fac1bceb7915eac208857512199c874bf88e",
+      "bytes": 21625
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\attention-owner-sources.json",
+      "sha256": "1d9fa83cdb36c0e9ad1c6f276228a23738fa29c977f29bbe39edf848414ed86c",
+      "bytes": 159070
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\compiled-owner.json",
+      "sha256": "6a9790b19331a0aa0e153b64902fbaac14dbdedae9f85a9dfdb3cec9459d245b",
+      "bytes": 2537
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\appworld-efficiency-20261007\\individual-prefix-owner-candidate-v1\\candidate\\vendor_fa_finite_p1_bf16_d256.cu",
+      "sha256": "9ebcef18cec94f45a875694acac0fed4b46064f13d3d0af1a4581c931df54c8b",
+      "bytes": 20505
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\layer-textcraft-observations\\rank0.json",
+      "sha256": "293984364656e53b6069baba599046965f9aae8468de5bf5cabb4986bf1eed70",
+      "bytes": 1890860
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\layer-textcraft-observations\\rank1.json",
+      "sha256": "1b1d344095ee37080f3065e817a537e5bd70a56e01f243811ba128a20437dca8",
+      "bytes": 1557010
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\layer-appworld-observations\\rank0.json",
+      "sha256": "b0233ddfda2d7f81563cf6279b4fbc56846c44b2da6cc3c171e3c01cd259f712",
+      "bytes": 3068783
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\layer-appworld-observations\\rank1.json",
+      "sha256": "b4be176bacf8d5b3f050cf87e6098b46d8d30a0476ce4b86717d8f637dc657dc",
+      "bytes": 3289932
+    }
+  ],
+  "algebra": {
+    "conditional_KV_remainder": "0",
+    "previous_equivalent_row_effect": "Delta O=p_F*Delta V+(p_F-p_CF)*(V_CF-O_other)",
+    "selected_exact_row_effect": "Delta O=p_CF*Delta V+(p_F-p_CF)*(V_F-O_other)",
+    "choice": "Both identities have the same exact complete local row effect. Choose the latter before candidate execution because the KV owner needs only one U/V contraction and one retained value operand. This is not a statement that their coefficient vectors or end-to-end source estimates are identical; do not run a PV-order parameter sweep.",
+    "value_coefficient": "p_CF*upstream, for this key-only counterfactual with factual query and all other keys/values factual.",
+    "key_coefficient": "[sigmoid(s_F-logZ_other)-sigmoid(s_CF-logZ_other)]/(s_F-s_CF) times upstream dot(V_F-O_other), then scale*Q_F.",
+    "stable_secant": "sigmoid(max(z_F,z_CF))*sigmoid(-min(z_F,z_CF))*(-expm1(-abs(delta_s)))/abs(delta_s); equal endpoints use sigmoid(z)*sigmoid(-z).",
+    "secant_bound": "Between 0 and 1/4 by the sigmoid derivative identity. This is a property of the unmodified formula, not a clipping bound.",
+    "dominant_key": "Track one top-key index and an independently accumulated partition/U-dot-output excluding that key. Non-top keys have p<=1/2, so exclusive mass uses stable log1p and a denominator >=1/2. No subtracting a rounded p=1 to reconstruct tiny mass.",
+    "streaming": "Within each query tile retain the top key and online weighted sum of all other keys. When a larger key appears, move the former top into the excluded accumulator. The source dimension is not materialized.",
+    "own_interaction": "F=O(Q1,K1,V1); M_i=O(Q1,K_i0,V_i0,others factual); CF_i=O(Q_i0,K_i0,V_i0,others factual). Compute (F-M_i)+(M_i-CF_i), and use CF_i in the original content1 gate identity.",
+    "query": "Use both query endpoints on the same conditional KV background; retain the original logarithmic-mean center machinery with factual other keys and own reference key/value. No global midpoint of K or Q in this conditional rule.",
+    "single_public_call": "Q0 strict-past FA supplies conditional endpoint0 partition/output on the original requested coefficient suffix. Factual row statistics supply endpoint1 own-key-excluded partition. Add each own reference-key mass by logaddexp. Thus the previously proposed second strict-past Q1 FA call is unnecessary.",
+    "composition": "The new local finite-row coefficients have the original tensor ABI and can compose with the unchanged input norm/projection, residual, MLP and remaining decoders. This defines a research approximation to source deletion; its whole-model quality is measured, not inferred from local exactness or one sample.",
+    "conservation": "Do not claim these conditional coefficients are the original joint content1 pullback. Their local row effects need not sum to the global paired endpoint difference. Preserve that diagnostic as a distinct quantity; do not add a rescale or label it passed."
+  },
+  "owner_bindings": {
+    "textcraft": {
+      "runner": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+        "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_dense_finite_runner_row_candidate.py",
+        "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555",
+        "module": "qwen35_dense_finite_runner"
+      },
+      "existing_public_LSE_callback": "def _public_varlen_attention_lse(captures, mask, args):\n    \"\"\"Compose the installed HF unpad and public FA return, without new FA.\"\"\"\n    from flash_attn.bert_padding import unpad_input, pad_input\n    from transformers.modeling_flash_attention_utils import _upad_input\n    q, k, v = [captures[name].transpose(1, 2) for name in ('query', 'key', 'value')]\n    batch, width = q.shape[:2]\n    q, k, v, indices, (cuq, cuk), (maxq, maxk) = _upad_input(q, k, v, mask, width, unpad_input)\n    aux, lse, unused = flash_attn_varlen_func(q, k, v, cuq, cuk, maxq, maxk, return_attn_probs=True, **args)\n    if lse.ndim != 2 or lse.shape != (q.shape[1], q.shape[0]):\n        raise ValueError('Installed public varlen FA LSE representation changed.')\n    return (pad_input(aux, indices, batch, width), pad_input(lse.transpose(0, 1), indices, batch, width).transpose(1, 2), unused)",
+      "resource_settings": {
+        "dt_dynamic_shapes": true,
+        "dt_compiler_options": {
+          "maca.disable_maca_triton_heuristics": true
+        },
+        "dt_answer_compiled": false,
+        "dt_offload_replay_mixer": false,
+        "dt_gdn_head_batch_size": 8,
+        "dt_compile_gdn_scalar_rules": true,
+        "dt_pin_replay_host": true,
+        "dt_gdn_gpu_capture_names": [
+          "h",
+          "w",
+          "v_new",
+          "A"
+        ],
+        "dt_fa_coefficient_suffix": true,
+        "dt_gdn_coefficient_suffix": true,
+        "dt_compact_gdn_captures": true,
+        "dt_pin_root_host": true,
+        "dt_reuse_native_prefix": true,
+        "dt_native_fla_fp16": true,
+        "dt_native_conv_initial_states": true
+      },
+      "original_phase": "Offload-disabled calls paired public_FA_LSE before finite MLP; offload-enabled already defers that owner call into mixer after MLP consumption.",
+      "proposed_seam": "An explicit research mode would replace that paired LSE replay with one B4 strict-past Q0/factual-KV public call in the original mixer. Q requests only the existing coefficient suffix; all factual K/V history remains. It must not retain the original paired replay and append the new call.",
+      "release": "The conditional rule does not read the captured global attention_output. Release or omit its restoration at the original consumer, preserving any requested observer trace; do not assume pop frees allocator/physical storage without measuring aliases and phase.",
+      "mask_owner": "Use installed HF/FA unpad_input, indices/cu_seqlens and pad_input. Q keeps the original valid suffix starting at the existing coefficient cut, K/V retains complete history except its last valid key. Bottom-right alignment then excludes the own key for each requested query. This omits unused coefficient rows, not state context. No copied mask/parser or token identity reconstruction."
+    },
+    "appworld": {
+      "runner": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+        "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+        "sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f",
+        "module": "qwen35_dense_finite_runner"
+      },
+      "existing_public_LSE_callback": "def _public_varlen_attention_lse(captures, mask, args):\n    \"\"\"Compose the installed HF unpad and public FA return, without new FA.\"\"\"\n    from flash_attn.bert_padding import unpad_input, pad_input\n    from transformers.modeling_flash_attention_utils import _upad_input\n    q, k, v = [captures[name].transpose(1, 2) for name in ('query', 'key', 'value')]\n    batch, width = q.shape[:2]\n    q, k, v, indices, (cuq, cuk), (maxq, maxk) = _upad_input(q, k, v, mask, width, unpad_input)\n    aux, lse, unused = flash_attn_varlen_func(q, k, v, cuq, cuk, maxq, maxk, return_attn_probs=True, **args)\n    if lse.ndim != 2 or lse.shape != (q.shape[1], q.shape[0]):\n        raise ValueError('Installed public varlen FA LSE representation changed.')\n    return (pad_input(aux, indices, batch, width), pad_input(lse.transpose(0, 1), indices, batch, width).transpose(1, 2), unused)",
+      "resource_settings": {
+        "dt_dynamic_shapes": true,
+        "dt_compiler_options": {
+          "maca.disable_maca_triton_heuristics": true
+        },
+        "dt_answer_compiled": false,
+        "dt_offload_replay_mixer": false,
+        "dt_gdn_head_batch_size": 8,
+        "dt_compile_gdn_scalar_rules": true,
+        "dt_pin_replay_host": true,
+        "dt_gdn_gpu_capture_names": [
+          "h",
+          "w",
+          "v_new",
+          "A"
+        ],
+        "dt_fa_coefficient_suffix": true,
+        "dt_gdn_coefficient_suffix": true,
+        "dt_compact_gdn_captures": true,
+        "dt_pin_root_host": true,
+        "dt_reuse_native_prefix": true,
+        "dt_native_fla_fp16": true,
+        "dt_native_conv_initial_states": true
+      },
+      "original_phase": "Offload-disabled calls paired public_FA_LSE before finite MLP; offload-enabled already defers that owner call into mixer after MLP consumption.",
+      "proposed_seam": "An explicit research mode would replace that paired LSE replay with one B4 strict-past Q0/factual-KV public call in the original mixer. Q requests only the existing coefficient suffix; all factual K/V history remains. It must not retain the original paired replay and append the new call.",
+      "release": "The conditional rule does not read the captured global attention_output. Release or omit its restoration at the original consumer, preserving any requested observer trace; do not assume pop frees allocator/physical storage without measuring aliases and phase.",
+      "mask_owner": "Use installed HF/FA unpad_input, indices/cu_seqlens and pad_input. Q keeps the original valid suffix starting at the existing coefficient cut, K/V retains complete history except its last valid key. Bottom-right alignment then excludes the own key for each requested query. This omits unused coefficient rows, not state context. No copied mask/parser or token identity reconstruction."
+    }
+  },
+  "native_LSE_reuse_seam": {
+    "pinned_interface_path": "/opt/conda/lib/python3.12/site-packages/flash_attn/flash_attn_interface.py",
+    "sha256": "f0edd4fe3acd251888e713552dcc6ab2c582d0049aeddc261aa2bbbab8a21b24",
+    "native_forward_source": {
+      "FlashAttnFunc": "@staticmethod\ndef forward(ctx, q, k, v, dropout_p, softmax_scale, causal, window_size, softcap, alibi_slopes, attn_mask, deterministic, return_softmax, s_aux, return_max_logit):\n    if softmax_scale is None:\n        softmax_scale = q.shape[-1] ** (-0.5)\n    ctx.qk_headdim = q.shape[-1]\n    results = _flash_attn_forward(q, k, v, dropout_p, softmax_scale, causal=causal, window_size=window_size, softcap=softcap, alibi_slopes=alibi_slopes, attn_mask=attn_mask, return_softmax=return_softmax and dropout_p > 0, s_aux=s_aux, return_max_logit=return_max_logit)\n    if return_max_logit:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state, attn_mask, max_logit = results\n    else:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state, attn_mask = results\n    ctx.save_for_backward(q, k, v, out_padded, softmax_lse, rng_state)\n    ctx.dropout_p = dropout_p\n    ctx.softmax_scale = softmax_scale\n    ctx.causal = causal\n    ctx.window_size = window_size\n    ctx.softcap = softcap\n    ctx.alibi_slopes = alibi_slopes\n    ctx.attn_mask = attn_mask\n    ctx.deterministic = deterministic\n    if not return_softmax:\n        if return_max_logit:\n            return (out, max_logit)\n        else:\n            return out\n    else:\n        return (out, softmax_lse, S_dmask)",
+      "FlashAttnVarlenFunc": "@staticmethod\ndef forward(ctx, q, k, v, cu_seqlens_q, cu_seqlens_k, max_seqlen_q, max_seqlen_k, dropout_p, softmax_scale, causal, window_size, softcap, alibi_slopes, deterministic, return_softmax, block_table, s_aux, return_max_logit):\n    if softmax_scale is None:\n        softmax_scale = q.shape[-1] ** (-0.5)\n    ctx.qk_headdim = q.shape[-1]\n    results = _flash_attn_varlen_forward(q, k, v, cu_seqlens_q, cu_seqlens_k, max_seqlen_q, max_seqlen_k, dropout_p, softmax_scale, causal=causal, window_size=window_size, softcap=softcap, alibi_slopes=alibi_slopes, return_softmax=return_softmax and dropout_p > 0, block_table=block_table, s_aux=s_aux, return_max_logit=return_max_logit)\n    if return_max_logit:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state, max_logit = results\n    else:\n        out, q, k, v, out_padded, softmax_lse, S_dmask, rng_state = results\n    ctx.save_for_backward(q, k, v, out_padded, softmax_lse, cu_seqlens_q, cu_seqlens_k, rng_state)\n    ctx.dropout_p = dropout_p\n    ctx.max_seqlen_q = max_seqlen_q\n    ctx.max_seqlen_k = max_seqlen_k\n    ctx.softmax_scale = softmax_scale\n    ctx.causal = causal\n    ctx.window_size = window_size\n    ctx.softcap = softcap\n    ctx.alibi_slopes = alibi_slopes\n    ctx.deterministic = deterministic\n    if not return_softmax:\n        if return_max_logit:\n            return (out, max_logit)\n        else:\n            return out\n    else:\n        return (out, softmax_lse, S_dmask)"
+    },
+    "evidence": "The pinned native autograd forward unconditionally obtains softmax_lse and saves it locally even when public return_attn_probs=False. Current passive capture does not retain this owner-emitted field, so the controller reruns public FA for LSE.",
+    "smallest_action": "A separate default-inert passive-capture extension can retain the original native forward LSE and original HF query indices, then use official pad_input. No FA/model callable, parser, mask or numerical formula needs replacement.",
+    "status": "Source-supported reuse opportunity; no runtime tensor capture or equivalence result is claimed here. It must not be called verified/deployed or silently assumed for the current job.",
+    "comparison": "Show both current-owner work and the potential baseline with native LSE reuse. Do not market removal of the baseline duplicate as a free accuracy improvement or compare only against avoidable baseline work."
+  },
+  "work": {
+    "original": "7 query-domain contractions + 5 KV-domain contractions + two public FA endpoints (4 public-domain contractions).",
+    "proposed": "9 query-domain contractions + 5 KV-domain contractions + one public strict-past FA endpoint (2 public-domain contractions).",
+    "original_custom_phases": 3,
+    "proposed_custom_phases": 4,
+    "public_FA_calls_per_full_attention_layer": {
+      "original": 1,
+      "proposed": 1
+    },
+    "logical_contraction_ratio_bound": 1,
+    "bound_scope": "Only dimension-D matrix contractions at the same logical lengths/cuts, including the existing LSE replay. This is not a bound on scalar operations, total FLOPs, SFU/reduction cost, traffic, kernel time or complete DT wall time. No runtime speed claim.",
+    "extra_scalar_work": "Stable exclusive normalization, argmax/online row reductions, logistic secants, diagonal Q/K scores and own-output combine must also be counted/profiled.",
+    "unchanged_calls": "One complete DT/B4 per trajectory group, no per-source model forward, no extra full-model pass, no target/reward expansion.",
+    "frozen_collection": {
+      "textcraft": {
+        "batches": [
+          {
+            "rank": 0,
+            "batch": 0,
+            "uids": [
+              "e63d3b4e-d489-450e-9da8-5b225ad6cdac",
+              "06a68e60-7664-4c1d-8f35-df1177d3e9a0",
+              "7a08c718-11cc-4183-af87-b7b2ecf5f6e0",
+              "6584d566-81ab-4556-880e-e47a6835baad"
+            ],
+            "rows": [
+              {
+                "length": 508,
+                "query_start": 320,
+                "coefficient_start": 346,
+                "logical_query_pairs": 69255,
+                "logical_KV_pairs": 13203,
+                "public_pairs": 77926,
+                "strict_past_public_pairs": 69093,
+                "original_contraction_pair_units": 862504,
+                "conditional_contraction_pair_units": 827496,
+                "native_LSE_reuse_baseline_contraction_pair_units": 550800,
+                "original_finite_query_tiles": 21,
+                "original_finite_KV_tiles": 6
+              },
+              {
+                "length": 604,
+                "query_start": 320,
+                "coefficient_start": 346,
+                "logical_query_pairs": 122679,
+                "logical_KV_pairs": 33411,
+                "public_pairs": 131350,
+                "strict_past_public_pairs": 122421,
+                "original_contraction_pair_units": 1551208,
+                "conditional_contraction_pair_units": 1516008,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1025808,
+                "original_finite_query_tiles": 40,
+                "original_finite_KV_tiles": 15
+              },
+              {
+                "length": 991,
+                "query_start": 448,
+                "coefficient_start": 457,
+                "logical_query_pairs": 386883,
+                "logical_KV_pairs": 142845,
+                "public_pairs": 390960,
+                "strict_past_public_pairs": 386349,
+                "original_contraction_pair_units": 4986246,
+                "conditional_contraction_pair_units": 4968870,
+                "native_LSE_reuse_baseline_contraction_pair_units": 3422406,
+                "original_finite_query_tiles": 108,
+                "original_finite_KV_tiles": 45
+              },
+              {
+                "length": 1139,
+                "query_start": 512,
+                "coefficient_start": 558,
+                "logical_query_pairs": 493269,
+                "logical_KV_pairs": 169071,
+                "public_pairs": 517902,
+                "strict_past_public_pairs": 492688,
+                "original_contraction_pair_units": 6369846,
+                "conditional_contraction_pair_units": 6270152,
+                "native_LSE_reuse_baseline_contraction_pair_units": 4298238,
+                "original_finite_query_tiles": 135,
+                "original_finite_KV_tiles": 55
+              }
+            ],
+            "original_contraction_pair_units": 13769804,
+            "conditional_contraction_pair_units": 13582526,
+            "ratio": 0.986399370680948,
+            "native_LSE_reuse_baseline_contraction_pair_units": 9297252,
+            "conditional_over_native_LSE_reuse_ratio": 1.4609183444742597,
+            "original_logical_contraction_FLOPs": 112802234368,
+            "conditional_logical_contraction_FLOPs": 111268052992
+          },
+          {
+            "rank": 0,
+            "batch": 2,
+            "uids": [
+              "e454b362-8533-4eac-bfc0-2f372729e055",
+              "81ea0202-602d-4c8c-a186-473d9e396aa5",
+              "490a962d-6551-4e03-aa0e-901980eda017",
+              "93f21e25-3419-4ddb-bec9-60708fbcf2cd"
+            ],
+            "rows": [
+              {
+                "length": 1632,
+                "query_start": 448,
+                "coefficient_start": 459,
+                "logical_query_pairs": 1226958,
+                "logical_KV_pairs": 688551,
+                "public_pairs": 1231952,
+                "strict_past_public_pairs": 1225785,
+                "original_contraction_pair_units": 16959269,
+                "conditional_contraction_pair_units": 16936947,
+                "native_LSE_reuse_baseline_contraction_pair_units": 12031461,
+                "original_finite_query_tiles": 323,
+                "original_finite_KV_tiles": 190
+              },
+              {
+                "length": 1666,
+                "query_start": 576,
+                "coefficient_start": 584,
+                "logical_query_pairs": 1217791,
+                "logical_KV_pairs": 585903,
+                "public_pairs": 1222435,
+                "strict_past_public_pairs": 1216709,
+                "original_contraction_pair_units": 16343792,
+                "conditional_contraction_pair_units": 16323052,
+                "native_LSE_reuse_baseline_contraction_pair_units": 11454052,
+                "original_finite_query_tiles": 333,
+                "original_finite_KV_tiles": 171
+              },
+              {
+                "length": 1669,
+                "query_start": 448,
+                "coefficient_start": 473,
+                "logical_query_pairs": 1281514,
+                "logical_KV_pairs": 715806,
+                "public_pairs": 1293039,
+                "strict_past_public_pairs": 1280318,
+                "original_contraction_pair_units": 17721784,
+                "conditional_contraction_pair_units": 17673292,
+                "native_LSE_reuse_baseline_contraction_pair_units": 12549628,
+                "original_finite_query_tiles": 350,
+                "original_finite_KV_tiles": 210
+              },
+              {
+                "length": 1802,
+                "query_start": 576,
+                "coefficient_start": 628,
+                "logical_query_pairs": 1426997,
+                "logical_KV_pairs": 689725,
+                "public_pairs": 1458327,
+                "strict_past_public_pairs": 1425823,
+                "original_contraction_pair_units": 19270912,
+                "conditional_contraction_pair_units": 19143244,
+                "native_LSE_reuse_baseline_contraction_pair_units": 13437604,
+                "original_finite_query_tiles": 390,
+                "original_finite_KV_tiles": 210
+              }
+            ],
+            "original_contraction_pair_units": 70295757,
+            "conditional_contraction_pair_units": 70076535,
+            "ratio": 0.9968814333986047,
+            "native_LSE_reuse_baseline_contraction_pair_units": 49472745,
+            "conditional_over_native_LSE_reuse_ratio": 1.4164674913429607,
+            "original_logical_contraction_FLOPs": 575862841344,
+            "conditional_logical_contraction_FLOPs": 574066974720
+          },
+          {
+            "rank": 0,
+            "batch": 4,
+            "uids": [
+              "17773f55-9abc-4c29-ba91-35ac452c48e8",
+              "193857d0-5699-41e8-a59f-fe1302103600",
+              "50a519da-c953-443d-86b5-1044637fc71b",
+              "afabb4b5-ee64-4037-a68e-2390a273ed32"
+            ],
+            "rows": [
+              {
+                "length": 2055,
+                "query_start": 512,
+                "coefficient_start": 540,
+                "logical_query_pairs": 1966470,
+                "logical_KV_pairs": 1148370,
+                "public_pairs": 1981212,
+                "strict_past_public_pairs": 1964955,
+                "original_contraction_pair_units": 27431988,
+                "conditional_contraction_pair_units": 27369990,
+                "native_LSE_reuse_baseline_contraction_pair_units": 19507140,
+                "original_finite_query_tiles": 525,
+                "original_finite_KV_tiles": 325
+              },
+              {
+                "length": 2078,
+                "query_start": 448,
+                "coefficient_start": 487,
+                "logical_query_pairs": 2041253,
+                "logical_KV_pairs": 1266436,
+                "public_pairs": 2059505,
+                "strict_past_public_pairs": 2039662,
+                "original_contraction_pair_units": 28858971,
+                "conditional_contraction_pair_units": 28782781,
+                "native_LSE_reuse_baseline_contraction_pair_units": 20620951,
+                "original_finite_query_tiles": 533,
+                "original_finite_KV_tiles": 351
+              },
+              {
+                "length": 2191,
+                "query_start": 576,
+                "coefficient_start": 628,
+                "logical_query_pairs": 2203830,
+                "logical_KV_pairs": 1222266,
+                "public_pairs": 2235160,
+                "strict_past_public_pairs": 2202267,
+                "original_contraction_pair_units": 30478780,
+                "conditional_contraction_pair_units": 30350334,
+                "native_LSE_reuse_baseline_contraction_pair_units": 21538140,
+                "original_finite_query_tiles": 585,
+                "original_finite_KV_tiles": 351
+              },
+              {
+                "length": 2196,
+                "query_start": 576,
+                "coefficient_start": 584,
+                "logical_query_pairs": 2241486,
+                "logical_KV_pairs": 1300078,
+                "public_pairs": 2246130,
+                "strict_past_public_pairs": 2239874,
+                "original_contraction_pair_units": 31175312,
+                "conditional_contraction_pair_units": 31153512,
+                "native_LSE_reuse_baseline_contraction_pair_units": 22190792,
+                "original_finite_query_tiles": 585,
+                "original_finite_KV_tiles": 351
+              }
+            ],
+            "original_contraction_pair_units": 117945051,
+            "conditional_contraction_pair_units": 117656617,
+            "ratio": 0.9975545052755117,
+            "native_LSE_reuse_baseline_contraction_pair_units": 83857023,
+            "conditional_over_native_LSE_reuse_ratio": 1.4030621740530904,
+            "original_logical_contraction_FLOPs": 966205857792,
+            "conditional_logical_contraction_FLOPs": 963843006464
+          },
+          {
+            "rank": 0,
+            "batch": 6,
+            "uids": [
+              "de15c078-1f39-4c0f-8a2a-5556948a7ef6",
+              "c34fbcb0-49b5-44d0-a498-0e608198c381",
+              "b62fed6f-e758-4a53-a1c9-48b134131c47",
+              "6739beae-307b-4816-847f-dedf8078bcb1"
+            ],
+            "rows": [
+              {
+                "length": 2350,
+                "query_start": 448,
+                "coefficient_start": 459,
+                "logical_query_pairs": 2656855,
+                "logical_KV_pairs": 1788886,
+                "public_pairs": 2661849,
+                "strict_past_public_pairs": 2654964,
+                "original_contraction_pair_units": 38189811,
+                "conditional_contraction_pair_units": 38166053,
+                "native_LSE_reuse_baseline_contraction_pair_units": 27542415,
+                "original_finite_query_tiles": 675,
+                "original_finite_KV_tiles": 465
+              },
+              {
+                "length": 2399,
+                "query_start": 576,
+                "coefficient_start": 630,
+                "logical_query_pairs": 2680035,
+                "logical_KV_pairs": 1565565,
+                "public_pairs": 2712624,
+                "strict_past_public_pairs": 2678266,
+                "original_contraction_pair_units": 37438566,
+                "conditional_contraction_pair_units": 37304672,
+                "native_LSE_reuse_baseline_contraction_pair_units": 26588070,
+                "original_finite_query_tiles": 696,
+                "original_finite_KV_tiles": 435
+              },
+              {
+                "length": 2430,
+                "query_start": 640,
+                "coefficient_start": 643,
+                "logical_query_pairs": 2746619,
+                "logical_KV_pairs": 1597578,
+                "public_pairs": 2748545,
+                "strict_past_public_pairs": 2744832,
+                "original_contraction_pair_units": 38208403,
+                "conditional_contraction_pair_units": 38197125,
+                "native_LSE_reuse_baseline_contraction_pair_units": 27214223,
+                "original_finite_query_tiles": 686,
+                "original_finite_KV_tiles": 406
+              },
+              {
+                "length": 2520,
+                "query_start": 576,
+                "coefficient_start": 628,
+                "logical_query_pairs": 2978954,
+                "logical_KV_pairs": 1790778,
+                "public_pairs": 3010284,
+                "strict_past_public_pairs": 2977062,
+                "original_contraction_pair_units": 41847704,
+                "conditional_contraction_pair_units": 41718600,
+                "native_LSE_reuse_baseline_contraction_pair_units": 29806568,
+                "original_finite_query_tiles": 775,
+                "original_finite_KV_tiles": 496
+              }
+            ],
+            "original_contraction_pair_units": 155684484,
+            "conditional_contraction_pair_units": 155386450,
+            "ratio": 0.9980856538022119,
+            "native_LSE_reuse_baseline_contraction_pair_units": 111151276,
+            "conditional_over_native_LSE_reuse_ratio": 1.397972705234621,
+            "original_logical_contraction_FLOPs": 1275367292928,
+            "conditional_logical_contraction_FLOPs": 1272925798400
+          },
+          {
+            "rank": 0,
+            "batch": 8,
+            "uids": [
+              "ff85aaf1-3a62-474f-819a-928e12b3472f",
+              "c25bd7e1-81ca-403b-be01-da1e4e4386fb",
+              "ac38a2d5-e4f6-4bc6-ae4c-45e163731cf7",
+              "491aab7d-9ece-494f-b77f-b6553d2b2478"
+            ],
+            "rows": [
+              {
+                "length": 3141,
+                "query_start": 448,
+                "coefficient_start": 487,
+                "logical_query_pairs": 4815683,
+                "logical_KV_pairs": 3523185,
+                "public_pairs": 4833935,
+                "strict_past_public_pairs": 4813029,
+                "original_contraction_pair_units": 70661446,
+                "conditional_contraction_pair_units": 70583130,
+                "native_LSE_reuse_baseline_contraction_pair_units": 51325706,
+                "original_finite_query_tiles": 1247,
+                "original_finite_KV_tiles": 946
+              },
+              {
+                "length": 3267,
+                "query_start": 576,
+                "coefficient_start": 628,
+                "logical_query_pairs": 5140772,
+                "logical_KV_pairs": 3483480,
+                "public_pairs": 5172102,
+                "strict_past_public_pairs": 5138133,
+                "original_contraction_pair_units": 74091212,
+                "conditional_contraction_pair_units": 73960614,
+                "native_LSE_reuse_baseline_contraction_pair_units": 53402804,
+                "original_finite_query_tiles": 1333,
+                "original_finite_KV_tiles": 946
+              },
+              {
+                "length": 3379,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 5493699,
+                "logical_KV_pairs": 3703281,
+                "public_pairs": 5505390,
+                "strict_past_public_pairs": 5490978,
+                "original_contraction_pair_units": 78993858,
+                "conditional_contraction_pair_units": 78941652,
+                "native_LSE_reuse_baseline_contraction_pair_units": 56972298,
+                "original_finite_query_tiles": 1376,
+                "original_finite_KV_tiles": 946
+              },
+              {
+                "length": 3496,
+                "query_start": 576,
+                "coefficient_start": 614,
+                "logical_query_pairs": 5923951,
+                "logical_KV_pairs": 4154403,
+                "public_pairs": 5946580,
+                "strict_past_public_pairs": 5921069,
+                "original_contraction_pair_units": 86025992,
+                "conditional_contraction_pair_units": 85929712,
+                "native_LSE_reuse_baseline_contraction_pair_units": 62239672,
+                "original_finite_query_tiles": 1495,
+                "original_finite_KV_tiles": 1081
+              }
+            ],
+            "original_contraction_pair_units": 309772508,
+            "conditional_contraction_pair_units": 309415108,
+            "ratio": 0.9988462501004124,
+            "native_LSE_reuse_baseline_contraction_pair_units": 223940480,
+            "conditional_over_native_LSE_reuse_ratio": 1.3816845797597648,
+            "original_logical_contraction_FLOPs": 2537656385536,
+            "conditional_logical_contraction_FLOPs": 2534728564736
+          },
+          {
+            "rank": 0,
+            "batch": 10,
+            "uids": [
+              "f46bd5db-f29c-4445-9ea2-34c7e1c89ab0",
+              "6e76f70e-bdeb-4726-8b35-d9e21eff2f68",
+              "37363e8c-7ae3-4636-a817-cf74ef0d8244",
+              "b5ff0536-092c-4120-bae0-63e482795248"
+            ],
+            "rows": [
+              {
+                "length": 3966,
+                "query_start": 576,
+                "coefficient_start": 614,
+                "logical_query_pairs": 7677756,
+                "logical_KV_pairs": 5619628,
+                "public_pairs": 7700385,
+                "strict_past_public_pairs": 7674404,
+                "original_contraction_pair_units": 112643972,
+                "conditional_contraction_pair_units": 112546752,
+                "native_LSE_reuse_baseline_contraction_pair_units": 81842432,
+                "original_finite_query_tiles": 1908,
+                "original_finite_KV_tiles": 1431
+              },
+              {
+                "length": 4062,
+                "query_start": 576,
+                "coefficient_start": 620,
+                "logical_query_pairs": 8059443,
+                "logical_KV_pairs": 5925403,
+                "public_pairs": 8085777,
+                "strict_past_public_pairs": 8056001,
+                "original_contraction_pair_units": 118386224,
+                "conditional_contraction_pair_units": 118274004,
+                "native_LSE_reuse_baseline_contraction_pair_units": 86043116,
+                "original_finite_query_tiles": 2035,
+                "original_finite_KV_tiles": 1540
+              },
+              {
+                "length": 4339,
+                "query_start": 384,
+                "coefficient_start": 393,
+                "logical_query_pairs": 9338209,
+                "logical_KV_pairs": 7787431,
+                "public_pairs": 9341710,
+                "strict_past_public_pairs": 9334263,
+                "original_contraction_pair_units": 141671458,
+                "conditional_contraction_pair_units": 141649562,
+                "native_LSE_reuse_baseline_contraction_pair_units": 104304618,
+                "original_finite_query_tiles": 2325,
+                "original_finite_KV_tiles": 1953
+              },
+              {
+                "length": 5511,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 14971505,
+                "logical_KV_pairs": 11778231,
+                "public_pairs": 14983196,
+                "strict_past_public_pairs": 14966652,
+                "original_contraction_pair_units": 223624474,
+                "conditional_contraction_pair_units": 223568004,
+                "native_LSE_reuse_baseline_contraction_pair_units": 163691690,
+                "original_finite_query_tiles": 3773,
+                "original_finite_KV_tiles": 3003
+              }
+            ],
+            "original_contraction_pair_units": 596326128,
+            "conditional_contraction_pair_units": 596038322,
+            "ratio": 0.9995173681204188,
+            "native_LSE_reuse_baseline_contraction_pair_units": 435881856,
+            "conditional_over_native_LSE_reuse_ratio": 1.3674309076999067,
+            "original_logical_contraction_FLOPs": 4885103640576,
+            "conditional_logical_contraction_FLOPs": 4882745933824
+          },
+          {
+            "rank": 1,
+            "batch": 1,
+            "uids": [
+              "aabd709f-9c43-455f-a588-13e58df5d754",
+              "e71e869a-6045-46eb-bbf6-d42805ef9f51",
+              "7d8c37fd-7299-4c55-aec0-eced2b1aea8b",
+              "ddddbac8-62fc-4b8d-9555-fd3ce741f8d5"
+            ],
+            "rows": [
+              {
+                "length": 1184,
+                "query_start": 384,
+                "coefficient_start": 393,
+                "logical_query_pairs": 624099,
+                "logical_KV_pairs": 313236,
+                "public_pairs": 627600,
+                "strict_past_public_pairs": 623308,
+                "original_contraction_pair_units": 8445273,
+                "conditional_contraction_pair_units": 8429687,
+                "native_LSE_reuse_baseline_contraction_pair_units": 5934873,
+                "original_finite_query_tiles": 169,
+                "original_finite_KV_tiles": 91
+              },
+              {
+                "length": 1308,
+                "query_start": 576,
+                "coefficient_start": 630,
+                "logical_query_pairs": 657321,
+                "logical_KV_pairs": 230181,
+                "public_pairs": 689910,
+                "strict_past_public_pairs": 656643,
+                "original_contraction_pair_units": 8511792,
+                "conditional_contraction_pair_units": 8380080,
+                "native_LSE_reuse_baseline_contraction_pair_units": 5752152,
+                "original_finite_query_tiles": 186,
+                "original_finite_KV_tiles": 78
+              },
+              {
+                "length": 1418,
+                "query_start": 448,
+                "coefficient_start": 473,
+                "logical_query_pairs": 893970,
+                "logical_KV_pairs": 446985,
+                "public_pairs": 905495,
+                "strict_past_public_pairs": 893025,
+                "original_contraction_pair_units": 12114695,
+                "conditional_contraction_pair_units": 12066705,
+                "native_LSE_reuse_baseline_contraction_pair_units": 8492715,
+                "original_finite_query_tiles": 248,
+                "original_finite_KV_tiles": 136
+              },
+              {
+                "length": 1588,
+                "query_start": 640,
+                "coefficient_start": 643,
+                "logical_query_pairs": 1054620,
+                "logical_KV_pairs": 446985,
+                "public_pairs": 1056546,
+                "strict_past_public_pairs": 1053675,
+                "original_contraction_pair_units": 13843449,
+                "conditional_contraction_pair_units": 13833855,
+                "native_LSE_reuse_baseline_contraction_pair_units": 9617265,
+                "original_finite_query_tiles": 270,
+                "original_finite_KV_tiles": 120
+              }
+            ],
+            "original_contraction_pair_units": 42915209,
+            "conditional_contraction_pair_units": 42710327,
+            "ratio": 0.9952258883325024,
+            "native_LSE_reuse_baseline_contraction_pair_units": 29797005,
+            "conditional_over_native_LSE_reuse_ratio": 1.4333765088135535,
+            "original_logical_contraction_FLOPs": 351561392128,
+            "conditional_logical_contraction_FLOPs": 349882998784
+          },
+          {
+            "rank": 1,
+            "batch": 3,
+            "uids": [
+              "baf7ce0e-0079-4901-a8f8-053d293fea2e",
+              "b1a9b0f0-cb25-42cc-977d-8207ff6787a0",
+              "d71b049b-e528-415c-bf2e-fda968a0d789",
+              "5a885cc3-e211-4bce-ac27-30e7f3caa665"
+            ],
+            "rows": [
+              {
+                "length": 1841,
+                "query_start": 512,
+                "coefficient_start": 558,
+                "logical_query_pairs": 1539600,
+                "logical_KV_pairs": 823686,
+                "public_pairs": 1564233,
+                "strict_past_public_pairs": 1538317,
+                "original_contraction_pair_units": 21152562,
+                "conditional_contraction_pair_units": 21051464,
+                "native_LSE_reuse_baseline_contraction_pair_units": 14895630,
+                "original_finite_query_tiles": 399,
+                "original_finite_KV_tiles": 231
+              },
+              {
+                "length": 1908,
+                "query_start": 512,
+                "coefficient_start": 540,
+                "logical_query_pairs": 1675116,
+                "logical_KV_pairs": 936396,
+                "public_pairs": 1689858,
+                "strict_past_public_pairs": 1673748,
+                "original_contraction_pair_units": 23167224,
+                "conditional_contraction_pair_units": 23105520,
+                "native_LSE_reuse_baseline_contraction_pair_units": 16407792,
+                "original_finite_query_tiles": 429,
+                "original_finite_KV_tiles": 253
+              },
+              {
+                "length": 2012,
+                "query_start": 448,
+                "coefficient_start": 457,
+                "logical_query_pairs": 1920425,
+                "logical_KV_pairs": 1209790,
+                "public_pairs": 1924502,
+                "strict_past_public_pairs": 1918870,
+                "original_contraction_pair_units": 27189933,
+                "conditional_contraction_pair_units": 27170515,
+                "native_LSE_reuse_baseline_contraction_pair_units": 19491925,
+                "original_finite_query_tiles": 500,
+                "original_finite_KV_tiles": 325
+              },
+              {
+                "length": 2048,
+                "query_start": 576,
+                "coefficient_start": 584,
+                "logical_query_pairs": 1927356,
+                "logical_KV_pairs": 1072380,
+                "public_pairs": 1932000,
+                "strict_past_public_pairs": 1925892,
+                "original_contraction_pair_units": 26581392,
+                "conditional_contraction_pair_units": 26559888,
+                "native_LSE_reuse_baseline_contraction_pair_units": 18853392,
+                "original_finite_query_tiles": 483,
+                "original_finite_KV_tiles": 276
+              }
+            ],
+            "original_contraction_pair_units": 98091111,
+            "conditional_contraction_pair_units": 97887387,
+            "ratio": 0.9979231145623378,
+            "native_LSE_reuse_baseline_contraction_pair_units": 69648739,
+            "conditional_over_native_LSE_reuse_ratio": 1.4054437798220583,
+            "original_logical_contraction_FLOPs": 803562381312,
+            "conditional_logical_contraction_FLOPs": 801893474304
+          },
+          {
+            "rank": 1,
+            "batch": 5,
+            "uids": [
+              "ad1ddab9-5dd5-4cbe-a2a1-a7b3df4f1741",
+              "9c1c29e2-9ef7-4b83-be65-d44da900b061",
+              "6960a96e-4f3d-4120-8891-56ec97933490",
+              "f5e5e8c7-beac-4c2b-a535-d82a52a84054"
+            ],
+            "rows": [
+              {
+                "length": 2211,
+                "query_start": 576,
+                "coefficient_start": 620,
+                "logical_query_pairs": 2252856,
+                "logical_KV_pairs": 1266436,
+                "public_pairs": 2279190,
+                "strict_past_public_pairs": 2251265,
+                "original_contraction_pair_units": 31218932,
+                "conditional_contraction_pair_units": 31110414,
+                "native_LSE_reuse_baseline_contraction_pair_units": 22102172,
+                "original_finite_query_tiles": 585,
+                "original_finite_KV_tiles": 351
+              },
+              {
+                "length": 2219,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 2246279,
+                "logical_KV_pairs": 1219141,
+                "public_pairs": 2257970,
+                "strict_past_public_pairs": 2244718,
+                "original_contraction_pair_units": 30851538,
+                "conditional_contraction_pair_units": 30801652,
+                "native_LSE_reuse_baseline_contraction_pair_units": 21819658,
+                "original_finite_query_tiles": 575,
+                "original_finite_KV_tiles": 325
+              },
+              {
+                "length": 2283,
+                "query_start": 576,
+                "coefficient_start": 599,
+                "logical_query_pairs": 2427486,
+                "logical_KV_pairs": 1418770,
+                "public_pairs": 2441010,
+                "strict_past_public_pairs": 2425802,
+                "original_contraction_pair_units": 33850292,
+                "conditional_contraction_pair_units": 33792828,
+                "native_LSE_reuse_baseline_contraction_pair_units": 24086252,
+                "original_finite_query_tiles": 621,
+                "original_finite_KV_tiles": 378
+              },
+              {
+                "length": 2308,
+                "query_start": 576,
+                "coefficient_start": 630,
+                "logical_query_pairs": 2465821,
+                "logical_KV_pairs": 1408681,
+                "public_pairs": 2498410,
+                "strict_past_public_pairs": 2464143,
+                "original_contraction_pair_units": 34297792,
+                "conditional_contraction_pair_units": 34164080,
+                "native_LSE_reuse_baseline_contraction_pair_units": 24304152,
+                "original_finite_query_tiles": 658,
+                "original_finite_KV_tiles": 406
+              }
+            ],
+            "original_contraction_pair_units": 130218554,
+            "conditional_contraction_pair_units": 129868974,
+            "ratio": 0.997315436324074,
+            "native_LSE_reuse_baseline_contraction_pair_units": 92312234,
+            "conditional_over_native_LSE_reuse_ratio": 1.4068446658976967,
+            "original_logical_contraction_FLOPs": 1066750394368,
+            "conditional_logical_contraction_FLOPs": 1063886635008
+          },
+          {
+            "rank": 1,
+            "batch": 7,
+            "uids": [
+              "419d4151-9ca3-4231-813c-bbd941c125b8",
+              "cb5b2e1d-9dbb-4ec8-8887-258e6734c8b8",
+              "aa876c97-a2e8-4a01-8b4f-1bcd250c7b2e",
+              "68e8ef5f-6c36-4824-8952-c0e0d51f0ee3"
+            ],
+            "rows": [
+              {
+                "length": 2531,
+                "query_start": 576,
+                "coefficient_start": 620,
+                "logical_query_pairs": 3011736,
+                "logical_KV_pairs": 1826916,
+                "public_pairs": 3038070,
+                "strict_past_public_pairs": 3009825,
+                "original_contraction_pair_units": 42369012,
+                "conditional_contraction_pair_units": 42259854,
+                "native_LSE_reuse_baseline_contraction_pair_units": 30216732,
+                "original_finite_query_tiles": 775,
+                "original_finite_KV_tiles": 496
+              },
+              {
+                "length": 2611,
+                "query_start": 576,
+                "coefficient_start": 628,
+                "logical_query_pairs": 3212460,
+                "logical_KV_pairs": 1967136,
+                "public_pairs": 3243790,
+                "strict_past_public_pairs": 3210477,
+                "original_contraction_pair_units": 45298060,
+                "conditional_contraction_pair_units": 45168774,
+                "native_LSE_reuse_baseline_contraction_pair_units": 32322900,
+                "original_finite_query_tiles": 816,
+                "original_finite_KV_tiles": 528
+              },
+              {
+                "length": 2848,
+                "query_start": 576,
+                "coefficient_start": 599,
+                "logical_query_pairs": 3877276,
+                "logical_KV_pairs": 2530125,
+                "public_pairs": 3890800,
+                "strict_past_public_pairs": 3875027,
+                "original_contraction_pair_units": 55354757,
+                "conditional_contraction_pair_units": 55296163,
+                "native_LSE_reuse_baseline_contraction_pair_units": 39791557,
+                "original_finite_query_tiles": 990,
+                "original_finite_KV_tiles": 666
+              },
+              {
+                "length": 2891,
+                "query_start": 576,
+                "coefficient_start": 628,
+                "logical_query_pairs": 3982880,
+                "logical_KV_pairs": 2561716,
+                "public_pairs": 4014210,
+                "strict_past_public_pairs": 3980617,
+                "original_contraction_pair_units": 56745580,
+                "conditional_contraction_pair_units": 56615734,
+                "native_LSE_reuse_baseline_contraction_pair_units": 40688740,
+                "original_finite_query_tiles": 1036,
+                "original_finite_KV_tiles": 703
+              }
+            ],
+            "original_contraction_pair_units": 199767409,
+            "conditional_contraction_pair_units": 199340525,
+            "ratio": 0.997863094875501,
+            "native_LSE_reuse_baseline_contraction_pair_units": 143019929,
+            "conditional_over_native_LSE_reuse_ratio": 1.3937954409136926,
+            "original_logical_contraction_FLOPs": 1636494614528,
+            "conditional_logical_contraction_FLOPs": 1632997580800
+          },
+          {
+            "rank": 1,
+            "batch": 9,
+            "uids": [
+              "f188f4fe-d66d-4b4d-a21d-c6f5d3b1039d",
+              "3ffd8fc6-00f0-4dd4-a5dd-99c4986e92bc",
+              "82100a14-b443-4cf8-88db-03fad6e145e5",
+              "2985d18e-b9b5-429d-aaf4-a377dd684f92"
+            ],
+            "rows": [
+              {
+                "length": 3562,
+                "query_start": 576,
+                "coefficient_start": 620,
+                "logical_query_pairs": 6153193,
+                "logical_KV_pairs": 4329153,
+                "public_pairs": 6179527,
+                "strict_past_public_pairs": 6150251,
+                "original_contraction_pair_units": 89436224,
+                "conditional_contraction_pair_units": 89325004,
+                "native_LSE_reuse_baseline_contraction_pair_units": 64718116,
+                "original_finite_query_tiles": 1551,
+                "original_finite_KV_tiles": 1128
+              },
+              {
+                "length": 3709,
+                "query_start": 576,
+                "coefficient_start": 614,
+                "logical_query_pairs": 6691390,
+                "logical_KV_pairs": 4791060,
+                "public_pairs": 6714019,
+                "strict_past_public_pairs": 6688295,
+                "original_contraction_pair_units": 97651106,
+                "conditional_contraction_pair_units": 97554400,
+                "native_LSE_reuse_baseline_contraction_pair_units": 70795030,
+                "original_finite_query_tiles": 1666,
+                "original_finite_KV_tiles": 1225
+              },
+              {
+                "length": 3932,
+                "query_start": 576,
+                "coefficient_start": 630,
+                "logical_query_pairs": 7533513,
+                "logical_KV_pairs": 5453253,
+                "public_pairs": 7566102,
+                "strict_past_public_pairs": 7530211,
+                "original_contraction_pair_units": 110265264,
+                "conditional_contraction_pair_units": 110128304,
+                "native_LSE_reuse_baseline_contraction_pair_units": 80000856,
+                "original_finite_query_tiles": 1908,
+                "original_finite_KV_tiles": 1431
+              },
+              {
+                "length": 3958,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 7618050,
+                "logical_KV_pairs": 5446650,
+                "public_pairs": 7629741,
+                "strict_past_public_pairs": 7614750,
+                "original_contraction_pair_units": 111078564,
+                "conditional_contraction_pair_units": 111025200,
+                "native_LSE_reuse_baseline_contraction_pair_units": 80559600,
+                "original_finite_query_tiles": 1898,
+                "original_finite_KV_tiles": 1378
+              }
+            ],
+            "original_contraction_pair_units": 408431158,
+            "conditional_contraction_pair_units": 408032908,
+            "ratio": 0.9990249274762725,
+            "native_LSE_reuse_baseline_contraction_pair_units": 296073602,
+            "conditional_over_native_LSE_reuse_ratio": 1.3781468703852902,
+            "original_logical_contraction_FLOPs": 3345868046336,
+            "conditional_logical_contraction_FLOPs": 3342605582336
+          },
+          {
+            "rank": 1,
+            "batch": 11,
+            "uids": [
+              "c335c422-9dda-47ca-be54-0f8ffec08566"
+            ],
+            "rows": [
+              {
+                "length": 6013,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 17864280,
+                "logical_KV_pairs": 14340690,
+                "public_pairs": 17875971,
+                "strict_past_public_pairs": 17858925,
+                "original_contraction_pair_units": 268257294,
+                "conditional_contraction_pair_units": 268199820,
+                "native_LSE_reuse_baseline_contraction_pair_units": 196753410,
+                "original_finite_query_tiles": 4410,
+                "original_finite_KV_tiles": 3570
+              },
+              {
+                "length": 6013,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 17864280,
+                "logical_KV_pairs": 14340690,
+                "public_pairs": 17875971,
+                "strict_past_public_pairs": 17858925,
+                "original_contraction_pair_units": 268257294,
+                "conditional_contraction_pair_units": 268199820,
+                "native_LSE_reuse_baseline_contraction_pair_units": 196753410,
+                "original_finite_query_tiles": 4410,
+                "original_finite_KV_tiles": 3570
+              },
+              {
+                "length": 6013,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 17864280,
+                "logical_KV_pairs": 14340690,
+                "public_pairs": 17875971,
+                "strict_past_public_pairs": 17858925,
+                "original_contraction_pair_units": 268257294,
+                "conditional_contraction_pair_units": 268199820,
+                "native_LSE_reuse_baseline_contraction_pair_units": 196753410,
+                "original_finite_query_tiles": 4410,
+                "original_finite_KV_tiles": 3570
+              },
+              {
+                "length": 6013,
+                "query_start": 640,
+                "coefficient_start": 658,
+                "logical_query_pairs": 17864280,
+                "logical_KV_pairs": 14340690,
+                "public_pairs": 17875971,
+                "strict_past_public_pairs": 17858925,
+                "original_contraction_pair_units": 268257294,
+                "conditional_contraction_pair_units": 268199820,
+                "native_LSE_reuse_baseline_contraction_pair_units": 196753410,
+                "original_finite_query_tiles": 4410,
+                "original_finite_KV_tiles": 3570
+              }
+            ],
+            "original_contraction_pair_units": 1073029176,
+            "conditional_contraction_pair_units": 1072799280,
+            "ratio": 0.9997857504668634,
+            "native_LSE_reuse_baseline_contraction_pair_units": 787013640,
+            "conditional_over_native_LSE_reuse_ratio": 1.3631266670295574,
+            "original_logical_contraction_FLOPs": 8790255009792,
+            "conditional_logical_contraction_FLOPs": 8788371701760
+          }
+        ],
+        "original_contraction_pair_units": 3216246349,
+        "conditional_contraction_pair_units": 3212794959,
+        "workload_ratio": 0.9989268887934927,
+        "native_LSE_reuse_baseline_contraction_pair_units": 2331465781,
+        "conditional_over_native_LSE_reuse_ratio": 1.3780150603891708,
+        "scope": "Sum of arithmetic work for these original B4 calls, not quality weighting, wall-clock speed or a model-throughput projection."
+      },
+      "appworld": {
+        "batches": [
+          {
+            "rank": 0,
+            "batch": 0,
+            "uids": [
+              "ee611414-1759-406e-817c-10ecfbef417a",
+              "b8832320-c765-41cc-a31e-8d7c57c957c4",
+              "3e501afc-2418-4283-9393-cc4b46c51401",
+              "c4784aa8-5ee6-445b-b42a-0bec9c0c32f5"
+            ],
+            "rows": [
+              {
+                "length": 6065,
+                "query_start": 2752,
+                "coefficient_start": 2758,
+                "logical_query_pairs": 14590484,
+                "logical_KV_pairs": 5469778,
+                "public_pairs": 14607017,
+                "strict_past_public_pairs": 14587177,
+                "original_contraction_pair_units": 187910346,
+                "conditional_contraction_pair_units": 187837600,
+                "native_LSE_reuse_baseline_contraction_pair_units": 129482278,
+                "original_finite_query_tiles": 3614,
+                "original_finite_KV_tiles": 1378
+              },
+              {
+                "length": 7719,
+                "query_start": 2688,
+                "coefficient_start": 2744,
+                "logical_query_pairs": 26029200,
+                "logical_KV_pairs": 12377800,
+                "public_pairs": 26181324,
+                "strict_past_public_pairs": 26024225,
+                "original_contraction_pair_units": 348818696,
+                "conditional_contraction_pair_units": 348200250,
+                "native_LSE_reuse_baseline_contraction_pair_units": 244093400,
+                "original_finite_query_tiles": 6478,
+                "original_finite_KV_tiles": 3160
+              },
+              {
+                "length": 8634,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 33461592,
+                "logical_KV_pairs": 17243128,
+                "public_pairs": 33489167,
+                "strict_past_public_pairs": 33455720,
+                "original_contraction_pair_units": 454403452,
+                "conditional_contraction_pair_units": 454281408,
+                "native_LSE_reuse_baseline_contraction_pair_units": 320446784,
+                "original_finite_query_tiles": 8234,
+                "original_finite_KV_tiles": 4278
+              },
+              {
+                "length": 8698,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 34016248,
+                "logical_KV_pairs": 17621016,
+                "public_pairs": 34043823,
+                "strict_past_public_pairs": 34010312,
+                "original_contraction_pair_units": 462394108,
+                "conditional_contraction_pair_units": 462271936,
+                "native_LSE_reuse_baseline_contraction_pair_units": 326218816,
+                "original_finite_query_tiles": 8370,
+                "original_finite_KV_tiles": 4371
+              }
+            ],
+            "original_contraction_pair_units": 1453526602,
+            "conditional_contraction_pair_units": 1452591194,
+            "ratio": 0.9993564562226017,
+            "native_LSE_reuse_baseline_contraction_pair_units": 1020241278,
+            "conditional_over_native_LSE_reuse_ratio": 1.423772224593328,
+            "original_logical_contraction_FLOPs": 11907289923584,
+            "conditional_logical_contraction_FLOPs": 11899627061248
+          },
+          {
+            "rank": 0,
+            "batch": 2,
+            "uids": [
+              "2b238591-e69a-421d-aa7c-fec4d53dc179",
+              "5a61f66c-625d-476f-89a4-d436c9689746",
+              "c565339b-610e-4ba1-b4d7-37752492d113",
+              "b638ef12-c0a1-460d-81da-baf839ea623b"
+            ],
+            "rows": [
+              {
+                "length": 9180,
+                "query_start": 2752,
+                "coefficient_start": 2754,
+                "logical_query_pairs": 38347155,
+                "logical_KV_pairs": 20649951,
+                "public_pairs": 38352662,
+                "strict_past_public_pairs": 38340729,
+                "original_contraction_pair_units": 525090488,
+                "conditional_contraction_pair_units": 525055608,
+                "native_LSE_reuse_baseline_contraction_pair_units": 371679840,
+                "original_finite_query_tiles": 9494,
+                "original_finite_KV_tiles": 5151
+              },
+              {
+                "length": 9331,
+                "query_start": 2752,
+                "coefficient_start": 2754,
+                "logical_query_pairs": 39744811,
+                "logical_KV_pairs": 21631753,
+                "public_pairs": 39750318,
+                "strict_past_public_pairs": 39738234,
+                "original_contraction_pair_units": 545373714,
+                "conditional_contraction_pair_units": 545338532,
+                "native_LSE_reuse_baseline_contraction_pair_units": 386372442,
+                "original_finite_query_tiles": 9785,
+                "original_finite_KV_tiles": 5356
+              },
+              {
+                "length": 9474,
+                "query_start": 2752,
+                "coefficient_start": 2770,
+                "logical_query_pairs": 41045240,
+                "logical_KV_pairs": 22475160,
+                "public_pairs": 41094947,
+                "strict_past_public_pairs": 41038536,
+                "original_contraction_pair_units": 564072268,
+                "conditional_contraction_pair_units": 563860032,
+                "native_LSE_reuse_baseline_contraction_pair_units": 399692480,
+                "original_finite_query_tiles": 10229,
+                "original_finite_KV_tiles": 5671
+              },
+              {
+                "length": 9480,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 41124237,
+                "logical_KV_pairs": 22569121,
+                "public_pairs": 41151812,
+                "strict_past_public_pairs": 41117519,
+                "original_contraction_pair_units": 565322512,
+                "conditional_contraction_pair_units": 565198776,
+                "native_LSE_reuse_baseline_contraction_pair_units": 400715264,
+                "original_finite_query_tiles": 10229,
+                "original_finite_KV_tiles": 5671
+              }
+            ],
+            "original_contraction_pair_units": 2199858982,
+            "conditional_contraction_pair_units": 2199452948,
+            "ratio": 0.9998154272599642,
+            "native_LSE_reuse_baseline_contraction_pair_units": 1558460026,
+            "conditional_over_native_LSE_reuse_ratio": 1.4112989177176367,
+            "original_logical_contraction_FLOPs": 18021244780544,
+            "conditional_logical_contraction_FLOPs": 18017918550016
+          },
+          {
+            "rank": 0,
+            "batch": 4,
+            "uids": [
+              "f1576731-2f85-4548-ba9f-bb9759d80815",
+              "93f729e6-16d9-4e24-a150-5404de49eede",
+              "b1c59c78-3663-4b4b-bd41-3542df8b8961",
+              "12069ac3-1ddd-427a-9716-a5eb92079065"
+            ],
+            "rows": [
+              {
+                "length": 10158,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 47781858,
+                "logical_KV_pairs": 27354106,
+                "public_pairs": 47809433,
+                "strict_past_public_pairs": 47774462,
+                "original_contraction_pair_units": 662481268,
+                "conditional_contraction_pair_units": 662356176,
+                "native_LSE_reuse_baseline_contraction_pair_units": 471243536,
+                "original_finite_query_tiles": 11774,
+                "original_finite_KV_tiles": 6786
+              },
+              {
+                "length": 10241,
+                "query_start": 2688,
+                "coefficient_start": 2744,
+                "logical_query_pairs": 48678021,
+                "logical_KV_pairs": 28106253,
+                "public_pairs": 48830145,
+                "strict_past_public_pairs": 48670524,
+                "original_contraction_pair_units": 676597992,
+                "conditional_contraction_pair_units": 675974502,
+                "native_LSE_reuse_baseline_contraction_pair_units": 481277412,
+                "original_finite_query_tiles": 12138,
+                "original_finite_KV_tiles": 7140
+              },
+              {
+                "length": 10705,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 53501962,
+                "logical_KV_pairs": 31589326,
+                "public_pairs": 53515737,
+                "strict_past_public_pairs": 53494014,
+                "original_contraction_pair_units": 746523312,
+                "conditional_contraction_pair_units": 746452316,
+                "native_LSE_reuse_baseline_contraction_pair_units": 532460364,
+                "original_finite_query_tiles": 13250,
+                "original_finite_KV_tiles": 7875
+              },
+              {
+                "length": 10872,
+                "query_start": 2688,
+                "coefficient_start": 2744,
+                "logical_query_pairs": 55339488,
+                "logical_KV_pairs": 33036256,
+                "public_pairs": 55491612,
+                "strict_past_public_pairs": 55331360,
+                "original_contraction_pair_units": 774524144,
+                "conditional_contraction_pair_units": 773899392,
+                "native_LSE_reuse_baseline_contraction_pair_units": 552557696,
+                "original_finite_query_tiles": 13632,
+                "original_finite_KV_tiles": 8256
+              }
+            ],
+            "original_contraction_pair_units": 2860126716,
+            "conditional_contraction_pair_units": 2858682386,
+            "ratio": 0.9994950118846413,
+            "native_LSE_reuse_baseline_contraction_pair_units": 2037539008,
+            "conditional_over_native_LSE_reuse_ratio": 1.403007439256839,
+            "original_logical_contraction_FLOPs": 23430158057472,
+            "conditional_logical_contraction_FLOPs": 23418326106112
+          },
+          {
+            "rank": 0,
+            "batch": 6,
+            "uids": [
+              "695fad64-7448-4bb9-bab7-3a2e7d4ffe8e",
+              "0c439f24-d641-4f99-a4b4-1af1cb6dd41a",
+              "e7d5ffb1-62c4-4eda-8ed5-32949b5e8d83",
+              "e5de831b-3da9-4a3a-ae1f-ec74e3bf3083"
+            ],
+            "rows": [
+              {
+                "length": 11816,
+                "query_start": 2752,
+                "coefficient_start": 2770,
+                "logical_query_pairs": 65977001,
+                "logical_KV_pairs": 40919581,
+                "public_pairs": 66026708,
+                "strict_past_public_pairs": 65967955,
+                "original_contraction_pair_units": 930543744,
+                "conditional_contraction_pair_units": 930326824,
+                "native_LSE_reuse_baseline_contraction_pair_units": 666436912,
+                "original_finite_query_tiles": 16259,
+                "original_finite_KV_tiles": 10153
+              },
+              {
+                "length": 11852,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 66438975,
+                "logical_KV_pairs": 41364060,
+                "public_pairs": 66452750,
+                "strict_past_public_pairs": 66429880,
+                "original_contraction_pair_units": 937704125,
+                "conditional_contraction_pair_units": 937630835,
+                "native_LSE_reuse_baseline_contraction_pair_units": 671893125,
+                "original_finite_query_tiles": 16445,
+                "original_finite_KV_tiles": 10296
+              },
+              {
+                "length": 11863,
+                "query_start": 2752,
+                "coefficient_start": 2755,
+                "logical_query_pairs": 66574926,
+                "logical_KV_pairs": 41482386,
+                "public_pairs": 66583188,
+                "strict_past_public_pairs": 66565818,
+                "original_contraction_pair_units": 939769164,
+                "conditional_contraction_pair_units": 939717900,
+                "native_LSE_reuse_baseline_contraction_pair_units": 673436412,
+                "original_finite_query_tiles": 16445,
+                "original_finite_KV_tiles": 10296
+              },
+              {
+                "length": 12031,
+                "query_start": 2752,
+                "coefficient_start": 2768,
+                "logical_query_pairs": 68546200,
+                "logical_KV_pairs": 42906216,
+                "public_pairs": 68590368,
+                "strict_past_public_pairs": 68536937,
+                "original_contraction_pair_units": 968715952,
+                "conditional_contraction_pair_units": 968520754,
+                "native_LSE_reuse_baseline_contraction_pair_units": 694354480,
+                "original_finite_query_tiles": 16820,
+                "original_finite_KV_tiles": 10585
+              }
+            ],
+            "original_contraction_pair_units": 3776732985,
+            "conditional_contraction_pair_units": 3776196313,
+            "ratio": 0.9998579004652615,
+            "native_LSE_reuse_baseline_contraction_pair_units": 2706120929,
+            "conditional_over_native_LSE_reuse_ratio": 1.3954277772780197,
+            "original_logical_contraction_FLOPs": 30938996613120,
+            "conditional_logical_contraction_FLOPs": 30934600196096
+          },
+          {
+            "rank": 0,
+            "batch": 8,
+            "uids": [
+              "eeaf52d2-6e6d-4e75-9f65-e4e71abb9489",
+              "f0f85f5c-74b4-4670-a074-99a3a09dbb98",
+              "f08d0f12-7e7c-4e33-b46b-ce3ed4abc025",
+              "363d3e7e-9472-40d3-a663-e75ec87bea32"
+            ],
+            "rows": [
+              {
+                "length": 12542,
+                "query_start": 2752,
+                "coefficient_start": 2767,
+                "logical_query_pairs": 74827625,
+                "logical_KV_pairs": 47780200,
+                "public_pairs": 74869025,
+                "strict_past_public_pairs": 74817850,
+                "original_contraction_pair_units": 1062170475,
+                "conditional_contraction_pair_units": 1061985325,
+                "native_LSE_reuse_baseline_contraction_pair_units": 762694375,
+                "original_finite_query_tiles": 18360,
+                "original_finite_KV_tiles": 11781
+              },
+              {
+                "length": 12603,
+                "query_start": 2752,
+                "coefficient_start": 2758,
+                "logical_query_pairs": 75619445,
+                "logical_KV_pairs": 48466935,
+                "public_pairs": 75635978,
+                "strict_past_public_pairs": 75609600,
+                "original_contraction_pair_units": 1074214702,
+                "conditional_contraction_pair_units": 1074128880,
+                "native_LSE_reuse_baseline_contraction_pair_units": 771670790,
+                "original_finite_query_tiles": 18557,
+                "original_finite_KV_tiles": 11935
+              },
+              {
+                "length": 12933,
+                "query_start": 2752,
+                "coefficient_start": 2767,
+                "logical_query_pairs": 79808183,
+                "logical_KV_pairs": 51678861,
+                "public_pairs": 79849583,
+                "strict_past_public_pairs": 79798017,
+                "original_contraction_pair_units": 1136449918,
+                "conditional_contraction_pair_units": 1136263986,
+                "native_LSE_reuse_baseline_contraction_pair_units": 817051586,
+                "original_finite_query_tiles": 19760,
+                "original_finite_KV_tiles": 12880
+              },
+              {
+                "length": 13069,
+                "query_start": 2752,
+                "coefficient_start": 2752,
+                "logical_query_pairs": 81617787,
+                "logical_KV_pairs": 53225403,
+                "public_pairs": 81617787,
+                "strict_past_public_pairs": 81607470,
+                "original_contraction_pair_units": 1163922672,
+                "conditional_contraction_pair_units": 1163902038,
+                "native_LSE_reuse_baseline_contraction_pair_units": 837451524,
+                "original_finite_query_tiles": 20169,
+                "original_finite_KV_tiles": 13203
+              }
+            ],
+            "original_contraction_pair_units": 4436757767,
+            "conditional_contraction_pair_units": 4436280229,
+            "ratio": 0.9998923677998488,
+            "native_LSE_reuse_baseline_contraction_pair_units": 3188868275,
+            "conditional_over_native_LSE_reuse_ratio": 1.3911770090283833,
+            "original_logical_contraction_FLOPs": 36345919627264,
+            "conditional_logical_contraction_FLOPs": 36342007635968
+          },
+          {
+            "rank": 0,
+            "batch": 10,
+            "uids": [
+              "06c5d754-c0df-4457-b968-9d805c69b076",
+              "1eaa075c-96a0-4501-a0fd-9323db762eaa",
+              "580f25c3-a7fe-4f88-8b07-f2be6801384d",
+              "56a7a2a3-2266-41d5-b013-b97b5d8694ac"
+            ],
+            "rows": [
+              {
+                "length": 15314,
+                "query_start": 2752,
+                "coefficient_start": 2764,
+                "logical_query_pairs": 113445725,
+                "logical_KV_pairs": 78757525,
+                "public_pairs": 113478827,
+                "strict_past_public_pairs": 113433175,
+                "original_contraction_pair_units": 1641823008,
+                "conditional_contraction_pair_units": 1641665500,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1187907700,
+                "original_finite_query_tiles": 27974,
+                "original_finite_KV_tiles": 19503
+              },
+              {
+                "length": 15369,
+                "query_start": 2752,
+                "coefficient_start": 2764,
+                "logical_query_pairs": 114289535,
+                "logical_KV_pairs": 79449315,
+                "public_pairs": 114322637,
+                "strict_past_public_pairs": 114276930,
+                "original_contraction_pair_units": 1654563868,
+                "conditional_contraction_pair_units": 1654406250,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1197273320,
+                "original_finite_query_tiles": 28215,
+                "original_finite_KV_tiles": 19701
+              },
+              {
+                "length": 15375,
+                "query_start": 2752,
+                "coefficient_start": 2764,
+                "logical_query_pairs": 114381770,
+                "logical_KV_pairs": 79524966,
+                "public_pairs": 114414872,
+                "strict_past_public_pairs": 114369159,
+                "original_contraction_pair_units": 1655956708,
+                "conditional_contraction_pair_units": 1655799078,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1198297220,
+                "original_finite_query_tiles": 28215,
+                "original_finite_KV_tiles": 19701
+              },
+              {
+                "length": 15689,
+                "query_start": 2752,
+                "coefficient_start": 2767,
+                "logical_query_pairs": 119250677,
+                "logical_KV_pairs": 83495503,
+                "public_pairs": 119292077,
+                "strict_past_public_pairs": 119237755,
+                "original_contraction_pair_units": 1729400562,
+                "conditional_contraction_pair_units": 1729209118,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1252232254,
+                "original_finite_query_tiles": 29435,
+                "original_finite_KV_tiles": 20706
+              }
+            ],
+            "original_contraction_pair_units": 6681744146,
+            "conditional_contraction_pair_units": 6681079946,
+            "ratio": 0.9999005948169389,
+            "native_LSE_reuse_baseline_contraction_pair_units": 4835710494,
+            "conditional_over_native_LSE_reuse_ratio": 1.3816128890035244,
+            "original_logical_contraction_FLOPs": 54736848044032,
+            "conditional_logical_contraction_FLOPs": 54731406917632
+          },
+          {
+            "rank": 1,
+            "batch": 1,
+            "uids": [
+              "d2630113-d480-4d1c-9c96-04abd0fe2f5f",
+              "b73da0af-824b-48c8-af21-4945e8793aef",
+              "34429a62-3124-4e0a-b68e-0cce16770442",
+              "6d11d916-4ebd-44af-96c2-247dbe714493"
+            ],
+            "rows": [
+              {
+                "length": 8823,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 35125173,
+                "logical_KV_pairs": 18401211,
+                "public_pairs": 35138948,
+                "strict_past_public_pairs": 35119107,
+                "original_contraction_pair_units": 478438058,
+                "conditional_contraction_pair_units": 478370826,
+                "native_LSE_reuse_baseline_contraction_pair_units": 337882266,
+                "original_finite_query_tiles": 8645,
+                "original_finite_KV_tiles": 4560
+              },
+              {
+                "length": 8932,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 36092875,
+                "logical_KV_pairs": 19068400,
+                "public_pairs": 36106650,
+                "strict_past_public_pairs": 36086700,
+                "original_contraction_pair_units": 492418725,
+                "conditional_contraction_pair_units": 492351275,
+                "native_LSE_reuse_baseline_contraction_pair_units": 347992125,
+                "original_finite_query_tiles": 8924,
+                "original_finite_KV_tiles": 4753
+              },
+              {
+                "length": 9056,
+                "query_start": 2752,
+                "coefficient_start": 2754,
+                "logical_query_pairs": 37216461,
+                "logical_KV_pairs": 19860753,
+                "public_pairs": 37221968,
+                "strict_past_public_pairs": 37210159,
+                "original_contraction_pair_units": 508706864,
+                "conditional_contraction_pair_units": 508672232,
+                "native_LSE_reuse_baseline_contraction_pair_units": 359818992,
+                "original_finite_query_tiles": 9207,
+                "original_finite_KV_tiles": 4950
+              },
+              {
+                "length": 9175,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 38292997,
+                "logical_KV_pairs": 20598571,
+                "public_pairs": 38306772,
+                "strict_past_public_pairs": 38286579,
+                "original_contraction_pair_units": 524270922,
+                "conditional_contraction_pair_units": 524202986,
+                "native_LSE_reuse_baseline_contraction_pair_units": 371043834,
+                "original_finite_query_tiles": 9494,
+                "original_finite_KV_tiles": 5151
+              }
+            ],
+            "original_contraction_pair_units": 2003834569,
+            "conditional_contraction_pair_units": 2003597319,
+            "ratio": 0.9998816020026452,
+            "native_LSE_reuse_baseline_contraction_pair_units": 1416737217,
+            "conditional_over_native_LSE_reuse_ratio": 1.4142335607182683,
+            "original_logical_contraction_FLOPs": 16415412789248,
+            "conditional_logical_contraction_FLOPs": 16413469237248
+          },
+          {
+            "rank": 1,
+            "batch": 3,
+            "uids": [
+              "b98de8ee-995e-49e7-acb8-1510b4433a6a",
+              "49405b97-5acf-47f5-a616-9bc8c70412d3",
+              "06da6d11-bd37-4855-924a-9c6c8614d79d",
+              "e84a2f14-c88a-472a-95ab-35a4c43e881d"
+            ],
+            "rows": [
+              {
+                "length": 9567,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 41952825,
+                "logical_KV_pairs": 23157415,
+                "public_pairs": 41980400,
+                "strict_past_public_pairs": 41946020,
+                "original_contraction_pair_units": 577378450,
+                "conditional_contraction_pair_units": 577254540,
+                "native_LSE_reuse_baseline_contraction_pair_units": 409456850,
+                "original_finite_query_tiles": 10379,
+                "original_finite_KV_tiles": 5778
+              },
+              {
+                "length": 9617,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 42432450,
+                "logical_KV_pairs": 23498940,
+                "public_pairs": 42460025,
+                "strict_past_public_pairs": 42425595,
+                "original_contraction_pair_units": 584361950,
+                "conditional_contraction_pair_units": 584237940,
+                "native_LSE_reuse_baseline_contraction_pair_units": 414521850,
+                "original_finite_query_tiles": 10530,
+                "original_finite_KV_tiles": 5886
+              },
+              {
+                "length": 9923,
+                "query_start": 2752,
+                "coefficient_start": 2770,
+                "logical_query_pairs": 45400091,
+                "logical_KV_pairs": 25586281,
+                "public_pairs": 45449798,
+                "strict_past_public_pairs": 45392938,
+                "original_contraction_pair_units": 627531234,
+                "conditional_contraction_pair_units": 627318100,
+                "native_LSE_reuse_baseline_contraction_pair_units": 445732042,
+                "original_finite_query_tiles": 11300,
+                "original_finite_KV_tiles": 6441
+              },
+              {
+                "length": 9975,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 45953397,
+                "logical_KV_pairs": 26053371,
+                "public_pairs": 45967172,
+                "strict_past_public_pairs": 45946179,
+                "original_contraction_pair_units": 635809322,
+                "conditional_contraction_pair_units": 635739786,
+                "native_LSE_reuse_baseline_contraction_pair_units": 451940634,
+                "original_finite_query_tiles": 11300,
+                "original_finite_KV_tiles": 6441
+              }
+            ],
+            "original_contraction_pair_units": 2425080956,
+            "conditional_contraction_pair_units": 2424550366,
+            "ratio": 0.9997812073041573,
+            "native_LSE_reuse_baseline_contraction_pair_units": 1721651376,
+            "conditional_over_native_LSE_reuse_ratio": 1.4082702222984778,
+            "original_logical_contraction_FLOPs": 19866263191552,
+            "conditional_logical_contraction_FLOPs": 19861916598272
+          },
+          {
+            "rank": 1,
+            "batch": 5,
+            "uids": [
+              "53add41c-219a-4357-9c0e-7a391452b6ce",
+              "30b1f015-4056-4fc0-a608-f4327b919e2d",
+              "cacc802c-2033-413e-a415-2a05b6cec896",
+              "3c4738fd-ed55-4ba3-b790-3e73699f39cc"
+            ],
+            "rows": [
+              {
+                "length": 11271,
+                "query_start": 2752,
+                "coefficient_start": 2764,
+                "logical_query_pairs": 59702126,
+                "logical_KV_pairs": 36188778,
+                "public_pairs": 59735228,
+                "strict_past_public_pairs": 59693619,
+                "original_contraction_pair_units": 837799684,
+                "conditional_contraction_pair_units": 837650262,
+                "native_LSE_reuse_baseline_contraction_pair_units": 598858772,
+                "original_finite_query_tiles": 14807,
+                "original_finite_KV_tiles": 9045
+              },
+              {
+                "length": 11419,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 61386787,
+                "logical_KV_pairs": 37476153,
+                "public_pairs": 61414362,
+                "strict_past_public_pairs": 61378130,
+                "original_contraction_pair_units": 862745722,
+                "conditional_contraction_pair_units": 862618108,
+                "native_LSE_reuse_baseline_contraction_pair_units": 617088274,
+                "original_finite_query_tiles": 15164,
+                "original_finite_KV_tiles": 9316
+              },
+              {
+                "length": 11515,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 62501467,
+                "logical_KV_pairs": 38355661,
+                "public_pairs": 62515242,
+                "strict_past_public_pairs": 62492709,
+                "original_contraction_pair_units": 879349542,
+                "conditional_contraction_pair_units": 879276926,
+                "native_LSE_reuse_baseline_contraction_pair_units": 629288574,
+                "original_finite_query_tiles": 15344,
+                "original_finite_KV_tiles": 9453
+              },
+              {
+                "length": 11774,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 65517522,
+                "logical_KV_pairs": 40657653,
+                "public_pairs": 65531297,
+                "strict_past_public_pairs": 65508505,
+                "original_contraction_pair_units": 924036107,
+                "conditional_contraction_pair_units": 923962973,
+                "native_LSE_reuse_baseline_contraction_pair_units": 661910919,
+                "original_finite_query_tiles": 16074,
+                "original_finite_KV_tiles": 10011
+              }
+            ],
+            "original_contraction_pair_units": 3503931055,
+            "conditional_contraction_pair_units": 3503508269,
+            "ratio": 0.9998793395208514,
+            "native_LSE_reuse_baseline_contraction_pair_units": 2507146539,
+            "conditional_over_native_LSE_reuse_ratio": 1.397408653423748,
+            "original_logical_contraction_FLOPs": 28704203202560,
+            "conditional_logical_contraction_FLOPs": 28700739739648
+          },
+          {
+            "rank": 1,
+            "batch": 7,
+            "uids": [
+              "dc4e0050-83fe-4359-946f-a32b8f699ff4",
+              "82547d47-ab26-4087-9480-7c7e7d5ee2c5",
+              "3441a256-f1d0-4de6-ae58-54b22d8ff840",
+              "682a3a72-e64a-4e34-a449-5d94ccd83913"
+            ],
+            "rows": [
+              {
+                "length": 12079,
+                "query_start": 2752,
+                "coefficient_start": 2752,
+                "logical_query_pairs": 69169032,
+                "logical_KV_pairs": 43501128,
+                "public_pairs": 69169032,
+                "strict_past_public_pairs": 69159705,
+                "original_contraction_pair_units": 978364992,
+                "conditional_contraction_pair_units": 978346338,
+                "native_LSE_reuse_baseline_contraction_pair_units": 701688864,
+                "original_finite_query_tiles": 17009,
+                "original_finite_KV_tiles": 10731
+              },
+              {
+                "length": 12155,
+                "query_start": 2752,
+                "coefficient_start": 2762,
+                "logical_query_pairs": 70062387,
+                "logical_KV_pairs": 44118921,
+                "public_pairs": 70089962,
+                "strict_past_public_pairs": 70052994,
+                "original_contraction_pair_units": 991391162,
+                "conditional_contraction_pair_units": 991262076,
+                "native_LSE_reuse_baseline_contraction_pair_units": 711031314,
+                "original_finite_query_tiles": 17199,
+                "original_finite_KV_tiles": 10878
+              },
+              {
+                "length": 12213,
+                "query_start": 2752,
+                "coefficient_start": 2758,
+                "logical_query_pairs": 70780130,
+                "logical_KV_pairs": 44703240,
+                "public_pairs": 70796663,
+                "strict_past_public_pairs": 70770675,
+                "original_contraction_pair_units": 1002163762,
+                "conditional_contraction_pair_units": 1002078720,
+                "native_LSE_reuse_baseline_contraction_pair_units": 718977110,
+                "original_finite_query_tiles": 17390,
+                "original_finite_KV_tiles": 11026
+              },
+              {
+                "length": 12486,
+                "query_start": 2752,
+                "coefficient_start": 2771,
+                "logical_query_pairs": 74115735,
+                "logical_KV_pairs": 47195470,
+                "public_pairs": 74168213,
+                "strict_past_public_pairs": 74106020,
+                "original_contraction_pair_units": 1051460347,
+                "conditional_contraction_pair_units": 1051231005,
+                "native_LSE_reuse_baseline_contraction_pair_units": 754787495,
+                "original_finite_query_tiles": 18360,
+                "original_finite_KV_tiles": 11781
+              }
+            ],
+            "original_contraction_pair_units": 4023380263,
+            "conditional_contraction_pair_units": 4022918139,
+            "ratio": 0.9998851403621354,
+            "native_LSE_reuse_baseline_contraction_pair_units": 2886484783,
+            "conditional_over_native_LSE_reuse_ratio": 1.3937084174817214,
+            "original_logical_contraction_FLOPs": 32959531114496,
+            "conditional_logical_contraction_FLOPs": 32955745394688
+          },
+          {
+            "rank": 1,
+            "batch": 9,
+            "uids": [
+              "3f69e783-6546-49ab-8b30-1857f7d2ec43",
+              "3b1ac231-6fa0-4781-929d-e7355b7b9466",
+              "94bf958f-af83-4c39-82ae-ba109be0b93d",
+              "cbb63dff-0776-4b92-aefe-bdc3f1387fc0"
+            ],
+            "rows": [
+              {
+                "length": 13289,
+                "query_start": 2752,
+                "coefficient_start": 2757,
+                "logical_query_pairs": 84503502,
+                "logical_KV_pairs": 55466778,
+                "public_pairs": 84517277,
+                "strict_past_public_pairs": 84492970,
+                "original_contraction_pair_units": 1206927512,
+                "conditional_contraction_pair_units": 1206851348,
+                "native_LSE_reuse_baseline_contraction_pair_units": 868858404,
+                "original_finite_query_tiles": 20790,
+                "original_finite_KV_tiles": 13695
+              },
+              {
+                "length": 13540,
+                "query_start": 2752,
+                "coefficient_start": 2764,
+                "logical_query_pairs": 87851340,
+                "logical_KV_pairs": 58066476,
+                "public_pairs": 87884442,
+                "strict_past_public_pairs": 87840564,
+                "original_contraction_pair_units": 1256829528,
+                "conditional_contraction_pair_units": 1256675568,
+                "native_LSE_reuse_baseline_contraction_pair_units": 905291760,
+                "original_finite_query_tiles": 21632,
+                "original_finite_KV_tiles": 14365
+              },
+              {
+                "length": 15088,
+                "query_start": 2752,
+                "coefficient_start": 2771,
+                "logical_query_pairs": 109990810,
+                "logical_KV_pairs": 75860403,
+                "public_pairs": 110043288,
+                "strict_past_public_pairs": 109978493,
+                "original_contraction_pair_units": 1589410837,
+                "conditional_contraction_pair_units": 1589176291,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1149237685,
+                "original_finite_query_tiles": 27020,
+                "original_finite_KV_tiles": 18721
+              },
+              {
+                "length": 15127,
+                "query_start": 2752,
+                "coefficient_start": 2755,
+                "logical_query_pairs": 110624238,
+                "logical_KV_pairs": 76539378,
+                "public_pairs": 110632500,
+                "strict_past_public_pairs": 110611866,
+                "original_contraction_pair_units": 1599596556,
+                "conditional_contraction_pair_units": 1599538764,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1157066556,
+                "original_finite_query_tiles": 27257,
+                "original_finite_KV_tiles": 18915
+              }
+            ],
+            "original_contraction_pair_units": 5652764433,
+            "conditional_contraction_pair_units": 5652241971,
+            "ratio": 0.999907574071732,
+            "native_LSE_reuse_baseline_contraction_pair_units": 4080454405,
+            "conditional_over_native_LSE_reuse_ratio": 1.3851991494069886,
+            "original_logical_contraction_FLOPs": 46307446235136,
+            "conditional_logical_contraction_FLOPs": 46303166226432
+          },
+          {
+            "rank": 1,
+            "batch": 11,
+            "uids": [
+              "29caf9c4-192e-4e56-bf39-8eacfb730801",
+              "36b4478c-12d1-45bd-b450-87e50f03d01d",
+              "ac557c4b-f619-4350-a204-57784a881929",
+              "7fe4e592-4e75-40a3-901b-a8869539124e"
+            ],
+            "rows": [
+              {
+                "length": 16535,
+                "query_start": 2752,
+                "coefficient_start": 2752,
+                "logical_query_pairs": 132923252,
+                "logical_KV_pairs": 94992436,
+                "public_pairs": 132923252,
+                "strict_past_public_pairs": 132909469,
+                "original_contraction_pair_units": 1937117952,
+                "conditional_contraction_pair_units": 1937090386,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1405424944,
+                "original_finite_query_tiles": 32724,
+                "original_finite_KV_tiles": 23436
+              },
+              {
+                "length": 17473,
+                "query_start": 2752,
+                "coefficient_start": 2768,
+                "logical_query_pairs": 148829305,
+                "logical_KV_pairs": 108125865,
+                "public_pairs": 148873473,
+                "strict_past_public_pairs": 148814600,
+                "original_contraction_pair_units": 2177928352,
+                "conditional_contraction_pair_units": 2177722270,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1582434460,
+                "original_finite_query_tiles": 36729,
+                "original_finite_KV_tiles": 26796
+              },
+              {
+                "length": 17500,
+                "query_start": 2752,
+                "coefficient_start": 2771,
+                "logical_query_pairs": 149293144,
+                "logical_KV_pairs": 108479085,
+                "public_pairs": 149345622,
+                "strict_past_public_pairs": 149278415,
+                "original_contraction_pair_units": 2184829921,
+                "conditional_contraction_pair_units": 2184590551,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1587447433,
+                "original_finite_query_tiles": 36729,
+                "original_finite_KV_tiles": 26796
+              },
+              {
+                "length": 17994,
+                "query_start": 2752,
+                "coefficient_start": 2768,
+                "logical_query_pairs": 158068719,
+                "logical_KV_pairs": 115923151,
+                "public_pairs": 158112887,
+                "strict_past_public_pairs": 158053493,
+                "original_contraction_pair_units": 2318548336,
+                "conditional_contraction_pair_units": 2318341212,
+                "native_LSE_reuse_baseline_contraction_pair_units": 1686096788,
+                "original_finite_query_tiles": 38957,
+                "original_finite_KV_tiles": 28680
+              }
+            ],
+            "original_contraction_pair_units": 8618424561,
+            "conditional_contraction_pair_units": 8617744419,
+            "ratio": 0.9999210827924307,
+            "native_LSE_reuse_baseline_contraction_pair_units": 6261403625,
+            "conditional_over_native_LSE_reuse_ratio": 1.3763278867044768,
+            "original_logical_contraction_FLOPs": 70602134003712,
+            "conditional_logical_contraction_FLOPs": 70596562280448
+          }
+        ],
+        "original_contraction_pair_units": 47636163035,
+        "conditional_contraction_pair_units": 47628843499,
+        "workload_ratio": 0.9998463449712643,
+        "native_LSE_reuse_baseline_contraction_pair_units": 34220817955,
+        "conditional_over_native_LSE_reuse_ratio": 1.3918090316143643,
+        "scope": "Sum of arithmetic work for these original B4 calls, not quality weighting, wall-clock speed or a model-throughput projection."
+      }
+    },
+    "full32k_logical_envelope": {
+      "rows": [
+        {
+          "length": 32768,
+          "query_start": 0,
+          "coefficient_start": 0,
+          "logical_query_pairs": 536887296,
+          "logical_KV_pairs": 536887296,
+          "public_pairs": 536887296,
+          "strict_past_public_pairs": 536854528,
+          "original_contraction_pair_units": 8590196736,
+          "conditional_contraction_pair_units": 8590131200,
+          "native_LSE_reuse_baseline_contraction_pair_units": 6442647552,
+          "original_finite_query_tiles": 131328,
+          "original_finite_KV_tiles": 131328
+        },
+        {
+          "length": 32768,
+          "query_start": 0,
+          "coefficient_start": 0,
+          "logical_query_pairs": 536887296,
+          "logical_KV_pairs": 536887296,
+          "public_pairs": 536887296,
+          "strict_past_public_pairs": 536854528,
+          "original_contraction_pair_units": 8590196736,
+          "conditional_contraction_pair_units": 8590131200,
+          "native_LSE_reuse_baseline_contraction_pair_units": 6442647552,
+          "original_finite_query_tiles": 131328,
+          "original_finite_KV_tiles": 131328
+        },
+        {
+          "length": 32768,
+          "query_start": 0,
+          "coefficient_start": 0,
+          "logical_query_pairs": 536887296,
+          "logical_KV_pairs": 536887296,
+          "public_pairs": 536887296,
+          "strict_past_public_pairs": 536854528,
+          "original_contraction_pair_units": 8590196736,
+          "conditional_contraction_pair_units": 8590131200,
+          "native_LSE_reuse_baseline_contraction_pair_units": 6442647552,
+          "original_finite_query_tiles": 131328,
+          "original_finite_KV_tiles": 131328
+        },
+        {
+          "length": 32768,
+          "query_start": 0,
+          "coefficient_start": 0,
+          "logical_query_pairs": 536887296,
+          "logical_KV_pairs": 536887296,
+          "public_pairs": 536887296,
+          "strict_past_public_pairs": 536854528,
+          "original_contraction_pair_units": 8590196736,
+          "conditional_contraction_pair_units": 8590131200,
+          "native_LSE_reuse_baseline_contraction_pair_units": 6442647552,
+          "original_finite_query_tiles": 131328,
+          "original_finite_KV_tiles": 131328
+        }
+      ],
+      "original_contraction_pair_units": 34360786944,
+      "conditional_contraction_pair_units": 34360524800,
+      "ratio": 0.9999923708382923,
+      "native_LSE_reuse_baseline_contraction_pair_units": 25770590208,
+      "conditional_over_native_LSE_reuse_ratio": 1.333323161117723,
+      "original_logical_contraction_FLOPs": 281483566645248,
+      "conditional_logical_contraction_FLOPs": 281481419161600
+    }
+  },
+  "storage": {
+    "batch": 4,
+    "length": 32768,
+    "query_heads": 16,
+    "kv_heads": 4,
+    "head_dim": 256,
+    "BF16_one_query_or_output": 1073741824,
+    "BF16_one_compact_K_or_V": 268435456,
+    "FP32_one_row_scalar": 8388608,
+    "original_paired_public_arrays_upper_bytes": 7516192768,
+    "replacement_B4_public_arrays_upper_bytes": 3758096384,
+    "six_FP32_row_stats_bytes": 50331648,
+    "own_QK_QK_UV_FP32_diagonal_inputs_bytes": 25165824,
+    "query_own_weight_FP32_bytes": 8388608,
+    "original_LSE_tau_center_FP32_bytes": 33554432,
+    "proposed_all_finite_FP32_row_buffers_bytes": 109051904,
+    "proposed_net_finite_FP32_row_buffer_increase_bytes": 75497472,
+    "factual_V_copy_replaces_original_reference_V_copy": true,
+    "original_global_attention_capture_pair_bytes": 2147483648,
+    "estimate_scope": "Upper array sizes before alias/reuse analysis, not measured net allocation or predicted physical peak. Packed Q/K/V, native output and padded output may be views or overlap; account actual storage once.",
+    "lifecycle": "A single current B4/32k attention output is 1GiB, not a bank per layer. Reuse one layer at a time; exclude the unused global attention capture from restore and consume the strict-past output at the gate. No 32-layer output bank.",
+    "tile_storage": "Keep the original FA D256 tile/shared-memory budget. Store the query own-key weight in one explicit row-scalar buffer instead of silently enlarging the full shared tile, overwriting an input or relabeling the original tau buffer.",
+    "capacity_reference": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_memory_capacity_20261008.json",
+      "sha256": "11b8965003472f93467daff1d4c61af050bf8e9ca00726096a66c3f0d263f08d",
+      "bytes": 22170
+    },
+    "capacity_scope": "The linked 62.626953125GiB high-water belongs to the consumed-cache-release candidate, not the currently held runner and not this proposed math. It cannot prove this candidate fits."
+  },
+  "numerical_scope": "No new kernel is implemented or tested. If implemented, retain the original FA reference/dtype/assertions for its ordinary-gradient limit; separately report the new finite-rule algebra/approximation. Neither test substitutes for the other or for cumulative deletion/RISE/MAS.",
+  "bounded_next_action": "A single default-inert finite-attention owner prototype can now be specified completely from these identities. Compare it on the frozen collection; do not add GDN/head corrections or expand samples to rescue a failed result. No production candidate is accepted by this derivation.",
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "GPU": 0,
+    "update": 0,
+    "production_modified": false
+  },
+  "formal_textcraft": {
+    "pid": 2833207,
+    "expected_birth": 1791370325.16,
+    "actual_birth": 1791370325.16,
+    "release_exists": [
+      false,
+      false
+    ]
+  },
+  "local_python": "C:\\Users\\Administrator\\miniconda3\\envs\\pytorch\\python.exe",
+  "elapsed_seconds": 0.41584299999522045
+}
