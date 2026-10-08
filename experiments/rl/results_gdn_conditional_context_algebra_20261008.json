@@ -1,0 +1,232 @@
+{
+  "status": "Mathematical/source/cost diagnostic only; no candidate implemented or deployed",
+  "unix": 1791424577.5361402,
+  "evidence": {
+    "gdn-owner-readonly.json": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\gdn-owner-readonly.json",
+      "sha256": "40521a94c61e2e8f3e980b7c2e000d42569f9c96c213ef866ab80f82dab97270",
+      "bytes": 29956
+    },
+    "joint-finite-sources.json": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-existing-pv-rule-20261008\\v1\\joint-finite-sources.json",
+      "sha256": "43b78129d5c62e2b18d7723c394ef4eceb7c6d73560212b613d4b7c8c84bdfcb",
+      "bytes": 127729
+    },
+    "rank0.json": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\direct-target-existing-pv-rule-20261008\\v1\\gdn-v2-results\\results\\rank0.json",
+      "sha256": "4e241312c96062c8ad5d5cc870b8bae9619d09826d3c11b3111684341d05b64a",
+      "bytes": 133700
+    },
+    "manifest.json": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\manifest.json",
+      "sha256": "2096e03e90722aa4fc6272209e22c5c820f88fd8da018e8b732e2f84d68489b4",
+      "bytes": 53910
+    }
+  },
+  "actual_owner_binding": {
+    "model_config": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/config.json",
+    "model_config_sha256": "d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05",
+    "modeling_sha256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+    "fla_chunk_sha256": "fe10b455f8c71f4f845415f60a4385ff4f630336e5e46c592611765dfd8cce97",
+    "fla_state_sha256": "e4a81e5f69991d6681fa1ad43c16f135da26032786f71428e305859677bcaaba",
+    "finite_fla_sha256": "f1555736d32974668676eff4e040a500f4c2b907e6ac1b298f01dc2ba87f7db6",
+    "conv_width": 4,
+    "head_key_dim": 128,
+    "head_value_dim": 128,
+    "value_heads": 32
+  },
+  "algebra": {
+    "scope": "Exact symbolic identities for arbitrary noncommuting operators; not empirical DT quality, an official numerical tolerance, or an implemented token-credit algorithm",
+    "sympy_version": "1.14.0",
+    "checks": [
+      {
+        "name": "Coupled finite state difference with factual previous-state form",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Same identity with counterfactual previous-state form",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Finite readout including the query/state interaction",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Symmetric finite readout, no scalar rescaling",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Transition product low-rank induction: one new column per position",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Additive state low-rank induction: one new column per position",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Complete finite q/k/v/alpha/beta memory rule before cotangent contraction",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Exact coupled 4-position window; factual future and conditional past",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Native decay/rank-update state expansion for 64-position chunk",
+        "expanded_residual": "0"
+      },
+      {
+        "name": "Factual reverse state expansion for 64-position chunk",
+        "expanded_residual": "0"
+      }
+    ],
+    "independent_position_shortcut": {
+      "algebraically_exact": false,
+      "omitted_noncommuting_monomials": 21,
+      "reason": "The same hidden-row intervention changes several adjacent Q/K/V operands; their conditional state histories are coupled."
+    }
+  },
+  "root_aligned_possibility": {
+    "scope": "Finite GDN memory effect at a given incoming output cotangent. Changing one layer-input row affects a conditional window of width4. This is not an exact original-token/world counterfactual after all model layers.",
+    "state": "H_j = alpha_j (I-beta_j k_j k_j^T) H_(j-1) + beta_j k_j v_j^T",
+    "coupled_window": "Delta H_end = sum_j (product_(l=end..j+1) M_l^F) [Delta M_j H_(j-1)^conditional + Delta B_j]. The conditional past must be preserved inside the four affected positions.",
+    "rank_factorization": "A width-w transition product is a I + U V^T with rank(U V^T)<=w; its additive state update has rank<=w. Induction: multiplying alpha(I-beta k k^T) adds at most one rank-one factor to each part.",
+    "consequence": "The conditional window can be represented without one dense KxV counterfactual state per source/time position. This algebra does not yet supply an efficient finite pullback implementation.",
+    "compact_forward_query": "H_(t-1)^T a_t = (prod_(l=start..t-1) alpha_l) H_start^T a_t + sum_(j=start..t-1) (prod_(l=j+1..t-1) alpha_l) (k_j^T a_t) u_j. Original captured u_j is v_new, not the uncorrected value v_j.",
+    "compact_reverse_query": "Lambda_t^T a_t = (prod_(l=t+1..end) alpha_l) D_end^T a_t + sum_(j=t+1..end) (prod_(l=t+1..j) alpha_l) [scale (q_j^T a_t) do_j - beta_j (k_j^T a_t) L_j], where L_j=(Lambda_j+scale q_j do_j^T)^T k_j.",
+    "owner_reuse": "Existing native h/v_new and factual native dh_end/dU_WY (L=A^T dU_WY) provide the chunk data. No copied native forward is needed. The current primitive APIs do not directly return all shifted conditional-window finite coefficients.",
+    "conditional_finite_coefficients": {
+      "premise": "Within one conditional window, endpoint0 changes only the selected layer-input row and its width4 conv consequences; endpoint1 is factual. All other layer-input rows and the incoming state are factual. A fixed memory-output cotangent do is supplied by the existing DT consumer.",
+      "shared_adjoint": "P_j^1=Lambda_j^1+scale*q_j^1*do_j^T, L_j=(P_j^1)^T k_j^1; Lambda_(j-1)^1=(M_j^1)^T P_j^1.",
+      "reference_state": "H_j^0=alpha_j^0 H_(j-1)^0+k_j^0 (u_j^0)^T; u_j^0=beta_j^0 (v_j^0-alpha_j^0 (H_(j-1)^0)^T k_j^0). H^0 is the conditional window state, not the global all-EOS state.",
+      "q": "m_q_j=scale*H_j^0*do_j",
+      "v": "m_v_j=beta_j^1*L_j",
+      "k": "m_k_j=P_j^1*u_j^0-alpha_j^1*beta_j^1*H_(j-1)^0*L_j",
+      "beta": "m_beta_j=(v_j^0-alpha_j^0*(H_(j-1)^0)^T*k_j^0)^T*L_j",
+      "alpha": "m_alpha_j=<P_j^1,H_(j-1)^0>-beta_j^1*L_j^T*(H_(j-1)^0)^T*k_j^0",
+      "meaning": "These are obtained by contracting the symbolically checked complete finite state difference. They are not ordinary derivatives and do not require dividing a small hidden change or rescaling output credit. Original exp/log-gate, Q/K normalization and conv/SiLU finite rules remain needed at their owner boundaries.",
+      "endpoint_order": "The ordered rule is an algebraic intermediate. Preserve the existing symmetric endpoint convention by also evaluating the reversed conditional window. Both orientations share the factual future adjoint after the last changed operand: all later memory operators and fixed do are the same. The reversed orientation needs only the conditional reverse within width4, not an extra whole-sequence/world backward.",
+      "limitation": "Exactness here is the weighted finite memory effect for the specified local conditional window. It does not turn a finite-chain approximation across all hidden/model layers into an exact original-token counterfactual."
+    },
+    "numerics": "Use strict causal/future products in these formulas. Do not obtain an exclusive state by dividing by alpha or exp(g), and do not apply output conservation/sign corrections.",
+    "remaining_work": "The complete memory coefficients are derived. Lower their conditional-window states and adjoints to the compact native chunk contractions, account for boundary-crossing width4 windows and the symmetric orientation, and count actual contractions/live tensors before an owner-layer candidate implementation. Original norm/gate and other-layer approximation remain distinct and must be evaluated on the frozen collection."
+  },
+  "capacity_geometry": {
+    "batch": 4,
+    "length": 32768,
+    "heads": 32,
+    "key_dim": 128,
+    "value_dim": 128,
+    "chunk": 64,
+    "chunks": 512
+  },
+  "memory_arithmetic": {
+    "one_dense_state_per_time_FP16": {
+      "bytes": 137438953472,
+      "GiB": 128.0
+    },
+    "one_dense_state_per_time_FP32": {
+      "bytes": 274877906944,
+      "GiB": 256.0
+    },
+    "one_original_chunk_state_FP16": {
+      "bytes": 2147483648,
+      "GiB": 2.0
+    },
+    "one_original_chunk_state_FP32": {
+      "bytes": 4294967296,
+      "GiB": 4.0
+    },
+    "four_materialized_rank_w_factors_FP32_full_heads": {
+      "bytes": 34359738368,
+      "GiB": 32.0
+    },
+    "four_materialized_rank_w_factors_FP32_head8": {
+      "bytes": 8589934592,
+      "GiB": 8.0
+    },
+    "scope": "Storage arithmetic for one layer; not measured RAM/VRAM or total runtime peak. Even low-rank factors must not all be materialized across time."
+  },
+  "existing_mixed_work": {
+    "default_mm_calls_per_orientation": 18,
+    "reuse_scalar_products_mm_calls_per_orientation": 15,
+    "current_symmetric_orientations": 2,
+    "current_head_group_size": 8,
+    "current_head_groups": 4,
+    "default_mm_calls_per_symmetric_head_group": 36,
+    "default_mm_calls_all_current_head_groups": 144,
+    "shapes_per_orientation": {
+      "C_by_C_times_C_by_K": 11,
+      "C_by_K_times_K_by_K": 7
+    },
+    "analytic_GEMM_FLOP_per_orientation": 1717986918400,
+    "scope": "18 vendor GEMMs plus one finite scan and two native adjoint stages per orientation/head group. Source-level call/work count, not a measured kernel trace. FLOPs above cover all32 heads. Excludes norms, projection, transport and compiler. FLOPs are not wall-clock predictions."
+  },
+  "decisions": [
+    "No top-negative-source selection or extra whole-model single-deletion refinement.",
+    "No replacement of the finite operator by the factual derivative, or V-only substitution.",
+    "No independent single-position shortcut across the width4 convolution window.",
+    "No dense per-position state bank or eager full-sequence rank-factor bank.",
+    "Retain the original frozen development/test corpus and original author quality evaluation; no quality claim from these identities."
+  ],
+  "operations": {
+    "new_model": 0,
+    "new_DT": 0,
+    "new_native_operator": 0,
+    "new_backward": 0,
+    "new_optimizer": 0,
+    "new_GPU_job_started": false,
+    "production_modified": false,
+    "credit_repaired": false
+  },
+  "cpu_seconds": 1.6023433999944245,
+  "local_resources": {
+    "rss_bytes": 66965504,
+    "peak_working_set_bytes": 66969600,
+    "torch_imported": false,
+    "model_or_FLA_imported": false
+  },
+  "recorded_from_local_HEAD": "9539e93dd26a4d50587fb2cfaeb64851636a591c",
+  "version_status": "Prepared research algebra only; no numerical candidate, imported runtime patch, deployment or training restart",
+  "research_sources": {
+    "inspect_gdn_owner.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/inspect_gdn_owner.py",
+      "sha256": "5254b60f2b9e2082c85c4dccc84cc2711e17a795f807c12ea30d3a9639a4eecd",
+      "bytes": 3442
+    },
+    "analyze_gdn_context_algebra.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/analyze_gdn_context_algebra.py",
+      "sha256": "2834fb53b6b29e364df7030e9ff457a8a5a5e2a9295525875596275469274a21",
+      "bytes": 15687
+    },
+    "gdn-owner-readonly.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/gdn-owner-readonly.json",
+      "sha256": "40521a94c61e2e8f3e980b7c2e000d42569f9c96c213ef866ab80f82dab97270",
+      "bytes": 29956
+    },
+    "gdn-context-algebra-cost.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/gdn-context-algebra-cost.json",
+      "sha256": "846fc37eddb18ef6b2afff0d65cf4069922202c0053558b6f46536cd59bf49bb",
+      "bytes": 11072
+    }
+  },
+  "formal_state_readonly": {
+    "unix": 1791424262.6592999,
+    "processes": {
+      "textcraft": {
+        "pid": 2833207,
+        "birth": 1791370325.16,
+        "same_birth": true,
+        "status": "sleeping"
+      },
+      "appworld": {
+        "pid": 2786671,
+        "missing": true
+      }
+    },
+    "text_update_releases": [
+      false,
+      false
+    ]
+  }
+}
