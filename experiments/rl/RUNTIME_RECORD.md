@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 集合尾部原PPO梯度诊断已启动；训练仍hold
+
+实际代码b7bc74bd、PID768614/birth1791430928.98，物理GPU4/5。原owner双卡
+初始化完成，1791431089观察正在对原完整256行计算old logprob；尚无完成
+minibatch，不把准备/启动称梯度验收。37点与24点子集、四个global64/local32、
+每卡B4、LoRA8/16、原loss/反向/分母/白化均按准备回执；预算12次原PG反向
+pass/rank、1800秒。没有native信用替换、新GDN候选、DT或采样/优化器写入。
+旧prepare中fc1dd9e7仅是未提交patch时的父提交；本次实际部署b7bc74bd包含
+新observer6ed5cd29和driver cfe1cc2f。准备输入和源哈希不变，启动提交另记，
+没有为提交号变化重做模型计算。实际源及PID见collection-gradient-launch.json。
+当时GPU4/5物理约21.46/18.64GiB，host available840140083200B；
+诊断进程树PSS43687496704B；这只是old-logprob阶段观察，不是连续峰值。
+TextCraft原PID/birth未变、两release仍false；AppWorld未重启。
+
 ## 2026-10-08 集合尾部的原PPO梯度诊断 prepared-only
 
 冻结TextCraft开发集合37个c>2位置、其中native单删d>=0的24个位置，全部通过
