@@ -1,5 +1,95 @@
 # 当前运行版本与修复记录
 
+## 2026-10-08 固定集合完成：条件注意力候选被否决，未部署
+
+TextCraft v3已完成32条主评测轨迹/16个初始状态、128个均匀source与37个原预测尾部
+单删配对。每rank12次DT（原/候选各6）、186次native paired B8前向，
+阶段耗时983.83/984.13秒；零optimizer/backward/rollout/检查点恢复。
+执行worker SHA0fe976d0…，基准source SHA2796233e…，基线提交7de13a34，
+运行时尚未提交的具体文件SHA及实际导入路径已绑定结果回执，不能冒充其已部署。
+
+必须纠正中途汇报：原作者函数SHA583f4b7d…返回AUC，README明确RISE↓/MAS↓，
+越低越好。此次同一fresh原模型/参考下，状态等权signed RISE 0.378320→0.402637，
+positive MAS 0.630884→0.667248，分别12/16、11/16状态变差，不能报收益。
+128个均匀source中，两处原DT漏估的native c>2仍未修好；不能用个别预测尾部
+幅度下降盖过整体质量结果。候选淘汰、不部署、不跑测试侧、不围绕失败候选调参。
+
+已立即停止刚启动的AppWorld候选driver3168041/birth1791453938.36，
+1791454041.96确认remaining_non_zombie=[]，两rank完成DT/native/optimizer均0。
+只停止本任务研究进程，正式入口和其它用户进程未改；物理GPU4/5释放。
+未将候选局部FA导数容差通过宣传为整网归因验收。
+
+旧保存基线与本次fresh B4重算有差异，回执保留分组幅度；其来源尚未定位，
+只使用本次相同原模型/候选/native配对判定，不混旧尾部计数、不声称官方容差通过。
+当前“极端归因的集合主因”仍未定位；这一阶段的有效结果是淘汰候选。
+TextCraft原正式任务因原actor非有限梯度已停止，详见下一条，不能报告仍健康训练。
+
+完整结果：experiments/rl/results_conditional_attention_collection_20261008.json；
+原始轨迹/状态分数、尾部分组、身份、命令、owner SHA、PID/birth均保留。
+本条覆盖下方v3仍待测/候选收益/作业仍运行的历史状态，不更改PLAN的方法公式。
+
+
+## 2026-10-08 恢复后出现原actor非有限梯度：停止受影响TextCraft，独立保留现场
+
+原rank0/1分别记录一次grad_norm=nan。已核对原dp_actor._optimizer_step：
+非有限时zero_grad并跳过该minibatch的optimizer.step；不能声称已完成健康更新，
+也不能因一个告警就声称其余minibatch均未更新。采样、DT、原actor的场景分开记录。
+保存的两rank原pre-update输入、DT Q/V/A、白化advantages、mask均有限，
+白化advantages最小值分别−140.341/−47.240。这只排除了已保存输入直接含NaN，
+没有定位梯度生成位置，不把它归因于当前归因候选或旧熵主导问题。
+
+用既有resume_at_native_checkpoint.py --stop-only --stop-now停止原2833207树；
+远端1791451908.09确认remaining_non_zombie=[]，无checkpoint marker。
+不创建、导出、恢复检查点。原worker日志、py-spy、原actor源码、两rank输入快照保留。
+active-training/formal-training/active-source状态已对齐，当前正式TextCraft停止。
+现场与停止回执：receipts/textcraft-first-update-nonfinite-20261008-v1。
+本条覆盖下方“已解除hold进入更新”的先前状态，不宣称训练修复。
+
+隔离归因集合测试v1因原作者ft_ifr_improve搜索路径遗漏退出，零DT/更新；
+v2完成原DT后，候选wrapper的layout类身份不同而断言退出，零策略更新。
+已分别补回已有官方模块路径、依赖注入原runner的同一RightPaddedLengths类，
+未抄写layout、改变张量或跳过断言。失败源码/启动/SHA/错误栈均保留，
+并非原训练的数值故障。v3 GPU4/5 driver2979183/birth1791452179.28，
+workerSHA0fe976d0…，原/候选整网质量仍待实测，不进入正式入口。
+
+
+## 2026-10-08 最新用户安排：TextCraft原作业解除hold；4/5继续极端归因调试
+
+原driver2833207/birth1791370325.16、workers2838967/2840776创建时间逐一核对，
+source.json SHA2796233e…不变。远端1791451326.23写入原hold接口的两枚release文件，
+两worker均于1791451326.96记录hold_released_unix并进入原pending PPO更新。
+未重启、未恢复检查点、未修改参数、未部署研究候选。正式GPU2/3，研究GPU4/5。
+此条覆盖下方较早“TextCraft继续hold”的运行安排；首次完整更新另以原日志核实。
+
+极端归因量级补充见results_extreme_attribution_magnitude_20261008.json：
+均匀抽样漏报的单删负尾TextCraft2/128（1状态）、AppWorld11/128（8状态），
+native A/r范围分别−10.51～−8.53、−7.70～−1.09，原DT对应均为正值。
+原开发预测尾部37项中跨到native非负的分别24/14项；分组、身份和分位数保留，
+不混成总体均值，不把原模型对照称为真实世界因果或官方容差。
+
+条件注意力组合已过原FA重合导数断言与256非零局部对照；完整owner只在隔离
+研究目录加载，不进入默认PYTHONPATH。固定TextCraft开发集合比较已提交，
+driver2908360/birth1791451554.49、原source SHA2796233e…、两卡4/5。
+原模型、GDN、真实Y、原作者累计删除/RISE/MAS、B4/LoRA8/16沿用。
+每rank计划12次DT（原/候选各6）及186次native paired前向，1800秒有界阶段。
+启动时尚无完整模型/集合结果，不能称修复；AppWorld正式作业仍未重启。
+原始源码SHA与命令见conditional-attention-owner-v1/textcraft-launch.json。
+
+
+## 2026-10-08 用户澄清：当前诊断极端归因，历史熵主导问题已修
+
+本轮目的是解释极端 token 归因的来源、可信度及有限传播误差，当前真实联合
+动作 target 版本的训练效果尚未判断。历史熵损失主导的问题已定位并修复，
+不得将本轮集合或局部候选结果写成对该历史问题的原因调查。
+近期已完成集合分层单删除、概率边界、整decoder残差及原PG影响测量；
+GDN30 联合背景与单删除背景的差额仅解释被选中的一个局部反号，未建立
+集合主因。最近数次新增的是条件注意力候选的接口/数值验证，并没有新增
+“极端归因的集合主因已定位”的证据。完整候选集合质量仍未测。
+最新局部组合回执见 results_conditional_attention_composition_20261008.json；
+其原 FA 断言通过和非零局部误差诊断不冒充整网归因修复。
+TextCraft hold、AppWorld 不重启、不恢复检查点的安排保持。
+
+
 ## 2026-10-08 条件注意力隔离 owner 候选：原 FA 导数断言通过，未部署
 
 候选库 SHA78678504b0c87e26f9a242faff2b077b3c7174c9c85a9655a9e1d2ab58569271；

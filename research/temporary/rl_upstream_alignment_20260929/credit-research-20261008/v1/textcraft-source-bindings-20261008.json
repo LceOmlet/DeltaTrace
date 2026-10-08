@@ -1,0 +1,297 @@
+{
+  "upstream_commit": "20bd331",
+  "submission_repository_commit": "14ba007d957d3b21ee3172993796b23474163da4",
+  "local_patch_commit": "6469fa432e5eed381139dab86292fc92493e7f6e",
+  "white_patch_commit": "8f52b95658d37fc7a0cb69647de801188f70be02",
+  "actor_fix_commit": "dc4e4d7",
+  "dt_dispatch_commit": "4c0cbdd",
+  "rollout_scope_commit": "2a32d002cffb6a16a1be89e835c3f43ba70b471c",
+  "lora_rank": 8,
+  "lora_alpha": 16,
+  "dt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace",
+  "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl",
+  "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry",
+  "startup_options": {
+    "ray_init.num_cpus": 16,
+    "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+    "actor_rollout_ref.model.trust_remote_code": true,
+    "actor_rollout_ref.model.lora_rank": 8,
+    "actor_rollout_ref.model.lora_alpha": 16,
+    "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+    "actor_rollout_ref.model.enable_activation_offload": true,
+    "actor_rollout_ref.model.use_fused_kernels": true,
+    "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+    "actor_rollout_ref.actor.strategy": "fsdp2",
+    "actor_rollout_ref.actor.ppo_mini_batch_size": 64,
+    "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+    "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+    "actor_rollout_ref.actor.use_torch_compile": true,
+    "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+    "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+    "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+    "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+    "actor_rollout_ref.rollout.name": "vllm",
+    "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+    "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+    "actor_rollout_ref.rollout.load_format": "safetensors",
+    "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+    "actor_rollout_ref.rollout.max_model_len": 32768,
+    "actor_rollout_ref.rollout.max_num_seqs": 32,
+    "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+    "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+      "image": 0,
+      "video": 0
+    },
+    "trainer.n_gpus_per_node": 2,
+    "trainer.nnodes": 1,
+    "+ray_init.runtime_env.env_vars.VERL_RELEASE_UNUSED_HOST_CACHE": "1",
+    "algorithm.adv_estimator": "deltatrace",
+    "data.train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/train.parquet",
+    "data.val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/validation.parquet",
+    "data.train_batch_size": 32,
+    "data.val_batch_size": 32,
+    "data.max_prompt_length": 32256,
+    "data.max_response_length": 512,
+    "data.return_raw_chat": true,
+    "data.truncation": "error",
+    "+data.dataloader_num_workers": 0,
+    "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+    "actor_rollout_ref.actor.ppo_epochs": 1,
+    "actor_rollout_ref.actor.optim.lr": 1e-06,
+    "actor_rollout_ref.actor.use_kl_loss": true,
+    "actor_rollout_ref.actor.kl_loss_coef": 0.001,
+    "actor_rollout_ref.actor.kl_loss_type": "low_var_kl",
+    "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 4,
+    "actor_rollout_ref.rollout.multi_turn.enable": true,
+    "actor_rollout_ref.rollout.temperature": 1.0,
+    "actor_rollout_ref.rollout.top_p": 1,
+    "actor_rollout_ref.rollout.val_kwargs.do_sample": true,
+    "actor_rollout_ref.rollout.val_kwargs.temperature": 1,
+    "actor_rollout_ref.rollout.val_kwargs.top_p": 1,
+    "env.env_name": "TextCraft",
+    "env.rollout.n": 8,
+    "env.max_steps": 30,
+    "+env.factory._target_": "textcraft_environment_entry.make_textcraft_environments",
+    "+env.textcraft": {
+      "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner",
+      "client": {
+        "task_name": "textcraft",
+        "env_addr": "http://127.0.0.1:36005",
+        "max_retries": 10,
+        "max_rounds": 10,
+        "timeout": 600
+      },
+      "eval_client": {
+        "task_name": "textcraft",
+        "env_addr": "http://127.0.0.1:36005",
+        "max_retries": 10,
+        "max_rounds": 30,
+        "timeout": 500
+      }
+    },
+    "trainer.logger": [
+      "console"
+    ],
+    "trainer.project_name": "deltatrace_official_environments",
+    "trainer.experiment_name": "dt-TextCraft",
+    "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/checkpoints",
+    "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/rollouts",
+    "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/validation",
+    "trainer.max_actor_ckpt_to_keep": 2,
+    "trainer.total_epochs": 30,
+    "trainer.total_training_steps": null,
+    "trainer.save_freq": 25,
+    "trainer.test_freq": -1,
+    "trainer.val_before_train": false,
+    "trainer.resume_mode": "disable"
+  },
+  "sampling": {
+    "temperature": 1.0,
+    "top_k": -1,
+    "top_p": 1,
+    "max_tokens": 512,
+    "ignore_eos": false
+  },
+  "actual_CPU_imports": {
+    "counterfactual": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/counterfactual.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/counterfactual.py",
+      "sha256": "0d3412b8ac25d7c036e7a827d4bbf19a4eb2b9984a0a0956f37e82d7d86f9d07"
+    },
+    "reward_readout": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/reward_readout.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/reward_readout.py",
+      "sha256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b"
+    },
+    "dt_training_batch": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/dt_training_batch.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/dt_training_batch.py",
+      "sha256": "1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e"
+    },
+    "owner_trajectory_batch": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/owner_trajectory_batch.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/owner_trajectory_batch.py",
+      "sha256": "e18774d233b038eb5b6efc55d22bfca0bc2672064a48cd5cb5b117bfc24a810d"
+    },
+    "deltatrace_rollout": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/deltatrace_rollout.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/deltatrace_rollout.py",
+      "sha256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e"
+    },
+    "executed_target_spans": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/executed_target_spans.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/executed_target_spans.py",
+      "sha256": "91919c128781386c0e8242000966a12bbcb3b76da72dc9956e3ca9c1caea8a66"
+    },
+    "verl.trainer.ppo.ray_trainer": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/ray_trainer.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/ray_trainer.py",
+      "sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619"
+    },
+    "verl.workers.actor.dp_actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+    },
+    "verl.utils.torch_functional": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/torch_functional.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/utils/torch_functional.py",
+      "sha256": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+    },
+    "task_bridge": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/textcraft_owner_rollout.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/textcraft_owner_rollout.py",
+      "sha256": "c65c5a2f72f881906935e2579b0a5013938f6a8f9f3be1a0c73e4eec0b1b98cd"
+    },
+    "official_parser": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/agentenv-owner/agentenv/envs/textcraft.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/agentenv-owner/agentenv/envs/textcraft.py",
+      "sha256": "e495871280f0407c1ad222f6de0e8402abc1f9a79e2b50fb126e28485407d538"
+    },
+    "launcher": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/launch_textcraft_native.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/launch_textcraft_native.py",
+      "sha256": "f6f9b6df211578956b0dd2603c7a914960736833624eae1ceb11701425849fd7"
+    },
+    "native_prefix_leases": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/native_prefix_leases.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/native_prefix_leases.py",
+      "sha256": "b94756147cc6f8e59fb39baa1c2737aa655b0d9c6b87091969a65c9071ad0852"
+    },
+    "qwen35_dense_finite_runner": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_dense_finite_runner_row_candidate.py",
+      "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555"
+    },
+    "qwen35_answer_finite": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_answer_finite.py",
+      "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e"
+    },
+    "qwen35_decoder_finite": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+      "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197"
+    },
+    "qwen35_gdn_finite": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-conv-initial-states-20261007-v1/isolated-owners/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+      "sha256": "ef55ce08dec9374304018b43b9f85510fca36054408c439ab1109dca8ac23ca9"
+    },
+    "qwen35_native_prefix_artifacts": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py",
+      "resolved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_native_prefix_artifacts.py",
+      "sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4"
+    }
+  },
+  "actor_owner_reuse": {
+    "reference": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "bytes": 26491
+    },
+    "baseline": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/actor/dp_actor.py",
+      "sha256": "1f862e8bbdaad6fa116d0670772ad41269529a3a1e4a5b1eb383352d0372e9bd",
+      "bytes": 25189
+    },
+    "update_policy_AST_identical": true
+  },
+  "historical_baseline_verification_references": {
+    "scope": "Historical verification provenance only; none is a requested checkpoint, current preparation or current launch",
+    "references": {
+      "prepared_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-formal-20261006-v2/prepared.json",
+      "prepared_receipt_sha256": "ee3fb085bd5f26f218ee9d6a9b372dc07cdf4a292cd0440e2d3a590cd0420e81",
+      "launch_plan_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-formal-20261006-v2/launch-plan.json",
+      "launch_plan_sha256": "de263511adf4cf469603d1a5f4047232a704282d93c87e14aeea1176f1ed1361",
+      "effective_config_preparation": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-official-whitening-formal-20261006-v2/effective-config.yaml",
+        "sha256": "ac390e14c4b923df9d13d4ea2b960b888eaeffe181764f46f2947df0eee7c2a7"
+      },
+      "submission_script_sha256": "91c82ab80a698baf4b342cdad494cd7223dd46bd343bed37b5bc3709342bf1fa",
+      "padding_comparison_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/actor-response-padding/real-model/owner-padding-assertion.json",
+      "padding_comparison_receipt_sha256": "30f34f4cddbb0aa6531a1ad3db7f1aca9aaf3ba060920fe30102e7b85dc7311b",
+      "rollout_scope_comparison": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/rollout-scope/replay-complete.json",
+      "rollout_scope_comparison_sha256": "1717504ef0837e8bc6db66c3554beddb6982ccf60b405c359c3c0d90df4540db",
+      "completed_overlay_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/owner-b8-dispatch-20260930/live-TextCraft-complete.json",
+      "completed_overlay_sha256": "dbc689b157a7c0126fc57a1861635c33cfb22b7781749b935003e235512c9108",
+      "prior_driver_observation": {
+        "pid": 3218909,
+        "pid_exists": false
+      },
+      "physical_before": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-official-whitening-20261006-v2/physical-before.txt",
+        "sha256": "0da0bc31d8ca5a958f72f9a7f9bad7d752afc2a6e3d6a7b324ad379dd83bd8ca"
+      },
+      "host_available_bytes": 1021222318080,
+      "service_observation": {
+        "pid": 4049454,
+        "pid_birth": 1790706407.49,
+        "status": "sleeping"
+      }
+    }
+  },
+  "target_semantics": "native_joint_action_target",
+  "environment_differences": {
+    "DT_ENTRY_ROOT": {
+      "before": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry",
+      "after": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry"
+    },
+    "PYTHONPATH": {
+      "before": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/agentenv-owner:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/skyrl-gym-7d94cc:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/AgentGym-d014732d9fe39b975c368c03749bfd50950067f6/agentenv:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/ml-loop-f14107a976e5793990329d3193df4742076c5a1d:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-env-entry-20260930:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/experiments/rl:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/SkyRL-7d94cc-owner-generator:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/environments/skyrl-owner-leaves-7d94cc:",
+      "after": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/agentenv-owner:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/skyrl-gym-7d94cc:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/AgentGym-d014732d9fe39b975c368c03749bfd50950067f6/agentenv:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/ml-loop-f14107a976e5793990329d3193df4742076c5a1d:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/official-verl-20bd331-env-entry-20260930:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/experiments/rl:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/third_party/SkyRL-7d94cc-owner-generator:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/environments/skyrl-owner-leaves-7d94cc:"
+    }
+  },
+  "official_configuration_differences": {
+    "trainer.default_local_dir": {
+      "before": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-action-target-20261007-v3/textcraft/textcraft-dt/checkpoints",
+      "after": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/checkpoints"
+    },
+    "trainer.rollout_data_dir": {
+      "before": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-action-target-20261007-v3/textcraft/textcraft-dt/rollouts",
+      "after": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/rollouts"
+    },
+    "trainer.validation_data_dir": {
+      "before": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-action-target-20261007-v3/textcraft/textcraft-dt/validation",
+      "after": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/validation"
+    }
+  },
+  "resource_environment": {
+    "VERL_RELEASE_UNUSED_HOST_CACHE": "1",
+    "VERL_TRIM_SHARED_PADDING": "1",
+    "VERL_TRIM_RESPONSE_HEAD": "1",
+    "CUDA_VISIBLE_DEVICES": "2,3",
+    "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace",
+    "DT_ENTRY_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry",
+    "DT_ENVIRONMENT_JSON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/environment.json"
+  },
+  "resume_mode": "disable",
+  "checkpoint_restore_requested": false,
+  "fresh_base_model": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+  "observed_unix": 1791454692.2038949,
+  "remote_source": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/source.json",
+    "sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52"
+  },
+  "scope": "Selected unchanged startup receipt fields, not a new live-import or tolerance verification; executed collection owner hashes are separately recorded in rank receipts."
+}

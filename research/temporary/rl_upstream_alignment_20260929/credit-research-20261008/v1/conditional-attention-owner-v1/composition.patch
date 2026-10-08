@@ -1,0 +1,356 @@
+--- a/textcraft/qwen35_decoder_finite.py
++++ b/textcraft/qwen35_decoder_finite.py
+@@ -133,6 +133,44 @@
+             +_linear_transpose(mv,vproj_weight))
+ 
+ 
++
++def _attention_own_kv(value,starts,time):
++    b,heads,length,dim=value.shape
++    positions=starts[:,None]+torch.arange(time,device=value.device)[None,:]
++    # Only padding indices exceed length. They never enter the public query
++    # mask or a valid finite coefficient. This is indexing, not credit clipping.
++    positions=positions.clamp_max(length-1)
++    return value.gather(2,positions[:,None,:,None].expand(b,heads,time,dim))
++
++
++def _attention_own_scores_rule(q0,q1,k0,starts,scale):
++    b,heads,time,dim=q0.shape;kh=k0.shape[1];groups=heads//kh
++    own=_attention_own_kv(k0,starts,time).float().unsqueeze(2)
++    score0=(q0.float().reshape(b,kh,groups,time,dim)*own).sum(-1).reshape(b,heads,time)*scale
++    score1=(q1.float().reshape(b,kh,groups,time,dim)*own).sum(-1).reshape(b,heads,time)*scale
++    return score0,score1
++
++
++def _attention_own_uv_rule(upstream,v0,starts):
++    b,heads,time,dim=upstream.shape;kh=v0.shape[1];groups=heads//kh
++    own=_attention_own_kv(v0,starts,time).float().unsqueeze(2)
++    # The existing finite FA ABI stores U in BF16 before contraction.
++    u=upstream.to(torch.bfloat16).float().reshape(b,kh,groups,time,dim)
++    return (u*own).sum(-1).reshape(b,heads,time)
++
++
++def _attention_own_endpoint_rule(past,lse,own_score,v0,starts):
++    b,time,heads,dim=past.shape;kh=v0.shape[1];groups=heads//kh
++    logz=torch.logaddexp(lse,own_score)
++    old_weight=torch.exp(lse-logz).transpose(1,2).unsqueeze(-1)
++    own_weight=torch.exp(own_score-logz).reshape(b,kh,groups,time,1)
++    own=_attention_own_kv(v0,starts,time).float().unsqueeze(2)
++    own=(own*own_weight).reshape(b,heads,time,dim).transpose(1,2)
++    # Keep the combined finite-rule value in FP32; do not add a second BF16
++    # rounding after the native strict-past output has already been stored.
++    return past.float()*old_weight+own,logz
++
++
+ class FiniteBoundaryOps:
+     """Composite finite graphs; native/vendor operations stay externally visible.
+ 
+@@ -147,12 +185,18 @@
+             'mlp':[(i,1) for i in range(7)],
+             'norm_residual':[(i,1) for i in (0,1,3,4)],
+             'attention_gate':[(i,1) for i in range(4)],
++            'attention_own_scores':[(0,2),(1,2),(2,2),(3,0)],
++            'attention_own_uv':[(0,2),(1,2),(2,0)],
++            'attention_own_endpoint':[(0,1),(1,2),(2,2),(3,2),(4,0)],
+             'gdn_norm_gate':[(i,1) for i in range(3)],
+             'gdn_conv_silu':[(i,2) for i in range(3)],
+             'attention_input':[(i,2) for i in range(3)]+[(i,1) for i in (3,4,5,6,7,10,11)],
+         }
+         for name,fn in [('mlp',_mlp_input_rule),('norm_residual',_norm_residual_rule),
+                         ('attention_gate',_attention_gate_rule),('attention_input',_attention_input_rule),
++                        ('attention_own_scores',_attention_own_scores_rule),
++                        ('attention_own_uv',_attention_own_uv_rule),
++                        ('attention_own_endpoint',_attention_own_endpoint_rule),
+                         ('gdn_norm_gate',_norm_gate_finite_rule),('gdn_conv_silu',_conv_silu_finite_rule)]:
+             op=torch.compile(fn,fullgraph=True,dynamic=None if dynamic_shapes else False,
+                 options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else fn
+@@ -174,7 +218,7 @@
+             setattr(self,name,op)
+ 
+ 
+-def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False,input_shape=None):
++def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False,input_shape=None,conditional=False):
+     """Input coefficients for the actual standard-attention module.
+ 
+     lse is the publicly returned paired FA LSE, [2B,H,T]. Endpoints share
+@@ -186,17 +230,32 @@
+         raise ValueError(f'Unsupported attention PV rule: {pv_rule!r}')
+     c=values;b,t,width=upstream.shape;heads=module.config.num_attention_heads;dim=module.head_dim
+     if input_shape is None:input_shape=c['input'].shape
+-    assert tuple(input_shape)==(2*b,t,width) and lse.shape==(2*b,heads,t)
++    assert tuple(input_shape)==(2*b,t,width)
++    if not conditional:assert lse.shape==(2*b,heads,t)
+     assert cos.shape==sin.shape and cos.shape[0]==2*b and cos.shape[1]==t
+     assert module.q_norm.eps==module.k_norm.eps and module.attention_dropout==0
++    endpoints=None
++    if conditional:
++        if pv_rule!='content1':raise ValueError('Conditional identity uses the fixed content1 gate ordering.')
++        from conditional_attention_endpoints import prepare_conditional_endpoints
++        endpoints=prepare_conditional_endpoints(c,layout,module.scaling,boundaries)
++    attention0=c['attention_output'][0::2] if endpoints is None else endpoints['attention0']
+     mcontent,mgate=boundaries.attention_gate(c['q_proj_output'][0::2],c['q_proj_output'][1::2],
+-        c['attention_output'][0::2],upstream,_linear_weights(module.o_proj),heads,dim)
++        attention0,upstream,_linear_weights(module.o_proj),heads,dim)
++    del attention0
+     if consume_captures:
+         c.pop('input',None)
+-        for name in ('q_proj_output','attention_output'):
+-            del c[name]
++        del c['q_proj_output']
++        if conditional:c.pop('attention_output',None)
++        else:del c['attention_output']
+     ops={'q0':c['query'][0::2],'q1':c['query'][1::2],'k0':c['key'][0::2],'k1':c['key'][1::2],
+-         'v0':c['value'][0::2],'u':mcontent,'lse0':lse[0::2],'lse1':lse[1::2]}
++         'v0':c['value'][0::2],'u':mcontent,
++         'lse0':lse[0::2] if endpoints is None else endpoints['lse0'],
++         'lse1':lse[1::2] if endpoints is None else endpoints['lse0']}
++    if endpoints is not None:
++        ops.update(v1=c['value'][1::2],own_q0k0=endpoints['own_q0k0'],own_q1k0=endpoints['own_q1k0'],
++            own_uv0=boundaries.attention_own_uv(mcontent,c['value'][0::2],endpoints['query_starts']))
++        del endpoints
+     if pv_rule=='content0':
+         # Reversing the finite pair selects P0 for the value coefficient and
+         # V1 for routing. Returned coefficients need no sign reversal.
+@@ -205,7 +264,8 @@
+         ops['lse0'],ops['lse1']=ops['lse1'],ops['lse0']
+         ops['v0']=c['value'][1::2]
+     activity={} if diagnostics else None
+-    coeff=finite_fa(ops,module.scaling,layout,activity)
++    coeff=(finite_fa(ops,module.scaling,layout,activity,conditional=True) if conditional
++           else finite_fa(ops,module.scaling,layout,activity))
+     if consume_captures:
+         del ops,mcontent
+         for name in ('query','key','value'):
+--- a/textcraft/qwen35_dense_finite_runner.py
++++ b/textcraft/qwen35_dense_finite_runner.py
+@@ -136,7 +136,7 @@
+ 
+ 
+ class Qwen35DenseFiniteRunner:
+-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False,reuse_native_prefix=False,native_conv_initial_states=False):
++    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False,reuse_native_prefix=False,native_conv_initial_states=False,conditional_attention=False):
+         """Optional GDN layer-index rules; unspecified layers retain content1.
+ 
+         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
+@@ -193,6 +193,7 @@
+         self.pin_root_host=pin_root_host
+         self.reuse_native_prefix=reuse_native_prefix
+         self.native_conv_initial_states=native_conv_initial_states
++        self.conditional_attention=conditional_attention
+         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
+         if not isinstance(key_rules,Mapping):
+             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
+@@ -407,6 +408,8 @@
+             attention_needed=None if copy_captures else {'q_proj_output',
+                 'attention_output','query','key','value','q_norm_input','k_norm_input',
+                 'dense_q','dense_k','dense_v'}
++            if self.conditional_attention and observer is None:
++                attention_needed={'q_proj_output','query','key','value','q_norm_input','k_norm_input'}
+             backend=self.capture_backend
+             decoder_capture=NativeDecoderCapture if backend is None else backend.NativeDecoderCapture
+             attention_capture=NativeDenseAttentionCapture if backend is None else backend.NativeDenseAttentionCapture
+@@ -442,7 +445,7 @@
+                 native_args=mc.packed_arguments if row_starts is not None else mc.dense_arguments
+                 args={k:v for k,v in native_args.items() if k in ('dropout_p','softmax_scale','causal')}
+                 if args['dropout_p']!=0 or not args['causal']:raise ValueError('Unsupported native FA settings.')
+-                if not offload_mixer:
++                if not offload_mixer and not self.conditional_attention:
+                     with torch.no_grad():aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:(_public_varlen_attention_lse(c,kw['attention_mask'],args) if row_starts is not None else flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args)))
+                     if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                     row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
+@@ -466,7 +469,7 @@
+                             c[name]=c[source].transpose(1,2)
+                     timed('restore_mixer_captures_'+str(i),restore)
+                 if is_fa:
+-                    if offload_mixer:
++                    if offload_mixer and not self.conditional_attention:
+                         aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:(_public_varlen_attention_lse(c,kw['attention_mask'],args) if row_starts is not None else flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args)))
+                         if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                         row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
+@@ -477,7 +480,7 @@
+                         for name in ('key','value'):
+                             c[name]=_compact_native_cached_kv(c[name],row_starts,row_lengths,prefix_start)
+                     cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused,
+-                        pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=offload_mixer,input_shape=mixer_input_shape)
++                        pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=offload_mixer,input_shape=mixer_input_shape,conditional=self.conditional_attention)
+                 finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
+                 if i in self.key_norm_by_layer:
+                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,
+--- a/appworld/qwen35_decoder_finite.py
++++ b/appworld/qwen35_decoder_finite.py
+@@ -157,6 +157,44 @@
+     return chunked
+ 
+ 
++
++def _attention_own_kv(value,starts,time):
++    b,heads,length,dim=value.shape
++    positions=starts[:,None]+torch.arange(time,device=value.device)[None,:]
++    # Only padding indices exceed length. They never enter the public query
++    # mask or a valid finite coefficient. This is indexing, not credit clipping.
++    positions=positions.clamp_max(length-1)
++    return value.gather(2,positions[:,None,:,None].expand(b,heads,time,dim))
++
++
++def _attention_own_scores_rule(q0,q1,k0,starts,scale):
++    b,heads,time,dim=q0.shape;kh=k0.shape[1];groups=heads//kh
++    own=_attention_own_kv(k0,starts,time).float().unsqueeze(2)
++    score0=(q0.float().reshape(b,kh,groups,time,dim)*own).sum(-1).reshape(b,heads,time)*scale
++    score1=(q1.float().reshape(b,kh,groups,time,dim)*own).sum(-1).reshape(b,heads,time)*scale
++    return score0,score1
++
++
++def _attention_own_uv_rule(upstream,v0,starts):
++    b,heads,time,dim=upstream.shape;kh=v0.shape[1];groups=heads//kh
++    own=_attention_own_kv(v0,starts,time).float().unsqueeze(2)
++    # The existing finite FA ABI stores U in BF16 before contraction.
++    u=upstream.to(torch.bfloat16).float().reshape(b,kh,groups,time,dim)
++    return (u*own).sum(-1).reshape(b,heads,time)
++
++
++def _attention_own_endpoint_rule(past,lse,own_score,v0,starts):
++    b,time,heads,dim=past.shape;kh=v0.shape[1];groups=heads//kh
++    logz=torch.logaddexp(lse,own_score)
++    old_weight=torch.exp(lse-logz).transpose(1,2).unsqueeze(-1)
++    own_weight=torch.exp(own_score-logz).reshape(b,kh,groups,time,1)
++    own=_attention_own_kv(v0,starts,time).float().unsqueeze(2)
++    own=(own*own_weight).reshape(b,heads,time,dim).transpose(1,2)
++    # Keep the combined finite-rule value in FP32; do not add a second BF16
++    # rounding after the native strict-past output has already been stored.
++    return past.float()*old_weight+own,logz
++
++
+ class FiniteBoundaryOps:
+     """Composite finite graphs; native/vendor operations stay externally visible.
+ 
+@@ -171,12 +209,18 @@
+             'mlp':[(i,1) for i in range(7)],
+             'norm_residual':[(i,1) for i in (0,1,3,4)],
+             'attention_gate':[(i,1) for i in range(4)],
++            'attention_own_scores':[(0,2),(1,2),(2,2),(3,0)],
++            'attention_own_uv':[(0,2),(1,2),(2,0)],
++            'attention_own_endpoint':[(0,1),(1,2),(2,2),(3,2),(4,0)],
+             'gdn_norm_gate':[(i,1) for i in range(3)],
+             'gdn_conv_silu':[(i,2) for i in range(3)],
+             'attention_input':[(i,2) for i in range(3)]+[(i,1) for i in (3,4,5,6,7,10,11)],
+         }
+         for name,fn in [('mlp',_mlp_input_rule),('norm_residual',_norm_residual_rule),
+                         ('attention_gate',_attention_gate_rule),('attention_input',_attention_input_rule),
++                        ('attention_own_scores',_attention_own_scores_rule),
++                        ('attention_own_uv',_attention_own_uv_rule),
++                        ('attention_own_endpoint',_attention_own_endpoint_rule),
+                         ('gdn_norm_gate',_norm_gate_finite_rule),('gdn_conv_silu',_conv_silu_finite_rule)]:
+             op=torch.compile(fn,fullgraph=True,dynamic=None if dynamic_shapes else False,
+                 options={'triton.cudagraphs':False,'max_autotune':False,**(compiler_options or {})}) if compiled else fn
+@@ -200,7 +244,7 @@
+             setattr(self,name,op)
+ 
+ 
+-def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False,input_shape=None):
++def attention_finite_pullback(module,values,lse,cos,sin,upstream,finite_fa,layout,boundaries,diagnostics=False,*,pv_rule='content1',consume_captures=False,input_shape=None,conditional=False):
+     """Input coefficients for the actual standard-attention module.
+ 
+     lse is the publicly returned paired FA LSE, [2B,H,T]. Endpoints share
+@@ -212,17 +256,32 @@
+         raise ValueError(f'Unsupported attention PV rule: {pv_rule!r}')
+     c=values;b,t,width=upstream.shape;heads=module.config.num_attention_heads;dim=module.head_dim
+     if input_shape is None:input_shape=c['input'].shape
+-    assert tuple(input_shape)==(2*b,t,width) and lse.shape==(2*b,heads,t)
++    assert tuple(input_shape)==(2*b,t,width)
++    if not conditional:assert lse.shape==(2*b,heads,t)
+     assert cos.shape==sin.shape and cos.shape[0]==2*b and cos.shape[1]==t
+     assert module.q_norm.eps==module.k_norm.eps and module.attention_dropout==0
++    endpoints=None
++    if conditional:
++        if pv_rule!='content1':raise ValueError('Conditional identity uses the fixed content1 gate ordering.')
++        from conditional_attention_endpoints import prepare_conditional_endpoints
++        endpoints=prepare_conditional_endpoints(c,layout,module.scaling,boundaries)
++    attention0=c['attention_output'][0::2] if endpoints is None else endpoints['attention0']
+     mcontent,mgate=boundaries.attention_gate(c['q_proj_output'][0::2],c['q_proj_output'][1::2],
+-        c['attention_output'][0::2],upstream,_linear_weights(module.o_proj),heads,dim)
++        attention0,upstream,_linear_weights(module.o_proj),heads,dim)
++    del attention0
+     if consume_captures:
+         c.pop('input',None)
+-        for name in ('q_proj_output','attention_output'):
+-            del c[name]
++        del c['q_proj_output']
++        if conditional:c.pop('attention_output',None)
++        else:del c['attention_output']
+     ops={'q0':c['query'][0::2],'q1':c['query'][1::2],'k0':c['key'][0::2],'k1':c['key'][1::2],
+-         'v0':c['value'][0::2],'u':mcontent,'lse0':lse[0::2],'lse1':lse[1::2]}
++         'v0':c['value'][0::2],'u':mcontent,
++         'lse0':lse[0::2] if endpoints is None else endpoints['lse0'],
++         'lse1':lse[1::2] if endpoints is None else endpoints['lse0']}
++    if endpoints is not None:
++        ops.update(v1=c['value'][1::2],own_q0k0=endpoints['own_q0k0'],own_q1k0=endpoints['own_q1k0'],
++            own_uv0=boundaries.attention_own_uv(mcontent,c['value'][0::2],endpoints['query_starts']))
++        del endpoints
+     if pv_rule=='content0':
+         # Reversing the finite pair selects P0 for the value coefficient and
+         # V1 for routing. Returned coefficients need no sign reversal.
+@@ -231,7 +290,8 @@
+         ops['lse0'],ops['lse1']=ops['lse1'],ops['lse0']
+         ops['v0']=c['value'][1::2]
+     activity={} if diagnostics else None
+-    coeff=finite_fa(ops,module.scaling,layout,activity)
++    coeff=(finite_fa(ops,module.scaling,layout,activity,conditional=True) if conditional
++           else finite_fa(ops,module.scaling,layout,activity))
+     if consume_captures:
+         del ops,mcontent
+         for name in ('query','key','value'):
+--- a/appworld/qwen35_dense_finite_runner.py
++++ b/appworld/qwen35_dense_finite_runner.py
+@@ -136,7 +136,7 @@
+ 
+ 
+ class Qwen35DenseFiniteRunner:
+-    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False,reuse_native_prefix=False,native_conv_initial_states=False):
++    def __init__(self,model,finite_fa,finite_fla,*,norm_gate_rules=None,finite_fla_by_layer=None,attention_pv_rules=None,key_norm_by_layer=None,dynamic_shapes=False,compiler_options=None,answer_compiled=True,copy_replay_captures=True,offload_replay_mixer=False,gdn_head_batch_size=None,capture_backend=None,defer_diagnostics=False,compile_gdn_scalar_rules=False,pin_replay_host=False,gdn_gpu_capture_names=(),fa_coefficient_suffix=False,gdn_coefficient_suffix=False,compact_gdn_captures=False,pin_root_host=False,reuse_native_prefix=False,native_conv_initial_states=False,conditional_attention=False):
+         """Optional GDN layer-index rules; unspecified layers retain content1.
+ 
+         The layer0 symmetric candidate is norm_gate_rules={0: 'symmetric'}.
+@@ -193,6 +193,7 @@
+         self.pin_root_host=pin_root_host
+         self.reuse_native_prefix=reuse_native_prefix
+         self.native_conv_initial_states=native_conv_initial_states
++        self.conditional_attention=conditional_attention
+         key_rules={} if key_norm_by_layer is None else key_norm_by_layer
+         if not isinstance(key_rules,Mapping):
+             raise TypeError('key_norm_by_layer must map integer GDN layers to finite normalization callbacks.')
+@@ -409,6 +410,8 @@
+             attention_needed=None if copy_captures else {'q_proj_output',
+                 'attention_output','query','key','value','q_norm_input','k_norm_input',
+                 'dense_q','dense_k','dense_v'}
++            if self.conditional_attention and observer is None:
++                attention_needed={'q_proj_output','query','key','value','q_norm_input','k_norm_input'}
+             backend=self.capture_backend
+             decoder_capture=NativeDecoderCapture if backend is None else backend.NativeDecoderCapture
+             attention_capture=NativeDenseAttentionCapture if backend is None else backend.NativeDenseAttentionCapture
+@@ -444,7 +447,7 @@
+                 native_args=mc.packed_arguments if row_starts is not None else mc.dense_arguments
+                 args={k:v for k,v in native_args.items() if k in ('dropout_p','softmax_scale','causal')}
+                 if args['dropout_p']!=0 or not args['causal']:raise ValueError('Unsupported native FA settings.')
+-                if not offload_mixer:
++                if not offload_mixer and not self.conditional_attention:
+                     with torch.no_grad():aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:(_public_varlen_attention_lse(c,kw['attention_mask'],args) if row_starts is not None else flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args)))
+                     if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                     row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
+@@ -468,7 +471,7 @@
+                             c[name]=c[source].transpose(1,2)
+                     timed('restore_mixer_captures_'+str(i),restore)
+                 if is_fa:
+-                    if offload_mixer:
++                    if offload_mixer and not self.conditional_attention:
+                         aux,lse,unused=timed('public_FA_LSE_'+str(i),lambda:(_public_varlen_attention_lse(c,kw['attention_mask'],args) if row_starts is not None else flash_attn_func(c['dense_q'],c['dense_k'],c['dense_v'],return_attn_probs=True,**args)))
+                         if unused is not None and unused.numel():raise ValueError('Unexpected quadratic probability output.')
+                         row['FA_auxiliary_relative_L2']=_relative_l2(c['attention_output'],aux,deferred=self.defer_diagnostics);del aux,unused
+@@ -479,7 +482,7 @@
+                         for name in ('key','value'):
+                             c[name]=_compact_native_cached_kv(c[name],row_starts,row_lengths,prefix_start)
+                     cos,sin=kw['position_embeddings'];return attention_finite_pullback(layer.self_attn,c,lse,cos,sin,upstream,self.finite_fa,layout,self.boundaries,focused,
+-                        pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=consume_captures,input_shape=mixer_input_shape)
++                        pv_rule=self.attention_pv_rules.get(i,'content1'),consume_captures=consume_captures,input_shape=mixer_input_shape,conditional=self.conditional_attention)
+                 finite_fla=self.finite_fla_by_layer.get(i,self.finite_fla)
+                 if i in self.key_norm_by_layer:
+                     return gdn_finite_pullback(layer.linear_attn,c,e,upstream,scale,finite_fla,focused,

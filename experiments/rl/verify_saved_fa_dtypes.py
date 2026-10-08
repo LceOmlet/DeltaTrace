@@ -21,11 +21,14 @@ parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--finite-library', type=Path)
 parser.add_argument('--finite-library-sha256')
 parser.add_argument('--finite-rule', choices=('joint', 'conditional'), default='joint')
+parser.add_argument('--conditional-composition',action='store_true')
 args = parser.parse_args()
 if (args.finite_library is None) != (args.finite_library_sha256 is None):
     parser.error('An explicit finite library requires its exact SHA256.')
 if args.finite_rule == 'conditional' and args.finite_library is None:
     parser.error('The research rule requires an explicit isolated finite library.')
+if args.conditional_composition and args.finite_rule != 'conditional':
+    parser.error('Conditional endpoint composition requires the explicit conditional research rule.')
 torch.set_num_threads(8)
 source = args.sources/'test_flash_attn_v263.py'
 assert hashlib.sha256(source.read_bytes()).hexdigest() == 'a290e11cbcb2e65fe7b8399d42eae3bb5c4113bbc12e6190cd7f710ad70abca9'
@@ -81,6 +84,16 @@ with torch.no_grad():
         uv = (grouped_u*own_v.float().unsqueeze(3)).sum(-1).reshape(*q.shape[:3])
         conditional_ops = dict(ops,v1=ops['v0'],own_q0k0=score.transpose(1,2),
             own_q1k0=score.transpose(1,2),own_uv0=uv.transpose(1,2))
+        if args.conditional_composition:
+            from qwen35_decoder_finite import FiniteBoundaryOps
+            from conditional_attention_endpoints import prepare_conditional_endpoints
+            boundaries=FiniteBoundaryOps(True,dynamic_shapes=True)
+            captures={name:value.repeat_interleave(2,0) for name,value in
+                      [('query',ops['q0']),('key',ops['k0']),('value',ops['v0'])]}
+            endpoints=prepare_conditional_endpoints(captures,layout,fa['scale'],boundaries)
+            conditional_ops.update(lse0=endpoints['lse0'],own_q0k0=endpoints['own_q0k0'],
+                own_q1k0=endpoints['own_q1k0'],
+                own_uv0=boundaries.attention_own_uv(ops['u'],ops['v0'],endpoints['query_starts']))
         print('phase=conditional_coincident_derivative',flush=True)
         finite = owner(conditional_ops,fa['scale'],layout,conditional=True)
     else:
@@ -102,6 +115,7 @@ result = dict(scope=__doc__,source=str(args.operands),query_shape=list(q.shape),
 if args.finite_library is not None:
     result.update(finite_library=str(args.finite_library),finite_library_sha256=args.finite_library_sha256,
         finite_rule=args.finite_rule,unchanged_default=unchanged_default,
+        conditional_composition=args.conditional_composition,
         candidate_scope='Primitive coincident-endpoint derivative only; not nonzero finite attribution, whole-model quality, 32k capacity or a training release.')
     result.update(peak_allocated_bytes=torch.cuda.max_memory_allocated(),
                   peak_reserved_bytes=torch.cuda.max_memory_reserved())
