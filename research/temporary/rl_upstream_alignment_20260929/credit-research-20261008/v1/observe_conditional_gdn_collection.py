@@ -15,9 +15,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--task',choices=('textcraft','appworld'),required=True)
     parser.add_argument('--version',default='v1')
+    parser.add_argument('--candidate-kind',choices=('conditional_gdn','conditional_mixers'),default='conditional_gdn')
     args=parser.parse_args()
-    remote=ROOT+'/receipts/conditional-gdn-collection-'+args.task+'-20261009-'+args.version
-    folder=HERE/('conditional-gdn-collection-'+args.version)
+    namespace=args.candidate_kind.replace('_','-')+'-collection-'
+    remote=ROOT+'/receipts/'+namespace+args.task+'-20261009-'+args.version
+    folder=HERE/(namespace+args.version)
     body='''import json,psutil,subprocess,time
 from pathlib import Path
 out=Path(OUT);launch=json.loads((out/'launch.json').read_bytes())

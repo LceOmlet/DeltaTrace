@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import sys
 import time
-from types import MethodType
+from types import FunctionType, MethodType
 
 import torch
 
@@ -33,22 +33,21 @@ def make_candidate(original, spec, environment):
     original_globals = original.attribute.__func__.__globals__
     native_gdn = original_globals['gdn_finite_pullback']
     assert sha(inspect.getsourcefile(native_gdn)) == spec['baseline_gdn_sha256']
-    # Import the unchanged, actual runner under a private module identity.
-    # Only this private copy binds the new default-inert owner callback.
+    # Load only the new owner callback. Preserve the actual incoming runner's
+    # globals, including any explicit research FA seam; reimporting its file
+    # would silently bind the default decoder instead of that actual owner.
     previous = {name: sys.modules.get(name) for name in
                 ('finite_fla_gpu', 'qwen35_gdn_finite', 'conditional_gdn_context')}
     try:
         fla = load('finite_fla_gpu', spec['fla'])
         gdn = load('qwen35_gdn_finite', spec['gdn'])
         context = load('conditional_gdn_context', spec['context'])
-        runner = load('research_conditional_gdn_runner', runner_path)
     finally:
         for name, module in previous.items():
             if module is None:
                 sys.modules.pop(name, None)
             else:
                 sys.modules[name] = module
-    runner.NativeGDNCapture = original_globals['NativeGDNCapture']
     layers = original.model.model.language_model.layers
     indices = {id(layer.linear_attn): i for i, layer in enumerate(layers)
                if layer.block_type == 'linear_attention'}
@@ -81,13 +80,21 @@ def make_candidate(original, spec, environment):
               elapsed_seconds=time.perf_counter()-start)
         return value
 
-    runner.gdn_finite_pullback = partial(gdn.gdn_finite_pullback,
-                                       conditional_context_pullback=callback)
+    globals_ = dict(original_globals)
+    globals_['gdn_finite_pullback'] = partial(gdn.gdn_finite_pullback,
+                                           conditional_context_pullback=callback)
+    function = original.attribute.__func__
+    attribute = FunctionType(function.__code__, globals_, function.__name__,
+                             function.__defaults__, function.__closure__)
+    attribute.__kwdefaults__ = function.__kwdefaults__
     candidate = copy.copy(original)
-    candidate.attribute = MethodType(runner.Qwen35DenseFiniteRunner.attribute, candidate)
+    candidate.attribute = MethodType(attribute, candidate)
     assert candidate.model is original.model and candidate.answer is original.answer
     assert candidate.capture_backend is original.capture_backend
     assert candidate.finite_fa is original.finite_fa and candidate.finite_fla is original.finite_fla
+    assert attribute.__code__ is function.__code__
+    assert all(globals_[name] is value for name, value in original_globals.items()
+               if name != 'gdn_finite_pullback')
     assert original.attribute.__func__.__globals__['gdn_finite_pullback'] is native_gdn
     return candidate, dict(kind='conditional_gdn', runner_path=runner_path,
         runner_sha256=sha(runner_path), files=spec['files'],

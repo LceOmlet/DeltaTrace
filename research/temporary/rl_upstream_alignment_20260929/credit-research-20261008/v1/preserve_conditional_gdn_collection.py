@@ -17,8 +17,9 @@ def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--task',choices=('textcraft','appworld'),required=True)
+    parser.add_argument('--candidate-kind',choices=('conditional_gdn','conditional_mixers'),default='conditional_gdn')
     args=parser.parse_args()
-    folder=HERE/'conditional-gdn-collection-v1'
+    folder=HERE/(args.candidate_kind.replace('_','-')+'-collection-v1')
     records=[json.loads((folder/(args.task+'-rank'+str(i)+'.json')).read_bytes()) for i in range(2)]
     assert all(r['phase']=='complete' for r in records)
     files=[]

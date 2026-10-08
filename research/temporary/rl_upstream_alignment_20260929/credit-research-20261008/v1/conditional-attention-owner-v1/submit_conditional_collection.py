@@ -21,17 +21,18 @@ def sha(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', choices=('textcraft', 'appworld'), required=True)
-    parser.add_argument('--candidate-kind', choices=('conditional_attention','endpoint_head','conditional_gdn'), default='conditional_attention')
+    parser.add_argument('--candidate-kind', choices=('conditional_attention','endpoint_head','conditional_gdn','conditional_mixers'), default='conditional_attention')
     args = parser.parse_args()
     task = args.task
     endpoint = args.candidate_kind == 'endpoint_head'
     gdn = args.candidate_kind == 'conditional_gdn'
-    cached = endpoint or gdn
-    output_folder = COLLECTION/'conditional-gdn-collection-v1' if gdn else COLLECTION/'endpoint-head-owner-v1' if endpoint else HERE
+    mixers = args.candidate_kind == 'conditional_mixers'
+    cached = endpoint or gdn or mixers
+    output_folder = COLLECTION/'conditional-mixers-collection-v1' if mixers else COLLECTION/'conditional-gdn-collection-v1' if gdn else COLLECTION/'endpoint-head-owner-v1' if endpoint else HERE
     output_folder.mkdir(exist_ok=True)
-    remote = ROOT + ('/receipts/conditional-gdn-collection-'+task+'-20261009-v1' if gdn else '/receipts/endpoint-head-collection-'+task+'-20261009-v1' if endpoint
+    remote = ROOT + ('/receipts/conditional-mixers-collection-'+task+'-20261009-v1' if mixers else '/receipts/conditional-gdn-collection-'+task+'-20261009-v1' if gdn else '/receipts/endpoint-head-collection-'+task+'-20261009-v1' if endpoint
                      else '/receipts/conditional-collection-'+task+'-20261008-v3')
-    if not cached:
+    if not cached or mixers:
         compiled = json.loads((HERE/'compiled-owner.json').read_bytes())
         composition = json.loads((HERE/'composition-prepared.json').read_bytes())
     manifest = json.loads((COLLECTION/'manifest.json').read_bytes())
@@ -52,18 +53,25 @@ def main():
         count = max(len(entries[uid]['queries']) for b in batches[offset:offset+2] for uid in b['uids'])
         for b in batches[offset:offset+2]:
             b['query_rounds'] = (count+1)//2
-    generated = COLLECTION/'conditional-gdn-owner-prepared' if gdn else None if endpoint else HERE/'composition-prepared'/task
+    generated = COLLECTION/'conditional-gdn-owner-prepared' if gdn or mixers else None if endpoint else HERE/'composition-prepared'/task
+    generated_directories = {generated} if generated is not None else set()
     files = [HERE/'inspect_conditional_collection.py',
         COLLECTION/'inspect_author_collection.py',
         AUDIT/'direct-target-action-author-curve-20261007/v1/inspect_action_curve.py',
         AUDIT/'direct-target-extreme-token-endpoint-20261007/v1/inspect_extreme_endpoint.py']
-    if gdn:
+    if gdn or mixers:
         assert task=='textcraft', 'First frozen whole-candidate comparison; AppWorld baseline remains separate'
         files += [COLLECTION/name for name in ('conditional_gdn_candidate.py',
             'conditional_gdn_context.py','conditional_conv_windows.py','tiled_conditional_memory.py',
             'conditional_window_memory.py','native_conditional_queries.py')]
         files += [generated/'qwen35_gdn_finite.py',generated/'finite_fla_gpu.py',
                   HERE/'textcraft-v3-rank0.json',HERE/'textcraft-v3-rank1.json']
+        if mixers:
+            attention_generated=HERE/'composition-prepared'/task
+            generated_directories.add(attention_generated)
+            files += [HERE/'conditional_attention_endpoints.py',
+                attention_generated/'qwen35_decoder_finite.py',
+                attention_generated/'qwen35_dense_finite_runner.py']
     elif endpoint:
         assert task=='textcraft', 'First fixed comparison only; no automatic second-task launch'
         derivation=json.loads((COLLECTION/'endpoint-head-derivation.json').read_bytes())
@@ -73,13 +81,13 @@ def main():
         files += [HERE/'conditional_attention_endpoints.py', generated/'qwen35_decoder_finite.py', generated/'qwen35_dense_finite_runner.py']
     for p in files:
         if p.suffix=='.py': ast.parse(p.read_text(encoding='utf8'))
-    if not cached:
+    if not cached or mixers:
         for item in composition['tasks'][task]:
-            assert sha(generated/item['generated_name']) == item['generated_sha256']
+            assert sha(HERE/'composition-prepared'/task/item['generated_name']) == item['generated_sha256']
     hashes = {p.name: sha(p) for p in files}
     assert hashes['inspect_action_curve.py'] == '7277fade4e9b1cb49f825e4cb2fc54453c9ff3ce4859b20350aa2bd67ffaf3a6'
     assert hashes['inspect_extreme_endpoint.py'] == '8a72887a32bd11533486ddee6dc0d36b4980bfb77ed94eadc7a9a13f031b36d5'
-    if gdn:
+    if gdn or mixers:
         candidate=dict(kind='conditional_gdn',builder=remote+'/conditional_gdn_candidate.py',
             gdn=remote+'/candidate/qwen35_gdn_finite.py',fla=remote+'/candidate/finite_fla_gpu.py',
             context=remote+'/conditional_gdn_context.py',phase_directory=remote+'/results',
@@ -89,6 +97,20 @@ def main():
                 ('conditional_gdn_candidate.py','conditional_gdn_context.py','conditional_conv_windows.py',
                  'tiled_conditional_memory.py','conditional_window_memory.py','native_conditional_queries.py',
                  'qwen35_gdn_finite.py','finite_fla_gpu.py')])
+        if mixers:
+            verified=json.loads((HERE/'original-fa-check.json').read_bytes())
+            library=compiled['remote_directory']+'/libfinite_conditional_research.so'
+            wrapper=str(Path(library).parent/'vendor_fa_finite_bf16_d256.py').replace('\\','/')
+            attention=dict(decoder=remote+'/candidate/qwen35_decoder_finite.py',
+                runner=remote+'/candidate/qwen35_dense_finite_runner.py',
+                library=library,library_sha256=compiled['library_sha256'],wrapper=wrapper,
+                files=[dict(path=remote+'/candidate/'+item['generated_name'],sha256=item['generated_sha256'])
+                       for item in composition['tasks'][task]])
+            attention['files'] += [dict(path=remote+'/conditional_attention_endpoints.py',sha256=hashes['conditional_attention_endpoints.py']),
+                dict(path=library,sha256=compiled['library_sha256']),
+                dict(path=wrapper,sha256=verified['launch']['candidate']['vendor_fa_finite_bf16_d256.py'])]
+            candidate=dict(kind='conditional_mixers',attention=attention,gdn=candidate,
+                           files=attention['files']+candidate['files'])
     elif endpoint:
         head=json.loads((COLLECTION/'layer-suboperations-textcraft-v2-observations/rank0.json').read_bytes())['owners']['qwen35_answer_finite']
         candidate=dict(kind='endpoint_head', seed=remote+'/endpoint_head_seed.py', head_owner=head,
@@ -119,11 +141,11 @@ def main():
             ((42 if b['primary'] else 1)+b['query_rounds']) for b in batches[rank::2]) for rank in range(2)],
         DT_calls_per_rank=6 if cached else 12,
         candidate_kind=args.candidate_kind,
-        derivation_sha256=sha(COLLECTION/'endpoint-head-derivation.json') if endpoint else None)
+        derivation_sha256=sha(COLLECTION/'conditional-mixers-derivation.json') if mixers else sha(COLLECTION/'endpoint-head-derivation.json') if endpoint else None)
     (output_folder/('comparison-inputs-'+task+'.json')).write_text(json.dumps(plan,indent=2)+'\n',encoding='utf8')
     subprocess.run(SSH+['mkdir','-p',remote+'/candidate'],check=True,timeout=30)
     for p in files:
-        destination = remote+('/candidate/' if generated is not None and p.parent == generated else '/')+p.name
+        destination = remote+('/candidate/' if p.parent in generated_directories else '/')+p.name
         subprocess.run(SCP+[str(p),SSH[-1]+':'+destination],check=True,timeout=45)
     subprocess.run(SCP+[str(output_folder/('comparison-inputs-'+task+'.json')),SSH[-1]+':'+remote+'/comparison-inputs.json'],check=True,timeout=45)
     commit = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()

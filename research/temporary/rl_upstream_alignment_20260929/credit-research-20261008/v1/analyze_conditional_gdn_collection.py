@@ -1,4 +1,5 @@
 """Use the original collection analyzer, with frozen robust-tail identities."""
+import argparse
 import hashlib
 import json
 import math
@@ -12,7 +13,11 @@ from analyze_collection import analyze,ratio_bin
 
 
 def main():
-    folder=HERE/'conditional-gdn-collection-v1'
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--candidate-kind',choices=('conditional_gdn','conditional_mixers'),default='conditional_gdn')
+    args=parser.parse_args()
+    label=args.candidate_kind
+    folder=HERE/(label.replace('_','-')+'-collection-v1')
     inputs=folder/'comparison-inputs-textcraft.json'
     paths=[folder/('textcraft-rank'+str(i)+'.json') for i in range(2)]
     records=[json.loads(p.read_bytes()) for p in paths]
@@ -36,7 +41,7 @@ def main():
     spurious=[];missed=[]
     for key,old in known.items():
         point=measured[key]
-        d=point['fresh_conditional_gdn_d']
+        d=point['fresh_'+label+'_d']
         values=dict(traj_uid=key[0],packed_slot=key[1],token_id=old['token_id'],
             initial_state_sha256=old['initial_state_sha256'],
             previously_examined=old['previously_examined'],native_interval=old['native_interval'],
@@ -67,7 +72,7 @@ def main():
         by_index={b['index']:b for b in baseline['batches']}
         for batch in record['batches']:
             before=by_index[batch['index']]['variants']['original']['detail']['complete_attribution_seconds_with_diagnostics']
-            after=batch['variants']['conditional_gdn']['detail']['complete_attribution_seconds_with_diagnostics']
+            after=batch['variants'][label]['detail']['complete_attribution_seconds_with_diagnostics']
             times.append(dict(batch=batch['index'],width=batch['width'],original_seconds=before,
                 candidate_seconds=after,ratio=after/before))
     result['DT_cost']=dict(scope='Same saved B4 identities and original diagnostic timing boundaries; separate runs, first-use costs retained. Not native-only kernel or official training throughput.',
@@ -88,7 +93,7 @@ def main():
             native_ratio_bin=ratio_bin(q['fresh_native_single_d']),
             factual_logp=lf,
             original_implied_deleted_logp=lf-q['fresh_original_d'],
-            candidate_implied_deleted_logp=lf-q['fresh_conditional_gdn_d'],
+            candidate_implied_deleted_logp=lf-q['fresh_'+label+'_d'],
             native_deleted_logp=lf-q['fresh_native_single_d']))
     result['probability_bound_diagnostic']=dict(
         meaning='If d is interpreted as a deletion log-probability difference, implied log p_deleted=log p_factual-d must be <=0. A necessary probability property, not an invented numeric tolerance or a clipping repair.',
@@ -124,15 +129,19 @@ def main():
         old=previous_FA[q['traj_uid'],q['packed_slot']]
         assert old['fresh_original_d']==q['original_d']
         overlap.append(dict(traj_uid=q['traj_uid'],packed_slot=q['packed_slot'],
-            initial_state_sha256=q['initial_state_sha256'],GDN_d=q['candidate_d'],FA_d=old['fresh_conditional_d']))
+            initial_state_sha256=q['initial_state_sha256'],candidate_d=q['candidate_d'],FA_d=old['fresh_conditional_d']))
     result['existing_candidate_overlap']=dict(sources=FA_sources,original_robust_spurious_points=len(overlap),
         FA_resolved_tail=sum(q['FA_d']>=-math.log(2) for q in overlap),
-        GDN_resolved_tail=sum(q['GDN_d']>=-math.log(2) for q in overlap),
-        both_resolved_tail=sum(q['FA_d']>=-math.log(2) and q['GDN_d']>=-math.log(2) for q in overlap),
-        either_resolved_tail=sum(q['FA_d']>=-math.log(2) or q['GDN_d']>=-math.log(2) for q in overlap),
+        candidate_label=label,candidate_resolved_tail=sum(q['candidate_d']>=-math.log(2) for q in overlap),
+        both_resolved_tail=sum(q['FA_d']>=-math.log(2) and q['candidate_d']>=-math.log(2) for q in overlap),
+        either_resolved_tail=sum(q['FA_d']>=-math.log(2) or q['candidate_d']>=-math.log(2) for q in overlap),
         points=overlap,
         limitation='Descriptive paired overlap only; not a mixed estimator, per-token selection, prediction of a combined result or authorization to deploy either rejected candidate.')
-    result['conclusion']='Not accepted as an extreme-negative-credit repair: 12/18 robust spurious tails remain, both uniform misses remain outside the predicted tail, signed RISE point estimate worsens, and DT cost is about twice the baseline. MAS improvement alone does not establish the required repair. No AppWorld or held-out candidate run is launched from this result.'
+    result['conclusion']=('Not accepted as an extreme-negative-credit repair. '
+        +str(result['robust_diagnostic_points']['still_spurious_tail'])+'/'+str(len(spurious))
+        +' robust spurious tails remain; original uniform misses still outside predicted tail: '
+        +str(result['robust_diagnostic_points']['missed_tail_still_outside_tail'])
+        +'. Primary author curves and DT cost are reported independently; no AppWorld or held-out run or production deployment is automatic from this result.')
     result['candidate_accepted']=False
     result['production_modified']=False
     (folder/'textcraft-analysis.json').write_text(json.dumps(result,indent=2)+'\n')

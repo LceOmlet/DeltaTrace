@@ -1,5 +1,24 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 返回极端负信用：隔离组合 FA/GDN 事实背景，尚未验收
+
+PPO原debug现场仍按44文件的原SHA回执保存；原NaN未定位/未修复，不新增回放。
+正式TextCraft/AppWorld均停止，不恢复检查点。单改FA或GDN都未通过冻结集合质量
+检查；现仅检验同一事实条件背景在两个序列混合算子同时生效的完整构造，不逐
+token选输出、不裁剪/补倍率，不增加训练的DT调用次数，Q/V/A及原PPO不变。
+
+组合仅复用已数值检查的两条私有owner seam。GDN绑定保留实际attribute代码
+对象与全部非GDN globals对象，避免重新导入runner时静默换回默认FA回调；
+这项身份断言在实际worker执行。原primitive源码及原FA/FLA dtype阈值不变，
+不将局部容差通过当作完整归因修复，也不创造整网有限标量容差。
+
+PID3176017/birth1791494006.66，物理GPU4/5，启动Git基线759100f4，
+实际执行文件逐SHA在launch记录。仅TextCraft冻结32条/16状态及13条额外尾轨迹，
+每rank6次DT、84次原作者native评测前向；原基线和单删结果复用。零optimizer、
+零rollout、零恢复，原1800秒worker预算。阶段日志/完整signed向量继续保存；
+结果未完成前不部署、不自动跑AppWorld/测试集。推导依据、实际phase及版本
+见results_conditional_mixers_20261009.json，既有候选的失败结果保持保留。
+
 ## 2026-10-09 条件 GDN 冻结集合检查完成；候选不足以修复，不部署
 
 实际运行的12个Python源码与提交5d9164eda86ab308fb4b0fc65f76e0e9dce38a9f的Git blob逐字节SHA一致；

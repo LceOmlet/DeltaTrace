@@ -33,6 +33,19 @@ def make_candidate(original, spec, environment):
     """Load explicit patched owner modules; keep the original model and GDN."""
     for item in spec['files']:
         assert sha(item['path']) == item['sha256']
+    if spec.get('kind') == 'conditional_mixers':
+        attention, attention_record = make_candidate(original, spec['attention'], environment)
+        module = load_module('research_conditional_gdn_builder', spec['gdn']['builder'])
+        candidate, record = module.make_candidate(attention, spec['gdn'], environment)
+        assert candidate.conditional_attention
+        assert candidate.finite_fa is attention.finite_fa
+        assert candidate.attribute.__func__.__code__ is attention.attribute.__func__.__code__
+        assert (candidate.attribute.__func__.__globals__['attention_finite_pullback']
+                is attention.attribute.__func__.__globals__['attention_finite_pullback'])
+        record.update(kind='conditional_mixers', attention_owner=attention_record,
+            same_FA=False, same_native_forward=True,
+            new_semantics='Factual conditional context in both existing sequence-mixer seams; unchanged pointwise/head rules and native model. No per-token choice or output correction.')
+        return candidate, record
     if spec.get('kind') == 'endpoint_head':
         # Only the new finite seed is local. The actual head, runner, FA/FLA,
         # model, author metric and all native execution remain their owners.
