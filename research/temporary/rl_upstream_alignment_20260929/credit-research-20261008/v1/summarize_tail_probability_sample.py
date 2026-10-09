@@ -28,9 +28,9 @@ def weighted_quantiles(values,weights):
     if not values:
         return None
     ordered = sorted(zip(values,weights))
-    result = {}
-    for p in (0,.25,.5,.75,1):
-        cut = p*sum(weights)
+    result = {'0':ordered[0][0], '1':ordered[-1][0]}
+    for p in (.25,.5,.75):
+        cut = p*math.fsum(weights)
         total = 0
         for value,weight in ordered:
             total += weight
