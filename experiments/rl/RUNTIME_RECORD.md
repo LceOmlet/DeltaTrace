@@ -1,5 +1,44 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 新稳定数值版 TextCraft 完整正式预算已部署
+
+最新人类要求：不得只跑四次更新/发烟/限制epoch，必须用新稳定版。部署源e3292033
+复用原正式launcher→VERL main_ppo→原TaskRunner/RayPPOTrainer，未挂诊断trainer/worker、
+first-iteration退出、首更新hold或训练timeout。唯一entry源码差为历史c9cd147/fc2e6c2
+文字标签改为实际fla-early-output-scale-20261009-v1；不是新增训练/环境实现。
+
+数值源26bef6c8；实际CPU导入GDN解析到该release的textcraft文件，SHA7c06d5e0…，
+其余六项TextCraft数值文件与接受的部署回执一致。原VERL upstream20bd331、actor
+SHA3a65e173…、corefc2f992b…、fsdp_workers e5eb4afc…、mainfc0c5480…均绑定原正式源。
+实际readout SHA814cfe92…、producer2aa5f552…；运行环境JSON SHA4ff00780…与原冻结配置相同。
+原FLA容差验收复用results_fla_early_output_scale_deployment_20261009.json，不改阈值，
+不把启动配置核对称为新GPU容差/整网/PPO/归因质量验收。
+
+物理GPU2/3，driver982372/出生1791553809.84，启动Unix1791553810.2115035；
+实际两worker987808/989860、出生1791553850.00/1791553867.51。
+输出runs/textcraft-formal-stable-20261009-v1，root formal-training/active-training/active-source
+均已指向本次记录；旧作业按实际终止状态保留，AppWorld未重启。原官方TextCraft环境
+3313391仍复用，不重配/重下载/清缓存。source记录只保留必要的原显式环境配置，
+没有把继承的整机环境变量写入版本证据；此项记录整理不改变运行进程。
+
+正式原30 epoch，trainer原生显示总330次迭代；每次32组×8条轨迹，全局64条optimizer
+minibatch因此每次四个optimizer更新，不能把此前四次诊断更新说成正式预算。
+LoRA8/16、actor/DT每卡B4/双卡B8、32768、官方entropy .001/dualclip3及其余参数未变，
+CPU逐项配置比较仅三个输出目录不同；resume_mode=disable，从基础权重启动。
+
+21:53:10观察：两worker已进入原generate_sequences，0/330、首轮交互1/30；尚无本次
+完整更新或新checkpoint。没有OOM/Traceback/skip-step记录。主机可用917503254528字节，
+单worker PSS约9.94/9.18GB。Ray原metrics exporter连线警告保留，训练仍推进；
+不由此改依赖/服务或宣称无任何异常。物理VRAM原样留在观察JSON，RSS不按fork直接求和。
+21:56:01后续观察：首个原环境轮次完成136.32秒，已进入第2/30轮，完整迭代仍0/330。
+两worker继续generate_sequences，物理GPU2/3为49685/49467MiB，主机可用916867756032字节；
+GDN解析路径/SHA复查未变。没有因首轮完成而停止，也没有改采样/更新配置。
+后续部署脚本仅补显式环境记录过滤及原环境JSON SHA校验，不是运行中数值补丁。
+已接受修复解决特定FP16范围问题，不宣称未复现的历史PPO NaN或所有极端归因误差修好。
+真实单删除支持的负信用保持，不做幅度纠偏。完整来源、SHA和scope见
+results_textcraft_formal_stable_20261009.json；旧“两正式任务停止”仅属于先前日期状态。
+
+
 ## 2026-10-09 原生端点差定位到 Linear；原 dtype 默认检查通过，不部署数值修补
 
 本轮是进展：继原48条集合观察，只捕获原B4索引0/1/10/11（16轨迹、12状态），

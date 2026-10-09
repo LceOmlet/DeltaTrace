@@ -42,6 +42,8 @@ def put(p,x):
 base=root/'runs/direct-target-prefix-runtime-20261007-v1/textcraft/textcraft-dt/source.json'
 assert sha(base)=='2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52'
 s=json.loads(base.read_bytes()); old_entry=Path(s['environment']['DT_ENTRY_ROOT']); entry=out/'entry'
+runtime_configuration=Path(s['environment']['DT_ENVIRONMENT_JSON'])
+assert sha(runtime_configuration)==s['candidate_environment']['sha256']
 if (out/'deployment.json').exists():
     previous=json.loads((out/'deployment.json').read_bytes())
     print(json.dumps({'already_deployed':True,'receipt':previous})); raise SystemExit(0)
@@ -124,6 +126,7 @@ physical=subprocess.check_output(['mx-smi'],text=True)
 assert not re.search(r'^\|\s*[23]\s+\d+\s+\S',physical,re.M),'Physical2/3 occupied'
 (out/'before-physical.txt').write_text(physical)
 metadata=dict(version=version,numerical_source_commit=__NUMERIC_COMMIT__,deployment_source_commit=__COMMIT__,
+    runtime_configuration_path=str(runtime_configuration),runtime_configuration_sha256=sha(runtime_configuration),
     base_source_path=str(base),base_source_sha256=sha(base),upstream_commit=s['upstream_commit'],
     numeric_files={p:dict(sha256=h,resolved=str(Path(p).resolve())) for p,h in numeric.items()},
     verified_deployment_receipt=__VERIFICATION__,native_owner_files=owner_files,
@@ -146,7 +149,8 @@ metadata.update(pid=p.pid,birth=psutil.Process(p.pid).create_time(),started_unix
                 devices=[2,3],argv=argv,log=str(out/'train.log'),formal_deployment=True,
                 status='submitted_initializing_not_yet_update_verified')
 put(out/'deployment.json',metadata)
-source=dict(s,unix=time.time(),environment=env,pythonpath=env['PYTHONPATH'],entry=str(entry),
+recorded_env={k:env[k] for k in s['environment'] if k in env}
+source=dict(s,unix=time.time(),environment=recorded_env,pythonpath=env['PYTHONPATH'],entry=str(entry),
     startup_options=pre['options'],actual_CPU_imports=pre['actual_CPU_imports'],prepared_only=False,
     numerical_runtime=version,accepted_numeric_files=metadata['numeric_files'],
     checkpoint_restore_requested=False,resume_mode='disable',fresh_base_model=True,
