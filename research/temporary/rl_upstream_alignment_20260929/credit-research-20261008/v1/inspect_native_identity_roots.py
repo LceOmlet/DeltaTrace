@@ -7,6 +7,7 @@ raises before the finite seed; it never supplies fabricated credit or a
 replacement model result. Descriptive differences are not a new tolerance.
 """
 import gc
+from contextlib import nullcontext
 import inspect
 import json
 import os
@@ -42,7 +43,7 @@ def pair_difference(value, row, length=None):
     return result
 
 
-def make_worker():
+def make_worker(*, operator_observer=None, batch_indices=None):
     import ray
     from verl.single_controller.base.decorator import Dispatch, register
     from verl.workers.fsdp_workers import ActorRolloutRefWorker
@@ -157,14 +158,21 @@ def make_worker():
                     # Only the diagnostic perturbation changes. Both native
                     # endpoints now carry the same exact original IDs.
                     reference=factual.clone()
-                    return old_trace(owner,reference,factual,*args,**kwargs)
+                    observation = (operator_observer(runner,out,active)
+                                   if operator_observer is not None else nullcontext())
+                    with observation:
+                        return old_trace(owner,reference,factual,*args,**kwargs)
 
                 runner.answer=stop_before_seed
                 reward_readout.trace_token_attribution=trace
-                for pair_index in range(0,len(spec['batches']),2):
+                indices = tuple(range(len(spec['batches']))) if batch_indices is None else tuple(batch_indices)
+                assert len(indices)%2 == 0 and len(set(indices)) == len(indices)
+                assert all(0 <= i < len(spec['batches']) for i in indices)
+                record['original_batch_indices'] = indices
+                for pair_index in range(0,len(indices),2):
                     if time.perf_counter()-started > 1800:
                         raise RuntimeError('Original bounded diagnostic wall budget reached; no retry')
-                    index=pair_index+self.rank
+                    index=indices[pair_index+self.rank]
                     batch=spec['batches'][index]
                     selected=[entries[uid] for uid in batch['uids']]
                     selected += [selected[-1]]*(4-len(selected))
@@ -174,7 +182,7 @@ def make_worker():
                         native=torch.load(e['native']['path'],map_location='cpu',weights_only=False)
                         rows.append(next(r for r in native['rows'] if str(r['traj_uid'])==e['traj_uid']))
                         del native
-                    active=dict(index=index,rows=rows)
+                    active=dict(index=index,rows=rows,rank=self.rank)
                     save('native_identity_root_begin',batch=index)
                     try:
                         producer.attribute_episodes([[r['row'] for r in rows]],[0.0])
