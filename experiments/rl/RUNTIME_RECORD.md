@@ -1,5 +1,34 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 当前正式新稳定版增加原始逐 token 诊断记录，数值未变
+
+同一正式PID982372/出生1791553809.84，物理2/3、原330次完整迭代，首轮已完成。
+数值源仍26bef6c8、GDN7c06d5e0…；两worker实际原RPC确认后继续第二轮DT。
+当前DirectActionTargetReadout原814cfe92…遗漏原始向量落盘；旧辅助读出的记录不能
+冒充当前action-target记录。因此仅在既有DT返回/恢复CPU向量后添加保存接口，完整
+AST去掉这一个helper/调用后与原文件一致，不改Q/V/A、白化、官方PPO/vLLM或参数。
+默认未启用时不保存，不增加模型/DT/optimizer调用，不传observer干预既有加速路径。
+
+诊断源bdc8cd6c、实际客户端修正b210fbc0。初次client仅用旧通用entry环境，原Ray
+签名校验在提交前报too many positional arguments；没有worker修改，失败原文保存。
+第二次启动前继承当前FORMAL/source.json实际environment，原execute_with_func_generator
+成功于Unix1791558877.3024504完成两worker接入，未绕过签名检查、未改Ray或重启训练。
+原module文件仍814cfe92…，活动trajectories/helper方法代码源为receipts/
+direct-credit-records-20261009-v1/reward_readout.py SHA2609d93f…；不得只看原module
+SHA而漏掉此已完成运行时覆盖。源和每rank PID/出生/目录已写入三份远端authority。
+冻结FORMAL/source.json SHA1c08b57b…未变。后续继续/重启须读取本覆盖记录，不能
+把原入口磁盘未变误当作诊断方法未接入，也不能把这项记录扩展当数值核心新版本。
+
+CPU真实保存B4读回值/dtype完全相同，0.666MB约0.086秒，零CUDA初始化；范围仅保存。
+Unix1791558985.6791723实际第二轮已观察28个记录文件、112条原rank记录、12970564字节，
+包含原DP padding，不当作112独立轨迹。原IDs、source/target/policy掩码、位置映射、
+逐source原d、真实奖励及端点logp已保存；CPU检查有限性与位置对应，无模型/DT计算。
+原日志六个最近写入约0.0147–0.0911秒/B4，只是实际样本，不冒充全面性能验收。
+首轮没有保存的原始向量仍缺失，未补造。记录不是极端归因已准确/长期稳定的证据。
+详细source/SHA、失败和成功边界、CPU及真实数据范围见
+results_textcraft_passive_credit_records_20261009.json。AppWorld仍停止，不恢复检查点。
+
+
 
 ## 2026-10-09 首个完整正式迭代已完成，继续原330次预算
 

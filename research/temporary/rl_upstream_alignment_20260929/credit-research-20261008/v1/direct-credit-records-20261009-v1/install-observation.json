@@ -1,0 +1,49 @@
+{
+  "unix": 1791558378.992804,
+  "query_alive": false,
+  "result": {
+    "started_unix": 1791558322.1824117,
+    "pid": 1453237,
+    "birth": 1791558321.41,
+    "complete": false,
+    "script_sha256": "1995705d799e4748d67973bc96f14dc6ff764d907dd8dec7a78fe6502ae5019e",
+    "formal_pid": 982372,
+    "formal_birth": 1791553809.84,
+    "scope": "Attach passive owner logging at the original VERL worker RPC boundary.",
+    "source_commit": "bdc8cd6c"
+  },
+  "log": "2026-10-09 23:05:22,203\tINFO worker.py:1821 -- Connecting to existing Ray cluster at address: 10.200.112.15:58837...\n2026-10-09 23:05:22,215\tINFO worker.py:2007 -- Connected to Ray cluster.\nTraceback (most recent call last):\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-credit-records-20261009-v1/install_live_records.py\", line 96, in <module>\n    refs = [ray.get_actor(x['name'], namespace=x['namespace']).execute_with_func_generator.remote(install_worker)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/actor.py\", line 685, in remote\n    return self._remote(args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/auto_init_hook.py\", line 22, in auto_init_wrapper\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py\", line 422, in _start_span\n    return method(self, args, kwargs, *_args, **_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/actor.py\", line 888, in _remote\n    object_refs = invocation(args, kwargs)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/actor.py\", line 868, in invocation\n    return dst_actor._actor_method_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/actor.py\", line 2143, in _actor_method_call\n    list_args = signature.flatten_args(function_signature, args, kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_common/signature.py\", line 130, in flatten_args\n    validate_args(signature_parameters, args, kwargs)\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_common/signature.py\", line 101, in validate_args\n    raise TypeError(str(exc)) from None\nTypeError: too many positional arguments\n",
+  "records": [],
+  "workers": [
+    {
+      "pid": 987808,
+      "phase": "ray::WorkerDict.actor_rollout_generate_sequences"
+    },
+    {
+      "pid": 989860,
+      "phase": "ray::WorkerDict.actor_rollout_generate_sequences"
+    }
+  ],
+  "manifest_keys": {
+    "active-source.json": [
+      "unix",
+      "manifest",
+      "jobs",
+      "numerical_capacity_evidence",
+      "observed_status_unix",
+      "last_status_observed_unix",
+      "accepted_fla_seed_range_overlay",
+      "accepted_fla_early_output_scale_overlay"
+    ],
+    "active-training.json": [
+      "manifest",
+      "jobs",
+      "unix"
+    ],
+    "formal-training.json": [
+      "manifest",
+      "jobs",
+      "unix"
+    ]
+  }
+}
