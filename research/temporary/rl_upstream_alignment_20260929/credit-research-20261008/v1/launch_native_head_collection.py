@@ -21,7 +21,8 @@ out = Path(directory)
 root = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 assert task in ('textcraft', 'appworld')
 assert not (out/'launch.json').exists(), 'Do not duplicate this diagnostic'
-hashes = json.loads((out/'native-head-source-hashes.json').read_bytes())['files']
+launch_source = json.loads((out/'native-head-source-hashes.json').read_bytes())
+hashes = launch_source['files']
 for name, digest in hashes.items():
     assert sha(out/name) == digest
     if name.endswith('.py'):
@@ -31,6 +32,11 @@ expected = dict(textcraft='2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbed
     appworld='58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0')
 assert sha(source_path) == expected[task]
 source = json.loads(source_path.read_bytes())
+overlay = launch_source.get('accepted_fla_seed_range_overlay')
+if overlay is not None:
+    path = Path(source['dt_root'])/'clean/qwen35/qwen35_gdn_finite.py'
+    assert sha(path) == overlay['sha256']
+    overlay = dict(overlay, actual_path=str(path), resolved_path=str(path.resolve()))
 physical = subprocess.run(['mx-smi'], capture_output=True, text=True, check=True).stdout
 assert not re.search(r'^\|\s*[45]\s+\d+\s+\S', physical, re.M), 'Research devices occupied'
 (out/'before-physical.txt').write_text(physical)
@@ -55,7 +61,10 @@ with (out/'driver.log').open('xb') as stream:
     process = subprocess.Popen(argv, env=env, cwd=out, stdout=stream,
         stderr=subprocess.STDOUT, start_new_session=True)
 receipt = dict(task=task, pid=process.pid, birth=psutil.Process(process.pid).create_time(),
-    launched_unix=time.time(), devices=[4, 5], base_commit='1a7676c6',
+    launched_unix=time.time(), devices=[4, 5],
+    base_commit=launch_source.get('diagnostic_source_commit','1a7676c6'),
+    original_initializer_base_commit='1a7676c6',
+    accepted_fla_seed_range_overlay=overlay,
     uncommitted_diagnostic_files_bound_by_sha256=hashes, argv=argv,
     source_path=str(source_path), source_sha256=sha(source_path),
     model_precision_and_training_config='unchanged; passive FP32 head reference only',
