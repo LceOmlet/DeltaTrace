@@ -1,5 +1,31 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 新稳定版第五个完整正式迭代返回，第六次采样进行
+
+同一正式TextCraft PID982372/出生1791553809.84、物理2/3；当前11项磁盘模块身份
+与此前两真实worker实际导入回执逐SHA一致，仍为fla-early-output-scale-20261009-v1，
+数值源26bef6c8、GDN SHA7c06d5e0…、source SHA1c08b57b…；无回退或研究候选部署。
+原330完整迭代预算继续，现5/330并进入第六次采样；没有四次更新截停或检查点恢复。
+LoRA8/16、actor/DT每卡B4/双卡B8、32768保持。原step5：reward0.625、grad_norm0.060、
+entropy0.639；gen1877.866、old_log_prob120.446、ref105.028、adv187.346（含DT）、
+update_actor437.737、step2728.885秒；不是在step时间之外重复加DT。
+两worker及TaskRunner所查错误标记为空；采样phase物理GPU50090/50132MiB，
+worker PSS16.63/17.28GB，完整cgroup/物理/主机快照保留。AppWorld正式仍停。
+
+第五次DT完整40个B4文件、160原rank行/唯一UID；与原报告的UID和路径集合均一致。
+两卡DT184.214/184.219秒；CPU原信用owner复核0.211秒、必要概率边界普查0.395秒。
+214138个source中1072处违反相对保存事实分数的归一化概率必要边界，涉及83条轨迹、
+28/32初始状态；c>2尾部53个位置中16处越界，完整分层和所有位置保留。
+本轮最小raw A=-25.181581、d=-3.265056，response743/input1058/token13784；
+事实联合target logp=-0.135315，隐含单删logp=+3.129741（概率约22.87），
+因此该DT数值不能直接视作该事实分数下精确的单删概率比。只是必要边界核对，
+不是native单删真值、召回/准确率、内核容差或训练退化证据；不据此裁剪、倍率纠偏
+或替换Q/V。原数值修复验收与极端归因准确性问题分开，尚未声称后者已解决。
+本次生产源码/方法/配置改动0，新增模型/DT/optimizer调用0，仅更新同PID状态。
+详细版本、官方验收绑定、第五轮原指标与完整保存数据见
+results_textcraft_fifth_formal_iteration_20261010.json及current_runtime最新字段。
+
+
 ## 2026-10-10 正式保存target/source接口核对完成，无生产修改
 
 复用原PackedAnswerTargets（实际SHA d47333ea…）在CPU重读第二/三/四次正式DT的
