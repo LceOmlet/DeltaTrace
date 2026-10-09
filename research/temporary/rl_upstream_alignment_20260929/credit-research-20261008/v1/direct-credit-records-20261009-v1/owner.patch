@@ -1,9 +1,6 @@
 --- baseline/reward_readout.py
 +++ recording/reward_readout.py
-@@ -448,6 +448,34 @@
-             stats['min'] = min(stats['min'], float(value.min()))
-             stats['max_abs'] = max(stats['max_abs'], float(value.abs().max()))
- 
+@@ -450,0 +451,28 @@
 +    def _record_joint_dt_batch(self, batch, detail):
 +        """Persist returned CPU data only; no model, DT, or credit computation."""
 +        directory = getattr(self, '_diagnostic_directory', None)
@@ -32,14 +29,5 @@
 +            path=str(destination), bytes=destination.stat().st_size,
 +            trajectories=len(rows), seconds=time.perf_counter()-started)), flush=True)
 +
-     @torch.no_grad()
-     def trajectories(self, rows: list[dict[str, Any]]) -> list[dict[str, torch.Tensor]]:
-         started = time.perf_counter()
-@@ -531,6 +559,7 @@
-                     factual_target_logp=audit.get('factual_target_logp'),
-                     reference_target_logp=audit.get('reference_target_logp'),
-                 ))
+@@ -533,0 +562 @@
 +            self._record_joint_dt_batch(batch, detail)
-             print(f'[DT direct joint minibatch] trajectories={len(batch)} length={length} '
-                   f'batch={report["finite_trace_calls"]}/{planned} '
-                   f'seconds={detail.get("complete_attribution_seconds_with_diagnostics")}', flush=True)
