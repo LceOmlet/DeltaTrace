@@ -1,5 +1,23 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 AppWorld 新数值版与既有显存修复的组合检查已启动，未部署正式入口
+
+TextCraft 正式PID982372/出生1791553809.84继续物理2/3，已完成2/330，第三次采样；
+接受数值源26bef6c8/GDN7c06d5e0…、LoRA8/16及每卡B4未变，不恢复checkpoint。
+AppWorld原默认runner628006b6…未继承先前已验证的consumed-cache-release runner7d6f57f6…；
+该内存candidate当前已通过既有symlink继承新GDN3f51f5f7…，CPU实际导入已核对。
+历史32k容量和新数值回放分别验收，尚未组合验证；不把两项独立结果合称组合通过。
+
+原生VERL worker容量检查源2c9daaed，PID1746650/出生1791561149.33，物理4/5。
+直接调用原AsyncActorRolloutRefWorker、官方异步vLLM初始化/休眠及compute_dt_token_advantages，
+无worker子类、复制forward/DT/PPO、rollout、optimizer或checkpoint恢复。
+仅一次精确32768 B8和原失败B8，每rank B4；扩展观测构造仅为存储stress，非自然任务或信用准确性。
+CPU原padding/ID/mask往返已通过，实际worker导入/组合显存仍待本次结果；正式AppWorld继续停止。
+新数值FA/FLA原容差验收沿用已有回执，不自造QVA跨旧数值版本的容差或PPO两次更新标准。
+详情：credit-research-20261008/v1/appworld-native-capacity-launch-20261009.json、
+appworld-memory-stable-prepared-imports-20261009.json，远端receipts/appworld-memory-stable-composition-20261009-v1。
+
+
 ## 2026-10-09 第二个完整正式迭代已完成，第三次采样继续
 
 上一goal轮完成全请求原始记录审计，是progress。本轮核实同一新稳定版正式PID
