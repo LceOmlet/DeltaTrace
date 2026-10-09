@@ -1,0 +1,430 @@
+FILE qwen35_dense_finite_runner /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py SHA 628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f
+1:"""Current DT finite propagation through the real Qwen3.5 dense FA/FLA model.
+2:
+3:Native target rows are the default; full output rows remain an explicit option.
+4:Shared controller for full versus native-selected output rows. All finite
+5:mathematics is imported unchanged. This path currently requires unpadded equal
+6:length endpoints; it does not claim variable-length multi-example acceptance.
+7:"""
+8:import copy
+9:import time
+10:from contextlib import contextmanager
+11:from collections.abc import Mapping
+12:import torch
+13:from flash_attn import flash_attn_func,flash_attn_varlen_func
+14:from transformers.integrations.flash_attention import flash_attention_forward
+15:from qwen35_answer_finite import FiniteAnswerOps,categorical_head_logits,selected_target_log_probs
+16:from qwen35_decoder_finite import NativeDecoderCapture,FiniteBoundaryOps,attention_finite_pullback,decoder_finite_pullback
+17:from qwen35_gdn_finite import NativeGDNCapture,gdn_finite_pullback
+18:from native_dense_attention_capture import NativeDenseAttentionCapture
+19:from native_attention_capture import copy_capture_tensor
+20:from native_target_logit_rows import NativeTargetLogitRows
+21:from vendor_fa_finite_bf16_d256 import RightPaddedLengths
+22:
+23:
+24:def _copy(value,device,*,pinned_host=False):
+25:    if isinstance(value,torch.Tensor):
+26:        # Native position IDs may be expanded zero-stride views. Such views
+27:        # cannot be copy_ destinations; materialize their actual values before
+28:        # using the existing stride-preserving pinned capture interface.
+29:        if pinned_host and any(n>1 and stride==0 for n,stride in zip(value.shape,value.stride())):
+30:            value=value.contiguous()
+31:        return (copy_capture_tensor(value,device,preserve_strides=True,pinned_host=True)
+32:                if pinned_host else value.detach().to(device,copy=True))
+33:    if isinstance(value,tuple):return tuple(_copy(v,device,pinned_host=pinned_host) for v in value)
+34:    if isinstance(value,list):return [_copy(v,device,pinned_host=pinned_host) for v in value]
+35:    if isinstance(value,dict):return {k:_copy(v,device,pinned_host=pinned_host) for k,v in value.items()}
+36:    if value is not None and not isinstance(value,(str,int,float,bool)):raise TypeError(type(value))
+37:    return value
+38:
+39:
+40:def _token_effect(m,x):
+41:    # The final contraction is independent across tokens. Bound temporary
+42:    # FP64 storage instead of materializing several full B*T*H tensors.
+43:    tokens=max(1,4*1024*1024//(m.shape[0]*m.shape[-1]))
+44:    return torch.cat([(m[:,start:start+tokens].double()*
+45:        (x[1::2,start:start+tokens].double()-x[0::2,start:start+tokens].double())).sum(-1)
+46:        for start in range(0,m.shape[1],tokens)],dim=1)
+47:
+48:
+49:def _effect(m,x):return float(_token_effect(m,x).sum())
+50:
+51:
+52:def _relative_l2(actual,reference,*,deferred=False):
+53:    # Diagnostic only: stream the same error/reference squared sums. This
+54:    # statistic must not create the largest live tensors in a training step.
+55:    tokens=max(1,4*1024*1024//(actual.shape[0]*actual[0,0].numel()))
+56:    squares=torch.zeros(2,device=actual.device,dtype=torch.float64)
+57:    for start in range(0,actual.shape[1],tokens):
+58:        a=actual[:,start:start+tokens].float();r=reference[:,start:start+tokens].float()
+59:        squares[0]+=(a-r).square().sum(dtype=torch.float64)
+60:        squares[1]+=r.square().sum(dtype=torch.float64)
+61:    value=squares[0].sqrt()/squares[1].sqrt().clamp_min(1e-30)
+62:    return value if deferred else float(value)
+63:
+64:
+65:@contextmanager
+66:def _native_conv_initial_states_scope(layers,enabled):
+67:    """Set only the patched owner's execution option, then restore it."""
+68:    if not enabled:
+69:        yield
+70:        return
+71:    name='_deltatrace_native_conv_initial_states'
+72:    saved=[]
+73:    try:
+74:        for layer in layers:
+75:            if layer.block_type!='linear_attention':continue
+76:            module=layer.linear_attn
+77:            saved.append((module,name in vars(module),getattr(module,name,None)))
+78:            setattr(module,name,True)
+79:        yield
+80:    finally:
+81:        for module,had,value in reversed(saved):
+82:            if had:setattr(module,name,value)
+83:            else:delattr(module,name)
+84:
+85:
+86:
+87:def _pack_native_cached_suffix_rows(paired_ids,selection,provider):
+88:    """Transport original valid IDs/positions to HF's existing row mask API."""
+89:    starts=tuple(provider.prefix_lengths);lengths=tuple(provider.context_lengths)
+90:    if (len(starts)!=selection.batch or len(lengths)!=selection.batch
+91:            or max(starts)!=provider.prefix_length):
+92:        raise ValueError('Prepared row prefix metadata does not match the original targets.')
+93:    selected=selection.suffix_rows(starts,lengths)
+94:    width=selected.length;prefix_width=provider.prefix_length
+95:    ids=paired_ids.new_zeros((2*selection.batch,width))
+96:    suffix_mask=paired_ids.new_zeros(ids.shape)
+97:    full_mask=paired_ids.new_zeros((2*selection.batch,prefix_width+width))
+98:    for row,(start,length) in enumerate(zip(starts,lengths)):
+99:        count=length-start
+100:        ids[2*row:2*row+2,:count]=paired_ids[2*row:2*row+2,start:length]
+101:        suffix_mask[2*row:2*row+2,:count]=1
+102:        full_mask[2*row:2*row+2,:start]=1
+103:        full_mask[2*row:2*row+2,prefix_width:prefix_width+count]=1
+104:    positions=(torch.tensor(starts,device=paired_ids.device,dtype=torch.long)
+105:               .repeat_interleave(2)[:,None]+torch.arange(width,device=paired_ids.device)[None,:])
+106:    positions=positions.masked_fill(suffix_mask==0,0)
+107:    return ids,{'full_attention':full_mask,'linear_attention':suffix_mask},positions,selected
+108:
+109:
+110:def _compact_native_cached_kv(value,starts,lengths,prefix_width):
+FILE deltatrace_rollout /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/deltatrace_rollout.py SHA 2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e
+405:            self.runner, self.readout_tokenizer, **self.readout_options)
+406:        self.appworld_readouts = {}
+407:        self.direct_readout = None
+408:        if os.environ.get('DT_TARGET_SEMANTICS') == 'native_joint_action_target':
+409:            from reward_readout import DirectActionTargetReadout
+410:            self.direct_readout = DirectActionTargetReadout(
+411:                self.runner, self.readout_tokenizer, task=self.readout_options['task'],
+412:                packed_answer_targets=self.packed_answer_targets,
+413:                max_length=self.readout_options['max_length'], minibatch_size=4,
+414:                prefix_lease_factory=self.readout_options['prefix_lease_factory'])
+415:
+416:    def attribute_prepared_batch(self, data):
+417:        """Consume native DP rows whose complete returns were prepared globally."""
+418:        from agent_system.multi_turn_rollout.utils import to_list_of_dict
+419:        from verl import DataProto
+420:        rows = to_list_of_dict(data)
+421:        if data.meta_info.get('dt_target_semantics') == 'native_joint_action_target':
+422:            if self.direct_readout is None:
+423:                raise RuntimeError('The direct-action target producer was not enabled at startup')
+424:            values = self.attribute_episodes([rows], [0.0])[0]
+425:            return DataProto.from_dict(tensors={name: torch.stack([value[name] for value in values])
+426:                for name in ('dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates')})
+427:        complete_returns = data.batch['dt_complete_return'].cpu().tolist()
+428:        values = self.attribute_episodes([rows], [0.0], complete_returns=[complete_returns])[0]
+429:        return DataProto.from_dict(tensors={name: torch.stack([value[name] for value in values])
+430:            for name in ('dt_token_advantages', 'dt_q_estimates', 'dt_v_estimates')})
+431:
+432:    def attribute_episode(self, rows: list[dict[str, Any]], episode_return: float) -> list[dict[str, torch.Tensor]]:
+433:        return self.attribute_episodes([rows], [episode_return])[0]
+434:
+435:    def attribute_episodes(self, episodes: list[list[dict[str, Any]]], returns: list[float], *, complete_returns=None) -> list[list[dict[str, torch.Tensor]]]:
+436:        if len(episodes) != len(returns):
+437:            raise ValueError("episode and return counts differ")
+438:        if self.direct_readout is None and self.readout_options['task'] == 'AppWorld':
+439:            from reward_readout import EventRatioReadout
+440:            counts = {int(row['appworld_num_tests']) for rows in episodes for row in rows}
+441:            if len(counts) != 1:
+442:                raise ValueError('AppWorld DT batch must carry one native test denominator')
+443:            count = counts.pop()
+444:            if count not in self.appworld_readouts:
+445:                self.appworld_readouts[count] = EventRatioReadout(
+446:                    self.runner, self.readout_tokenizer, **self.readout_options,
+447:                    appworld_num_tests=count)
+448:            self.readout = self.appworld_readouts[count]
+449:        # Per-event official rewards in rows are authoritative; never multiply
+450:        # by episode_return again. RPC retains that upstream summary argument.
+451:        training = self.actor.training
+452:        self.actor.eval()
+453:        text_model = self.runner.model.model.language_model
+454:        attention = text_model.config._attn_implementation
+455:        try:
+456:            # Public HF dispatch switches the existing layers, without new
+457:            # weights. Restore the actor's selected backend afterwards; some
+458:            # hosts have a forward-only FA wheel, while MetaX's installed FA2
+459:            # backward is separately verified in its environment receipt.
+460:            text_model.set_attn_implementation('flash_attention_2')
+461:            # The pinned MetaX BF16 cached GDN dK exceeded FLA's original
+462:            # tolerance. The tested opt-in only casts native FLA operands;
+463:            # restore the original binding before VERL log-prob/PPO resumes.
+464:            if self.native_fla_fp16:
+465:                from accelerated.qwen35.native_fla_precision import native_fla_fp16
+466:                precision = native_fla_fp16(self.actor)
+467:            else:
+468:                precision = nullcontext()
+469:            with precision:
+470:                if self.direct_readout is not None:
+471:                    result = [self.direct_readout.trajectories(rows) for rows in episodes]
+472:                else:
+473:                    result = self.readout.episodes(episodes, complete_returns=complete_returns)
+474:            report = self.direct_readout.last_report if self.direct_readout is not None else self.readout.last_report
+475:            print('[DeltaTrace readout] ' + json.dumps(report), flush=True)
+476:            return result
+477:        finally:
+478:            text_model.set_attn_implementation(attention)
+479:            self.actor.train(training)
+FILE reward_readout /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/appworld/entry/reward_readout.py SHA b60251fdd3abd1687e5f8d6ca7415575acb0c88e60be30892a7d1513fe82c17c
+1:"""Complete-return targets traced by the official EOS DeltaTrace runner.
+2:
+3:This module does not score environments, reconstruct generated tokens, train a
+4:critic, or implement model/cache transitions. Qwen's original head estimates
+5:declared return categories; the official DT runner owns endpoint evaluation.
+6:"""
+7:from __future__ import annotations
+8:
+9:from dataclasses import dataclass
+10:import json
+11:import math
+12:import string
+13:import time
+14:from typing import Any
+15:
+16:import torch
+17:
+18:from counterfactual import episode_returns, return_credit_for_rows, reward_event_token_credit
+19:from deltatrace_credit import trace_token_attribution
+20:
+21:
+22:@dataclass(frozen=True)
+23:class RewardAlphabet:
+24:    task: str
+25:    values: tuple[float, ...]
+26:    meanings: tuple[str, ...]
+27:    invalid_action_penalty_coef: float = 0.0
+28:
+29:    @classmethod
+30:    def for_task(cls, task: str, max_steps: int = 15,
+31:                 invalid_action_penalty_coef: float = 0.0, *,
+32:                 appworld_num_tests: int | None = None) -> 'RewardAlphabet':
+33:        if task == 'AppWorld':
+34:            # The selected LOOP training benchmark returns a test-pass fraction.
+35:            # Read the denominator from its native eval_result.num_tests; never
+95:            raise ValueError('Return query must refer to a current step inside the rollout horizon')
+96:        legend = '; '.join(f'{label}: {meaning}' for label, meaning in zip(self.labels(), self.meanings))
+97:        reward_rule = ('Each executed interaction costs -0.1; solving the single-box puzzle adds 11 '
+98:                       'on that interaction and ends the episode. ' if self.task == 'Sokoban' else
+99:                       'Successful completion gives 10 once; all other interactions give 0. ')
+100:        if self.task == 'AppWorld':
+101:            reward_rule = (
+102:                'At the actual episode end, the native LOOP task evaluator returns the fraction '
+103:                'of official tests that pass, including when the interaction or context budget '
+104:                'ends the episode. Earlier interactions give no intermediate reward. '
+105:                'The training benchmark has no missing-code or execution-error reward penalty. '
+106:            )
+107:        elif self.task == 'SkyRL-SQL':
+108:            reward_rule = (
+109:                'The native SQL environment gives no intermediate reward. At its final '
+110:                'submission or interaction limit it gives -1 for invalid answer format, '
+111:                '0 for an incorrect query result, or 1 for a query result matching the ground truth. '
+112:                'Exhausting the input budget before that scored step adds no reward. '
+113:            )
+114:        elif self.task == 'TextCraft':
+115:            reward_rule = (
+116:                'The native crafting environment gives 1 when the requested goal is achieved '
+117:                'and ends the episode; all earlier interactions give 0. '
+118:            )
+119:        if self.invalid_action_penalty_coef:
+120:            reward_rule += (
+121:                f'The trainer additionally subtracts {self.invalid_action_penalty_coef:g} '
+122:                'if this CURRENT response is an invalid action under the task parser. '
+123:                'Subtract that current-response penalty once. Do not subtract penalties '
+124:                'for past or future responses. '
+125:            )
+126:        # Deliberately contains no sampled future observation, action, reward or
+127:        # stopping time. The same query is appended at both token endpoints.
+128:        policy = 'sampling tokens at temperature 1 with no top-k or top-p truncation. '
+129:        if sampling is not None:
+130:            policy = ('using these actual vLLM sampling parameters: '
+131:                      + json.dumps(sampling, sort_keys=True, separators=(',', ':')) + '. ')
+132:        query = (
+133:            '<|im_end|>\n<|im_start|>user\n'
+134:            f'Future cumulative return forecast for {self.task}. The preceding text is the exact agent prefix, '
+135:            'after generation of the current response has ended, possibly at its token limit. Do not treat this forecast request '
+136:            'as an environment action. Imagine the environment immediately processing that response as emitted and then continuing with '
+137:            'this same policy, ' + policy +
+138:            f'The current interaction is {current_step + 1}; the episode allows {max_steps} interactions. '
+139:            'Predict the SUM of all official rewards from the current interaction through the end '
+140:            'of this episode, with discount 1. Exclude earlier rewards. '
+141:            + reward_rule + 'Early stopping or exhaustion of the interaction/context budget adds no '
+142:            'extra reward; interactions that never occur contribute zero. '
+143:            f'Categories (label: cumulative return): {legend}. Return only the category label.'
+144:            '<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+145:        )
+146:        return tokenizer.encode(query, add_special_tokens=False)
+147:
+148:    def readout_token_budget(self, tokenizer: Any, max_steps: int,
+149:                             sampling: dict | None = None) -> int:
+150:        """Exact worst-case query plus target length, without a model call."""
+151:        return 1 + max(len(self.query_ids(tokenizer, current_step=i,
+152:                                          max_steps=max_steps, sampling=sampling))
+153:                       for i in range(max_steps))
+154:
+155:
+156:class EventRatioReadout:
+157:    """One complete-return contrast per response through the official runner.
+158:
+159:    DT's signed vector estimates the individual deletion log-prob effects in
+160:    PLAN.md. It is not a measured collection of leave-one-out forward passes.
+161:    All tokens keep their own signed entries; no span broadcast or O routing.
+162:    """
+163:
+164:    def __init__(self, runner: Any, tokenizer: Any, *, task: str, max_steps: int,
+165:                 packed_answer_targets: Any, max_length: int = 32768, minibatch_size: int = 4,
+166:                 invalid_action_penalty_coef: float = 0.0,
+167:                 appworld_num_tests: int | None = None, sampling: dict | None = None,
+168:                 prefix_lease_factory: Any = None):
+169:        if max_steps < 1:
+170:            raise ValueError('Horizon must be positive')
+171:        if tokenizer.eos_token_id is None:
+172:            raise ValueError('EOS attribution requires the checkpoint EOS token')
+173:        if minibatch_size < 1:
+174:            raise ValueError('DT minibatch_size must be positive')
+175:        self.minibatch_size = minibatch_size
+176:        self.runner, self.tokenizer = runner, tokenizer
+177:        self.sampling = sampling
+178:        self.alphabet = RewardAlphabet.for_task(task, max_steps, invalid_action_penalty_coef,
+179:                                              appworld_num_tests=appworld_num_tests)
+180:        self.max_steps, self.max_length = max_steps, max_length
+181:        self.packed_answer_targets = packed_answer_targets
+182:        self.prefix_lease_factory = prefix_lease_factory
+183:        self.last_report: dict[str, Any] = {}
+184:
+185:    def _prepare_episode(self, rows, report, returns):
+186:        events = [row for row in rows if bool(row['active_masks'])]
+187:        labels = self.alphabet.label_ids(self.tokenizer)
+188:        log_ratios = []
+189:        requests = []
+190:        report['nonzero_reward_events'] += sum(float(r['rewards']) != 0 for r in events)
+191:
+192:        for row_index, (row, value) in enumerate(zip(rows, returns)):
+193:            response = row['responses']
+194:            width = response.numel()
+195:            vector = torch.zeros(width, dtype=torch.float32)
+196:            log_ratios.append(vector)
+197:            if not bool(row['active_masks']):
+198:                continue
+199:            attention = row['attention_mask'].bool()
+200:            positions = attention[-width:].nonzero().flatten().tolist()
+201:            if positions != list(range(len(positions))):
+202:                raise ValueError('Original generated response must have right padding only')
+203:            prompt = row['input_ids'][:-width][attention[:-width]].cpu()
+204:            actions = response[:len(positions)].cpu()
+205:            if not torch.equal(row['input_ids'][-width:].cpu(), response.cpu()):
+206:                raise ValueError('Original rollout input and response token identities differ')
+207:            report['policy_tokens'] += len(positions)
+208:            report['actual_row_lengths'].append(prompt.numel() + actions.numel())
+209:            observed = self.alphabet.observed_index(value)
+210:            if not positions or value == 0:
+211:                continue
+212:            query = torch.tensor(self.alphabet.query_ids(
+213:                self.tokenizer, current_step=int(row['env_step']), max_steps=self.max_steps,
+214:                sampling=self.sampling,
+215:            ), device='cpu', dtype=torch.long)
+216:            target = torch.tensor([labels[observed]], device='cpu', dtype=torch.long)
+217:            length = prompt.numel() + actions.numel() + query.numel() + target.numel()
+218:            if length > self.max_length:
+219:                raise ValueError(f'Reward readout context {length} exceeds cap {self.max_length}; no silent truncation')
+220:            start, end = prompt.numel(), prompt.numel() + actions.numel()
+221:            # Only original current actions become EOS. Future observations,
+222:            # actions and actual stopping time never enter either prefix.
+223:            requests.append(dict(prompt=prompt, actions=actions, query=query, target=target,
+224:                case={'target_ids': target, 'prompt_length': length - 1},
+225:                start=start, end=end, vector=vector,
+226:                source_step=int(row['env_step']),
+227:                traj_uid=str(row['traj_uid']), observed_return=value,
+228:                context_tokens=length, query_tokens=query.numel(), row_index=row_index))
+229:        return log_ratios, requests
+230:
+231:    @torch.no_grad()
+232:    def episodes(self, episodes: list[list[dict[str, Any]]], *, complete_returns=None) -> list[list[dict[str, torch.Tensor]]]:
+233:        if complete_returns is None:
+234:            complete_returns = [episode_returns(rows) for rows in episodes]
+235:        if len(complete_returns) != len(episodes) or any(
+FILE qwen35_native_prefix_artifacts /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py SHA 37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4
+1:"""Exact native Qwen3.5 artifacts for explicitly supplied prefix leases.
+2:
+3:The HF model, FLA state operator and Transformers Cache retain ownership of
+4:all computation and state transitions. This file does not implement attention,
+5:recurrence, convolution, cache updates, attribution or a training scheduler.
+6:It is not enabled by the default DT runner or a production launcher.
+7:"""
+8:from dataclasses import dataclass
+9:
+10:import torch
+11:
+12:
+13:@dataclass
+14:class NativePrefixArtifacts:
+15:    config: object
+16:    input_ids: torch.Tensor
+17:    layers: list
+18:    boundary_rows: object = None
+19:
+20:    @classmethod
+21:    @torch.no_grad()
+22:    def capture(cls, model, input_ids, prefix_lengths, *, config, observe_native_cache=None, boundary_rows=None, observe_boundary_rows=None):
+23:        """Read requested boundaries during one unchanged native forward.
+24:
+25:        Only the supplied factual IDs are forwarded. A boundary consumes
+26:        tensors up to that boundary. FLA emits its own FP32 final state; HF
+27:        Cache determines the stored dtype when the artifacts are consumed.
+28:        The caller owns the lifetime and grouping of these exact artifacts.
+29:        """
+30:        from accelerated.native_capture_events import LocalCaptureEvents
+31:        from fla.ops.gated_delta_rule.chunk import chunk_gated_delta_rule_fwd
+32:        from fla.ops.common.chunk_delta_h import chunk_gated_delta_rule_fwd_h
+33:        from transformers.cache_utils import DynamicCache, LinearAttentionCacheLayerMixin
+34:
+35:        lengths = sorted(set(int(n) for n in prefix_lengths))
+36:        if not lengths or any(n < 64 or n % 64 or n > input_ids.shape[1] for n in lengths):
+37:            raise ValueError('Native DT prefix boundaries must be positive 64-token boundaries in the factual input')
+38:        selected_rows = None
+39:        if boundary_rows is not None:
+40:            selected_rows = {n: tuple(int(row) for row in boundary_rows.get(n, ())) for n in lengths}
+41:            if any(len(set(rows)) != len(rows) or any(row < 0 or row >= input_ids.shape[0] for row in rows)
+42:                   for rows in selected_rows.values()):
+43:                raise ValueError('Selected native boundary rows must be distinct original capture rows')
+44:        cache = DynamicCache(config=config)
+45:        layers = model.model.language_model.layers
+46:        artifacts = [None] * len(layers)
+47:        active = [None]
+48:        pending = {}
+49:        windows = {}
+50:        handles = []
+51:
+52:        def state_event(frame, kind, value):
+53:            if kind != 'return' or value is None:
+54:                return
+55:            i = active[0]
+56:            f = frame.f_locals
+57:            if i is None or f['initial_state'] is not None or f['cu_seqlens'] is not None:
+58:                raise ValueError('Prefix artifact capture requires the original dense prefill from an empty cache')
+59:            pending[i] = {name: f[name].detach() for name in ('k', 'w', 'u', 'g')}
+60:            pending[i]['final_state'] = f['final_state'].detach()
+61:
+62:        def begin(_module, _args, i):
+63:            active[0] = i
+64:
+65:        def projection(_module, _args, output, i, width):
