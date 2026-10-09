@@ -1,4 +1,5 @@
 """Read actual formal records on CPU using the unchanged credit composition owner."""
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -18,8 +19,17 @@ def digest(path):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--after-unix', type=float)
+    parser.add_argument('--before-unix', type=float)
+    parser.add_argument('--output', type=Path, default=Path(__file__).with_name('complete-second-DT-record-audit.json'))
+    args = parser.parse_args()
     started = time.perf_counter()
     files = sorted((FORMAL / 'credit-records').glob('*/*.pt'))
+    # The passive recorder names each artifact with its original time.time_ns().
+    files = [path for path in files
+             if (args.after_unix is None or int(path.stem.removeprefix('joint-')) / 1e9 > args.after_unix)
+             and (args.before_unix is None or int(path.stem.removeprefix('joint-')) / 1e9 <= args.before_unix)]
     rows, identities = [], set()
     for path in files:
         stored = torch.load(path, map_location='cpu', weights_only=False)
@@ -56,8 +66,9 @@ if __name__ == '__main__':
         files=len(files), original_rank_rows=len(rows), unique_traj_uids=len(identities),
         bytes=sum(p.stat().st_size for p in files), rows=rows,
         model_DT_optimizer_calls=0, cuda_initialized=False,
+        selected_record_time=dict(after_unix=args.after_unix, before_unix=args.before_unix),
         conclusion='CPU persistence/mask/position/finite credit only; no single-deletion accuracy or population recall claim')
-    destination = Path(__file__).with_name('complete-second-DT-record-audit.json')
+    destination = args.output
     destination.write_text(json.dumps(record, indent=2)+'\n')
     summary = {k:v for k,v in record.items() if k != 'rows'}
     summary['minimum_observed_row'] = min(rows, key=lambda x:x['minimum_prior_source']['raw_advantage'])
