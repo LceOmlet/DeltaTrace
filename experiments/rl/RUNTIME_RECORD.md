@@ -1,5 +1,18 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 TextCraft 新稳定版已完成第三个正式迭代，第四次采样中
+
+同一正式PID982372/出生1791553809.84，物理2/3，新数值源26bef6c8、GDN7c06d5e0…，
+source.json SHA1c08b57b…未变；原进度3/330，第四次原generate_sequences已开始。
+原step3 reward均值0.645、grad_norm0.051、entropy0.690，原TaskRunner无非有限skip/OOM错误。
+原timing_s/gen1822.046、adv137.759（含DT）、update_actor450.278、step2641.785秒；
+三轮完成不宣称长期稳定或归因已精确，不把原allocator70GB读数当物理OOM。
+原正式330次预算无截停、无checkpoint恢复；LoRA8/16、每卡actor/DT B4保持。
+根formal-training/active-training/active-source只更新此PID任务的实际进度，保留源/运行时覆盖。
+回执results_textcraft_third_formal_iteration_20261010.json及third-iteration-authority记录，
+下方AppWorld组合检查仍仅为已完成调试，未重启其正式训练。
+
+
 ## 2026-10-10 AppWorld 新稳定数值与缓存释放组合：原生worker容量回归完成
 
 同一检查PID1746650/出生1791561149.33已正常结束，物理4/5恢复859MiB，无GPU遗留。
