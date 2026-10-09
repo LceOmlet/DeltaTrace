@@ -168,8 +168,14 @@ def make_worker():
                         rounds = max(spec['batches'][i]['native_paired_forwards'] for i in (pair_index, pair_index+1))
                         for round_index in range(rounds):
                             budget()
-                            queries = [entry['queries'][round_index] if row < batch_spec['actual_rows'] and round_index < len(entry['queries']) else None
-                                       for row, entry in enumerate(entries)]
+                            if 'probability_sample_queries' in batch_spec:
+                                assert rounds == 1 and round_index == 0
+                                queries = batch_spec['probability_sample_queries']+[None]*(4-batch_spec['actual_rows'])
+                                assert len(queries) == 4
+                                assert all(q is None or q['traj_uid'] == e['traj_uid'] for q,e in zip(queries,entries))
+                            else:
+                                queries = [entry['queries'][round_index] if row < batch_spec['actual_rows'] and round_index < len(entry['queries']) else None
+                                           for row, entry in enumerate(entries)]
                             ids = []
                             for row, query in zip(rows, queries):
                                 deleted = row['selected'].clone()
