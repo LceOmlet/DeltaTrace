@@ -1,5 +1,31 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 AppWorld新稳定/显存组合的独立启动清单已准备，正式未启动
+
+本轮是progress：复用既有原launcher/options_for和submit_prepared_direct_targets.check_prepared，
+完成appworld-stable-memory-entry-20261010-v3；23项实际源码绑定通过，原任务/训练选项
+逐项相同，仅入口dataset路径与输出目录迁移。新entry只纠正launcher历史数值文字标签，
+其余链接原owner；DT_ROOT/environment.json选择已完成组合容量检查的7d6f57f6…/cd28a6e2…。
+实际GDN为已接受fla-early-output-scale-20261009-v1（26bef6c8、3f51f5f7…）；
+与上次组合检查的7项CPU模块及所有native worker记录逐SHA相等，原FA/FLA容差回执沿用。
+准备源57ad451f、显存源79922486；不是将准备提交号当数值版本，也不是新的训练实现。
+
+原200次/40组×6请求、全局minibatch32、PPO2epoch、LoRA8/16、每卡actor/DT B4、
+32768上限不变。无新增模型、DT、optimizer、环境episode或checkpoint调用；不恢复检查点。
+formal/active/source根清单在准备前后SHA相同；AppWorld正式仍停，4/5只供已授权调试。
+未来确需提交时可复用本prepared清单，不能退回历史runner628006b6…；本轮没有提交它。
+
+v1在CPU检查前因环境dict重复keyword失败，v2在比较dataset入口路径时未通过；
+失败源码提交、command和stderr保留，均不在默认路径，未启动GPU或训练。v3保留所有训练
+参数，仅在比较时归一化同源码的入口/输出路径，通过原owner检查；不抹掉失败或放宽容差。
+
+00:38同一TextCraft正式PID982372/出生1791553809.84仍在第四次采样，source SHA1c08b57b…
+未变，原两个worker及driver所查错误标记为空，330预算继续；worker PSS15.57/15.42GB，
+host可用893444730880字节。具体物理mx-smi及cgroup原文保留为phase样本，非峰值证明。
+分组召回原1061/task采集已完成，本轮不重复GPU补采、不据本项声明极端信用准确性修复。
+完整绑定见results_appworld_stable_memory_entry_20261010.json及current_runtime最新prepared字段。
+
+
 ## 2026-10-10 第三次正式DT的逐token诊断已全部核对，原训练继续
 
 上一goal轮完成新稳定/内存组合回归和第三次完整更新，是progress。本轮只读同一活跃
