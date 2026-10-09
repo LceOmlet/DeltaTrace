@@ -1,5 +1,22 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 新稳定版实际双卡进程再次核对一致
+
+TextCraft正式PID982372/出生1791553809.84继续物理2/3；原VERL generic RPC只读核对
+两真实worker987808/989860，出生时间、全部已加载模块路径/链接目标/SHA及有效actor
+配置与上次已验收live回执逐项相同。实际GDN仍指向fla-early-output-scale-20261009-v1，
+数值源26bef6c8、SHA7c06d5e0…；磁盘入口及模型/框架11项模块身份也相符。
+原FLA实际dtype验收回执SHA19717594…保持，未重新定义或放宽容差。
+
+原30epochs/330完整迭代，无total_training_steps截短，无checkpoint恢复；LoRA8/16、
+每卡B4/双卡B8、32768保持。已完成4个完整迭代，第五次采样已完成5次交互，进入6/30，
+197条仍active；两worker原generate_sequences进行，所查worker/TaskRunner错误标记为空。
+此次数值/源码/训练行为改动0，模型/DT/optimizer新增调用0；既有被动记录覆盖保持。
+不把四轮有限结果称长期稳定或极端归因已准确，AppWorld正式仍停，不启动旧入口。
+详细实际加载身份、官方验收绑定、预算与原始资源样本见
+results_textcraft_stable_version_recheck_20261010.json及current_runtime同名最新字段。
+
+
 ## 2026-10-10 新稳定版第四个完整正式迭代完成，第五次采样已开始
 
 同一TextCraft正式PID982372/出生1791553809.84，物理2/3，数值源26bef6c8、
