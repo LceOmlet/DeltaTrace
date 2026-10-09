@@ -67,11 +67,27 @@ def main():
     start=time.perf_counter()
     source=REPO/'experiments/rl/results_stable_negative_credit_20261008.json'
     recorded=json.loads(source.read_bytes())
+    latest_paths=[HERE/f'attention-pv-textcraft-v2/rank{r}.json' for r in (0,1)]
+    latest={(p['traj_uid'],p['packed_slot']):p for path in latest_paths
+            for batch in json.loads(path.read_bytes())['batches'] for p in batch['points']}
     tasks={}
     for task,original in recorded['tasks'].items():
         cohorts={}
         for cohort,data in original['cohorts'].items():
-            points=data['points_with_identity']
+            points=[dict(p) for p in data['points_with_identity']]
+            if task=='textcraft':
+                for p in points:
+                    current=latest[p['traj_uid'],p['packed_slot']]
+                    assert current['token_id']==p['token_id']
+                    p['native_d_interval']=[min(p['native_d_interval'][0],current['native_single_d']),
+                                            max(p['native_d_interval'][1],current['native_single_d'])]
+                    p['DT_d_interval']=[min(p['DT_d_interval'][0],current['fresh_DT_d']),
+                                        max(p['DT_d_interval'][1],current['fresh_DT_d'])]
+                    p['DT_tail_all_repeats']=p['DT_d_interval'][1]<-math.log(2)
+                    p['spurious_DT_tail_all_references']=p['DT_tail_all_repeats'] and p['native_d_interval'][0]>=0
+                    p['missed_native_tail_all_references']=p['DT_d_interval'][0]>=-math.log(2) and p['native_d_interval'][1]<-math.log(2)
+                    p['probability_bound_violated_all_references']=p['DT_d_interval'][1]<min(
+                        p['factual_logp_observed_interval'][0],current['factual_target_logp'],current['DT_factual_target_logp'])
             cells={}
             for p in points:
                 cells.setdefault(p['DT_ratio_bin']+':'+p['FP32_head_ratio_bin'],[]).append(p)
@@ -95,7 +111,7 @@ def main():
                     DT_ratio_bin=p['DT_ratio_bin'],FP32_head_ratio_bin=p['FP32_head_ratio_bin'],
                     **flags(p)) for p in points])
         tasks[task]=dict(unique_points=original['unique_points'],cohorts=cohorts)
-    result=dict(scope=__doc__,observed_unix=time.time(),sources=[ref(source),ref(Path(__file__))],
+    result=dict(scope=__doc__,observed_unix=time.time(),sources=[ref(source),ref(Path(__file__)),*[ref(p) for p in latest_paths]],
         statistical_method=dict(aggregation='Source rate per trajectory, trajectory mean per initial state, state equal mean',
             cluster_unit='Complete initial state, preserving its trajectories and source positions',
             bootstrap_replicates=REPLICATES,seed=SEED,
@@ -111,13 +127,15 @@ def main():
             'Group average agreement cannot certify individual tail tokens or erase an unsupported tail. Native sign crossing zero remains unresolved.',
             'Native single deletion is a supplemental diagnostic under the agreed model/world idealization. It does not replace original author RISE/MAS or official actual-dtype FA/FLA checks.',
             'The collection originates in saved nonzero-reward requests, not an unbiased sample of all task trajectories or deployed training effects.',
+            'TextCraft robustness flags include the latest completed PV execution. Original predicted/native FP32-head bins and their descriptive quantiles remain fixed, not reselected after the extra execution.',
             'No production change, credit clipping/scaling, additional reference sampling, or numerical repair is made.'
         ],operations=dict(model=0,DT=0,FA=0,GPU=0,optimizer=0,production_modified=False),
         elapsed_seconds=time.perf_counter()-start)
     output=REPO/'experiments/rl/results_grouped_negative_support_20261009.json'
     output.write_text(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False)+'\n',encoding='utf-8')
     print(json.dumps(dict(output=ref(output),elapsed_seconds=result['elapsed_seconds'],summary={
-        t:c['cohorts']['predicted_tail_census']['all'] for t,c in tasks.items()})))
+        t:{k:v for k,v in c['cohorts']['predicted_tail_census']['all'].items()
+           if k!='bounded_state_equal_frequencies'} for t,c in tasks.items()})))
 
 
 if __name__=='__main__':
