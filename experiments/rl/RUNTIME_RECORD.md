@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 第四次正式DT完整落盘；全量概率必要边界检查完成
+
+本轮是progress。TextCraft同一正式PID982372/出生1791553809.84继续2/3，新数值源
+26bef6c8与source SHA1c08b57b…不变；第四次DT已返回，原actor更新进行，仍只确认3/330完整。
+原第四次144个非零DT请求，对应36个B4文件/144个唯一UID，无DP重复；两worker原
+第四个readout报告UID集合、被动落盘路径与保存文件逐项一致。既有CPU信用owner审核
+0.213秒、全部有限，保存19598076字节；没有增加模型/DT/optimizer或改白化/PPO。
+本批最小raw A=-52.473671、d=-3.979189，response922/input1237/token13235；
+事实联合target logp=-25.128792，隐含删除logp=-21.149602，在概率上仍可能，不因幅度裁剪。
+
+新增只读CPU源b5122443普查第二、三、四次全体已保存非零请求，分别163/165/144轨迹；
+使用原PLAN的c分层、UID/source去重，原DP的全部数值视角保留，不挑有利副本。
+对于归一化target，若d是精确单删log比，必须ell_factual-d<=0；这是数学必要边界，
+不是新FA/FLA容差或单删除真值。分别191716/150327/174331个source中，全部DP视角
+均越界544/1375/851个；大负c>2的稳定分组内分别13/53、15/29、12/52越界。
+各轮最负值本身都没有越界，因此不能按极值大小全判错；边界内也不能据此判准确。
+全部具体位置、d/事实分数/隐含概率对数及初始状态分组保存，总CPU核算1.122秒，
+GPU/模型/DT/更新/rollout均0。仅描述保存的正式cohort，不混入1061/task开发采样框，
+不从必要边界计算precision/recall、总体误差或因果正确性，未做任何信用纠偏或部署。
+
+第四次actor phase样本worker PSS16.84/16.86GB、host可用830010949632字节；原物理
+mx-smi快照保留，不用torch虚拟allocator数字冒充物理峰值。所查两个worker错误标记为空。
+原TextCraft save_freq=25/test_freq=-1保持，前三次无checkpoint不自动当保存故障；
+AppWorld仍未正式启动，准备清单不改为部署。完整来源见
+results_textcraft_fourth_DT_records_20261010.json及results_formal_credit_probability_bounds_20261010.json。
+
+
 ## 2026-10-10 AppWorld新稳定/显存组合的独立启动清单已准备，正式未启动
 
 本轮是progress：复用既有原launcher/options_for和submit_prepared_direct_targets.check_prepared，
