@@ -1,0 +1,68 @@
+{
+  "role": "Read-only mathematical analysis of the existing EOS estimator; not a replacement method specification, candidate, or new acceptance gate",
+  "method_owner": "experiments/rl/PLAN.md",
+  "production_modified": false,
+  "model_queries": 0,
+  "assumptions": [
+    "Preserve the accepted idealization: exact model-estimated token counterfactual values are the corresponding real-world variable values.",
+    "At a fixed prefix h, p_a(Y) is the factual outcome law and q(Y|h) is the same deletion reference law across choices of the actual token a.",
+    "The reference law is covered by each factual outcome law used in the importance-sampling identity, and the expectations being asserted exist.",
+    "The derivation applies to the raw source-token estimator before finite-batch whitening and PPO clipping; self-target boundary semantics remain as fixed in PLAN.md."
+  ],
+  "existing_estimator": "d=log p_a(Y)-log q(Y|h); A_hat=r(Y)*(1-exp(-d))",
+  "expected_gradient_property": {
+    "conceptual_reference_return": "B_del(h)=sum_Y r(Y)*q(Y|h); no B module or extra computation is introduced",
+    "conditional_mean": "E[A_hat|h,a]=Q_pi(h,a)-B_del(h)=A_pi(h,a)+V_pi(h)-B_del(h)",
+    "score_identity": "E_a[grad log pi(a|h)]=0",
+    "result": "E_{a,Y}[grad log pi(a|h)*A_hat|h]=E_a[grad log pi(a|h)*A_pi(h,a)|h]",
+    "scope": "Sampling-policy, unclipped expected score-function gradient, with the same state/token weights. This is not equality of every sampled coefficient or of finite-batch whitened/clipped PPO updates.",
+    "action_comparison": "At the same prefix, differences of conditional expected deletion advantages equal differences of Q_pi values because the same B_del is subtracted.",
+    "exact_PPO_advantage_condition": "Conditional mean equals Q_pi-V_pi when B_del(h)=V_pi(h). Gradient equivalence itself does not require this additional equality."
+  },
+  "optimality_scope": {
+    "conclusion": "Neither unbiased expected-gradient equivalence nor an exact deletion reference implies minimum gradient variance.",
+    "ordinary_scalar_baseline_comparison": "For a single fixed-prefix gradient term z(a)*(G-b(h)), z=grad log pi, the state-only scalar baseline minimizing conditional trace covariance is b_star=E[||z||^2*G|h]/E[||z||^2|h], when these second moments exist and the denominator is positive.",
+    "value_function_property": "V_pi=E[G|h] minimizes unweighted conditional squared return-prediction error. This objective differs from score-weighted gradient variance.",
+    "comparison_limit": "The scalar-baseline formula is not an optimizer for the outcome-dependent importance estimator above, full trajectory covariance, or the PPO clipped loss. It explains why no general variance-optimality theorem follows from the expected-gradient identity.",
+    "implementation_change": "None. No learned critic, alternative reference, extra reference-token sampling, or new baseline module is proposed."
+  },
+  "approximation_bias_analysis": {
+    "gradient_error": "Let C_i be the implemented raw DT credit and C_i_exact the accepted exact deletion credit on the same rollout. The raw gradient bias is E[sum_i grad log pi(a_i|h_i)*(C_i-C_i_exact)]. Zero mean credit error or conserved total credit alone does not make this score-weighted expectation vanish.",
+    "finite_horizon_scope": "Only the actual finite task horizon is considered. An L-step Bellman return with the correct terminal bootstrap preserves the corresponding conditional return expectation. Bootstrap error enters as gamma^L times the terminal value error; finite-horizon truncation by itself is not a universal optimal-policy guarantee. This is distinct from an action-correlated credit-estimation error.",
+    "unbiased_residual_identity_for_research": "For any fixed rollout and approximate C_i, select source positions with known positive inclusion probabilities eta_i, without looking at their unqueried exact deletion values. Define C_i_corrected=C_i+I_i/eta_i*(C_i_exact-C_i). Then E_selection[C_i_corrected|rollout]=C_i_exact. Together with the existing idealized deletion-gradient identity this removes approximation bias from the raw expected score gradient, while retaining dense DT information as a model-assisted approximation.",
+    "residual_variance": "For each fixed rollout and token, Var_selection(C_i_corrected)=(1/eta_i-1)*(C_i_exact-C_i)^2. Source-selection correlations also affect the full gradient variance. Rare large residuals can make this construction unsuitable even though its expectation is correct.",
+    "cost_and_status": "This identity needs some actual single-deletion measurements; it is not a free normalization of the present DT vector. No query budget, training candidate, extra forward calls, loss change, or deployment was selected. The existing probability sample supports read-only study of residuals, not a claim that this construction has been accepted or is efficient.",
+    "reference_scope": "Replacing C_i_exact with a numerical native measurement corrects toward that measurement; its model/numerical error remains separately recorded. Idealized world equivalence follows only under the accepted exact-token-value premise and the existing reference conditions.",
+    "PPO_scope": "The unbiasedness identity is for raw credit and its linear score gradient. Subsequent finite-batch whitening and clipping retain their existing nonlinear effects; this is not a proof of equality of clipped PPO updates."
+  },
+  "negative_tail_interpretation": {
+    "exact_case": "With positive reward, an exact ratio q(Y|h)/p_a(Y)>1 gives negative sampled credit: the selected token suppresses this realized rewarded outcome relative to deletion. This does not alone establish that its conditional expected return is worse.",
+    "large_values": "Exact importance ratios can be large when the observed outcome is rare under the factual action. A large negative sample is not by itself proof of estimation error or of minimum variance.",
+    "error_propagation": "For epsilon=d_DT-d_true, A_DT-A_true=-r*exp(-d_true)*(exp(-epsilon)-1). Negative d error is amplified by the exponential.",
+    "conditional_bias_mechanism": "Holding r>0 and d_true fixed, conditionally zero-mean epsilon implies a nonpositive expected credit error by Jensen when the required expectations exist. This is a possible mechanism, not an empirical claim that the observed prediction-selected tail proves an all-token bias.",
+    "empirical_receipt": "experiments/rl/results_probability_sample_credit_error_20261009.json",
+    "probability_sample_receipt": "experiments/rl/results_tail_probability_analysis_20261009.json"
+  },
+  "primary_sources": [
+    {
+      "title": "Hindsight Credit Assignment",
+      "url": "https://papers.neurips.cc/paper/9413-hindsight-credit-assignment.pdf",
+      "location": "Theorem 2, equations (5)-(6)",
+      "supports": "The hindsight likelihood-ratio value/advantage identity under the paper's coverage assumption.",
+      "does_not_claim": "The paper uses a policy-marginal reference. The EOS deletion reference's action-independent-baseline extension above is our explicit derivation; the paper does not establish EOS deletion variance optimality."
+    },
+    {
+      "title": "Variance Reduction Techniques for Gradient Estimates in Reinforcement Learning",
+      "url": "https://jmlr.org/papers/volume5/greensmith04a/greensmith04a.pdf",
+      "location": "Optimal-baseline analysis, including Theorem 16",
+      "supports": "Score-weighted variance-optimal baselines and the distinction between a true value function and a variance-optimal gradient baseline.",
+      "derivation_scope": "The conditional vector-norm single-term formula recorded above is an explicit elementary minimization, not a claim that the paper proves a full DT/PPO optimum."
+    },
+    {
+      "title": "High-Dimensional Continuous Control Using Generalized Advantage Estimation",
+      "url": "https://arxiv.org/pdf/1506.02438",
+      "location": "Section 3, Proposition 1 and the k-step advantage construction",
+      "supports": "Distinguishing return/advantage-estimation bias, bootstrapped value accuracy, and the policy-gradient expectation. The elementary random-source residual identity above is our own explicit conditioning argument, not a theorem attributed to GAE."
+    }
+  ]
+}
