@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 既有被动记录器补齐原生target字段，数值版不变
+
+通过原VERL execute_with_func_generator，仅更新两原worker的_record_joint_dt_batch。
+数值仍26bef6c8/GDN7c06d5e0…；原trajectory计算方法对象保持、源码2609d93f…；
+新保存helper源f0fbae61…（记录部署源55376cd0），没有替换Q/V/A、白化、PPO或核。
+新增八项均是runner已经返回的CPU列表/标量：逐target端点logp、实际predictor rows、
+原生row prefix/context长度、shared prefix/carrier宽度、head输入形状；不重建模型结果。
+既有真实B4现场CPU对照：原payload及输入逐值不变、八项与原detail逐值相同、未初始化CUDA。
+该现场文件666039→675895字节（增加9856），单次写入0.061/0.103秒；只证明保存行为，
+不是官方核容差、方法质量或正式峰值性能验收，没有重复模型/DT/GPU调用。
+
+首个安装v1因错误检查torch.no_grad wrapper的code来源，在赋值前失败；保留原失败源、
+回执与日志。v2用inspect.unwrap定位原方法，两worker均确认旧helper仍2609d93f…，
+随后原RPC于1791568829.178完成。成功覆盖回执native-target-records-20261010-v2.json，
+不是把v1未完成状态当成功，也未重启训练或恢复检查点。此安装RPC的AssertionError
+属于记录器校验失败，不能混作原训练NaN/OOM；正式两worker仍继续第六次采样。
+新增正式payload尚未产生，下一次原DT落盘后再核对实际选取与逐target分数，不宣称已核实。
+当前预算仍330、LoRA8/16、每卡B4/双卡B8、32768；AppWorld正式不启动。
+详见results_native_target_recording_20261010.json与current_runtime最新独立helper字段。
+
+
 ## 2026-10-10 新稳定版第五个完整正式迭代返回，第六次采样进行
 
 同一正式TextCraft PID982372/出生1791553809.84、物理2/3；当前11项磁盘模块身份

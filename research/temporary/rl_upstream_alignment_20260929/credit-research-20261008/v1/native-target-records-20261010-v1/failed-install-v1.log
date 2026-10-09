@@ -1,0 +1,30 @@
+2026-10-10 01:58:38,559	INFO worker.py:1821 -- Connecting to existing Ray cluster at address: 10.200.112.15:58837...
+2026-10-10 01:58:38,571	INFO worker.py:2007 -- Connected to Ray cluster.
+Traceback (most recent call last):
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-target-records-20261010-v1/install_native_target_records.py", line 84, in <module>
+    results=ray.get(refs)
+            ^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/auto_init_hook.py", line 22, in auto_init_wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/client_mode_hook.py", line 104, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py", line 2967, in get
+    values, debugger_breakpoint = worker.get_objects(
+                                  ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py", line 1015, in get_objects
+    raise value.as_instanceof_cause()
+ray.exceptions.RayTaskError(AssertionError): [36mray::WorkerDict.execute_with_func_generator()[39m (pid=989860, ip=10.200.112.15, actor_id=88f3e6c6e2edbc7ffa4759df01000000, repr=<verl.single_controller.ray.base.WorkerDict object at 0x7ee8655a3680>)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py", line 534, in inner
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/worker.py", line 319, in execute_with_func_generator
+    ret_proto = func(self, *args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-target-records-20261010-v1/install_native_target_records.py", line 38, in install_worker
+    assert digest(type(readout).trajectories.__code__.co_filename)==OLD_SHA
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
