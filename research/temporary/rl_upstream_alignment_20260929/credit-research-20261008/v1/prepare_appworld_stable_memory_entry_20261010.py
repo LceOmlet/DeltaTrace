@@ -16,8 +16,8 @@ sys.path.insert(0, str(HERE.parents[1]))
 from stage_environment_entry import ENTRY, ROOT, SSH, SCP
 
 VERSION = 'fla-early-output-scale-20261009-v1'
-REMOTE = ROOT+'/candidates/appworld-stable-memory-entry-20261010-v1'
-LOCAL = HERE/'appworld-stable-memory-entry-20261010-v1'
+REMOTE = ROOT+'/candidates/appworld-stable-memory-entry-20261010-v2'
+LOCAL = HERE/'appworld-stable-memory-entry-20261010-v2'
 
 
 def main():
@@ -95,8 +95,8 @@ result=dict(options=options,sampling=sampling,actual_CPU_imports=modules,probe=p
     model_DT_optimizer_episode_calls=0)
 (base/'CPU-imports.json').write_text(json.dumps(result,indent=2)+'\n')
 """
-runenv=dict(os.environ,**env,CUDA_VISIBLE_DEVICES='-1',INSPECTION_BASE=str(base),
-    ORIGINAL_SOURCE=str(original),PREPARED_OUTPUT=str(output),PROBE_PATH=str(candidate/'probe_appworld_memory_stable_imports.py'))
+runenv={**os.environ,**env,'CUDA_VISIBLE_DEVICES':'-1','INSPECTION_BASE':str(base),
+    'ORIGINAL_SOURCE':str(original),'PREPARED_OUTPUT':str(output),'PROBE_PATH':str(candidate/'probe_appworld_memory_stable_imports.py')}
 run=subprocess.run([env['VENV_PYTHON'],'-c',inspection],cwd=entry,env=runenv,capture_output=True,timeout=60)
 (base/'CPU-imports.stdout').write_bytes(run.stdout);(base/'CPU-imports.stderr').write_bytes(run.stderr)
 if run.returncode:print(run.stderr.decode(errors='replace')[-4000:]);run.check_returncode()
