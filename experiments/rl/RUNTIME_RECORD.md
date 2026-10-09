@@ -1,5 +1,30 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 第二个完整正式迭代已完成，第三次采样继续
+
+上一goal轮完成全请求原始记录审计，是progress。本轮核实同一新稳定版正式PID
+982372/出生1791553809.84实际原step2返回，原进度2/330，两worker进入第三次
+actor_rollout_generate_sequences。无重启、checkpoint恢复、诊断退出或训练参数改动。
+Unix1791559630.884118原step2全部指标有限；两worker及TaskRunner的out/err完整扫描
+无Traceback/OOM/FloatingPointError/nonfinite grad/skip文字，不能只凭GPU忙称健康。
+
+原第二轮奖励均值0.637、actor/grad_norm0.044、entropy0.663；两批任务不同，不能
+据0.664→0.637两点推断训练效果退化。第二轮白化advantage -123.831..6.331与
+原source信用-18.868是不同量，不能混用；未裁剪或改写原信用/白化。
+原timing_s：gen1831.859，old_log_prob127.002，ref110.933，adv200.117，
+update_actor462.049，step2732.468（45分32.468秒）；adv已包含DT，不能再次相加。
+原logger三位小数、LR显示0.000不等于实际LR为0；原文本和全部指标一并保留。
+原allocator最大69.848/76.172GB不是物理显存或OOM。当前第三次采样实测物理
+GPU2/3=50306/50460MiB；PSS15.56/15.43GB，host可用894843142144字节。
+本采样不是峰值/无泄漏证明。尚未在本FORMAL目录发现原checkpoint完成标记。
+
+记录包括活动被动诊断覆盖、冻结source SHA1c08b57b…、原日志路径/SHA/字节和
+资源原快照，见results_textcraft_second_formal_iteration_20261009.json。
+数值核心仍接受源26bef6c8/GDN7c06d5e0…，LoRA8/16、每卡B4/双卡B8、32768，
+官方预算330保持。两轮完成不冒充长期稳定、原NaN原因已定位或归因已精确。
+AppWorld/SQL仍停止，物理4/5保留已授权调试，不依据旧自动goal擅自重新启作业。
+
+
 ## 2026-10-09 第二次正式DT完成，完整逐token记录与原CPU信用组合核验
 
 上一goal轮完成被动记录接入和实际数据验证，是progress。本轮不重启正式训练、
