@@ -233,21 +233,7 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
     mo,mz=norm_gate(e['o'],c['z'],m,module.norm.weight,module.norm.eps,norm_gate_rule)
     # Follow the norm input and then FLA operand dtype at their actual boundary.
     # The default BF16 path is unchanged; a native FP16 kernel receives FP16 do.
-    native_mo=mo.to(e['o'].dtype)
-    seed_exponent=None
-    if e['q'].dtype==torch.float16:
-        # Native FLA is linear in this cotangent. Use the smallest power of
-        # two that avoids overflowing its actual FP16 representation, then
-        # undo it on every returned coefficient. No attribution is clipped.
-        magnitude=native_mo.float().abs().amax(dim=(1,3),keepdim=True)
-        seed_exponent=torch.ceil(torch.log2(
-            magnitude/torch.finfo(torch.float16).max).clamp_min(0)).to(torch.int32)
-        native_mo=torch.ldexp(native_mo.float(),-seed_exponent)
-    native_mo=native_mo.to(e['q'].dtype)
-    def restore_seed_range(coeff,exponent):
-        if exponent is None:return coeff
-        return {name:torch.ldexp(value.float(),exponent if value.ndim==4 else exponent[...,0])
-                for name,value in coeff.items()}
+    native_mo=mo.to(e['o'].dtype).to(e['q'].dtype)
     if offload_endpoints:
         del e['o'],c['z'],mnorm,m,mo
     # Keep the boundary chunk containing the first changed token. Native h
@@ -264,17 +250,13 @@ def gdn_finite_pullback(module,values,endpoints,upstream,scale,fla_pullback,diag
         for start in range(0,module.num_v_heads,fla_head_batch_size):
             group={name:head_group(value,start)
                    for name,value in fla_endpoints.items() if name!='o'}
-            part=fla_pullback(group,native_mo[:,cut:,start:start+fla_head_batch_size].contiguous(),scale)
-            exponent=None if seed_exponent is None else seed_exponent[:,:,start:start+fla_head_batch_size]
-            parts.append(restore_seed_range(part,exponent))
-            del part,exponent
+            parts.append(fla_pullback(group,native_mo[:,cut:,start:start+fla_head_batch_size].contiguous(),scale))
             del group
         coeff={name:torch.cat([part[name] for part in parts],dim=2) for name in parts[0]}
         del parts
     else:
         if offload_endpoints:restore(fla_endpoints,*tuple(fla_endpoints))
         coeff=fla_pullback(fla_endpoints,native_mo[:,cut:],scale)
-        coeff=restore_seed_range(coeff,seed_exponent)
     del fla_endpoints
     if cut:
         coeff={name:F.pad(value,(0,0)*(value.ndim-2)+(cut,0)) for name,value in coeff.items()}
