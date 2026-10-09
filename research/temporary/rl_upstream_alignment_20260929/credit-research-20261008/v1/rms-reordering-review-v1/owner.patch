@@ -1,0 +1,21 @@
+--- original/signed_secant_rules.py
++++ candidate/signed_secant_rules.py
+@@ -44,15 +44,13 @@
+ 
+ 
+ def rmsnorm_secant_pullback(x0,x1,weight,upstream,eps):
+-    """Analytical finite secant for weight*x/sqrt(mean(x²)+eps)."""
++    """Same symmetric finite RMS rule, with a normalized intermediate sum."""
+     r0=(x0.square().mean(-1,keepdim=True)+eps).sqrt()
+     r1=(x1.square().mean(-1,keepdim=True)+eps).sqrt()
+     inverse_mean=(1/r0+1/r1)*.5
+-    inverse_secant=-1/(r0*r1*(r0+r1))
+-    xbar=(x0+x1)*.5
++    normalized_sum=(x0+x1)/(r0+r1)
+     weighted=upstream*weight
+-    coefficient=2*inverse_secant/x0.shape[-1]
+-    return inverse_mean*weighted+xbar*coefficient*(xbar*weighted).sum(-1,keepdim=True)
++    return inverse_mean*(weighted-normalized_sum*(normalized_sum*weighted).mean(-1,keepdim=True))
+ 
+ 
+ def nonlinear_reveal_cancel(function,base,positive_incoming,negative_incoming):
