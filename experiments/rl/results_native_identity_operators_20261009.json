@@ -1,0 +1,571 @@
+{
+  "role": "Completed native operator localization and original PyTorch dtype comparison; not a production repair",
+  "inputs": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/launch.json",
+      "bytes": 8075,
+      "sha256": "499a4b7dffd0577db99851457f4be2abb53ba0fce5883261f24952583bc4391e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/rank0.json",
+      "bytes": 137734,
+      "sha256": "0c5551f47d153a602d9f1cb34c81ae291413da690d97ffa83ca8165bec289b50"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/rank1.json",
+      "bytes": 139998,
+      "sha256": "035e9b5b2ca78776daf9d68ae38a32206516658e363aabeb262675d0d92434e6"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/completed.json",
+      "bytes": 147,
+      "sha256": "4bd1c3b93f47877e3abd1c7dcb6cad3e509908dcd7e56a253f61e080d4257f30"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/linear-roundoff.json",
+      "bytes": 2418925,
+      "sha256": "46f5aa6a8027873abba3544e01c262fc93af1a3dde0666df2885a8eb9131784c"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/linear-check-launch.json",
+      "bytes": 917,
+      "sha256": "0020ddd39e1f6db5162c2af0d947311d8875182e5d70683e7e49408b9be2a9d5"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/rank0-batch0-operators.json",
+      "bytes": 94273,
+      "sha256": "546d87e0de2d21457fd738b5eac208616382bf5106022938b01533e41f4e9c9d"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/rank1-batch1-operators.json",
+      "bytes": 156396,
+      "sha256": "0c13671b06d7efc39b3e3a434bf13c2110dd245db9520f37cf3e3da904770fa0"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/rank0-batch10-operators.json",
+      "bytes": 94475,
+      "sha256": "e7011c1cde1d9e6dbc44e7be1a58e7ef574a8f5d007572d0eff25bb7bab3092d"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/rank1-batch11-operators.json",
+      "bytes": 214379,
+      "sha256": "4c243c3fd9b83c681919c7114880534e84189370085c9fc97c910c7f6483b9b3"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/observation-1791552770.json",
+      "bytes": 3794603,
+      "sha256": "df2cafd31235ca3eff84a794bc1af27c9709e656f069c9159b3c7c158fe35ce6"
+    },
+    {
+      "path": "experiments/rl/results_native_identity_roots_20261009.json",
+      "bytes": 483740,
+      "sha256": "15ea057b951248e25a641402f405ef58b698cba537780315b7ad445e12126f36"
+    }
+  ],
+  "failed_observer_attempt": {
+    "launch": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v1/launch.json",
+      "bytes": 8074,
+      "sha256": "19a6d5b7ce607b13fb4f97ee0c2c39354e4552781ff418a407fc4f72b618fecf"
+    },
+    "rank1": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v1/rank1.json",
+      "bytes": 17934,
+      "sha256": "0b1ab42ef8fcaaa163d925fb0a3a59e8e81232b05dcf03425145b4fbadaec59a"
+    },
+    "terminal": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v1/observation-1791552121.json",
+      "bytes": 79323,
+      "sha256": "96dea123fc2ab846db581aad21c12037335394868635ce16ca28bf15c25bb431"
+    },
+    "source_commit": "1f2b872f",
+    "accepted": false,
+    "issue": "Diagnostic state_dict export was followed by a mixed Tensor/DTensor error in the next original Linear call. It is not a production failure. The exact FSDP side-effect hook was not separately traced.",
+    "correction": "Observer v2 reads the original Linear return frame through LocalCaptureEvents; no state_dict call. The original endpoint score differences reproduce.",
+    "numerical_results_after_failure_accepted": false
+  },
+  "source_commit": "397cd639fa5562924e33589530f3323f062a569d",
+  "check_source_commit": "632037447306ae4d55a3782004801f4044f3f48c",
+  "numerical_version": "fla-early-output-scale-20261009-v1",
+  "actual_numerical_owners": [
+    {
+      "qwen35_dense_finite_runner": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+        "sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f"
+      },
+      "qwen35_answer_finite": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-head-memory-20261007-v2/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+        "sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e"
+      },
+      "qwen35_gdn_finite": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/fla-early-output-scale-20261009-v1/appworld/qwen35_gdn_finite.py",
+        "sha256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+      },
+      "qwen35_decoder_finite": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+        "sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234"
+      },
+      "qwen35_native_prefix_artifacts": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_native_prefix_artifacts.py",
+        "sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4"
+      }
+    },
+    {
+      "qwen35_dense_finite_runner": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+        "sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f"
+      },
+      "qwen35_answer_finite": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-head-memory-20261007-v2/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+        "sha256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e"
+      },
+      "qwen35_gdn_finite": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/fla-early-output-scale-20261009-v1/appworld/qwen35_gdn_finite.py",
+        "sha256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+      },
+      "qwen35_decoder_finite": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+        "sha256": "1c58c33c3d9120c846f571a5bfac80c07362e2e8247305cc38db5303d90d3234"
+      },
+      "qwen35_native_prefix_artifacts": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_native_prefix_artifacts.py",
+        "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/combined-capacity-b8-v1/qwen35_native_prefix_artifacts.py",
+        "sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4"
+      }
+    }
+  ],
+  "frame": {
+    "original_B4_indices": [
+      0,
+      1,
+      10,
+      11
+    ],
+    "trajectories": 16,
+    "initial_states": 12,
+    "scope": "Operator localization of all eight previously unequal native-root rows plus original matched control batches. Not a quality/development sample or replacement recall frame."
+  },
+  "first_unequal": {
+    "trajectories": 8,
+    "operations": {
+      "in_proj_a.base": 1,
+      "in_proj_b.base": 3,
+      "in_proj_qkv.base": 4
+    }
+  },
+  "original_endpoint_reproduction_maxabs": 3.410605131648481e-13,
+  "torch_checks": {
+    "owner": "Original installed torch.nn.Linear/F.linear and torch.testing.assert_close, Torch 2.8.0+metax3.5.3.9",
+    "owner_sources": [
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/linear.py",
+        "sha256": "fa22acbb48e41bff3be26779c2f242b15663b8157e54f0d55987721add97d16f",
+        "name": "Linear.forward"
+      },
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/testing/_comparison.py",
+        "sha256": "28c448353b4dd0dfc3232f839ffee6aff045f1d2280b8071945028fa81c17f79",
+        "name": "assert_close"
+      },
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/testing/_comparison.py",
+        "sha256": "28c448353b4dd0dfc3232f839ffee6aff045f1d2280b8071945028fa81c17f79",
+        "name": "default_tolerances"
+      }
+    ],
+    "rtol_atol": [
+      0.016,
+      1e-05
+    ],
+    "full_native_pair_checks": 12,
+    "all_unequal_cell_endpoint_checks": 22,
+    "total_unequal_cells": 5988,
+    "status": "passed",
+    "scope": "BF16 defaults from the owning public PyTorch assertion; not FA/FLA tolerances or an original whole-model/VERL test. FP64 reference is evaluated only at every unequal coordinate, not at the equal coordinates."
+  },
+  "resource": {
+    "worker_elapsed_seconds": [
+      92.2547988500155,
+      101.3266036589921
+    ],
+    "capture_launch_to_last_worker_complete_seconds": 183.16937375068665,
+    "worker_terminal_PSS_bytes": [
+      8678950912,
+      8710782976
+    ],
+    "CPU_check_seconds": 4.880528302019229,
+    "CPU_check_terminal_PSS_bytes": 3587456000,
+    "CPU_check_cuda_initialized": false,
+    "terminal_host_available_bytes": 1030647984128,
+    "terminal_disk_free_bytes": 13145680642048,
+    "physical_receipt": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/native-identity-operators-appworld-v2/observation-1791552770.json",
+      "bytes": 3794603,
+      "sha256": "df2cafd31235ca3eff84a794bc1af27c9709e656f069c9159b3c7c158fe35ce6"
+    },
+    "scope": "Terminal and sampled readings, not true peaks. CPU check performs no model or GPU work."
+  },
+  "handles": {
+    "driver": {
+      "pid": 824846,
+      "birth": 1791552303.22,
+      "alive": false
+    },
+    "workers": [
+      {
+        "pid": 828363,
+        "birth": 1791552331.35,
+        "phase": "complete"
+      },
+      {
+        "pid": 829843,
+        "birth": 1791552345.67,
+        "phase": "complete"
+      }
+    ],
+    "CPU_check": {
+      "pid": 869326,
+      "birth": 1791552701.24,
+      "status": "complete"
+    }
+  },
+  "operations": [
+    {
+      "native_root": 2,
+      "finite_seed": 0,
+      "DT": 0,
+      "optimizer": 0,
+      "backward": 0,
+      "rollout": 0,
+      "checkpoint_restore": 0
+    },
+    {
+      "native_root": 2,
+      "finite_seed": 0,
+      "DT": 0,
+      "optimizer": 0,
+      "backward": 0,
+      "rollout": 0,
+      "checkpoint_restore": 0
+    }
+  ],
+  "points": [
+    {
+      "traj_uid": "ee611414-1759-406e-817c-10ecfbef417a",
+      "batch": 0,
+      "row": 0,
+      "initial_state_sha256": "f897e3f1600e266b4f7abea8cb6d0441ae6a7b3e97b6334801750b3b8c9f08c0",
+      "root_score_difference": 0.0,
+      "previous_root_score_difference": 0.0,
+      "repeated_root_difference": 0.0,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "b8832320-c765-41cc-a31e-8d7c57c957c4",
+      "batch": 0,
+      "row": 1,
+      "initial_state_sha256": "94f14b2c5107721011a17c807bab4f123c728eea0bf89ad089b237b1f03bcaca",
+      "root_score_difference": 0.0,
+      "previous_root_score_difference": 0.0,
+      "repeated_root_difference": 0.0,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "3e501afc-2418-4283-9393-cc4b46c51401",
+      "batch": 0,
+      "row": 2,
+      "initial_state_sha256": "83acc0aa62ca50a87679b4756e4531f4f7f7faeed20d097b62acff2085fe4192",
+      "root_score_difference": 0.0,
+      "previous_root_score_difference": 0.0,
+      "repeated_root_difference": 0.0,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "c4784aa8-5ee6-445b-b42a-0bec9c0c32f5",
+      "batch": 0,
+      "row": 3,
+      "initial_state_sha256": "83acc0aa62ca50a87679b4756e4531f4f7f7faeed20d097b62acff2085fe4192",
+      "root_score_difference": 0.0,
+      "previous_root_score_difference": 0.0,
+      "repeated_root_difference": 0.0,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "d2630113-d480-4d1c-9c96-04abd0fe2f5f",
+      "batch": 1,
+      "row": 0,
+      "initial_state_sha256": "986943331d6f47508a913f07af883635d215e4ab583be903590fbfc2395f3d6b",
+      "root_score_difference": -0.13213513620561912,
+      "previous_root_score_difference": -0.13213513620561912,
+      "repeated_root_difference": 0.0,
+      "first_unequal": {
+        "layer": 1,
+        "operation": "in_proj_a.base",
+        "event": 32
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 0.0009765625,
+        "changed_elements": 1,
+        "first_coordinate": [
+          4984,
+          24
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    },
+    {
+      "traj_uid": "b73da0af-824b-48c8-af21-4945e8793aef",
+      "batch": 1,
+      "row": 1,
+      "initial_state_sha256": "c42c4648f72e6dd495a740a9102bb73683f8432a64807e8e1e6bb7418ccf5ae0",
+      "root_score_difference": 0.45953379506437386,
+      "previous_root_score_difference": 0.45953379506437386,
+      "repeated_root_difference": 0.0,
+      "first_unequal": {
+        "layer": 1,
+        "operation": "in_proj_b.base",
+        "event": 30
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 1.9073486328125e-06,
+        "changed_elements": 1,
+        "first_coordinate": [
+          2685,
+          12
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    },
+    {
+      "traj_uid": "34429a62-3124-4e0a-b68e-0cce16770442",
+      "batch": 1,
+      "row": 2,
+      "initial_state_sha256": "7ac3f874f00d44d7fce5636fb509ebbc87765668a6709c47863470b7205aa3d0",
+      "root_score_difference": -0.003237407134406567,
+      "previous_root_score_difference": -0.003237407134406567,
+      "repeated_root_difference": 0.0,
+      "first_unequal": {
+        "layer": 1,
+        "operation": "in_proj_b.base",
+        "event": 30
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 0.0001220703125,
+        "changed_elements": 2,
+        "first_coordinate": [
+          331,
+          28
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    },
+    {
+      "traj_uid": "6d11d916-4ebd-44af-96c2-247dbe714493",
+      "batch": 1,
+      "row": 3,
+      "initial_state_sha256": "986943331d6f47508a913f07af883635d215e4ab583be903590fbfc2395f3d6b",
+      "root_score_difference": 0.20294663956894965,
+      "previous_root_score_difference": 0.20294663956894965,
+      "repeated_root_difference": 0.0,
+      "first_unequal": {
+        "layer": 1,
+        "operation": "in_proj_b.base",
+        "event": 30
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 2.384185791015625e-07,
+        "changed_elements": 1,
+        "first_coordinate": [
+          3478,
+          28
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    },
+    {
+      "traj_uid": "06c5d754-c0df-4457-b968-9d805c69b076",
+      "batch": 10,
+      "row": 0,
+      "initial_state_sha256": "60dd0e72cfc2983ead54bf1fa9e6525cfe280937491f717ea68cfdfbac22d113",
+      "root_score_difference": 0.0,
+      "previous_root_score_difference": 0.0,
+      "repeated_root_difference": 0.0,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "1eaa075c-96a0-4501-a0fd-9323db762eaa",
+      "batch": 10,
+      "row": 1,
+      "initial_state_sha256": "1e02224f35944f29bae10fc91f471738913c140c5a26ea875423514be0851dea",
+      "root_score_difference": 2.842170943040401e-14,
+      "previous_root_score_difference": -2.842170943040401e-14,
+      "repeated_root_difference": 5.684341886080802e-14,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "580f25c3-a7fe-4f88-8b07-f2be6801384d",
+      "batch": 10,
+      "row": 2,
+      "initial_state_sha256": "60dd0e72cfc2983ead54bf1fa9e6525cfe280937491f717ea68cfdfbac22d113",
+      "root_score_difference": 0.0,
+      "previous_root_score_difference": 0.0,
+      "repeated_root_difference": 0.0,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "56a7a2a3-2266-41d5-b013-b97b5d8694ac",
+      "batch": 10,
+      "row": 3,
+      "initial_state_sha256": "00832f9f2b0230023b0becfeda4ce6cf2c475ba51d55b3c2db05287446ef2d1f",
+      "root_score_difference": 0.0,
+      "previous_root_score_difference": 0.0,
+      "repeated_root_difference": 0.0,
+      "first_unequal": null,
+      "first_unequal_output": null,
+      "first_operation_input_all_pairs_equal": null
+    },
+    {
+      "traj_uid": "29caf9c4-192e-4e56-bf39-8eacfb730801",
+      "batch": 11,
+      "row": 0,
+      "initial_state_sha256": "f8d4e180a97c963b8efe2f2c43fac6221d8c7f68710322f5b7069fb2851b643b",
+      "root_score_difference": -0.24867218494199506,
+      "previous_root_score_difference": -0.24867218494199506,
+      "repeated_root_difference": 0.0,
+      "first_unequal": {
+        "layer": 0,
+        "operation": "in_proj_qkv.base",
+        "event": 1
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 0.015625,
+        "changed_elements": 1356,
+        "first_coordinate": [
+          2,
+          4339
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    },
+    {
+      "traj_uid": "36b4478c-12d1-45bd-b450-87e50f03d01d",
+      "batch": 11,
+      "row": 1,
+      "initial_state_sha256": "fc2fd6313753ec2c5185c746edb09be1a91f04f02067b91832f10d826a4ce98e",
+      "root_score_difference": -0.3702026027826264,
+      "previous_root_score_difference": -0.3702026027826548,
+      "repeated_root_difference": 2.842170943040401e-14,
+      "first_unequal": {
+        "layer": 0,
+        "operation": "in_proj_qkv.base",
+        "event": 1
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 0.03125,
+        "changed_elements": 1543,
+        "first_coordinate": [
+          0,
+          8025
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    },
+    {
+      "traj_uid": "ac557c4b-f619-4350-a204-57784a881929",
+      "batch": 11,
+      "row": 2,
+      "initial_state_sha256": "d7e1ba744cedb8ace0db51791ef1b20371e84ab151b298fc06ef26040d6fb190",
+      "root_score_difference": 0.6296560698633584,
+      "previous_root_score_difference": 0.6296560698633016,
+      "repeated_root_difference": 5.684341886080802e-14,
+      "first_unequal": {
+        "layer": 0,
+        "operation": "in_proj_qkv.base",
+        "event": 1
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 0.03125,
+        "changed_elements": 1456,
+        "first_coordinate": [
+          81,
+          5487
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    },
+    {
+      "traj_uid": "7fe4e592-4e75-40a3-901b-a8869539124e",
+      "batch": 11,
+      "row": 3,
+      "initial_state_sha256": "fc2fd6313753ec2c5185c746edb09be1a91f04f02067b91832f10d826a4ce98e",
+      "root_score_difference": 1.256825514152979,
+      "previous_root_score_difference": 1.2568255141526379,
+      "repeated_root_difference": 3.410605131648481e-13,
+      "first_unequal": {
+        "layer": 0,
+        "operation": "in_proj_qkv.base",
+        "event": 1
+      },
+      "first_unequal_output": {
+        "equal": false,
+        "maxabs": 0.03125,
+        "changed_elements": 1622,
+        "first_coordinate": [
+          60,
+          1587
+        ],
+        "nonfinite": 0
+      },
+      "first_operation_input_all_pairs_equal": true
+    }
+  ],
+  "conclusions": [
+    "All eight unequal root rows first diverge in original native Linear projections, before the corresponding convolution and FLA. Later FLA operand/output differences cannot by themselves prove a FLA defect.",
+    "The captured Linear differences pass the owning PyTorch assertion with unchanged BF16 defaults. No projection, DT, FA/FLA or credit correction is deployed.",
+    "A permitted local floating-point discrepancy can propagate to a nonzero joint-score difference. Local checks neither bound that whole-model difference nor establish an attribution error for every queried source.",
+    "Original deletion-supported negative tails remain unchanged. The same-input endpoint discrepancy is separate from an actual deletion effect.",
+    "The prior 48-row investigation does not need to be repeated to obtain these operands: complete original artifacts are now saved remotely and bound by SHA256."
+  ],
+  "production_modified": false,
+  "official_tolerance_changed": false,
+  "training_restart": false,
+  "attribution_accuracy_repaired": false,
+  "original_PPO_NaN_repaired": false
+}
