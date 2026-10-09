@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+
+## 2026-10-10 04:14 同一正式作业再次核实新稳定数值版
+
+TextCraft仍为PID982372/出生1791553809.84、物理2/3；数值源26bef6c8、
+fla-early-output-scale-20261009-v1、GDN SHA7c06d5e0…保持验收身份。
+12项路径检查（11个独立路径）与此前两worker实际导入回执一致，两worker出生时间
+保持，原六份worker/TaskRunner所查错误为空。8/330次完整迭代、32次optimizer更新，
+第九次采样进入10/30交互、132条active；不是四次更新后截停的测试任务。
+LoRA8/16、actor/DT每卡B4/双卡B8、32768、无恢复/hold/手动截停保持。
+物理两卡50242/50488MiB为采样快照；主机可用887.39GB，cgroup228.47GB。
+本次只读，没有新测试、生产patch、模型/DT/optimizer调用或启动其他任务；
+既有官方FLA验收与被动记录覆盖分别引用，未把日志版本当成数值版本。
+完整来源和身份见results_textcraft_stable_formal_version_confirmed_20261010.json。
+
 ## 2026-10-10 新稳定版第八次正式迭代完整返回，第九次采样开始
 
 同一TextCraft PID982372/出生1791553809.84、物理2/3、验收数值源26bef6c8/GDN7c06d5e0…
