@@ -1,5 +1,24 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 TextCraft 真实worker版本及参数通过原VERL只读RPC确认
+
+上一goal轮已实际部署完整正式预算并观察采样推进，属于progress。本轮不重复诊断训练，
+源048df163通过原Worker.execute_with_func_generator读取当前named WorkerDict的
+sys.modules路径/SHA及owner.config，没有state_dict、forward、hooks、patch或optimizer调用。
+query1053096/出生1791554456.60，22:01:44完成并已退出；正式982372/出生1791553809.84仍在。
+真实两worker987808/989860回传，原actor3a65e173…、corefc2f992b…、fsdp_workers e5eb4afc…、
+fsdp_vllm364e6945…及vLLM7d2fcdb2…均与部署绑定相同，没有换到旧PPO/vLLM路径。
+实际LoRA8/16、microbatch4、32768、max_num_seqs32、entropy .001、dualclip3正确。
+原worker将全局optimizer minibatch64按两rank归一化为本地32，这是官方拆分，不是参数缩减。
+
+本次RPC发生在正式采样边界；DT producer/readout/GDN尚未懒加载，不能把CPU启动前
+DT导入证据冒充真实worker DT已加载。进入首DT后再用同一原只读RPC核对，不设置hold。
+目前正式采样已完成前三轮、进入第4/30轮，活动轨迹256→240→224，前3轮136.32、
+约123、109秒；不是新迭代或PPO更新。没有新增GPU查询/短训练/方法候选，也不宣称
+数值容差、极端归因或首次更新已验收。完整scope/时间/来源见
+results_textcraft_live_workers_20261009.json。AppWorld保持停止，正式训练没有重启或截停。
+
+
 ## 2026-10-09 新稳定数值版 TextCraft 完整正式预算已部署
 
 最新人类要求：不得只跑四次更新/发烟/限制epoch，必须用新稳定版。部署源e3292033
