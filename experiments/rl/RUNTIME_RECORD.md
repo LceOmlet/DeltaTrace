@@ -1,6 +1,36 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-10 06:11 新稳定版第十一次正式迭代完整返回，第十二次采样开始
+
+同一TextCraft PID982372/出生1791553809.84、物理2/3、验收数值源26bef6c8/GDN7c06d5e0…
+保持；12项路径检查（11个独立路径）与此前原worker实际导入回执一致。原330预算现11/330、
+44次optimizer更新，两worker进入第十二次generate_sequences；LoRA8/16、actor/DT每卡B4/
+双卡B8、32768、基础权重起点、无恢复/hold/手动截停不变，六份原错误检查为空。
+原step11：reward0.664、grad_norm0.039、entropy0.637；gen1711.430、old111.790、ref97.538、
+adv162.934（含DT）、actor406.211、step2490.311秒（41分30秒），826285 token。
+原白化优势[-57.168,6.140]。不同实际负载，不作官方同硬件或受控提速对照。
+物理显存49.127/48.746GiB为第十二次采样快照，非峰值；原虚拟allocator计数分开保留。
+
+第十一次DT两卡各22个B4、159.661/159.670秒；44文件/176原rank行/170唯一UID，保留6个DP
+重复视角，原callback路径、UID、信用组合/mask/位置/有限值匹配。CPU原信用owner0.257秒，
+未来概率诊断2.136秒/PSS386236416字节，无新增模型/DT/optimizer或GPU任务。原全rollout
+source612746与非零DT去重source192424分开；逐target sample_sums与保存score残差0，32个
+非零DT初始状态分组保留。2844处必要未来概率边界正残差，c>2为14/41；严格正残差不是
+官方容差、故障门槛、precision/recall或已测native删除结果。最小raw A=-8.918185、UIDe69031e8…、
+response2182/input2497/token609/d=-2.294370；未来21个target事实logp=-1.829497，隐含删除
+logp=0.464873/概率1.591812，不能解释为精确单EOS删除概率比。原tokenizer只读解码为“ pl”，
+在最终smithing table动作前Thought中的planks；上下文保存，仅作该点显示，不推断总体质量。
+此为归因近似问题，未裁剪/纠偏或追加删除查询，正式任务按用户授权继续。
+
+原plot_training_progress.py c9da6ff…读出/解析/绘图复用，同一正式1–11原训练点；v5来源
+按第十一次原回执新建，旧6/8/9/10快照逐字节保留，缺失不填0、不平滑、不混pilot/eval。
+原checkpoint完成标记仍无，save_freq25不变，不强制保存/恢复，不启动备份。三项远端权威
+清单只更新同TextCraft PID的11完成状态；AppWorld正式仍停，SQL/GRPO不启。无生产patch。
+来源/SHA见results_textcraft_eleventh_formal_iteration_20261010.json、
+results_textcraft_eleventh_DT_records_20261010.json、results_textcraft_stable_progress_plot_eleventh_20261010.json。
+
+
 
 ## 2026-10-10 05:29 新稳定版第十次正式迭代完整返回，第十一次采样开始
 
