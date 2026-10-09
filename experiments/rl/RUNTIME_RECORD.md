@@ -1,5 +1,27 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 正式保存target/source接口核对完成，无生产修改
+
+复用原PackedAnswerTargets（实际SHA d47333ea…）在CPU重读第二/三/四次正式DT的
+120个保存B4、480个原rank行、472个去重UID；原target token ID/前一位置predictor、
+target_offsets与mask、suffix索引、source/target独立policy mask均一致，非source及
+已为EOS的source原d全零。核算2.023秒，CUDA未初始化，模型/DT/optimizer新增调用0。
+只核对实际保存数据与原packing接口，没有用夹具替代官方内核或累计删除评测。
+
+已绑定实际wrapper8046762a…、runner5f14bb3c…、head d47333ea…与原readout814cfe92…，
+及完成的被动记录覆盖2609d93f…。原文本target为全词表log_softmax，按原sample_sums求和；
+原signed向量未做target长度归一化。此次没有找到保存数据的单位混用或索引/mask不一致。
+各cohort端点差减source总和最大绝对残差0.6741/0.6485/0.6268，仅原值报告，不添加
+阈值、倍率、裁剪或守恒纠偏；累计残差不能证明逐token删除准确性。
+原逐target GPU分数、原散射前向量未保存，本CPU核对不能独立重建它们；没有夸大验收范围。
+
+先前条件FA、GDN、mixers集合候选的未接受结论保持，没有重复启动、调参或部署。
+TextCraft仍为26bef6c8新数值版、同PID982372/出生1791553809.84、物理2/3，原330预算。
+最新实读1791566251.84：第五次采样完成17次交互、进入18/30，两worker generate进行，
+driver所查错误标记为空；AppWorld正式仍停。无版本、参数、Q/V/A、白化或PPO修改。
+完整限制、源码片段与数据覆盖见results_formal_target_alignment_20261010.json。
+
+
 ## 2026-10-10 新稳定版实际双卡进程再次核对一致
 
 TextCraft正式PID982372/出生1791553809.84继续物理2/3；原VERL generic RPC只读核对
