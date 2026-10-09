@@ -16,8 +16,8 @@ sys.path.insert(0, str(HERE.parents[1]))
 from stage_environment_entry import ENTRY, ROOT, SSH, SCP
 
 VERSION = 'fla-early-output-scale-20261009-v1'
-REMOTE = ROOT+'/candidates/appworld-stable-memory-entry-20261010-v2'
-LOCAL = HERE/'appworld-stable-memory-entry-20261010-v2'
+REMOTE = ROOT+'/candidates/appworld-stable-memory-entry-20261010-v3'
+LOCAL = HERE/'appworld-stable-memory-entry-20261010-v3'
 
 
 def main():
@@ -64,7 +64,7 @@ from launch_appworld_native import options_for
 base=Path(os.environ['INSPECTION_BASE']);old=json.loads(Path(os.environ['ORIGINAL_SOURCE']).read_bytes())
 output=Path(os.environ['PREPARED_OUTPUT']);options,sampling=options_for(output)
 def redirect(value):
-    if isinstance(value,str):return value.replace(str(Path(os.environ['ORIGINAL_SOURCE']).parent),str(output))
+    if isinstance(value,str):return value.replace(str(Path(os.environ['ORIGINAL_SOURCE']).parent),str(output)).replace(old['entry'],os.environ['DT_ENTRY_ROOT'])
     if isinstance(value,dict):return {k:redirect(v) for k,v in value.items()}
     if isinstance(value,list):return [redirect(v) for v in value]
     return value
@@ -85,13 +85,16 @@ for name in ('reward_readout','counterfactual','dt_training_batch','owner_trajec
     if name.startswith('verl.'):
         relative=str(p.relative_to(Path(old['verl_root'])))
         assert modules[name]['sha256']==old['verl_sha256'][relative],name
+dataset=Path(options['data.custom_cls.path'])
+assert hashlib.sha256(dataset.read_bytes()).hexdigest()==old['entry_sha256'][dataset.name]
+modules['loop_iteration_dataset']=dict(path=str(dataset),resolved=str(dataset.resolve()),sha256=hashlib.sha256(dataset.read_bytes()).hexdigest())
 assert cfg.trainer.resume_mode=='disable' and cfg.trainer.total_training_steps==200
 assert cfg.actor_rollout_ref.model.lora_rank==8 and cfg.actor_rollout_ref.model.lora_alpha==16
 assert cfg.actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu==4
 assert cfg.actor_rollout_ref.actor.entropy_coeff==0.001 and cfg.actor_rollout_ref.actor.clip_ratio_c==3
 assert not torch.cuda.is_initialized()
 result=dict(options=options,sampling=sampling,actual_CPU_imports=modules,probe=probe,
-    original_task_and_training_options_equal_except_output_paths=True,CUDA_initialized=False,
+    original_task_and_training_options_equal_except_entry_and_output_paths=True,CUDA_initialized=False,
     model_DT_optimizer_episode_calls=0)
 (base/'CPU-imports.json').write_text(json.dumps(result,indent=2)+'\n')
 """
@@ -129,7 +132,7 @@ result=dict(status='prepared_verified_selection_not_started',unix=time.time(),ve
     source_template=binding(base/'source-template.json'),CPU_imports=binding(base/'CPU-imports.json'),
     effective_config=binding(base/'effective-config.yaml'),existing_checker=binding(candidate/'submit_prepared_direct_targets.py'),
     source_bindings_verified=checked['source_bindings_verified'],source_commit=__COMMIT__,
-    original_task_and_training_options_equal_except_output_paths=True,
+    original_task_and_training_options_equal_except_entry_and_output_paths=True,
     formal_started=False,root_authorities_unchanged=authorities,
     model_DT_optimizer_episode_calls=0,CPU=cpu)
 put(base/'result.json',result);print(json.dumps(result))
