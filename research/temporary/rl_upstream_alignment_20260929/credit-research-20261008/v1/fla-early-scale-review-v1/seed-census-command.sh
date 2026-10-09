@@ -1,0 +1,3 @@
+set -eu
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-early-output-scale-20261009-v1/check_fla_early_scale_seeds.py --directory /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v3/results --output /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-early-output-scale-20261009-v1/seed-census.json

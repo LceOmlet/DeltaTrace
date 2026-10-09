@@ -1,0 +1,285 @@
+{
+  "scope": "Check the scale reorder with the installed FLA and its original assertions.\n\nReuse the actual overflow block, both actual operand dtypes, the saved nonzero\ninitial state, original reference recurrence, native kernels and finite owner.\nNo model, training, attribution estimator or tolerance is reimplemented.\n",
+  "sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v2/results/rank0-first-nonfinite.pt",
+      "bytes": 1449841842,
+      "sha256": "9cd75ef2ca64793cf6c84713c32c3b925841e2e4363aba3465cac6e39f9f7e03"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/credit-single-background-nonfinite-appworld-20261009-v3/results/rank0-precast-seed.pt",
+      "bytes": 524224246,
+      "sha256": "f5cdf28299d50469653c2e214a102c54c01d363990715f3bc68e69a8e23c996e"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/direct-target-numerics-20261007-v3/official-check-setup/test_gated_delta_v041.py",
+      "bytes": 13148,
+      "sha256": "35f28bf6d01f101f075309133929d1764ab540eb9a892f35eca92227e8768813"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-early-output-scale-20261009-v1/check_fla_early_scale.py",
+      "bytes": 7791,
+      "sha256": "102bc708feecd0ec1dd0d08438c188f8190baf72cfd33b2e62d7c48f990f806f"
+    }
+  ],
+  "official_thresholds": {
+    "o": 0.005,
+    "ht": 0.005,
+    "dq": 0.008,
+    "dk": 0.008,
+    "dv": 0.008,
+    "db": 0.02,
+    "dg": 0.02,
+    "dh0": 0.008
+  },
+  "scale": 0.08838834764831845,
+  "capture_local_block_start": 3712,
+  "tokens": 64,
+  "reference": "Original FLA FP32 recurrence on exact native dtype operands, original unrounded FP32 cotangent. Finite coincident-endpoint derivative limit is checked; this is not a nonzero DT quality certificate.",
+  "production_changed": false,
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "optimizer": 0
+  },
+  "cases": [
+    {
+      "dtype": "torch.float16",
+      "seed_dtype": "torch.float16",
+      "original_scale": 0.08838834764831845,
+      "callback_scale": 1.0,
+      "seed_maxabs": 6816.0,
+      "seed_nonfinite": 0,
+      "exponent": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "checks": [
+        {
+          "name": "native scaled o",
+          "threshold": 0.005,
+          "normalized_error": 0.00030193546862074835,
+          "max_abs": 1.1702999472618103e-05,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dq",
+          "threshold": 0.008,
+          "normalized_error": 0.0016678270742501505,
+          "max_abs": 0.08832931518554688,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dq",
+          "threshold": 0.008,
+          "normalized_error": 0.0016794228470230785,
+          "max_abs": 0.09039688110351562,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dk",
+          "threshold": 0.008,
+          "normalized_error": 0.0016360089907578792,
+          "max_abs": 0.07726669311523438,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dk",
+          "threshold": 0.008,
+          "normalized_error": 0.0017053315243914366,
+          "max_abs": 0.08710479736328125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dv",
+          "threshold": 0.008,
+          "normalized_error": 0.0018554461623707804,
+          "max_abs": 1.172821044921875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dv",
+          "threshold": 0.008,
+          "normalized_error": 0.0018281265969071487,
+          "max_abs": 1.084747314453125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.0016567527325142678,
+          "max_abs": 0.04032135009765625,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.00173858017144557,
+          "max_abs": 0.044429779052734375,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dg",
+          "threshold": 0.02,
+          "normalized_error": 0.0036504052058299427,
+          "max_abs": 0.013654947280883789,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dg",
+          "threshold": 0.02,
+          "normalized_error": 0.0035552017613234422,
+          "max_abs": 0.01312565803527832,
+          "nonfinite": 0,
+          "status": "passed"
+        }
+      ],
+      "seconds": 35.05453200600459,
+      "status": "passed"
+    },
+    {
+      "dtype": "torch.bfloat16",
+      "seed_dtype": "torch.bfloat16",
+      "original_scale": 0.08838834764831845,
+      "callback_scale": 0.08838834764831845,
+      "seed_maxabs": 76800.0,
+      "seed_nonfinite": 0,
+      "exponent": null,
+      "checks": [
+        {
+          "name": "native scaled o",
+          "threshold": 0.005,
+          "normalized_error": 0.0019487464919888855,
+          "max_abs": 7.625296711921692e-05,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dq",
+          "threshold": 0.008,
+          "normalized_error": 0.003229502804263653,
+          "max_abs": 0.21809005737304688,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dq",
+          "threshold": 0.008,
+          "normalized_error": 0.0027717816345041307,
+          "max_abs": 0.1944122314453125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dk",
+          "threshold": 0.008,
+          "normalized_error": 0.0039997110280252345,
+          "max_abs": 0.24683380126953125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dk",
+          "threshold": 0.008,
+          "normalized_error": 0.003596614588434351,
+          "max_abs": 0.1931915283203125,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dv",
+          "threshold": 0.008,
+          "normalized_error": 0.004808593850943788,
+          "max_abs": 3.5604248046875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dv",
+          "threshold": 0.008,
+          "normalized_error": 0.0034690719813293266,
+          "max_abs": 2.00799560546875,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.003834390260640181,
+          "max_abs": 0.09644508361816406,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dbeta",
+          "threshold": 0.02,
+          "normalized_error": 0.0033225075597122285,
+          "max_abs": 0.08020591735839844,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "native reordered dg",
+          "threshold": 0.02,
+          "normalized_error": 0.008411237338014596,
+          "max_abs": 0.03270387649536133,
+          "nonfinite": 0,
+          "status": "passed"
+        },
+        {
+          "name": "finite reordered dg",
+          "threshold": 0.02,
+          "normalized_error": 0.007169092067910006,
+          "max_abs": 0.026183128356933594,
+          "nonfinite": 0,
+          "status": "passed"
+        }
+      ],
+      "seconds": 30.081390072999056,
+      "status": "passed"
+    }
+  ],
+  "status": "passed",
+  "peak_allocated": 558453248,
+  "peak_reserved": 861929472
+}

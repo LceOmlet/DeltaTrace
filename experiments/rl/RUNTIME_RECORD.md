@@ -1,5 +1,45 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 提前FLA输出缩放已验证部署；统一分组召回补采完成
+
+新版本fla-early-output-scale-20261009-v1、源码26bef6c8，继承已接受的
+fla-seed-range-20261009-v1；TextCraft实际GDN bc1a11d9→7c06d5e，
+AppWorld 33b169b3→3f51f5f，保留各自consume_captures及原释放行为。
+只在原FP16内容系数的RMS乘法中融合已有scale，FLA adjoint及所有有限直接项
+使用单位scale；门控mz及BF16默认调用保持，原二进制范围保护继续保留。
+同一固定scale不是任意系数的溢出上界；没有信用裁剪、补偿倍率或新Q/V。
+原FA、head、runner等12文件逐SHA不变。两现有叶symlink、独立新进程CPU导入
+和active-training/active-source/verified_runtime的新增accepted overlay均核对；
+旧owner及停止作业source.json未改。RMS归一化重排候选和FA源key草案未部署。
+
+真实溢出块两dtype的22项原FLA断言全部通过；非重合端点5项有限等价对照
+沿用相同assert_close及对应原阈值通过，后者不冒充官方整条DT质量认证。
+两rank保存的289488896个FP32系数作CPU范围普查，旧FP16非有限3→0；
+归零L2比例2.25e-11/3.33e-11。这是保存值缩放普查，不冒充重新计算RMS。
+原AppWorld及TextCraft双卡各一B4调用、零optimizer/rollout/restore，完整完成；
+冷调用AppWorld108.51/108.55秒、TextCraft44.38/44.43秒，含编译及准备，
+不据此宣称稳态提速。现场、输入、原断言及SHA均保存；见两项
+results_fla_early_output_scale[_deployment]_20261009.json。
+
+统一概率采样控制器640843/出生1791509992.08及四块全部完成，各任务1061位置
+精确一一匹配，原样本SHA60eed5f1，统计源码c9e78c9b；不追加旧关注点，
+只在相同采样身份上并入已有native数值参照范围，抽样权重不变。
+TextCraft85条/121248 source，AppWorld122条/204865 source及2条缺失，
+各16状态；每任务DT预测c>2的37位置全数，其他预测层独立SRSWOR抽1024。
+TextCraft大负幅度支持1、不支持35、跨阈值1；随机非尾中发现3个漏报、3状态。
+AppWorld支持5、不支持22、跨阈值10；随机非尾26个漏报、10状态，另45点
+参照跨阈值。不能把幅度不支持全部写成负号错误。原同框TP/FP/FN/TN和
+状态/轨迹等权结果统一保存，body及各尾部区间分别报告，不混无界原始优势矩。
+
+按原数值参照范围，c>2支持率TextCraft2.7%–5.4%、AppWorld13.5%–40.5%；
+有限已完成保存总体的95%抽样及参照敏感范围，召回TextCraft0.059%–8.0%、
+AppWorld0.025%–0.550%。这些区间条件于观测参照范围，不包世界/模型/数值误差；
+不能外推全任务、同时覆盖全部状态/阈值或声称罕见c>100的召回已知。
+见results_tail_probability_analysis_20261009.json；原作者RISE/MAS独立保留。
+数值范围修复不等于归因估计误报/漏报已修复，也不等于原PPO NaN已定位。
+两正式训练继续停止，无checkpoint恢复；本轮诊断已退出，物理八卡均约858MiB。
+
+
 ## 2026-10-09 统一负尾采样已冻结，原native补采启动；尚无新召回结果
 
 用户指出旧采集不能支撑分组召回，已停止把不同采样框的计数拼接。仍使用原
