@@ -1,5 +1,52 @@
 # 当前运行版本与修复记录
 
+
+## 2026-10-09 首个完整正式迭代已完成，继续原330次预算
+
+当前同一新稳定版正式PID982372/出生1791553809.84，数值源26bef6c8、实际两worker
+GDN SHA7c06d5e0…已由原RPC确认（前一节/回执），没有再次部署或修改数值/参数。
+Unix1791556869.985870（22:41:09）读取原TaskRunner step:1及1/330进度，
+两worker987808/989860已进入下一次generate_sequences，没有四次更新后的退出钩子。
+
+原日志首轮timing_s：gen1858.930秒、old_log_prob149.592、ref117.156、adv227.446、
+update_actor500.755、step2854.315（47分34.315秒）。各rank DT223.373/223.535秒是
+本阶段内部报告，不与adv再次相加。此为本次正式实际总时长，不混v5诊断主动停止的记录。
+原score/reward/episode reward均0.664、actor/grad_norm0.035，全部原step1指标有限；
+两worker原out/err无grad_norm is not finite/Traceback/OOM，首完整更新返回。
+原256条/全局optimizer64/PPO epoch1对应四次optimizer更新，是框架循环计数与无skip
+日志依据，不冒充新增逐步gradient/state_dict抓取。每迭代四次更新后继续采样330总预算。
+原logger仅三位小数，精确原文本保留。下一次采样物理2/3为50779/49579MiB、
+单worker PSS14.531/14.376GB，host可用901738364928字节。原allocator最大值
+64.773/70.994GB原样保存，不冒充mx-smi物理峰值或OOM；实测phase样本非峰值。
+尚未形成原checkpoint完成标记，未恢复/导出检查点；AppWorld仍停止。
+原reward_fn的reward_extra_info fallback文字也原样留存，不隐去；原官方score和170/256
+非零轨迹一致。没有据此新增或改写reward行为。
+
+当前事实：首轮完整训练与下一轮采样已经成立；不据一轮宣称长期稳定或归因已准确。
+完整日志来源/SHA、指标/资源及版本关联见results_textcraft_first_formal_iteration_20261009.json。
+下面22:35“PPO更新中”是较早同一job观察，已由本节覆盖。
+
+
+## 2026-10-09 新稳定版已在真实两worker DT中确认；首DT完成，原PPO更新中
+
+保持正式PID982372/出生1791553809.84，原330完整迭代预算，不新增短训、hold、timeout、
+checkpoint恢复或数值改动。原RPC源048df163的第二次只读查询1225093/出生1791556137.81
+于Unix1791556305.830232（22:31:45）完成，真实987808/989860均已加载DT。
+实际GDN解析到releases/fla-early-output-scale-20261009-v1/textcraft，SHA7c06d5e0…；
+readout814cfe92…、producer2aa5f552…、runner5f14bb3c…与接受源一致，VERL/vLLM未换路径。
+原FLA22项及非重合端点5项验收关联既有数值回执，未扩大或重定义容差。
+
+原两worker各完成22个B4有限trace批次，报告223.373/223.535秒，含约33.688秒prefix准备；
+此为各rank原DT阶段报告，不能当作整迭代或两卡耗时相加。原traces及trajectories字段各88，原分发对齐记录保留，
+不把176条报告项称为176条独立轨迹。实际DT context最长6013/7459，
+不据此宣称自然输入为32k或重新通过32k容量。原信用负值保留，未裁剪/纠偏。
+22:35:09两worker进入原actor_rollout_update_actor，尚未返回完整更新/梯度指标；
+driver和两worker原日志均未见OOM/Traceback/grad_norm is not finite，不能提前称更新健康。
+该phase物理2/3为31226/37408MiB，单worker PSS约14.55/14.39GB，host可用839094685696；
+这是实测样本而非峰值或无泄漏证明。源、SHA、实际配置及原报告绑定见
+results_textcraft_live_dt_version_20261009.json。AppWorld仍未重启。
+
+
 ## 2026-10-09 正式采样phase资源实测；不增加修补或短测
 
 上一goal轮已通过真实worker原RPC核对VERL/vLLM/参数，属于progress。本轮继续同一

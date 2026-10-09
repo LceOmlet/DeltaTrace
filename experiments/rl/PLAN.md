@@ -9,6 +9,10 @@ SHA7c06d5e0…与验收绑定一致；不是未接受研究候选，也不退回
 原30 epoch，原trainer实际显示330次完整迭代；每迭代32组×8条轨迹、4次全局64条
 optimizer更新，不是只运行4次更新。LoRA8/16、每卡B4/双卡B8保持，参数逐项与原正式配置一致。
 21:53:10原两worker已进入首轮generate_sequences，日志0/330；尚无完整更新验证。
+2026-10-09 22:35只读核验：真实两worker已加载上述release与SHA，首DT各22个B4完成；
+原PPO更新中，尚无完整更新返回。详见results_textcraft_live_dt_version_20261009.json。
+22:41原step1完整返回，1/330并已进入下一次采样；原奖励均值0.664、grad_norm0.035，
+无nonfinite skip/OOM。正式预算未截停，见results_textcraft_first_formal_iteration_20261009.json。
 AppWorld仍停止，4/5用于已授权调试。该段覆盖下方较早“两正式任务停止”等状态，
 不更改方法定义或宣称原PPO NaN、极端归因准确性已修复。源/配置/进程/验收关联见
 results_textcraft_formal_stable_20261009.json及RUNTIME_RECORD.md。
