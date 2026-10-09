@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 第六次正式DT完整返回，新增原生target记录已全量实读
+
+TextCraft同一正式PID982372/出生1791553809.84、物理2/3、新数值源26bef6c8保持；
+第六次原DT两卡各21个B4、164.495/164.514秒完成，原PPO更新进行，完整进度仍5/330。
+42个文件、168原rank行、164唯一UID（4个DP重复视角保留），与原报告的UID/路径集合一致。
+新增helper f0fbae61…在全部正式文件实际生效，不再只是历史CPU现场或安装成功。
+原PackedAnswerTargets d47333ea…和NativeTargetLogitRows ebb5345e…直接读回真实数据：
+七项实际predictor、suffix重定位、target/endpoint身份、head尺寸、分数有限/非正及端点
+存在性核对全无失败；逐target原sample_sums与保存事实/参照分数的最大差均0。
+先读22个B4的中途结果单独保留，不用它代替后续全部42个B4结果。
+CPU原信用owner审核0.211秒、全量概率边界0.392秒、原生target审核1.381秒/PSS352.8MB；
+CUDA均未初始化，没有新增模型/DT/optimizer，未重定义或重复官方数值容差。
+本轮保存22082118字节；原真实非零DT最大输入5018，不冒充32k容量测试。
+
+198341个去重source中1063处违反相对实际事实分数的归一化概率必要边界，涉及89条轨迹、
+27/31个非零DT初始状态；c>2的56位置中17处越界，完整主体/尾部/全部重复视角保留。
+本轮最小raw A=-92.037346、d=-4.533001，response1800/input2115/token1；
+实际逐target求和事实logp=-37.061931、隐含删除logp=-32.528930，在概率边界内，
+不能只因幅度大就判错或修掉，也不能据边界内直接确认单删因果准确。
+这些边界计数不是precision/recall、核容差或训练退化结论；实际位置/聚合正确也
+不证明联合有限分配等于事实单删。极端归因准确性仍未声称已修复，不裁剪或倍率纠偏。
+原LoRA8/16、每卡actor/DT B4/双卡B8、32768、原330预算继续；AppWorld正式仍停。
+根三项权威清单仅更新同PID实际DT/actor phase及原生回执链接，原源码/参数/其他任务不变。
+完整原报告、分组位置、实际owner路径/SHA与检查限制见
+results_textcraft_sixth_DT_native_targets_20261010.json及current_runtime最新字段。
+
+
 ## 2026-10-10 既有被动记录器补齐原生target字段，数值版不变
 
 通过原VERL execute_with_func_generator，仅更新两原worker的_record_joint_dt_batch。

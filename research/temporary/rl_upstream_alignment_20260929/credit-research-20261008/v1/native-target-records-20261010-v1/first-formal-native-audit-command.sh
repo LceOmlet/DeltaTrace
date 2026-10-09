@@ -1,0 +1,2 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 "$VENV_PYTHON" /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-target-records-20261010-v1/audit_native_target_records.py /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-target-records-20261010-v1/first-formal-native-audit.json
