@@ -1,0 +1,556 @@
+{
+  "status": "verified_for_user_authorized_deployment",
+  "version": "fla-early-output-scale-20261009-v1",
+  "parent_version": "fla-seed-range-20261009-v1",
+  "prepared": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\prepared.json",
+    "bytes": 2209,
+    "sha256": "5dc4dbbb98f5a243f63f9e4395a1790c009444d40d50c61af7aaf67bff51ce3d"
+  },
+  "owners": {
+    "textcraft": {
+      "base_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\qwen35_gdn_finite.py",
+      "base_sha256": "bc1a11d95255f8990f312696235c50da219a91d2d3f026155084f2f56273bb15",
+      "candidate_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\textcraft\\qwen35_gdn_finite.py",
+      "candidate_sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656",
+      "consume_captures": false,
+      "public_signature_unchanged": true
+    },
+    "appworld": {
+      "base_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\baseline-qwen35_gdn_finite.py",
+      "base_sha256": "33b169b3fb660eb8ce57a6bda6ecb04c7f7235a029aa04038ff447b2faddf6fd",
+      "candidate_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\appworld\\qwen35_gdn_finite.py",
+      "candidate_sha256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+      "consume_captures": true,
+      "public_signature_unchanged": true
+    }
+  },
+  "algebra": "For fixed captured endpoints: F_E(m, s) = F_E(s*m, 1). Native state reverse calls use s*m; all direct qH/qKV finite terms use the same s*m. Gate cotangent mz is unchanged.",
+  "range_scope": "Accepted per-head power-of-two representation remains after the reorder; fixed s alone is not a universal FP16 overflow bound.",
+  "official_checks": {
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\official-result.json",
+      "bytes": 8512,
+      "sha256": "21f9adba4f62d8822f2036aa7c63a1db02e620abb351aed2b228fc290b713ebb"
+    },
+    "checks_passed": 22,
+    "thresholds": {
+      "o": 0.005,
+      "ht": 0.005,
+      "dq": 0.008,
+      "dk": 0.008,
+      "dv": 0.008,
+      "db": 0.02,
+      "dg": 0.02,
+      "dh0": 0.008
+    },
+    "cases": [
+      {
+        "dtype": "torch.float16",
+        "seed_dtype": "torch.float16",
+        "original_scale": 0.08838834764831845,
+        "callback_scale": 1.0,
+        "seed_maxabs": 6816.0,
+        "seed_nonfinite": 0,
+        "exponent": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "checks": [
+          {
+            "name": "native scaled o",
+            "threshold": 0.005,
+            "normalized_error": 0.00030193546862074835,
+            "max_abs": 1.1702999472618103e-05,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dq",
+            "threshold": 0.008,
+            "normalized_error": 0.0016678270742501505,
+            "max_abs": 0.08832931518554688,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dq",
+            "threshold": 0.008,
+            "normalized_error": 0.0016794228470230785,
+            "max_abs": 0.09039688110351562,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dk",
+            "threshold": 0.008,
+            "normalized_error": 0.0016360089907578792,
+            "max_abs": 0.07726669311523438,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dk",
+            "threshold": 0.008,
+            "normalized_error": 0.0017053315243914366,
+            "max_abs": 0.08710479736328125,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dv",
+            "threshold": 0.008,
+            "normalized_error": 0.0018554461623707804,
+            "max_abs": 1.172821044921875,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dv",
+            "threshold": 0.008,
+            "normalized_error": 0.0018281265969071487,
+            "max_abs": 1.084747314453125,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dbeta",
+            "threshold": 0.02,
+            "normalized_error": 0.0016567527325142678,
+            "max_abs": 0.04032135009765625,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dbeta",
+            "threshold": 0.02,
+            "normalized_error": 0.00173858017144557,
+            "max_abs": 0.044429779052734375,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dg",
+            "threshold": 0.02,
+            "normalized_error": 0.0036504052058299427,
+            "max_abs": 0.013654947280883789,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dg",
+            "threshold": 0.02,
+            "normalized_error": 0.0035552017613234422,
+            "max_abs": 0.01312565803527832,
+            "nonfinite": 0,
+            "status": "passed"
+          }
+        ],
+        "seconds": 35.05453200600459,
+        "status": "passed"
+      },
+      {
+        "dtype": "torch.bfloat16",
+        "seed_dtype": "torch.bfloat16",
+        "original_scale": 0.08838834764831845,
+        "callback_scale": 0.08838834764831845,
+        "seed_maxabs": 76800.0,
+        "seed_nonfinite": 0,
+        "exponent": null,
+        "checks": [
+          {
+            "name": "native scaled o",
+            "threshold": 0.005,
+            "normalized_error": 0.0019487464919888855,
+            "max_abs": 7.625296711921692e-05,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dq",
+            "threshold": 0.008,
+            "normalized_error": 0.003229502804263653,
+            "max_abs": 0.21809005737304688,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dq",
+            "threshold": 0.008,
+            "normalized_error": 0.0027717816345041307,
+            "max_abs": 0.1944122314453125,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dk",
+            "threshold": 0.008,
+            "normalized_error": 0.0039997110280252345,
+            "max_abs": 0.24683380126953125,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dk",
+            "threshold": 0.008,
+            "normalized_error": 0.003596614588434351,
+            "max_abs": 0.1931915283203125,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dv",
+            "threshold": 0.008,
+            "normalized_error": 0.004808593850943788,
+            "max_abs": 3.5604248046875,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dv",
+            "threshold": 0.008,
+            "normalized_error": 0.0034690719813293266,
+            "max_abs": 2.00799560546875,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dbeta",
+            "threshold": 0.02,
+            "normalized_error": 0.003834390260640181,
+            "max_abs": 0.09644508361816406,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dbeta",
+            "threshold": 0.02,
+            "normalized_error": 0.0033225075597122285,
+            "max_abs": 0.08020591735839844,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "native reordered dg",
+            "threshold": 0.02,
+            "normalized_error": 0.008411237338014596,
+            "max_abs": 0.03270387649536133,
+            "nonfinite": 0,
+            "status": "passed"
+          },
+          {
+            "name": "finite reordered dg",
+            "threshold": 0.02,
+            "normalized_error": 0.007169092067910006,
+            "max_abs": 0.026183128356933594,
+            "nonfinite": 0,
+            "status": "passed"
+          }
+        ],
+        "seconds": 30.081390072999056,
+        "status": "passed"
+      }
+    ],
+    "scope": "Original FLA FP32 recurrence on exact native dtype operands, original unrounded FP32 cotangent. Finite coincident-endpoint derivative limit is checked; this is not a nonzero DT quality certificate."
+  },
+  "noncoincident_equivalence": {
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\nonzero-result.json",
+      "bytes": 3755,
+      "sha256": "39eeb369fcd76797327d5397f609d542d9fe70af16cf7aa1dc22d799de02211d"
+    },
+    "checks_passed": 5,
+    "checks": [
+      {
+        "name": "q",
+        "threshold": 0.008,
+        "normalized_error": 0.00392478585670161,
+        "max_abs": 0.239990234375,
+        "nonfinite": 0,
+        "status": "passed"
+      },
+      {
+        "name": "k",
+        "threshold": 0.008,
+        "normalized_error": 0.004464181598938821,
+        "max_abs": 0.2954254150390625,
+        "nonfinite": 0,
+        "status": "passed"
+      },
+      {
+        "name": "v",
+        "threshold": 0.008,
+        "normalized_error": 0.0027392401416274823,
+        "max_abs": 1.78466796875,
+        "nonfinite": 0,
+        "status": "passed"
+      },
+      {
+        "name": "beta",
+        "threshold": 0.02,
+        "normalized_error": 0.003933548586391537,
+        "max_abs": 0.09657669067382812,
+        "nonfinite": 0,
+        "status": "passed"
+      },
+      {
+        "name": "g",
+        "threshold": 0.02,
+        "normalized_error": 0.008692564864328817,
+        "max_abs": 0.0326690673828125,
+        "nonfinite": 0,
+        "status": "passed"
+      }
+    ],
+    "scope": "Compare the reorder on the saved noncoincident finite endpoint block.\n\nThis supplements the original FLA derivative-limit assertions. Its native\nassert_close calculator/thresholds are reused for a finite equivalence check,\nnot described as an official test of nonzero DT attribution accuracy.\n"
+  },
+  "saved_range_census": {
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\seed-census.json",
+      "bytes": 1807,
+      "sha256": "926f2c7f013d4752d71e70e66e8608c13d5f56efd9082bc42c0f22885a52475d"
+    },
+    "elements": 289488896,
+    "old_FP16_nonfinite": 3,
+    "new_FP16_nonfinite": 0,
+    "zeroed_L2_fractions": [
+      2.2469473867141237e-11,
+      3.326532807533897e-11
+    ]
+  },
+  "replays": {
+    "textcraft": {
+      "launch": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\replay-textcraft\\launch.json",
+        "bytes": 5318,
+        "sha256": "3811ca90accb08a47e6741a37af8e7e563e724c3eb7b2b954d9f43793c8f3533"
+      },
+      "ranks": [
+        {
+          "rank": 0,
+          "phase": "complete",
+          "operations": {
+            "DT": 1,
+            "native_forward": 0,
+            "optimizer": 0,
+            "backward": 0,
+            "rollout": 0,
+            "checkpoint_restore": 0
+          },
+          "elapsed_seconds": 44.384329449007055,
+          "rounds": [
+            [
+              {
+                "round": 0,
+                "seconds": 43.24414006099687,
+                "queries": 4
+              }
+            ]
+          ],
+          "actual_candidate": {
+            "base_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\qwen35_gdn_finite.py",
+            "base_sha256": "bc1a11d95255f8990f312696235c50da219a91d2d3f026155084f2f56273bb15",
+            "candidate_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-early-output-scale-20261009-v1/replay-textcraft/diagnostic_gdn_owner.py",
+            "candidate_sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656",
+            "consume_captures": false,
+            "public_signature_unchanged": true,
+            "manifest_sha256": "771c3ff566f69502e6b5c9e0dacd041c4e119b06ac0e43cd133298f7120fdd79",
+            "production_modified": false,
+            "default_inert": true
+          },
+          "ending_allocated": 67180032,
+          "ending_reserved": 15839789056,
+          "PSS": 7971026944,
+          "source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+          "finite_runner": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+            "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555"
+          }
+        },
+        {
+          "rank": 1,
+          "phase": "complete",
+          "operations": {
+            "DT": 1,
+            "native_forward": 0,
+            "optimizer": 0,
+            "backward": 0,
+            "rollout": 0,
+            "checkpoint_restore": 0
+          },
+          "elapsed_seconds": 44.42704552799114,
+          "rounds": [
+            [
+              {
+                "round": 0,
+                "seconds": 43.2855674099992,
+                "queries": 4
+              }
+            ]
+          ],
+          "actual_candidate": {
+            "base_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\deltatrace\\clean\\qwen35\\qwen35_gdn_finite.py",
+            "base_sha256": "bc1a11d95255f8990f312696235c50da219a91d2d3f026155084f2f56273bb15",
+            "candidate_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-early-output-scale-20261009-v1/replay-textcraft/diagnostic_gdn_owner.py",
+            "candidate_sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656",
+            "consume_captures": false,
+            "public_signature_unchanged": true,
+            "manifest_sha256": "771c3ff566f69502e6b5c9e0dacd041c4e119b06ac0e43cd133298f7120fdd79",
+            "production_modified": false,
+            "default_inert": true
+          },
+          "ending_allocated": 67180032,
+          "ending_reserved": 16955473920,
+          "PSS": 8728889344,
+          "source_sha256": "2796233e2683f1939896c74b2b578c242dbd7a7f235b9ef61cbedd398f61be52",
+          "finite_runner": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+            "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555"
+          }
+        }
+      ],
+      "source_manifest": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\replay-textcraft\\preserved\\manifest.json",
+        "bytes": 3717,
+        "sha256": "6bdfd5adee6e20a94419ec8f70e234f8e8d8ef9e1f66c76886bc7b99fed915e4"
+      }
+    },
+    "appworld": {
+      "launch": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\replay-appworld\\launch.json",
+        "bytes": 5064,
+        "sha256": "4443a28d5ae65c9ba18ae71045b2d76332e211128aef9cd5cc292f968ed29407"
+      },
+      "ranks": [
+        {
+          "rank": 0,
+          "phase": "complete",
+          "operations": {
+            "DT": 1,
+            "native_forward": 0,
+            "optimizer": 0,
+            "backward": 0,
+            "rollout": 0,
+            "checkpoint_restore": 0
+          },
+          "elapsed_seconds": 108.51309625498834,
+          "rounds": [
+            [
+              {
+                "round": 0,
+                "seconds": 107.4345337030245,
+                "queries": 4
+              }
+            ]
+          ],
+          "actual_candidate": {
+            "base_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\baseline-qwen35_gdn_finite.py",
+            "base_sha256": "33b169b3fb660eb8ce57a6bda6ecb04c7f7235a029aa04038ff447b2faddf6fd",
+            "candidate_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-early-output-scale-20261009-v1/replay-appworld/diagnostic_gdn_owner.py",
+            "candidate_sha256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+            "consume_captures": true,
+            "public_signature_unchanged": true,
+            "manifest_sha256": "7d55df6175331b5435423e0affdcc06b6f1148480392250378a0dd75ef93ef9e",
+            "production_modified": false,
+            "default_inert": true
+          },
+          "ending_allocated": 67180032,
+          "ending_reserved": 43708841984,
+          "PSS": 8201340928,
+          "source_sha256": "58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0",
+          "finite_runner": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+            "sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f"
+          }
+        },
+        {
+          "rank": 1,
+          "phase": "complete",
+          "operations": {
+            "DT": 1,
+            "native_forward": 0,
+            "optimizer": 0,
+            "backward": 0,
+            "rollout": 0,
+            "checkpoint_restore": 0
+          },
+          "elapsed_seconds": 108.55432476001442,
+          "rounds": [
+            [
+              {
+                "round": 0,
+                "seconds": 107.47475475800456,
+                "queries": 4
+              }
+            ]
+          ],
+          "actual_candidate": {
+            "base_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\baseline-qwen35_gdn_finite.py",
+            "base_sha256": "33b169b3fb660eb8ce57a6bda6ecb04c7f7235a029aa04038ff447b2faddf6fd",
+            "candidate_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/fla-early-output-scale-20261009-v1/replay-appworld/diagnostic_gdn_owner.py",
+            "candidate_sha256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+            "consume_captures": true,
+            "public_signature_unchanged": true,
+            "manifest_sha256": "7d55df6175331b5435423e0affdcc06b6f1148480392250378a0dd75ef93ef9e",
+            "production_modified": false,
+            "default_inert": true
+          },
+          "ending_allocated": 67180032,
+          "ending_reserved": 40791703552,
+          "PSS": 8837004288,
+          "source_sha256": "58209daa0fccfea4b70645465e96ea5d203f9d309187b7a64b405cbd9fd47da0",
+          "finite_runner": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+            "sha256": "628006b637516f8d62e95583a9eb51fe9038ea7931798e2c1f42c28e154cf24f"
+          }
+        }
+      ],
+      "source_manifest": {
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\fla-early-scale-review-v1\\replay-appworld\\preserved\\manifest.json",
+        "bytes": 3707,
+        "sha256": "62bb7acef32793fe6443865e82b4751c10d82b8bbddb412473755a520e48ebed"
+      }
+    }
+  },
+  "cost": "One scalar fused into the existing RMS upstream product; no new model call, full tensor, reduction or FLA call. Existing range guard retained, not a promised speedup.",
+  "timing_scope": "Cold integration calls and primitive first calls include compilation/preparation; no stable speedup claim. Same FLA callback count and tensor dimensions; accepted range guard retained.",
+  "QVA_whitening_PPO_changed": false,
+  "official_tolerance_changed": false,
+  "FA_changed": false,
+  "credit_clipping_or_correction": false,
+  "training_restart": false,
+  "checkpoint_restore": false,
+  "extreme_credit_accuracy_repaired": false,
+  "original_PPO_NaN_repaired": false,
+  "production_deployed": false
+}
