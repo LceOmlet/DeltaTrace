@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 源key背景V的有界算子诊断完成，未形成可部署信用修复
+
+源97039cf0、timeout PID2294861/实际Python2294862、出生1791525873.22，GPU4；
+沿用全部165个已保存TextCraft算子点（128均匀、37旧预测尾全数），不是新统一召回
+采样框，不从这些点再算召回。只将joint V0的source-key行换为已保存native单删V；
+原Q/K、upstream、dtype、因果坐标及finite FA owner/库不变，完全是oracle算子诊断。
+全数完成82.3745秒，96次原public FA+72次原finite FA，模型/DT/更新/rollout/restore均0。
+采样PSS峰11.154GB（含mmap原现场）、GPU allocated峰2.164GB/reserved4.131GB；
+结束物理卡全部约858MiB，没有留下GPU作业。原结果、阶段、launch、log传输SHA验证。
+
+均匀117/128点及预测尾37/37点的局部绝对残差减少，但均匀中位数1.461→1.433，
+尾部2.798→2.711；18个旧稳健误报点中位数2.804→2.718。源行V参照单项不足以
+解释主要偏差，不据此修改finite规则、修正信用或宣称整体DT改善。分prediction/native
+区间、初始状态、cohort和已查看身份保存，baseline replay漂移原样保留，不虚构容差。
+该oracle值不能由一次DT直接读出，未部署、未生成新训练候选。
+见results_saved_FA_source_reference_20261009.json。已部署的提前FLA输出缩放版本
+26bef6c8不变；新的统一分组统计仍使用c9e78c9b的1061/task同框结果。两正式作业
+仍停止，不恢复检查点；大负归因准确性与原PPO NaN均不能称为修好。
+
+
 ## 2026-10-09 提前FLA输出缩放已验证部署；统一分组召回补采完成
 
 新版本fla-early-output-scale-20261009-v1、源码26bef6c8，继承已接受的
