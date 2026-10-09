@@ -1,4 +1,4 @@
-"""Run one bounded CPU-only inspection of already saved FA operands."""
+"""Run one bounded saved-operand readout, without a model or training."""
 import hashlib
 import argparse
 import json
@@ -39,7 +39,7 @@ from pathlib import Path
 target=Path({target!r})
 assert psutil.virtual_memory().available>8*(1<<30)
 physical=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout if {args.key_regions!r} else None
-if physical is not None:assert not re.search(r'^\|\s*4\s+\d+\s+\S',physical,re.M),'Research GPU4 occupied'
+if physical is not None:assert not re.search(r'^\\|\\s*4\\s+\\d+\\s+\\S',physical,re.M),'Research GPU4 occupied'
 command={command!r}
 log=(target/'driver.log').open('xb')
 p=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)

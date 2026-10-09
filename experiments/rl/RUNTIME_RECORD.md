@@ -1,5 +1,41 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 分组负尾仍不可信；已接受的FP16溢出修复全面固定部署
+
+FP16转换修复版本为fla-seed-range-20261009-v1，部署源码c1da84ea；本机默认及
+两实际DT入口均已更新。TextCraft原ef55ce08→bc1a11d9，AppWorld原448ef32c→
+33b169b3；只复用已经验证的三处数值表示改动，不交换两环境的owner。AppWorld
+consume_captures保留，两个函数签名均不变。两独立新进程通过原启动环境与已有
+metax-entry.env.sh读取实际文件；12项runner/head/FA等文件逐SHA不变。原已解析
+历史owner文件和停止作业的source.json未覆盖，只有当前叶symlink指向新version。
+根active-training/active-source和原verified_runtime均另记accepted overlay。
+
+验收沿用原FLA22项实际dtype断言、原失败AppWorld B4两rank回放和31个未溢出
+head逐值一致证据。TextCraft同三处diff逐字复用、逆补丁恢复原base，接口/导入已
+核验；不声称新增TextCraft整网回放或全网官方容差。两个导入探针环境遗漏的失败
+均保存：首次不全的PYTHONPATH只改变了TextCraft叶，第二次漏source既有MACA
+shell环境；未重装依赖，完成状态只在最终两入口确认后发布。此修复不代表极端
+归因或原PPO NaN修复，两个正式任务仍停止，无恢复/训练更新。
+
+分组诊断复用冻结的两个环境各165位置，主体均匀128与原预测负尾37分开。
+TextCraft的37负尾中9个在全部对照中为负、18个非负、10个跨零；只有1个的
+A/r<-1由全部对照支撑，35个被全部对照排除该幅度。AppWorld的37位置中为负/
+非负/跨零为21/13/3，支撑A/r<-1为6个、排除为23个；其中只有34个在DT重复中
+保持大负，稳健反号11个。初始状态等权稳健反号率37.86%/26.56%，探索性状态
+bootstrap95%区间21.19–53.33%/8.85–46.88%；不当作全任务错误率或数值容差。
+原分层及已查看/未查看身份保留，TextCraft含最新PV运行的重复对照。
+
+CPU原操作数检查165位置/60文件，44.63秒，采样PSS峰0.575GB，零模型/DT/GPU。
+原FA分key区域检查165位置/60文件，104.11秒，480原public FA，零模型/DT/更新；
+allocated/reserved峰1.186/3.064GB，采样PSS峰9.438GB。18稳健误报中15个最大
+PV背景余项在source key，状态等权频率.7361；该区域绝对中位2.1055。全165
+单删除均影响后续隐藏行，18稳健误报的source之前Q/K/V逐值相同。支持进一步
+查source条件背景与多行交互，未接受新候选、未把张量能量当信用或扣除余项。
+原FA完整PV重放差≤1.78e-15；分区域BF16闭合差另存，不是新容差或修复。
+
+见results_grouped_negative_support_20261009.json、results_saved_FA_source_support_20261009.json、
+results_saved_FA_PV_regions_20261009.json、results_fla_seed_range_deployment_20261009.json。
+
 ## 2026-10-09 PV分解完成：误报负尾的主要FA余项是背景交互，尚未修复
 
 被动诊断PID4148472/出生1791503396.84完成并退出，8文件绑定be4a5d0b；每rank
