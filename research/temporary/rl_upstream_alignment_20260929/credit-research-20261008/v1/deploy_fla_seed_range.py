@@ -35,6 +35,7 @@ def main():
     binding=HERE/'fla-range-deploy-base-precheck.jsonl'
     subprocess.run(SCP+[str(binding),f'{SSH[-1]}:{version}/baseline-binding.jsonl'],check=True)
     script=f'''set -e
+source {shlex.quote(ENTRY+'/metax-entry.env.sh')}
 CUDA_VISIBLE_DEVICES=-1 /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python - <<'PY'
 import ast,hashlib,json,os,subprocess,sys,time
 from pathlib import Path
