@@ -1,5 +1,30 @@
 # 当前运行版本与修复记录
 
+## 2026-10-09 统一负尾采样已冻结，原native补采启动；尚无新召回结果
+
+用户指出旧采集不能支撑分组召回，已停止把不同采样框的计数拼接。仍使用原
+冻结开发/测试划分；有限总体为已完成开发capture的全部source：TextCraft85条/
+121248位置，AppWorld122条/204865位置（另2条缺失显式保留）。c<=1与1<c<=2
+按总体比例固定新seed抽1024，c>2的37位置全数，共各1061；抽取不读native结果。
+实际覆盖TextCraft82轨迹/16状态、AppWorld121轨迹/16状态，不保证每条都有抽中。
+保存每点n_h/N_h及token计数、状态/轨迹/source等权权重。混淆矩阵及TP/(TP+FN)
+同一总体加权计算，数值跨阈值单列未定；不会把旧人工关注点追加进新估计。
+现有SciPy1.16超几何反演CPU728分布检查，最低覆盖.95238；零命中例区间非零。
+这些仅验证采样算术，不代替DT或FA/FLA数值证据。准备1.328秒、PSS峰.556GB，
+零模型/DT/GPU。1024仅为测量预算，不承诺稀少分组精度；原RISE/MAS仍独立保留。
+
+采样源码8f34db31，native诊断源码888f048d；sample SHA60eed5f1。只给既有原native
+诊断增加批次query列表，模型/target读取/FP32 head参考函数均沿用，旧路径不变。
+四个删除/事实pair组成既有B8；每任务两块、每rank每块67次原forward。控制器
+PID640843/出生1791509992.08，GPU4/5；TextCraft首块531位置已完成（两rank各
+67次、164.18秒），第二块进入原初始化；AppWorld尚待后续两块。当前只记录阶段，
+不报告新召回或归因修复。完整样本才计算对应任务结果；失败/缺失不记为TN。
+原runner/readout/HF/VERL实际导入哈希仍校验，FP16已接受overlay SHA另核对。
+原1500秒worker预算保持，无自动重试；实际阶段、PSS、物理mx-smi和allocator
+分别观察。两个正式训练仍停止，无checkpoint恢复，RMS及FA研究草案未部署。
+见results_tail_probability_sampling_20261009.json及带身份的current_runtime。
+
+
 ## 2026-10-09 RMS重排核对正确，独立候选未部署；召回分母已核查
 
 用户提出的RMS重排与两实际入口的signed_secant_rules.py原函数代数等价；实际

@@ -45,6 +45,7 @@ def summarize_task(spec, observations, threshold=2, domain_state=None, alpha=.05
     treated as random missingness or as TN. A state domain uses indicators for
     that state under the same global probability sample, not a new sample.
     """
+    assert threshold in (2,10,100)
     entries = {e['traj_uid']:e for e in spec['entries']}
     expected = {(u,q['packed_slot']):q for u,e in entries.items() for q in e['queries']}
     observed = {(o['traj_uid'],o['packed_slot']):o for o in observations}
