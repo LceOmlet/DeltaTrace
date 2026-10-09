@@ -63,6 +63,41 @@
       "url": "https://arxiv.org/pdf/1506.02438",
       "location": "Section 3, Proposition 1 and the k-step advantage construction",
       "supports": "Distinguishing return/advantage-estimation bias, bootstrapped value accuracy, and the policy-gradient expectation. The elementary random-source residual identity above is our own explicit conditioning argument, not a theorem attributed to GAE."
+    },
+    {
+      "title": "Doob conditional-expectation martingale explanation by Scott Sheffield",
+      "url": "https://math.mit.edu/~sheffield/martingalenote.pdf",
+      "location": "page 1, lines explaining increasing-information conditional expectations",
+      "supports": "M_k=E[G|F_k] is a martingale. The finite telescoping token/action accounting above is our explicit specialization."
+    },
+    {
+      "title": "RUDDER: Return Decomposition for Delayed Rewards",
+      "url": "https://arxiv.org/pdf/1806.07857",
+      "location": "Theorems 1-3, equation (1), section 3",
+      "supports": "Return-equivalent reward redistribution; its optimality is defined by zero expected future redistributed reward, with consecutive Q differences. This is a related formal allocation definition, not a claim that raw DT deletion effects or our present implementation satisfy it."
     }
-  ]
+  ],
+  "sequential_credit_and_overlap": {
+    "role": "Analysis of the user question, not an accepted alternative implementation or a new plan",
+    "horizon": "Only the fixed finite task horizon. G=sum of rewards within that horizon; current gamma=1.",
+    "formal_PPO_token_coefficient": "C_star(h,a)=E[G|h,a]-E[G|h]=Q_pi(h,a)-V_pi(h), with already collected rewards cancelling in the difference.",
+    "uniqueness": "For each reachable prefix h, require C(h,a)-C(h,b)=Q_pi(h,a)-Q_pi(h,b) for supported actions, and E_pi[C(h,a)|h]=0. These two conditions imply uniquely C=Q_pi-V_pi, up to null-probability events.",
+    "causal_order": "The next token conditions on the actual earlier token. A change already included in that prefix value is not added again; the next coefficient measures its own remaining conditional deviation.",
+    "example": {
+      "successful_return": 1,
+      "failed_return": 0,
+      "expected_return_before_earlier_token": 0.9,
+      "after_earlier_token": 0.1,
+      "after_later_bad_token": 0,
+      "earlier_advantage": -0.8,
+      "later_advantage": -0.1,
+      "assumption": "No intervening observation or reward in this illustration; future policy is included in each expectation."
+    },
+    "martingale_statement": "With the natural chronological information filtration F_k and M_k=E[G|F_k], D_k=M_{k+1}-M_k has E[D_k|F_k]=0 and sum_k D_k=G-E[G|F_0] when the terminal sigma-field reveals G. An action reveal before external randomness has D=Q-V. Observations/reward reveals supply other conditional innovations, are not policy actions, and receive no actor loss. This is a formal accounting identity, not observation-credit routing.",
+    "deletion_overlap": "Separate exact single-token total deletion effects are contrasts from different interventions. They can overlap and need not sum to one conserved reward. This is not a contradiction of exact counterfactual values. Adding a downstream total effect to an upstream effect that already includes it is double counting if presented as one disjoint allocation.",
+    "policy_gradient": "The training target is E[sum_i z_i C_i]=E[sum_i z_i A_pi_i], where z_i=grad log pi(a_i|h_i). This is not a requirement that sum_i C_i equal terminal reward. Reusing a realized return with different token scores is not itself double counting.",
+    "EOS_reference_relation": "Under the existing common-reference and coverage assumptions, bar_C_del(h,a)=E[C_del|h,a]=Q_pi(h,a)-B_del(h). Then bar_C_del(h,a)-E_pi[bar_C_del(h,a)|h]=Q_pi(h,a)-V_pi(h). This identifies the baseline offset mathematically; it is not an instruction to add a learned critic, reference-token sampling, per-prefix LLM queries, or trajectory-mean substitution.",
+    "unbiased_error_requirement": "For approximate raw credit C_i=C_exact_i+e_i, the gradient error is E[sum_i z_i e_i]. Conservation, zero average e, or tokenwise sign accuracy alone do not establish this quantity is zero.",
+    "implementation": "No changes to DT/Q/V/A/whitening/PPO, no new candidate, no deployment or formal restart."
+  }
 }
