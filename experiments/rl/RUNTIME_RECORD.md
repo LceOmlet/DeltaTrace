@@ -1,5 +1,28 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 AppWorld 新稳定数值与缓存释放组合：原生worker容量回归完成
+
+同一检查PID1746650/出生1791561149.33已正常结束，物理4/5恢复859MiB，无GPU遗留。
+原VERL worker、原vLLM初始化/休眠与compute_dt_token_advantages直接调用；无子类或影子训练循环。
+两worker在初始化和两次返回均实际核对runner7d6f57f6…、新GDN3f51f5f7…，producer2aa5f552…、
+原worker e5eb4afc…不变。数值源26bef6c8，缓存释放源79922486，检查源2c9daaed。
+
+精确32768 B8（每rank B4）返回320.966秒，mx-smi采样峰值62.679/62.667GiB；
+原失败实际B8返回197.479秒、峰值55.675/55.240GiB。两者全部Q/V/A有限，O/pad严格为0，
+target直接A严格等于原reward、V=0。CPU保存结果审计未初始化CUDA，没有额外模型/DT/更新。
+32k输入仅在原观测区间扩展作容量stress；原失败B8保持原始IDs，不能冒充自然32k任务或归因准确性。
+原native worker RPC计时包含分发/结束host-cache释放，旧producer诊断计时口径不同，不作统计提速结论。
+官方FA/FLA数值容差仍是原已接受回执，没有引入整网更新或旧新版QVA容差。
+
+本次补齐组合显存验证，AppWorld正式仍停止，默认入口未改；以后AppWorld调试/恢复必须选择
+本组合DT_ROOT=…/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace与同目录
+DT_ENVIRONMENT_JSON=environment.json（SHAcd28a6e2…、offload_replay_mixer=true），并保持新GDN。
+不可把历史runner628006b6…默认入口当作本组合。实际完整路径/SHA与回执见
+results_appworld_memory_stable_composition_20261010.json和current_runtime最新verified字段。
+TextCraft同一新稳定正式PID982372继续2/3、330预算，当前第三次原actor更新；不恢复checkpoint，
+LoRA8/16、每卡actor/DT B4、32768以及原信用/白化/PPO均未变。前面launch记录保留为历史阶段。
+
+
 ## 2026-10-09 AppWorld 新数值版与既有显存修复的组合检查已启动，未部署正式入口
 
 TextCraft 正式PID982372/出生1791553809.84继续物理2/3，已完成2/330，第三次采样；
