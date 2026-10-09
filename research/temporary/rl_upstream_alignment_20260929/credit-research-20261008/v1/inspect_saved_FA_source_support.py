@@ -105,7 +105,8 @@ def main():
                 assert 0<=position<length
                 result['points'].append(dict(traj_uid=key[0],packed_slot=position,token_id=query['token_id'],
                     initial_state_sha256=point['initial_state_sha256'],previously_examined=point['previously_examined'],
-                    previous_comparisons=point['previous_comparisons'],saved_d=point['saved_d'],
+                    previous_comparisons=point['previous_comparisons'],
+                    saved_d=point['saved_d'] if 'saved_d' in point else point['d'],
                     fresh_DT_d=point['fresh_DT_d'],native_single_d=point['native_single_d'],
                     context_tokens=length,actual_operator_file=actual,
                     actual_dtype={n:str(saved['endpoints'][n].dtype) for n in ('query','key','value')},
