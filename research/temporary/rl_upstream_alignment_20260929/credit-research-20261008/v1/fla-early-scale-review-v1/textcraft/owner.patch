@@ -1,0 +1,69 @@
+--- textcraft-accepted-range-base
++++ textcraft-early-scale-candidate
+@@ -158,19 +158,19 @@
+     return rmsnorm_secant_pullback(x0.float(),x1.float(),dimension**-.5,upstream,1e-6/dimension)
+ 
+ 
+-def _norm_gate_finite_rule(o,z,m,weight,eps,norm_gate_rule):
++def _norm_gate_finite_rule(o,z,m,weight,eps,norm_gate_rule,mo_scale=1.0):
+     """Existing finite RMS/SiLU formula, factored for the owner compiler."""
+     o0,o1=o[0::2].float(),o[1::2].float();z0,z1=z[0::2].float(),z[1::2].float()
+     weight=weight.float()
+     n0=o0*torch.rsqrt(o0.square().mean(-1,keepdim=True)+eps)*weight
+     s0,s1=F.silu(z0),F.silu(z1)
+     if norm_gate_rule=='content1':
+-        mo=rmsnorm_secant_pullback(o0,o1,weight,m*s1,eps)
++        mo=rmsnorm_secant_pullback(o0,o1,weight,m*s1*mo_scale,eps)
+         mz=m*n0*_scalar_secant(z0,z1,s0,s1,_silu_derivative(z0))
+     else:
+         n1=o1*torch.rsqrt(o1.square().mean(-1,keepdim=True)+eps)*weight
+         s_mean=(s0+s1)*0.5;n_mean=(n0+n1)*0.5
+-        mo=rmsnorm_secant_pullback(o0,o1,weight,m*s_mean,eps)
++        mo=rmsnorm_secant_pullback(o0,o1,weight,m*s_mean*mo_scale,eps)
+         mz=m*n_mean*_scalar_secant(z0,z1,s0,s1,_silu_derivative(z0))
+     return mo,mz
+ 
+@@ -230,7 +230,16 @@
+     mnorm=_linear_transpose(upstream,_linear_weights(module.out_proj))
+     m=mnorm.reshape(batch,length,module.num_v_heads,module.head_v_dim)
+     norm_gate=_norm_gate_finite_rule if norm_gate_pullback is None else norm_gate_pullback
+-    mo,mz=norm_gate(e['o'],c['z'],m,module.norm.weight,module.norm.eps,norm_gate_rule)
++    # FLA output is scale * qH; its state update does not depend on scale.
++    # Fuse that scale into the RMS content cotangent before its low-precision
++    # boundary, then use unit scale for both native adjoints and finite terms.
++    # The SiLU gate cotangent remains unchanged. Preserve the BF16 route.
++    fla_scale=scale
++    if e['q'].dtype==torch.float16:
++        mo,mz=norm_gate(e['o'],c['z'],m,module.norm.weight,module.norm.eps,norm_gate_rule,scale)
++        fla_scale=1.0
++    else:
++        mo,mz=norm_gate(e['o'],c['z'],m,module.norm.weight,module.norm.eps,norm_gate_rule)
+     # Follow the norm input and then FLA operand dtype at their actual boundary.
+     # The default BF16 path is unchanged; a native FP16 kernel receives FP16 do.
+     native_mo=mo.to(e['o'].dtype)
+@@ -264,7 +273,7 @@
+         for start in range(0,module.num_v_heads,fla_head_batch_size):
+             group={name:head_group(value,start)
+                    for name,value in fla_endpoints.items() if name!='o'}
+-            part=fla_pullback(group,native_mo[:,cut:,start:start+fla_head_batch_size].contiguous(),scale)
++            part=fla_pullback(group,native_mo[:,cut:,start:start+fla_head_batch_size].contiguous(),fla_scale)
+             exponent=None if seed_exponent is None else seed_exponent[:,:,start:start+fla_head_batch_size]
+             parts.append(restore_seed_range(part,exponent))
+             del part,exponent
+@@ -273,7 +282,7 @@
+         del parts
+     else:
+         if offload_endpoints:restore(fla_endpoints,*tuple(fla_endpoints))
+-        coeff=fla_pullback(fla_endpoints,native_mo[:,cut:],scale)
++        coeff=fla_pullback(fla_endpoints,native_mo[:,cut:],fla_scale)
+         coeff=restore_seed_range(coeff,seed_exponent)
+     del fla_endpoints
+     if cut:
+@@ -330,6 +339,7 @@
+         # Returned tensors are for separate analysis and are not retained by
+         # the normal propagation route. No synchronization in the route itself.
+         terms={'mnorm':mnorm,'mo_before_cast':mo,'mo_native':native_mo,'mz':mz,'coeff':coeff,
++            'fla_scale':fla_scale,'norm_output_seed_scale':scale if fla_scale==1.0 else 1.0,
+             'mq':mq,'mk':mk,'mb':mb,'ma':ma,'mconv':mconv,'pre':pre.detach(),'mpre':mpre,
+             'mprojected':mprojected.detach(),'pre_collision':(p0==p1)&(y0!=y1)}
+     return F.pad(mx,(0,0,capture_start,0)) if capture_start else mx,terms
