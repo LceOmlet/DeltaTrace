@@ -32,6 +32,7 @@ class OperatorObservation:
         self.handles=[];self.current=None;self.pending={};self.events=[]
         self.first={};self.artifacts=[];self.seconds=0.0
         self.text=runner.model.model.language_model
+        self.linear_names={}
 
     def paired(self,value,layout='time'):
         if layout=='conv':return value.transpose(1,2)
@@ -88,6 +89,7 @@ class OperatorObservation:
         from qwen35_gdn_finite import resolve_native_gdn_forward
         from fla.ops.gated_delta_rule.chunk import chunk_gated_delta_rule_fwd
         codes={}
+        codes[torch.nn.Linear.forward.__code__]='linear'
         for i in range(3):
             layer=self.text.layers[i]
             assert layer.block_type!='full_attention'
@@ -109,15 +111,19 @@ class OperatorObservation:
                 mlp_gate=layer.mlp.gate_proj,mlp_up=layer.mlp.up_proj,mlp_down=layer.mlp.down_proj,
                 GDN_output=mixer,MLP_output=layer.mlp,decoder_output=layer)
             for name,module in modules.items():
+                base=module.get_base_layer() if hasattr(module,'get_base_layer') else module
+                if isinstance(base,torch.nn.Linear):self.linear_names[id(base)]=name+'.base'
                 def hook(module,args,output,name=name):
                     if self.current is None:return
                     value=output[0] if isinstance(output,tuple) else output
                     layout='norm' if name=='gated_norm' else 'time'
                     x=self.paired(args[0],layout) if args and isinstance(args[0],torch.Tensor) else None
-                    # Capture a module only if it is the first divergence.
-                    # state_dict retains the actual PEFT/base parameters.
+                    # Never call state_dict in a live FSDP forward. Linear
+                    # operands are observed at the original Linear return.
                     self.observe(name,value,layout=layout,inputs={'input':x},
-                        artifact=lambda:dict(args=args,state_dict=module.state_dict(),module_type=str(type(module))))
+                        artifact=lambda:dict(args=args,
+                            weight=getattr(module,'weight',None),bias=getattr(module,'bias',None),
+                            module_type=str(type(module))))
                 self.handles.append(module.register_forward_hook(hook))
             self.handles.append(layer.register_forward_hook(end))
         self.codes=codes
@@ -134,6 +140,13 @@ class OperatorObservation:
         if self.current is None:return
         label=self.codes[frame.f_code];f=frame.f_locals
         if label=='GDN':return
+        if label=='linear':
+            name=self.linear_names.get(id(f['self']))
+            if kind=='return' and name is not None:
+                self.observe(name,value,inputs={'input':f['input']},
+                    artifact=dict(input=f['input'],weight=f['self'].weight,bias=f['self'].bias,
+                                  module_type=str(type(f['self']))))
+            return
         if kind=='call':
             names=(('x','weight','bias','activation','seq_idx','initial_states','return_final_states') if label=='conv'
                    else ('q','k','v','g','beta','scale','initial_state','output_final_state',
