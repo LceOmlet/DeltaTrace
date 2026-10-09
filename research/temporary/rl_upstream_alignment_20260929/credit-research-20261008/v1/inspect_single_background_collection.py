@@ -66,6 +66,8 @@ def make_worker():
             producer = None
             original_gdn = None
             runner_namespace = None
+            original_gdn_module = None
+            candidate_gdn_module = None
             previous_training = self.actor_module_fsdp.training
             original_trace = reward_readout.trace_token_attribution
             try:
@@ -83,8 +85,29 @@ def make_worker():
                 if self._is_offload_param:
                     load_fsdp_model_to_gpu(self.actor_module_fsdp)
                 self.actor_module_fsdp.eval()
+                candidate_manifest = os.environ.get('DT_DIAGNOSTIC_GDN_OWNER_MANIFEST')
+                if candidate_manifest:
+                    import importlib.util
+                    import sys
+                    import qwen35_gdn_finite
+                    binding = json.loads(Path(candidate_manifest).read_bytes())['owners'][case_name]
+                    assert sha(qwen35_gdn_finite.__file__) == binding['base_sha256']
+                    assert sha(binding['candidate_path']) == binding['candidate_sha256']
+                    original_gdn_module = qwen35_gdn_finite
+                    owner_spec = importlib.util.spec_from_file_location('qwen35_gdn_finite', binding['candidate_path'])
+                    candidate_gdn_module = importlib.util.module_from_spec(owner_spec)
+                    owner_spec.loader.exec_module(candidate_gdn_module)
+                    # The original runner constructor now compiles the candidate's
+                    # own scalar rule. Do not duplicate its compiler/wrappers.
+                    sys.modules['qwen35_gdn_finite'] = candidate_gdn_module
+                    record['isolated_gdn_candidate'] = dict(binding, manifest_sha256=sha(candidate_manifest),
+                        production_modified=False, default_inert=True)
                 producer = DeltaTraceRolloutProducer(self.actor_module_fsdp,
                     eos_token_id=self.tokenizer.eos_token_id,pad_token_id=self.tokenizer.pad_token_id)
+                if candidate_gdn_module is not None:
+                    runner_namespace = producer.runner.attribute.__func__.__globals__
+                    original_gdn = runner_namespace['gdn_finite_pullback']
+                    runner_namespace['gdn_finite_pullback'] = candidate_gdn_module.gdn_finite_pullback
                 runner_path = inspect.getsourcefile(producer.runner.attribute)
                 assert sha(runner_path) == source['actual_CPU_imports']['qwen35_dense_finite_runner']['sha256']
                 record['finite_runner'] = dict(path=runner_path,sha256=sha(runner_path))
@@ -150,7 +173,7 @@ def make_worker():
                         reward_readout.trace_token_attribution = trace
                         try:
                             scope=nullcontext()
-                            if replay and not range_owner_path:
+                            if replay and not range_owner_path and candidate_gdn_module is None:
                                 from passive_nonfinite import PassiveNonfinite
                                 scope=PassiveNonfinite(producer.runner,out,self.rank)
                             with scope:producer.attribute_episodes([[row['row'] for row in rows]],[0.0])
@@ -195,6 +218,8 @@ def make_worker():
                 reward_readout.trace_token_attribution = original_trace
                 if original_gdn is not None:
                     runner_namespace['gdn_finite_pullback'] = original_gdn
+                if original_gdn_module is not None:
+                    sys.modules['qwen35_gdn_finite'] = original_gdn_module
                 self.actor_module_fsdp.train(previous_training)
                 if producer is not None:
                     producer.runner.model.release_owner_params()
