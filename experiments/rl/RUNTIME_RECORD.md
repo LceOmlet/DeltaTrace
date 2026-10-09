@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 新稳定版第四个完整正式迭代完成，第五次采样已开始
+
+同一TextCraft正式PID982372/出生1791553809.84，物理2/3，数值源26bef6c8、
+source SHA1c08b57b…未变。原step4返回，进度4/330，两原worker进入第五次
+generate_sequences；无四次更新截停、无checkpoint恢复，LoRA8/16、每卡actor/DT B4保持。
+原第四轮reward均值0.562（原非零请求144/256）、grad_norm0.033、entropy0.660；
+原worker及TaskRunner错误标记扫描为空。原白化advantage最小-339.421，与此前raw
+-52.473671不是同一个量，不能混用；也不因大负幅度修改信用或白化。
+
+原timing_s：gen1922.219、old_log_prob128.216、ref111.817、adv148.379（包含DT）、
+update_actor469.430、step2780.501秒（46分20.501秒）。没有把DT重复相加，
+没有把整次采样称为纯decode。原logger三位小数的LR0.000不等于实际零学习率；
+原allocator67.716/73.709GB不等于物理卡超64GiB。原mx-smi/PSS样本随原始回执保存。
+根formal-training/active-training/active-source仅更新同一PID任务进度4和实际phase，
+没有修改源、预算、运行时覆盖或其他任务。AppWorld仍未正式启动，SQL/GRPO不重启。
+完整四轮返回不等于原NaN机制已全部定位、长期稳定或极端归因准确性已修复；
+本轮全量概率必要边界结果单独保留，不混作训练退化结论。
+见results_textcraft_fourth_formal_iteration_20261010.json及current_runtime最新complete字段。
+
+
 ## 2026-10-10 第四次正式DT完整落盘；全量概率必要边界检查完成
 
 本轮是progress。TextCraft同一正式PID982372/出生1791553809.84继续2/3，新数值源
