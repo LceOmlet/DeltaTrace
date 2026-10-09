@@ -1,5 +1,21 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 新稳定版已完成第六个正式迭代，第七次采样继续
+
+同一正式TextCraft PID982372/出生1791553809.84、物理2/3，原330预算未截停；
+当前6/330完整迭代、合计24次原optimizer更新，非只运行4次更新。数值源仍为
+26bef6c8、GDN 7c06d5e0…，11项磁盘模块身份与前次实际worker导入回执一致。
+LoRA8/16、actor/DT每卡B4/双卡B8、32768保持；无恢复、诊断hold或timeout。
+原step6：reward0.641、grad_norm0.031、entropy0.654；gen1811.597、old119.753、
+ref104.581、adv167.026（含DT）、actor435.224、step2638.643秒，约43.98分钟。
+原白化优势范围[-477.323,4.992]保留；不因极值大而裁剪或宣称准确性已解决。
+原两worker/TaskRunner所查错误标记为空；第七次采样phase物理显存50326/50180MiB，
+worker PSS16.63/17.29GB，cgroup226.33GB，主机可用889.73GB。物理快照不是峰值；
+原logger虚拟allocator最大值不替代mx-smi物理占用。AppWorld正式仍停、SQL/GRPO不启。
+只读原日志并更新同PID清单与版本账本，新增模型/DT/optimizer调用0，无生产源码改动。
+原始完整metrics、源码SHA、回执与检查范围见results_textcraft_sixth_formal_iteration_20261010.json。
+
+
 ## 2026-10-10 第六次正式DT完整返回，新增原生target记录已全量实读
 
 TextCraft同一正式PID982372/出生1791553809.84、物理2/3、新数值源26bef6c8保持；
