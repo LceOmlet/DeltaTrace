@@ -1,0 +1,127 @@
+{
+  "scope": "Review of the user-proposed equivalent RMS finite-propagation reordering; no production promotion.",
+  "observed_unix": 1791508269.1136544,
+  "version": "rms-normalized-secant-20261009-v1",
+  "status": "algebra_and_CPU_arithmetic_verified_candidate_not_deployed",
+  "source_commit": "12a1b24e6715c6be6b5448b7f870daa4ffea5cce",
+  "prepared": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\prepared.json",
+    "bytes": 2410,
+    "sha256": "190f1fa5b84fb21dae9874adc6ada005b1d53a1adf836e40181a4b5f870a49d9"
+  },
+  "owner_patch": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\owner.patch",
+    "bytes": 891,
+    "sha256": "2b3980334b5f59bcb231a760d72c5d077ff0b19d5c19f5046c3f9e491fc4b3df"
+  },
+  "original_owner_sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d",
+  "candidate_owner_sha256": "b03b8d7761d9d24a303a87d7dea894b21187ed7b5438351140ae619816b3689a",
+  "actual_original_owners": {
+    "textcraft": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d"
+    },
+    "appworld": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-mlp-token-chunk-20261007-v1/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-prefix-resume-20261005-v2/deltatrace/clean/qwen35/signed_secant_rules.py",
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d"
+    }
+  },
+  "algebra": {
+    "sympy_version": "1.14.0",
+    "difference": "0",
+    "mean_variable": "p=mean((x0+x1)*w)",
+    "eps": "Same eps in r0 and r1; eps cancels in r1^2-r0^2",
+    "normalized_sum_bound": "RMS(x0+x1)/(r0+r1) <= (RMS(x0)+RMS(x1))/(r0+r1) <= 1 for eps>=0 and r0+r1>0",
+    "coincident_limit": "1/r * [w - (x/r)*mean((x/r)*w)], the native RMS transpose Jacobian",
+    "allocation": "Same symmetric finite allocation, exact endpoint contraction in real arithmetic"
+  },
+  "numerical_review": {
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\result.json",
+      "bytes": 371949,
+      "sha256": "0dd6d7522c7f14896f1f4a2f7279bbb13927aaefc7ac53c846028496a275168f"
+    },
+    "launch": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\launch.json",
+      "bytes": 1652,
+      "sha256": "7629532d6da883e77b83e0b8be102ec6cb14f7b7a30c4c13e69ccb71ca3c6490"
+    },
+    "completion": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\completion.json",
+      "bytes": 1711,
+      "sha256": "caae7f4c30fb5ec7c13b8f3c06798d078c0655449e8893e06c595e7198fa431e"
+    },
+    "summary": {
+      "cases": 432,
+      "original_nonfinite": 0,
+      "candidate_nonfinite": 0,
+      "FP64_equivalence_relative_L2_max": 1.1952475271897916e-16,
+      "original_FP32_relative_L2_max": 1.0532858957680648e-07,
+      "candidate_FP32_relative_L2_max": 1.0149796949762723e-07,
+      "candidate_more_accurate_cases": 113,
+      "candidate_less_accurate_cases": 103,
+      "sampled_process_PSS_bytes": 540774400
+    },
+    "execution_elapsed_seconds": 8.328779935836792,
+    "CPU_arithmetic_seconds": 0.44195627799490467,
+    "scope": "Arithmetic unit cases, not original official FA/FLA tolerance assertions, actual full DT replay or task-quality evidence."
+  },
+  "quoted_sample": {
+    "independently_saved_FP32_seed": -76970.9921875,
+    "native_BF16_seed": -76800.0,
+    "quoted_reconstructed_endpoint_RMS_u_0813_and_inverse_mean_582": "Not independently reproduced: saved artifact contains mo only, without original RMS endpoints and incoming weighted vector.",
+    "extrapolation": "Symbolic equivalence applies to those endpoints if reconstructed correctly, but does not reproduce the quoted per-sample FP32 error."
+  },
+  "operational_review": {
+    "no_new_full_size_tensor_required": true,
+    "same_reduction_count": true,
+    "full_size_pointwise_count": "Excluding common weighted vector and endpoint RMS computation: original 7, candidate 6; mean scalar normalization counted with the reduction.",
+    "performance": "No GPU/compiled latency or peak-memory measurement; fewer elementwise expressions do not alone prove a speedup.",
+    "numerical_range": "Normalized sum has RMS <=1 in real arithmetic, not elementwise absolute value <=1. The final coefficient can remain large.",
+    "overflow": "An intermediate of order 1e8 is representable in the actual FP32 path. Removing it is expression-range hygiene, not evidence that it caused the observed FP16 cast overflow."
+  },
+  "fixed_FP16_baseline": {
+    "version": "fla-seed-range-20261009-v1",
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_fla_seed_range_deployment_20261009.json",
+      "bytes": 27945,
+      "sha256": "c134dd4aa709180eeeea712f76a5aebfb5610f104cc7bf58712688e3ef7b5690"
+    },
+    "preserved": true,
+    "removed_or_replaced": false
+  },
+  "production_modified": false,
+  "official_tolerance_claim": false,
+  "extreme_credit_repaired": false,
+  "FP16_fix_replaced": false,
+  "next_scope": "If promoted, apply only this owner-function diff on top of the accepted FP16 overlay, retaining original official actual-dtype checks. No Q/V/A, clipping, learned value model, PPO or new allocation.",
+  "sources": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\original-owner.json",
+      "bytes": 8368,
+      "sha256": "b0e3d00ae3ebbe512e9f6b72f700e505c23ad2a882399442a756f2e594badf2e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\original-signed_secant_rules.py",
+      "bytes": 3063,
+      "sha256": "056d576e31b7076e7a08c89a5f25fde86897cfdf9daa3988d0a20acd6401030d"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\candidate-signed_secant_rules.py",
+      "bytes": 3014,
+      "sha256": "b03b8d7761d9d24a303a87d7dea894b21187ed7b5438351140ae619816b3689a"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\check_rms_reordering.py",
+      "bytes": 7098,
+      "sha256": "59c94a1082e5ddb582339e6792b72f57be9e2001a4d132130f12e41d76eea233"
+    }
+  ],
+  "post_review_active_baseline": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\rms-reordering-review-v1\\post-review-baseline.json",
+    "bytes": 1857,
+    "sha256": "b11a6cf71d9027ba7ec3246d8be7792b44d13f86847c676b106e580e386f9a63"
+  }
+}
