@@ -1,0 +1,13 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import torch,inspect,importlib,json,base64,hashlib,psutil,time
+from pathlib import Path
+files=[]; modules=[]
+for name in ['torch.distributed.fsdp._fully_shard._fully_shard','torch.distributed.fsdp._fully_shard._fsdp_state','torch.distributed.fsdp._fully_shard._fsdp_param_group','torch.distributed.fsdp._fully_shard._fsdp_param','torch.distributed.fsdp._fully_shard._fsdp_collectives','torch.distributed._composable.fsdp.fully_shard','torch.distributed._composable.fsdp._fsdp_state','torch.distributed._composable.fsdp._fsdp_param_group','torch.distributed._composable.fsdp._fsdp_param','torch.distributed._composable.fsdp._fsdp_collectives']:
+ try:
+  mod=importlib.import_module(name);p=Path(inspect.getsourcefile(mod));b=p.read_bytes();modules.append(dict(module=name,path=str(p),sha256=hashlib.sha256(b).hexdigest()));files.append(dict(path=str(p),relative=name.replace('.','/')+'.py',bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),base64=base64.b64encode(b).decode()))
+ except ImportError as e:modules.append(dict(module=name,unavailable=repr(e)))
+print(json.dumps(dict(unix=time.time(),torch_version=torch.__version__,torch_git_version=torch.version.git_version,CUDA_initialized=torch.cuda.is_initialized(),peak_RSS=psutil.Process().memory_info().rss,modules=modules,files=files)))
+
+PY
