@@ -1,0 +1,1570 @@
+{
+  "scope": "Review frozen coefficient-error arithmetic, without rerunning any model.\n\nDecimal independently evaluates the exponential identity from the original\nbinary float inputs. This is an arithmetic audit, not a FA/FLA tolerance or\nan estimate of the current policy-gradient bias. Original strata and all\nrecorded reference views remain separate.\n",
+  "observed_unix": 1791605895.497286,
+  "sources": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_credit_bias_components_20261010.json",
+      "bytes": 7646034,
+      "sha256": "ebb23926d0de73d2572284cc4a302bfcedc5ba0cc44bdf39f2c9aeaa8bb5912d"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\verify_credit_bias_components_20261010.py",
+      "bytes": 8101,
+      "sha256": "ed7bdcd2d2e35b70e13df5e40de56696e25fbad7a13204b47a25dbc5069508cd"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_probability_sample_credit_error_20261009.json",
+      "bytes": 4603328,
+      "sha256": "b57a6bc09409777b31439115fd9df5d3d417f7cb658a1e55214bf7a9e33b513c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_credit_collection_error_gradients_20261008.json",
+      "bytes": 85385,
+      "sha256": "08c0083c8a1e4c62c948e0f0d9a996fbdef967949232db5cdf5662a63b3fd4e5"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\analyze_credit_bias_components.py",
+      "bytes": 9827,
+      "sha256": "ec6bbe33c22ce0b922a37829ac8c3dcc1eba9d1204dd0e6b1b21bf89f01a2658"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\summarize_tail_probability_sample.py",
+      "bytes": 7475,
+      "sha256": "8137e499248fea03df392f90479d3c40bd3b6d5272286f08b6a9f6f119f50ddd"
+    }
+  ],
+  "tasks": {
+    "textcraft": {
+      "frame": {
+        "declared_trajectories": 85,
+        "completed_trajectories": 85,
+        "missing_uids": [],
+        "initial_states": 16,
+        "completed_frame_sources": 121248,
+        "sampled_sources": 1061,
+        "sampled_trajectories": 82,
+        "sampled_states": 16,
+        "strata": [
+          {
+            "name": "ratio_le_1",
+            "population": 98948,
+            "sample": 836,
+            "inclusion_probability": 0.008448882241177184
+          },
+          {
+            "name": "ratio_1_to_2",
+            "population": 22263,
+            "sample": 188,
+            "inclusion_probability": 0.008444504334546108
+          },
+          {
+            "name": "ratio_2_to_10",
+            "population": 35,
+            "sample": 35,
+            "inclusion_probability": 1.0
+          },
+          {
+            "name": "ratio_10_to_100",
+            "population": 2,
+            "sample": 2,
+            "inclusion_probability": 1.0
+          },
+          {
+            "name": "ratio_gt_100",
+            "population": 0,
+            "sample": 0,
+            "inclusion_probability": null
+          }
+        ]
+      },
+      "observations": 1061,
+      "initial_states": 16,
+      "compared_reference_points": 5305,
+      "maximum_absolute_float_vs_decimal_discrepancy": {
+        "A_over_r_error": 8.809976730012488e-16,
+        "first_order": 7.205707471444135e-16,
+        "curvature": 1.5679725753936572e-15
+      },
+      "positive_decimal_curvature_points": 0,
+      "crossed_cells": [
+        {
+          "cell": "ratio_10_to_100:reference_ratio_2_to_10..ratio_2_to_10",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 1.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.9558237808887244,
+              "median_coefficient_error": -14.659432370987137,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.40291323314157346
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.9483625224883983,
+              "median_coefficient_error": -14.590850386338133,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.400331921594888
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.9558238999815987,
+              "median_coefficient_error": -14.65943346157967,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.4029132742755083
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.9483625224883983,
+              "median_coefficient_error": -14.590850386338133,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.400331921594888
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -1.0407036441015154,
+              "median_coefficient_error": -15.404645290147448,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.43168478231654417
+            }
+          }
+        },
+        {
+          "cell": "ratio_10_to_100:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 1.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -6.532896519697186,
+              "median_coefficient_error": -14.92779724712409,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.9904821877136415
+            },
+            "FP32": {
+              "median_log_ratio_error": -6.491420253051654,
+              "median_coefficient_error": -14.926876237162142,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.9901415011107897
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -6.532896519697186,
+              "median_coefficient_error": -14.92779724712409,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.9904821877136415
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -6.30267512649554,
+              "median_coefficient_error": -14.922167052860818,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.9884361090143322
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -6.532896519697186,
+              "median_coefficient_error": -14.92779724712409,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.9904821877136415
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_1_to_2..ratio_1_to_2",
+          "sampled_positions": 21,
+          "sampled_states": 9,
+          "HT_source_total": 2486.824468085106,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.08364896068172557,
+              "median_coefficient_error": 0.08887315006469465,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.0016289301360623476
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.025197664070689955,
+              "median_coefficient_error": 0.025534582071796263,
+              "negative_error_positions": 5,
+              "median_curvature_share_of_negative_error": 0.0018921044691884983
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.09029799079416755,
+              "median_coefficient_error": 0.09493223209973789,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.0016289896759751907
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.10393544156569727,
+              "median_coefficient_error": 0.1096008194596203,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.0016289301360623476
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.025197664070689955,
+              "median_coefficient_error": 0.025534582071796263,
+              "negative_error_positions": 6,
+              "median_curvature_share_of_negative_error": 0.0018921044691884983
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_2_to_10..ratio_2_to_10",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 118.42021276595744,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.5869517590284263,
+              "median_coefficient_error": 0.9534370418927249,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.6025906031338368,
+              "median_coefficient_error": 0.9872850578172545,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.5869518745124256,
+              "median_coefficient_error": 0.9534372898917929,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.6025906031338368,
+              "median_coefficient_error": 0.9872850578172545,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.5869517590284263,
+              "median_coefficient_error": 0.9534370418927249,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_le_1..ratio_1_to_2",
+          "sampled_positions": 24,
+          "sampled_states": 8,
+          "HT_source_total": 2842.0851063829787,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.025445712090609855,
+              "median_coefficient_error": 0.025928706423862247,
+              "negative_error_positions": 10,
+              "median_curvature_share_of_negative_error": 0.007120547742488959
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.024193650622855778,
+              "median_coefficient_error": -0.02407312618209989,
+              "negative_error_positions": 20,
+              "median_curvature_share_of_negative_error": 0.016622098309866835
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.025445712090609855,
+              "median_coefficient_error": 0.025928706423862247,
+              "negative_error_positions": 10,
+              "median_curvature_share_of_negative_error": 0.008652564222065603
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.033028692279259184,
+              "median_coefficient_error": 0.03367934112991011,
+              "negative_error_positions": 6,
+              "median_curvature_share_of_negative_error": 0.0021987878881622558
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.033974883092366015,
+              "median_coefficient_error": -0.033531356715852945,
+              "negative_error_positions": 24,
+              "median_curvature_share_of_negative_error": 0.017078449845492727
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 142,
+          "sampled_states": 16,
+          "HT_source_total": 16815.670212765956,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.06722083439791639,
+              "median_coefficient_error": -0.06589406088308081,
+              "negative_error_positions": 142,
+              "median_curvature_share_of_negative_error": 0.03494786209419069
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.07021219170745502,
+              "median_coefficient_error": -0.06944813213325274,
+              "negative_error_positions": 142,
+              "median_curvature_share_of_negative_error": 0.03553377739393744
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.0672210723508342,
+              "median_coefficient_error": -0.06589428638735273,
+              "negative_error_positions": 142,
+              "median_curvature_share_of_negative_error": 0.03494780395141343
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.05714055831041239,
+              "median_coefficient_error": -0.05607194300423968,
+              "negative_error_positions": 142,
+              "median_curvature_share_of_negative_error": 0.029534151554650414
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.07781067972623637,
+              "median_coefficient_error": -0.0760754739197188,
+              "negative_error_positions": 142,
+              "median_curvature_share_of_negative_error": 0.039322359830961266
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_1_to_2..ratio_1_to_2",
+          "sampled_positions": 7,
+          "sampled_states": 6,
+          "HT_source_total": 7.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.871688834281575,
+              "median_coefficient_error": -2.1988630098593207,
+              "negative_error_positions": 7,
+              "median_curvature_share_of_negative_error": 0.373311949051166
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.9530040284495029,
+              "median_coefficient_error": -2.3223218186476533,
+              "negative_error_positions": 7,
+              "median_curvature_share_of_negative_error": 0.40193870292573997
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.871688476537291,
+              "median_coefficient_error": -2.1988624443225007,
+              "negative_error_positions": 7,
+              "median_curvature_share_of_negative_error": 0.37331182087107984
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.871688476537291,
+              "median_coefficient_error": -2.1988624443225007,
+              "negative_error_positions": 7,
+              "median_curvature_share_of_negative_error": 0.37331182087107984
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -1.0847114250328544,
+              "median_coefficient_error": -2.502166454180239,
+              "negative_error_positions": 7,
+              "median_curvature_share_of_negative_error": 0.44617623714493226
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_1_to_2..ratio_2_to_10",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 1.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.33132570460334776,
+              "median_coefficient_error": -0.5983613158634586,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.15653148586454577
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.1782605264238164,
+              "median_coefficient_error": -0.34641082169070114,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.08648359666435583
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.33132582194999216,
+              "median_coefficient_error": -0.5983614946142213,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.15653153808149253
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.08664527293198532,
+              "median_coefficient_error": 0.19202849470991357,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.33132582194999216,
+              "median_coefficient_error": -0.5983614946142213,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.15653153808149253
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_le_1..ratio_1_to_2",
+          "sampled_positions": 11,
+          "sampled_states": 6,
+          "HT_source_total": 11.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.8837173404537377,
+              "median_coefficient_error": -1.466195536197304,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.37761059966168653
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.9488880537975699,
+              "median_coefficient_error": -1.531346131938635,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.4005140131259855
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.8837172217101095,
+              "median_coefficient_error": -1.4661954135802029,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.37761055733626825
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.8605234495211838,
+              "median_coefficient_error": -1.4661954135802029,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.3693017422937834
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.9488880537975699,
+              "median_coefficient_error": -1.531346131938635,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.4005140131259855
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 16,
+          "sampled_states": 6,
+          "HT_source_total": 16.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -1.115502147949802,
+              "median_coefficient_error": -1.5421656812290436,
+              "negative_error_positions": 16,
+              "median_curvature_share_of_negative_error": 0.4267306509469562
+            },
+            "FP32": {
+              "median_log_ratio_error": -1.1428649002017766,
+              "median_coefficient_error": -1.5505202150564288,
+              "negative_error_positions": 16,
+              "median_curvature_share_of_negative_error": 0.428000470064564
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -1.1155020287696162,
+              "median_coefficient_error": -1.5421650409263408,
+              "negative_error_positions": 16,
+              "median_curvature_share_of_negative_error": 0.4267306509469562
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -1.1070096480815765,
+              "median_coefficient_error": -1.5156221945382922,
+              "negative_error_positions": 16,
+              "median_curvature_share_of_negative_error": 0.4221121580700555
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -1.1689084483622638,
+              "median_coefficient_error": -1.7357107403080616,
+              "negative_error_positions": 16,
+              "median_curvature_share_of_negative_error": 0.428000470064564
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_1_to_2..ratio_1_to_2",
+          "sampled_positions": 74,
+          "sampled_states": 14,
+          "HT_source_total": 8758.555023923445,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.13459494554869972,
+              "median_coefficient_error": 0.14173680546670042,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.1249843417531167,
+              "median_coefficient_error": 0.1247417716290784,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.13459482639761783,
+              "median_coefficient_error": 0.14173667135983636,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.151194323603355,
+              "median_coefficient_error": 0.14788934657301056,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.11418067325111914,
+              "median_coefficient_error": 0.11330491815809607,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_2_to_10..ratio_2_to_10",
+          "sampled_positions": 2,
+          "sampled_states": 2,
+          "HT_source_total": 236.71770334928232,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 1.1060814995207127,
+              "median_coefficient_error": 1.7180879218325886,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 1.2376752641657165,
+              "median_coefficient_error": 2.0792046570183706,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 1.1060814995207127,
+              "median_coefficient_error": 1.7180879218325886,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 1.2376752641657165,
+              "median_coefficient_error": 2.0792046570183706,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 1.1060814995207127,
+              "median_coefficient_error": 1.7180879218325886,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_le_1..ratio_1_to_2",
+          "sampled_positions": 62,
+          "sampled_states": 12,
+          "HT_source_total": 7338.2488038277515,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.07709468375864527,
+              "median_coefficient_error": 0.0788226575915677,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.006755006008410883
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.0033854002909287327,
+              "median_coefficient_error": 0.0033311820087902344,
+              "negative_error_positions": 28,
+              "median_curvature_share_of_negative_error": 0.019688154033519117
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.077094892371264,
+              "median_coefficient_error": 0.07882287920731279,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.0067547733015127995
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.0810101142410452,
+              "median_coefficient_error": 0.08185122086926988,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.003297846989129641,
+              "median_coefficient_error": 0.0032559734327607393,
+              "negative_error_positions": 29,
+              "median_curvature_share_of_negative_error": 0.01889898444600179
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 698,
+          "sampled_states": 16,
+          "HT_source_total": 82614.47846889953,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.026256574444242703,
+              "median_coefficient_error": -0.02498882708324668,
+              "negative_error_positions": 476,
+              "median_curvature_share_of_negative_error": 0.030226044561555566
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.027878844820641572,
+              "median_coefficient_error": -0.026987324722438477,
+              "negative_error_positions": 474,
+              "median_curvature_share_of_negative_error": 0.03140415211700927
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.026256574444242703,
+              "median_coefficient_error": -0.02497304011255208,
+              "negative_error_positions": 476,
+              "median_curvature_share_of_negative_error": 0.03022610293866837
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.021521456199111985,
+              "median_coefficient_error": -0.020703970922348658,
+              "negative_error_positions": 456,
+              "median_curvature_share_of_negative_error": 0.02728925829198639
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.03408660570032318,
+              "median_coefficient_error": -0.03310086636840459,
+              "negative_error_positions": 494,
+              "median_curvature_share_of_negative_error": 0.035115090820887374
+            }
+          }
+        }
+      ]
+    },
+    "appworld": {
+      "frame": {
+        "declared_trajectories": 124,
+        "completed_trajectories": 122,
+        "missing_uids": [
+          "eb7de0bd-872b-4db3-9329-50e2f94391fa",
+          "ff340a84-4b3e-4fb8-8ecd-76b105932cc1"
+        ],
+        "initial_states": 16,
+        "completed_frame_sources": 204865,
+        "sampled_sources": 1061,
+        "sampled_trajectories": 121,
+        "sampled_states": 16,
+        "strata": [
+          {
+            "name": "ratio_le_1",
+            "population": 166304,
+            "sample": 831,
+            "inclusion_probability": 0.004996873196074659
+          },
+          {
+            "name": "ratio_1_to_2",
+            "population": 38524,
+            "sample": 193,
+            "inclusion_probability": 0.0050098639808950265
+          },
+          {
+            "name": "ratio_2_to_10",
+            "population": 35,
+            "sample": 35,
+            "inclusion_probability": 1.0
+          },
+          {
+            "name": "ratio_10_to_100",
+            "population": 2,
+            "sample": 2,
+            "inclusion_probability": 1.0
+          },
+          {
+            "name": "ratio_gt_100",
+            "population": 0,
+            "sample": 0,
+            "inclusion_probability": null
+          }
+        ]
+      },
+      "observations": 1061,
+      "initial_states": 16,
+      "compared_reference_points": 5305,
+      "maximum_absolute_float_vs_decimal_discrepancy": {
+        "A_over_r_error": 5.561721738270649e-15,
+        "first_order": 8.000011926240451e-15,
+        "curvature": 5.934739951821757e-15
+      },
+      "positive_decimal_curvature_points": 0,
+      "crossed_cells": [
+        {
+          "cell": "ratio_10_to_100:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 2,
+          "sampled_states": 2,
+          "HT_source_total": 2.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -26.23087037223026,
+              "median_coefficient_error": -72.97310487238053,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.999999998557559
+            },
+            "FP32": {
+              "median_log_ratio_error": -26.57708055753658,
+              "median_coefficient_error": -72.97310487246715,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.9999999990389907
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -26.230864457097272,
+              "median_coefficient_error": -72.97310487238053,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.999999998557624
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -26.230864457097272,
+              "median_coefficient_error": -72.97310487238053,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.999999998557559
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -27.37912237294599,
+              "median_coefficient_error": -72.97310487258262,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.9999999991014966
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_1_to_2..ratio_1_to_2",
+          "sampled_positions": 63,
+          "sampled_states": 16,
+          "HT_source_total": 12575.191709844561,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.20443621664326134,
+              "median_coefficient_error": 0.2287556506732049,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.009501697216287524
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.1512965369950145,
+              "median_coefficient_error": 0.17001066959554678,
+              "negative_error_positions": 4,
+              "median_curvature_share_of_negative_error": 0.009657860834107147
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.19951064120013948,
+              "median_coefficient_error": 0.22758881841054546,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.00950060153706634
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.2504573858291139,
+              "median_coefficient_error": 0.3020993582376461,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.00950060153706634
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.09983075428048173,
+              "median_coefficient_error": 0.10881691953730388,
+              "negative_error_positions": 4,
+              "median_curvature_share_of_negative_error": 0.009657860834107147
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_1_to_2..ratio_2_to_10",
+          "sampled_positions": 5,
+          "sampled_states": 5,
+          "HT_source_total": 998.0310880829016,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.7467682583737704,
+              "median_coefficient_error": 1.1151257655829803,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.5990844513852297,
+              "median_coefficient_error": 0.8405905770222706,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.7489004084272827,
+              "median_coefficient_error": 1.119649871309753,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.7975814796277435,
+              "median_coefficient_error": 1.250115758201452,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.5442932710764493,
+              "median_coefficient_error": 0.724391119154443,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_2_to_10..ratio_2_to_10",
+          "sampled_positions": 5,
+          "sampled_states": 5,
+          "HT_source_total": 998.0310880829016,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.7808716915334868,
+              "median_coefficient_error": 1.2907698804332635,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.7304718934837372,
+              "median_coefficient_error": 1.1813830310796327,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.7808721948551307,
+              "median_coefficient_error": 1.2907710791057523,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.7808721948551307,
+              "median_coefficient_error": 1.2907710791057523,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.7190467789708022,
+              "median_coefficient_error": 1.0547310532986984,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_le_1..ratio_1_to_2",
+          "sampled_positions": 38,
+          "sampled_states": 15,
+          "HT_source_total": 7585.036269430052,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.0015013785595103368,
+              "median_coefficient_error": 0.0015150916811075277,
+              "negative_error_positions": 18,
+              "median_curvature_share_of_negative_error": 0.032528149635060316
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.07448076171034586,
+              "median_coefficient_error": -0.07339588632775662,
+              "negative_error_positions": 23,
+              "median_curvature_share_of_negative_error": 0.05598285880459294
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.0014961444225038544,
+              "median_coefficient_error": 0.001509805784875251,
+              "negative_error_positions": 18,
+              "median_curvature_share_of_negative_error": 0.032532028902975116
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.10680034114513415,
+              "median_coefficient_error": 0.11282513315868181,
+              "negative_error_positions": 3,
+              "median_curvature_share_of_negative_error": 0.0029747707429088215
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.11114057164056117,
+              "median_coefficient_error": -0.1060681266993242,
+              "negative_error_positions": 38,
+              "median_curvature_share_of_negative_error": 0.05598285880459294
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_le_1..ratio_2_to_10",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 199.60621761658032,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.7033498934402568,
+              "median_coefficient_error": 1.0227892620070824,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.00614198316866546,
+              "median_coefficient_error": -0.006136836287766068,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.003067847923194135
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.7033379278041801,
+              "median_coefficient_error": 1.0227650314657277,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.7033498934402568,
+              "median_coefficient_error": 1.0227892620070824,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.00614198316866546,
+              "median_coefficient_error": -0.006136836287766068,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.003067847923194135
+            }
+          }
+        },
+        {
+          "cell": "ratio_1_to_2:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 81,
+          "sampled_states": 16,
+          "HT_source_total": 16168.103626943006,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.2843802890225548,
+              "median_coefficient_error": -0.2528784693321754,
+              "negative_error_positions": 81,
+              "median_curvature_share_of_negative_error": 0.13545986507968052
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.2203334100843402,
+              "median_coefficient_error": -0.2020982542027434,
+              "negative_error_positions": 81,
+              "median_curvature_share_of_negative_error": 0.10612440695341101
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.28438205481015627,
+              "median_coefficient_error": -0.2524878229346298,
+              "negative_error_positions": 81,
+              "median_curvature_share_of_negative_error": 0.13546066450565541
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.19507912181399292,
+              "median_coefficient_error": -0.18955473679303403,
+              "negative_error_positions": 81,
+              "median_curvature_share_of_negative_error": 0.09437024856214217
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.3278411730952699,
+              "median_coefficient_error": -0.2839821685642784,
+              "negative_error_positions": 81,
+              "median_curvature_share_of_negative_error": 0.154979937027714
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_10_to_100..ratio_10_to_100",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 1.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 2.0582285503786704,
+              "median_coefficient_error": 32.12694712988442,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 1.840176170094109,
+              "median_coefficient_error": 24.91147073555781,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 2.0582311171946355,
+              "median_coefficient_error": 32.12704166407113,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 2.0582311171946355,
+              "median_coefficient_error": 32.12704166407113,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 1.4478708383144134,
+              "median_coefficient_error": 15.301716945775443,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_1_to_2..ratio_10_to_100",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 1.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.3224914596018301,
+              "median_coefficient_error": -0.6194879592855997,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.152593986675462
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.09398023586449755,
+              "median_coefficient_error": 0.22144523918784875,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.3234527220034614,
+              "median_coefficient_error": -0.6210519689426379,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.1530230536345837
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 2.035916819656412,
+              "median_coefficient_error": 14.96542823150512,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.41100511031889153,
+              "median_coefficient_error": -0.757379528962318,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.19146492931511294
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_1_to_2..ratio_1_to_2",
+          "sampled_positions": 8,
+          "sampled_states": 7,
+          "HT_source_total": 8.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.40917882455585675,
+              "median_coefficient_error": -0.7782586650646743,
+              "negative_error_positions": 8,
+              "median_curvature_share_of_negative_error": 0.18046394284068457
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.5053024794900438,
+              "median_coefficient_error": -0.8059337655326442,
+              "negative_error_positions": 8,
+              "median_curvature_share_of_negative_error": 0.1860261130754106
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.40917110992348205,
+              "median_coefficient_error": -0.7782467896115439,
+              "negative_error_positions": 8,
+              "median_curvature_share_of_negative_error": 0.1804639570548016
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.3754216129614716,
+              "median_coefficient_error": -0.7215228913626015,
+              "negative_error_positions": 8,
+              "median_curvature_share_of_negative_error": 0.16752112466938984
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.5498397943078175,
+              "median_coefficient_error": -1.1469553252548603,
+              "negative_error_positions": 8,
+              "median_curvature_share_of_negative_error": 0.23649135508669614
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_1_to_2..ratio_2_to_10",
+          "sampled_positions": 7,
+          "sampled_states": 6,
+          "HT_source_total": 7.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.42947572423026537,
+              "median_coefficient_error": -1.0405538685411508,
+              "negative_error_positions": 6,
+              "median_curvature_share_of_negative_error": 0.1994141246053393
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.41505842992822517,
+              "median_coefficient_error": -1.056650617152684,
+              "negative_error_positions": 7,
+              "median_curvature_share_of_negative_error": 0.19321414126028383
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.42947572423026537,
+              "median_coefficient_error": -1.0405538685411508,
+              "negative_error_positions": 6,
+              "median_curvature_share_of_negative_error": 0.1994141246053393
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.06836432209880394,
+              "median_coefficient_error": -0.20554503597417106,
+              "negative_error_positions": 5,
+              "median_curvature_share_of_negative_error": 0.05430342455590332
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.5585908089087916,
+              "median_coefficient_error": -1.313364025918782,
+              "negative_error_positions": 7,
+              "median_curvature_share_of_negative_error": 0.25342765387494154
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_2_to_10..ratio_10_to_100",
+          "sampled_positions": 2,
+          "sampled_states": 2,
+          "HT_source_total": 2.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.9641503120055226,
+              "median_coefficient_error": 3.8403477391079015,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 1.1312986183796057,
+              "median_coefficient_error": 4.459256550250594,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.9641466835105852,
+              "median_coefficient_error": 3.8406995669819786,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 1.7293936494076718,
+              "median_coefficient_error": 9.848466122462348,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.9641466835105852,
+              "median_coefficient_error": 3.8403477391079015,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_2_to_10..ratio_2_to_10",
+          "sampled_positions": 2,
+          "sampled_states": 2,
+          "HT_source_total": 2.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.420821576917104,
+              "median_coefficient_error": 1.6187949430508808,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.7216585362115615,
+              "median_coefficient_error": 3.2729179866965628,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.41085245049397434,
+              "median_coefficient_error": 1.5720463689698652,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.749269294251588,
+              "median_coefficient_error": 3.451161523715015,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.0029268149756338513,
+              "median_coefficient_error": 0.006303928667941605,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_le_1..ratio_1_to_2",
+          "sampled_positions": 1,
+          "sampled_states": 1,
+          "HT_source_total": 1.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.9580899692719874,
+              "median_coefficient_error": -1.5296867802150595,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.403695569620518
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.9614916555015959,
+              "median_coefficient_error": -1.5329198870130352,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.40486843730087924
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.9580900586789546,
+              "median_coefficient_error": -1.5296868653358406,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.4036956004702882
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.8895018031642855,
+              "median_coefficient_error": -1.462095246261315,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.37966985542784204
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -1.1333361395612433,
+              "median_coefficient_error": -1.6827300252650808,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.4618540141630956
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_le_1..ratio_2_to_10",
+          "sampled_positions": 2,
+          "sampled_states": 2,
+          "HT_source_total": 2.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -1.8163520702459703,
+              "median_coefficient_error": -1.7357781102678378,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.6472681525072496
+            },
+            "FP32": {
+              "median_log_ratio_error": -1.3709075519082756,
+              "median_coefficient_error": -1.5466116487617851,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.4301949710338157
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -1.8163202175824307,
+              "median_coefficient_error": -1.7357673730560887,
+              "negative_error_positions": 1,
+              "median_curvature_share_of_negative_error": 0.6472609208178155
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.10913674811250362,
+              "median_coefficient_error": 0.23903186145227373,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -1.8163520702459703,
+              "median_coefficient_error": -1.7357781102678378,
+              "negative_error_positions": 2,
+              "median_curvature_share_of_negative_error": 0.4345777158481152
+            }
+          }
+        },
+        {
+          "cell": "ratio_2_to_10:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 11,
+          "sampled_states": 5,
+          "HT_source_total": 11.0,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -4.474455518810446,
+              "median_coefficient_error": -2.3060461131372816,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.948419365833368
+            },
+            "FP32": {
+              "median_log_ratio_error": -4.413952371108353,
+              "median_coefficient_error": -2.306046114464617,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.9459043083372242
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -4.47445275855951,
+              "median_coefficient_error": -2.306046113137271,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.9484192536361077
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -4.413952371108353,
+              "median_coefficient_error": -2.3060461114381954,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.9459043083372242
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -4.601766300785885,
+              "median_coefficient_error": -2.306046114464617,
+              "negative_error_positions": 11,
+              "median_curvature_share_of_negative_error": 0.9533574150421309
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_1_to_2..ratio_1_to_2",
+          "sampled_positions": 225,
+          "sampled_states": 16,
+          "HT_source_total": 45028.15884476534,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.3141725684956913,
+              "median_coefficient_error": 0.34411769013007354,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.2727891252555696,
+              "median_coefficient_error": 0.29730740567728176,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.314171197672535,
+              "median_coefficient_error": 0.34593094930351387,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.35907490011610255,
+              "median_coefficient_error": 0.399297575275559,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.23550046453240128,
+              "median_coefficient_error": 0.2463306662082373,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_1_to_2..ratio_2_to_10",
+          "sampled_positions": 39,
+          "sampled_states": 12,
+          "HT_source_total": 7804.880866425992,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.8355196098742439,
+              "median_coefficient_error": 1.2834060929864282,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.5423241052461972,
+              "median_coefficient_error": 0.6110487582475614,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.8367924523662154,
+              "median_coefficient_error": 1.2665895395151598,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.9605778858567051,
+              "median_coefficient_error": 1.357355556402986,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 0.4992636593737099,
+              "median_coefficient_error": 0.593669076841467,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_2_to_10..ratio_10_to_100",
+          "sampled_positions": 3,
+          "sampled_states": 2,
+          "HT_source_total": 600.3754512635378,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 2.5577449769841385,
+              "median_coefficient_error": 9.747324556890423,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 1.7640217514942538,
+              "median_coefficient_error": 4.637606075166905,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 2.5576005437976326,
+              "median_coefficient_error": 9.63636032569687,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 2.5577449769841385,
+              "median_coefficient_error": 9.747324556890423,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 1.7640217514942538,
+              "median_coefficient_error": 4.637606075166905,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_2_to_10..ratio_2_to_10",
+          "sampled_positions": 18,
+          "sampled_states": 9,
+          "HT_source_total": 3602.2527075812272,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 1.1052925176086679,
+              "median_coefficient_error": 1.7512443438224259,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "FP32": {
+              "median_log_ratio_error": 1.114114542702664,
+              "median_coefficient_error": 1.6345034121533737,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 1.105792468457857,
+              "median_coefficient_error": 1.7512065574596933,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 1.2375156880575726,
+              "median_coefficient_error": 2.033673852018745,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": 1.0212504427646902,
+              "median_coefficient_error": 1.531907477353259,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_le_1..ratio_1_to_2",
+          "sampled_positions": 141,
+          "sampled_states": 16,
+          "HT_source_total": 28217.64620938628,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": 0.06650675426323582,
+              "median_coefficient_error": 0.06261854722507709,
+              "negative_error_positions": 48,
+              "median_curvature_share_of_negative_error": 0.05973018307775156
+            },
+            "FP32": {
+              "median_log_ratio_error": 0.0441873300139064,
+              "median_coefficient_error": 0.040667298098604476,
+              "negative_error_positions": 55,
+              "median_curvature_share_of_negative_error": 0.04673589222678577
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": 0.06650669477500637,
+              "median_coefficient_error": 0.06261899257715475,
+              "negative_error_positions": 46,
+              "median_curvature_share_of_negative_error": 0.06731243671088791
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": 0.1568455844037839,
+              "median_coefficient_error": 0.1579534596883001,
+              "negative_error_positions": 0,
+              "median_curvature_share_of_negative_error": null
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.05841170932773904,
+              "median_coefficient_error": -0.05392158324666352,
+              "negative_error_positions": 103,
+              "median_curvature_share_of_negative_error": 0.050638387956226445
+            }
+          }
+        },
+        {
+          "cell": "ratio_le_1:reference_ratio_le_1..ratio_le_1",
+          "sampled_positions": 405,
+          "sampled_states": 16,
+          "HT_source_total": 81050.68592057761,
+          "reference_views": {
+            "native": {
+              "median_log_ratio_error": -0.2534475938685236,
+              "median_coefficient_error": -0.20022684067937024,
+              "negative_error_positions": 349,
+              "median_curvature_share_of_negative_error": 0.15323986525903327
+            },
+            "FP32": {
+              "median_log_ratio_error": -0.19659454147759645,
+              "median_coefficient_error": -0.16334735031613612,
+              "negative_error_positions": 348,
+              "median_curvature_share_of_negative_error": 0.1203424576071875
+            },
+            "rounded_FP32": {
+              "median_log_ratio_error": -0.25340649722535064,
+              "median_coefficient_error": -0.20021524693569548,
+              "negative_error_positions": 348,
+              "median_curvature_share_of_negative_error": 0.1505473923074734
+            },
+            "recorded_interval_low": {
+              "median_log_ratio_error": -0.14805740671680467,
+              "median_coefficient_error": -0.12764751145352127,
+              "negative_error_positions": 325,
+              "median_curvature_share_of_negative_error": 0.10327811571710055
+            },
+            "recorded_interval_high": {
+              "median_log_ratio_error": -0.31917984779161146,
+              "median_coefficient_error": -0.23891949184006178,
+              "negative_error_positions": 371,
+              "median_curvature_share_of_negative_error": 0.16275665441249745
+            }
+          }
+        }
+      ]
+    }
+  },
+  "arithmetic_comparison": "80-digit Decimal using exact original binary-float inputs; discrepancies reported without a new pass threshold",
+  "metric_units": "(A_DT-A_reference)/r before native masked whitening; positive-reward captures",
+  "formula": {
+    "epsilon": "d_DT-d_reference",
+    "c": "exp(-d_reference)",
+    "error": "c*(1-exp(-epsilon))",
+    "first_order": "c*epsilon",
+    "curvature": "c*(1-exp(-epsilon)-epsilon)<=0"
+  },
+  "theoretical_scope": {
+    "ideal_baseline": "A common action-independent deletion-reference return B(h) cancels in the sampling-policy score expectation; it need not equal V(h).",
+    "actual_error": "Delta_g=E[sum_i grad_log_pi_i*(C_DT_i-C_exact_i)] under that ideal-baseline condition.",
+    "entire_piecewise_rule": "For the actual self-target/source rule define b_hat(h,a)=E[R*exp(-d)*1_nonself | h,a]. The raw gradient difference from score*R is -E[score*b_hat]. A source-only proof must not silently prove the whole piecewise rule.",
+    "necessary_softmax_condition": "At one prefix with independent supported action logits, bias_a=-pi_a*(b_hat_a-E_pi[b_hat]). This is an analytic criterion, not a new B module or a measured estimate.",
+    "conservation": "Zero mean coefficient error or a conserved credit sum does not imply the score-weighted error is zero.",
+    "implementation_gap": "The production runner attributes a simultaneous all-source EOS contrast; its conserved components are not generally factual-background single-deletion log ratios when sources interact.",
+    "whitening": "Subtracting a shared batch mean does not generally remove action-correlated error. Random same-batch mean/scale and PPO clipping have their own nonlinear effects.",
+    "no_claim": "This study does not estimate the full model-gradient bias or establish training degradation."
+  },
+  "sources_for_theoretical_scope": [
+    {
+      "url": "https://papers.neurips.cc/paper/9413-hindsight-credit-assignment.pdf",
+      "item": "Theorem 2 and equation 6: policy-marginal outcome ratio under its stated support condition; not a theorem identifying EOS with the policy marginal"
+    },
+    {
+      "url": "https://www.jmlr.org/papers/volume5/greensmith04a/greensmith04a.pdf",
+      "item": "Baseline/control-variate variance optimization; equal expected gradients do not establish minimum variance"
+    }
+  ],
+  "limits": [
+    "Frozen base-model development captures, not the current trained formal policy.",
+    "Reference view ranges are numerical sensitivity records, not confidence limits or exact world-oracle bounds.",
+    "Crossed prediction/reference magnitude cells and initial-state coverage are retained; no pooled raw credit moment.",
+    "The curvature term is an exact algebraic component, not a causal share attributable to an operator.",
+    "In particular, all false-positive cells have d_DT below the reference by construction; that sign is not independent evidence of a directional error mechanism.",
+    "Exact deletion ratios remove the estimated-d error term; a source-only baseline argument does not by itself prove the whole source/self-target piecewise gradient unbiased.",
+    "No full policy-gradient bias or training degradation is measured here.",
+    "No scalar, credit clipping, calibration, reward modification, or new production rule is introduced."
+  ],
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "backward": 0,
+    "optimizer": 0,
+    "GPU": 0,
+    "rollout": 0,
+    "remote": 0
+  },
+  "production_modified": false,
+  "official_tolerance_changed": false,
+  "elapsed_seconds": 2.230822999999873
+}
