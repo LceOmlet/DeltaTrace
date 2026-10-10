@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原第二B4 head异步采集完成，坏logp已在head返回时存在
+
+原事故单次诊断894899、worker898278/899803均已退出，正式仍停止37/330。
+复用e48ed002原回放、3f4942a9异常采集、782db0e8薄observer，GPU4/5，
+LoRA8/16、每卡B4、旧概率/参考32行与27个原DT B4保持；两卡第二B4再次
+出现132/121个logp梯度NaN（有效128/119），本次未执行任何optimizer更新。
+约0.2MB官方non_blocking CPU copy在原head返回时排队，event只在update
+退出或抛错后等待；原head/loss计算未替换，loss前无CPU值读取或显式同步。
+按真实标签唯一offset319对齐，两卡9933/11237有效位置的head logp与loss
+逐值相同，包括全部坏梯度位置。因此本次坏概率已在head返回时产生，不是
+随后response裁切或loss把概率改坏。输出仍有限，但与old最大差164.300/151.115。
+Rank0失败autograd保存H/IDs与之前正常capture A逐值相同、与B的H不同；
+Rank1的H与A/B均不同、IDs相同。不能混用之前v2两卡H均等于B的结论。
+失败full W仍未获得，尚未区分实际GEMM输入读取、GEMM、归一化/gather及
+编译输出buffer。原observer随后读取FSDP已释放W报invalid argument；新
+异步observer无错误，完整保存两卡head输出。Rank1异常JSON缺失如实保留。
+终态mx-smi八卡各858MiB、无GPU进程，主机可用1024926892032字节；CPU
+对照峰值698040320字节、CUDA未初始化。生产无改动，KL官方guard仍candidate。
+见[完成回执](results_textcraft_incident37_async_head_20261011.json)及原张量/哈希。
+
+
 ## 2026-10-11 原第二B4 head返回值异步采集正在运行
 
 当前尚未区分坏logp是head计算已错，还是返回后到loss之间被改写。GPU4/5单次原事故

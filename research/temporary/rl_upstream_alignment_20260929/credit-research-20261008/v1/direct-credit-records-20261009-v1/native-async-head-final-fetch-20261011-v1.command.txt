@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,base64,time,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1')
+names=['job.json','driver.log','head-loss-comparison-v1.json','hidden-comparison-v1.json','source/capture_native_incident37_async_head_20261011.py','source/compare_native_async_head_20261011.py','source/compare_native_head_captures_20261011.py']
+for rank in (0,1):names.extend([f'result/rank{rank}.json',f'result/rank{rank}-phases.jsonl',f'result/rank{rank}-async-head-capture.json',f'result/rank{rank}-async-head-return-microbatch1.pt',f'result/rank{rank}-loss-inputs-microbatch1.pt',f'result/rank{rank}-exception-capture.json'])
+rows=[];missing=[]
+for name in names:
+ p=root/name
+ if not p.exists():missing.append(str(p));continue
+ b=p.read_bytes();rows.append({'relative':name,'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+processes=[]
+for pid,birth in [(894899,1791673741.42),(898278,1791673762.4),(899803,1791673776.31)]:
+ row={'pid':pid,'expected_birth':birth}
+ try:p=psutil.Process(pid);row.update(birth=p.create_time(),same_birth=p.create_time()==birth,status=p.status())
+ except psutil.NoSuchProcess:row['missing']=True
+ processes.append(row)
+print(json.dumps({'unix':time.time(),'files':rows,'missing_files':missing,'processes':processes,'host_available_bytes':psutil.virtual_memory().available,'physical_gpu':subprocess.run(['mx-smi'],capture_output=True,text=True).stdout}))
+
+PY
