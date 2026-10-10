@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 11:44 冻结负尾采样口径复核；不是当前策略或NaN原因结论
+
+使用原已配置SciPy1.16及SHA6eb34117…的原统计函数，复算两任务各1061位置、
+各16初始状态、三个原阈值的全部原表；与已发布c9e78c9b回执逐值一致。
+源sample SHA60eed5f1…、全部原native/参考/分析文件SHA、总体分层计数、原纳入概率、
+token与state/trajectory/source权重、完整观测身份和所有保存参考范围均核对。
+完成总体为TextCraft85轨迹/121248source，AppWorld122轨迹/204865source；
+AppWorld两条缺失继续保留，未填阴性。相同sample来源8f34db31、原native采集888f048d，
+不是当前正式训练18轮后的策略，更不是新稳定版DT整体质量或训练偏差的证明。
+原c>2诊断：预测尾部各37，TextCraft明确参考尾部1/非尾35/跨阈值1；
+AppWorld分别5/22/10。基于原数值参考范围的precision为2.7%–5.4%/13.5%–40.5%；
+原条件有限总体95%召回区间约0.059%–8.0%/0.025%–0.550%，各状态区间仍常宽或未定义。
+数值参考范围不是置信区间；置信覆盖以其包含对照标签为条件，且为单阈值/单domain，
+不是同时覆盖所有状态。单删诊断不替代原作者累计删除/RISE/MAS，不推断当前训练梯度。
+CPU1.803秒、峰RSS118566912字节、PSS81672192字节，未导入torch，CUDA mask=-1；
+没有新采样、模型、DT、反向、optimizer或生产改动，不重新安装本机缺失的SciPy。
+回执results_frozen_tail_frame_audit_20261010.json。11:47同一原TextCraft两worker进入
+actor_rollout_compute_log_prob，裁剪前事件暂无新增；第14轮NaN根因仍未知。
+数值源26bef6c8、正式预算及参数不变，AppWorld/SQL/GRPO未重启。
+
 ## 2026-10-10 11:34 TextCraft 当前融合输出头来源核对（只读）
 
 实际初始化日志已明确启用Torch融合头；该owner源SHA e285c335…不是完全未改的官方文件。
