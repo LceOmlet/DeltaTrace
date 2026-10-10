@@ -1,5 +1,30 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 10:12 论文四例原生行差首差定位补齐，局部原生断言通过
+
+补齐上一条尚未定位的两例；同一B8/原输入/完整target/实际reader，一次完整native
+前向仍逐值复现此前八个分数（最大差0）。现有OperatorObservation/LocalCaptureEvents
+保留，通过公开hook扩展到后续decoder/原FA接口；四对的首个观察差异全部在原
+torch.nn.Linear：MoreHopQA1 layer1 in_proj_b、MQ6 layer2 in_proj_a、MQ0及
+MoreHopQA0均layer3 self_attn.k_proj。每对在该首差Linear的输入严格相同；剩余
+两例在进入该层FA之前已经发生首差，不能把它归为FA或DT有限传播独有的错误。
+前三层的两份原始操作数SHA与上一诊断完全相同；新增k_proj原始B8全张量另存远端。
+
+复用既有CPU checker的原F.linear参考和torch.testing.assert_close，仍为原BF16
+默认rtol=.016/atol=1e-5；只将比较行从range(4)改为原capture的new_rows并记录行号，
+防止把输入已受上游差异影响的其他行混作同输入舍入比较，未改任何数值计算或容差。
+四项完整输出对及八项全部不相同坐标的FP64回BF16端点检查，12项均通过；该计数
+与上一条14项有重叠，不相加。首差四对共有25个不同行坐标，非总体采样/召回数据。
+这只证明所定位Linear的局部检查通过，不给整网累计log-prob差设新合格阈值，也
+不将其作为DT总体归因质量、单删真实性、FA/FLA或VERL容差的替代证据。
+
+有效诊断PID1377244/出生1791598184.28，GPU4，含载入64.958秒；一次原生前向，
+DT/反向/optimizer/rollout/恢复/生产改动均0。Torch峰allocated22.687/reserved24.365GiB，
+进程峰RSS26.469GiB，非物理显存峰。CPU参考0.240秒，PSS约0.288GiB，未初始化CUDA。
+10:12已确认该原句柄退出，物理GPU4恢复859MiB；2/3原worker保持，未重启。
+源码/实际导入/SHA/原始分数/操作数身份/原断言见results_paper_native_rows_all_20261010.json；
+上一条局部回执保留，正式数值版本仍为26bef6c8/fla-early-output-scale-20261009-v1。
+
 ## 2026-10-10 10:02 论文四例原生 batch 行差：一次前向复现，两例定位原 Linear
 
 继续论文 William Walton 实现核查；不是重新计算 DT、修改信用或新增训练验收。
