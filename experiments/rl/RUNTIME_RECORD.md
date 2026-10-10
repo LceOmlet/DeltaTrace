@@ -1,5 +1,39 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 16:59 TextCraft第26轮完整返回，NaN14仍未定位
+
+同一原PID982372/出生1791553809.84及两worker完成26/330，已进入第27轮原采样。
+各rank完整32个B4原log_prob梯度均有限，覆盖4次optimizer×8个microbatch；
+各4次原optimizer全部实际step，8项裁剪前local norm与同次原返回逐值相同。
+这些是DTensor _NormPartial local观察，不另称全局L2实测。
+第14轮仍只有已确认的梯度范数NaN及原生跳过一笔同步更新；首个异常参数/算子未知。
+原奖励、熵和DT信用有限，后续有限更新不等于修复第14轮。
+
+原轨迹reward0.703、entropy0.643、grad_norm0.039；采样1707.772秒、
+旧logp111.520秒、ref97.418秒、DT/优势209.959秒、actor407.049秒，
+整轮2534.139秒（42.23565分钟）。白化后优势最小值-406.865仍有限，
+不凭幅度单独判定归因错误或NaN成因。native-curves-20261010-165912绘至26轮；
+仅第14轮范数NaN留空、红线标记，未平滑或填零。奖励是更新前训练轨迹回报。
+
+原save_freq25，此轮不保存；latest_checkpointed_iteration.txt仍为25，
+14份检查点清单及18,189,780,704字节与上一轮一致，未复制、恢复或验证restore。
+DT瞬时物理GPU2/3为17093/16961MiB，actor为52308/34184MiB，均非峰值。
+对比原25/26轮DT阶段：cgroup增加18,638,073,856字节，其中file cache增加
+18,224,431,104、rss增加413,032,448；两worker PSS反而略降。
+与原检查点25写入的18,189,780,704字节相符，支持主要是文件缓存的解释；
+不是每个缓存文件的追踪证明，不能把总增量称为训练张量泄漏。
+原Torch allocator 84.765/91.580GB另存，不当作物理显存。
+
+数值源26bef6c8/GDN7c06d5e0、观察源85aa2940、LoRA8/16、每卡B4/双卡B8未变。
+原response上限10240、prompt315，本轮不是新增32k容量或容差测试。
+三份远端authority均完成26并保留NaN调查status；AppWorld/SQL/GRPO未启动。
+本地监听v1因Windows文本stdin的CRLF转换在远端Python启动前失败；
+v2使用byte stdin并核对同一PID出生后完成，未重启训练或重装环境。
+
+回执results_textcraft_iteration26_20261010.json绑定全部20份原始文件SHA、梯度、
+实际step、阶段资源与曲线；零额外模型/DT/backward/optimizer调用，零生产数值改动。
+
+
 ## 2026-10-10 16:17 TextCraft第25轮完整返回，原生检查点25已完成
 
 同一原PID982372/出生1791553809.84与两worker完成25/330，已进入第26轮原采样。
