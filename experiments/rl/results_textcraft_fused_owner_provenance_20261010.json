@@ -1,0 +1,126 @@
+{
+  "observed_unix": 1791603249.1350033,
+  "scope": "Bind the active head to its accepted patch and original saved owner receipts.\n\nSource/receipt inspection only. This does not run a model or numerical test,\nreplace an owner implementation, or establish the cause of the NaN incident.\n",
+  "upstream_commit_from_runtime": "20bd331",
+  "upstream_full_commit_from_original_receipt": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "active_head_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py",
+  "active_head_resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/utils/experimental/torch_functional.py",
+  "active_head_sha256": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+  "pristine_head_sha256": "5855ac3bce4e12f9990ab89d3457df9b49be913776a2acb713e54be296953960",
+  "accepted_patch_commit": "dc4e4d7349c26d08eaceaac6d00a57c0e1fbfda7",
+  "accepted_patch_source_sha256": "399e92c10b504388a800a14d7bfa8046ab7149cd98693e637208c4dc140082c8",
+  "active_source_equals_accepted_patch_applied_to_pinned_owner": true,
+  "local_patch_matches_accepted_patch_AST": true,
+  "head_is_pristine_upstream": false,
+  "differences": [
+    {
+      "name": "_fused_linear_for_ppo_fwd",
+      "diff": "--- pinned-owner/_fused_linear_for_ppo_fwd\n+++ active-source/_fused_linear_for_ppo_fwd\n@@ -1,4 +1,4 @@\n-\n+@torch.compile(dynamic=True, options={\"emulate_precision_casts\": True})\n def _fused_linear_for_ppo_fwd(\n     hidden_states: torch.FloatTensor,\n     vocab_weights: torch.FloatTensor,\n@@ -6,6 +6,8 @@\n     temperature: float = 1.0\n ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:\n     logits = (hidden_states @ vocab_weights.t()) / temperature\n+    if temperature != 1.0:\n+        torch._dynamo.graph_break()\n     orig_dtype = logits.dtype\n     logits = logits.to(torch.float32)\n \n@@ -16,4 +18,4 @@\n     token_log_probs = log_probs.gather(-1, input_ids.unsqueeze(-1)).squeeze(-1)\n     entropy = torch.logsumexp(logits, dim=-1) - torch.sum(probs * logits, dim=-1)\n \n-    return token_log_probs.to(orig_dtype), entropy.to(orig_dtype)\n+    return token_log_probs, entropy\n"
+    },
+    {
+      "name": "_fused_linear_for_ppo_bwd",
+      "diff": "--- pinned-owner/_fused_linear_for_ppo_bwd\n+++ active-source/_fused_linear_for_ppo_bwd\n@@ -1,4 +1,4 @@\n-\n+@torch.compile(dynamic=True, options={\"emulate_precision_casts\": True})\n def _fused_linear_for_ppo_bwd(\n     dlog_probs: Optional[torch.FloatTensor],\n     dentropy: Optional[torch.FloatTensor],\n@@ -8,6 +8,8 @@\n     temperature: float = 1.0,\n ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:\n     logits = (hidden_states @ vocab_weights.t()) / temperature\n+    if temperature != 1.0:\n+        torch._dynamo.graph_break()\n     orig_dtype = logits.dtype\n     logits = logits.to(torch.float32)\n \n@@ -18,13 +20,13 @@\n     # Gradient from log_probs\n     if dlog_probs is not None:\n         one_hot_input = torch.zeros_like(logits).scatter_(-1, input_ids.unsqueeze(-1), 1)\n-        dlogits += dlog_probs.to(torch.float32).unsqueeze(-1) * (one_hot_input - probs)\n+        dlogits += (dlog_probs.to(torch.float32).unsqueeze(-1) * (one_hot_input - probs)).to(orig_dtype)\n \n     # Gradient from entropy\n     if dentropy is not None:\n         log_probs = logits.log_softmax(dim=-1)\n         entropy = torch.logsumexp(logits, dim=-1) - torch.sum(probs * logits, dim=-1)\n-        dlogits += probs * (log_probs + entropy.unsqueeze(-1)) * (-dentropy.unsqueeze(-1))\n+        dlogits += (probs * (log_probs + entropy.unsqueeze(-1)) * (-dentropy.unsqueeze(-1))).to(orig_dtype)\n \n     dlogits = dlogits.to(orig_dtype) / temperature\n \n"
+    },
+    {
+      "name": "FusedLinearForPPOFunction",
+      "diff": "--- pinned-owner/FusedLinearForPPOFunction\n+++ active-source/FusedLinearForPPOFunction\n@@ -27,8 +27,8 @@\n \n         # Allocate memory for outputs\n         output_requires_grad = hidden_states.requires_grad or vocab_weights.requires_grad\n-        log_probs = hidden_states.new_zeros(T, requires_grad=output_requires_grad)\n-        entropy = hidden_states.new_zeros(T, requires_grad=output_requires_grad)\n+        log_probs = torch.zeros(T, device=hidden_states.device, dtype=torch.float32, requires_grad=output_requires_grad)\n+        entropy = torch.zeros(T, device=hidden_states.device, dtype=torch.float32, requires_grad=output_requires_grad)\n \n         # Perform forward one chunk at a time\n         for chunk_start in range(0, T, chunk_size):\n"
+    }
+  ],
+  "original_head_test": null,
+  "original_saved_test_scope": "Original VERL output-head comparisons and global B8 x 32768 update capacity; not a new whole-network tolerance or a task training-success claim",
+  "original_saved_owner": {
+    "commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "test": "tests/kernels/test_linear_cross_entropy.py",
+    "unmodified_test": "TestLinearCrossEntropy(2).verify_correctness(): five repetitions passed",
+    "forward_atol": 0.0001,
+    "forward_rtol": 0.0001,
+    "backward_atol": 0.01,
+    "backward_rtol": 0.0001,
+    "production_path": "Original RayWorkerGroup DP dispatch -> original dp_actor update/loss -> original Qwen torch wrapper -> patched owner FusedLinearForPPO",
+    "changed": "Qwen3.5 text dispatch; FP32 head output storage; preserve BF16 gradient branches and nonunit-temperature storage boundary; compile original chunks",
+    "unchanged": "DT Q/V/A, PPO loss/optimizer/update, FA/FLA, vLLM, task budgets, LoRA rank8 alpha16"
+  },
+  "historical_receipts": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\owner-entropy-20260930\\final-official-head-case2.log",
+      "bytes": 884,
+      "sha256": "ff9ae5f8eddf2bf33e4e48ffebdec1f311773c3a54b7b028094a64b59bff607c",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\owner-entropy-20260930\\final-fused-temperature1.json",
+      "bytes": 1390,
+      "sha256": "1d1ab8621e90ad04601aab0afb9159622702a6e0e4f159a78ab78e6d0db0c72f",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\owner-entropy-20260930\\materialized-temperature09.json",
+      "bytes": 1361,
+      "sha256": "bc2301092db287120cf655b653ef89dcd3d2e25cca0e9bf6f6ea6732835fd17e",
+      "matches_recorded_sha256": true
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\owner-b8-dispatch-20260930\\live-TextCraft-complete.json",
+      "bytes": 3206,
+      "sha256": "dbc689b157a7c0126fc57a1861635c33cfb22b7781749b935003e235512c9108",
+      "matches_recorded_sha256": true
+    }
+  ],
+  "current_runtime": {
+    "formal_pid": 982372,
+    "formal_birth": 1791553809.84,
+    "observed_unix": 1791602977.4609041,
+    "workers": [
+      {
+        "pid": 987808,
+        "birth": 1791553850.0,
+        "phase": "ray::WorkerDict",
+        "PSS_bytes": 17866669056
+      },
+      {
+        "pid": 989860,
+        "birth": 1791553867.51,
+        "phase": "ray::WorkerDict.actor_rollout_generate_sequences",
+        "PSS_bytes": 19171267584
+      }
+    ]
+  },
+  "source_artifacts": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-nonfinite-math-source-1791603249.json",
+      "bytes": 149111,
+      "sha256": "98f3e864e62a0edbcebee5ad82d809f80f358f4e7f5f6c608f40ceac7a910ae4"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-actor-observer-observation-1791602977.json",
+      "bytes": 26954,
+      "sha256": "a33a4a80977642a54e762db2eab5a0853080e93c729c93bb58ca06d9c84d360f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_actor_b8.json",
+      "bytes": 14497,
+      "sha256": "b1b792fcdda4a8900e74f321d903d78a9fb336da97d2105058cbd083f1196f4c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_first_formal_update.json",
+      "bytes": 11468,
+      "sha256": "1cd81123cb7b97cd262b0bc48a54e87705168fced1c77e2b2a1c525cfcf36368"
+    }
+  ],
+  "NaN_root_cause_localized": false,
+  "repair_deployed": false,
+  "numerical_version_changed": false,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "backward_calls": 0,
+  "production_changes": 0,
+  "limitations": [
+    "This verifies source identity and the integrity of historical receipts; no numerical test was rerun.",
+    "The historical owner-head tests do not prove that the current whole model cannot generate a nonfinite gradient.",
+    "The incident at iteration14 lacks saved pre-update actor inputs, parameters, moments and RNG; these cannot be reconstructed from finite iteration18 inputs.",
+    "No evidence attributes the NaN incident to the accepted head patch, and this audit does not exclude it as a possible cause.",
+    "The frozen source and native initialization log identify this active branch; this inspection did not query live sys.modules or change worker state.",
+    "The remote host has no git executable; pristine source revision was not newly checked with git. Exact source SHA and the previously pinned version are recorded.",
+    "The copied pristine checkout has no tests/kernels/test_linear_cross_entropy.py file. Historical original-test receipts were checked by SHA, but the test source and its assertions were not newly inspected."
+  ]
+}

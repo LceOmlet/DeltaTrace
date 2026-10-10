@@ -1,5 +1,18 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 11:34 TextCraft 当前融合输出头来源核对（只读）
+
+实际初始化日志已明确启用Torch融合头；该owner源SHA e285c335…不是完全未改的官方文件。
+完整源码逐字等于已接受提交dc4e4d7中的原patch_precision应用于固定20bd331原head，
+本机补丁AST亦与该提交一致。差异为FP32概率/熵输出存储、BF16梯度分支边界及原chunk编译；
+不是本次引入的新版本差异。原官方case2日志、两份实际dtype/温度对照及原部署完成记录
+四份SHA与results_actor_b8.json一致。本次未重跑数值检查，不能据此排除该头作为NaN可能来源。
+远端无git且复制的pristine目录未带该test源码，故不宣称新核对了git HEAD或原测试断言源码。
+原PPO loss/update/optimizer/norm所查函数AST保持20bd331；actor forward仍为已记录适配。
+原PID及两worker已只读确认，最后观测仍完成18/330、在第19轮采样；新NaN现场尚未出现。
+数值源26bef6c8、LoRA8/16、每卡B4及预算未变，无模型/DT/反向/生产改动，根因仍未定位。
+回执results_textcraft_fused_owner_provenance_20261010.json；此来源核对不是修复或训练健康验收。
+
 被动preclip观察扩展源码已绑定提交0fa354c89abe3d7170b0af8f5ccf44600303dc29（SHA110428a8…），
 部署时未提交，现已验证该提交blob与远端已安装源码SHA完全相同；不是数值基线更新。
 数值源仍26bef6c8，绑定回执native-preclip-source-commit-binding-20261010.json。
