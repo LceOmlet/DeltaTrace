@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,resource
+import torch
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');previous=root/'receipts/textcraft-native-incident37-async-head-capture-20261011-v1/result';job=root/'receipts/textcraft-native-incident37-GEMM-rows-capture-20261011-v1';job.mkdir(exist_ok=True);(job/'source').mkdir(exist_ok=True);(job/'result').mkdir(exist_ok=True)
+manifest={'unix':time.time(),'scope':'All active NaN-gradient positions from prior failing async-head replay, fixed before new replay. Incident localization only, not representative attribution evaluation.','selection_reads_new_outcomes':False,'ranks':[],'source_artifacts':[]}
+for rank in range(2):
+ def load(name):
+  p=previous/name;b=p.read_bytes();manifest['source_artifacts'].append({'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()});return torch.load(p,map_location='cpu',weights_only=False,mmap=True)
+ loss=load(f'rank{rank}-loss-inputs-microbatch1.pt');head=load(f'rank{rank}-async-head-return-microbatch1.pt');p=previous/f'rank{rank}-exception-head-H-IDs.pt';ids=torch.load(p,map_location='cpu',weights_only=False,mmap=True)['input_ids'].reshape(head['log_probs'].shape)
+ rr,cc=(torch.isnan(loss['log_prob_gradient']) & loss['response_mask'].bool()).nonzero(as_tuple=True);offset=319;positions=rr*ids.shape[1]+cc+offset
+ row={'rank':rank,'head_shape':list(ids.shape),'vocab':248320,'hidden_dim':4096,'rows':[],'planned_logits_copy_bytes':int(rr.numel()*248320*2),'failed_labels_source':str(p)}
+ for i in range(rr.numel()):
+  r,c=int(rr[i]),int(cc[i]);pos=int(positions[i]);row['rows'].append({'flat_position':pos,'response_row':r,'response_column':c,'expected_token_id':int(ids.reshape(-1)[pos]),'prior_head_logp':float(head['log_probs'].reshape(-1)[pos]),'prior_loss_logp':float(loss['log_prob'][r,c]),'prior_old_logp':float(loss['old_log_prob'][r,c])})
+ row['native_chunks_covered']=len({x['flat_position']//512 for x in row['rows']});manifest['ranks'].append(row)
+manifest['CUDA_initialized']=torch.cuda.is_initialized();manifest['peak_RSS_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+b=(json.dumps(manifest,indent=2)+'\n').encode();p=job/'selection.json';p.write_bytes(b);print(json.dumps({'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'manifest':manifest}))
+
+PY

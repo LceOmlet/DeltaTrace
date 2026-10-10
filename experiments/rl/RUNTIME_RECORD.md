@@ -1,5 +1,20 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原GEMM行采集已进入old-logprob，正式仍停37/330
+
+针对已证实的坏head返回值，单次诊断1057731/出生1791675280.07、GPU4/5。
+原e48ed002回放、782db0e8 head输出采集及3f4942a9异常采集保持，新增14e7f926
+薄observer只观察第二B4已编译head的原extern_kernels.mm，不替换mm或归一化。
+此前失败中128/119个有效NaN位置预先冻结；约63.57/59.10MB原BF16 logits与
+小块实际H/W/IDs异步复制CPU，loss前无CPU值读取或显式同步，无新增GEMM。
+CPU实际Ray/VERL登记核验通过；owner源码及两份实际Inductor wrapper已读取。
+首次启动器多建result目录，原入口mkdir(exist_ok=False)在模型初始化前退出；
+原PID1047608和日志保留，改交不存在的result-native路径，原owner未修改。
+当前worker1060831/1062284在原old-logprob，物理各约13.3GB；尚未采到目标head，
+进程存活不等于验证。生产Q/V/A、LoRA8/16、每卡B4、损失与数值版本均不变。
+见[GEMM诊断启动回执](results_textcraft_incident37_GEMM_rows_launch_20261011.json)。
+
+
 ## 2026-10-11 原第二B4 head异步采集完成，坏logp已在head返回时存在
 
 原事故单次诊断894899、worker898278/899803均已退出，正式仍停止37/330。

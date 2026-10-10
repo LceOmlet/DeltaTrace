@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-GEMM-rows-capture-20261011-v1';record=json.loads((job/'job.json').read_bytes());out={'unix':time.time(),'processes':[],'ranks':[],'owner_functions':[]}
+for pid in [record['pid']]:
+ try:p=psutil.Process(pid);out['processes'].append({'pid':pid,'birth':p.create_time(),'status':p.status(),'command':p.cmdline()})
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'missing':True})
+for n in [0,1]:
+ f=job/f'result/rank{n}-phases.jsonl';r={'rank':n,'phase_file_exists':f.is_file()}
+ if f.is_file():
+  rows=[json.loads(l) for l in f.read_text().splitlines()];r['latest_phase']=rows[-1];r['count']=len(rows)
+ g=job/f'result/rank{n}.json'
+ if g.is_file():
+  v=json.loads(g.read_bytes());r.update(phase=v['phase'],pid=v['pid'],birth=v['birth'],actual_optimizer_steps=v['actual_optimizer_steps'],microbatches=v['microbatches'])
+ out['ranks'].append(r)
+f=root/'candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/torch_functional.py';lines=f.read_text().splitlines();out['owner_path']=str(f);out['owner_sha256']=hashlib.sha256(f.read_bytes()).hexdigest()
+for i,l in enumerate(lines):
+ if l.startswith('def logprobs_from_logits(') or l.startswith('def entropy_from_logits('):out['owner_functions'].append({'line':i+1,'source':'\n'.join(lines[i:i+42])})
+out['driver_tail']='\n'.join((job/'driver.log').read_text(errors='replace').splitlines()[-10:]);print(json.dumps(out))
+
+PY
