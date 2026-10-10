@@ -1,0 +1,28 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 "$VENV_PYTHON" - <<'PY'
+import json,hashlib,time,resource
+from pathlib import Path
+import torch
+from safetensors import safe_open
+from transformers.conversion_mapping import get_checkpoint_conversion_mapping
+p=Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');audit=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-pre-DT-layer-audit-20261011-v1/result')
+index=json.loads((p/'model.safetensors.index.json').read_bytes());rows=[]
+for rank in [0,1]:
+ record=json.loads((audit/f'rank{rank}.json').read_bytes())
+ for field in record['pre_DT_parameter_state']['before_old']['fields']:
+  if field['kind']!='parameter' or field['requires_grad']:continue
+  name=field['name'];assert name.startswith('base_model.model.');key=name[len('base_model.model.'):].replace('.base_layer.','.')
+  if key.startswith('model.'):key='model.language_model.'+key[len('model.'):]
+  assert field['placements']==['S(0)'] and field['shape'][0]%2==0
+  file=p/index['weight_map'][key];digest=hashlib.sha256();n=field['local_shape'][0];start=rank*n;elements_per_row=1
+  for dim in field['shape'][1:]:elements_per_row*=dim
+  chunk_rows=max(1,8388608//elements_per_row)
+  with safe_open(str(file),framework='pt',device='cpu') as f:
+   tensor=f.get_slice(key);assert list(tensor.get_shape())==field['shape']
+   for offset in range(0,n,chunk_rows):
+    value=tensor[start+offset:start+min(n,offset+chunk_rows)].to(getattr(torch,field['dtype'].split('.')[-1])).contiguous()
+    digest.update(memoryview(value.reshape(-1).view(torch.uint8).numpy()))
+    del value
+  rows.append(dict(rank=rank,native_name=name,checkpoint_key=key,file=str(file),global_shape=field['shape'],local_shape=field['local_shape'],dtype=field['dtype'],native_sha256=field['sha256'],checkpoint_slice_sha256=digest.hexdigest(),exact=digest.hexdigest()==field['sha256']))
+print(json.dumps(dict(unix=time.time(),scope='CPU-only exact saved native frozen-shard hashes versus original safetensors slices; no model loader or parameter mutation',official_checkpoint_conversion_mapping=repr(get_checkpoint_conversion_mapping('qwen3_5_text')),checkpoint_index_sha256=hashlib.sha256((p/'model.safetensors.index.json').read_bytes()).hexdigest(),records=rows,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),model_calls=0,DT_calls=0,optimizer_steps=0)))
+PY

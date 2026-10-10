@@ -1,0 +1,10 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,hashlib,time,resource
+from pathlib import Path
+from safetensors import safe_open
+p=Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B')
+index=json.loads((p/'model.safetensors.index.json').read_bytes());keys=list(index['weight_map'])
+selected=[k for k in keys if 'layers.0.' in k or k.endswith('lm_head.weight') or 'embed_tokens.weight' in k]
+print(json.dumps(dict(unix=time.time(),checkpoint=str(p),index_sha256=hashlib.sha256((p/'model.safetensors.index.json').read_bytes()).hexdigest(),keys_count=len(keys),selected_keys=selected,config=json.loads((p/'config.json').read_bytes()).get('model_type'),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)))
+PY

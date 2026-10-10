@@ -1,0 +1,6 @@
+mx-smi
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import psutil,time,json,shutil
+print(json.dumps(dict(unix=time.time(),host_available=psutil.virtual_memory().available,disk=shutil.disk_usage('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')._asdict())))
+PY

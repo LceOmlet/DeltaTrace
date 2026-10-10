@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,base64,hashlib,time,psutil,subprocess
+b=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-training-layer-audit-20261011-v1')
+paths=[b/'job.json',b/'result/completed.json',b/'result/rank0.json',b/'result/rank1.json',b/'result/rank0-phases.jsonl',b/'result/rank1-phases.jsonl',b/'result/initialization-config.yaml']+sorted((b/'source').glob('*.py'))
+files=[]
+for p in paths:
+ if p.is_file():
+  raw=p.read_bytes();files.append(dict(path=str(p),relative=str(p.relative_to(b)),bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),base64=base64.b64encode(raw).decode()))
+job=json.loads((b/'job.json').read_bytes()); states=[]
+for label,pid,birth in [('driver',job['pid'],job['birth'])]+[(f'rank{r}',json.loads((b/f'result/rank{r}.json').read_bytes())['pid'],json.loads((b/f'result/rank{r}.json').read_bytes())['birth']) for r in [0,1]]:
+ try:
+  p=psutil.Process(pid);states.append(dict(label=label,pid=pid,expected_birth=birth,actual_birth=p.create_time(),same_birth=abs(p.create_time()-birth)<.02,status=p.status()))
+ except psutil.NoSuchProcess:states.append(dict(label=label,pid=pid,expected_birth=birth,exists=False))
+print(json.dumps(dict(unix=time.time(),files=files,processes=states,physical=subprocess.run(['mx-smi'],capture_output=True,text=True).stdout,host_available=psutil.virtual_memory().available)))
+
+PY

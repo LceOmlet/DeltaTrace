@@ -1,0 +1,10 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,time,psutil
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');formal=root/'runs/textcraft-formal-stable-20261009-v1';job=root/'receipts/textcraft-native-incident37-training-layer-audit-20261011-v1';records=[]
+for rank,pid,birth in [(0,3910233,1791662519.14),(1,3911868,1791662532.84)]:
+ p=psutil.Process(pid);assert p.create_time()==birth;folder=formal/f'credit-records/rank{rank}-pid{pid}';paths=sorted(folder.glob('*'),key=lambda p:p.stat().st_mtime) if folder.exists() else []
+ records.append(dict(rank=rank,pid=pid,birth=birth,live=p.status()!='zombie',PSS_bytes=p.memory_full_info().pss,record_folder=str(folder),files=len(paths),joint_completed_files=len(list(folder.glob('joint-*.pt'))),last_files=[dict(name=x.name,bytes=x.stat().st_size,mtime=x.stat().st_mtime) for x in paths[-6:]]))
+print(json.dumps(dict(unix=time.time(),records=records)))
+PY

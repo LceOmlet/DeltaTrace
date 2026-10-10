@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+
+## 2026-10-11 原old/训练前向逐层对照完成，正式仍停37/330
+
+原事故输入的old/ref→27个真实DT B4→原32行更新诊断已完成并退出；两rank各8个B4梯度
+有限、各1次原optimizer操作。第二B4旧前向/训练前向共38张量（含32层、入口、mask、
+位置与final norm）逐值相同，当前native old与训练logp逐值相同；没有复现原百量级
+概率偏差或NaN，不能据此称故障修好。head H与final norm、live W/IDs与前两次采集均已核对。
+
+另以CPU对照此前保存的冻结状态与原safetensors，854/854冻结分片逐字节相同，峰值
+1.50GiB，未初始化GPU；不是原失败持久进程权重恢复或本次DT后全状态校验。
+旧正式saved old与本次train的rank1有效token最大差0.24950，属于跨初始化差异，
+与原事故百量级差异分开。CPU逐层/head比较峰值4.64GiB，无额外模型计算。
+
+诊断保留GPU clone直到原更新完成再写CPU，仍扰动分配和时序；继承模块docstring仅
+描述默认模式，启用trace的loss前GPU clone以实际flag/源SHA明确记录。冻结对照v1
+最终元数据读取失败，v2改用原HF get_checkpoint_conversion_mapping后完成；两份记录保留。
+新诊断未改生产/Q/V/A/官方目标、LoRA8/16或每卡B4；原KL保护仅验收候选未部署。
+正式保持37/330停止，不恢复检查点；driver3907237/1791662497.6及两worker均退出，
+物理mx-smi各858MiB、无GPU进程。源/配置/PID birth/现场SHA及资源见
+[训练逐层与冻结权重回执](results_textcraft_incident37_training_layers_20261011.json)。
+
 ## 2026-10-11 原old/ref/old逐层与参数现场，正式仍停37/330
 
 GPU4/5一次原native old/ref/old诊断已完成并退出，不运行DT、loss、optimizer或生成。
