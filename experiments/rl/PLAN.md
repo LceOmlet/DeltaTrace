@@ -1,5 +1,12 @@
 # DeltaTrace token 信用：唯一固定计划
 
+**2026-10-10 23:59 运行状态更新，方法不变。** TextCraft第37轮发生真实KL反向NaN，
+原VERL跳过首笔optimizer更新；第38轮采样期间已停止原driver与两worker并保存现场。
+当前不恢复检查点或部署未验收修复。第37轮已定位原low_var_kl指数溢出造成NaN梯度，
+其前置actor/old logp异常差异仍在调查；第14轮首个异常算子仍未知。
+该段覆盖下方“正式持续运行”的状态叙述，不修改Q/V/A、官方目标或正式预算。
+源版本、有效参数与事故回执见RUNTIME_RECORD.md和current_runtime.json。
+
 **2026-10-09 最新人类指令：新稳定版直接部署 TextCraft 正式预算。**
 使用已验收 `fla-early-output-scale-20261009-v1`（数值源26bef6c8），实际GDN
 SHA7c06d5e0…与验收绑定一致；不是未接受研究候选，也不退回旧FP16溢出路径。

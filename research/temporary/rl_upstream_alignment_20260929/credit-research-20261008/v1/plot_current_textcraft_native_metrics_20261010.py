@@ -3,6 +3,7 @@
 Reuses the project's existing console parser. Original lines, line numbers,
 source hashes and actor warnings are retained beside the figure and CSV.
 """
+import argparse
 import csv
 import datetime as dt
 import hashlib
@@ -24,9 +25,8 @@ def module(name, path):
     return result
 
 
-def main():
+def collect_live_snapshot():
     transport = module('current_transport', HERE.parents[1] / 'stage_environment_entry.py')
-    owner = module('native_log_plot_owner', REPO / 'experiments/rl/plot_training_progress.py')
     remote = r'''
 import hashlib,json,psutil,re,time
 from pathlib import Path
@@ -62,7 +62,11 @@ print(json.dumps(dict(collected_at=time.time(),formal_dir=str(formal),
     result = subprocess.run(transport.SSH + ['bash', '-s'], input=command.encode(),
                             capture_output=True, timeout=50)
     result.check_returncode()
-    snapshot = json.loads(result.stdout)
+    return json.loads(result.stdout)
+
+
+def render(snapshot):
+    owner = module('native_log_plot_owner', REPO / 'experiments/rl/plot_training_progress.py')
     metrics, _ = owner.parse_logs(snapshot['records'])
     stamp = dt.datetime.fromtimestamp(snapshot['collected_at'], dt.timezone(dt.timedelta(hours=8)))
     output = HERE / 'direct-credit-records-20261009-v1' / ('native-curves-' + stamp.strftime('%Y%m%d-%H%M%S'))
@@ -130,7 +134,7 @@ print(json.dumps(dict(collected_at=time.time(),formal_dir=str(formal),
     plt.close(fig)
     summary = dict(collected_at=snapshot['collected_at'], iterations=len(metrics),
                    last_iteration=metrics[-1]['step'], nonfinite_grad_norm_iterations=bad,
-                   actor_warning_count=len(snapshot['actor_warnings']),
+                   actor_warning_count=len(snapshot['actor_warnings']) if 'actor_warnings' in snapshot else None,
                    latest={k:metrics[-1]['values'].get(k) for k in keys},
                    first={k:metrics[0]['values'].get(k) for k in keys},
                    source_sha256=snapshot['source_sha256'],
@@ -143,4 +147,9 @@ print(json.dumps(dict(collected_at=time.time(),formal_dir=str(formal),
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--snapshot', type=Path,
+                        help='Render a saved original-log snapshot without remote calls.')
+    args = parser.parse_args()
+    render(json.loads(args.snapshot.read_text(encoding='utf-8'))
+           if args.snapshot else collect_live_snapshot())

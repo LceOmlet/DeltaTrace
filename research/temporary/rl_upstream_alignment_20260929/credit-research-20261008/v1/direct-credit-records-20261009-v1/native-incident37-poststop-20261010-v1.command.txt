@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,subprocess,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');ray=Path('/tmp/ray/session_2026-10-09_21-50-24_958031_982372/logs')
+processes=[dict(pid=p,exists=psutil.pid_exists(p)) for p in [982372,987808,989860]]
+assert not any(x['exists'] for x in processes)
+warnings=[]
+for pid in [987808,989860]:
+ for suffix in ['out','err']:
+  p=next(ray.glob('*-'+str(pid)+'.'+suffix))
+  for n,line in enumerate(p.read_text(errors='replace').splitlines(),1):
+   if 'grad_norm is not finite' in line:warnings.append(dict(pid=pid,path=str(p),line=n,text=line))
+physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15)
+print(json.dumps(dict(unix=time.time(),processes=processes,actor_warnings=warnings,physical_mx_smi=physical.stdout,physical_mx_smi_stderr=physical.stderr,physical_mx_smi_exit=physical.returncode,host_available_bytes=psutil.virtual_memory().available,production_changes=0,model_calls=0)))
+
+PY

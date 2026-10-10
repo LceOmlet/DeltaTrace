@@ -1,5 +1,38 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 23:59 TextCraft第37轮真实KL反向NaN，已停止并保留现场
+
+本段覆盖下方第36轮“37轮正在采样”的运行状态。原trainer已记录37/330，
+但第37轮首笔同步optimizer更新被原VERL跳过，随后三笔实际执行；不能记作四笔健康更新。
+在第38轮采样期间仅向原PID982372/出生1791553809.84及两worker987808/989860
+发送SIGTERM；23:51三者均已消失，23:59再次确认。GPU2/3物理各858MiB，
+无其他进程被发信号，未恢复检查点、未修改方法、预算或生产数值代码。
+
+两rank的第1个optimizer、第2个B4（观察index20/optimizer0/microbatch1）
+出现loss对log_prob的NaN梯度，分别132/122位置，其中有效policy位置128/120。
+实际old/new/ref logp、优势、mask均有限。保存输入通过同一已安装原core_algos
+CPU分支重放：PPO项梯度全部有限；KL项NaN位置与现场逐位完全相同。
+ref-minus-actor最大164.3207/150.3310，超过FP32 exp的88.72284范围；原
+low_var_kl先exp再clamp，前向最终loss有限仍不能阻止反向NaN。
+这定位了第37轮损失层的异常来源，不能反推第14轮未保存输入的首个异常算子。
+
+更上游的问题尚未解决：第37轮尚未有参数step时，部分actor/old logp已差100以上。
+rank0第二B4的row0/response column301：actor=-121.875，old=-0.0000976276。
+CPU读取原不可变pre-update快照证明该B4的old/ref/优势与现场逐值相同，
+不是观察器把其他训练行配到了这个B4；仍未确定actor前向差异的来源。
+不以单独增加KL指数保护来宣称根因修好，尚无修复候选部署。
+
+原不可变输入/LoRA/优化器/RNG与参数梯度共6份文件保留远端SHA及inode。
+只读CPU损失重放和输入检查峰值RSS分别0.798/0.934GB，零模型/DT/optimizer调用。
+数值源26bef6c8、GDN7c06d5e0、VERL20bd331、actor3a65e173、corefc2f992b
+和原source.json SHA1c08b57b均绑定回执；LoRA8/16、每卡B4/双卡B8、预算330不变。
+AppWorld/SQL/GRPO未启动。当前正式训练停止，NaN调查未完成，不称作健康。
+
+奖励/熵/梯度曲线已复用原日志解析器画至37：NaN14/37均保留断点并标红，
+无平滑、填零或独立评估混入。plot helper只增加已保存原日志快照的离线绘图入口，
+未改变训练。证据、27份诊断/曲线文件SHA及终止确认见
+[第37轮事故回执](results_textcraft_incident37_20261010.json)。
+
 ## 2026-10-10 23:14 TextCraft第36轮完整返回，37轮原采样已开始
 
 同一原PID982372/出生1791553809.84及两worker完成36/330。各rank32个B4原log_prob

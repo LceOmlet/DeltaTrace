@@ -1,0 +1,46 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,os,psutil,signal,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');formal=root/'runs/textcraft-formal-stable-20261009-v1';out=root/'receipts/textcraft-native-actor-incidents-20261010-v1'
+expected=[(982372,1791553809.84),(987808,1791553850.0),(989860,1791553867.51)]
+before=[]
+for pid,birth in expected:
+ p=psutil.Process(pid);assert p.create_time()==birth
+ before.append(dict(pid=pid,birth=birth,phase=p.name(),status=p.status()))
+artifacts=[]
+for rank,pid in [(0,987808),(1,989860)]:
+ folder=out/('rank'+str(rank)+'-pid'+str(pid))
+ paths=[]
+ for pattern in ['loss-backward-179164691*.pt','preclip-179164695*-gradients.pt','incident-179164695*-update.pt']:
+  found=list(folder.glob(pattern));assert len(found)==1,(str(folder),pattern,len(found));paths+=found
+ for path in paths:
+  h=hashlib.sha256()
+  with path.open('rb') as stream:
+   for chunk in iter(lambda:stream.read(1024*1024),b''):h.update(chunk)
+  stat=path.stat();artifacts.append(dict(path=str(path),bytes=stat.st_size,inode=stat.st_ino,hardlinks=stat.st_nlink,sha256=h.hexdigest()))
+assert len(artifacts)==6
+signals=[]
+for pid,birth in expected:
+ try:
+  p=psutil.Process(pid);assert p.create_time()==birth;os.kill(pid,signal.SIGTERM);signals.append(dict(pid=pid,birth=birth,signal='SIGTERM',unix=time.time()))
+ except psutil.NoSuchProcess: signals.append(dict(pid=pid,birth=birth,already_exited=True))
+time.sleep(3)
+after=[]
+for pid,birth in expected:
+ try:
+  p=psutil.Process(pid);assert p.create_time()==birth;after.append(dict(pid=pid,birth=birth,status=p.status(),phase=p.name(),terminal=p.status()==psutil.STATUS_ZOMBIE))
+ except psutil.NoSuchProcess: after.append(dict(pid=pid,birth=birth,terminal=True,exists=False))
+ray=Path('/tmp/ray/session_2026-10-09_21-50-24_958031_982372/logs');trainer=next(ray.glob('*-985585.out'))
+lines=trainer.read_text(errors='replace').splitlines();native=[x for x in lines if 'step:' in x and ' - ' in x]
+result=dict(unix=time.time(),before=before,signals=signals,after=after,preserved_incident_artifacts=artifacts,last_native_step_line=native[-1] if native else None,production_numerical_changes=0,other_processes_signaled=0,reason='Iteration37 captured nonfinite KL log-prob gradient; first-optimizer actor/old log-prob discrepancy under investigation; stop affected formal process rather than continuing known-invalid loss inputs.')
+receipt=out/('stopped-incident37-'+str(int(result['unix']))+'.json');result['remote_receipt']=str(receipt)
+updates=[]
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ path=root/name;old=path.read_bytes();data=json.loads(old);jobs=[j for j in data['jobs'] if j.get('pid')==982372];assert len(jobs)==1
+ j=jobs[0];prior=j.get('status');j['status']='formal_stopped_incident37_native_loss_nan_under_debug';j['stopped_for_debug_unix']=result['unix'];j['stop_receipt']=str(receipt)
+ path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n');updates.append(dict(path=str(path),previous_status=prior,status=j['status'],previous_sha256=hashlib.sha256(old).hexdigest(),sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
+result['authority_updates']=updates;receipt.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False))
+
+PY

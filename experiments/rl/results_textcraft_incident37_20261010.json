@@ -1,0 +1,344 @@
+{
+  "observed_unix": 1791647950.4649477,
+  "status": "TextCraft stopped after actual iteration37 KL backward NaN; upstream actor/old log-prob discrepancy remains under investigation",
+  "trainer_recorded_iterations": 37,
+  "total_iterations": 330,
+  "interrupted_phase": "iteration38 sampling",
+  "driver": {
+    "pid": 982372,
+    "birth": 1791553809.84,
+    "terminated": true
+  },
+  "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "numerical_source_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+  "numerical_release": "fla-early-output-scale-20261009-v1",
+  "gdn_sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656",
+  "actor_sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+  "core_algos_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+  "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+  "records": [
+    {
+      "rank": 0,
+      "pid": 987808,
+      "first_bad_optimizer_index": 0,
+      "first_bad_microbatch_index": 1,
+      "nonfinite_logprob_gradient_count": 132,
+      "nonfinite_active_tokens": 128,
+      "PPO_branch_nonfinite_count": 0,
+      "KL_branch_nonfinite_count": 132,
+      "KL_bad_mask_exactly_matches_captured": true,
+      "max_ref_minus_actor_logprob": 164.32066345214844,
+      "native_optimizer_calls": 4,
+      "actual_optimizer_step_calls": 3,
+      "second_B4_inputs_match_original_snapshot": {
+        "old_log_probs": {
+          "exact": true,
+          "maxabs": 0.0
+        },
+        "advantages": {
+          "exact": true,
+          "maxabs": 0.0
+        },
+        "ref_log_prob": {
+          "exact": true,
+          "maxabs": 0.0
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "pid": 989860,
+      "first_bad_optimizer_index": 0,
+      "first_bad_microbatch_index": 1,
+      "nonfinite_logprob_gradient_count": 122,
+      "nonfinite_active_tokens": 120,
+      "PPO_branch_nonfinite_count": 0,
+      "KL_branch_nonfinite_count": 122,
+      "KL_bad_mask_exactly_matches_captured": true,
+      "max_ref_minus_actor_logprob": 150.33103942871094,
+      "native_optimizer_calls": 4,
+      "actual_optimizer_step_calls": 3,
+      "second_B4_inputs_match_original_snapshot": {
+        "old_log_probs": {
+          "exact": true,
+          "maxabs": 0.0
+        },
+        "advantages": {
+          "exact": true,
+          "maxabs": 0.0
+        },
+        "ref_log_prob": {
+          "exact": true,
+          "maxabs": 0.0
+        }
+      }
+    }
+  ],
+  "confirmed_chain": "Finite loss inputs -> native low_var_kl FP32 exp overflow -> clamped finite KL value but NaN loss/log_prob gradients -> nonfinite LoRA gradients/native norm -> original first optimizer skip",
+  "upstream_anomaly": "Before first iteration37 optimizer step, actual actor log-prob differs from matching old policy values by >100; its origin is not yet established",
+  "example": {
+    "rank": 0,
+    "row_in_microbatch": 0,
+    "response_column": 301,
+    "actor_logprob": -121.875,
+    "old_logprob": -9.76276e-05,
+    "ref_logprob": -9.67933e-05
+  },
+  "historical_iteration14": "Only native nonfinite grad_norm and original skip were captured; iteration37 cause cannot be retroactively assigned to iteration14",
+  "latest_metrics": {
+    "training_rollout_reward_mean": 0.832,
+    "entropy_log": 0.505,
+    "grad_norm": "nan",
+    "ppo_kl": 0.281
+  },
+  "plot": {
+    "directory": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-curves-20261010-235154",
+    "nonfinite_iterations": [
+      14,
+      37
+    ],
+    "smoothing": false,
+    "missing_filled": false
+  },
+  "official_check_scope": "Actual tensors through same installed VERL loss owners on CPU; no model replay or new numerical tolerance claim",
+  "preserved_remote_incident_artifacts": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/loss-backward-1791646910870699040.pt",
+      "bytes": 1150925,
+      "inode": 19162447,
+      "hardlinks": 1,
+      "sha256": "537a2045e105ee2dba3f64cd2a2f547a234e9994cb9532c8815ea5052c5383a4"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/preclip-1791646951221777058-gradients.pt",
+      "bytes": 43576627,
+      "inode": 19386807,
+      "hardlinks": 1,
+      "sha256": "ee50e3932d5a27d187a233899eceeb728c9805c8e946f50f6904536723cefd50"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/incident-1791646951472459222-update.pt",
+      "bytes": 256292240,
+      "inode": 19386806,
+      "hardlinks": 2,
+      "sha256": "52859f89a535e3543d41b82916d090733c9b1d48aff02e06ee3d8b2e17664772"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/loss-backward-1791646910895854293.pt",
+      "bytes": 1150925,
+      "inode": 19364026,
+      "hardlinks": 1,
+      "sha256": "0e6ff2ad745b583714939df350472ddacfacfb0acdc379d6201cdef31a24d512"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/preclip-1791646951226042869-gradients.pt",
+      "bytes": 43576627,
+      "inode": 19235969,
+      "hardlinks": 1,
+      "sha256": "a34932371833bf0486bf9e8c0bd04d9fbe93a02e8d391dda618d54eab60dda0d"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/incident-1791646951472693178-update.pt",
+      "bytes": 256277968,
+      "inode": 19261569,
+      "hardlinks": 2,
+      "sha256": "9a2306e95b909612aa68b29ce24495d12beead50675a8d753313a8e2d87d10c5"
+    }
+  ],
+  "termination": [
+    {
+      "pid": 982372,
+      "birth": 1791553809.84,
+      "terminal": true,
+      "exists": false
+    },
+    {
+      "pid": 987808,
+      "birth": 1791553850.0,
+      "terminal": true,
+      "exists": false
+    },
+    {
+      "pid": 989860,
+      "birth": 1791553867.51,
+      "terminal": true,
+      "exists": false
+    }
+  ],
+  "authority_updates": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/formal-training.json",
+      "status": "formal_stopped_incident37_native_loss_nan_under_debug",
+      "sha256": "851b555ceb4771552cd4d957c38b04c0c89716c5e8fb45d45c7fc97d52be0034"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-training.json",
+      "status": "formal_stopped_incident37_native_loss_nan_under_debug",
+      "sha256": "851b555ceb4771552cd4d957c38b04c0c89716c5e8fb45d45c7fc97d52be0034"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-source.json",
+      "status": "formal_stopped_incident37_native_loss_nan_under_debug",
+      "sha256": "b16401f503a81eed2d38acde1ab6e3d969424d3edc953dcb3b54ee44749519c9"
+    }
+  ],
+  "GPU2_and_GPU3_poststop_physical_MiB": [
+    858,
+    858
+  ],
+  "host_available_bytes": 1026154704896,
+  "unchanged_config": {
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "microbatch_per_gpu": 4,
+    "effective_two_gpu_microbatch": 8,
+    "total_epochs": 30,
+    "total_iterations": 330,
+    "restored_checkpoint": false
+  },
+  "diagnostic_CPU_peak_RSS_bytes": {
+    "loss_replay": 797638656,
+    "input_inspection": 934273024
+  },
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer_calls_by_diagnostics": 0,
+  "production_numerical_changes": 0,
+  "artifacts": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/probe_native_incident_loss_20261010.py",
+      "bytes": 6161,
+      "sha256": "6f8f8818a24849cee3b021a94a27e5f52658945430271e0825499c58404dc4eb"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/plot_current_textcraft_native_metrics_20261010.py",
+      "bytes": 8281,
+      "sha256": "3a1228d5c5d2a52937dd317025c77b2d078b43245e80aeadf476556eba68064b"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-update37-live-watch-20261010-v1.command.txt",
+      "bytes": 2687,
+      "sha256": "5009a73629bb138d0871306841bc4750f85f3ab35819c2003109e280f91f9170"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-update37-live-watch-20261010-v1.jsonl",
+      "bytes": 50561,
+      "sha256": "c339fc2ec1eb81a60403b040fde9abe7b74edbbde95408eddc72309970cc6e5f"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-phase-resources-1791646770.command.txt",
+      "bytes": 7439,
+      "sha256": "d61e50d91c1e9700c6a080333e5e1753b5b59b7f77b214e427f36f058080a4db"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-phase-resources-1791646770.json",
+      "bytes": 10742,
+      "sha256": "496f4790760d5e3d2c4f5a70faa5591263ae21fe3363398b178952baba540dd4"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-actor-observer-observation-1791646952.json",
+      "bytes": 789062,
+      "sha256": "fa08ba6ab8e3ce29f2639648659d34a337ad7d497403570d474ef9472a353955"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-input-alignment-20261010-v1.command.txt",
+      "bytes": 3981,
+      "sha256": "3d8fbe7f7697407f092687126dc86db39d0dfa20d336e04b6f499b29c6813eae"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-input-alignment-20261010-v1.json",
+      "bytes": 364497,
+      "sha256": "a78a2e2cb837909b0023f6001fe01a85b8b03603bd3251c2dc533f15182cd950"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-input-alignment-20261010-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-input-alignment-20261010-v1.stdout.txt",
+      "bytes": 364497,
+      "sha256": "a78a2e2cb837909b0023f6001fe01a85b8b03603bd3251c2dc533f15182cd950"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-loss-20261010-v1.command.txt",
+      "bytes": 4713,
+      "sha256": "c4adb9a0043c7ac5995342431de157909bc47813c359e0040fdc161c8b138c2b"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-loss-20261010-v1.json",
+      "bytes": 29801,
+      "sha256": "9d4c37e99f5bdb87c1df9b8e5a9bfa4906d233af184796501bd756481dc16118"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-loss-20261010-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-loss-20261010-v1.stdout.txt",
+      "bytes": 29801,
+      "sha256": "9d4c37e99f5bdb87c1df9b8e5a9bfa4906d233af184796501bd756481dc16118"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-plot-snapshot.json",
+      "bytes": 77251,
+      "sha256": "c91625f4a90000c47a1d190629db8354e198bb05b349824507538730bec541de"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-poststop-20261010-v1.command.txt",
+      "bytes": 1185,
+      "sha256": "d9af645366c6c262f26edf968a7485378459ac23c0e39bc7c3110ee62503c299"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-poststop-20261010-v1.json",
+      "bytes": 5345,
+      "sha256": "79f0dcf21b8929805570ca69e8a8551607c0b5df9ddc39a7dbee6d202e5842d3"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-poststop-20261010-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-stop-1791647362.command.txt",
+      "bytes": 3511,
+      "sha256": "df718de9dcbb29a2d11d30b024860b087a39967cbc952eccac6e71a42428a14d"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-stop-1791647362.json",
+      "bytes": 7250,
+      "sha256": "722ec7a2581559a60f834c6d39f59193f44b258291517b62fbd9468c96810b5e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-terminated-1791647514.command.txt",
+      "bytes": 2878,
+      "sha256": "1467ae2e117cf3e36755f4fd039175d6868eeb67ca22f44b38e7497e01766a8e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-incident37-terminated-1791647514.json",
+      "bytes": 78545,
+      "sha256": "b3830c7133625f78e2526854048b31e27bb847af7ddf1e7514a91d3f7495381b"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-curves-20261010-235154/original-native-metric-lines.json",
+      "bytes": 77251,
+      "sha256": "c91625f4a90000c47a1d190629db8354e198bb05b349824507538730bec541de"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-curves-20261010-235154/plot-receipt.json",
+      "bytes": 1642,
+      "sha256": "57cc6d2cbf1a585eccb327cb723a7fc214b679f9233942adc717768fe1f7877f"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-curves-20261010-235154/reward-entropy-gradient.csv",
+      "bytes": 6662,
+      "sha256": "9826404c89b7ec3d36e59bd3feb1dea1abfce4e621e1d71490374fd986e152fc"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-curves-20261010-235154/reward-entropy-gradient.png",
+      "bytes": 262605,
+      "sha256": "fb5aa870adc7f9d45fcb53647792ae681ecd965d4a71e82fb8387b98098a5ba1"
+    }
+  ]
+}

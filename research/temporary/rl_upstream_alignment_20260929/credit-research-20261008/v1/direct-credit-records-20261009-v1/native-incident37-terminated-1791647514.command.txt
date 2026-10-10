@@ -1,0 +1,31 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,os,psutil,signal,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out=root/'receipts/textcraft-native-actor-incidents-20261010-v1';expected=[(982372,1791553809.84),(987808,1791553850.0),(989860,1791553867.51)]
+procs=[];before=[]
+for pid,birth in expected:
+ try:
+  p=psutil.Process(pid);assert p.create_time()==birth;procs.append(p);before.append(dict(pid=pid,birth=birth,status=p.status(),phase=p.name()))
+ except psutil.NoSuchProcess:before.append(dict(pid=pid,birth=birth,exists=False))
+_,alive=psutil.wait_procs(procs,timeout=5);signals=[]
+for p in alive:
+ birth=dict(expected)[p.pid];assert p.create_time()==birth
+ if p.status()!=psutil.STATUS_ZOMBIE:os.kill(p.pid,signal.SIGKILL);signals.append(dict(pid=p.pid,birth=birth,signal='SIGKILL',reason='Same verified process remained live after original SIGTERM request'))
+psutil.wait_procs(alive,timeout=5)
+after=[]
+for pid,birth in expected:
+ try:
+  p=psutil.Process(pid);assert p.create_time()==birth;after.append(dict(pid=pid,birth=birth,status=p.status(),terminal=p.status()==psutil.STATUS_ZOMBIE))
+ except psutil.NoSuchProcess:after.append(dict(pid=pid,birth=birth,terminal=True,exists=False))
+assert all(x['terminal'] for x in after),after
+ray=Path('/tmp/ray/session_2026-10-09_21-50-24_958031_982372/logs');trainer=next(ray.glob('*-985585.out'));content=trainer.read_bytes();records=[dict(path=str(trainer),line=i,text=s) for i,s in enumerate(content.decode(errors='replace').splitlines(),1) if 'step:' in s and ' - ' in s]
+result=dict(unix=time.time(),before=before,signals=signals,after=after,termination_confirmed=True,trainer_log=str(trainer),trainer_sha256=hashlib.sha256(content).hexdigest(),native_metric_lines=records,prior_stop_receipt=str(out/'stopped-incident37-1791647362.json'),production_changes=0,other_processes_signaled=0)
+receipt=out/('terminated-incident37-'+str(int(result['unix']))+'.json');result['remote_receipt']=str(receipt);updates=[]
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ path=root/name;data=json.loads(path.read_bytes());jobs=[j for j in data['jobs'] if j.get('pid')==982372];assert len(jobs)==1;j=jobs[0]
+ j['status']='formal_stopped_incident37_native_loss_nan_under_debug';j['termination_confirmed_unix']=result['unix'];j['stop_receipt']=str(receipt);path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n');updates.append(dict(path=str(path),status=j['status'],sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
+result['authority_updates']=updates;receipt.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False))
+
+PY
