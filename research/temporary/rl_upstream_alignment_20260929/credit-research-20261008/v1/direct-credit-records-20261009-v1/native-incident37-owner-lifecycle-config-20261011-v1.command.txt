@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,hashlib,os,time,resource,shutil,inspect
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());os.environ.update(s['environment']);os.environ['CUDA_VISIBLE_DEVICES']='-1'
+import torch
+from torch._inductor import config
+from torch.distributed.fsdp import FSDPModule
+settings={}
+for path in ['triton.cudagraphs','fx_graph_cache','max_autotune','emulate_precision_casts']:
+ try:
+  value=config
+  for key in path.split('.'):value=getattr(value,key)
+  settings[path]=value
+ except Exception as e:settings[path]=repr(e)
+envp=s['environment'].get('DT_ENVIRONMENT_JSON');env=json.loads(Path(envp).read_bytes())['qwen35'] if envp else {}
+model=json.loads(Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B/config.json').read_bytes());text=model.get('text_config',model)
+functions=[]
+for name in ['unshard','reshard','set_reshard_after_forward']:
+ f=getattr(FSDPModule,name);p=Path(inspect.getsourcefile(f));functions.append(dict(name=name,path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),source=inspect.getsource(f)))
+tools={n:shutil.which(n) for n in ['compute-sanitizer','cuda-memcheck','maca-sanitizer','mcprof','mxgdb','maca-gdb']}
+print(json.dumps(dict(unix=time.time(),torch_version=torch.__version__,torch_inductor_settings_after_formal_env_only=settings,DT_environment_file=envp,DT_compiler_options=env.get('dt_compiler_options'),DT_dynamic_shapes=env.get('dt_dynamic_shapes'),DT_fla_fp16=env.get('dt_native_fla_fp16'),explicit_debug_environment={k:s['environment'].get(k) for k in ['TORCH_LOGS','TORCH_COMPILE_DEBUG','TORCHINDUCTOR_CUDAGRAPHS','TORCHINDUCTOR_CACHE_DIR','TRITON_CACHE_DIR','PYTORCH_CUDA_ALLOC_CONF']},model_dropout={k:v for k,v in text.items() if 'drop' in k},native_tools=tools,maca_bin_entries=[p.name for p in Path('/opt/maca/bin').iterdir()] if Path('/opt/maca/bin').is_dir() else [],FSDP_owner_methods=functions,CUDA_initialized=torch.cuda.is_initialized(),model_calls=0,DT_calls=0,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)))
+
+PY

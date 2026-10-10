@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,time,hashlib,resource,torch
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out=[]
+for rank,pid in enumerate([987808,989860]):
+ folder=root/f'receipts/textcraft-native-actor-incidents-20261010-v1/rank{rank}-pid{pid}';snapshot=torch.load(next(folder.glob('incident-*-update.pt')),map_location='cpu',weights_only=False)
+ badp=root/f'receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/result/rank{rank}-loss-inputs-microbatch1.pt';goodp=root/f'receipts/textcraft-native-incident37-all-DT-postfailure-capture-20261011-v1/result/rank{rank}-loss-inputs-microbatch1.pt'
+ bad=torch.load(badp,map_location='cpu',weights_only=False);good=torch.load(goodp,map_location='cpu',weights_only=False);x=bad['log_prob']-good['log_prob'];mask=bad['response_mask'].bool();rows=[]
+ for b in range(x.shape[0]):
+  selected=x[b][mask[b]];negative=(x[b] < -1)&mask[b];positions=negative.nonzero().flatten().tolist();segments=[]
+  for v in positions:
+   if segments and v==segments[-1][-1]+1:segments[-1][-1]=v
+   else:segments.append([v,v])
+  indexes=torch.where(mask[b],-x[b],torch.full_like(x[b],-torch.inf)).topk(8).indices.tolist()
+  rows.append(dict(row=b,active_tokens=int(mask[b].sum()),quantiles=torch.quantile(selected,torch.tensor([0.,.01,.1,.5,.9,.99,1.])).tolist(),negative_difference_below_minus1=int(negative.sum()),positive_difference_above1=int(((x[b]>1)&mask[b]).sum()),position_bins64=[int(negative[j:j+64].sum()) for j in range(0,x.shape[-1],64)],segments=segments,most_negative=[dict(column=j,token_ID=int(snapshot['input_batch']['responses'][b+4,j]),bad=float(bad['log_prob'][b,j]),good=float(good['log_prob'][b,j]),old=float(bad['old_log_prob'][b,j]),gap=float(x[b,j])) for j in indexes]))
+ out.append(dict(rank=rank,input_batch_keys=list(snapshot['input_batch'].keys()),bad_path=str(badp),good_path=str(goodp),bad_sha256=hashlib.sha256(badp.read_bytes()).hexdigest(),good_sha256=hashlib.sha256(goodp.read_bytes()).hexdigest(),shape=list(x.shape),old_exact=torch.equal(bad['old_log_prob'],good['old_log_prob']),reference_exact=torch.equal(bad['ref_logprob'],good['ref_logprob']),advantages_exact=torch.equal(bad['advantages'],good['advantages']),mask_exact=torch.equal(bad['response_mask'],good['response_mask']),rows=rows))
+ del snapshot,bad,good,x
+print(json.dumps(dict(unix=time.time(),records=out,model_calls=0,DT_calls=0,optimizer_steps=0,CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,threshold_note='Difference below -1 is descriptive grouping only, not an acceptance tolerance; columns are original response slots, not claimed native head kernel chunks.')))
+
+PY

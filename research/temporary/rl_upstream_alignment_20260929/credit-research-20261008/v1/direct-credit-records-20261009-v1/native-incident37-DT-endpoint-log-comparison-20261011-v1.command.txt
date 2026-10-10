@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,hashlib,time,resource,subprocess,psutil
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');records=[]
+for stem in ['old-ref-DT','old-ref-only','old-ref-one-DT','old-ref-all-DT-head','all-DT-postfailure-capture']:
+ f=root/f'receipts/textcraft-native-incident37-{stem}-20261011-v1';p=f/'driver.log';reports=[]
+ offset=0
+ with p.open('rb') as stream:
+  for line in stream:
+   marker=b'[DeltaTrace readout] '
+   if marker in line:
+    tail=line.split(marker,1)[1].decode('utf-8',errors='replace')
+    try:report,end=json.JSONDecoder().raw_decode(tail);reports.append(dict(byte_offset=offset,line_sha256=hashlib.sha256(line).hexdigest(),report=report))
+    except Exception as e:reports.append(dict(byte_offset=offset,parse_error=repr(e),tail_length=len(tail)))
+   offset+=len(line)
+ records.append(dict(stem=stem,log=str(p),log_bytes=p.stat().st_size,log_sha256=hashlib.sha256(p.read_bytes()).hexdigest(),reports=reports))
+print(json.dumps(dict(unix=time.time(),records=records,model_calls=0,DT_calls=0,optimizer_steps=0,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,physical_mx_smi=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12).stdout)))
+
+PY

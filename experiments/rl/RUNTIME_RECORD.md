@@ -1,5 +1,27 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 DT端点对照与原VERL输出头检查，概率异常来源仍未定位
+
+本轮只读CPU源与事故数据，没有GPU/model/DT/optimizer调用或生产改动。
+已按原driver行SHA、worker PID及rank结果绑定两组108条轨迹；rank0在一次失败与
+加入head分片读取的正常回放之间，全部108个DT trace字段和信用分组统计逐值相同，
+但原actor logp不同。这仅证明已记录标量相同，不冒充完整token向量或live权重相同。
+两rank旧/参考logp、优势和mask仍相同，异常actor概率差几乎只向负侧扩大。
+不能据此把KL事故直接归因于DT信用数值，也未确定输出头/编译器或FSDP是根因。
+
+已查到固定VERL tests/kernels/test_linear_cross_entropy.py：原参考run_torch_entropy、
+run_verl_original_entropy，前向atol=rtol=1e-4，反向atol=1e-2/rtol=1e-4。
+该原测试先把hidden和weight转FP32，不能偷换成实际BF16整网已通过；本轮未运行
+该GPU测试。已安装FSDP setter所改的两个字段均见DT适配器恢复，源对照本身不证明
+全部时序状态正确。首个源搜索因远端无rg失败，保留错误后用pathlib只读，不安装。
+
+原正式奖励/熵/梯度图复核至37：回报0.664→0.832，熵0.677→0.505，14/37的梯度
+NaN留断点；不是独立评估。正式保持停37/330，无重启/恢复。LoRA8/16、每卡B4不变；
+官方KL guard仍仅候选。失败前向hidden/labels/liveW与稳定触发条件仍缺失。
+源SHA、分组对照、原测试源、CPU资源和回执见
+[输出检查回执](results_textcraft_incident37_readout_analysis_20261011.json)。
+
+
 ## 2026-10-11 原old/ref→DT→更新已复现一次第37轮事故，稳定触发条件未定
 
 旧概率与参考概率调用补齐后，GPU4/5新actor按原27个保存DT批次再做原更新，

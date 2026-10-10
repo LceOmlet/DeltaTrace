@@ -1,0 +1,85 @@
+"""Read the actual native head owner/tests and bind saved DT reports to ranks.
+
+CPU-only source/log inspection. No model, DT, optimizer, configuration, or
+production-file changes. The saved reports are not complete token vectors.
+"""
+import hashlib
+import json
+from pathlib import Path
+import runpy
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[5]
+OUT = Path(__file__).parent / 'direct-credit-records-20261009-v1'
+transport = runpy.run_path(str(ROOT / 'research/temporary/rl_upstream_alignment_20260929/stage_environment_entry.py'))
+REMOTE = r'''
+import ast, hashlib, json, os, re, resource, shutil, subprocess, sys, time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+formal=root/'runs/textcraft-formal-stable-20261009-v1'
+source=json.loads((formal/'source.json').read_text())
+assert hashlib.sha256((formal/'source.json').read_bytes()).hexdigest()=='1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658'
+os.environ.update(source['environment'])
+os.environ['CUDA_VISIBLE_DEVICES']='-1'
+os.environ.pop('RAY_ADDRESS',None)
+paths=source['pythonpath']
+sys.path[:0]=paths.split(os.pathsep) if isinstance(paths,str) else paths
+import verl, torch
+checkout=Path(verl.__file__).resolve().parents[1]
+result=dict(unix=time.time(), owner_root=str(checkout), files=[], reports=[],
+            model_calls=0, DT_calls=0, optimizer_steps=0, production_changes=0)
+roots=[str(p) for p in (checkout/'tests',checkout/'verl/models') if p.exists()]
+if shutil.which('rg'):
+ query=subprocess.run(['rg','-l','--glob','*.py','FusedLinearForPPO|_fused_linear_for_ppo',*roots],capture_output=True,text=True)
+ paths=query.stdout.splitlines()
+ result['head_owner_search']=dict(roots=roots,tool='rg',returncode=query.returncode,stderr=query.stderr)
+else:
+ paths=[str(p) for folder in roots for p in Path(folder).rglob('*.py')
+        if re.search('FusedLinearForPPO|_fused_linear_for_ppo',p.read_text())]
+ result['head_owner_search']=dict(roots=roots,tool='pathlib fallback; rg absent',matched_files=len(paths))
+for path in paths:
+ p=Path(path);text=p.read_text();tree=ast.parse(text)
+ functions=[]
+ for node in ast.walk(tree):
+  if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)):
+   body=ast.get_source_segment(text,node)
+   if any(key in body for key in ('FusedLinearForPPO','_fused_linear_for_ppo')):
+    functions.append(dict(name=node.name,line=node.lineno,source=body))
+ result['files'].append(dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),functions=functions,
+   test_source=text if 'tests' in p.parts else None))
+for stem in ['old-ref-DT','old-ref-all-DT-head','all-DT-postfailure-capture']:
+ folder=root/'receipts'/('textcraft-native-incident37-'+stem+'-20261011-v1')
+ known={}
+ for p in (folder/'result').glob('rank[01].json'):
+  row=json.loads(p.read_text());known[row['pid']]=row['rank']
+ data=(folder/'driver.log').read_bytes();offset=0
+ for line in data.splitlines(keepends=True):
+  marker=b'[DeltaTrace readout] '
+  if marker in line:
+   prefix,payload=line.split(marker,1)
+   parsed,_=json.JSONDecoder().raw_decode(payload.decode())
+   traces=parsed.get('traces',[])
+   identities=[(r['trajectory_index'],r['traj_uid']) for r in traces]
+   signature=hashlib.sha256(json.dumps(identities).encode()).hexdigest()
+   match=re.search(rb'pid=(\d+)',prefix);pid=int(match.group(1)) if match else None
+   result['reports'].append(dict(stem=stem,log=str(folder/'driver.log'),byte_offset=offset,
+     line_sha256=hashlib.sha256(line).hexdigest(),prefix=prefix.decode(errors='replace'),
+     worker_pid=pid,rank=known.get(pid),trace_identity_sha256=signature,traces=len(traces)))
+  offset+=len(line)
+result['CUDA_initialized']=torch.cuda.is_initialized()
+result['peak_RSS_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+print(json.dumps(result,indent=2))
+'''
+command = f"source {transport['ENTRY']}/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 \"$VENV_PYTHON\" - <<'PY'\n" + REMOTE + "\nPY\n"
+stem = OUT / 'native-incident37-head-contract-and-report-ranks-20261011-v1'
+stem.with_suffix('.command.txt').write_text(command, encoding='utf-8', newline='\n')
+result = subprocess.run(transport['SSH']+['bash','-s'], input=command.encode(), capture_output=True, timeout=55)
+stem.with_suffix('.stderr.txt').write_bytes(result.stderr)
+stem.with_suffix('.json').write_bytes(result.stdout)
+assert result.returncode == 0, (result.returncode, result.stderr.decode(errors='replace'))
+report = json.loads(result.stdout)
+assert not report['CUDA_initialized']
+print(json.dumps(dict(path=str(stem.with_suffix('.json')),
+    sha256=hashlib.sha256(result.stdout).hexdigest(),
+    files=[dict(path=f['path'],functions=[n['name'] for n in f['functions']]) for f in report['files']],
+    reports=report['reports'],peak_RSS_bytes=report['peak_RSS_bytes']), indent=2))
