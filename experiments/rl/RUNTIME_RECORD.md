@@ -1,5 +1,27 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 18:19 TextCraft第28轮完整返回，29轮原采样已开始
+
+同一原PID982372/出生1791553809.84及两worker完成28/330。各rank32个B4原log_prob
+梯度均有限，覆盖4次optimizer×8个microbatch；4笔同步更新全部实际step，无新异常或跳过。
+8项裁剪前local norm与同次原返回相等，仍是DTensor _NormPartial local观察。
+NaN仍只见于14轮；首个异常参数/算子未知，未把后续有限更新当作其修复。
+原reward0.754、entropy0.597、grad_norm0.060；采样1601.437秒、旧logp100.211秒、
+ref87.420秒、DT/优势172.042秒、actor365.064秒，整轮2326.587秒（38.77645分钟）。
+原worker DT各25个消费批次、169.6831/169.5529秒；与trainer总adv计时分开记录。
+raw prior-source最小值-9.806748、白化后最小值-53.172均有限，不凭幅度认定归因错误。
+曲线native-curves-20261010-181920绘至28，NaN14留断点，未平滑或填零。
+
+DT瞬时物理GPU2/3为17093/17054MiB、PSS18.633/19.136GB；actor为37752/35150MiB、
+PSS18.566/19.136GB，均非峰值，原Torch allocator数字另存。12项源码检查不变，
+数值源26bef6c8/GDN7c06d5e0、观察源85aa2940、LoRA8/16、每卡B4/双卡B8保持。
+原response上限10240、prompt315，本轮不是新增32k容量或官方容差验收。
+原save_freq25，此轮无新保存；marker25和14份检查点清单不变，未复制/恢复或验证restore。
+三份远端authority均完成28并保留NaN调查status，AppWorld/SQL/GRPO未重启。
+回执results_textcraft_iteration28_20261010.json绑定18份原始文件、实际梯度/step、DT日志、
+阶段资源、源码及曲线SHA。本次监听已完成退出，零额外模型/DT/反向/optimizer调用。
+
+
 ## 2026-10-10 17:40 TextCraft第27轮完整返回，28轮原采样已开始
 
 原PID982372/出生1791553809.84与两worker保持。两rank各32个B4原log_prob

@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import hashlib,json,psutil,time
+from pathlib import Path
+r=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');f=r/'runs/textcraft-formal-stable-20261009-v1'
+p=psutil.Process(982372);assert p.create_time()==1791553809.84
+workers=[]
+for pid,birth in [(987808,1791553850.0),(989860,1791553867.51)]:
+ w=psutil.Process(pid);assert w.create_time()==birth;workers.append(dict(pid=pid,birth=birth,phase=w.name()))
+authorities=[]
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ path=r/name;data=json.loads(path.read_bytes());jobs=[x for x in data['jobs'] if x.get('pid')==982372];assert len(jobs)==1;j=jobs[0]
+ assert j['status']=='formal_running_native_nonfinite_skip_under_investigation'
+ for k in ['completed_iterations_observed','last_completed_update_observed']:
+  assert j[k]==28,(name,k,j.get(k))
+ assert j['latest_original_step_metrics']['step']==28
+ authorities.append(dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest(),status=j['status'],completed_iterations_observed=j['completed_iterations_observed'],last_completed_update_observed=j['last_completed_update_observed'],latest_original_step_metrics=j['latest_original_step_metrics']))
+ck=f/'textcraft-dt/checkpoints'
+markers=[dict(path=str(x),text=x.read_text()) for x in ck.rglob('latest_checkpointed_iteration.txt')] if ck.exists() else []
+print(json.dumps(dict(unix=time.time(),driver=dict(pid=p.pid,birth=p.create_time()),workers=workers,authorities=authorities,checkpoint_directory=str(ck),checkpoint_markers=markers,checkpoint_files=[dict(path=str(x),bytes=x.stat().st_size,mtime_ns=x.stat().st_mtime_ns) for x in ck.rglob("*") if x.is_file()],model_calls=0,production_changes=0)))
+
+PY
