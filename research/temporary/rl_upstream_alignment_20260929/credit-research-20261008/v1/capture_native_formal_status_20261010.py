@@ -76,6 +76,7 @@ for name in ['formal-training.json','active-training.json','active-source.json']
  jobs=[x for x in data['jobs'] if x.get('pid')==982372];assert len(jobs)==1
  job=jobs[0];old_status=job.get('status')
  job.update(last_status_observed_unix=observed,completed_iterations_observed=ITERATION,total_iterations_observed=330,
+  last_completed_update_observed=ITERATION,
   latest_original_step_metrics=metrics,latest_original_metrics_source=str(task),
   last_native_worker_phases=[dict(pid=x['pid'],name=x['phase']) for x in workers])
  if 'complete_iterations_observed' in job:job['complete_iterations_observed']=ITERATION
@@ -90,6 +91,7 @@ out.write_text(json.dumps(record,indent=2)+'\n')
 print(json.dumps(record))
 '''.replace('ROOT', repr(transport.ROOT), 1).replace('EXPECTED', repr(expected), 1).replace('ITERATION',str(iteration))
 script = 'source '+transport.ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+remote+'\nPY\n'
+(HERE/'direct-credit-records-20261009-v1'/('formal-iteration-'+str(iteration)+'-complete-20261010.command.txt')).write_text(script,encoding='utf-8')
 result = subprocess.run(transport.SSH+['bash', '-s'], input=script.encode(),
                         capture_output=True, timeout=50)
 (HERE/'direct-credit-records-20261009-v1'/('formal-iteration-'+str(iteration)+'-status.stderr')).write_bytes(result.stderr)
