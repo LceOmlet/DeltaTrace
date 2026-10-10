@@ -1,5 +1,31 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 13:27 TextCraft第21轮完整返回，原4次更新均执行
+
+同一原PID982372及2/3两worker完成21/330，已进入第22轮原generate_sequences。
+通过只读监听原活跃进程与callback文件，实际观察本轮采样、旧logp、ref、DT及更新；
+没有重复回放或新增模型计算。两rank各32个B4原log_prob梯度均有限，各4次原optimizer
+均实际step；8个裁剪前local norm与同次原返回逐值相同，无observer_error或新增NaN。
+原第14轮NaN的首个异常算子/参数仍未知；本轮有限不作为该事故已修的证据。
+
+原reward0.695、entropy0.635、grad_norm0.047；采样1646.267秒、DT/优势167.929秒、
+actor404.559秒、整轮2427.360秒（40.46分钟）。原图更新到native-curves-20261010-132606，
+仍仅第14轮grad_norm非有限、原两rank共两条同次skip警告，NaN断线保留，未填0或平滑。
+这些是更新前训练采样的reward，不是独立评估；原save_freq25/test_freq-1保持。
+
+阶段资源原始快照：DT物理GPU2/3占17421/17081MiB，actor快照32908/30388MiB，
+更新后下一采样49352/48862MiB，均为瞬时非峰值，不作为新32k容量验收。
+两worker PSS约18.029/19.196GB；主机可用内存DT865.733GB、actor819.762GB、
+返回后882.300GB。cgroup RSS及worker PSS变化小，不单凭全机available变化归因具体分配。
+磁盘余13.139TB；未复制或恢复检查点，没有新增checkpoint完成标记（未到原save25）。
+
+实际磁盘源码12项SHA仍匹配既有live-import绑定，数值源26bef6c8/GDN7c06d5e0不变；
+观察源85aa2940/SHA7e94ea6b、Q/V/A、LoRA8/16、每卡B4及正式预算均未变。
+三份remote authority同步同PID进度21、最新原metrics与worker阶段，NaN调查状态保留；
+其他作业未改，AppWorld/SQL/GRPO未重启。只读监听已在本轮原update返回后正常结束，
+不是停止训练。回执results_textcraft_iteration21_20261010.json保留原32回调/卡、norm、
+日志行、源SHA、阶段资源及曲线，另保留完整原observer文件供复核。
+
 ## 2026-10-10 12:53 归档先前冻结信用误差分解；不修改正式训练
 
 原TextCraft PID982372及987808/989860出生时间只读确认仍一致，原两worker处于
