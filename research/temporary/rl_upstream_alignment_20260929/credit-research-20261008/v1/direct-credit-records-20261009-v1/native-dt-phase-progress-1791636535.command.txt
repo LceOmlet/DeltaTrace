@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import json,time,psutil
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');ray=Path('/tmp/ray/session_2026-10-09_21-50-24_958031_982372/logs')
+assert psutil.Process(982372).create_time()==1791553809.84
+workers=[]
+for pid,birth in [(987808,1791553850.0),(989860,1791553867.51)]:
+ p=psutil.Process(pid);assert p.create_time()==birth
+ paths={}
+ for suffix in ['out','err']:
+  path=next(ray.glob('*-'+str(pid)+'.'+suffix))
+  with path.open('rb') as stream:
+   stream.seek(max(0,path.stat().st_size-15000));tail=stream.read().decode(errors='replace')
+  paths[str(path)]=tail
+ folder=root/'runs/textcraft-formal-stable-20261009-v1/credit-records'/('rank'+str(len(workers))+'-pid'+str(pid))
+ recent=sorted([(str(f),f.stat().st_size,f.stat().st_mtime) for f in folder.glob('joint-*.pt') if f.stat().st_mtime>=1791636125],key=lambda x:x[2])
+ workers.append(dict(pid=pid,birth=birth,phase=p.name(),original_log_tails=paths,credit_record_files_after_iteration32_sampling=recent))
+print(json.dumps(dict(unix=time.time(),workers=workers,model_calls=0,production_changes=0)))
+
+PY
