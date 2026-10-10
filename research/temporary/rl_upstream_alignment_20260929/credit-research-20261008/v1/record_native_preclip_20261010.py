@@ -5,12 +5,66 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import sys
 
 HERE=Path(__file__).resolve().parent
 REPO=next(p for p in HERE.parents if (p/'experiments/rl/current_runtime.json').exists())
 RAW=HERE/'direct-credit-records-20261009-v1'
 spec=importlib.util.spec_from_file_location('transport',HERE.parents[1]/'stage_environment_entry.py')
 transport=importlib.util.module_from_spec(spec);spec.loader.exec_module(transport)
+if len(sys.argv)==3 and sys.argv[1]=='--bind-source':
+    commit=subprocess.check_output(['git','rev-parse',sys.argv[2]],cwd=REPO,text=True).strip()
+    relative=(HERE/'capture_native_preclip_20261010.py').relative_to(REPO).as_posix()
+    blob=subprocess.check_output(['git','show',commit+':'+relative],cwd=REPO)
+    expected='110428a8674e9fb49c27a468a36ae9a78ce030bc184b3d2aca0d4394c737c6c0'
+    assert hashlib.sha256(blob).hexdigest()==expected
+    code=r'''
+import hashlib,json,psutil,time
+from pathlib import Path
+root=Path(ROOT);assert psutil.Process(982372).create_time()==1791553809.84
+formal=root/'runs/textcraft-formal-stable-20261009-v1'
+override=formal/'runtime-overrides/native-preclip-preservation-20261010-v1.json'
+data=json.loads(override.read_bytes())
+assert all(x['observer_sha256']==EXPECTED for x in data['installation']['results'])
+source=Path(data['installation']['results'][0]['observer_path'])
+assert hashlib.sha256(source.read_bytes()).hexdigest()==EXPECTED
+data.update(observer_source_commit=COMMIT,source_uncommitted_at_installation=True,
+            committed_source_SHA256_matches_deployed=True)
+override.write_text(json.dumps(data,indent=2)+'\n')
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ path=root/name;content=json.loads(path.read_bytes());jobs=[j for j in content['jobs'] if j.get('pid')==982372]
+ assert len(jobs)==1;jobs[0]['native_preclip_observer_source_commit']=COMMIT
+ path.write_text(json.dumps(content,indent=2)+'\n')
+print(json.dumps(dict(unix=time.time(),observer_source_commit=COMMIT,observer_sha256=EXPECTED,
+ source_uncommitted_at_installation=True,committed_source_SHA256_matches_deployed=True,
+ numerical_version='fla-early-output-scale-20261009-v1',numerical_source_commit='26bef6c8',
+ override_path=str(override),override_sha256=hashlib.sha256(override.read_bytes()).hexdigest())))
+'''.replace('ROOT',repr(transport.ROOT),1).replace('EXPECTED',repr(expected)).replace('COMMIT',repr(commit))
+    command='source '+transport.ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+code+'\nPY\n'
+    r=subprocess.run(transport.SSH+['bash','-s'],input=command.encode(),capture_output=True,timeout=45)
+    r.check_returncode();binding=json.loads(r.stdout)
+    (RAW/'native-preclip-source-commit-binding-20261010.json').write_bytes(r.stdout)
+    receipt_path=REPO/'experiments/rl/results_textcraft_native_preclip_20261010.json'
+    receipt=json.loads(receipt_path.read_bytes());receipt['observer_source_commit_binding']=binding
+    receipt_path.write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    path=REPO/'experiments/rl/current_runtime.json';raw=path.read_bytes();old=json.loads(raw)
+    key='latest_textcraft_preclip_capture_20261010';entry=dict(old[key],observer_source_commit=commit)
+    entry['receipt']=dict(path=str(receipt_path),bytes=receipt_path.stat().st_size,
+                          sha256=hashlib.sha256(receipt_path.read_bytes()).hexdigest())
+    eol=b'\r\n' if raw.startswith(b'{\r\n') else b'\n';start=b'{'+eol
+    def fragment(value):return json.dumps({key:value},ensure_ascii=False,indent=2).encode().replace(b'\n',eol)[len(start):-len(eol+b'}')]
+    before=fragment(old[key]);assert raw.startswith(start+before+b','+eol)
+    after=start+fragment(entry)+raw[len(start+before):]
+    assert {k:v for k,v in json.loads(after).items() if k!=key}=={k:v for k,v in old.items() if k!=key}
+    path.write_bytes(after)
+    path=REPO/'experiments/rl/RUNTIME_RECORD.md';raw=path.read_bytes()
+    sep=b'\r\n' if raw.startswith('# 当前运行版本与修复记录\r\n'.encode()) else b'\n'
+    end=raw.index(sep+sep)+2*len(sep)
+    note=('被动preclip观察扩展源码已绑定提交'+commit+'（SHA110428a8…），\n'
+          '部署时未提交，现已验证该提交blob与远端已安装源码SHA完全相同；不是数值基线更新。\n'
+          '数值源仍26bef6c8，绑定回执native-preclip-source-commit-binding-20261010.json。\n\n')
+    path.write_bytes(raw[:end]+note.encode().replace(b'\n',sep)+raw[end:])
+    print(json.dumps(binding));raise SystemExit(0)
 snapshot_path=max(RAW.glob('native-input-capture-audit-*.json'),key=lambda p:int(p.stem.rsplit('-',1)[1]))
 snapshot=json.loads(snapshot_path.read_bytes())
 assert len(snapshot['workers'])==2 and all(w['snapshot_exists'] for w in snapshot['workers'])
