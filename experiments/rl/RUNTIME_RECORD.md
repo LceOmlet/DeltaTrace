@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 14:22 官方对称profile源身份核对：本机缺文件是稀疏检出，无需补写
+
+本机qwen35_gdn_symmetric.py/configs原文件未落盘，但git index均为S标记，
+core.sparseCheckout及cone均true，选定路径无删除/修改。HEAD中factory、
+对称模块、配置三份blob SHA与原official-profiles-20260913清单逐字匹配；
+远端同一原PID/两worker出生时间下factory SHA3467dd3d、对称模块SHA
+dd6bbfff重新只读复核一致，并关联先前真实producer回执。本次不是新live-import
+或数值/质量验收；只证明所用profile代码已在Git和远端现有入口中，不把本机
+稀疏缺文件误判为生产漏集成，也不据此补写第二份实现或改动默认入口。
+数值源26bef6c8及正式训练不变，新模型/测试/生产改动均0；未hydrate、重装、
+恢复或启动其他作业。回执results_official_profile_source_identity_20261010.json
+保留Git blob、清单、远端实际路径/SHA/原命令和范围；不外推wheel可安装性。
+
+
 ## 2026-10-10 14:09 TextCraft第22轮完整返回，原更新与NaN断点曲线已归档
 
 原PID982372/出生1791553809.84及两worker完成22/330，已进入第23轮原采样；

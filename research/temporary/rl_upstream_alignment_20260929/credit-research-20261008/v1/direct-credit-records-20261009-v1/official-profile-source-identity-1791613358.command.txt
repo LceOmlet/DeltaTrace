@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import hashlib,json,psutil,time
+from pathlib import Path
+p=psutil.Process(982372);assert p.create_time()==1791553809.84
+workers=[]
+for pid,birth in [(987808,1791553850.0),(989860,1791553867.51)]:
+ w=psutil.Process(pid);assert w.create_time()==birth;workers.append(dict(pid=pid,birth=birth,phase=w.name()))
+checks=[]
+for path,want in {'/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/profiles/official.py': '3467dd3de535d9dbc3e1838468a141b4457caf3c2e6573bc055b45398ebbbc89', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/profiles/qwen35_gdn_symmetric.py': 'dd6bbfff9aae4c679439af113a160e0bd8c4cf1b19bb17cab47a04ff7b0831d0'}.items():
+ f=Path(path);b=f.read_bytes();h=hashlib.sha256(b).hexdigest();assert h==want;checks.append(dict(path=str(f),resolved=str(f.resolve()),bytes=len(b),sha256=h))
+print(json.dumps(dict(unix=time.time(),original_driver=dict(pid=p.pid,birth=p.create_time()),workers=workers,checks=checks,scope='disk source hashes bound to prior same-PID producer/import receipts; not a new live-import, numerical, or model test',production_changes=0,model_calls=0)))
+
+PY
