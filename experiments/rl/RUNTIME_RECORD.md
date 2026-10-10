@@ -1,5 +1,42 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 11:20 原第18轮完整返回，裁剪前观察实际调用已确认
+
+原PID与2/3两worker不变，原日志已完成18/330轮并进入后续采样。
+首份真实输入保存已验证；每rank原4次optimizer调用均执行，8个裁剪前local_total_norm
+与同次原_optimizer_step返回的grad_norm逐值相同，未发生observer_error或新非有限跳过。
+实际返回是DTensor _NormPartial，各rank原局部值不同；监控仅展示原actor/grad_norm聚合日志，
+不将这些标量另称完整全局L2范数，不改变原分布式裁剪行为。输入保存每卡最多1.878秒，
+第18轮完整PPO更新已返回；原第14轮NaN根因仍未知，没有数值修复或训练全程健康结论。
+原日志奖励/熵/梯度曲线已更新到native-curves-20261010-111815，回执及runtime override
+已更新实际调用证据。正式参数、数值基线26bef6c8、预算及其他停止作业保持。
+
+## 2026-10-10 11:15 NaN 诊断补齐裁剪前现场，首份真实更新输入已核验
+
+原TextCraft PID982372及2/3两worker保持，完成17/330轮；
+第14轮NaN根因仍未知，没有部署数值修复。当前原日志明确use_fused_kernels=True、
+Torch backend，不能沿未启用的dense FlashAttention交叉熵分支作根因结论。
+原PPO loss、KL、聚合、update_policy、_optimizer_step、fsdp2_clip_grad_norm_及
+torch_functional所查函数与固定20bd331 AST一致；forward仍有已记录适配，非整文件原封不动。
+
+被动preclip扩展110428a8…在1791601579.347/.247通过原通用RPC安装到原两worker；
+只调用一次原PyTorch_get_total_norm并返回原对象，在原裁剪前发现非有限时保存原梯度及名字。
+原clip_grad.py SHA534f39d7…；现有Torch2.8.0+metax3.5.3.9的CPU有限/NaN/Inf三项
+结果和裁剪后梯度逐值相同，callback错误不改返回，CUDA未初始化。该CPU接口检查不是
+FA/FLA或PPO数值容差验收。首次提交器未继承冻结PYTHONPATH，客户端签名检查退出，
+未派发worker任务；保留失败源/日志，1724837改为完整继承冻结source环境后安装完成。
+
+原observer首份真实输入（第18轮原更新前）每rank128行/10752输入长度、每卡B4、
+局部optimizer minibatch32/全局64；两文件256841680/256908496字节，保存1.878/1.720秒。
+原old/ref log-prob、白化优势、各496个可训练局部参数及1488个optimizer state tensor全有限。
+CPU只读审计6.005秒、峰RSS1.136GiB、CUDA未初始化，无模型/DT/反向/optimizer调用。
+这是滚动诊断输入，会被后续正常更新替换；事故版本另保留。实际preclip调用及异常
+梯度保存仍待原更新事件，不把安装/输入有限称根因修复。数学、参数、dtype和预算未变，
+数值基线仍26bef6c8；三份远端authority只添加同PID诊断override，其他作业未启动。
+回执results_textcraft_native_preclip_20261010.json；奖励/熵/梯度原日志曲线已保存到
+research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/
+direct-credit-records-20261009-v1/native-curves-20261010-105031/。
+
 ## 2026-10-10 10:40 TextCraft 第14轮原生梯度跳过，已保存诊断证据并接入被动现场保存
 
 原PID982372/出生1791553809.84及两worker保持，现已完成17/330轮；

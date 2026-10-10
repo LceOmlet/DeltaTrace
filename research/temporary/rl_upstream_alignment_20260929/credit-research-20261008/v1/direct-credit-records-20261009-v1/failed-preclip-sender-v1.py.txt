@@ -1,0 +1,68 @@
+"""CPU-test the passive norm seam, then submit one native-worker install RPC."""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+
+HERE=Path(__file__).resolve().parent
+spec=importlib.util.spec_from_file_location('transport',HERE.parents[1]/'stage_environment_entry.py')
+transport=importlib.util.module_from_spec(spec);spec.loader.exec_module(transport)
+out=transport.ROOT+'/receipts/textcraft-native-actor-incidents-20261010-v1/preclip-v1'
+receipt=HERE/'direct-credit-records-20261009-v1/native-preclip-stage-20261010.json'
+assert not receipt.exists(), 'Inspect the existing submitted handle instead of resubmitting'
+
+def remote(code):
+    command=('source '+transport.ENTRY+'/metax-entry.env.sh\n'
+             'CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+code+'\nPY\n')
+    result=subprocess.run(transport.SSH+['bash','-s'],input=command.encode(),capture_output=True,timeout=55)
+    result.check_returncode()
+    return json.loads(result.stdout)
+
+remote('from pathlib import Path\nimport json\np=Path('+repr(out)+')\np.mkdir(parents=True,exist_ok=True)\nprint(json.dumps(dict(path=str(p))))')
+files={}
+for name in ['capture_native_preclip_20261010.py','test_capture_native_preclip_20261010.py']:
+    path=HERE/name
+    subprocess.run(transport.SCP+[str(path),transport.SSH[-1]+':'+out+'/'+name],check=True,timeout=30)
+    files[name]=hashlib.sha256(path.read_bytes()).hexdigest()
+check=remote('import hashlib,json,os,subprocess,sys\nfrom pathlib import Path\np=Path('+repr(out)+')\n'
+ 'expected='+repr(files)+'\n'
+ 'for name,sha in expected.items():assert hashlib.sha256((p/name).read_bytes()).hexdigest()==sha\n'
+ 'r=subprocess.run([sys.executable,str(p/"test_capture_native_preclip_20261010.py")],capture_output=True,text=True,timeout=35)\n'
+ 'r.check_returncode()\nprint(r.stdout)')
+receipt.write_text(json.dumps(dict(status='CPU_interface_test_passed_not_installed',files=files,cpu_check=check),indent=2)+'\n')
+
+query=r'''
+import json,os,psutil,time
+from pathlib import Path
+import ray
+from capture_native_preclip_20261010 import install
+out=Path(__file__).parent
+ray.init(address='127.0.0.1:58837',log_to_driver=False,ignore_reinit_error=False)
+named=[x for x in ray.util.list_named_actors(all_namespaces=True)
+ if x['name'].startswith('zagXiMWorkerDict_') and 'register_center' not in x['name']]
+assert len(named)==2,named
+record=dict(pid=os.getpid(),birth=psutil.Process().create_time(),started_unix=time.time(),named_actors=named,complete=False)
+path=out/'query-result.json';path.write_text(json.dumps(record,indent=2)+'\n')
+refs=[ray.get_actor(x['name'],namespace=x['namespace']).execute_with_func_generator.remote(install) for x in named]
+try:
+ record.update(results=ray.get(refs),complete=True,completed_unix=time.time())
+ path.write_text(json.dumps(record,indent=2)+'\n')
+finally:ray.shutdown()
+'''
+launch=remote('import hashlib,json,psutil,subprocess,sys,time\nfrom pathlib import Path\n'
+ 'out=Path('+repr(out)+')\n'
+ 'driver=psutil.Process(982372);assert driver.create_time()==1791553809.84\n'
+ 'script=out/"install_preclip_query.py"\n'
+ 'assert not script.exists(),"Existing query must be inspected, not resubmitted"\n'
+ 'script.write_text('+repr(query)+')\n'
+ 'log=(out/"query.log").open("ab",buffering=0)\n'
+ 'p=subprocess.Popen([sys.executable,str(script)],cwd=out,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)\n'
+ 'd=dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),launched_unix=time.time(),path=str(script),'
+ 'script_sha256=hashlib.sha256(script.read_bytes()).hexdigest(),out=str(out),status="submitted_not_verified")\n'
+ '(out/"launch.json").write_text(json.dumps(d,indent=2)+"\\n")\n'
+ 'print(json.dumps(d))')
+data=dict(status='submitted_native_RPC_not_verified',files=files,cpu_check=check,launch=launch,
+          model_calls=0,gradient_or_norm_replacement=False,scope=__doc__)
+receipt.write_text(json.dumps(data,indent=2)+'\n')
+print(json.dumps(dict(saved=str(receipt),**data)))
