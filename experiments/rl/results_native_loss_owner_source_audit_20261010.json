@@ -1,0 +1,108 @@
+{
+  "observed_unix": 1791611026.7292013,
+  "status": "read_only_source_audit_completed_no_numerical_change",
+  "upstream_in_use": "VERL-agent 20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "numerical_source_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+  "pinned_loss_source": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\recipe-sources\\verl-agent-20bd331\\verl\\trainer\\ppo\\core_algos.py",
+    "bytes": 28863,
+    "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+  },
+  "deployment_binding": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_textcraft_iteration21_20261010.json",
+    "bytes": 76611,
+    "sha256": "426e84b788f902a147269dc797b2b792c1170e86868d6a77d4fa3538934d3a14"
+  },
+  "previously_completed_arithmetic_probe": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-exp-backward-20261010-v1.json",
+    "bytes": 10370,
+    "sha256": "c253b57465d765651a43e63b87f32f066858f0c9cfa6779330f3464cf0f90ad2"
+  },
+  "newer_upstream_reference": {
+    "commit": "9058412fb308e9f2e31a794ad1d18d97d4286485",
+    "core_algos": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\upstream-verl-core-algos-9058412.txt",
+      "bytes": 105282,
+      "sha256": "369b614f239f237a04a38a40b1877cd6fd14aa7bd5f9ff4fe4d7758b682a6948"
+    },
+    "tests": [
+      {
+        "url": "https://raw.githubusercontent.com/verl-project/verl/9058412fb308e9f2e31a794ad1d18d97d4286485/tests/trainer/ppo/test_core_algos_on_cpu.py",
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\upstream-verl-test_core_algos_on_cpu-9058412.txt",
+        "bytes": 13397,
+        "sha256": "0a60e917589ab91646989f0a8616f810fea0dc70047d2b8c13914f4977f5569c"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/verl-project/verl/9058412fb308e9f2e31a794ad1d18d97d4286485/tests/trainer/ppo/test_dynamic_policy_losses_on_cpu.py",
+        "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\upstream-verl-test_dynamic_policy_losses_on_cpu-9058412.txt",
+        "bytes": 2196,
+        "sha256": "e22250753d57b7a83ddfee4210bee70bc319c77b856310cce4cd4be88fd0fb1c"
+      }
+    ],
+    "installed": false,
+    "executed": false
+  },
+  "findings": [
+    {
+      "owner": "pinned compute_policy_loss",
+      "lines": [
+        472,
+        473,
+        481,
+        486
+      ],
+      "finding": "Exponentiation precedes PPO clipping and dual clipping; no pre-exp log-ratio bound in this pinned owner."
+    },
+    {
+      "owner": "pinned kl_penalty low_var_kl",
+      "lines": [
+        639,
+        640,
+        641,
+        642
+      ],
+      "finding": "Exponentiation precedes output clamp; a finite clipped scalar does not prove finite backward inputs."
+    },
+    {
+      "owner": "newer upstream reference only",
+      "lines": [
+        1338,
+        2242
+      ],
+      "finding": "Pinned newer official source applies [-20,20] bounds before exp in vanilla policy loss and KL forward. Not backported or imported."
+    },
+    {
+      "owner": "reviewed official test_core_algos_on_cpu.py",
+      "lines": [
+        347,
+        357,
+        358,
+        362,
+        365,
+        371,
+        372,
+        381
+      ],
+      "finding": "These KL tests compare k3+ forward to k3 and k3+ gradient to k2 on torch.randn(4,8); they do not reproduce the already observed FP32 exp-overflow arithmetic case."
+    },
+    {
+      "owner": "reviewed official test_dynamic_policy_losses_on_cpu.py",
+      "lines": [
+        39,
+        51
+      ],
+      "finding": "This selected test concerns DRO and positive beta; it is not an overflow check for the currently used native PPO/low_var_kl functions."
+    }
+  ],
+  "interpretation": [
+    "No new official tolerance, numerical pass claim, or framework upgrade is inferred from reading source.",
+    "Selected-file coverage only; no assertion that the entire newer upstream test suite lacks overflow tests.",
+    "The actual iteration14 old/new/reference log-prob tensors were not preserved, so the demonstrated mechanism is not the incident root cause.",
+    "Do not copy the newer whole core_algos module or introduce k3+ gradient behavior: neither is the currently accepted numerical baseline.",
+    "Continue using already installed passive native loss and preclip captures for an actual recurrence; no extra reference-token sampling or model replay."
+  ],
+  "production_changes": 0,
+  "new_model_calls": 0,
+  "new_backward_calls": 0,
+  "new_tests_executed": 0
+}

@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 13:43 原VERL损失与较新官方源码只读核对，未部署数值改动
+
+固定VERL-agent20bd331的core_algos SHAfc2f992b与第21轮实际源码绑定一致；
+原PPO及low_var_kl都先exp后clamp。此前CPU已复现大log-ratio下有限loss/NaN梯度，
+本次只读检查不重跑算术或模型；仍缺第14轮实际概率张量，不能认定事故根因。
+较新官方9058412在vanilla PPO和KL forward中加入exp前[-20,20]限制；
+仅保存原源码及SHA作参考，未导入、回移或执行。已核对的官方KL测试为普通随机输入
+上的k3+前向/梯度比较，不覆盖此前溢出例；该范围不能外推为全官方测试套件缺失，
+也不引入新容差。不得把较新整文件或k3+梯度行为替换为当前已验收损失。
+回执results_native_loss_owner_source_audit_20261010.json绑定原probe、第21轮回执及
+两份只读官方测试原文；新模型/反向/测试执行和生产改动均0。原TextCraft继续正式预算，
+已安装的原loss/preclip被动现场采集保持，数值源26bef6c8不变。
+
+
 ## 2026-10-10 13:27 TextCraft第21轮完整返回，原4次更新均执行
 
 同一原PID982372及2/3两worker完成21/330，已进入第22轮原generate_sequences。
