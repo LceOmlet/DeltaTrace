@@ -1,6 +1,27 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-11 原生FSDP状态观察完成，未新增卸载补丁
+
+同一原事故输入的old/ref→27个DT B4→原32行更新诊断完成；两rank各8个B4梯度有限、
+各1次原optimizer。新增观察仅读取Python元数据，不在loss前读取/复制GPU张量值、
+同步或修改状态；不恢复原持久actor/optimizer，不据有限回放宣称原故障修好。
+DT后34个参数组均IDLE/SHARDED，无待完成gather或梯度卸载event，激活卸载容器为空。
+原post_forward_order计数old后272、ref后544、DT后3244，首训练前向3278、第二前向34、
+完成后0；原反向清理实际执行，当前无证据增加同步/卸载修补。记录不证明CUDA依赖无误。
+
+只读CPU对照原失败和此前失败fresh replay的完整第二B4：old/ref/优势/mask完全相同，
+rank1有效logp最大差0.00011635，>10差异位置集合相同；rank0对应集合Jaccard0.981986。
+这是失败输出结构可复现的证据，不是新容差，也未区分隐藏状态、head或labels为根因。
+CPU比较v1误读保存字典顶层产生KeyError，v2按原tensors成员读取；失败记录保留。
+
+本次driver27855/1791665489.49和worker32090/33552均已核验退出，物理mx-smi无进程。
+DT约206.9秒、32行原更新约57.8秒；Torch峰值allocated18.96/14.43GiB，结束PSS各15.4GB，
+host可用约1.025TB；不是正式迭代吞吐或32k容量验收。正式仍停37/330，无恢复或重启；
+KL保护仅验收候选，生产源、Q/V/A、LoRA8/16及每卡B4保持。源码/配置/SHA及原始回执见
+[原生状态与失败输出对照](results_textcraft_incident37_runtime_metadata_20261011.json)。
+
+
 ## 2026-10-11 失败后H/IDs采集修正并完成原生回放，概率异常未修好
 
 针对此前真实失败回放保存现场时读取已释放FSDP完整词表权重的错误，只把该次CPU复制

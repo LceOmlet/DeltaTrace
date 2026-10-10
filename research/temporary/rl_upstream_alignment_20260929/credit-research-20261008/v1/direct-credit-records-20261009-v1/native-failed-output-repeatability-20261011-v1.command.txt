@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+from pathlib import Path
+import json,time,torch,psutil,hashlib
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');rows=[]
+for rank,pid in [(0,987808),(1,989860)]:
+ p=next((root/f'receipts/textcraft-native-actor-incidents-20261010-v1/rank{rank}-pid{pid}').glob('loss-backward-*.pt'))
+ q=root/f'receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/result/rank{rank}-loss-inputs-microbatch1.pt'
+ a=torch.load(p,map_location='cpu',weights_only=False);b=torch.load(q,map_location='cpu',weights_only=False);active=a['response_mask'].bool();x=a['log_prob'];y=b['log_prob'];difference=(y-x)[active];oldgap=x-a['old_log_prob'];newgap=y-b['old_log_prob'];am=active & (oldgap.abs()>10);bm=active & (newgap.abs()>10)
+ rows.append(dict(rank=rank,original=dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest()),failed_replay=dict(path=str(q),sha256=hashlib.sha256(q.read_bytes()).hexdigest()),identical_inputs={k:torch.equal(a[k],b[k]) for k in ['old_log_prob','ref_logprob','advantages','response_mask']},active_count=int(active.sum()),actor_logp_exact_active=int((difference==0).sum()),actor_logp_max_abs_difference=float(difference.abs().max()),actor_logp_abs_difference_quantiles=torch.quantile(difference.abs(),torch.tensor([0.,.5,.9,.99,1.])).tolist(),actor_logp_mean_abs_difference=float(difference.abs().mean()),large_gap_original=int(am.sum()),large_gap_failed_replay=int(bm.sum()),large_gap_intersection=int((am & bm).sum()),large_gap_union=int((am | bm).sum()),large_gap_map_Jaccard=float((am & bm).sum()/(am | bm).sum()),original_large_gap_values_exact_BF16=float((x[am].bfloat16().float()==x[am]).float().mean()),failed_large_gap_values_exact_BF16=float((y[bm].bfloat16().float()==y[bm]).float().mean())))
+print(json.dumps(dict(unix=time.time(),scope='Paired CPU comparison of all saved active positions in original failed secondB4 and the previously failed fresh replay. Descriptive logp>10 map, not a numerical tolerance or cause proof.',ranks=rows,CUDA_initialized=torch.cuda.is_initialized(),model_calls=0,DT_calls=0,peak_RSS_bytes=psutil.Process().memory_info().rss)))
+
+PY

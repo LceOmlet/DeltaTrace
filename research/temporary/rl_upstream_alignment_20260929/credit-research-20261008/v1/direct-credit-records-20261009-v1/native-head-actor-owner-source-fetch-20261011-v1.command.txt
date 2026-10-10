@@ -1,0 +1,13 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,hashlib,base64,time
+r=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+s=json.loads((r/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes())
+paths=[r/'candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py',r/'candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py']
+f=[]
+for p in paths:
+ raw=p.read_bytes();f.append(dict(path=str(p),resolved=str(p.resolve()),sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw),base64=base64.b64encode(raw).decode()))
+print(json.dumps(dict(unix=time.time(),files=f,cache_environment={k:v for k,v in s['environment'].items() if 'CACHE' in k or 'INDUCTOR' in k or 'DYNAMO' in k},production_changes=0)))
+
+PY

@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,base64,hashlib,time
+paths=['/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor/lr/clrhss4uefrk2ymjpwtenwtamnwnps3hptvxotevc3nljtc7mexg.py', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor/3p/c3pp6dlpiwjzhjqe6s6nmqswevxtbqi7a5wq7bannqauhea46nmh.py', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor/ib/cibwke5qtkewdns242twwjwnhbqmv6iqkyiqeqrhorsftup6ulj3.py']
+files=[]
+for name in paths:
+ p=Path(name);raw=p.read_bytes();files.append(dict(path=name,sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw),base64=base64.b64encode(raw).decode()))
+print(json.dumps(dict(unix=time.time(),files=files,scope="Selected cached candidates, not a claim these exact variants executed in failed runtime.")))
+
+PY

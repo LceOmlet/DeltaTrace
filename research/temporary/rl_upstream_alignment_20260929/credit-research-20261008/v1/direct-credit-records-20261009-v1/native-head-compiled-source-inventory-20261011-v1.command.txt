@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,time,hashlib,psutil
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor')
+files=[];count=0;total=0
+for directory in root.iterdir():
+ if not directory.is_dir():continue
+ for p in directory.glob('*.py'):
+  count+=1;raw=p.read_bytes();total+=len(raw)
+  if b'248320' in raw and (b'gather' in raw or b'log_softmax' in raw):
+   text=raw.decode(errors='replace');lines=text.splitlines();hints=[dict(line=i+1,text=l[:400]) for i,l in enumerate(lines) if any(k in l for k in ['gather','log_softmax','torch_functional.py','Source Nodes','FusedLinearForPPO','assert_size_stride'])]
+   files.append(dict(path=str(p),bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),mtime=p.stat().st_mtime,hints=hints[:100]))
+print(json.dumps(dict(unix=time.time(),cache_root=str(root),python_files_read=count,bytes_read=total,matches=files,peak_RSS_bytes=psutil.Process().memory_info().rss,scope='Read existing cached compiled sources only; no model, compilation, cache deletion or numerical test.'),ensure_ascii=False))
+
+PY

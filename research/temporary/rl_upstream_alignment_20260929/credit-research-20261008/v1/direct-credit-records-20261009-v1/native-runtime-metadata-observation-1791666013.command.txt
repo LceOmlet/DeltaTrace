@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+from pathlib import Path
+import json,psutil,time,subprocess
+b=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-runtime-metadata-20261011-v1');job=json.loads((b/'job.json').read_bytes());rows=[]
+try:
+ p=psutil.Process(job['pid']);driver=dict(pid=p.pid,birth=p.create_time(),same_birth=abs(p.create_time()-job['birth'])<.02,status=p.status())
+except psutil.NoSuchProcess:driver=dict(pid=job['pid'],exists=False)
+for rank in [0,1]:
+ p=b/f'result/rank{rank}.json'
+ if not p.exists():rows.append(dict(rank=rank,present=False));continue
+ d=json.loads(p.read_bytes());row={k:d.get(k) for k in ['rank','pid','birth','phase','unix','allocated','reserved','pss_bytes','actual_optimizer_steps','microbatches']};row['metadata']={}
+ for line in (b/f'result/rank{rank}-phases.jsonl').read_text().splitlines():
+  e=json.loads(line);meta=e.get('native_runtime_metadata')
+  if meta:
+   row['metadata'][e['phase']]=dict(group_count=len(meta['groups']),contexts=meta['contexts'],activation_handlers=meta['activation_handlers'],group_training_states=sorted({g.get('group_training_state','none') for g in meta['groups']}),sharded_states=sorted({g.get('sharded_state','none') for g in meta['groups']}),pending_gather_groups=sum(g.get('all_gather_result_pending',False) for g in meta['groups']),pending_gradient_offload_events=sum(g.get('gradient_offload_events',0) for g in meta['groups']))
+ rows.append(row)
+lines=(b/'driver.log').read_text(errors='replace').splitlines();tail=[s[:600] for s in lines[-14:]]
+print(json.dumps(dict(unix=time.time(),driver=driver,completed=(b/'result/completed.json').exists(),ranks=rows,tail=tail,host_available=psutil.virtual_memory().available)))
+
+PY
