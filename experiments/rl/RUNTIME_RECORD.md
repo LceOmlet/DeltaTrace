@@ -1,5 +1,36 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 09:24 论文 William Walton 原输入核查完成，无生产改动
+
+按用户指定的论文例子，使用原始四份 Qwen3.5 保存输入/完整 response+EOS、原 eligible
+source mask，B4 一批，调用现有正式 producer/runner/target 接口；未重新生成答案、训练、
+恢复检查点或修改 PPO/DT 方法。基础 Qwen3.5-9B 权重，不是正式训练后的策略权重。
+两次有效 DT 分别用官方 gdn-symmetric-v1 和 clean-v1；工厂/对称模块 SHA 与
+official-profiles-20260913 原清单逐项相同，实际 GDN SHA7c06d5e0…绑定验收数值源
+26bef6c8b2e49db118f46e3c05e86944dcf8e293 / fla-early-output-scale-20261009-v1。
+各实际导入路径、完整 SHA、输入 hash、token 位置与原向量均在本次回执；复用已有实际
+dtype FA/FLA 验收，不将论文标量接近程度或守恒残差当作新官方容差。
+
+论文展示的 Shakespeare/Walton 名称 span 原分数为+1.558198/-1.133073；当前官方
+clean-v1 为+1.532285/-1.140205，当前正式 gdn-symmetric-v1 为+1.254345/-0.828369。
+另一个前置 Walton span 在两个配置中也为负。论文与本次均为联合 EOS 归因的 span
+求和；名称内 token 可以异号，不能据此宣称单 EOS 删除概率比精确，或已修复极端信用误差。
+四输入×两配置共八份向量全有限，固定输入、target 与 padding 位置严格为0；两个配置
+的端点分数差逐项相同。此次没有 RISE/MAS、总体尾部召回或32k容量的新验收。
+
+诊断入口两次错误保留并明确作废：v1 漏传 tokenizer EOS，回退 token0，产生两次无效
+DT；v2 加入错误的 EOS248044 断言，尚未调用 DT 即退出。有效 v3 直接读取 tokenizer
+EOS248046，与原保存 target 末尾一致。正式 readout/worker 原本显式使用 tokenizer EOS，
+未受这两次诊断错误影响，也未因诊断新增生产 patch。v1/v2 原结果与作废记录均保留。
+
+有效诊断 PID1062739/出生1791595173.25，单独物理GPU4，已正常退出；09:24 mx-smi
+该卡恢复859MiB。诊断峰值 allocated 29.059GiB/reserved31.512GiB、进程峰值RSS26.464GiB；
+allocated/reserved 为 Torch 计数，不冒充物理峰值。TextCraft原PID982372/出生1791553809.84
+及source SHA1c08b57b…保持，正式GPU2/3未停止或重启；不以此前12/330快照冒充当前进度。
+来源：results_paper_role_implementation_20261010.json，原始资料在
+research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/
+paper-role-implementation-check-20261010-v{1,2,3}/。
+
 
 ## 2026-10-10 06:58 新稳定版第十二次正式迭代完整返回，第十三次采样开始
 

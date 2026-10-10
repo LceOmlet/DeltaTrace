@@ -1,0 +1,71 @@
+{
+  "unix": 1791595243.9499307,
+  "files": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/reward_readout.py",
+      "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/reward_readout.py",
+      "sha256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b",
+      "matches": [
+        {
+          "line": 508,
+          "context": [
+            "                # target predictor. Keep them factual and use their known d=0.",
+            "                sources = item['prior'][item['suffix_positions']].nonzero().flatten()",
+            "                reference[b, sources.to(device)+item['prompt_length']] = self.tokenizer.eos_token_id",
+            "            signed, _, detail = trace_token_attribution(",
+            "                self.runner, reference, factual, [item['case'] for item in batch],",
+            "                [item['target_offsets'] for item in batch],",
+            "                packed_answer_targets=self.packed_answer_targets,",
+            "                **({} if leases is None else {",
+            "                    'prefix_cache_provider': leases[offset // self.minibatch_size]}),"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+      "resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/workers/fsdp_workers.py",
+      "sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+      "matches": [
+        {
+          "line": 719,
+          "context": [
+            "        try:",
+            "            if not hasattr(self, \"_deltatrace_producer\"):",
+            "                self._deltatrace_producer = DeltaTraceRolloutProducer(",
+            "                    self.actor_module_fsdp,",
+            "                    eos_token_id=data.meta_info['eos_token_id'],",
+            "                    pad_token_id=data.meta_info['pad_token_id'],",
+            "                    invalid_action_penalty_coef=(self.config.actor.invalid_action_penalty_coef",
+            "                        if self.config.actor.get(\"use_invalid_action_penalty\", True) else 0.0),",
+            "                )"
+          ]
+        }
+      ]
+    }
+  ],
+  "tokenizer_eos": "<|im_end|>",
+  "added_tokens": [
+    {
+      "id": 248044,
+      "content": "<|endoftext|>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 248046,
+      "content": "<|im_end|>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    }
+  ],
+  "config_parent_eos": null,
+  "config_text_eos": 248044,
+  "model_or_DT_calls": 0
+}
