@@ -1,5 +1,28 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 12:36 NaN排查补齐原loss输入梯度观察；未改数值版本
+
+同一原TextCraft PID982372及2/3两worker保持，已完成19/330轮，第20轮原actor更新中。
+第14轮原grad_norm NaN根因仍未知；奖励/熵/策略损失有限不等于反向有限。
+使用实际导入的原VERL core_algos（SHAfc2f992b…，固定20bd331）CPU复现：
+log概率差89/100时，原low_var_kl及PPO正/负优势裁剪前向均有限，FP32反向均NaN；
+差88及所测FP64均有限。这只确认原指数后裁剪的算术路径，未测得第14轮存在该概率差，
+不把合成输入当作真实事故复现或官方容差。调用耗时0.0076秒（不含import），峰RSS786MB，
+无CUDA/模型/DT/optimizer计算。原正式配置确实启用low_var_kl，未修改它。
+
+被动观察源码85aa2940/SHA7e94ea6b…于1791606797.574/6798.111在原两worker安装完成。
+只委托原compute_policy_loss/kl_penalty一次，返回原对象；原Tensor.register_hook返回原梯度。
+每B4检查现有log_prob输入梯度，非有限时才保存小型新旧/参考logp、优势、mask及梯度；
+用弱引用避免保留GPU图，不保存隐藏状态或词表张量。CPU委托正常/NaN及回调失败检查通过，
+不是PPO容差或完整训练验收。真实第20轮已观察两rank分别17/17个B4的输入梯度，均有限；
+有限性检查最长0.285毫秒/B4，不含hook注册/JSON追加，未称全阶段额外耗时或NaN修复。
+原数值源26bef6c8、GDN7c06d5e0、Q/V/A、LoRA8/16、每卡B4和预算均保持；
+AppWorld/SQL/GRPO未启动。完成runtime override及三份authority只记录同PID诊断覆盖。
+只读核对上游VERL 9058412的vanilla PPO和low_var_kl已有指数前稳定边界；
+当前固定20bd331没有这两行，尚未移植或更换框架，不以此认定第14轮原因。
+回执results_textcraft_native_loss_backward_20261010.json；新奖励/熵/梯度图在
+native-curves-20261010-122240，仍19轮，第14轮断线保留NaN而非填0。
+
 ## 2026-10-10 12:08 TextCraft第19轮完整返回，新增优势极值已对应原token
 
 原PID982372及两worker出生时间不变，物理2/3继续，完成19/330并进入第20轮采样。

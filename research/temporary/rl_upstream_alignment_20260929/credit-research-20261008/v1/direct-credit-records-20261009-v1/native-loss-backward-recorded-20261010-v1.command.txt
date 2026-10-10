@@ -1,0 +1,38 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');formal=root/'runs/textcraft-formal-stable-20261009-v1'
+assert psutil.Process(982372).create_time()==1791553809.84
+source=formal/'source.json';assert hashlib.sha256(source.read_bytes()).hexdigest()=='1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658'
+out=root/'receipts/textcraft-native-actor-incidents-20261010-v1/loss-backward-v1'
+installation=json.loads((out/'query-result.json').read_bytes());launch=json.loads((out/'launch.json').read_bytes())
+assert installation['complete'] and {x['pid']:x['birth'] for x in installation['results']}=={987808:1791553850.0,989860:1791553867.51}
+assert launch['observer_commit']=='85aa2940d535b5e722bb5ec51d339b85c267905f'
+workers=[]
+for item in installation['results']:
+ p=psutil.Process(item['pid']);assert p.create_time()==item['birth']
+ for key in ['observer','actor_owner','loss_owner']:
+  assert hashlib.sha256(Path(item[key+'_path']).read_bytes()).hexdigest()==item[key+'_sha256']
+ workers.append(dict(pid=p.pid,birth=p.create_time(),phase=p.name(),PSS_bytes=p.memory_full_info().pss))
+override=formal/'runtime-overrides/native-loss-backward-preservation-20261010-v1.json'
+data=dict(version='native-loss-backward-preservation-20261010-v1',observed_unix=time.time(),installation=installation,
+ formal_pid=982372,formal_birth=1791553809.84,observer_source_commit=launch['observer_commit'],
+ numerical_release='fla-early-output-scale-20261009-v1',numerical_source_commit='26bef6c8b2e49db118f46e3c05e86944dcf8e293',
+ observer_source_SHA_matches_committed='7e94ea6b74867b5a21aeab3c322fc160690b6d5c8140caf3f12b92877c39ba49',
+ native_loss_inputs_copied_only_if_nonfinite_gradient=True,hidden_or_vocabulary_tensors_retained=False,
+ original_function_return_and_gradient_preserved=True,production_numerical_changes=0,
+ root_cause_localized=False,repair_deployed=False,actual_backward_invocation_verified=False)
+assert not override.exists();override.write_text(json.dumps(data,indent=2)+'\n')
+updates=[]
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ path=root/name;content=json.loads(path.read_bytes());others=[j for j in content['jobs'] if j.get('pid')!=982372]
+ jobs=[j for j in content['jobs'] if j.get('pid')==982372];assert len(jobs)==1
+ jobs[0].update(native_loss_backward_runtime_override=str(override),native_loss_backward_observer_installed=True,
+   native_loss_backward_observer_source_commit=launch['observer_commit'])
+ assert others==[j for j in content['jobs'] if j.get('pid')!=982372]
+ path.write_text(json.dumps(content,indent=2)+'\n');updates.append(dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
+print(json.dumps(dict(unix=time.time(),installation=installation,workers=workers,source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),runtime_override=dict(path=str(override),sha256=hashlib.sha256(override.read_bytes()).hexdigest()),authority_updates=updates,production_numerical_changes=0,root_cause_localized=False)))
+
+PY

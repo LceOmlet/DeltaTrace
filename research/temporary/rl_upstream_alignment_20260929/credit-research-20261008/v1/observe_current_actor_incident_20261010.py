@@ -29,6 +29,15 @@ if preclip.exists():
   try:
    if any(str(preclip/name) in (p.info['cmdline'] or []) for name in ['install_preclip_query.py','install_preclip_query_v2.py']):processes.append(p.info)
   except psutil.Error:pass
+loss=out/'loss-backward-v1';loss_files={}
+if loss.exists():
+ for name in ['launch.json','query-result.json','query.log']:
+  path=loss/name
+  if path.exists():loss_files[name]=path.read_text(errors='replace')[-12000:]
+ for p in psutil.process_iter(['pid','create_time','cmdline','name']):
+  try:
+   if str(loss/'install_loss_backward_query.py') in (p.info['cmdline'] or []):processes.append(p.info)
+  except psutil.Error:pass
 workers=[]
 for pid,birth in [(987808,1791553850.00),(989860,1791553867.51)]:
  p=psutil.Process(pid);assert p.create_time()==birth;m=p.memory_full_info()
@@ -42,7 +51,7 @@ for pid,birth in [(987808,1791553850.00),(989860,1791553867.51)]:
  workers.append(dict(pid=pid,birth=birth,phase=p.name(),PSS_bytes=m.pss,RSS_bytes=m.rss,artifacts=artifacts))
 print(json.dumps(dict(unix=time.time(),formal_pid=formal.pid,formal_birth=formal.create_time(),
  query_processes=processes,installation=result,query_log=(out/'query.log').read_text(errors='replace')[-6000:] if (out/'query.log').exists() else None,
- workers=workers,preclip_files=preclip_files,host_available_bytes=psutil.virtual_memory().available,production_changes=0)))
+ workers=workers,preclip_files=preclip_files,loss_backward_files=loss_files,host_available_bytes=psutil.virtual_memory().available,production_changes=0)))
 '''.replace('ROOT',repr(transport.ROOT),1)
 script='source '+transport.ENTRY+'/metax-entry.env.sh\nCUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<\'PY\'\n'+code+'\nPY\n'
 r=subprocess.run(transport.SSH+['bash','-s'],input=script.encode(),capture_output=True,timeout=45)
@@ -61,9 +70,13 @@ for worker in d['workers']:
   native_events=parsed.get('native-events.jsonl',[])[-6:],
   preclip_events=parsed.get('preclip-events.jsonl',[])[-6:],
   preclip_installed='preclip-installation.json' in parsed,
+  loss_backward_installed='loss-backward-installation.json' in parsed,
+  loss_backward_events=parsed.get('loss-backward-events.jsonl',[])[-6:],
   snapshots=[a for a in worker['artifacts'] if 'bytes' in a]))
 preclip_result=json.loads(d['preclip_files']['query-result-v2.json']) if 'query-result-v2.json' in d['preclip_files'] else None
+loss_result=json.loads(d['loss_backward_files']['query-result.json']) if 'query-result.json' in d['loss_backward_files'] else None
 print(json.dumps(dict(saved=str(out),unix=d['unix'],query_processes=d['query_processes'],
  installation_complete=d['installation'].get('complete') if d['installation'] else None,
  preclip_installation_complete=preclip_result.get('complete') if preclip_result else None,
+ loss_backward_installation_complete=loss_result.get('complete') if loss_result else None,
  workers=summary),ensure_ascii=False))

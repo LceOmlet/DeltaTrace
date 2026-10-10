@@ -1,0 +1,27 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');formal=root/'runs/textcraft-formal-stable-20261009-v1'
+assert psutil.Process(982372).create_time()==1791553809.84
+out=root/'receipts/textcraft-native-actor-incidents-20261010-v1'
+workers=[]
+for pid,birth in [(987808,1791553850.0),(989860,1791553867.51)]:
+ p=psutil.Process(pid);assert p.create_time()==birth
+ folder=next(out.glob('rank*-pid'+str(pid)))
+ events=[json.loads(line) for line in (folder/'loss-backward-events.jsonl').read_text().splitlines()]
+ observed=[x for x in events if x['event']=='native_log_prob_gradient']
+ native=[json.loads(line) for line in (folder/'native-events.jsonl').read_text().splitlines()]
+ workers.append(dict(pid=pid,birth=birth,phase=p.name(),PSS_bytes=p.memory_full_info().pss,
+  loss_backward_events=events,actual_backward_invocation_verified=bool(observed),
+  native_optimizer_events=[x for x in native if x['event']=='native_optimizer_return' and x['update_index']==3],
+  finite_callbacks=sum(x['finite'] for x in observed),nonfinite_callbacks=sum(not x['finite'] for x in observed),
+  seconds_in_finite_check_excluding_file_append=sum(x['seconds'] for x in observed),
+  maximum_finite_check_seconds=max(x['seconds'] for x in observed)))
+override=formal/'runtime-overrides/native-loss-backward-preservation-20261010-v1.json'
+d=json.loads(override.read_bytes());d.update(actual_backward_invocation_verified=all(x['actual_backward_invocation_verified'] for x in workers),actual_native_invocation_observation=dict(unix=time.time(),workers=workers))
+override.write_text(json.dumps(d,indent=2)+'\n')
+print(json.dumps(dict(unix=time.time(),workers=workers,actual_backward_invocation_verified=d['actual_backward_invocation_verified'],runtime_override=dict(path=str(override),sha256=hashlib.sha256(override.read_bytes()).hexdigest()),new_model_calls=0,production_numerical_changes=0)))
+
+PY

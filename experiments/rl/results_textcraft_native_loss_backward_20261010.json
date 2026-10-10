@@ -1,0 +1,1032 @@
+{
+  "status": "native_loss_arithmetic_mechanism_reproduced_CPU_passive_real_backward_invocations_verified_NaN_cause_unresolved",
+  "scope": "Diagnose the native actor nonfinite norm at iteration14; scalar arithmetic reproduction does not establish its cause.",
+  "observed_unix": 1791607206.1153915,
+  "numerical_release": "fla-early-output-scale-20261009-v1",
+  "numerical_source_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+  "diagnostic_source_commit": "85aa2940d535b5e722bb5ec51d339b85c267905f",
+  "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "formal_driver": {
+    "pid": 982372,
+    "birth": 1791553809.84
+  },
+  "formal_source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+  "loss_owner": {
+    "owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py",
+    "owner_resolved": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py",
+    "owner_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "torch_version": "2.8.0+metax3.5.3.9"
+  },
+  "formal_kl_configuration": {
+    "actor_rollout_ref.actor.use_kl_loss": true,
+    "actor_rollout_ref.actor.kl_loss_type": "low_var_kl",
+    "source": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_textcraft_formal_stable_20261009.json",
+      "bytes": 19241,
+      "sha256": "ad08102578a0fc832964bfa8b50ec381ddb67a9b6e6284e35578f9669a08903b"
+    }
+  },
+  "mechanism": {
+    "native_functions": [
+      "kl_penalty",
+      "compute_policy_loss"
+    ],
+    "synthetic_inputs": "Valid scalar log probabilities with positive log-probability gaps20,80,88,89,100; FP32 and FP64 comparison.",
+    "finite_loss_nonfinite_gradient_cases": [
+      {
+        "branch": "low_var_kl",
+        "dtype": "torch.float32",
+        "log_probability_gap": 89.0,
+        "loss": 10.0,
+        "gradient": NaN,
+        "loss_finite": true,
+        "gradient_finite": false
+      },
+      {
+        "branch": "dual_clip_negative",
+        "dtype": "torch.float32",
+        "log_probability_gap": 89.0,
+        "loss": 3.0,
+        "gradient": NaN,
+        "loss_finite": true,
+        "gradient_finite": false
+      },
+      {
+        "branch": "clip_positive",
+        "dtype": "torch.float32",
+        "log_probability_gap": 89.0,
+        "loss": -1.2000000476837158,
+        "gradient": NaN,
+        "loss_finite": true,
+        "gradient_finite": false
+      },
+      {
+        "branch": "low_var_kl",
+        "dtype": "torch.float32",
+        "log_probability_gap": 100.0,
+        "loss": 10.0,
+        "gradient": NaN,
+        "loss_finite": true,
+        "gradient_finite": false
+      },
+      {
+        "branch": "dual_clip_negative",
+        "dtype": "torch.float32",
+        "log_probability_gap": 100.0,
+        "loss": 3.0,
+        "gradient": NaN,
+        "loss_finite": true,
+        "gradient_finite": false
+      },
+      {
+        "branch": "clip_positive",
+        "dtype": "torch.float32",
+        "log_probability_gap": 100.0,
+        "loss": -1.2000000476837158,
+        "gradient": NaN,
+        "loss_finite": true,
+        "gradient_finite": false
+      }
+    ],
+    "interpretation": "The native exponential can overflow before downstream clamping. Finite clamped forward loss does not imply finite backward gradients.",
+    "iteration14_extreme_probability_gap_measured": false,
+    "root_cause_localized": false,
+    "seconds_after_import": 0.00762109097559005,
+    "peak_RSS_bytes": 786194432,
+    "PSS_bytes": 429940736,
+    "CUDA_initialized": false
+  },
+  "cpu_delegation_checks": {
+    "status": "passed",
+    "records": [
+      {
+        "gap": 1.0,
+        "owner_called_once": true,
+        "same_return_object": true,
+        "same_loss_and_gradient": true,
+        "nonfinite_gradient_preserved": false
+      },
+      {
+        "gap": 89.0,
+        "owner_called_once": true,
+        "same_return_object": true,
+        "same_loss_and_gradient": true,
+        "nonfinite_gradient_preserved": true
+      }
+    ],
+    "callback_errors_preserve_native_results": true,
+    "CUDA_initialized": false,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "optimizer_calls": 0,
+    "scope": "CPU delegation checks; not a PPO numerical tolerance or training test."
+  },
+  "submitted_sender": {
+    "pid": 2261352,
+    "birth": 1791606739.55,
+    "launched_unix": 1791606739.9157603,
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/loss-backward-v1/install_loss_backward_query.py",
+    "script_sha256": "dca95fdf50ffa789a6475796914292c9432ec99efb45ee7b1abe18c0b4867170",
+    "out": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/loss-backward-v1",
+    "observer_commit": "85aa2940d535b5e722bb5ec51d339b85c267905f",
+    "status": "submitted_not_verified"
+  },
+  "observer_sources": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\capture_native_loss_backward_20261010.py",
+      "bytes": 6417,
+      "sha256": "7e94ea6b74867b5a21aeab3c322fc160690b6d5c8140caf3f12b92877c39ba49"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\test_capture_native_loss_backward_20261010.py",
+      "bytes": 2914,
+      "sha256": "f69de2fdf9d988d705d34b60f353fa02a49e1a167e2fbed703fd2831ef28de42"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\stage_native_loss_backward_20261010.py",
+      "bytes": 5424,
+      "sha256": "030cbbe97a28c10ffb8480c7b6507641f45483a523962f22647e9ff8c7d56523"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\probe_native_loss_exp_backward_20261010.py",
+      "bytes": 4773,
+      "sha256": "37bc228b0c22b83225eee95c11396c3e0f3fe3083e56b4f2084612c07c9706c2"
+    }
+  ],
+  "raw": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-exp-backward-20261010-v1.json",
+      "bytes": 10370,
+      "sha256": "c253b57465d765651a43e63b87f32f066858f0c9cfa6779330f3464cf0f90ad2"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-exp-backward-20261010-v1.command.txt",
+      "bytes": 3139,
+      "sha256": "ef65a08d9cdf7d3cc65d258ae332f65066804223cf0d688407f614779775f852"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-exp-backward-20261010-v1.stdout.txt",
+      "bytes": 10370,
+      "sha256": "c253b57465d765651a43e63b87f32f066858f0c9cfa6779330f3464cf0f90ad2"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-exp-backward-20261010-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-stage-20261010.json",
+      "bytes": 1983,
+      "sha256": "6a2d7dc0783e9ef558ac9848153ec9aad63838bcb4da796d7dde49833108d108"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-actor-observer-observation-1791606784.json",
+      "bytes": 34512,
+      "sha256": "1f132bca05ec8b7561393e8d15f88c37cf1c5670e2739dd36266311831275f92"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-actor-observer-observation-1791606870.json",
+      "bytes": 41517,
+      "sha256": "96cf15fbddb2321913281a63179520b7b4d0071049e6d23bb6630deb04bef9df"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-recorded-20261010-v1.json",
+      "bytes": 4720,
+      "sha256": "31a9a5d8d871335948a0334046de02a0f1144b107f39dd4f56dfff8fb3441be5"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-recorded-20261010-v1.command.txt",
+      "bytes": 3316,
+      "sha256": "19d3ca3a4e4269c490d5adb97d718a6e8653f4f416d9c7fcdad4a3d166a47bae"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-recorded-20261010-v1.stdout.txt",
+      "bytes": 4720,
+      "sha256": "31a9a5d8d871335948a0334046de02a0f1144b107f39dd4f56dfff8fb3441be5"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-recorded-20261010-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-actor-observer-observation-1791607045.json",
+      "bytes": 46278,
+      "sha256": "7f040a529b2a49183a320f9758885d7ea241aadc9ff807fae342ec836c5a8c51"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-real-invocation-20261010-v1.json",
+      "bytes": 11270,
+      "sha256": "39a19c07359430c3798c373ce3b1eddf2ad725a7fc750926470de6d34a4f0b20"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-real-invocation-20261010-v1.command.txt",
+      "bytes": 2166,
+      "sha256": "847503ca2860e139fc786fbfcd33c091202acdd5d64e50bad57bf27b3f81ce7e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-real-invocation-20261010-v1.stdout.txt",
+      "bytes": 11270,
+      "sha256": "39a19c07359430c3798c373ce3b1eddf2ad725a7fc750926470de6d34a4f0b20"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-loss-backward-real-invocation-20261010-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "limitations": [
+    "Scalar mechanism reproduction does not substitute for an incident replay, actual training inputs or official numerical tolerance.",
+    "No replacement loss, exponential clamp or dtype change has been deployed.",
+    "Actual original worker backward callbacks are verified. The finite-check timing excludes callback registration and JSON file append. A new nonfinite incident has not been observed.",
+    "Numerical source, PPO, DT Q/V/A, LoRA8/16, B4 per card and full budget are unchanged."
+  ],
+  "new_model_calls": 0,
+  "new_DT_calls": 0,
+  "new_optimizer_calls": 0,
+  "production_numerical_changes": 0,
+  "runtime_installation": {
+    "unix": 1791606985.7331088,
+    "installation": {
+      "pid": 2261352,
+      "birth": 1791606739.55,
+      "started_unix": 1791606740.3166277,
+      "named_actors": [
+        {
+          "name": "zagXiMWorkerDict_0:0",
+          "namespace": "6a025451-baff-4510-b5e4-bf28800968d8"
+        },
+        {
+          "name": "zagXiMWorkerDict_0:1",
+          "namespace": "6a025451-baff-4510-b5e4-bf28800968d8"
+        }
+      ],
+      "complete": true,
+      "results": [
+        {
+          "unix": 1791606798.1109757,
+          "pid": 987808,
+          "birth": 1791553850.0,
+          "observer_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/loss-backward-v1/capture_native_loss_backward_20261010.py",
+          "observer_sha256": "7e94ea6b74867b5a21aeab3c322fc160690b6d5c8140caf3f12b92877c39ba49",
+          "actor_owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+          "actor_owner_sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "loss_owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py",
+          "loss_owner_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+          "native_functions": [
+            "compute_policy_loss",
+            "kl_penalty"
+          ],
+          "hook": "torch.Tensor.register_hook",
+          "use_kl_loss": true,
+          "kl_loss_type": "low_var_kl",
+          "scope": "Observe the existing loss-to-log-prob gradient without replacing the loss.\n\nThe native functions are called once and their exact objects are returned.\nTensor.register_hook returns the same gradient. Only a nonfinite gradient\ncopies the small loss inputs to CPU; no hidden states or vocabulary tensor is\nretained. Weak references prevent the diagnostic from retaining GPU graphs.\n",
+          "model_calls": 0,
+          "loss_or_gradient_replacement": false,
+          "dtype_configuration_or_optimizer_changes": false
+        },
+        {
+          "unix": 1791606797.5736032,
+          "pid": 989860,
+          "birth": 1791553867.51,
+          "observer_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/loss-backward-v1/capture_native_loss_backward_20261010.py",
+          "observer_sha256": "7e94ea6b74867b5a21aeab3c322fc160690b6d5c8140caf3f12b92877c39ba49",
+          "actor_owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+          "actor_owner_sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "loss_owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py",
+          "loss_owner_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+          "native_functions": [
+            "compute_policy_loss",
+            "kl_penalty"
+          ],
+          "hook": "torch.Tensor.register_hook",
+          "use_kl_loss": true,
+          "kl_loss_type": "low_var_kl",
+          "scope": "Observe the existing loss-to-log-prob gradient without replacing the loss.\n\nThe native functions are called once and their exact objects are returned.\nTensor.register_hook returns the same gradient. Only a nonfinite gradient\ncopies the small loss inputs to CPU; no hidden states or vocabulary tensor is\nretained. Weak references prevent the diagnostic from retaining GPU graphs.\n",
+          "model_calls": 0,
+          "loss_or_gradient_replacement": false,
+          "dtype_configuration_or_optimizer_changes": false
+        }
+      ],
+      "completed_unix": 1791606798.1241915
+    },
+    "workers": [
+      {
+        "pid": 987808,
+        "birth": 1791553850.0,
+        "phase": "ray::WorkerDict.actor_rollout_update_actor",
+        "PSS_bytes": 17998112768
+      },
+      {
+        "pid": 989860,
+        "birth": 1791553867.51,
+        "phase": "ray::WorkerDict.actor_rollout_update_actor",
+        "PSS_bytes": 19197253632
+      }
+    ],
+    "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "runtime_override": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/runtime-overrides/native-loss-backward-preservation-20261010-v1.json",
+      "sha256": "1c23b87701da480a92ef7e178447809fdcf0f39c807ccd4aaadc94427e2802e3"
+    },
+    "authority_updates": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/formal-training.json",
+        "sha256": "51a2ab1b9fdebf33e1c93cb96921e221914d93b17ffce8af9502d604ff7c56b7"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-training.json",
+        "sha256": "51a2ab1b9fdebf33e1c93cb96921e221914d93b17ffce8af9502d604ff7c56b7"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-source.json",
+        "sha256": "870c8659c0e6438bdde44168bf620248117ddd368481f9de1355b2047de0e7ea"
+      }
+    ],
+    "production_numerical_changes": 0,
+    "root_cause_localized": false
+  },
+  "actual_backward_invocation_verified": true,
+  "upstream_read_only_comparison": {
+    "observed_unix": 1791607141.561265,
+    "commit": "9058412fb308e9f2e31a794ad1d18d97d4286485",
+    "url": "https://raw.githubusercontent.com/volcengine/verl/9058412fb308e9f2e31a794ad1d18d97d4286485/verl/trainer/ppo/core_algos.py",
+    "source_path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\upstream-verl-core-algos-9058412.txt",
+    "source_bytes": 105282,
+    "source_sha256": "369b614f239f237a04a38a40b1877cd6fd14aa7bd5f9ff4fe4d7758b682a6948",
+    "functions": {
+      "compute_policy_loss_vanilla": {
+        "start_line": 1286,
+        "end_line": 1376,
+        "stability_lines": [
+          {
+            "line": 1338,
+            "text": "    negative_approx_kl = torch.clamp(negative_approx_kl, min=-20.0, max=20.0)"
+          },
+          {
+            "line": 1339,
+            "text": "    ratio = torch.exp(negative_approx_kl)"
+          },
+          {
+            "line": 1347,
+            "text": "    pg_losses2 = -advantages * torch.clamp("
+          }
+        ],
+        "source_sha256": "49a343954c0384110d99ba9ffe6543c8fb322bd223e2960a07d7a9f034cd240a"
+      },
+      "kl_penalty_forward": {
+        "start_line": 2216,
+        "end_line": 2251,
+        "stability_lines": [
+          {
+            "line": 2242,
+            "text": "        kl = torch.clamp(kl, min=-20, max=20)"
+          },
+          {
+            "line": 2243,
+            "text": "        ratio = torch.exp(kl)"
+          },
+          {
+            "line": 2245,
+            "text": "        return torch.clamp(kld, min=-10, max=10)"
+          }
+        ],
+        "source_sha256": "89683b7332445fc81a8755728500c7fc5869d9f8ad3dd6af5d19b180735e2e4a"
+      }
+    },
+    "finding": "Both upstream vanilla PPO and low_var_kl apply a stability bound before exp. The active fixed fork lacks these lines.",
+    "deployed": false,
+    "runtime_framework_revision_changed": false,
+    "scope": "Read-only comparison; this newer revision is not the accepted runtime or a verified remedy for iteration14."
+  },
+  "real_backward_observation": {
+    "unix": 1791607206.1153915,
+    "workers": [
+      {
+        "pid": 987808,
+        "birth": 1791553850.0,
+        "phase": "ray::WorkerDict.actor_rollout_update_actor",
+        "PSS_bytes": 17998111744,
+        "loss_backward_events": [
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791606969.344844,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 0,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.000269214971922338
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791606984.858539,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 1,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0002599559957161546
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791606999.404574,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 2,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0001847660169005394
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607013.8260565,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 3,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00017863098764792085
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607026.9144075,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 4,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0001754669938236475
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607038.3044488,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 5,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.000180628034286201
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607052.6298084,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 6,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0001749980146996677
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607061.0046108,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 7,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0001732480013743043
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607077.316021,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 0,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0001817020238377154
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607090.7855394,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 1,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00017528102034702897
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607103.5507321,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 2,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00024826498702168465
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607121.0193827,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 3,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00026327400701120496
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607138.9247391,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 4,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0002512250212021172
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607155.6242418,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 5,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00022670201724395156
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607172.236875,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 6,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0002490220358595252
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607187.886682,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 7,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00024004600709304214
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607204.9048913,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 2,
+            "microbatch_index": 0,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0002004479756578803
+          }
+        ],
+        "actual_backward_invocation_verified": true,
+        "native_optimizer_events": [
+          {
+            "event": "native_optimizer_return",
+            "unix": 1791607073.3270397,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "grad_norm": 0.04877933859825134,
+            "native_optimizer_step_calls": 1,
+            "seconds": 0.18597930204123259
+          },
+          {
+            "event": "native_optimizer_return",
+            "unix": 1791607201.7481725,
+            "pid": 987808,
+            "birth": 1791553850.0,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "grad_norm": 0.025043927133083344,
+            "native_optimizer_step_calls": 1,
+            "seconds": 0.18763174704508856
+          }
+        ],
+        "finite_callbacks": 17,
+        "nonfinite_callbacks": 0,
+        "seconds_in_finite_check_excluding_file_append": 0.0036328741116449237,
+        "maximum_finite_check_seconds": 0.000269214971922338
+      },
+      {
+        "pid": 989860,
+        "birth": 1791553867.51,
+        "phase": "ray::WorkerDict.actor_rollout_update_actor",
+        "PSS_bytes": 19197252608,
+        "loss_backward_events": [
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791606969.0530818,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 0,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0002845920389518142
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791606985.0855744,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 1,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.000188770005479455
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791606998.8777351,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 2,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00024037196999415755
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607013.938067,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 3,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00016851496184244752
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607026.6957982,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 4,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00016677798703312874
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607038.6765754,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 5,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00016771600348874927
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607052.8014023,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 6,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00023328099632635713
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607060.976975,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "microbatch_index": 7,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0002354609896428883
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607077.4202888,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 0,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00018072797683998942
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607091.093465,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 1,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0002443650155328214
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607103.1428113,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 2,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00018114701379090548
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607121.630185,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 3,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00023930397583171725
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607139.0695248,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 4,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00017562496941536665
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607155.002941,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 5,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.00017612800002098083
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607172.7140038,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 6,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0001747499918565154
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607188.5355065,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "microbatch_index": 7,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.000167137011885643
+          },
+          {
+            "event": "native_log_prob_gradient",
+            "unix": 1791607205.5278196,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 2,
+            "microbatch_index": 0,
+            "shape": [
+              4,
+              10240
+            ],
+            "dtype": "torch.float32",
+            "finite": true,
+            "seconds": 0.0001999629894271493
+          }
+        ],
+        "actual_backward_invocation_verified": true,
+        "native_optimizer_events": [
+          {
+            "event": "native_optimizer_return",
+            "unix": 1791607073.325995,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 0,
+            "grad_norm": 0.05513510853052139,
+            "native_optimizer_step_calls": 1,
+            "seconds": 0.18471729598240927
+          },
+          {
+            "event": "native_optimizer_return",
+            "unix": 1791607201.747297,
+            "pid": 989860,
+            "birth": 1791553867.51,
+            "update_index": 3,
+            "optimizer_index": 1,
+            "grad_norm": 0.02868766337633133,
+            "native_optimizer_step_calls": 1,
+            "seconds": 0.18696238298434764
+          }
+        ],
+        "finite_callbacks": 17,
+        "nonfinite_callbacks": 0,
+        "seconds_in_finite_check_excluding_file_append": 0.0034246318973600864,
+        "maximum_finite_check_seconds": 0.0002845920389518142
+      }
+    ],
+    "actual_backward_invocation_verified": true,
+    "runtime_override": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/runtime-overrides/native-loss-backward-preservation-20261010-v1.json",
+      "sha256": "f3ca4fb9db59484cb4e99d7344f088d5accfb649822ea9188bb8632e54e8b47b"
+    },
+    "new_model_calls": 0,
+    "production_numerical_changes": 0
+  }
+}
