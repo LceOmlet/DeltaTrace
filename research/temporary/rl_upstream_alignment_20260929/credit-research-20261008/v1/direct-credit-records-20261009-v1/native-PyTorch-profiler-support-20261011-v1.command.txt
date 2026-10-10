@@ -1,0 +1,9 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=4,5 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,torch,inspect,hashlib,psutil,shutil
+out=dict(unix=time.time(),torch_version=torch.__version__,kineto_available=torch.profiler.kineto_available(),supported_activities=[str(a) for a in torch.profiler.supported_activities()],profile_signature=str(inspect.signature(torch.profiler.profile)),cuda_initialized=torch.cuda.is_initialized(),profiler_source_path=inspect.getsourcefile(torch.profiler.profile),scope='Inspect installed official PyTorch profiler support; no profiling or model/DT/optimizer call')
+p=pathlib.Path(out['profiler_source_path']);out['profiler_source_sha256']=hashlib.sha256(p.read_bytes()).hexdigest();out['peak_rss_bytes']=int(pathlib.Path('/proc/self/status').read_text().split('VmHWM:')[1].split()[0])*1024
+print(json.dumps(out))
+
+PY

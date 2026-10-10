@@ -23,8 +23,12 @@ def main():
     native_factory = original.make_worker
 
     def observed_factory():
+        import ray
         worker_class = native_factory()
-        native_method = worker_class.replay_incident
+        # Ray owns the registered actor implementation. Assigning a method
+        # on the ActorClass wrapper does not update that implementation.
+        native_class = worker_class.__ray_metadata__.modified_class.__ray_actor_class__
+        native_method = native_class.replay_incident
 
         @functools.wraps(native_method)
         def observed(self, output):
@@ -75,8 +79,11 @@ def main():
                     json.dumps(report, indent=2) + '\n')
                 raise
 
-        worker_class.replay_incident = observed
-        return worker_class
+        class NativeExceptionObserved(native_class):
+            pass
+
+        NativeExceptionObserved.replay_incident = observed
+        return ray.remote(NativeExceptionObserved)
 
     original.make_worker = observed_factory
     try:

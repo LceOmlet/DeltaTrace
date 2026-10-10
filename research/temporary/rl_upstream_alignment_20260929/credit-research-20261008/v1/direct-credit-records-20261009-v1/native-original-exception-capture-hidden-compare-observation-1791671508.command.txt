@@ -1,0 +1,10 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,psutil,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2');job=json.loads((root/'hidden-comparison-job.json').read_bytes());out={'unix':time.time(),'process':{'pid':job['pid'],'expected_birth':job['birth']}}
+try:p=psutil.Process(job['pid']);out['process'].update(birth=p.create_time(),same_birth=p.create_time()==job['birth'],status=p.status(),rss=p.memory_info().rss)
+except psutil.NoSuchProcess:out['process']['missing']=True
+f=root/'hidden-comparison.json';out['result']=json.loads(f.read_bytes()) if f.is_file() else None;out['log_tail']=(root/'hidden-comparison.log').read_text(errors='replace')[-2000:];print(json.dumps(out))
+
+PY

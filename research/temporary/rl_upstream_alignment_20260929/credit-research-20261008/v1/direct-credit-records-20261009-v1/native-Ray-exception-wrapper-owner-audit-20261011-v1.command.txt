@@ -1,0 +1,29 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,sys,inspect,hashlib,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+source=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes())
+original_dir=root/'receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source'
+sys.path[:0]=[str(original_dir)]+source['pythonpath']
+import replay_native_incident37_old_ref_dt_20261011 as original
+import ray,torch,psutil,functools
+actor=original.make_worker();meta=actor.__ray_metadata__;native=meta.modified_class.replay_incident
+out=dict(unix=time.time(),original_source=original.__file__,original_sha256=hashlib.sha256(pathlib.Path(original.__file__).read_bytes()).hexdigest(),actor_type=str(type(actor)),metadata_class=str(meta.modified_class),native_filename=native.__code__.co_filename,native_line=native.__code__.co_firstlineno,native_registration=repr(getattr(native,'__dict__',{})),wrapper_scope='CPU construction only; no Ray initialization, actor creation, model or GPU work')
+@functools.wraps(native)
+def observed(*args,**kwargs):return native(*args,**kwargs)
+actor.replay_incident=observed
+out['outer_assignment_updates_modified_class']=meta.modified_class.replay_incident is observed
+out['outer_assignment_keeps_native_modified_class_method']=meta.modified_class.replay_incident is native
+out['Ray_source_path']=ray.actor.__file__;out['Ray_source_sha256']=hashlib.sha256(pathlib.Path(ray.actor.__file__).read_bytes()).hexdigest()
+out['official_actor_class_factory_source']=inspect.getsource(ray.actor.ActorClass._ray_from_modified_class)
+class NativeExceptionObserved(meta.modified_class):
+ @functools.wraps(native)
+ def replay_incident(self,output):return native(self,output)
+replacement=ray.remote(NativeExceptionObserved)
+out['official_redecoration_owns_wrapper']=replacement.__ray_metadata__.modified_class.replay_incident is NativeExceptionObserved.replay_incident
+out['official_redecoration_native_base']=str(NativeExceptionObserved.__bases__)
+out['cuda_initialized']=torch.cuda.is_initialized();out['peak_rss_bytes']=int(pathlib.Path('/proc/self/status').read_text().split('VmHWM:')[1].split()[0])*1024
+print(json.dumps(out))
+
+PY

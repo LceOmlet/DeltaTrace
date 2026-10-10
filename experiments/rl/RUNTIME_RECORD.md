@@ -1,6 +1,29 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-11 失败head隐藏状态已取得，开始原更新阶段profile
+
+先用CPU实际Ray登记检查证实旧包装只改了ActorClass外层，worker登记的类方法
+未变；诊断包装改为继承原类并调用官方ray.remote重新登记，源3f4942a9。原e48ed002
+模型/DT/PPO代码未改。GPU4/5一次回放再次在第二B4失败，零optimizer；已保存两rank
+完整H/IDs。rank0回执未写完，但张量文件独立SHA核验并成功读取，不补造worker回执。
+CPU原比较器对照正常all-DT capture：两rank全部H/IDs逐值相同；rank1也与no-DT
+正常capture相同。保存的loss梯度NaN为133/124，与原事故重合130/122；输入仍有限。
+这是失败autograd保存上下文，不冒充独立的前向边界捕获；失败W仍缺，不能判定根因。
+
+原driver613794及worker616683/618385均按birth核验退出，结束mx-smi无进程，host
+可用约1.025TB；CPU比较峰值约1.185GB，CUDA未初始化。正式仍停37/330，无恢复/
+重启或生产补丁，KL保护仍只候选。完整版本与证据见
+[失败隐藏状态回执](results_textcraft_incident37_failed_hidden_20261011.json)。
+
+当前另一次有目的诊断：GPU4/5、PID708475/出生1791671965.34，更新profile源f57a4dab，
+原e48ed002+已验证采集3f4942a9。PyTorch原profiler仅覆盖原update_actor，记录CPU/CUDA
+活动、分配释放及head返回时的形状/dtype/地址/stream元数据，不读张量值、不克隆、
+不加同步，不改参数或公式。CPU实际登记已核对，原VERL更新调用链保留。
+1791672049观察：原old logprob阶段，worker711052/713647；尚无profile结果，不是修复。
+复用原环境和缓存；正式不重启，不再另开同一诊断。
+
+
 ## 2026-10-11 原失败诊断再次复现，异常后隐藏状态采集未成功
 
 使用原e48ed002诊断源码、原32行old/ref与27个DT B4，GPU4/5完成后在第二B4

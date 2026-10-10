@@ -36,15 +36,42 @@ def main():
                    actual_optimizer_steps=record['actual_optimizer_steps'],
                    native_microbatches=record['microbatches'], captures=[])
         result['ranks'].append(row)
-        for point in record['microbatches']:
+        # Preserve the original native record. An exception-only wrapper has
+        # its own receipt and does not rewrite the native microbatch record.
+        points = list(record['microbatches'])
+        exception_path = args.result / f'rank{rank}-exception-capture.json'
+        if exception_path.is_file():
+            exception_record = json.loads(exception_path.read_bytes())
+            row['exception_receipt'] = dict(path=str(exception_path),
+                                            sha256=sha(exception_path))
+            for capture in exception_record['captures']:
+                if 'path' not in capture:
+                    row.setdefault('capture_errors', []).append(capture)
+                    continue
+                points.append(dict(index=None, head_inputs=capture,
+                                   exception_only_capture=True))
+        else:
+            # Ray may terminate the peer after it saves the tensor but before
+            # it writes the receipt. Verify that actual artifact independently;
+            # do not invent or rewrite the missing worker receipt.
+            path = args.result / f'rank{rank}-exception-head-H-IDs.pt'
+            if path.is_file():
+                row['exception_receipt_missing'] = True
+                points.append(dict(index=None,
+                    head_inputs=dict(path=str(path), sha256=sha(path)),
+                    exception_only_capture=True))
+        for point in points:
             capture = point.get('head_inputs')
             if capture is None:
                 continue
             path = Path(capture['path'])
             assert sha(path) == capture['sha256']
             failed = load(path)
-            value = dict(microbatch=point['index'], path=str(path),
+            value = dict(microbatch=failed.get('microbatch_index', point['index']), path=str(path),
                          sha256=capture['sha256'],
+                         exception_only_capture=point.get('exception_only_capture', False),
+                         hidden_scope='Autograd saved head context after bad loss gradient; '
+                                      'not an independent forward-boundary capture.',
                          full_failed_live_weights_available=False,
                          hidden_finite=bool(torch.isfinite(failed['hidden_states']).all()),
                          comparisons=[])
@@ -55,6 +82,7 @@ def main():
                 prior = load(prior_path)
                 tensors = prior['tensors']
                 value['comparisons'].append(dict(path=str(prior_path),
+                    bytes=prior_path.stat().st_size, sha256=sha(prior_path),
                     hidden_states=summarize(tensors['hidden_states'].flatten(0, 1),
                                             failed['hidden_states']),
                     input_ids=summarize(tensors['input_ids'].flatten(), failed['input_ids'])))
