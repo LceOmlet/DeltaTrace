@@ -1,0 +1,31 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,os,sys,time,resource,ijson
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-update-profiler-20261011-v1')
+a=json.loads((root/'trace-analysis-v1.json').read_bytes());out={'unix':time.time(),'ranks':[],'production_changes':0,'model_calls':0}
+for rank in a['ranks']:
+ scopes=sorted([e for e in rank['native_head_and_fsdp_scopes'] if e['name']=='FusedLinearForPPOFunction'],key=lambda e:e['ts'])
+ rows=[{'call':i,'cpu_start_us':e['ts'],'cpu_end_us':e['ts']+e['dur'],'cpu_event_ids':set(),'gpu_events':[],'cpu_names':{}} for i,e in enumerate(scopes)]
+ with open(rank['trace']['path'],'rb') as f:
+  for e in ijson.items(f,'traceEvents.item',use_float=True):
+   if e.get('cat')=='cpu_op':
+    for row,scope in zip(rows,scopes):
+     if e.get('tid')==scope['tid'] and row['cpu_start_us']<=e.get('ts',-1)<row['cpu_end_us']:
+      ext=e.get('args',{}).get('External id');row['cpu_event_ids'].add(ext);row['cpu_names'][e['name']]=row['cpu_names'].get(e['name'],0)+1
+   elif e.get('cat') in ('kernel','gpu_memcpy'):
+    ext=e.get('args',{}).get('External id')
+    for row in rows:
+     if ext in row['cpu_event_ids']:row['gpu_events'].append(e)
+ for row in rows:
+  events=row.pop('gpu_events');ids=row.pop('cpu_event_ids');row['cpu_event_count']=len(ids);row['gpu_event_count']=len(events)
+  row['gpu_streams']=sorted(set(e.get('args',{}).get('stream') for e in events if e.get('args',{}).get('stream') is not None))
+  row['gpu_begin_us']=min((e['ts'] for e in events),default=None);row['gpu_end_us']=max((e['ts']+e.get('dur',0) for e in events),default=None)
+  row['kernel_names']=sorted(set(e['name'] for e in events));row['first_gpu']=events[:2];row['last_gpu']=events[-2:]
+ out['ranks'].append({'rank':rank['rank'],'heads':rows})
+source=json.loads(pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes())
+out['formal_compiler_environment']={k:v for k,v in source['environment'].items() if any(s in k for s in ['COMPILE','DYNAMO','INDUCTOR','TRITON','GRAPH','CUBLAS','MACA'])}
+out['peak_RSS_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+(root/'head-trace-correlation-v1.json').write_text(json.dumps(out,indent=2)+'\n')
+print(json.dumps(out))
+
+PY

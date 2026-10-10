@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,pathlib,hashlib,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+job=root/'receipts/textcraft-native-incident37-update-profiler-20261011-v1'
+rows=[];seen=set()
+for rank in (0,1):
+ d=json.loads((job/'result'/f'rank{rank}.json').read_bytes())
+ for name in d['sources']:
+  if name in seen:continue
+  seen.add(name);p=pathlib.Path(name);rows.append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'reported_by_worker':True})
+for p in [root/'runs/textcraft-formal-stable-20261009-v1/source.json',job/'source/profile_native_incident37_update_20261011.py',job/'source/replay_native_incident37_exception_capture_20261011.py']:
+ rows.append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'reported_by_worker':False})
+print(json.dumps({'unix':time.time(),'files':rows,'model_calls':0}))
+
+PY

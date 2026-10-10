@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,pathlib,time,psutil,subprocess,importlib.util,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-update-profiler-20261011-v1')
+out={'unix':time.time(),'processes':[],'host_available_bytes':psutil.virtual_memory().available,'ijson_available':importlib.util.find_spec('ijson') is not None}
+for pid,birth in [(708475,1791671965.34),(711052,1791671983.56),(713647,1791671999.71)]:
+ row={'pid':pid,'expected_birth':birth}
+ try:
+  p=psutil.Process(pid);row.update(birth=p.create_time(),same_birth=p.create_time()==birth,status=p.status())
+ except psutil.NoSuchProcess:row['missing']=True
+ out['processes'].append(row)
+out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True).stdout
+out['traces']=[]
+for rank in (0,1):
+ f=root/'result'/f'rank{rank}-native-update-trace.json'
+ with f.open() as h:prefix=h.read(14000)
+ profile=json.loads((root/'result'/f'rank{rank}-native-update-profile.json').read_bytes())
+ d=json.loads((root/'result'/f'rank{rank}.json').read_bytes())
+ out['traces'].append({'rank':rank,'bytes':f.stat().st_size,'prefix':prefix,'metadata':profile,'result':{k:d.get(k) for k in ['phase','actual_optimizer_steps','native_metrics','peak_torch_allocated_bytes','peak_torch_reserved_bytes','pss_bytes']}})
+print(json.dumps(out))
+
+PY

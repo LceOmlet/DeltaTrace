@@ -1,0 +1,12 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,base64,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-update-profiler-20261011-v1')
+names=['job.json','driver.log']
+for rank in (0,1):names.extend([f'result/rank{rank}.json',f'result/rank{rank}-phases.jsonl',f'result/rank{rank}-native-update-profile.json'])
+rows=[]
+for name in names:
+ p=root/name;b=p.read_bytes();rows.append({'relative':name,'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+print(json.dumps({'unix':time.time(),'files':rows}))
+
+PY

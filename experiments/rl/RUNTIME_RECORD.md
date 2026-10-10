@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原更新profile完成；未认定或部署概率异常修复
+
+原diagnostic e48ed002、采集3f4942a9、profile f57a4dab，GPU4/5的driver708475及
+worker711052/713647均已按birth核验退出。两rank各8个B4反向有限、各1次原optimizer；
+profile会改变时序与分配，不能把这次有限回放称作原NaN故障修复。正式仍停37/330，
+不恢复、不重启，KL保护仍仅候选，Q/V/A、LoRA8/16、每卡B4与生产owner不变。
+
+原两份trace各597683602/647243169字节留在远端并已核验SHA；CPU流式读取共约502万
+事件，用时18.57秒、峰值RSS125886464字节，没有模型/GPU计算。已把8次原head调用
+分别关联实际GPU活动，均stream0；记录中没有mcGraphLaunch。CPU侧释放完整head权重
+早于已入队head kernel结束，但该顺序本身符合异步stream执行，不能据此认定悬空读取，
+也不能因此增加同步或改卸载。该正常trace尚未证明失败执行具体缺少哪项依赖。
+
+失败H/IDs与正常all-DT保存值相同的结论保留；失败时实际读取的完整W/编译中间量仍
+缺失，保存上下文不是独立前向边界。只读检查了原sanitizer与compiler源码，没有启动
+sanitizer或改变编译/allocator配置。第一份源码身份查询误用了wrapper目录、失败保留；
+按原launch PYTHONPATH的v2目录核对后，actor/head/e48/formal/profile/capture SHA均对应。
+结束物理各卡858MiB、无GPU进程；host可用约1.025TB。trace与来源、配置、阶段日志、
+进程及资源限制见[原更新profile回执](results_textcraft_incident37_update_profiler_20261011.json)。
+
+
 
 ## 2026-10-11 失败head隐藏状态已取得，开始原更新阶段profile
 

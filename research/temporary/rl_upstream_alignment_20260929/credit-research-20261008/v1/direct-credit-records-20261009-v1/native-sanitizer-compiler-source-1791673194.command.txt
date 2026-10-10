@@ -1,0 +1,15 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,importlib.util
+root=pathlib.Path('/opt/conda/lib/python3.12/site-packages/torch')
+paths=[root/'cuda/_sanitizer.py',root/'_inductor/config.py',root/'_inductor/compile_fx.py']
+out={'unix':time.time(),'files':[],'model_calls':0}
+for p in paths:
+ t=p.read_text();lines=t.splitlines();matches=[]
+ for i,l in enumerate(lines):
+  if any(s in l for s in ['torch.compile','TORCHINDUCTOR_FREEZING','def enable_cuda_sanitizer','CUDASanitizer','CUDAGraphs','def cudagraphify','class CUDASanitizer','_activate_cuda_trace','TORCH_CUDA_SANITIZER']):
+   matches.append({'line':i+1,'text':'\n'.join(lines[max(0,i-3):i+9])})
+ out['files'].append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'matches':matches})
+print(json.dumps(out))
+
+PY
