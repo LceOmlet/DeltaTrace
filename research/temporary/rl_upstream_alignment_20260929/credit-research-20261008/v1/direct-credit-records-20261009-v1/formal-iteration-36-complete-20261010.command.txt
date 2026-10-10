@@ -1,0 +1,72 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,re,subprocess,time
+from pathlib import Path
+r=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');f=r/'runs/textcraft-formal-stable-20261009-v1'
+p=psutil.Process(982372)
+assert p.create_time()==1791553809.84
+sha=lambda path:hashlib.sha256(Path(path).read_bytes()).hexdigest()
+assert sha(f/'source.json')=='1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658'
+checks=[]
+for item in [{'name': 'verl.trainer.main_ppo', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/main_ppo.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/main_ppo.py', 'sha256': 'fc0c5480f891802b4a1c62c88d85d0c39a65b9c84e817e560dd66ef40d9811b8', 'expected': 'fc0c5480f891802b4a1c62c88d85d0c39a65b9c84e817e560dd66ef40d9811b8'}, {'name': 'verl.workers.actor.dp_actor', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py', 'sha256': '3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c', 'expected': '3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c'}, {'name': 'verl.trainer.ppo.core_algos', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py', 'sha256': 'fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299', 'expected': 'fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299'}, {'name': 'deltatrace_rollout', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/deltatrace_rollout.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/deltatrace_rollout.py', 'sha256': '2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e', 'expected': '2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e'}, {'name': 'reward_readout', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/reward_readout.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/reward_readout.py', 'sha256': '814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b', 'expected': '814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b'}, {'name': 'counterfactual', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/counterfactual.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/counterfactual.py', 'sha256': '0d3412b8ac25d7c036e7a827d4bbf19a4eb2b9984a0a0956f37e82d7d86f9d07', 'expected': '0d3412b8ac25d7c036e7a827d4bbf19a4eb2b9984a0a0956f37e82d7d86f9d07'}, {'name': 'dt_training_batch', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/dt_training_batch.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/dt_training_batch.py', 'sha256': '1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e', 'expected': '1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e'}, {'name': 'owner_trajectory_batch', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/owner_trajectory_batch.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/entry/owner_trajectory_batch.py', 'sha256': 'e18774d233b038eb5b6efc55d22bfca0bc2672064a48cd5cb5b117bfc24a810d', 'expected': 'e18774d233b038eb5b6efc55d22bfca0bc2672064a48cd5cb5b117bfc24a810d'}, {'name': 'qwen35_gdn_finite', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/fla-early-output-scale-20261009-v1/textcraft/qwen35_gdn_finite.py', 'sha256': '7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656', 'expected': '7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656'}, {'name': 'vllm', 'path': '/opt/conda/lib/python3.12/site-packages/vllm/__init__.py', 'resolved': '/opt/conda/lib/python3.12/site-packages/vllm/__init__.py', 'sha256': '7d2fcdb2be605a1762738ace551515832d4fbdd485b7e888c6387fc1bd7e2876', 'expected': '7d2fcdb2be605a1762738ace551515832d4fbdd485b7e888c6387fc1bd7e2876'}, {'name': 'transformers', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/__init__.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/__init__.py', 'sha256': 'b8d8f71a68be16a4ffed3bdda15075db9964ac4ca122d1863e2f4f09cdb4b636', 'expected': 'b8d8f71a68be16a4ffed3bdda15075db9964ac4ca122d1863e2f4f09cdb4b636'}, {'name': 'qwen35_gdn_finite', 'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py', 'resolved': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/releases/fla-early-output-scale-20261009-v1/textcraft/qwen35_gdn_finite.py', 'sha256': '7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656', 'expected': '7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656'}]:
+ path=Path(item['path']);value=sha(path)
+ assert value==item['expected'],(str(path),value,item['expected'])
+ checks.append(dict(name=item['name'],path=str(path),resolved=str(path.resolve()),sha256=value))
+ray=Path('/tmp/ray/session_2026-10-09_21-50-24_958031_982372/logs')
+task=next(ray.glob('*-985585.out'))
+ansi=re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]')
+lines=ansi.sub('',task.read_text(errors='replace')).splitlines()
+marker='step:'+str(36)+' - '
+fifth=[line[line.index(marker):] for line in lines if marker in line]
+assert len(fifth)==1,len(fifth)
+metrics={key:float(value) for key,value in re.findall(r'([\w/]+):(-?\d+(?:\.\d+)?)',fifth[0])}
+assert metrics['step']==36 and metrics['training/global_step']==36
+workers=[];errors={}
+bad=['Traceback (most','OutOfMemoryError','FloatingPointError','[Skip the step]',
+     'Non-finite grad','grad_norm is not finite']
+for pid,birth in [(987808,1791553850.00),(989860,1791553867.51)]:
+ q=psutil.Process(pid);assert q.create_time()==birth
+ mem=q.memory_full_info()
+ workers.append(dict(pid=pid,birth=birth,phase=q.name(),PSS_bytes=mem.pss,
+                     RSS_bytes=mem.rss,USS_bytes=mem.uss))
+ for suffix in ['out','err']:
+  path=next(ray.glob('*-'+str(pid)+'.'+suffix))
+  errors[str(path)]=[x for x in path.read_text(errors='replace').splitlines() if any(s in x for s in bad)]
+for suffix in ['out','err']:
+ path=next(ray.glob('*-985585.'+suffix))
+ errors[str(path)]=[x for x in path.read_text(errors='replace').splitlines() if any(s in x for s in bad)]
+driver=(f/'train.log').read_text(errors='replace').splitlines()
+observed=time.time()
+record=dict(unix=observed,pid=p.pid,birth=p.create_time(),source_sha256=sha(f/'source.json'),
+ numerical_version='fla-early-output-scale-20261009-v1',numerical_source_commit='26bef6c8',
+ original_step_line=fifth[0],original_metrics=metrics,metrics_source=str(task),workers=workers,
+ source_checks=checks,errors=errors,completed_formal_iterations=36,total_formal_iterations=330,
+ progress=[x for x in driver if 'Training Progress:' in x or 'Rounds ' in x][-8:],
+ host_available_bytes=psutil.virtual_memory().available,disk_free_bytes=psutil.disk_usage(str(r)).free,
+ physical_mx_smi=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout,
+ cgroup_memory_usage_bytes=Path('/sys/fs/cgroup/memory/memory.usage_in_bytes').read_text().strip(),
+ cgroup_memory_stat=Path('/sys/fs/cgroup/memory/memory.stat').read_text(),
+ checkpoint_restore=False,manual_training_step_cap=None,production_changes=0,
+ scope='Read existing native step metrics, same PID births and disk hashes bound to prior live import receipt. No fresh worker RPC or model/DT/optimizer calls.')
+updates=[]
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ path=r/name;data=json.loads(path.read_bytes());old_other=[x for x in data['jobs'] if x.get('pid')!=982372]
+ jobs=[x for x in data['jobs'] if x.get('pid')==982372];assert len(jobs)==1
+ job=jobs[0];old_status=job.get('status')
+ job.update(last_status_observed_unix=observed,completed_iterations_observed=36,total_iterations_observed=330,
+  last_completed_update_observed=36,
+  latest_original_step_metrics=metrics,latest_original_metrics_source=str(task),
+  last_native_worker_phases=[dict(pid=x['pid'],name=x['phase']) for x in workers])
+ if 'complete_iterations_observed' in job:job['complete_iterations_observed']=36
+ if 'completed_iterations' in job:job['completed_iterations']=36
+ assert [x for x in data['jobs'] if x.get('pid')!=982372]==old_other
+ previous=sha(path);path.write_text(json.dumps(data,indent=2)+'\n')
+ updates.append(dict(path=str(path),previous_sha256=previous,sha256=sha(path),
+                     previous_status=old_status,status=job['status']))
+record['authority_status_updates']=updates
+out=r/'receipts/direct-credit-records-20261009-v1'/('formal-iteration-'+str(36)+'-complete-20261010.json')
+out.write_text(json.dumps(record,indent=2)+'\n')
+print(json.dumps(record))
+
+PY
