@@ -1,0 +1,15 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import json,time,psutil,subprocess,hashlib
+from pathlib import Path
+f=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-pre-DT-layer-audit-20261011-v1');job=json.loads((f/'job.json').read_bytes())
+def live(pid,birth):
+ try:return psutil.Process(pid).create_time()==birth and psutil.Process(pid).status()!='zombie'
+ except psutil.Error:return False
+records=[]
+for p in sorted((f/'result').glob('rank[01].json')):
+ d=json.loads(p.read_bytes());records.append({'rank':d['rank'],'pid':d['pid'],'birth':d['birth'],'live':live(d['pid'],d['birth']),'phase':d.get('phase'),'allocated':d.get('allocated'),'reserved':d.get('reserved'),'pss_bytes':d.get('pss_bytes'),'capture_counts':[len(x['files']) for x in d.get('pre_DT_layer_captures',[])],'fingerprints':list(d.get('pre_DT_parameter_state',{})),'traceback':d.get('traceback')})
+print(json.dumps({'unix':time.time(),'job':job,'driver_live':live(job['pid'],job['birth']),'completed':(f/'result/completed.json').exists(),'records':records,'capture_files':len(list((f/'result').glob('rank*-layers/*.pt'))),'capture_bytes':sum(p.stat().st_size for p in (f/'result').glob('rank*-layers/*.pt')),'log_tail':(f/'driver.log').read_text(errors='replace')[-2400:],'physical':subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12).stdout,'host_available':psutil.virtual_memory().available}))
+
+PY

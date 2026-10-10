@@ -1,0 +1,8 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,base64,hashlib
+from pathlib import Path
+p=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-pre-DT-layer-audit-20261011-v1')
+files=['job.json', 'result/rank0.json', 'result/rank1.json', 'result/completed.json', 'result/rank0-phases.jsonl', 'result/rank1-phases.jsonl', 'result/initialization-config.yaml', 'source/replay_native_incident37_old_ref_only_20261011.py', 'source/capture_native_pre_dt_layers_20261011.py']
+print(json.dumps([dict(relative=n,remote_path=str(p/n),sha256=hashlib.sha256((p/n).read_bytes()).hexdigest(),base64=base64.b64encode((p/n).read_bytes()).decode()) for n in files]))
+PY

@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原old/ref/old逐层与参数现场，正式仍停37/330
+
+GPU4/5一次原native old/ref/old诊断已完成并退出，不运行DT、loss、optimizer或生成。
+原事故前32行、精确恢复496个LoRA local shard、LoRA8/16及每卡B4保持。
+两rank各925个parameter/buffer字段在before_old/after_ref/after_old_again逐值相同；
+第二B4的32层输出、入口、位置、mask及final norm共38张量前后逐值相同，
+32行old logp/entropy亦完全相同。当前run未发现参考概率调用改变模型状态。
+
+这不是原失败持久进程恢复；hook clone、边界同步/hash及CPU写盘会改变分配和时序。
+未调用training/update，不能据此宣称原NaN或百量级actor-old概率差修好。当前old输出
+rank0对应此前cluster0、rank1对应cluster1；旧run缺逐层/完整冻结状态，跨进程最早偏差
+仍未知。真实第37轮KL反向溢出已定位，官方guard仍验收候选未部署；生产/Q/V/A未改。
+
+driver3769262/1791661199.26及worker3774876、3776621已退出，原38×2×2 capture约24.41GB；
+Torch allocated峰值约13.25/13.45GiB，reserved16.08/16.31GiB；CPU比较峰值951MB，
+未初始化CUDA。最后mx-smi无进程、每卡858MiB。不是32k/vLLM容量或训练吞吐验收。
+诊断新增分支默认关闭，去除显式观察分支后原worker AST相同；仅诊断文件改变。
+正式停止37/330，无恢复/重启；源SHA、PID birth、完整参数hash及逐层回执见
+[原native逐层回执](results_textcraft_incident37_native_layers_20261011.json)。
+
+
 ## 2026-10-11 七次既有回放的DT前概率分组，未新增GPU计算
 
 本轮仅CPU分析已有数据与原owner源，无新模型/DT/optimizer调用及生产修改。
