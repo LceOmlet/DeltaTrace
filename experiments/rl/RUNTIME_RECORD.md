@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 七次既有回放的DT前概率分组，未新增GPU计算
+
+本轮仅CPU分析已有数据与原owner源，无新模型/DT/optimizer调用及生产修改。
+两次真实head采集的初始化配置逐字节相同，DT前63条语句的AST相同；事故输入、
+已恢复496个LoRA分片、248个适配器及train/eval状态相同。不是全部冻结权重相同证明。
+七次已有回放中每rank的DT前old/ref输出恰有两组逐值一致结果；本对照cluster1
+与原事故old/ref逐值相同，cluster0在有效old token最大差rank0=0.44043、rank1=0.31978，
+ref最大差0.37498/0.91088，都是FP32保存。没有用这些差值定义/声称官方容差通过。
+rank0 cluster0同时存在失败与正常更新，不能把两组输出差异直接认定NaN根因；
+rank1仅一次失败在cluster1，同样不足以推因果。该差异与原上百actor-old偏差分开。
+
+原事故记录器在native update前快照；后面NaN时只建硬链接，文件名时间不是快照时间。
+原ActivationHandler仅training时进入checkpoint/offload，eval直接走原forward；
+这只是已核对的调用路径差别，不声称卸载去重/异步、DCP或某个内核有bug，不打假设补丁。
+未采集的冻结权重/buffer/实际dtype与最早内部偏差，仍是下一次定向诊断需补的信息。
+正式停37/330，无重启/恢复，KL官方guard仍候选；观察时mx-smi无进程。
+源、精确分组、按行有效token与CPU资源见
+[初始化及概率分组回执](results_textcraft_incident37_initialization_20261011.json)。
+
+
 ## 2026-10-11 真实第二B4输出头现场及原VERL前向参考检查，正式仍停37/330
 
 新建actor在原old/ref后、以及原27个DT批次后，各完成每rank8个B4和一次原optimizer；

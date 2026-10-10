@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,time,torch,resource
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');receipt=root/'receipts';folders=[receipt/(n+'-20261011-v1')/'result' for n in ['textcraft-native-incident37-native-head-live-capture','textcraft-native-incident37-all-DT-live-head-capture']]
+records=[]
+for rank,pid in enumerate([987808,989860]):
+ p=next((receipt/'textcraft-native-actor-incidents-20261010-v1'/f'rank{rank}-pid{pid}').glob('incident-*-update.pt'));snapshot=torch.load(p,map_location='cpu',weights_only=False);batch=snapshot['input_batch'][:32];width=batch['responses'].shape[1];mask=batch['loss_mask'][:,-width:].bool();old=[torch.load(f/f'rank{rank}-native-old.pt',map_location='cpu',weights_only=False) for f in folders];refs=[torch.load(f/f'rank{rank}-native-ref.pt',map_location='cpu',weights_only=False) for f in folders];rows=[]
+ for row in range(32):
+  m=mask[row];record={'row':row,'valid_policy_tokens':int(m.sum()),'old_cross_run_max_all':float((old[0]['old_log_probs'][row]-old[1]['old_log_probs'][row]).abs().max()),'ref_cross_run_max_all':float((refs[0]['ref_log_prob'][row]-refs[1]['ref_log_prob'][row]).abs().max())}
+  if m.any():
+   diff=old[0]['old_log_probs'][row]-old[1]['old_log_probs'][row];r=diff.masked_fill(~m,0);record.update(old_cross_run_max_valid=float(r.abs().max()),old_cross_run_changed_valid=int(((diff!=0)&m).sum()),old_cross_run_l2_valid=float(r.square().sum().sqrt()),old_original_vs_new_max_valid=[float((x['old_log_probs'][row][m]-batch['old_log_probs'][row][m]).abs().max()) for x in old],ref_cross_run_max_valid=float((refs[0]['ref_log_prob'][row][m]-refs[1]['ref_log_prob'][row][m]).abs().max()))
+   pos=int(r.abs().argmax());record['max_position']={'response_column':pos,'token_id':int(batch['responses'][row,pos]),'old_values':[float(x['old_log_probs'][row,pos]) for x in old],'incident_old':float(batch['old_log_probs'][row,pos])}
+  rows.append(record)
+ records.append({'rank':rank,'input_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'snapshot_keys':list(snapshot),'rows':rows})
+ del snapshot,batch,old,refs
+print(json.dumps({'unix':time.time(),'records':records,'CUDA_initialized':torch.cuda.is_initialized(),'model_calls':0,'DT_calls':0,'optimizer_steps':0,'peak_RSS_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024}))
+
+PY

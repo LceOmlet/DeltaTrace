@@ -1,0 +1,28 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,time,torch,resource
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');folders=sorted(p for p in root.glob('textcraft-native-incident37-*-20261011-v1') if p.is_dir());records=[]
+for rank in [0,1]:
+ keys={};rows=[];representatives={}
+ for folder in folders:
+  old=folder/'result'/f'rank{rank}-native-old.pt';ref=folder/'result'/f'rank{rank}-native-ref.pt';meta=folder/'result'/f'rank{rank}.json'
+  if not(old.exists() and ref.exists() and meta.exists()):continue
+  a=torch.load(old,map_location='cpu',weights_only=False);b=torch.load(ref,map_location='cpu',weights_only=False);m=json.loads(meta.read_bytes());fields={**a,**b};digests={k:hashlib.sha256(v.contiguous().numpy().tobytes()).hexdigest() for k,v in fields.items()};key=tuple(sorted(digests.items()))
+  if key not in keys:keys[key]=len(keys);representatives[keys[key]]={k:v.clone() for k,v in fields.items()}
+  cluster=keys[key];metrics=m.get('microbatches',[])
+  rows.append({'name':folder.name,'rank':rank,'pid':m['pid'],'birth':m['birth'],'cluster':cluster,'field_hashes':digests,'shapes':{k:list(v.shape) for k,v in fields.items()},'any_nonfinite_gradient':any(x.get('gradient_finite') is False for x in metrics),'phase':m.get('phase'),'input_artifact':m['input_artifact']})
+ pairs=[]
+ for i in representatives:
+  for j in representatives:
+   if j<=i:continue
+   diff={}
+   for k,a in representatives[i].items():
+    b=representatives[j][k];diff[k]={'shape_equal':a.shape==b.shape}
+    if a.shape==b.shape:diff[k].update(maxabs=float((a-b).abs().max()),changed=int((a!=b).sum()))
+   pairs.append({'clusters':[i,j],'fields':diff})
+ records.append({'rank':rank,'clusters':len(keys),'runs':rows,'comparisons':pairs})
+print(json.dumps({'unix':time.time(),'records':records,'CUDA_initialized':torch.cuda.is_initialized(),'model_calls':0,'DT_calls':0,'optimizer_steps':0,'peak_RSS_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024}))
+
+PY

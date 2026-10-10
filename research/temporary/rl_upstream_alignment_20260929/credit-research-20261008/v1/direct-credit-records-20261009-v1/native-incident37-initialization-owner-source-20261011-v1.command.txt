@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,time,ast
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');source=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());verl=Path(source['verl_root']);files=[]
+paths=[verl/'verl/workers/fsdp_workers.py',verl/'verl/utils/fsdp_utils.py',Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py')]
+keep={'_build_model_optimizer','_init_weights','__init__','fsdp2_load_full_state_dict','fsdp2_load_model','load_fsdp_model_to_gpu','offload_fsdp_model_to_cpu','compute_log_prob','compute_ref_log_prob'}
+for path in paths:
+ text=path.read_text();tree=ast.parse(text);functions=[]
+ for node in ast.walk(tree):
+  if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)) and node.name in keep:
+   if node.name=='__init__' and path.name!='modeling_qwen3_5.py':continue
+   functions.append({'name':node.name,'line':node.lineno,'source':ast.get_source_segment(text,node)})
+ files.append({'path':str(path),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'functions':functions})
+print(json.dumps({'unix':time.time(),'files':files,'startup_options_relevant':{k:v for k,v in source['startup_options'].items() if any(w in k for w in ['dtype','seed','lora','checkpoint','offload','fused','strategy','remove_padding'])},'model_calls':0,'DT_calls':0,'optimizer_steps':0}))
+
+PY

@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,time,re,ast
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');receipt=root/'receipts'
+folders=[receipt/(n+'-20261011-v1') for n in ['textcraft-native-incident37-native-head-live-capture','textcraft-native-incident37-all-DT-live-head-capture']]
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+records=[]
+configs=[(f/'result/initialization-config.yaml').read_bytes() for f in folders]
+for rank in [0,1]:
+ a,b=[json.loads((f/'result'/f'rank{rank}.json').read_bytes()) for f in folders];r={'rank':rank,'input_artifacts':[x['input_artifact'] for x in [a,b]],'trainable_shards_loaded':[x['trainable_shards_loaded_exactly'] for x in [a,b]],'modes':{}}
+ for phase in ['before_old','after_old','after_ref']:
+  x,y=[d['model_modes'][phase] for d in [a,b]]
+  r['modes'][phase]={'exact':x==y,'training':[x['training'],y['training']],'adapter_count':[len(x['adapters']),len(y['adapters'])],'adapter_differences':[k for k in x['adapters'].keys()|y['adapters'].keys() if x['adapters'].get(k)!=y['adapters'].get(k)],'module_training_differences':[k for k in x['modules_training'].keys()|y['modules_training'].keys() if x['modules_training'].get(k)!=y['modules_training'].get(k)]}
+ records.append(r)
+logs=[]
+for f in folders:
+ p=f/'driver.log';s=p.read_text(errors='replace')
+ patterns=['missing','unexpected','newly initialized','not initialized','attn_implementation','dtype','dropout','seed','mismatch','non-determin','error','warning','qwen','GatedDelta','conv','fla']
+ selected=[line[:1800] for line in s.splitlines() if any(p.lower() in line.lower() for p in patterns)]
+ logs.append({'path':str(p),'sha256':sha(p),'selected_lines':selected[:85]})
+print(json.dumps({'unix':time.time(),'config_bytes_equal':configs[0]==configs[1],'configs':[{'path':str(f/'result/initialization-config.yaml'),'sha256':sha(f/'result/initialization-config.yaml')} for f in folders],'records':records,'logs':logs,'model_calls':0,'DT_calls':0,'optimizer_steps':0}))
+
+PY

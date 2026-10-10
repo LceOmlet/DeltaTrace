@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+representatives=[{'rank': 0, 'cluster': 0, 'name': 'textcraft-native-incident37-all-DT-live-head-capture-20261011-v1', 'input': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/incident-1791646951472459222-update.pt'}, {'rank': 0, 'cluster': 1, 'name': 'textcraft-native-incident37-native-head-live-capture-20261011-v1', 'input': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/incident-1791646951472459222-update.pt'}, {'rank': 1, 'cluster': 0, 'name': 'textcraft-native-incident37-all-DT-live-head-capture-20261011-v1', 'input': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/incident-1791646951472693178-update.pt'}, {'rank': 1, 'cluster': 1, 'name': 'textcraft-native-incident37-old-ref-DT-20261011-v1', 'input': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/incident-1791646951472693178-update.pt'}]
+
+import hashlib,json,time,torch,psutil,subprocess,resource
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');records=[]
+for r in representatives:
+ data=torch.load(r['input'],map_location='cpu',weights_only=False);batch=data['input_batch'][:32];mask=batch['loss_mask'][:,-batch['responses'].shape[1]:].bool();folder=root/r['name']/'result';a=torch.load(folder/f'rank{r["rank"]}-native-old.pt',map_location='cpu',weights_only=False);b=torch.load(folder/f'rank{r["rank"]}-native-ref.pt',map_location='cpu',weights_only=False);out=dict(r,fields={})
+ for key,x,y in [('old_log_probs',a['old_log_probs'],batch['old_log_probs']),('ref_log_prob',b['ref_log_prob'],batch['ref_log_prob'])]:
+  delta=x-y;out['fields'][key]={'equal_all':torch.equal(x,y),'equal_valid':torch.equal(x[mask],y[mask]),'maxabs_all':float(delta.abs().max()),'maxabs_valid':float(delta[mask].abs().max()),'changed_valid':int((delta[mask]!=0).sum()),'dtype_current':str(x.dtype),'dtype_original':str(y.dtype)}
+ records.append(out);del data,batch,a,b
+physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12)
+print(json.dumps({'unix':time.time(),'records':records,'physical':physical.stdout,'physical_exit':physical.returncode,'host_available_bytes':psutil.virtual_memory().available,'peak_RSS_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'CUDA_initialized':torch.cuda.is_initialized(),'model_calls':0,'DT_calls':0,'optimizer_steps':0}))
+
+PY
