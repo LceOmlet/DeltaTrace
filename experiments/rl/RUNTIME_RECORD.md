@@ -1,5 +1,28 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 10:40 TextCraft 第14轮原生梯度跳过，已保存诊断证据并接入被动现场保存
+
+原PID982372/出生1791553809.84及两worker保持，现已完成17/330轮；
+当前正式状态为非有限梯度原因调查中，不能称所有更新健康。第14轮两rank各一条WARN
+对应一次全局skip，原step14 grad_norm=nan；其后15、16轮有限。原update_policy及
+_optimizer_step与固定VERL-agent20bd331原源码AST一致，非有限时zero_grad并不执行step。
+原actor实际SHA3a65e173…；没有改动PPO数学、dtype、mask或超参来规避告警。
+
+原第14轮38个DT批次、152个rank行/149条去重轨迹与原callback路径及UID完全匹配；
+CPU复用原信用owner0d3412b8…重算全部优势有限，0.244秒，不作反事实准确性或NaN根因结论。
+第14轮当时没有保存actor的old/ref log-prob、更新前LoRA/optimizer/RNG，不能声称精确复现。
+已有原始warn、step、DT记录及源码身份已保留；不为重建旧现场重复完整训练。
+
+经原worker通用RPC在原生更新边界安装被动observer8bc4fba4…，两worker完成时间
+1791599796.751/1791599796.754；query1511718已退出。仅委托原update_policy/_optimizer_step，
+原Optimizer.register_step_post_hook计数，原step方法不覆盖；滚动保存真实输入、可训练
+局部参数、optimizer局部state和RNG到CPU；若原skip再现保留该输入。尚未验证首份snapshot
+及其实际资源/耗时，不把安装称现场保存已验收。运行时override另记，不修改数值基线。
+提交器首版在Popen后写元数据NameError，复用实际同PID恢复记录，未再次提交或重启。
+数值版本仍26bef6c8/fla-early-output-scale-20261009-v1，LoRA8/16、每卡B4、原正式预算不变；
+无额外模型/DT/反向/optimizer计算、诊断停步或恢复。AppWorld/SQL/GRPO未启动。
+回执results_textcraft_native_nonfinite_20261010.json；三份远端authority状态已明确告警未修复。
+
 ## 2026-10-10 10:12 论文四例原生行差首差定位补齐，局部原生断言通过
 
 补齐上一条尚未定位的两例；同一B8/原输入/完整target/实际reader，一次完整native
