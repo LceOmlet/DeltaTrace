@@ -1,5 +1,37 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 09:42 论文四例原作者累计删除/RISE/MAS补充核查完成
+
+继续用户指定的论文实现核查，在同一四份原输入/原完整response+EOS上，读取已保存的
+原论文clean归因、当前clean归因与当前正式gdn-symmetric归因；本轮不重新调用DT。
+使用原作者faithfulness_test_skip_tokens（SHA583f4b7d…，原k20），复用已有集合评估
+批处理运输0ac43043…及原ID carrier7277fade…，排序/删除/密度/归一化/指标均未抄写。
+actual runner5f14bb3c…、原native模型59f9c339…、目标读出d47333ea…与上一条有效DT回执绑定。
+原向量与当前向量统一由当前同一基础模型读出评分，不冒充原论文历史指标数值。
+
+四例按morehopqa1、niah_mq_q2-0、morehopqa0、niah_mq_q2-6顺序，原论文归因重评分
+RISE/MAS为0.150122/0.225520、0.169474/0.227110、0.216495/0.343104、
+0.159669/0.217389；当前正式配置为0.132666/0.170819、0.145643/0.186525、
+0.171905/0.239642、0.123584/0.168535。均按原AUC越低越好；当前clean的完整结果另存。
+本四例没有归一化全零曲线；原raw log-prob回升与作者running-min归一化分别保存。
+本轮只支持指定四例的证据排序行为，不能作为总体精度、负尾召回、单删除真实性或
+FA/FLA官方容差的新验收；原64条冻结集合的历史质量结果也未冒充当前版本结果。
+
+三组归因的同view事实/EOS端点逐项完全一致。相同IDs的signed/positive两个batch行仍有
+累计事实log-prob差0.235898、0.378016、-0.519730、0.694400 nats；未纠偏、未设新容差，
+未据此定位特定算子或宣布超差。对应行差在三组中相同，未混入这次配对指标变化。
+该已知原生同输入行差与本次归因排序证据分别保留，相关历史定位见
+results_native_identity_roots_20261009.json，不能称该问题已修复。
+
+有效诊断PID1196587/出生1791596423.27，物理GPU4，63个B8原生评分前向，诊断总110.752秒（含载入）；
+DT/反向/optimizer/rollout/恢复/生产改动均0。Torch峰allocated22.687/reserved24.365GiB，
+进程峰RSS26.771GiB，非物理显存峰值。原生评分后段每批约0.8秒，非训练吞吐基准。
+终态09:42 mx-smi确认该卡859MiB、进程已退出；TextCraft原2/3 worker仍在，无重启。
+诊断v1误用旧carrier哈希断言、v2误调用actor专用forward_root，都在完成模型前向前退出；
+原记录保留。有效v3使用native HF的原公开forward；未给生产代码新增兼容实现。
+原始曲线、作者返回值、source/PID/SHA及检查图见results_paper_author_curves_20261010.json；
+完整数据在credit-research-20261008/v1/paper-role-author-curves-20261010-v{1,2,3}/。
+
 ## 2026-10-10 09:24 论文 William Walton 原输入核查完成，无生产改动
 
 按用户指定的论文例子，使用原始四份 Qwen3.5 保存输入/完整 response+EOS、原 eligible
