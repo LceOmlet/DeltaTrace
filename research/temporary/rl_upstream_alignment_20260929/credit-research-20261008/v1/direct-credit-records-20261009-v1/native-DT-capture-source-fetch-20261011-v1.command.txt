@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,hashlib,base64,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());dt=pathlib.Path(s['environment']['DT_ROOT'])
+files=[]
+for name in ['accelerated/qwen35/qwen35_code_local_capture.py','accelerated/qwen35/native_fla_precision.py','clean/qwen35/qwen35_gdn_finite.py','clean/qwen35/qwen35_dense_finite_runner.py','clean/qwen35/qwen35_native_prefix_artifacts.py','clean/qwen35/qwen35_decoder_finite.py','clean/qwen35/native_attention_capture.py']:
+ p=dt/name;b=p.read_bytes();files.append(dict(relative=name,path=str(p),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),base64=base64.b64encode(b).decode()))
+print(json.dumps(dict(unix=time.time(),files=files)))
+
+PY

@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,hashlib,re,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());env=s['environment'];dt=pathlib.Path(env['DT_ROOT'])
+out={'unix':time.time(),'DT_ROOT':str(dt),'DT_environment_file':env.get('DT_ENVIRONMENT_JSON'),'selected_environment':{k:env.get(k) for k in ['DT_TARGET_SEMANTICS','DT_OFFICIAL_ROOT','VERL_TRIM_SHARED_PADDING','VERL_TRIM_RESPONSE_HEAD']},'matches':[]}
+pattern=re.compile(r'def qwen35_code_local_capture|\.forward\s*=|\.data\s*=|register_forward|register_full_backward|class .*Capture|def .*capture|requires_grad_\(')
+for folder in ['accelerated/qwen35','clean/qwen35','profiles']:
+ for f in sorted((dt/folder).rglob('*.py')):
+  if f.stat().st_size>512*1024:continue
+  text=f.read_text();lines=text.splitlines();matches=[{'line':i+1,'text':line} for i,line in enumerate(lines) if pattern.search(line)]
+  if matches:out['matches'].append({'path':str(f),'bytes':f.stat().st_size,'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'matches':matches})
+print(json.dumps(out))
+
+PY

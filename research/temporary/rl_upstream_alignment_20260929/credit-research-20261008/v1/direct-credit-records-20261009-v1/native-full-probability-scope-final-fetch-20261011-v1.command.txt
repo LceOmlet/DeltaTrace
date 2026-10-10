@@ -1,0 +1,30 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,base64,hashlib,time,subprocess,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+jobdir=root/'receipts/textcraft-native-incident37-full-probability-scope-20261011-v1'
+out={'unix':time.time(),'processes':[],'files':[],'remote_retained_files':[]}
+for pid,birth in [(324497,1791668340.25),(328708,1791668362.09),(330450,1791668376.32)]:
+ d={'pid':pid,'expected_birth':birth}
+ try:
+  p=psutil.Process(pid);d.update(birth=p.create_time(),same_birth=p.create_time()==birth,status=p.status(),rss=p.memory_info().rss)
+ except psutil.NoSuchProcess:d['missing']=True
+ out['processes'].append(d)
+for f in sorted(jobdir.rglob('*')):
+ if not f.is_file() or '__pycache__' in f.parts:continue
+ b=f.read_bytes();a={'relative':str(f.relative_to(jobdir)),'path':str(f),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ if f.name.endswith(('-native-old.pt','-native-ref.pt')):out['remote_retained_files'].append(a)
+ elif len(b)<4*1024*1024:a['base64']=base64.b64encode(b).decode();out['files'].append(a)
+logroot=pathlib.Path('/tmp/ray/session_2026-10-11_05-39-14_254748_324497/logs')
+for f in sorted(logroot.glob('worker-*-01000000-*.out')):
+ if f.name.endswith(('-328708.out','-330450.out')):
+  b=f.read_bytes();out['files'].append({'relative':'worker-logs/'+f.name,'path':str(f),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+r=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10);out['physical_gpu']=r.stdout;out['gpu_error']=r.stderr
+out['host']=dict(psutil.virtual_memory()._asdict())
+for c in [pathlib.Path('/sys/fs/cgroup/memory/memory.usage_in_bytes'),pathlib.Path('/sys/fs/cgroup/memory/memory.stat')]:
+ if c.is_file():out[str(c)]=c.read_text()
+f=root/'runs/textcraft-formal-stable-20261009-v1/source.json';out['formal_source_sha256']=hashlib.sha256(f.read_bytes()).hexdigest()
+print(json.dumps(out))
+
+PY

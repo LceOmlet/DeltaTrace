@@ -1,6 +1,25 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-11 原128行概率范围回放完成，原NaN前置异常仍未修好
+
+原事故snapshot每rank128行；此前诊断old/ref仅32行。本次仅恢复两处概率输入为原
+128行，原27个DT B4及首32行update保持，LoRA8/16、B4和原owner/source SHA不变。
+AST去掉docstring并还原两处slice后与80f0ea9c父源相同；诊断源2cebfea1。
+两rank DT Q/V/A有限，各8个B4梯度有限、各1次原optimizer，未触发失败H采集。
+DT RPC约207秒，原32行更新约58秒；不据此宣称原持久actor故障修复，也不继续
+无新证据重复同一回放。原第37轮KL exp溢出及132/122个NaN梯度结论保持，
+其前置百量级actor概率异常未定位；第14轮仅范数NaN，不能挪用第37轮原因。
+
+只读DT/PEFT源核查未形成新生产补丁。PEFT CPU低精度分支写回LoRA weight.data
+只是条件性源码行为，未证明本事故执行过；不作为根因。统一hidden位置前后错一位
+亦不能解释整批失败输出，不引入新容差。正式仍停37/330，不恢复或重启，KL保护
+仍候选未部署。driver324497及worker328708/330450已按birth核验退出，mx-smi
+各858MiB且无进程，host可用约1.025TB；Torch allocated峰值18.96/14.43GiB。
+原奖励/熵/梯度37轮图保持实际日志，无平滑、NaN断线。完整源码、配置、PID birth、
+阶段耗时和诊断范围见[原128行范围回执](results_textcraft_incident37_full_probability_scope_20261011.json)。
+
+
 ## 2026-10-11 原输出头反向与标签错位小诊断完成，未改生产
 
 原保存正常H/W/IDs与失败输出的小计算已完成：两rank的head labels与原responses

@@ -1,0 +1,13 @@
+{
+  "unix": 1791668449.9936128,
+  "path": "/opt/conda/lib/python3.12/site-packages/peft/tuners/lora/layer.py",
+  "bytes": 101608,
+  "sha256": "e8a47a49cf69f92ded68bf7ab286aeaf068f0ac809ab3465ad16f78a8f9f8b63",
+  "functions": [
+    {
+      "class": "Linear",
+      "line": 745,
+      "source": "def get_delta_weight(self, adapter) -> torch.Tensor:\n        \"\"\"\n        Compute the delta weight for the given adapter.\n\n        Args:\n            adapter (str):\n                The name of the adapter for which the delta weight should be computed.\n        \"\"\"\n        device = self.lora_B[adapter].weight.device\n        dtype = self.lora_B[adapter].weight.dtype\n\n        # In case users wants to merge the adapter weights that are in\n        # (b)float16 while being on CPU, we need to cast the weights to float32, perform the merge and then cast back to\n        # (b)float16 because some CPUs have slow bf16/fp16 matmuls.\n        cast_to_fp32 = device.type == \"cpu\" and (dtype == torch.float16 or dtype == torch.bfloat16)\n\n        weight_A = self.lora_A[adapter].weight\n        weight_B = self.lora_B[adapter].weight\n\n        if cast_to_fp32:\n            weight_A = weight_A.float()\n            weight_B = weight_B.float()\n\n        output_tensor = transpose(weight_B @ weight_A, self.fan_in_fan_out) * self.scaling[adapter]\n\n        if cast_to_fp32:\n            output_tensor = output_tensor.to(dtype=dtype)\n\n            # cast back the weights\n            self.lora_A[adapter].weight.data = weight_A.to(dtype)\n            self.lora_B[adapter].weight.data = weight_B.to(dtype)\n\n        return output_tensor"
+    }
+  ]
+}

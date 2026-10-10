@@ -1,0 +1,32 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,torch,resource,sys,os
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());sys.path[:0]=s['pythonpath'].split(':');out={'unix':time.time(),'GPU_initialized_before':torch.cuda.is_initialized(),'ranks':[],'model_calls':0,'DT_calls':0,'optimizer_calls':0}
+for rank,oldpid in [(0,987808),(1,989860)]:
+ folder=root/f'receipts/textcraft-native-actor-incidents-20261010-v1/rank{rank}-pid{oldpid}'
+ path=next(folder.glob('incident-*-update.pt'));v=torch.load(path,map_location='cpu',weights_only=False);batch=v['input_batch'];meta=v['input_meta_info'];shapes={k:list(t.shape) for k,t in batch.items()};print('',end='')
+ record={'rank':rank,'snapshot':str(path),'snapshot_rows':batch.batch_size[0],'tensor_shapes':shapes,'meta':{k:meta[k] for k in ['temperature','micro_batch_size','max_token_len','use_dynamic_bsz','multi_turn'] if k in meta}}
+ t=torch.load(root/f'receipts/textcraft-native-label-alignment-20261011-v1/rank{rank}-diagnostic-vectors.pt',map_location='cpu',weights_only=False)
+ r,c=t['row'],t['response_column'];idx={(int(rr),int(cc)):i for i,(rr,cc) in enumerate(zip(r,c))};tests=[]
+ for shift in [-1,1]:
+  dest=[];src=[]
+  for i,(rr,cc) in enumerate(zip(r,c)):
+   j=idx.get((int(rr),int(cc)+shift))
+   if j is not None:dest.append(i);src.append(j)
+  di=torch.tensor(dest);si=torch.tensor(src)
+  predicted=t['predicted_logp'][-shift][si];failed=t['failed_logp'][di];unshifted=t['finite_capture_logp'][di]
+  tests.append({'hidden_position_shift':shift,'actual_positions':len(dest),'baseline_MAE_same_positions':float((unshifted-failed).abs().double().mean()),'shift_prediction_MAE':float((predicted-failed).abs().double().mean()),'max_abs':float((predicted-failed).abs().max())})
+ record['adjacent_hidden_diagnostics']=tests
+ record['failure_geometry']=[]
+ for row in range(4):
+  sel=r==row;rrc=c[sel];gap=(t['failed_logp']-t['old_logp'])[sel];bad=gap.abs()>10
+  bins=[]
+  for chunk in torch.unique((rrc+319)//512):
+   mask=(rrc+319)//512==chunk;bins.append({'head_chunk':int(chunk),'active':int(mask.sum()),'severe':int((mask&bad).sum())})
+  record['failure_geometry'].append({'row':row,'active':int(sel.sum()),'severe':int(bad.sum()),'gap_min':float(gap.min()),'gap_max':float(gap.max()),'head_chunks':bins})
+ out['ranks'].append(record);del v,batch,t
+out.update(peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,GPU_initialized_after=torch.cuda.is_initialized(),note='Only existing real input shapes and vector reindexing; abs gap>10 descriptive bin, no numerical tolerance or new model execution.')
+print(json.dumps(out))
+
+PY

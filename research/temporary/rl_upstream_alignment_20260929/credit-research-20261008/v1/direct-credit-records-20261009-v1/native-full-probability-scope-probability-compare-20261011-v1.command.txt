@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,torch,resource,sys,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());sys.path[:0]=s['pythonpath'].split(':');job=root/'receipts/textcraft-native-incident37-full-probability-scope-20261011-v1';out={'unix':time.time(),'ranks':[],'GPU_initialized_before':torch.cuda.is_initialized()}
+for rank,pid in [(0,987808),(1,989860)]:
+ folder=root/f'receipts/textcraft-native-actor-incidents-20261010-v1/rank{rank}-pid{pid}';v=torch.load(next(folder.glob('incident-*-update.pt')),map_location='cpu',weights_only=False);b=v['input_batch'];mask=b['loss_mask'][:,-b['responses'].shape[1]:].bool();rec={'rank':rank,'fields':[]}
+ for suffix,key in [('old','old_log_probs'),('ref','ref_log_prob')]:
+  f=job/f'result/rank{rank}-native-{suffix}.pt'
+  if not f.exists():rec['fields'].append({'key':key,'available':False});continue
+  actual=torch.load(f,map_location='cpu',weights_only=False)[key].float();expected=b[key].float();d=actual-expected
+  for scope,mm in [('all128',mask),('first32',mask.clone()),('original_second_B4',mask.clone())]:
+   if scope=='first32':mm[32:]=False
+   elif scope=='original_second_B4':mm[:4]=False;mm[8:]=False
+   values=d[mm];rec['fields'].append({'key':key,'scope':scope,'shape':list(actual.shape),'positions':values.numel(),'exact':torch.equal(actual[mm],expected[mm]),'max_abs':float(values.abs().max()),'mean_abs':float(values.abs().double().mean()),'nonfinite':int((~torch.isfinite(values)).sum())})
+ out['ranks'].append(rec);del v,b
+logs=pathlib.Path('/tmp/ray/session_latest/logs');out['worker_log_tails']=[]
+for pid in [328708,330450]:
+ for f in logs.glob(f'*{pid}*.out'):
+  out['worker_log_tails'].append({'pid':pid,'path':str(f.resolve()),'tail':f.read_text(errors='replace')[-6500:]})
+out.update(GPU_initialized_after=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,host_available_bytes=psutil.virtual_memory().available,model_calls=0,DT_calls=0,optimizer_calls=0)
+print(json.dumps(out))
+
+PY
