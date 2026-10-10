@@ -1,5 +1,36 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 14:09 TextCraft第22轮完整返回，原更新与NaN断点曲线已归档
+
+原PID982372/出生1791553809.84及两worker完成22/330，已进入第23轮原采样；
+原第22轮两rank各32个B4 log_prob梯度全有限、各4次原optimizer均实际step，
+8项裁剪前local norm与同次原返回逐值相同，无observer_error或新增非有限值。
+local norm仍是原DTensor _NormPartial观察，不另称全局L2实测；第14轮首个异常
+算子/参数仍未知，本轮有限不作为原NaN事故已修复证据。
+
+原训练回报0.621、entropy0.617、grad_norm0.040；采样1850.827秒、旧logp116.393秒、
+ref101.599秒、DT/优势172.029秒、actor430.158秒，整轮2671.486秒（44.52分钟）。
+原奖励/熵/梯度图native-curves-20261010-141011更新至22轮；只有14轮范数NaN，
+两rank原两条警告属于同一次global skip，无平滑/填零/混其他作业。奖励来自更新前
+训练轨迹，非独立评估；当前波动不能称已持续提升。原任务response上限10240、实际
+prompt315，本轮不是新增32k容量或数值容差验收。
+
+本轮瞬时物理GPU2/3：采样50116/50154MiB、DT23617/23717MiB、
+actor30564/35376MiB、返回后下一采样49730/50094MiB；均非峰值。两worker
+PSS约18.027–18.032/19.193–19.195GB，cgroup RSS/cache另留原值，
+不简单累加fork RSS或用Torch虚拟allocator冒充物理显存。主机available随phase
+变动但PSS与cgroup RSS相近，未从全机available单独推断本任务分配原因。
+
+source SHA1c08b57b、11份不同路径的12项磁盘SHA检查保持；原数值源26bef6c8、
+GDN7c06d5e0、观察源85aa2940/SHA7e94ea6b、LoRA8/16、每卡B4、原30 epoch/330
+及save25/test-1不变。当前未到25且原checkpoint完成标记为空；未复制/恢复。
+状态采集工具d97d2aa1移除覆盖NaN调查status的赋值，27247cc1同步完成更新计数
+并保存实际命令；仅元数据修复，不是PPO或DT数值改动。三份remote authority实际
+复核均为22且保留formal_running_native_nonfinite_skip_under_investigation；其他作业未改。
+回执results_textcraft_iteration22_20261010.json含完整32回调/卡、norm、原日志、
+分phase资源、实际命令/源码SHA与曲线；原只读监听已正常终止，正式训练未停止/重启。
+
+
 ## 2026-10-10 13:43 原VERL损失与较新官方源码只读核对，未部署数值改动
 
 固定VERL-agent20bd331的core_algos SHAfc2f992b与第21轮实际源码绑定一致；
