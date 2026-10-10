@@ -1,5 +1,24 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原GEMM行采集完成，异常集中于词表项159048
+
+诊断1057731及worker1060831/1062284均已退出；第二B4复现132/124个logp梯度
+NaN、两卡0次optimizer更新。14e7f926薄observer成功观察原42/44次GEMM，
+128/119个预先冻结的位置全部采到，其中本次128/118个仍为NaN梯度。
+保存的247行实际logits，经原VERL CPU logprob/entropy函数读出，与坏head输出
+逐值相同；target token的实际GEMM logit与实际H/W标量FP64点积回BF16逐值相同。
+这247行的top1全为词表项159048，实际logit110.5..189；原正常W同行的点积仅
+−5.665..3.818。例：实际token64700的logit30.125、异常项logit152，故logp−121.875。
+实际采样token的H/W行均与正常capture A逐值相同；不代表未采到的竞争项W也正确。
+原checkpoint磁盘行159048与正常capture W逐值相同，SHA4defedf718a10ac…；
+该词项解码为越南语“ tổ”。异常已缩到该类别投影，但失败GEMM时该W行尚未采到，
+不能直接断言权重写坏、输入可见性/生命周期或矩阵内核哪一个负责，更不能当作已修复。
+CPU对照0.622秒、峰值RSS1.233GB、无GPU调用；大GEMM/H张量保留远端并核验SHA。
+缺失rank1异常JSON如实记录。终态无GPU进程、主机可用1024812503040字节。
+正式仍停37/330；生产数值源26bef6c8、Q/V/A、LoRA8/16、每卡B4及PPO无修改。
+见[GEMM完整定位回执](results_textcraft_incident37_GEMM_rows_20261011.json)。
+
+
 ## 2026-10-11 原GEMM行采集已进入old-logprob，正式仍停37/330
 
 针对已证实的坏head返回值，单次诊断1057731/出生1791675280.07、GPU4/5。

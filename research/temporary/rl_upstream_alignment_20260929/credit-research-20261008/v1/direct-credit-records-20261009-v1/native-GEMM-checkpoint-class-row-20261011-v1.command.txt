@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,resource
+import torch
+from safetensors import safe_open
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');out={'unix':time.time(),'model':str(model),'vocab_id':159048,'GPU_calls':0,'model_calls':0,'rows':[]};index=model/'model.safetensors.index.json';mapping=json.loads(index.read_bytes())['weight_map'];keys=[k for k in mapping if k.endswith('lm_head.weight')];out['matching_checkpoint_keys']=keys
+for key in keys:
+ file=model/mapping[key]
+ with safe_open(file,framework='pt',device='cpu') as f:row=f.get_slice(key)[159048:159049].clone().reshape(-1)
+ prior_path=root/'receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank0-native-head-live-microbatch1.pt';prior=torch.load(prior_path,map_location='cpu',weights_only=False,mmap=True)['tensors']['vocab_weights'][159048]
+ out['rows'].append({'key':key,'file':str(file),'file_bytes':file.stat().st_size,'mtime':file.stat().st_mtime,'shape':list(row.shape),'dtype':str(row.dtype),'exact_prior_normal_capture':torch.equal(row,prior),'max_abs_difference':float((row.float()-prior.float()).abs().max()),'min':float(row.min()),'max':float(row.max()),'L2':float(row.double().norm()),'row_sha256':hashlib.sha256(row.view(torch.uint8).numpy().tobytes()).hexdigest()})
+from transformers import AutoTokenizer
+tokenizer=AutoTokenizer.from_pretrained(model,local_files_only=True);out['tokenizer_class']=type(tokenizer).__name__;out['token']=tokenizer.convert_ids_to_tokens(159048);out['decoded_token']=tokenizer.decode([159048]);out.update(CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024);job=root/'receipts/textcraft-native-incident37-GEMM-rows-capture-20261011-v1';(job/'GEMM-checkpoint-class-row-v1.json').write_text(json.dumps(out,indent=2)+'\n');print(json.dumps(out))
+
+PY

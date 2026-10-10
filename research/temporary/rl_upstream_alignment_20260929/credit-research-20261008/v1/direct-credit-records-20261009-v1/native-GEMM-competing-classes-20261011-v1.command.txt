@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,collections,hashlib,resource
+import torch
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-GEMM-rows-capture-20261011-v1';comparison=json.loads((job/'GEMM-comparison-v1.json').read_bytes());out={'unix':time.time(),'ranks':[],'GPU_calls':0,'model_calls':0,'new_numerical_tolerance':None};torch.set_num_threads(4)
+for rank in range(2):
+ row=comparison['ranks'][rank];a=torch.load(job/f'result-native/rank{rank}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);prior_path=root/f'receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank{rank}-native-head-live-microbatch1.pt';prior=torch.load(prior_path,map_location='cpu',weights_only=False,mmap=True);w=prior['tensors']['vocab_weights'];positions=row['positions'];details=[]
+ for j,p in enumerate(positions):
+  index=a['metadata']['copied_indices'][j];h=a['hidden'][index].double();ids=p['top3_logit_ids'];ww=w[torch.tensor(ids)].double();dot=(ww*h[None,:]).sum(-1);rounded=dot.to(torch.bfloat16).float()
+  details.append({'flat_position':p['flat_position'],'target_id':p['expected_token_id'],'actual_target_logit':p['actual_target_GEMM_logit'],'head_logp':p['current_head_logp'],'current_gradient_nan':p['current_gradient_nan'],'top3_ids':ids,'actual_top3_logits':p['top3_logits'],'prior_normal_W_scalar_dots':dot.tolist(),'prior_normal_W_scalar_dots_BF16':rounded.tolist(),'top3_actual_minus_prior_dot':[v-float(r) for v,r in zip(p['top3_logits'],rounded)]})
+ out['ranks'].append({'rank':rank,'positions':details,'common_top1_ids':collections.Counter(p['top3_logit_ids'][0] for p in positions).most_common(12),'example':details[0],'max_top1_difference_vs_prior_normal_W':max(abs(p['top3_actual_minus_prior_dot'][0]) for p in details)})
+ del a,prior,w
+out.update(CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024);p=job/'GEMM-competing-classes-v1.json';p.write_text(json.dumps(out,indent=2)+'\n');print(json.dumps(out))
+
+PY

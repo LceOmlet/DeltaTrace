@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-GEMM-rows-capture-20261011-v1';record=json.loads((job/'job-v2.json').read_bytes());started=time.time();observations=[]
+def same_driver():
+ try:p=psutil.Process(record['pid']);return abs(p.create_time()-record['birth'])<.01
+ except psutil.NoSuchProcess:return False
+while True:
+ rows=[]
+ for rank in range(2):
+  p=job/f'result-native/rank{rank}.json'
+  if p.is_file():
+   v=json.loads(p.read_bytes());rows.append({'rank':rank,'phase':v['phase'],'unix':v['unix'],'actual_optimizer_steps':v['actual_optimizer_steps'],'microbatches':v['microbatches']})
+ current={'unix':time.time(),'driver_live':same_driver(),'ranks':rows}
+ if not observations or current['ranks']!=observations[-1]['ranks'] or current['driver_live']!=observations[-1]['driver_live']:observations.append(current)
+ if not current['driver_live'] or time.time()-started>=35:break
+ time.sleep(2)
+print(json.dumps({'unix':time.time(),'waited_seconds':time.time()-started,'observations':observations,'result_files':[{'name':p.name,'bytes':p.stat().st_size} for p in (job/'result-native').iterdir()],'driver_tail':'\n'.join((job/'driver-v2.log').read_text(errors='replace').splitlines()[-12:])}))
+
+PY

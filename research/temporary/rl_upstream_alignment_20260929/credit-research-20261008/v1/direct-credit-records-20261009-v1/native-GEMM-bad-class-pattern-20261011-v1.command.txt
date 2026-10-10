@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,resource
+import torch
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-GEMM-rows-capture-20261011-v1';torch.set_num_threads(4);out={'unix':time.time(),'bad_vocab_id':159048,'ranks':[],'GPU_calls':0,'model_calls':0,'new_numerical_tolerance':None};hs=[];ys=[]
+for rank in range(2):
+ a=torch.load(job/f'result-native/rank{rank}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);p=root/f'receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank{rank}-native-head-live-microbatch1.pt';prior=torch.load(p,map_location='cpu',weights_only=False,mmap=True);w=prior['tensors']['vocab_weights'][159048].double();h=a['hidden'].double();y=a['logits'][:,159048].double();expected=h@w;residual=y-expected;hs.append(h);ys.append(residual);out['ranks'].append({'rank':rank,'prior_normal_W_row':{'min':float(w.min()),'max':float(w.max()),'mean':float(w.mean()),'L2':float(w.norm()),'nonzero':int(w.count_nonzero())},'actual_bad_logit_min':float(y.min()),'actual_bad_logit_max':float(y.max()),'prior_normal_W_dot_min':float(expected.min()),'prior_normal_W_dot_max':float(expected.max())});del a,prior,w
+h=torch.cat(hs);y=torch.cat(ys);xc=h-h.mean(0);yc=y-y.mean();cor=(xc.T@yc)/(xc.square().sum(0)*yc.square().sum()).sqrt().clamp_min(1e-30);vals,inds=cor.abs().topk(8);out['single_hidden_coordinate_correlations']=[{'coordinate':int(i),'correlation':float(cor[i])} for i in inds]
+for name,x in [('sum_hidden',h.sum(-1)),('mean_hidden',h.mean(-1))]:
+ xc=x-x.mean();slope=(xc@yc)/(xc@xc);intercept=y.mean()-slope*x.mean();pred=x*slope+intercept;out[name]={'slope':float(slope),'intercept':float(intercept),'R_squared':float(1-(pred-y).square().sum()/yc.square().sum()),'residual_max_abs':float((pred-y).abs().max())}
+source=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());out['model_environment']={k:v for k,v in source['environment'].items() if 'MODEL' in k};out.update(CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024);p=job/'GEMM-bad-class-pattern-v1.json';p.write_text(json.dumps(out,indent=2)+'\n');print(json.dumps(out))
+
+PY

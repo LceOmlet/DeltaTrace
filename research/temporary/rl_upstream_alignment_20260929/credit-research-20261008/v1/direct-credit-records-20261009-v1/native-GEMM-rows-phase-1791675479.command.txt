@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-GEMM-rows-capture-20261011-v1';record=json.loads((job/'job-v2.json').read_bytes());out={'unix':time.time(),'processes':[],'ranks':[],'result_files':[]}
+for pid,birth in [(record['pid'],record['birth']),(1060831,1791675301.09),(1062284,1791675315.11)]:
+ try:
+  p=psutil.Process(pid);out['processes'].append({'pid':pid,'birth':p.create_time(),'expected_birth':birth,'same_process':abs(p.create_time()-birth)<.01,'status':p.status(),'PSS_bytes':p.memory_full_info().pss,'CPU_seconds':sum(p.cpu_times()[:2])})
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+for rank in range(2):
+ f=job/f'result-native/rank{rank}-phases.jsonl';r={'rank':rank}
+ if f.is_file():
+  rows=[json.loads(l) for l in f.read_text().splitlines()];r['latest_phase']=rows[-1];r['phase_count']=len(rows)
+ f=job/f'result-native/rank{rank}.json'
+ if f.is_file():
+  v=json.loads(f.read_bytes());r.update(phase=v['phase'],actual_optimizer_steps=v['actual_optimizer_steps'],microbatches=v['microbatches'],unix=v['unix'],allocated=v.get('allocated'),reserved=v.get('reserved'))
+ out['ranks'].append(r)
+for f in (job/'result-native').iterdir():out['result_files'].append({'name':f.name,'bytes':f.stat().st_size})
+out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['driver_tail']='\n'.join((job/'driver-v2.log').read_text(errors='replace').splitlines()[-12:]);print(json.dumps(out))
+
+PY
