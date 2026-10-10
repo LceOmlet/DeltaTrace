@@ -1,0 +1,15 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import json,hashlib,time,torch,subprocess
+from pathlib import Path
+f=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1');out=[]
+for rank,pid in [(0,987808),(1,989860)]:
+ packets=sorted([p for p in (f/f'credit-records/rank{rank}-pid{pid}').glob('joint-*.pt') if 1791646740<p.stat().st_mtime<1791646915],key=lambda p:p.stat().st_mtime)
+ records=[];rows=[]
+ for p in packets:
+  a=torch.load(p,map_location='cpu',weights_only=False);rows.extend(a['rows']);records.append(dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),rows=len(a['rows']),mtime=p.stat().st_mtime))
+ out.append(dict(rank=rank,packets=records,rows=len(rows),unique_traj_uid=len({r['traj_uid'] for r in rows}),widths=sorted({r['policy_mask'].numel() for r in rows}),prompt_lengths=sorted({r['prompt_length'] for r in rows}),lengths=[r['input_ids'].numel() for r in rows]))
+mx=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15);print(json.dumps(dict(unix=time.time(),records=out,physical_mx_smi=mx.stdout,model_calls=0)))
+
+PY

@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import ast,hashlib,inspect,json,os,subprocess,time,torch
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');formal=root/'runs/textcraft-formal-stable-20261009-v1';rows=[]
+for rank,pid in [(0,987808),(1,989860)]:
+ folder=formal/f'credit-records/rank{rank}-pid{pid}';packets=sorted([p for p in folder.glob('joint-*.pt') if 1791646740<p.stat().st_mtime<1791646915],key=lambda p:p.stat().st_mtime)
+ p=packets[-1];a=torch.load(p,map_location='cpu',weights_only=False)
+ def describe(v):
+  if isinstance(v,torch.Tensor):return dict(shape=list(v.shape),dtype=str(v.dtype))
+  if isinstance(v,dict):return {k:describe(x) for k,x in v.items()}
+  if isinstance(v,list):return dict(length=len(v),first=[describe(x) for x in v[:1]])
+  return str(v)[:140]
+ rows.append(dict(rank=rank,packets=[dict(path=str(x),bytes=x.stat().st_size,mtime=x.stat().st_mtime) for x in packets],last_packet=dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),structure=describe(a))))
+source=json.loads((formal/'source.json').read_bytes());entry=Path(source['entry']);files=[]
+for name in ['reward_readout.py','deltatrace_rollout.py']:
+ p=entry/name;text=p.read_text();tree=ast.parse(text)
+ functions=[dict(name=n.name,line=n.lineno,source=ast.get_source_segment(text,n)) for n in ast.walk(tree) if isinstance(n,ast.FunctionDef) and (('joint' in n.name or 'attribute' in n.name) and name=='reward_readout.py')]
+ files.append(dict(path=str(p),resolved=str(p.resolve()),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),functions=functions))
+physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15)
+print(json.dumps(dict(unix=time.time(),records=rows,files=files,physical_mx_smi=physical.stdout,model_calls=0,production_changes=0)))
+
+PY

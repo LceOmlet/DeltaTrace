@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import json,time,subprocess,shutil,psutil
+from pathlib import Path
+f=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1');r=f/'result';rows=[]
+for p in sorted(r.glob('rank*.json')):
+ a=json.loads(p.read_text());pid=a['pid'];s=dict(rank=a['rank'],pid=pid,phase=a['phase'])
+ try:
+  proc=psutil.Process(pid);s.update(pss=proc.memory_full_info().pss,cpu_times=list(proc.cpu_times()),status=proc.status())
+  exe='/opt/conda/bin/py-spy' if Path('/opt/conda/bin/py-spy').is_file() else shutil.which('py-spy');s['py_spy']=exe
+  if exe:
+   t=subprocess.run([exe,'dump','--pid',str(pid)],capture_output=True,text=True,timeout=12);s['stack']=t.stdout;s['stack_stderr']=t.stderr
+ except psutil.NoSuchProcess:s['missing']=True
+ rows.append(s)
+t=(f/'driver.log').read_text(errors='replace');print(json.dumps(dict(unix=time.time(),records=rows,tail=[x[:1000] for x in t.splitlines()[-30:]],physical_mx_smi=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout)))
+
+PY

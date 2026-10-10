@@ -1,0 +1,1167 @@
+{
+  "status": "formal_stopped_KL_exp_root_reproduced_official_guard_GPU_checked_preupdate_actor_gap_unresolved",
+  "observed_unix": 1791651049.5605922,
+  "recording_parent_commit": "eebde70aaa0089e42c6fd8a52470b8d74da260e0",
+  "formal_training": {
+    "recorded_iterations": 37,
+    "total_iterations": 330,
+    "stopped": true,
+    "new_formal_updates": 0,
+    "checkpoint_restore_performed": false,
+    "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "numerical_source_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+    "numerical_release": "fla-early-output-scale-20261009-v1",
+    "GDN_sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656",
+    "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "LoRA_rank": 8,
+    "LoRA_alpha": 16,
+    "microbatch_per_card": 4,
+    "effective_two_card_microbatch": 8,
+    "physical_GPUs": [
+      2,
+      3
+    ]
+  },
+  "original_failure": {
+    "iteration": 37,
+    "optimizer_index": 0,
+    "microbatch_index": 1,
+    "loss_owner": "VERL low_var_kl",
+    "loss_to_logp_NaN_counts": [
+      132,
+      122
+    ],
+    "active_policy_NaN_counts": [
+      128,
+      120
+    ],
+    "ref_minus_actor_logp_max": [
+      164.3207,
+      150.331
+    ],
+    "FP32_exp_overflow_threshold": 88.72284,
+    "all_loss_inputs_finite": true,
+    "clipped_PPO_branch_gradient_finite": true,
+    "KL_branch_NaN_mask_matches_saved_incident": true,
+    "earlier_actor_old_gap_root": "unresolved; actor logp differs by >100 before any parameter step",
+    "iteration14_root": "unknown; no saved first-operator evidence"
+  },
+  "isolated_replays": [
+    {
+      "DT_batches_per_rank": 0,
+      "observed_unix": 1791649267.7841964,
+      "ranks": [
+        {
+          "rank": 1,
+          "pid": 2483431,
+          "birth": 1791649049.01,
+          "phase": "complete",
+          "actual_optimizer_steps": 1,
+          "microbatches": 8,
+          "nonfinite_logp_gradient_count": 0,
+          "active_logp_old_gap_min": -0.3197765350341797,
+          "active_logp_old_gap_max": 0.30996429920196533,
+          "native_grad_norm": [
+            0.0985669270157814
+          ],
+          "head_comparisons": [
+            {
+              "head_call": 0,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.0625,
+              "eager_min": -31.0625,
+              "max_abs_difference": 2.1457672119140625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-replay-20261011-v1/result/rank1-head0.pt",
+              "sha256": "5b8f21800a23d0fe3b7737b197892377cf2f19ff993ef7ee26abcf4f9b48da6c"
+            },
+            {
+              "head_call": 1,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.46875,
+              "eager_min": -31.46875,
+              "max_abs_difference": 2.384185791015625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-replay-20261011-v1/result/rank1-head1.pt",
+              "sha256": "1e793278e1d19b00463ae3812452f9420ffe6e38d31ac0bd71da035ce327ad67"
+            }
+          ],
+          "peak_torch_allocated_bytes": 11357849088,
+          "peak_torch_reserved_bytes": 15814623232,
+          "final_worker_PSS_bytes": 8858872832,
+          "DT_batch": null
+        },
+        {
+          "rank": 0,
+          "pid": 2481945,
+          "birth": 1791649033.74,
+          "phase": "complete",
+          "actual_optimizer_steps": 1,
+          "microbatches": 8,
+          "nonfinite_logp_gradient_count": 0,
+          "active_logp_old_gap_min": 0.0,
+          "active_logp_old_gap_max": 0.0,
+          "native_grad_norm": [
+            0.0862981379032135
+          ],
+          "head_comparisons": [
+            {
+              "head_call": 0,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.28125,
+              "eager_min": -31.28125,
+              "max_abs_difference": 2.384185791015625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-replay-20261011-v1/result/rank0-head0.pt",
+              "sha256": "53b93234b5b74adb564b2264ce6b000eb04b52090ec686d380bca88bc649d28f"
+            },
+            {
+              "head_call": 1,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.15625,
+              "eager_min": -31.15625,
+              "max_abs_difference": 2.384185791015625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-replay-20261011-v1/result/rank0-head1.pt",
+              "sha256": "63a25e15181cbac3fcc83e7d04b63b1a82e4152b0fdf03595ffdfad8ae89c963"
+            }
+          ],
+          "peak_torch_allocated_bytes": 11127631360,
+          "peak_torch_reserved_bytes": 16349396992,
+          "final_worker_PSS_bytes": 9616649216,
+          "DT_batch": null
+        }
+      ]
+    },
+    {
+      "DT_batches_per_rank": 1,
+      "observed_unix": 1791650311.99035,
+      "ranks": [
+        {
+          "rank": 0,
+          "pid": 2594529,
+          "birth": 1791650095.74,
+          "phase": "complete",
+          "actual_optimizer_steps": 1,
+          "microbatches": 8,
+          "nonfinite_logp_gradient_count": 0,
+          "active_logp_old_gap_min": -0.39960145950317383,
+          "active_logp_old_gap_max": 0.4404268264770508,
+          "native_grad_norm": [
+            0.08725245296955109
+          ],
+          "head_comparisons": [
+            {
+              "head_call": 0,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.28125,
+              "eager_min": -31.28125,
+              "max_abs_difference": 2.0265579223632812e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-head0.pt",
+              "sha256": "b0389b8bdcb74498c51aa05c38bd4ab224f7cac526fbf444d77c8baf137892ed"
+            },
+            {
+              "head_call": 1,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.5,
+              "eager_min": -31.5,
+              "max_abs_difference": 2.384185791015625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-head1.pt",
+              "sha256": "33c45c18ee010bb9020c9b41eedf504396681a7d5d44c0aa02382394c5d4ccf8"
+            }
+          ],
+          "peak_torch_allocated_bytes": 20358287360,
+          "peak_torch_reserved_bytes": 27351056384,
+          "final_worker_PSS_bytes": 8342467584,
+          "DT_batch": {
+            "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646901472009418.pt",
+            "packet_sha256": "b7a07b67436ab6fea08f2bbe63d646d80b41a2dacde814415d9e37bbb5792a2d",
+            "original_valid_IDs_and_masks_exact": true,
+            "trajectories": 4,
+            "result_finite": {
+              "dt_token_advantages": true,
+              "dt_q_estimates": true,
+              "dt_v_estimates": true
+            },
+            "model_training_before": true,
+            "model_training_after": true,
+            "parameter_metadata_changes": [],
+            "actual_GDN_source": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+              "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+            }
+          }
+        },
+        {
+          "rank": 1,
+          "pid": 2597165,
+          "birth": 1791650110.44,
+          "phase": "complete",
+          "actual_optimizer_steps": 1,
+          "microbatches": 8,
+          "nonfinite_logp_gradient_count": 0,
+          "active_logp_old_gap_min": -0.3436775207519531,
+          "active_logp_old_gap_max": 0.4083961248397827,
+          "native_grad_norm": [
+            0.09938932210206985
+          ],
+          "head_comparisons": [
+            {
+              "head_call": 0,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.21875,
+              "eager_min": -31.21875,
+              "max_abs_difference": 2.384185791015625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-head0.pt",
+              "sha256": "167da04d2712d0c1150c45be1ef70302c472ad1d8d6935122307c06c390c542f"
+            },
+            {
+              "head_call": 1,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.15625,
+              "eager_min": -31.15625,
+              "max_abs_difference": 2.1457672119140625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-head1.pt",
+              "sha256": "ed90dafc52beed0afba40e519be190baf6f6914bbdf01ae948220bc72d2d8002"
+            }
+          ],
+          "peak_torch_allocated_bytes": 15498612736,
+          "peak_torch_reserved_bytes": 22198353920,
+          "final_worker_PSS_bytes": 8997931008,
+          "DT_batch": {
+            "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646901367830041.pt",
+            "packet_sha256": "de83f908ba781ab2ece3330a8153ccfd639363a789aedda8b0c0a52a24aa4c7b",
+            "original_valid_IDs_and_masks_exact": true,
+            "trajectories": 4,
+            "result_finite": {
+              "dt_token_advantages": true,
+              "dt_q_estimates": true,
+              "dt_v_estimates": true
+            },
+            "model_training_before": true,
+            "model_training_after": true,
+            "parameter_metadata_changes": [],
+            "actual_GDN_source": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+              "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "DT_batches_per_rank": 27,
+      "observed_unix": 1791650988.5286186,
+      "ranks": [
+        {
+          "rank": 0,
+          "pid": 2648938,
+          "birth": 1791650592.71,
+          "phase": "complete",
+          "actual_optimizer_steps": 1,
+          "microbatches": 8,
+          "nonfinite_logp_gradient_count": 0,
+          "active_logp_old_gap_min": -0.39960145950317383,
+          "active_logp_old_gap_max": 0.4404268264770508,
+          "native_grad_norm": [
+            0.08726128935813904
+          ],
+          "head_comparisons": [
+            {
+              "head_call": 0,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.28125,
+              "eager_min": -31.28125,
+              "max_abs_difference": 2.0265579223632812e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-head0.pt",
+              "sha256": "b0389b8bdcb74498c51aa05c38bd4ab224f7cac526fbf444d77c8baf137892ed"
+            },
+            {
+              "head_call": 1,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.5,
+              "eager_min": -31.5,
+              "max_abs_difference": 2.384185791015625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-head1.pt",
+              "sha256": "33c45c18ee010bb9020c9b41eedf504396681a7d5d44c0aa02382394c5d4ccf8"
+            }
+          ],
+          "peak_torch_allocated_bytes": 20357795840,
+          "peak_torch_reserved_bytes": 27002929152,
+          "final_worker_PSS_bytes": 15363295232,
+          "DT_batch": {
+            "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646757078360303.pt",
+            "packet_sha256": "738f05c2ad3cc45ab48917601456bc69628766c4119cb98393fe695af9d200ac",
+            "original_valid_IDs_and_masks_exact": true,
+            "trajectories": 108,
+            "unique_trajectory_ids": 107,
+            "all_input_packets": [
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646757078360303.pt",
+                "sha256": "738f05c2ad3cc45ab48917601456bc69628766c4119cb98393fe695af9d200ac"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646758985220719.pt",
+                "sha256": "8178efcbe6e07c528f8337b8be264aa3b97b9454dd2a95bcfe31c93119cefa5e"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646761108373584.pt",
+                "sha256": "05cbd04e394f9779dffe68e73a5d66928b14f7386c059a76fb42aa66924253f2"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646763326776679.pt",
+                "sha256": "93ba13a52e8526446819d337b1dc57028bdff9d04573f173e9256376f4047193"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646765661363817.pt",
+                "sha256": "7b42d1ac7f51a0c02d100848551f15b8ddf9cd1e950788cf916d05d60b4b79e6"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646768179102406.pt",
+                "sha256": "30140f8d25d2395ca3df49f4e0998b4daeeef3c317cedb8b33869ea525fb198e"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646770569655182.pt",
+                "sha256": "6fc6e2e73386bfb3eec299e44aaf22132d6dbc421587bda5b9dbd6c5b89997e1"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646773403746405.pt",
+                "sha256": "54024c4724048dbed5e766efb8f2da4eab047e2bbbcd37231db606ff9db2fdf5"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646776406285324.pt",
+                "sha256": "708b6992e82a4ceb4a19124f5b89a735f0f9b0e372ea2d36ec87c0a3439b4ed1"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646779942018845.pt",
+                "sha256": "4b89945b45bac38627ab0f0439d242e4301f417032a25c12c422f3233ed45edc"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646783155274157.pt",
+                "sha256": "7abf5933d564e32c19bf1c90ab12f8a817a484a1c5b2ff87aec41592ca84ab6b"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646786903687530.pt",
+                "sha256": "f8b621215bd1fd9c3d8176ce511ff7f942f0d7e0e172e0bf7d25b2e98969cd5a"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646790716659140.pt",
+                "sha256": "3c964330b2afc03bbb05fd45f0c75ce10dedd27c61f46cd76dcf6d88e228cc72"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646795028741994.pt",
+                "sha256": "b94ed9d0421ceffa845fc805cf79728f8727e266e9cbc24bdf25450fd0bc9f1a"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646799539060234.pt",
+                "sha256": "6da9ec34a3f3963e9546d601285170c47ef30935eb455a817dd6f5adb535a99e"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646804160664704.pt",
+                "sha256": "0ef5592c2e60d22b57f1f842500006c53e8e4405b061bb7948352d89489f0c12"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646809365869241.pt",
+                "sha256": "218d1171d010120ccb8dc859e8058614a736eaaf9e133f2a2b52dbc4500b66fb"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646814822196703.pt",
+                "sha256": "694eab9d896b02fb3a76d4e06384aef974ef8440cd64b6c3f4ff54db9e303d78"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646820859046474.pt",
+                "sha256": "a624196dcafdc917f5a85766cb71aab12f3b0050e079caee6c07c2af58677ce1"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646827018336571.pt",
+                "sha256": "f2603834fa6f20e10425b29d57d4f16c8d986950e5d8d1bb0f821b20601bcd01"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646834162482772.pt",
+                "sha256": "c24416ef40fbc957b1bf7a2e95ce387b71dc3abd95fda42e703072e307ea2eb9"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646841895326949.pt",
+                "sha256": "bc20b200aaea8a71d2396ab6397a75f1ecf70e161ef4e83260a48d0a91de10b6"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646850016330229.pt",
+                "sha256": "fd246578095801885f23f896f9e7e9e0c48aff149ecb725dac37d742fa0ac1b3"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646859307008976.pt",
+                "sha256": "1fb7979fa81185719821a9c679e9a6f78a5affcc122252be63be484206a5289a"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646870199930450.pt",
+                "sha256": "99211130476dfe2fe483b88046e681608215e874980e46216017ff64112a67a2"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646882997969029.pt",
+                "sha256": "cbf4579c249221d77fcea05c69e9d88929ab868925eb16ff2cb44c0b5b58e3c0"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646901472009418.pt",
+                "sha256": "b7a07b67436ab6fea08f2bbe63d646d80b41a2dacde814415d9e37bbb5792a2d"
+              }
+            ],
+            "result_finite": {
+              "dt_token_advantages": true,
+              "dt_q_estimates": true,
+              "dt_v_estimates": true
+            },
+            "model_training_before": true,
+            "model_training_after": true,
+            "parameter_metadata_changes": [],
+            "actual_GDN_source": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+              "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+            }
+          }
+        },
+        {
+          "rank": 1,
+          "pid": 2650689,
+          "birth": 1791650607.27,
+          "phase": "complete",
+          "actual_optimizer_steps": 1,
+          "microbatches": 8,
+          "nonfinite_logp_gradient_count": 0,
+          "active_logp_old_gap_min": -0.3436775207519531,
+          "active_logp_old_gap_max": 0.4083961248397827,
+          "native_grad_norm": [
+            0.09939741343259811
+          ],
+          "head_comparisons": [
+            {
+              "head_call": 0,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.21875,
+              "eager_min": -31.21875,
+              "max_abs_difference": 2.384185791015625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-head0.pt",
+              "sha256": "167da04d2712d0c1150c45be1ef70302c472ad1d8d6935122307c06c390c542f"
+            },
+            {
+              "head_call": 1,
+              "chunk_begin": 0,
+              "chunk_end": 512,
+              "hidden_dtype": "torch.bfloat16",
+              "weight_dtype": "torch.bfloat16",
+              "compiled_min": -31.15625,
+              "eager_min": -31.15625,
+              "max_abs_difference": 2.1457672119140625e-06,
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-head1.pt",
+              "sha256": "ed90dafc52beed0afba40e519be190baf6f6914bbdf01ae948220bc72d2d8002"
+            }
+          ],
+          "peak_torch_allocated_bytes": 15500197376,
+          "peak_torch_reserved_bytes": 23708303360,
+          "final_worker_PSS_bytes": 15366676480,
+          "DT_batch": {
+            "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646757075743918.pt",
+            "packet_sha256": "4c1b7fa4d834cac42256290fa43a4090dd9dcda8b5e71e9fa754249d48cc43dc",
+            "original_valid_IDs_and_masks_exact": true,
+            "trajectories": 108,
+            "unique_trajectory_ids": 107,
+            "all_input_packets": [
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646757075743918.pt",
+                "sha256": "4c1b7fa4d834cac42256290fa43a4090dd9dcda8b5e71e9fa754249d48cc43dc"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646758985752804.pt",
+                "sha256": "369d5ad9b1f42f2707e1e2585730c53ee049b9582e45141eb8fef146f9c26a54"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646761108305509.pt",
+                "sha256": "0c92b2a94ac520e1f4dbf80f3e7189ea29f8f3431634973407dea4f67e5d0a52"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646763322397437.pt",
+                "sha256": "bd4965f733d52cfe352a09fc7e82c9bb8f6b3cea48881377e3c2295a607980fd"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646765657123298.pt",
+                "sha256": "f7052b7e8f2ae7e7c8a540d06701614080297f2fd79dc57636ac00263732f25d"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646768176057609.pt",
+                "sha256": "2f635c7f668d847ad3990c64910819020b9712a3250c973a9f82fb50b27ee076"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646770572353583.pt",
+                "sha256": "156e015196a3b7e56d055057c3b7b475e2e3c415b526f58eb3b17650b31dc64d"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646773397398783.pt",
+                "sha256": "16871148e70e556289318640e250401b3b6e4c431015a64837210dda08fad3ed"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646776413268705.pt",
+                "sha256": "c2f8d61876e4090231f005eb944b80bcb8216f399bfd4154ffe50363c03d0e90"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646779947634610.pt",
+                "sha256": "ae66b3013561fa4478d099fa2e13db35dd31e9ac46f7f6890866e72acd61643e"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646783149976407.pt",
+                "sha256": "007b6dda0dade662a20758ad2cc9256b2e3db45aa89ad9c51b9bf765f1a6bf5c"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646786906454281.pt",
+                "sha256": "71106f9111a1b69d5f3d78a75b68d8a9325988531d42481537842ce71dddbb4e"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646790718474101.pt",
+                "sha256": "7b469e873108d21bcec05db1f55b1b22ec6efcb758eaf39ac58f395c00f0fa7a"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646795025974952.pt",
+                "sha256": "3a94e9fbf49b98418e8b1f066a7251861bbe96d1b45e7246965f45216d84701a"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646799550205079.pt",
+                "sha256": "f7c8ca3c90c6389f1d6fb8390c549fbcd252289f82395abee8fcd7886b0e1a0b"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646804161174097.pt",
+                "sha256": "22eed9f1ec98c9370f5fb6ea981caa7ddfb13883f96665812068b270cc73c00e"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646809360767803.pt",
+                "sha256": "e4275e8fe4ce0fd5a5bb70d8256e2b56586346e3d38b834bd94f72cc5872ee9c"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646814812984818.pt",
+                "sha256": "dd9bde8c0b6e086377e74afb88e7fa39aa5ac8d4b6ad84b0be1971c9d26fd94a"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646820859467336.pt",
+                "sha256": "452b5c03de243655f841e11b6fae92d406ac8b7dd45ba3763002fa1c598aead9"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646827025172280.pt",
+                "sha256": "bd6850004343ba55e4d6b66bbd9fd7e052f9a88dff602ecc4b969478936d28e0"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646834146753795.pt",
+                "sha256": "4cb1c50aeae7769242eb52f4f671508c74e25e28e2c8d0567c7c88b53db00459"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646841907677056.pt",
+                "sha256": "64f4c55e945fb15e54201fd900364bdb88675b8358bf3e80972162eeff839f7f"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646850015317228.pt",
+                "sha256": "f3cd11c296bd083ac7117ca11adb31b4e83fb2cdb79d0bd8e85a3c41d49aaca5"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646859304690253.pt",
+                "sha256": "8b739effa56b4e3ee33a18e85fcd47a10a8211ad0885c9d93adaeb3906adb985"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646870198903723.pt",
+                "sha256": "a5bbed060451a8e7493ce60859ce86fa875b2b8a296885a23d132057d2316bfa"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646882997576581.pt",
+                "sha256": "b6c0060f7726625e3ee191c53058a71f5583ce291a9777514a827f70d2f84c2d"
+              },
+              {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646901367830041.pt",
+                "sha256": "de83f908ba781ab2ece3330a8153ccfd639363a789aedda8b0c0a52a24aa4c7b"
+              }
+            ],
+            "result_finite": {
+              "dt_token_advantages": true,
+              "dt_q_estimates": true,
+              "dt_v_estimates": true
+            },
+            "model_training_before": true,
+            "model_training_after": true,
+            "parameter_metadata_changes": [],
+            "actual_GDN_source": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+              "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "replay_scope": {
+    "native_owner_initialization": true,
+    "captured_trainable_shards_loaded_via_Torch_DCP": 496,
+    "frozen_base_loaded_from_original_checkpoint": true,
+    "loss_inputs_from_original_incident": true,
+    "fresh_optimizer_state": true,
+    "formal_checkpoint_restore": false,
+    "physical_GPUs": [
+      4,
+      5
+    ],
+    "native_worker_update_actor": true,
+    "no_rollout": true,
+    "no_production_patch": true,
+    "one_native_32_row_mini_per_rank_per_case": true,
+    "parameter_update_equivalence_claimed": false,
+    "case27_preserves_all_original_packet_rows_and_native_sorting": true,
+    "interpretation": "Static saved inputs/trainable weights and one saved DT phase do not reproduce huge preupdate logp gap. This does not exonerate the original persistent runtime or identify a DT cause."
+  },
+  "official_KL_candidate": {
+    "unix": 1791651049.5605922,
+    "status": "candidate_GPU_branch_checked_not_deployed",
+    "device": "MetaX C550",
+    "physical_GPU": 4,
+    "torch_version": "2.8.0+metax3.5.3.9",
+    "original_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py",
+    "original_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "candidate_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/verl-low-var-kl-official-guard-20261011-v1/core_algos.py",
+    "candidate_sha256": "1faf86aa09004f4947d2d04c636bea8b76c8928091323d3f0c7f7c8d5065a395",
+    "records": [
+      {
+        "rank": 0,
+        "original_nonfinite_gradient_count": 132,
+        "candidate_nonfinite_gradient_count": 0,
+        "forward_exactly_equal": true,
+        "all_original_finite_gradient_positions_exactly_equal": true,
+        "candidate_gradient_at_original_NaN_all_zero": true,
+        "input_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/loss-backward-1791646910870699040.pt",
+        "input_sha256": "537a2045e105ee2dba3f64cd2a2f547a234e9994cb9532c8815ea5052c5383a4"
+      },
+      {
+        "rank": 1,
+        "original_nonfinite_gradient_count": 122,
+        "candidate_nonfinite_gradient_count": 0,
+        "forward_exactly_equal": true,
+        "all_original_finite_gradient_positions_exactly_equal": true,
+        "candidate_gradient_at_original_NaN_all_zero": true,
+        "input_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/loss-backward-1791646910895854293.pt",
+        "input_sha256": "0e6ff2ad745b583714939df350472ddacfacfb0acdc379d6201cdef31a24d512"
+      }
+    ],
+    "one_DT_vs_27_DT": [
+      {
+        "rank": 0,
+        "microbatch": 0,
+        "one_DT_vs_27_DT_all_fields_exactly_equal": {
+          "log_prob": true,
+          "old_log_prob": true,
+          "advantages": true,
+          "response_mask": true
+        },
+        "max_logp_difference": 0.0
+      },
+      {
+        "rank": 0,
+        "microbatch": 1,
+        "one_DT_vs_27_DT_all_fields_exactly_equal": {
+          "log_prob": true,
+          "old_log_prob": true,
+          "advantages": true,
+          "response_mask": true
+        },
+        "max_logp_difference": 0.0
+      },
+      {
+        "rank": 1,
+        "microbatch": 0,
+        "one_DT_vs_27_DT_all_fields_exactly_equal": {
+          "log_prob": true,
+          "old_log_prob": true,
+          "advantages": true,
+          "response_mask": true
+        },
+        "max_logp_difference": 0.0
+      },
+      {
+        "rank": 1,
+        "microbatch": 1,
+        "one_DT_vs_27_DT_all_fields_exactly_equal": {
+          "log_prob": true,
+          "old_log_prob": true,
+          "advantages": true,
+          "response_mask": true
+        },
+        "max_logp_difference": 0.0
+      }
+    ],
+    "peak_RSS_bytes": 9311698944,
+    "PSS_bytes": 9300537344,
+    "peak_torch_allocated_bytes": 2827264,
+    "peak_torch_reserved_bytes": 4194304,
+    "scope": "Exact actual saved input comparison using native VERL KL/aggregation; no invented tolerance, no model/DT/optimizer calls and no production changes",
+    "model_calls": 0,
+    "DT_calls": 0,
+    "optimizer_calls": 0,
+    "production_changes": 0
+  },
+  "candidate_deployed": false,
+  "numerical_tolerances": {
+    "KL": "Exact actual-tensor equality on CPU and MetaX; no invented threshold or FA/FLA criterion for algorithm loss.",
+    "head": "Same 512-token chunk compiled/eager maximum differences recorded as diagnostics only; no pass threshold invented.",
+    "DT_FA_FLA": "Unchanged accepted source; no new official tolerance claim."
+  },
+  "curves": {
+    "receipt": {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_textcraft_incident37_20261010.json",
+      "bytes": 16049,
+      "sha256": "d25c5010fd81e97edd24a7a99e469849338ac03150fc9f78e4b69b2a0cddb14c"
+    },
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-curves-20261010-235154\\reward-entropy-gradient.png",
+    "through_iteration": 37,
+    "NaN_iterations": [
+      14,
+      37
+    ],
+    "NaN_kept_as_gap": true,
+    "smoothing": false,
+    "training_reward_not_independent_evaluation": true
+  },
+  "files": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-DT-packet-inspection-20261011-v1.command.txt",
+      "bytes": 1970,
+      "sha256": "6e9b35f5e46ec398da2a1cca4382af1a6f16ffaeb4ee107f7bb9cd4751b5d74a"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-DT-packet-inspection-20261011-v1.json",
+      "bytes": 19930,
+      "sha256": "f93526badf3b8683afa16033ce463cf79702fbd9d5c25f4e75ae9e98c6f610c7"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-DT-packet-inspection-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-DT-source-20261011-v1.command.txt",
+      "bytes": 1372,
+      "sha256": "8ecb96973233fe4b5ec50f0995fe79eaf0450b2455874832b3f62bb21a3f602e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-DT-source-20261011-v1.json",
+      "bytes": 100696,
+      "sha256": "933e7e446f4335990550652a6fca451f830335ce536666b1b1c2678aaf0645a1"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-DT-source-20261011-v1.stderr.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-PPO-head-source-20261011.command.txt",
+      "bytes": 534,
+      "sha256": "bd8180f03038d365d54faa4e6142acaa6af86a2c4e4ebfec865ce06d42621d5a"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-PPO-head-source-20261011.json",
+      "bytes": 8861,
+      "sha256": "ac0a2733f8b09e76a18ceb71ef49727828fa66d9f4af88c3b524e9891f9254ac"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-PPO-head-source-20261011.py",
+      "bytes": 8565,
+      "sha256": "8ec85198f00eca8e5994716fa6ccff82471a5a7190828caa3be027a9524b5b2e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-launch-20261011-v1.command.txt",
+      "bytes": 26737,
+      "sha256": "c8c0b51d4c4327187536d464aa6f81cb7e1354923aad21738fc40428de14025d"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-launch-20261011-v1.json",
+      "bytes": 5396,
+      "sha256": "d414a4d39dd6e0638c9bf4d45c80cba35d89084578b188b20e4d810288b583c0"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650666.command.txt",
+      "bytes": 1241,
+      "sha256": "3ef24a160396742c4ce1b38a95e15b8d9364030412223a7b7c860546646f803b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650666.json",
+      "bytes": 20886,
+      "sha256": "e38d22f8611f2127761f26e0a9882392e58f537b573c15b1679e2eafa4ff8933"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650666.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650770.command.txt",
+      "bytes": 1241,
+      "sha256": "3ef24a160396742c4ce1b38a95e15b8d9364030412223a7b7c860546646f803b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650770.json",
+      "bytes": 20886,
+      "sha256": "31a97c092a5d0358cda07e4dde30ecfa4ab1790176c2585e7f6f50273bba7197"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650770.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650921.command.txt",
+      "bytes": 1241,
+      "sha256": "3ef24a160396742c4ce1b38a95e15b8d9364030412223a7b7c860546646f803b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650921.json",
+      "bytes": 47528,
+      "sha256": "74683dfb04fb403208c59ea288a32ea5427c0130ec149773237a9c1a8098fc77"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650921.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650988.command.txt",
+      "bytes": 1241,
+      "sha256": "3ef24a160396742c4ce1b38a95e15b8d9364030412223a7b7c860546646f803b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650988.json",
+      "bytes": 154543,
+      "sha256": "23032a84007d5453cbd00389a20a9de974e5d0ac283e50a5f4af6b4c27880b98"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-replay-observation-1791650988.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-stacks-1791650819.command.txt",
+      "bytes": 1191,
+      "sha256": "7508ac7c701bbdcc3aec135db70c16e8532b5e7442d579ac23e01929474e2596"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-stacks-1791650819.json",
+      "bytes": 10420,
+      "sha256": "788d055fb4e2eff0faf44849b27c48695a77bf2d95463767960e73455467a47d"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-stacks-1791650877.command.txt",
+      "bytes": 1263,
+      "sha256": "7235e2b3276f8d8982ba08b68cb5165ee9cb23cfb154b074a5d574077cb3b1f6"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-all-DT-stacks-1791650877.json",
+      "bytes": 16676,
+      "sha256": "f61f18e74e34454ac99625e8b2236f8a7f59e95b8317c2a8375befdd88781723"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-launch-20261011-v1.command.txt",
+      "bytes": 26213,
+      "sha256": "4a5f366e467ed31cb52f047239e13c68e3fe41bd646e96823c9f0ca75efa4dd4"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-launch-20261011-v1.json",
+      "bytes": 5364,
+      "sha256": "1c64a658a03ef122e7ca92b252cbca52efb553e48024cc82c2d80470f1241b78"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650108.command.txt",
+      "bytes": 1237,
+      "sha256": "29e77a77d5695beee92a4c76bb93d0c8a35e3be9c603b262cb36ba8bcc727576"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650108.json",
+      "bytes": 9447,
+      "sha256": "b3dca20e3ea1f436e79d3025c15e517e88170bb262f50f55a0f8f400ed58bbd7"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650108.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650181.command.txt",
+      "bytes": 1237,
+      "sha256": "29e77a77d5695beee92a4c76bb93d0c8a35e3be9c603b262cb36ba8bcc727576"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650181.json",
+      "bytes": 20767,
+      "sha256": "31817f9d523fb65b510d241c43c3c2642cbd29b5538fb4d99b749b5f5dee9f16"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650181.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650233.command.txt",
+      "bytes": 1237,
+      "sha256": "29e77a77d5695beee92a4c76bb93d0c8a35e3be9c603b262cb36ba8bcc727576"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650233.json",
+      "bytes": 28756,
+      "sha256": "9489b9eebc06249ed862b30ee438c6b500f51963add1bd84ace7e887fe580f01"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650233.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650311.command.txt",
+      "bytes": 1237,
+      "sha256": "29e77a77d5695beee92a4c76bb93d0c8a35e3be9c603b262cb36ba8bcc727576"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650311.json",
+      "bytes": 40636,
+      "sha256": "64fe1dcf2582de42d8880f08be1442f2f0fc7f183182575d6ef7e6cdc9aab18b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-after-DT-replay-observation-1791650311.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-complete-DT-packet-set-20261011-v1.command.txt",
+      "bytes": 1281,
+      "sha256": "7a474be5d8a0cc0e437ece2ced6addf24e7b38a0310b61cbca6ef7a7a58ce66f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-complete-DT-packet-set-20261011-v1.json",
+      "bytes": 26722,
+      "sha256": "2bb42bd1ec28b5f5eae09a2a606c0302b272fd14285e462b85c467ffbf2b4d43"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-DT-owner-0-20261011.py",
+      "bytes": 26778,
+      "sha256": "d10724616004ce157379508c1536903a149927acd913f9c6e52fe7939768ac39"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-DT-owner-1-20261011.py",
+      "bytes": 34950,
+      "sha256": "6ceeada9c5fcb440df70bb518ca3bb15b78e2c0e34598813b9d91bdb8e6b0265"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-DT-owner-2-20261011.py",
+      "bytes": 37070,
+      "sha256": "cb9b4e10dfbd8e9a949d584e73539a5f65b38e71a373bd24d8fcd293e2c70a4f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-model-source-and-row-gaps-20261011-v1.command.txt",
+      "bytes": 4002,
+      "sha256": "5bff3935dd72460efac36967c68fbf4b7be477505c278fd9802964df9813c1c7"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-model-source-and-row-gaps-20261011-v1.json",
+      "bytes": 78969,
+      "sha256": "4536ffa85115018ad76c9a7377f443b28729ee3231896849b2fb69dbfd554412"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-model-source-and-row-gaps-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-model-source-and-row-gaps-20261011-v1.stdout.txt",
+      "bytes": 78969,
+      "sha256": "4536ffa85115018ad76c9a7377f443b28729ee3231896849b2fb69dbfd554412"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-official-KL-guard-candidate-20261011-v1.command.txt",
+      "bytes": 5171,
+      "sha256": "4124a80f5e80941c888b47fc38304864295c2f5ceac9323cb7840b212bc8be18"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-official-KL-guard-candidate-20261011-v1.json",
+      "bytes": 2370,
+      "sha256": "51155841db5580bd03e0e18ba107e2d237afea586b5e31f75da523e64f1c3e28"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-official-KL-guard-candidate-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-official-KL-guard-GPU-20261011-v1.command.txt",
+      "bytes": 4374,
+      "sha256": "0fa575803ecad9323de9a8ef62fc95e82f81809ec393fbf1382af345f1ee7f22"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-official-KL-guard-GPU-20261011-v1.json",
+      "bytes": 3405,
+      "sha256": "fa3a894ce71519d107e788350f5470910c89947800591faf3d7ea8a7b3d7846d"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-official-KL-guard-GPU-20261011-v1.stderr.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-launch-20261011-v1.command.txt",
+      "bytes": 22135,
+      "sha256": "329e5b90b031aaee3129c7af55877e7a94a91b54faa119a9e996c202e1944a0f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-launch-20261011-v1.json",
+      "bytes": 5190,
+      "sha256": "8c1f3870ba340a6e0d83d933448dc132da0b7983768a206123627c0d99c39c32"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-observation-1791649044.json",
+      "bytes": 411,
+      "sha256": "4d409e3047f63ae11fdc06bf9984d5ddda9465cc943b36676dba23823570a09d"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-observation-1791649267.json",
+      "bytes": 21825,
+      "sha256": "87a4dbd1d95cff81c189a08c63668ab5e6b89f98077bc526e91f9c71c3112a8b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-owner-api-20261011-v1.command.txt",
+      "bytes": 1457,
+      "sha256": "e6b5f6c74b4cc7521adc25840ceab423bb4f0d6f1be24040fd6535cf290cb7c5"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-owner-api-20261011-v1.json",
+      "bytes": 432189,
+      "sha256": "a391f777189bbc4203a483f485f2f21143e4ad0d711031203960abb3cc0fc4c6"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-replay-owner-api-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\official-verl-9058412-tree-20261011.json",
+      "bytes": 369856,
+      "sha256": "fb42ec73477225928e79464a647465d2b0839337dc42dedcf1107898427c4e9b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\official-verl-agent-20bd331-tree-20261011.json",
+      "bytes": 414498,
+      "sha256": "c1b89ad529b47318821ca96abda45206e67412657687de38a4876c22145a66a6"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\upstream-verl-core-algos-9058412.txt",
+      "bytes": 105282,
+      "sha256": "369b614f239f237a04a38a40b1877cd6fd14aa7bd5f9ff4fe4d7758b682a6948"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\upstream-verl-test-core-algos-9058412.py",
+      "bytes": 13397,
+      "sha256": "0a60e917589ab91646989f0a8616f810fea0dc70047d2b8c13914f4977f5569c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\replay_native_incident37_20261011.py",
+      "bytes": 12989,
+      "sha256": "1055fc2e603243a5656633f080c521a3b80d7a19767aafea0b4b215d807c1e51"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\replay_native_incident37_after_all_dt_20261011.py",
+      "bytes": 17651,
+      "sha256": "3c3a8245cad298aa5dd1f8f913fc837f2f783cad258559f2bd069a6706633921"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\replay_native_incident37_after_dt_20261011.py",
+      "bytes": 17155,
+      "sha256": "5f83b5fad9325ce249b40adca6e0af10896c0fb1ccb5eb033a9577195e4c7bd6"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-diagnosis-final-status-20261011-v1.command.txt",
+      "bytes": 4560,
+      "sha256": "819c023c64764663d6c5df4ab8d8f2f37aae02258524745409f07f4e2a4c3b2f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-diagnosis-final-status-20261011-v1.json",
+      "bytes": 4202,
+      "sha256": "cf6143e121edd818ca00f3218cb932285c0d5469a058e4f0f3f19b2691973402"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-diagnosis-final-status-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "next_unresolved_issue": "Original persistent actor forward/runtime state causing huge old/new logp gaps before optimizer step; not solved by loss guard or finite isolated replay.",
+  "final_runtime_status": {
+    "unix": 1791651231.4572778,
+    "GPU_receipt_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/verl-low-var-kl-official-guard-20261011-v1/prepared-and-GPU-checked.json",
+    "GPU_receipt_sha256": "459af51e08870884d7faf15af4cc54e817620148e5653086211fa2a70bae56a4",
+    "processes": [
+      {
+        "pid": 982372,
+        "missing": true
+      },
+      {
+        "pid": 987808,
+        "missing": true
+      },
+      {
+        "pid": 989860,
+        "missing": true
+      },
+      {
+        "pid": 2478515,
+        "missing": true
+      },
+      {
+        "pid": 2591368,
+        "missing": true
+      },
+      {
+        "pid": 2645401,
+        "missing": true
+      }
+    ],
+    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 00:53:51 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+  }
+}

@@ -1,0 +1,10 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,inspect,json,time,torch
+from pathlib import Path
+from torch.distributed.checkpoint.state_dict import StateDictOptions,get_model_state_dict,set_model_state_dict
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');p=root/'runs/textcraft-formal-stable-20261009-v1/source.json';s=json.loads(p.read_bytes());folder=root/'receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808';a=torch.load(next(folder.glob('incident-*-update.pt')),map_location='cpu',weights_only=False)
+print(json.dumps(dict(unix=time.time(),source_keys=list(s),source_values={k:v for k,v in s.items() if k in ['verl_root','pythonpath','source_commit','numerical_source_commit','source_bindings','startup_options']},captured_parameter_examples=[dict(name=k,shape=list(v.shape),dtype=str(v.dtype),meta=a['parameter_metadata'][k]) for k,v in list(a['trainable_local_parameters'].items())[:3]],state_dict_api=dict(options=str(inspect.signature(StateDictOptions)),get=str(inspect.signature(get_model_state_dict)),set=str(inspect.signature(set_model_state_dict))),official_tests=[str(p) for p in (root/'candidates/official-verl-20bd331/tests').rglob('*.py') if any(x in p.name for x in ['core','ppo','kl'])],CUDA_initialized=torch.cuda.is_initialized())))
+
+PY

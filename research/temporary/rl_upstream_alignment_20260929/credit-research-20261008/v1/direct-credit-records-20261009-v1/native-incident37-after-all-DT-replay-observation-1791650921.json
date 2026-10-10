@@ -1,0 +1,589 @@
+{
+  "unix": 1791650921.3557281,
+  "job": {
+    "unix": 1791650570.675824,
+    "pid": 2645401,
+    "birth": 1791650570.31,
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+    "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "diagnostic_files": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/source/capture_native_loss_backward_20261010.py": "7e94ea6b74867b5a21aeab3c322fc160690b6d5c8140caf3f12b92877c39ba49",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/source/replay_native_incident37_after_all_dt_20261011.py": "96767abf9b87434a28bf15e57e7dba83bb866934454e5bf7c4a2ba8f52f6bd5e"
+    },
+    "physical_GPUs": [
+      4,
+      5
+    ],
+    "command": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/source/replay_native_incident37_after_all_dt_20261011.py",
+      "--source",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result"
+    ],
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/driver.log",
+    "result": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result",
+    "physical_before": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 00:42:50 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "formal_training_restarted": false
+  },
+  "driver": {
+    "pid": 2645401,
+    "birth": 1791650570.31,
+    "same_birth": true,
+    "status": "sleeping",
+    "pss": 6099355648
+  },
+  "records": [
+    {
+      "rank": 0,
+      "pid": 2648938,
+      "birth": 1791650592.71,
+      "scope": "Replay all saved incident37 DT batches then its native optimizer operation in isolation.\n\nOriginal VERL model initialization, actor forward/loss/update and Torch DCP\nstate loading own every operation. Only the saved trainable local shards are\nloaded into this diagnostic actor; no formal checkpoint/job is restored.\nPassive head observation calls the same owner's undecorated function on one\nidentical original chunk, and returns the original compiled outputs unchanged.\nOne existing native DT RPC on its complete saved nonzero-target rows; no production patch, replacement loss, rollout or training budget.\n",
+      "head_observations": [
+        {
+          "head_call": 0,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.28125,
+          "eager_min": -31.28125,
+          "max_abs_difference": 2.0265579223632812e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-head0.pt",
+          "sha256": "b0389b8bdcb74498c51aa05c38bd4ab224f7cac526fbf444d77c8baf137892ed"
+        },
+        {
+          "head_call": 1,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.5,
+          "eager_min": -31.5,
+          "max_abs_difference": 2.384185791015625e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-head1.pt",
+          "sha256": "33c45c18ee010bb9020c9b41eedf504396681a7d5d44c0aa02382394c5d4ccf8"
+        }
+      ],
+      "microbatches": [
+        {
+          "index": 0,
+          "finite_logp": true,
+          "min_active_gap": -0.15221810340881348,
+          "max_active_gap": 0.16811418533325195,
+          "native_pg_loss": -0.5523290038108826,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-microbatch0.pt",
+          "sha256": "6c3b7b7f2862d8a4b086e4b03c7a3f831222ed21112854cee4d7dc1aa0e9add5",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 1,
+          "finite_logp": true,
+          "min_active_gap": -0.39960145950317383,
+          "max_active_gap": 0.4404268264770508,
+          "native_pg_loss": 0.19500420987606049,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-microbatch1.pt",
+          "sha256": "f978415e0307f879cdfe78c8e14d47689a5d3e8fa190444d81aca8f305f8f3a2",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 2,
+          "finite_logp": true,
+          "min_active_gap": -0.20780956745147705,
+          "max_active_gap": 0.24864482879638672,
+          "native_pg_loss": -0.4267791509628296,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 3,
+          "finite_logp": true,
+          "min_active_gap": -0.16919386386871338,
+          "max_active_gap": 0.21649432182312012,
+          "native_pg_loss": -0.2841878831386566,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 4,
+          "finite_logp": true,
+          "min_active_gap": -0.26006364822387695,
+          "max_active_gap": 0.22303175926208496,
+          "native_pg_loss": -0.01158757135272026,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 5,
+          "finite_logp": true,
+          "min_active_gap": -0.20310020446777344,
+          "max_active_gap": 0.21450090408325195,
+          "native_pg_loss": -0.034209977835416794,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 6,
+          "finite_logp": true,
+          "min_active_gap": -0.22492122650146484,
+          "max_active_gap": 0.24179697036743164,
+          "native_pg_loss": -0.651639461517334,
+          "nonfinite_logp_gradient_count": 0
+        }
+      ],
+      "actual_optimizer_steps": 0,
+      "model_forward_calls": 7,
+      "input_artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/incident-1791646951472459222-update.pt",
+        "sha256": "52859f89a535e3543d41b82916d090733c9b1d48aff02e06ee3d8b2e17664772"
+      },
+      "sources": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/source/replay_native_incident37_after_all_dt_20261011.py": "96767abf9b87434a28bf15e57e7dba83bb866934454e5bf7c4a2ba8f52f6bd5e"
+      },
+      "phase": "native_logp_backward_observed",
+      "unix": 1791650919.720733,
+      "allocated": 503431168,
+      "reserved": 27002929152,
+      "pss_bytes": 15361533952,
+      "trainable_shards_loaded_exactly": 496,
+      "DCP_missing_frozen_keys": 427,
+      "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646757078360303.pt",
+      "packet_sha256": "738f05c2ad3cc45ab48917601456bc69628766c4119cb98393fe695af9d200ac",
+      "DT_batch": {
+        "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646757078360303.pt",
+        "packet_sha256": "738f05c2ad3cc45ab48917601456bc69628766c4119cb98393fe695af9d200ac",
+        "original_valid_IDs_and_masks_exact": true,
+        "trajectories": 108,
+        "unique_trajectory_ids": 107,
+        "all_input_packets": [
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646757078360303.pt",
+            "sha256": "738f05c2ad3cc45ab48917601456bc69628766c4119cb98393fe695af9d200ac"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646758985220719.pt",
+            "sha256": "8178efcbe6e07c528f8337b8be264aa3b97b9454dd2a95bcfe31c93119cefa5e"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646761108373584.pt",
+            "sha256": "05cbd04e394f9779dffe68e73a5d66928b14f7386c059a76fb42aa66924253f2"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646763326776679.pt",
+            "sha256": "93ba13a52e8526446819d337b1dc57028bdff9d04573f173e9256376f4047193"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646765661363817.pt",
+            "sha256": "7b42d1ac7f51a0c02d100848551f15b8ddf9cd1e950788cf916d05d60b4b79e6"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646768179102406.pt",
+            "sha256": "30140f8d25d2395ca3df49f4e0998b4daeeef3c317cedb8b33869ea525fb198e"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646770569655182.pt",
+            "sha256": "6fc6e2e73386bfb3eec299e44aaf22132d6dbc421587bda5b9dbd6c5b89997e1"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646773403746405.pt",
+            "sha256": "54024c4724048dbed5e766efb8f2da4eab047e2bbbcd37231db606ff9db2fdf5"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646776406285324.pt",
+            "sha256": "708b6992e82a4ceb4a19124f5b89a735f0f9b0e372ea2d36ec87c0a3439b4ed1"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646779942018845.pt",
+            "sha256": "4b89945b45bac38627ab0f0439d242e4301f417032a25c12c422f3233ed45edc"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646783155274157.pt",
+            "sha256": "7abf5933d564e32c19bf1c90ab12f8a817a484a1c5b2ff87aec41592ca84ab6b"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646786903687530.pt",
+            "sha256": "f8b621215bd1fd9c3d8176ce511ff7f942f0d7e0e172e0bf7d25b2e98969cd5a"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646790716659140.pt",
+            "sha256": "3c964330b2afc03bbb05fd45f0c75ce10dedd27c61f46cd76dcf6d88e228cc72"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646795028741994.pt",
+            "sha256": "b94ed9d0421ceffa845fc805cf79728f8727e266e9cbc24bdf25450fd0bc9f1a"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646799539060234.pt",
+            "sha256": "6da9ec34a3f3963e9546d601285170c47ef30935eb455a817dd6f5adb535a99e"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646804160664704.pt",
+            "sha256": "0ef5592c2e60d22b57f1f842500006c53e8e4405b061bb7948352d89489f0c12"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646809365869241.pt",
+            "sha256": "218d1171d010120ccb8dc859e8058614a736eaaf9e133f2a2b52dbc4500b66fb"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646814822196703.pt",
+            "sha256": "694eab9d896b02fb3a76d4e06384aef974ef8440cd64b6c3f4ff54db9e303d78"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646820859046474.pt",
+            "sha256": "a624196dcafdc917f5a85766cb71aab12f3b0050e079caee6c07c2af58677ce1"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646827018336571.pt",
+            "sha256": "f2603834fa6f20e10425b29d57d4f16c8d986950e5d8d1bb0f821b20601bcd01"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646834162482772.pt",
+            "sha256": "c24416ef40fbc957b1bf7a2e95ce387b71dc3abd95fda42e703072e307ea2eb9"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646841895326949.pt",
+            "sha256": "bc20b200aaea8a71d2396ab6397a75f1ecf70e161ef4e83260a48d0a91de10b6"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646850016330229.pt",
+            "sha256": "fd246578095801885f23f896f9e7e9e0c48aff149ecb725dac37d742fa0ac1b3"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646859307008976.pt",
+            "sha256": "1fb7979fa81185719821a9c679e9a6f78a5affcc122252be63be484206a5289a"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646870199930450.pt",
+            "sha256": "99211130476dfe2fe483b88046e681608215e874980e46216017ff64112a67a2"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646882997969029.pt",
+            "sha256": "cbf4579c249221d77fcea05c69e9d88929ab868925eb16ff2cb44c0b5b58e3c0"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646901472009418.pt",
+            "sha256": "b7a07b67436ab6fea08f2bbe63d646d80b41a2dacde814415d9e37bbb5792a2d"
+          }
+        ],
+        "result_finite": {
+          "dt_token_advantages": true,
+          "dt_q_estimates": true,
+          "dt_v_estimates": true
+        },
+        "model_training_before": true,
+        "model_training_after": true,
+        "parameter_metadata_changes": [],
+        "actual_GDN_source": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+        }
+      },
+      "head": {
+        "head_call": 1,
+        "chunk_begin": 0,
+        "chunk_end": 512,
+        "hidden_dtype": "torch.bfloat16",
+        "weight_dtype": "torch.bfloat16",
+        "compiled_min": -31.5,
+        "eager_min": -31.5,
+        "max_abs_difference": 2.384185791015625e-06,
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-head1.pt",
+        "sha256": "33c45c18ee010bb9020c9b41eedf504396681a7d5d44c0aa02382394c5d4ccf8"
+      },
+      "microbatch": 6,
+      "nonfinite": 0
+    },
+    {
+      "rank": 1,
+      "pid": 2650689,
+      "birth": 1791650607.27,
+      "scope": "Replay all saved incident37 DT batches then its native optimizer operation in isolation.\n\nOriginal VERL model initialization, actor forward/loss/update and Torch DCP\nstate loading own every operation. Only the saved trainable local shards are\nloaded into this diagnostic actor; no formal checkpoint/job is restored.\nPassive head observation calls the same owner's undecorated function on one\nidentical original chunk, and returns the original compiled outputs unchanged.\nOne existing native DT RPC on its complete saved nonzero-target rows; no production patch, replacement loss, rollout or training budget.\n",
+      "head_observations": [
+        {
+          "head_call": 0,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.21875,
+          "eager_min": -31.21875,
+          "max_abs_difference": 2.384185791015625e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-head0.pt",
+          "sha256": "167da04d2712d0c1150c45be1ef70302c472ad1d8d6935122307c06c390c542f"
+        },
+        {
+          "head_call": 1,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.15625,
+          "eager_min": -31.15625,
+          "max_abs_difference": 2.1457672119140625e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-head1.pt",
+          "sha256": "ed90dafc52beed0afba40e519be190baf6f6914bbdf01ae948220bc72d2d8002"
+        }
+      ],
+      "microbatches": [
+        {
+          "index": 0,
+          "finite_logp": true,
+          "min_active_gap": -0.12834978103637695,
+          "max_active_gap": 0.14101970195770264,
+          "native_pg_loss": -0.8741645812988281,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-microbatch0.pt",
+          "sha256": "7fecd5dc0c84dc9360869210468c4dfc79f0be14dfd112ee0b69a86fbff8dd6a",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 1,
+          "finite_logp": true,
+          "min_active_gap": -0.2616853713989258,
+          "max_active_gap": 0.23688817024230957,
+          "native_pg_loss": 0.3104495406150818,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-microbatch1.pt",
+          "sha256": "b62f7f0e49c47b5c59bdd700ceb3922bf096c1abe6e0e51e68cafaef56852784",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 2,
+          "finite_logp": true,
+          "min_active_gap": -0.24452590942382812,
+          "max_active_gap": 0.19965243339538574,
+          "native_pg_loss": -0.4183897078037262,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 3,
+          "finite_logp": true,
+          "min_active_gap": -0.24647045135498047,
+          "max_active_gap": 0.4083961248397827,
+          "native_pg_loss": -0.013517195358872414,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 4,
+          "finite_logp": true,
+          "min_active_gap": -0.3436775207519531,
+          "max_active_gap": 0.2448587417602539,
+          "native_pg_loss": -0.14011070132255554,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 5,
+          "finite_logp": true,
+          "min_active_gap": -0.22916793823242188,
+          "max_active_gap": 0.24276280403137207,
+          "native_pg_loss": -0.4007660746574402,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 6,
+          "finite_logp": true,
+          "min_active_gap": -0.18583643436431885,
+          "max_active_gap": 0.21634340286254883,
+          "native_pg_loss": -0.8393165469169617,
+          "nonfinite_logp_gradient_count": 0
+        }
+      ],
+      "actual_optimizer_steps": 0,
+      "model_forward_calls": 7,
+      "input_artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/incident-1791646951472693178-update.pt",
+        "sha256": "9a2306e95b909612aa68b29ce24495d12beead50675a8d753313a8e2d87d10c5"
+      },
+      "sources": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/source/replay_native_incident37_after_all_dt_20261011.py": "96767abf9b87434a28bf15e57e7dba83bb866934454e5bf7c4a2ba8f52f6bd5e"
+      },
+      "phase": "native_logp_backward_observed",
+      "unix": 1791650919.6361654,
+      "allocated": 345728000,
+      "reserved": 23708303360,
+      "pss_bytes": 15365029888,
+      "trainable_shards_loaded_exactly": 496,
+      "DCP_missing_frozen_keys": 427,
+      "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646757075743918.pt",
+      "packet_sha256": "4c1b7fa4d834cac42256290fa43a4090dd9dcda8b5e71e9fa754249d48cc43dc",
+      "DT_batch": {
+        "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646757075743918.pt",
+        "packet_sha256": "4c1b7fa4d834cac42256290fa43a4090dd9dcda8b5e71e9fa754249d48cc43dc",
+        "original_valid_IDs_and_masks_exact": true,
+        "trajectories": 108,
+        "unique_trajectory_ids": 107,
+        "all_input_packets": [
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646757075743918.pt",
+            "sha256": "4c1b7fa4d834cac42256290fa43a4090dd9dcda8b5e71e9fa754249d48cc43dc"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646758985752804.pt",
+            "sha256": "369d5ad9b1f42f2707e1e2585730c53ee049b9582e45141eb8fef146f9c26a54"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646761108305509.pt",
+            "sha256": "0c92b2a94ac520e1f4dbf80f3e7189ea29f8f3431634973407dea4f67e5d0a52"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646763322397437.pt",
+            "sha256": "bd4965f733d52cfe352a09fc7e82c9bb8f6b3cea48881377e3c2295a607980fd"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646765657123298.pt",
+            "sha256": "f7052b7e8f2ae7e7c8a540d06701614080297f2fd79dc57636ac00263732f25d"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646768176057609.pt",
+            "sha256": "2f635c7f668d847ad3990c64910819020b9712a3250c973a9f82fb50b27ee076"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646770572353583.pt",
+            "sha256": "156e015196a3b7e56d055057c3b7b475e2e3c415b526f58eb3b17650b31dc64d"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646773397398783.pt",
+            "sha256": "16871148e70e556289318640e250401b3b6e4c431015a64837210dda08fad3ed"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646776413268705.pt",
+            "sha256": "c2f8d61876e4090231f005eb944b80bcb8216f399bfd4154ffe50363c03d0e90"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646779947634610.pt",
+            "sha256": "ae66b3013561fa4478d099fa2e13db35dd31e9ac46f7f6890866e72acd61643e"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646783149976407.pt",
+            "sha256": "007b6dda0dade662a20758ad2cc9256b2e3db45aa89ad9c51b9bf765f1a6bf5c"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646786906454281.pt",
+            "sha256": "71106f9111a1b69d5f3d78a75b68d8a9325988531d42481537842ce71dddbb4e"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646790718474101.pt",
+            "sha256": "7b469e873108d21bcec05db1f55b1b22ec6efcb758eaf39ac58f395c00f0fa7a"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646795025974952.pt",
+            "sha256": "3a94e9fbf49b98418e8b1f066a7251861bbe96d1b45e7246965f45216d84701a"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646799550205079.pt",
+            "sha256": "f7c8ca3c90c6389f1d6fb8390c549fbcd252289f82395abee8fcd7886b0e1a0b"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646804161174097.pt",
+            "sha256": "22eed9f1ec98c9370f5fb6ea981caa7ddfb13883f96665812068b270cc73c00e"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646809360767803.pt",
+            "sha256": "e4275e8fe4ce0fd5a5bb70d8256e2b56586346e3d38b834bd94f72cc5872ee9c"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646814812984818.pt",
+            "sha256": "dd9bde8c0b6e086377e74afb88e7fa39aa5ac8d4b6ad84b0be1971c9d26fd94a"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646820859467336.pt",
+            "sha256": "452b5c03de243655f841e11b6fae92d406ac8b7dd45ba3763002fa1c598aead9"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646827025172280.pt",
+            "sha256": "bd6850004343ba55e4d6b66bbd9fd7e052f9a88dff602ecc4b969478936d28e0"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646834146753795.pt",
+            "sha256": "4cb1c50aeae7769242eb52f4f671508c74e25e28e2c8d0567c7c88b53db00459"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646841907677056.pt",
+            "sha256": "64f4c55e945fb15e54201fd900364bdb88675b8358bf3e80972162eeff839f7f"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646850015317228.pt",
+            "sha256": "f3cd11c296bd083ac7117ca11adb31b4e83fb2cdb79d0bd8e85a3c41d49aaca5"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646859304690253.pt",
+            "sha256": "8b739effa56b4e3ee33a18e85fcd47a10a8211ad0885c9d93adaeb3906adb985"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646870198903723.pt",
+            "sha256": "a5bbed060451a8e7493ce60859ce86fa875b2b8a296885a23d132057d2316bfa"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646882997576581.pt",
+            "sha256": "b6c0060f7726625e3ee191c53058a71f5583ce291a9777514a827f70d2f84c2d"
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646901367830041.pt",
+            "sha256": "de83f908ba781ab2ece3330a8153ccfd639363a789aedda8b0c0a52a24aa4c7b"
+          }
+        ],
+        "result_finite": {
+          "dt_token_advantages": true,
+          "dt_q_estimates": true,
+          "dt_v_estimates": true
+        },
+        "model_training_before": true,
+        "model_training_after": true,
+        "parameter_metadata_changes": [],
+        "actual_GDN_source": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+        }
+      },
+      "head": {
+        "head_call": 1,
+        "chunk_begin": 0,
+        "chunk_end": 512,
+        "hidden_dtype": "torch.bfloat16",
+        "weight_dtype": "torch.bfloat16",
+        "compiled_min": -31.15625,
+        "eager_min": -31.15625,
+        "max_abs_difference": 2.1457672119140625e-06,
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-head1.pt",
+        "sha256": "ed90dafc52beed0afba40e519be190baf6f6914bbdf01ae948220bc72d2d8002"
+      },
+      "microbatch": 6,
+      "nonfinite": 0
+    }
+  ],
+  "phases": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank0-phases.jsonl": [
+      "{\"phase\": \"native_policy_loss_observed\", \"unix\": 1791650913.9021482, \"allocated\": 883964928, \"reserved\": 27002929152, \"pss_bytes\": 15361464320, \"microbatch\": 5}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650914.0334916, \"allocated\": 736114176, \"reserved\": 27002929152, \"pss_bytes\": 15361464320, \"microbatch\": 5, \"nonfinite\": 0}",
+      "{\"phase\": \"native_policy_loss_observed\", \"unix\": 1791650919.5953448, \"allocated\": 735124992, \"reserved\": 27002929152, \"pss_bytes\": 15361533952, \"microbatch\": 6}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650919.720733, \"allocated\": 503431168, \"reserved\": 27002929152, \"pss_bytes\": 15361533952, \"microbatch\": 6, \"nonfinite\": 0}"
+    ],
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/result/rank1-phases.jsonl": [
+      "{\"phase\": \"native_policy_loss_observed\", \"unix\": 1791650913.7791696, \"allocated\": 783447040, \"reserved\": 23708303360, \"pss_bytes\": 15364997120, \"microbatch\": 5}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650913.9112673, \"allocated\": 546416128, \"reserved\": 23708303360, \"pss_bytes\": 15364997120, \"microbatch\": 5, \"nonfinite\": 0}",
+      "{\"phase\": \"native_policy_loss_observed\", \"unix\": 1791650919.5029655, \"allocated\": 500432384, \"reserved\": 23708303360, \"pss_bytes\": 15365025792, \"microbatch\": 6}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650919.6361654, \"allocated\": 345728000, \"reserved\": 23708303360, \"pss_bytes\": 15365029888, \"microbatch\": 6, \"nonfinite\": 0}"
+    ]
+  },
+  "completed": null,
+  "driver_log_tail": [
+    "\u001b[36m(IncidentWorker pid=2648938)\u001b[0m WARNING:2026-10-11 00:43:43,719:Current Triton version 3.0.0 is below the recommended 3.2.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.",
+    "\u001b[36m(IncidentWorker pid=2648938)\u001b[0m ",
+    "Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]",
+    "\u001b[36m(IncidentWorker pid=2648938)\u001b[0m [2026-10-11 00:43:43,831 E 2648938 2649046] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14\u001b[32m [repeated 6x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)\u001b[0m",
+    "\u001b[36m(IncidentWorker pid=2648938)\u001b[0m ",
+    "Loading weights: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 427/427 [00:00<00:00, 15101.55it/s]",
+    "\u001b[36m(IncidentWorker pid=2650689)\u001b[0m ",
+    "Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]",
+    "Loading weights: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 427/427 [00:00<00:00, 11619.25it/s]",
+    "\u001b[36m(IncidentWorker pid=2650689)\u001b[0m /opt/conda/lib/python3.12/site-packages/torchvision/transforms/v2/__init__.py:54: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().\u001b[32m [repeated 2x across cluster]\u001b[0m",
+    "\u001b[36m(IncidentWorker pid=2650689)\u001b[0m   warnings.warn(_BETA_TRANSFORMS_WARNING)\u001b[32m [repeated 2x across cluster]\u001b[0m",
+    "\u001b[36m(IncidentWorker pid=2650689)\u001b[0m WARNING:2026-10-11 00:43:43,720:Current Triton version 3.0.0 is below the recommended 3.2.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.",
+    "\u001b[36m(WorkerGroupRegisterCenter pid=2650569)\u001b[0m [2026-10-11 00:43:57,495 E 2650569 2650650] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14",
+    "\u001b[36m(IncidentWorker pid=2650689)\u001b[0m [2026-10-11 00:43:58,380 E 2650689 2650781] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14",
+    "\u001b[36m(IncidentWorker pid=2648938)\u001b[0m /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-all-DT-replay-20261011-v1/source/replay_native_incident37_after_all_dt_20261011.py:208: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.",
+    "\u001b[36m(IncidentWorker pid=2648938)\u001b[0m Consider using tensor.detach() first. (Triggered internally at /workspace/framework/mcPytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)",
+    "\u001b[36m(IncidentWorker pid=2648938)\u001b[0m   native_pg_loss=float(result[0]))",
+    "\u001b[36m(IncidentWorker pid=2650689)\u001b[0m   native_pg_loss=float(result[0]))"
+  ],
+  "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 00:48:41 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 92%         Disabled |\n| 334W / 450W      | 54C          P9 | 28749/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 63%         Disabled |\n| 250W / 450W      | 50C          P9 | 25609/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  4                  2648938         ray::IncidentWo              27842          |\n|  5                  2650689         ray::IncidentWo              24700          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+}

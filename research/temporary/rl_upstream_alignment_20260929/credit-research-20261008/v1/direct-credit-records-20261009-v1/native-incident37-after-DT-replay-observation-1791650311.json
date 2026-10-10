@@ -1,0 +1,501 @@
+{
+  "unix": 1791650311.99035,
+  "job": {
+    "unix": 1791650073.182017,
+    "pid": 2591368,
+    "birth": 1791650072.81,
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+    "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "diagnostic_files": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/source/capture_native_loss_backward_20261010.py": "7e94ea6b74867b5a21aeab3c322fc160690b6d5c8140caf3f12b92877c39ba49",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/source/replay_native_incident37_after_dt_20261011.py": "def7e15213829a566b4ac86b0b36167cb40916a501447df8fc6d6b304c25f926"
+    },
+    "physical_GPUs": [
+      4,
+      5
+    ],
+    "command": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/source/replay_native_incident37_after_dt_20261011.py",
+      "--source",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result"
+    ],
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/driver.log",
+    "result": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result",
+    "physical_before": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 00:34:32 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "formal_training_restarted": false
+  },
+  "driver": {
+    "pid": 2591368,
+    "missing": true
+  },
+  "records": [
+    {
+      "rank": 0,
+      "pid": 2594529,
+      "birth": 1791650095.74,
+      "scope": "Replay one incident37 DT batch then its native optimizer operation in isolation.\n\nOriginal VERL model initialization, actor forward/loss/update and Torch DCP\nstate loading own every operation. Only the saved trainable local shards are\nloaded into this diagnostic actor; no formal checkpoint/job is restored.\nPassive head observation calls the same owner's undecorated function on one\nidentical original chunk, and returns the original compiled outputs unchanged.\nOne existing native DT RPC on its saved batch; no production patch, replacement loss, rollout or training budget.\n",
+      "head_observations": [
+        {
+          "head_call": 0,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.28125,
+          "eager_min": -31.28125,
+          "max_abs_difference": 2.0265579223632812e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-head0.pt",
+          "sha256": "b0389b8bdcb74498c51aa05c38bd4ab224f7cac526fbf444d77c8baf137892ed"
+        },
+        {
+          "head_call": 1,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.5,
+          "eager_min": -31.5,
+          "max_abs_difference": 2.384185791015625e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-head1.pt",
+          "sha256": "33c45c18ee010bb9020c9b41eedf504396681a7d5d44c0aa02382394c5d4ccf8"
+        }
+      ],
+      "microbatches": [
+        {
+          "index": 0,
+          "finite_logp": true,
+          "min_active_gap": -0.15221810340881348,
+          "max_active_gap": 0.16811418533325195,
+          "native_pg_loss": -0.5523290038108826,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-microbatch0.pt",
+          "sha256": "6c3b7b7f2862d8a4b086e4b03c7a3f831222ed21112854cee4d7dc1aa0e9add5",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 1,
+          "finite_logp": true,
+          "min_active_gap": -0.39960145950317383,
+          "max_active_gap": 0.4404268264770508,
+          "native_pg_loss": 0.19500420987606049,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-microbatch1.pt",
+          "sha256": "f978415e0307f879cdfe78c8e14d47689a5d3e8fa190444d81aca8f305f8f3a2",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 2,
+          "finite_logp": true,
+          "min_active_gap": -0.20780956745147705,
+          "max_active_gap": 0.24864482879638672,
+          "native_pg_loss": -0.4267791509628296,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 3,
+          "finite_logp": true,
+          "min_active_gap": -0.16919386386871338,
+          "max_active_gap": 0.21649432182312012,
+          "native_pg_loss": -0.2841878831386566,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 4,
+          "finite_logp": true,
+          "min_active_gap": -0.26006364822387695,
+          "max_active_gap": 0.22303175926208496,
+          "native_pg_loss": -0.01158757135272026,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 5,
+          "finite_logp": true,
+          "min_active_gap": -0.20310020446777344,
+          "max_active_gap": 0.21450090408325195,
+          "native_pg_loss": -0.034209977835416794,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 6,
+          "finite_logp": true,
+          "min_active_gap": -0.22492122650146484,
+          "max_active_gap": 0.24179697036743164,
+          "native_pg_loss": -0.651639461517334,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 7,
+          "finite_logp": true,
+          "min_active_gap": -0.2495441436767578,
+          "max_active_gap": 0.25998497009277344,
+          "native_pg_loss": 0.04119980335235596,
+          "nonfinite_logp_gradient_count": 0
+        }
+      ],
+      "actual_optimizer_steps": 1,
+      "model_forward_calls": 8,
+      "input_artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/incident-1791646951472459222-update.pt",
+        "sha256": "52859f89a535e3543d41b82916d090733c9b1d48aff02e06ee3d8b2e17664772"
+      },
+      "sources": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/source/replay_native_incident37_after_dt_20261011.py": "def7e15213829a566b4ac86b0b36167cb40916a501447df8fc6d6b304c25f926"
+      },
+      "phase": "complete",
+      "unix": 1791650272.0337417,
+      "allocated": 163780608,
+      "reserved": 27351056384,
+      "pss_bytes": 8342467584,
+      "trainable_shards_loaded_exactly": 496,
+      "DCP_missing_frozen_keys": 427,
+      "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646901472009418.pt",
+      "packet_sha256": "b7a07b67436ab6fea08f2bbe63d646d80b41a2dacde814415d9e37bbb5792a2d",
+      "DT_batch": {
+        "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank0-pid987808/joint-1791646901472009418.pt",
+        "packet_sha256": "b7a07b67436ab6fea08f2bbe63d646d80b41a2dacde814415d9e37bbb5792a2d",
+        "original_valid_IDs_and_masks_exact": true,
+        "trajectories": 4,
+        "result_finite": {
+          "dt_token_advantages": true,
+          "dt_q_estimates": true,
+          "dt_v_estimates": true
+        },
+        "model_training_before": true,
+        "model_training_after": true,
+        "parameter_metadata_changes": [],
+        "actual_GDN_source": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+        }
+      },
+      "head": {
+        "head_call": 1,
+        "chunk_begin": 0,
+        "chunk_end": 512,
+        "hidden_dtype": "torch.bfloat16",
+        "weight_dtype": "torch.bfloat16",
+        "compiled_min": -31.5,
+        "eager_min": -31.5,
+        "max_abs_difference": 2.384185791015625e-06,
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-head1.pt",
+        "sha256": "33c45c18ee010bb9020c9b41eedf504396681a7d5d44c0aa02382394c5d4ccf8"
+      },
+      "microbatch": 7,
+      "nonfinite": 0,
+      "native_metrics": {
+        "actor/kl_loss": 0.0020960101392120123,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": [
+          -0.5523290038108826,
+          0.19500420987606049,
+          -0.4267791509628296,
+          -0.2841878831386566,
+          -0.01158757135272026,
+          -0.034209977835416794,
+          -0.651639461517334,
+          0.04119980335235596
+        ],
+        "actor/pg_clipfrac": [
+          0.0,
+          0.000402698089601472,
+          0.0006020469591021538,
+          0.0,
+          0.0017953321803361177,
+          0.00013646288425661623,
+          0.0005312085268087685,
+          0.0002363786770729348
+        ],
+        "actor/ppo_kl": [
+          -0.0005155557300895452,
+          -0.00012524696649052203,
+          -0.0008605017210356891,
+          1.809265449992381e-05,
+          0.00048368817078880966,
+          0.000752046296838671,
+          -0.0003987039963249117,
+          -0.000373900547856465
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.08725245296955109
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 18.960132598876953,
+        "perf/max_memory_reserved_gb": 25.47265625,
+        "perf/cpu_memory_used_gb": 133.01390838623047,
+        "actor/lr": 1e-06
+      },
+      "optimizer_state_scope": "Fresh diagnostic optimizer; incident trainable weights and loss inputs exact; no claim about matching a parameter update.",
+      "peak_torch_allocated_bytes": 20358287360,
+      "peak_torch_reserved_bytes": 27351056384
+    },
+    {
+      "rank": 1,
+      "pid": 2597165,
+      "birth": 1791650110.44,
+      "scope": "Replay one incident37 DT batch then its native optimizer operation in isolation.\n\nOriginal VERL model initialization, actor forward/loss/update and Torch DCP\nstate loading own every operation. Only the saved trainable local shards are\nloaded into this diagnostic actor; no formal checkpoint/job is restored.\nPassive head observation calls the same owner's undecorated function on one\nidentical original chunk, and returns the original compiled outputs unchanged.\nOne existing native DT RPC on its saved batch; no production patch, replacement loss, rollout or training budget.\n",
+      "head_observations": [
+        {
+          "head_call": 0,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.21875,
+          "eager_min": -31.21875,
+          "max_abs_difference": 2.384185791015625e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-head0.pt",
+          "sha256": "167da04d2712d0c1150c45be1ef70302c472ad1d8d6935122307c06c390c542f"
+        },
+        {
+          "head_call": 1,
+          "chunk_begin": 0,
+          "chunk_end": 512,
+          "hidden_dtype": "torch.bfloat16",
+          "weight_dtype": "torch.bfloat16",
+          "compiled_min": -31.15625,
+          "eager_min": -31.15625,
+          "max_abs_difference": 2.1457672119140625e-06,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-head1.pt",
+          "sha256": "ed90dafc52beed0afba40e519be190baf6f6914bbdf01ae948220bc72d2d8002"
+        }
+      ],
+      "microbatches": [
+        {
+          "index": 0,
+          "finite_logp": true,
+          "min_active_gap": -0.12834978103637695,
+          "max_active_gap": 0.14101970195770264,
+          "native_pg_loss": -0.8741645812988281,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-microbatch0.pt",
+          "sha256": "7fecd5dc0c84dc9360869210468c4dfc79f0be14dfd112ee0b69a86fbff8dd6a",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 1,
+          "finite_logp": true,
+          "min_active_gap": -0.2616853713989258,
+          "max_active_gap": 0.23688817024230957,
+          "native_pg_loss": 0.3104495406150818,
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-microbatch1.pt",
+          "sha256": "b62f7f0e49c47b5c59bdd700ceb3922bf096c1abe6e0e51e68cafaef56852784",
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 2,
+          "finite_logp": true,
+          "min_active_gap": -0.24452590942382812,
+          "max_active_gap": 0.19965243339538574,
+          "native_pg_loss": -0.4183897078037262,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 3,
+          "finite_logp": true,
+          "min_active_gap": -0.24647045135498047,
+          "max_active_gap": 0.4083961248397827,
+          "native_pg_loss": -0.013517195358872414,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 4,
+          "finite_logp": true,
+          "min_active_gap": -0.3436775207519531,
+          "max_active_gap": 0.2448587417602539,
+          "native_pg_loss": -0.14011070132255554,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 5,
+          "finite_logp": true,
+          "min_active_gap": -0.22916793823242188,
+          "max_active_gap": 0.24276280403137207,
+          "native_pg_loss": -0.4007660746574402,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 6,
+          "finite_logp": true,
+          "min_active_gap": -0.18583643436431885,
+          "max_active_gap": 0.21634340286254883,
+          "native_pg_loss": -0.8393165469169617,
+          "nonfinite_logp_gradient_count": 0
+        },
+        {
+          "index": 7,
+          "finite_logp": true,
+          "min_active_gap": -0.24653959274291992,
+          "max_active_gap": 0.19458341598510742,
+          "native_pg_loss": -0.2809832990169525,
+          "nonfinite_logp_gradient_count": 0
+        }
+      ],
+      "actual_optimizer_steps": 1,
+      "model_forward_calls": 8,
+      "input_artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/incident-1791646951472693178-update.pt",
+        "sha256": "9a2306e95b909612aa68b29ce24495d12beead50675a8d753313a8e2d87d10c5"
+      },
+      "sources": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/source/replay_native_incident37_after_dt_20261011.py": "def7e15213829a566b4ac86b0b36167cb40916a501447df8fc6d6b304c25f926"
+      },
+      "phase": "complete",
+      "unix": 1791650272.033688,
+      "allocated": 163780608,
+      "reserved": 22198353920,
+      "pss_bytes": 8997931008,
+      "trainable_shards_loaded_exactly": 496,
+      "DCP_missing_frozen_keys": 427,
+      "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646901367830041.pt",
+      "packet_sha256": "de83f908ba781ab2ece3330a8153ccfd639363a789aedda8b0c0a52a24aa4c7b",
+      "DT_batch": {
+        "packet": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/credit-records/rank1-pid989860/joint-1791646901367830041.pt",
+        "packet_sha256": "de83f908ba781ab2ece3330a8153ccfd639363a789aedda8b0c0a52a24aa4c7b",
+        "original_valid_IDs_and_masks_exact": true,
+        "trajectories": 4,
+        "result_finite": {
+          "dt_token_advantages": true,
+          "dt_q_estimates": true,
+          "dt_v_estimates": true
+        },
+        "model_training_before": true,
+        "model_training_after": true,
+        "parameter_metadata_changes": [],
+        "actual_GDN_source": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+        }
+      },
+      "head": {
+        "head_call": 1,
+        "chunk_begin": 0,
+        "chunk_end": 512,
+        "hidden_dtype": "torch.bfloat16",
+        "weight_dtype": "torch.bfloat16",
+        "compiled_min": -31.15625,
+        "eager_min": -31.15625,
+        "max_abs_difference": 2.1457672119140625e-06,
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-head1.pt",
+        "sha256": "ed90dafc52beed0afba40e519be190baf6f6914bbdf01ae948220bc72d2d8002"
+      },
+      "microbatch": 7,
+      "nonfinite": 0,
+      "native_metrics": {
+        "actor/kl_loss": 0.0038716692943125963,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": [
+          -0.8741645812988281,
+          0.3104495406150818,
+          -0.4183897078037262,
+          -0.013517195358872414,
+          -0.14011070132255554,
+          -0.4007660746574402,
+          -0.8393165469169617,
+          -0.2809832990169525
+        ],
+        "actor/pg_clipfrac": [
+          0.0,
+          0.00017798344197217375,
+          0.000581733591388911,
+          0.00041788548696786165,
+          0.0004333225078880787,
+          0.0004449388070497662,
+          0.0007627765298821032,
+          0.00033233631984330714
+        ],
+        "actor/ppo_kl": [
+          -0.00202623987570405,
+          -0.0002724994265008718,
+          -0.0010888742981478572,
+          -0.0004914359305985272,
+          -6.060426676413044e-05,
+          0.00019355719268787652,
+          -0.00043041256139986217,
+          -6.71900634188205e-05
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.09938932210206985
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 14.434207916259766,
+        "perf/max_memory_reserved_gb": 20.673828125,
+        "perf/cpu_memory_used_gb": 133.76647567749023,
+        "actor/lr": 1e-06
+      },
+      "optimizer_state_scope": "Fresh diagnostic optimizer; incident trainable weights and loss inputs exact; no claim about matching a parameter update.",
+      "peak_torch_allocated_bytes": 15498612736,
+      "peak_torch_reserved_bytes": 22198353920
+    }
+  ],
+  "phases": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank0-phases.jsonl": [
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650259.618773, \"allocated\": 502233088, \"reserved\": 27351056384, \"pss_bytes\": 8340730880, \"microbatch\": 6, \"nonfinite\": 0}",
+      "{\"phase\": \"native_policy_loss_observed\", \"unix\": 1791650264.5697813, \"allocated\": 1073114112, \"reserved\": 27351056384, \"pss_bytes\": 8340800512, \"microbatch\": 7}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650264.6700666, \"allocated\": 935637504, \"reserved\": 27351056384, \"pss_bytes\": 8340800512, \"microbatch\": 7, \"nonfinite\": 0}",
+      "{\"phase\": \"complete\", \"unix\": 1791650272.0337417, \"allocated\": 163780608, \"reserved\": 27351056384, \"pss_bytes\": 8342467584, \"peak_torch_allocated_bytes\": 20358287360, \"peak_torch_reserved_bytes\": 27351056384}"
+    ],
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1/result/rank1-phases.jsonl": [
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650259.5266128, \"allocated\": 343898624, \"reserved\": 22198353920, \"pss_bytes\": 8996124672, \"microbatch\": 6, \"nonfinite\": 0}",
+      "{\"phase\": \"native_policy_loss_observed\", \"unix\": 1791650264.276994, \"allocated\": 512526336, \"reserved\": 22198353920, \"pss_bytes\": 8996202496, \"microbatch\": 7}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791650264.384552, \"allocated\": 438899200, \"reserved\": 22198353920, \"pss_bytes\": 8996202496, \"microbatch\": 7, \"nonfinite\": 0}",
+      "{\"phase\": \"complete\", \"unix\": 1791650272.033688, \"allocated\": 163780608, \"reserved\": 22198353920, \"pss_bytes\": 8997931008, \"peak_torch_allocated_bytes\": 15498612736, \"peak_torch_reserved_bytes\": 22198353920}"
+    ]
+  },
+  "completed": [
+    {
+      "rank": 0,
+      "completed": true,
+      "actual_optimizer_steps": 1
+    },
+    {
+      "rank": 1,
+      "completed": true,
+      "actual_optimizer_steps": 1
+    }
+  ],
+  "driver_log_tail": [
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m wrap_policy: functools.partial(<function _or_policy at 0x7f331f32fc40>, policies=[functools.partial(<function lambda_auto_wrap_policy at 0x7f331f32f600>, lambda_fn=<function get_fsdp_wrap_policy.<locals>.lambda_policy_fn at 0x7f31ddd36d40>), functools.partial(<function transformer_auto_wrap_policy at 0x7f331f32fb00>, transformer_layer_cls={<class 'transformers.models.qwen3_5.modeling_qwen3_5.Qwen3_5DecoderLayer'>})])",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m Actor use_remove_padding=False",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m Actor use_fused_kernels=True",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m Only support config type of {'minicpmv', 'apertus', 'seed_oss', 'mistral', 'qwen2', 'qwen3', 'llama', 'glm4v', 'qwen2_5_vl', 'minicpmo', 'gemma3_text', 'deepseek_v3', 'qwen3_vl_moe', 'qwen2_vl', 'qwen3_vl', 'qwen2_moe', 'qwen3_moe'}, but got qwen3_5. MFU will always be zero.",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m Only support config type of {'mistral', 'qwen3_moe', 'glm4v', 'qwen2_moe', 'gemma3_text', 'deepseek_v3', 'llama', 'apertus', 'qwen3', 'minicpmo', 'qwen3_vl_moe', 'qwen3_vl', 'minicpmv', 'qwen2_vl', 'seed_oss', 'qwen2', 'qwen2_5_vl'}, but got qwen3_5. MFU will always be zero.",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m [DeltaTrace] owner FSDP2 lifecycle modules=34 layerwise=True remaining_dtensor=921 sample=[('model.language_model.embed_tokens.weight', (Shard(dim=0),)), ('model.language_model.layers.0.linear_attn.dt_bias', (Shard(dim=0),)), ('model.language_model.layers.0.linear_attn.A_log', (Shard(dim=0),))]",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m Total steps: 330, num_warmup_steps: 0",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m Actor use_remove_padding=False",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m Actor use_fused_kernels=True",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m [DT direct joint minibatch] trajectories=4 length=4015 batch=1/1 seconds=33.35469473100966",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m [DeltaTrace readout] {\"task\": \"TextCraft\", \"target_semantics\": \"real_executed_action_joint\", \"target_normalization\": \"original_full_vocabulary\", \"reward_events\": 4, \"trajectories\": 4, \"finite_trace_calls\": 1, \"joint_target_requests\": 4, \"minibatch_size\": 4, \"query_tokens\": 0, \"synthetic_labels\": 0, \"reference_token_samples\": 0, \"per_token_probability_queries\": 0, \"prefix_lease_used\": true, \"target_self_tokens\": 677, \"prior_source_tokens\": 10982, \"policy_tokens\": 11663, \"empty_joint_targets\": 0, \"zero_reward_trajectories\": 0, \"actual_context_lengths\": [3492, 3552, 3819, 4015], \"original_response_rows\": [null, null, null, null], \"traces\": [{\"trajectory_index\": 0, \"traj_uid\": \"c4fd6508-6a81-4525-84cc-29957e8a6812\", \"reward\": 1.0, \"target_tokens\": 138, \"actual_context_tokens\": 3492, \"compute_tokens\": 4015, \"target_self_tokens\": 138, \"prior_source_tokens\": 2644, \"root_effect\": 240.00828172782803, \"signed_sum\": 240.54763955680102, \"conservation_residual\": -0.5393578289729817, \"factual_target_logp\": -24.484409746789424, \"reference_target_logp\": -264.49269147461746}, {\"trajectory_index\": 1, \"traj_uid\": \"f8f0e4fb-a3a5-4171-a715-9d7773dffd79\", \"reward\": 1.0, \"target_tokens\": 197, \"actual_context_tokens\": 3552, \"compute_tokens\": 4015, \"target_self_tokens\": 197, \"prior_source_tokens\": 2582, \"root_effect\": 283.48801034703115, \"signed_sum\": 283.78915105660656, \"conservation_residual\": -0.3011407095754066, \"factual_target_logp\": -0.2038636011404833, \"reference_target_logp\": -283.69187394817163}, {\"trajectory_index\": 2, \"traj_uid\": \"2c67f058-042c-4839-8781-570a07bf449c\", \"reward\": 1.0, \"target_tokens\": 275, \"actual_context_tokens\": 3819, \"compute_tokens\": 4015, \"target_self_tokens\": 275, \"prior_source_tokens\": 2624, \"root_effect\": 358.09055066589895, \"signed_sum\": 358.0439264637812, \"conservation_residual\": 0.046624202117754976, \"factual_target_logp\": -11.576335622263514, \"reference_target_logp\": -369.66688628816246}, {\"trajectory_index\": 3, \"traj_uid\": \"a313b108-81cd-41c8-b29c-98a5266e5d46\", \"reward\": 1.0, \"target_tokens\": 67, \"actual_context_tokens\": 4015, \"compute_tokens\": 4015, \"target_self_tokens\": 67, \"prior_source_tokens\": 3132, \"root_effect\": 166.5748246920657, \"signed_sum\": 166.5549160172203, \"conservation_residual\": 0.01990867484539649, \"factual_target_logp\": -1.7213618182913706, \"reference_target_logp\": -168.29618651035707}], \"shared_native_prefix\": {\"capture_rounds\": 1, \"local_unique_histories\": 4, \"consumer_batches\": 1, \"capture_token_slots\": 2304, \"original_shared_prefix_token_slots\": 1536, \"capture_and_preparation_seconds\": 17.055937204044312}, \"raw_advantage_groups\": {\"self_target\": {\"tokens\": 677, \"sum\": 677.0, \"sumsq\": 677.0, \"max\": 1.0, \"min\": 1.0, \"max_abs\": 1.0}, \"prior_source\": {\"tokens\": 10982, \"sum\": 645.5323068359864, \"sumsq\": 270.340586467247, \"max\": 1.0, \"min\": -4.1049957275390625, \"max_abs\": 4.1049957275390625}, \"other_policy\": {\"tokens\": 4, \"sum\": 0.0, \"sumsq\": 0.0, \"max\": 0.0, \"min\": 0.0, \"max_abs\": 0.0}}, \"seconds\": 50.43279227102175}",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m [DeltaTrace] owner FSDP2 lifecycle modules=34 layerwise=True remaining_dtensor=921 sample=[('model.language_model.embed_tokens.weight', (Shard(dim=0),)), ('model.language_model.layers.0.linear_attn.dt_bias', (Shard(dim=0),)), ('model.language_model.layers.0.linear_attn.A_log', (Shard(dim=0),))]",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m [native_host_cache] phase=compute_dt_token_advantages reserved_before=21062346285 reserved_after=10727232000 release_s=0.084881",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m [native_host_cache] phase=update_actor reserved_before=25365205517 reserved_after=10727232000 release_s=0.893073",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m [DT direct joint minibatch] trajectories=4 length=5283 batch=1/1 seconds=33.4598975959816",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m [DeltaTrace readout] {\"task\": \"TextCraft\", \"target_semantics\": \"real_executed_action_joint\", \"target_normalization\": \"original_full_vocabulary\", \"reward_events\": 4, \"trajectories\": 4, \"finite_trace_calls\": 1, \"joint_target_requests\": 4, \"minibatch_size\": 4, \"query_tokens\": 0, \"synthetic_labels\": 0, \"reference_token_samples\": 0, \"per_token_probability_queries\": 0, \"prefix_lease_used\": true, \"target_self_tokens\": 595, \"prior_source_tokens\": 12048, \"policy_tokens\": 12647, \"empty_joint_targets\": 0, \"zero_reward_trajectories\": 0, \"actual_context_lengths\": [3490, 3502, 3706, 5283], \"original_response_rows\": [null, null, null, null], \"traces\": [{\"trajectory_index\": 0, \"traj_uid\": \"0d04b5c8-f26f-431d-a6e0-fe7d1a1dfbfa\", \"reward\": 1.0, \"target_tokens\": 126, \"actual_context_tokens\": 3490, \"compute_tokens\": 5283, \"target_self_tokens\": 126, \"prior_source_tokens\": 2710, \"root_effect\": 214.83805212904417, \"signed_sum\": 215.01621793827906, \"conservation_residual\": -0.17816580923488345, \"factual_target_logp\": -0.2192344972659157, \"reference_target_logp\": -215.0572866263101}, {\"trajectory_index\": 1, \"traj_uid\": \"39544d44-cb50-4bb2-aa3e-038ffccf26fe\", \"reward\": 1.0, \"target_tokens\": 82, \"actual_context_tokens\": 3502, \"compute_tokens\": 5283, \"target_self_tokens\": 82, \"prior_source_tokens\": 2611, \"root_effect\": 165.0151998864527, \"signed_sum\": 165.39500900607015, \"conservation_residual\": -0.37980911961744823, \"factual_target_logp\": -0.9812188788349658, \"reference_target_logp\": -165.99641876528767}, {\"trajectory_index\": 2, \"traj_uid\": \"6a9efa5d-6c8a-4570-9e0e-98fdbb2b6fcf\", \"reward\": 1.0, \"target_tokens\": 99, \"actual_context_tokens\": 3706, \"compute_tokens\": 5283, \"target_self_tokens\": 99, \"prior_source_tokens\": 2657, \"root_effect\": 127.79547470322996, \"signed_sum\": 127.58014462615262, \"conservation_residual\": 0.21533007707733987, \"factual_target_logp\": -42.39215201832576, \"reference_target_logp\": -170.18762672155572}, {\"trajectory_index\": 3, \"traj_uid\": \"5f3f5abc-df99-45d2-81bd-bfb775ea8cbc\", \"reward\": 1.0, \"target_tokens\": 288, \"actual_context_tokens\": 5283, \"compute_tokens\": 5283, \"target_self_tokens\": 288, \"prior_source_tokens\": 4070, \"root_effect\": 381.2545474609344, \"signed_sum\": 381.61188015984516, \"conservation_residual\": -0.3573326989107386, \"factual_target_logp\": -5.131390753110267, \"reference_target_logp\": -386.3859382140447}], \"shared_native_prefix\": {\"capture_rounds\": 1, \"local_unique_histories\": 4, \"consumer_batches\": 1, \"capture_token_slots\": 2304, \"original_shared_prefix_token_slots\": 1536, \"capture_and_preparation_seconds\": 17.056407385971397}, \"raw_advantage_groups\": {\"self_target\": {\"tokens\": 595, \"sum\": 595.0, \"sumsq\": 595.0, \"max\": 1.0, \"min\": 1.0, \"max_abs\": 1.0}, \"prior_source\": {\"tokens\": 12048, \"sum\": 532.1721793148363, \"sumsq\": 192.78108737801182, \"max\": 1.0, \"min\": -1.5663777589797974, \"max_abs\": 1.5663777589797974}, \"other_policy\": {\"tokens\": 4, \"sum\": 0.0, \"sumsq\": 0.0, \"max\": 0.0, \"min\": 0.0, \"max_abs\": 0.0}}, \"seconds\": 50.53903882903978}",
+    "\u001b[36m(IncidentWorker pid=2594529)\u001b[0m [native_host_cache] phase=compute_dt_token_advantages reserved_before=30210385453 reserved_after=10727232000 release_s=0.162712",
+    "\u001b[36m(IncidentWorker pid=2597165)\u001b[0m [native_host_cache] phase=update_actor reserved_before=26406986253 reserved_after=10727232000 release_s=0.901427"
+  ],
+  "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 00:38:31 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+}

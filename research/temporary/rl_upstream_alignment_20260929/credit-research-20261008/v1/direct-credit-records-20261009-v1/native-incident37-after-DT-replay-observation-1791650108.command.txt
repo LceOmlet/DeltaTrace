@@ -1,0 +1,15 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import json,time,psutil,subprocess
+from pathlib import Path
+f=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-DT-replay-20261011-v1');j=json.loads((f/'job.json').read_text());r=f/'result'
+try:
+ p=psutil.Process(j['pid']);driver=dict(pid=p.pid,birth=p.create_time(),same_birth=abs(p.create_time()-j['birth'])<.01,status=p.status(),pss=p.memory_full_info().pss)
+except psutil.NoSuchProcess:driver=dict(pid=j['pid'],missing=True)
+records=[json.loads(p.read_text()) for p in sorted(r.glob('rank*.json'))]
+logs={str(p):p.read_text(errors='replace').splitlines()[-4:] for p in sorted(r.glob('*phases.jsonl'))}
+mx=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15)
+print(json.dumps(dict(unix=time.time(),job=j,driver=driver,records=records,phases=logs,completed=json.loads((r/'completed.json').read_text()) if (r/'completed.json').exists() else None,driver_log_tail=(f/'driver.log').read_text(errors='replace').splitlines()[-18:],physical_mx_smi=mx.stdout)))
+
+PY

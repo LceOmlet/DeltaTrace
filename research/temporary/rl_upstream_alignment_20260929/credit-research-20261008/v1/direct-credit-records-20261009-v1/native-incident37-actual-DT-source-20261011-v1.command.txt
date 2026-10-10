@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import json,os,subprocess
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_text())
+code=r"""
+import inspect,json,hashlib,ast,os
+from pathlib import Path
+import deltatrace_rollout as dr, reward_readout as rr
+paths=[Path(inspect.getsourcefile(dr)),Path(inspect.getsourcefile(rr)),Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-target-records-20261010-v1/reward_readout.py')]
+rows=[]
+for p in paths:
+ t=p.read_text();tree=ast.parse(t)
+ rows.append(dict(path=str(p),resolved=str(p.resolve()),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),source=t))
+print(json.dumps(dict(files=rows,DT_ROOT=os.environ.get('DT_ROOT'),DT_OFFICIAL_ROOT=os.environ.get('DT_OFFICIAL_ROOT'))))
+"""
+e=dict(os.environ,**s['environment']);e['CUDA_VISIBLE_DEVICES']='-1';e['PYTHONPATH']=s['pythonpath'];e.pop('RAY_ADDRESS',None)
+r=subprocess.run([e['VENV_PYTHON'],'-c',code],env=e,capture_output=True,text=True,timeout=90);print(r.stdout);print(r.stderr,file=__import__('sys').stderr);raise SystemExit(r.returncode)
+
+PY
