@@ -1581,6 +1581,10 @@ def main() -> None:
     dispatch = args.verl_root / 'verl/models/transformers/monkey_patch.py'
     dispatch.write_text(patch_dispatch(dispatch.read_text()))
 
+    from patch_verl_kl_stability import patch as patch_kl_stability
+    core = args.verl_root / 'verl/trainer/ppo/core_algos.py'
+    core.write_text(patch_kl_stability(core.read_text()))
+
     vllm = args.verl_root / VLLM_ROLLOUT_FILE
     vllm.write_text(patch_vllm_prefix_cache_option(patch_vllm_active_rows(vllm.read_text())))
 

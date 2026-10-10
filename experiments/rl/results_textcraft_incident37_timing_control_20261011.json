@@ -1,0 +1,307 @@
+{
+  "observed_unix": 1791652786.712009,
+  "source_parent_commit": "4012aec5e899aa7a4e30a209f83a7280ec99c21a",
+  "status": "Official KL guard integrated in local patch generator; complete-DT timing-controlled native replays finite; original preupdate probability gap unresolved",
+  "formal_training_stopped": true,
+  "trainer_recorded_iterations": 37,
+  "total_iterations": 330,
+  "formal_jobs_restarted": 0,
+  "checkpoint_restore_performed": false,
+  "production_owner_changes": 0,
+  "local_default_patch_generator_changes": "Adds only official KL exp guard inside existing core_algos. Frozen production owner unchanged.",
+  "method_changes": 0,
+  "upstream_VERL_agent_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "numerical_DT_source_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+  "GDN_sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656",
+  "frozen_production_core_sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+  "prepared_KL_owner_sha256": "1faf86aa09004f4947d2d04c636bea8b76c8928091323d3f0c7f7c8d5065a395",
+  "official_KL_fix_commit": "9058412fb308e9f2e31a794ad1d18d97d4286485",
+  "official_KL_gpu_verification_receipt": "experiments/rl/results_textcraft_incident37_diagnosis_20261011.json",
+  "new_replays": [
+    {
+      "receipt": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-observation-1791652205.json",
+      "driver_pid": 2793188,
+      "driver_exited": true,
+      "DT_batches_per_rank": 0,
+      "rank_results": [
+        {
+          "rank": 0,
+          "worker_pid": 2796262,
+          "worker_birth": 1791651989.94,
+          "finite_loss_gradient_B4": 8,
+          "actual_native_optimizer_steps": 1,
+          "grad_norm": [
+            0.08744888752698898
+          ],
+          "torch_peak_allocated_bytes": 11127369216,
+          "torch_peak_reserved_bytes": 15839789056,
+          "final_PSS_bytes": 8078260224,
+          "extra_head_calls": 0,
+          "preloss_tensor_observation": false
+        },
+        {
+          "rank": 1,
+          "worker_pid": 2797800,
+          "worker_birth": 1791652004.35,
+          "finite_loss_gradient_B4": 8,
+          "actual_native_optimizer_steps": 1,
+          "grad_norm": [
+            0.09952365607023239
+          ],
+          "torch_peak_allocated_bytes": 11357849088,
+          "torch_peak_reserved_bytes": 15814623232,
+          "final_PSS_bytes": 8853192704,
+          "extra_head_calls": 0,
+          "preloss_tensor_observation": false
+        }
+      ],
+      "frozen_base": "Original checkpoint; frozen tensors not captured at incident",
+      "optimizer": "Fresh native optimizer; not original incident optimizer state",
+      "physical_devices": [
+        4,
+        5
+      ]
+    },
+    {
+      "receipt": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-all-DT-no-preloss-sync-observation-1791652646.json",
+      "driver_pid": 2824224,
+      "driver_exited": true,
+      "DT_batches_per_rank": 27,
+      "rank_results": [
+        {
+          "rank": 0,
+          "worker_pid": 2827415,
+          "worker_birth": 1791652261.98,
+          "finite_loss_gradient_B4": 8,
+          "actual_native_optimizer_steps": 1,
+          "grad_norm": [
+            0.08730319887399673
+          ],
+          "torch_peak_allocated_bytes": 20357795840,
+          "torch_peak_reserved_bytes": 27002929152,
+          "final_PSS_bytes": 15365122048,
+          "extra_head_calls": 0,
+          "preloss_tensor_observation": false
+        },
+        {
+          "rank": 1,
+          "worker_pid": 2828945,
+          "worker_birth": 1791652277.59,
+          "finite_loss_gradient_B4": 8,
+          "actual_native_optimizer_steps": 1,
+          "grad_norm": [
+            0.09944254159927368
+          ],
+          "torch_peak_allocated_bytes": 15500197376,
+          "torch_peak_reserved_bytes": 23708303360,
+          "final_PSS_bytes": 15339256832,
+          "extra_head_calls": 0,
+          "preloss_tensor_observation": false
+        }
+      ],
+      "frozen_base": "Original checkpoint; frozen tensors not captured at incident",
+      "optimizer": "Fresh native optimizer; not original incident optimizer state",
+      "physical_devices": [
+        4,
+        5
+      ]
+    }
+  ],
+  "actual_error_pattern": {
+    "population": "All active policy positions in the original anomalous second B4 on both ranks; not a sample of all training",
+    "rank0": {
+      "active_tokens": 9933,
+      "actor_minus_old_less_than_minus1": 3151,
+      "actor_minus_old_greater_than_plus1": 0
+    },
+    "rank1": {
+      "active_tokens": 11237,
+      "actor_minus_old_less_than_minus1": 3669,
+      "actor_minus_old_greater_than_plus1": 0
+    },
+    "threshold": "Descriptive count at 1 log-prob unit; not a tolerance",
+    "conclusion": "Discrepancy appears in all 8 trajectories; token-ID representability and advantage sign correlations do not locate a cause"
+  },
+  "unresolved": [
+    "Original persistent actor forward/runtime state causing >100 old/new logp gaps before optimizer step; fresh actor with saved LoRA does not reproduce it",
+    "Iteration14 first bad operator was not captured; cannot assign iteration37 cause to it"
+  ],
+  "inference_limits": [
+    "Finite replays are not a formal training health or root-cause repair claim",
+    "No frozen incident base/buffers or head hidden inputs available; local trainable shards match exactly but complete persistent runtime does not",
+    "No FA/FLA tolerance or fabricated full-network update criterion substituted for actual owner comparisons"
+  ],
+  "local_identity_check": "First check incorrectly compared LF-normalized hash with raw CRLF hash; raw bytes confirmed unchanged and candidate output hash matched. Corrected receipt preserves both.",
+  "raw_files": [
+    {
+      "path": "experiments\\rl\\patch_verl_agent2.py",
+      "bytes": 102145,
+      "sha256": "c5e1ece4623a773ad2ed5bd6247b9851eda9e749542b5d13a5162eda11434765"
+    },
+    {
+      "path": "experiments\\rl\\patch_verl_kl_stability.py",
+      "bytes": 1062,
+      "sha256": "a134ef98043d39bde3a287275f124f89532f476a725c1c62aac7b942cd1bcf18"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actor-path-0-20261011.py",
+      "bytes": 27001,
+      "sha256": "441ad52cb00d685873cc1879c87b91c28565fba3795a26638bf0152133442d32"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actor-path-1-20261011.py",
+      "bytes": 14367,
+      "sha256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actor-path-2-20261011.py",
+      "bytes": 20725,
+      "sha256": "a66a2867e1afd524fd66ac0523f24b26bbd5e8062a5b72a92995d0e3b7d208d2"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-actor-path-source-20261011-v1.command.txt",
+      "bytes": 689,
+      "sha256": "3f3cd145a3977299d2b6dbed5cc1aca98d31abcd7f43300669dcbde07216186a"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-actor-path-source-20261011-v1.json",
+      "bytes": 63956,
+      "sha256": "48dbb4eae543a9e2bdd6973a3c6158e43fe3679b18f71728df640794ba20343b"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-core-source-20261011-v1.command.txt",
+      "bytes": 539,
+      "sha256": "bebecf581235c0f1108843a9b585251d472874c71b2a4d7ba3a7a806ca4afde0"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-core-source-20261011-v1.json",
+      "bytes": 29577,
+      "sha256": "2570e53748b279562c4c1e7bfbcf6dd1bf585c1bf80b554a0b348f4b3ef3b2d8"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-actual-core-source-20261011-v1.py",
+      "bytes": 28863,
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-all-DT-no-preloss-sync-launch-20261011-v1.command.txt",
+      "bytes": 24892,
+      "sha256": "611005ea02cbcd8d729ac7b684e7c87d6fe658f351dd7ea0d1560bdc437fca0e"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-all-DT-no-preloss-sync-launch-20261011-v1.json",
+      "bytes": 5435,
+      "sha256": "0b62e0ca99c65cc3a1f3542b9d7ed0ad0461964b596c3db459b52a2b1983368d"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-all-DT-no-preloss-sync-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-all-DT-no-preloss-sync-observation-1791652646.command.txt",
+      "bytes": 1244,
+      "sha256": "e70346b5ed84b5a109d1fef995c0a64215a8f9e277ecb5f7522be142a633675c"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-all-DT-no-preloss-sync-observation-1791652646.json",
+      "bytes": 140632,
+      "sha256": "ea88fac7a308889d8c6c3bd96959540e26511b1b3e16ea714fcf244dd9f286e8"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-all-DT-no-preloss-sync-observation-1791652646.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-logp-error-pattern-20261011-v1.command.txt",
+      "bytes": 2527,
+      "sha256": "6498e2e7f090dab3b6ad0c949b9e016b91b59f98a2c1ffb4a189bc513113fef5"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-logp-error-pattern-20261011-v1.json",
+      "bytes": 133445,
+      "sha256": "e7e18ae4693aaa1fe62c55e40ac1eb33ac9437bb2ab0106cccaf4ef40785b36a"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-logp-error-pattern-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-logp-error-pattern-advantage-20261011-v1.command.txt",
+      "bytes": 2671,
+      "sha256": "550d2ee9be967354d072d474ffbf2cf7635e103d4965adc0f2e84204b6cbe3bd"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-logp-error-pattern-advantage-20261011-v1.json",
+      "bytes": 134716,
+      "sha256": "c9f9ca4d299101cba3b3738a214798af433b1598470a314d610e7cadbad2223f"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-logp-error-pattern-advantage-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-launch-20261011-v1.command.txt",
+      "bytes": 20312,
+      "sha256": "7a8c75138725c032c19a08acee26fcb31b328c9b0a48afcdad5f38834dc73a1d"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-launch-20261011-v1.json",
+      "bytes": 5379,
+      "sha256": "063df802a974b36013d42ad48869202c3920d381e7c250ba47b3d06916465301"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-observation-1791652083.command.txt",
+      "bytes": 1237,
+      "sha256": "e14001ac3360803dc76b226022ccd4877415b9e5ee898dbce148cf0ce90e7791"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-observation-1791652083.json",
+      "bytes": 19949,
+      "sha256": "b1942ff1873eba4570aaa93aee16c583959d8c2b42e27309750bfcea09ba31a6"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-observation-1791652083.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-observation-1791652205.command.txt",
+      "bytes": 1237,
+      "sha256": "e14001ac3360803dc76b226022ccd4877415b9e5ee898dbce148cf0ce90e7791"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-observation-1791652205.json",
+      "bytes": 22900,
+      "sha256": "281f06ace6006f256f52135bf3a233c5493ce42b179f9f1cf64d2697d7b37442"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-no-preloss-sync-observation-1791652205.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-incident37-persistent-owner-KL-patch-20261011-v1.json",
+      "bytes": 906,
+      "sha256": "d39bfe9aed15cc88cd64bceae373b3ab150cafdb043b8f1160e79c5f6fc7a5bb"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\replay_native_incident37_all_dt_no_preloss_sync_20261011.py",
+      "bytes": 15775,
+      "sha256": "acf52fd227189a2faead230a8ab030855dae397dc64ba4c2da89780b6449e6e4"
+    },
+    {
+      "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\replay_native_incident37_no_preloss_sync_20261011.py",
+      "bytes": 11325,
+      "sha256": "4f818673af0857fa43b101fe928939bb9a6c7246973d5c48e74e12bcadc67ec2"
+    }
+  ]
+}

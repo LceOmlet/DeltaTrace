@@ -1,0 +1,33 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import json,time,torch,resource
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');inc=root/'receipts/textcraft-native-actor-incidents-20261010-v1';records=[]
+torch.set_num_threads(1)
+for rank,pid in [(0,987808),(1,989860)]:
+ f=inc/f'rank{rank}-pid{pid}';a=torch.load(next(f.glob('incident-*-update.pt')),map_location='cpu',weights_only=False);t=torch.load(next(f.glob('loss-backward-179164691*.pt')),map_location='cpu',weights_only=False)['tensors'];ids=a['input_batch']['responses'][4:8].long();gap=t['log_prob']-t['old_log_prob'];mask=t['response_mask'].bool();bad=(gap < -1)&mask;positive=(gap>1)&mask
+ classifications={
+ 'advantage_negative':t['advantages']<0,
+ 'old_logp_below_minus1':t['old_log_prob'] < -1,
+ 'old_logp_below_minus01':t['old_log_prob'] < -.1,
+ 'IDs_not_exact_BF16':ids.to(torch.bfloat16).long()!=ids,
+ 'IDs_not_exact_FP16':ids.to(torch.float16).long()!=ids,
+ 'IDs_ge_65536':ids>=65536,
+ 'IDs_ge_131072':ids>=131072,
+ 'ID_is_EOS':ids==248046,
+ 'IDs_not_exact_FP32':ids.float().long()!=ids,
+ }
+ counts={k:dict(bad_and_property=int((bad&v).sum()),bad_without_property=int((bad&~v).sum()),ordinary_and_property=int((mask&~bad&v).sum()),ordinary_without_property=int((mask&~bad&~v).sum())) for k,v in classifications.items()}
+ first=[]
+ for row in range(4):
+  positions=bad[row].nonzero().flatten();first.append(dict(row=row,first_positions=positions[:40].tolist(),IDs_at_first_positions=ids[row,positions[:40]].tolist(),mod512_hist=torch.bincount(positions%512,minlength=512).tolist(),total=int(mask[row].sum()),large_negative=int(bad[row].sum()),positive=int(positive[row].sum())))
+ token_counts=[]
+ for ID in torch.unique(ids[mask]).tolist():
+  p=(ids==ID)&mask;count=int(p.sum());b=int((p&bad).sum())
+  if count>=10:token_counts.append(dict(ID=ID,count=count,bad_count=b,bad_fraction=b/count))
+ records.append(dict(rank=rank,total_active=int(mask.sum()),large_negative=int(bad.sum()),large_positive=int(positive.sum()),classifications=counts,per_row=first,repeated_token_IDs=sorted(token_counts,key=lambda q:(-q['bad_fraction'],-q['count']))))
+ del a,t
+print(json.dumps(dict(unix=time.time(),records=records,model_calls=0,CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,scope='Observed >1 log-prob discrepancy classification only; not a numerical acceptance tolerance or attribution-method quality score.')))
+
+PY

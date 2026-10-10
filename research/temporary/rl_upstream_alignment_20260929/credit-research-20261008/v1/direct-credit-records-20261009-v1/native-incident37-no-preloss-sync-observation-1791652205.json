@@ -1,0 +1,311 @@
+{
+  "unix": 1791652205.8816075,
+  "job": {
+    "unix": 1791651965.7033532,
+    "pid": 2793188,
+    "birth": 1791651965.34,
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+    "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "diagnostic_files": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/source/capture_native_loss_backward_20261010.py": "7e94ea6b74867b5a21aeab3c322fc160690b6d5c8140caf3f12b92877c39ba49",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/source/replay_native_incident37_no_preloss_sync_20261011.py": "48b5f886289542b5cbe1433848b509d463be90ff57d8cd2aff13db93789bcca8"
+    },
+    "physical_GPUs": [
+      4,
+      5
+    ],
+    "command": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/source/replay_native_incident37_no_preloss_sync_20261011.py",
+      "--source",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/result"
+    ],
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/driver.log",
+    "result": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/result",
+    "physical_before": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 01:06:05 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "formal_training_restarted": false
+  },
+  "driver": {
+    "pid": 2793188,
+    "missing": true
+  },
+  "records": [
+    {
+      "rank": 0,
+      "pid": 2796262,
+      "birth": 1791651989.94,
+      "scope": "Replay incident37 without pre-loss tensor reads or extra head calls.\n\nOriginal VERL model initialization, actor forward/loss/update and Torch DCP\nstate loading own every operation. Only the saved trainable local shards are\nloaded into this diagnostic actor; no formal checkpoint/job is restored.\nOnly the original-style backward hook reads gradients after native loss is\ncomputed. No output-head comparison, forward scalar conversion, pre-loss CPU\ncopy or extra head/model call is introduced. No production patch or rollout.\n",
+      "microbatches": [
+        {
+          "index": 0,
+          "gradient_finite": true
+        },
+        {
+          "index": 1,
+          "gradient_finite": true
+        },
+        {
+          "index": 2,
+          "gradient_finite": true
+        },
+        {
+          "index": 3,
+          "gradient_finite": true
+        },
+        {
+          "index": 4,
+          "gradient_finite": true
+        },
+        {
+          "index": 5,
+          "gradient_finite": true
+        },
+        {
+          "index": 6,
+          "gradient_finite": true
+        },
+        {
+          "index": 7,
+          "gradient_finite": true
+        }
+      ],
+      "actual_optimizer_steps": 1,
+      "extra_head_calls": 0,
+      "preloss_tensor_observation": false,
+      "input_artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/incident-1791646951472459222-update.pt",
+        "sha256": "52859f89a535e3543d41b82916d090733c9b1d48aff02e06ee3d8b2e17664772"
+      },
+      "sources": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/source/replay_native_incident37_no_preloss_sync_20261011.py": "48b5f886289542b5cbe1433848b509d463be90ff57d8cd2aff13db93789bcca8"
+      },
+      "phase": "complete",
+      "unix": 1791652114.876947,
+      "allocated": 163710464,
+      "reserved": 15839789056,
+      "pss_bytes": 8078260224,
+      "trainable_shards_loaded_exactly": 496,
+      "DCP_missing_frozen_keys": 427,
+      "native_metrics": {
+        "actor/kl_loss": 0.0021290970034897327,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": [
+          -0.5521467328071594,
+          0.19481821358203888,
+          -0.4265478551387787,
+          -0.2838374078273773,
+          -0.011320638470351696,
+          -0.034070730209350586,
+          -0.6518580913543701,
+          0.040908072143793106
+        ],
+        "actor/pg_clipfrac": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actor/ppo_kl": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.08744888752698898
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 10.363170146942139,
+        "perf/max_memory_reserved_gb": 14.751953125,
+        "perf/cpu_memory_used_gb": 134.59087753295898,
+        "actor/lr": 1e-06
+      },
+      "optimizer_state_scope": "Fresh diagnostic optimizer; incident trainable weights and loss inputs exact; no claim about matching a parameter update.",
+      "peak_torch_allocated_bytes": 11127369216,
+      "peak_torch_reserved_bytes": 15839789056
+    },
+    {
+      "rank": 1,
+      "pid": 2797800,
+      "birth": 1791652004.35,
+      "scope": "Replay incident37 without pre-loss tensor reads or extra head calls.\n\nOriginal VERL model initialization, actor forward/loss/update and Torch DCP\nstate loading own every operation. Only the saved trainable local shards are\nloaded into this diagnostic actor; no formal checkpoint/job is restored.\nOnly the original-style backward hook reads gradients after native loss is\ncomputed. No output-head comparison, forward scalar conversion, pre-loss CPU\ncopy or extra head/model call is introduced. No production patch or rollout.\n",
+      "microbatches": [
+        {
+          "index": 0,
+          "gradient_finite": true
+        },
+        {
+          "index": 1,
+          "gradient_finite": true
+        },
+        {
+          "index": 2,
+          "gradient_finite": true
+        },
+        {
+          "index": 3,
+          "gradient_finite": true
+        },
+        {
+          "index": 4,
+          "gradient_finite": true
+        },
+        {
+          "index": 5,
+          "gradient_finite": true
+        },
+        {
+          "index": 6,
+          "gradient_finite": true
+        },
+        {
+          "index": 7,
+          "gradient_finite": true
+        }
+      ],
+      "actual_optimizer_steps": 1,
+      "extra_head_calls": 0,
+      "preloss_tensor_observation": false,
+      "input_artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/incident-1791646951472693178-update.pt",
+        "sha256": "9a2306e95b909612aa68b29ce24495d12beead50675a8d753313a8e2d87d10c5"
+      },
+      "sources": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/source/replay_native_incident37_no_preloss_sync_20261011.py": "48b5f886289542b5cbe1433848b509d463be90ff57d8cd2aff13db93789bcca8"
+      },
+      "phase": "complete",
+      "unix": 1791652114.880935,
+      "allocated": 163710464,
+      "reserved": 15814623232,
+      "pss_bytes": 8853192704,
+      "trainable_shards_loaded_exactly": 496,
+      "DCP_missing_frozen_keys": 427,
+      "native_metrics": {
+        "actor/kl_loss": 0.0038716692943125963,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": [
+          -0.8741645812988281,
+          0.3104495406150818,
+          -0.4183897078037262,
+          -0.013517195358872414,
+          -0.14011070132255554,
+          -0.4007660746574402,
+          -0.8393165469169617,
+          -0.2809832990169525
+        ],
+        "actor/pg_clipfrac": [
+          0.0,
+          0.00017798344197217375,
+          0.000581733591388911,
+          0.00041788548696786165,
+          0.0004333225078880787,
+          0.0004449388070497662,
+          0.0007627765298821032,
+          0.00033233631984330714
+        ],
+        "actor/ppo_kl": [
+          -0.00202623987570405,
+          -0.0002724994265008718,
+          -0.0010888742981478572,
+          -0.0004914359305985272,
+          -6.060426676413044e-05,
+          0.00019355719268787652,
+          -0.00043041256139986217,
+          -6.71900634188205e-05
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.09952365607023239
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 10.577821254730225,
+        "perf/max_memory_reserved_gb": 14.728515625,
+        "perf/cpu_memory_used_gb": 134.82777404785156,
+        "actor/lr": 1e-06
+      },
+      "optimizer_state_scope": "Fresh diagnostic optimizer; incident trainable weights and loss inputs exact; no claim about matching a parameter update.",
+      "peak_torch_allocated_bytes": 11357849088,
+      "peak_torch_reserved_bytes": 15814623232
+    }
+  ],
+  "phases": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/result/rank0-phases.jsonl": [
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791652097.7552938, \"microbatch\": 5, \"gradient_finite\": true}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791652103.170962, \"microbatch\": 6, \"gradient_finite\": true}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791652108.044324, \"microbatch\": 7, \"gradient_finite\": true}",
+      "{\"phase\": \"complete\", \"unix\": 1791652114.876947, \"allocated\": 163710464, \"reserved\": 15839789056, \"pss_bytes\": 8078260224, \"peak_torch_allocated_bytes\": 11127369216, \"peak_torch_reserved_bytes\": 15839789056}"
+    ],
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-no-preloss-sync-20261011-v1/result/rank1-phases.jsonl": [
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791652097.6313572, \"microbatch\": 5, \"gradient_finite\": true}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791652103.080977, \"microbatch\": 6, \"gradient_finite\": true}",
+      "{\"phase\": \"native_logp_backward_observed\", \"unix\": 1791652107.7504852, \"microbatch\": 7, \"gradient_finite\": true}",
+      "{\"phase\": \"complete\", \"unix\": 1791652114.880935, \"allocated\": 163710464, \"reserved\": 15814623232, \"pss_bytes\": 8853192704, \"peak_torch_allocated_bytes\": 11357849088, \"peak_torch_reserved_bytes\": 15814623232}"
+    ]
+  },
+  "completed": [
+    {
+      "rank": 0,
+      "completed": true,
+      "actual_optimizer_steps": 1
+    },
+    {
+      "rank": 1,
+      "completed": true,
+      "actual_optimizer_steps": 1
+    }
+  ],
+  "driver_log_tail": [
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m Using Torch backend for fused kernels in Qwen3_5ForCausalLM",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m Applying LoRA to actor module",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m PeftModelForCausalLM contains 8.98B parameters",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m wrap_policy: functools.partial(<function _or_policy at 0x7f874a833c40>, policies=[functools.partial(<function lambda_auto_wrap_policy at 0x7f874a833600>, lambda_fn=<function get_fsdp_wrap_policy.<locals>.lambda_policy_fn at 0x7f85f052fec0>), functools.partial(<function transformer_auto_wrap_policy at 0x7f874a833b00>, transformer_layer_cls={<class 'transformers.models.qwen3_5.modeling_qwen3_5.Qwen3_5DecoderLayer'>})])",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m [Gloo] Rank 1 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m Total steps: 330, num_warmup_steps: 0",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m Actor use_remove_padding=False",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m Actor use_fused_kernels=True",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m Only support config type of {'minicpmv', 'glm4v', 'deepseek_v3', 'qwen3', 'mistral', 'qwen2_moe', 'seed_oss', 'qwen2_5_vl', 'gemma3_text', 'qwen3_vl_moe', 'qwen3_moe', 'qwen2', 'qwen2_vl', 'minicpmo', 'qwen3_vl', 'apertus', 'llama'}, but got qwen3_5. MFU will always be zero.",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m Using Torch backend for fused kernels in Qwen3_5ForCausalLM",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m Applying LoRA to actor module",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m wrap_policy: functools.partial(<function _or_policy at 0x7fbff3437c40>, policies=[functools.partial(<function lambda_auto_wrap_policy at 0x7fbff3437600>, lambda_fn=<function get_fsdp_wrap_policy.<locals>.lambda_policy_fn at 0x7fbeb13f2ca0>), functools.partial(<function transformer_auto_wrap_policy at 0x7fbff3437b00>, transformer_layer_cls={<class 'transformers.models.qwen3_5.modeling_qwen3_5.Qwen3_5DecoderLayer'>})])",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m Only support config type of {'qwen2_moe', 'glm4v', 'qwen2_5_vl', 'minicpmo', 'qwen3_vl_moe', 'mistral', 'qwen3', 'deepseek_v3', 'gemma3_text', 'minicpmv', 'qwen3_vl', 'apertus', 'llama', 'qwen2_vl', 'qwen3_moe', 'qwen2', 'seed_oss'}, but got qwen3_5. MFU will always be zero.",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m [native_host_cache] phase=update_actor reserved_before=26493477933 reserved_after=10727232000 release_s=0.398286",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m Total steps: 330, num_warmup_steps: 0",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m Actor use_remove_padding=False",
+    "\u001b[36m(IncidentWorker pid=2796262)\u001b[0m Actor use_fused_kernels=True",
+    "\u001b[36m(IncidentWorker pid=2797800)\u001b[0m [native_host_cache] phase=update_actor reserved_before=27501700141 reserved_after=10727232000 release_s=0.406808"
+  ],
+  "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 01:10:05 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+}
