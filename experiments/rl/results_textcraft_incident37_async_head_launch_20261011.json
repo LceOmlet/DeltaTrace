@@ -1,0 +1,651 @@
+{
+  "status": "One native replay active to capture second update head result asynchronously; no production repair",
+  "observed_unix": 1791673874.2220201,
+  "recording_parent_commit": "f1a99e5569117967cf72cae4113f28a2d261ca2d",
+  "diagnostic_job": {
+    "unix": 1791673741.7845666,
+    "pid": 894899,
+    "birth": 1791673741.42,
+    "command": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+      "--source",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/result"
+    ],
+    "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "original_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+    "original_sha256": "e48ed0021391b2d6c1473714d9e90ab6d44bfed6026697572dc8f0596e40ccb9",
+    "wrapper_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+    "wrapper_sha256": "782db0e8548f7cfb12bcf9c24271400da895b8bcb9e008eb3813f9014a0e9cc2",
+    "exception_capture_sha256": "3f4942a9c5135eb1d52ae1393d3fba82f46fa28cdf99509d5f2606da8a8e4f23",
+    "physical_GPUs": [
+      4,
+      5
+    ],
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/driver.log",
+    "result": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/result",
+    "prelaunch_physical_gpu": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 07:09:01 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "host_available_before": 1024957661184,
+    "formal_training_restarted": false,
+    "scope": "Same original32-row old/ref,27 DT B4,32-row native update. Queue only second update head result CPU pinned copy with native non_blocking copy_; explicit event wait/read occurs after native update returns or raises. No extra model/head calls or pre-loss explicit synchronization."
+  },
+  "binding": {
+    "replay_chain": [
+      {
+        "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+        "line": 449
+      },
+      {
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+        "line": 33
+      },
+      {
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+        "line": 28
+      },
+      {
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+        "line": 530
+      },
+      {
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+        "line": 39
+      }
+    ],
+    "update_chain": [
+      {
+        "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+        "line": 449
+      },
+      {
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+        "line": 33
+      },
+      {
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+        "line": 530
+      },
+      {
+        "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+        "line": 612
+      }
+    ],
+    "replay_registration": "{'__wrapped__': <function make_worker.<locals>.IncidentWorker.replay_incident at 0x7fde40c77a60>, 'attrs_3141562937': {'dispatch_mode': <Dispatch.ONE_TO_ALL: 1>, 'execute_mode': <Execute.ALL: 0>, 'blocking': True}, '__signature__': <Signature (self, output, *, _ray_trace_ctx=None)>}",
+    "update_registration": "{'__wrapped__': <function ActorRolloutRefWorker.update_actor at 0x7fde40c77740>, 'attrs_3141562937': {'dispatch_mode': <Dispatch.DP_COMPUTE_PROTO: 9>, 'execute_mode': <Execute.ALL: 0>, 'blocking': True}, '__signature__': <Signature (self, data: verl.protocol.DataProto, *, _ray_trace_ctx=None)>}",
+    "actual_binding_verified": true,
+    "unix": 1791673681.751984,
+    "source_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+    "source_sha256": "782db0e8548f7cfb12bcf9c24271400da895b8bcb9e008eb3813f9014a0e9cc2",
+    "exception_wrapper_sha256": "3f4942a9c5135eb1d52ae1393d3fba82f46fa28cdf99509d5f2606da8a8e4f23",
+    "original_source_sha256": "e48ed0021391b2d6c1473714d9e90ab6d44bfed6026697572dc8f0596e40ccb9",
+    "cuda_initialized": false,
+    "peak_rss_bytes": 915001344,
+    "scope": "CPU inspection of actual Ray/VERL registration; second-head observer is inside native update only. No model/DT/loss/optimizer execution"
+  },
+  "latest_observation": {
+    "unix": 1791673812.8956518,
+    "driver": {
+      "pid": 894899,
+      "expected_birth": 1791673741.42,
+      "birth": 1791673741.42,
+      "same_birth": true,
+      "status": "sleeping",
+      "children": [
+        {
+          "pid": 896115,
+          "birth": 1791673753.93,
+          "name": "gcs_server"
+        },
+        {
+          "pid": 896649,
+          "birth": 1791673756.37,
+          "name": "python"
+        },
+        {
+          "pid": 896658,
+          "birth": 1791673756.57,
+          "name": "python"
+        },
+        {
+          "pid": 896798,
+          "birth": 1791673757.5,
+          "name": "python"
+        },
+        {
+          "pid": 896800,
+          "birth": 1791673757.64,
+          "name": "raylet"
+        },
+        {
+          "pid": 896850,
+          "birth": 1791673757.76,
+          "name": "python"
+        },
+        {
+          "pid": 896852,
+          "birth": 1791673757.76,
+          "name": "python"
+        },
+        {
+          "pid": 896910,
+          "birth": 1791673757.86,
+          "name": "ray::IDLE"
+        },
+        {
+          "pid": 896911,
+          "birth": 1791673757.86,
+          "name": "ray::IDLE"
+        },
+        {
+          "pid": 896912,
+          "birth": 1791673757.86,
+          "name": "ray::IDLE"
+        },
+        {
+          "pid": 896913,
+          "birth": 1791673757.87,
+          "name": "ray::IDLE"
+        },
+        {
+          "pid": 896915,
+          "birth": 1791673757.88,
+          "name": "ray::IDLE"
+        },
+        {
+          "pid": 896916,
+          "birth": 1791673757.89,
+          "name": "ray::IDLE"
+        },
+        {
+          "pid": 898278,
+          "birth": 1791673762.4,
+          "name": "ray::NativeExceptionObserved.replay_incident"
+        },
+        {
+          "pid": 899564,
+          "birth": 1791673775.39,
+          "name": "ray::WorkerGroupRegisterCenter"
+        },
+        {
+          "pid": 899803,
+          "birth": 1791673776.31,
+          "name": "ray::NativeExceptionObserved.replay_incident"
+        },
+        {
+          "pid": 901167,
+          "birth": 1791673791.45,
+          "name": "python"
+        },
+        {
+          "pid": 901892,
+          "birth": 1791673797.99,
+          "name": "python"
+        },
+        {
+          "pid": 901898,
+          "birth": 1791673798.02,
+          "name": "python"
+        },
+        {
+          "pid": 901905,
+          "birth": 1791673798.06,
+          "name": "python"
+        },
+        {
+          "pid": 901909,
+          "birth": 1791673798.1,
+          "name": "python"
+        },
+        {
+          "pid": 901914,
+          "birth": 1791673798.13,
+          "name": "python"
+        },
+        {
+          "pid": 901920,
+          "birth": 1791673798.16,
+          "name": "python"
+        },
+        {
+          "pid": 901924,
+          "birth": 1791673798.19,
+          "name": "python"
+        },
+        {
+          "pid": 901928,
+          "birth": 1791673798.22,
+          "name": "python"
+        },
+        {
+          "pid": 901932,
+          "birth": 1791673798.25,
+          "name": "python"
+        },
+        {
+          "pid": 901936,
+          "birth": 1791673798.27,
+          "name": "python"
+        },
+        {
+          "pid": 901940,
+          "birth": 1791673798.3,
+          "name": "python"
+        },
+        {
+          "pid": 901944,
+          "birth": 1791673798.33,
+          "name": "python"
+        },
+        {
+          "pid": 901948,
+          "birth": 1791673798.35,
+          "name": "python"
+        },
+        {
+          "pid": 901952,
+          "birth": 1791673798.38,
+          "name": "python"
+        },
+        {
+          "pid": 901956,
+          "birth": 1791673798.4,
+          "name": "python"
+        },
+        {
+          "pid": 901960,
+          "birth": 1791673798.42,
+          "name": "python"
+        },
+        {
+          "pid": 901964,
+          "birth": 1791673798.44,
+          "name": "python"
+        },
+        {
+          "pid": 901968,
+          "birth": 1791673798.46,
+          "name": "python"
+        },
+        {
+          "pid": 901972,
+          "birth": 1791673798.48,
+          "name": "python"
+        },
+        {
+          "pid": 901976,
+          "birth": 1791673798.51,
+          "name": "python"
+        },
+        {
+          "pid": 901980,
+          "birth": 1791673798.53,
+          "name": "python"
+        },
+        {
+          "pid": 901984,
+          "birth": 1791673798.55,
+          "name": "python"
+        },
+        {
+          "pid": 901988,
+          "birth": 1791673798.57,
+          "name": "python"
+        },
+        {
+          "pid": 901992,
+          "birth": 1791673798.6,
+          "name": "python"
+        },
+        {
+          "pid": 901996,
+          "birth": 1791673798.62,
+          "name": "python"
+        },
+        {
+          "pid": 902000,
+          "birth": 1791673798.65,
+          "name": "python"
+        },
+        {
+          "pid": 902004,
+          "birth": 1791673798.67,
+          "name": "python"
+        },
+        {
+          "pid": 902008,
+          "birth": 1791673798.7,
+          "name": "python"
+        },
+        {
+          "pid": 902012,
+          "birth": 1791673798.72,
+          "name": "python"
+        },
+        {
+          "pid": 902016,
+          "birth": 1791673798.75,
+          "name": "python"
+        },
+        {
+          "pid": 902023,
+          "birth": 1791673798.77,
+          "name": "python"
+        },
+        {
+          "pid": 902030,
+          "birth": 1791673798.8,
+          "name": "python"
+        },
+        {
+          "pid": 901168,
+          "birth": 1791673791.45,
+          "name": "python"
+        },
+        {
+          "pid": 901893,
+          "birth": 1791673797.99,
+          "name": "python"
+        },
+        {
+          "pid": 901899,
+          "birth": 1791673798.02,
+          "name": "python"
+        },
+        {
+          "pid": 901906,
+          "birth": 1791673798.06,
+          "name": "python"
+        },
+        {
+          "pid": 901910,
+          "birth": 1791673798.1,
+          "name": "python"
+        },
+        {
+          "pid": 901915,
+          "birth": 1791673798.13,
+          "name": "python"
+        },
+        {
+          "pid": 901921,
+          "birth": 1791673798.16,
+          "name": "python"
+        },
+        {
+          "pid": 901925,
+          "birth": 1791673798.19,
+          "name": "python"
+        },
+        {
+          "pid": 901929,
+          "birth": 1791673798.22,
+          "name": "python"
+        },
+        {
+          "pid": 901933,
+          "birth": 1791673798.25,
+          "name": "python"
+        },
+        {
+          "pid": 901937,
+          "birth": 1791673798.27,
+          "name": "python"
+        },
+        {
+          "pid": 901941,
+          "birth": 1791673798.3,
+          "name": "python"
+        },
+        {
+          "pid": 901945,
+          "birth": 1791673798.33,
+          "name": "python"
+        },
+        {
+          "pid": 901949,
+          "birth": 1791673798.35,
+          "name": "python"
+        },
+        {
+          "pid": 901953,
+          "birth": 1791673798.38,
+          "name": "python"
+        },
+        {
+          "pid": 901957,
+          "birth": 1791673798.4,
+          "name": "python"
+        },
+        {
+          "pid": 901962,
+          "birth": 1791673798.42,
+          "name": "python"
+        },
+        {
+          "pid": 901966,
+          "birth": 1791673798.44,
+          "name": "python"
+        },
+        {
+          "pid": 901970,
+          "birth": 1791673798.47,
+          "name": "python"
+        },
+        {
+          "pid": 901974,
+          "birth": 1791673798.49,
+          "name": "python"
+        },
+        {
+          "pid": 901978,
+          "birth": 1791673798.51,
+          "name": "python"
+        },
+        {
+          "pid": 901982,
+          "birth": 1791673798.53,
+          "name": "python"
+        },
+        {
+          "pid": 901986,
+          "birth": 1791673798.56,
+          "name": "python"
+        },
+        {
+          "pid": 901990,
+          "birth": 1791673798.58,
+          "name": "python"
+        },
+        {
+          "pid": 901994,
+          "birth": 1791673798.6,
+          "name": "python"
+        },
+        {
+          "pid": 901998,
+          "birth": 1791673798.63,
+          "name": "python"
+        },
+        {
+          "pid": 902002,
+          "birth": 1791673798.65,
+          "name": "python"
+        },
+        {
+          "pid": 902006,
+          "birth": 1791673798.68,
+          "name": "python"
+        },
+        {
+          "pid": 902010,
+          "birth": 1791673798.7,
+          "name": "python"
+        },
+        {
+          "pid": 902014,
+          "birth": 1791673798.73,
+          "name": "python"
+        },
+        {
+          "pid": 902018,
+          "birth": 1791673798.75,
+          "name": "python"
+        },
+        {
+          "pid": 902025,
+          "birth": 1791673798.78,
+          "name": "python"
+        },
+        {
+          "pid": 902034,
+          "birth": 1791673798.81,
+          "name": "python"
+        }
+      ]
+    },
+    "ranks": [
+      {
+        "rank": 0,
+        "pid": 898278,
+        "birth": 1791673762.4,
+        "phase": "native_old_logprob_begin",
+        "unix": 1791673812.6793585,
+        "actual_optimizer_steps": 0,
+        "microbatches": [],
+        "traceback": null,
+        "peak_torch_allocated_bytes": null,
+        "peak_torch_reserved_bytes": null,
+        "pss_bytes": 7702239232,
+        "phase_tail": [
+          "{\"phase\": \"native_actor_initialized\", \"unix\": 1791673812.0026844, \"allocated\": 1024, \"reserved\": 3055550464, \"pss_bytes\": 7699266560}",
+          "{\"phase\": \"captured_trainable_state_loaded_via_Torch_DCP\", \"unix\": 1791673812.5787628, \"allocated\": 1024, \"reserved\": 3095396352, \"pss_bytes\": 7702239232}",
+          "{\"phase\": \"native_old_logprob_begin\", \"unix\": 1791673812.6793585, \"allocated\": 1024, \"reserved\": 3095396352, \"pss_bytes\": 7702239232}"
+        ],
+        "async_head": null
+      },
+      {
+        "rank": 1,
+        "pid": 899803,
+        "birth": 1791673776.31,
+        "phase": "native_old_logprob_begin",
+        "unix": 1791673812.6141808,
+        "actual_optimizer_steps": 0,
+        "microbatches": [],
+        "traceback": null,
+        "peak_torch_allocated_bytes": null,
+        "peak_torch_reserved_bytes": null,
+        "pss_bytes": 8720432128,
+        "phase_tail": [
+          "{\"phase\": \"native_actor_initialized\", \"unix\": 1791673811.9663138, \"allocated\": 1024, \"reserved\": 3053453312, \"pss_bytes\": 8717546496}",
+          "{\"phase\": \"captured_trainable_state_loaded_via_Torch_DCP\", \"unix\": 1791673812.5167193, \"allocated\": 1024, \"reserved\": 3095396352, \"pss_bytes\": 8720431104}",
+          "{\"phase\": \"native_old_logprob_begin\", \"unix\": 1791673812.6141808, \"allocated\": 1024, \"reserved\": 3095396352, \"pss_bytes\": 8720432128}"
+        ],
+        "async_head": null
+      }
+    ],
+    "host_available_bytes": 966032969728,
+    "physical_gpu": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 07:10:12 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 122W / 450W      | 47C          P9 | 12240/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 3%          Disabled |\n| 120W / 450W      | 47C          P9 | 12238/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 859/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  4                   898278         ray::NativeExce              11358          |\n|  5                   899803         ray::NativeExce              11356          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "log_tail": [
+      "\u001b[36m(NativeExceptionObserved pid=898278)\u001b[0m WARNING:2026-10-11 07:09:51,308:Current Triton version 3.0.0 is below the recommended 3.2.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.",
+      "\u001b[36m(NativeExceptionObserved pid=898278)\u001b[0m ",
+      "Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]",
+      "Loading weights: 100%|██████████| 427/427 [00:00<00:00, 11282.54it/s]",
+      "\u001b[36m(NativeExceptionObserved pid=899803)\u001b[0m ",
+      "Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]",
+      "\u001b[36m(NativeExceptionObserved pid=899803)\u001b[0m ",
+      "Loading weights: 100%|██████████| 427/427 [00:00<00:00, 16322.93it/s]",
+      "\u001b[36m(WorkerGroupRegisterCenter pid=899564)\u001b[0m [2026-10-11 07:10:06,536 E 899564 899764] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14\u001b[32m [repeated 7x across cluster] (Ray",
+      "\u001b[36m(NativeExceptionObserved pid=899803)\u001b[0m /opt/conda/lib/python3.12/site-packages/torchvision/transforms/v2/__init__.py:54: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedb",
+      "\u001b[36m(NativeExceptionObserved pid=899803)\u001b[0m   warnings.warn(_BETA_TRANSFORMS_WARNING)\u001b[32m [repeated 2x across cluster]\u001b[0m",
+      "\u001b[36m(NativeExceptionObserved pid=899803)\u001b[0m WARNING:2026-10-11 07:09:51,307:Current Triton version 3.0.0 is below the recommended 3.2.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton."
+    ]
+  },
+  "formal_training": {
+    "stopped": true,
+    "iterations": 37,
+    "total_iterations": 330,
+    "restarted": false,
+    "checkpoint_restored": false
+  },
+  "unchanged": {
+    "LoRA_rank": 8,
+    "LoRA_alpha": 16,
+    "actor_microbatch_per_card": 4,
+    "DT_microbatch_per_card": 4,
+    "original_Q_V_A": true,
+    "native_loss_and_optimizer": true
+  },
+  "scope": "Original replay e48ed002 and exception capture3f4942a9. Only second update head result is queued to CPU pinned buffers using Tensor.copy_(non_blocking=True); event wait and CPU value access after native update exit. No extra head/model calls or pre-loss explicit synchronization. Timing can still change; finite result cannot establish repair.",
+  "exact_question": "Was the captured bad loss log-prob already present at the native head return, or did it change between head return and loss?",
+  "production_changes": 0,
+  "new_numerical_tolerance": null,
+  "files": [
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/capture_native_incident37_async_head_20261011.py",
+      "bytes": 4976,
+      "sha256": "782db0e8548f7cfb12bcf9c24271400da895b8bcb9e008eb3813f9014a0e9cc2"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-launch-20261011-v1.command.txt",
+      "bytes": 3015,
+      "sha256": "4003988bd29099c9c3b2d865729b9588aca631f035b6ba2ff214f5a37c4cc32b"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-launch-20261011-v1.json",
+      "bytes": 5638,
+      "sha256": "c26e27e8c5ebf2c93b0d2c3648882d6eef058ef7b84ee4891cd45f114089f596"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-binding-20261011-v1.command.txt",
+      "bytes": 9384,
+      "sha256": "99d888243a0514bef5e4c7e07dfc69cca17a22c739801a2144c284e4b1fdb93f"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-binding-20261011-v1.json",
+      "bytes": 3083,
+      "sha256": "2c3f481771378d8028d0be69482cd19fd25e989d83abbcb97bb5091e66cbdb1c"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-binding-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-observation-1791673811.command.txt",
+      "bytes": 1703,
+      "sha256": "c3eb871621f522130dc252ca5d5e89180b36cd3d0f4901368dc4fae3aa0902ba"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-observation-1791673811.json",
+      "bytes": 12262,
+      "sha256": "0df5f73d8ea6d9dd26af1ed643be42fc8cad85442639d0a23886e2df5eef3107"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-observation-1791673811.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-copy-owner-source-20261011-v1.command.txt",
+      "bytes": 743,
+      "sha256": "93ce6a54c2ced8effca465987b3dc00c6f7635d3238c406d45c6f2696513a827"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-copy-owner-source-20261011-v1.json",
+      "bytes": 2755,
+      "sha256": "61d0e171265443675cc311dfd25c0e5f09a6dc0709e2dadd0d565ddba8d9ae19"
+    },
+    {
+      "relative": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-async-head-copy-owner-source-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

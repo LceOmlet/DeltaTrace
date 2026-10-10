@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原第二B4 head返回值异步采集正在运行
+
+当前尚未区分坏logp是head计算已错，还是返回后到loss之间被改写。GPU4/5单次原事故
+回放PID894899/出生1791673741.42，诊断源782db0e8，原e48ed002+采集3f4942a9不变；
+不运行profiler、不更改编译/卸载/损失。复用已验证Ray/VERL登记，CPU实际调用链核验
+CUDA未初始化、峰值约915MB；observer只在原update_actor内，避免采到old/ref阶段。
+只有第二B4原head返回后向CPU pinned buffer排入约0.2MB原生non_blocking copy，
+对应event只在原update返回或抛错后等待；loss前无CPU张量值读取或显式同步。
+这仍可能改变时序，有限结果不得称作修复。源、官方copy_/Event语义、launch和调用链
+原记录已保存；不复制模型/head/更新算法。首观察worker898278/899803在原old logprob，
+尚未得到新head结果。正式仍停37/330、无恢复或重启，生产Q/V/A、LoRA8/16与B4不变。
+见[异步head诊断启动回执](results_textcraft_incident37_async_head_launch_20261011.json)。
+
+
 ## 2026-10-11 原更新profile完成；未认定或部署概率异常修复
 
 原diagnostic e48ed002、采集3f4942a9、profile f57a4dab，GPU4/5的driver708475及
