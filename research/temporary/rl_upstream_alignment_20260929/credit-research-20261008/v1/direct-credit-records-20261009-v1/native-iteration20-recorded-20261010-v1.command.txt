@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,subprocess,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');assert psutil.Process(982372).create_time()==1791553809.84
+updates=[]
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ p=root/name;data=json.loads(p.read_bytes());others=[j for j in data['jobs'] if j.get('pid')!=982372]
+ jobs=[j for j in data['jobs'] if j.get('pid')==982372];assert len(jobs)==1
+ jobs[0].update(completed_iterations_observed=20,status='formal_running_native_nonfinite_skip_under_investigation',last_status_observed_unix=time.time(),last_completed_update_finite=True)
+ assert others==[j for j in data['jobs'] if j.get('pid')!=982372]
+ p.write_text(json.dumps(data,indent=2)+'\n');updates.append(dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
+physical=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True,timeout=20).stdout
+print(json.dumps(dict(unix=time.time(),authority_updates=updates,physical_mx_smi=physical,host_available_bytes=psutil.virtual_memory().available,disk_free_bytes=psutil.disk_usage(root).free,production_numerical_changes=0)))
+
+PY

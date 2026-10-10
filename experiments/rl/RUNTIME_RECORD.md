@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 12:46 TextCraft第20轮完整返回，原loss输入梯度32个B4/卡均有限
+
+同一原PID982372及2/3两worker完成20/330，已进入第21轮原generate_sequences。
+两rank各32个B4原log_prob梯度回调有限，各4次原optimizer调用均实际step，
+无observer_error或新增非有限跳过。第14轮原grad_norm NaN仍未定位首个算子/参数，
+未部署数值修复；当前有限不作为原事故已修的证据。原数值26bef6c8、GDN7c06d5e0、
+被动观察85aa2940/SHA7e94ea6b、LoRA8/16、每卡B4和正式预算不变。
+
+第20轮原reward0.625、entropy0.654、grad_norm0.041；采样1805.587秒、
+DT/优势164.003秒、actor465.036秒、整轮2672.392秒（44.54分钟）。
+原奖励/熵/梯度图更新至native-curves-20261010-124510，NaN14保留断线与标记，
+无平滑、填零或混其他作业；奖励来自更新前的训练采样，非独立评估。
+原save_freq25/test_freq-1保持，第20轮尚无checkpoint完成标记，不据此判定保存异常。
+
+12:46物理mx-smi瞬时GPU2/3占49652/49478MiB（非峰）；两worker PSS17.998/19.197GB，
+主机可用882.058GB、磁盘余13.139TB。三份远端authority仅更新同PID实际进度20及
+NaN调查状态，其他作业未改；AppWorld/SQL/GRPO未启动，未复制/恢复检查点。
+本次只读原日志、回调记录、资源并归档，没有新增模型/DT/反向/optimizer计算。
+回执results_textcraft_iteration20_20261010.json绑定原日志行431、实际回调、资源与图。
+
+
 ## 2026-10-10 12:36 NaN排查补齐原loss输入梯度观察；未改数值版本
 
 同一原TextCraft PID982372及2/3两worker保持，已完成19/330轮，第20轮原actor更新中。

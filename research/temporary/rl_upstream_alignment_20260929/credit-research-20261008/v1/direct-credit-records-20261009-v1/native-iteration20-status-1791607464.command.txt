@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,re,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');assert psutil.Process(982372).create_time()==1791553809.84
+formal=root/'runs/textcraft-formal-stable-20261009-v1'
+ray=Path('/tmp/ray/session_2026-10-09_21-50-24_958031_982372/logs');log=next(ray.glob('*-985585.out'));b=log.read_bytes();lines=b.decode(errors='replace').splitlines()
+steps=[dict(line=n,text=s) for n,s in enumerate(lines,1) if re.search(r'\bstep:\d+ - ',s)]
+workers=[]
+for pid,birth in [(987808,1791553850.0),(989860,1791553867.51)]:
+ p=psutil.Process(pid);assert p.create_time()==birth
+ folder=next((root/'receipts/textcraft-native-actor-incidents-20261010-v1').glob('rank*-pid'+str(pid)))
+ native=[json.loads(s) for s in (folder/'native-events.jsonl').read_text().splitlines()]
+ loss=[json.loads(s) for s in (folder/'loss-backward-events.jsonl').read_text().splitlines()]
+ workers.append(dict(pid=pid,birth=birth,phase=p.name(),PSS_bytes=p.memory_full_info().pss,native_events=native[-7:],
+   loss_callbacks=len(loss),nonfinite_loss_callbacks=[x for x in loss if x.get('finite') is False],loss_observer_errors=[x for x in loss if x['event'].endswith('error')]))
+job=next(x for x in json.loads((root/'formal-training.json').read_bytes())['jobs'] if x.get('pid')==982372)
+checkpoint_job_fields={k:v for k,v in job.items() if any(q in k for q in ['checkpoint','output_dir','local_dir'])}
+markers=[]
+for p in formal.rglob('latest_checkpointed_iteration.txt'):markers.append(dict(path=str(p),text=p.read_text(),mtime=p.stat().st_mtime))
+print(json.dumps(dict(unix=time.time(),trainer_path=str(log),trainer_sha256=hashlib.sha256(b).hexdigest(),last_step=steps[-1],trainer_tail=lines[-28:],workers=workers,checkpoint_job_fields=checkpoint_job_fields,formal_checkpoint_markers=markers,model_calls=0,production_changes=0)))
+
+PY
