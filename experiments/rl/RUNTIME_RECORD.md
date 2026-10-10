@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 10:02 论文四例原生 batch 行差：一次前向复现，两例定位原 Linear
+
+继续论文 William Walton 实现核查；不是重新计算 DT、修改信用或新增训练验收。
+复用同一基础模型、四份原输入/完整 target、原 B8 行序和原 native target reader；
+一次完整原生前向逐值复现此前八个分数，最大差0。原生同输入行差依次仍为
+0.235898、0.378016、-0.519730、0.694400 nats，没有做输出纠偏。
+沿用已有 OperatorObservation/LocalCaptureEvents 观察前三个 GDN decoder：
+Walton例首个观察到的不同行出现在layer1原torch.nn.Linear(in_proj_b)，同输入
+一个BF16元素差2.384185791e-7；MQ6例在layer2原Linear(in_proj_a)，一个元素
+差4.768371582e-7。两份完整原始操作数保存在远端并绑定SHA；另两例在本观察
+范围内尚未定位，不将AppWorld历史定位套用，也不称四例差异全部已解释。
+
+原CPU check_native_linear_roundoff.py（SHAac22648a…）未修改：八项整对输出
+和六项全部差异坐标的FP64参考回BF16检查，14项原torch.testing.assert_close均通过。
+原PyTorch BF16默认rtol=.016/atol=1e-5，所有者linear.py SHAfa22acbb…、
+_comparison.py SHA28c44835…；这不是FA/FLA或VERL/整网容差，不能由此给累计
+log-prob差值发合格证。差异在本次纯原生前向已出现，不能归为DT有限传播独有。
+
+诊断v1观察器未处理原生卷积initial_states=None而中断，未完成模型前向；失败
+源/PID/原栈保留。v2仅在独立诊断目录给原观察器的transpose加Tensor判断，保留
+None原值；SHA8903659d…，生产观察器、原生模型、数值内核和训练配置均未改。
+有效v2 PID1311250/出生1791597555.5，物理GPU4，含载入55.163秒；DT/反向/
+optimizer/rollout/恢复均0。Torch峰allocated22.687/reserved24.365GiB，进程峰RSS
+26.467GiB（非物理显存峰）；CPU参考0.159秒、PSS约0.298GiB、未初始化CUDA。
+10:02原句柄已终止，GPU4恢复859MiB；原2/3 worker仍在，未停止或重新启动。
+源码/原始分数/操作数SHA/原容差/资源与失败记录见results_paper_native_rows_20261010.json。
+
 ## 2026-10-10 09:42 论文四例原作者累计删除/RISE/MAS补充核查完成
 
 继续用户指定的论文实现核查，在同一四份原输入/原完整response+EOS上，读取已保存的

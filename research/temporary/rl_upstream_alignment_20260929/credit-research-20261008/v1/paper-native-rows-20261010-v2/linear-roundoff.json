@@ -1,0 +1,269 @@
+{
+  "scope": "Check captured Linear outputs with the owning PyTorch operator/assertion.\n\nFP64 CPU F.linear checks every nonidentical output coordinate using the\nexact original BF16 inputs and weights, without repeating the full GEMM. The\nunchanged public torch.testing.assert_close uses its actual-dtype defaults.\nFull paired outputs are compared; FP64 checks concern all differing cells,\nnot the equal cells. This is not FA/FLA, DT or PPO correctness validation.\nNo model, GPU, rollout, update, method change or compensation is performed.\n",
+  "pid": 1328781,
+  "birth": 1791597698.98,
+  "script_sha256": "ac22648a404497ecc785ca54685dabe9565ed864363152927e64410ae22c8b2d",
+  "torch_version": "2.8.0+metax3.5.3.9",
+  "cases": [
+    {
+      "artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/paper-native-rows-20261010-v2/rank0-batch0-layer1-in_proj_b.base.pt",
+        "bytes": 57660756,
+        "sha256": "eb902a83e459ee9228529d7d34bddc4beee148082ee8ab1d0a1b64714553f13b",
+        "first_unequal_rows": [
+          0
+        ],
+        "operation": "in_proj_b.base",
+        "layer": 1
+      },
+      "operation": "in_proj_b.base",
+      "shape": [
+        8,
+        869,
+        4096
+      ],
+      "weight_shape": [
+        32,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "all_identical_input_pairs": true,
+      "all_unequal_cells_vs_FP64_rounded_BF16_checks": [
+        {
+          "row": 0,
+          "endpoints": [
+            {
+              "rtol_atol": [
+                0.016,
+                1e-05
+              ],
+              "status": "passed"
+            },
+            {
+              "rtol_atol": [
+                0.016,
+                1e-05
+              ],
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "native_pair_checks": [
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        },
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        },
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        },
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        }
+      ],
+      "maximum_native_absolute_error_vs_FP64_on_unequal_cells": 4.0926806832430884e-07,
+      "unequal_elements": [
+        {
+          "row": 0,
+          "token": 167,
+          "channel": 8,
+          "native_pair": [
+            4.506111145019531e-05,
+            4.5299530029296875e-05
+          ],
+          "FP64": 4.4890261960972566e-05,
+          "FP64_rounded_BF16": 4.482269287109375e-05,
+          "native_absolute_errors": [
+            1.7084948922274634e-07,
+            4.0926806832430884e-07
+          ]
+        }
+      ],
+      "sampled_PSS_bytes": 319700992
+    },
+    {
+      "artifact": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/paper-native-rows-20261010-v2/rank0-batch0-layer2-in_proj_a.base.pt",
+        "bytes": 57660756,
+        "sha256": "132cc670a39efbede0998fa8b04c6041ca7654580f373546940d1374cb95ab51",
+        "first_unequal_rows": [
+          3
+        ],
+        "operation": "in_proj_a.base",
+        "layer": 2
+      },
+      "operation": "in_proj_a.base",
+      "shape": [
+        8,
+        869,
+        4096
+      ],
+      "weight_shape": [
+        32,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "all_identical_input_pairs": true,
+      "all_unequal_cells_vs_FP64_rounded_BF16_checks": [
+        {
+          "row": 0,
+          "endpoints": [
+            {
+              "rtol_atol": [
+                0.016,
+                1e-05
+              ],
+              "status": "passed"
+            },
+            {
+              "rtol_atol": [
+                0.016,
+                1e-05
+              ],
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "row": 3,
+          "endpoints": [
+            {
+              "rtol_atol": [
+                0.016,
+                1e-05
+              ],
+              "status": "passed"
+            },
+            {
+              "rtol_atol": [
+                0.016,
+                1e-05
+              ],
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "native_pair_checks": [
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        },
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        },
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        },
+        {
+          "rtol_atol": [
+            0.016,
+            1e-05
+          ],
+          "status": "passed"
+        }
+      ],
+      "maximum_native_absolute_error_vs_FP64_on_unequal_cells": 3.9874284993857145e-06,
+      "unequal_elements": [
+        {
+          "row": 0,
+          "token": 127,
+          "channel": 12,
+          "native_pair": [
+            0.001068115234375,
+            0.00107574462890625
+          ],
+          "FP64": 0.0010717572004068643,
+          "FP64_rounded_BF16": 0.001068115234375,
+          "native_absolute_errors": [
+            3.6419660318642855e-06,
+            3.9874284993857145e-06
+          ]
+        },
+        {
+          "row": 3,
+          "token": 793,
+          "channel": 8,
+          "native_pair": [
+            -0.00011396408081054688,
+            -0.00011348724365234375
+          ],
+          "FP64": -0.0001140429690167366,
+          "FP64_rounded_BF16": -0.00011396408081054688,
+          "native_absolute_errors": [
+            7.888820618973114e-08,
+            5.557253643928561e-07
+          ]
+        }
+      ],
+      "sampled_PSS_bytes": 319889408
+    }
+  ],
+  "owners": [
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/linear.py",
+      "sha256": "fa22acbb48e41bff3be26779c2f242b15663b8157e54f0d55987721add97d16f",
+      "name": "Linear.forward"
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/testing/_comparison.py",
+      "sha256": "28c448353b4dd0dfc3232f839ffee6aff045f1d2280b8071945028fa81c17f79",
+      "name": "assert_close"
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/testing/_comparison.py",
+      "sha256": "28c448353b4dd0dfc3232f839ffee6aff045f1d2280b8071945028fa81c17f79",
+      "name": "default_tolerances"
+    }
+  ],
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "GPU": 0,
+    "optimizer": 0,
+    "rollout": 0,
+    "checkpoint_restore": 0
+  },
+  "production_modified": false,
+  "official_thresholds_changed": false,
+  "status": "complete",
+  "seconds": 0.15891903400188312,
+  "cuda_initialized": false,
+  "sampled_terminal_PSS_bytes": 319889408,
+  "claims_excluded": [
+    "FA/FLA tolerance",
+    "DT accuracy",
+    "PPO correctness",
+    "whole-model tolerance",
+    "attribution repair"
+  ]
+}
