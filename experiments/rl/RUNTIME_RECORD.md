@@ -1,5 +1,33 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 15:32 TextCraft第24轮完整返回，原更新及曲线已保存
+
+同一原PID982372/出生1791553809.84与两worker完成24/330，已进入第25轮原采样。
+本轮两rank各32个B4原log_prob梯度全有限，覆盖4次optimizer×8个microbatch；
+各4次原optimizer全部实际step，8项裁剪前local norm与同次原返回逐值相同，
+无observer_error、新非有限值或跳过。仍为原DTensor _NormPartial local观察，
+不另称全局L2实测；第14轮首个异常参数/算子仍未知，不宣称事故已修复。
+
+原训练轨迹reward0.648、entropy0.606、grad_norm0.037；采样1721.564秒、
+旧logp114.973秒、ref100.335秒、DT/优势177.723秒、actor419.763秒，
+整轮2534.875秒（42.2479分钟）。native-curves-20261010-153247更新至24轮，
+仅14轮范数NaN，原两rank警告属同一次global skip；未平滑或填零。
+奖励仍是更新前训练采样回报，非独立评估；不据单轮变化宣称改善或退化。
+原response上限10240、prompt315，不把本轮称为新增32k容量或数值容差验收。
+
+原DT阶段物理GPU2/3为17101/16961MiB，actor为32288/38528MiB，均为瞬时非峰值。
+两worker PSS在DT约18.283/19.288GB、actor约18.283/19.171GB；
+完整cgroup RSS/cache及主机available原值另存，不能简单累加fork RSS，
+也不能把原Torch虚拟allocator大于卡容量的数字当作物理OOM。
+11份不同路径的12项源码磁盘SHA与既有同PID导入绑定保持一致，
+数值源26bef6c8/GDN7c06d5e0、观察源85aa2940、LoRA8/16、每卡B4/双卡B8未改。
+三份远端authority实际复核均完成24并保留NaN调查status；尚未完成原save25，
+checkpoint完成标记仍为空，未复制/恢复或重启。AppWorld/SQL/GRPO未启动。
+
+回执results_textcraft_iteration24_20261010.json保存原完整callback/norm/step、
+原日志行、阶段资源、实际命令和SHA。只读监听已完成退出，正式训练继续原预算。
+
+
 ## 2026-10-10 14:50 TextCraft第23轮完整返回，原梯度与更新现场已归档
 
 同一原PID982372/出生1791553809.84及两worker完成23/330，已进入第24轮原采样。
