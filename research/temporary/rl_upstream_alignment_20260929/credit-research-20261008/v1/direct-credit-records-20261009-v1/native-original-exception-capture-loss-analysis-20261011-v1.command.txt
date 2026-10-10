@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,torch,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v1')
+original=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1')
+out={'unix':time.time(),'scope':'CPU-only statistics of saved failed losses; no model/DT/head/optimizer call','ranks':[]}
+for rank,pid,ns in [(0,987808,1791646910870699040),(1,989860,1791646910895854293)]:
+ p=root/'result'/f'rank{rank}-loss-inputs-microbatch1.pt';d=torch.load(p,map_location='cpu',weights_only=False,mmap=True)
+ old=torch.load(original/f'rank{rank}-pid{pid}'/f'loss-backward-{ns}.pt',map_location='cpu',weights_only=False,mmap=True)['tensors']
+ active=d['response_mask'].bool();g=d['log_prob_gradient'];delta=d['ref_logprob']-d['log_prob']
+ row={'rank':rank,'saved_path':str(p),'tensor_shapes':{k:list(v.shape) for k,v in d.items() if torch.is_tensor(v)},'finite_inputs':{k:bool(torch.isfinite(v).all()) for k,v in d.items() if torch.is_tensor(v) and k!='log_prob_gradient'},'nan_gradient_count':int(torch.isnan(g).sum()),'active_nan_gradient_count':int((torch.isnan(g)&active).sum()),'max_delta':float(delta.max()),'exp_delta_inf_count':int(torch.isinf(torch.exp(delta)).sum()),'original_nan_mask_equal':bool(torch.equal(torch.isnan(g),torch.isnan(old['log_prob_gradient']))),'original_nan_overlap_count':int((torch.isnan(g)&torch.isnan(old['log_prob_gradient'])).sum())}
+ out['ranks'].append(row)
+out['cuda_initialized']=torch.cuda.is_initialized();out['peak_rss_bytes']=int(pathlib.Path('/proc/self/status').read_text().split('VmHWM:')[1].split()[0])*1024
+print(json.dumps(out))
+
+PY

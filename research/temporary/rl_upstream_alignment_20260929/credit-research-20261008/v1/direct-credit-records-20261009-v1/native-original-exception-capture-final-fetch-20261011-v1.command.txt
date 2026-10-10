@@ -1,0 +1,27 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,hashlib,base64,time,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v1')
+job=json.loads((root/'job.json').read_bytes());out={'unix':time.time(),'root':str(root),'job':job,'files':[],'processes':[],'capture_files':[]}
+for f in [root/'job.json',root/'driver.log',*sorted((root/'source').glob('*.py')),*sorted((root/'result').glob('*.json')),*sorted((root/'result').glob('*.jsonl')),root/'result/initialization-config.yaml']:
+ if not f.is_file():continue
+ b=f.read_bytes();out['files'].append(dict(path=str(f),relative=str(f.relative_to(root)),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),base64=base64.b64encode(b).decode()))
+for rank in (0,1):
+ f=root/'result'/f'rank{rank}.json';d=json.loads(f.read_bytes())
+ for pid,birth in [(d['pid'],d['birth'])]:
+  pinfo=dict(pid=pid,expected_birth=birth)
+  try:p=psutil.Process(pid);pinfo.update(birth=p.create_time(),same_birth=p.create_time()==birth,status=p.status())
+  except psutil.NoSuchProcess:pinfo['missing']=True
+  out['processes'].append(pinfo)
+ for f in (root/'result').glob(f'rank{rank}*.pt'):
+  b=f.read_bytes();out['capture_files'].append(dict(path=str(f),bytes=len(b),sha256=hashlib.sha256(b).hexdigest()))
+pinfo=dict(pid=job['pid'],expected_birth=job['birth'])
+try:p=psutil.Process(job['pid']);pinfo.update(birth=p.create_time(),same_birth=p.create_time()==job['birth'],status=p.status())
+except psutil.NoSuchProcess:pinfo['missing']=True
+out['processes'].append(pinfo)
+out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout
+out['host_available_bytes']=psutil.virtual_memory().available
+print(json.dumps(out))
+
+PY

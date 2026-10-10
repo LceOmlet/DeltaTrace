@@ -1,0 +1,423 @@
+{
+  "status": "Original native KL-gradient failure reproduced; failed hidden-state capture still unavailable; production unchanged",
+  "observed_unix": 1791670666.0278037,
+  "formal_training": {
+    "stopped": true,
+    "recorded_iterations": 37,
+    "total_iterations": 330,
+    "restarted": false,
+    "checkpoint_restored": false
+  },
+  "production_changes": 0,
+  "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "numerical_source_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+  "formal_source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+  "original_replay_source_sha256": "e48ed0021391b2d6c1473714d9e90ab6d44bfed6026697572dc8f0596e40ccb9",
+  "exception_wrapper": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\replay_native_incident37_exception_capture_20261011.py",
+    "bytes": 4153,
+    "sha256": "e153ea37350c7160ef6f1e4ffc5ed6366ab037fcac737c2524a7c7e742aebd08"
+  },
+  "actual_config": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\result\\initialization-config.yaml",
+    "bytes": 9327,
+    "sha256": "2b17044560b2b6de97cdba5fc6b3223195ba2cefe496e087e6072d769281e448"
+  },
+  "diagnostic_processes": [
+    {
+      "pid": 509503,
+      "expected_birth": 1791670089.66,
+      "missing": true
+    },
+    {
+      "pid": 510947,
+      "expected_birth": 1791670103.85,
+      "missing": true
+    },
+    {
+      "pid": 505930,
+      "expected_birth": 1791670066.94,
+      "missing": true
+    }
+  ],
+  "diagnostic_result": {
+    "rank0_nan_count": 132,
+    "rank1_nan_count": 124,
+    "original_rank0_nan_overlap_count": 132,
+    "original_rank1_nan_overlap_count": 122,
+    "original_second_B4_reached": true,
+    "actual_optimizer_steps_per_rank": 0,
+    "DT_batches_per_rank": 27,
+    "failed_head_hidden_capture_available": false,
+    "exception_capture_metadata_available": false,
+    "raised_error": "Original observer attempts to copy released FSDP vocabulary weight and raises CUDA invalid argument after detecting bad log-prob gradient.",
+    "interpretation": "Native failed loss reproduced. Exception wrapper did not produce its promised hidden-state artifact; its integration remains unaccepted. This does not locate the original pre-update probability defect or constitute a repair."
+  },
+  "cpu_saved_loss_analysis": {
+    "unix": 1791670724.5927567,
+    "scope": "CPU-only statistics of saved failed losses; no model/DT/head/optimizer call",
+    "ranks": [
+      {
+        "rank": 0,
+        "saved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+        "tensor_shapes": {
+          "log_prob": [
+            4,
+            10240
+          ],
+          "old_log_prob": [
+            4,
+            10240
+          ],
+          "advantages": [
+            4,
+            10240
+          ],
+          "response_mask": [
+            4,
+            10240
+          ],
+          "ref_logprob": [
+            4,
+            10240
+          ],
+          "log_prob_gradient": [
+            4,
+            10240
+          ]
+        },
+        "finite_inputs": {
+          "log_prob": true,
+          "old_log_prob": true,
+          "advantages": true,
+          "response_mask": true,
+          "ref_logprob": true
+        },
+        "nan_gradient_count": 132,
+        "active_nan_gradient_count": 128,
+        "max_delta": 164.32066345214844,
+        "exp_delta_inf_count": 132,
+        "original_nan_mask_equal": true,
+        "original_nan_overlap_count": 132
+      },
+      {
+        "rank": 1,
+        "saved_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+        "tensor_shapes": {
+          "log_prob": [
+            4,
+            10240
+          ],
+          "old_log_prob": [
+            4,
+            10240
+          ],
+          "advantages": [
+            4,
+            10240
+          ],
+          "response_mask": [
+            4,
+            10240
+          ],
+          "ref_logprob": [
+            4,
+            10240
+          ],
+          "log_prob_gradient": [
+            4,
+            10240
+          ]
+        },
+        "finite_inputs": {
+          "log_prob": true,
+          "old_log_prob": true,
+          "advantages": true,
+          "response_mask": true,
+          "ref_logprob": true
+        },
+        "nan_gradient_count": 124,
+        "active_nan_gradient_count": 122,
+        "max_delta": 149.12725830078125,
+        "exp_delta_inf_count": 124,
+        "original_nan_mask_equal": false,
+        "original_nan_overlap_count": 122
+      }
+    ],
+    "cuda_initialized": false,
+    "peak_rss_bytes": 547893248
+  },
+  "resources": {
+    "host_available_bytes": 1025102602240,
+    "physical_gpu_no_process": true,
+    "physical_gpu_raw": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 06:17:46 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+  },
+  "official_KL_guard": "Candidate only, not deployed; does not fix bad actor log-probabilities",
+  "read_only_source_audit": {
+    "in_place_weight_write_root_cause_established": false,
+    "compiler_cache_files_are_not_actual_failing_kernel_identity": true,
+    "failed_logprob_layout_scope": "All saved active tokens of original incident second B4 only; descriptive >10 gap partition is not a numerical tolerance or training population error rate."
+  },
+  "curves": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-curves-20261010-235154\\plot-receipt.json",
+    "bytes": 1642,
+    "sha256": "57cc6d2cbf1a585eccb327cb723a7fc214b679f9233942adc717768fe1f7877f"
+  },
+  "files": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-capture-owner-source-20261011-v1\\accelerated\\qwen35\\native_fla_precision.py",
+      "bytes": 1463,
+      "sha256": "606b6ad6ba4b8738438f9d8097ed84485e9ffb101be481adcd19f1962691504c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-capture-owner-source-20261011-v1\\accelerated\\qwen35\\qwen35_code_local_capture.py",
+      "bytes": 1286,
+      "sha256": "993ae72a49dc90901bfcbb7817e5fd32ad6004fbe630a190b775c6f1e77fbe72"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-capture-owner-source-20261011-v1\\clean\\qwen35\\native_attention_capture.py",
+      "bytes": 5149,
+      "sha256": "2a226ac35302e933920aa096fe962db7ed724c1a478c247ef5700b253461ab74"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-capture-owner-source-20261011-v1\\clean\\qwen35\\qwen35_decoder_finite.py",
+      "bytes": 13386,
+      "sha256": "047c38e6b180adb350083ff370693ed20b95e2df82e4a78cd59038bc0803a197"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-capture-owner-source-20261011-v1\\clean\\qwen35\\qwen35_dense_finite_runner.py",
+      "bytes": 40266,
+      "sha256": "5f14bb3cdb491e4d5b3b531607e00936bae76e055e2286ed60e096c6c5d2e555"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-capture-owner-source-20261011-v1\\clean\\qwen35\\qwen35_gdn_finite.py",
+      "bytes": 20026,
+      "sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-capture-owner-source-20261011-v1\\clean\\qwen35\\qwen35_native_prefix_artifacts.py",
+      "bytes": 14277,
+      "sha256": "37a86074f430efd837c878b5409ce22ff3aac5ebdc984936ea5be5647d7b97d4"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-head-compiler-owner-source-20261011-v1\\accelerated\\qwen35\\native_fla_precision.py",
+      "bytes": 1463,
+      "sha256": "606b6ad6ba4b8738438f9d8097ed84485e9ffb101be481adcd19f1962691504c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-head-compiler-owner-source-20261011-v1\\clean\\qwen35\\qwen35_answer_finite.py",
+      "bytes": 11203,
+      "sha256": "d47333ea68fb7a332e7d1dce7913c989d875ea262dfe49cfa4f20f7c35ebe03e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-head-compiler-source-fetch-20261011-v1.command.txt",
+      "bytes": 1601,
+      "sha256": "44c0998d13c880e038a0599f74090926140776b9a4c446b3862f03bbc2ccc928"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-head-compiler-source-fetch-20261011-v1.json",
+      "bytes": 2128,
+      "sha256": "6f0b92b83712ba611e047f8d84b4cea4b07b20b22509e38cfa9fbe2043b608c4"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-head-compiler-source-fetch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-failed-logprob-layout-20261011-v1.command.txt",
+      "bytes": 2717,
+      "sha256": "64563d9016b5084582c0ef57104e05135df5f0f64e899fa4705e9ca45fb1510c"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-failed-logprob-layout-20261011-v1.json",
+      "bytes": 23219,
+      "sha256": "2eb18844c325cc104d179f112382d975f853257b94902d735b1d680e25f7c909"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-failed-logprob-layout-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernel-inventory-20261011-v2.command.txt",
+      "bytes": 1255,
+      "sha256": "828a851baa3f3f2d72d7b0210fea5c6cc1c9c993a76b4b7102cca8db76099f39"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernel-inventory-20261011-v2.json",
+      "bytes": 529425,
+      "sha256": "a26de56861d5c20e93846a34b6216eb5eec209dbec26e71d2903e065cad81adb"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernel-inventory-20261011-v2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernels-20261011-v2\\c26sag34caez6ldmcmdnaxfysekre6zvjttt6ozafrp2v7rqn2ko.py",
+      "bytes": 19932,
+      "sha256": "1307ae5afd68b721ad0a5e381bfe86aa81f43e7bfad162d0200c651785c1a744"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernels-20261011-v2\\c7fihwthp7zvrajdlksdiu3b3uf47toyxtdfy3vgncudmtn7fma6.py",
+      "bytes": 17017,
+      "sha256": "68dd7bf11d447c8d0c4c9bc06f8a64aad5cb0aa2928c2db9d27bc2dbf8f420ce"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernels-20261011-v2\\cgzl2zqux6hgjy7ke6guvq52iyiggxsgxebh7bl4lw6bdltx4fh6.py",
+      "bytes": 19684,
+      "sha256": "addb08c6766b0fb9fd61b4cae55da0d02dabc4e5d4ed5cd60f023b9ab8d6571b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernels-20261011-v2\\cibwke5qtkewdns242twwjwnhbqmv6iqkyiqeqrhorsftup6ulj3.py",
+      "bytes": 17049,
+      "sha256": "a508073585178532abfbd9695469947186b3f7f85b7bcc05359a5d188620fe15"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-head-generated-kernels-20261011-v2\\cu3wcorjdensh7z4hnz7i3v2prwjx5z2xpxexv7h6phir7swriui.py",
+      "bytes": 19652,
+      "sha256": "70edb54d95bbd1f217af5481657d6ce7b6326507f53fa7d6ba3856e8c6b4c861"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\driver.log",
+      "bytes": 121355,
+      "sha256": "51a14e875c56f84fc97decf86149c88143414b8c4851ec2443b5aeadf39561da"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\job.json",
+      "bytes": 5593,
+      "sha256": "97c2339cfd8fc244443cbe06a29339e0516000a146007e1df7796d4b6b4e3de0"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\result\\initialization-config.yaml",
+      "bytes": 9327,
+      "sha256": "2b17044560b2b6de97cdba5fc6b3223195ba2cefe496e087e6072d769281e448"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\result\\rank0-phases.jsonl",
+      "bytes": 12727,
+      "sha256": "be456dbb2ce752ef5615a4e774a314a6ce1ea463dec534e621826f99152ccef5"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\result\\rank0.json",
+      "bytes": 1193746,
+      "sha256": "abaa2dba5b4f3da711690fbf12c132263b41135dd5eff2bc114e332165e978fc"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\result\\rank1-phases.jsonl",
+      "bytes": 12728,
+      "sha256": "ac0d231c45ef4bc7f6bee684bb04380d1831adbc3216095c2176ae5eaeac2a68"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\result\\rank1.json",
+      "bytes": 1193746,
+      "sha256": "85bd0ac5cce9fc6a215faeac45c0065a52f2da5b9571c4dc15ddb49c9d92c174"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-artifacts-20261011-v1\\source\\replay_native_incident37_exception_capture_20261011.py",
+      "bytes": 4153,
+      "sha256": "e153ea37350c7160ef6f1e4ffc5ed6366ab037fcac737c2524a7c7e742aebd08"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-final-fetch-20261011-v1.command.txt",
+      "bytes": 1972,
+      "sha256": "aa8b1048a8d7109e6144a71f9466d2c3e956f832a37e5c4b3c1b7ae06c5d8131"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-final-fetch-20261011-v1.json",
+      "bytes": 3418345,
+      "sha256": "c14162d2b3309603e6af7bf37cefd58cdf6c94e0572163a83d9abf032ca9e63f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-final-fetch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-launch-20261011-v1.command.txt",
+      "bytes": 8057,
+      "sha256": "26af65b2b0d1222b872d2faacb48b878d81e98e7c0437d58c10367b808e3fe9f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-launch-20261011-v1.json",
+      "bytes": 5519,
+      "sha256": "6486b6c2e7e56611660a77d44827437d913b502a261556d88cef3a6a7be2f719"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-loss-analysis-20261011-v1.command.txt",
+      "bytes": 1948,
+      "sha256": "7bf053223992e11902a1f9ff4a701826735d096f1c911d3a5ee61dc052de6e85"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-loss-analysis-20261011-v1.json",
+      "bytes": 1607,
+      "sha256": "b65c75d451cc0b46ba6b0448f305f5afdc89849977688b551b9ba301192efab4"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-loss-analysis-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670155.command.txt",
+      "bytes": 1812,
+      "sha256": "802b68e81733338b0791fd05cbdbb61804546c320ce9d68ebdaa47acceb31206"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670155.json",
+      "bytes": 9429,
+      "sha256": "3e5148075fb7d56dd22fb8b45c1379e9cb94253aace0464d4194f1108572e0cd"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670155.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670295.command.txt",
+      "bytes": 1812,
+      "sha256": "802b68e81733338b0791fd05cbdbb61804546c320ce9d68ebdaa47acceb31206"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670295.json",
+      "bytes": 10221,
+      "sha256": "5b8fd423f1ad5c8cb281b394ff2601ac4d8a99793b10d3344ab9e6f9f26d2c49"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670295.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670426.command.txt",
+      "bytes": 1812,
+      "sha256": "802b68e81733338b0791fd05cbdbb61804546c320ce9d68ebdaa47acceb31206"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670426.json",
+      "bytes": 17570,
+      "sha256": "ada1b075527eb8ee66a71b48a0e63d8eadfc5dd18c5ea80626ec22a1883bc362"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-original-exception-capture-observation-1791670426.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\replay_native_incident37_exception_capture_20261011.py",
+      "bytes": 4153,
+      "sha256": "e153ea37350c7160ef6f1e4ffc5ed6366ab037fcac737c2524a7c7e742aebd08"
+    }
+  ],
+  "limitations": [
+    "Original failed hidden/weight inputs remain missing. Do not infer root cause from normal replay inputs.",
+    "No production patch, formal rollout, formal checkpoint restore or new numerical tolerance.",
+    "Iteration14 first failing operator remains unknown."
+  ]
+}

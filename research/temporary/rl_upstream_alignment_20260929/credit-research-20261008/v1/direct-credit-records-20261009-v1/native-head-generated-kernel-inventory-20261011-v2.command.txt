@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,base64
+cache=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor');out={'unix':time.time(),'files':[],'native_head_candidates':[],'note':'Static cache inventory only; no claim that a candidate ran in original failing process.'}
+for f in cache.glob('*/*.py'):
+ if f.stat().st_size>2*1024*1024:continue
+ b=f.read_bytes()
+ if b'248320' not in b or b'4096' not in b:continue
+ s=b.decode(errors='replace');bench=s[s.find('def benchmark_compiled_module'):];nodes=[l for l in s.splitlines() if 'Topologically Sorted Source Nodes:' in l]
+ a={'path':str(f),'bytes':len(b),'mtime':f.stat().st_mtime,'sha256':hashlib.sha256(b).hexdigest(),'nodes':nodes,'benchmark':bench[:4500]}
+ out['files'].append(a)
+ if 'log_probs' in s and 'entropy' in s and '512' in bench and 'bfloat16' in bench and 'dlogits' not in s:
+  a=dict(a);a['base64']=base64.b64encode(b).decode();out['native_head_candidates'].append(a)
+out['files'].sort(key=lambda a:a['mtime'],reverse=True)
+print(json.dumps(out))
+
+PY

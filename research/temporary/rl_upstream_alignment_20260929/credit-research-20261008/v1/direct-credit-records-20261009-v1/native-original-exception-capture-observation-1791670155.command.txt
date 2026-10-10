@@ -1,0 +1,23 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v1');job=json.loads((root/'job.json').read_bytes());out={'unix':time.time(),'process':{'pid':job['pid'],'expected_birth':job['birth']},'ranks':[]}
+try:
+ p=psutil.Process(job['pid']);out['process'].update(birth=p.create_time(),same_birth=p.create_time()==job['birth'],status=p.status(),rss=p.memory_info().rss)
+except psutil.NoSuchProcess:out['process']['missing']=True
+for f in sorted((root/'result').glob('rank[01].json')):
+ try:
+  d=json.loads(f.read_bytes());out['ranks'].append({k:d.get(k) for k in ['rank','pid','birth','phase','unix','allocated','reserved','pss_bytes','microbatches','actual_optimizer_steps','exception','traceback']})
+ except Exception as e:out['ranks'].append({'file':str(f),'read_error':repr(e)})
+out['driver_tail']=(root/'driver.log').read_text(errors='replace')[-5000:]
+logroot=pathlib.Path('/tmp/ray/session_latest/logs');out['worker_tails']={}
+for r in out['ranks']:
+ pid=r.get('pid')
+ for f in logroot.glob(f'worker-*-{pid}.out'):
+  lines=f.read_text(errors='replace').splitlines();out['worker_tails'][str(f)]=[l for l in lines if '[DT direct joint minibatch]' in l][-3:]
+out['result_files']=[{'name':f.name,'bytes':f.stat().st_size} for f in (root/'result').glob('*') if f.is_file()]
+mx=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10);out['physical_gpu']=mx.stdout;out['host_available_bytes']=psutil.virtual_memory().available
+print(json.dumps(out))
+
+PY

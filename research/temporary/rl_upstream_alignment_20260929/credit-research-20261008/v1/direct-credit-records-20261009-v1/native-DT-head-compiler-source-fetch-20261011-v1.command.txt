@@ -1,0 +1,23 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,base64,os
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());env=s['environment'];dt=pathlib.Path(env['DT_ROOT']);out={'unix':time.time(),'DT_ROOT':str(dt),'selected_environment':{k:env[k] for k in env if any(w in k for w in ['CACHE','COMPILE','CUDAGRAPH','TRITON','PRECISION'])},'files':[],'head_cache_candidates':[]}
+for rel in ['clean/qwen35/qwen35_answer_finite.py','clean/qwen35/finite_ops.py','accelerated/qwen35/native_fla_precision.py']:
+ f=dt/rel
+ if f.is_file():
+  b=f.read_bytes();out['files'].append({'relative':rel,'path':str(f),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+cache=pathlib.Path(env.get('TORCHINDUCTOR_CACHE_DIR',os.environ.get('TORCHINDUCTOR_CACHE_DIR','/tmp/torchinductor_root')))
+out['cache_root']=str(cache);count=0;scanned=0
+if cache.is_dir():
+ for f in cache.glob('*/*.py'):
+  scanned+=1
+  if f.stat().st_size>2*1024*1024:continue
+  b=f.read_bytes()
+  if b'_fused_linear_for_ppo_fwd' in b:
+   count+=1;out['head_cache_candidates'].append({'path':str(f),'bytes':len(b),'mtime':f.stat().st_mtime,'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+  if count>=30:break
+out['cache_files_scanned']=scanned
+print(json.dumps(out))
+
+PY

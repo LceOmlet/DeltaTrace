@@ -1,0 +1,26 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,torch,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out={'unix':time.time(),'GPU_initialized_before':torch.cuda.is_initialized(),'ranks':[],'model_calls':0,'DT_calls':0,'optimizer_calls':0}
+for rank,T in [(0,5376),(1,5568)]:
+ path=root/f'receipts/textcraft-native-label-alignment-20261011-v1/rank{rank}-diagnostic-vectors.pt';t=torch.load(path,map_location='cpu',weights_only=False)
+ r,c,pos=t['row'],t['response_column'],t['native_head_position'];bad=(t['failed_logp']-t['old_logp']).abs()>10;flat=r*T+pos
+ rec={'rank':rank,'source':str(path),'keys':list(t),'rows':4,'native_head_length':T,'active_positions':len(r),'severe_positions':int(bad.sum()),'minimums':{k:float(t[k].min()) for k in ['failed_logp','finite_capture_logp','old_logp']},'maximums':{k:float(t[k].max()) for k in ['failed_logp','finite_capture_logp','old_logp']},'modulo_counts':{},'quantization':{},'token_groups':[]}
+ for period in [16,32,64,128,256,512]:
+  total=torch.bincount(flat%period,minlength=period);severe=torch.bincount((flat%period)[bad],minlength=period)
+  rec['modulo_counts'][period]={'total':total.tolist(),'severe':severe.tolist(),'ratio_min':float((severe/total.clamp_min(1)).min()),'ratio_max':float((severe/total.clamp_min(1)).max())}
+ for k in ['failed_logp','finite_capture_logp']:
+  v=t[k][bad].double();rec['quantization'][k]={str(step):{'exact_count':int(((v/step).round()*step==v).sum()),'maximum_distance':float(((v/step).round()*step-v).abs().max())} for step in [0.125,0.0625,0.03125,0.015625]}
+ for token in torch.unique(t['native_head_labels']):
+  sel=t['native_head_labels']==token;n=int(sel.sum())
+  if n>=50:rec['token_groups'].append({'token_id':int(token),'total':n,'severe':int((sel&bad).sum())})
+ rec['token_groups'].sort(key=lambda x:x['total'],reverse=True)
+ if isinstance(t['selected_logits'],dict):
+  rec['selected_logits_keys']=list(t['selected_logits'])
+  sel=t['selected_logits'][0].double();rec['native_selected_logit_range']=[float(sel.min()),float(sel.max())];z=sel-t['failed_logp'].double();rec['implied_logZ_if_selected_logit_unchanged']=[float(z.min()),float(z.max())]
+ out['ranks'].append(rec)
+out.update(peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,GPU_initialized_after=torch.cuda.is_initialized(),note='Exhaustive saved active positions only. abs gap>10 is existing descriptive partition, not numerical acceptance. No mutation or new model evaluation.')
+print(json.dumps(out))
+
+PY
