@@ -1,0 +1,35 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" -u - <<'PY'
+
+import json,time,psutil
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out=root/'receipts/textcraft-native-actor-incidents-20261010-v1';started=time.time();last=None
+print(json.dumps(dict(event='watch_started',unix=started,original_driver=982372,target_native_update_index=16,target_formal_iteration=33,training_controls_changed=False)),flush=True)
+for tick in range(330):
+ try:
+  assert psutil.Process(982372).create_time()==1791553809.84
+  workers=[];terminal=False;incident=False
+  for pid,birth in [(987808,1791553850.0),(989860,1791553867.51)]:
+   p=psutil.Process(pid);assert p.create_time()==birth
+   folder=next(out.glob('rank*-pid'+str(pid)))
+   events=[json.loads(s) for s in (folder/'native-events.jsonl').read_text().splitlines()]
+   losses=[json.loads(s) for s in (folder/'loss-backward-events.jsonl').read_text().splitlines()]
+   current=[e for e in events if e.get('update_index')==16];ls=[e for e in losses if e.get('update_index')==16]
+   bad=[e for e in ls if e.get('finite') is False];steps=[e for e in current if e['event']=='native_optimizer_return'];returns=[e for e in current if e['event']=='native_update_return']
+   incident |= bool(bad) or any(e.get('incident_count',0)>0 for e in current)
+   workers.append(dict(pid=pid,birth=birth,phase=p.name(),loss_callbacks=len(ls),nonfinite=bad,optimizer_returns=steps,update_returns=returns))
+  key=[(w['phase'],w['loss_callbacks'],len(w['optimizer_returns']),len(w['update_returns'])) for w in workers]
+  done=all(w['update_returns'] for w in workers)
+  if key!=last or tick%6==0 or incident or done:
+   progress_path=root/'runs/textcraft-formal-stable-20261009-v1/train.log'
+   with progress_path.open('rb') as stream:
+    stream.seek(max(0,progress_path.stat().st_size-10000));tail=stream.read().decode(errors='replace').splitlines()
+   progress=[x for x in tail if 'Rounds ' in x or 'Training Progress:' in x][-2:]
+   print(json.dumps(dict(event='live_observation',unix=time.time(),workers=workers,incident=incident,complete=done,original_progress=progress,model_calls=0,production_changes=0)),flush=True);last=key
+  if incident or done:break
+ except (psutil.Error,AssertionError) as error:
+  print(json.dumps(dict(event='original_handle_missing_or_identity_changed',unix=time.time(),error=repr(error),no_restart=True)),flush=True);break
+ time.sleep(10)
+else:print(json.dumps(dict(event='observation_window_ended',unix=time.time(),training_unchanged=True)),flush=True)
+
+PY
