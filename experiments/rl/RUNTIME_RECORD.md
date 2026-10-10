@@ -1,5 +1,28 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 22:41 TextCraft第35轮完整返回，36轮原采样已开始
+
+同一原PID982372/出生1791553809.84及两worker完成35/330。各rank32个B4原log_prob
+梯度均有限，4次optimizer各8个microbatch；4笔同步更新均实际step，无新异常或跳过。
+8项裁剪前DTensor _NormPartial local norm与同次原返回相等，不另称全局L2。
+NaN仍只记录在正式14轮；首个异常参数/算子未知，未把后续有限更新当作修复。
+观察计数update_index18对应正式35轮。原reward0.887、entropy0.508、grad_norm0.075；
+采样1337.190秒、旧logp73.976秒、ref64.575秒、DT/优势184.661秒、actor267.636秒，
+整轮1928.370秒（32.1395分钟）。原worker DT各29个消费批次、115条unique histories，
+包含尾批；耗时180.3848/180.2758秒，与trainer adv总计时分开。
+raw prior-source最小-9.960583、白化后最小-40.605均有限，不凭幅度认定归因错误。
+曲线native-curves-20261010-224147绘至35，NaN14留断点；无平滑或填零，已目视检查。
+
+DT瞬时物理GPU2/3为17083/16743MiB、worker PSS19.074/20.183GB；actor为31870/29559MiB、
+PSS19.011/19.981GB，均非峰值。12项源码SHA保持；数值源26bef6c8/GDN7c06d5e0、
+观察源85aa2940、LoRA8/16、每卡B4/双卡B8保持。prompt315/response10240，本轮不是
+新增32k容量或官方容差验收。原checkpoint marker25和14份清单不变，无复制/恢复。
+本轮本地watch构造的宽泛替换保护断言在SSH前阻止操作，改用指定update_index字段后
+保留driver出生常量；未影响原训练，零生产数值更改/重启。原始保护回执一起保存。
+三份远端authority均完成35且保留NaN调查status；AppWorld/SQL/GRPO未重启。
+results_textcraft_iteration35_20261010.json绑定19份原文件、梯度/step、阶段资源、DT及曲线SHA。
+监听已正常退出，零额外模型/DT/反向/optimizer调用。
+
 ## 2026-10-10 22:08 TextCraft第34轮完整返回，35轮原采样已开始
 
 同一原PID982372/出生1791553809.84及两worker完成34/330。各rank32个B4原log_prob
