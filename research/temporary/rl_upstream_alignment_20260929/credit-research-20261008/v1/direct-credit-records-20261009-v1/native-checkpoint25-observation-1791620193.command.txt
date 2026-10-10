@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,time
+from pathlib import Path
+f=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')/'runs/textcraft-formal-stable-20261009-v1'
+p=psutil.Process(982372);assert p.create_time()==1791553809.84
+workers=[]
+for pid,birth in [(987808,1791553850.0),(989860,1791553867.51)]:
+ w=psutil.Process(pid);assert w.create_time()==birth;workers.append(dict(pid=pid,birth=birth,phase=w.name()))
+ray=Path('/tmp/ray/session_2026-10-09_21-50-24_958031_982372/logs');path=next(ray.glob('*-985585.out'));lines=path.read_text(errors='replace').splitlines()
+ck=f/'textcraft-dt/checkpoints'
+files=[dict(path=str(x),bytes=x.stat().st_size,mtime_ns=x.stat().st_mtime_ns) for x in ck.rglob('*') if x.is_file()] if ck.exists() else []
+markers=[dict(path=str(x),text=x.read_text(),sha256=hashlib.sha256(x.read_bytes()).hexdigest()) for x in ck.rglob('latest_checkpointed_iteration.txt')] if ck.exists() else []
+print(json.dumps(dict(unix=time.time(),driver=dict(pid=p.pid,birth=p.create_time()),workers=workers,checkpoint_directory=str(ck),checkpoint_markers=markers,checkpoint_files=files,original_step25_lines=[dict(path=str(path),line=i,text=x) for i,x in enumerate(lines,1) if 'step:25 - ' in x],original_checkpoint_log_tail=[dict(path=str(path),line=i,text=x) for i,x in enumerate(lines,1) if 'checkpoint' in x.lower()][-12:],model_calls=0,production_changes=0,restore_calls=0)))
+
+PY

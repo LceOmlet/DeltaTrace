@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 16:17 TextCraft第25轮完整返回，原生检查点25已完成
+
+同一原PID982372/出生1791553809.84与两worker完成25/330，已进入第26轮原采样。
+两rank各32个B4原log_prob梯度全有限，完整覆盖4次optimizer×8个microbatch；
+各4次原optimizer全部实际step，8项裁剪前local norm与同次原返回逐值相同，
+无observer_error、新非有限值或跳过。仍为原DTensor _NormPartial local观察，
+不另称全局L2实测；第14轮首个异常参数/算子仍未知，不宣称事故已修复。
+
+原训练轨迹reward0.723、entropy0.633、grad_norm0.048；采样1722.284秒、
+旧logp124.836秒、ref109.038秒、DT/优势194.959秒、actor456.570秒，
+原save_checkpoint60.336秒，整轮2668.462秒（44.4744分钟）。
+原生latest_checkpointed_iteration.txt内容为25，14份检查点文件共18,189,780,704字节；
+两rank的model/optim/extra_state及trainer data.pt均存在且非空，之后继续原采样。
+只核验原保存完成标记与文件清单，未复制/恢复、未进行restore验证，不自行另存检查点。
+
+native-curves-20261010-161710更新至25轮，NaN范数仍仅14轮，未平滑或填零。
+本轮白化后优势最小值-142.687，有限；不凭幅度单独判定归因错误或NaN14成因。
+原response上限10240、prompt315，本轮不构成新增32k容量或官方数值容差验收。
+DT瞬时物理GPU2/3为17401/17061MiB，actor为37312/34908MiB，均非峰值。
+两worker PSS在DT为18.418/19.381GB、actor为18.341/19.213GB；原cgroup及RSS另存。
+数值源26bef6c8/GDN7c06d5e0、观察源85aa2940、LoRA8/16、每卡B4/双卡B8保持。
+三份远端authority复核均完成25并保留NaN调查status；AppWorld/SQL/GRPO未启动。
+
+回执results_textcraft_iteration25_20261010.json保存原callback/norm/step、保存前后现场、
+原日志行、阶段资源、实际命令和SHA。原25轮监听已完成退出，正式训练继续原预算。
+
+
 ## 2026-10-10 15:32 TextCraft第24轮完整返回，原更新及曲线已保存
 
 同一原PID982372/出生1791553809.84与两worker完成24/330，已进入第25轮原采样。
