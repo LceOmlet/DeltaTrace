@@ -1,9 +1,11 @@
-"""Isolate native old/ref -> all 27 saved DT B4s -> original incident37 update.
+"""Isolate original old/reference-logp calls before incident37 native update.
 
-Same original input artifacts, Torch DCP trainable state, official native
-owners, LoRA 8/16 and B4/card. No generation or preloss tensor observation.
-Do not read head parameters before DT or update. After a bad gradient, capture native head hidden/ID context only after a bad loss gradient. This is
-a bounded diagnostic; no formal budget, loss or credit formula changes.
+Use the same saved first 32 rows and trainable shards, native VERL old/ref
+RPCs and update, LoRA 8/16, B4/card. Do not call DT or generation. Fresh base
+and optimizer runtime are not the original persistent process. Native head
+input capture occurs only after a nonfinite loss gradient. Save CPU head
+local shards at an RPC boundary; do not read freed unsharded weight storage
+in the pre-backward gradient hook. No extra head or model call.
 """
 import argparse
 import functools
@@ -49,8 +51,7 @@ def make_worker():
             events = (out/f'rank{self.rank}-phases.jsonl').open('a', buffering=1)
             record = dict(rank=self.rank, pid=os.getpid(), birth=psutil.Process().create_time(),
                           scope=__doc__, microbatches=[],
-                          actual_optimizer_steps=0, extra_head_calls=0,
-                          preloss_tensor_observation=capture_head_microbatch is not None)
+                          actual_optimizer_steps=0, extra_head_calls=0, preloss_tensor_observation=False)
 
             def save(phase, **extra):
                 row = dict(phase=phase, unix=time.time(),
@@ -133,64 +134,20 @@ def make_worker():
             del ref_result,native_data
             save('native_reference_logprob_completed')
 
-            # Reference frozen head shards from the same checkpoint in the
-            # completed no-DT diagnostic; no tensor read or CPU allocation here.
-            record['head_shards_before_update'] = dict(
-                path=str(INCIDENT.parent/'textcraft-native-incident37-old-ref-only-20261011-v1/result'/f'rank{self.rank}-head-shards-before-update.pt'),
-                scope='Separate no-DT run, same base checkpoint; not a capture of this live forward weight')
-
-            # Exercise the complete saved DT phase via the existing worker RPC.
-            # Only undo the recorder's unpadding; all valid IDs/masks are exact.
-            import numpy as np
-            from reward_readout import DirectActionTargetReadout
-            formal = INCIDENT.parents[1]/'runs/textcraft-formal-stable-20261009-v1'
-            packets = sorted([p for p in (formal/f'credit-records/rank{self.rank}-pid{old_pid}').glob('joint-*.pt')
-                              if 1791646740 < p.stat().st_mtime < 1791646915], key=lambda p:p.stat().st_mtime)
-            packet_path = packets[0]
-            assert len(packets)==27
-            packet_list = [torch.load(p,map_location='cpu',weights_only=False) for p in packets]
-            packet = dict(packet_list[0]);packet['rows']=[row for p in packet_list for row in p['rows']]
-            assert len(packets)==27
-            assert len({r['policy_mask'].numel() for r in packet['rows']})==1
-            assert len({r['prompt_length'] for r in packet['rows']})==1
-            tensors = {k:[] for k in ['input_ids','attention_mask','responses','policy_mask','target_mask','dt_direct_reward']}
-            for index,row in enumerate(packet['rows']):
-                length = row['prompt_length']; width = row['policy_mask'].numel()
-                ids = torch.full((length+width,),packet['eos_token_id'],dtype=torch.long)
-                ids[:length] = row['input_ids'][:length]
-                ids[length+row['suffix_positions']] = row['input_ids'][length:]
-                attention = torch.zeros_like(ids);attention[:length]=1;attention[length+row['suffix_positions']]=1
-                item=dict(input_ids=ids,attention_mask=attention,responses=ids[length:],
-                          policy_mask=row['policy_mask'],target_mask=row['target_mask'],
-                          dt_direct_reward=torch.tensor(row['reward']),traj_uid=row['traj_uid'])
-                check_row = DirectActionTargetReadout._prepare_row(item,index)
-                assert torch.equal(check_row['selected'],row['input_ids'])
-                assert torch.equal(check_row['suffix_positions'],row['suffix_positions'])
-                assert torch.equal(check_row['prior'],row['prior_source_mask'])
-                assert check_row['target_offsets'] == row['target_offsets']
-                for key in tensors:tensors[key].append(item[key])
-            dt_data = DataProto.from_dict(tensors={k:torch.stack(v) for k,v in tensors.items()},
-                non_tensors={'traj_uid':np.array([r['traj_uid'] for r in packet['rows']])},
-                meta_info=dict(eos_token_id=packet['eos_token_id'],pad_token_id=self.tokenizer.pad_token_id,
-                               dt_target_semantics='native_joint_action_target'))
-            before_training = self.actor_module_fsdp.training
-            parameter_versions = {n:(p._version,str(p.dtype),tuple(p.shape)) for n,p in self.actor_module_fsdp.named_parameters()}
-            save('native_saved_DT_batch_begin',packet=str(packet_path),packet_sha256=sha(packet_path))
-            dt_result = self.compute_dt_token_advantages(dt_data)
-            record['DT_batch'] = dict(packet=str(packet_path),packet_sha256=sha(packet_path),
-                original_valid_IDs_and_masks_exact=True, trajectories=len(packet['rows']),
-                unique_trajectory_ids=len({r['traj_uid'] for r in packet['rows']}),
-                all_input_packets=[dict(path=str(p),sha256=sha(p)) for p in packets],
-                result_finite={k:bool(torch.isfinite(v).all()) for k,v in dt_result.batch.items()},
-                model_training_before=before_training,model_training_after=self.actor_module_fsdp.training,
-                parameter_metadata_changes=[n for n,p in self.actor_module_fsdp.named_parameters()
-                    if parameter_versions[n] != (p._version,str(p.dtype),tuple(p.shape))])
-            import qwen35_gdn_finite
-            record['DT_batch']['actual_GDN_source']=dict(path=inspect.getsourcefile(qwen35_gdn_finite),sha256=sha(inspect.getsourcefile(qwen35_gdn_finite)))
-            assert record['DT_batch']['actual_GDN_source']['sha256']=='7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656'
-            record['model_modes']['after_DT'] = model_modes()
-            save('native_saved_DT_batch_completed',DT_batch=record['DT_batch'])
-            del dt_result,dt_data,packet,packet_list,tensors
+            # Preserve the existing CPU-offloaded head's local shards before
+            # native update. No model call or independent state transition.
+            head_shards = {}
+            for name,param in self.actor_module_fsdp.named_parameters():
+                if name.endswith('lm_head.weight'):
+                    value = param.to_local() if isinstance(param,DTensor) else param
+                    head_shards[name] = dict(value=value.detach().to('cpu',copy=True),
+                        global_shape=list(param.shape),placements=[str(x) for x in getattr(param,'placements',())])
+            head_path = out/f'rank{self.rank}-head-shards-before-update.pt'
+            torch.save(head_shards,head_path)
+            record['head_shards_before_update'] = dict(path=str(head_path),sha256=sha(head_path),
+                bytes=head_path.stat().st_size, names=list(head_shards))
+            del head_shards
+            save('native_head_local_shards_preserved')
 
             # Mirror the original incident recorder: no tensor reads, scalar
             # conversion, CPU copies, or extra head forward before native loss.
@@ -217,8 +174,7 @@ def make_worker():
                         values['log_prob_gradient'] = g.detach().to('cpu',copy=True)
                         path=out/f'rank{self.rank}-loss-inputs-microbatch{index}.pt'
                         torch.save(values,path);point.update(path=str(path),sha256=sha(path))
-                    if not finite and not record.get('head_capture_attempted'):
-                        record['head_capture_attempted']=True
+                    if not finite:
                         # Read the native head context only after the bad loss
                         # gradient exists. This supplies the missing incident
                         # hidden inputs without any extra model/head call.
@@ -260,8 +216,37 @@ def make_worker():
                     context['ref_logprob'] = weakref.ref(arguments['ref_logprob'])
 
             native_policy = owner.compute_policy_loss
-            from capture_native_head_return_20261011 import install
-            remove_head_capture = install(head,record,capture_head_microbatch,out,self.rank,save)
+            native_head_forward = head.FusedLinearForPPO.forward
+
+            def observe_native_head(result, arguments):
+                # This owner is called via .forward(), so Module hooks do not
+                # apply. Observe its exact returned tensors after computation,
+                # while the enclosing FSDP root still owns live full weights.
+                index = len(record['microbatches'])
+                if index != capture_head_microbatch or record.get('live_head_capture'):
+                    return
+                path = out/f'rank{self.rank}-native-head-live-microbatch{index}.pt'
+                values = {key: arguments[key].detach().to('cpu', copy=True)
+                          for key in ['hidden_states', 'vocab_weights', 'input_ids']}
+                values.update(token_log_probs=result[0].detach().to('cpu', copy=True),
+                              entropy=result[1].detach().to('cpu', copy=True))
+                metadata = dict(microbatch_index=index,
+                    temperature=arguments['temperature'],
+                    autocast_enabled=torch.is_autocast_enabled('cuda'),
+                    autocast_dtype=str(torch.get_autocast_dtype('cuda')),
+                    original_strides={key:list(arguments[key].stride()) for key in
+                                      ['hidden_states', 'vocab_weights', 'input_ids']},
+                    head_source_sha256=HEAD_SHA,
+                    scope='Native head return, before root FSDP post-forward; no extra model/head call')
+                torch.save(dict(tensors=values, metadata=metadata), path)
+                record['live_head_capture'] = dict(path=str(path), bytes=path.stat().st_size,
+                    sha256=sha(path), metadata=metadata)
+                save('native_live_head_captured')
+
+            if capture_head_microbatch is not None:
+                head.FusedLinearForPPO.forward = observe_call(native_head_forward,
+                    lambda:True, observe_native_head,
+                    lambda error: save('optional_live_head_capture_error',error=repr(error)))
             handle = actor.actor_optimizer.register_step_post_hook(
                 lambda *_: record.update(actual_optimizer_steps=record['actual_optimizer_steps']+1))
             native_KL = owner.kl_penalty
@@ -287,7 +272,7 @@ def make_worker():
                 save('failed',traceback=traceback.format_exc())
                 raise
             finally:
-                remove_head_capture()
+                head.FusedLinearForPPO.forward = native_head_forward
                 owner.compute_policy_loss = native_policy
                 owner.kl_penalty = native_KL
                 handle.remove()

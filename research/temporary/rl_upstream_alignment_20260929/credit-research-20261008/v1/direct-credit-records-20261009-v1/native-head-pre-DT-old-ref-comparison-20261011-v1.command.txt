@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import hashlib,json,time,torch
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');records=[]
+folders=[root/(name+'-20261011-v1')/'result' for name in ['textcraft-native-incident37-native-head-live-capture','textcraft-native-incident37-all-DT-live-head-capture']]
+for rank in [0,1]:
+ a,b=[torch.load(f/f'rank{rank}-native-old.pt',map_location='cpu',weights_only=False) for f in folders];refa,refb=[torch.load(f/f'rank{rank}-native-ref.pt',map_location='cpu',weights_only=False) for f in folders];losses=[torch.load(f/f'rank{rank}-loss-inputs-microbatch1.pt',map_location='cpu',weights_only=False) for f in folders];r=dict(rank=rank,fields={})
+ for key in a:r['fields']['pre_DT_old_'+key]=dict(exact=torch.equal(a[key],b[key]),maxabs=float((a[key]-b[key]).abs().max()))
+ r['fields']['pre_DT_ref']=dict(exact=torch.equal(refa['ref_log_prob'],refb['ref_log_prob']),maxabs=float((refa['ref_log_prob']-refb['ref_log_prob']).abs().max()))
+ r['after_forward_vs_own_pre_DT_old']=[]
+ for name,old,loss in zip(['noDT','27DT'],[a,b],losses):
+  mask=loss['response_mask']!=0;delta=loss['log_prob']-old['old_log_probs'][4:8];r['after_forward_vs_own_pre_DT_old'].append(dict(run=name,exact=torch.equal(loss['log_prob'],old['old_log_probs'][4:8]),all_maxabs=float(delta.abs().max()),policy_maxabs=float(delta[mask].abs().max())))
+ records.append(r)
+print(json.dumps(dict(unix=time.time(),records=records,CUDA_initialized=torch.cuda.is_initialized(),model_calls=0,DT_calls=0,optimizer_steps=0)))
+PY

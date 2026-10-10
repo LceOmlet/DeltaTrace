@@ -49,8 +49,7 @@ def make_worker():
             events = (out/f'rank{self.rank}-phases.jsonl').open('a', buffering=1)
             record = dict(rank=self.rank, pid=os.getpid(), birth=psutil.Process().create_time(),
                           scope=__doc__, microbatches=[],
-                          actual_optimizer_steps=0, extra_head_calls=0,
-                          preloss_tensor_observation=capture_head_microbatch is not None)
+                          actual_optimizer_steps=0, extra_head_calls=0, preloss_tensor_observation=False)
 
             def save(phase, **extra):
                 row = dict(phase=phase, unix=time.time(),

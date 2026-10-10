@@ -1,5 +1,29 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 真实第二B4输出头现场及原VERL前向参考检查，正式仍停37/330
+
+新建actor在原old/ref后、以及原27个DT批次后，各完成每rank8个B4和一次原optimizer；
+均有限。本轮采集原输出头返回时的完整H/W/rolled IDs/output，在root FSDP释放权重前
+保存；不额外调用模型或head。两组driver和worker均退出，物理mx-smi无进程、各858MiB。
+这不是原持久进程重建，有限回放不能称修好。正式未重启/恢复，生产及Q/V/A未改动。
+
+同版本VERL tests/kernels/test_linear_cross_entropy.py原参考函数和前向断言，
+对两rank全部86个原生512-token块的FP32路径通过（atol=rtol=1e-4）。BF16编译/eager
+最大logp差约2.4e-6，仅描述，不另定容差。不声称反向、整网、32k或vLLM验收。
+真实head输出到有效policy token的loss logp逐值相同；原输入、优势、mask对齐。
+
+两组新actor完整输出头W/IDs逐值相同；rank1 H及输出相同，rank0 H相对L2差约2%，
+有效policy logp最大差0.4404。进一步查原DT前保存的old/ref已存在rank0差异，
+而各组第二B4 actor logp均逐值等于各自DT前old，因此不能把这组跨进程差异归因DT。
+原事故上百logp偏差的来源仍未定位，失败现场H/live W仍缺，KL保护仍仅候选未部署。
+
+诊断纠错透明保留：部署脚本继承preloss_tensor_observation=False，但实际采集在head
+返回后/loss前发生CPU读取，影响后续时序；本机标志修正仅prepared，原源码与回执保留。
+首次CPU mask对照误用全序列形状，v2改用原owner的response切片；不是生产mask修复。
+原记录及源SHA、PID birth、86块结果、资源见
+[真实输出头回执](results_textcraft_incident37_native_head_20261011.json)。
+
+
 ## 2026-10-11 DT端点对照与原VERL输出头检查，概率异常来源仍未定位
 
 本轮只读CPU源与事故数据，没有GPU/model/DT/optimizer调用或生产改动。

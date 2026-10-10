@@ -1,0 +1,9 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,psutil,subprocess,time
+from pathlib import Path
+f=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-head-owner-reference-20261011-v1');jobs=json.loads((f/'jobs.json').read_text());records=[]
+for j in jobs['jobs']:
+ p=f/('rank'+str(j['rank'])+'.json');log=f/('rank'+str(j['rank'])+'.log');d=json.loads(p.read_text()) if p.exists() else {};records.append(dict(job=j,live=psutil.pid_exists(j['pid']) and psutil.Process(j['pid']).create_time()==j['birth'],result=d,log_tail=log.read_text(errors='replace')[-3500:]))
+print(json.dumps(dict(unix=time.time(),records=records,physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12).stdout)))
+PY

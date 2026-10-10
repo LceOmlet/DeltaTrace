@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import hashlib,json,resource,time,torch
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');f=root/'receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result';incident=root/'receipts/textcraft-native-actor-incidents-20261010-v1';records=[]
+for rank,oldpid in enumerate([987808,989860]):
+ p=f/f'rank{rank}-native-head-live-microbatch1.pt';payload=torch.load(p,map_location='cpu',weights_only=False);v=payload['tensors'];labels=v['input_ids'];T=labels.shape[1]
+ snap_path=next((incident/f'rank{rank}-pid{oldpid}').glob('incident-*-update.pt'));snapshot=torch.load(snap_path,map_location='cpu',weights_only=False);batch=snapshot['input_batch'];orig=batch['input_ids'][4:8];loss_path=f/f'rank{rank}-loss-inputs-microbatch1.pt';loss=torch.load(loss_path,map_location='cpu',weights_only=False)
+ assert torch.equal(loss['old_log_prob'],batch['old_log_probs'][4:8]);assert torch.equal(loss['advantages'],batch['advantages'][4:8]);assert torch.equal(loss['response_mask'],batch['loss_mask'][4:8,-batch['responses'].shape[1]:])
+ # Find an exact source window from the actual token identities, not a copy
+ # of the owner's trimming policy. Ignore the roll wrap only during search.
+ counts=[int((orig[0]==labels[0,i]).sum()) for i in range(min(T,64))];anchor=min(range(len(counts)),key=counts.__getitem__);starts=(orig[0]==labels[0,anchor]).nonzero().flatten()-anchor-1;starts=[int(x) for x in starts if 0<=x<=orig.shape[1]-T]
+ matches=[left for left in starts if torch.equal(torch.roll(orig[:,left:left+T],-1,-1),labels)]
+ r=dict(rank=rank,capture_path=str(p),capture_sha256=hashlib.sha256(p.read_bytes()).hexdigest(),head_shapes={k:list(x.shape) for k,x in v.items()},head_dtypes={k:str(x.dtype) for k,x in v.items()},old_advantage_mask_exact=True,exact_rolled_input_windows=matches,hidden_finite=bool(torch.isfinite(v['hidden_states']).all()),hidden_absmax=float(v['hidden_states'].abs().max()),logp_finite=bool(torch.isfinite(v['token_log_probs']).all()),entropy_finite=bool(torch.isfinite(v['entropy']).all()))
+ if len(matches)==1:
+  left=matches[0];prompt=batch['prompts'].shape[1];row,col=(loss['response_mask']!=0).nonzero(as_tuple=True);headcols=prompt+col-1-left;valid=(headcols>=0)&(headcols<T);r['policy_positions_mapped']=int(valid.sum());r['policy_positions_total']=len(row)
+  mapped=v['token_log_probs'][row[valid],headcols[valid]];actual=loss['log_prob'][row[valid],col[valid]];r['native_head_vs_actual_loss_exact']=torch.equal(mapped,actual);r['native_head_vs_actual_loss_maxabs']=float((mapped-actual).abs().max());r['policy_entropy_mean']=float(v['entropy'][row[valid],headcols[valid]].mean())
+ records.append(r);del payload,v,labels,snapshot,batch,orig,loss
+print(json.dumps(dict(unix=time.time(),records=records,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),model_calls=0,DT_calls=0,optimizer_steps=0)))
+
+PY

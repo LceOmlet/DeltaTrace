@@ -36,7 +36,7 @@ def make_worker():
     @ray.remote
     class IncidentWorker(ActorRolloutRefWorker):
         @register(dispatch_mode=Dispatch.ONE_TO_ALL)
-        def replay_incident(self, output):
+        def replay_incident(self, output, capture_head_microbatch=None):
             import psutil
             from torch.distributed.checkpoint.state_dict import (
                 StateDictOptions, get_model_state_dict, set_model_state_dict)
@@ -51,7 +51,8 @@ def make_worker():
             events = (out/f'rank{self.rank}-phases.jsonl').open('a', buffering=1)
             record = dict(rank=self.rank, pid=os.getpid(), birth=psutil.Process().create_time(),
                           scope=__doc__, microbatches=[],
-                          actual_optimizer_steps=0, extra_head_calls=0, preloss_tensor_observation=False)
+                          actual_optimizer_steps=0, extra_head_calls=0,
+                          preloss_tensor_observation=capture_head_microbatch is not None)
 
             def save(phase, **extra):
                 row = dict(phase=phase, unix=time.time(),
@@ -216,6 +217,8 @@ def make_worker():
                     context['ref_logprob'] = weakref.ref(arguments['ref_logprob'])
 
             native_policy = owner.compute_policy_loss
+            from capture_native_head_return_20261011 import install
+            remove_head_capture = install(head,record,capture_head_microbatch,out,self.rank,save)
             handle = actor.actor_optimizer.register_step_post_hook(
                 lambda *_: record.update(actual_optimizer_steps=record['actual_optimizer_steps']+1))
             native_KL = owner.kl_penalty
@@ -241,6 +244,7 @@ def make_worker():
                 save('failed',traceback=traceback.format_exc())
                 raise
             finally:
+                remove_head_capture()
                 owner.compute_policy_loss = native_policy
                 owner.kl_penalty = native_KL
                 handle.remove()
@@ -255,6 +259,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--capture-head-microbatch',type=int,default=None)
     args=p.parse_args()
     assert sha(args.source)==SOURCE_SHA
     source=json.loads(args.source.read_bytes())
@@ -269,7 +274,7 @@ def main():
         group=RayWorkerGroup(RayResourcePool([2],use_gpu=True,max_colocate_count=1),
             RayClassWithInitArgs(make_worker(),cfg.actor_rollout_ref,'actor'))
         group.init_model()
-        result=group.replay_incident(str(args.output))
+        result=group.replay_incident(str(args.output),args.capture_head_microbatch)
         (args.output/'completed.json').write_text(json.dumps(result,indent=2))
     finally:
         ray.shutdown()

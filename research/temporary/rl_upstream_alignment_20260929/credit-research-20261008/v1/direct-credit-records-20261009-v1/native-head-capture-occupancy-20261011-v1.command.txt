@@ -1,0 +1,6 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import inspect,json,subprocess,time,psutil,torch
+from torch.nn.modules.module import register_module_forward_hook
+print(json.dumps(dict(unix=time.time(),physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout,hook_signature=str(inspect.signature(register_module_forward_hook)),formal_PIDs={str(p):psutil.pid_exists(p) for p in [982372,987808,989860]},CUDA_initialized=torch.cuda.is_initialized())))
+PY

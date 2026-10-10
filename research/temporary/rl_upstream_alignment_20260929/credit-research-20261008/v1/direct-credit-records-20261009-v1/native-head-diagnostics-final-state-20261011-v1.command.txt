@@ -1,0 +1,12 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import hashlib,json,psutil,subprocess,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');records=[]
+for name in ['textcraft-native-incident37-native-head-live-capture-20261011-v1','textcraft-native-incident37-all-DT-live-head-capture-20261011-v1']:
+ f=root/name;j=json.loads((f/'job.json').read_text());r=dict(name=name,job=j,driver_live=psutil.pid_exists(j['pid']) and psutil.Process(j['pid']).create_time()==j['birth'],completed=(f/'result/completed.json').exists(),ranks=[])
+ for p in (f/'result').glob('rank[01].json'):
+  d=json.loads(p.read_text());pid=d['pid'];r['ranks'].append(dict(rank=d['rank'],pid=pid,birth=d['birth'],worker_live=psutil.pid_exists(pid) and psutil.Process(pid).create_time()==d['birth'],phase=d['phase'],microbatches=d['microbatches'],actual_optimizer_steps=d['actual_optimizer_steps'],allocated=d.get('allocated'),reserved=d.get('reserved'),pss_bytes=d.get('pss_bytes'),native_metrics=d.get('native_metrics'),live_head_capture=d.get('live_head_capture'),traceback=d.get('traceback'),phase_records=[json.loads(line) for line in (f/'result'/f'rank{d["rank"]}-phases.jsonl').read_text().splitlines()]))
+ records.append(r)
+print(json.dumps(dict(unix=time.time(),records=records,physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12).stdout,host_available=psutil.virtual_memory().available,formal_PIDs={str(p):psutil.pid_exists(p) for p in [982372,987808,989860]})))
+PY
