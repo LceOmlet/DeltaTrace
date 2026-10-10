@@ -1,0 +1,41 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import hashlib,json,psutil,subprocess,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');formal=root/'runs/textcraft-formal-stable-20261009-v1'
+assert psutil.Process(982372).create_time()==1791553809.84
+source_sha=hashlib.sha256((formal/'source.json').read_bytes()).hexdigest()
+assert source_sha=='1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658'
+workers=[]
+for pid,birth in [(987808,1791553850.00),(989860,1791553867.51)]:
+ p=psutil.Process(pid);assert p.create_time()==birth
+ folder=next((root/'receipts/textcraft-native-actor-incidents-20261010-v1').glob('rank*-pid'+str(pid)))
+ native_path=folder/'native-events.jsonl';pre_path=folder/'preclip-events.jsonl'
+ native=[json.loads(line) for line in native_path.read_text().splitlines()]
+ pre=[json.loads(line) for line in pre_path.read_text().splitlines()]
+ events=[x for x in native if x['event']=='native_optimizer_return' and x['update_index']==2]
+ norms=[x for x in pre if x['event']=='native_norm_before_clipping' and x['update_index']==2]
+ returned=[x for x in native if x['event']=='native_update_return' and x['update_index']==2]
+ assert len(events)==len(norms)==4 and len(returned)==1
+ assert all(x['native_optimizer_step_calls']==1 for x in events)
+ assert [x['grad_norm'] for x in events]==[x['local_total_norm'] for x in norms]
+ memory=p.memory_full_info()
+ workers.append(dict(pid=pid,birth=birth,phase=p.name(),PSS_bytes=memory.pss,RSS_bytes=memory.rss,native_events=events,preclip_events=norms,update_return=returned[0],event_sources=[dict(path=str(q),sha256=hashlib.sha256(q.read_bytes()).hexdigest()) for q in [native_path,pre_path]]))
+now=time.time();authority=[]
+for name in ['formal-training.json','active-training.json','active-source.json']:
+ p=root/name;raw=p.read_bytes();d=json.loads(raw)
+ other=[j.copy() for j in d['jobs'] if j.get('pid')!=982372]
+ matches=[j for j in d['jobs'] if j.get('pid')==982372];assert len(matches)==1
+ job=matches[0];before=dict(job)
+ job.update(completed_iterations_observed=19,last_status_observed_unix=now,status='formal_running_native_nonfinite_skip_under_investigation',last_completed_update_finite=True,last_completed_update_incidents=0,last_completed_update_observed=19)
+ assert [j for j in d['jobs'] if j.get('pid')!=982372]==other
+ p.write_text(json.dumps(d,indent=2)+'\n')
+ authority.append(dict(path=str(p),previous_sha256=hashlib.sha256(raw).hexdigest(),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),changed_fields={k:dict(before=before.get(k),after=v) for k,v in job.items() if before.get(k)!=v}))
+cgroup={}
+for name in ['memory.usage_in_bytes','memory.stat']:
+ p=Path('/sys/fs/cgroup/memory')/name
+ if p.exists():cgroup[name]=p.read_text()
+print(json.dumps(dict(unix=now,driver_pid=982372,driver_birth=1791553809.84,source_sha256=source_sha,completed_iterations=19,total_iterations=330,workers=workers,authority_updates=authority,physical_mx_smi=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True,timeout=20).stdout,host_available_bytes=psutil.virtual_memory().available,cgroup=cgroup,disk=psutil.disk_usage(root)._asdict(),numerical_changes=0,model_calls=0,DT_calls=0,optimizer_calls=0,root_cause='iteration14 NaN unresolved')))
+
+PY

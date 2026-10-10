@@ -1,5 +1,27 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 12:08 TextCraft第19轮完整返回，新增优势极值已对应原token
+
+原PID982372及两worker出生时间不变，物理2/3继续，完成19/330并进入第20轮采样。
+两rank各4次原optimizer均实际step，裁剪前local norm与原返回逐值相同、全部有限；
+没有新增NaN skip。第14轮NaN根因仍未知，未部署数值修复，原异常标记继续保留。
+第19轮原日志reward0.699、entropy0.627、grad_norm0.037；采样1678.162秒、
+DT/优势201.167秒、actor406.802秒、整轮2495.493秒（41.6分钟）。
+原奖励/熵/梯度曲线已更新native-curves-20261010-120012，无平滑或缺失填0。
+
+原优势最小值-300.062927已从真实actor snapshot对应到traj4765b121…、
+response879/input1194/token353（' I'），位于'Thought: After getting bamboo, I'。
+原d=-4.042787，reward=1，原Q=1/V=56.984943/rawA=-55.984943；原信用owner CPU
+重算与保存rawA逐值相同，白化后为-300.062927。保存事实target logp=-4.161114，
+该view下必要概率上界满足，但未新测单删真实性，不以此点代替总体质量或NaN根因。
+两rank原old/ref/A全有限；CPU读取及原记录join29.375秒、峰RSS约1.45GiB，无CUDA/模型。
+读取脚本曾因未替换ROOT变量失败，原command/stderr保留；仅修诊断脚本，无生产修改。
+
+12:08物理显存50200/50902MiB（瞬时非峰）；worker PSS18.000/19.197GB，
+主机可用883.076GB、磁盘余13.139TB。数值源26bef6c8、LoRA8/16、每卡B4和预算保持；
+AppWorld/SQL/GRPO未重启。三份远端authority仅更新同PID进度，NaN调查状态保持。
+回执results_textcraft_iteration19_20261010.json绑定原日志、观察事件、位置/rawd和曲线。
+
 ## 2026-10-10 11:44 冻结负尾采样口径复核；不是当前策略或NaN原因结论
 
 使用原已配置SciPy1.16及SHA6eb34117…的原统计函数，复算两任务各1061位置、
