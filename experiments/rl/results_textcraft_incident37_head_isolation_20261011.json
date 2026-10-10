@@ -1,0 +1,1023 @@
+{
+  "observed_unix": 1791667666.108511,
+  "status": "Two targeted head/label diagnostics complete; original pre-update actor probability defect unresolved; formal stopped 37/330",
+  "formal_source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+  "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "DT_numerical_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+  "unchanged_config": {
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "actor_microbatch_per_GPU": 4,
+    "total_iterations": 330,
+    "formal_restarted": false,
+    "checkpoint_restored": false
+  },
+  "label_diagnostic": {
+    "started_unix": 1791666923.6469438,
+    "pid": 179346,
+    "birth": 1791666921.83,
+    "scope": "Diagnose a one-token label shift using already captured real H/W/IDs.\n\nNo model/DT/head/optimizer is executed, and no training reference is changed.\nUse log p(alt)-log p(real) = logit(alt)-logit(real) to test the concrete\noff-by-one hypothesis in the owning wrapper's torch.roll(labels, -1) boundary.\nSelected-logit bmm is a diagnostic identity, not a replacement output head or\nan official numerical acceptance test. The H/W are from a finite capture, not\nthe lost failed forward; a mismatch cannot exclude other label corruption.\n",
+    "source_sha256": "55ee74ba40677a924a3dbc18d378ae3a5ca1da92a3f5d4ae27cb23541990ce9a",
+    "ranks": [
+      {
+        "rank": 0,
+        "capture": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank0-native-head-live-microbatch1.pt",
+          "sha256": "22b2db81f578d6ddb4da01f0167a16e4c037aa065f03d52c41692abe92116f62"
+        },
+        "failure": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/loss-backward-1791646910870699040.pt",
+          "sha256": "537a2045e105ee2dba3f64cd2a2f547a234e9994cb9532c8815ea5052c5383a4"
+        },
+        "exact_unique_response_offset": 319,
+        "active_positions": 9933,
+        "severe_positions": 2149,
+        "source_dtype": "torch.bfloat16",
+        "temperature": 1.0,
+        "diagnostics": {
+          "-1": {
+            "all_active": {
+              "count": 9933,
+              "mean": -9.358178771467449,
+              "mean_abs": 18.84443412784314,
+              "max_abs": 145.643798828125,
+              "abs_quantiles": [
+                0.0004405975341796875,
+                13.219000816345215,
+                17.374980926513672,
+                21.546764373779297,
+                26.663117599487308,
+                75.06579895019537,
+                145.643798828125
+              ]
+            },
+            "severe_subset": {
+              "count": 2149,
+              "mean": 20.640294158885844,
+              "mean_abs": 23.179028390784104,
+              "max_abs": 145.643798828125,
+              "abs_quantiles": [
+                0.0004405975341796875,
+                5.549962997436523,
+                14.062084197998047,
+                33.96867370605469,
+                56.75894393920899,
+                108.32140502929686,
+                145.643798828125
+              ]
+            }
+          },
+          "0": {
+            "all_active": {
+              "count": 9933,
+              "mean": 9.00716382000642,
+              "mean_abs": 9.007163942899238,
+              "max_abs": 164.300048828125,
+              "abs_quantiles": [
+                0.0,
+                2.769345883280039e-06,
+                0.00024890899658203125,
+                6.107861518859863,
+                34.71480484008794,
+                93.88480895996116,
+                164.300048828125
+              ]
+            },
+            "severe_subset": {
+              "count": 2149,
+              "mean": 39.28430917863238,
+              "mean_abs": 39.28430917863238,
+              "max_abs": 164.300048828125,
+              "abs_quantiles": [
+                10.000019073486328,
+                18.5,
+                32.124969482421875,
+                52.24884033203125,
+                75.84882202148438,
+                125.32135375976563,
+                164.300048828125
+              ]
+            }
+          },
+          "1": {
+            "all_active": {
+              "count": 9933,
+              "mean": -4.160665931771748,
+              "mean_abs": 15.961135058583995,
+              "max_abs": 161.91355895996094,
+              "abs_quantiles": [
+                3.337860107421875e-06,
+                9.25,
+                13.312487602233887,
+                17.625,
+                25.320321655273442,
+                79.31451202392584,
+                161.91355895996094
+              ]
+            },
+            "severe_subset": {
+              "count": 2149,
+              "mean": 26.495944622673505,
+              "mean_abs": 27.491590803420614,
+              "max_abs": 161.91355895996094,
+              "abs_quantiles": [
+                2.574920654296875e-05,
+                7.437482833862305,
+                19.549976348876953,
+                40.09366989135742,
+                64.28773193359375,
+                114.2224768066406,
+                161.91355895996094
+              ]
+            }
+          }
+        },
+        "vectors": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-label-alignment-20261011-v1/rank0-diagnostic-vectors.pt",
+          "bytes": 690559,
+          "sha256": "ca95fa7f8cc5c7cd24514de11beee818d5773ce38c3818c88ce9cdb3a2e453c9"
+        }
+      },
+      {
+        "rank": 1,
+        "capture": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank1-native-head-live-microbatch1.pt",
+          "sha256": "a457ba612bed14936ba648b78ecac0779b036b63bbaf5ff36306caf51767b7d1"
+        },
+        "failure": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/loss-backward-1791646910895854293.pt",
+          "sha256": "0e6ff2ad745b583714939df350472ddacfacfb0acdc379d6201cdef31a24d512"
+        },
+        "exact_unique_response_offset": 319,
+        "active_positions": 11237,
+        "severe_positions": 2413,
+        "source_dtype": "torch.bfloat16",
+        "temperature": 1.0,
+        "diagnostics": {
+          "-1": {
+            "all_active": {
+              "count": 11237,
+              "mean": -8.642172502837344,
+              "mean_abs": 17.951810200761926,
+              "max_abs": 139.48519897460938,
+              "abs_quantiles": [
+                1.0727790140663274e-06,
+                12.179920196533203,
+                16.435420989990234,
+                20.829891204833984,
+                26.126024627685545,
+                73.48302154541011,
+                139.48519897460938
+              ]
+            },
+            "severe_subset": {
+              "count": 2413,
+              "mean": 20.572722342120034,
+              "mean_abs": 22.74365479887841,
+              "max_abs": 139.48519897460938,
+              "abs_quantiles": [
+                0.000125885009765625,
+                5.100593566894531,
+                13.936515808105469,
+                34.6533088684082,
+                55.33289947509766,
+                104.76992523193374,
+                139.48519897460938
+              ]
+            }
+          },
+          "0": {
+            "all_active": {
+              "count": 11237,
+              "mean": 8.716483411292113,
+              "mean_abs": 8.722800453449878,
+              "max_abs": 150.33203125,
+              "abs_quantiles": [
+                0.0,
+                0.00023412704467773438,
+                0.018894270062446594,
+                6.646921157836914,
+                32.91361389160156,
+                90.18696685791011,
+                150.33203125
+              ]
+            },
+            "severe_subset": {
+              "count": 2413,
+              "mean": 37.87705536023048,
+              "mean_abs": 37.87705536023048,
+              "max_abs": 150.33203125,
+              "abs_quantiles": [
+                10.039718627929688,
+                18.24835777282715,
+                30.874971389770508,
+                50.87156677246094,
+                72.77361450195316,
+                121.8749008178711,
+                150.33203125
+              ]
+            }
+          },
+          "1": {
+            "all_active": {
+              "count": 11237,
+              "mean": -3.374652283956453,
+              "mean_abs": 15.076257995991055,
+              "max_abs": 143.52447509765625,
+              "abs_quantiles": [
+                1.8358230590820312e-05,
+                8.114898681640625,
+                12.315896987915039,
+                16.830101013183594,
+                25.73036956787107,
+                79.93219573974605,
+                143.52447509765625
+              ]
+            },
+            "severe_subset": {
+              "count": 2413,
+              "mean": 26.325648659153988,
+              "mean_abs": 27.21755263482294,
+              "max_abs": 143.52447509765625,
+              "abs_quantiles": [
+                0.0006494522094726562,
+                7.868936538696289,
+                19.446887969970703,
+                39.86549758911133,
+                61.57877655029297,
+                111.24897369384767,
+                143.52447509765625
+              ]
+            }
+          }
+        },
+        "vectors": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-label-alignment-20261011-v1/rank1-diagnostic-vectors.pt",
+          "bytes": 780223,
+          "sha256": "213bd573bd3298dba8329170336e293a73a807b7857c13e0861279abe0b91bf8"
+        }
+      }
+    ],
+    "complete": true,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "head_calls": 0,
+    "optimizer_calls": 0,
+    "production_changes": 0,
+    "official_tolerance_tests": 0,
+    "bin_note": "abs(failed-old)>10 is an existing descriptive bin, not an acceptance tolerance.",
+    "unix": 1791666934.7906094,
+    "peak_RSS_bytes": 12350578688,
+    "peak_torch_allocated_bytes": 2122321920,
+    "peak_torch_reserved_bytes": 2124414976
+  },
+  "label_process_final": {
+    "unix": 1791666950.6947057,
+    "process": {
+      "pid": 179346,
+      "exists": false
+    },
+    "result": {
+      "started_unix": 1791666923.6469438,
+      "pid": 179346,
+      "birth": 1791666921.83,
+      "scope": "Diagnose a one-token label shift using already captured real H/W/IDs.\n\nNo model/DT/head/optimizer is executed, and no training reference is changed.\nUse log p(alt)-log p(real) = logit(alt)-logit(real) to test the concrete\noff-by-one hypothesis in the owning wrapper's torch.roll(labels, -1) boundary.\nSelected-logit bmm is a diagnostic identity, not a replacement output head or\nan official numerical acceptance test. The H/W are from a finite capture, not\nthe lost failed forward; a mismatch cannot exclude other label corruption.\n",
+      "source_sha256": "55ee74ba40677a924a3dbc18d378ae3a5ca1da92a3f5d4ae27cb23541990ce9a",
+      "ranks": [
+        {
+          "rank": 0,
+          "capture": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank0-native-head-live-microbatch1.pt",
+            "sha256": "22b2db81f578d6ddb4da01f0167a16e4c037aa065f03d52c41692abe92116f62"
+          },
+          "failure": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808/loss-backward-1791646910870699040.pt",
+            "sha256": "537a2045e105ee2dba3f64cd2a2f547a234e9994cb9532c8815ea5052c5383a4"
+          },
+          "exact_unique_response_offset": 319,
+          "active_positions": 9933,
+          "severe_positions": 2149,
+          "source_dtype": "torch.bfloat16",
+          "temperature": 1.0,
+          "diagnostics": {
+            "-1": {
+              "all_active": {
+                "count": 9933,
+                "mean": -9.358178771467449,
+                "mean_abs": 18.84443412784314,
+                "max_abs": 145.643798828125,
+                "abs_quantiles": [
+                  0.0004405975341796875,
+                  13.219000816345215,
+                  17.374980926513672,
+                  21.546764373779297,
+                  26.663117599487308,
+                  75.06579895019537,
+                  145.643798828125
+                ]
+              },
+              "severe_subset": {
+                "count": 2149,
+                "mean": 20.640294158885844,
+                "mean_abs": 23.179028390784104,
+                "max_abs": 145.643798828125,
+                "abs_quantiles": [
+                  0.0004405975341796875,
+                  5.549962997436523,
+                  14.062084197998047,
+                  33.96867370605469,
+                  56.75894393920899,
+                  108.32140502929686,
+                  145.643798828125
+                ]
+              }
+            },
+            "0": {
+              "all_active": {
+                "count": 9933,
+                "mean": 9.00716382000642,
+                "mean_abs": 9.007163942899238,
+                "max_abs": 164.300048828125,
+                "abs_quantiles": [
+                  0.0,
+                  2.769345883280039e-06,
+                  0.00024890899658203125,
+                  6.107861518859863,
+                  34.71480484008794,
+                  93.88480895996116,
+                  164.300048828125
+                ]
+              },
+              "severe_subset": {
+                "count": 2149,
+                "mean": 39.28430917863238,
+                "mean_abs": 39.28430917863238,
+                "max_abs": 164.300048828125,
+                "abs_quantiles": [
+                  10.000019073486328,
+                  18.5,
+                  32.124969482421875,
+                  52.24884033203125,
+                  75.84882202148438,
+                  125.32135375976563,
+                  164.300048828125
+                ]
+              }
+            },
+            "1": {
+              "all_active": {
+                "count": 9933,
+                "mean": -4.160665931771748,
+                "mean_abs": 15.961135058583995,
+                "max_abs": 161.91355895996094,
+                "abs_quantiles": [
+                  3.337860107421875e-06,
+                  9.25,
+                  13.312487602233887,
+                  17.625,
+                  25.320321655273442,
+                  79.31451202392584,
+                  161.91355895996094
+                ]
+              },
+              "severe_subset": {
+                "count": 2149,
+                "mean": 26.495944622673505,
+                "mean_abs": 27.491590803420614,
+                "max_abs": 161.91355895996094,
+                "abs_quantiles": [
+                  2.574920654296875e-05,
+                  7.437482833862305,
+                  19.549976348876953,
+                  40.09366989135742,
+                  64.28773193359375,
+                  114.2224768066406,
+                  161.91355895996094
+                ]
+              }
+            }
+          },
+          "vectors": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-label-alignment-20261011-v1/rank0-diagnostic-vectors.pt",
+            "bytes": 690559,
+            "sha256": "ca95fa7f8cc5c7cd24514de11beee818d5773ce38c3818c88ce9cdb3a2e453c9"
+          }
+        },
+        {
+          "rank": 1,
+          "capture": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank1-native-head-live-microbatch1.pt",
+            "sha256": "a457ba612bed14936ba648b78ecac0779b036b63bbaf5ff36306caf51767b7d1"
+          },
+          "failure": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-actor-incidents-20261010-v1/rank1-pid989860/loss-backward-1791646910895854293.pt",
+            "sha256": "0e6ff2ad745b583714939df350472ddacfacfb0acdc379d6201cdef31a24d512"
+          },
+          "exact_unique_response_offset": 319,
+          "active_positions": 11237,
+          "severe_positions": 2413,
+          "source_dtype": "torch.bfloat16",
+          "temperature": 1.0,
+          "diagnostics": {
+            "-1": {
+              "all_active": {
+                "count": 11237,
+                "mean": -8.642172502837344,
+                "mean_abs": 17.951810200761926,
+                "max_abs": 139.48519897460938,
+                "abs_quantiles": [
+                  1.0727790140663274e-06,
+                  12.179920196533203,
+                  16.435420989990234,
+                  20.829891204833984,
+                  26.126024627685545,
+                  73.48302154541011,
+                  139.48519897460938
+                ]
+              },
+              "severe_subset": {
+                "count": 2413,
+                "mean": 20.572722342120034,
+                "mean_abs": 22.74365479887841,
+                "max_abs": 139.48519897460938,
+                "abs_quantiles": [
+                  0.000125885009765625,
+                  5.100593566894531,
+                  13.936515808105469,
+                  34.6533088684082,
+                  55.33289947509766,
+                  104.76992523193374,
+                  139.48519897460938
+                ]
+              }
+            },
+            "0": {
+              "all_active": {
+                "count": 11237,
+                "mean": 8.716483411292113,
+                "mean_abs": 8.722800453449878,
+                "max_abs": 150.33203125,
+                "abs_quantiles": [
+                  0.0,
+                  0.00023412704467773438,
+                  0.018894270062446594,
+                  6.646921157836914,
+                  32.91361389160156,
+                  90.18696685791011,
+                  150.33203125
+                ]
+              },
+              "severe_subset": {
+                "count": 2413,
+                "mean": 37.87705536023048,
+                "mean_abs": 37.87705536023048,
+                "max_abs": 150.33203125,
+                "abs_quantiles": [
+                  10.039718627929688,
+                  18.24835777282715,
+                  30.874971389770508,
+                  50.87156677246094,
+                  72.77361450195316,
+                  121.8749008178711,
+                  150.33203125
+                ]
+              }
+            },
+            "1": {
+              "all_active": {
+                "count": 11237,
+                "mean": -3.374652283956453,
+                "mean_abs": 15.076257995991055,
+                "max_abs": 143.52447509765625,
+                "abs_quantiles": [
+                  1.8358230590820312e-05,
+                  8.114898681640625,
+                  12.315896987915039,
+                  16.830101013183594,
+                  25.73036956787107,
+                  79.93219573974605,
+                  143.52447509765625
+                ]
+              },
+              "severe_subset": {
+                "count": 2413,
+                "mean": 26.325648659153988,
+                "mean_abs": 27.21755263482294,
+                "max_abs": 143.52447509765625,
+                "abs_quantiles": [
+                  0.0006494522094726562,
+                  7.868936538696289,
+                  19.446887969970703,
+                  39.86549758911133,
+                  61.57877655029297,
+                  111.24897369384767,
+                  143.52447509765625
+                ]
+              }
+            }
+          },
+          "vectors": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-label-alignment-20261011-v1/rank1-diagnostic-vectors.pt",
+            "bytes": 780223,
+            "sha256": "213bd573bd3298dba8329170336e293a73a807b7857c13e0861279abe0b91bf8"
+          }
+        }
+      ],
+      "complete": true,
+      "model_calls": 0,
+      "DT_calls": 0,
+      "head_calls": 0,
+      "optimizer_calls": 0,
+      "production_changes": 0,
+      "official_tolerance_tests": 0,
+      "bin_note": "abs(failed-old)>10 is an existing descriptive bin, not an acceptance tolerance.",
+      "unix": 1791666934.7906094,
+      "peak_RSS_bytes": 12350578688,
+      "peak_torch_allocated_bytes": 2122321920,
+      "peak_torch_reserved_bytes": 2124414976
+    },
+    "log": "{\"complete\": true, \"output\": \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-label-alignment-20261011-v1/result.json\"}\n",
+    "physical": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 05:15:50 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "host_available": 1025288011776
+  },
+  "native_head_gradient_diagnostic": {
+    "started_unix": 1791667295.7398844,
+    "pid": 217022,
+    "birth": 1791667281.1,
+    "scope": "Call the actual VERL head with captured H/W/IDs and upstream gradients.\n\nNo backbone, DT, optimizer, policy-loss replacement or numerical acceptance\nthreshold. Replay the captured finite logp gradient; obtain entropy's gradient\nby the existing VERL agg_loss with the actual native mask/coefficient. Check\nthe next head output after the native head backward, without FSDP or offload.\nThis does not reproduce the missing original failed H/W or FSDP stream state.\n",
+    "complete": true,
+    "sources": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-runtime-metadata-20261011-v1/result/initialization-config.yaml": "2b17044560b2b6de97cdba5fc6b3223195ba2cefe496e087e6072d769281e448",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-head-gradient-20261011-v1/replay_native_head_gradient_20261011.py": "ced221b20afb1ce6fa40ba428f9534f756934765798e95839a858389e95aa702"
+    },
+    "ranks": [
+      {
+        "rank": 0,
+        "capture": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank0-native-head-live-microbatch1.pt",
+          "sha256": "22b2db81f578d6ddb4da01f0167a16e4c037aa065f03d52c41692abe92116f62"
+        },
+        "loss_input": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+          "sha256": "d1e5e375de3b7a6b781d4805bcc039e5f42a4ab16e6cc9dc591aee5283647e5d"
+        },
+        "response_offset": 319,
+        "entropy_coeff": 0.001,
+        "loss_agg_mode": "token-mean",
+        "gradient_accumulation": 8,
+        "head_shape": [
+          4,
+          5376,
+          4096
+        ],
+        "input_dtypes": [
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.int64"
+        ],
+        "input_requires_grad": [
+          true,
+          false,
+          false
+        ],
+        "before_backward_vs_saved": [
+          {
+            "exact": false,
+            "nonfinite": 0,
+            "max_abs": 1.9073486328125e-06,
+            "mean_abs": 5.465268415605351e-08
+          },
+          {
+            "exact": false,
+            "nonfinite": 0,
+            "max_abs": 1.52587890625e-05,
+            "mean_abs": 2.156144773834967e-06
+          }
+        ],
+        "hidden_gradient_finite": true,
+        "H_unchanged_after_backward": true,
+        "W_unchanged_after_backward": true,
+        "IDs_unchanged_after_backward": true,
+        "after_vs_before": [
+          {
+            "exact": true,
+            "nonfinite": 0,
+            "max_abs": 0.0,
+            "mean_abs": 0.0
+          },
+          {
+            "exact": true,
+            "nonfinite": 0,
+            "max_abs": 0.0,
+            "mean_abs": 0.0
+          }
+        ],
+        "vectors": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-head-gradient-20261011-v1/rank0-head-replay-outputs.pt",
+          "bytes": 346705,
+          "sha256": "b1aa75ba703c50ef214c251b601fde7055b7b6ca3e2afdaf205e87f1060bfa0a"
+        }
+      },
+      {
+        "rank": 1,
+        "capture": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank1-native-head-live-microbatch1.pt",
+          "sha256": "a457ba612bed14936ba648b78ecac0779b036b63bbaf5ff36306caf51767b7d1"
+        },
+        "loss_input": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+          "sha256": "204cf38dc52e382d02638111d463561c3f8894a7d2d1db99e57d7fec77eecac7"
+        },
+        "response_offset": 319,
+        "entropy_coeff": 0.001,
+        "loss_agg_mode": "token-mean",
+        "gradient_accumulation": 8,
+        "head_shape": [
+          4,
+          5568,
+          4096
+        ],
+        "input_dtypes": [
+          "torch.bfloat16",
+          "torch.bfloat16",
+          "torch.int64"
+        ],
+        "input_requires_grad": [
+          true,
+          false,
+          false
+        ],
+        "before_backward_vs_saved": [
+          {
+            "exact": false,
+            "nonfinite": 0,
+            "max_abs": 1.9073486328125e-06,
+            "mean_abs": 5.5240597873762454e-08
+          },
+          {
+            "exact": false,
+            "nonfinite": 0,
+            "max_abs": 1.71661376953125e-05,
+            "mean_abs": 2.1488501715793973e-06
+          }
+        ],
+        "hidden_gradient_finite": true,
+        "H_unchanged_after_backward": true,
+        "W_unchanged_after_backward": true,
+        "IDs_unchanged_after_backward": true,
+        "after_vs_before": [
+          {
+            "exact": true,
+            "nonfinite": 0,
+            "max_abs": 0.0,
+            "mean_abs": 0.0
+          },
+          {
+            "exact": true,
+            "nonfinite": 0,
+            "max_abs": 0.0,
+            "mean_abs": 0.0
+          }
+        ],
+        "vectors": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-head-gradient-20261011-v1/rank1-head-replay-outputs.pt",
+          "bytes": 358993,
+          "sha256": "7eb80171f956ada0d8b3409cdf0a83e3c30ec18eda08182786a7662f76194054"
+        }
+      }
+    ],
+    "head_calls": 4,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "optimizer_calls": 0,
+    "official_tolerance_tests": 0,
+    "production_changes": 0,
+    "phase": "complete",
+    "unix": 1791667310.9633522,
+    "peak_RSS_bytes": 14353039360,
+    "peak_torch_allocated_bytes": 6865037312,
+    "peak_torch_reserved_bytes": 9149874176
+  },
+  "native_head_process_final": {
+    "pid": 217022,
+    "expected_birth": 1791667281.1,
+    "missing": true
+  },
+  "findings": [
+    "The recorded normal head labels match original responses at one exact offset319 on both ranks. Uniform +/-1 label shifts worsen whole-active-position mean absolute residual against failed outputs; severe-only partial improvement is not a cause explanation.",
+    "Actual VERL head calls with captured finite H/W/IDs and original finite logp gradients plus native agg_loss entropy gradient did not mutate H/W/IDs; each next head output equals its preceding output exactly. Four native head calls, two head backwards; no backbone/DT/optimizer.",
+    "These use finite-run H/W because the original failed H/W were not saved. They do not exclude FSDP/offload/backbone interactions or other label corruption, do not reproduce original persistent runtime, and are not official tolerance or 32k capacity acceptance.",
+    "Adapter files were read only and resolved by formal PYTHONPATH order; this static resolution is not a new live-worker imported-module proof."
+  ],
+  "production_changes": 0,
+  "official_tolerance_tests": 0,
+  "formal_training_status": "stopped37/330; original actor-old defect unresolved; official KL guard remains validated candidate only, not deployed",
+  "resources": {
+    "label_peak_RSS_bytes": 12350578688,
+    "label_peak_torch_allocated_bytes": 2122321920,
+    "head_peak_RSS_bytes": 14353039360,
+    "head_peak_torch_allocated_bytes": 6865037312,
+    "head_peak_torch_reserved_bytes": 9149874176,
+    "host_available_bytes": 1025261596672,
+    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 05:27:46 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+  },
+  "adapter_static_sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/deltatrace_rollout.py",
+      "bytes": 26299,
+      "sha256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\0-deltatrace_rollout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/reward_readout.py",
+      "bytes": 34388,
+      "sha256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\1-reward_readout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/entry/dt_training_batch.py",
+      "bytes": 12119,
+      "sha256": "1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\2-dt_training_batch.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/deltatrace_rollout.py",
+      "bytes": 26299,
+      "sha256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\3-deltatrace_rollout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/reward_readout.py",
+      "bytes": 34388,
+      "sha256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\4-reward_readout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/dt_training_batch.py",
+      "bytes": 12119,
+      "sha256": "1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\5-dt_training_batch.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/deltatrace_rollout.py",
+      "bytes": 24253,
+      "sha256": "0ad37a17aede30089fd2ac9a609a42689e6a3a68d00b601520db0a5cff8b8e6e",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\6-deltatrace_rollout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/reward_readout.py",
+      "bytes": 21551,
+      "sha256": "228afbc7a10841d482c3d73def59dfe9ef192c057a97d76dca57369502a10137",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\7-reward_readout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/dt_training_batch.py",
+      "bytes": 4027,
+      "sha256": "22a47416dd291d888a516f94bda1c0381c4829a5bc314f616255af576a8b5fbb",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\8-dt_training_batch.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/experiments/rl/deltatrace_rollout.py",
+      "bytes": 23314,
+      "sha256": "d9c20b78da5e41b6e7113bd4e22b4db464fb00ed314d7a957d4455137145f9f5",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\9-deltatrace_rollout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/experiments/rl/reward_readout.py",
+      "bytes": 18381,
+      "sha256": "01a8d0b195817669b0c6bdc89a8c74df455c55c706bbbe63842a63402de38c48",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\10-reward_readout.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace/experiments/rl/dt_training_batch.py",
+      "bytes": 3492,
+      "sha256": "ff125cf9c97acb8e227aa99f3cb77493142e1d54d38ff06cbdb8b12b1c75024e",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\11-dt_training_batch.py"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/reward_readout.py",
+      "bytes": 18521,
+      "sha256": "077bd5c1b040dca83008416682ce3e2f5c670f0ea6995aec1428d5c13ba326d4",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-DT-adapter-owner-source-20261011-v1\\12-reward_readout.py"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/diagnose_native_label_alignment_20261011.py",
+      "bytes": 7615,
+      "sha256": "55ee74ba40677a924a3dbc18d378ae3a5ca1da92a3f5d4ae27cb23541990ce9a"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/0-deltatrace_rollout.py",
+      "bytes": 26299,
+      "sha256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/1-reward_readout.py",
+      "bytes": 34388,
+      "sha256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/10-reward_readout.py",
+      "bytes": 18381,
+      "sha256": "01a8d0b195817669b0c6bdc89a8c74df455c55c706bbbe63842a63402de38c48"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/11-dt_training_batch.py",
+      "bytes": 3492,
+      "sha256": "ff125cf9c97acb8e227aa99f3cb77493142e1d54d38ff06cbdb8b12b1c75024e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/12-reward_readout.py",
+      "bytes": 18521,
+      "sha256": "077bd5c1b040dca83008416682ce3e2f5c670f0ea6995aec1428d5c13ba326d4"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/2-dt_training_batch.py",
+      "bytes": 12119,
+      "sha256": "1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/3-deltatrace_rollout.py",
+      "bytes": 26299,
+      "sha256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/4-reward_readout.py",
+      "bytes": 34388,
+      "sha256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/5-dt_training_batch.py",
+      "bytes": 12119,
+      "sha256": "1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/6-deltatrace_rollout.py",
+      "bytes": 24253,
+      "sha256": "0ad37a17aede30089fd2ac9a609a42689e6a3a68d00b601520db0a5cff8b8e6e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/7-reward_readout.py",
+      "bytes": 21551,
+      "sha256": "228afbc7a10841d482c3d73def59dfe9ef192c057a97d76dca57369502a10137"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/8-dt_training_batch.py",
+      "bytes": 4027,
+      "sha256": "22a47416dd291d888a516f94bda1c0381c4829a5bc314f616255af576a8b5fbb"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-DT-adapter-owner-source-20261011-v1/9-deltatrace_rollout.py",
+      "bytes": 23314,
+      "sha256": "d9c20b78da5e41b6e7113bd4e22b4db464fb00ed314d7a957d4455137145f9f5"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-artifacts-20261011-v1/driver.log",
+      "bytes": 162,
+      "sha256": "ff8ce44a28923b5a838ceddd153a2cda5ba5b0afe7a2877126ed53e405063b03"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-artifacts-20261011-v1/job.json",
+      "bytes": 1298,
+      "sha256": "bbf975997b00e78cb1e30f0dbde6042aef57e68caae3b7e336f36f55302f3b5f"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-artifacts-20261011-v1/rank0-head-replay-outputs.pt",
+      "bytes": 346705,
+      "sha256": "b1aa75ba703c50ef214c251b601fde7055b7b6ca3e2afdaf205e87f1060bfa0a"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-artifacts-20261011-v1/rank1-head-replay-outputs.pt",
+      "bytes": 358993,
+      "sha256": "7eb80171f956ada0d8b3409cdf0a83e3c30ec18eda08182786a7662f76194054"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-artifacts-20261011-v1/replay_native_head_gradient_20261011.py",
+      "bytes": 7763,
+      "sha256": "ced221b20afb1ce6fa40ba428f9534f756934765798e95839a858389e95aa702"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-artifacts-20261011-v1/result.json",
+      "bytes": 6217,
+      "sha256": "6ef174e8250552a8ad7e5a0523ef3a83e317653398266a14310db50ba578cd4e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-final-fetch-20261011-v1.command.txt",
+      "bytes": 1835,
+      "sha256": "396b1ee65958fb4294ede70587dd62718a55db14ceb267a07f623242c6c76589"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-final-fetch-20261011-v1.json",
+      "bytes": 15722,
+      "sha256": "8494e1ef66bf8632e1d7a130a0f74304d89b250b5a896c32e7dc88bee1e8cd64"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-final-fetch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-launch-20261011-v1.json",
+      "bytes": 4954,
+      "sha256": "838c2cfe7129d6b31d997905f9bd1781eadb85e476b5d0a2a0330c8e003e1d4e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-observation-1791667320.command.txt",
+      "bytes": 1194,
+      "sha256": "1e84f90146fd0b852c0b815a7b45bae2300bf0c6b7bb73e7add6295f4b814a73"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-observation-1791667320.json",
+      "bytes": 9064,
+      "sha256": "94bdade8cd235e927bcc93a2627e07819adb9140e591e03a59fe14704062a8e9"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-head-gradient-observation-1791667320.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-artifacts-20261011-v1/diagnose_native_label_alignment_20261011.py",
+      "bytes": 7615,
+      "sha256": "55ee74ba40677a924a3dbc18d378ae3a5ca1da92a3f5d4ae27cb23541990ce9a"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-artifacts-20261011-v1/driver.log",
+      "bytes": 164,
+      "sha256": "09e964ba16a2669b2f4e1242461167f06c48118ef198c705ceac8d25f848555c"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-artifacts-20261011-v1/job.json",
+      "bytes": 1113,
+      "sha256": "1e149565d65c1f499ea94d74ead07b503dbd5e5e41cdcbd832a76e9a1ed3e538"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-artifacts-20261011-v1/rank0-diagnostic-vectors.pt",
+      "bytes": 690559,
+      "sha256": "ca95fa7f8cc5c7cd24514de11beee818d5773ce38c3818c88ce9cdb3a2e453c9"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-artifacts-20261011-v1/rank1-diagnostic-vectors.pt",
+      "bytes": 780223,
+      "sha256": "213bd573bd3298dba8329170336e293a73a807b7857c13e0861279abe0b91bf8"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-artifacts-20261011-v1/result.json",
+      "bytes": 9228,
+      "sha256": "002a351bdbc3af150cdc604b512e3d51c9af0828a5893bd9a04814f71174f615"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-launch-20261011-v1.json",
+      "bytes": 1079,
+      "sha256": "4b41953c0d620d2edb011254bd525bb286eb96c961d930279baf10a23d0ceb4e"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-launch-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-observation-1791666950.command.txt",
+      "bytes": 990,
+      "sha256": "26c5abd45a51f7c35f5f456b31e59782624c445e829c1c2c356c36ce7e1a95e3"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-observation-1791666950.json",
+      "bytes": 10237,
+      "sha256": "6f7970c97cb15ee6017355c58bce85cbd5b0b0e9c271eec0fa465cfc10833cf7"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-observation-1791666950.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-occupancy-20261011-v1.command.txt",
+      "bytes": 416,
+      "sha256": "be6e78d0dd26e60f11a07e92c45a8e69c63fcb0d535fc79be127328b63bf23f2"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-occupancy-20261011-v1.json",
+      "bytes": 3565,
+      "sha256": "70f8e7d7f150343a14fa23ca3dce6e435b3c5e0f0e6a2afc97a4222262a936f4"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-label-alignment-occupancy-20261011-v1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/replay_native_head_gradient_20261011.py",
+      "bytes": 7763,
+      "sha256": "ced221b20afb1ce6fa40ba428f9534f756934765798e95839a858389e95aa702"
+    }
+  ]
+}

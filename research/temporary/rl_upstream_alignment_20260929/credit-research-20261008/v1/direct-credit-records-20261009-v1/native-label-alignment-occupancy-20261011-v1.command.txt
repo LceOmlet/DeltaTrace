@@ -1,0 +1,7 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import subprocess,psutil,json,time
+print(json.dumps(dict(unix=time.time(),physical=subprocess.run(['mx-smi'],capture_output=True,text=True).stdout,host_available=psutil.virtual_memory().available)))
+
+PY

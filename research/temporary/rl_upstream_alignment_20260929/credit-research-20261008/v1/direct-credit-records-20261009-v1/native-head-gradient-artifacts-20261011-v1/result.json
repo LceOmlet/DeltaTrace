@@ -1,0 +1,160 @@
+{
+  "started_unix": 1791667295.7398844,
+  "pid": 217022,
+  "birth": 1791667281.1,
+  "scope": "Call the actual VERL head with captured H/W/IDs and upstream gradients.\n\nNo backbone, DT, optimizer, policy-loss replacement or numerical acceptance\nthreshold. Replay the captured finite logp gradient; obtain entropy's gradient\nby the existing VERL agg_loss with the actual native mask/coefficient. Check\nthe next head output after the native head backward, without FSDP or offload.\nThis does not reproduce the missing original failed H/W or FSDP stream state.\n",
+  "complete": true,
+  "sources": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-runtime-metadata-20261011-v1/result/initialization-config.yaml": "2b17044560b2b6de97cdba5fc6b3223195ba2cefe496e087e6072d769281e448",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-head-gradient-20261011-v1/replay_native_head_gradient_20261011.py": "ced221b20afb1ce6fa40ba428f9534f756934765798e95839a858389e95aa702"
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "capture": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank0-native-head-live-microbatch1.pt",
+        "sha256": "22b2db81f578d6ddb4da01f0167a16e4c037aa065f03d52c41692abe92116f62"
+      },
+      "loss_input": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+        "sha256": "d1e5e375de3b7a6b781d4805bcc039e5f42a4ab16e6cc9dc591aee5283647e5d"
+      },
+      "response_offset": 319,
+      "entropy_coeff": 0.001,
+      "loss_agg_mode": "token-mean",
+      "gradient_accumulation": 8,
+      "head_shape": [
+        4,
+        5376,
+        4096
+      ],
+      "input_dtypes": [
+        "torch.bfloat16",
+        "torch.bfloat16",
+        "torch.int64"
+      ],
+      "input_requires_grad": [
+        true,
+        false,
+        false
+      ],
+      "before_backward_vs_saved": [
+        {
+          "exact": false,
+          "nonfinite": 0,
+          "max_abs": 1.9073486328125e-06,
+          "mean_abs": 5.465268415605351e-08
+        },
+        {
+          "exact": false,
+          "nonfinite": 0,
+          "max_abs": 1.52587890625e-05,
+          "mean_abs": 2.156144773834967e-06
+        }
+      ],
+      "hidden_gradient_finite": true,
+      "H_unchanged_after_backward": true,
+      "W_unchanged_after_backward": true,
+      "IDs_unchanged_after_backward": true,
+      "after_vs_before": [
+        {
+          "exact": true,
+          "nonfinite": 0,
+          "max_abs": 0.0,
+          "mean_abs": 0.0
+        },
+        {
+          "exact": true,
+          "nonfinite": 0,
+          "max_abs": 0.0,
+          "mean_abs": 0.0
+        }
+      ],
+      "vectors": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-head-gradient-20261011-v1/rank0-head-replay-outputs.pt",
+        "bytes": 346705,
+        "sha256": "b1aa75ba703c50ef214c251b601fde7055b7b6ca3e2afdaf205e87f1060bfa0a"
+      }
+    },
+    {
+      "rank": 1,
+      "capture": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank1-native-head-live-microbatch1.pt",
+        "sha256": "a457ba612bed14936ba648b78ecac0779b036b63bbaf5ff36306caf51767b7d1"
+      },
+      "loss_input": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+        "sha256": "204cf38dc52e382d02638111d463561c3f8894a7d2d1db99e57d7fec77eecac7"
+      },
+      "response_offset": 319,
+      "entropy_coeff": 0.001,
+      "loss_agg_mode": "token-mean",
+      "gradient_accumulation": 8,
+      "head_shape": [
+        4,
+        5568,
+        4096
+      ],
+      "input_dtypes": [
+        "torch.bfloat16",
+        "torch.bfloat16",
+        "torch.int64"
+      ],
+      "input_requires_grad": [
+        true,
+        false,
+        false
+      ],
+      "before_backward_vs_saved": [
+        {
+          "exact": false,
+          "nonfinite": 0,
+          "max_abs": 1.9073486328125e-06,
+          "mean_abs": 5.5240597873762454e-08
+        },
+        {
+          "exact": false,
+          "nonfinite": 0,
+          "max_abs": 1.71661376953125e-05,
+          "mean_abs": 2.1488501715793973e-06
+        }
+      ],
+      "hidden_gradient_finite": true,
+      "H_unchanged_after_backward": true,
+      "W_unchanged_after_backward": true,
+      "IDs_unchanged_after_backward": true,
+      "after_vs_before": [
+        {
+          "exact": true,
+          "nonfinite": 0,
+          "max_abs": 0.0,
+          "mean_abs": 0.0
+        },
+        {
+          "exact": true,
+          "nonfinite": 0,
+          "max_abs": 0.0,
+          "mean_abs": 0.0
+        }
+      ],
+      "vectors": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-head-gradient-20261011-v1/rank1-head-replay-outputs.pt",
+        "bytes": 358993,
+        "sha256": "7eb80171f956ada0d8b3409cdf0a83e3c30ec18eda08182786a7662f76194054"
+      }
+    }
+  ],
+  "head_calls": 4,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer_calls": 0,
+  "official_tolerance_tests": 0,
+  "production_changes": 0,
+  "phase": "complete",
+  "unix": 1791667310.9633522,
+  "peak_RSS_bytes": 14353039360,
+  "peak_torch_allocated_bytes": 6865037312,
+  "peak_torch_reserved_bytes": 9149874176
+}

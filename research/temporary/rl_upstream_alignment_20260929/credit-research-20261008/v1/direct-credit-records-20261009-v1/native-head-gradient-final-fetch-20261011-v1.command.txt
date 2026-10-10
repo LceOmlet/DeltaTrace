@@ -1,0 +1,26 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,base64,hashlib,time,subprocess,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+jobdir=root/'receipts/textcraft-native-head-gradient-20261011-v1'
+out={'unix':time.time(),'process':{'pid':217022,'expected_birth':1791667281.1},'files':[]}
+try:
+ p=psutil.Process(217022);out['process'].update(birth=p.create_time(),same_birth=p.create_time()==1791667281.1,status=p.status(),rss=p.memory_info().rss)
+except psutil.NoSuchProcess:out['process']['missing']=True
+for f in sorted(jobdir.rglob('*')):
+ if f.is_file() and f.stat().st_size<4*1024*1024:
+  b=f.read_bytes();out['files'].append({'relative':str(f.relative_to(jobdir)),'path':str(f),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+r=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10);out['physical_gpu']=r.stdout;out['gpu_error']=r.stderr
+out['host']=dict(psutil.virtual_memory()._asdict())
+srcpath=root/'runs/textcraft-formal-stable-20261009-v1/source.json';b=srcpath.read_bytes();s=json.loads(b);out['formal_source_sha256']=hashlib.sha256(b).hexdigest();out['formal_pythonpath']=s['pythonpath'];out['formal_keys']=list(s)
+paths=s['pythonpath'].split(':') if isinstance(s['pythonpath'],str) else s['pythonpath']
+out['adapter_sources']=[]
+for entry in paths:
+ for name in ['deltatrace_rollout.py','reward_readout.py','dt_training_batch.py']:
+  f=pathlib.Path(entry)/name
+  if f.is_file():
+   b=f.read_bytes();out['adapter_sources'].append({'path':str(f),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+print(json.dumps(out))
+
+PY
