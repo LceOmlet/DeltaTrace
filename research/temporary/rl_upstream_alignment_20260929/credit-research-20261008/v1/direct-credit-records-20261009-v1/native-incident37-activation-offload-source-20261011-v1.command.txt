@@ -1,0 +1,7 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,hashlib
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());p=Path(s['verl_root'])/'verl/utils/activation_offload.py';b=p.read_bytes();print(json.dumps(dict(path=str(p),resolved=str(p.resolve()),sha256=hashlib.sha256(b).hexdigest(),source=b.decode())))
+
+PY

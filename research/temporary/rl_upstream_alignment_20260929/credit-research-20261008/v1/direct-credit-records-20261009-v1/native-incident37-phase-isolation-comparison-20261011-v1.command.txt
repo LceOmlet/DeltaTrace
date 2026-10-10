@@ -1,0 +1,15 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,json,hashlib,resource,time
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out=[]
+for rank,pid in enumerate([987808,989860]):
+ original=torch.load(next((root/f'receipts/textcraft-native-actor-incidents-20261010-v1/rank{rank}-pid{pid}').glob('loss-backward-*.pt')),map_location='cpu',weights_only=False)['tensors']
+ oldbad=~torch.isfinite(original['log_prob_gradient'])
+ for label,folder in [('all_DT','old-ref-DT'),('one_DT','old-ref-one-DT'),('no_DT','old-ref-only')]:
+  p=root/f'receipts/textcraft-native-incident37-{folder}-20261011-v1/result/rank{rank}-loss-inputs-microbatch1.pt'
+  x=torch.load(p,map_location='cpu',weights_only=False);bad=~torch.isfinite(x['log_prob_gradient']);mask=x['response_mask'].bool()
+  out.append(dict(rank=rank,sequence=label,NaN=int(bad.sum()),NaN_original_overlap=int((bad&oldbad).sum()),new_only=int((bad&~oldbad).sum()),original_only=int((oldbad&~bad).sum()),active_NaN=int((bad&mask).sum()),actor_minus_old_min=float((x['log_prob']-x['old_log_prob'])[mask].min()),actor_minus_old_max=float((x['log_prob']-x['old_log_prob'])[mask].max()),actor_ref_maxgap=float((x['ref_logprob']-x['log_prob']).max()),dtypes={k:str(v.dtype) for k,v in x.items()},artifact=dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest())))
+print(json.dumps(dict(unix=time.time(),records=out,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,model_calls=0,DT_calls=0,production_changes=0)))
+
+PY

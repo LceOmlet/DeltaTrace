@@ -1,0 +1,10 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,json,time,psutil,hashlib,resource
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');folder=root/'receipts/textcraft-native-incident37-old-ref-only-20261011-v1/result';incident=root/'receipts/textcraft-native-actor-incidents-20261010-v1';records=[]
+for rank,pid in enumerate([987808,989860]):
+ p=folder/f'rank{rank}-loss-inputs-microbatch1.pt';new=torch.load(p,map_location='cpu',weights_only=False);original_path=next((incident/f'rank{rank}-pid{pid}').glob('loss-backward-*.pt'));original=torch.load(original_path,map_location='cpu',weights_only=False)['tensors'];x=new['log_prob'];old=new['old_log_prob'];mask=new['response_mask'].bool();g=new['log_prob_gradient'];reference=new['ref_logprob'];records.append(dict(rank=rank,NaN_gradients=int((~torch.isfinite(g)).sum()),NaN_active=int(((~torch.isfinite(g))&mask).sum()),NaN_mask_matches_original=torch.equal(~torch.isfinite(g),~torch.isfinite(original['log_prob_gradient'])),logp_all_finite=bool(torch.isfinite(x).all()),active_actor_minus_old_min=float((x-old)[mask].min()),active_actor_minus_old_max=float((x-old)[mask].max()),active_actor_maxabs_difference_from_original=float((x-original['log_prob'])[mask].abs().max()),old_exact=torch.equal(old,original['old_log_prob']),reference_exact=torch.equal(reference,original['ref_logprob']),ref_minus_actor_max=float((reference-x).max()),artifact=dict(path=str(p),bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest())))
+print(json.dumps(dict(unix=time.time(),records=records,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,model_calls=0,DT_calls=0,production_changes=0)))
+
+PY

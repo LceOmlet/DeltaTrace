@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import ast,hashlib,json,time,psutil,subprocess
+from pathlib import Path
+root=Path("/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922")
+s=json.loads((root/"runs/textcraft-formal-stable-20261009-v1/source.json").read_bytes())
+files=[Path(s['verl_root'])/"verl/workers/fsdp_workers.py",Path(s['verl_root'])/"verl/workers/sharding_manager/fsdp_vllm.py",Path(s['verl_root'])/"verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py"]
+records=[]
+for p in files:
+ b=p.read_bytes();text=b.decode();tree=ast.parse(text);classes={n.name:[dict(name=x.name,line=x.lineno) for x in n.body if isinstance(x,(ast.FunctionDef,ast.AsyncFunctionDef))] for n in tree.body if isinstance(n,ast.ClassDef)}
+ records.append(dict(path=str(p),resolved=str(p.resolve()),sha256=hashlib.sha256(b).hexdigest(),source=text,classes=classes))
+print(json.dumps(dict(unix=time.time(),records=records,source_sha256=hashlib.sha256((root/"runs/textcraft-formal-stable-20261009-v1/source.json").read_bytes()).hexdigest(),formal_pids_alive={str(p):psutil.pid_exists(p) for p in [982372,987808,989860]},physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout)))
+
+PY

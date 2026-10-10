@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,subprocess,time,psutil
+from pathlib import Path
+f=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-all-DT-head-20261011-v1')
+a=[]
+for p in sorted((f/'result').glob('rank[01].json')):
+ d=json.loads(p.read_text());q=psutil.Process(d['pid']);assert q.create_time()==d['birth'];s=subprocess.run(['/opt/conda/bin/py-spy','dump','--pid',str(d['pid'])],capture_output=True,text=True,timeout=12);a.append(dict(rank=d['rank'],phase=d['phase'],phase_age_s=time.time()-d['unix'],pid=d['pid'],PSS=q.memory_full_info().pss,stack=s.stdout,stderr=s.stderr,rc=s.returncode))
+print(json.dumps(dict(unix=time.time(),records=a,mx_smi=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12).stdout)))
+
+PY
