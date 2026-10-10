@@ -1,5 +1,33 @@
 # 当前运行版本与修复记录
 
+## 2026-10-10 14:50 TextCraft第23轮完整返回，原梯度与更新现场已归档
+
+同一原PID982372/出生1791553809.84及两worker完成23/330，已进入第24轮原采样。
+本轮两rank各32个B4原log_prob梯度均有限，逐项覆盖4次optimizer×8个microbatch；
+各4次原optimizer全部实际step，8项裁剪前local norm与同次原返回逐值相同，
+无observer_error、新非有限值或跳过。local norm仍是原DTensor _NormPartial观察，
+不另称全局L2实测。第14轮首个异常参数/算子仍未知，本轮有限不代表事故已修。
+
+原训练轨迹reward0.680、entropy0.664、grad_norm0.045；采样1667.791秒、
+旧logp115.811秒、ref101.295秒、DT/优势155.029秒、actor423.039秒，
+整轮2463.462秒（41.0577分钟）。曲线native-curves-20261010-145026已更新至23轮，
+仅14轮范数NaN，原两rank警告属于同一次global skip；未平滑或填零。
+这些奖励来自本轮更新前训练采样，不是独立评估；熵在23轮回到0.664，
+不能沿用22轮端点把后续变化说成持续下降，也不能据单轮回升宣称效果改善。
+原response上限10240、prompt315，本轮不是新增32k容量或官方数值容差验收。
+
+DT及actor实际阶段各保存一次物理mx-smi、worker PSS/USS、cgroup RSS/cache快照；
+DT两卡17581/17361MiB，PSS18.340/19.164GB；actor PSS18.284/19.164GB，
+均为瞬时非峰值；主机available不单独用于归因分配，不把Torch虚拟allocator当物理显存。
+11份不同路径的12项源码磁盘SHA与既有同PID导入绑定一致；数值源26bef6c8/
+GDN7c06d5e0、观察源85aa2940、LoRA8/16、每卡B4/双卡B8与正式预算均未改。
+三份远端authority实际复核均完成23并保留NaN调查status；原save25未到，
+原checkpoint完成标记为空，未复制/恢复或重启。AppWorld/SQL/GRPO未启动。
+
+回执results_textcraft_iteration23_20261010.json保存原完整callback/norm/step、
+原日志行、阶段资源、命令和SHA；只读监听完成退出，正式训练继续。
+
+
 ## 2026-10-10 14:22 官方对称profile源身份核对：本机缺文件是稀疏检出，无需补写
 
 本机qwen35_gdn_symmetric.py/configs原文件未落盘，但git index均为S标记，
