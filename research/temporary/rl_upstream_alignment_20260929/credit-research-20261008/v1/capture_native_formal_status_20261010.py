@@ -75,8 +75,7 @@ for name in ['formal-training.json','active-training.json','active-source.json']
  path=r/name;data=json.loads(path.read_bytes());old_other=[x for x in data['jobs'] if x.get('pid')!=982372]
  jobs=[x for x in data['jobs'] if x.get('pid')==982372];assert len(jobs)==1
  job=jobs[0];old_status=job.get('status')
- job.update(status='formal_running_after_completed_iteration'+str(ITERATION),
-  last_status_observed_unix=observed,completed_iterations_observed=ITERATION,total_iterations_observed=330,
+ job.update(last_status_observed_unix=observed,completed_iterations_observed=ITERATION,total_iterations_observed=330,
   latest_original_step_metrics=metrics,latest_original_metrics_source=str(task),
   last_native_worker_phases=[dict(pid=x['pid'],name=x['phase']) for x in workers])
  if 'complete_iterations_observed' in job:job['complete_iterations_observed']=ITERATION
