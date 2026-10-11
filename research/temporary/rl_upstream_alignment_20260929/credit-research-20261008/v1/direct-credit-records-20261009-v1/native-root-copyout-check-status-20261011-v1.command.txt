@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,psutil,subprocess
+j=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-root-copyout-check-20261011-v1');job=json.loads((j/'job.json').read_bytes())
+try:
+ p=psutil.Process(job['pid']);state={'pid':p.pid,'birth':p.create_time(),'same_birth':abs(p.create_time()-job['birth'])<.01,'status':p.status(),'RSS':p.memory_info().rss}
+except psutil.NoSuchProcess:state={'pid':job['pid'],'missing':True}
+result=json.loads((j/'result.json').read_bytes()) if (j/'result.json').is_file() else None
+print(json.dumps({'unix':time.time(),'job':job,'process':state,'result':result,'driver_log':(j/'driver.log').read_text()[-5000:],'physical':subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout},ensure_ascii=False))
+
+PY

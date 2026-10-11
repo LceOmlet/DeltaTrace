@@ -1,5 +1,24 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原FSDP实际head尺寸copy-out检查通过；未定位故障写入
+
+同一已启动诊断PID150097/出生1791706511.37已退出，物理GPU4；没有正式重启。
+直接执行PyTorch v2.8.0原test_split_with_sizes_copy_out方法体，含原CUDA graph
+用例；再用现场norm/head形状[2,2048]/[2,508559360]调用实际FSDP复制算子，
+fresh及原free_storage/alloc_storage两种串行情形逐元素完全相等，约2.92毫秒。
+不新增浮点容差，不复制训练算法，无model/DT/PPO/分布式通信调用。
+
+该结果只说明上述串行原语条件下未复现遗漏覆盖，不能排除真实训练的并发、
+通信或存储生命周期缺陷，也不是生产修复。正式仍37/330停止，异常head串用
+第0层payload的具体操作仍未知；KL clamp不能作为该问题的完整修复。
+
+峰Torch allocated 5085619200字节，物理resident 5764MiB；峰RSS11261202432
+字节（10.49GiB），高于最初约3GB预估，如实记录，不把终态858MiB当峰值。
+第37轮首NaN位于KL到actor logp的反向梯度；原37行奖励/熵/梯度图已核对，
+第14/37轮NaN保留断点，第14轮首算子未知。本次无新训练迭代或参数改变。
+见[实际原语、官方精确相等准则、资源与证据界限](results_textcraft_incident37_native_root_copyout_20261011.json)。
+
+
 ## 2026-10-11 MCCL诊断已结束；原FSDP Python与官方逐字节一致
 
 原driver4081870及actor4086511/4088176均按出生时间复核已退出，两rank各8个B4
