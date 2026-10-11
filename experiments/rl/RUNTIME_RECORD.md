@@ -1,5 +1,17 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原事故输入已启用官方Torch流检查；尚无诊断结果
+
+单次driver2582227/出生1791689713.3，物理GPU4/5，原GEMM352/async782/
+exception3f/e48实际源及原配置严格复用；没有新actor类或训练方法。唯一新诊断
+开关为Torch官方TORCH_CUDA_SANITIZER=1，实际driver及Ray子进程环境已读回。
+安装CSAN源edf5b060已绑定，前述官方32-byte工具示例已验证可用；当前仍在
+Ray原actor初始化，不把存活或工具示例当作模型/DT/编译路径通过。
+自定义Triton和编译路径的覆盖尚未建立；若有报告，须核对原操作、地址和phase，
+不自动增加wait_stream，不改PPO/DT或数值容差。正式仍停37/330，不恢复、不重启，
+LoRA8/16和每卡B4保持。见[实际启动/开关回执](results_textcraft_incident37_official_CSAN_launch_20261011.json)。
+
+
 ## 2026-10-11 原生H2D观察结束有限；官方Torch流检查工具已验证可用
 
 原driver2464398及四worker均按birth核验退出。两rank各8个B4反向有限，
