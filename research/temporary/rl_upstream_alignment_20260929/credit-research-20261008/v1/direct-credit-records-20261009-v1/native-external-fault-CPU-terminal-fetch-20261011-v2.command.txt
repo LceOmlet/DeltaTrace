@@ -1,0 +1,19 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,base64,time,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-external-fault-CPU-20261011-v2';out=dict(unix=time.time(),remote_root=str(job),files=[],large_files=[],processes=[])
+for p in sorted(job.rglob('*')):
+ if not p.is_file():continue
+ h=hashlib.sha256()
+ with p.open('rb')as f:
+  for chunk in iter(lambda:f.read(8<<20),b''):h.update(chunk)
+ r=dict(path=p.relative_to(job).as_posix(),bytes=p.stat().st_size,sha256=h.hexdigest())
+ if p.stat().st_size<=2_000_000:r['base64']=base64.b64encode(p.read_bytes()).decode();out['files'].append(r)
+ else:out['large_files'].append(r)
+for pid,birth in [(3229745,1791695885.81),(3229952,1791695887.44),(3233412,1791695915.26),(3234944,1791695930.58)]:
+ r=dict(pid=pid,expected_birth=birth);out['processes'].append(r)
+ if psutil.pid_exists(pid):r.update(birth=psutil.Process(pid).create_time(),status=psutil.Process(pid).status())
+ else:r['missing']=True
+out['physical_GPU']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout;out['host_available']=psutil.virtual_memory().available;out['disk_free']=psutil.disk_usage(str(root)).free
+print(json.dumps(out))
+PY

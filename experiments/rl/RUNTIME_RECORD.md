@@ -1,5 +1,22 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 无前置干预的原编译诊断结束有限；未得到失败CPU源
+
+supervisor3229745、driver3229952与原actor3233412/3234944均按出生确认退出。
+两rank各8个B4梯度有限，共同一次原诊断optimizer；247处原GEMM权重均正常。
+原记录器没有产生NaN，故外部采集没有触发，signals与CPU_captures均空；没有
+提前暂停、worker新增import/hook或替换原函数。不能把正常结果称为修复，也
+不能仅凭先前探针正常，就判定是“探针掩盖故障”。本探针不再重复。
+
+官方TORCH_TRACE原compilation_metrics绑定两rank实际head forward SHA68dd7bf…、
+backward SHAb371a481…，六个frame与先前失败TRACE同源；非CSAN那种跳过编译。
+CPU原归一化比较.373秒、峰RSS1233612800，无GPU/模型调用；logp残差仅描述，
+不新设容差或宣称算法验收。23份8962378字节原现场保存，六份大文件SHA登记。
+终态八卡无进程，主机可用1023835209728字节、磁盘空闲13037598670848。
+正式仍停37/330，无生产修复；源26bef6c8、LoRA8/16、B4、DT Q/V/A与PPO未改。
+见[终态、实际编译绑定及范围](results_textcraft_incident37_external_fault_CPU_terminal_20261011.json)。
+
+
 ## 2026-10-11 已验证MetaX锁页CPU映射；仅在真实NaN后采集的新诊断运行中
 
 v2 supervisor3229745/出生1791695885.81，driver3229952/出生1791695887.44，原actor
