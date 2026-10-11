@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,base64,hashlib,psutil,time,subprocess
+job=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-MCPTI-addresses-20261011-v1');out={'unix':time.time(),'files':[],'terminal_processes':[]}
+for pid,birth in [(2025442,1791684456.08),(2028646,1791684477.52),(2030343,1791684492.54)]:
+ try:
+  p=psutil.Process(pid);out['terminal_processes'].append({'pid':pid,'expected_birth':birth,'birth':p.create_time(),'same_birth':p.create_time()==birth,'status':p.status()})
+ except psutil.NoSuchProcess:out['terminal_processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+files=[p for p in job.glob('*') if p.is_file()]+[p for p in (job/'result').glob('*') if p.is_file()]
+for p in sorted(files):
+ data=p.read_bytes();x={'path':str(p),'relative':str(p.relative_to(job)),'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+ if p.suffix!='.pt':x['base64']=base64.b64encode(data).decode()
+ out['files'].append(x)
+out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout
+print(json.dumps(out))
+PY

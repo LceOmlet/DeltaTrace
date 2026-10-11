@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,pathlib,psutil,time,subprocess,hashlib
+job=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-MCPTI-addresses-20261011-v1');j=json.loads((job/'job.json').read_text());out={'unix':time.time(),'files':[],'workers':[]}
+for pid,birth in [(j['pid'],j['birth']),(2028646,1791684477.52),(2030343,1791684492.54)]:
+ try:
+  p=psutil.Process(pid);m=p.memory_full_info();out['workers'].append({'pid':pid,'birth':p.create_time(),'expected_birth':birth,'same_birth':p.create_time()==birth,'status':p.status(),'rss_bytes':m.rss,'pss_bytes':m.pss})
+ except psutil.NoSuchProcess:out['workers'].append({'pid':pid,'expected_birth':birth,'missing':True})
+for p in sorted((job/'result').glob('*')):
+ if not p.is_file():continue
+ x={'name':p.name,'bytes':p.stat().st_size,'mtime':p.stat().st_mtime}
+ if p.suffix=='.json':
+  q=json.loads(p.read_text());x['json']={k:v for k,v in q.items() if k not in ['model_modes','modules_training']} if isinstance(q,dict) else q
+ elif p.suffix=='.jsonl' and 'memcpy-addresses' not in p.name:x['tail']=p.read_text().splitlines()[-3:]
+ out['files'].append(x)
+out['log_tail']=(job/'driver.log').read_text(errors='replace').splitlines()[-7:];out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout
+print(json.dumps(out))
+PY
