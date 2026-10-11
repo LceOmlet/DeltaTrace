@@ -1,0 +1,19 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+ROOT='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922'
+JOB='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-transport-20261011-v1'
+import json,os,pathlib,subprocess,sys
+root=pathlib.Path(ROOT); job=pathlib.Path(JOB); source=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes())
+env=os.environ.copy(); env['CUDA_VISIBLE_DEVICES']='-1'; env['PYTHONPATH']=':'.join([str(job/'source'),str(root/'receipts/textcraft-native-incident37-postfailure-shard-20261011-v1/source'),str(root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source'),str(root/'receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source'),source['pythonpath']])
+commands=[([sys.executable,str(root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/compare_native_incident37_GEMM_rows_20261011.py'),'--result',str(job/'result'),'--output',str(job/'GEMM-competing-weight-comparison-v1.json')],job/'GEMM-comparison-CPU'),([sys.executable,str(root/'receipts/textcraft-native-incident37-postfailure-shard-20261011-v1/source/compare_native_incident37_postfailure_shard_20261011.py'),'--job',str(job),'--output',str(job/'postfailure-shard-comparison-v1.json')],job/'postfailure-comparison-CPU')]
+commands.append(([sys.executable,str(job/'source/compare_native_incident37_transport_20261011.py'),'--job',str(job),'--output',str(job/'transport-comparison-v1.json')],job/'transport-comparison-CPU'))
+for command,stem in commands:
+ r=subprocess.run(command,env=env,capture_output=True,timeout=30)
+ stem.with_suffix('.stdout.json').write_bytes(r.stdout);stem.with_suffix('.stderr.txt').write_bytes(r.stderr)
+ print(json.dumps(dict(command=command,exit=r.returncode,stderr=r.stderr.decode(errors='replace')[-2000:])))
+ if r.returncode: continue
+ d=json.loads(r.stdout)
+ if stem.name=='GEMM-comparison-CPU': print(json.dumps({k:v for k,v in d.items() if k!='ranks'}));print(json.dumps([{k:v for k,v in row.items() if k!='positions'} for row in d['ranks']]))
+ else: print(json.dumps(d))
+
+PY

@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,base64,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-transport-20261011-v1';out={'unix':time.time(),'files':[],'missing_files':[],'remote_large_artifacts':[],'processes':[]}
+names=['job.json','driver.log','selection.json','binding-check.json','GEMM-competing-weight-comparison-v1.json','postfailure-shard-comparison-v1.json','transport-comparison-v1.json','transport-owner-source.json','source/capture_native_incident37_transport_20261011.py','source/compare_native_incident37_transport_20261011.py']
+for n in [0,1]:names += [f'result/rank{n}.json',f'result/rank{n}-phases.jsonl',f'result/rank{n}-async-head-capture.json',f'result/rank{n}-async-head-return-microbatch1.pt',f'result/rank{n}-loss-inputs-microbatch1.pt',f'result/rank{n}-native-GEMM-capture.json',f'result/rank{n}-postfailure-shard.json',f'result/rank{n}-postfailure-shard.pt',f'result/rank{n}-transport.json',f'result/rank{n}-transport.pt']
+for name in names:
+ p=job/name
+ if not p.is_file():out['missing_files'].append(str(p));continue
+ b=p.read_bytes();out['files'].append({'relative':name,'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+for n in [0,1]:
+ for suffix in ['native-GEMM-rows.pt']:
+  p=job/f'result/rank{n}-{suffix}'
+  if not p.is_file():out['missing_files'].append(str(p));continue
+  h=hashlib.sha256()
+  with p.open('rb') as f:
+   for b in iter(lambda:f.read(8<<20),b''):h.update(b)
+  out['remote_large_artifacts'].append({'path':str(p),'bytes':p.stat().st_size,'sha256':h.hexdigest(),'downloaded':False})
+for pid,birth in [(1455741,1791679018.14),(1458786,1791679038.81),(1460145,1791679052.7)]:
+ try:p=psutil.Process(pid);out['processes'].append({'pid':pid,'expected_birth':birth,'birth':p.create_time(),'status':p.status(),'same_process':abs(p.create_time()-birth)<.01})
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;print(json.dumps(out))
+
+PY
