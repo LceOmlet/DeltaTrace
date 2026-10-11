@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,psutil,os
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-after-native-report-CPU-source-20261011-v1';binding=json.loads((job/'job.json').read_bytes());pid=binding['pid'];driver=dict(pid=pid,expected_birth=binding['birth'])
+if psutil.pid_exists(pid):
+ p=psutil.Process(pid);driver.update(birth=p.create_time(),status=p.status(),PSS=p.memory_full_info().pss)
+else:driver['missing']=True
+hooks=[json.loads(p.read_bytes())for p in(job/'hook-records').glob('*.json')];workers=[]
+for hook in hooks:
+ pid=hook['pid']
+ if psutil.pid_exists(pid):
+  p=psutil.Process(pid);e=p.environ();workers.append(dict(pid=pid,birth=p.create_time(),command=p.cmdline()[:3],PSS=p.memory_full_info().pss,actual_result_env=e.get('DT_INCIDENT_AFTER_REPORT_RESULT'),CSAN=e.get('TORCH_CUDA_SANITIZER'),compile_disable=e.get('TORCH_COMPILE_DISABLE')))
+phases=[]
+for p in(job/'result').glob('rank*-phases.jsonl'):
+ rows=[json.loads(line)for line in p.read_text().splitlines()];phases.append(dict(path=str(p),last=rows[-1] if rows else None))
+log=job/'driver.log';print(json.dumps(dict(unix=time.time(),driver=driver,hooks=hooks,workers=workers,phases=phases,tail=log.read_text(errors='replace')[-7000:],formal_still_stopped=True)))
+PY

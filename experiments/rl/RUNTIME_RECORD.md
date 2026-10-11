@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原报告写出后采集CPU源；当前原DT，未有故障源结论
+
+诊断driver2980668/出生1791693545.27，原actor2984831/出生1791693577.32及2986245/
+出生1791693592.78，物理GPU4/5；Unix1791693716两rank在native_saved_DT_batch_begin。
+原352/782/3f/e48源码与配置严格不变，没有新增actor类、模型运算或前置GPU/CPU值探针。
+Ray原生worker_process_setup_hook已在实际worker加载251ca219回调，只在原GEMM终态
+报告write_text返回后读取CPU分片与FSDP元数据。launcher4c16d573仅组合Ray原生启动
+字段；CPU导入/装卸检查未初始化CUDA。这不是容差、故障已修或原32k训练验收。
+要核对失败时rank1负责159048行的_sharded_param_data与GPU坏行；正常结束不算
+取得失败源，故障后正常CPU值也不能排除此前瞬时改变。原冻结源1c08b57、LoRA8/16、
+每卡B4、Q/V/A保持；正式仍停37/330，无生产修复，不恢复正式检查点。
+见[启动、实际worker与源码回执](results_textcraft_incident37_after_report_CPU_source_launch_20261011.json)。
+
+
 ## 2026-10-11 原编译路径再次复现第二B4 NaN；相同坏权重，尚未修复
 
 原driver2756368与actor2759651/2761040均按birth确认退出，物理4/5；两rank首B4
