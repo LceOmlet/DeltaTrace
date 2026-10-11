@@ -1,0 +1,10 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,pathlib,hashlib,resource,time
+root=pathlib.Path('/opt/conda/lib/python3.12/site-packages/torch')
+sources=[('_dynamo/convert_frame.py',1405,1490),('_dynamo/convert_frame.py',640,715),('distributed/fsdp/_fully_shard/_fsdp_param_group.py',225,320),('distributed/fsdp/_fully_shard/_fsdp_param_group.py',470,565),('cuda/_sanitizer.py',615,670)]
+rows=[]
+for name,start,stop in sources:
+ p=root/name;b=p.read_bytes();lines=b.decode().splitlines();rows.append(dict(path=str(p),sha256=hashlib.sha256(b).hexdigest(),start=start,source='\n'.join(f'{i+1}: {v}' for i,v in enumerate(lines) if start<=i+1<=stop)))
+print(json.dumps(dict(unix=time.time(),sources=rows,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,GPU_calls=0,model_calls=0)))
+PY

@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,resource
+root=pathlib.Path('/opt/conda/lib/python3.12/site-packages/torch');out={'unix':time.time(),'files':[],'GPU_calls':0,'model_calls':0}
+for folder in ['_dynamo','_inductor']:
+ for p in (root/folder).rglob('*.py'):
+  text=p.read_text(errors='replace')
+  if 'CUDASanitizer' in text or 'non-infra' in text or 'non_infra_mode' in text or 'unsupported dispatch mode' in text.lower():
+   lines=text.splitlines();hits=[]
+   for i,line in enumerate(lines):
+    if any(x in line for x in ['CUDASanitizer','non-infra','non_infra_mode','unsupported dispatch mode']):hits.append({'line':i+1,'context':'\n'.join(lines[max(0,i-3):i+6])})
+   if hits:out['files'].append({'path':str(p),'hits':hits})
+out.update(peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024);print(json.dumps(out))
+PY

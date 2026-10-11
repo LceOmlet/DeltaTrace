@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,hashlib,time,resource
+p=Path('/opt/maca/include/mcr/mc_runtime_tracer_str.h');b=p.read_bytes();lines=b.decode(errors='replace').splitlines();hits=[]
+for i,line in enumerate(lines):
+ if any(n in line for n in ['stringfy_mcMemcpyAsync','stringfy_mcLaunchKernel','stringfy_mcMalloc','stringfy_mcEventRecord','stringfy_mcStreamWaitEvent','mcLaunchKernel(','mcMemcpyAsync(']):hits.append({'line':i+1,'source':'\n'.join(f'{j+1}: {lines[j]}' for j in range(max(0,i-2),min(len(lines),i+15)))})
+index=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json')
+s=json.loads(index.read_text());model=s['environment'].get('MODEL_PATH')
+print(json.dumps({'unix':time.time(),'path':str(p),'sha256':hashlib.sha256(b).hexdigest(),'hits':hits[:14],'model_path':model,'source_keys':list(s),'environment_keys':[k for k in s['environment'] if 'MODEL' in k],'GPU_calls':0,'model_calls':0,'RSS':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024}))
+PY

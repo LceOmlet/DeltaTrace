@@ -1,0 +1,27 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,pathlib,time,psutil,subprocess,hashlib
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');job=root/'textcraft-native-incident37-CPU-source-at-bad-gradient-20261011-v1';out={'unix':time.time(),'driver':{},'workers':[],'ranks':[],'configs':[],'model_mode_hashes':[]}
+try:
+ p=psutil.Process(1847823);out['driver']={'pid':p.pid,'birth':p.create_time(),'expected_birth':1791682765.92,'status':p.status()}
+ for c in p.children(recursive=True):
+  try:
+   if 'ray::' in c.name():out['workers'].append({'pid':c.pid,'birth':c.create_time(),'name':c.name(),'status':c.status(),'pss_bytes':c.memory_full_info().pss})
+  except psutil.Error:pass
+except psutil.NoSuchProcess:out['driver']={'pid':1847823,'missing':True}
+for i in [0,1]:
+ q=job/'result'/f'rank{i}.json'; row={'rank':i}
+ if q.exists():
+  d=json.loads(q.read_bytes());row.update({k:d.get(k) for k in ['phase','pid','birth','unix','actual_optimizer_steps','microbatches','allocated','reserved','pss_bytes']})
+  row['CPU_source_capture_exists']=(q.parent/f'rank{i}-CPU-source-at-bad-gradient.json').exists()
+ out['ranks'].append(row)
+if (job/'driver.log').exists():out['driver_tail']=(job/'driver.log').read_text(errors='replace').splitlines()[-10:]
+for name in ['textcraft-native-incident37-competing-weight-capture-20261011-v1','textcraft-native-incident37-postfailure-shard-20261011-v1','textcraft-native-incident37-transport-20261011-v1','textcraft-native-incident37-allocator-20261011-v1','textcraft-native-incident37-CPU-source-at-bad-gradient-20261011-v1']:
+ q=root/name/'result/initialization-config.yaml'
+ if q.exists():out['configs'].append({'job':name,'path':str(q),'bytes':q.stat().st_size,'sha256':hashlib.sha256(q.read_bytes()).hexdigest()})
+ for i in [0,1]:
+  q=root/name/'result'/f'rank{i}.json'
+  if q.exists():
+   d=json.loads(q.read_bytes());out['model_mode_hashes'].append({'job':name,'rank':i,'phases':{k:hashlib.sha256(json.dumps(v,sort_keys=True).encode()).hexdigest() for k,v in d.get('model_modes',{}).items()}})
+out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout;out['host_available_bytes']=psutil.virtual_memory().available;out['formal_restarted']=False;print(json.dumps(out))
+PY

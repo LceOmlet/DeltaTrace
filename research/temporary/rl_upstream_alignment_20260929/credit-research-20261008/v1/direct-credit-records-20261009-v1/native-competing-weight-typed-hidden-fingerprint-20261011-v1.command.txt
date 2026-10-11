@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,torch,time,resource,json,hashlib
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1'
+torch.set_num_threads(4);start=time.perf_counter();v={'unix':time.time(),'GPU_calls':0,'model_calls':0,'DT_calls':0,'production_changes':0,'ranks':[]}
+for rank in [0,1]:
+ result=job/'result';g=torch.load(result/f'rank{rank}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True)
+ weights=g['competing_weights'];inds=g['metadata']['copied_indices'];bad=weights[inds[0]].clone();hfile=result/f'rank{rank}-failed-hidden-microbatch1.pt'
+ if not hfile.is_file():
+  print('missing',str(hfile));raise FileNotFoundError(hfile)
+ pack=torch.load(hfile,map_location='cpu',weights_only=False,mmap=True)
+ v.setdefault('hidden_keys',[]).append({k:tuple(x.shape) for k,x in pack.items() if isinstance(x,torch.Tensor)})
+ h=pack['hidden_states'] if 'hidden_states' in pack else pack['hidden']
+ reinterpret=bad.view(torch.float16);outside=torch.cat((bad[:320],bad[352:])).float()
+ row={'rank':rank,'bad_sha256':hashlib.sha256(bad.view(torch.uint8).numpy().tobytes()).hexdigest(),'bad_dtype':str(bad.dtype),'hidden_dtype':str(h.dtype),'hidden_shape':list(h.shape),'bad_first16':bad[:16].float().tolist(),'reinterpret_FP16_first16':reinterpret[:16].float().tolist(),'reinterpret_FP16_range':[float(reinterpret.min()),float(reinterpret.max())],'reinterpret_FP16_L2':float(reinterpret.float().norm()),'outside_large_block_range':[float(outside.min()),float(outside.max())],'outside_large_block_L2':float(outside.norm()),'typed_matches':[]}
+ for label,needle,target in [('bad_BF16_vs_hidden_BF16',bad,h.to(torch.bfloat16)),('reinterpret_FP16_vs_hidden_FP16',reinterpret,h.to(torch.float16))]:
+  flat=target.contiguous().flatten();needle=needle[:16];hits=torch.nonzero(flat==needle[0]).flatten();hits=hits[hits<=flat.numel()-16];exact=[]
+  for offset in hits.tolist():
+   if torch.equal(flat[offset:offset+16],needle):exact.append(offset)
+  row['typed_matches'].append({'interpretation':label,'searched_elements':flat.numel(),'first_element_candidates':hits.numel(),'matching_flat_offsets':exact})
+  del flat,target
+ v['ranks'].append(row);del pack,h,g,weights,bad,reinterpret
+v.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized())
+(job/'typed-hidden-fingerprint-v1.json').write_text(json.dumps(v,indent=2)+'\n');print(json.dumps(v))
+PY

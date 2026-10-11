@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import os,sys,pathlib,json,subprocess,time,hashlib,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-MetaX-tracer-capability-20261011-v1')
+pre=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout
+if 'no process found' not in pre:raise RuntimeError('Occupancy changed; no GPU probe submitted')
+env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='4';env['MACA_HOTSPOT_MEMSTACK']='1'
+start=time.perf_counter();r=subprocess.run(['/opt/maca/bin/mcTracer','--odname','trace','--name','native-memory-probe',sys.executable,str(root/'probe.py')],env=env,cwd=root,capture_output=True,text=True,timeout=40)
+(root/'probe-v2.stdout.txt').write_text(r.stdout);(root/'probe-v2.stderr.txt').write_text(r.stderr)
+files=[];trace=[]
+for p in (root/'trace').rglob('*'):
+ if p.is_file():
+  files.append(dict(path=str(p),bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
+  if p.suffix=='.json' and p.stat().st_size<10000000:
+   try:
+    d=json.loads(p.read_text());events=d.get('traceEvents',[]) if isinstance(d,dict) else d
+    selected=[x for x in events if any(v in str(x) for v in ['Memcpy','MemCpy','Malloc','StreamWait','EventRecord','memcpy','DtoH','HtoD'])]
+    trace.append(dict(path=str(p),type=type(d).__name__,keys=list(d)[:10] if isinstance(d,dict) else None,event_count=len(events),selected=selected[:30],event_sample=events[:5]))
+   except Exception as error:trace.append(dict(path=str(p),error=repr(error)))
+out=dict(unix=time.time(),seconds=time.perf_counter()-start,returncode=r.returncode,stdout=r.stdout,stderr=r.stderr,files=files,trace=trace,physical_before=pre,physical_after=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout,scope='Same official tool probe; fix mcTracer output directory to relative name because installed tool prepends cwd. Not training acceptance.',production_changes=0,model_calls=0,DT_calls=0,new_tolerance=None,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)
+(root/'receipt-v2.json').write_text(json.dumps(out,indent=2));print(json.dumps(out))
+PY

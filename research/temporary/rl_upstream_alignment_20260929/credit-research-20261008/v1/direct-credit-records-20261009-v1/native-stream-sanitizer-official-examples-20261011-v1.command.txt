@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import os,subprocess,json,time,pathlib,psutil
+p=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10);assert p.returncode==0
+report={'unix':time.time(),'official_document':'https://docs.pytorch.org/docs/2.8/cuda._sanitizer.html','scope':'Tool availability only: official unsynchronized/synchronized two-stream examples. No model, DT, PPO or training acceptance.','model_calls':0,'DT_calls':0,'production_changes':0,'GPU':4,'physical_before':p.stdout,'cases':[]}
+assert 'no process found' in p.stdout.lower(),'GPU occupancy changed; do not start capability check'
+base='import torch\na = torch.rand(4, 2, device="cuda")\nwith torch.cuda.stream(torch.cuda.Stream()):\n'
+for label,sync in [('official_unsynchronized',False),('official_synchronized',True)]:
+ code=base+('    torch.cuda.current_stream().wait_stream(torch.cuda.default_stream())\n' if sync else '')+'    torch.mul(a, 5, out=a)\n'
+ env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='4';env['TORCH_CUDA_SANITIZER']='1'
+ t=time.perf_counter();r=subprocess.run([os.environ['VENV_PYTHON'],'-c',code],env=env,capture_output=True,text=True,timeout=35)
+ report['cases'].append({'name':label,'code':code,'returncode':r.returncode,'stdout':r.stdout,'stderr':r.stderr,'seconds':time.perf_counter()-t})
+report['detected_official_bad_example']=report['cases'][0]['returncode']!=0 and 'CSAN detected a possible data race' in report['cases'][0]['stderr']
+report['accepted_official_synchronized_example']=report['cases'][1]['returncode']==0
+report['physical_after']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;report['host_available_bytes']=psutil.virtual_memory().available
+print(json.dumps(report))
+PY

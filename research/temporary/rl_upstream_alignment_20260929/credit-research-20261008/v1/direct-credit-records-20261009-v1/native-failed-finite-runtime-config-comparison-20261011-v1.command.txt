@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,pathlib,hashlib,time,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts')
+names=['textcraft-native-incident37-competing-weight-capture-20261011-v1','textcraft-native-incident37-postfailure-shard-20261011-v1','textcraft-native-incident37-transport-20261011-v1','textcraft-native-incident37-allocator-20261011-v1']
+out={'unix':time.time(),'jobs':[],'GPU_calls':0,'model_calls':0}
+for name in names:
+ q=root/name;row={'job':name,'files':[],'records':[]}
+ for p in q.glob('*.json'):
+  if p.name in ['job.json','binding-check.json']:
+   d=json.loads(p.read_bytes());row['records'].append({'file':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'contents':{k:v for k,v in d.items() if k not in ['prelaunch_physical_gpu','replay_registration','update_registration','replay_chain','update_chain','actual_chains']}})
+ for p in (q/'result').glob('*.json'):
+  if p.name in ['rank0.json','rank1.json','config.json','runtime.json','effective_config.json','rank0-runtime.json','rank1-runtime.json']:
+   d=json.loads(p.read_bytes());row['records'].append({'file':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'keys':list(d),'contents':{k:v for k,v in d.items() if k in ['sources','DT_batch','input_artifact','config','environment','actual_environment','actual_imports','native_config','lora','runtime','module_versions','actual_optimizer_steps','parameter_metadata_changes','actual_GDN_source']}})
+ for p in q.rglob('*.json'):
+  row['files'].append({'path':str(p.relative_to(q)),'bytes':p.stat().st_size})
+ out['jobs'].append(row)
+from safetensors import safe_open
+base=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');idx=json.loads((base/'model.safetensors.index.json').read_bytes());dtypes={}
+for file in sorted(set(idx['weight_map'].values())):
+ with safe_open(base/file,framework='pt',device='cpu') as f:
+  for k in f.keys():
+   dtype=f.get_slice(k).get_dtype();dtypes[dtype]=dtypes.get(dtype,0)+1
+out['original_checkpoint_dtypes']=dtypes;out['peak_RSS_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024;print(json.dumps(out))
+PY

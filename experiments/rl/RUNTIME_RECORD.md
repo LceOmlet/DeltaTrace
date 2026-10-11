@@ -1,5 +1,22 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原NaN保存点CPU源分片采集已启动；无生产修复
+
+单次driver1847823/出生1791682765.92，GPU4/5；源8b37b30f保留原GEMM
+observer类，原compiled head/mm/main AST不变。仅在原hook已保存CPU非有限logp
+梯度后，读取159048行的实际CPU flat/local分片；不在故障前新增GPU拷贝、模型、
+collective或同步。实际Ray/VERL登记CPU验证通过，CUDA未初始化；原e48回放、
+源26bef6c8、LoRA8/16、B4与Q/V/A不变。尚未获得失败CPU源，不是修复。
+已比较失败/有限四类诊断：事故输入、actor/head/GDN源及模型模式相同；连同本次
+五份初始化yaml SHA均2b170445…，未发现配置差异能解释失败消失。此结论不补造
+未采集的历史进程完整环境。保存H的typed16元素指纹未命中，不能排除其它中间量。
+原PyTorch CSAN官方坏/好示例在MetaX分别报错/通过，但installed Dynamo会跳过
+该dispatch mode下的编译，未用于整网。原mcTracer小拷贝生成84项活动，未输出
+src/dst地址，未据此启动整网追踪或认定写入方；首个绝对目录尝试无trace，保留无效。
+正式仍停37/330，不恢复、不重启；本轮只增加事故观察器与诊断记录。
+见[启动及工具核查回执](results_textcraft_incident37_bad_gradient_source_launch_20261011.json)。
+
+
 ## 2026-10-11 原生allocator观察结束；未复现，不是修复
 
 诊断1568818及worker1571474/1573160均按birth核验已退出；两rank各8个B4反向有限，

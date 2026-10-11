@@ -1,0 +1,13 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,resource,time
+root=pathlib.Path('/opt/conda/lib/python3.12/site-packages/torch');out={'unix':time.time(),'sources':[],'tool_files':[],'GPU_calls':0,'model_calls':0}
+for name,start,stop in [('distributed/fsdp/_fully_shard/_fsdp_param.py',310,380),('distributed/fsdp/_fully_shard/_fsdp_param.py',480,575),('distributed/fsdp/_fully_shard/_fsdp_param.py',640,710),('distributed/fsdp/_fully_shard/_fsdp_api.py',25,105),('_dynamo/guards.py',355,395)]:
+ p=root/name;b=p.read_bytes();lines=b.decode().splitlines();out['sources'].append(dict(path=str(p),sha256=hashlib.sha256(b).hexdigest(),start=start,source='\n'.join(f'{i+1}: {v}' for i,v in enumerate(lines) if start<=i+1<=stop)))
+for folder in ['/opt/maca/tools','/opt/maca/bin','/opt/maca/share','/opt/maca/include']:
+ q=pathlib.Path(folder)
+ if q.exists():
+  for f in q.rglob('*'):
+   if f.is_file() and any(x in f.name.lower() for x in ['trac','sanit','debug','memcheck','gdb']):out['tool_files'].append({'path':str(f),'bytes':f.stat().st_size})
+out['peak_RSS_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024;print(json.dumps(out))
+PY

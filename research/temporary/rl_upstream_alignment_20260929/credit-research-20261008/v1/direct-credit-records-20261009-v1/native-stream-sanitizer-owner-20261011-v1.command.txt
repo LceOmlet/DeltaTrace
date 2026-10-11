@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,inspect,json,hashlib,pathlib,time,resource,shutil,os
+import torch.cuda._sanitizer as s
+import torch.cuda._gpu_trace as g
+v={'unix':time.time(),'torch_version':torch.__version__,'cuda_initialized':torch.cuda.is_initialized(),'model_calls':0,'GPU_calls':0,'production_changes':0,'files':[],'sanitizer_signature':str(inspect.signature(s.enable_cuda_sanitizer)),'trace_C_bindings':{x:hasattr(torch._C,x) for x in ['_activate_gpu_trace','_cuda_trace','_cuda_isCurrentStreamCapturing']},'bin_names':[]}
+for x in [s,g]:
+ p=pathlib.Path(inspect.getsourcefile(x));b=p.read_bytes();v['files'].append({'path':str(p),'sha256':hashlib.sha256(b).hexdigest(),'text':b.decode()})
+for root in ['/opt/maca/bin','/opt/maca/tools','/opt/maca/mxgpu_llvm/bin','/usr/local/bin']:
+ p=pathlib.Path(root)
+ if p.is_dir():
+  v['bin_names'].append({'root':root,'matches':[x.name for x in p.iterdir() if any(w in x.name.lower() for w in ['sanit','memcheck','debug','prof','gdb'])]})
+v['peak_RSS_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024;print(json.dumps(v))
+PY

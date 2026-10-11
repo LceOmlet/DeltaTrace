@@ -1,0 +1,29 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import os,sys,pathlib,json,subprocess,time,hashlib,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-MetaX-tracer-capability-20261011-v1');root.mkdir(exist_ok=False)
+pre=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout
+if 'no process found' not in pre:raise RuntimeError('Occupancy changed; no GPU probe submitted')
+probe=root/'probe.py'
+probe.write_text("""import json,os,pathlib,torch
+p=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/result/rank0-native-GEMM-rows.pt')
+x=torch.load(p,map_location='cpu',weights_only=False,mmap=True)['competing_weights'][0].clone().pin_memory()
+a=x.to('cuda',non_blocking=True)
+b=torch.empty_like(a);b.copy_(a);c=torch.empty_like(x,pin_memory=True);c.copy_(b,non_blocking=True)
+torch.cuda.synchronize()
+print(json.dumps(dict(pid=os.getpid(),CPU_source=x.data_ptr(),H2D_output=a.data_ptr(),D2D_output=b.data_ptr(),CPU_destination=c.data_ptr(),numel=x.numel(),bytes=x.numel()*x.element_size(),exact=torch.equal(x,c),model_calls=0,DT_calls=0)))
+""")
+env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='4';env['MACA_HOTSPOT_MEMSTACK']='1'
+start=time.perf_counter();r=subprocess.run(['/opt/maca/bin/mcTracer','--odname',str(root/'trace'),'--name','native-memory-probe',sys.executable,str(probe)],env=env,cwd=root,capture_output=True,text=True,timeout=40)
+(root/'probe.stdout.txt').write_text(r.stdout);(root/'probe.stderr.txt').write_text(r.stderr)
+files=[];trace=[]
+for p in root.rglob('*'):
+ if p.is_file():
+  files.append(dict(path=str(p),bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
+  if p.suffix=='.json' and p.stat().st_size<10000000:
+   try:
+    d=json.loads(p.read_text());trace.append(dict(path=str(p),type=type(d).__name__,keys=list(d)[:10] if isinstance(d,dict) else None,sample=str(d)[:16000]))
+   except Exception as error:trace.append(dict(path=str(p),error=repr(error)))
+out=dict(unix=time.time(),seconds=time.perf_counter()-start,returncode=r.returncode,stdout=r.stdout,stderr=r.stderr,files=files,trace=trace,physical_before=pre,physical_after=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout,scope='Official mcTracer/API memory-tracing capability on one captured actual weight row, original native copies only. No model/DT/PPO execution or production change.',production_changes=0,model_calls=0,DT_calls=0,new_tolerance=None,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)
+(root/'receipt.json').write_text(json.dumps(out,indent=2));print(json.dumps(out))
+PY
