@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,pathlib,json,time,hashlib,resource
+torch.set_num_threads(4);started=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts')
+jobs={'failed':'textcraft-native-incident37-competing-weight-capture-20261011-v1','failed_positive_control':'textcraft-native-incident37-original-GEMM-positive-control-20261011-v1','failed_TRACE':'textcraft-native-incident37-official-Torch-TRACE-20261011-v1','normal_collective_metadata':'textcraft-native-incident37-collective-buffer-origin-20261011-v1'}
+out={'unix':time.time(),'scope':'CPU mmap read of saved native GEMM metadata and BF16 rows only; no model/kernel/update','jobs':{}}
+for label,job in jobs.items():
+ ranks=[];out['jobs'][label]=ranks
+ for rank in range(2):
+  path=root/job/'result'/f'rank{rank}-native-GEMM-rows.pt'
+  if not path.exists():ranks.append({'rank':rank,'missing':str(path)});continue
+  d=torch.load(path,map_location='cpu',weights_only=False,mmap=True);m=d['metadata'];indices=m['copied_indices'];w=d['competing_weights'];hashes={}
+  for i in indices:
+   b=w[i].contiguous().view(torch.uint8).numpy().tobytes();h=hashlib.sha256(b).hexdigest();hashes[h]=hashes.get(h,0)+1
+  ranks.append({'rank':rank,'path':str(path),'bytes':path.stat().st_size,'metadata':m,'right_pointers':sorted(set(x['right_pointer']for x in m['mm_calls'])),'all_competing_row_SHA_counts':hashes,'captured_rows':len(indices),'W_row_range':[float(w[indices].min()),float(w[indices].max())]})
+  del d,w
+out.update(seconds=time.perf_counter()-started,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),production_changes=0)
+print(json.dumps(out))
+
+PY

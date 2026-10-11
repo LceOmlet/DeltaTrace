@@ -1,0 +1,42 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,pathlib,json,time,hashlib,resource,bisect
+from safetensors import safe_open
+torch.set_num_threads(4);start=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');receipts=root/'receipts';model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');wm=json.loads((model/'model.safetensors.index.json').read_bytes())['weight_map'];proof=json.loads((receipts/'textcraft-native-incident37-layer0-payload-exact-20261011-v1.json').read_bytes());order=proof['official_meta_order'];total=proof['expected_layer0_rank0_payload_bytes']//2;begin=(159048*4096-proof['expected_layer0_rank0_payload_offset_bytes']//2);assert begin==150784*4096
+states=[]
+for rank,pid in [(0,987808),(1,989860)]:
+ path=next((receipts/f'textcraft-native-actor-incidents-20261010-v1/rank{rank}-pid{pid}').glob('incident-*-update.pt'));s=torch.load(path,map_location='cpu',weights_only=False,mmap=True);states.append(s['trainable_local_parameters'])
+starts=[x['BF16_rank0_start_bytes']//2 for x in order]
+files={};cached={}
+def fragment(rank,offset,n):
+ parts=[]
+ while n:
+  index=bisect.bisect_right(starts,offset)-1;p=order[index];lo=offset-starts[index];take=min(n,p['rank0_numel']-lo);name=p['name'];key=(rank,name)
+  if key not in cached:
+   if '.lora_'in name:t=states[rank]['base_model.model.model.layers.0.'+name].flatten()
+   else:
+    ck='model.language_model.layers.0.'+name.replace('.base_layer.','.')
+    fn=wm[ck]
+    if fn not in files:files[fn]=safe_open(model/fn,framework='pt',device='cpu');files[fn].__enter__()
+    full=files[fn].get_tensor(ck).flatten();t=full[rank*p['rank0_numel']:(rank+1)*p['rank0_numel']]
+   assert t.numel()==p['rank0_numel'],(rank,name,t.shape,p);cached[key]=t
+  parts.append(cached[key][lo:lo+take].to(torch.bfloat16));offset+=take;n-=take
+ return torch.cat(parts)
+# 64 uniformly spaced whole rows over the predicted two-rank payload, plus the already identified row.
+lo=(begin+4095)//4096;hi=(begin+2*total)//4096-1
+ids=sorted(set([lo+(hi-lo)*i//63 for i in range(64)]+[159048]));weights=[];origins=[]
+for vid in ids:
+ offset=vid*4096-begin;rr=offset//total;oo=offset%total;first=min(4096,total-oo);parts=[fragment(rr,oo,first)]
+ if first<4096:parts.append(fragment(rr+1,0,4096-first))
+ weights.append(torch.cat(parts));origins.append({'vocab_id':vid,'payload_rank':rr,'offset_elements':oo,'crosses_rank_boundary':first<4096})
+weights=torch.stack(weights);headkey=next(k for k in wm if k.endswith('lm_head.weight'));headfile=safe_open(model/wm[headkey],framework='pt',device='cpu');headfile.__enter__();trueweights=headfile.get_tensor(headkey)[ids].to(torch.bfloat16);out={'unix':time.time(),'scope':'CPU source-pointer hypothesis check against already captured native GEMM logits; no model, DT or GPU calls; descriptive equality, no tolerance/test criterion','predicted_payload_head_first_row':lo,'predicted_payload_head_last_whole_row':hi,'readout_vocab_ids':ids,'weights_sha256':hashlib.sha256(weights.view(torch.uint8).numpy().tobytes()).hexdigest(),'ranks':[]}
+for label,job in [('failed','textcraft-native-incident37-competing-weight-capture-20261011-v1'),('failed_positive_control','textcraft-native-incident37-original-GEMM-positive-control-20261011-v1'),('failed_TRACE','textcraft-native-incident37-official-Torch-TRACE-20261011-v1'),('normal','textcraft-native-incident37-collective-buffer-origin-20261011-v1')]:
+ for rank in range(2):
+  path=receipts/job/'result'/f'rank{rank}-native-GEMM-rows.pt';g=torch.load(path,map_location='cpu',weights_only=False,mmap=True);valid=g['metadata']['copied_indices'];H=g['hidden'][valid].double();actual=g['logits'][valid][:,ids];dots=H@weights.double().T;rounded=dots.to(actual.dtype);normal_dot=(H@trueweights.double().T).to(actual.dtype);eq=rounded==actual;rows=[]
+  for j,o in enumerate(origins):
+   err=(rounded[:,j].float()-actual[:,j].float()).abs();rows.append({**o,'exact_rounded_dot_count':int(eq[:,j].sum()),'count':len(valid),'max_abs_difference':float(err.max()),'mean_abs_difference':float(err.mean()),'first_predicted':float(rounded[0,j]),'first_actual':float(actual[0,j]),'checkpoint_head_first_predicted':float(normal_dot[0,j]),'checkpoint_head_exact_count':int((normal_dot[:,j]==actual[:,j]).sum()),'checkpoint_head_max_abs_difference':float((normal_dot[:,j].float()-actual[:,j].float()).abs().max()),'checkpoint_head_mean_abs_difference':float((normal_dot[:,j].float()-actual[:,j].float()).abs().mean())})
+  out['ranks'].append({'job':label,'rank':rank,'captured_hidden_rows':len(valid),'compared_vocab_columns':len(ids),'exact_rounded_dot_count':int(eq.sum()),'count':eq.numel(),'columns':rows});del g,H,actual,dots,rounded,eq
+out.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),model_calls=0,GPU_calls=0,production_changes=0)
+print(json.dumps(out))
+
+PY

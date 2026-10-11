@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,time,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-collective-pointers-20261011-v1';d=json.loads((job/'job.json').read_bytes());out={'unix':time.time(),'driver':{},'ranks':[]}
+try:
+ p=psutil.Process(d['pid']);out['driver']={'pid':p.pid,'birth':p.create_time(),'same_birth':abs(p.create_time()-d['birth'])<.001,'status':p.status()}
+except psutil.NoSuchProcess:out['driver']={'pid':d['pid'],'missing':True}
+for p in sorted((job/'result').glob('rank[01].json')):
+ r=json.loads(p.read_bytes());phase=p.with_name(f"rank{r['rank']}-phases.jsonl");out['ranks'].append({k:r.get(k)for k in ['rank','pid','birth','phase','actual_optimizer_steps','error']}|{'microbatches':[{'index':x['index'],'gradient_finite':x['gradient_finite']}for x in r.get('microbatches',[])],'phase_tail':[json.loads(s)for s in phase.read_text().splitlines()[-2:]]})
+py=pathlib.Path('/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py');text=py.read_text();lines=text.splitlines();out['official_allocator_API']={'path':str(py),'sha256':hashlib.sha256(py.read_bytes()).hexdigest(),'source':[]}
+for i,l in enumerate(lines):
+ if l.startswith('def caching_allocator_enable('):out['official_allocator_API']['source']=lines[max(0,i-3):i+18]
+out['physical_allocators_changed']=False;out['production_changes']=0;out['host_available']=psutil.virtual_memory().available
+print(json.dumps(out))
+
+PY
