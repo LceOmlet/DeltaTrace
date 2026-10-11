@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=4,5 "$VENV_PYTHON" - <<'PY'
+import torch,psutil,json,time,subprocess,re
+assert not psutil.pid_exists(1749723)
+m=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10,check=True).stdout;assert not re.search(r'^\|\s+[45]\s+\d+\s+',m.split('Process:',1)[-1],re.M)
+r=[]
+for d in [0,1]:
+ torch.cuda.set_device(d);a=torch.accelerator.current_stream();b=torch.cuda.current_stream()
+ r.append(dict(current_device=torch.cuda.current_device(),accelerator_device=str(a.device),accelerator_stream_id=a.stream_id,cuda_device=str(b.device),cuda_stream_id=b.stream_id,equal=a==b))
+print(json.dumps(dict(unix=time.time(),torch=torch.__version__,stream_comparison=r,model_calls=0,scope='Direct original accelerator/cuda current-stream API identity; no model or communication.')))
+PY

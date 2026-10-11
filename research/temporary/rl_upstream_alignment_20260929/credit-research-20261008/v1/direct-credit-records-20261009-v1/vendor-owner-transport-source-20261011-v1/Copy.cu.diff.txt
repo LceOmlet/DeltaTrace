@@ -1,0 +1,114 @@
+--- pytorch-v2.8.0
+
++++ public-newer-metax
+
+@@ -8,9 +8,14 @@
+
+ #include <ATen/cuda/CUDAEvent.h>
+ #include <ATen/cuda/PeerToPeerAccess.h>
+ #include <ATen/native/Copy.h>
+ #include <ATen/native/TensorIterator.h>
++
++#ifdef USE_MACA
++#include <ATen/native/cuda/maca_kernels/Loops_copy.cuh>
++#else
+ #include <ATen/native/cuda/Loops.cuh>
++#endif
+ 
+ #ifndef AT_PER_OPERATOR_HEADERS
+ #include <ATen/Functions.h>
+ #else
+@@ -174,20 +179,38 @@
+
+ // TODO: We probably can use the opaque type trick to avoid creating duplicate
+ // kernels for equivalent bit lengths
+ void direct_copy_kernel_cuda(TensorIteratorBase &iter) {
+   ScalarType dtype = iter.dtype(0);
++
++#ifdef USE_MACA
+   if (isQIntType(dtype)) {
+     AT_DISPATCH_QINT_TYPES(dtype, "copy_", [&] {
+       gpu_kernel(iter, [] GPU_LAMBDA(scalar_t x) { return x; });
+     });
+   } else if (isFloat8Type(dtype)) {
++    float8_copy_kernel_cuda(iter);
++  } else {
++    AT_DISPATCH_ALL_TYPES_AND_COMPLEX_AND6(
++        kHalf, kBool, kBFloat16, kComplexHalf, kFloat8_e4m3fn, kFloat8_e5m2, dtype, "copy_", [&] {
++          gpu_kernel_maca_arity1_copy(iter, [] GPU_LAMBDA(scalar_t x) { return x; });
++    });
++  }
++#else
++
++  if (isQIntType(dtype)) {
++    AT_DISPATCH_QINT_TYPES(dtype, "copy_", [&] {
++      gpu_kernel(iter, [] GPU_LAMBDA(scalar_t x) { return x; });
++    });
++  } else if (isFloat8Type(dtype)) {
+      float8_copy_kernel_cuda(iter);
+-  } else if (iter.dtype(1) == kFloat && (dtype == kBFloat16 || dtype == kHalf)) {
+-     if (dtype == kBFloat16) {
+-       bfloat16_copy_kernel_cuda(iter);
+-     } else {
+-       float16_copy_kernel_cuda(iter);
+-     }
++// #ifndef USE_MACA  // call gpu_kernel_maca_arity1_copy for maca
++//   } else if (iter.dtype(1) == kFloat && (dtype == kBFloat16 || dtype == kHalf)) {
++//      if (dtype == kBFloat16) {
++//        bfloat16_copy_kernel_cuda(iter);
++//      } else {
++//        float16_copy_kernel_cuda(iter);
++//      }
++// #endif // USE_MACA
+   } else if (isBitsType(dtype)) {
+     TORCH_CHECK(dtype == iter.dtype(1), "copy_() does not support casting "
+       "bits types to different bits types. Source dtype is ", iter.dtype(1), "target dtype is ", dtype);
+     AT_DISPATCH_BIT_TYPES(dtype, "copy_", [&] {
+@@ -195,11 +218,17 @@
+
+     });
+   } else {
+     AT_DISPATCH_V2(
+         dtype, "copy_", AT_WRAP([&] {
++// #ifdef USE_MACA
++//           gpu_kernel_maca_arity1_copy(iter, [] GPU_LAMBDA(scalar_t x) { return x; });
++// #else
+           gpu_kernel(iter, [] GPU_LAMBDA(scalar_t x) { return x; });
++// #endif
+     }), AT_EXPAND(AT_ALL_TYPES_AND_COMPLEX), kHalf, kBool, kBFloat16, kComplexHalf, AT_EXPAND(AT_BAREBONES_UNSIGNED_TYPES));
+   }
++
++#endif
+ }
+ 
+ void neg_conj_kernel_cuda(TensorIteratorBase &iter) {
+   AT_DISPATCH_COMPLEX_TYPES(iter.common_dtype(), "neg_conj_cuda", [&] {
+@@ -252,8 +281,14 @@
+
+     void *dst = iter.data_ptr(0);
+     void *src = iter.data_ptr(1);
+     size_t size = numel * iter.element_size(0);
+     if (src != dst || src_device != dst_device) {
++    #ifdef USE_MACA
++      if (src_device == dst_device && size <= CUDACachingAllocator::getSmallMemcpyByteSize() &&
++          maca_likely(!at::maca::get_maca_disable_direct_copy_kernel_replace_memcpy())) {
++        direct_copy_kernel_cuda(iter);
++      } else {
++    #endif
+       // Due to bizarre cuda driver intricacies, copies of
+       // cudaMallocAsynced memory between devices that aren't
+       // peer-to-peer-capable need "cudaMemcpyPeerAsync".
+       // So we let the allocator implement the correct call
+@@ -261,8 +296,11 @@
+
+       AT_CUDA_CHECK(CUDACachingAllocator::memcpyAsync(
+         dst, dst_device.index(),
+         src, src_device.index(),
+         size, copy_stream, p2p_enabled));
++    #ifdef USE_MACA
++      }
++    #endif
+     }
+   } else {
+     if (same_neg) {
+       if (!same_conj) {

@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import psutil,json,time,subprocess
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out=root/'receipts/incident37-root-stream-dependencies-20261011-v1';d={'unix':time.time(),'driver_missing':not psutil.pid_exists(1749723),'ranks':[]}
+for f in (out/'result').glob('rank?.json'):
+ v=json.loads(f.read_bytes());d['ranks'].append({k:v.get(k) for k in ['rank','phase','unix','pid','actual_optimizer_steps','traceback']})
+for pattern in ['*root-native-stages.json','*native-dependencies.json']:
+ for f in (out/'result').glob(pattern):d[f.name]=json.loads(f.read_bytes())
+v=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());d['transport_environment']={k:x for k,x in v['environment'].items() if any(s in k for s in ['NCCL','MCCL','MACA','SDMA','TORCH','PYTORCH'])};print(json.dumps(d))
+PY

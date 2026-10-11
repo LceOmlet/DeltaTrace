@@ -1,0 +1,190 @@
+{
+  "unix": 1791723495.2949555,
+  "scope": "TextCraft incident37 frozen GPU weight corruption -> actor probability error -> native KL NaN. No credit formula change.",
+  "cause": {
+    "owner": "Installed torch 2.8.0+metax3.5.3.9 FSDPParamGroup.finalize_backward",
+    "event_interoperation": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-accelerator-event-interoperation-20261011-v1.json",
+      "bytes": 764,
+      "sha256": "4fec0514ef0a09f1b5a988325f6c768139dfa72ad71fad3e29bdf50f0d82ee56"
+    },
+    "mechanism": "FSDP passes CUDA Event to generic torch.accelerator Stream.wait_event. Direct integer ordering test fails on both GPUs while native CUDA Stream succeeds. The owner frees a mistargeted outstanding prefetch. Its layer0 collective output allocation overlaps the next root H2D temporary exactly at the wrong output row.",
+    "failed_row": {
+      "vocab_id": 159048,
+      "original_sha256": "4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a",
+      "wrong_layer0_payload_sha256": "137e443eab6c94ef47722c8395c83fc3e59468dd0ecdc1fe52390d91f739c2c4"
+    },
+    "failed_address": {
+      "root_H2D_base": 140194244198400,
+      "root_local_row_byte_offset": 285802496,
+      "layer0_collective_base": 140194462302208,
+      "layer0_rank0_payload_offset": 67698688,
+      "both_addresses": 140194530000896
+    },
+    "failing_native_stage_artifacts": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-root-stages-artifacts-fetch-20261011-v1.json",
+      "bytes": 10190,
+      "sha256": "73c0f80848822dc3c01dc3a8e809120056dea3db95b9bbb3c9d6e10bdf6ef936"
+    }
+  },
+  "fix": {
+    "lookup": "torch.accelerator.current_stream -> torch.cuda.current_stream",
+    "owner_body_copied": false,
+    "installed_packages_modified": false,
+    "device_wide_synchronize_added": false,
+    "GPU_arithmetic_added": false,
+    "numerical_formula_changes": false,
+    "activation": "Opt-in native Ray worker_process_setup_hook",
+    "files": [
+      {
+        "path": "experiments/rl/metax_fsdp_event_wait.py",
+        "bytes": 3172,
+        "sha256": "78eb717d787100850d8a42b9840bc9a17c334383c0349ef34ce7be88bd8425ee"
+      },
+      {
+        "path": "experiments/rl/launch_textcraft_eventwait.py",
+        "bytes": 1400,
+        "sha256": "2198cec336dc72049ad4012638f46cb51b17cb3a2e19ccf5d5c55eb274c77464"
+      }
+    ],
+    "candidate_original_code_SHA256": "f29d8303a7d522339cb829f5487f7b4322fed1d2dbf0ef1f7bfafa71726b87ff",
+    "candidate_patched_code_SHA256": "1609439cddb3ffa0b30e18fa55ad6119c1527e009515335eafca5b24dcb3abfc"
+  },
+  "verification": {
+    "original_incident_replay": [
+      {
+        "rank": 0,
+        "phase": "complete",
+        "microbatches": [
+          {
+            "index": 0,
+            "gradient_finite": true
+          },
+          {
+            "index": 1,
+            "gradient_finite": true,
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/incident37-metax-eventwait-owner-fix-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+            "sha256": "d1e5e375de3b7a6b781d4805bcc039e5f42a4ab16e6cc9dc591aee5283647e5d"
+          },
+          {
+            "index": 2,
+            "gradient_finite": true
+          },
+          {
+            "index": 3,
+            "gradient_finite": true
+          },
+          {
+            "index": 4,
+            "gradient_finite": true
+          },
+          {
+            "index": 5,
+            "gradient_finite": true
+          },
+          {
+            "index": 6,
+            "gradient_finite": true
+          },
+          {
+            "index": 7,
+            "gradient_finite": true
+          }
+        ],
+        "actual_optimizer_steps": 1
+      },
+      {
+        "rank": 1,
+        "phase": "complete",
+        "microbatches": [
+          {
+            "index": 0,
+            "gradient_finite": true
+          },
+          {
+            "index": 1,
+            "gradient_finite": true,
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/incident37-metax-eventwait-owner-fix-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+            "sha256": "72ed5ba8720e562a9191f0d039f612b86f9e18d1e7017b3a87c37b09048b2fb3"
+          },
+          {
+            "index": 2,
+            "gradient_finite": true
+          },
+          {
+            "index": 3,
+            "gradient_finite": true
+          },
+          {
+            "index": 4,
+            "gradient_finite": true
+          },
+          {
+            "index": 5,
+            "gradient_finite": true
+          },
+          {
+            "index": 6,
+            "gradient_finite": true
+          },
+          {
+            "index": 7,
+            "gradient_finite": true
+          }
+        ],
+        "actual_optimizer_steps": 1
+      }
+    ],
+    "native_stages": [
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-eventwait-fix-artifacts-20261011-v1/incident37-metax-eventwait-owner-fix-20261011-v1/result/rank0-root-native-stages.json",
+        "bytes": 2937,
+        "sha256": "65b36e4836e4221108d54d39c728fb3cfac72c5564bd966b565a7b70df0b1d78"
+      },
+      {
+        "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-eventwait-fix-artifacts-20261011-v1/incident37-metax-eventwait-owner-fix-20261011-v1/result/rank1-root-native-stages.json",
+        "bytes": 4466,
+        "sha256": "85f4b25bd3524a94a625a5f8b253df250c8a15fe993b888dd921b111d7a8444d"
+      }
+    ],
+    "artifacts": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-eventwait-fix-artifacts-fetch-20261011-v1.json",
+      "bytes": 30732,
+      "sha256": "a71d3c8c0317c898decf8574b229d2f86f81865d3baed29fb55c0e8a096fdf0b"
+    },
+    "production_hook_stdout": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-owner-fix-production-hook-20261011-v1.stdout.txt",
+      "bytes": 1510,
+      "sha256": "9a850a53b5d4dffd93c2e562c895331143acd5a27430640b95ca8b60626c4dea"
+    },
+    "criterion": "Exact native event ordering and exact frozen row bytes. Unchanged algorithm/DT arithmetic; no FA/FLA tolerance imported for memory corruption.",
+    "limits": [
+      "One corrected full incident replay, not evidence that formal training has completed. Prior finite unpatched replays do not constitute a repair. Long-run health remains to be observed.",
+      "Public v2.8 C++ source explains incompatible event layouts; no claim that a public newer MetaX commit is the installed binary.",
+      "The incident37 root is established; the first operator at iteration14 was not captured."
+    ]
+  },
+  "checkpoint_inspection": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-checkpoint25-CPU-inspection-20261011-v1.json",
+    "bytes": 160484,
+    "sha256": "4c0eb25656dcf0a4abedbb6cfcdc634777151a6720d2a70c4c15a3c842e9f976"
+  },
+  "resume": {
+    "decision": "Use original VERL complete checkpoint25; skipping NaN is not a restart justification.",
+    "original_optimizer_steps": 99,
+    "original_scheduler_last_epoch": 25,
+    "original_scheduler_step_count": 26,
+    "model_optimizer_scheduler_rng_data_owner": "Original VERL checkpoint manager and trainer",
+    "unchanged": {
+      "numerical_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+      "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+      "lora_rank": 8,
+      "lora_alpha": 16,
+      "per_card_microbatch": 4,
+      "total_microbatch": 8,
+      "formal_budget": 330
+    },
+    "deployed": false,
+    "actual_restoration_observed": false
+  }
+}

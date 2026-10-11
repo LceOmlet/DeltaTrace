@@ -1,0 +1,13 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,base64,hashlib,time,psutil,subprocess
+folder=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/incident37-root-native-stages-20261011-v1');files=[]
+for f in folder.rglob('*'):
+ if f.is_file() and len(f.relative_to(folder).parts)<=3 and f.stat().st_size<2000000 and (f.suffix in ['.py','.json','.txt','.log'] or f.name.endswith('-root-native-stages.pt')):files.append(f)
+d=dict(unix=time.time(),files=[dict(remote=str(f),sha256=hashlib.sha256(f.read_bytes()).hexdigest(),bytes=f.stat().st_size,data=base64.b64encode(f.read_bytes()).decode()) for f in files],processes=[])
+for pid in [1680387,1684171,1685805]:
+ try:p=psutil.Process(pid);d['processes'].append(dict(pid=pid,birth=p.create_time(),status=p.status()))
+ except psutil.NoSuchProcess:d['processes'].append(dict(pid=pid,missing=True))
+print(json.dumps(d))
+PY

@@ -1,0 +1,732 @@
+--- pytorch-v2.8.0
+
++++ public-newer-metax
+
+@@ -1087,16 +1087,22 @@
+
+   }
+   // Get environment variable.
+   auto nbEnv = c10::utils::check_env("TORCH_NCCL_USE_COMM_NONBLOCKING");
+ 
++#ifndef USE_MACA // temp solution
+   // 1st priority: Respect the user's setting
+   if (options_->config.blocking != NCCL_CONFIG_UNDEF_INT) {
+     useNonblocking_ = options_->config.blocking == 0;
+   }
+   // 2nd priority: Respect the environment variable
+   else if (nbEnv.has_value()) {
+     useNonblocking_ = nbEnv;
+   }
++#else
++  if (nbEnv.has_value()) {
++    useNonblocking_ = nbEnv.value();
++  }
++#endif
+   // 3rd priority: automatically use nonblocking if we are in eager init mode
+   // Note: this automatic selection is disabled in torch 2.7.1 to work around a
+   // hang in NCCL 2.26 in non-blocking mode. We can revisit if NCCL fixes the
+   // bug. See https://github.com/pytorch/pytorch/issues/153960
+@@ -4340,8 +4346,37 @@
+
+       opts.asyncOp,
+       profilingTitle);
+ }
+ 
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::allreduce_impl_sdma(
++    at::Tensor& tensor,
++    const char* profilingTitle,
++    const AllreduceOptions& opts) {
++  return collective(
++      tensor,
++      tensor,
++      [&](at::Tensor& input,
++          at::Tensor& output,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream) {
++        auto ncclDataType = getNcclDataType(input.scalar_type());
++        auto ncclReduceOp =
++            getNcclReduceOp(opts.reduceOp, input, ncclDataType, comm);
++        return mcclAllReduceExt(
++            input.data_ptr(),
++            output.data_ptr(),
++            input.numel(),
++            ncclDataType,
++            ncclReduceOp,
++            comm,
++            stream.stream());
++      },
++      OpType::ALLREDUCE,
++      profilingTitle);
++}
++#endif
++
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::allreduce(
+     std::vector<at::Tensor>& tensors,
+     const AllreduceOptions& opts) {
+   TORCH_CHECK(tensors.size() == 1, MULTI_DEVICE_ERROR_MSG);
+@@ -4387,8 +4422,60 @@
+
+ 
+   // avoidRecordStreams_ note: collective() will stash tensors.
+   return allreduce_impl(tensor, "nccl:all_reduce", opts);
+ }
++
++
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::allreduce_sdma(
++    std::vector<at::Tensor>& tensors,
++    const AllreduceOptions& opts) {
++  TORCH_CHECK(tensors.size() == 1, MULTI_DEVICE_ERROR_MSG);
++  auto tensor = tensors.back();
++  if (tensor.is_complex()) {
++    TORCH_CHECK(
++        complexViewAsRealAllowed(opts.reduceOp),
++        "all_reduce does not support",
++        opts.reduceOp,
++        "on complex tensors");
++    tensor = at::view_as_real(tensor);
++  }
++  check_gpu_single_tensor(tensor);
++
++  if (intraNodeComm_ != nullptr && opts.reduceOp == ReduceOp::SUM) {
++    using namespace intra_node_comm;
++    auto algo = intraNodeComm_->selectAllReduceAlgo(tensor);
++    if (algo != intra_node_comm::AllReduceAlgo::NONE) {
++      intraNodeComm_->allReduce(tensor, algo);
++      return c10::make_intrusive<IntraNodeCommWork>();
++    }
++  }
++  TORCH_CHECK(
++      !isFloat8Type(tensor.scalar_type()),
++      "Float8 dtypes are not currenlty supported for NCCL reductions");
++  // @lint-ignore CLANGTIDY
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqCollective_) + 1,
++          false), // seq + 1 to match collective
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      tensors, // inputTensors
++      tensors, // outputTensors
++      rank_, // rank
++      "allreduce", // collective name
++      tensor.numel(), // inNelems
++      tensor.numel(), // outNelems
++      tensor.scalar_type(), // dType
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSizes
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  // avoidRecordStreams_ note: collective() will stash tensors.
++  return allreduce_impl_sdma(tensor, "nccl:all_reduce", opts);
++}
++#endif
+ 
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::allreduce_coalesced(
+     std::vector<at::Tensor>& tensors,
+     const AllreduceCoalescedOptions& opts) {
+@@ -4440,8 +4527,63 @@
+
+       OpType::COALESCED,
+       opts.asyncOp,
+       "nccl:allreduce_coalesced");
+ }
++
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::allreduce_coalesced_sdma(
++    std::vector<at::Tensor>& tensors,
++    const AllreduceCoalescedOptions& opts) {
++  auto total_numel = check_gpu_tensors_same_device(tensors);
++  TORCH_CHECK(
++      !isFloat8Type(tensors.back().scalar_type()),
++      "Float8 dtypes are not currenlty supported for NCCL reductions");
++
++  // @lint-ignore CLANGTIDY
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqCollective_) + 1,
++          false), // seq + 1 to match collective and assume only one collective
++                  // in coalesed range
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      tensors, // inputTensors
++      tensors, // outputTensors
++      rank_, // rank
++      "allreduce_coalesced_sdma", // collective name
++      total_numel, // inNelems
++      total_numel, // outNelems
++      tensors[0].scalar_type(), // dType
++      // I'm not sure what in,outSplitSizes mean here.
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSizes
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  // avoidRecordStreams_ note: collective() will stash tensors.
++  return collectiveCoalesced(
++      tensors,
++      tensors,
++      [&](at::Tensor& input,
++          at::Tensor& output,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream) {
++        auto ncclDataType = getNcclDataType(input.scalar_type());
++        auto ncclReduceOp =
++            getNcclReduceOp(opts.reduceOp, input, ncclDataType, comm);
++        return mcclAllReduceExt(
++            input.data_ptr(),
++            output.data_ptr(),
++            input.numel(),
++            ncclDataType,
++            ncclReduceOp,
++            comm,
++            stream.stream());
++      },
++      OpType::COALESCED,
++      "nccl:allreduce_coalesced");
++}
++#endif
+ 
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::broadcast(
+     std::vector<at::Tensor>& tensors,
+     const BroadcastOptions& opts) {
+@@ -4779,8 +4921,53 @@
+
+       OpType::COALESCED,
+       opts.asyncOp,
+       "nccl:all_gather_into_tensor_coalesced");
+ }
++
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::allgather_into_tensor_coalesced_sdma(
++    std::vector<at::Tensor>& outputs,
++    std::vector<at::Tensor>& inputs,
++    const AllgatherOptions& opts) {
++  // @lint-ignore CLANGTIDY
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqCollective_) + 1,
++          false), // seq + 1 to match collective and assume only one collective
++                  // in coalesed range
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      inputs, // inputTensors
++      outputs, // outputTensors
++      rank_, // rank
++      "allgather_into_tensor_coalesced_sdma", // collective name
++      getTensorsNumel(inputs), // inNelems
++      getTensorsNumel(outputs), // outNelems
++      inputs[0].scalar_type(), // dType
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSizes
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  return collectiveCoalesced(
++      inputs,
++      outputs,
++      [&](at::Tensor& input,
++          at::Tensor& output,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream) {
++        return mcclAllGatherExt(
++            input.data_ptr(),
++            output.data_ptr(),
++            input.numel(),
++            getNcclDataType(input.scalar_type()),
++            comm,
++            stream.stream());
++      },
++      OpType::COALESCED,
++      "nccl:all_gather_into_tensor_coalesced");
++}
++#endif
+ 
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::reduce_scatter(
+     std::vector<at::Tensor>& outputTensors,
+     std::vector<std::vector<at::Tensor>>& inputTensors,
+@@ -4947,8 +5134,87 @@
+
+       opts.asyncOp,
+       "nccl:_reduce_scatter_base");
+ }
+ 
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::_reduce_scatter_base_sdma(
++    at::Tensor& outputTensor,
++    at::Tensor& inputTensor,
++    const ReduceScatterOptions& opts) {
++  if (inputTensor.dtype() != outputTensor.dtype()) {
++    C10_THROW_ERROR(
++        TypeError, "input tensor must be the same type as the output tensor.");
++  }
++
++  if (inputTensor.numel() != outputTensor.numel() * size_) {
++    C10_THROW_ERROR(
++        ValueError,
++        "input tensor must be the same size as output size times world size");
++  }
++
++  // @lint-ignore CLANGTIDY
++  const auto& tensor = outputTensor;
++  TORCH_CHECK(
++      !isFloat8Type(tensor.scalar_type()),
++      "Float8 dtypes are not currenlty supported for NCCL reductions");
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqCollective_) + 1,
++          false), // seq + 1 to match collective
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      inputTensor, // inputTensor
++      outputTensor, // outputTensor
++      rank_, // rank
++      "_reduce_scatter_base_sdma", // collective name
++      inputTensor.numel(), // inNelems
++      tensor.numel(), // outNelems
++      tensor.scalar_type(), // dtype
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSizes
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  // avoidRecordStreams_ note: collective() will stash inputs and outputs.
++  // Note 2: for asyncOp = false, we don't want to record streams because we
++  // know that the NCCL stream will join back to the "current" stream right
++  // after this op. So we might just as well keep the stream ownership of the
++  // input/output tensors unchanged. The benefit would be that the
++  // allocation/free of the tensors would look deterministic to the "current"
++  // stream so that the caching allocator can reuse memory pool for this stream
++  // in a clever way. This setting is added for libraries like FSDP which uses
++  // `reduce_scatter_tensor`.
++  bool avoidRecordStreams = avoidRecordStreams_ || (!opts.asyncOp);
++
++  return collective(
++      inputTensor,
++      outputTensor,
++      [&](at::Tensor& input,
++          at::Tensor& output,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream) {
++        if (!avoidRecordStreams) {
++          c10::cuda::CUDACachingAllocator::recordStream(
++              output.storage().data_ptr(), stream);
++        }
++        auto ncclDataType = getNcclDataType(input.scalar_type());
++        auto ncclReduceOp =
++            getNcclReduceOp(opts.reduceOp, input, ncclDataType, comm);
++        return mcclReduceScatterExt(
++            input.data_ptr(),
++            output.data_ptr(),
++            output.numel(),
++            ncclDataType,
++            ncclReduceOp,
++            comm,
++            stream.stream());
++      },
++      OpType::_REDUCE_SCATTER_BASE,
++      opts.asyncOp,
++      "nccl:_reduce_scatter_base");
++}
++#endif
++
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::reduce_scatter_tensor_coalesced(
+     std::vector<at::Tensor>& outputs,
+     std::vector<at::Tensor>& inputs,
+     const ReduceScatterOptions& opts) {
+@@ -5029,8 +5295,65 @@
+
+              "This can potentially cause a hang if this rank to GPU mapping is incorrect. ",
+              "You can specify device_id in init_process_group() to force use of a particular device.");
+   return static_cast<c10::DeviceIndex>(devIdx);
+ }
++
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::reduce_scatter_tensor_coalesced_sdma(
++    std::vector<at::Tensor>& outputs,
++    std::vector<at::Tensor>& inputs,
++    const ReduceScatterOptions& opts) {
++  TORCH_CHECK(
++      !isFloat8Type(inputs.back().scalar_type()),
++      "Float8 dtypes are not currenlty supported for NCCL reductions");
++
++  // @lint-ignore CLANGTIDY
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqCollective_) + 1,
++          false), // seq + 1 to match collective and assume only one collective
++                  // in coalesed range
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      inputs, // inputTensors
++      outputs, // outputTensors
++      rank_, // rank
++      "reduce_scatter_tensor_coalesced_sdma", // collective name
++      getTensorsNumel(inputs), // inNelems
++      getTensorsNumel(outputs), // outNelems
++      inputs[0].scalar_type(), // dType
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSizes
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  return collectiveCoalesced(
++      inputs,
++      outputs,
++      [&](at::Tensor& input,
++          at::Tensor& output,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream) {
++        if (!avoidRecordStreams_) {
++          c10::cuda::CUDACachingAllocator::recordStream(
++              output.storage().data_ptr(), stream);
++        }
++        auto ncclDataType = getNcclDataType(input.scalar_type());
++        auto ncclReduceOp =
++            getNcclReduceOp(opts.reduceOp, input, ncclDataType, comm);
++        return mcclReduceScatterExt(
++            input.data_ptr(),
++            output.data_ptr(),
++            output.numel(),
++            ncclDataType,
++            ncclReduceOp,
++            comm,
++            stream.stream());
++      },
++      OpType::COALESCED,
++      "nccl:reduce_scatter_tensor_coalesced");
++}
++#endif
+ 
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::barrier(const BarrierOptions& opts) {
+   RECORD_PARAM_COMMS(
+       std::make_tuple(
+@@ -5199,8 +5522,119 @@
+
+         "nccl:all_to_all");
+   }
+ }
+ 
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::alltoall_base_sdma(
++    at::Tensor& outputTensor,
++    at::Tensor& inputTensor,
++    std::vector<int64_t>& outputSplitSizes,
++    std::vector<int64_t>& inputSplitSizes,
++    const AllToAllOptions& /* unused */) {
++  check_gpu_single_tensor(outputTensor);
++  check_gpu_single_tensor(inputTensor);
++  if (outputSplitSizes.empty() && inputSplitSizes.empty()) {
++    RECORD_PARAM_COMMS_DATA(
++        std::make_tuple(
++            static_cast<int64_t>(seqCollective_) + 1,
++            false), // seq + 1 to match collective
++        std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++        inputTensor, // inputTensor
++        outputTensor, // outputTensor
++        rank_, // rank
++        "all_to_all", // collective name
++        inputTensor.numel(), // inNelems
++        outputTensor.numel(), // outNelems
++        inputTensor.scalar_type(), // dType
++        std::vector<int64_t>(), // inSplitSizes
++        std::vector<int64_t>(), // outSplitSizes
++        globalRankStart_, // globalRankStart_
++        globalRankStride_, // globalRankStride_
++        this->getSize()); // worldSize
++
++    // avoidRecordStreams_ note: collective() will stash inputTensors and
++    // outputTensors.
++    return collective(
++        inputTensor,
++        outputTensor,
++        [&](at::Tensor& input,
++            at::Tensor& output,
++            ncclComm_t comm,
++            at::cuda::CUDAStream& stream) {
++          // See [Sync Streams].
++          if (!avoidRecordStreams_) {
++            c10::cuda::CUDACachingAllocator::recordStream(
++                output.storage().data_ptr(), stream);
++          }
++          torch::cuda::nccl::all2all_single_equal_split_sdma(
++              input, output, this->getSize(), comm, stream);
++          return ncclSuccess;
++        },
++        OpType::ALLTOALL_BASE,
++        "nccl:all_to_all");
++  } else {
++    c10d::checkSplitSizes(inputSplitSizes, inputTensor, size_);
++    c10d::checkSplitSizes(outputSplitSizes, outputTensor, size_);
++
++    RECORD_PARAM_COMMS_DATA(
++        std::make_tuple(
++            static_cast<int64_t>(seqCollective_) + 1,
++            false), // seq + 1 to match collective
++        std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++        inputTensor, // inputTensor
++        outputTensor, // outputTensor
++        rank_, // rank
++        "all_to_allv", // collective name
++        inputTensor.numel(), // inNelems
++        outputTensor.numel(), // outNelems
++        inputTensor.scalar_type(), // dType
++        inputSplitSizes, // inSplitSizes
++        outputSplitSizes, // outSplitSizes
++        globalRankStart_, // globalRankStart_
++        globalRankStride_, // globalRankStride_
++        this->getSize()); // worldSize
++
++    // avoidRecordStreams_ note: collective() will stash inputTensors and
++    // outputTensors.
++    return collective(
++        inputTensor,
++        outputTensor,
++        [&](at::Tensor& input,
++            at::Tensor& output,
++            ncclComm_t comm,
++            at::cuda::CUDAStream& stream) {
++          std::vector<size_t> send_lengths(size_);
++          std::vector<size_t> recv_lengths(size_);
++          std::vector<size_t> send_offsets(size_);
++          std::vector<size_t> recv_offsets(size_);
++          c10d::computeLengthsAndOffsets(
++              inputSplitSizes, input, &send_lengths, &send_offsets);
++          c10d::computeLengthsAndOffsets(
++              outputSplitSizes, output, &recv_lengths, &recv_offsets);
++          // See [Sync Streams].
++          if (!avoidRecordStreams_) {
++            c10::cuda::CUDACachingAllocator::recordStream(
++                output.storage().data_ptr(), stream);
++          }
++          torch::cuda::nccl::all2all_single_unequal_split_sdma(
++              input.data_ptr(),
++              send_lengths.data(),
++              send_offsets.data(),
++              output.data_ptr(),
++              recv_lengths.data(),
++              recv_offsets.data(),
++              input.element_size(),
++              input.scalar_type(),
++              comm,
++              stream);
++          return ncclSuccess;
++        },
++        OpType::ALLTOALL_BASE,
++        "nccl:all_to_all");
++  }
++}
++#endif
++
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::alltoall(
+     std::vector<at::Tensor>& outputTensors,
+     std::vector<at::Tensor>& inputTensors,
+     const AllToAllOptions& opts) {
+@@ -5309,8 +5743,60 @@
+
+       c10::str("nccl:send ", rank_, "->", dstRank).c_str());
+   return ret;
+ }
+ 
++
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::send_ext(
++    std::vector<at::Tensor>& tensors,
++    int dstRank,
++    int /* unused */) {
++  TORCH_CHECK(tensors.size() == 1, MULTI_DEVICE_ERROR_MSG);
++  // @lint-ignore CLANGTIDY
++  auto tensor = tensors.back();
++  check_gpu_single_tensor(tensor, true);
++
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqP2P_) + (coalescing_state_ & CoalP2P ? 0 : 1),
++          true), // the 1st p2p in coalesced range sets coalescing_state_ and
++                 // bumps seqP2P_
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      tensors, // inputTensors
++      tensors, // outputTensors
++      dstRank, // dst rank
++      "send", // collective name
++      tensor.numel(), // inNelems
++      tensor.numel(), // outNelems
++      tensor.scalar_type(), // dType
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSizes
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  auto ret = pointToPoint(
++      tensor,
++      [&](at::Tensor& input,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream,
++          int dst) {
++        auto ncclDataType = getNcclDataType(input.scalar_type());
++        return mcclSendExt(
++            input.data_ptr(),
++            input.numel(),
++            ncclDataType,
++            dst,
++            comm,
++            stream.stream());
++      },
++      dstRank,
++      OpType::SEND,
++      c10::str("nccl:send ", rank_, "->", dstRank).c_str());
++  return ret;
++}
++#endif
++
+ c10::intrusive_ptr<Work> ProcessGroupNCCL::recv(
+     std::vector<at::Tensor>& tensors,
+     int srcRank,
+     int /* unused */) {
+@@ -5356,8 +5842,59 @@
+
+       OpType::RECV,
+       c10::str("nccl:recv ", rank_, "<-", srcRank).c_str());
+   return ret;
+ }
++
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::recv_ext(
++    std::vector<at::Tensor>& tensors,
++    int srcRank,
++    int /* unused */) {
++  TORCH_CHECK(tensors.size() == 1, MULTI_DEVICE_ERROR_MSG);
++  // @lint-ignore CLANGTIDY
++  auto tensor = tensors.back();
++  check_gpu_single_tensor(tensor, true);
++
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqP2P_) + (coalescing_state_ & CoalP2P ? 0 : 1),
++          true), // the 1st p2p in coalesced range sets coalescing_state_ and
++                 // bumps seqP2P_
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      tensors, // inputTensors
++      tensors, // outputTensors
++      srcRank, // src rank
++      "recv", // collective name
++      tensor.numel(), // inNelems
++      tensor.numel(), // outNelems
++      tensor.scalar_type(), // dType
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSizes
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  auto ret = pointToPoint(
++      tensor,
++      [&](at::Tensor& output,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream,
++          int src) {
++        auto ncclDataType = getNcclDataType(output.scalar_type());
++        return mcclRecvExt(
++            output.data_ptr(),
++            output.numel(),
++            ncclDataType,
++            src,
++            comm,
++            stream.stream());
++      },
++      srcRank,
++      OpType::RECV,
++      c10::str("nccl:recv ", rank_, "<-", srcRank).c_str());
++  return ret;
++}
++#endif
+ 
+ void ProcessGroupNCCL::groupStart() {
+   C10D_NCCL_CHECK(ncclGroupStart(), std::nullopt);
+   ++ncclActiveGroupCounter_;
+@@ -5631,8 +6168,81 @@
+
+       opts.asyncOp,
+       "nccl:_all_gather_base");
+ }
+ 
++#ifdef USE_MACA
++c10::intrusive_ptr<Work> ProcessGroupNCCL::_allgather_base_sdma(
++    at::Tensor& output_tensor,
++    at::Tensor& input_tensor,
++    const AllgatherOptions& opts) {
++  check_gpu_single_tensor(input_tensor);
++  check_gpu_single_tensor(output_tensor);
++
++  if (input_tensor.dtype() != output_tensor.dtype()) {
++    C10_THROW_ERROR(
++        TypeError, "output tensor must have the same type as input tensor");
++  }
++
++  if (input_tensor.numel() * size_ != output_tensor.numel()) {
++    C10_THROW_ERROR(
++        ValueError,
++        "output tensor size must be equal to world_size times input tensor size");
++  }
++
++  RECORD_PARAM_COMMS_DATA(
++      std::make_tuple(
++          static_cast<int64_t>(seqCollective_) + 1,
++          false), // seq + 1 to match collective
++      std::make_tuple(pg_uid_, pg_desc_), // PG name tuple
++      input_tensor, // inputTensors
++      output_tensor, // outputTensors
++      rank_, // rank
++      "_allgather_base_sdma", // collective name
++      input_tensor.numel(), // inNelems
++      output_tensor.numel(), // outNelems
++      output_tensor.scalar_type(), // dType
++      std::vector<int64_t>(), // inSplitSizes
++      std::vector<int64_t>(), // outSplitSize
++      globalRankStart_, // globalRankStart_
++      globalRankStride_, // globalRankStride_
++      this->getSize()); // worldSize
++
++  // avoidRecordStreams_ note: collective() will stash inputs and outputs.
++  // Note 2: for asyncOp = false, we don't want to record streams because we
++  // know that the NCCL stream will join back to the "current" stream right
++  // after this op. So we might just as well keep the stream ownership of the
++  // input/output tensors unchanged. The benefit would be that the
++  // allocation/free of the tensors would look deterministic to the "current"
++  // stream so that the caching allocator can reuse memory pool for this stream
++  // in a clever way. This setting is added for libraries like FSDP which uses
++  // `all_gather_into_tensor`.
++  bool avoidRecordStreams = avoidRecordStreams_ || (!opts.asyncOp);
++
++  return collective(
++      input_tensor,
++      output_tensor,
++      [&](at::Tensor& input,
++          at::Tensor& output,
++          ncclComm_t comm,
++          at::cuda::CUDAStream& stream) {
++        if (!avoidRecordStreams) {
++          c10::cuda::CUDACachingAllocator::recordStream(
++              output.storage().data_ptr(), stream);
++        }
++        return mcclAllGatherExt(
++            input.data_ptr(),
++            output.data_ptr(),
++            input.numel(),
++            getNcclDataType(input.scalar_type()),
++            comm,
++            stream.stream());
++      },
++      OpType::_ALLGATHER_BASE,
++      opts.asyncOp,
++      "nccl:_all_gather_base");
++}
++#endif
++
+ // Create a memory allocator for NCCL. This allocator is used to allocate memory
+ // that supports NVLink Sharp functionality. This allocator is later pybinded to
+ // python, so that users can use it to create MemPool. For example:
+ // >>> pool = torch.cuda.MemPool(backend.mem_allocator)

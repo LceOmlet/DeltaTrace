@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=4,5 "$VENV_PYTHON" - <<'PY'
+import torch,psutil,json,time,subprocess,re,traceback
+assert not psutil.pid_exists(1749723)
+m=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10,check=True).stdout;assert not re.search(r'^\|\s+[45]\s+\d+\s+',m.split('Process:',1)[-1],re.M)
+r=[]
+for device in [0,1]:
+ torch.cuda.set_device(device)
+ for kind in ['cuda','accelerator']:
+  result=dict(device=device,kind=kind)
+  try:
+   x=torch.zeros(4096,device='cuda',dtype=torch.int32);torch.cuda.synchronize();other=torch.cuda.Stream()
+   with torch.cuda.stream(other):
+    torch.cuda._sleep(10000000);x.fill_(7);event=other.record_event()
+   consumer=torch.cuda.current_stream() if kind=='cuda' else torch.accelerator.current_stream()
+   consumer.wait_event(event)
+   value=x.cpu();result.update(all_equal=bool((value==7).all()),event_complete=event.query(),consumer_device=str(consumer.device),consumer_stream_id=consumer.stream_id)
+  except Exception as e:result.update(error=repr(e),traceback=traceback.format_exc())
+  r.append(result)
+print(json.dumps(dict(unix=time.time(),torch=torch.__version__,results=r,model_calls=0,scope='Existing cuda.Event waited by native CUDA Stream versus generic torch.accelerator Stream; exact int check, no numerical tolerance.')))
+PY

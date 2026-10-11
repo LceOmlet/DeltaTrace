@@ -1,0 +1,37 @@
+Traceback (most recent call last):
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/source/run_original_incident_after_replay_rpc.py", line 50, in shutdown_after_observation
+    results = group.execute_all_sync('execute_with_func_generator', read_CPU_source, str(output))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/ray/base.py", line 572, in execute_all_sync
+    return ray.get(self.execute_all_async(method_name, *args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/auto_init_hook.py", line 22, in auto_init_wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/client_mode_hook.py", line 104, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py", line 2967, in get
+    values, debugger_breakpoint = worker.get_objects(
+                                  ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py", line 1015, in get_objects
+    raise value.as_instanceof_cause()
+ray.exceptions.RayTaskError(FileNotFoundError): [36mray::NativeExceptionObserved.execute_with_func_generator()[39m (pid=1582448, ip=10.200.112.15, actor_id=bcfe61950771b2446804500401000000, repr=<replay_native_incident37_exception_capture_20261011.NativeExceptionObserved object at 0x7f2ac641d010>)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py", line 534, in inner
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/worker.py", line 319, in execute_with_func_generator
+    ret_proto = func(self, *args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/source/observe_CPU_source_after_replay_rpc.py", line 29, in read_CPU_source
+    'report': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/pathlib.py", line 1019, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/incident37-two-group-after-RPC-20261011-v2/result/rank1-after-native-report-CPU-source.json'

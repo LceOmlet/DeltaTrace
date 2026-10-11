@@ -1,0 +1,15 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,base64,hashlib,time,psutil
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');files=[]
+for name in ['incident37-owner-copy-operators-20261011-v1','incident37-two-group-after-RPC-20261011-v1','incident37-two-group-after-RPC-20261011-v2']:
+ folder=root/name
+ for f in folder.rglob('*'):
+  if f.is_file() and len(f.relative_to(folder).parts)<=3 and f.suffix in ['.py','.json','.txt','.log'] and f.stat().st_size<2000000:files.append(f)
+for rank in [0,1]:
+ for suffix in ['json','pt']:
+  f=Path('/root')/f'rank{rank}-after-native-report-CPU-source.{suffix}'
+  if f.is_file():files.append(f)
+print(json.dumps(dict(unix=time.time(),files=[dict(remote=str(f),sha256=hashlib.sha256(f.read_bytes()).hexdigest(),bytes=f.stat().st_size,data=base64.b64encode(f.read_bytes()).decode()) for f in files])))
+PY
