@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,subprocess,os,sys,time,pickle,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-allocator-window-20261011-v2';original=root/'receipts/textcraft-native-incident37-allocator-20261011-v1';formal=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());script=original/'source/analyze_native_incident37_allocator_20261011.py';assert hashlib.sha256(script.read_bytes()).hexdigest()=='70a7bd02e4a8661627b62cf3b3e31f48820a8eecf64e694fe244d54cf82fa773'
+env=dict(os.environ,CUDA_VISIBLE_DEVICES='-1',PYTHONPATH=formal['pythonpath']);r=subprocess.run([sys.executable,str(script),'--job',str(job),'--output',str(job/'allocator-analysis-v1.json')],env=env,capture_output=True,timeout=35);(job/'allocator-analysis.stdout').write_bytes(r.stdout);(job/'allocator-analysis.stderr').write_bytes(r.stderr);r.check_returncode();report=json.loads(r.stdout);report['retained_window']=[]
+for rank in [0,1]:
+ packet=json.loads((job/'result'/f'rank{rank}-allocator-window.json').read_bytes());assert packet['errors']==[] and packet['source_sha256']=='60372faff2735eaa026b918cf885c91431f73b460d6cb6adaea2657f9e5315ba'
+ events=[json.loads(x) for x in (job/'result'/f'rank{rank}-phases.jsonl').read_text().splitlines()];bracket=[next(x['unix'] for x in events if x.get('microbatch')==i) for i in [0,1]];snap=pickle.loads((job/'result'/f'rank{rank}-native-allocator.pickle').read_bytes());row=dict(rank=rank,selected_head_bracket=bracket,history=[])
+ for device,trace in enumerate(snap['device_traces']):
+  stamps=[x['time_us']/1e6 for x in trace if 'time_us' in x];row['history'].append(dict(device=device,count=len(trace),first_time=min(stamps),last_time=max(stamps),events_in_selected_bracket=sum(bracket[0]<=t<=bracket[1] for t in stamps),ring_reached_cap=len(trace)>=packet['max_entries']))
+ report['retained_window'].append(row)
+ del snap
+(job/'allocator-window-analysis-v1.json').write_text(json.dumps(report,indent=2)+chr(10))
+summary={k:v for k,v in report.items()if k!='ranks'};summary['ranks']=[]
+for row in report['ranks']:
+ small={k:v for k,v in row.items()if k!='address_histories'};small['address_histories']=[dict(row_pointer=h['row_pointer'],event_count=len(h['events']),current_blocks=h['current_blocks'],events=[{k:v for k,v in e.items()if k!='frames'}for e in h['events']])for h in row['address_histories']];summary['ranks'].append(small)
+print(json.dumps(summary))
+PY

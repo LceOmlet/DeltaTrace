@@ -1,0 +1,19 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,subprocess,os,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-allocator-window-20261011-v2';original=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';formal=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());script=original/'source/compare_native_incident37_GEMM_rows_20261011.py';assert hashlib.sha256(script.read_bytes()).hexdigest()=='926292cae52daaa356084b3f26cd00e86f57a517c82bb63e74b630304d3fbe66'
+env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='-1';env['PYTHONPATH']=':'.join([str(original/'source'),str(root/'receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source'),formal['pythonpath']]);p=subprocess.run([os.environ['VENV_PYTHON'],str(script),'--result',str(job/'result'),'--output',str(job/'GEMM-competing-weight-comparison-v1.json')],env=env,capture_output=True,timeout=30);(job/'comparison.stdout').write_bytes(p.stdout);(job/'comparison.stderr').write_bytes(p.stderr);p.check_returncode();comp=json.loads((job/'GEMM-competing-weight-comparison-v1.json').read_bytes());out={'unix':time.time(),'CPU_comparison':{k:v for k,v in comp.items()if k!='ranks'},'ranks':[{k:v for k,v in row.items()if k!='positions'}for row in comp['ranks']],'compiler_binding':[]}
+for trace in(job/'torch-trace').glob('*'):
+ codes={};metrics=[]
+ for lineno,line in enumerate(trace.read_text(errors='replace').splitlines(),1):
+  if not any(x in line for x in ['"inductor_output_code"','"compilation_metrics"']):continue
+  data=json.loads(line[line.index('{'):]);key=(data.get('rank'),data.get('frame_id'),data.get('frame_compile_id'))
+  if 'inductor_output_code'in data:codes[key]=dict(path=data['inductor_output_code']['filename'],trace_line=lineno)
+  if 'compilation_metrics'in data and data['compilation_metrics'].get('co_name','').startswith('_fused_linear_for_ppo_'):metrics.append((key,lineno,data['compilation_metrics']))
+ for key,line,metric in metrics:
+  code=codes.get(key);row=dict(trace=str(trace),rank=key[0],frame_id=key[1],frame_compile_id=key[2],metric_line=line,co_name=metric['co_name'],fail_type=metric.get('fail_type'),code=code)
+  if code:
+   data=pathlib.Path(code['path']).read_bytes();row['code'].update(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+  out['compiler_binding'].append(row)
+(job/'CPU-comparison-and-compiler-binding-v1.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY
