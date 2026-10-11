@@ -1,0 +1,827 @@
+{
+  "unix": 1791717770.508165,
+  "scope": "TextCraft incident37 actor NaN debugging only. SQL/AppWorld/GRPO remain canceled. CPU diagnostics and one already-launched incident replay; no formal restart, checkpoint restore, backup, or production repair.",
+  "diagnostic_evidence_commit": "bcb7871bc7b2d831fd21f8bcfe8e0fbfa513ab5b",
+  "official_RPC_source_commit": "47efffc9929f3b43e5bf3847843d0e0d9b93a366",
+  "previous_goal_turn": "progress: original native recorder evidence and official post-replay RPC prepared; current continuation observed the live handle and collected terminal evidence.",
+  "formal": {
+    "iterations": 37,
+    "budget": 330,
+    "stopped": true,
+    "restarted": false,
+    "driver_identity": {
+      "pid": 982372,
+      "birth": 1791553809.84,
+      "missing": true
+    },
+    "source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "numerical_runtime": "fla-early-output-scale-20261009-v1",
+    "numerical_patch_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+    "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "recorded_local_patch_commit": "e32920333da443aa6eaa523e10b2c9445bf913bc",
+    "source_record": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-saved-GEMM-address-and-formal-source-20261011-v1.json",
+      "bytes": 801426,
+      "sha256": "9deeacefd3a174bf25b0b435af5f5101e2efa86843be1ef33d57db4523c008b5"
+    },
+    "startup_options": {
+      "ray_init.num_cpus": 16,
+      "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+      "actor_rollout_ref.model.trust_remote_code": true,
+      "actor_rollout_ref.model.lora_rank": 8,
+      "actor_rollout_ref.model.lora_alpha": 16,
+      "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+      "actor_rollout_ref.model.enable_activation_offload": true,
+      "actor_rollout_ref.model.use_fused_kernels": true,
+      "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+      "actor_rollout_ref.actor.strategy": "fsdp2",
+      "actor_rollout_ref.actor.ppo_mini_batch_size": 64,
+      "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+      "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+      "actor_rollout_ref.actor.use_torch_compile": true,
+      "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+      "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+      "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+      "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+      "actor_rollout_ref.rollout.name": "vllm",
+      "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+      "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+      "actor_rollout_ref.rollout.load_format": "safetensors",
+      "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+      "actor_rollout_ref.rollout.max_model_len": 32768,
+      "actor_rollout_ref.rollout.max_num_seqs": 32,
+      "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+      "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+        "image": 0,
+        "video": 0
+      },
+      "trainer.n_gpus_per_node": 2,
+      "trainer.nnodes": 1,
+      "+ray_init.runtime_env.env_vars.VERL_RELEASE_UNUSED_HOST_CACHE": "1",
+      "algorithm.adv_estimator": "deltatrace",
+      "data.train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/train.parquet",
+      "data.val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/validation.parquet",
+      "data.train_batch_size": 32,
+      "data.val_batch_size": 32,
+      "data.max_prompt_length": 32256,
+      "data.max_response_length": 512,
+      "data.return_raw_chat": true,
+      "data.truncation": "error",
+      "+data.dataloader_num_workers": 0,
+      "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+      "actor_rollout_ref.actor.ppo_epochs": 1,
+      "actor_rollout_ref.actor.optim.lr": 1e-06,
+      "actor_rollout_ref.actor.use_kl_loss": true,
+      "actor_rollout_ref.actor.kl_loss_coef": 0.001,
+      "actor_rollout_ref.actor.kl_loss_type": "low_var_kl",
+      "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 4,
+      "actor_rollout_ref.rollout.multi_turn.enable": true,
+      "actor_rollout_ref.rollout.temperature": 1.0,
+      "actor_rollout_ref.rollout.top_p": 1,
+      "actor_rollout_ref.rollout.val_kwargs.do_sample": true,
+      "actor_rollout_ref.rollout.val_kwargs.temperature": 1,
+      "actor_rollout_ref.rollout.val_kwargs.top_p": 1,
+      "env.env_name": "TextCraft",
+      "env.rollout.n": 8,
+      "env.max_steps": 30,
+      "+env.factory._target_": "textcraft_environment_entry.make_textcraft_environments",
+      "+env.textcraft": {
+        "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner",
+        "client": {
+          "task_name": "textcraft",
+          "env_addr": "http://127.0.0.1:36005",
+          "max_retries": 10,
+          "max_rounds": 10,
+          "timeout": 600
+        },
+        "eval_client": {
+          "task_name": "textcraft",
+          "env_addr": "http://127.0.0.1:36005",
+          "max_retries": 10,
+          "max_rounds": 30,
+          "timeout": 500
+        }
+      },
+      "trainer.logger": [
+        "console"
+      ],
+      "trainer.project_name": "deltatrace_official_environments",
+      "trainer.experiment_name": "dt-TextCraft",
+      "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/textcraft-dt/checkpoints",
+      "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/textcraft-dt/rollouts",
+      "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/textcraft-dt/validation",
+      "trainer.max_actor_ckpt_to_keep": 2,
+      "trainer.total_epochs": 30,
+      "trainer.total_training_steps": null,
+      "trainer.save_freq": 25,
+      "trainer.test_freq": -1,
+      "trainer.val_before_train": false,
+      "trainer.resume_mode": "disable"
+    },
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "actor_microbatch_per_card": 4,
+    "DT_batch_per_card": 4,
+    "physical_formal_GPUs": [
+      2,
+      3
+    ]
+  },
+  "replay": {
+    "job": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1",
+    "driver": {
+      "pid": 1194923,
+      "birth": 1791716422.58,
+      "terminal": true
+    },
+    "physical_GPUs": [
+      4,
+      5
+    ],
+    "workers": [
+      {
+        "rank": 0,
+        "pid": 1199486,
+        "birth": 1791716447.39,
+        "phase": "complete",
+        "actual_optimizer_steps": 1,
+        "microbatches": [
+          {
+            "index": 0,
+            "gradient_finite": true
+          },
+          {
+            "index": 1,
+            "gradient_finite": true,
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+            "sha256": "d1e5e375de3b7a6b781d4805bcc039e5f42a4ab16e6cc9dc591aee5283647e5d"
+          },
+          {
+            "index": 2,
+            "gradient_finite": true
+          },
+          {
+            "index": 3,
+            "gradient_finite": true
+          },
+          {
+            "index": 4,
+            "gradient_finite": true
+          },
+          {
+            "index": 5,
+            "gradient_finite": true
+          },
+          {
+            "index": 6,
+            "gradient_finite": true
+          },
+          {
+            "index": 7,
+            "gradient_finite": true
+          }
+        ],
+        "native_metrics": {
+          "actor/kl_loss": 0.0021290970034897327,
+          "actor/kl_coef": 0.001,
+          "actor/pg_loss": [
+            -0.5521467328071594,
+            0.19481821358203888,
+            -0.4265478551387787,
+            -0.2838374078273773,
+            -0.011320638470351696,
+            -0.034070730209350586,
+            -0.6518580913543701,
+            0.040908072143793106
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.08627868443727493
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 18.961461067199707,
+          "perf/max_memory_reserved_gb": 25.48046875,
+          "perf/cpu_memory_used_gb": 147.87521743774414,
+          "actor/lr": 1e-06
+        },
+        "actual_imported_files": {
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py": "e48ed0021391b2d6c1473714d9e90ab6d44bfed6026697572dc8f0596e40ccb9"
+        },
+        "torch_peak_allocated_bytes": 20359713792,
+        "torch_peak_reserved_bytes": 27359444992
+      },
+      {
+        "rank": 1,
+        "pid": 1201144,
+        "birth": 1791716462.4,
+        "phase": "complete",
+        "actual_optimizer_steps": 1,
+        "microbatches": [
+          {
+            "index": 0,
+            "gradient_finite": true
+          },
+          {
+            "index": 1,
+            "gradient_finite": true,
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+            "sha256": "204cf38dc52e382d02638111d463561c3f8894a7d2d1db99e57d7fec77eecac7"
+          },
+          {
+            "index": 2,
+            "gradient_finite": true
+          },
+          {
+            "index": 3,
+            "gradient_finite": true
+          },
+          {
+            "index": 4,
+            "gradient_finite": true
+          },
+          {
+            "index": 5,
+            "gradient_finite": true
+          },
+          {
+            "index": 6,
+            "gradient_finite": true
+          },
+          {
+            "index": 7,
+            "gradient_finite": true
+          }
+        ],
+        "native_metrics": {
+          "actor/kl_loss": 0.004016753286123276,
+          "actor/kl_coef": 0.001,
+          "actor/pg_loss": [
+            -0.872452974319458,
+            0.31061431765556335,
+            -0.4179854094982147,
+            -0.013182184658944607,
+            -0.13999640941619873,
+            -0.4005894660949707,
+            -0.8389249444007874,
+            -0.2805844843387604
+          ],
+          "actor/pg_clipfrac": [
+            0.0,
+            0.00017798344197217375,
+            0.000581733591388911,
+            0.0006268282304517925,
+            0.00021666125394403934,
+            0.0004449388070497662,
+            0.0,
+            0.0
+          ],
+          "actor/ppo_kl": [
+            -0.0019207753939554095,
+            -0.0007899948977865279,
+            0.0008261537295766175,
+            -0.0006078987498767674,
+            -0.0001305002224398777,
+            7.657318201381713e-05,
+            -0.00014265441859606653,
+            0.0002158803545171395
+          ],
+          "actor/pg_clipfrac_lower": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "actor/grad_norm": [
+            0.09854967147111893
+          ],
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 14.434098720550537,
+          "perf/max_memory_reserved_gb": 22.662109375,
+          "perf/cpu_memory_used_gb": 149.28672409057617,
+          "actor/lr": 1e-06
+        },
+        "actual_imported_files": {
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/experimental/torch_functional.py": "e285c3353bddbffae38df346b44014ee5038b606531874ddbeb10ee1241f77de",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py": "e48ed0021391b2d6c1473714d9e90ab6d44bfed6026697572dc8f0596e40ccb9"
+        },
+        "torch_peak_allocated_bytes": 15498495488,
+        "torch_peak_reserved_bytes": 24333254656
+      }
+    ],
+    "interpretation": "Both ranks completed 8 finite-gradient B4 microbatches and one shared original diagnostic optimizer update. Failure was not reproduced; this is not a production fix or formal progress.",
+    "failure_reproduced": false,
+    "job_identity": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-after-replay-RPC-downloaded-20261011-v1/job.json",
+      "bytes": 9774,
+      "sha256": "75957d401ea54bbe568d59d6f5c6efde79ecc84212c56963caa006b7defeca2a"
+    },
+    "original_binding": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-after-replay-RPC-downloaded-20261011-v1/original-binding-check.json",
+      "bytes": 3772,
+      "sha256": "6b95f1c59d8bed62ae49554a6efc016ab58ddc26cfc66578dc2867b176d5133c"
+    },
+    "CPU_import_preflight": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-after-replay-RPC-downloaded-20261011-v1/CPU-import-preflight.json",
+      "bytes": 4933,
+      "sha256": "69aa916d7663de3fc52c589173f312e268f1772737241b299bf587dfca928b26"
+    },
+    "actual_VERL_RPC_sources": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-20261011-v1/source/run_original_incident_native_recorder.py",
+        "sha256": "15bf3d5443c1db47fb6e907f47abce288ef6f55ae3e7cef1a0ca0d54191d4d1b"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/worker.py",
+        "sha256": "4863a3d69016ab7b2ab97053dfad7bb1c4bdaacccdf9404696b2a8386f75f17b"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/ray/base.py",
+        "sha256": "bcdb6ca4e7e9e9392338157012e988dc39e12a85f4de540b6e66ffe3fd914ef4"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-20261011-v1/source/dump_native_collectives_after_report.py",
+        "sha256": "4e6e437119e1a9f1c232cef3d01f9eca3d1a8b4cb6c2411ac2de097698cad4c2"
+      }
+    ],
+    "official_RPC_result": {
+      "results": [
+        {
+          "rank": 0,
+          "captured": true,
+          "original_phase": "complete",
+          "report": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank0-after-native-report-CPU-source.json",
+          "sha256": "2669ceff77f5bca90cee4fc83c5f5df3b139273baa8e0e0aece0032113f1ed5e"
+        },
+        {
+          "rank": 1,
+          "captured": true,
+          "original_phase": "complete",
+          "report": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank1-after-native-report-CPU-source.json",
+          "sha256": "49acfcb25fea0fa423552edfe86fc391c4959432530ccd9fea40c5883176ce92"
+        }
+      ],
+      "production_changes": 0,
+      "pre_terminal_worker_changes": 0
+    },
+    "official_RPC_receipt": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-after-replay-RPC-downloaded-20261011-v1/result/after-replay-CPU-source-RPC.json",
+      "bytes": 849,
+      "sha256": "66d116faf2eabfc84e0145ddd6b1536f74df5f54dd9412d0433e2a2e6ec3d1a4"
+    },
+    "terminal_process_checks": [
+      {
+        "pid": 1194923,
+        "birth": 1791716422.58,
+        "missing": true
+      },
+      {
+        "pid": 1199486,
+        "birth": 1791716447.39,
+        "missing": true
+      },
+      {
+        "pid": 1201144,
+        "birth": 1791716462.4,
+        "missing": true
+      }
+    ],
+    "terminal_status": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-after-replay-RPC-status-20261011-v1-1791716892.json",
+      "bytes": 16366,
+      "sha256": "d1e2845c6a3fe27d837ba90dc14d15d66f9167df3f129a40cef4bd2af5930f4a"
+    },
+    "host_available_bytes": 1022928797696,
+    "cgroup_bytes": 254629031936,
+    "physical_resource_note": "Terminal mx-smi showed all eight devices at 858 MiB and no process; this is not a peak. The earlier live physical snapshot is retained separately.",
+    "live_status": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-after-replay-RPC-status-20261011-v1-1791716809.json",
+      "bytes": 41771,
+      "sha256": "e2a6e1b4afc1bafc459ea4f182e08382b9803f77c590bad07834dbc684354b9c"
+    },
+    "CPU_source": {
+      "unix": 1791717047.9478786,
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-CPU-source-20261011-v2/source/compare_frozen_CPU_source.py",
+      "source_sha256": "878ea70b3670621440ef3b82abbb066b8bdda3b19e04bbb1b39d7f51c3d3b006",
+      "reference": {
+        "row": 159048,
+        "key": "lm_head.weight",
+        "file": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/model.safetensors-00001-of-00004.safetensors",
+        "dtype": "torch.bfloat16",
+        "shape": [
+          4096
+        ],
+        "sha256": "4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a"
+      },
+      "ranks": [
+        {
+          "rank": 0,
+          "report_errors": [],
+          "CPU_source_rows": [
+            {
+              "source": "_sharded_param_data",
+              "device": "cpu",
+              "shape": [
+                508559360
+              ],
+              "dtype": "torch.bfloat16",
+              "pointer": 140437429944320,
+              "not_owned_on_this_rank": true
+            },
+            {
+              "source": "_sharded_local_tensor",
+              "device": "cpu",
+              "shape": [
+                124160,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "pointer": 140437429944320,
+              "not_owned_on_this_rank": true
+            }
+          ],
+          "artifact": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank0-after-native-report-CPU-source.pt",
+            "bytes": 2075,
+            "sha256": "c5b7f19a542bf852e5827a4fb97a313e0c530b34ebfab358a6f41d0e8a6aace6"
+          }
+        },
+        {
+          "rank": 1,
+          "report_errors": [],
+          "CPU_source_rows": [
+            {
+              "source": "_sharded_param_data",
+              "device": "cpu",
+              "shape": [
+                508559360
+              ],
+              "dtype": "torch.bfloat16",
+              "pointer": 140234536779776,
+              "local_row": 34888,
+              "sha256": "4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a",
+              "exact_original_weight": true,
+              "changed_elements": 0,
+              "max_abs_difference": 0.0
+            },
+            {
+              "source": "_sharded_local_tensor",
+              "device": "cpu",
+              "shape": [
+                124160,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "pointer": 140234536779776,
+              "local_row": 34888,
+              "sha256": "4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a",
+              "exact_original_weight": true,
+              "changed_elements": 0,
+              "max_abs_difference": 0.0
+            }
+          ],
+          "artifact": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank1-after-native-report-CPU-source.pt",
+            "bytes": 19085,
+            "sha256": "1ac2c4cc1f8543d3981fdd1900d253fc34116a2b6fe1fd11bf65d66dd75dd87a"
+          }
+        }
+      ],
+      "seconds": 1.5280339539749548,
+      "peak_RSS_bytes": 542187520,
+      "CUDA_initialized": false,
+      "model_calls": 0,
+      "DT_calls": 0,
+      "optimizer_steps": 0,
+      "production_changes": 0,
+      "numerical_tolerance": null,
+      "scope": "The fixed incident row is frozen and must match its original dtype bytes. This verifies CPU source after the saved fault only; no claim about unobserved GPU transport stages or other rows."
+    },
+    "actual_actor_old_comparison": {
+      "unix": 1791717055.3640158,
+      "rows": [
+        {
+          "rank": 0,
+          "label": "failed_native",
+          "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+          "sha256": "35af4eb1de2e24ccd23af9768309d84bb2f7e95a908a4a5e1cf1b4821edb4237",
+          "action_tokens": 9933,
+          "exact_matches": 86,
+          "nonfinite": 0,
+          "max_abs_difference": 163.42505553364754,
+          "L2_difference": 2204.7349528295395,
+          "quantiles": {
+            "0.0": -163.42505553364754,
+            "0.01": -94.27721964836121,
+            "0.1": -34.70601870398968,
+            "0.5": -0.002820969397362205,
+            "0.9": 0.0012001514434814534,
+            "0.99": 0.087738995552063,
+            "1.0": 0.44042491912841797
+          }
+        },
+        {
+          "rank": 0,
+          "label": "finite_packed_observer",
+          "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-root-copy-boundary-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+          "sha256": "6007a6f5d23247db41e0e9d1a870e2f06167277ca8ca3bf2980fcec81acdc7dc",
+          "action_tokens": 9933,
+          "exact_matches": 271,
+          "nonfinite": 0,
+          "max_abs_difference": 0.4404268264770508,
+          "L2_difference": 2.972515345597808,
+          "quantiles": {
+            "0.0": -0.39960145950317383,
+            "0.01": -0.11033388137817382,
+            "0.1": -0.010287486016750336,
+            "0.5": 0.0,
+            "0.9": 0.011670351028442483,
+            "0.99": 0.10558126449584962,
+            "1.0": 0.4404268264770508
+          }
+        },
+        {
+          "rank": 0,
+          "label": "finite_after_replay_RPC",
+          "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+          "sha256": "d1e5e375de3b7a6b781d4805bcc039e5f42a4ab16e6cc9dc591aee5283647e5d",
+          "action_tokens": 9933,
+          "exact_matches": 9933,
+          "nonfinite": 0,
+          "max_abs_difference": 0.0,
+          "L2_difference": 0.0,
+          "quantiles": {
+            "0.0": 0.0,
+            "0.01": 0.0,
+            "0.1": 0.0,
+            "0.5": 0.0,
+            "0.9": 0.0,
+            "0.99": 0.0,
+            "1.0": 0.0
+          }
+        },
+        {
+          "rank": 1,
+          "label": "failed_native",
+          "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+          "sha256": "3c33199c4ce27ca0b0cba29afab3aa9d32008e8db1b354cf0adc17d737c40040",
+          "action_tokens": 11237,
+          "exact_matches": 75,
+          "nonfinite": 0,
+          "max_abs_difference": 149.1153769493103,
+          "L2_difference": 2249.041027372655,
+          "quantiles": {
+            "0.0": -149.1153769493103,
+            "0.01": -90.07242146372795,
+            "0.1": -32.91870322227478,
+            "0.5": -0.0056149959564208984,
+            "0.9": 0.0022550784051418244,
+            "0.99": 0.09266676425933833,
+            "1.0": 0.23868036270141602
+          }
+        },
+        {
+          "rank": 1,
+          "label": "finite_packed_observer",
+          "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-root-copy-boundary-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+          "sha256": "204cf38dc52e382d02638111d463561c3f8894a7d2d1db99e57d7fec77eecac7",
+          "action_tokens": 11237,
+          "exact_matches": 204,
+          "nonfinite": 0,
+          "max_abs_difference": 0.2494964599609375,
+          "L2_difference": 3.210558599597489,
+          "quantiles": {
+            "0.0": -0.2494964599609375,
+            "0.01": -0.10831597328186035,
+            "0.1": -0.014102104306221006,
+            "0.5": 0.0,
+            "0.9": 0.01711196899414061,
+            "0.99": 0.1140787696838378,
+            "1.0": 0.2388455867767334
+          }
+        },
+        {
+          "rank": 1,
+          "label": "finite_after_replay_RPC",
+          "artifact": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+          "sha256": "204cf38dc52e382d02638111d463561c3f8894a7d2d1db99e57d7fec77eecac7",
+          "action_tokens": 11237,
+          "exact_matches": 204,
+          "nonfinite": 0,
+          "max_abs_difference": 0.2494964599609375,
+          "L2_difference": 3.210558599597489,
+          "quantiles": {
+            "0.0": -0.2494964599609375,
+            "0.01": -0.10831597328186035,
+            "0.1": -0.014102104306221006,
+            "0.5": 0.0,
+            "0.9": 0.01711196899414061,
+            "0.99": 0.1140787696838378,
+            "1.0": 0.2388455867767334
+          }
+        }
+      ],
+      "seconds": 0.07255541096674278,
+      "peak_RSS_bytes": 554561536,
+      "CUDA_initialized": false,
+      "new_tolerance": null,
+      "model_calls": 0,
+      "production_changes": 0,
+      "scope": "Descriptive comparison of saved same-policy pre-first-step log probabilities, not an independent numerical acceptance test."
+    },
+    "native_recorder_environment": {
+      "TORCH_NCCL_TRACE_BUFFER_SIZE": "2000",
+      "TORCH_NCCL_TRACE_CPP_STACK": "0",
+      "TORCH_NCCL_ENABLE_TIMING": "0",
+      "DT_INCIDENT_AFTER_REPORT_RESULT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result",
+      "DT_INCIDENT_AFTER_REPORT_HOOK_RECORD": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/hook"
+    },
+    "production_changes": 0
+  },
+  "localization": {
+    "previous_byte_proven_wrong_row": 159048,
+    "previous_wrong_weight_sha256": "137e443eab6c94ef47722c8395c83fc3e59468dd0ecdc1fe52390d91f739c2c4",
+    "original_weight_sha256": "4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a",
+    "same_hidden_native_comparison": {
+      "unix": 1791717408.396758,
+      "rows": [
+        {
+          "rank": 0,
+          "selected_positions": 128,
+          "same_hidden_positions": 0,
+          "selection_exact": true,
+          "sources": [
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-20261011-v1/result/rank0-native-GEMM-rows.pt",
+              "sha256": "c6e4d0ba625cb98e74de6689796d00b59fa8b6a7a0f140eb0638910a19cc04e8"
+            },
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank0-native-GEMM-rows.pt",
+              "sha256": "bd7403c7d03a3f152db3bd48709d275ad517e9b4c22e7dd7a1989c3ec594c288"
+            }
+          ]
+        },
+        {
+          "rank": 1,
+          "selected_positions": 119,
+          "same_hidden_positions": 119,
+          "selection_exact": true,
+          "sources": [
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-20261011-v1/result/rank1-native-GEMM-rows.pt",
+              "sha256": "b04023b4a8e768094a86ba44776401a82da4e2252c1e53343319f8de1e6a0d46"
+            },
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1/result/rank1-native-GEMM-rows.pt",
+              "sha256": "c509209298ea78eabc4ca529e0ca95ff59a886f350e8141c5cebbcde56497a43"
+            }
+          ],
+          "changed_vocab_rows": 9499,
+          "first_changed": 150784,
+          "last_changed_exclusive": 160353,
+          "span_rows": 9569,
+          "logits_exact_outside_span": true,
+          "changed_rows_per_position_min": 9482,
+          "changed_rows_per_position_max": 9496,
+          "maximum_abs_difference": 179.625,
+          "top": [
+            {
+              "vocab_id": 159048,
+              "max_abs_difference": 179.625,
+              "changed_positions": 119
+            },
+            {
+              "vocab_id": 150788,
+              "max_abs_difference": 44.453125,
+              "changed_positions": 119
+            },
+            {
+              "vocab_id": 150787,
+              "max_abs_difference": 29.921875,
+              "changed_positions": 119
+            },
+            {
+              "vocab_id": 150784,
+              "max_abs_difference": 29.5859375,
+              "changed_positions": 119
+            },
+            {
+              "vocab_id": 150786,
+              "max_abs_difference": 27.5,
+              "changed_positions": 119
+            },
+            {
+              "vocab_id": 159029,
+              "max_abs_difference": 23.875,
+              "changed_positions": 119
+            },
+            {
+              "vocab_id": 156553,
+              "max_abs_difference": 22.46875,
+              "changed_positions": 119
+            },
+            {
+              "vocab_id": 150785,
+              "max_abs_difference": 22.3125,
+              "changed_positions": 119
+            }
+          ],
+          "artifact": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/incident37-saved-full-vocab-CPU-20261011-v1/rank1-same-hidden-all-selected.pt",
+            "bytes": 2990192,
+            "sha256": "8ca3f593c6ab757ddaf53bd60724d341ae16831ebd499dd958857fd1e0f0794f"
+          }
+        }
+      ],
+      "scope": "All saved selected positions with byte-identical actual hidden vectors. These positions were selected by the old recorder, not a representative task sample. Native logits only, no tolerance or physical allocation-boundary inference.",
+      "seconds": 0.44697384402388707,
+      "peak_RSS_bytes": 1171288064,
+      "CUDA_initialized": false,
+      "GPU_calls": 0,
+      "model_calls": 0,
+      "production_changes": 0
+    },
+    "full_vocab_FP64_diagnostic": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-saved-full-vocab-CPU-20261011-v1.json",
+      "bytes": 86837,
+      "sha256": "770766896e6a6b11e3cb83c895119f880ee262d9163d264620d37e67739931a9"
+    },
+    "neighborhood_diagnostic": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-saved-logit-neighborhood-CPU-20261011-v1.json",
+      "bytes": 300357,
+      "sha256": "2fb3ec4cf98ecd74ce6e5b64b9a541a74e32ccba834153cfb7a7bcce45db31ae"
+    },
+    "full_vocab_compute": {
+      "seconds": 3.2426591370021924,
+      "peak_RSS_bytes": 2700750848,
+      "CUDA_initialized": false
+    },
+    "conclusion": "For all 119 saved selected rank1 positions, actual hidden vectors match exactly between failed and finite replays. Native-logit changes occur in 9499 vocabulary dimensions within [150784,160353); all dimensions outside this interval are exactly identical. This localizes output discrepancies to a region rather than the one previously captured row. Rank0 hidden vectors differ and are excluded from this exact-input claim.",
+    "limits": [
+      "The 119 positions came from the pre-existing incident recorder selection, not a representative task sample.",
+      "A changed output dimension does not directly reveal every changed weight element or the writing operation.",
+      "The vocabulary interval is not a physical allocation boundary, communication chunk, or proof of a race.",
+      "Post-replay CPU source is pristine in this finite replay only; failed-time CPU source remains unavailable.",
+      "FP64-dot comparisons are descriptive and are not a replacement for official acceptance tolerances."
+    ],
+    "next_evidence_need": "Use the localized vocabulary interval and actual saved operand addresses to inspect the owning FSDP copy/all-gather/parameter storage path; do not deploy a synchronization/clamp/allocator workaround without evidence of the responsible operation."
+  },
+  "artifacts": {
+    "replay_manifest": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-after-replay-RPC-artifacts-20261011-v1.json",
+      "bytes": 11799,
+      "sha256": "7eb80da25158cc5cf59c7e021dce5e2c93a8f7a45fb8b28e0c83c58e9a0a3791"
+    },
+    "replay_files": 29,
+    "replay_bytes": 7043332,
+    "CPU_extent_manifest": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-saved-logit-extent-artifacts-20261011-v1.json",
+      "bytes": 4345,
+      "sha256": "351b8a19e3864ef20e4ea6dfe8bd224d2e8050275a37625c23e7723245f7dc8f"
+    },
+    "CPU_extent_files": 9,
+    "CPU_extent_bytes": 11359819,
+    "all_downloaded_SHA256_verified": true
+  },
+  "method_changes": 0,
+  "production_changes": 0,
+  "new_numerical_tolerance": null,
+  "faulty_writer_identified": false,
+  "repair_accepted": false,
+  "formal_restarted": false
+}
