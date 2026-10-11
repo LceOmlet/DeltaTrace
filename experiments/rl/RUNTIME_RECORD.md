@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原失败正对照入口的故障后CPU采集启动；不改worker
+
+supervisor3613664/出生1791699572.1，driver3613884/出生1791699573.86，物理4/5。
+外部v3源13ed72fe复用v2采集，仅去掉TORCH_TRACE以对齐先前失败正对照环境；
+原352/782/3f/e48、正式源1c08b57与配置9327字节/SHA2b170445保持。进程按birth
+确认存活，driver实际环境无TRACE/sanitizer/preload/launch-blocking，尚未取得失败CPU源。
+不加worker import/hook/值读取，不在NaN之前发信号；仍只在真实logp梯度非有限已
+保存之后读CPU锁页分片。正式37/330停止，LoRA8/16、B4、DT及PPO不改。
+CPU另核对异常64字节块在775份/9.653B参数的BF16值与280项norm dtype/加一变换，
+无精确匹配；4.123秒/峰RSS5922160640，无CUDA/模型调用。只排除这些特定指纹来源，
+不据未命中推断哪个GPU算子写坏了W。新诊断不是修复或正式进度。
+见[原入口启动、配置及CPU指纹范围](results_textcraft_incident37_external_fault_CPU_original_entry_20261011.json)。
+
+
 ## 2026-10-11 原生记录保留第二head时间窗；诊断有限，正式仍停止
 
 原driver3434319与actor3438510/3439990均已按出生确认退出；两rank各8个B4梯度

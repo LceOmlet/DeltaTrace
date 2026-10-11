@@ -1,0 +1,31 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,torch,time,resource,hashlib
+from safetensors import safe_open
+start=time.perf_counter();torch.set_num_threads(4)
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1'
+g=torch.load(job/'result/rank0-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);bad=g['competing_weights'][g['metadata']['copied_indices'][0]].clone();assert hashlib.sha256(bad.view(torch.uint8).numpy().tobytes()).hexdigest()=='137e443eab6c94ef47722c8395c83fc3e59468dd0ecdc1fe52390d91f739c2c4'
+model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');idx=json.loads((model/'model.safetensors.index.json').read_bytes());out=dict(unix=time.time(),scope='CPU saved failure row against recorded checkpoint norm transforms and abnormal block; no model execution',GPU_calls=0,model_calls=0,DT_calls=0,optimizer_steps=0,production_changes=0,bad_sha256=hashlib.sha256(bad.view(torch.uint8).numpy().tobytes()).hexdigest(),index_sha256=hashlib.sha256((model/'model.safetensors.index.json').read_bytes()).hexdigest(),norm_transforms=[],high_block_matches=[],searched_parameters=0,searched_elements=0)
+needle=bad[320:352]
+for file in sorted(set(idx['weight_map'].values())):
+ with safe_open(model/file,framework='pt',device='cpu') as f:
+  for name in f.keys():
+   x=f.get_tensor(name);out['searched_parameters']+=1;out['searched_elements']+=x.numel()
+   if x.ndim==1 and 'norm' in name:
+    for label,z in [('original',x.float()),('Qwen_plus_one',1+x.float())]:
+     for dtype in [torch.bfloat16,torch.float16]:
+      q=z.to(dtype);target=bad if dtype==torch.bfloat16 else bad.view(torch.float16)
+      if q.numel()==4096:out['norm_transforms'].append(dict(name=name,transform=label,dtype=str(dtype),exact=bool(torch.equal(q,target)),squared_error=float((q.double()-target.double()).square().sum())))
+   flat=x.to(torch.bfloat16).reshape(-1)
+   for offset in range(0,flat.numel(),8<<20):
+    piece=flat[offset:min(flat.numel(),offset+(8<<20)+31)];hits=torch.where(piece==needle[0])[0];hits=hits[(hits<(8<<20))&(hits+32<=piece.numel())]
+    for i in range(1,32):
+     if not hits.numel():break
+     hits=hits[piece[hits+i]==needle[i]]
+    for h in hits.tolist():out['high_block_matches'].append(dict(name=name,file=file,shape=list(x.shape),dtype=str(x.dtype),flat_offset=offset+h,matched_elements=32))
+   del x,flat
+assert out['searched_parameters']==len(idx['weight_map'])
+out['norm_transform_count']=len(out['norm_transforms']);out['norm_exact_matches']=[r for r in out['norm_transforms'] if r['exact']];out['nearest_norm_transforms']=sorted(out.pop('norm_transforms'),key=lambda x:x['squared_error'])[:8]
+out.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized())
+p=root/'receipts/textcraft-native-incident37-weight-producer-fingerprints-20261011-v1.json';p.write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY
