@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,os,sys,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-allocator-20261011-v1';source=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='-1';env['PYTHONPATH']=':'.join([str(job/'source'),str(root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source'),str(root/'receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source'),source['pythonpath']])
+for rank in range(2):
+ p=job/f'result/rank{rank}-native-allocator.json';print(json.dumps({'native_allocator':json.loads(p.read_bytes())}))
+cmd=[sys.executable,str(job/'source/analyze_native_incident37_allocator_20261011.py'),'--job',str(job),'--output',str(job/'allocator-analysis-v1.json')];r=subprocess.run(cmd,env=env,capture_output=True,timeout=30);(job/'allocator-analysis-CPU.stdout.json').write_bytes(r.stdout);(job/'allocator-analysis-CPU.stderr.txt').write_bytes(r.stderr);print(json.dumps({'command':cmd,'exit':r.returncode,'stderr':r.stderr.decode(errors='replace')[-2000:]}))
+if r.returncode==0:
+ x=json.loads(r.stdout);out={k:v for k,v in x.items() if k!='ranks'};out['ranks']=[]
+ for row in x['ranks']:
+  z={k:v for k,v in row.items() if k!='address_histories'};z['address_histories']=[]
+  for h in row.get('address_histories',[]):
+   z['address_histories'].append({'row_pointer':h['row_pointer'],'event_count':len(h['events']),'current_blocks':h['current_blocks'],'events':[dict(**{k:v for k,v in v.items() if k!='frames'},frames=v.get('frames',[])[-8:]) for v in h['events']]})
+  out['ranks'].append(z)
+ print(json.dumps(out))
+PY

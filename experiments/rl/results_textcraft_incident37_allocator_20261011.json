@@ -1,0 +1,2128 @@
+{
+  "status": "Native allocator diagnostic completed without reproducing wrong weight; no production repair",
+  "observed_unix": 1791680865.960586,
+  "recording_parent_commit": "445f8aec1c5065f95df4fdbe7e21433187664f76",
+  "formal": {
+    "stopped": true,
+    "recorded_iterations": 37,
+    "budget": 330,
+    "restarted": false,
+    "checkpoint_restored": false
+  },
+  "production_changes": 0,
+  "new_numerical_tolerance": null,
+  "diagnostic_job": {
+    "unix": 1791680075.0932436,
+    "pid": 1568818,
+    "birth": 1791680074.73,
+    "command": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+      "--source",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json",
+      "--output",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result"
+    ],
+    "formal_source_sha256": "1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658",
+    "original_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+    "original_sha256": "e48ed0021391b2d6c1473714d9e90ab6d44bfed6026697572dc8f0596e40ccb9",
+    "wrapper_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+    "wrapper_sha256": "4e75e023d31810a006a465499c42cdc3d4b0f0318e7ab3fed2d1508886f4fd52",
+    "async_source_sha256": "782db0e8548f7cfb12bcf9c24271400da895b8bcb9e008eb3813f9014a0e9cc2",
+    "exception_capture_sha256": "3f4942a9c5135eb1d52ae1393d3fba82f46fa28cdf99509d5f2606da8a8e4f23",
+    "GEMM_source_sha256": "35262c5946fe86989425a68bbdba4414fd22ee13e000f404ef6c45a89889d3f8",
+    "physical_GPUs": [
+      4,
+      5
+    ],
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/driver.log",
+    "result": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result",
+    "prelaunch_physical_gpu": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 08:54:34 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "host_available_before": 1024653443072,
+    "formal_training_restarted": false,
+    "scope": "Original saved incident replay. Native torch allocator history, max60000 events and Python stacks, only during original update_actor. Compose unchanged GEMM352; native snapshot only after update exits. No extra tensor copies, model/DT/GEMM/collective, pre-exit synchronization or parameter writes. No production change; finite replay is not a repair."
+  },
+  "CPU_binding": {
+    "actual_chains": {
+      "replay_incident": [
+        {
+          "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+          "line": 449
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+          "line": 33
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+          "line": 28
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+          "line": 530
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+          "line": 39
+        }
+      ],
+      "update_actor": [
+        {
+          "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+          "line": 449
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+          "line": 29
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/capture_native_incident37_GEMM_rows_20261011.py",
+          "line": 30
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+          "line": 33
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+          "line": 530
+        },
+        {
+          "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+          "line": 612
+        }
+      ]
+    },
+    "actual_binding_verified": true,
+    "unix": 1791680035.7532768,
+    "source_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+    "source_sha256": "4e75e023d31810a006a465499c42cdc3d4b0f0318e7ab3fed2d1508886f4fd52",
+    "GEMM_source_sha256": "35262c5946fe86989425a68bbdba4414fd22ee13e000f404ef6c45a89889d3f8",
+    "async_source_sha256": "782db0e8548f7cfb12bcf9c24271400da895b8bcb9e008eb3813f9014a0e9cc2",
+    "exception_wrapper_sha256": "3f4942a9c5135eb1d52ae1393d3fba82f46fa28cdf99509d5f2606da8a8e4f23",
+    "original_source_sha256": "e48ed0021391b2d6c1473714d9e90ab6d44bfed6026697572dc8f0596e40ccb9",
+    "memory_owner": {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "sha256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d",
+      "history_signature": "(enabled: Optional[str] = 'all', context: Optional[str] = 'all', stacks: str = 'all', max_entries: int = 9223372036854775807, device: 'Device' = None, clear_history: bool = False, compile_context: bool = False, global_record_annotations: bool = False)"
+    },
+    "cuda_initialized": false,
+    "peak_rss_bytes": 914616320,
+    "scope": "CPU Ray binding and installed native allocator owner only; no GPU/model/DT/loss execution."
+  },
+  "memory_owner": [
+    {
+      "name": "_record_memory_history",
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "sha256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d",
+      "signature": "(enabled: Optional[str] = 'all', context: Optional[str] = 'all', stacks: str = 'all', max_entries: int = 9223372036854775807, device: 'Device' = None, clear_history: bool = False, compile_context: bool = False, global_record_annotations: bool = False)",
+      "source": "def _record_memory_history(\n    enabled: Literal[None, \"state\", \"all\"] = \"all\", *args, **kwargs\n) -> None:\n    \"\"\"Enable recording of stack traces associated with memory\n    allocations, so you can tell what allocated any piece of memory in\n    :func:`torch.cuda.memory._snapshot()`.\n\n    In addition to keeping stack traces with each current allocation and free,\n    this will also enable recording of a history of all alloc/free events.\n\n    Use :func:`torch.cuda.memory._snapshot()` to retrieve this information,\n    and the tools in `_memory_viz.py` to visualize snapshots.\n\n    Buffer behavior\n    ---------------\n\n    This will store up to `max_entries` instances of `TraceEntry` when enabled.\n    Python trace collection defaults to `sys.maxsize`, meaning long-running\n    or indefinitely running jobs should set a reasonable limit to avoid excessive\n    memory use. Expect each entry to be several KB.\n\n    Longer running workflows or those with smaller `max_entries` values will only\n    store the last accumulated `max_entries` entries, meaning new entries overwrite\n    older entries.\n\n    C++ implementation for reference to ring buffer implemenation:\n\n    .. code-block:: cpp\n\n        if (record_history) {\n          if (alloc_trace->size() < alloc_trace_max_entries_) {\n            alloc_trace->emplace_back(te);\n          } else {\n            (*alloc_trace)[alloc_trace_next++] = te;\n            if (alloc_trace_next == alloc_trace_max_entries_) {\n              alloc_trace_next = 0;\n            }\n          }\n        }\n\n    Latency impact\n    --------------\n\n    The Python trace collection is fast (2us per trace), so you may consider\n    enabling this on production jobs if you anticipate ever having to debug\n    memory issues.\n\n    C++ trace collection is also fast (~50ns/frame), which for many typical programs\n    works out to ~2us per trace, but can vary depending on stack depth.\n\n    Args:\n        enabled (Literal[None, \"state\", \"all\"], optional):\n            `None`, disable recording memory history.\n            `\"state\"`, keep information for currenly allocated memory.\n            `\"all\"`, additionally keep a history of all alloc/free calls.\n            Defaults to \"all\".\n        context (Literal[None, \"state\", \"alloc\", \"all\"], optional):\n            `None`, Do not record any tracebacks.\n            `\"state\"`, Record tracebacks for currently allocated memory.\n            `\"alloc\"`, additionally keep tracebacks for alloc calls.\n            `\"all\"`, additionally keep tracebacks for free calls.\n            Defaults to \"all\".\n        stacks (Literal[\"python\", \"all\"], optional):\n            `\"python\"`, include Python, TorchScript, and inductor frames in tracebacks\n            `\"all\"`, additionally include C++ frames\n            Defaults to \"all\".\n        max_entries (int, optional): Keep a maximum of `max_entries`\n            alloc/free events in the recorded history recorded.\n    \"\"\"\n    if isinstance(enabled, bool):\n        return _record_memory_history_legacy(enabled, *args, **kwargs)\n    else:\n        return _record_memory_history_impl(enabled, *args, **kwargs)\n"
+    },
+    {
+      "name": "_snapshot",
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "sha256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d",
+      "signature": "(device: 'Device' = None)",
+      "source": "def _snapshot(device: \"Device\" = None):\n    \"\"\"Save a snapshot of CUDA memory state at the time it was called.\n\n    The state is represented as a dictionary with the following structure.\n\n    .. code-block:: python\n\n        class Snapshot(TypedDict):\n            segments : List[Segment]\n            device_traces: List[List[TraceEntry]]\n\n        class Segment(TypedDict):\n            # Segments are memory returned from a cudaMalloc call.\n            # The size of reserved memory is the sum of all Segments.\n            # Segments are cached and reused for future allocations.\n            # If the reuse is smaller than the segment, the segment\n            # is split into more then one Block.\n            # empty_cache() frees Segments that are entirely inactive.\n            address: int\n            total_size: int #  cudaMalloc'd size of segment\n            stream: int\n            segment_type: Literal['small', 'large'] # 'large' (>1MB)\n            allocated_size: int # size of memory in use\n            active_size: int # size of memory in use or in active_awaiting_free state\n            blocks : List[Block]\n\n        class Block(TypedDict):\n            # A piece of memory returned from the allocator, or\n            # current cached but inactive.\n            size: int\n            requested_size: int # size requested during malloc, may be smaller than\n                                # size due to rounding\n            address: int\n            state: Literal['active_allocated', # used by a tensor\n                        'active_awaiting_free', # waiting for another stream to finish using\n                                                # this, then it will become free\n                        'inactive',] # free for reuse\n            frames: List[Frame] # stack trace from where the allocation occurred\n\n        class Frame(TypedDict):\n                filename: str\n                line: int\n                name: str\n\n        class TraceEntry(TypedDict):\n            # When `torch.cuda.memory._record_memory_history()` is enabled,\n            # the snapshot will contain TraceEntry objects that record each\n            # action the allocator took.\n            action: Literal[\n            'alloc'  # memory allocated\n            'free_requested', # the allocated received a call to free memory\n            'free_completed', # the memory that was requested to be freed is now\n                            # able to be used in future allocation calls\n            'segment_alloc', # the caching allocator ask cudaMalloc for more memory\n                            # and added it as a segment in its cache\n            'segment_free',  # the caching allocator called cudaFree to return memory\n                            # to cuda possibly trying free up memory to\n                            # allocate more segments or because empty_caches was called\n            'oom',          # the allocator threw an OOM exception. 'size' is\n                            # the requested number of bytes that did not succeed\n            'snapshot'      # the allocator generated a memory snapshot\n                            # useful to coorelate a previously taken\n                            # snapshot with this trace\n            ]\n            addr: int # not present for OOM\n            frames: List[Frame]\n            size: int\n            stream: int\n            device_free: int # only present for OOM, the amount of\n                            # memory cuda still reports to be free\n\n    Returns:\n        The Snapshot dictionary object\n    \"\"\"\n    return _C._cuda_memorySnapshot(None)\n"
+    },
+    {
+      "name": "_dump_snapshot",
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "sha256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d",
+      "signature": "(filename='dump_snapshot.pickle')",
+      "source": "def _dump_snapshot(filename=\"dump_snapshot.pickle\"):\n    \"\"\"\n    Save a pickled version of the `torch.memory._snapshot()` dictionary to a file.\n\n    This file can be opened by the interactive snapshot viewer at pytorch.org/memory_viz\n\n    Snapshot file sizes scale with `max_entries` and stack trace depth per entry,\n    with several KB per entry. These can easily be in the GB range for longer running\n    workflows with large `max_entries`.\n\n    Args:\n        filename (str, optional): Name of the file to create. Defaults to \"dump_snapshot.pickle\".\n    \"\"\"\n    s = _snapshot()\n    with open(filename, \"wb\") as f:\n        pickle.dump(s, f)\n"
+    }
+  ],
+  "unchanged_production": {
+    "numerical_source": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+    "GDN_sha256": "7c06d5e0a4d6c00c13483dadd27d6389e25eee7868a05666d2d1faeaa2d62656",
+    "LoRA_rank": 8,
+    "LoRA_alpha": 16,
+    "microbatch_per_GPU": 4,
+    "two_GPU_microbatch": 8,
+    "Q_V_A": "PLAN unchanged",
+    "PPO": "Original deployed VERL owners unchanged"
+  },
+  "allocator_analysis": {
+    "unix": 1791680520.0910954,
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/analyze_native_incident37_allocator_20261011.py",
+    "source_sha256": "70a7bd02e4a8661627b62cf3b3e31f48820a8eecf64e694fe244d54cf82fa773",
+    "GPU_calls": 0,
+    "model_calls": 0,
+    "DT_calls": 0,
+    "production_changes": 0,
+    "new_numerical_tolerance": null,
+    "ranks": [
+      {
+        "rank": 0,
+        "unavailable": [],
+        "phase": "complete",
+        "optimizer_steps": 1,
+        "snapshot_bytes": 8242240,
+        "snapshot_sha256": "9ff4337d146d8d2fa281871f40e3a9ec005fe74f20564c5428ba3068b104120f",
+        "native_mm_calls": 42,
+        "W_pointers": [
+          139394350579712
+        ],
+        "actual_weight_addresses": [
+          139395653500928
+        ],
+        "observed_weight_rows": 128,
+        "address_histories": [
+          {
+            "row_pointer": 139395653500928,
+            "events": [
+              {
+                "device": 0,
+                "trace_index": 12944,
+                "action": "free_requested",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680441909411,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 12945,
+                "action": "free_completed",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680441909412,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 12973,
+                "action": "alloc",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680441914926,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "alloc_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 870
+                  },
+                  {
+                    "name": "alloc_all_gather_outputs",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 652
+                  },
+                  {
+                    "name": "foreach_all_gather_copy_out",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+                    "line": 311
+                  },
+                  {
+                    "name": "decorate_context",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py",
+                    "line": 120
+                  },
+                  {
+                    "name": "wait_for_unshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 305
+                  },
+                  {
+                    "name": "pre_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 352
+                  },
+                  {
+                    "name": "_pre_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 248
+                  },
+                  {
+                    "name": "_fn",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py",
+                    "line": 929
+                  },
+                  {
+                    "name": "fsdp_hook_wrapper",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 62
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1806
+                  },
+                  {
+                    "name": "_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1879
+                  },
+                  {
+                    "name": "_wrapped_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1773
+                  },
+                  {
+                    "name": "_forward_micro_batch",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 259
+                  },
+                  {
+                    "name": "update_policy",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 451
+                  },
+                  {
+                    "name": "log",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 90
+                  },
+                  {
+                    "name": "f",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 80
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+                    "line": 627
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 70
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/capture_native_incident37_GEMM_rows_20261011.py",
+                    "line": 122
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+                    "line": 49
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+                    "line": 264
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 31
+                  },
+                  {
+                    "name": "observed",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+                    "line": 36
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "actor_method_executor",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/function_manager.py",
+                    "line": 693
+                  },
+                  {
+                    "name": "main_loop",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py",
+                    "line": 1031
+                  },
+                  {
+                    "name": "<module>",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/workers/default_worker.py",
+                    "line": 322
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 30022,
+                "action": "free_requested",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680443934705,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 360
+                  },
+                  {
+                    "name": "_post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 261
+                  },
+                  {
+                    "name": "_fn",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py",
+                    "line": 929
+                  },
+                  {
+                    "name": "fsdp_hook_wrapper",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 62
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1840
+                  },
+                  {
+                    "name": "_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1879
+                  },
+                  {
+                    "name": "_wrapped_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1773
+                  },
+                  {
+                    "name": "_forward_micro_batch",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 259
+                  },
+                  {
+                    "name": "update_policy",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 451
+                  },
+                  {
+                    "name": "log",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 90
+                  },
+                  {
+                    "name": "f",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 80
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+                    "line": 627
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 70
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/capture_native_incident37_GEMM_rows_20261011.py",
+                    "line": 122
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+                    "line": 49
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+                    "line": 264
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 31
+                  },
+                  {
+                    "name": "observed",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+                    "line": 36
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "actor_method_executor",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/function_manager.py",
+                    "line": 693
+                  },
+                  {
+                    "name": "main_loop",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py",
+                    "line": 1031
+                  },
+                  {
+                    "name": "<module>",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/workers/default_worker.py",
+                    "line": 322
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 30023,
+                "action": "free_completed",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680443934705,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 360
+                  },
+                  {
+                    "name": "_post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 261
+                  },
+                  {
+                    "name": "_fn",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py",
+                    "line": 929
+                  },
+                  {
+                    "name": "fsdp_hook_wrapper",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 62
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1840
+                  },
+                  {
+                    "name": "_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1879
+                  },
+                  {
+                    "name": "_wrapped_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1773
+                  },
+                  {
+                    "name": "_forward_micro_batch",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 259
+                  },
+                  {
+                    "name": "update_policy",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 451
+                  },
+                  {
+                    "name": "log",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 90
+                  },
+                  {
+                    "name": "f",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 80
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+                    "line": 627
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 70
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/capture_native_incident37_GEMM_rows_20261011.py",
+                    "line": 122
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+                    "line": 49
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+                    "line": 264
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 31
+                  },
+                  {
+                    "name": "observed",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+                    "line": 36
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "actor_method_executor",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/function_manager.py",
+                    "line": 693
+                  },
+                  {
+                    "name": "main_loop",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py",
+                    "line": 1031
+                  },
+                  {
+                    "name": "<module>",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/workers/default_worker.py",
+                    "line": 322
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 30384,
+                "action": "alloc",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680444201611,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "alloc_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 870
+                  },
+                  {
+                    "name": "alloc_all_gather_outputs",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 652
+                  },
+                  {
+                    "name": "foreach_all_gather_copy_out",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+                    "line": 311
+                  },
+                  {
+                    "name": "decorate_context",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py",
+                    "line": 120
+                  },
+                  {
+                    "name": "wait_for_unshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 305
+                  },
+                  {
+                    "name": "pre_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 387
+                  },
+                  {
+                    "name": "_pre_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 287
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 59897,
+                "action": "free_requested",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680450014932,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 59898,
+                "action": "free_completed",
+                "addr": 139394350579712,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680450014933,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              }
+            ],
+            "current_blocks": [
+              {
+                "device": 0,
+                "segment_address": 139394350579712,
+                "segment_stream": 0,
+                "address": 139394350579712,
+                "size": 2034237440,
+                "requested_size": 2034237440,
+                "state": "inactive",
+                "frames": []
+              }
+            ]
+          }
+        ],
+        "actual_weight_rows_all_equal": true,
+        "actual_weight_row_sha256": "4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a",
+        "trace_counts": [
+          {
+            "events": 60000,
+            "actions": {
+              "free_requested": 20031,
+              "free_completed": 20031,
+              "alloc": 19938
+            }
+          }
+        ],
+        "logp_gradient_nan_count": 0
+      },
+      {
+        "rank": 1,
+        "unavailable": [],
+        "phase": "complete",
+        "optimizer_steps": 1,
+        "snapshot_bytes": 8629579,
+        "snapshot_sha256": "fa736a50590d335066739e0d91356dd52d5b322695fcb06cd43d666816688f0a",
+        "native_mm_calls": 44,
+        "W_pointers": [
+          139687291256832
+        ],
+        "actual_weight_addresses": [
+          139688594178048
+        ],
+        "observed_weight_rows": 119,
+        "address_histories": [
+          {
+            "row_pointer": 139688594178048,
+            "events": [
+              {
+                "device": 0,
+                "trace_index": 13376,
+                "action": "free_requested",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680441909376,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 13377,
+                "action": "free_completed",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680441909377,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 13405,
+                "action": "alloc",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680441914921,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "alloc_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 870
+                  },
+                  {
+                    "name": "alloc_all_gather_outputs",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 652
+                  },
+                  {
+                    "name": "foreach_all_gather_copy_out",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+                    "line": 311
+                  },
+                  {
+                    "name": "decorate_context",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py",
+                    "line": 120
+                  },
+                  {
+                    "name": "wait_for_unshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 305
+                  },
+                  {
+                    "name": "pre_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 352
+                  },
+                  {
+                    "name": "_pre_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 248
+                  },
+                  {
+                    "name": "_fn",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py",
+                    "line": 929
+                  },
+                  {
+                    "name": "fsdp_hook_wrapper",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 62
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1806
+                  },
+                  {
+                    "name": "_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1879
+                  },
+                  {
+                    "name": "_wrapped_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1773
+                  },
+                  {
+                    "name": "_forward_micro_batch",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 259
+                  },
+                  {
+                    "name": "update_policy",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 451
+                  },
+                  {
+                    "name": "log",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 90
+                  },
+                  {
+                    "name": "f",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 80
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+                    "line": 627
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 70
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/capture_native_incident37_GEMM_rows_20261011.py",
+                    "line": 122
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+                    "line": 49
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+                    "line": 264
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 31
+                  },
+                  {
+                    "name": "observed",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+                    "line": 36
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "actor_method_executor",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/function_manager.py",
+                    "line": 693
+                  },
+                  {
+                    "name": "main_loop",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py",
+                    "line": 1031
+                  },
+                  {
+                    "name": "<module>",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/workers/default_worker.py",
+                    "line": 322
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 30238,
+                "action": "free_requested",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680443812517,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 360
+                  },
+                  {
+                    "name": "_post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 261
+                  },
+                  {
+                    "name": "_fn",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py",
+                    "line": 929
+                  },
+                  {
+                    "name": "fsdp_hook_wrapper",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 62
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1840
+                  },
+                  {
+                    "name": "_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1879
+                  },
+                  {
+                    "name": "_wrapped_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1773
+                  },
+                  {
+                    "name": "_forward_micro_batch",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 259
+                  },
+                  {
+                    "name": "update_policy",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 451
+                  },
+                  {
+                    "name": "log",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 90
+                  },
+                  {
+                    "name": "f",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 80
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+                    "line": 627
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 70
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/capture_native_incident37_GEMM_rows_20261011.py",
+                    "line": 122
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+                    "line": 49
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+                    "line": 264
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 31
+                  },
+                  {
+                    "name": "observed",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+                    "line": 36
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "actor_method_executor",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/function_manager.py",
+                    "line": 693
+                  },
+                  {
+                    "name": "main_loop",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py",
+                    "line": 1031
+                  },
+                  {
+                    "name": "<module>",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/workers/default_worker.py",
+                    "line": 322
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 30239,
+                "action": "free_completed",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680443812518,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 360
+                  },
+                  {
+                    "name": "_post_forward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 261
+                  },
+                  {
+                    "name": "_fn",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py",
+                    "line": 929
+                  },
+                  {
+                    "name": "fsdp_hook_wrapper",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 62
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1840
+                  },
+                  {
+                    "name": "_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1879
+                  },
+                  {
+                    "name": "_wrapped_call_impl",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py",
+                    "line": 1773
+                  },
+                  {
+                    "name": "_forward_micro_batch",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 259
+                  },
+                  {
+                    "name": "update_policy",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/actor/dp_actor.py",
+                    "line": 451
+                  },
+                  {
+                    "name": "log",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 90
+                  },
+                  {
+                    "name": "f",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/utils/debug/performance.py",
+                    "line": 80
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/workers/fsdp_workers.py",
+                    "line": 627
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 70
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/source/capture_native_incident37_GEMM_rows_20261011.py",
+                    "line": 122
+                  },
+                  {
+                    "name": "update_actor",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+                    "line": 49
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py",
+                    "line": 264
+                  },
+                  {
+                    "name": "inner",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/single_controller/base/decorator.py",
+                    "line": 534
+                  },
+                  {
+                    "name": "replay_incident",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source/capture_native_incident37_async_head_20261011.py",
+                    "line": 31
+                  },
+                  {
+                    "name": "observed",
+                    "filename": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py",
+                    "line": 36
+                  },
+                  {
+                    "name": "_resume_span",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+                    "line": 461
+                  },
+                  {
+                    "name": "actor_method_executor",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/function_manager.py",
+                    "line": 693
+                  },
+                  {
+                    "name": "main_loop",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py",
+                    "line": 1031
+                  },
+                  {
+                    "name": "<module>",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/ray/_private/workers/default_worker.py",
+                    "line": 322
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 30600,
+                "action": "alloc",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680443908109,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "alloc_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 870
+                  },
+                  {
+                    "name": "alloc_all_gather_outputs",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 652
+                  },
+                  {
+                    "name": "foreach_all_gather_copy_out",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+                    "line": 311
+                  },
+                  {
+                    "name": "decorate_context",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/utils/_contextlib.py",
+                    "line": 120
+                  },
+                  {
+                    "name": "wait_for_unshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 305
+                  },
+                  {
+                    "name": "pre_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 387
+                  },
+                  {
+                    "name": "_pre_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 287
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 59897,
+                "action": "free_requested",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680450015086,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              },
+              {
+                "device": 0,
+                "trace_index": 59898,
+                "action": "free_completed",
+                "addr": 139687291256832,
+                "size": 2034237440,
+                "stream": 0,
+                "time_us": 1791680450015087,
+                "compile_context": "N/A",
+                "frames": [
+                  {
+                    "name": "free_storage",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 875
+                  },
+                  {
+                    "name": "free_unsharded_param",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 674
+                  },
+                  {
+                    "name": "to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+                    "line": 541
+                  },
+                  {
+                    "name": "_to_sharded",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 548
+                  },
+                  {
+                    "name": "reshard",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 342
+                  },
+                  {
+                    "name": "post_backward",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+                    "line": 425
+                  },
+                  {
+                    "name": "_root_post_backward_final_callback",
+                    "filename": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+                    "line": 305
+                  }
+                ]
+              }
+            ],
+            "current_blocks": [
+              {
+                "device": 0,
+                "segment_address": 139687291256832,
+                "segment_stream": 0,
+                "address": 139687291256832,
+                "size": 2034237440,
+                "requested_size": 2034237440,
+                "state": "inactive",
+                "frames": []
+              }
+            ]
+          }
+        ],
+        "actual_weight_rows_all_equal": true,
+        "actual_weight_row_sha256": "4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a",
+        "trace_counts": [
+          {
+            "events": 60000,
+            "actions": {
+              "alloc": 19962,
+              "free_requested": 20019,
+              "free_completed": 20019
+            }
+          }
+        ],
+        "logp_gradient_nan_count": 0
+      }
+    ],
+    "seconds": 0.21672539098653942,
+    "peak_RSS_bytes": 635715584,
+    "CUDA_initialized": false,
+    "limitation": "Allocator CPU order and stack ownership do not alone establish ordering of asynchronous GPU reads/writes."
+  },
+  "history_limit": {
+    "max_entries_per_rank": 60000,
+    "retained_events_each_rank": [
+      60000,
+      60000
+    ],
+    "limit_reached": true,
+    "consequence": "Earlier allocation history is unavailable in the bounded ring; observed final events are not a complete history of all eight microbatches."
+  },
+  "findings": [
+    "Both ranks completed eight native B4 backwards and one shared optimizer step in the saved incident diagnostic; this is not formal progress.",
+    "All247 captured competing weight rows are the unchanged checkpoint row; no NaN reproduced.",
+    "Retained matching-address events identify native FSDP free_storage/alloc_all_gather_outputs; their existence in a finite execution does not prove corruption or an asynchronous race."
+  ],
+  "not_established": [
+    "Boundary and writer of the actual wrong runtime row captured in the failed diagnostic.",
+    "Whether any lifetime transition causes corruption in a failing execution.",
+    "Production fix, full-chain reliability or long-context acceptance."
+  ],
+  "CPU_fingerprint_checks": {
+    "captured_LoRA": {
+      "unix": 1791679740.7267008,
+      "badrow_sha256": "137e443eab6c94ef47722c8395c83fc3e59468dd0ecdc1fe52390d91f739c2c4",
+      "ranks": [
+        {
+          "rank": 0,
+          "parameter_count": 496,
+          "elements": 10819584,
+          "fingerprint_matches": [],
+          "row_nearest": [
+            {
+              "name": "base_model.model.model.layers.18.mlp.gate_proj.lora_B.default.weight",
+              "row": 11,
+              "squared_L2_excluding_32": 0.5868362188339233,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.14.mlp.up_proj.lora_B.default.weight",
+              "row": 11,
+              "squared_L2_excluding_32": 0.5868415832519531,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.23.mlp.up_proj.lora_B.default.weight",
+              "row": 5,
+              "squared_L2_excluding_32": 0.5869044661521912,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.5.mlp.up_proj.lora_B.default.weight",
+              "row": 10,
+              "squared_L2_excluding_32": 0.5869228839874268,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+              "row": 7,
+              "squared_L2_excluding_32": 0.5869243144989014,
+              "shape": [
+                4096,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.14.mlp.gate_proj.lora_B.default.weight",
+              "row": 5,
+              "squared_L2_excluding_32": 0.5869402885437012,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.2.mlp.gate_proj.lora_B.default.weight",
+              "row": 4,
+              "squared_L2_excluding_32": 0.586940348148346,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.11.mlp.down_proj.lora_B.default.weight",
+              "row": 3,
+              "squared_L2_excluding_32": 0.5869626998901367,
+              "shape": [
+                2048,
+                8
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 1,
+          "parameter_count": 496,
+          "elements": 10819584,
+          "fingerprint_matches": [],
+          "row_nearest": [
+            {
+              "name": "base_model.model.model.layers.29.linear_attn.in_proj_qkv.lora_B.default.weight",
+              "row": 0,
+              "squared_L2_excluding_32": 0.5869284868240356,
+              "shape": [
+                4096,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.11.mlp.down_proj.lora_B.default.weight",
+              "row": 0,
+              "squared_L2_excluding_32": 0.5869296789169312,
+              "shape": [
+                2048,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.17.mlp.gate_proj.lora_B.default.weight",
+              "row": 5,
+              "squared_L2_excluding_32": 0.586930513381958,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.19.mlp.down_proj.lora_B.default.weight",
+              "row": 2,
+              "squared_L2_excluding_32": 0.5869305729866028,
+              "shape": [
+                2048,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.8.mlp.up_proj.lora_B.default.weight",
+              "row": 8,
+              "squared_L2_excluding_32": 0.5869482159614563,
+              "shape": [
+                6144,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.17.linear_attn.in_proj_qkv.lora_B.default.weight",
+              "row": 2,
+              "squared_L2_excluding_32": 0.5869491100311279,
+              "shape": [
+                4096,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.21.linear_attn.in_proj_qkv.lora_B.default.weight",
+              "row": 7,
+              "squared_L2_excluding_32": 0.586951494216919,
+              "shape": [
+                4096,
+                8
+              ]
+            },
+            {
+              "name": "base_model.model.model.layers.29.mlp.down_proj.lora_B.default.weight",
+              "row": 2,
+              "squared_L2_excluding_32": 0.5869675874710083,
+              "shape": [
+                2048,
+                8
+              ]
+            }
+          ]
+        }
+      ],
+      "GPU_calls": 0,
+      "model_calls": 0,
+      "production_changes": 0,
+      "seconds": 1.636458588996902,
+      "peak_RSS_bytes": 728592384,
+      "CUDA_initialized": false
+    },
+    "all_frozen_parameters": {
+      "unix": 1791680433.549537,
+      "pid": 1609658,
+      "badrow_sha256": "137e443eab6c94ef47722c8395c83fc3e59468dd0ecdc1fe52390d91f739c2c4",
+      "scanned_parameters": 775,
+      "scanned_elements": 9653104368,
+      "matches": [],
+      "GPU_calls": 0,
+      "model_calls": 0,
+      "production_changes": 0,
+      "seconds": 11.04513343196595,
+      "peak_RSS_bytes": 5918154752,
+      "CUDA_initialized": false
+    }
+  },
+  "invalid_prior_scan": {
+    "path": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-competing-weight-vs-all-frozen-parameters-20261011-v1.json",
+    "reason": "Filename glob scanned zero parameters; invalid negative evidence; corrected by exact checkpoint index in v2."
+  },
+  "artifacts": [
+    {
+      "relative": "job.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/job.json",
+      "bytes": 5932,
+      "sha256": "8e47182290c9f1571c54529e1bc610f57fc6ef99a8effc91a5204034fe67646a",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\job.json"
+    },
+    {
+      "relative": "driver.log",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/driver.log",
+      "bytes": 118641,
+      "sha256": "42b2badf4f5aba0d39dcdd5b0e9ca5eb341ed99b709fdd59d14438da364b8b1a",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\driver.log"
+    },
+    {
+      "relative": "selection.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/selection.json",
+      "bytes": 71553,
+      "sha256": "9a82a6912a18e44cf11cca67bcc217ffbcdf6d16dbc8adc71bd487f461c5cd1c",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\selection.json"
+    },
+    {
+      "relative": "binding-check.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/binding-check.json",
+      "bytes": 3875,
+      "sha256": "0124157f4013d80857a5d6cce0bc7abb22f9ad3327b19b054055f18103a6f2df",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\binding-check.json"
+    },
+    {
+      "relative": "allocator-analysis-v1.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/allocator-analysis-v1.json",
+      "bytes": 72888,
+      "sha256": "4f533384bbeb83924c6af7328f0d554ab11640c41cfa5ba6287b94c73da7e9b2",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\allocator-analysis-v1.json"
+    },
+    {
+      "relative": "allocator-analysis-CPU.stdout.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/allocator-analysis-CPU.stdout.json",
+      "bytes": 47280,
+      "sha256": "09b94a4b1612e7ff3fe432f6a917beb68db4c42010b26c69a2110ae5c26b1083",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\allocator-analysis-CPU.stdout.json"
+    },
+    {
+      "relative": "allocator-analysis-CPU.stderr.txt",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/allocator-analysis-CPU.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\allocator-analysis-CPU.stderr.txt"
+    },
+    {
+      "relative": "source/capture_native_incident37_allocator_20261011.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/capture_native_incident37_allocator_20261011.py",
+      "bytes": 3714,
+      "sha256": "4e75e023d31810a006a465499c42cdc3d4b0f0318e7ab3fed2d1508886f4fd52",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\source\\capture_native_incident37_allocator_20261011.py"
+    },
+    {
+      "relative": "source/analyze_native_incident37_allocator_20261011.py",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/source/analyze_native_incident37_allocator_20261011.py",
+      "bytes": 4830,
+      "sha256": "70a7bd02e4a8661627b62cf3b3e31f48820a8eecf64e694fe244d54cf82fa773",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\source\\analyze_native_incident37_allocator_20261011.py"
+    },
+    {
+      "relative": "result/rank0.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0.json",
+      "bytes": 1484670,
+      "sha256": "7003fa5e8ecd84a006005703d8ed75525c3c3efd0fd543763eb258ea578c9c51",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank0.json"
+    },
+    {
+      "relative": "result/rank0-phases.jsonl",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-phases.jsonl",
+      "bytes": 10511,
+      "sha256": "4c93f8ea730f5e521a143af83e6eaf7b81f647315ae2a028b1be7521497c76e1",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank0-phases.jsonl"
+    },
+    {
+      "relative": "result/rank0-async-head-capture.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-async-head-capture.json",
+      "bytes": 1332,
+      "sha256": "3db0cabbc888035fbc2fe2a1169837446ed021aae94255d9c37a6f22581f53d2",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank0-async-head-capture.json"
+    },
+    {
+      "relative": "result/rank0-async-head-return-microbatch1.pt",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-async-head-return-microbatch1.pt",
+      "bytes": 174469,
+      "sha256": "f40bedb45be18302ba62038a930e4619994bf7178f7ad04778a8a4f0fc490aa5",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank0-async-head-return-microbatch1.pt"
+    },
+    {
+      "relative": "result/rank0-loss-inputs-microbatch1.pt",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-loss-inputs-microbatch1.pt",
+      "bytes": 1150173,
+      "sha256": "196f6d57f817462e68f93f634e91f9e1e44a1f00af2a72bbf03de9d9aa0ff8cd",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank0-loss-inputs-microbatch1.pt"
+    },
+    {
+      "relative": "result/rank0-native-GEMM-capture.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-native-GEMM-capture.json",
+      "bytes": 1005,
+      "sha256": "bd0ac34e46c87838adcdb5d7b3b07eca3a61e56da8c30f494007406cc9447981",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank0-native-GEMM-capture.json"
+    },
+    {
+      "relative": "result/rank0-native-allocator.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-native-allocator.json",
+      "bytes": 1124,
+      "sha256": "3d33470d54c24395d440ab422339bcb0e01d55125768eae752c35180d2e7153b",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank0-native-allocator.json"
+    },
+    {
+      "relative": "result/rank1.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1.json",
+      "bytes": 1484691,
+      "sha256": "211209c909adc0b0edf14f75f3e3c952c991249f58269ccf2ae042fd0fb361e5",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank1.json"
+    },
+    {
+      "relative": "result/rank1-phases.jsonl",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-phases.jsonl",
+      "bytes": 10506,
+      "sha256": "129be4a517725ce4fb2d2e3e4aa8a3a61134348bcf57907b8a534179996bc8ae",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank1-phases.jsonl"
+    },
+    {
+      "relative": "result/rank1-async-head-capture.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-async-head-capture.json",
+      "bytes": 1332,
+      "sha256": "90a8b480c3c4eb7cf29563f893b7964da06c2000fe5bdd63cd7aa6a6b8fa5c6a",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank1-async-head-capture.json"
+    },
+    {
+      "relative": "result/rank1-async-head-return-microbatch1.pt",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-async-head-return-microbatch1.pt",
+      "bytes": 180613,
+      "sha256": "13454f736c14e660272b8d0e57681db214f16aff9c3536f71d1482cbf5b62ac6",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank1-async-head-return-microbatch1.pt"
+    },
+    {
+      "relative": "result/rank1-loss-inputs-microbatch1.pt",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-loss-inputs-microbatch1.pt",
+      "bytes": 1150173,
+      "sha256": "c8a13061a91742a151d7eccd6d9463696117b0068d2b6d54af77b968b6976ff8",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank1-loss-inputs-microbatch1.pt"
+    },
+    {
+      "relative": "result/rank1-native-GEMM-capture.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-native-GEMM-capture.json",
+      "bytes": 1005,
+      "sha256": "18cd46f9c8b994278212de8ac292f9286eb26c1355039fea621aa885a60614a8",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank1-native-GEMM-capture.json"
+    },
+    {
+      "relative": "result/rank1-native-allocator.json",
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-native-allocator.json",
+      "bytes": 1125,
+      "sha256": "43a4a4b36435fb20f00c03ffbacc4b8f2ee99ccf6b92c7d6d37b57f6464487f1",
+      "local": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-allocator-final-artifacts-20261011-v1\\result\\rank1-native-allocator.json"
+    }
+  ],
+  "large_artifacts": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-native-GEMM-rows.pt",
+      "bytes": 66735998,
+      "sha256": "54561780b915e7b71379039a03d5aab8fa76a9c8deab6824fd25c7e077a13de4",
+      "downloaded": false
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-native-allocator.pickle",
+      "bytes": 8242240,
+      "sha256": "9ff4337d146d8d2fa281871f40e3a9ec005fe74f20564c5428ba3068b104120f",
+      "downloaded": false
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-native-GEMM-rows.pt",
+      "bytes": 62044478,
+      "sha256": "de273486a88dc7f7ee8a64c4221d715d00e80ae5f9ae66394f8845eef47819d0",
+      "downloaded": false
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-native-allocator.pickle",
+      "bytes": 8629579,
+      "sha256": "fa736a50590d335066739e0d91356dd52d5b322695fcb06cd43d666816688f0a",
+      "downloaded": false
+    }
+  ],
+  "terminal_processes": [
+    {
+      "pid": 1568818,
+      "expected_birth": 1791680074.73,
+      "missing": true
+    },
+    {
+      "pid": 1571474,
+      "expected_birth": 1791680093.31,
+      "missing": true
+    },
+    {
+      "pid": 1573160,
+      "expected_birth": 1791680108.37,
+      "missing": true
+    }
+  ],
+  "terminal_resources": {
+    "host_available_bytes": 1024616333312,
+    "physical_gpu": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sun Oct 11 09:07:46 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 94W / 450W       | 48C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 94W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 0%          Disabled |\n| 94W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 95W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 93W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 96W / 450W       | 47C          P0 | 858/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  no process found                                                               |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+  },
+  "missing_artifacts": [],
+  "curve_source": "research\\temporary\\rl_upstream_alignment_20260929\\credit-research-20261008\\v1\\direct-credit-records-20261009-v1\\native-curves-20261010-235154\\reward-entropy-gradient.csv",
+  "limitations": [
+    "Native memory history and observer can perturb timing; finite completion is not a repair.",
+    "Allocator CPU order and stack ownership do not alone establish ordering of asynchronous GPU reads/writes.",
+    "Captured-LoRA/checkpoint fingerprint negatives exclude only direct contiguous sixteen-element matches in saved dtype, not transformed or transient activations."
+  ]
+}

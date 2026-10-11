@@ -1,5 +1,36 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原生allocator观察结束；未复现，不是修复
+
+诊断1568818及worker1571474/1573160均按birth核验已退出；两rank各8个B4反向有限，
+共同1次optimizer更新，仅为事故保存输入诊断，不计正式进度。原PyTorch memory.py
+SHA3afde642的历史各到60000项上限，早期事件已丢失；保留地址事件来自原FSDP
+free_storage/alloc_all_gather_outputs，不能单凭有限执行中的释放重分配证明异步竞争。
+247项实际GEMM竞争权重均为正常checkpoint行，无NaN；不得据此称已修复原坏W。
+23份小文件共5981442字节及远端大张量/原生pickle SHA已保存，缺失0；CPU分析.217秒、
+峰RSS635715584字节、无CUDA初始化。另一CPU扫描按原权重索引覆盖775项/9653104368
+元素，未匹配异常行连续16元素，仅排除保存dtype中的直接指纹；先前0参数扫描无效。
+正式仍停37/330，生产源26bef6c8、LoRA8/16、每卡B4、Q/V/A未变，不恢复、不重启。
+本轮仅更新诊断记录，无生产修复。原NaN具体为第37轮首optimizer的第二B4中KL到
+logp的反向梯度；奖励、DT优势及前向损失有限。第14轮仅梯度范数NaN，根因未定位。
+原37轮奖励/熵/梯度图已保存并展示；权重写入方未明，不能用有限回放否决真实失败。
+见[完整回执](results_textcraft_incident37_allocator_20261011.json)。
+
+
+## 2026-10-11 原生allocator历史诊断已启动；正式仍停止
+
+单次driver1568818/出生1791680074.73，GPU4/5；worker1571474/1573160
+出生1791680093.31/1791680108.37，当前原DT。诊断4e75e023复用未改GEMM352、
+原old/ref/27 DT B4，只在原update启用PyTorch内存历史（60000事件、Python栈），
+退出后调用原_dump_snapshot。installed owner memory.py SHA3afde642已核对；
+实际Ray登记链CPU验证，无额外模型、张量拷贝、collective或退出前同步。
+这不是修复；CPU事件先后也不能单独证明GPU异步读写次序。
+此前异常行与事故保存的两rank各496个LoRA局部分片未匹配16元素指纹，
+只排除这批保存值的直接匹配，不推断写入方。CPU1.636秒、峰RSS728592384字节、
+无CUDA初始化。生产源26bef6c8、LoRA8/16、每卡B4及Q/V/A未改；正式停37/330，
+不恢复、不重启。见[启动回执](results_textcraft_incident37_allocator_launch_20261011.json)。
+
+
 ## 2026-10-11 原FSDP搬运链观察完成；未复现，不是修复
 
 诊断1455741及worker1458786/1460145均已按birth核验退出，两rank各8个B4反向

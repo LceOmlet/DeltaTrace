@@ -1,0 +1,8 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,inspect,pathlib,json,hashlib,subprocess,psutil,time
+out={'unix':time.time(),'torch_version':torch.__version__,'APIs':[]}
+for name in ['_record_memory_history','_snapshot','_dump_snapshot']:
+ f=getattr(torch.cuda.memory,name);p=pathlib.Path(inspect.getsourcefile(f));out['APIs'].append({'name':name,'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'signature':str(inspect.signature(f)),'source':inspect.getsource(f)[:18000]})
+out['CUDA_initialized']=torch.cuda.is_initialized();out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;print(json.dumps(out))
+PY

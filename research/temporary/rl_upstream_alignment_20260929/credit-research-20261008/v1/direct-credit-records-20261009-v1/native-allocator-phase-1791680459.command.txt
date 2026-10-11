@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,psutil,subprocess
+job=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1');x=json.loads((job/'job.json').read_bytes());out={'unix':time.time(),'job':x,'processes':[],'ranks':[]}
+try:
+ p=psutil.Process(x['pid']);out['processes'].append({'pid':p.pid,'birth':p.create_time(),'expected_birth':x['birth'],'status':p.status()});procs=p.children(recursive=True)
+except psutil.NoSuchProcess:out['processes'].append({'pid':x['pid'],'missing':True});procs=[]
+for p in procs:
+ try:
+  if 'Native' in p.name():out['processes'].append({'pid':p.pid,'birth':p.create_time(),'name':p.name(),'status':p.status(),'pss_bytes':p.memory_full_info().pss})
+ except psutil.Error:pass
+for rank in range(2):
+ p=job/f'result/rank{rank}.json'
+ if p.is_file():
+  v=json.loads(p.read_bytes());out['ranks'].append({k:v.get(k) for k in ['rank','pid','birth','phase','unix','actual_optimizer_steps','microbatches']})
+out['driver_tail']=(job/'driver.log').read_text(errors='replace')[-3500:];out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['host_available_bytes']=psutil.virtual_memory().available;print(json.dumps(out))
+PY

@@ -1,0 +1,23 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,torch,time,resource,hashlib
+from safetensors import safe_open
+start=time.perf_counter();torch.set_num_threads(4);root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';cap=torch.load(job/'result/rank0-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);bad=cap['competing_weights'][cap['metadata']['copied_indices'][0]].clone();model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');result={'unix':time.time(),'pid':__import__('os').getpid(),'badrow_sha256':hashlib.sha256(bad.view(torch.uint8).numpy().tobytes()).hexdigest(),'scanned_parameters':0,'scanned_elements':0,'matches':[],'GPU_calls':0,'model_calls':0,'production_changes':0}
+assert result['badrow_sha256']=='137e443eab6c94ef47722c8395c83fc3e59468dd0ecdc1fe52390d91f739c2c4'
+for path in sorted(model.glob('model-*.safetensors')):
+ with safe_open(path,framework='pt',device='cpu') as f:
+  for name in f.keys():
+   tensor=f.get_tensor(name);flat=tensor.reshape(-1);needle=bad.to(flat.dtype);result['scanned_parameters']+=1;result['scanned_elements']+=flat.numel()
+   for start_offset in range(0,flat.numel(),8<<20):
+    piece=flat[start_offset:min(flat.numel(),start_offset+(8<<20)+15)];candidates=torch.where(piece==needle[0])[0];candidates=candidates[(candidates<(8<<20)) & (candidates+16<=piece.numel())]
+    for off in range(1,16):
+     if candidates.numel()==0:break
+     candidates=candidates[piece[candidates+off]==needle[off]]
+    for off in candidates.tolist():
+     offset=start_offset+off;item={'name':name,'path':str(path),'shape':list(tensor.shape),'dtype':str(tensor.dtype),'flat_offset':offset,'fingerprint_elements':16}
+     if offset+4096<=flat.numel():
+      row=flat[offset:offset+4096].to(bad.dtype);mask=torch.ones(4096,dtype=torch.bool);mask[320:352]=False;item.update(full_row_exact=bool(torch.equal(row,bad)),non32_exact=bool(torch.equal(row[mask],bad[mask])),non32_changed=int((row[mask]!=bad[mask]).sum()))
+     result['matches'].append(item)
+   del tensor,flat
+result.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized());(job/'competing-weight-vs-all-frozen-parameters-v1.json').write_text(json.dumps(result,indent=2)+chr(10));print(json.dumps(result))
+PY

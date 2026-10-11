@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+import pathlib,json,time,hashlib,base64,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-allocator-20261011-v1';out={'unix':time.time(),'files':[],'missing_files':[],'remote_large_artifacts':[],'processes':[]}
+names=['job.json', 'driver.log', 'selection.json', 'binding-check.json', 'allocator-analysis-v1.json', 'allocator-analysis-CPU.stdout.json', 'allocator-analysis-CPU.stderr.txt', 'source/capture_native_incident37_allocator_20261011.py', 'source/analyze_native_incident37_allocator_20261011.py', 'result/rank0.json', 'result/rank0-phases.jsonl', 'result/rank0-async-head-capture.json', 'result/rank0-async-head-return-microbatch1.pt', 'result/rank0-loss-inputs-microbatch1.pt', 'result/rank0-native-GEMM-capture.json', 'result/rank0-native-allocator.json', 'result/rank1.json', 'result/rank1-phases.jsonl', 'result/rank1-async-head-capture.json', 'result/rank1-async-head-return-microbatch1.pt', 'result/rank1-loss-inputs-microbatch1.pt', 'result/rank1-native-GEMM-capture.json', 'result/rank1-native-allocator.json']
+for name in names:
+ p=job/name
+ if not p.is_file():out['missing_files'].append(str(p));continue
+ b=p.read_bytes();out['files'].append({'relative':name,'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+for n in [0,1]:
+ for suffix in ['native-GEMM-rows.pt','native-allocator.pickle']:
+  p=job/f'result/rank{n}-{suffix}'
+  if not p.is_file():out['missing_files'].append(str(p));continue
+  h=hashlib.sha256()
+  with p.open('rb') as f:
+   for b in iter(lambda:f.read(8<<20),b''):h.update(b)
+  out['remote_large_artifacts'].append({'path':str(p),'bytes':p.stat().st_size,'sha256':h.hexdigest(),'downloaded':False})
+for pid,birth in [(1568818,1791680074.73),(1571474,1791680093.31),(1573160,1791680108.37)]:
+ try:p=psutil.Process(pid);out['processes'].append({'pid':pid,'expected_birth':birth,'birth':p.create_time(),'status':p.status(),'same_process':abs(p.create_time()-birth)<.01})
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;print(json.dumps(out))
+
+PY
