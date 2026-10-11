@@ -1,5 +1,13 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 官方流检查诊断进入原old-logprob阶段
+
+Unix1791689833按birth核验driver2582227仍在，原worker2585525/出生1791689738.07、
+2586913/出生1791689753.42均已加载事故LoRA分片并进入native_old_logprob_begin。
+GPU4/5；尚无本次诊断完成、同步错误或修复结论。原PPO/DT/head未修改，正式停37/330。
+见[实际phase回执](results_textcraft_incident37_official_CSAN_phase_20261011.json)。
+
+
 ## 2026-10-11 原事故输入已启用官方Torch流检查；尚无诊断结果
 
 单次driver2582227/出生1791689713.3，物理GPU4/5，原GEMM352/async782/
