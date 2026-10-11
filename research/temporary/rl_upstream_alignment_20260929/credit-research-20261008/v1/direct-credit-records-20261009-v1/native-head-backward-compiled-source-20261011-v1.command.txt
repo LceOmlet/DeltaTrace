@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor');started=time.perf_counter();rows=[];count=total=0
+for path in root.rglob('*.py'):
+ b=path.read_bytes();count+=1;total+=len(b)
+ if b'dvocab_weights' not in b and b'dhidden_states' not in b:continue
+ lines=b.decode(errors='replace').splitlines();start=next((i for i,l in enumerate(lines) if l.startswith('def call(')),None);hints=[{'line':i+1,'text':line[:280]} for i,line in enumerate(lines) if 'dhidden_states' in line or 'dvocab_weights' in line];body=lines[start:start+110] if start is not None else []
+ rows.append(dict(path=str(path),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),hints=hints,call_body=body))
+out={'unix':time.time(),'root':str(root),'files_read':count,'bytes_read':total,'matches':rows,'seconds':time.perf_counter()-started,'peak_RSS_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'GPU_calls':0,'compilation_calls':0};print(json.dumps(out))
+PY

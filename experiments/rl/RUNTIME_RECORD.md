@@ -1,5 +1,35 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原FSDP搬运链同一权重行采集已启动
+
+单次诊断1455741/出生1791679018.14，GPU4/5；worker1458786/1460145
+出生1791679038.81/1791679052.7，当前原old-logprob。源7d246d99只观察原update
+前两次head unshard的159048行：实际扁平CPU源、原返回H2D输入、原
+all_gather_outputs，再与未改GEMM352的实际权重比较。每项8KiB读数在原stream
+排队，update退出后才等待；无新增模型/DT/GEMM/collective或参数写入。
+原实际Ray调用链与installed native函数签名CPU核验通过；解开no_grad装饰器后的
+实际owner为_fsdp_collectives.py SHA3bf07921…，不是仅记录_contextlib包装器。
+已保存失败/有限执行全部172次GEMM地址：同次输入、W、输出范围均不重叠；
+该检查不排除别的阶段写入或生命周期问题。没有据此修改官方实现或容差。
+当前无搬运值结论，也不是修复；正式仍停37/330、不恢复，源26bef6c8、
+LoRA8/16、每卡B4和Q/V/A保持。见[启动回执](results_textcraft_incident37_transport_launch_20261011.json)。
+
+
+## 2026-10-11 更新退出后源分片采集有限，未复现原故障
+
+诊断1360482及worker1363510/1364882均退出，两rank各8个B4反向有限、共同1次
+optimizer更新，仅诊断不计正式进度。源a5686e51只在原update退出后读取CPU
+源分片159048行，复用未改的GEMM352观察器，不新增故障前张量读取、GPU拷贝或同步。
+全部247行实际GEMM权重及rank1退出后CPU分片与checkpoint逐值一致；rank0不拥有
+该行如实记录。CPU对照.0383秒、RSS553717760字节、无CUDA初始化；原张量及24份
+小文件已绑定SHA，终态无GPU进程、主机可用1024717611008字节。
+本次没有复现故障，因此不能推断失败执行中的CPU源分片正确，也不是修复。
+下一步需要区分原native实际读取的扁平CPU数据、H2D/all-gather输入、原参数
+all_gather_outputs与已证实异常的GEMM权重，不能用另一次有限运行补齐失败链路。
+正式仍停37/330、不恢复，生产数值源26bef6c8、LoRA8/16、每卡B4和Q/V/A不变。
+见[完整回执](results_textcraft_incident37_postfailure_shard_20261011.json)。
+
+
 ## 2026-10-11 阶段权重观察回放有限；原权重异常仍未修复
 
 诊断1279826及worker1282734/1286559均退出，两rank原8个B4反向有限、共同1次

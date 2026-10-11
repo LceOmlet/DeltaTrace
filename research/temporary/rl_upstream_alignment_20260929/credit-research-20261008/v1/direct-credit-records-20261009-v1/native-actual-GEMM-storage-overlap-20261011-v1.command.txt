@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+ROOT='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922'
+import torch,pathlib,json,time,resource
+root=pathlib.Path(ROOT);torch.set_num_threads(2);out={'unix':time.time(),'jobs':[],'GPU_calls':0,'compilation_calls':0,'production_changes':0}
+for suffix in ['competing-weight-capture','postfailure-shard']:
+ job=root/('receipts/textcraft-native-incident37-'+suffix+'-20261011-v1')
+ for rank in [0,1]:
+  x=torch.load(job/f'result/rank{rank}-native-GEMM-rows.pt',map_location='cpu',mmap=True,weights_only=False)['metadata'];calls=x['mm_calls'];rows=[]
+  for c in calls:
+   def overlap(pa,na,pb,nb):return max(pa,pb)<min(pa+na,pb+nb)
+   wl=c['right_pointer'];wn=c['right_shape'][0]*c['right_shape'][1]*2;hl=c['left_pointer'];hn=c['left_shape'][0]*c['left_shape'][1]*2;ol=c['output_pointer'];on=c['output_shape'][0]*c['output_shape'][1]*2
+   rows.append({'chunk':c['start'],'W_pointer':wl,'H_pointer':hl,'out_pointer':ol,'W_H_overlap':overlap(wl,wn,hl,hn),'W_out_overlap':overlap(wl,wn,ol,on),'H_out_overlap':overlap(hl,hn,ol,on),'stream':c['stream']})
+  out['jobs'].append({'job':str(job),'rank':rank,'calls':len(calls),'W_pointers':sorted(set(c['right_pointer'] for c in calls)),'all_current_operands_disjoint':not any(r[k] for r in rows for k in ['W_H_overlap','W_out_overlap','H_out_overlap']),'first_last':[rows[0],rows[-1]],'all_rows':rows})
+out['available_debug_tools']=[str(p) for base in ['/opt/maca/bin','/usr/local/bin','/opt/conda/bin'] if pathlib.Path(base).exists() for p in pathlib.Path(base).iterdir() if any(w in p.name.lower() for w in ['sanitiz','memcheck','gdb','mcprof'])]
+out.update(CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024);print(json.dumps(out))
+
+PY
