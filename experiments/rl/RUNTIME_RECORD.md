@@ -1,6 +1,24 @@
 # 当前运行版本与修复记录
 
 
+## 2026-10-11 官方MCPTI拷贝地址观察已启动；无生产修复
+
+单次诊断driver2025442/出生1791684456.08，worker2028646/2030343，物理GPU4/5。
+复用原e48事故输入回放、GEMM352及a568更新退出后CPU分片观察，原head/mm、
+DT/PPO及参数未改。新源224c9fa5仅在原update启用已安装MetaX MCPTI的原生
+mcMemcpy/Async/WithStream回调，记录实际src/dst/bytes/stream，不替换原API、
+不新增张量值读取、GPU拷贝、模型/DT计算、collective或同步。官方headers与SO
+b2ac3a45已绑定；原8KiB拷贝三组地址逐项匹配、6回调无丢弃，仅工具能力验证。
+订阅本身较Torch导入后的PSS增加102400字节，无CUDA初始化；不得把整个CUDA
+小拷贝探针9.06GB峰RSS归于回调。首次编译include缺失、先订阅后加载runtime的
+失败及只读SSH CRLF错误均保留，没有重装环境或数值纠偏。
+10:12实际仍在原saved-DT阶段，尚未进入地址采集对应的update；两worker PSS、
+物理显存及源码记录在回执。CPU API时间不等于GPU完成顺序，且不覆盖kernel
+写入；当前没有证明拷贝覆盖或写入方。正式仍停37/330，不恢复、不重启，
+源26bef6c8、LoRA8/16与每卡B4保持；有限回放不称修复。
+见[启动与官方工具回执](results_textcraft_incident37_MCPTI_launch_20261011.json)。
+
+
 ## 2026-10-11 故障触发CPU源观察结束；未复现，不是修复
 
 单次driver1847823及worker1850688/1852364均按birth核验退出；两rank各8个B4

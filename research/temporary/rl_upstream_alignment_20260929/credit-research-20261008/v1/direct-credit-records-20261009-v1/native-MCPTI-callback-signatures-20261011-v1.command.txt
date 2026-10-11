@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,shutil,hashlib,time
+out={'unix':time.time(),'compiler':shutil.which('g++'),'sources':[],'libraries':[]}
+for name in ['/opt/maca/include/mcpti/mcpti_type.h','/opt/maca/include/mcpti/mcpti.h']:
+ p=pathlib.Path(name);text=p.read_text();lines=text.splitlines();hits=[]
+ for i,l in enumerate(lines):
+  if any(s in l for s in ['MCpti_CallbackData','MCpti_CallbackFunc','mcptiSubscribe','mcptiEnableCallback','MCPTI_CB_DOMAIN_RUNTIME_API']):hits.append({'line':i+1,'text':'\n'.join(lines[max(0,i-8):i+12])})
+ out['sources'].append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'hits':hits})
+for p in pathlib.Path('/opt/maca/include').rglob('*'):
+ if p.is_file() and ('generated' in p.name or p.name=='mc_runtime_api_trace.h'):
+  text=p.read_text(errors='replace');lines=text.splitlines();hits=[]
+  for i,l in enumerate(lines):
+   if any(s in l for s in ['mcMemcpyAsync_params','mcMemcpy_params','mcLaunchKernel_params','mcMemcpyAsync {']):hits.append({'line':i+1,'text':'\n'.join(lines[max(0,i-10):i+20])})
+  if hits:out['sources'].append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'hits':hits})
+for root in ['/opt/maca/lib','/opt/maca/lib64']:
+ p=pathlib.Path(root)
+ if p.exists():out['libraries'].extend(str(q) for q in p.glob('*mcpti*'))
+print(json.dumps(out))
+PY

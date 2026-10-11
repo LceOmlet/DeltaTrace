@@ -1,0 +1,9 @@
+python - <<'PY'
+import pathlib,json
+root=pathlib.Path('/opt/maca/include');out={'maca_headers':[str(p) for p in root.rglob('maca.h')],'sample_makefiles':[],'head_includes':{}}
+for p in pathlib.Path('/opt/maca/samples/0_Introduction/profilerScope').glob('*'):
+ if p.is_file() and p.name in ['Makefile','CMakeLists.txt']:out['sample_makefiles'].append({'path':str(p),'text':p.read_text()})
+for name in ['mcpti/mcpti_type.h','mcpti/mcpti.h','mcr/generated_maca_runtime_api_meta.h']:
+ p=root/name;out['head_includes'][str(p)]=p.read_text().splitlines()[:25]
+print(json.dumps(out))
+PY

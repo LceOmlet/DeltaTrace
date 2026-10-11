@@ -1,0 +1,6 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-MCPTI-address-observer-20261011-v3');out={'unix':time.time(),'probe_source':(root.parent/'textcraft-native-MetaX-tracer-capability-20261011-v1/probe.py').read_text(),'native_trace':(root/'probe-callback.jsonl').read_text(),'probe_terminated':not psutil.pid_exists(1984744)}
+print(json.dumps(out))
+PY

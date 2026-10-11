@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=4 "$VENV_PYTHON" - <<'PY'
+import os,json,pathlib,time,psutil,ctypes,subprocess,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-MCPTI-address-observer-20261011-v3');rows=[]
+def phase(name):
+ p=psutil.Process();m=p.memory_full_info();rows.append({'phase':name,'monotonic_ns':time.monotonic_ns(),'RSS':m.rss,'PSS':m.pss,'USS':m.uss,'anonymous_bytes':sum(int(l.split()[1])*1024 for l in pathlib.Path('/proc/self/smaps_rollup').read_text().splitlines() if l.startswith('Anonymous:'))})
+phase('before_torch_import');import torch;phase('after_torch_import')
+lib=ctypes.CDLL(str(root/'memcpy_callback.so'));lib.dt_diagnostic_start.argtypes=[ctypes.c_char_p];lib.dt_diagnostic_start.restype=ctypes.c_int;lib.dt_diagnostic_stop.restype=ctypes.c_int;phase('after_observer_dlopen')
+start=time.perf_counter();status=lib.dt_diagnostic_start(str(root/'CPU-subscription-overhead.jsonl').encode());subscribe_seconds=time.perf_counter()-start;phase('after_subscribe')
+physical_during=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout
+start=time.perf_counter();stop=lib.dt_diagnostic_stop() if status==0 else None;unsubscribe_seconds=time.perf_counter()-start;phase('after_unsubscribe')
+out={'unix':time.time(),'pid':os.getpid(),'phases':rows,'status':status,'stop_status':stop,'subscribe_seconds':subscribe_seconds,'unsubscribe_seconds':unsubscribe_seconds,'peak_RSS_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'torch_CUDA_initialized':torch.cuda.is_initialized(),'tensor_GPU_calls':0,'model_calls':0,'DT_calls':0,'physical_during':physical_during,'scope':'Native subscriber overhead only, no tensor copies or model calls; not numerical acceptance'}
+(root/'CPU-subscription-overhead-receipt.json').write_text(json.dumps(out,indent=2));print(json.dumps(out))
+PY
