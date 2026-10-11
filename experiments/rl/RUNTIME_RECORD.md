@@ -1,3 +1,19 @@
+## 2026-10-11 22:10 续训进程补回已接受的逐 token 诊断覆盖，训练数值不变
+
+正式PID1949625/出生1791723586.64、物理2/3不变；完整26已通过、27采样继续。
+发现原2026-10-09逐token记录仅是已完成worker运行时覆盖，不在冻结source.json中，
+本次重启未继承；第26轮没有完整向量，不能事后补造。已在原VERL RPC边界复用
+原记录源SHA2609d93f，两实际worker1958679/1960836均于Unix1791727826前回执完成。
+原module仍814cfe92，数值源26bef6c8/GDN7c06d5e0及FSDP修复2534a670不变。
+客户端仅替换新PID/出生、正式输出目录及原Ray地址/actor名称；原完整AST去掉记录
+helper/call后与owner一致，既有trace/credit函数身份不变，无新增模型/DT/optimizer调用。
+
+三份远端authority已写入passive_credit_recording_runtime_override；冻结source未改。
+以后续训必须读取并接回此已接受覆盖，不能把磁盘source相同当作运行时行为全继承。
+此时尚未进入下一DT落盘，不提前宣称已有新完整向量或极端归因精度改善；不为补记录
+重跑第26轮、重置optimizer/scheduler或停下正式训练。
+见[原记录器接回与实际worker回执](results_textcraft_resume_passive_records_20261011.json)。
+
 ## 2026-10-11 21:49 续训第26轮完整通过，已进入第27轮；正式预算继续
 
 原PID1949625/出生1791723586.64、两worker1958679/1960836与物理2/3保持。
