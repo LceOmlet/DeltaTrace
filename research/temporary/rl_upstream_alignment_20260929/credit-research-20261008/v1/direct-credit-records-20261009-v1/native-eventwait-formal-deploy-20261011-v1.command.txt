@@ -1,0 +1,123 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+from pathlib import Path
+import base64,hashlib,json,os,psutil,re,runpy,subprocess,time,urllib.request
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+previous=root/'runs/textcraft-formal-stable-20261009-v1'
+out=root/'runs/textcraft-formal-eventwait-resume25-20261011-v1';entry=out/'entry'
+diagnostic=root/'receipts/incident37-metax-eventwait-owner-fix-20261011-v1'
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def put(p,x):
+ tmp=p.with_suffix(p.suffix+'.tmp');tmp.write_text(json.dumps(x,indent=2)+'\n');tmp.replace(p)
+assert sha(previous/'source.json')=='1c08b57bf83506d3e69d865f74377e3baa624358c678e0ac92cb6ebfb2d73658'
+s=json.loads((previous/'source.json').read_text());checkpoint=previous/'textcraft-dt/checkpoints/global_step_25'
+assert (checkpoint.parent/'latest_checkpointed_iteration.txt').read_text().strip()=='25'
+check=json.loads((diagnostic/'checkpoint25-CPU.json').read_text())
+assert len(check['files'])==7 and all(not f['nonfinite'] for f in check['files'])
+assert next(f for f in check['files'] if f['path'].endswith('model_world_size_2_rank_1.pt'))['head']['row159048_SHA256']=='4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a'
+hook=json.loads((diagnostic/'production-hook-verification/verification.json').read_text())
+assert hook['native_Ray_hook_result']['receipt']['patched_code_SHA256']=='1609439cddb3ffa0b30e18fa55ad6119c1527e009515335eafca5b24dcb3abfc'
+for rank in [0,1]:
+ r=json.loads((diagnostic/f'result/rank{rank}.json').read_text())
+ assert r['phase']=='complete' and r['actual_optimizer_steps']==1
+ assert len(r['microbatches'])==8 and all(m['gradient_finite'] for m in r['microbatches'])
+for relative,expected in s['verl_sha256'].items():assert sha(Path(s['verl_root'])/relative)==expected,relative
+for name,meta in s['actual_CPU_imports'].items():assert sha(meta['path'])==meta['sha256'],name
+if (out/'deployment.json').exists():
+ print(json.dumps(dict(already_deployed=True,receipt=json.loads((out/'deployment.json').read_text()))));raise SystemExit(0)
+out.mkdir(parents=True,exist_ok=True);entry.mkdir(exist_ok=True)
+for p in (previous/'entry').iterdir():
+ if p.name in ['__pycache__','outputs']:continue
+ target=entry/p.name
+ if not target.exists():target.symlink_to(p,target_is_directory=p.is_dir())
+newfiles={'metax_fsdp_event_wait.py': 'IiIiUGlubmVkIEZTRFAgQ1VEQS1ldmVudCBjb21wYXRpYmlsaXR5IGZpeCwgYWN0aXZhdGVkIG9ubHkgYnkgYSBSYXkgc2V0dXAgaG9vay4KCkluIHRvcmNoIDIuOC4wK21ldGF4My41LjMuOSwgdGhlIGdlbmVyaWMgU3RyZWFtLndhaXRfZXZlbnQgZG9lcyBub3Qgd2FpdCBvbgp0aGUgQ1VEQSBFdmVudCBwcm9kdWNlZCBieSBGU0RQLiBmaW5hbGl6ZV9iYWNrd2FyZCB0aGVuIHJlbGVhc2VzIGFuIG91dHN0YW5kaW5nCnByZWZldGNoIGJ1ZmZlciB0b28gZWFybHkuIEtlZXAgdGhlIGluc3RhbGxlZCBvd25lciBmdW5jdGlvbiBhbmQgY2hhbmdlIGl0cwpzaW5nbGUgYWNjZWxlcmF0b3IgbG9va3VwIHRvIGN1ZGEuIE5vIG93bmVyIGJvZHkgaXMgY29waWVkIGFuZCBubyBpbnN0YWxsZWQKcGFja2FnZSBvciBnbG9iYWwgdG9yY2ggQVBJIGlzIG1vZGlmaWVkLiBTZWUgdGhlIGluY2lkZW50MzcgdmVyaWZpY2F0aW9uIHJlY2VpcHQuCiIiIgoKaW1wb3J0IGhhc2hsaWIKaW1wb3J0IGpzb24KaW1wb3J0IG1hcnNoYWwKaW1wb3J0IG9zCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQgdGltZQoKT1dORVJfU0hBMjU2ID0gIjI3OThhODdiMjYzMTA5MWRmNzM4YWZhZmY2ZGZjZWFkMzhjZTBjYzQyMTU4NWI0MzMxZWNhYWVmYjRlNzg0ZjUiCl9yZWNlaXB0ID0gTm9uZQoKCmRlZiBpbnN0YWxsKCk6CiAgICAiIiJJbnN0YWxsIHRoZSB0ZXN0ZWQgb25lLWxvb2t1cCBmaXggaW4gdGhpcyBwcm9jZXNzJ3Mgb3JpZ2luYWwgb3duZXIuIiIiCiAgICBnbG9iYWwgX3JlY2VpcHQKICAgIGlmIF9yZWNlaXB0IGlzIG5vdCBOb25lOgogICAgICAgIHJldHVybiBkaWN0KF9yZWNlaXB0KQoKICAgIGltcG9ydCB0b3JjaAogICAgZnJvbSB0b3JjaC5kaXN0cmlidXRlZC5mc2RwLl9mdWxseV9zaGFyZCBpbXBvcnQgX2ZzZHBfcGFyYW1fZ3JvdXAgYXMgb3duZXIKCiAgICBpZiB0b3JjaC5fX3ZlcnNpb25fXyAhPSAiMi44LjArbWV0YXgzLjUuMy45IjoKICAgICAgICByYWlzZSBSdW50aW1lRXJyb3IoIkZTRFAgZXZlbnQgZml4IGlzIHZlcmlmaWVkIG9ubHkgZm9yIHRvcmNoIDIuOC4wK21ldGF4My41LjMuOSIpCiAgICBvd25lcl9wYXRoID0gUGF0aChvd25lci5fX2ZpbGVfXykKICAgIGlmIGhhc2hsaWIuc2hhMjU2KG93bmVyX3BhdGgucmVhZF9ieXRlcygpKS5oZXhkaWdlc3QoKSAhPSBPV05FUl9TSEEyNTY6CiAgICAgICAgcmFpc2UgUnVudGltZUVycm9yKCJJbnN0YWxsZWQgRlNEUCBvd25lciBkaWZmZXJzIGZyb20gdGhlIHZlcmlmaWVkIG93bmVyIikKICAgIGZ1bmN0aW9uID0gb3duZXIuRlNEUFBhcmFtR3JvdXAuZmluYWxpemVfYmFja3dhcmQKICAgIG9yaWdpbmFsID0gZnVuY3Rpb24uX19jb2RlX18KICAgIGlmIG9yaWdpbmFsLmNvX25hbWVzLmNvdW50KCJhY2NlbGVyYXRvciIpICE9IDEgb3IgImN1ZGEiIGluIG9yaWdpbmFsLmNvX25hbWVzOgogICAgICAgIHJhaXNlIFJ1bnRpbWVFcnJvcigiVW5leHBlY3RlZCBGU0RQIGZpbmFsaXplX2JhY2t3YXJkIGNvZGU7IHJlZnVzaW5nIGFuIHVudmVyaWZpZWQgb3ZlcnJpZGUiKQogICAgbmFtZXMgPSB0dXBsZSgiY3VkYSIgaWYgbmFtZSA9PSAiYWNjZWxlcmF0b3IiIGVsc2UgbmFtZSBmb3IgbmFtZSBpbiBvcmlnaW5hbC5jb19uYW1lcykKICAgIHBhdGNoZWQgPSBvcmlnaW5hbC5yZXBsYWNlKGNvX25hbWVzPW5hbWVzKQogICAgYXNzZXJ0IHBhdGNoZWQuY29fY29kZSA9PSBvcmlnaW5hbC5jb19jb2RlIGFuZCBwYXRjaGVkLmNvX2NvbnN0cyA9PSBvcmlnaW5hbC5jb19jb25zdHMKICAgIGZ1bmN0aW9uLl9fY29kZV9fID0gcGF0Y2hlZAogICAgX3JlY2VpcHQgPSBkaWN0KAogICAgICAgIG93bmVyX3BhdGg9c3RyKG93bmVyX3BhdGgpLCBvd25lcl9maWxlX1NIQTI1Nj1PV05FUl9TSEEyNTYsCiAgICAgICAgZnVuY3Rpb249IkZTRFBQYXJhbUdyb3VwLmZpbmFsaXplX2JhY2t3YXJkIiwKICAgICAgICBvcmlnaW5hbF9jb2RlX1NIQTI1Nj1oYXNobGliLnNoYTI1NihtYXJzaGFsLmR1bXBzKG9yaWdpbmFsKSkuaGV4ZGlnZXN0KCksCiAgICAgICAgcGF0Y2hlZF9jb2RlX1NIQTI1Nj1oYXNobGliLnNoYTI1NihtYXJzaGFsLmR1bXBzKHBhdGNoZWQpKS5oZXhkaWdlc3QoKSwKICAgICAgICBvcmlnaW5hbF9uYW1lcz1saXN0KG9yaWdpbmFsLmNvX25hbWVzKSwgcGF0Y2hlZF9uYW1lcz1saXN0KHBhdGNoZWQuY29fbmFtZXMpLAogICAgICAgIGluc3RydWN0aW9uX2J5dGVzX3VuY2hhbmdlZD1UcnVlLCBjb25zdGFudHNfdW5jaGFuZ2VkPVRydWUsCiAgICAgICAgY29waWVkX2Z1bmN0aW9uX2JvZGllcz0wLCBpbnN0YWxsZWRfZmlsZXNfbW9kaWZpZWQ9MCwKICAgICAgICBudW1lcmljYWxfb3JfYWxnb3JpdGhtX2NoYW5nZXM9MCwKICAgICkKICAgIHJldHVybiBkaWN0KF9yZWNlaXB0KQoKCmRlZiB3b3JrZXJfc2V0dXAoKToKICAgICIiIlJheSdzIG5hdGl2ZSB3b3JrZXJfcHJvY2Vzc19zZXR1cF9ob29rOyBubyBDVURBIGluaXRpYWxpemF0aW9uIG9yIG1vZGVsIGxvYWQuIiIiCiAgICBpbXBvcnQgcHN1dGlsCiAgICBpbXBvcnQgdG9yY2gKCiAgICByZWNlaXB0ID0gaW5zdGFsbCgpCiAgICByZWNlaXB0LnVwZGF0ZSgKICAgICAgICBwaWQ9b3MuZ2V0cGlkKCksIGJpcnRoPXBzdXRpbC5Qcm9jZXNzKCkuY3JlYXRlX3RpbWUoKSwgdW5peD10aW1lLnRpbWUoKSwKICAgICAgICBzb3VyY2U9c3RyKFBhdGgoX19maWxlX18pLnJlc29sdmUoKSksCiAgICAgICAgc291cmNlX1NIQTI1Nj1oYXNobGliLnNoYTI1NihQYXRoKF9fZmlsZV9fKS5yZWFkX2J5dGVzKCkpLmhleGRpZ2VzdCgpLAogICAgICAgIGN1ZGFfaW5pdGlhbGl6ZWQ9dG9yY2guY3VkYS5pc19pbml0aWFsaXplZCgpLAogICAgICAgIGFjdGl2YXRpb249IlJheSBydW50aW1lX2Vudi53b3JrZXJfcHJvY2Vzc19zZXR1cF9ob29rIiwKICAgICkKICAgIGRlc3RpbmF0aW9uID0gUGF0aChvcy5lbnZpcm9uWyJEVF9GU0RQX0VWRU5UX1dBSVRfUkVDRUlQVFMiXSkKICAgIGRlc3RpbmF0aW9uLm1rZGlyKHBhcmVudHM9VHJ1ZSwgZXhpc3Rfb2s9VHJ1ZSkKICAgIHBhdGggPSBkZXN0aW5hdGlvbiAvIGYid29ya2VyLXtyZWNlaXB0WydwaWQnXX0uanNvbiIKICAgIHBhdGgud3JpdGVfdGV4dChqc29uLmR1bXBzKHJlY2VpcHQsIGluZGVudD0yKSArICJcbiIsIGVuY29kaW5nPSJ1dGYtOCIpCg==', 'launch_textcraft_eventwait.py': 'IiIiRGVsZWdhdGUgdG8gdGhlIHZlcmlmaWVkIFRleHRDcmFmdCBsYXVuY2hlciB3aXRoIFJheSdzIG5hdGl2ZSBzZXR1cCBob29rLgoKQWxsIENMSSBhcmd1bWVudHMsIHdvcmtsb2FkLCBjaGVja3BvaW50IHJlc3RvcmF0aW9uIGFuZCB0cmFpbmluZyByZW1haW4gb3duZWQKYnkgdGhhdCBsYXVuY2hlciBhbmQgVkVSTC4gT25seSB0aGUgdHdvIHdvcmtlci1zZXR1cCBjb25maWd1cmF0aW9uIGtleXMgYXJlCmFkZGVkLiBUaGlzIGVudHJ5IGlzIG9wdC1pbiBhbmQgZG9lcyBub3QgbW9kaWZ5IHRoZSBoaXN0b3JpY2FsIGVudHJ5IG9yIHBhY2thZ2VzLgoiIiIKaW1wb3J0IGhhc2hsaWIKaW1wb3J0IG9zCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQgcnVucHkKaW1wb3J0IHN5cwoKT1dORVJfTEFVTkNIRVJfU0hBMjU2ID0gIjRiNmJjNmM0MDA5ZjJlZTY4YjMyZWFmZjAxMzkwMjU3MDlkZjBlNGQ2OTk2M2Y5NjlkZWY1NWIwYzE2ODJjNTYiCgoKZGVmIGNvbmZpZ3VyZV93b3JrZXJfc2V0dXAoKToKICAgIGltcG9ydCBvd25lcl9ydW50aW1lX29wdGlvbnMKCiAgICBvcmlnaW5hbCA9IG93bmVyX3J1bnRpbWVfb3B0aW9ucy5ydW50aW1lX29wdGlvbnMKCiAgICBkZWYgcnVudGltZV9vcHRpb25zKCk6CiAgICAgICAgb3B0aW9ucyA9IG9yaWdpbmFsKCkKICAgICAgICBvcHRpb25zWycrcmF5X2luaXQucnVudGltZV9lbnYud29ya2VyX3Byb2Nlc3Nfc2V0dXBfaG9vayddID0gJ21ldGF4X2ZzZHBfZXZlbnRfd2FpdC53b3JrZXJfc2V0dXAnCiAgICAgICAgb3B0aW9uc1snK3JheV9pbml0LnJ1bnRpbWVfZW52LmVudl92YXJzLkRUX0ZTRFBfRVZFTlRfV0FJVF9SRUNFSVBUUyddID0gb3MuZW52aXJvblsnRFRfRlNEUF9FVkVOVF9XQUlUX1JFQ0VJUFRTJ10KICAgICAgICByZXR1cm4gb3B0aW9ucwoKICAgIG93bmVyX3J1bnRpbWVfb3B0aW9ucy5ydW50aW1lX29wdGlvbnMgPSBydW50aW1lX29wdGlvbnMKCgpkZWYgb3duZXJfbGF1bmNoZXIoKToKICAgIHBhdGggPSBQYXRoKG9zLmVudmlyb25bJ0RUX0ZTRFBfT1dORVJfTEFVTkNIRVInXSkKICAgIGlmIGhhc2hsaWIuc2hhMjU2KHBhdGgucmVhZF9ieXRlcygpKS5oZXhkaWdlc3QoKSAhPSBPV05FUl9MQVVOQ0hFUl9TSEEyNTY6CiAgICAgICAgcmFpc2UgUnVudGltZUVycm9yKCdWZXJpZmllZCBUZXh0Q3JhZnQgbGF1bmNoZXIgZGlmZmVycyBmcm9tIHRoZSByZWNvcmRlZCBvd25lcicpCiAgICByZXR1cm4gcGF0aAoKCmlmIF9fbmFtZV9fID09ICdfX21haW5fXyc6CiAgICBwYXRoID0gb3duZXJfbGF1bmNoZXIoKQogICAgY29uZmlndXJlX3dvcmtlcl9zZXR1cCgpCiAgICBzeXMuYXJndlswXSA9IHN0cihwYXRoKQogICAgcnVucHkucnVuX3BhdGgoc3RyKHBhdGgpLCBydW5fbmFtZT0nX19tYWluX18nKQo='}
+for name,encoded in newfiles.items():
+ data=base64.b64decode(encoded);compile(data,str(entry/name),'exec');(entry/name).write_bytes(data)
+assert sha(entry/'metax_fsdp_event_wait.py')==sha(diagnostic/'metax_fsdp_event_wait.py')
+env=dict(os.environ,**s['environment']);env.pop('RAY_ADDRESS',None);env.pop('MACA_VISIBLE_DEVICES',None)
+for key in list(env):
+ if key.startswith(('DT_ACTOR_INCIDENT','DT_HOLD','DT_STOP_AFTER')):env.pop(key)
+env.update(CUDA_VISIBLE_DEVICES='2,3',DT_ENTRY_ROOT=str(entry),
+ DT_FSDP_OWNER_LAUNCHER=str(previous/'entry/launch_textcraft_native.py'),
+ DT_FSDP_EVENT_WAIT_RECEIPTS=str(out/'worker-runtime-overrides'),
+ PYTHONPATH=str(entry)+':'+s['pythonpath'])
+inspection=r"""
+import os,runpy,json,hashlib,sys
+from pathlib import Path
+import torch
+from omegaconf import OmegaConf
+import launch_textcraft_eventwait as wrapper
+wrapper.configure_worker_setup()
+native=runpy.run_path(str(wrapper.owner_launcher()),run_name='verified_native_launcher')
+out=Path(os.environ['INSPECT_OUT']);checkpoint=Path(os.environ['INSPECT_CHECKPOINT'])
+options,sampling=native['options_for'](Path(os.environ['INSPECT_DATA']),out/'textcraft-dt',resume_from=checkpoint)
+config=OmegaConf.load(Path(os.environ['VERL_ROOT'])/'verl/trainer/config/ppo_trainer.yaml')
+for k,v in options.items():OmegaConf.update(config,k.lstrip('+'),v,force_add=True)
+(out/'effective-config.yaml').write_text(OmegaConf.to_yaml(config))
+assert not torch.cuda.is_initialized()
+(out/'preflight.json').write_text(json.dumps(dict(options=options,sampling=sampling,CUDA_initialized=False,
+ total_epochs=config.trainer.total_epochs,total_training_steps=config.trainer.total_training_steps,
+ resume_mode=config.trainer.resume_mode,resume_from_path=config.trainer.resume_from_path),indent=2)+'\n')
+"""
+checked=subprocess.run([env['VENV_PYTHON'],'-c',inspection],cwd=entry,
+ env=dict(env,CUDA_VISIBLE_DEVICES='-1',INSPECT_OUT=str(out),INSPECT_CHECKPOINT=str(checkpoint),
+ INSPECT_DATA=str(root/'datasets/textcraft-native-20260930')),capture_output=True,timeout=120)
+(out/'preflight.stdout').write_bytes(checked.stdout);(out/'preflight.stderr').write_bytes(checked.stderr)
+if checked.returncode:print(checked.stderr.decode(errors='replace')[-3000:]);checked.check_returncode()
+pre=json.loads((out/'preflight.json').read_text());options=pre['options']
+allowed={'trainer.default_local_dir','trainer.rollout_data_dir','trainer.validation_data_dir',
+ 'trainer.resume_mode','trainer.resume_from_path','+ray_init.runtime_env.worker_process_setup_hook',
+ '+ray_init.runtime_env.env_vars.DT_FSDP_EVENT_WAIT_RECEIPTS'}
+assert {k:v for k,v in options.items() if k not in allowed}=={k:v for k,v in s['startup_options'].items() if k not in allowed}
+assert pre['total_epochs']==30 and pre['total_training_steps'] is None and pre['resume_mode']=='resume_path'
+assert options['actor_rollout_ref.model.lora_rank']==8 and options['actor_rollout_ref.model.lora_alpha']==16
+assert options['actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu']==4
+argv=[env['VENV_PYTHON'],str(entry/'launch_textcraft_eventwait.py'),'--data',str(root/'datasets/textcraft-native-20260930'),
+ '--output',str(out/'textcraft-dt'),'--resume-from',str(checkpoint)]
+meta=dict(prepared_unix=time.time(),source_commit='2534a670974e388bc2b9a01d4f304d5c23b37534',upstream_commit=s['upstream_commit'],
+ previous_source=str(previous/'source.json'),previous_source_sha256=sha(previous/'source.json'),
+ resume_from=str(checkpoint),resume_iteration=25,model_optimizer_scheduler_rng_data_owned_by='original VERL',
+ checkpoint_CPU_receipt=str(diagnostic/'checkpoint25-CPU.json'),checkpoint_CPU_receipt_sha256=sha(diagnostic/'checkpoint25-CPU.json'),
+ original_native_owner_SHA256=s['verl_sha256'],numerical_runtime=s['numerical_runtime'],
+ options=options,sampling=pre['sampling'],effective_config_sha256=sha(out/'effective-config.yaml'),
+ worker_setup_hook='metax_fsdp_event_wait.worker_setup',
+ runtime_override=dict(owner='FSDPParamGroup.finalize_backward',lookup='torch.accelerator -> torch.cuda',
+ owner_file_sha256='2798a87b2631091df738afaff6dfcead38ce0cc421585b4331ecaaefb4e784f5',
+ patched_code_sha256='1609439cddb3ffa0b30e18fa55ad6119c1527e009515335eafca5b24dcb3abfc'),
+ entry_files={n:dict(path=str(entry/n),sha256=sha(entry/n)) for n in newfiles},
+ checkpoint_restore_requested=True,restoration_observed=False,formal_budget=330,
+ diagnostic_stop=False,training_timeout=None,per_card_microbatch=4,total_microbatch=8,lora_rank=8,lora_alpha=16)
+put(out/'prepared.json',meta)
+if not True:
+ print(json.dumps(dict(prepared=True,receipt=meta)));raise SystemExit(0)
+physical=subprocess.check_output(['mx-smi'],text=True)
+assert not re.search(r'^\|\s*[23]\s+\d+\s+\S',physical,re.M),'Physical2/3 occupied'
+with urllib.request.urlopen('http://127.0.0.1:36005/docs',timeout=5) as response:assert response.status==200
+(out/'before-physical.txt').write_text(physical)
+with (out/'train.log').open('xb') as stream:
+ p=subprocess.Popen(argv,cwd=entry,env=env,stdout=stream,stderr=subprocess.STDOUT,start_new_session=True)
+meta.update(pid=p.pid,birth=psutil.Process(p.pid).create_time(),started_unix=time.time(),devices=[2,3],argv=argv,
+ log=str(out/'train.log'),status='submitted_native_resume_initializing')
+put(out/'deployment.json',meta)
+source=dict(s,unix=time.time(),environment={k:env[k] for k in set(s['environment'])|{'DT_FSDP_OWNER_LAUNCHER','DT_FSDP_EVENT_WAIT_RECEIPTS'}},
+ entry=str(entry),pythonpath=env['PYTHONPATH'],startup_options=options,checkpoint_restore_requested=True,
+ resume_mode='resume_path',resume_from_path=str(checkpoint),fresh_base_model=False,local_patch_commit='2534a670974e388bc2b9a01d4f304d5c23b37534',
+ runtime_override=meta['runtime_override'],deployment=str(out/'deployment.json'),prepared_only=False)
+source['entry_sha256']=dict(s['entry_sha256'],**{n:sha(entry/n) for n in newfiles});put(out/'source.json',source)
+manifest=json.loads((root/'formal-training.json').read_text());jobs=[j for j in manifest['jobs'] if j['task']!='TextCraft']
+jobs.append(dict(task='TextCraft',method='dt',pid=p.pid,observed_process_created_unix=meta['birth'],started_unix=meta['started_unix'],
+ devices=[2,3],argv=argv,entry=str(entry),verl_root=s['verl_root'],dt_root=s['dt_root'],output=str(out/'textcraft-dt'),
+ log=meta['log'],checkpoints=str(out/'textcraft-dt/checkpoints'),source_receipt=str(out/'source.json'),
+ numerical_runtime=s['numerical_runtime'],status=meta['status'],actor_microbatch=4,lora_rank=8,lora_alpha=16,
+ resume_from=str(checkpoint),runtime_override=meta['runtime_override'],budget=dict(epochs=30,total_training_steps=None,
+ prompt_groups_per_batch=32,samples_per_prompt=8,global_optimizer_minibatch=64,ppo_epochs=1)))
+manifest.update(jobs=jobs,unix=time.time(),manifest=str(out/'formal-training.json'))
+put(out/'formal-training.json',manifest);put(root/'formal-training.json',manifest);put(root/'active-training.json',manifest)
+active=json.loads((root/'active-source.json').read_text());active.update(manifest=str(out/'formal-training.json'),unix=time.time(),
+ jobs=[dict(task=j['task'],pid=j['pid'],birth=j.get('observed_process_created_unix'),entry=j['entry'],verl_root=j['verl_root'],
+ source_receipt=j['source_receipt'],status=j['status'],numerical_runtime=j.get('numerical_runtime'),runtime_override=j.get('runtime_override')) for j in jobs])
+put(root/'active-source.json',active)
+print(json.dumps(dict(deployed=True,receipt=meta,source_sha256=sha(out/'source.json'))))
+
+PY

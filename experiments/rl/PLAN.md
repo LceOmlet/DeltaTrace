@@ -1,3 +1,17 @@
+**2026-10-11 21:05 实际恢复确认，方法不变。** 原VERL已完成第25轮完整检查点
+模型/optimizer/scheduler/RNG/data恢复；原trainer显示25/330，两正式worker进入
+第26轮generate_sequences。已部署FSDP事件等待修复2534a670，LoRA8/16、每卡B4、
+原预算保持；尚未完成恢复后的新完整更新。此状态覆盖下方较早“初始化待恢复”。
+
+**2026-10-11 最新用户指令与运行状态，信用方法不变。** 第37轮已定位原FSDP
+CUDA事件被通用Stream错误等待、参数通信缓冲区过早复用，导致输出层数据污染及
+随后原KL反向NaN。最小owner查找修复已通过原事故回放和原Ray启动hook，源2534a670。
+用户明确跳过NaN步不构成重启理由；第25轮完整检查点CPU检查通过，已提交原VERL
+完整resume_path续训，恢复模型/optimizer/scheduler/RNG/data，保持原330预算、
+LoRA8/16和每卡B4。driver1949625/出生1791723586.64，物理2/3；当前初始化，
+检查点恢复及后续更新尚待实际日志确认。该段覆盖下方历史“不恢复/停止”的运行安排；
+不改变Q/V/A、真实联合Y、白化或官方PPO。详见RUNTIME_RECORD与current_runtime。
+
 # DeltaTrace token 信用：唯一固定计划
 
 **2026-10-10 23:59 运行状态更新，方法不变。** TextCraft第37轮发生真实KL反向NaN，

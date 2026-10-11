@@ -1,3 +1,45 @@
+## 2026-10-11 21:05 原完整检查点25已恢复，正式第26轮采样中
+
+原VERL两worker1958679/出生1791723631.83及1960836/1791723649.88的真实Ray stdout
+均记录model、optim、extra_state三文件加载。原_load_checkpoint依次完成actor恢复与
+train_dataloader.load_state_dict，原trainer已显示25/330并调用两worker的
+actor_rollout_generate_sequences。实际恢复成功，不是仅提交；当前第26轮采样，
+尚无恢复后新完整更新。optimizer99、scheduler25状态保持原加载，未补步或从头重启。
+两worker启动回执实际code SHA1609439c，owner文件SHA2798a87不变，运行覆盖明确记录。
+物理显存板卡2/3约49–50GiB（含基础占用），对应worker PSS约9.3/8.5GiB；
+不把进程存活/GPU忙当更新健康证明。driver1949625/出生1791723586.64，源2534a670，
+所有manifest已回写resumed25_current26_sampling及resume-observed.json。
+见[修复、完整状态加载与实际阶段](results_textcraft_incident37_event_wait_fix_20261011.json)。
+
+## 2026-10-11 原FSDP CUDA事件等待缺陷已定位、修复验收；原VERL完整续训25已提交
+
+源/诊断提交2534a670974e388bc2b9a01d4f304d5c23b37534；VERL-agent仍20bd331b，
+数值源仍26bef6c8、GDN SHA7c06d5e0，LoRA8/16、每卡B4/双卡B8与原正式负载不变。
+实际安装torch2.8.0+metax3.5.3.9的FSDPParamGroup.finalize_backward将CUDA Event
+交给通用accelerator Stream.wait_event；两卡直接整数顺序测试均未等待，原CUDA
+Stream正确。原失败回放中，第0层未消费预取缓冲区释放后与下一root H2D临时存储
+重叠；两地址均140194530000896，错误行精确匹配第0层payload。原actor logp由此
+异常，随后原KL指数反向NaN。已定位第37轮链路；第14轮首算子没有保存，不混称。
+
+仅将原owner函数的一次accelerator属性查找改为cuda。保留原类/函数/指令/常量，
+不复制owner函数体、不修改共享安装包、不增加全设备同步、不裁剪KL或信用。
+原事故old/ref/DT/update完整回放：两rank各8个B4梯度均有限，共同一次optimizer；
+首两B4各原生搬运/通信/写回阶段输出行逐字节正确。生产hook与候选的原/新code
+SHA分别f29d8303/1609439c；原Ray worker_process_setup_hook实际对照通过，import
+默认不安装、安装幂等、CUDA未初始化。此为事件顺序/数据完整性修复，无新增浮点容差。
+
+用户明确：跳过NaN步不是重启理由。第25轮原完整检查点7个PT文件CPU可读、全部
+浮点张量有限，事故行与基础权重SHA4defedf一致；optimizer step99，scheduler
+last_epoch25/step_count26、lr1e-6，保留原状态不补步。通过原--resume-from及
+VERL resume_path恢复模型/优化器/scheduler/RNG/data，不恢复仅LoRA，也不从头重启。
+21:00提交driver1949625/出生1791723586.64，物理GPU2/3，原330完整迭代预算。
+实际发布目录runs/textcraft-formal-eventwait-resume25-20261011-v1；新entry仅两薄文件，
+其余原入口以软链接复用；config差异仅输出目录、原恢复参数和Ray setup配置。
+21:02两原worker1958679/1960836已实际安装code1609439c，尚在模型/vLLM初始化；
+此时不称检查点已恢复或新正式更新完成。无诊断停止/迭代限额/timeout、备份或其他任务。
+远端formal-training/active-training/active-source已指向本次PID、source、runtime override。
+完整证据及SHA见[修复与续训回执](results_textcraft_incident37_event_wait_fix_20261011.json)。
+
 ## 2026-10-11 原事故RPC回放终态；CPU保存值定位到输出词表区段，未修复
 
 原driver1194923/出生1791716422.58及worker1199486/1791716447.39、1201144/
