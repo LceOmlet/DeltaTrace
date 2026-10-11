@@ -1,5 +1,20 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 官方CSAN结束有限，但跳过原编译路径；不是修复
+
+原driver2582227及actor2585525/2586913均按birth核验退出；两rank各8个B4有限，
+共同1次诊断optimizer更新。原head入口各调用8次，但实际Inductor GEMM入口均0次、
+计划247行均未采到，不能从未初始化的缓冲区读取权重。原CPU comparator因空输入
+min归约报错，完整错误保留，没有伪造数值对照或把缺失当正常。原配置9327字节、
+SHA2b170445…逐字节一致。安装Torch convert_frame a513a5f5第1437–1466行明确：
+非infra TorchDispatchMode会跳过Dynamo编译；官方CSAN正通过此mode工作。因此本次
+有限执行不覆盖原编译故障，不排除写坏W，也不作为容差、长上下文或训练验收。
+26份8606100字节原文件及4份大文件SHA已保存；原Ray日志无CSAN报告，正式仍停37/330。
+未部署任何修复，LoRA8/16、每卡B4、Q/V/A和PPO未改；不重跑本CSAN回放。
+下一项使用官方TORCH_TRACE记录原编译入口，不新增TorchDispatchMode/actor/模型计算。
+见[终态与实际覆盖回执](results_textcraft_incident37_official_CSAN_terminal_20261011.json)。
+
+
 ## 2026-10-11 官方流检查诊断进入原old-logprob阶段
 
 Unix1791689833按birth核验driver2582227仍在，原worker2585525/出生1791689738.07、

@@ -1,0 +1,23 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,base64,psutil,subprocess,shutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-official-Torch-CSAN-20261011-v1';out={'unix':time.time(),'files':[],'large_artifacts':[],'processes':[]}
+for pid,birth in [(2582227,1791689713.3),(2585525,1791689738.07),(2586913,1791689753.42)]:
+ try:
+  p=psutil.Process(pid);out['processes'].append({'pid':pid,'birth':p.create_time(),'same_birth':p.create_time()==birth,'status':p.status()});assert p.create_time()!=birth,'Original diagnostic still live'
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+paths=[p for p in job.iterdir()if p.is_file()]+[p for p in(job/'result').iterdir()if p.is_file()]
+for session in pathlib.Path('/tmp/ray').glob('session_*_2582227'):
+ for pid in [2585525,2586913]:paths += [p for p in(session/'logs').glob('*'+str(pid)+'.*')if p.suffix in['.out','.err']]
+for p in paths:
+ sz=p.stat().st_size;h=hashlib.sha256()
+ with p.open('rb')as f:
+  for b in iter(lambda:f.read(8<<20),b''):h.update(b)
+ rel=str(p.relative_to(job))if p.is_relative_to(job)else 'original-Ray-logs/'+p.name
+ item={'path':str(p),'relative':rel,'bytes':sz,'sha256':h.hexdigest()}
+ if sz<2<<20:
+  b=p.read_bytes();assert hashlib.sha256(b).hexdigest()==item['sha256'];item['base64']=base64.b64encode(b).decode();out['files'].append(item)
+ else:out['large_artifacts'].append(item)
+out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['host_available_bytes']=psutil.virtual_memory().available;out['disk_free_bytes']=shutil.disk_usage(job).free
+print(json.dumps(out))
+PY
