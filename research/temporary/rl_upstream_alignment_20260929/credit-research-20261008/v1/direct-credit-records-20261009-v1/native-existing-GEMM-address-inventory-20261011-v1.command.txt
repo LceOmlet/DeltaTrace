@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,torch,hashlib,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');started=time.perf_counter();out={'unix':time.time(),'records':[],'GPU_calls':0,'model_calls':0,'production_changes':0}
+for job in sorted(root.glob('textcraft-native-incident37-*')):
+ result=job/'result'
+ for rank in [0,1]:
+  path=result/f'rank{rank}-native-GEMM-rows.pt';state=result/f'rank{rank}.json'
+  if not path.exists() or not state.exists():continue
+  try:
+   state=json.loads(state.read_bytes());data=torch.load(path,map_location='cpu',weights_only=False,mmap=True);metadata=data['metadata'];calls=metadata['mm_calls'];indices=metadata['copied_indices'];row=dict(job=job.name,rank=rank,phase=state.get('phase'),microbatches=state.get('microbatches'),actual_optimizer_steps=state.get('actual_optimizer_steps'),calls=len(calls),observed=len(indices),input_GEMM_metadata=calls[0]if calls else None)
+   if indices:
+    b=data['competing_weights'][indices[0]].contiguous().view(torch.uint8).numpy().tobytes();row['competing_row_sha256']=hashlib.sha256(b).hexdigest()
+   out['records'].append(row)
+  except Exception as error:out['records'].append(dict(job=job.name,rank=rank,error=repr(error)))
+out.update(seconds=time.perf_counter()-started,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized());(root/'textcraft-native-incident37-existing-GEMM-address-inventory-20261011-v1.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY

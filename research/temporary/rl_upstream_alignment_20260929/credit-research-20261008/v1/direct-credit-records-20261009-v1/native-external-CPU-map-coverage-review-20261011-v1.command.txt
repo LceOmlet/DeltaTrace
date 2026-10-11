@@ -1,0 +1,9 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,torch,hashlib,time,resource
+started=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');job=root/'textcraft-native-incident37-external-CPU-postmortem-20261011-v1';data=torch.load(root/'textcraft-native-incident37-native-head-live-capture-20261011-v1/result/rank1-native-head-live-microbatch1.pt',map_location='cpu',weights_only=False,mmap=True)['tensors']['vocab_weights'];out=dict(unix=time.time(),baseline_dtype=str(data.dtype),baseline_shape=list(data.shape),baseline_stride=list(data.stride()),row_sha=hashlib.sha256(data[159048].contiguous().view(torch.uint8).numpy().tobytes()).hexdigest(),large_regions=[])
+for line in (job/'external-rank1-CPU/maps.txt').read_text().splitlines():
+ fields=line.split(maxsplit=5);a,b=[int(s,16)for s in fields[0].split('-')]
+ if b-a>900_000_000:out['large_regions'].append(dict(begin=a,end=b,bytes=b-a,permissions=fields[1],name=fields[5]if len(fields)>5 else'',line=line))
+out.update(seconds=time.perf_counter()-started,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized());(job/'CPU-map-coverage-review-v1.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY
