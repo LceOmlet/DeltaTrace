@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,base64,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-weight-boundaries-20261011-v1';out={'unix':time.time(),'files':[],'missing_files':[],'processes':[]};names=['job.json','driver.log','binding-check.json','weight-boundary-comparison-v1.json','source/capture_native_incident37_weight_boundaries_20261011.py','source/compare_native_incident37_weight_boundaries_20261011.py']
+for n in [0,1]:names += [f'result/rank{n}.json',f'result/rank{n}-phases.jsonl',f'result/rank{n}-async-head-capture.json',f'result/rank{n}-async-head-return-microbatch1.pt',f'result/rank{n}-loss-inputs-microbatch1.pt',f'result/rank{n}-weight-boundaries.json',f'result/rank{n}-weight-boundaries.pt']
+for name in names:
+ p=job/name
+ if not p.is_file():out['missing_files'].append(str(p));continue
+ b=p.read_bytes();out['files'].append({'relative':name,'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+for pid,birth in [(1279826,1791677388.51),(1282734,1791677406.76),(1286559,1791677423.63)]:
+ try:p=psutil.Process(pid);out['processes'].append({'pid':pid,'expected_birth':birth,'birth':p.create_time(),'status':p.status(),'same_process':abs(p.create_time()-birth)<.01})
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;print(json.dumps(out))
+PY

@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 阶段权重观察回放有限；原权重异常仍未修复
+
+诊断1279826及worker1282734/1286559均退出，两rank原8个B4反向有限、共同1次
+optimizer step，仅诊断不计正式进度。源fdbc1853观察32个rank0全量W边界、
+65个rank1 CPU分片/全量W边界，159048行全与checkpoint逐值相同。rank0不拥有
+该CPU分片，按not_owned记录；未填零、未当缺失。所有原old/ref/27 DT及参数保持。
+CPU对照.04394秒、RSS峰552620032字节、无CUDA初始化；终态无GPU进程、
+主机可用1024760430592字节。采集前后的CPU clone、小D2H及Python包装会改变
+时序和分配，因此本次有限不是修复，也不能否决先前失败GEMM中的实际异常W。
+原异常写入边界/写入方仍未知；后续需要在同一失败执行后采其FSDP源分片，
+避免继续用故障前全阶段观察使问题消失。未部署同步、卸载、编译或概率修补。
+正式仍停37/330，不恢复；源26bef6c8、Q/V/A、LoRA8/16、每卡B4保持。
+见[阶段观察完整回执](results_textcraft_incident37_weight_boundaries_20261011.json)。
+
+
+## 2026-10-11 异常权重最早阶段采集已启动，尚无新边界结论
+
+原事故单次诊断1279826/出生1791677388.51，GPU4/5；worker1282734/1286559
+出生1791677406.76/1791677423.63，首观察在原init_model，非训练健康证明。
+源fdbc1853只采原FSDP lm_head分片中的159048行、原head全量W同一行：
+old/ref/DT前后、update前、head前后、原head反向前后和原Tensor.backward返回后。
+CPU行clone、GPU行原non_blocking D2H，每行8KB；所有GPU等待只在replay退出后。
+未增加模型/DT/GEMM/collective，不写参数，不改源26bef6c8、LoRA8/16或每卡B4。
+实际Ray登记/官方worker调用链CPU核验通过；时序仍可能受观察影响，有限不等于修好。
+正式仍停37/330、不恢复、不部署；见[阶段采集启动回执](results_textcraft_incident37_weight_boundaries_launch_20261011.json)。
+
+
 ## 2026-10-11 失败时实际输出权重行已确认异常，尚未定位写入方
 
 诊断1187241及worker1190103/1191401均退出；原第二B4复现132/124个logp梯度NaN，
