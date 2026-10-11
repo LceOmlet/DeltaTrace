@@ -1,0 +1,13 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,hashlib,json,time,inspect,ray
+from ray.runtime_env import RuntimeEnv
+from ray._private.runtime_env import setup_hook
+out={'unix':time.time(),'ray_version':ray.__version__,'owner_files':[],'model_calls':0,'GPU_calls':0,'production_changes':0,'setup_hook_scope':'Read installed official worker_process_setup_hook API only; no hook installed and no job launched.'}
+for module in [inspect.getmodule(RuntimeEnv),setup_hook]:
+ p=pathlib.Path(inspect.getsourcefile(module));text=p.read_text();lines=text.splitlines();matches=[i for i,l in enumerate(lines)if 'worker_process_setup_hook' in l or 'def load_and_execute_setup_hook' in l or 'def export_setup_func_callable' in l];keep=set()
+ for i in matches:
+  keep.update(range(max(0,i-2),min(len(lines),i+5)))
+ out['owner_files'].append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'excerpts':[{'line':i+1,'text':lines[i]}for i in sorted(keep)][:120]})
+print(json.dumps(out))
+PY

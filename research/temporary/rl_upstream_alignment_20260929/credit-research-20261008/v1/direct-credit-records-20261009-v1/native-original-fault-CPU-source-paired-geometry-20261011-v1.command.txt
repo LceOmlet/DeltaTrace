@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,time,resource,torch
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');receipts=root/'receipts';names=['textcraft-native-incident37-competing-weight-capture-20261011-v1','textcraft-native-incident37-original-GEMM-positive-control-20261011-v1','textcraft-native-incident37-original-fault-branch-CPU-source-20261011-v1'];torch.set_num_threads(2);start=time.perf_counter();out={'unix':time.time(),'jobs':[],'GPU_calls':0,'model_calls':0,'DT_calls':0,'optimizer_steps':0,'new_tolerance':None}
+def load(p):return torch.load(p,map_location='cpu',weights_only=False,mmap=True)
+for name in names:
+ job=receipts/name;entry={'job':name,'config_sha256':hashlib.sha256((job/'result/initialization-config.yaml').read_bytes()).hexdigest(),'ranks':[]};out['jobs'].append(entry)
+ for rank in range(2):
+  path=job/f'result/rank{rank}-native-GEMM-rows.pt';g=load(path);ref=load(receipts/names[0]/f'result/rank{rank}-native-GEMM-rows.pt');indices=g['metadata']['copied_indices'];rindices=ref['metadata']['copied_indices'];mm=g['metadata']['mm_calls'];ptrs=sorted({m['right_pointer']for m in mm});w=g['competing_weights'][indices[0]].contiguous();r={'rank':rank,'GEMM_path':str(path),'captured_rows':len(indices),'weight_pointers':ptrs,'weight_pointers_hex':[hex(x)for x in ptrs],'row159048_pointers_hex':[hex(x+159048*4096*2)for x in ptrs],'coordinate324_pointer_low32':[hex((x+159048*4096*2+324*2)&0xffffffff)for x in ptrs],'hidden_exact_failed':torch.equal(g['hidden'][indices],ref['hidden'][rindices]),'target_weights_exact_failed':torch.equal(g['target_weights'][indices],ref['target_weights'][rindices]),'competing_row_sha256':hashlib.sha256(w.view(torch.uint8).numpy().tobytes()).hexdigest(),'old_ref_exact_failed':{}}
+  for suffix in ['native-old.pt','native-ref.pt']:
+   aa=load(job/f'result/rank{rank}-{suffix}');bb=load(receipts/names[0]/f'result/rank{rank}-{suffix}');r['old_ref_exact_failed'][suffix]={k:torch.equal(v,bb[k])for k,v in aa.items()if isinstance(v,torch.Tensor)}
+  entry['ranks'].append(r)
+out.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized());print(json.dumps(out))
+PY

@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,base64,psutil,subprocess,torch
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-original-fault-branch-CPU-source-20261011-v1';old=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';out={'unix':time.time(),'files':[],'missing_files':[],'remote_large_artifacts':[],'processes':[],'competing_weight_comparison':[]};torch.set_num_threads(2)
+names=['job.json','driver.log','selection.json','binding-check.json','GEMM-competing-weight-comparison-v1.json','GEMM-competing-weight-comparison-v1.stderr','result/initialization-config.yaml','result/completed.json']
+for n in [0,1]:names += [f'result/rank{n}.json',f'result/rank{n}-phases.jsonl',f'result/rank{n}-async-head-capture.json',f'result/rank{n}-async-head-return-microbatch1.pt',f'result/rank{n}-loss-inputs-microbatch1.pt',f'result/rank{n}-native-GEMM-capture.json']
+for p in (job/'result').glob('*exception-capture.json'):names.append(str(p.relative_to(job)))
+for name in names:
+ p=job/name
+ if not p.is_file():out['missing_files'].append(str(p));continue
+ bb=p.read_bytes();out['files'].append({'relative':name,'path':str(p),'bytes':len(bb),'sha256':hashlib.sha256(bb).hexdigest(),'base64':base64.b64encode(bb).decode()})
+for n in [0,1]:
+ for suffix in ['native-GEMM-rows.pt','native-old.pt','native-ref.pt']:
+  p=job/f'result/rank{n}-{suffix}'
+  if not p.is_file():out['missing_files'].append(str(p));continue
+  h=hashlib.sha256()
+  with p.open('rb')as f:
+   for bb in iter(lambda:f.read(8<<20),b''):h.update(bb)
+  out['remote_large_artifacts'].append({'path':str(p),'bytes':p.stat().st_size,'sha256':h.hexdigest(),'downloaded':False})
+ now=torch.load(job/f'result/rank{n}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);prior=torch.load(old/f'result/rank{n}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);indices=now['metadata']['copied_indices'];oldindices=prior['metadata']['copied_indices'];w=now['competing_weights'][indices[0]].contiguous();pw=prior['competing_weights'][oldindices[0]].contiguous();out['competing_weight_comparison'].append({'rank':n,'copied_rows':len(indices),'exact_previous_bad_weight':torch.equal(w,pw),'all_current_captured_rows_same':all(torch.equal(w,now['competing_weights'][i])for i in indices),'bad_row_sha256':hashlib.sha256(w.view(torch.uint8).numpy().tobytes()).hexdigest(),'min':float(w.min()),'max':float(w.max()),'L2':float(w.double().norm())})
+for pid,birth in [(2275891,1791686823.06),(2278582,1791686842.0),(2280290,1791686859.35)]:
+ try:p=psutil.Process(pid);out['processes'].append({'pid':pid,'expected_birth':birth,'birth':p.create_time(),'status':p.status(),'same_process':abs(p.create_time()-birth)<.01})
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+out['host_available_bytes']=psutil.virtual_memory().available;out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['CUDA_initialized']=torch.cuda.is_initialized();print(json.dumps(out))
+PY
