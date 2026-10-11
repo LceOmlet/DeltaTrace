@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,os,json,hashlib,subprocess,psutil,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');directory=root/'receipts/incident37-external-CPU-postmortem-source-20261011-v1';script=directory/'run_external_postmortem.py'
+assert hashlib.sha256(script.read_bytes()).hexdigest()=='cb1c97b547e6b1c1783946f3463d5415b26ded7661763239193bc7e9bf8cbe1c'
+assert hashlib.sha256((directory/'capture_cpu_shard.py').read_bytes()).hexdigest()=='f28dbbf2951d15d59f2435f61d4ad12b3fc540b67f28d643eb9c8a4f73c16fec'
+assert not(root/'receipts/textcraft-native-incident37-external-CPU-postmortem-20261011-v1').exists()
+with(directory/'supervisor.log').open('ab',buffering=0)as log:p=subprocess.Popen([os.environ['VENV_PYTHON'],str(script)],stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+out=dict(unix=time.time(),supervisor_pid=p.pid,supervisor_birth=psutil.Process(p.pid).create_time(),source_path=str(script),source_sha256=hashlib.sha256(script.read_bytes()).hexdigest(),source_parent_commit='3210282d',production_changes=0)
+(directory/'supervisor-launch.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY

@@ -1,5 +1,21 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原失败入口进程外CPU采集已启动；不是修复
+
+诊断supervisor3145550/出生1791695106.94、driver3145598/出生1791695107.31，物理4/5。
+原352/782/3f/e48入口、正式源1c08b57、官方TORCH_TRACE与原配置/缓存保持。
+新代码只在外部CPU supervisor中运行，不向原Ray worker加入hook/import/张量读取。
+待原任务已派发进入DT后暂挂driver，防止异常时提前销毁worker；仅在原GEMM终态
+报告已写出后暂挂对应worker，通过Linux procfs读匿名CPU分片候选，随后finally恢复。
+每次信号核对PID出生；不触及正式作业或其他用户进程。
+
+工具能力检查使用独立CPU子进程，只读取4.20MB、.039秒、峰RSS22654976，无GPU。
+该检查仅说明进程外读取可用，不是PPO/DT验证或故障修复。四处原保存权重anchor
+匹配的CPU allocation仍只是候选；不伪称获取FSDP对象身份，不以正常值排除历史
+瞬时改变。正式仍停37/330，LoRA8/16与每卡B4不变；本次必须看是否仍复现原坏行。
+见[启动、源哈希与能力范围](results_textcraft_incident37_external_CPU_postmortem_launch_20261011.json)。
+
+
 ## 2026-10-11 原报告后CPU采集结束有限；未取得失败源，不是修复
 
 driver2980668、原actor2984831/2986245均按birth核验退出。两rank各8个B4反向有限，

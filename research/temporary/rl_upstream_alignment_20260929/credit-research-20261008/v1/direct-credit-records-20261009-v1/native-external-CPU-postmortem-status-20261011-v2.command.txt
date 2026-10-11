@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,psutil,time
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-external-CPU-postmortem-20261011-v1';out={'unix':time.time(),'processes':[]}
+p=job/'job.json'
+if p.exists():
+ v=json.loads(p.read_bytes());out['job']={k:v[k]for k in v if k not in ['prelaunch_physical_GPU','environment','startup_options']}
+ for pid,birth in [(v['supervisor_pid'],v['supervisor_birth']),(v['driver']['pid'],v['driver']['birth'])]+[(w['pid'],w['birth'])for w in v['workers']]:
+  r=dict(pid=pid,expected_birth=birth);out['processes'].append(r)
+  if psutil.pid_exists(pid):r.update(birth=psutil.Process(pid).create_time(),status=psutil.Process(pid).status())
+  else:r['missing']=True
+ out['rank_phases']=[]
+ for rank in [0,1]:
+  p=job/'result'/f'rank{rank}.json'
+  if p.exists():
+   r=json.loads(p.read_bytes());out['rank_phases'].append({k:r.get(k)for k in ['rank','pid','birth','phase','unix','actual_optimizer_steps','microbatches']})
+for p in [root/'receipts/incident37-external-CPU-postmortem-source-20261011-v1/supervisor.log',job/'driver.log']:
+ if p.exists():out[str(p.name)]=p.read_text(errors='replace')[-1200:]
+print(json.dumps(out))
+PY
