@@ -1,0 +1,12 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,hashlib,time
+job=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-head-copy-boundary-20261011-v1')
+files=[job/'job.json',job/'binding-check.json',job/'selection.json',job/'driver.log',*(job/'result').glob('*.json')]
+out={'unix':time.time(),'files':[],'binary_files':[]}
+for p in files:
+ b=p.read_bytes();out['files'].append({'name':str(p.relative_to(job)),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'text':b.decode(errors='replace')})
+for p in (job/'result').glob('*.pt'):out['binary_files'].append({'name':str(p.relative_to(job)),'bytes':p.stat().st_size})
+print(json.dumps(out))
+PY

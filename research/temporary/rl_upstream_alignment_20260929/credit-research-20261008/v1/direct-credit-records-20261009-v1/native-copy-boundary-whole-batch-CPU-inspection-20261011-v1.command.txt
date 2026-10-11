@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,torch,time,psutil
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');out={'unix':time.time(),'jobs':[]}
+for mode in ['root','head']:
+ job=root/f'receipts/textcraft-native-incident37-{mode}-copy-boundary-20261011-v1';rows=[]
+ for rank in [0,1]:
+  row={'rank':rank}
+  for name in [f'rank{rank}-loss-inputs-microbatch1.pt',f'rank{rank}-async-head-return-microbatch1.pt']:
+   d=torch.load(job/'result'/name,map_location='cpu',weights_only=False,mmap=True);fields={}
+   for k,v in d.items():
+    if torch.is_tensor(v):
+     z=v.detach().to(torch.float64);q=z[torch.isfinite(z)]
+     fields[k]={'shape':list(v.shape),'dtype':str(v.dtype),'nonfinite':int((~torch.isfinite(z)).sum()),'min':float(q.min()) if q.numel() else None,'max':float(q.max()) if q.numel() else None}
+    else:fields[k]=str(v)[:500]
+   row[name]=fields
+  rows.append(row)
+ out['jobs'].append({'mode':mode,'ranks':rows})
+out['CUDA_initialized']=torch.cuda.is_initialized();out['peak_RSS_bytes']=psutil.Process().memory_info().rss
+print(json.dumps(out))
+PY

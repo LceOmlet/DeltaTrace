@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,psutil,time
+job=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-root-copy-boundary-20261011-v1');out={'unix':time.time(),'workers':[]}
+for pid,birth in [(386520,1791708755.15),(388009,1791708769.52)]:
+ row={'pid':pid,'birth':birth};out['workers'].append(row)
+ try:
+  p=psutil.Process(pid);row.update(live_same_birth=p.create_time()==birth,PSS=p.memory_full_info().pss,anonymous_bytes=None)
+  sm=Path(f'/proc/{pid}/smaps_rollup').read_text();row['smaps_rollup']=sm
+ except psutil.NoSuchProcess:row['missing']=True
+logs=[]
+for d in Path('/tmp/ray').glob('session_*_383917'):
+ for pid in [386520,388009]:
+  for p in (d/'logs').glob(f'worker-*-{pid}.*'):
+   if p.suffix in ['.out','.err']:logs.append({'path':str(p),'bytes':p.stat().st_size,'tail':p.read_bytes()[-4000:].decode(errors='replace')})
+out['logs']=logs
+for rank in [0,1]:
+ p=job/'result'/f'rank{rank}.json'
+ if p.exists():d=json.loads(p.read_text());out[f'rank{rank}']={'phase':d.get('phase'),'mtime':p.stat().st_mtime,'DT_batch_keys':list(d.get('DT_batch',{})),'microbatches':d.get('microbatches')}
+print(json.dumps(out))
+PY
