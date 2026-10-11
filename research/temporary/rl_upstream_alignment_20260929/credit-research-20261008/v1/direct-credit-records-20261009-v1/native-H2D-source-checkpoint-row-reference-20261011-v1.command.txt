@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,resource
+import torch
+from safetensors import safe_open
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-native-H2D-source-20261011-v1';source=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes())
+paths=[v for k,v in source['startup_options'].items()if k.endswith('model.path')];assert len(paths)==1,paths
+model=pathlib.Path(paths[0]);idx=model/'model.safetensors.index.json';index=json.loads(idx.read_bytes());wm=index['weight_map'];names=[k for k in wm if k=='lm_head.weight' or k.endswith('.embed_tokens.weight')];assert len(names)==2,names
+start=time.perf_counter();rows=[];tensors={}
+for name in names:
+ path=model/wm[name]
+ with safe_open(str(path),framework='pt',device='cpu')as owner:
+  sl=owner.get_slice(name);shape=sl.get_shape();assert shape==[248320,4096],shape
+  for row in [34888,159048]:
+   value=sl[row:row+1].clone();b=value.view(torch.uint8).numpy().tobytes();key=name+':'+str(row);tensors[key]=value
+   rows.append({'parameter':name,'row':row,'file':str(path),'shape':shape,'dtype':str(value.dtype),'bytes':len(b),'row_sha256':hashlib.sha256(b).hexdigest(),'CPU_row_hex':b.hex(),'L2':value.double().norm().item()})
+assert next(r for r in rows if r['parameter']=='lm_head.weight' and r['row']==159048)['row_sha256']=='4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a'
+torch.save(tensors,job/'checkpoint-reference-rows.pt')
+out={'unix':time.time(),'seconds':time.perf_counter()-start,'model':str(model),'index_sha256':hashlib.sha256(idx.read_bytes()).hexdigest(),'rows':rows,'peak_RSS_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'cuda_initialized':torch.cuda.is_initialized(),'model_calls':0,'production_changes':0}
+(job/'checkpoint-reference-rows.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY

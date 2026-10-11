@@ -1,0 +1,15 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib
+import torch
+base=pathlib.Path(torch.__file__).resolve().parent
+owners=[]
+for name in ['cuda/_sanitizer.py','cuda/_gpu_trace.py']:
+ p=base/name;lines=p.read_text().splitlines();hits=[]
+ needles=['def enable_cuda_sanitizer','class CUDASanitizer','_activate_gpu_trace','class CUDASanitizerDispatchMode','def _handle_kernel_launch','def _handle_memory_deallocation','def _handle_event_record','def _handle_stream_synchronization','def _handle_device_synchronization']
+ for i,s in enumerate(lines):
+  if any(n in s for n in needles):hits.append({'line':i+1,'text':chr(10).join(lines[max(0,i-2):min(len(lines),i+22)])})
+ owners.append({'path':str(p),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'excerpts':hits})
+out={'unix':time.time(),'torch_version':torch.__version__,'native_GPU_trace_entry_exists':hasattr(torch._C,'_activate_gpu_trace'),'cuda_initialized':torch.cuda.is_initialized(),'source_inventory':owners,'scope':'Read installed official PyTorch CUDA Sanitizer source only; no sanitizer enabled, GPU call, model or job','production_changes':0}
+print(json.dumps(out))
+PY

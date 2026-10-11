@@ -1,0 +1,19 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,subprocess,os,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-Torch-CSAN-capability-20261011-v1');root.mkdir(exist_ok=False)
+# These are the unsynchronized and wait_stream-corrected examples in PyTorch 2.8 docs.
+bad='import torch\na = torch.rand(4, 2, device="cuda")\nwith torch.cuda.stream(torch.cuda.Stream()):\n    torch.mul(a, 5, out=a)\n'
+good='import torch\na = torch.rand(4, 2, device="cuda")\nwith torch.cuda.stream(torch.cuda.Stream()):\n    torch.cuda.current_stream().wait_stream(torch.cuda.default_stream())\n    torch.mul(a, 5, out=a)\n'
+for name,text in [('official_unsynchronized.py',bad),('official_wait_stream.py',good)]:(root/name).write_text(text)
+pre=subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout;assert 'no process found'in pre
+assert not any(psutil.pid_exists(pid)for pid in [2464398,2468683,2470194])
+env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='4';env['TORCH_CUDA_SANITIZER']='1'
+results=[]
+for name in ['official_unsynchronized.py','official_wait_stream.py']:
+ start=time.perf_counter();p=subprocess.run([os.environ['VENV_PYTHON'],str(root/name)],env=env,capture_output=True,text=True,timeout=30)
+ (root/(name+'.stdout')).write_text(p.stdout);(root/(name+'.stderr')).write_text(p.stderr)
+ results.append({'name':name,'seconds':time.perf_counter()-start,'returncode':p.returncode,'CSAN_race_reported':'CSAN detected a possible data race' in p.stderr,'stdout':p.stdout,'stderr':p.stderr})
+out={'unix':time.time(),'official_example':'https://docs.pytorch.org/docs/2.8/cuda._sanitizer.html','scope':'Installed native PyTorch stream-sanitizer tool capability only. No model, DT, PPO, numerical tolerance, deployment, or training reliability claim. These examples do not cover custom Triton kernels.','results':results,'physical_before':pre,'physical_after':subprocess.run(['mx-smi'],capture_output=True,text=True,check=True).stdout,'files':[{'path':str(p),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}for p in root.iterdir()if p.is_file()],'production_changes':0,'model_calls':0}
+(root/'receipt.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY
