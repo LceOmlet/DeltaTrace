@@ -1,0 +1,9 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import hashlib,json,base64
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts')
+p=root/'textcraft-native-incident37-competing-weight-capture-20261011-v1/source/compare_native_incident37_GEMM_rows_20261011.py'
+b=p.read_bytes();assert hashlib.sha256(b).hexdigest()=='926292cae52daaa356084b3f26cd00e86f57a517c82bb63e74b630304d3fbe66'
+print(json.dumps(dict(path=str(p),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),b64=base64.b64encode(b).decode())))
+PY

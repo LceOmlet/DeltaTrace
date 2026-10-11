@@ -1,0 +1,19 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import torch,json,time,resource,hashlib
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts')
+start=time.perf_counter();torch.set_num_threads(4);rows=[]
+for rank in (0,1):
+ paths=[root/j/'result'/f'rank{rank}-native-GEMM-rows.pt' for j in ['textcraft-native-incident37-native-flight-recorder-20261011-v1','textcraft-native-incident37-after-replay-official-RPC-20261011-v1']]
+ a,b=[torch.load(p,map_location='cpu',weights_only=False,mmap=True) for p in paths]
+ ia,ib=[v['metadata']['copied_indices'][0] for v in (a,b)];ha,hb=a['hidden'][ia],b['hidden'][ib]
+ item=dict(rank=rank,sources=[dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in paths],hidden_exact=torch.equal(ha,hb),hidden_max_abs=float((ha.float()-hb.float()).abs().max()),selection_exact=a['metadata']['selection']['rows'][ia]==b['metadata']['selection']['rows'][ib])
+ if item['hidden_exact'] and item['selection_exact']:
+  delta=a['logits'][ia].float()-b['logits'][ib].float(); changed=torch.nonzero(delta!=0).reshape(-1);lo=int(changed.min());hi=int(changed.max())+1;top=delta.abs().topk(8).indices
+  item.update(changed_rows=changed.numel(),first_changed=lo,last_changed_exclusive=hi,span_rows=hi-lo,logits_exact_outside_span=bool((delta[:lo]==0).all() and (delta[hi:]==0).all()),span_weight_bytes=(hi-lo)*ha.numel()*ha.element_size(),maximum_abs_difference=float(delta.abs().max()),top=[dict(vocab_id=int(i),native_failed=float(a['logits'][ia,i]),native_finite=float(b['logits'][ib,i]),delta=float(delta[i])) for i in top])
+ rows.append(item)
+out=dict(unix=time.time(),rows=rows,scope='Exact native-logit comparison only for the same saved hidden vector and selected position. No FP64 reference or new tolerance, and no global-position or buffer-boundary claim.',seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,model_calls=0,production_changes=0)
+(root/'incident37-saved-full-vocab-CPU-20261011-v1/same-hidden-native-comparison.json').write_text(json.dumps(out,indent=2))
+print(json.dumps(out))
+PY

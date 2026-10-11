@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,hashlib,base64,time
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts')
+paths=[root/'incident37-saved-logit-neighborhood-CPU-20261011-v1'/n for n in ['analyze_saved_logit_neighborhood.py','analysis.json']]+[root/'incident37-saved-full-vocab-CPU-20261011-v1'/n for n in ['analyze_saved_logit_full_vocab.py','analysis.json','analysis.pt','same-hidden-native-comparison.json','same-hidden-all-selected-comparison.json','rank1-same-hidden-all-selected.pt']]+[root/'textcraft-native-incident37-after-replay-official-RPC-20261011-v1/frozen-CPU-source-comparison.json']
+items=[]
+for p in paths:
+ b=p.read_bytes();items.append(dict(relative=p.relative_to(root).as_posix(),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),b64=base64.b64encode(b).decode()))
+print(json.dumps(dict(unix=time.time(),files=items)))
+PY

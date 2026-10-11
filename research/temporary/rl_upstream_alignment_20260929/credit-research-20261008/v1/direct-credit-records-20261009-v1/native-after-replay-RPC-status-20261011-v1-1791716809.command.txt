@@ -1,0 +1,27 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,psutil,time,subprocess,re
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+job=root/'receipts/textcraft-native-incident37-after-replay-official-RPC-20261011-v1'
+j=json.loads((job/'job.json').read_text());out={'unix':time.time(),'job_pid':j['pid'],'job_birth':j['birth']}
+try:
+ p=psutil.Process(j['pid']);out['driver']={'pid':p.pid,'birth':p.create_time(),'same_birth':p.create_time()==j['birth'],'status':p.status(),'RSS':p.memory_info().rss}
+ out['descendants']=[]
+ for c in p.children(recursive=True):
+  try:
+   out['descendants'].append({'pid':c.pid,'birth':c.create_time(),'name':c.name(),'RSS':c.memory_info().rss,'status':c.status(),'cmdline':' '.join(c.cmdline())[:200]})
+  except (psutil.NoSuchProcess,psutil.AccessDenied):pass
+except psutil.NoSuchProcess:out['driver']={'pid':j['pid'],'missing':True}
+log=job/'driver.log';out['driver_log_tail']=log.read_bytes()[-6500:].decode(errors='replace') if log.exists() else None
+out['result_files']=[]
+for p in (job/'result').glob('*.json'):
+ try:
+  d=json.loads(p.read_text());d=d if isinstance(d,dict) else {'list_length':len(d)};out['result_files'].append({'name':p.name,'bytes':p.stat().st_size,'mtime':p.stat().st_mtime,'phase':d.get('phase'),'native_update_error':d.get('native_update_error'),'microbatches':d.get('microbatches'),'watched_modules':d.get('watched_modules'),'record_count':len(d.get('records',[]))})
+ except Exception as e:out['result_files'].append({'name':p.name,'error':repr(e)})
+mem=Path('/sys/fs/cgroup/memory/memory.usage_in_bytes');out['cgroup_bytes']=int(mem.read_text()) if mem.exists() else None
+out['host_available_bytes']=psutil.virtual_memory().available
+r=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10);out['physical']=r.stdout;out['physical_returncode']=r.returncode
+print(json.dumps(out))
+
+PY

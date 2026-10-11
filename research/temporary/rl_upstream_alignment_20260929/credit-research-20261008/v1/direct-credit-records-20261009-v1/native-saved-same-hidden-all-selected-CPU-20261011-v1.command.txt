@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import torch,json,time,resource,hashlib
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');start=time.perf_counter();torch.set_num_threads(4);rows=[]
+for rank in (0,1):
+ paths=[root/j/'result'/f'rank{rank}-native-GEMM-rows.pt' for j in ['textcraft-native-incident37-native-flight-recorder-20261011-v1','textcraft-native-incident37-after-replay-official-RPC-20261011-v1']]
+ a,b=[torch.load(p,map_location='cpu',weights_only=False,mmap=True) for p in paths]
+ ia,ib=[torch.tensor(v['metadata']['copied_indices'],dtype=torch.long) for v in (a,b)]
+ sa,sb=[[v['metadata']['selection']['rows'][int(i)] for i in indices] for v,indices in [(a,ia),(b,ib)]];assert sa==sb
+ ha,hb=a['hidden'][ia],b['hidden'][ib];same=(ha==hb).all(dim=1);n=int(same.sum());item=dict(rank=rank,selected_positions=len(sa),same_hidden_positions=n,selection_exact=True,sources=[dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in paths])
+ if n:
+  x=a['logits'][ia[same]];y=b['logits'][ib[same]];delta=x.float()-y.float();change_count=(delta!=0).sum(dim=0);changed=torch.nonzero(change_count).reshape(-1);lo=int(changed.min());hi=int(changed.max())+1
+  pos_change=(delta!=0).sum(dim=1);max_by_vocab=delta.abs().max(dim=0).values;top=max_by_vocab.topk(8).indices
+  p=root/'incident37-saved-full-vocab-CPU-20261011-v1'/f'rank{rank}-same-hidden-all-selected.pt';torch.save(dict(change_count=change_count,max_abs_difference=max_by_vocab,same_hidden_indices=ia[same],selections=[s for s,keep in zip(sa,same) if keep]),p)
+  item.update(changed_vocab_rows=int(changed.numel()),first_changed=lo,last_changed_exclusive=hi,span_rows=hi-lo,logits_exact_outside_span=bool((change_count[:lo]==0).all() and (change_count[hi:]==0).all()),changed_rows_per_position_min=int(pos_change.min()),changed_rows_per_position_max=int(pos_change.max()),maximum_abs_difference=float(max_by_vocab.max()),top=[dict(vocab_id=int(i),max_abs_difference=float(max_by_vocab[i]),changed_positions=int(change_count[i])) for i in top],artifact=dict(path=str(p),bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
+ rows.append(item)
+out=dict(unix=time.time(),rows=rows,scope='All saved selected positions with byte-identical actual hidden vectors. These positions were selected by the old recorder, not a representative task sample. Native logits only, no tolerance or physical allocation-boundary inference.',seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,model_calls=0,production_changes=0)
+(root/'incident37-saved-full-vocab-CPU-20261011-v1/same-hidden-all-selected-comparison.json').write_text(json.dumps(out,indent=2));print(json.dumps(out))
+PY
