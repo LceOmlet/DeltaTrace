@@ -1,0 +1,13 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib
+job=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1');out={'unix':time.time(),'scope':'Read native emitted compiler source references only; live trace may be incomplete','files':[]};refs={}
+for trace in(job/'torch-trace').glob('*'):
+ if not trace.is_file():continue
+ for lineno,line in enumerate(trace.read_text(errors='replace').splitlines(),1):
+  if '"inductor_output_code"'not in line:continue
+  data=json.loads(line[line.index('{'):]);name=data['inductor_output_code']['filename'];refs.setdefault(name,[]).append({'trace':str(trace),'line':lineno,'rank':data.get('rank'),'frame_id':data.get('frame_id'),'frame_compile_id':data.get('frame_compile_id')})
+for name,events in refs.items():
+ p=pathlib.Path(name);b=p.read_bytes();s=b.decode();head_hints=[(i+1,l)for i,l in enumerate(s.splitlines())if any(t in l for t in ['[dhidden_states]','[dvocab_weights]','[token_log_probs]','[entropy]'])];out['files'].append({'path':str(p),'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b),'native_trace_references':events,'possible_head_hints':head_hints})
+print(json.dumps(out))
+PY

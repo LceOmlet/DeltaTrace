@@ -1,5 +1,29 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原编译路径再次复现第二B4 NaN；相同坏权重，尚未修复
+
+原driver2756368与actor2759651/2761040均按birth确认退出，物理4/5；两rank首B4
+有限、第二B4 logp梯度NaN133/124，零optimizer更新。只加官方TORCH_TRACE，原352/
+782/3f/e48入口、正式源1c08b57、配置、缓存、LoRA8/16、每卡B4未改。实际原GEMM
+42/44次，247/247计划行完整，覆盖了前次CSAN未执行的原编译路径。已保存两份官方
+trace共32813811字节，按原compilation_metrics绑定实际forward/backward生成代码，
+不是从缓存目录猜执行版本。全部trace和大型现场保留本机与远端，manifest登记SHA；
+Git提交原小型日志、配置、元数据与源码，不重复提交54MB base64传输副本。
+
+实际冻结head159048行在全部247处逐字节相同，SHA137e443e…，与此前原失败坏行完全
+一致。CPU原VERL归一化与实际head输出逐值一致；FP64实际H·实际W回BF16也逐值一致，
+支持权重异常先于head概率异常，但写坏方未查明。rank0 H相对此前正常A改变461904元素、
+maxabs0.875，rank1 H精确一致，不能沿用“两个H都相同”的旧报告。原模型/DT不新增调用，
+CPU比较.640秒、峰RSS1233805312；另8KiB行逐字节核对.021秒、RSS542994432，均无CUDA。
+
+NaN之后原e48故障捕获第231行拷贝saved weight到CPU又报CUDA invalid argument；原loss
+及GEMM现场已先保存。此为后续捕获错误，不据报错点认定原写坏位置，异步错误或FSDP
+saved-view生命周期仍待证实。实际生成forward把logits写到独立buf0，backward的dH/dW
+各自分配；源码无显式覆盖W，但这不构成GPU内存/流安全证明。未加裁剪纠偏或猜测性同步。
+正式仍停37/330，无生产修复；下一步定位第二head前实际W写入或存储生命周期。
+见[编译故障终态与实际源回执](results_textcraft_incident37_official_TRACE_terminal_20261011.json)。
+
+
 ## 2026-10-11 原编译事故入口已启用官方TORCH_TRACE；未完成
 
 driver2756368/出生1791691389.97，原actor2759651/出生1791691414.61及2761040/

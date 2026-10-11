@@ -1,0 +1,8 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,base64
+files=[{'path': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor/t6/ct6zpxkbp4isythowiiemao4akxthuxd636qrdjewohv2zvhtfqa.py', 'sha256': 'b371a481f120102101adc1649e05604a0197782b18b9423cd88b873a57323ae5', 'bytes': 20608, 'native_trace_references': [{'trace': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1/torch-trace/dedicated_log_torch_trace_rank_1_1zfdxaqc.log', 'line': 28674, 'rank': 1, 'frame_id': 8, 'frame_compile_id': 0}, {'trace': '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1/torch-trace/dedicated_log_torch_trace_rank_0_dwtuvx1a.log', 'line': 36235, 'rank': 0, 'frame_id': 8, 'frame_compile_id': 0}], 'possible_head_hints': [[334, '        # Topologically Sorted Source Nodes: [dhidden_states], Original ATen: [aten.mm]'], [338, '        # Topologically Sorted Source Nodes: [dvocab_weights], Original ATen: [aten.mm]']]}]
+for row in files:
+ p=pathlib.Path(row['path']);b=p.read_bytes();assert hashlib.sha256(b).hexdigest()==row['sha256'];row['base64']=base64.b64encode(b).decode()
+print(json.dumps(files))
+PY

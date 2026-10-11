@@ -1,0 +1,9 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,base64,time
+paths=['/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1/GEMM-competing-weight-comparison-v1.json', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1/GEMM-competing-weight-comparison-v1.stdout', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1/GEMM-competing-weight-comparison-v1.stderr', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py', '/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/cache/inductor/7f/c7fihwthp7zvrajdlksdiu3b3uf47toyxtdfy3vgncudmtn7fma6.py']
+out=[]
+for name in paths:
+ p=pathlib.Path(name);data=p.read_bytes();out.append(dict(path=name,bytes=len(data),sha256=hashlib.sha256(data).hexdigest(),base64=base64.b64encode(data).decode()))
+print(json.dumps(dict(unix=time.time(),files=out)))
+PY

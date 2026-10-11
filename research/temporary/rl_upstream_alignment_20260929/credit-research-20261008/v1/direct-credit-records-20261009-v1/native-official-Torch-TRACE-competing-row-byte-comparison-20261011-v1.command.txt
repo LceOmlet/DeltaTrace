@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,pathlib,json,hashlib,time,resource
+start=time.perf_counter();torch.set_num_threads(2)
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+original=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/result'
+current=root/'receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1/result'
+out=[]
+for rank in [0,1]:
+ before=torch.load(original/f'rank{rank}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True)
+ after=torch.load(current/f'rank{rank}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True)
+ valid=after['metadata']['copied_indices'];oldvalid=before['metadata']['copied_indices'];row=after['competing_weights'][valid[0]].clone();oldrow=before['competing_weights'][oldvalid[0]]
+ data=row.contiguous().view(torch.uint8).numpy().tobytes();olddata=oldrow.contiguous().view(torch.uint8).numpy().tobytes()
+ out.append(dict(rank=rank,captured_rows=len(valid),all_captured_rows_equal=all(torch.equal(after['competing_weights'][i],row)for i in valid),equals_original_bad_row=torch.equal(row,oldrow),row_sha256=hashlib.sha256(data).hexdigest(),original_row_sha256=hashlib.sha256(olddata).hexdigest(),original_path=str(original/f'rank{rank}-native-GEMM-rows.pt'),current_path=str(current/f'rank{rank}-native-GEMM-rows.pt')))
+print(json.dumps(dict(unix=time.time(),rows=out,seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,optimizer_steps=0,production_changes=0)))
+PY
