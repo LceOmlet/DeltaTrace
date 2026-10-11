@@ -17,6 +17,7 @@ import capture_native_incident37_async_head_20261011 as async_head
 
 ASYNC_SOURCE_SHA = '782db0e8548f7cfb12bcf9c24271400da895b8bcb9e008eb3813f9014a0e9cc2'
 SELECTION_SHA = '9a82a6912a18e44cf11cca67bcc217ffbcdf6d16dbc8adc71bd487f461c5cd1c'
+COMPETING_VOCAB_ID = 159048
 
 
 def make_observed_worker(native_factory):
@@ -60,6 +61,7 @@ def make_observed_worker(native_factory):
                     logits=torch.empty((count, vocab), dtype=h.dtype, device='cpu', pin_memory=True),
                     hidden=torch.empty((count, h.shape[-1]), dtype=h.dtype, device='cpu', pin_memory=True),
                     target_weights=torch.empty((count, w.shape[-1]), dtype=w.dtype, device='cpu', pin_memory=True),
+                    competing_weights=torch.empty((count, w.shape[-1]), dtype=w.dtype, device='cpu', pin_memory=True),
                     token_ids=torch.empty(count, dtype=ids.dtype, device='cpu', pin_memory=True))
                 ids_flat = ids.view(-1)
                 native_mm = extern_kernels.mm
@@ -94,6 +96,7 @@ def make_observed_worker(native_factory):
                                     buffers['logits'][j].copy_(value[local].detach(), non_blocking=True)
                                     buffers['hidden'][j].copy_(left[local].detach(), non_blocking=True)
                                     buffers['target_weights'][j].copy_(right[:, token].detach(), non_blocking=True)
+                                    buffers['competing_weights'][j].copy_(right[:, COMPETING_VOCAB_ID].detach(), non_blocking=True)
                                     buffers['token_ids'][j].copy_(ids_flat[position].detach(), non_blocking=True)
                                     copied.append(j)
                     except Exception as error:
@@ -111,6 +114,7 @@ def make_observed_worker(native_factory):
                     pending.append(dict(index=index, buffers=buffers, event=event,
                         mm_calls=mm_calls, copied_indices=copied, native_rows_seen=row_start,
                         expected_rows=ids.numel(), temperature=bound.arguments['temperature'],
+                        competing_vocab_id=COMPETING_VOCAB_ID,
                         selection=selection))
 
             head.FusedLinearForPPO.forward = observed_head

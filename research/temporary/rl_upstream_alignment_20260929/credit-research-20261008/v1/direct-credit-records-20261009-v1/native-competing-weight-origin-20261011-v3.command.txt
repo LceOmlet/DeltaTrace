@@ -1,0 +1,12 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,torch,resource
+from safetensors import safe_open
+torch.set_num_threads(4);started=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';g=torch.load(job/'result/rank0-native-GEMM-rows.pt',map_location='cpu',mmap=True,weights_only=False);w=g['competing_weights'][0];out={'unix':time.time(),'base_row_candidates':[],'GPU_calls':0,'production_changes':0};model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');index=json.loads((model/'model.safetensors.index.json').read_bytes());wm=index['weight_map']
+for name in ['lm_head.weight','model.language_model.embed_tokens.weight']:
+ with safe_open(model/wm[name],framework='pt',device='cpu') as f:
+  t=f.get_tensor(name)
+  for lo,hi in [(0,16),(352,368),(4080,4096)]:
+   matches=torch.nonzero((t[:,lo:hi]==w[lo:hi]).all(-1)).view(-1);out['base_row_candidates'].append({'name':name,'fingerprint_columns':[lo,hi],'candidate_rows':matches.tolist(),'full_row_differences':[{'row':int(i),'count':int((t[i]!=w).sum()),'first_different_columns':torch.nonzero(t[i]!=w).view(-1)[:80].tolist()} for i in matches[:8]]})
+out.update(seconds=time.perf_counter()-started,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized());(job/'competing-weight-origin-v3.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY

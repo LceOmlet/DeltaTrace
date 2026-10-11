@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,psutil,subprocess
+job=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1')
+x=json.loads((job/'job.json').read_bytes());out={'unix':time.time(),'job':x,'process':[]}
+try:
+ p=psutil.Process(x['pid']);out['process'].append({'pid':p.pid,'birth':p.create_time(),'expected_birth':x['birth'],'status':p.status(),'cmd':p.cmdline()});procs=p.children(recursive=True)
+except psutil.NoSuchProcess:out['process'].append({'pid':x['pid'],'missing':True});procs=[]
+for p in procs:
+ try:
+  if 'ray::' in p.name() or 'python' in p.name():out['process'].append({'pid':p.pid,'birth':p.create_time(),'name':p.name(),'status':p.status(),'rss':p.memory_info().rss})
+ except psutil.Error:pass
+out['driver_tail']=(job/'driver.log').read_text(errors='replace')[-11000:]
+out['files']=[{'path':str(p.relative_to(job)),'bytes':p.stat().st_size,'mtime':p.stat().st_mtime} for p in (job/'result').rglob('*') if p.is_file()] if (job/'result').exists() else []
+out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout
+out['host_memory']=dict(psutil.virtual_memory()._asdict());out['disk']=dict(psutil.disk_usage(str(job))._asdict())
+print(json.dumps(out))
+PY

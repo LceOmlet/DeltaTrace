@@ -96,6 +96,18 @@ def main():
         prior_w = prior['tensors']['vocab_weights'][labels]
         row['actual_GEMM_hidden_vs_prior_normal_A'] = summarize(prior_h, h)
         row['actual_target_weights_vs_prior_normal_A'] = summarize(prior_w, w)
+        competing_id = metadata['competing_vocab_id']
+        competing_w = gemm['competing_weights'][indices]
+        prior_competing_w = prior['tensors']['vocab_weights'][competing_id].expand_as(competing_w)
+        competing_mm = gemm['logits'][indices, competing_id]
+        competing_dot = (h.double() * competing_w.double()).sum(-1)
+        competing_dot_rounded = competing_dot.to(competing_mm.dtype)
+        row['competing_vocab_id'] = competing_id
+        row['actual_competing_weights_vs_prior_normal_A'] = summarize(prior_competing_w, competing_w)
+        row['native_competing_logit_vs_actual_FP64_dot_rounded'] = summarize(competing_dot_rounded, competing_mm)
+        row['actual_competing_weight_ranges'] = dict(min=float(competing_w.min()),
+            max=float(competing_w.max()), L2_min=float(competing_w.double().norm(dim=-1).min()),
+            L2_max=float(competing_w.double().norm(dim=-1).max()))
         del prior
         loss_path = args.result / f'rank{rank}-loss-inputs-microbatch1.pt'
         loss = load(loss_path) if loss_path.is_file() else None
@@ -114,6 +126,9 @@ def main():
                 FP64_scalar_dot=float(scalar_dot[j]),
                 FP64_dot_rounded=float(rounded_dot[j]),
                 target_logit_minus_rounded_dot=float(target_mm[j].double() - rounded_dot[j].double()),
+                actual_competing_GEMM_logit=float(competing_mm[j]),
+                actual_competing_FP64_dot=float(competing_dot[j]),
+                actual_competing_dot_rounded=float(competing_dot_rounded[j]),
                 current_loss_logp=float(loss['log_prob'][rr, cc]) if loss is not None else None,
                 current_gradient_nan=bool(torch.isnan(loss['log_prob_gradient'][rr, cc])) if loss is not None else None,
                 top3_logit_ids=top_ids[j].tolist(), top3_logits=values[j].tolist()))

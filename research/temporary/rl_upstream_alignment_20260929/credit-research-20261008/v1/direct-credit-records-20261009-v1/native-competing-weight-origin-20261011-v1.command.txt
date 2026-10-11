@@ -1,0 +1,23 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,torch,hashlib,resource
+from safetensors import safe_open
+torch.set_num_threads(4);started=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';rows=[];out={'unix':time.time(),'ranks':[],'checkpoint_matches':[],'GPU_calls':0,'production_changes':0}
+for rank in range(2):
+ g=torch.load(job/f'result/rank{rank}-native-GEMM-rows.pt',map_location='cpu',mmap=True,weights_only=False);w=g['competing_weights'];row=w[0];rows.append(row.clone());r={'rank':rank,'all_captured_weight_rows_exact':torch.equal(w,row.expand_as(w)),'weight_row_sha256':hashlib.sha256(row.view(torch.uint8).numpy().tobytes()).hexdigest(),'values_first32':row[:32].float().tolist()}
+ hfile=job/f'result/rank{rank}-exception-head-H-IDs.pt';v=torch.load(hfile,map_location='cpu',mmap=True,weights_only=False);r['exception_keys']=list(v);tensors=v.get('tensors',v);r['exception_tensor_keys']=list(tensors)
+ H=tensors.get('hidden_states',tensors.get('hidden'))
+ if H is not None:
+  H=H.reshape(-1,4096);matches=[];best=(float('inf'),-1)
+  for lo in range(0,H.shape[0],512):
+   chunk=H[lo:lo+512];exact=(chunk==row).all(-1);matches += (torch.nonzero(exact).view(-1)+lo).tolist();d=(chunk.float()-row.float()).square().sum(-1);idx=int(d.argmin());val=float(d[idx]);best=min(best,(val,lo+idx))
+  r['failed_H_exact_matching_rows']=matches;r['failed_H_nearest_squared_L2']=best
+ out['ranks'].append(r)
+out['rank0_rank1_competing_weight_exact']=torch.equal(rows[0],rows[1]);model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');index=json.loads((model/'model.safetensors.index.json').read_bytes());weightmap=index['weight_map'];candidates=[k for k in weightmap if ('norm' in k and 'weight' in k)]
+for name in candidates:
+ with safe_open(model/weightmap[name],framework='pt',device='cpu') as f:
+  shape=f.get_slice(name).get_shape()
+  if shape==[4096]:
+   t=f.get_tensor(name);exact=torch.equal(t,rows[0]);plus1=torch.equal((t.float()+1).to(rows[0].dtype),rows[0]);d=float((t.float()-rows[0].float()).square().sum());out['checkpoint_matches'].append({'name':name,'shape':shape,'exact':exact,'plus1_exact':plus1,'squared_L2':d})
+out['checkpoint_matches'].sort(key=lambda x:x['squared_L2']);out.update(seconds=time.perf_counter()-started,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized());(job/'competing-weight-origin-v1.json').write_text(json.dumps(out,indent=2)+'\n');print(json.dumps(out))
+PY
