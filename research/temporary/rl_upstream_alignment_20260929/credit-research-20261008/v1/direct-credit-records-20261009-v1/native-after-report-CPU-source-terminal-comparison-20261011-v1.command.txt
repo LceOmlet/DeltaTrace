@@ -1,0 +1,28 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,time,psutil,torch,resource
+start=time.perf_counter();torch.set_num_threads(2);root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-after-native-report-CPU-source-20261011-v1';result=job/'result';out=dict(unix=time.time(),ranks=[],processes=[])
+for pid,birth in [(2980668,1791693545.27),(2984831,1791693577.32),(2986245,1791693592.78)]:
+ row=dict(pid=pid,expected_birth=birth);out['processes'].append(row)
+ if psutil.pid_exists(pid):row.update(birth=psutil.Process(pid).create_time(),status=psutil.Process(pid).status())
+ else:row['missing']=True
+for rank in [0,1]:
+ record=result/f'rank{rank}.json';meta=result/f'rank{rank}-native-GEMM-capture.json';cpu=result/f'rank{rank}-after-native-report-CPU-source.json';packet=result/f'rank{rank}-after-native-report-CPU-source.pt'
+ row=dict(rank=rank);out['ranks'].append(row)
+ if record.exists():
+  v=json.loads(record.read_bytes());row.update(phase=v.get('phase'),actual_optimizer_steps=v.get('actual_optimizer_steps'),microbatches=v.get('microbatches'))
+ if meta.exists():row['GEMM']=json.loads(meta.read_bytes())
+ if cpu.exists():row['CPU_capture']=json.loads(cpu.read_bytes())
+ if packet.exists():
+  rows=torch.load(packet,map_location='cpu',weights_only=False);row['CPU_rows']=[]
+  for observed in rows:
+   for source in observed['CPU_source_rows']:
+    if 'buffer' not in source:continue
+    data=source['buffer'].contiguous().view(torch.uint8).numpy().tobytes();row['CPU_rows'].append(dict(source=source['source'],sha256=hashlib.sha256(data).hexdigest(),min=float(source['buffer'].min()),max=float(source['buffer'].max()),L2=float(source['buffer'].double().norm()),equals_known_normal_checkpoint=hashlib.sha256(data).hexdigest()=='4defedf718a10ac463b43d89a6b0b0f9d5e98ec0a459eeab066f8673b125423a'))
+ if (result/f'rank{rank}-native-GEMM-rows.pt').exists():
+  g=torch.load(result/f'rank{rank}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);valid=g['metadata']['copied_indices'];row['captured_GEMM_rows']=len(valid)
+  if valid:
+   value=g['competing_weights'][valid[0]];data=value.contiguous().view(torch.uint8).numpy().tobytes();row['GPU_competing_row_sha256']=hashlib.sha256(data).hexdigest();row['all_GPU_rows_equal']=all(torch.equal(value,g['competing_weights'][i])for i in valid)
+out.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,production_changes=0)
+(job/'terminal-CPU-source-comparison-v1.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+PY

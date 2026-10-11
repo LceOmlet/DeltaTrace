@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,base64,time,subprocess,os,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-after-native-report-CPU-source-20261011-v1';result=job/'result';formal=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());original=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1'
+for pid,birth in [(2980668,1791693545.27),(2984831,1791693577.32),(2986245,1791693592.78)]:
+ assert not psutil.pid_exists(pid) or abs(psutil.Process(pid).create_time()-birth)>.1
+source=original/'source/compare_native_incident37_GEMM_rows_20261011.py';assert hashlib.sha256(source.read_bytes()).hexdigest()=='926292cae52daaa356084b3f26cd00e86f57a517c82bb63e74b630304d3fbe66'
+env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='-1';env['PYTHONPATH']=':'.join([str(original/'source'),str(root/'receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source'),formal['pythonpath']])
+p=subprocess.run([os.environ['VENV_PYTHON'],str(source),'--result',str(result),'--output',str(job/'GEMM-competing-weight-comparison-v1.json')],env=env,capture_output=True,timeout=30);(job/'GEMM-competing-weight-comparison-v1.stdout').write_bytes(p.stdout);(job/'GEMM-competing-weight-comparison-v1.stderr').write_bytes(p.stderr);p.check_returncode()
+files=[];large=[]
+for path in sorted(job.rglob('*')):
+ if not path.is_file():continue
+ data=path.read_bytes();row=dict(path=str(path),relative=str(path.relative_to(job)),bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+ if len(data)>2_000_000:large.append(row)
+ else:row['base64']=base64.b64encode(data).decode();files.append(row)
+rayroot=pathlib.Path('/tmp/ray/session_2026-10-11_12-39-27_618268_2980668/logs')
+for pid in [2984831,2986245]:
+ for path in sorted(rayroot.glob(f'worker-*-{pid}.*')):
+  if path.suffix not in ['.out','.err']:continue
+  data=path.read_bytes();files.append(dict(path=str(path),relative='original-Ray-logs/'+path.name,bytes=len(data),sha256=hashlib.sha256(data).hexdigest(),base64=base64.b64encode(data).decode()))
+print(json.dumps(dict(unix=time.time(),files=files,large_artifacts=large,physical_gpu=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10,check=True).stdout,host_available_bytes=psutil.virtual_memory().available,disk_free_bytes=__import__('shutil').disk_usage(root).free)))
+PY

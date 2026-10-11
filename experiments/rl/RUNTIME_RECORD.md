@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原报告后CPU采集结束有限；未取得失败源，不是修复
+
+driver2980668、原actor2984831/2986245均按birth核验退出。两rank各8个B4反向有限，
+共同一次原诊断optimizer操作，不计正式进度。实际原编译GEMM42/44次，247/247处
+权重均为正常checkpoint行，非CSAN那种跳过编译。rank1负责159048行，原H2D平坦
+源_sharded_param_data与_sharded_local_tensor指针完全一致；本地34888行两份CPU
+clone逐字节匹配checkpoint SHA4defedf…，回调errors空。rank0不拥有该行，不填假数据。
+读取确在原GEMM终态报告写出后执行，无新actor类或前置Tensor值读取；但启动hook/
+Python报告边界仍可能改变时序，有限结果不能排除原失败源，也不能推翻原入口与
+TORCH_TRACE坏行137e…/NaN的失败证据。不重复本探针，无生产修复或正式恢复。
+
+原初始化yaml9327字节/SHA2b170445…不变；41份9127249字节原日志/源码/现场已保存，
+4份大文件SHA登记。CPU源分析.135秒、峰RSS549466112，无CUDA；原归一化比较单独
+保存。终态八卡无进程，主机可用1024021692416字节、磁盘空闲13038020198400。
+报告后完整unsharded storage=0、SHARDED/IDLE为本次正常终态，不能据此定位上次
+故障发生时的存储或secondary CUDA invalid argument。正式仍停37/330，固定源26bef6c8、
+LoRA8/16、每卡B4、Q/V/A和PPO不变。下一步只定位原失败时实际W写入/存储生命周期。
+见[终态、CPU分片与实际编译覆盖回执](results_textcraft_incident37_after_report_CPU_source_terminal_20261011.json)。
+
+
 ## 2026-10-11 原报告写出后采集CPU源；当前原DT，未有故障源结论
 
 诊断driver2980668/出生1791693545.27，原actor2984831/出生1791693577.32及2986245/
