@@ -1,3 +1,15 @@
+## 2026-10-11 23:03 两组新作业的实际初始状态和导入版本已回读
+
+原VERL只读RPC已完成四worker回执：DT2646857/2648285、GRPO2595974/2598164，
+PID出生均与新作业一致；optimizer state均为空，scheduler last_epoch均0、step_count1、lr1e-6。
+这支持真正从头启动，不沿用旧optimizer/schedule。新任务尚无完整更新，不把初始化当健康更新。
+实际加载actor3a65e173、官方完整core fc2f992b、FSDP worker e5eb4afc和vLLM7d2fcdb2；
+四worker的FSDP函数均逐CodeType等于原owner唯一accelerator→cuda查找替换，指令/常量未变。
+LoRA8/16、每卡B4、32k、官方entropy0.001/dual-clip3均回读一致；global64在两rank原生分成32。
+采样阶段DT有限模块尚未加载，是原lazy路径；不把磁盘数值版本绑定扩大为已加载DT验收。
+原逐token记录覆盖已挂载，既有数值版本及后续首DT导入仍需跟实际阶段核对。
+证据：[新作业四worker初始状态](results_textcraft_fresh_initial_worker_state_20261011.json)。
+
 ## 2026-10-11 22:54 两组 TextCraft 从基础权重正式训练，历史曲线已绘制
 
 用户得知 FSDP 缓冲区错误也可能污染有限更新后，明确要求 DT 从头训练。
