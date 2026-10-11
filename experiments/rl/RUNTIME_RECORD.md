@@ -1,5 +1,21 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原NaN分支内CPU源捕获已启动；无生产修复
+
+单次driver2275891/出生1791686823.06，worker2278582/2280290，物理GPU4/5；
+当前原saved-DT，尚无失败时CPU源结果。仅在原e48的if not finite分支、已经确认
+NaN并保存loss输入后读取原FSDP的_sharded_param_data及_sharded_local_tensor；
+不在更新前替换torch.save、不新增Ray类、不新增前置GPU计算/拷贝/同步。
+诊断源b7484584；其余原exception/async/GEMM文件只更新来源哈希常量，实际
+CPU Ray/VERL登记与导入路径已核对，无CUDA初始化。移除插入分支后原文本及
+AST精确恢复；这只验证观察范围，不是数值验收。首次生成transport命令缺词法
+空格，Python在执行任何语句前报错，已保留并本地parse修正，未启动GPU作业。
+上轮原入口已复现完全相同坏行；本次试图区分CPU源已坏与后续搬运/GPU写坏，
+即使有限也不能称修复。正式仍停37/330，不恢复、不重启；源26bef6c8、LoRA8/16、
+每卡B4及Q/V/A不变。源/配置/实际PID与阶段见
+[启动回执](results_textcraft_incident37_original_fault_CPU_source_launch_20261011.json)。
+
+
 ## 2026-10-11 原失败入口再次复现同一坏W与第二B4 NaN；未部署修复
 
 仅复用原GEMM352→async782→exception3f→e48源链、事故输入及配置，新增输出目录；
