@@ -1,0 +1,240 @@
+{
+  "unix": 1791728247.6011882,
+  "base": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard",
+  "files": [
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+      "sha256": "3bf079219682d1a9439b81754af65e87f69157ec69f20f065e5565519f7093d9",
+      "functions": [
+        {
+          "name": "foreach_all_gather",
+          "line": 164,
+          "events": [
+            {
+              "line": 202,
+              "text": "    all_gather_stream.wait_stream(all_gather_copy_in_stream)"
+            },
+            {
+              "line": 210,
+              "text": "        all_gather_event = all_gather_stream.record_event()"
+            }
+          ]
+        },
+        {
+          "name": "foreach_all_gather_copy_out",
+          "line": 274,
+          "events": [
+            {
+              "line": 290,
+              "text": "        device_handle.current_stream().wait_event(all_gather_event)"
+            }
+          ]
+        },
+        {
+          "name": "foreach_reduce",
+          "line": 376,
+          "events": [
+            {
+              "line": 446,
+              "text": "    current_stream = device_handle.current_stream()"
+            },
+            {
+              "line": 449,
+              "text": "    reduce_scatter_stream.wait_stream(current_stream)"
+            },
+            {
+              "line": 467,
+              "text": "        reduce_scatter_event = reduce_scatter_stream.record_event()"
+            },
+            {
+              "line": 479,
+              "text": "                    post_reduce_stream.record_event(),"
+            },
+            {
+              "line": 487,
+              "text": "            all_reduce_stream.wait_stream(reduce_scatter_stream)"
+            },
+            {
+              "line": 495,
+              "text": "                all_reduce_event = all_reduce_stream.record_event()"
+            },
+            {
+              "line": 503,
+              "text": "        all_reduce_stream.wait_stream(reduce_scatter_stream)"
+            },
+            {
+              "line": 539,
+              "text": "                    fsdp_param.grad_offload_event = reduce_scatter_stream.record_event()"
+            },
+            {
+              "line": 556,
+              "text": "        post_reduce_event = post_reduce_stream.record_event()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+      "sha256": "2798a87b2631091df738afaff6dfcead38ce0cc421585b4331ecaaefb4e784f5",
+      "functions": [
+        {
+          "name": "lazy_init",
+          "line": 52,
+          "events": [
+            {
+              "line": 61,
+              "text": "        self.all_gather_copy_in_stream = self.device_handle.Stream("
+            },
+            {
+              "line": 66,
+              "text": "        self.all_gather_stream = self.device_handle.Stream(priority=high_priority)"
+            },
+            {
+              "line": 69,
+              "text": "        self.reduce_scatter_stream = self.device_handle.Stream(priority=high_priority)"
+            },
+            {
+              "line": 73,
+              "text": "        self.all_reduce_stream = self.device_handle.Stream()"
+            }
+          ]
+        },
+        {
+          "name": "get_all_gather_streams",
+          "line": 82,
+          "events": [
+            {
+              "line": 91,
+              "text": "        current_stream = self.device_handle.current_stream()"
+            }
+          ]
+        },
+        {
+          "name": "wait_for_unshard",
+          "line": 288,
+          "events": [
+            {
+              "line": 313,
+              "text": "        all_gather_copy_out_event = self.device_handle.Event()"
+            }
+          ]
+        },
+        {
+          "name": "_wait_all_gather_streams_on_event",
+          "line": 325,
+          "events": [
+            {
+              "line": 328,
+              "text": "            self.comm_ctx.all_gather_copy_in_stream.wait_event(event)"
+            },
+            {
+              "line": 330,
+              "text": "            self.comm_ctx.all_gather_stream.wait_event(event)"
+            }
+          ]
+        },
+        {
+          "name": "reshard",
+          "line": 332,
+          "events": [
+            {
+              "line": 338,
+              "text": "                self._reshard_after_forward_event = self.device_handle.Event()"
+            }
+          ]
+        },
+        {
+          "name": "post_backward",
+          "line": 391,
+          "events": [
+            {
+              "line": 433,
+              "text": "                self.device_handle.current_stream().wait_event("
+            }
+          ]
+        },
+        {
+          "name": "finalize_backward",
+          "line": 484,
+          "events": [
+            {
+              "line": 494,
+              "text": "                torch.accelerator.current_stream().wait_event(event)"
+            }
+          ]
+        },
+        {
+          "name": "_wait_for_post_backward",
+          "line": 501,
+          "events": [
+            {
+              "line": 503,
+              "text": "            self.device_handle.current_stream().wait_event(self._post_reduce_event)"
+            },
+            {
+              "line": 509,
+              "text": "            self.device_handle.current_stream().wait_event(self._all_reduce_state.event)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+      "sha256": "46c55a0b88c364534d8032a14a139a0017a00ddfed1c6b5ffe43cd6a16b3474b",
+      "functions": [
+        {
+          "name": "_root_pre_forward",
+          "line": 120,
+          "events": [
+            {
+              "line": 132,
+              "text": "                self._comm_ctx.all_gather_copy_in_stream.wait_event(event)"
+            },
+            {
+              "line": 133,
+              "text": "                self._comm_ctx.all_gather_stream.wait_event(event)"
+            },
+            {
+              "line": 136,
+              "text": "                current_stream = self._device_handle.current_stream()"
+            },
+            {
+              "line": 137,
+              "text": "                self._comm_ctx.all_gather_copy_in_stream.wait_stream(current_stream)"
+            },
+            {
+              "line": 138,
+              "text": "                self._comm_ctx.all_gather_stream.wait_stream(current_stream)"
+            }
+          ]
+        },
+        {
+          "name": "_post_forward",
+          "line": 255,
+          "events": [
+            {
+              "line": 268,
+              "text": "                self._comm_ctx.all_gather_copy_in_stream.wait_event("
+            },
+            {
+              "line": 271,
+              "text": "                self._comm_ctx.all_gather_stream.wait_event(all_gather_state.event)"
+            }
+          ]
+        },
+        {
+          "name": "_root_post_backward_final_callback",
+          "line": 293,
+          "events": [
+            {
+              "line": 314,
+              "text": "                    self._device_handle.current_stream().wait_event("
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

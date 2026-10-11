@@ -1,0 +1,49 @@
+{
+  "unix": 1791728388.4418926,
+  "scope": "Read-only installed pinned FSDP adjacent wait-site source audit after incident37 root repair.",
+  "generic_wait_sites": [
+    {
+      "file": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+      "function": "finalize_backward",
+      "line": 494,
+      "text": "                torch.accelerator.current_stream().wait_event(event)"
+    }
+  ],
+  "related_event_operations": 33,
+  "device_handle_owner": {
+    "unix": 1791728333.2076256,
+    "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/device_mesh.py",
+    "sha256": "05459be53447b2c6e491e853d9a43c388d7a54905e43b8cb9175493541779a5e",
+    "function": {
+      "start": 375,
+      "end": 382,
+      "source": "    def _get_device_handle(device_type: str = \"cuda\"):\n        \"\"\"\n        Get the module corresponding to the device_type which is cuda or cuda-like device.\n        For example, when the device_type is cuda, the module `torch.cuda` is returned.\n        Return None when there is no corresponding module for device_type, otherwise\n        return the corresponding module.\n        \"\"\"\n        return getattr(torch, device_type, None)"
+    }
+  },
+  "conclusion": "Only the already repaired finalize_backward site directly combines generic accelerator current_stream with the CUDA Event. Other inspected waits use device_handle-derived streams; cuda device maps to torch.cuda. No additional identical source mismatch found in this FSDP package.",
+  "limitation": "Static owner source audit only; not a proof for every backend, all torch code, or indefinite training stability. No new GPU test or production patch.",
+  "operations": {
+    "model": 0,
+    "DT": 0,
+    "GPU": 0,
+    "optimizer": 0,
+    "production_changes": 0
+  },
+  "sources": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-fsdp-related-event-source-audit-20261011.json",
+      "sha256": "47b5280f1c627bd9cf585a71da6bf70a47beec76937ea6e885640476434eb3a4",
+      "bytes": 7671
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-fsdp-device-handle-source-20261011.json",
+      "sha256": "e7ac95b18b1c3c5e9cffb29407d2b47f1b694621b3ee6491be7f597066ead26e",
+      "bytes": 6911
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-fsdp-device-handle-owner-20261011.json",
+      "sha256": "0b0726f28d4ef997c0571e97eeba9be25f3871fd5eb97ccb3663b47d18716a6e",
+      "bytes": 728
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "unix": 1791730442.5577881,
+  "scope": "Human requested native TextCraft GRPO on the other pair, then fresh DT after finite-update corruption risk was explained.",
+  "dt": {
+    "pid": 2638949,
+    "birth": 1791730174.47,
+    "physical_gpus": [
+      2,
+      3
+    ],
+    "launch": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/dt-native-fresh-formal-launch-20261011.json",
+    "fresh_base_model": true,
+    "resume_checkpoint": null,
+    "completed_iterations": 0,
+    "phase": "first rollout generation",
+    "budget": {
+      "epochs": 30,
+      "total_iterations": 330,
+      "groups": 32,
+      "trajectories_per_group": 8,
+      "optimizer_minibatch": 64,
+      "optimizer_updates_per_iteration": 4
+    }
+  },
+  "grpo": {
+    "pid": 2590429,
+    "birth": 1791729725.14,
+    "physical_gpus": [
+      4,
+      5
+    ],
+    "launch": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/grpo-native-formal-launch-20261011.json",
+    "fresh_base_model": true,
+    "resume_checkpoint": null,
+    "completed_iterations": 0,
+    "phase": "first rollout generation, completed four interaction rounds at observation",
+    "budget": {
+      "epochs": 30,
+      "total_iterations": 330,
+      "groups": 32,
+      "trajectories_per_group": 8,
+      "optimizer_minibatch": 64,
+      "optimizer_updates_per_iteration": 4
+    }
+  },
+  "common": {
+    "model": "Qwen3.5-9B",
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "microbatch_per_gpu": 4,
+    "global_two_gpu_microbatch": 8,
+    "context_cap": 32768,
+    "optimizer_minibatch_trajectories": 64,
+    "rollout_groups": 32,
+    "trajectories_per_group": 8,
+    "total_training_iterations": 330
+  },
+  "exact_configuration_differences": {
+    "+ray_init.runtime_env.env_vars.DT_FSDP_EVENT_WAIT_RECEIPTS": {
+      "dt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-eventwait-fresh-20261011-v1/worker-runtime-overrides",
+      "grpo": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-eventwait-20261011-v1/worker-runtime-overrides"
+    },
+    "trainer.validation_data_dir": {
+      "dt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-eventwait-fresh-20261011-v1/textcraft-dt/validation",
+      "grpo": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-eventwait-20261011-v1/textcraft-grpo/validation"
+    },
+    "trainer.rollout_data_dir": {
+      "dt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-eventwait-fresh-20261011-v1/textcraft-dt/rollouts",
+      "grpo": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-eventwait-20261011-v1/textcraft-grpo/rollouts"
+    },
+    "trainer.experiment_name": {
+      "dt": "dt-TextCraft",
+      "grpo": "grpo-TextCraft"
+    },
+    "algorithm.adv_estimator": {
+      "dt": "deltatrace",
+      "grpo": "grpo"
+    },
+    "trainer.default_local_dir": {
+      "dt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-eventwait-fresh-20261011-v1/textcraft-dt/checkpoints",
+      "grpo": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-eventwait-20261011-v1/textcraft-grpo/checkpoints"
+    }
+  },
+  "official_GRPO_owner": {
+    "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "file": "research/temporary/rl_upstream_alignment_20260929/recipe-sources/verl-agent-20bd331/verl/trainer/ppo/core_algos.py",
+    "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "function": "compute_grpo_outcome_advantage",
+    "function_AST_sha256": "907ef9f333b4e2be8848c3ee810c967c922340977adf7d96c629f51702586e45",
+    "entire_deployed_core_file_identical": true,
+    "algorithm_code_added": 0,
+    "whole_model_tolerance_test_added": 0
+  },
+  "runtime": {
+    "FSDP_fix_commit": "2534a670974e388bc2b9a01d4f304d5c23b37534",
+    "DT_numerical_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+    "FSDP_worker_setup_source_sha256": "78eb717d787100850d8a42b9840bc9a17c334383c0349ef34ce7be88bd8425ee",
+    "scope": "Existing accepted actor/vLLM/numerical versions reused. New job completed-update correctness not yet observed."
+  },
+  "passive_recording": {
+    "job": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/fresh-passive-records-20261011-v1/job-v2.json",
+    "status": "completed at native actor boundary",
+    "accepted_recorder_source_sha256": "2609d93f91e9e16b8963ed5ca2226a00e28190005dbd51e56a214d3d35696eb2",
+    "scope": "Identical passive methods attached to original class before lazy construction; no numerical change. Initial early-module import failed before attachment and was repaired in diagnostic client only.",
+    "deployment_receipt": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/fresh-passive-records-20261011-v1/deployment-receipt.json",
+    "completed_unix": 1791730454.4982467,
+    "worker_pids": [
+      2648285,
+      2646857
+    ]
+  },
+  "original_stop_receipt": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/fresh-restart-original-completed-stop-20261011.json",
+  "bug_scope": {
+    "can_affect_finite_updates": true,
+    "observed_case": "Iteration37 had wrong frozen head values and wrong actor log-probabilities before NaN gradient.",
+    "earlier_finite_updates": "Not proved unaffected; complete checkpoint restoration did not prove clean historical gradients.",
+    "fresh_start_reason": "Explicit human decision, not merely skipped NaN steps."
+  },
+  "figures": {
+    "native-metrics.json": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/textcraft-curves-20261011-v1/native-metrics.json",
+      "sha256": "9e155afd81b9ace6a72171fedeb5ba191179f3bfad843cbfc6d15fec71a2ef31"
+    },
+    "native-metrics.csv": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/textcraft-curves-20261011-v1/native-metrics.csv",
+      "sha256": "192654d6e2f7f81873b3edeb0df97cbd1b5b4602db93e80396e269c1f3da6379"
+    },
+    "plot_native_curves.py": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/textcraft-curves-20261011-v1/plot_native_curves.py",
+      "sha256": "35313dce312a3c841411af95229c6ee8253d5cf1335cc6d8b67a26a96f791678"
+    },
+    "training-curves.png": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/textcraft-curves-20261011-v1/training-curves.png",
+      "sha256": "e1c7629cc20110d1e03d6fa1049a053b3091d020a2bd1af4d886acbacf8b87f3"
+    },
+    "training-curves.pdf": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/textcraft-curves-20261011-v1/training-curves.pdf",
+      "sha256": "a4bfc58fa595222bf58404f691916a31fdfff690ab5269bbde414b3936b7fa41"
+    },
+    "phase-times.png": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/textcraft-curves-20261011-v1/phase-times.png",
+      "sha256": "a9889aede3b197de890b0fb372ca2267b24f6f820b458e08497db684b9852e21"
+    },
+    "phase-times.pdf": {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/textcraft-curves-20261011-v1/phase-times.pdf",
+      "sha256": "762ab805842bb543dc190df67bfc4219926643f33f21137e077a8d5a99ac7434"
+    }
+  },
+  "plot_scope": "37 original + 2 resumed native metric records. Old 26–37 and resumed26–27 are distinct archived branches; no old metric is attributed to either fresh job. NaNs remain gaps; training reward is not independent evaluation.",
+  "resource_observation": {
+    "cgroup_memory_bytes": 342395346944,
+    "worker_PSS": [
+      {
+        "pid": 2646857,
+        "pss": 7943961600
+      },
+      {
+        "pid": 2648285,
+        "pss": 8694961152
+      },
+      {
+        "pid": 2595974,
+        "pss": 8025553920
+      },
+      {
+        "pid": 2598164,
+        "pss": 8804849664
+      }
+    ],
+    "source": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/two-fresh-textcraft-formal-status-20261011.json"
+  },
+  "authority_metadata_cleanup": {
+    "receipt": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/fresh-passive-records-20261011-v1/deployment-receipt.json",
+    "scope": "Removed inherited resume25/26 optimizer and scheduler observations from fresh-job records; archived prior manifests retained remotely."
+  }
+}

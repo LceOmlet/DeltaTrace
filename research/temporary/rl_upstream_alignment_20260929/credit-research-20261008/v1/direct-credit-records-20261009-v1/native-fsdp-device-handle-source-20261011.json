@@ -1,0 +1,149 @@
+{
+  "unix": 1791728278.0674517,
+  "files": [
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py",
+      "sha256": "3bf079219682d1a9439b81754af65e87f69157ec69f20f065e5565519f7093d9",
+      "contexts": [
+        {
+          "start": 171,
+          "lines": [
+            "    allocate_memory_from_process_group: bool = False,",
+            ") -> Optional[AllGatherResult]:",
+            "    world_size, rank = group.size(), group.rank()",
+            "    device_handle = _get_device_handle(device.type)",
+            "    with device_handle.stream(all_gather_copy_in_stream):",
+            "        param_all_gather_inputs = _get_param_all_gather_inputs(fsdp_params)",
+            "        (",
+            "            param_all_gather_input_dtypes,",
+            "            param_all_gather_input_numels,",
+            "            dtype,"
+          ]
+        },
+        {
+          "start": 285,
+          "lines": [
+            "        all_gather_input_split_sizes,",
+            "    ) = all_gather_result",
+            "    _dtype, device = all_gather_output.dtype, all_gather_output.device",
+            "    device_handle = _get_device_handle(device.type)",
+            "    if all_gather_event is not None:  # sync op",
+            "        device_handle.current_stream().wait_event(all_gather_event)",
+            "    if isinstance(all_gather_work, dist.distributed_c10d.Work):  # async op",
+            "        all_gather_work.wait()",
+            "    world_size, device = group.size(), all_gather_output.device",
+            ""
+          ]
+        },
+        {
+          "start": 441,
+          "lines": [
+            "        group=reduce_scatter_group,",
+            "        from_process_group=allocate_memory_from_process_group,",
+            "    )",
+            "    device_handle = _get_device_handle(device.type)",
+            "    foreach_reduce_scatter_copy_in(unsharded_grads, reduce_scatter_input, world_size)",
+            "    current_stream = device_handle.current_stream()",
+            "    # Only after the copy-in finishes can we free the gradients",
+            "    unsharded_grads.clear()",
+            "    reduce_scatter_stream.wait_stream(current_stream)",
+            "    all_reduce_input = None"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_init.py",
+      "sha256": "95cd101f9d5c1da7db1965fc2ecd2b344878e58a4d81299fdad1a1223e0a61aa",
+      "contexts": [
+        {
+          "start": 76,
+          "lines": [
+            "def _get_device_from_mesh(mesh: DeviceMesh) -> torch.device:",
+            "    if mesh.device_type == \"cpu\":",
+            "        return torch.device(\"cpu\")",
+            "    device_handle = _get_device_handle(mesh.device_type)",
+            "    return torch.device(mesh.device_type, device_handle.current_device())",
+            "",
+            "",
+            "def _ignore_module(",
+            "    module: nn.Module,",
+            "    ignored_params: set[nn.Parameter],"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+      "sha256": "2798a87b2631091df738afaff6dfcead38ce0cc421585b4331ecaaefb4e784f5",
+      "contexts": [
+        {
+          "start": 50,
+          "lines": [
+            "    \"\"\"This has the communication state shared across FSDP states/parameter groups.\"\"\"",
+            "",
+            "    def lazy_init(self, device: torch.device):",
+            "        self.device_handle = _get_device_handle(device.type)",
+            "        # Setting the all-gather/reduce-scatter streams to be higher priority",
+            "        # can help avoid some issues where their copies in/out are delayed and",
+            "        # block computation (this is different from high-pri NCCL streams)",
+            "        high_priority = -1",
+            "        # All-gather state and copy-in stream allow overlapping the next",
+            "        # copy-in with the current all-gather in forward; copy-in overlaps with"
+          ]
+        },
+        {
+          "start": 144,
+          "lines": [
+            "        self.mesh_info = mesh_info",
+            "        self.post_forward_mesh_info = post_forward_mesh_info",
+            "        self.device = device",
+            "        self.device_handle = _get_device_handle(device.type)",
+            "        self.mp_policy = mp_policy",
+            "        self.offload_policy = offload_policy",
+            "        self._training_state = TrainingState.IDLE",
+            "        # Group's sharded state always matches its parameters' sharded states",
+            "        self._sharded_state = ShardedState.SHARDED",
+            "        self._module_fqn: Optional[str] = None  # prefixed from root module"
+          ]
+        },
+        {
+          "start": 246,
+          "lines": [
+            "        # For example, DoRA (https://arxiv.org/abs/2402.09353) initializes linear magnitudes based on",
+            "        # other parameters (e.g. loaded from the state dict).",
+            "        if not hasattr(self.comm_ctx, \"device_handle\"):",
+            "            self.comm_ctx.device_handle = _get_device_handle(self.device.type)",
+            "        if self.is_sharded and not self._reset_sharded_params:",
+            "            for fsdp_param in self.fsdp_params:",
+            "                fsdp_param.reset_sharded_param()",
+            "                fsdp_param._init_extensions()  # allow monkey patch after init",
+            "            self._reset_sharded_params = True",
+            "        self._validate_no_meta_params()"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py",
+      "sha256": "46c55a0b88c364534d8032a14a139a0017a00ddfed1c6b5ffe43cd6a16b3474b",
+      "contexts": [
+        {
+          "start": 97,
+          "lines": [
+            "            _insert_module_state(module, self)",
+            "        self._modules = modules",
+            "        self._device = device",
+            "        self._device_handle = _get_device_handle(device.type)",
+            "        self._mp_policy = mp_policy",
+            "        self._auto_reshard_after_forward = auto_reshard_after_forward",
+            "        if len(modules) == 1:",
+            "            self._pre_forward_hook_handle = modules[0].register_forward_pre_hook(",
+            "                self._pre_forward, prepend=True, with_kwargs=True",
+            "            )"
+          ]
+        }
+      ]
+    }
+  ]
+}

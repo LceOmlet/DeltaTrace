@@ -1,0 +1,95 @@
+{
+  "entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry",
+  "verl_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl",
+  "upstream": "20bd331",
+  "environment_keys": [
+    "DT_MAX_STEPS",
+    "VENV_PYTHON",
+    "DT_LOOP_ENVIRONMENT_RECEIPT",
+    "VERL_RELEASE_UNUSED_HOST_CACHE",
+    "FLA_BOUNDED_NORM_TUNING",
+    "DT_METAX_BASE",
+    "DT_ENTRY_ROOT",
+    "MKL_NUM_THREADS",
+    "DT_RUNTIME_ROOT",
+    "VERL_ENTRY_BASELINE",
+    "PYTORCH_CUDA_ALLOC_CONF",
+    "DT_MAX_LENGTH",
+    "MODEL_PATH",
+    "MACA_TORCH_COMPILE_CONF",
+    "AGENTGYM_RL_ROOT",
+    "VERL_TRIM_RESPONSE_HEAD",
+    "DT_SAMPLING_JSON",
+    "DT_ROOT",
+    "VERL_ROOT",
+    "DT_FSDP_EVENT_WAIT_RECEIPTS",
+    "PYTHONPATH",
+    "DT_RAY_NUM_CPUS",
+    "DT_OFFICIAL_ROOT",
+    "TORCHINDUCTOR_CACHE_DIR",
+    "CUDA_VISIBLE_DEVICES",
+    "DT_FSDP_OWNER_LAUNCHER",
+    "DT_TARGET_SEMANTICS",
+    "DT_ENVIRONMENT_JSON",
+    "VERL_TRIM_SHARED_PADDING",
+    "DT_TASK",
+    "OMP_NUM_THREADS",
+    "DT_TOKENIZER_PATH",
+    "VERL_ATTN_IMPLEMENTATION",
+    "TRITON_CACHE_DIR"
+  ],
+  "old_contents": [
+    "prepared.json",
+    "formal-training.json",
+    "credit-records",
+    "source.json",
+    "effective-config.yaml",
+    "preflight.json",
+    "before-physical.txt",
+    "textcraft-dt",
+    "preflight.stdout",
+    "deployment.json",
+    "first-observation.json",
+    "preflight.stderr",
+    "resource-observations",
+    "entry",
+    "train.log",
+    "runtime-overrides"
+  ],
+  "old_ray_sessions": [
+    "/tmp/ray/session_2026-10-09_21-50-24_958031_982372"
+  ],
+  "owner_context": {
+    "verl/trainer/ppo/ray_trainer.py": {
+      "sha256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+      "contexts": [
+        "    return attention_mask[:, -response_length:]\n\n\ndef compute_advantage(data: DataProto, adv_estimator, gamma=1.0, lam=1.0, num_repeat=1, multi_turn=False, norm_adv_by_std_in_grpo=True, step_advantage_w=1.0, gigpo_mode=\"mean_std_norm\", gigpo_enable_similarity=False, gigpo_similarity_thresh=0.95, **kwargs):\n    \"\"\"Compute advantage estimates for policy optimization.\n\n    This function computes advantage estimates using various estimators like GAE, GRPO, REINFORCE++, etc.\n    The advantage estimates are used to guide policy optimization in RL algorithms.\n\n    Args:\n        data (DataProto): The data containing batched model outputs and inputs.\n        adv_estimator: The advantage estimator to use (e.g., GAE, GRPO, REINFORCE++).\n        gamma (float, optional): Discount factor for future rewards. Defaults to 1.0.",
+        "        lam (float, optional): Lambda parameter for GAE. Defaults to 1.0.\n        num_repeat (int, optional): Number of times to repeat the computation. Defaults to 1.\n        multi_turn (bool, optional): Whether the data is from a multi-turn conversation. Defaults to False.\n        norm_adv_by_std_in_grpo (bool, optional): Whether to normalize advantages by standard deviation in GRPO. Defaults to True.\n\n    Returns:\n        DataProto: The updated data with computed advantages and returns.\n    \"\"\"\n    # Back-compatible with trainers that do not compute response mask in fit\n    if \"response_mask\" not in data.batch:\n        data.batch[\"response_mask\"] = compute_response_mask(data)\n    # prepare response group\n    # TODO: add other ways to estimate advantages",
+        "                kwargs.get(\"pf_ppo_reweight_method\", \"pow\"),\n                kwargs.get(\"pf_ppo_weight_pow\", 2.0),\n            )\n    elif adv_estimator == AdvantageEstimator.GRPO:\n        # TODO: test on more adv estimator type\n        grpo_calculation_mask = data.batch[\"response_mask\"]\n        if multi_turn:\n            # If multi-turn, replace the mask with the relevant part of loss_mask\n            response_length = grpo_calculation_mask.size(1)  # Get length from the initial response mask\n            grpo_calculation_mask = data.batch[\"loss_mask\"][:, -response_length:]  # This mask is the one intended for GRPO\n        # Call compute_grpo_outcome_advantage with parameters matching its definition\n        advantages, returns = core_algos.compute_grpo_outcome_advantage(\n            token_level_rewards=data.batch[\"token_level_rewards\"],",
+        "            # If multi-turn, replace the mask with the relevant part of loss_mask\n            response_length = grpo_calculation_mask.size(1)  # Get length from the initial response mask\n            grpo_calculation_mask = data.batch[\"loss_mask\"][:, -response_length:]  # This mask is the one intended for GRPO\n        # Call compute_grpo_outcome_advantage with parameters matching its definition\n        advantages, returns = core_algos.compute_grpo_outcome_advantage(\n            token_level_rewards=data.batch[\"token_level_rewards\"],\n            response_mask=grpo_calculation_mask,\n            index=data.non_tensor_batch[\"uid\"],\n            traj_index=data.non_tensor_batch['traj_uid'],\n            norm_adv_by_std_in_grpo=norm_adv_by_std_in_grpo,\n        )\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = returns",
+        "            response_length = grpo_calculation_mask.size(1)  # Get length from the initial response mask\n            grpo_calculation_mask = data.batch[\"loss_mask\"][:, -response_length:]  # This mask is the one intended for GRPO\n        # Call compute_grpo_outcome_advantage with parameters matching its definition\n        advantages, returns = core_algos.compute_grpo_outcome_advantage(\n            token_level_rewards=data.batch[\"token_level_rewards\"],\n            response_mask=grpo_calculation_mask,\n            index=data.non_tensor_batch[\"uid\"],\n            traj_index=data.non_tensor_batch['traj_uid'],\n            norm_adv_by_std_in_grpo=norm_adv_by_std_in_grpo,\n        )\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = returns\n    elif adv_estimator == AdvantageEstimator.GRPO_PASSK:",
+        "            response_mask=grpo_calculation_mask,\n            index=data.non_tensor_batch[\"uid\"],\n            traj_index=data.non_tensor_batch['traj_uid'],\n            norm_adv_by_std_in_grpo=norm_adv_by_std_in_grpo,\n        )\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = returns\n    elif adv_estimator == AdvantageEstimator.GRPO_PASSK:\n        advantages, returns = core_algos.compute_grpo_passk_outcome_advantage(\n            token_level_rewards=data.batch[\"token_level_rewards\"],\n            response_mask=data.batch[\"response_mask\"],\n            index=data.non_tensor_batch[\"uid\"],\n            traj_index=data.non_tensor_batch['traj_uid'],",
+        "        )\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = returns\n    elif adv_estimator == AdvantageEstimator.GRPO_PASSK:\n        advantages, returns = core_algos.compute_grpo_passk_outcome_advantage(\n            token_level_rewards=data.batch[\"token_level_rewards\"],\n            response_mask=data.batch[\"response_mask\"],\n            index=data.non_tensor_batch[\"uid\"],\n            traj_index=data.non_tensor_batch['traj_uid'],\n            norm_adv_by_std_in_grpo=norm_adv_by_std_in_grpo,\n        )\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = returns",
+        "            response_mask=data.batch[\"response_mask\"],\n            index=data.non_tensor_batch[\"uid\"],\n            traj_index=data.non_tensor_batch['traj_uid'],\n            norm_adv_by_std_in_grpo=norm_adv_by_std_in_grpo,\n        )\n        data.batch[\"advantages\"] = advantages\n        data.batch[\"returns\"] = returns\n    elif adv_estimator == AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE:\n        advantages, returns = core_algos.compute_reinforce_plus_plus_baseline_outcome_advantage(\n            token_level_rewards=data.batch[\"token_level_rewards\"],\n            response_mask=data.batch[\"response_mask\"],\n            index=data.non_tensor_batch[\"uid\"],\n            traj_index=data.non_tensor_batch['traj_uid'],",
+        "            )\n        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        response_mask = data.batch[\"response_mask\"].to(device=data.batch[\"responses\"].device, dtype=torch.bool)\n        for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):\n            if name not in data.batch:\n                raise RuntimeError(f\"deltatrace estimator requires {name}\")\n            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)\n            if value.shape != response_mask.shape:\n                raise RuntimeError(f\"{name} must align with original response tokens\")\n            if not torch.isfinite(value).all():\n                raise RuntimeError(f\"{name} contains non-finite values\")",
+        "        if self.config.algorithm.adv_estimator == AdvantageEstimator.GAE:\n            self.use_critic = True\n        elif self.config.algorithm.adv_estimator in [\n            AdvantageEstimator.GRPO,\n            AdvantageEstimator.GRPO_PASSK,\n            AdvantageEstimator.REINFORCE_PLUS_PLUS,\n            AdvantageEstimator.REMAX,\n            AdvantageEstimator.RLOO,\n            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.DELTATRACE\n        ]:\n            self.use_critic = False",
+        "            self.use_critic = True\n        elif self.config.algorithm.adv_estimator in [\n            AdvantageEstimator.GRPO,\n            AdvantageEstimator.GRPO_PASSK,\n            AdvantageEstimator.REINFORCE_PLUS_PLUS,\n            AdvantageEstimator.REMAX,\n            AdvantageEstimator.RLOO,\n            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.DELTATRACE\n        ]:\n            self.use_critic = False\n        else:",
+        "            AdvantageEstimator.RLOO,\n            AdvantageEstimator.REINFORCE_PLUS_PLUS_BASELINE,\n            AdvantageEstimator.GiGPO,\n            AdvantageEstimator.DELTATRACE\n        ]:\n            self.use_critic = False\n        else:\n            raise NotImplementedError\n\n        self._validate_config()\n        self._create_dataloader(train_dataset, val_dataset, collate_fn, train_sampler)\n\n    def _validate_config(self):",
+        "        # check multi_turn with tool config\n        if config.actor_rollout_ref.rollout.multi_turn.enable and not config.env.get(\"factory\"):\n            assert config.actor_rollout_ref.rollout.multi_turn.tool_config_path is not None, \"tool_config_path must be set when enabling multi_turn with tool, due to no role-playing support\"\n            assert config.algorithm.adv_estimator in [AdvantageEstimator.GRPO], \"only GRPO is tested for multi-turn with tool\"\n\n        print(\"[validate_config] All configuration checks passed successfully!\")\n\n    def _create_dataloader(self, train_dataset, val_dataset, collate_fn, train_sampler):\n        \"\"\"\n        Creates the train and validation dataloaders.\n        \"\"\"\n        # TODO: we have to make sure the batch size is divisible by the dp size\n        from verl.trainer.main_ppo import create_rl_dataset, create_rl_sampler",
+        "\n                        # compute advantages, executed on the driver process\n\n                        norm_adv_by_std_in_grpo = self.config.algorithm.get(\"norm_adv_by_std_in_grpo\", True)  # GRPO adv normalization factor\n\n                        # DT consumes native rewards after all owner adjustments.\n                        if self.config.algorithm.adv_estimator == AdvantageEstimator.DELTATRACE:\n                            from dt_training_batch import compute_training_credit\n                            if \"dt_response_slices\" in batch.non_tensor_batch:\n                                from owner_trajectory_batch import trajectory_credit\n                                dt_values = trajectory_credit(\n                                    batch, self.envs.credit_responses, self.actor_rollout_wg,\n                                    eos_token_id=int(self.tokenizer.eos_token_id),"
+      ]
+    },
+    "verl/trainer/ppo/core_algos.py": {
+      "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "contexts": [
+        "\n\n# NOTE(sgm): this implementation only consider outcome supervision, where the reward is a scalar.\ndef compute_grpo_outcome_advantage(\n    token_level_rewards: torch.Tensor,\n    response_mask: torch.Tensor,\n    index: np.ndarray,\n    traj_index: np.ndarray,\n    epsilon: float = 1e-6,\n    norm_adv_by_std_in_grpo: str = True,\n    compute_mean_std_cross_steps: bool = True,\n):\n    \"\"\"",
+        "    index: np.ndarray,\n    traj_index: np.ndarray,\n    epsilon: float = 1e-6,\n    norm_adv_by_std_in_grpo: str = True,\n    compute_mean_std_cross_steps: bool = True,\n):\n    \"\"\"\n    Compute advantage for GRPO, operating only on Outcome reward\n    (with only one scalar reward for each response).\n    Args:\n        token_level_rewards: `(torch.Tensor)`\n            shape is (bs, response_length)\n        response_mask: `(torch.Tensor)`",
+        "            shape is (bs, response_length)\n        response_mask: `(torch.Tensor)`\n            shape is (bs, response_length)\n        norm_adv_by_std_in_grpo: (bool)\n            whether to scale the GRPO advantage.\n            If True, the advantage is scaled by the std, as in the original GRPO.\n            If False, the advantage is not scaled, as in Dr.GRPO (https://arxiv.org/abs/2503.20783).\n        compute_mean_std_cross_steps: bool\n            If True (more stable), the mean and std are computed across steps within one group. \n            If False (i.e., standard episode-level adv), the mean and std are computed across trajectories within one group.\n\n    Returns:\n        advantages: `(torch.Tensor)`",
+        "            else:\n                raise ValueError(f\"no score in prompt index: {idx}\")\n        for i in range(bsz):\n            if norm_adv_by_std_in_grpo:\n                scores[i] = (scores[i] - id2mean[index[i]]) / (id2std[index[i]] + epsilon)\n            else:\n                scores[i] = scores[i] - id2mean[index[i]]\n        scores = scores.unsqueeze(-1) * response_mask\n\n    return scores, scores\n\n\ndef compute_grpo_passk_outcome_advantage(",
+        "    index: np.ndarray,\n    traj_index: np.ndarray,\n    epsilon: float = 1e-6,\n    norm_adv_by_std_in_grpo: bool = True,\n    compute_mean_std_cross_steps: bool = True,\n):\n    \"\"\"\n    Compute advantage for Pass@k using a GRPO-style outcome reward formulation.\n    Only the best response per group gets a non-zero advantage: r_max - r_second_max.\n\n    Implemented as described in https://arxiv.org/abs/2503.19595.\n\n    Args:",
+        "        response_mask: (bs, response_length)\n        index: (bs,) \u2192 group ID per sample\n        epsilon: float for numerical stability\n        norm_adv_by_std_in_grpo: if True, normalize advantage by std within group\n        compute_mean_std_cross_steps: bool\n            If True (more stable), the mean and std are computed across steps within one group. \n            If False (i.e., standard episode-level adv), the mean and std are computed across trajectories within one group.\n\n    Returns:\n        advantages: (bs, response_length)\n        returns: (bs, response_length)\n    \"\"\"\n    scores = token_level_rewards.sum(dim=-1)  # (bs,)",
+        "            r_max, r_second_max = topk[0], topk[1]\n            i_max = id2indices[idx][topk_idx[0].item()]\n            advantage = r_max - r_second_max\n            if norm_adv_by_std_in_grpo:\n                std = torch.std(rewards)\n                advantage = advantage / (std + epsilon)\n            advantages[i_max] = advantage\n\n    advantages = advantages.unsqueeze(-1) * response_mask\n    return advantages, advantages\n\n\ndef compute_reinforce_plus_plus_baseline_outcome_advantage(token_level_rewards: torch.Tensor, response_mask: torch.Tensor, index: torch.Tensor, traj_index: np.ndarray, epsilon: float = 1e-6, compute_mean_std_cross_steps: bool = True):"
+      ]
+    }
+  }
+}

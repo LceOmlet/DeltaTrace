@@ -10,8 +10,6 @@ import torch
 
 
 FORMAL = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1')
-sys.path.insert(0, str(FORMAL / 'entry'))
-import counterfactual as owner
 
 
 def digest(path):
@@ -20,10 +18,14 @@ def digest(path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--formal', type=Path, default=FORMAL)
     parser.add_argument('--after-unix', type=float)
     parser.add_argument('--before-unix', type=float)
     parser.add_argument('--output', type=Path, default=Path(__file__).with_name('complete-second-DT-record-audit.json'))
     args = parser.parse_args()
+    FORMAL = args.formal
+    sys.path.insert(0, str(FORMAL / 'entry'))
+    import counterfactual as owner
     started = time.perf_counter()
     files = sorted((FORMAL / 'credit-records').glob('*/*.pt'))
     # The passive recorder names each artifact with its original time.time_ns().
