@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,hashlib,subprocess,os,psutil,time
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-native-flight-recorder-20261011-v1';original=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';formal=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());script=original/'source/compare_native_incident37_GEMM_rows_20261011.py'
+assert hashlib.sha256(script.read_bytes()).hexdigest()=='926292cae52daaa356084b3f26cd00e86f57a517c82bb63e74b630304d3fbe66'
+for pid,birth in [(818147,1791712848.74),(822541,1791712883.47),(824393,1791712898.55)]:assert not psutil.pid_exists(pid) or abs(psutil.Process(pid).create_time()-birth)>.1
+env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='-1';env['PYTHONPATH']=':'.join([str(original/'source'),str(root/'receipts/textcraft-native-incident37-async-head-capture-20261011-v1/source'),formal['pythonpath']]);result=job/'GEMM-competing-weight-comparison-v1.json'
+p=subprocess.run([os.environ['VENV_PYTHON'],str(script),'--result',str(job/'result'),'--output',str(result)],env=env,capture_output=True,text=True,timeout=35);(job/'GEMM-competing-weight-comparison-v1.stdout').write_text(p.stdout);(job/'GEMM-competing-weight-comparison-v1.stderr').write_text(p.stderr)
+if p.returncode:print(json.dumps({'returncode':p.returncode,'stderr':p.stderr}));raise SystemExit(1)
+import torch
+meta=[]
+for rank in [0,1]:
+ saved=torch.load(job/'result'/f'rank{rank}-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True)
+ w=saved['competing_weights'];raw=bytes(w[0].contiguous().view(torch.uint8).numpy());m=saved['metadata']
+ meta.append({'rank':rank,'metadata':m,'competing_row_SHA256':hashlib.sha256(raw).hexdigest()});del saved,w
+print(json.dumps({'unix':time.time(),'comparison':json.loads(result.read_text()),'metadata':meta,'CUDA_initialized':torch.cuda.is_initialized()}))
+PY

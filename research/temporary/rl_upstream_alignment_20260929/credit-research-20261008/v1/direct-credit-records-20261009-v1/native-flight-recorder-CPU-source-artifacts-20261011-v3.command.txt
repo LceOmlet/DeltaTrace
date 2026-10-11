@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import base64,hashlib,json,psutil,time
+job=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-native-flight-recorder-CPU-source-20261011-v3')
+targets=[{'pid':1061780,'birth':1791715180.68},{'pid':1065344,'birth':1791715205.04},{'pid':1069985,'birth':1791715220.06}]
+terminal=[]
+for x in targets:
+ try:
+  p=psutil.Process(x['pid']);same=p.create_time()==x['birth'];assert not same or p.status()==psutil.STATUS_ZOMBIE
+  terminal.append(dict(x,current_birth=p.create_time(),current_status=p.status(),same_birth=same))
+ except psutil.NoSuchProcess:terminal.append(dict(x,missing=True))
+files=[job/'job.json',job/'original-binding-check.json',job/'selection.json',job/'driver.log']+list((job/'source').glob('*.py'))+list((job/'hook').glob('*.json'))+list((job/'result').glob('*.json'))+list((job/'result').glob('*native-flight-recorder.pkl'))+list((job/'result').glob('*after-native-report-CPU-source.pt'))
+items=[]
+for p in files:
+ b=p.read_bytes();items.append(dict(relative=p.relative_to(job).as_posix(),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),b64=base64.b64encode(b).decode()))
+print(json.dumps(dict(unix=time.time(),job=str(job),terminal=terminal,files=items)))
+PY

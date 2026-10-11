@@ -1,4 +1,80 @@
+## 2026-10-11 v3同源回放终态：未复现，准备通过原VERL在退出前读CPU源
+
+原driver1061780/出生1791715180.68及worker1065344/1791715205.04、1069985/1791715220.06
+均按出生核验退出。两rank各8个B4梯度有限，共同一次原诊断optimizer，不计正式进度。
+CPU源159048行仍与原模型逐字节一致，但本次没有失败，不能排除失败时源端异常。
+完整第二B4文件SHA与此前有限packed观察分别相同；其actor-old最大差.440427/.249496，
+不将有限差异另定容差或判为新故障。v2第二B4全部21170位置逐值一致的记录仍独立保留。
+28个源/报告/trace/CPU行文件共7,043,914字节已校SHA下载。没有继续追加GPU回放。
+
+只读安装源码确认原VERL提供RayWorkerGroup.execute_all_sync与Worker.execute_with_func_generator。
+下一观察器只准备在原回放返回/报错后、ray.shutdown前，通过此原RPC调用已有CPU observer，
+避免新增worker启动观察器。源处于research临时目录，只有语法检查与owner源码核对，未运行、
+未验收、未部署到默认入口，不是修复。原v1 native记录器和原worker算法保持原SHA。
+正式仍37/330停止，无恢复、生产修改或新容差；具体错误写入/遗漏覆盖/复用尚未知。
+见[同源回放终态及prepared RPC来源](results_textcraft_incident37_native_recorder_CPU_source_repeat_20261011.json)。
+下节“v3尚无结果”为18:42的历史初始化记录。
+
+
+## 2026-10-11 同源事故回放v3已启动：只补失败时CPU源，尚无结果
+
+v2没有重现故障，失败时CPU源仍缺失。物理4/5复用完全相同的launcher15bf3d54与
+报告后observer25ff2cd9再回放一次；driver1061780/出生1791715180.68，worker1065344/
+1791715205.04、1069985/1791715220.06已按出生核验。18:42处于原DT，各rank还未更新。
+原source/config/26bef6c8/LoRA8/16/B4不变，无新增失败前张量读取或同步，无正式重启。
+本次仅补缺失现场，不扫参数或以有限结果当修复。结果仍待原进程，不能从状态文件推断终态。
+正式仍37/330停止；当前PID、启动命令和SHA见current_runtime.json顶部记录。
+
+
+## 2026-10-11 终态CPU源回放未复现：第二B4全部actor/old逐值一致，仍无生产修复
+
+v2 driver916659/出生1791713797.22及worker920553/1791713820.63、922317/1791713836.33
+均已按出生核验退出；物理GPU4/5，两rank各8个B4有限，共同一次原诊断optimizer。
+仅复用原报告后的CPU source观察器；launcher SHA15bf3d54、观察器25ff2cd9，原事故输入、
+26bef6c8、LoRA8/16与每卡B4未变。此回放没有失败，不能排除失败时CPU源被污染。
+
+CPU源159048行两别名与原模型SHA4defedf逐字节一致；rank0不拥有该行属预期。
+完整第二B4共9933/11237个action的actor logp与本次原old logp全部逐值相同。
+此前有限packed观察相对old仍有最大.440427/.249496差异，不能充当精确真值；本次比较
+没有新增容差、模型调用或GPU计算。失败v1相对old最大差163.425/149.115，首KL反向
+非有限仍未修。CPU源比较1.411秒/峰RSS.543GB，完整B4对照.058秒/峰RSS.554GB。
+
+28个终态/源/原生trace/CPU行文件已逐一核SHA下载，合计7,043,135字节。
+原helper的通用措辞“after the saved fault”不代表本v2失败，以原rank phase=complete为准。
+正式仍37/330停止，无恢复、重启或生产改动；下节v2“尚无结果”为此前初始化时的历史。
+见[终态、CPU源及完整B4对照](results_textcraft_incident37_native_recorder_CPU_source_20261011.json)。
+
+
 # 当前运行版本与修复记录
+
+## 2026-10-11 原生通信记录捕获同次失败：两rank序列匹配，仍无生产修复
+
+原352/782/3f/e48链、26bef6c8、LoRA8/16及每卡B4不变。诊断driver818147/
+出生1791712848.74、worker822541/1791712883.47、824393/1791712898.55已退出。
+两rank首B4梯度有限、第二B4非有限，零optimizer step；原故障后gradient hook
+另报invalid argument，不能当首NaN。正式仍37/330停止，无检查点恢复或正式重启。
+
+只启用安装PyTorch的native flight recorder，原终态报告之后才dump；每rank保留
+2000项、序列2360..4359。原PyTorch v2.8.0 tools/flight_recorder分析器逐文件原样
+运行，2000/2000 metadata匹配；包含最后三次root尺寸gather4225/4259/4326。
+记录全部completed，但这不证明buffer内容、copy完成或存储寿命正确；更早环形
+记录已覆盖。原分析器接受native trace2.9，无算法修改或新数值容差。
+
+原CPU归一化与247个原GEMM返回logp/entropy逐值相同；竞争词159048权重仍为
+第0层payload SHA137e443。原GEMM与捕获错误权重的FP64核算回舍入逐值一致。
+完整第二B4的old/ref/advantages/mask相同；相对此前packed正常观察，actor logp
+差绝对值>10为2144/9933、2411/11237，最大163.408/149.110；这只是描述区间。
+logp梯度非有限133/124，actor logp有限不能当健康。CPU比较.647秒/峰RSS1.235GB，
+全B4比较.049秒/峰RSS.554GB，无CUDA。终态八卡858MiB，非峰值。
+
+源码审计确认官方已有event等待；公开较新MetaX 2ee4c341的C++不能冒充安装
+016d0a82/2.8.0+metax3.5.3.9。没有添加同步、record_stream、clamp或更换环境。
+下一项只在原终态之后复用已存CPU source observer：v2 driver916659/
+出生1791713797.22，物理4/5；18:17已按出生核验初始化，尚无结果。其launcher
+SHA15bf3d54保持，观察器SHA25ff2cd9只追加终态CPU读取，不新增失败前张量操作。
+具体错误写入/遗漏覆盖/复用仍未知，不能称修复。
+见[原生记录、完整B4和源码范围](results_textcraft_incident37_native_recorder_20261011.json)。
+
 
 ## 2026-10-11 临时参数输入地址回放终态：未复现，仍无生产修复
 

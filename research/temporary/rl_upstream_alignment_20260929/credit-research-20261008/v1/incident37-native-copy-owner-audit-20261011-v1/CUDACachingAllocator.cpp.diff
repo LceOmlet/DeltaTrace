@@ -1,0 +1,119 @@
+--- pytorch/v2.8.0/CUDACachingAllocator.cpp
++++ MetaX/2ee4c341/CUDACachingAllocator.cpp
+@@ -62,6 +62,13 @@
+ namespace cuda::CUDACachingAllocator {
+ 
+ using namespace c10::CachingAllocator;
++#ifdef USE_MACA
++bool get_maca_graph_mem_policy_default() {
++  static char const* temp = std::getenv("PYTORCH_GRAPH_MEM_POLICY_DEFAULT");
++  return temp != nullptr;
++}
++#endif // USE_MACA
++
+ using namespace c10::CachingDeviceAllocator;
+ 
+ // Included here as this is externally used in CUDAAllocatorConfig
+@@ -1089,7 +1096,8 @@
+ } // namespace Native
+ 
+ static std::string reportProcessMemoryInfo(c10::DeviceIndex device) {
+-#ifdef PYTORCH_C10_DRIVER_API_SUPPORTED
++#if defined(PYTORCH_C10_DRIVER_API_SUPPORTED) && \
++    !defined(USE_MACA) // temp solution
+   void* nvml_handle = DriverAPI::get_nvml_handle();
+   if (!nvml_handle) {
+     return "";
+@@ -1364,15 +1372,33 @@
+       // cudaMalloc. So far this function has not modified allocator state, but
+       // keep in mind that any observed allocator state may change across calls
+       // to alloc_block since it may release the lock.
+-      block_found = alloc_block(params, false, context, lock)
+-          // Free enough available cached blocks to satisfy alloc and retry
+-          // alloc.
+-          || (release_available_cached_blocks(params, context) &&
+-              alloc_block(params, false, context, lock))
+-          // Free all non-split cached blocks and retry alloc.
+-          || (C10_LIKELY(captures_underway.empty()) &&
+-              release_cached_blocks(context, {0, 0}) &&
+-              alloc_block(params, true, context, lock));
++#ifdef USE_MACA
++      if (C10_UNLIKELY(c10::cuda::CUDACachingAllocator::
++                           get_maca_graph_mem_policy_default())) {
++#endif
++        block_found = alloc_block(params, false, context, lock)
++            // Free enough available cached blocks to satisfy alloc and retry
++            // alloc.
++            || (release_available_cached_blocks(params, context) &&
++                alloc_block(params, false, context, lock))
++            // Free all non-split cached blocks and retry alloc.
++            || (C10_LIKELY(captures_underway.empty()) &&
++                release_cached_blocks(context, {0, 0}) &&
++                alloc_block(params, true, context, lock));
++#ifdef USE_MACA
++      } else {
++        block_found = alloc_block(params, false, context, lock)
++            // Free enough available cached blocks to satisfy alloc and retry
++            // alloc.
++            || (C10_LIKELY(captures_underway.empty()) &&
++                release_available_cached_blocks(params, context) &&
++                alloc_block(params, false, context, lock))
++            // Free all non-split cached blocks and retry alloc.
++            || (C10_LIKELY(captures_underway.empty()) &&
++                release_cached_blocks(context, {0, 0}) &&
++                alloc_block(params, true, context, lock));
++      }
++#endif  // USE_MACA
+     }
+ 
+     // we are about to oom, try to use existing mempools as a last resort
+@@ -2997,8 +3023,8 @@
+           --it;
+         }
+         if (!(*cur)->expandable_segment_) {
++          totalReleased += (*cur)->size;
+           release_block(*cur, context);
+-          totalReleased += (*cur)->size;
+         }
+         if (is_first) {
+           break;
+@@ -4122,6 +4148,39 @@
+ 
+ } // namespace Native
+ 
++// Size pretty-printer
++std::string format_size(uint64_t size) {
++  std::ostringstream os;
++  os.precision(2);
++  os << std::fixed;
++  if (size <= 1024) {
++    os << size << " bytes";
++  } else if (size <= 1048576) {
++    os << (static_cast<double>(size) / 1024.0);
++    os << " KiB";
++  } else if (size <= 1073741824ULL) {
++    os << static_cast<double>(size) / 1048576.0;
++    os << " MiB";
++  } else {
++    os << static_cast<double>(size) / 1073741824.0;
++    os << " GiB";
++  }
++  return os.str();
++}
++
++#ifdef USE_MACA
++// The reduce_async_memcpy_src_size is set to 256 for reduce.
++constexpr int small_memcpy_size = 256;
++constexpr int reduceAsyncMemcpySrc[small_memcpy_size] = {0};
++int getSmallMemcpyByteSize() {
++  return small_memcpy_size * sizeof(int);
++}
++
++const int* getReduceAsyncMemcpySrc() {
++  return reduceAsyncMemcpySrc;
++}
++#endif
++
+ namespace CudaMallocAsync {
+ // If this is put in its own header file, it gets incorrectly renamed in HIPify.
+ // NOLINTNEXTLINE(misc-use-internal-linkage)

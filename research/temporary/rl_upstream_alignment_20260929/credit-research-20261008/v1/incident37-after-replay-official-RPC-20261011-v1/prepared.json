@@ -1,0 +1,36 @@
+{
+  "status": "prepared_only_unaccepted_not_executed",
+  "need": "Capture frozen CPU head source after an actual failing replay, without adding a worker setup observer. Two CPU-observer replays did not reproduce the fault.",
+  "owner_source_audit": {
+    "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/direct-credit-records-20261009-v1/native-flight-recorder-postterminal-RPC-owner-audit-20261011-v1.json",
+    "bytes": 1642,
+    "sha256": "eb4f0f154265a8e26fcf072a8ba8148f048663a0c10cc512ec8d46cbd7794b49"
+  },
+  "owner_interfaces": [
+    "RayWorkerGroup.execute_all_sync",
+    "Worker.execute_with_func_generator"
+  ],
+  "driver_seam": "Only the original diagnostic driver final ray.shutdown call after replay returns or raises. Original worker classes and methods unchanged.",
+  "CPU_observer_reused_sha256": "251ca219fba4c1479dda275e633a2a56971b89f9d1a67928848df2af306e7759",
+  "native_worker_setup_observer_reused_sha256": "4e6e437119e1a9f1c232cef3d01f9eca3d1a8b4cb6c2411ac2de097698cad4c2",
+  "files": [
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/incident37-after-replay-official-RPC-20261011-v1/observe_CPU_source_after_replay_rpc.py",
+      "bytes": 1549,
+      "sha256": "fa84f3da40621e97642b410785e37b745dd059f2acd58d33223288dde848a275"
+    },
+    {
+      "path": "research/temporary/rl_upstream_alignment_20260929/credit-research-20261008/v1/incident37-after-replay-official-RPC-20261011-v1/run_original_incident_after_replay_rpc.py",
+      "bytes": 3297,
+      "sha256": "e8932f725ee2e6094b8789869fa5f243c0aed56ae3b628d3e7894cb0aa14ff35"
+    }
+  ],
+  "validation": "Python syntax and installed owner source inspection only; no runtime RPC or GPU verification.",
+  "production_changes": 0,
+  "deployed": false,
+  "new_numerical_tolerance": null,
+  "limitations": [
+    "Observation is after replay returns or raises, not an instantaneous sample of the first bad write.",
+    "Runtime actor RPC has not been verified; this remains a prepared diagnostic, not a fix."
+  ]
+}

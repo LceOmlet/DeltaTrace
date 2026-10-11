@@ -1,0 +1,13 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,hashlib,base64,time
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+verl=root/'candidates/direct-action-target-20261007-v3/textcraft/verl'
+files=[verl/'verl/single_controller/base/worker.py',verl/'verl/single_controller/ray/base.py',root/'receipts/textcraft-native-incident37-old-ref-DT-20261011-v1/source/replay_native_incident37_old_ref_dt_20261011.py']
+items=[]
+for p in files:
+ b=p.read_bytes();items.append(dict(path=str(p),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),b64=base64.b64encode(b).decode()))
+print(json.dumps(dict(unix=time.time(),files=items,production_changes=0,GPU_calls=0,scope='Read installed original worker RPC and diagnostic driver lifecycle before adding any new observer.')))
+
+PY

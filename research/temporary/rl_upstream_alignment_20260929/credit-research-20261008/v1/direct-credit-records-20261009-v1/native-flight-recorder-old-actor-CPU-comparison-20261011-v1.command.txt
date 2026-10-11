@@ -1,0 +1,18 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,json,time,resource,hashlib
+from pathlib import Path
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts')
+variants={'failed_native':'textcraft-native-incident37-native-flight-recorder-20261011-v1','finite_packed_observer':'textcraft-native-incident37-root-copy-boundary-20261011-v1','finite_CPU_source_observer':'textcraft-native-incident37-native-flight-recorder-CPU-source-20261011-v2'}
+start=time.monotonic();rows=[]
+for rank in range(2):
+ for label,job in variants.items():
+  p=root/job/'result'/f'rank{rank}-loss-inputs-microbatch1.pt'
+  d=torch.load(p,map_location='cpu',weights_only=False)
+  if not isinstance(d,dict):raise TypeError(type(d))
+  if 'log_prob' not in d:print(json.dumps({'keys':list(d)}));raise SystemExit(2)
+  mask=d['response_mask'].bool();actor=d['log_prob'][mask].double();old=d['old_log_prob'][mask].double();diff=actor-old
+  rows.append(dict(rank=rank,label=label,artifact=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),action_tokens=diff.numel(),exact_matches=int((diff==0).sum()),nonfinite=int((~torch.isfinite(diff)).sum()),max_abs_difference=diff.abs().max().item(),L2_difference=diff.norm().item(),quantiles={str(q):torch.quantile(diff,q).item() for q in (0.,.01,.1,.5,.9,.99,1.)}))
+print(json.dumps(dict(unix=time.time(),rows=rows,seconds=time.monotonic()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),new_tolerance=None,model_calls=0,production_changes=0,scope='Descriptive comparison of saved same-policy pre-first-step log probabilities, not an independent numerical acceptance test.')))
+
+PY
