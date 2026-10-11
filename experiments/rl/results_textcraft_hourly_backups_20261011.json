@@ -1,0 +1,124 @@
+{
+  "unix": 1791733072.5107212,
+  "scope": "Hourly read-only monitoring/plotting and native file backups only; training/numerical/credit/optimizer configuration unchanged.",
+  "automation": {
+    "id": "textcraft",
+    "kind": "heartbeat",
+    "name": "TextCraft 每小时绘图、检查与双备份",
+    "status": "ACTIVE",
+    "rrule": "FREQ=HOURLY;INTERVAL=1",
+    "target_thread_id": "01a0d644-7cb3-79d0-b73d-ac2af1fb8b57"
+  },
+  "backup": {
+    "started": 1791732869.0983613,
+    "status": "passed",
+    "destination": "F:\\DeltaTraceBackups\\textcraft-20261011",
+    "source_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922",
+    "outputs": [
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-eventwait-fresh-20261011-v1/textcraft-dt",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-eventwait-20261011-v1/textcraft-grpo"
+    ],
+    "selection": "F:\\DeltaTraceBackups\\textcraft-20261011\\receipts\\1791732869098361300\\selection.json",
+    "files": 2112,
+    "bytes": 128460630,
+    "completed_checkpoints": {
+      "dt": null,
+      "grpo": null
+    },
+    "remote_stage": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/backup-access/local-snapshots/1791732869098361300",
+    "copy_command": [
+      "F:\\DeltaTraceBackups\\tools\\rclone.exe",
+      "copy",
+      ":sftp:/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/backup-access/local-snapshots/1791732869098361300/files",
+      "F:\\DeltaTraceBackups\\textcraft-20261011\\runtime",
+      "--sftp-ssh",
+      "ssh -oBatchMode=yes -oConnectTimeout=12 -oStrictHostKeyChecking=yes -oServerAliveInterval=15 -oServerAliveCountMax=3 -oHostKeyAlias=[ssh.v5000-prod-gw.nhss.zhejianglab.com]:32036 -p 31146 root@ssh.v5000-prod-gw.nhss.zhejianglab.com",
+      "--sftp-disable-hashcheck",
+      "--backup-dir",
+      "F:\\DeltaTraceBackups\\textcraft-20261011\\previous\\1791732869098361300",
+      "--transfers",
+      "2",
+      "--checkers",
+      "4",
+      "--buffer-size",
+      "8M",
+      "--multi-thread-streams",
+      "0",
+      "--stats",
+      "30s",
+      "--log-level",
+      "INFO",
+      "--log-file",
+      "F:\\DeltaTraceBackups\\textcraft-20261011\\receipts\\1791732869098361300\\copy.log"
+    ],
+    "local_full_sha256_verified": true,
+    "shared_backup": {
+      "unix": 1791732960.5776937,
+      "stage": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/backup-access/local-snapshots/1791732869098361300",
+      "destination": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011",
+      "files": 2112,
+      "bytes": 128460630,
+      "completed_checkpoints": {
+        "dt": null,
+        "grpo": null
+      },
+      "full_sha256_verified": true
+    },
+    "completed": 1791732960.7460449,
+    "full_sha256_verified": true
+  },
+  "local_backup_receipt_sha256": "7bf7c0a1c50df62fd021503cebf083b9a1ddc7b92d9219505b001e3d7bbd417d",
+  "rclone": {
+    "version": "v1.75.2",
+    "url": "https://downloads.rclone.org/v1.75.2/rclone-v1.75.2-windows-amd64.zip",
+    "zip_sha256": "8a9db2bad1dc79a65b3348fd857069598e2aab7cf4d118b77b1df23055aff818",
+    "exe_sha256": "41eab3e118d264920b62c3327966c5ece0dc4dd715ee617d9e30450d8ead95a4"
+  },
+  "source_files": {
+    "experiments\\rl\\backup_current_training.py": "aaf7d677003980044eeb9de1b68e8bfe98652d9ce22deeea5139c5e7da916d71",
+    "experiments\\rl\\plot_training_progress.py": "5e5a2fcc398c232841f498160e391a15c7cb0dbb33149e17fb974a73f8aebafc"
+  },
+  "plot": {
+    "snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-formal-eventwait-fresh-20261011-v1-1791729725\\latest.json",
+    "snapshot_sha256": "b09083065e408e434b6ea231424ff088a46f085ec357602e61990fe7ca87a9db",
+    "jobs": [
+      {
+        "task": "TextCraft DTPO",
+        "metrics": 0,
+        "phase": "ray::WorkerDict.actor_rollout_update_actor",
+        "errors": []
+      },
+      {
+        "task": "TextCraft GRPO",
+        "metrics": 1,
+        "phase": "ray::WorkerDict.actor_rollout_generate_sequences",
+        "errors": []
+      }
+    ]
+  },
+  "verification": {
+    "plot_owner_tests": "2 passed",
+    "actual_source_manifest_selected_outputs": 2,
+    "missing_recorded_backup_paths": [],
+    "backup_files": 2112,
+    "local_and_shared_full_SHA256": true
+  },
+  "storage_scope": "F is the independent off-machine copy. Shared copy uses the same verified NFS mount as training and is not an independent failure domain.",
+  "training": {
+    "DT_numeric_commit": "26bef6c8",
+    "FSDP_fix_commit": "2534a670",
+    "rank": 8,
+    "alpha": 16,
+    "microbatch_per_gpu": 4,
+    "total_iterations": 330,
+    "physical_DT_gpus": [
+      2,
+      3
+    ],
+    "physical_GRPO_gpus": [
+      4,
+      5
+    ],
+    "resume": false
+  }
+}

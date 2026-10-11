@@ -63,20 +63,63 @@ def read_job_logs(job):
     return records, errors
 
 
-def collect(root):
+def collect(root, job_outputs=None):
     root = Path(root)
     manifest = json.loads((root / 'formal-training.json').read_text())
-    out = {'collected_at': time.time(), 'started': manifest['started'],
-           'source_commit': manifest['source_commit'], 'root': str(root), 'jobs': []}
-    for job in manifest['jobs']:
+    jobs = manifest['jobs']
+    if job_outputs:
+        jobs = [j for j in jobs if j.get('output', j.get('run_dir')) in job_outputs]
+        if {j.get('output', j.get('run_dir')) for j in jobs} != set(job_outputs):
+            raise ValueError('Requested output is absent from the original training manifest')
+    out = {'collected_at': time.time(),
+           'started': manifest['started'] if 'started' in manifest else min(j['started_unix'] for j in jobs),
+           'source_commit': manifest.get('source_commit', 'recorded-runtime'),
+           'root': str(root), 'jobs': []}
+    if 'source_commit' not in manifest:
+        out['source_label'] = 'TextCraft DTPO / GRPO · 当前从头训练'
+    for original in jobs:
+        job = dict(original)
+        # Resolve only this driver's open native Ray log; never session_latest.
+        import psutil
+        birth = job.get('observed_process_created_unix', job.get('birth'))
+        try:
+            process = psutil.Process(job['pid'])
+            alive = process.is_running() and process.status() != psutil.STATUS_ZOMBIE
+            if birth is not None:
+                alive = alive and process.create_time() == birth
+        except psutil.NoSuchProcess:
+            process, alive = None, False
+        worker_phases = []
+        if alive:
+            for handle in (Path('/proc') / str(job['pid']) / 'fd').iterdir():
+                try:
+                    target = handle.resolve(strict=True)
+                except OSError:
+                    continue
+                for parent in target.parents:
+                    if parent.name == 'logs' and parent.parent.name.startswith('session_'):
+                        job['ray_session'] = str(parent.parent)
+                        break
+            worker_phases = sorted({p.name() for p in process.children(recursive=True)
+                                    if 'WorkerDict' in p.name()})
         records, errors = read_job_logs(job)
         metrics, phases = parse_logs(records)
-        checkpoint = Path(job['checkpoint_dir']) / 'latest_checkpointed_iteration.txt'
-        exit_file = Path(job['exit_file'])
-        out['jobs'].append({'task': job['task'], 'gpu': job['gpu'],
-                           'run_dir': job['run_dir'], 'budget': job['paper_budget']['iterations'],
-                           'pid_alive': Path('/proc', str(job['pid'])).exists(),
-                           'exit_code': exit_file.read_text().strip() if exit_file.exists() else None,
+        checkpoint = Path(job.get('checkpoint_dir') or job['checkpoints']) / 'latest_checkpointed_iteration.txt'
+        exit_file = Path(job['exit_file']) if job.get('exit_file') else None
+        devices = job.get('devices', [job.get('gpu')])
+        method = job.get('method')
+        label = job['task'] + ({'dt': ' DTPO', 'grpo': ' GRPO'}.get(method, ''))
+        budget = job.get('paper_budget', {}).get('iterations')
+        if budget is None:
+            budget = job['budget']['total_iterations']
+        out['jobs'].append({'task': label, 'environment_task': job['task'], 'method': method,
+                           'gpu': devices[0], 'devices': devices,
+                           'run_dir': job.get('run_dir') or job['output'], 'budget': budget,
+                           'pid': job['pid'], 'pid_alive': alive,
+                           'observed_process_created_unix': birth,
+                           'ray_session': job.get('ray_session'),
+                           'phase_label': ' / '.join(worker_phases) if worker_phases else None,
+                           'exit_code': exit_file.read_text().strip() if exit_file and exit_file.exists() else None,
                            'checkpoint_step': int(checkpoint.read_text()) if checkpoint.exists() else None,
                            'metrics': metrics, 'phases': phases, 'records': records, 'errors': errors[-10:]})
     mem = Path('/sys/fs/cgroup/memory')
@@ -134,7 +177,7 @@ def render(snapshot, history, output):
                          'text.color': '#0f172a', 'axes.edgecolor': '#cbd5e1',
                          'figure.facecolor': '#f8fafc', 'axes.facecolor': 'white'})
     colors = {'Sokoban': '#b45309', 'Webshop': '#2563eb', 'AppWorld': '#0f766e',
-              'TextCraft': '#2563eb'}
+              'TextCraft': '#2563eb', 'TextCraft DTPO': '#087e8b', 'TextCraft GRPO': '#b96c39'}
     jobs = snapshot['jobs']
     for job in jobs:
         colors.setdefault(job['task'], '#64748b')
@@ -267,20 +310,32 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--collect', action='store_true', help='Remote stdlib-only JSON output')
     p.add_argument('--source-root', required=True)
+    p.add_argument('--job-output', action='append', help='Select an exact output recorded in formal-training.json')
     p.add_argument('--host', default='root@ssh.v5000-prod-gw.nhss.zhejianglab.com')
-    p.add_argument('--port', default='32036')
+    p.add_argument('--port', help='Default to the existing deployment SSH owner port')
     p.add_argument('--snapshot', type=Path, help='Render an already collected snapshot offline')
     p.add_argument('--output', type=Path, default=Path('research/temporary/rl_training_plots'))
     p.add_argument('--publish', action='store_true', help='Copy artifacts into remote receipts for existing backup')
     args = p.parse_args()
     if args.collect:
-        print(json.dumps(collect(args.source_root)))
+        print(json.dumps(collect(args.source_root, args.job_output)))
         return
-    ssh = ['ssh', '-oBatchMode=yes', '-oConnectTimeout=20', '-p', args.port, args.host]
+    # Same strict, kept-alive transport as the existing deployment owner.
+    import importlib.util
+    owner_path = Path(__file__).resolve().parents[2] / 'research/temporary/rl_upstream_alignment_20260929/stage_environment_entry.py'
+    spec = importlib.util.spec_from_file_location('plot_ssh_owner', owner_path)
+    owner = importlib.util.module_from_spec(spec); spec.loader.exec_module(owner)
+    ssh = list(owner.SSH)
+    if args.port:
+        ssh[ssh.index('-p') + 1] = args.port
+    ssh[-1] = args.host
     if args.snapshot:
         snapshot = json.loads(args.snapshot.read_text(encoding='utf-8'))
     else:
-        cmd = shlex.join(['/opt/conda/bin/python', '-', '--collect', '--source-root', args.source_root])
+        command = ['/opt/conda/bin/python', '-', '--collect', '--source-root', args.source_root]
+        for output in args.job_output or []:
+            command.extend(['--job-output', output])
+        cmd = shlex.join(command)
         raw = subprocess.run(ssh + [cmd], input=Path(__file__).read_bytes(), capture_output=True, check=True, timeout=120).stdout
         snapshot = json.loads(raw)
     run = Path(snapshot['jobs'][0]['run_dir']).parent.name + '-' + str(int(snapshot['started']))
@@ -301,7 +356,10 @@ def main():
     if args.publish:
         remote = str(Path(args.source_root).as_posix()).rstrip('/') + '/receipts/training-plots/' + run
         subprocess.run(ssh + ['mkdir -p -- ' + shlex.quote(remote)], check=True, timeout=60)
-        subprocess.run(['scp', '-q', '-oBatchMode=yes', '-oConnectTimeout=20', '-P', args.port,
+        scp = list(owner.SCP)
+        if args.port:
+            scp[scp.index('-P') + 1] = args.port
+        subprocess.run(scp + ['-q', '-oConnectTimeout=20',
                         *[str(path) for path in files], args.host + ':' + remote + '/'], check=True, timeout=120)
     print(json.dumps({'output': str(output.resolve()), 'files': [str(f.resolve()) for f in files],
                       'published': args.publish, 'jobs': [{'task': j['task'], 'iterations': completed(j),

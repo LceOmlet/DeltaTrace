@@ -1,3 +1,21 @@
+## 2026-10-11 23:39 每小时绘图与两份备份已启用，训练参数未改
+
+自动跟进 textcraft 已ACTIVE、每小时，绑定当前线程；只跟进新DT2/3与原生GRPO4/5。
+复用原parse_logs/read_job_logs/render，按原manifest精确output筛选两任务，实际driver
+PID出生和打开的原Ray日志定位，避免同名TextCraft/旧SQL/AppWorld日志混用。
+已有两项日志测试通过，真实当前日志采集、F盘绘图及远端发布已完成。
+
+本机F:/DeltaTraceBackups/textcraft-20261011为独立异机备份；共享副本在
+/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011。
+findmnt已确认该共享路径与训练源同属NFS，不称其独立故障域。用户允许D/F；
+实际F盘可用约406GiB，而D盘约42GiB。官方rclone v1.75.2下载ZIP及exe SHA已绑定；
+复用原SSH/凭据接口，rclone负责增量SFTP/copy/previous保留/checksum，GNU cp负责
+共享副本，不新增训练或存储算法。最新2112文件/128460630字节，两副本全SHA256
+通过；原完成标记目前没有新checkpoint，不虚报保存。后续原save_freq25的完整
+checkpoint（含optimizer/scheduler/RNG/data）按标记自动备份，不改变训练保存行为。
+当前正式预算继续，GRPO首轮完成，DT首轮actor更新中，尚不称长期稳定。
+详见[监测与双备份实际回执](results_textcraft_hourly_backups_20261011.json)。
+
 ## 2026-10-11 23:03 两组新作业的实际初始状态和导入版本已回读
 
 原VERL只读RPC已完成四worker回执：DT2646857/2648285、GRPO2595974/2598164，
