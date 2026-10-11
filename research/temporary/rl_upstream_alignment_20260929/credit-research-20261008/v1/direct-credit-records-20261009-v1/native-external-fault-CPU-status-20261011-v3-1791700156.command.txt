@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,psutil,subprocess,hashlib
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-external-fault-CPU-20261011-v3';state=json.loads((job/'job.json').read_bytes());out=dict(unix=time.time(),job=state,processes=[])
+for ident in [dict(pid=state['supervisor_pid'],birth=state['supervisor_birth']),state['driver']]:
+ item=dict(ident);out['processes'].append(item)
+ try:
+  p=psutil.Process(item['pid']);item.update(actual_birth=p.create_time(),status=p.status(),same_birth=abs(p.create_time()-item['birth'])<.001,pss=p.memory_full_info().pss)
+  if p.pid==state['driver']['pid']:item['trace_environment']={k:v for k,v in p.environ().items() if k in ['TORCH_TRACE','TORCH_CUDA_SANITIZER','LD_PRELOAD','CUDA_LAUNCH_BLOCKING','MACA_LAUNCH_BLOCKING','CUDA_VISIBLE_DEVICES']}
+ except psutil.NoSuchProcess:item['missing']=True
+out['ranks']=[]
+for rank in [0,1]:
+ p=job/'result'/f'rank{rank}.json'
+ if not p.exists():continue
+ r=json.loads(p.read_bytes());rr={k:r.get(k) for k in ['rank','pid','birth','phase','unix','microbatches','actual_optimizer_steps','error','pss_bytes','allocated','reserved']};out['ranks'].append(rr)
+ events=job/'result'/f'rank{rank}-phases.jsonl';rr['phase_tail']=[{k:v for k,v in json.loads(x).items() if k in ['phase','unix','microbatch','gradient_finite']} for x in events.read_text().splitlines()[-4:]] if events.exists() else []
+config=job/'result/initialization-config.yaml'
+if config.exists():out['config']=dict(bytes=config.stat().st_size,sha256=hashlib.sha256(config.read_bytes()).hexdigest())
+out['driver_tail']=(job/'driver.log').read_text(errors='replace').splitlines()[-5:];out['mx_smi']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout;out['host_available']=psutil.virtual_memory().available;print(json.dumps(out))
+PY

@@ -1,5 +1,32 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 异常head整行4096值精确定位为第0层rank0参数payload
+
+失败159048行SHA137e443与以下连续片段逐字节相同：LoRA-A尾192、LoRA-B128、
+dt_bias16、A_log16、MLP gate前3744；用原HF/PEFT meta构造及原FSDP管理顺序
+验证五参数连续，实际LoRA全形状与原两卡分片一致。CPU .907秒/峰RSS939483136，
+无CUDA/模型forward。原先按保存FP32直接查LoRA漏掉BF16转换，本次补齐后命中。
+大值来源已确定为其他合法参数，不是BF16舍入或DT信用溢出；具体串用操作尚未定位。
+
+新诊断driver3782291/出生1791701185.44，actor3785392/出生1791701204.22及
+3787756/出生1791701218.93，物理4/5；观察时原DT，配置9327字节/SHA2b170445。
+只在update_actor记录原root/layer0 gather输入、staging与copy-out输出元数据，
+不新增值读取、复制、计算、wait或数值变化。原352/782/3f/e48、LoRA8/16、B4保持。
+源及CPU真实Ray/VERL方法链已核对；这是诊断，正式37/330仍停止，没有生产修复。
+launch模板残留空observer列表已在job.json更正并保留前SHA，不是worker运行时修改。
+见[完整数据来源、原owner顺序及当前进程](results_textcraft_incident37_layer0_payload_origin_20261011.json)。
+
+
+## 2026-10-11 原失败入口外部v3诊断结束有限；未获得失败CPU源
+
+原supervisor3613664及driver3613884均退出，两rank各8个B4梯度有限，共同一次
+原诊断optimizer；无NaN触发，signals与CPU_captures均为空。原352/782/3f/e48、
+9327字节配置SHA2b170445与LoRA8/16、每卡B4不变，未启用TORCH_TRACE。
+402.997秒结束，仅为原事故诊断，不计正式进度、不证明写坏冻结W的问题已修。
+正式保持37/330停止，无生产修改；这份回执不扩大为GPU权重或整网容差验收。
+见[原入口v3终态与证据范围](results_textcraft_incident37_external_fault_CPU_original_entry_terminal_20261011.json)。
+
+
 ## 2026-10-11 原失败正对照入口的故障后CPU采集启动；不改worker
 
 supervisor3613664/出生1791699572.1，driver3613884/出生1791699573.86，物理4/5。

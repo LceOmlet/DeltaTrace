@@ -1,0 +1,20 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,torch,resource,hashlib
+from safetensors import safe_open
+torch.set_num_threads(4);started=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1'
+g=torch.load(job/'result/rank0-native-GEMM-rows.pt',map_location='cpu',mmap=True,weights_only=False);bad=g['competing_weights'][0].float();mask=torch.ones_like(bad);mask[320:352]=0;needle=bad*mask;needle2=float(needle.square().sum());model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');wm=json.loads((model/'model.safetensors.index.json').read_bytes())['weight_map'];out={'unix':time.time(),'scope':'CPU nearest-row diagnostics, excluding observed abnormal coordinates320:352; no model calls or numerical acceptance claim','bad_row_sha256':hashlib.sha256(g['competing_weights'][0].view(torch.uint8).numpy().tobytes()).hexdigest(),'comparisons':[]}
+for name in ['lm_head.weight','model.language_model.embed_tokens.weight']:
+ with safe_open(model/wm[name],framework='pt',device='cpu') as f:
+  t=f.get_tensor(name);cos_best=[];mse_best=[]
+  for lo in range(0,t.shape[0],4096):
+   x=t[lo:lo+4096].float();x[:,320:352]=0;dots=x@needle;norm2=x.square().sum(-1);cs=dots/(norm2.sqrt()*needle2**.5);dist=norm2+needle2-2*dots
+   cv,ci=cs.topk(5);dv,di=dist.topk(5,largest=False);cos_best.extend((float(v),lo+int(i)) for v,i in zip(cv,ci));mse_best.extend((float(v),lo+int(i)) for v,i in zip(dv,di))
+  cos_best=sorted(cos_best,reverse=True)[:5];mse_best=sorted(mse_best)[:5]
+  direct=(t[159048].float()*mask);d=needle-direct
+  out['comparisons'].append({'name':name,'shape':list(t.shape),'top_cosine':cos_best,'top_squared_L2':mse_best,'same_index':{'cosine':float(torch.dot(direct,needle)/(direct.norm()*needle.norm())),'squared_L2':float(d.square().sum()),'exact_unmasked_coordinates':int(((t[159048]==g['competing_weights'][0])&(mask.bool())).sum())}})
+  del t,x
+out.update(seconds=time.perf_counter()-started,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,model_calls=0,production_changes=0)
+path=root/'receipts/textcraft-native-incident37-nearest-weight-rows-20261011-v1.json';path.write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+
+PY

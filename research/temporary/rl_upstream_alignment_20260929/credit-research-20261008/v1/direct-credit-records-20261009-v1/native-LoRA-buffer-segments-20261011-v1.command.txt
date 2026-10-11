@@ -1,0 +1,32 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,torch,resource,hashlib
+from safetensors import safe_open
+torch.set_num_threads(4);start=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');g=torch.load(root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/result/rank0-native-GEMM-rows.pt',map_location='cpu',mmap=True,weights_only=False);bad=g['competing_weights'][0].clone();p=next((root/'receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808').glob('incident-*-update.pt'));data=torch.load(p,map_location='cpu',mmap=True,weights_only=False);ps=data['trainable_local_parameters'];name='base_model.model.model.layers.0.linear_attn.in_proj_a.lora_A.default.weight';t=ps[name].reshape(-1).to(bad.dtype);off=16192;n=min(len(bad),t.numel()-off);diff=torch.nonzero(t[off:off+n]!=bad[:n]).flatten();out={'unix':time.time(),'first_source':{'name':name,'offset':off,'available':n,'exact':bool(torch.equal(t[off:off+n],bad[:n])),'first_mismatches':diff[:20].tolist()},'segment_fingerprints':[],'nearby_parameter_order':[]}
+keys=list(ps);j=keys.index(name);out['nearby_parameter_order']=[{'name':k,'shape':list(ps[k].shape),'dtype':str(ps[k].dtype)} for k in keys[max(0,j-5):j+7]]
+for lo,hi in [(0,16),(16,32),(176,192),(192,208),(304,320),(320,336),(336,352),(352,368),(368,384),(4080,4096)]:
+ needle=bad[lo:hi];matches=[]
+ for k,v in ps.items():
+  flat=v.reshape(-1).to(bad.dtype);c=torch.nonzero(flat==needle[0]).flatten();c=c[c+len(needle)<=flat.numel()]
+  for i in range(1,len(needle)):
+   if c.numel()==0:break
+   c=c[flat[c+i]==needle[i]]
+  for offset in c.tolist():matches.append({'source':'LoRA rank0','name':k,'offset':offset,'shape':list(v.shape)})
+ out['segment_fingerprints'].append({'bad_columns':[lo,hi],'values':needle.float().tolist(),'matches':matches[:50],'total_matches':len(matches)})
+model=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');wm=json.loads((model/'model.safetensors.index.json').read_bytes())['weight_map'];out['layer0_small_parameters']=[]
+for name,file in wm.items():
+ if '.layers.0.linear_attn.' in name:
+  with safe_open(model/file,framework='pt',device='cpu') as f:
+   v=f.get_tensor(name)
+   if v.numel()<=4096:
+    flat=v.flatten().to(bad.dtype);matches=[]
+    for lo in range(320,352,16):
+     needle=bad[lo:lo+16];c=torch.nonzero(flat==needle[0]).flatten();c=c[c+16<=flat.numel()]
+     for i in range(1,16):
+      if not c.numel():break
+      c=c[flat[c+i]==needle[i]]
+     for offset in c.tolist():matches.append({'bad_columns':[lo,lo+16],'offset':offset})
+    out['layer0_small_parameters'].append({'name':name,'shape':list(v.shape),'dtype':str(v.dtype),'values':v.flatten().float().tolist() if v.numel()<=64 else None,'BF16_matches':matches})
+out.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,model_calls=0,production_changes=0);p=root/'receipts/textcraft-native-incident37-LoRA-buffer-segments-20261011-v1.json';p.write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+
+PY

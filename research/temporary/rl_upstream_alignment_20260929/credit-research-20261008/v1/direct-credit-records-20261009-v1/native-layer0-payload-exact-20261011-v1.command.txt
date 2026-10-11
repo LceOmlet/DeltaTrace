@@ -1,0 +1,23 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,pathlib,json,time,hashlib,resource
+from safetensors import safe_open
+from transformers import AutoConfig,Qwen3_5ForCausalLM
+from peft import get_peft_model,LoraConfig,TaskType
+from torch.distributed.fsdp._fully_shard._fsdp_init import _get_managed_modules,_get_managed_states
+torch.set_num_threads(4);start=time.perf_counter();root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';g=torch.load(job/'result/rank0-native-GEMM-rows.pt',map_location='cpu',mmap=True,weights_only=False);bad=g['competing_weights'][0].clone();incident=next((root/'receipts/textcraft-native-actor-incidents-20261010-v1/rank0-pid987808').glob('incident-*-update.pt'));state=torch.load(incident,map_location='cpu',mmap=True,weights_only=False);ps=state['trainable_local_parameters'];prefix='base_model.model.model.layers.0.linear_attn.in_proj_a.';modelpath=pathlib.Path('/mnt/si0021787ci2/default/models/Qwen3.5-9B');wm=json.loads((modelpath/'model.safetensors.index.json').read_bytes())['weight_map'];parts=[ps[prefix+'lora_A.default.weight'].flatten()[16192:].to(bad.dtype),ps[prefix+'lora_B.default.weight'].flatten().to(bad.dtype)];names=['rank0 in_proj_a LoRA_A tail','rank0 in_proj_a LoRA_B']
+for name,lo,hi in [('model.language_model.layers.0.linear_attn.dt_bias',0,16),('model.language_model.layers.0.linear_attn.A_log',0,16),('model.language_model.layers.0.mlp.gate_proj.weight',0,3744)]:
+ with safe_open(modelpath/wm[name],framework='pt',device='cpu') as f:parts.append(f.get_tensor(name).flatten()[lo:hi].to(bad.dtype));names.append(name)
+reconstructed=torch.cat(parts);assert reconstructed.shape==bad.shape;assert torch.equal(reconstructed.view(torch.uint8),bad.view(torch.uint8));out={'unix':time.time(),'whole4096_bitwise_exact':True,'bad_row_sha256':hashlib.sha256(bad.view(torch.uint8).numpy().tobytes()).hexdigest(),'reconstructed_sha256':hashlib.sha256(reconstructed.view(torch.uint8).numpy().tobytes()).hexdigest(),'segments':[]};lo=0
+for name,t in zip(names,parts):out['segments'].append({'source':name,'bad_columns':[lo,lo+t.numel()],'elements':t.numel(),'bitwise_exact':bool(torch.equal(t.view(torch.uint8),bad[lo:lo+t.numel()].view(torch.uint8)))});lo+=t.numel()
+config=AutoConfig.from_pretrained(modelpath,local_files_only=True);text_config=config.get_text_config()
+with torch.device('meta'):
+ m=Qwen3_5ForCausalLM(text_config);m.to(torch.bfloat16);m=get_peft_model(m,LoraConfig(task_type=TaskType.CAUSAL_LM,r=8,lora_alpha=16,target_modules='all-linear',bias='none'))
+ layer=m.base_model.model.model.layers[0];modules=_get_managed_modules((layer,));params,buffers=_get_managed_states(modules);name_by_id={id(p):n for n,p in layer.named_parameters()};order=[];cum=0
+ for p in params:
+  name=name_by_id[id(p)];n=((p.shape[0]+1)//2)*p[0].numel();order.append({'name':name,'orig_shape':list(p.shape),'rank0_numel':n,'BF16_rank0_start_bytes':cum*2});cum+=n
+ expected=[x['name']for x in order];index=expected.index('linear_attn.in_proj_a.lora_A.default.weight');out['official_meta_order']=order;out['matched_consecutive_owner_parameters']=expected[index:index+5];out['expected_layer0_rank0_payload_offset_bytes']=(order[index]['BF16_rank0_start_bytes']+16192*2);out['expected_layer0_rank0_payload_bytes']=cum*2;out['official_owner_order_supports_five_segments']=expected[index:index+5]==['linear_attn.in_proj_a.lora_A.default.weight','linear_attn.in_proj_a.lora_B.default.weight','linear_attn.dt_bias','linear_attn.A_log','mlp.gate_proj.base_layer.weight']
+ actual={n:tuple(p.shape)for n,p in m.named_parameters()if p.requires_grad};out['meta_LoRA_full_shapes_match_actual_shards']=all(n in actual and actual[n]==(2*t.shape[0],*t.shape[1:])for n,t in ps.items());out['meta_only_parameters']=all(p.device.type=='meta'for p in m.parameters())
+out.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,model_forward_calls=0,production_changes=0,scope='Exact saved bad row reconstruction, plus original HF/PEFT meta construction and installed FSDP ordering helper. This is source identity evidence, not a reproduction or fix of the faulty buffer lifetime.');p=root/'receipts/textcraft-native-incident37-layer0-payload-exact-20261011-v1.json';p.write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps({k:v for k,v in out.items()if k!='official_meta_order'}))
+
+PY

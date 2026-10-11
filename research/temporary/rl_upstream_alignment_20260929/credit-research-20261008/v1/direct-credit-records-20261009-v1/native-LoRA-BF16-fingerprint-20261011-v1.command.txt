@@ -1,0 +1,22 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import torch,pathlib,json,time,resource,hashlib
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');start=time.perf_counter();torch.set_num_threads(4)
+cap=torch.load(root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1/result/rank0-native-GEMM-rows.pt',map_location='cpu',weights_only=False,mmap=True);bad=cap['competing_weights'][0].clone();result={'unix':time.time(),'badrow_sha256':hashlib.sha256(bad.view(torch.uint8).numpy().tobytes()).hexdigest(),'ranks':[]}
+for rank,pid in [(0,987808),(1,989860)]:
+ folder=root/f'receipts/textcraft-native-actor-incidents-20261010-v1/rank{rank}-pid{pid}';path=next(folder.glob('incident-*-update.pt'));data=torch.load(path,map_location='cpu',weights_only=False,mmap=True);params=data['trainable_local_parameters'];r={'rank':rank,'parameter_count':len(params),'elements':0,'BF16_fingerprint_matches':[],'prefix32_nearest':[],'dtypes':{}};result['ranks'].append(r)
+ for name,t in params.items():
+  r['dtypes'][str(t.dtype)]=r['dtypes'].get(str(t.dtype),0)+1;flat=t.reshape(-1).to(torch.bfloat16);r['elements']+=flat.numel()
+  for lo,hi in [(0,16),(320,336),(352,368),(4080,4096)]:
+   needle=bad[lo:hi];c=torch.where(flat==needle[0])[0];c=c[c+16<=flat.numel()]
+   for off in range(1,16):
+    if c.numel()==0:break
+    c=c[flat[c+off]==needle[off]]
+   for off in c.tolist():r['BF16_fingerprint_matches'].append({'name':name,'shape':list(t.shape),'source_offset':off,'bad_columns':[lo,hi],'full4096_exact':bool(torch.equal(flat[off:off+4096],bad)) if lo==0 and off+4096<=flat.numel() else None})
+  if 'lora_A' in name and t.numel()%t.shape[-1]==0 and t.shape[-1]>=32:
+   rows=t.reshape(-1,t.shape[-1]).float();diff=rows[:,:32]-bad[:32].float();v,j=diff.square().sum(-1).min(0);r['prefix32_nearest'].append({'name':name,'row':int(j),'squared_L2':float(v),'columns':t.shape[-1],'BF16_exact_count32':int((rows[j,:32].to(bad.dtype)==bad[:32]).sum())})
+ r['prefix32_nearest']=sorted(r['prefix32_nearest'],key=lambda x:x['squared_L2'])[:10]
+ del data,params
+result.update(seconds=time.perf_counter()-start,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,CUDA_initialized=torch.cuda.is_initialized(),GPU_calls=0,model_calls=0,production_changes=0);out=root/'receipts/textcraft-native-incident37-LoRA-BF16-fingerprint-20261011-v1.json';out.write_text(json.dumps(result,indent=2)+chr(10));print(json.dumps(result))
+
+PY

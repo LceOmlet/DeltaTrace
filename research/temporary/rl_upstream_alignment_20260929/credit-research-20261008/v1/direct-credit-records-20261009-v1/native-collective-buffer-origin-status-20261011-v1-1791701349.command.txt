@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,psutil,hashlib,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-collective-buffer-origin-20261011-v1';j=json.loads((job/'job.json').read_bytes());before=hashlib.sha256((job/'job.json').read_bytes()).hexdigest()
+if j.get('additional_observers_since_original_failing_job')==[]:
+ j['additional_observers_since_original_failing_job']=[{'path':j['command'][1],'sha256':j['diagnostic_source_sha256'],'scope':'Native root/layer0 collective buffer metadata only'}];j['metadata_correction']={'unix':time.time(),'previous_sha256':before,'field':'additional_observers_since_original_failing_job','reason':'Launch template retained empty observer list; actual_binding and diagnostic_source_sha256 already identify the added observer. No process/config change.'};(job/'job.json').write_text(json.dumps(j,indent=2)+chr(10))
+out={'unix':time.time(),'job_json_sha256':hashlib.sha256((job/'job.json').read_bytes()).hexdigest(),'driver':{},'ranks':[]}
+try:
+ p=psutil.Process(j['pid']);out['driver']={'pid':p.pid,'birth':p.create_time(),'expected_birth':j['birth'],'same_birth':abs(p.create_time()-j['birth'])<.001,'status':p.status(),'pss':p.memory_full_info().pss}
+except psutil.NoSuchProcess:out['driver']={'pid':j['pid'],'missing':True}
+for path in sorted((job/'result').glob('rank[01].json')):
+ d=json.loads(path.read_bytes());row={k:d.get(k)for k in ['rank','pid','birth','phase','unix','actual_optimizer_steps','error','allocated','reserved','pss_bytes']};row['microbatches']=[{k:x.get(k)for k in ['index','gradient_finite']}for x in d.get('microbatches',[])];pid=d.get('pid')
+ if pid:
+  try:
+   p=psutil.Process(pid);row['live']={'birth':p.create_time(),'status':p.status(),'pss':p.memory_full_info().pss}
+  except psutil.NoSuchProcess:row['live']={'missing':True}
+ phase=path.with_name(f"rank{d['rank']}-phases.jsonl")
+ if phase.exists():row['phase_tail']=[json.loads(x)for x in phase.read_text().splitlines()[-3:]]
+ out['ranks'].append(row)
+for name in ['initialization-config.yaml']:
+ p=job/'result'/name
+ if p.exists():out['config']={'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+out['collective_metadata_files']=[{'path':str(p),'bytes':p.stat().st_size}for p in (job/'result').glob('*collective-buffer-metadata.json')];out['driver_tail']=[s[:700]for s in (job/'driver.log').read_text(errors='replace').splitlines()[-8:]];out['physical']=subprocess.check_output(['mx-smi'],text=True);out['host_available']=psutil.virtual_memory().available;out['formal_restarted']=False;out['production_changes']=0;print(json.dumps(out))
+
+PY
