@@ -1,0 +1,62 @@
+{
+  "unix": 1791726699.8966784,
+  "owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl/verl/trainer/ppo/ray_trainer.py",
+  "SHA256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+  "source_expected_SHA": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+  "points": [
+    {
+      "line": 640,
+      "text": "\n        print(f\"Size of train dataloader: {len(self.train_dataloader)}, Size of val dataloader: {len(self.val_dataloader)}\")\n\n        total_training_steps = len(self.train_dataloader) * self.config.trainer.total_epochs\n\n        if self.config.trainer.total_training_steps is not None:\n            total_training_steps = self.config.trainer.total_training_steps\n"
+    },
+    {
+      "line": 643,
+      "text": "        total_training_steps = len(self.train_dataloader) * self.config.trainer.total_epochs\n\n        if self.config.trainer.total_training_steps is not None:\n            total_training_steps = self.config.trainer.total_training_steps\n\n        self.total_training_steps = total_training_steps\n        print(f\"Total training steps: {self.total_training_steps}\")\n"
+    },
+    {
+      "line": 645,
+      "text": "        if self.config.trainer.total_training_steps is not None:\n            total_training_steps = self.config.trainer.total_training_steps\n\n        self.total_training_steps = total_training_steps\n        print(f\"Total training steps: {self.total_training_steps}\")\n\n        try:\n            OmegaConf.set_struct(self.config, True)"
+    },
+    {
+      "line": 652,
+      "text": "            OmegaConf.set_struct(self.config, True)\n            with open_dict(self.config):\n                if OmegaConf.select(self.config, \"actor_rollout_ref.actor.optim\"):\n                    self.config.actor_rollout_ref.actor.optim.total_training_steps = total_training_steps\n                if OmegaConf.select(self.config, \"critic.optim\"):\n                    self.config.critic.optim.total_training_steps = total_training_steps\n        except Exception as e:\n            print(f\"Warning: Could not set total_training_steps in config. Structure missing? Error: {e}\")"
+    },
+    {
+      "line": 654,
+      "text": "                if OmegaConf.select(self.config, \"actor_rollout_ref.actor.optim\"):\n                    self.config.actor_rollout_ref.actor.optim.total_training_steps = total_training_steps\n                if OmegaConf.select(self.config, \"critic.optim\"):\n                    self.config.critic.optim.total_training_steps = total_training_steps\n        except Exception as e:\n            print(f\"Warning: Could not set total_training_steps in config. Structure missing? Error: {e}\")\n\n    def _dump_generations(self, inputs, outputs, scores, reward_extra_infos_dict, dump_path):"
+    },
+    {
+      "line": 989,
+      "text": "                    global_step_folder = os.path.join(working_dir, global_step_folder)\n        print(f\"Load from checkpoint folder: {global_step_folder}\")\n        # set global step\n        self.global_steps = int(global_step_folder.split(\"global_step_\")[-1])\n\n        print(f\"Setting global step to {self.global_steps}\")\n        print(f\"Resuming from {global_step_folder}\")\n"
+    },
+    {
+      "line": 1007,
+      "text": "        dataloader_local_path = os.path.join(global_step_folder, \"data.pt\")\n        if os.path.exists(dataloader_local_path):\n            dataloader_state_dict = torch.load(dataloader_local_path, weights_only=False)\n            self.train_dataloader.load_state_dict(dataloader_state_dict)\n        else:\n            print(f\"Warning: No dataloader state found at {dataloader_local_path}, will start from scratch\")\n\n    def _balance_batch(self, batch: DataProto, metrics, logging_prefix=\"global_seqlen\"):"
+    },
+    {
+      "line": 1042,
+      "text": "            config=OmegaConf.to_container(self.config, resolve=True),\n        )\n\n        self.global_steps = 0\n\n        # load checkpoint before doing anything\n        self._load_checkpoint()\n"
+    },
+    {
+      "line": 1064,
+      "text": "        self.global_steps += 1\n        last_val_metrics = None\n\n        for epoch in range(self.config.trainer.total_epochs):\n            for batch_dict in self.train_dataloader:\n                metrics = {}\n                timing_raw = {}\n                batch: DataProto = DataProto.from_single_dict(batch_dict)"
+    },
+    {
+      "line": 1086,
+      "text": "                    non_tensor_batch_keys=non_tensor_batch_keys_to_pop,\n                )\n\n                is_last_step = self.global_steps >= self.total_training_steps\n\n                with _timer(\"step\", timing_raw):\n                    # generate a batch\n                    with _timer(\"gen\", timing_raw):"
+    }
+  ],
+  "rollouts": {
+    "previous": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/textcraft-dt/rollouts/26.jsonl",
+        "bytes": 3176669
+      }
+    ],
+    "resumed": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/textcraft-dt/rollouts/26.jsonl",
+        "bytes": 2972501
+      }
+    ]
+  }
+}

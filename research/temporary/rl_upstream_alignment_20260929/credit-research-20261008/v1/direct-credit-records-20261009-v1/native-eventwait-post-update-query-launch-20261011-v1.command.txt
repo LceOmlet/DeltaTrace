@@ -1,0 +1,14 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+
+from pathlib import Path
+import hashlib,json,os,psutil,subprocess,time
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');p=root/'receipts/incident37-metax-eventwait-owner-fix-20261011-v1';source=p/'inspect_resumed_worker_v2.py';assert hashlib.sha256(source.read_bytes()).hexdigest()=='f859329a01578a0d320fd6fe11382889574f70bcfee42d035f60e1b361fe8073'
+s=json.loads((root/'runs/textcraft-formal-eventwait-resume25-20261011-v1/source.json').read_text());env=dict(os.environ,**s['environment']);env['CUDA_VISIBLE_DEVICES']='-1';env['PYTHONPATH']=str(root/'receipts/textcraft-formal-worker-runtime-20261009-v1')+':'+str(p)+':'+s['pythonpath']
+argv=[env['VENV_PYTHON'],str(source),'--address','10.200.112.15:58752','--prefix','Z0XGfd','--output',str(p/'resumed-worker-post-update.json')]
+assert abs(psutil.Process(1949625).create_time()-1791723586.64)<.05
+with (p/'resumed-worker-post-update.log').open('xb') as stream:process=subprocess.Popen(argv,env=env,stdout=stream,stderr=subprocess.STDOUT,start_new_session=True)
+j=dict(pid=process.pid,birth=psutil.Process(process.pid).create_time(),unix=time.time(),argv=argv,source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),formal_pid=1949625,formal_birth=1791723586.64,model_calls=0,GPU_tensor_reads=0,queued_during_native_update=True)
+(p/'resumed-worker-post-update-job.json').write_text(json.dumps(j,indent=2)+'\n');print(json.dumps(j))
+
+PY

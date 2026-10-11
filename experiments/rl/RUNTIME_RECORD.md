@@ -1,3 +1,24 @@
+## 2026-10-11 21:49 续训第26轮完整通过，已进入第27轮；正式预算继续
+
+原PID1949625/出生1791723586.64、两worker1958679/1960836与物理2/3保持。
+原Ray只读RPC在update_actor返回后实际读取两rank各496份optimizer state：
+99->103，scheduler last_epoch25->26、step_count27、lr1e-6；四次原更新全部执行，
+无NaN跳步。实际GDN导入SHA7c06d5e0与26bef6c8已接受版本一致，原FSDP代码仍
+严格等于固定owner仅一次accelerator->cuda查找替换。没有新增模型调用、同步或生产覆盖。
+
+原TaskRunner stdout中的step26指标均有限：reward0.688、entropy0.610、grad_norm0.027；
+原driver未转发该指标行，已直接保存原Ray stdout，不重构logger或伪造指标。
+完整迭代2553.711秒，生成1719.906、DT196.263、PPO update414.999秒。
+旧同配置第26轮分别2534.139/1707.772/209.959/407.049秒；实际token数不同，
+仅作真实阶段参照，不称同输入加速测试或官方速度倍数。更新物理VRAM约27–29GiB，
+两worker PSS约13.6GiB稳定；torch虚拟allocator统计不当作板卡物理占用。
+
+原resume外层epoch显示0是固定owner行为；global step、scheduler及data状态按原接口恢复，
+原330全局迭代终止条件保持，不补步或额外运行330次。原save_freq25保持，新输出尚无
+完整检查点；旧完整25保留为恢复来源，不把完成26当作已保存26。负尾指标原样保留，
+本次没有修改DT信用或证明其归因准确性；当前仅证明修复回放及首轮完整续训通过。
+见[首轮续训、实际状态与原始日志](results_textcraft_incident37_first_resumed_iteration_20261011.json)。
+
 ## 2026-10-11 21:22 原生worker回读确认完整续训状态，非重置训练
 
 通过原VERL execute_with_func_generator只读RPC，在原actor队列边界实际读取两worker：
