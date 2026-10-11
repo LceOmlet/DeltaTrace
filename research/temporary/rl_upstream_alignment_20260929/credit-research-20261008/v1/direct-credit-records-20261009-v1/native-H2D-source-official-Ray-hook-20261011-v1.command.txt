@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,os,sys,hashlib
+import ray
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-H2D-source-observer-20261011-v2')
+output=root/'worker-hook-probe';assert not output.exists();output.mkdir()
+library_sha=hashlib.sha256((root/'memcpy_source_callback.so').read_bytes()).hexdigest()
+vars={'DT_DIAGNOSTIC_SOURCE_DIR':str(root),'DT_DIAGNOSTIC_SOURCE_OUTPUT':str(output),'DT_DIAGNOSTIC_SOURCE_LIBRARY_SHA':library_sha,'PYTHONPATH':str(root)+':'+os.environ.get('PYTHONPATH',''),'CUDA_VISIBLE_DEVICES':'-1'}
+sys.path.insert(0,str(root))
+start=time.perf_counter()
+ray.init(num_cpus=1,include_dashboard=False,runtime_env={'worker_process_setup_hook':'incident37_mcpti_source_setup.setup','env_vars':vars})
+@ray.remote
+def inspect_hook():
+ import os,pathlib,json,torch,psutil
+ p=pathlib.Path(os.environ['DT_DIAGNOSTIC_SOURCE_OUTPUT'])/f'pid{os.getpid()}-worker-setup.json'
+ return {'receipt':json.loads(p.read_bytes()),'actual_hook_path':__import__('incident37_mcpti_source_setup').__file__,'cuda_initialized':torch.cuda.is_initialized(),'PSS_bytes':psutil.Process().memory_full_info().pss}
+try:result=ray.get(inspect_hook.remote())
+finally:ray.shutdown()
+failed=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-H2D-source-observer-20261011-v1/probe-source.jsonl')
+failed_rows=[json.loads(s) for s in failed.read_text().splitlines()]
+out={'unix':time.time(),'seconds':time.perf_counter()-start,'official_ray_version':ray.__version__,'hook':result,'v1_unavailable_CPU_read_errno':[r['read_errno'] for r in failed_rows if 'read_errno' in r],'v1_unavailable_CPU_read_bytes':[r['read_bytes'] for r in failed_rows if 'read_bytes' in r],'production_changes':0,'model_calls':0,'DT_calls':0}
+(output/'receipt.json').write_text(json.dumps(out,indent=2)+chr(10));print(json.dumps(out))
+assert not result['cuda_initialized'] and result['receipt']['start_status']==0
+PY

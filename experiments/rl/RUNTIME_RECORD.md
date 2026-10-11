@@ -1,5 +1,19 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原生H2D主机源观察器已验证；尚未启动事故回放
+
+安装MetaX MCPTI的三种原生memcpy回调，仅匹配已记录1017118720字节BF16分片，
+在现有H2D入口/出口读取8192字节主机行；不调用GPU API、不增GPU拷贝/同步。
+v1的process_vm_readv实际返回EFAULT，原因未定，原失败源/回执保留；v2普通
+主机读取在原8KiB Torch拷贝两端逐字节一致，零丢弃。Ray2.53.0官方
+worker_process_setup_hook字符串入口实际执行，worker未初始化CUDA、PSS565917696。
+观察器通过官方启动参数组合原失败GEMM352入口，不新增actor类或训练方法；
+C++源d6054bc0、库98e1b3e4、hook b7772441、launcher9eb21221均单独登记。
+尚未启动事故回放，不是修复或算法容差通过；异步API退出不代表GPU完成，
+相同大小的embedding分片须按实际值区分。正式仍停37/330，不恢复、不重启。
+见[能力与源码回执](results_textcraft_incident37_H2D_source_capability_20261011.json)。
+
+
 ## 2026-10-11 原故障分支CPU源观察结束；未取得失败源，不是修复
 
 driver2275891、worker2278582/2280290均按birth核验已退出。两rank各8个B4反向
