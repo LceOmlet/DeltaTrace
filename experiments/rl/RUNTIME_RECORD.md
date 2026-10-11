@@ -1,3 +1,20 @@
+## 2026-10-11 21:22 原生worker回读确认完整续训状态，非重置训练
+
+通过原VERL execute_with_func_generator只读RPC，在原actor队列边界实际读取两worker：
+每rank496份optimizer state步数均99，scheduler last_epoch25、step_count26、lr1e-6。
+保留原NaN跳步后的真实状态，未补步、未从基础权重重启。正式PID1949625/出生1791723586.64，
+物理2/3；当前第26轮采样，15次交互已完成，尚无本次新完整更新，不称长期稳定。
+原actor/core/FSDP/vLLM实际导入路径与SHA均已核对；DT模块在采样阶段尚未导入，
+不把磁盘版本对照扩大成已加载DT验收。LoRA8/16、每卡B4/双卡B8、330预算不变。
+
+两实际worker的FSDP代码对象均严格等于编译固定owner后只替换一次accelerator->cuda；
+原指令字节/常量完全相同。运行时marshal序列化SHA189141c6与安装时1609439c不同，
+在无代码变化的独立CPU进程也重现；不把引用共享编码差异误判为版本切换或重新补丁。
+此回读不执行模型、不读GPU tensor、不添加同步或训练hook；源修复仍2534a670，
+数值源仍26bef6c8。物理板卡约49GiB，worker PSS约9.38/8.56GiB；容器282GiB中
+约238GiB为文件cache、43GiB为匿名rss，不将fork RSS相加。具体采集时点见回执。
+见[原生续训状态与实际代码验证](results_textcraft_incident37_resume_state_20261011.json)。
+
 ## 2026-10-11 21:05 原完整检查点25已恢复，正式第26轮采样中
 
 原VERL两worker1958679/出生1791723631.83及1960836/1791723649.88的真实Ray stdout
