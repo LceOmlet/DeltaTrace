@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+from pathlib import Path
+import json,torch,time,resource,psutil,hashlib
+root=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');start=time.monotonic();out={'unix':time.time(),'ranks':[],'new_tolerance':None,'model_calls':0,'DT_calls':0,'optimizer_calls':0,'production_changes':0}
+for pid,birth in [(591619,1791710696.64),(594450,1791710716.39),(595940,1791710731.26),(383917,1791708736.48),(386520,1791708755.15),(388009,1791708769.52)]:assert not psutil.pid_exists(pid) or abs(psutil.Process(pid).create_time()-birth)>.1
+for rank in [0,1]:
+ saved={};files=[]
+ for mode in ['root','inputs']:
+  label={'root':'root-copy-boundary','inputs':'parameter-input-pointers'}[mode]
+  p=root/f'receipts/textcraft-native-incident37-{label}-20261011-v1/result/rank{rank}-loss-inputs-microbatch1.pt'
+  saved[mode]=torch.load(p,map_location='cpu',weights_only=False,mmap=True);files.append({'mode':mode,'path':str(p),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
+ a,b=saved['root'],saved['inputs'];mask=a['response_mask'].bool();assert torch.equal(mask,b['response_mask'])
+ r={'rank':rank,'files':files,'action_tokens':int(mask.sum()),'old_ref_advantages_equal':{k:torch.equal(a[k],b[k]) for k in ['old_log_prob','ref_logprob','advantages']},'diagnostic_thresholds_not_acceptance_gates':[1,10,20,80]}
+ delta=(b['log_prob']-a['log_prob']).double();active=delta[mask]
+ r['inputs_minus_packed_observer_actor_logprob']={'nonfinite':int((~torch.isfinite(active)).sum()),'min':float(active.min()),'max':float(active.max()),'quantiles':{str(q):float(torch.quantile(active,q)) for q in [0.,.01,.1,.5,.9,.99,1.]},'abs_exceeds':{str(t):int((active.abs()>t).sum()) for t in [1,10,20,80]}}
+ r['max_ref_minus_actor']={k:float((v['ref_logprob']-v['log_prob'])[mask].max()) for k,v in saved.items()}
+ r['gradients_nonfinite']={k:int((~torch.isfinite(v['log_prob_gradient'])).sum()) for k,v in saved.items()}
+ flat=torch.where(mask,delta.abs(),torch.full_like(delta,-1.)).flatten();inds=torch.topk(flat,16).indices
+ r['largest_differences']=[{'row':int(i)//delta.shape[1],'response_column':int(i)%delta.shape[1],'packed_actor':float(a['log_prob'].flatten()[i]),'inputs_actor':float(b['log_prob'].flatten()[i]),'old':float(a['old_log_prob'].flatten()[i]),'ref':float(a['ref_logprob'].flatten()[i]),'advantage':float(a['advantages'].flatten()[i]),'packed_gradient':float(a['log_prob_gradient'].flatten()[i]),'inputs_gradient':float(b['log_prob_gradient'].flatten()[i])} for i in inds]
+ out['ranks'].append(r)
+out['seconds']=time.monotonic()-start;out['peak_RSS_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024;out['CUDA_initialized']=torch.cuda.is_initialized()
+print(json.dumps(out))
+PY
