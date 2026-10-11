@@ -1,0 +1,12 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,subprocess,json,psutil,time,os
+print(json.dumps(dict(unix=time.time(),host_available=psutil.virtual_memory().available,disk_free=psutil.disk_usage('/mnt').free)))
+print(subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15).stdout)
+for base in ['/opt/maca/bin','/opt/maca/share','/opt/maca/doc','/opt/maca/include']:
+ p=pathlib.Path(base)
+ if not p.exists():continue
+ matches=[str(x) for x in p.rglob('*') if any(k in x.name.lower() for k in ['tracer','trace','sanitiz','profiler'])]
+ print(json.dumps(dict(base=base,paths=matches[:80])))
+p=pathlib.Path('/opt/maca/bin/mcTracer');print(json.dumps(dict(executable=str(p),target=str(p.resolve()),bytes=p.stat().st_size)))
+PY

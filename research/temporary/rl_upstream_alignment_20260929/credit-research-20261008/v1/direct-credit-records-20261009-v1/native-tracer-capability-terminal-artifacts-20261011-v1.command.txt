@@ -1,0 +1,10 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,psutil,json,time,hashlib,base64,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts');files=[]
+for version in (1,2):
+ p=root/f'incident37-native-tracer-source-20261011-v{version}'
+ for f in p.rglob('*'):
+  if f.is_file():files.append(dict(path=str(f.relative_to(root)),bytes=f.stat().st_size,sha256=hashlib.sha256(f.read_bytes()).hexdigest(),base64=base64.b64encode(f.read_bytes()).decode()))
+print(json.dumps(dict(unix=time.time(),files=files,known_processes={str(pid):psutil.pid_exists(pid) for pid in [3366984,3367543,3374220,3374713]},mx_smi=subprocess.check_output(['mx-smi'],text=True))))
+PY

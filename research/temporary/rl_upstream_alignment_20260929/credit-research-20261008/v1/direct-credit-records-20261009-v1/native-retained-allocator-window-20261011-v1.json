@@ -1,0 +1,62 @@
+{
+  "unix": 1791697694.4139638,
+  "GPU_calls": 0,
+  "model_calls": 0,
+  "production_changes": 0,
+  "ranks": [
+    {
+      "rank": 0,
+      "snapshot": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank0-native-allocator.pickle",
+        "bytes": 8242240,
+        "sha256": "9ff4337d146d8d2fa281871f40e3a9ec005fe74f20564c5428ba3068b104120f"
+      },
+      "selected_second_head_time_bracket": [
+        1791680394.5730433,
+        1791680409.6678138
+      ],
+      "devices": [
+        {
+          "device": 0,
+          "count": 60000,
+          "first_time": 1791680440.834979,
+          "last_time": 1791680450.588934,
+          "chronological": true,
+          "events_inside_selected_call_bracket": 0,
+          "events_before_bracket": 0,
+          "events_after_bracket": 60000
+        }
+      ]
+    },
+    {
+      "rank": 1,
+      "snapshot": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-allocator-20261011-v1/result/rank1-native-allocator.pickle",
+        "bytes": 8629579,
+        "sha256": "fa736a50590d335066739e0d91356dd52d5b322695fcb06cd43d666816688f0a"
+      },
+      "selected_second_head_time_bracket": [
+        1791680394.516799,
+        1791680409.689873
+      ],
+      "devices": [
+        {
+          "device": 0,
+          "count": 60000,
+          "first_time": 1791680440.830189,
+          "last_time": 1791680450.595249,
+          "chronological": true,
+          "events_inside_selected_call_bracket": 0,
+          "events_before_bracket": 0,
+          "events_after_bracket": 60000
+        }
+      ]
+    }
+  ],
+  "owner_path": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+  "owner_sha256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d",
+  "owner_docstring": "Enable recording of stack traces associated with memory\n    allocations, so you can tell what allocated any piece of memory in\n    :func:`torch.cuda.memory._snapshot()`.\n\n    In addition to keeping stack traces with each current allocation and free,\n    this will also enable recording of a history of all alloc/free events.\n\n    Use :func:`torch.cuda.memory._snapshot()` to retrieve this information,\n    and the tools in `_memory_viz.py` to visualize snapshots.\n\n    Buffer behavior\n    ---------------\n\n    This will store up to `max_entries` instances of `TraceEntry` when enabled.\n    Python trace collection defaults to `sys.maxsize`, meaning long-running\n    or indefinitely running jobs should set a reasonable limit to avoid excessive\n    memory use. Expect each entry to be several KB.\n\n    Longer running workflows or those with smaller `max_entries` values will only\n    store the last accumulated `max_entries` entries, meaning new entries overwrite\n    older entries.\n\n    C++ implementation for reference to ring buffer implemenation:\n\n    .. code-block:: cpp\n\n        if (record_history) {\n          if (alloc_trace->size() < alloc_trace_max_entries_) {\n            alloc_trace->emplace_back(te);\n          } else {\n            (*alloc_trace)[alloc_trace_next++] = te;\n            if (alloc_trace_next == alloc_trace_max_entries_) {\n              alloc_trace_next = 0;\n            }\n          }\n        }\n\n    Latency impact\n    --------------\n\n    The Python trace collection is fast (2us per trace), so you may consider\n    enabling this on production jobs if you anticipate ever having to debug\n    memory issues.\n\n    C++ trace collection is also fast (~50ns/frame), which for many typical programs\n    works out to ~2us per trace, but can vary depending on stack depth.\n\n    Args:\n        enabled (Literal[None, \"state\", \"all\"], optional):\n            `None`, disable recording memory history.\n            `\"state\"`, keep information for currenly allocated memory.\n            `\"all\"`, additionally keep a history of all alloc/free calls.\n            Defaults to \"all\".\n        context (Literal[None, \"state\", \"alloc\", \"all\"], optional):\n            `None`, Do not record any tracebacks.\n            `\"state\"`, Record tracebacks for currently allocated memory.\n            `\"alloc\"`, additionally keep tracebacks for alloc calls.\n            `\"all\"`, additionally keep tracebacks for free calls.\n            Defaults to \"all\".\n        stacks (Literal[\"python\", \"all\"], optional):\n            `\"python\"`, include Python, TorchScript, and inductor frames in tracebacks\n            `\"all\"`, additionally include C++ frames\n            Defaults to \"all\".\n        max_entries (int, optional): Keep a maximum of `max_entries`\n            alloc/free events in the recorded history recorded.\n    ",
+  "seconds": 0.20132940000621602,
+  "peak_RSS_bytes": 629514240,
+  "CUDA_initialized": false
+}
