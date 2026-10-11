@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-native-H2D-source-20261011-v1';meta=json.loads((job/'job.json').read_bytes());out={'unix':time.time(),'job':str(job),'driver':{'pid':meta['pid'],'expected_birth':meta['birth']}}
+try:
+ p=psutil.Process(meta['pid']);out['driver'].update(birth=p.create_time(),same_birth=p.create_time()==meta['birth'],status=p.status());out['children']=[{'pid':c.pid,'birth':c.create_time(),'status':c.status(),'name':c.name()}for c in p.children(recursive=True)]
+except psutil.NoSuchProcess:out['driver']['missing']=True
+res=job/'result';out['files']=[{'name':p.name,'bytes':p.stat().st_size}for p in sorted(res.glob('*'))if p.is_file()];out['rank_states']={p.name:json.loads(p.read_bytes())for p in sorted(res.glob('rank[01].json'))}
+out['rank_states']={n:{k:s.get(k)for k in ['rank','pid','birth','phase','unix','actual_optimizer_steps','microbatches','error','pss_bytes','allocated','reserved','sources']}for n,s in out['rank_states'].items()}
+out['phase_tails']={p.name:[json.loads(s)for s in p.read_text(errors='replace').splitlines()[-3:]]for p in res.glob('*phases*.jsonl')}
+out['completed']=json.loads((res/'completed.json').read_bytes())if(res/'completed.json').exists()else None
+observations=job/'H2D-source-observations';out['worker_hook_receipts']=[json.loads(p.read_bytes())for p in observations.glob('*worker-setup.json')];traces={}
+for p in observations.glob('*native-H2D-source.jsonl'):
+ groups={};rows=p.read_text().splitlines();valid=[]
+ for line in rows:
+  try:valid.append(json.loads(line))
+  except json.JSONDecodeError:pass
+ for row in valid:
+  if 'CPU_row_hex' not in row:continue
+  value=bytes.fromhex(row['CPU_row_hex']);key=(row['src'],hashlib.sha256(value).hexdigest())
+  if key not in groups:groups[key]={'src':row['src'],'row_sha256':key[1],'count':0,'first_time_ns':row['time_ns'],'last_time_ns':row['time_ns'],'row_bytes':len(value),'read_errno':row['read_errno']}
+  groups[key]['count']+=1;groups[key]['last_time_ns']=row['time_ns']
+ traces[p.name]={'bytes':p.stat().st_size,'header':valid[0]if valid else None,'source_groups':list(groups.values()),'summary':valid[-1]if valid and 'selected'in valid[-1]else None}
+out['H2D_source_traces']=traces;out['driver_tail']=(job/'driver.log').read_text(errors='replace').splitlines()[-12:];out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['host_available']=psutil.virtual_memory().available;print(json.dumps(out))
+PY
