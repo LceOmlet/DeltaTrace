@@ -1,5 +1,25 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 同次失败已取得root/第0层地址；当前gather输出未与head重叠
+
+原352/782/3f/e48事故回放、源配置和26bef6c8数值版本不变，仅对root与decoder0
+两个FSDP group实例记录原unshard/wait/reshard指针；没有新增tensor值计算或同步。
+driver252512/出生1791707496.39，两worker255918/1791707516.95、257500/1791707532.58
+均已退出，物理4/5；两rank均首B4梯度有限、第二B4非有限，零optimizer step。
+247处原GEMM logits经原VERL CPU归一化与返回logp/entropy逐值相同；竞争词159048
+权重仍为原第0层payload的同一SHA137e443，说明异常权重与错误logp确实共同出现。
+
+每rank20条生命周期记录，实际GEMM权重地址与root head输出地址相同；当前8次
+可见gather输出均不与head区域重叠。这不能排除未观察的copy-in、较早写入、
+异步生命周期或遗漏覆盖；具体串用操作仍未知，不称修复，也不据此盲目改FSDP。
+原NaN之后旧诊断gradient hook另报invalid argument，不能将其报错点当首NaN。
+CPU比较0.643秒/峰RSS1235755008，无CUDA；终态八卡各858MiB且无进程。
+
+正式仍37/330停止，LoRA8/16、每卡B4/双卡B8及Q/V/A/PPO不变，没有检查点恢复。
+原37行奖励/熵曲线已绘制并核对，NaN14/37断线保留；第14轮首算子仍未知。
+见[同次失败地址、原GEMM/归一化与范围](results_textcraft_incident37_two_group_lifecycle_20261011.json)。
+
+
 ## 2026-10-11 原FSDP实际head尺寸copy-out检查通过；未定位故障写入
 
 同一已启动诊断PID150097/出生1791706511.37已退出，物理GPU4；没有正式重启。
