@@ -1,0 +1,11 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,pathlib,hashlib,subprocess,time,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-competing-weight-capture-20261011-v1';out={'unix':time.time(),'files':[],'GPU_calls':0,'production_changes':0}
+for name in ['job.json','binding-check.json','selection.json']:
+ p=job/name
+ if p.exists():out['files'].append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'json':json.loads(p.read_text())})
+p=job/'source/capture_native_incident37_GEMM_rows_20261011.py';out['original_observer']={'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['host_available_bytes']=psutil.virtual_memory().available
+print(json.dumps(out))
+PY

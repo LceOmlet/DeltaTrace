@@ -1,5 +1,26 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原失败入口再次复现同一坏W与第二B4 NaN；未部署修复
+
+仅复用原GEMM352→async782→exception3f→e48源链、事故输入及配置，新增输出目录；
+无MCPTI/allocator/transport/退出后CPU观察。driver2175285及worker2179137/2180549
+均按birth核验已退出。两rank首B4反向有限、第二B4出现132/124个logp梯度NaN，
+零optimizer更新；此为诊断数，不混同原正式132/122。实际247行GEMM采集无缺失，
+竞争权重159048行在两rank所有采集位置均与原坏行逐值相同（SHA137e443e…、
+L2 35.80547），H及目标token权重仍与正常现场相同；原VERL归一化与实际head输出
+逐值一致。因此新增观察器中的有限回放不是修复证据，原坏W仍可复现，写入方未知。
+原comparator926292ca CPU .640秒、峰RSS1233842176字节，无CUDA初始化；20份
+文件5561565字节及远端大PT哈希已保存，缺失0，终态八卡无进程、主机可用
+1024124903424字节。原启动检查误用不存在的exception文件名并被if exists跳过，
+本轮已读取真正导入的replay_native_incident37_exception_capture_20261011.py，
+SHA3f4942a9与原绑定一致；没有改运行源。FSDP原storage/collective及head独立dW
+源码已核对，尚无直接写入方证据；未套用不适用的上游proposal或安装新工具。
+正式仍停37/330，源26bef6c8、LoRA8/16、每卡B4及Q/V/A保持，不恢复、不重启。
+NaN具体为KL对actor logp反向及后续LoRA梯度/范数；奖励、DT优势、熵和前向loss有限。
+原37轮奖励/熵/梯度图已核对；第14轮首个异常算子未知。
+见[复现与现场回执](results_textcraft_incident37_original_entry_control_20261011.json)。
+
+
 
 ## 2026-10-11 官方MCPTI地址诊断结束；有限执行不能视为修复
 

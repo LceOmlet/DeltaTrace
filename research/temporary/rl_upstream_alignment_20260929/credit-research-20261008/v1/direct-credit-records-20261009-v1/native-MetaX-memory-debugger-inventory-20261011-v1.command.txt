@@ -1,0 +1,16 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,shutil,subprocess,psutil
+out={'unix':time.time(),'commands':{n:shutil.which(n) for n in ['mcSanitizer','mcsanitizer','mcdbg','mc-gdb','mcTracer','compute-sanitizer']},'installed_paths':{},'GPU_calls':0,'model_calls':0,'production_changes':0}
+for directory in ['/opt/maca/bin','/opt/maca/tools','/opt/maca/share','/opt/maca/libexec']:
+ p=pathlib.Path(directory);out['installed_paths'][directory]=[str(x) for x in p.iterdir()] if p.is_dir() else None
+out['processes']=[]
+for pid,birth in [(2025442,1791684456.08),(2028646,1791684477.52),(2030343,1791684492.54),(982372,1791553809.84)]:
+ try:p=psutil.Process(pid);out['processes'].append({'pid':pid,'birth':p.create_time(),'expected_birth':birth,'same_birth':p.create_time()==birth,'status':p.status()})
+ except psutil.NoSuchProcess:out['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['host_available_bytes']=psutil.virtual_memory().available
+for name,p in out['commands'].items():
+ if p and 'sanitizer' in name.lower():
+  r=subprocess.run([p,'--help'],capture_output=True,text=True,timeout=10);out[name+'_help']={'returncode':r.returncode,'stdout':r.stdout,'stderr':r.stderr}
+print(json.dumps(out))
+PY
