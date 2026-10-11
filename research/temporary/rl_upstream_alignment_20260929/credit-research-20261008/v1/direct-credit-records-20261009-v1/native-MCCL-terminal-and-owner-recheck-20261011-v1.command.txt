@@ -1,0 +1,29 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,time,subprocess,psutil
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');src=root/'runs/textcraft-formal-stable-20261009-v1/source.json';s=json.loads(src.read_bytes())
+procs=[]
+for pid,birth in [(4081870,1791704016.23),(4086511,1791704050.72),(4088176,1791704067.6),(982372,1791553809.84),(987808,1791553850.0),(989860,1791553867.51)]:
+ try:
+  p=psutil.Process(pid);procs.append({'pid':pid,'expected_birth':birth,'actual_birth':p.create_time(),'same_birth':abs(p.create_time()-birth)<0.01,'status':p.status()})
+ except psutil.NoSuchProcess:procs.append({'pid':pid,'expected_birth':birth,'missing':True})
+files=[]
+for name in ['_fsdp_collectives.py','_fsdp_param.py','_fsdp_param_group.py','_fsdp_state.py','_fully_shard.py']:
+ p=pathlib.Path('/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard')/name;files.append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size})
+seams=[]
+for name in ['deltatrace_rollout.py','deltatrace_credit.py','reward_readout.py']:
+ for entry in s['pythonpath'].split(':'):
+  p=pathlib.Path(entry)/name
+  if p.is_file():
+   row={'path':str(p),'resolved':str(p.resolve()),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+   if name=='deltatrace_credit.py':row['text']=p.read_text()
+   seams.append(row);break
+states={}
+for n in ['formal-training.json','active-training.json','active-source.json']:
+ p=root/n
+ if p.exists():
+  v=json.loads(p.read_bytes());states[n]={'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'status':v.get('status')}
+physical=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=15)
+print(json.dumps({'unix':time.time(),'processes':procs,'source_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),'installed_files':files,'DT_seams':seams,'authority':states,'host_available':psutil.virtual_memory().available,'physical':physical.stdout,'physical_returncode':physical.returncode,'model_calls':0},ensure_ascii=False))
+
+PY

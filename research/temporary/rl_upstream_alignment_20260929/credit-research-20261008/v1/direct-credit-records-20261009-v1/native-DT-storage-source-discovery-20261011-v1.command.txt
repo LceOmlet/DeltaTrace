@@ -1,0 +1,8 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib
+p=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json')
+s=json.loads(p.read_bytes())
+print(json.dumps({'source_keys':list(s),'source_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'environment_type':type(s.get('environment')).__name__,'environment':{k:v for k,v in s.get('environment',{}).items() if k.startswith('DT_') or k in ['PYTORCH_CUDA_ALLOC_CONF','TORCHINDUCTOR_CACHE_DIR']},'environment_path':s.get('environment_path')},ensure_ascii=False))
+
+PY

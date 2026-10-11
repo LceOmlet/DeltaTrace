@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib
+p=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-stable-20261009-v1/source.json');s=json.loads(p.read_bytes())
+env=json.loads(pathlib.Path(s['environment']['DT_ENVIRONMENT_JSON']).read_bytes())['qwen35']
+r=pathlib.Path(s['environment']['DT_ROOT'])
+result={'unix':__import__('time').time(),'dt_root':str(r),'environment':{k:v for k,v in env.items() if k in ['official_root','dt_offload_replay_mixer','dt_pin_replay_host','dt_pin_root_host','dt_reuse_native_prefix','dt_native_fla_fp16','dt_compiler_options','dt_dynamic_shapes']},'imports':s.get('actual_CPU_imports'),'bindings':s.get('source_bindings'),'profile_source':[],'storage_references':[]}
+for p in [r/'profiles/official.py',r/'accelerated/qwen35/__init__.py']:
+ if p.exists():result['profile_source'].append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'text':p.read_text()})
+for sub in ['accelerated/qwen35','clean/qwen35']:
+ d=r/sub
+ if d.exists():
+  for p in d.rglob('*.py'):
+   lines=p.read_text().splitlines();hits=[]
+   for i,l in enumerate(lines):
+    if any(t in l for t in ['release_owner_params','record_stream','cuda.Stream','cuda.stream(','.data =','set_(','resize_(0)','set_reshard','release_finite_layer','prepare_finite_layer','copy_(']):
+     hits.append({'line':i+1,'text':l.strip()})
+   if hits:result['storage_references'].append({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'hits':hits})
+print(json.dumps(result,ensure_ascii=False))
+
+PY

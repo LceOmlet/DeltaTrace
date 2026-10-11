@@ -1,0 +1,21 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,sys,importlib,os,resource,inspect
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes());os.environ.update({k:v for k,v in s['environment'].items() if k!='CUDA_VISIBLE_DEVICES'})
+sys.path[:0]=[s['environment']['DT_ROOT'],s['environment']['DT_OFFICIAL_ROOT'],s['environment']['DT_ROOT']+'/clean/qwen35']+s['pythonpath'].split(':')
+mod=importlib.import_module('accelerated.qwen35')
+from accelerated.qwen35 import qwen35_code_local_capture
+result={'namespace_paths':list(mod.__path__),'namespace_file':mod.__file__,'capture_binding_type':type(qwen35_code_local_capture).__name__,'capture_module':getattr(qwen35_code_local_capture,'__module__',None),'files':[]}
+paths=set()
+if inspect.ismodule(qwen35_code_local_capture):paths.add(pathlib.Path(qwen35_code_local_capture.__file__))
+else:paths.add(pathlib.Path(inspect.getfile(qwen35_code_local_capture)))
+for entry in s['pythonpath'].split(':'):
+ for name in ['reward_readout.py','native_prefix_leases.py']:
+  p=pathlib.Path(entry)/name
+  if p.is_file() and not any(x.name==name for x in paths):paths.add(p)
+for p in sorted(paths):result['files'].append({'path':str(p),'resolved':str(p.resolve()),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'text':p.read_text()})
+import torch
+result.update(CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,model_calls=0)
+print(json.dumps(result,ensure_ascii=False))
+
+PY

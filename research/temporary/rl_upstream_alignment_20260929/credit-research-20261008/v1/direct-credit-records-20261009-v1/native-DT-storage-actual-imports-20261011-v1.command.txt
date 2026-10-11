@@ -1,0 +1,17 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,hashlib,sys,importlib,os,resource
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');s=json.loads((root/'runs/textcraft-formal-stable-20261009-v1/source.json').read_bytes())
+os.environ.update({k:v for k,v in s['environment'].items() if k!='CUDA_VISIBLE_DEVICES'})
+sys.path[:0]=[s['environment']['DT_ROOT'],s['environment']['DT_OFFICIAL_ROOT'],s['environment']['DT_ROOT']+'/clean/qwen35']+s['pythonpath'].split(':')
+result={'modules':[],'errors':[]}
+for name in ['profiles.official','profiles.qwen35_gdn_symmetric','accelerated.qwen35','accelerated.qwen35.native_fla_precision','qwen35_dense_finite_runner']:
+ try:
+  mod=importlib.import_module(name);p=pathlib.Path(mod.__file__)
+  result['modules'].append({'module':name,'path':str(p),'resolved':str(p.resolve()),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'text':p.read_text()})
+ except Exception as e:result['errors'].append({'module':name,'type':type(e).__name__,'error':str(e)})
+import torch
+result.update(CUDA_initialized=torch.cuda.is_initialized(),peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,model_calls=0)
+print(json.dumps(result,ensure_ascii=False))
+
+PY

@@ -1,0 +1,32 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,base64,hashlib,time,psutil,subprocess
+job=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-MCCL-collective-log-20261011-v1');j=json.loads((job/'job.json').read_bytes())
+r={'unix':time.time(),'processes':[],'ranks':[],'formal_restarted':False,'production_changes':0}
+checks=[(j['pid'],j['birth'])]
+for p in sorted((job/'result').glob('rank[01].json')):
+ q=json.loads(p.read_bytes());r['ranks'].append({k:q.get(k)for k in ['rank','pid','birth','phase','unix','microbatches','actual_optimizer_steps','traceback']});checks.append((q['pid'],q['birth']))
+for pid,birth in checks:
+ try:
+  p=psutil.Process(pid);r['processes'].append({'pid':pid,'expected_birth':birth,'birth':p.create_time(),'same_birth':p.create_time()==birth,'status':p.status()})
+ except psutil.NoSuchProcess:r['processes'].append({'pid':pid,'expected_birth':birth,'missing':True})
+r['all_terminal']=len(checks)==3 and all(x.get('missing')for x in r['processes'])
+if not r['all_terminal']:
+ print(json.dumps(r));raise SystemExit
+import torch
+r['GEMM_rows']=[];r['large_files']=[]
+for rank in [0,1]:
+ p=job/'result'/f'rank{rank}-native-GEMM-rows.pt'
+ if p.exists():
+  r['large_files'].append({'path':str(p),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
+  v=torch.load(p,map_location='cpu',weights_only=False,mmap=True);w=v['competing_weights'];hashes=[hashlib.sha256(row.contiguous().view(torch.uint8).numpy().tobytes()).hexdigest()for row in w]
+  r['GEMM_rows'].append({'rank':rank,'metadata':v['metadata'],'weight_row_count':len(hashes),'weight_row_hash_counts':{s:hashes.count(s)for s in set(hashes)}});del v,w
+r['CUDA_initialized']=torch.cuda.is_initialized();assert not r['CUDA_initialized']
+r['resources']={'host_available':psutil.virtual_memory().available,'physical':subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12).stdout}
+files=[job/'job.json',job/'original-binding-check.json']+list((job/'result').glob('*.json'))+list((job/'result').glob('*.jsonl'))+list((job/'result').glob('*.yaml'))+list(job.glob('mccl.*.log'))+[job/'driver.log']
+r['artifacts']=[]
+for p in files:
+ b=p.read_bytes();r['artifacts'].append({'path':str(p.relative_to(job)),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'base64':base64.b64encode(b).decode()})
+print(json.dumps(r))
+
+PY

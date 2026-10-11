@@ -1,0 +1,26 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import json,psutil,time,subprocess,re,hashlib
+from pathlib import Path
+job=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-incident37-MCCL-collective-log-20261011-v1')
+j=json.loads((job/'job.json').read_bytes());r={'unix':time.time(),'job_sha256':hashlib.sha256((job/'job.json').read_bytes()).hexdigest(),'driver':{'pid':j['pid'],'expected_birth':j['birth']},'ranks':[],'native_logs':[]}
+try:
+ p=psutil.Process(j['pid']);r['driver'].update(birth=p.create_time(),same_birth=p.create_time()==j['birth'],status=p.status(),PSS=p.memory_full_info().pss,diagnostic_environment={k:p.environ().get(k) for k in j['native_diagnostic_environment']})
+except psutil.NoSuchProcess:r['driver']['missing']=True
+for p in sorted((job/'result').glob('rank[01].json')):
+ q=json.loads(p.read_bytes());v={k:q.get(k) for k in ['rank','pid','birth','phase','unix','actual_optimizer_steps','microbatches','allocated','reserved','pss_bytes','traceback','native_metrics']}
+ try:
+  proc=psutil.Process(q['pid']);v['live']={'birth':proc.create_time(),'same_birth':proc.create_time()==q['birth'],'PSS':proc.memory_full_info().pss,'diagnostic_environment':{k:proc.environ().get(k) for k in j['native_diagnostic_environment']},'MCCL_maps':[x for x in Path(f'/proc/{proc.pid}/maps').read_text().splitlines() if 'libmccl.so' in x][:3]}
+ except psutil.NoSuchProcess:v['missing']=True
+ ph=job/'result'/f"rank{q['rank']}-phases.jsonl"
+ v['phase_tail']=[json.loads(x)for x in ph.read_text().splitlines()[-4:]] if ph.exists()else[];r['ranks'].append(v)
+for p in sorted(job.glob('mccl.*.log')):
+ lines=p.read_text(errors='replace').splitlines();collectives=[x for x in lines if 'sendbuff 'in x and 'recvbuff 'in x]
+ r['native_logs'].append({'path':str(p),'bytes':p.stat().st_size,'lines':len(lines),'collective_pointer_lines':len(collectives),'first_pointer_lines':collectives[:2],'last_pointer_lines':collectives[-3:]})
+config=job/'result/initialization-config.yaml'
+if config.exists():r['config']={'bytes':config.stat().st_size,'sha256':hashlib.sha256(config.read_bytes()).hexdigest()}
+r['driver_tail']=(job/'driver.log').read_text(errors='replace').splitlines()[-8:]
+r['host_available']=psutil.virtual_memory().available;r['formal_restarted']=False;r['production_changes']=0
+print(json.dumps(r))
+
+PY

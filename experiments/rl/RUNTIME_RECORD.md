@@ -1,5 +1,39 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 MCCL诊断已结束；原FSDP Python与官方逐字节一致
+
+原driver4081870及actor4086511/4088176均按出生时间复核已退出，两rank各8个B4
+有限，共同一次原诊断optimizer；247处head行均为正常SHA4defedf。正式仍37/330
+停止，无生产补丁、恢复检查点或重启，不把本次正常回放称为修复。
+
+更正下方launch记录的“每PID日志”预期：本机安装的MetaX MCCL未展开%h/%p，
+两进程写同一字面文件并有覆盖/交错。仅2818条字段完整记录可解析；不能据缺失
+记录或本次未复现推断故障没有地址重叠。原日志及分析完整保留，未再启动GPU回放。
+
+现场安装的FSDP collectives/param/param_group/state/fully_shard五文件，与PyTorch
+v2.8.0原文件SHA逐一相同，远端再次读文件验证。该结论限于Python源码，不扩展到
+MetaX C++、MCCL、allocator或实际GPU顺序。DT原接口通过public unshard/reshard、
+trace finally释放；FLA精度适配只cast输入并恢复绑定，当前未找到直接权重写入。
+accelerated.qwen35为namespace，__file__=None是合法行为；首个检查脚本误当文件，
+已按实际capture绑定核对，不是训练导入错误。CPU导入峰RSS689MB以内，无CUDA。
+
+最新物理八卡各858MiB、无进程，host可用1023459356672字节；这是终态资源，非峰值。
+具体错误写入/释放/复用仍未定位；KL clamp不足以修复异常权重与错误log-prob。
+见[终态、官方源码对照、实际接口与证据界限](results_textcraft_incident37_MCCL_terminal_owner_20261011.json)。
+
+
+## 2026-10-11 使用原MetaX MCCL日志取地址；不新增worker算子观察
+
+原352/782/3f/e48失败入口未改，driver4081870/出生1791704016.23，物理4/5。
+仅通过安装的libmccl原MCCL_DEBUG=TRACE、SUBSYS=COLL及每PID日志文件记录通信；
+原二进制含sendbuff/recvbuff/count/datatype/stream格式，SHAe57b8cc2已登记。
+原配置9327字节/SHA2b170445仍一致；当前driver按出生确认存活、尚在初始化。
+目的为同次故障下取得layer0通信与实际GEMM地址，尚无故障地址或修复结论。
+不新增Python operator hook、张量读取/复制、模型计算、同步、分配器或数值改动；
+原诊断一次8个B4，不计正式预算。正式仍37/330停止，无检查点恢复。
+见[原库诊断能力、来源与实际启动](results_textcraft_incident37_MCCL_collective_log_launch_20261011.json)。
+
+
 ## 2026-10-11 两次通信buffer观察均已结束有限；正式仍37/330停止
 
 完整元数据诊断3782291及仅指针诊断3931146的driver/两worker均按出生时间确认退出。

@@ -1,0 +1,24 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import os,sys,json,subprocess,hashlib,time
+from pathlib import Path
+r={'unix':time.time(),'python':sys.executable,'libraries':[]}
+r['physical']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=12).stdout
+roots=[Path('/opt/maca'),Path('/opt/conda/lib/python3.12/site-packages/torch/lib'),Path('/opt/conda/lib')]
+ps=[]
+for root in roots:
+ for pattern in ['lib/libmccl.so*','lib/libnccl.so*','lib64/libmccl.so*','lib64/libnccl.so*','libmccl.so*','libnccl.so*','mccl/lib/libmccl.so*']:
+  ps.extend(root.glob(pattern))
+seen=set()
+for p in ps:
+ p=p.resolve()
+ if p in seen or not p.is_file():continue
+ seen.add(p)
+ text=subprocess.run(['strings',str(p)],capture_output=True,text=True,timeout=15).stdout
+ hits=[x for x in text.splitlines() if ('DEBUG' in x and ('NCCL_' in x or 'MCCL_' in x)) or ('sendbuff' in x and 'recvbuff' in x) or ('opCount' in x and '%p' in x)]
+ r['libraries'].append({'path':str(p),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'diagnostic_strings':hits[:50]})
+r['tool_dirs']={str(p):[x.name for x in p.iterdir()][:45] for p in [Path('/opt/maca/bin'),Path('/opt/maca/tools'),Path('/opt/maca/include')] if p.exists()}
+r['model_calls']=0;r['GPU_calls']=0;r['production_changes']=0
+print(json.dumps(r))
+
+PY
