@@ -1,0 +1,25 @@
+source /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/environment-only-20260930/entry/metax-entry.env.sh
+CUDA_VISIBLE_DEVICES=-1 "$VENV_PYTHON" - <<'PY'
+import pathlib,json,time,hashlib,psutil,subprocess
+root=pathlib.Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922');job=root/'receipts/textcraft-native-incident37-official-Torch-TRACE-20261011-v1';out={'unix':time.time(),'job':str(job),'driver':{'pid':2756368,'expected_birth':1791691389.97}}
+try:
+ p=psutil.Process(2756368);out['driver'].update(birth=p.create_time(),same_birth=p.create_time()==1791691389.97,status=p.status());out['children']=[{'pid':c.pid,'birth':c.create_time(),'status':c.status(),'name':c.name()}for c in p.children(recursive=True)]
+except psutil.NoSuchProcess:out['driver']['missing']=True
+correct=root/'receipts/textcraft-native-incident37-original-exception-capture-20261011-v2/source/replay_native_incident37_exception_capture_20261011.py';sha=hashlib.sha256(correct.read_bytes()).hexdigest();assert sha=='3f4942a9c5135eb1d52ae1393d3fba82f46fa28cdf99509d5f2606da8a8e4f23';out['actual_exception_source']={'path':str(correct),'sha256':sha,'source_scope':'Actual original exception source strictly verified before this launch; no source changed.'}
+out['debug_environments']=[]
+for row in [{'pid':2756368}]+out.get('children',[]):
+ try:
+  proc=psutil.Process(row['pid']);out['debug_environments'].append({'pid':proc.pid,'birth':proc.create_time(),'TORCH_CUDA_SANITIZER':proc.environ().get('TORCH_CUDA_SANITIZER'),'TORCH_TRACE':proc.environ().get('TORCH_TRACE'),'TORCH_COMPILE_DISABLE':proc.environ().get('TORCH_COMPILE_DISABLE')})
+ except(psutil.NoSuchProcess,psutil.AccessDenied):pass
+res=job/'result';out['files']=[{'name':p.name,'bytes':p.stat().st_size}for p in sorted(res.glob('*'))if p.is_file()];out['rank_states']={p.name:json.loads(p.read_bytes())for p in sorted(res.glob('rank[01].json'))};out['phase_tails']={p.name:p.read_text(errors='replace').splitlines()[-3:]for p in res.glob('*phases*.jsonl')};out['rank_states']={n:{k:s.get(k)for k in ['rank','pid','birth','phase','unix','actual_optimizer_steps','microbatches','error','pss_bytes','allocated','reserved','sources']}for n,s in out['rank_states'].items()};out['phase_tails']={n:[{k:v for k,v in json.loads(line).items()if k in ['phase','unix','pss_bytes','allocated','reserved','sources']}for line in lines]for n,lines in out['phase_tails'].items()};out['completed']=json.loads((res/'completed.json').read_bytes())if(res/'completed.json').exists()else None
+out['driver_tail']=(job/'driver.log').read_text(errors='replace').splitlines()[-25:];out['physical_gpu']=subprocess.run(['mx-smi'],capture_output=True,text=True,timeout=10).stdout;out['host_available']=psutil.virtual_memory().available
+out['completed']=[{k:s.get(k)for k in ['rank','pid','birth','phase','unix','actual_optimizer_steps','microbatches','error']}for s in out['completed']]if isinstance(out['completed'],list)else out['completed'];out['original_worker_logs']=[]
+for session in pathlib.Path('/tmp/ray').glob('session_*_2756368'):
+ for pid in [s['pid']for s in out['rank_states'].values()if s.get('pid')is not None]:
+  for p in (session/'logs').glob('*'+str(pid)+'.*'):
+   if p.suffix not in ['.out','.err']:continue
+   lines=p.read_text(errors='replace').splitlines();markers=[(i+1,s)for i,s in enumerate(lines)if any(t in s for t in ['[DT direct joint minibatch]','CSAN detected','CUDASanitizerErrors','[DeltaTrace readout]','[native_host_cache]'])]
+   out['original_worker_logs'].append({'path':str(p),'bytes':p.stat().st_size,'mtime':p.stat().st_mtime,'line_count':len(lines),'markers':markers[-10:],'tail':lines[-10:]})
+out['compiler_trace_files']=[{'path':str(p),'bytes':p.stat().st_size,'mtime':p.stat().st_mtime}for p in(job/'torch-trace').glob('*')if p.is_file()]
+print(json.dumps(out))
+PY

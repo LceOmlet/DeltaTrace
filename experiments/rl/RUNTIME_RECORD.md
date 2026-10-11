@@ -1,5 +1,17 @@
 # 当前运行版本与修复记录
 
+## 2026-10-11 原编译事故入口已启用官方TORCH_TRACE；未完成
+
+driver2756368/出生1791691389.97，原actor2759651/出生1791691414.61及2761040/
+出生1791691429.13，物理GPU4/5；Unix1791691488仍在old-logprob。两rank已有各
+约514KB官方trace。仅增加TORCH_TRACE原生日志，实际driver/Ray子进程读回无
+TORCH_CUDA_SANITIZER/TORCH_COMPILE_DISABLE；无新actor、Tensor观察或计算路径。
+原352/782/3f/e48源严格复用，正式源1c08b57、配置/缓存/LoRA8/16/每卡B4保持。
+不是正式恢复或数值验收；原编译GEMM、权重行与NaN结局仍待核对。前一CSAN
+因官方non-infra mode跳过Dynamo，不重复该不能覆盖原编译路径的工具。
+正式仍停37/330，无生产修复。见[实际启动回执](results_textcraft_incident37_official_TRACE_launch_20261011.json)。
+
+
 ## 2026-10-11 官方CSAN结束有限，但跳过原编译路径；不是修复
 
 原driver2582227及actor2585525/2586913均按birth核验退出；两rank各8个B4有限，
