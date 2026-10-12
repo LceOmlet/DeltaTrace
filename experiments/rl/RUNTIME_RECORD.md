@@ -1,3 +1,87 @@
+## 2026-10-12 16:45：首批交互完成与当前记录清理
+
+两组新正式run均完成首批30次交互，原driver进度计时DT773秒、GRPO729秒；16:45原worker在compute_ref_log_prob，均0/330，未把采样完成当完整更新。原绘图快照snapshot-1791794733保存于F盘，当前cgroup137.57/900GiB，未检出新日志异常。旧18/19轮曲线和新run分开。
+
+16:48当前修正记录的新备份2058文件/89443864字节已通过F盘和共享副本完整SHA256，尚无正式第5轮检查点；诊断step1不混入正式备份。首次准备失败来自新receipt字段误写成字符串，已改回原backup所需path对象，未另造备份或训练行为。另清理新manifest残留旧birth、DT/VERL根和旧初始worker声明，改以实际launch环境及本次四worker回读为准；冻结launch/验收原件未改。当前记录修正后的双副本也已完成校验，随后由原小时备份继续同步。后续提交脚本只补清理这些旧元数据，不改变训练启动计算。具体差异保存在backup-metadata-contract.json及metadata-provenance-correction.json。
+
+## 2026-10-12 16:34：原生图执行已上线，32k与完整检查点恢复验收通过
+
+本条覆盖下方旧PID及“验证进行中/尚未部署”的历史状态。用户要求的训练参数保持，只有原vLLM图执行配置、必要的存储生命周期修复和save_freq=5生效。
+
+- 正式DTPO：PID3172194/出生1791793609.09，physical GPU2/3，runs/textcraft-dt-formal-native-graph-fresh-20261012-v1；worker3179523/1791793654.28与3181267/1791793670.7。正式GRPO：PID3174448/1791793629.73，physical4/5，runs/textcraft-grpo-formal-native-graph-fresh-20261012-v1；worker3181257/1791793670.47与3183308/1791793689.3。均从基础权重开始完整330预算，无旧checkpoint恢复或诊断截停。16:34均0/330、首轮第7/30次交互，尚无新训练reward/entropy/gradient，不填0或称首完整更新已通过。
+- 原LoRA rank8/alpha16、每卡microbatch4/双卡B8、32768、32组×8条、global optimizer minibatch64、每完整迭代4次更新、PPOepochs1、30数据epochs/330迭代、entropy0.001/dualclip3不变。用户明确checkpoint每5个完整训练迭代；原trainer.save_freq=5，不再用25。
+- 已确认集成缺陷：旧TextCraft未继承已验收32k内存路径；复用该路径后，在短前缀320/后缀32448的原native MLP重放仍暴露额外gate_output GPU保留。实际加速capture覆盖也曾绕开host选项。最小修复接回原capture owner，额外保留的gate按既有开关存CPU、现有2048-token有限块按原dtype取回。第一实际gate张量[8,32448,12288]的全部元素往返精确一致，原HF/PEFT/FA/FLA/QVA公式未改。
+- 相同B8×32768输入、修复前同一DT源，eager也在layer29申请5.94GiB时OOM（物理free2.31GiB），图模式同处free2.18GiB；不能把旧容量缺陷说成图改变DT/HF数学。修复后实际图+DT完成413.2316秒，oldlogprob39.9625秒、原PPO update100.1894秒，有限grad_norm0.0619465；物理峰值63.2395GiB/卡。容量输入由已有原观测补长helper构造，不冒充自然任务32k质量，也不把B8容量更新耗时当完整正式迭代耗时。
+- 原VERL/vLLM默认图配置enforce_eager=False/free_cache_engine=False。相同32前缀×128输出的单引擎hot10.072→4.125秒/2.441倍；四实际worker均回读FULL_AND_PIECEWISE、原async和prefix_cache开启。正式首rollout约4.83分钟、每卡136–137个物理采样，GPU2/3/4/5平均59.45/64.21/61.51/59.87%，范围包含环境/调度及被动RPC，非纯decode。该窗口cgroup127.93GiB、oom_kill0。
+- 检查点原_save_checkpoint/_load_checkpoint实测恢复两rank参数、496个optimizer state、scheduler(last_epoch1)、训练Python/numpy/torch/CUDA RNG、现有rollout manager gen_random_states及global_step；哈希全部一致，下一批所有原字段精确相同。最小原checkpoint owner扩展仅在extra_state补存现有rollout RNG；没有另造checkpoint或sampler。曾用活动DataLoader迭代器做恢复导致诊断失败；按官方真实续训的新trainer/loader恢复已通过，原数据采样未修改。
+- 恢复后实际更新LoRA通过原vLLM check_logprobs_close及原sleep输出完全一致断言。前者首处分歧互在top5，不是绝对logprob容差。旧sleep对照错误混合warm/cold前缀缓存，失败保留；当前两侧同为空缓存，对齐vLLM0.15 tests/basic_correctness/test_cumem.py初始条件，断言未放宽，正式缓存行为未改。FULL_DECODE_ONLY旧失败候选仍未部署。
+- 本次代码补丁提交0b12b2020f2ece724b17e4e3179aa664df2bd737已推送。数值26bef6c8+内存799224868组合，DT_ROOT=candidates/textcraft-gate-capture-host-20261012-v1/deltatrace；GDN3f51f5f7、runner198f78db、decoder44153c17、actual capture5ad0bf9b；环境cd28a6e2。VERL上游20bd331b，VERL_ROOT=candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner；worker9dfd6ce7/checkpointmanagerf65b6538仅checkpoint扩展，原actor3a65e173/corefc2f992b/manager364e6945不变。四实际worker初始optimizer0/scheduler0已回读。已接受FSDP事件等待2534a670/setup78eb717d的当前worker运行回执也核对通过，未退回旧错误路径。
+- DT原被动逐token记录已在当前两worker挂载：模块814cfe92、运行覆盖2609d93f，剔除记录后方法AST不变；首次DT尚未执行，不称已有新向量。自动textcraft已更新本次PID/run/原生图/每5迭代保存及小时绘图/双备份；新run首次备份已启动，完成状态以F盘latest-backup.json为准。正式原checkpoint尚未到第5迭代，诊断step1不混入正式进度或备份。
+- 本地汇总：experiments/rl/results_textcraft_native_graph_deployment_20261012.json。完整原日志/失败现场/断言/实际来源在远端receipts/textcraft-native-graph-deployment-20261012-v1；本地小回执research/temporary/rl_textcraft_restart_20261012/receipts。新owner最小patch及完整前后SHA在owner-patches/source-manifest.json；根三manifest为运行事实，不凭候选目录名判断部署。
+
+## 2026-10-12 GPU 图执行与 32k 共存验收进行中（覆盖下方旧 PID 状态）
+
+用户最新要求：先修生成 GPU-Util，再确认原 32768、LoRA8/16、每卡 B4/两卡 B8 可以更新，随后重交正式330迭代；checkpoint 每5个完整训练迭代保存。
+
+- 旧DT1824597和GRPO1708090已按出生时间核对并主动停止；原日志保存在远端 receipts/textcraft-native-graph-deployment-20261012-v1，旧根manifest标为stopped_for_native_graph_efficiency_validation。尚未重交正式训练。
+- 原生默认图执行已有同输入2.441倍单引擎生成和官方 batching/sleep 断言证据；不能称完整训练提速。当前原生图+actor+DT组合验收PID2915907/1791791283.07、GPU2/3，integration-launch.json/integration-result.json是事实来源。
+- 原TextCraft入口未继承此前32k内存版本；已复用26bef6c8数值+799224868内存释放组合，但短前缀/32k后缀压力下仍在原HF/PEFT MLP OOM。缓存清理单独测试不足以修复。
+- 当前隔离候选textcraft-gate-capture-host-20261012-v1仅把额外保留的native gate_output存CPU，原2048-token有限MLP分块取回；原HF/PEFT前向、FA/FLA、Q/V/A不变，正在实际32k验证，未标已验收或部署。
+- 已定位加速capture子类覆盖retain，原新增gate卸载未执行；已在实际子类接回原decoder选项。早期复制核验在scope退出前读异步pinned D2H，现已在诊断内等待完成，生产计算未变；失败日志分开保留，不称通过。
+- checkpoint候选textcraft-checkpoint-rollout-rng-20261012-v1在原FSDP extra_state补存同步rollout manager已有gen_random_states；官方worker AST除checkpoint构造绑定完全相同。原参数/optimizer/scheduler/训练RNG/数据游标及此采样RNG将做扰动-恢复验证，尚未标通过。
+- 详细候选文件SHA、旧失败/诊断日志和版本都保留在同一远端receipt目录；不把candidate名称、文件较新或进程存活当验收。自动检查已增加当前状态覆盖，禁止恢复旧任务或沿用save_freq25。
+
+## 2026-10-12 13:51：小时检查与备份读取修复（训练配置不变）
+
+- 实际PID/出生保持DT1824597/1791781436.07、GRPO1708090/1791780387.65。DT0/330，首批30次交互及DT已完成，正在首轮actor更新；DT两rank各21个B4、各约232秒，逐token原向量已落盘42文件/21708422字节。GRPO1/330，第二轮已完成10次交互，正在第11次。尚无新NaN/OOM/退出，cgroup139.19/900GiB、oom_kill0。
+- 备份原脚本误把manifest中的整数worker PID当字典，准备阶段AttributeError。最小修复读取已完成runtime override原JSON的results取得active_method_source，仍由原rclone/GNU cp负责copy和SHA256；未改训练。实际新版脚本SHA256 c37faa9e9c106834ff18f6541b58da013fbfbb859ae5e6257db010e6607f1523，基于e8056e75工作区补丁，非新的DT数值版本。
+- 13:50:46双副本校验完成：2096文件/128471094字节，F盘和共享目录完整SHA256均通过，包含42个逐token向量及实际2609d93f覆盖源。两组尚无原save_freq25完成检查点，不制造新检查点。完整来源在research/temporary/rl_textcraft_restart_20261012/hourly-check-20261012-1343.json及F盘latest-backup.json；图为13:46:17当前新run快照。
+
+## 2026-10-12：先绘旧曲线，再以原配置重启；调查物理 GPU 低利用率
+
+本项覆盖下方12:31“未重启”的历史状态。原记录保留，不混合旧、新曲线。
+
+- 旧日志绘图：`F:/DeltaTraceBackups/plots/interrupted-20261012/textcraft-dt-formal-eventwait-fresh-20261011-v1-1791729725/effects.png`。完整指标仅到DT15/GRPO16；末次持久进度18/19没有完整指标，不补造。
+- 当前DT：PID1824597/出生1791781436.07，物理GPU2/3，`runs/textcraft-dt-formal-eventwait-fresh-20261012-v2`。worker1831261/1791781482.13及1832825/1791781498.56。当前GRPO：PID1708090/1791780387.65，GPU4/5，`runs/textcraft-grpo-formal-eventwait-fresh-20261012-v1`；worker1721320/1791780490.54及1723255/1791780509.34。原manifest三文件已更新。均从基础权重、原330迭代预算启动。13:38新GRPO已1/330，reward0.629/entropy0.665/grad_norm0.030；DT首批30轮交互完成，原old_logprob中、0/330。旧曲线与新曲线分开。
+- 原LoRA8/16、每卡microbatch4、上下文32768、全局optimizer minibatch64及每迭代4次更新、PPOepochs1、entropy0.001/dualclip3、save_freq25全部不变。DT数值26bef6c8/GDN7c06d5e0、FSDP修复2534a670/setup78eb717d不变。
+- 新容器丢失两份原已验收平台修复。调用c9cd147原patch owner恢复cumem.py SHA7e557a8f及gpu_worker.py SHA37db3830，逐字节等于旧验收版本；未重装。当前DT及GRPO四worker实际导入路径/SHA、optimizer_states0/scheduler0均已回读一致；不存在reward_readout模块是原生GRPO正常行为，不是缺失依赖。原lazy GDN数值模块尚未到首次DT阶段，不称已加载。
+- DT逐token被动记录已用原RPC `execute_with_func_generator(func=...)` 装到上述两worker；方法AST剔除被动记录后与814cfe92基线相同，覆盖源2609d93f。记录目录在新run下，首次DT尚未开始，不能称已落盘。原RPC导出签名为`**kwargs`，不能向named actor传位置参数。
+- 首次DT v1被官方mcTracer分析工具回传超限中止：12:57:24，`mcRpc.MsgReply`大小2717007051超过Protobuf2GB，触发SIGABRT。cgroup OOM=0，未完成更新，GRPO未受影响。保留完整原Ray错误日志和JSON跟踪，禁止再在正式worker做全量mcTracer attach；改用已有有界vLLM profiler及物理mx-smi。
+- 首段生成物理利用率均值约22–28%。9秒vendor trace内核+copy并集1.856秒、130909个内核，存在大量主机启动间隙；该trace受profiling影响，不冒充未插桩吞吐。实际引擎回读enforce_eager=True、cudagraph_mode=NONE、async_scheduling=True、prefix_cache=True。原生async调度已启用，不能声称靠再开启它解决问题。
+- 空闲GPU6已用当前同一runtime、保存的32个TextCraft前缀、原vLLM比较函数对照eager/图执行。只做原生引擎输出、sleep、耗时和显存对照，不新增训练预算；未部署候选。原rank1/alpha2数值夹具已零填充到rank8/alpha16，alpha/r不变、有效权重不变；不改正式adapter。该诊断不证明任务分数。
+- 独立vLLM测试误用解析后的系统Python，旧Transformers不认识qwen3_5；直接改回原VENV_PYTHON后完成推理。venv入口决定sys.prefix，不能因二进制相同而替换。未重装、未改模型注册或正式环境。
+- eager固定32×128生成为10.373/9.710/10.434秒；默认图模式4.524/4.118/4.132秒，热均值10.072→4.125秒、2.441倍。物理利用率均值31.47%→69.17%（各15/6个两秒样本，不声称总体置信区间）。两模式原vLLM batching断言、图/eager比较及sleep一致性检查通过。原check_logprobs_close只要求首处分歧的token互在top5，并保留续写分歧警告；不是logprob绝对数值误差上界，不夸大为逐值相同。
+- 官方FULL_DECODE_ONLY/mode0虽然热4.391秒，但原check_outputs_equal在sleep/wake后失败，候选排除、未部署，未放宽断言。默认图模式独立物理mx-smi测得awake47.641GiB/asleep1.724GiB；日志2.36/4.20等allocator读数不代替物理显存。独立引擎不等于实际actor/DT共存容量，未据此称新配置32k更新已验收，也未擅改正式enforce_eager。
+- 原GRPO首迭代2626.395秒：gen1851.642、old_logprob154.754、ref114.989、update504.570；生成确为大头。原py-spy仅dump一次，确认actor反向栈，物理GPU75–98%，不是整个训练都低于50%。原MFU字段因不识别qwen3_5恒0，不能当物理GPU利用率。
+- 回执目录`receipts/textcraft-restart-utilization-20261012-v1`，本地启动/读数脚本在`research/temporary/rl_textcraft_restart_20261012`。原小时自动检查已改为本次PID/路径。新run的F盘/共享备份13:13:50启动，13:14:51完成2039文件/86261679字节，两处完整SHA256通过；尚无完成检查点，仍按原save_freq25保存。
+
+## 2026-10-12 12:31 SSH恢复，但两组原训练进程已不存在
+
+按用户提供的原31146入口重试，严格SSH和既有私有凭据入口均登录成功，
+未修改密码、SSH配置或训练。原DT driver2638949及worker2646857/2648285，
+GRPO driver2590429及worker2595974/2598164均不存在；物理八卡无进程，
+每卡858MiB。当前容器的内核挂载记录始于12:24，原/tmp/ray已不存在。
+这支持运行容器发生变化的判断，但没有旧容器退出原因，不能称已查明OOM或训练错误。
+
+持久driver.log原Training Progress最后为DT18/330、GRPO19/330，日志mtime分别
+1791778975.522039、1791779028.770487；末尾仍在后续采样，没有错误栈。
+两组原完成检查点标记均不存在（原save_freq25未改），DT逐token记录仍有756文件。
+本次12:25绘图因原Ray日志缺失回退到不完整driver指标，得到11/0；这不是训练进度
+回退，不能作为当前完成计数。最后完整原指标快照仍是1791772543的15/16，
+新18/19仅由原进度行证明，不能补造其奖励/熵。未重启任务或更改参数/方法。
+
+只读现场回执：F:/DeltaTraceBackups/plots/ssh-recovered-interruption-1791779511.json。
+已复用原备份入口收集当前存续文件，备份状态以latest-backup.json实际校验为准；
+保留F盘此前原Ray日志和历史副本，不将当前容器的OOM计数当旧容器无OOM证明。
+
+## 2026-10-12 用户确认共享备份挂载根
+
+用户明确指定共享目录为 `/mnt/si0021787ci2/default`。现有共享副本目录
+`/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011`
+已位于该挂载根内，继续使用原备份入口和此任务子目录，无需迁移或修改训练。
+独立异机副本仍为 `F:/DeltaTraceBackups/textcraft-20261011`；共享副本与训练源
+同属NFS，不称独立故障域。路径确认同步记录于 `current_runtime.json`。
+
 ## 2026-10-11 23:39 每小时绘图与两份备份已启用，训练参数未改
 
 自动跟进 textcraft 已ACTIVE、每小时，绑定当前线程；只跟进新DT2/3与原生GRPO4/5。

@@ -1,0 +1,69 @@
+{
+  "unix": 1791792860.358955,
+  "scope": "Matched eager control uses the same pre-gate-fix DT source and B8 x 32768 capacity inputs; bounded at reproduced OOM, no actor update",
+  "eager_failure": "native_replay MLP LoRA up_proj, requested 5.94GiB, physical free 2.31GiB",
+  "graph_failure": "same pre-gate-fix source, native_replay layer29 MLP, requested 5.94GiB, physical free 2.18GiB",
+  "interpretation": "The tested eager mode also fails. Graph execution does not cause the arithmetic or existing gate-retention capacity defect. After gate host retention, actual graph+DT+update passes; not a proof that graphs have zero memory overhead.",
+  "ledger": {
+    "0": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/eager-memory-comparison/DT-memory-rank0.json",
+      "last_entries": [
+        {
+          "unix": 1791792410.5519602,
+          "name": "base_model.model.model.layers.30.mlp.up_proj",
+          "input_shape": [
+            8,
+            32448,
+            4096
+          ],
+          "input_dtype": "torch.bfloat16",
+          "allocated": 81175265280,
+          "physical_free": 4193398784
+        },
+        {
+          "unix": 1791792427.4705584,
+          "name": "base_model.model.model.layers.29.mlp.up_proj",
+          "input_shape": [
+            8,
+            32448,
+            4096
+          ],
+          "input_dtype": "torch.bfloat16",
+          "allocated": 81175267840,
+          "physical_free": 2479874048
+        }
+      ]
+    },
+    "1": {
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/eager-memory-comparison/DT-memory-rank1.json",
+      "last_entries": [
+        {
+          "unix": 1791792410.5243938,
+          "name": "base_model.model.model.layers.30.mlp.up_proj",
+          "input_shape": [
+            8,
+            32448,
+            4096
+          ],
+          "input_dtype": "torch.bfloat16",
+          "allocated": 81175265280,
+          "physical_free": 4193378304
+        },
+        {
+          "unix": 1791792427.4224756,
+          "name": "base_model.model.model.layers.29.mlp.up_proj",
+          "input_shape": [
+            8,
+            32448,
+            4096
+          ],
+          "input_dtype": "torch.bfloat16",
+          "allocated": 81175267840,
+          "physical_free": 2479853568
+        }
+      ]
+    }
+  },
+  "eager_driver": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/eager-memory-comparison/driver.log",
+  "eager_driver_sha256": "98fcfc2b569f03e142234f2a9c639296cf0fe46de7baa0dc9bd3f0cbe6ccc2a9"
+}

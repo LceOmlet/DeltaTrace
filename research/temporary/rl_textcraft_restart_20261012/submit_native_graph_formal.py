@@ -95,7 +95,8 @@ def main():
                     checkpoint_extension=checkpoint_extension,
                     execution_verification=str(OUT/'integration-result.json'),execution_verification_SHA256=digest(OUT/'integration-result.json'))
         save(run/'launch.json',record)
-        for k in ('runtime_override','deployment','passive_credit_recording_runtime_override','initial_worker_state_verification'):
+        for k in ('runtime_override','deployment','passive_credit_recording_runtime_override','initial_worker_state_verification',
+                  'actual_initial_worker_state_receipt','actual_initial_worker_state_verified','actual_initial_worker_states'):
             source.pop(k,None)
         source.update(verl_root=checkpoint_extension['new_VERL_ROOT'],
                       local_patch_commit=record['local_patch_commit'],
@@ -131,9 +132,11 @@ def main():
         save(run/'source.json',source)
         job=copy.deepcopy(old_job)
         for k in ('ray_session','completed_iterations','last_metric','runtime_override',
-                  'passive_credit_recording_runtime_override','initial_worker_state_verification','stop_receipt'):
+                  'passive_credit_recording_runtime_override','initial_worker_state_verification','stop_receipt',
+                  'workers','actual_initial_worker_state_receipt','actual_initial_worker_state_verified','actual_initial_worker_states'):
             job.pop(k,None)
-        job.update(pid=process.pid,observed_process_created_unix=birth,started_unix=record['unix'],
+        job.update(pid=process.pid,birth=birth,observed_process_created_unix=birth,started_unix=record['unix'],
+                   dt_root=env['DT_ROOT'],verl_root=env['VERL_ROOT'],
                    output=str(run/('textcraft-'+method)),log=str(run/'driver.log'),
                    checkpoints=str(run/('textcraft-'+method)/'checkpoints'),source_receipt=str(run/'source.json'),
                    argv=argv,status='formal_initializing',fresh_base_model=True,resume_checkpoint=None,

@@ -1,3 +1,13 @@
+## 2026-10-12 16:34 当前已验证正式组合（覆盖下方旧入口）
+
+本次DTPO3172194/GPU2/3、GRPO3174448/GPU4/5，native-graph-fresh-20261012-v1两run均完整330预算，save_freq=5。四worker实际原生图、LoRA8/16、每卡B4、32k、optimizer0/scheduler0已回读。原VENV_PYTHON与平台修复保持；数值26bef6c8+内存799224868，实际DT_ROOT=textcraft-gate-capture-host-20261012-v1/deltatrace、GDN3f51f5f7；环境direct-target-consumed-cache-release-20261007-v1/environment.json。VERL_ROOT=textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner，worker9dfd6ce7/checkpointmanagerf65b6538，仅补存现有rollout RNG；原actor/core/inference不变。最小patch提交0b12b202已推送。准确绝对路径、完整SHA、原32k DT/update/完整state恢复验收及PID出生见RUNTIME_RECORD最新条目与results_textcraft_native_graph_deployment_20261012.json。原生enforce_eager=False/free_cache_engine=False已生效，不沿用旧save25/eager配置或旧未卸载DT路径。先source底座，再合并实际launch环境；不要只继承底座旧DT/VERL_ROOT，也不要把metadata-only integration-launch.json误作有效环境。原权重、环境资产和持久cache复用，不重装。
+
+## 2026-10-12 新容器与实际正式环境继承
+
+当前端口31146，严格HostKeyAlias仍32036。新容器中原cumem/gpu_worker修复已按旧SHA恢复，见RUNTIME_RECORD最新条目；新DT/GRPO身份以根目录三manifest为准。禁止再对正式worker全量mcTracer attach：该工具回传超过Protobuf2GB会SIGABRT目标进程，已发生一次；已有有界原vLLM profiler可以限制迭代数。
+
+派生诊断先复用`metax-entry.env.sh`底座，再继承**当前实际作业**的有效环境，最后只改设备/输出身份。必须直接调用原`VENV_PYTHON=/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python`，不能用其解析后的`/opt/conda/bin/python`替换：两者虽指向同一二进制，Python按调用入口确定venv prefix；系统入口读到旧Transformers，不识别qwen3_5。此次独立诊断失败的实际原因是入口选错，不是正式worker缺少模型注册，也不是缺依赖；改回VENV_PYTHON后原生Qwen推理及官方断言已完成。早期source.json的environment是部分键白名单，不能单独替换整个子进程环境而漏掉MACA_PATH/LD_LIBRARY_PATH/PATH。不要因此重装Transformers或Triton。
+
 # 远端环境记录与复用入口
 
 继续或恢复作业前，先查 [当前版本与修复账本](RUNTIME_RECORD.md) 和

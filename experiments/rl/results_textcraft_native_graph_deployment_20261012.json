@@ -1,0 +1,303 @@
+{
+  "observed_local": "2026-10-12T16:47:05.873455+08:00",
+  "status": "native_graph_deployed_first_rollout_complete_ref_logprob_in_progress",
+  "source_patch_commit": "0b12b2020f2ece724b17e4e3179aa664df2bd737",
+  "remote_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922",
+  "receipt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1",
+  "ssh_port": 31146,
+  "jobs": [
+    {
+      "method": "dt",
+      "pid": 3172194,
+      "birth": 1791793609.09,
+      "workers": [
+        {
+          "pid": 3179523,
+          "birth": 1791793654.28,
+          "rank": 0
+        },
+        {
+          "pid": 3181267,
+          "birth": 1791793670.7,
+          "rank": 1
+        }
+      ],
+      "round": 30,
+      "completed_iterations": 0,
+      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt",
+      "phase": "ray::WorkerDict.actor_rollout_compute_ref_log_prob",
+      "errors": [],
+      "first_rollout_interaction_loop_seconds": 773,
+      "first_rollout_timing_scope": "Driver progress-bar elapsed over30 interactions; not generation-only or full iteration"
+    },
+    {
+      "method": "grpo",
+      "pid": 3174448,
+      "birth": 1791793629.73,
+      "workers": [
+        {
+          "pid": 3181257,
+          "birth": 1791793670.47,
+          "rank": 0
+        },
+        {
+          "pid": 3183308,
+          "birth": 1791793689.3,
+          "rank": 1
+        }
+      ],
+      "round": 30,
+      "completed_iterations": 0,
+      "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-native-graph-fresh-20261012-v1/textcraft-grpo",
+      "phase": "ray::WorkerDict.actor_rollout_compute_ref_log_prob",
+      "errors": [],
+      "first_rollout_interaction_loop_seconds": 729,
+      "first_rollout_timing_scope": "Driver progress-bar elapsed over30 interactions; not generation-only or full iteration"
+    }
+  ],
+  "parameters": {
+    "model": "Qwen3.5-9B",
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "microbatch_per_gpu": 4,
+    "two_gpu_batch": 8,
+    "context": 32768,
+    "groups_per_iteration": 32,
+    "samples_per_group": 8,
+    "optimizer_minibatch_global": 64,
+    "optimizer_updates_per_complete_iteration": 4,
+    "ppo_epochs": 1,
+    "data_epochs": 30,
+    "complete_iterations": 330,
+    "entropy": 0.001,
+    "dual_clip": 3,
+    "save_freq_complete_iterations": 5
+  },
+  "native_graph": {
+    "enforce_eager": false,
+    "free_cache_engine": false,
+    "same_input_single_engine_hot_speedup": 2.441492284750095,
+    "scope": "Fixed same32 prefixes x128 outputs, native vLLM; not complete training speedup",
+    "official_batching_assertion": "Unchanged vLLM0.15 check_logprobs_close; first divergence mutual top5, not absolute logprob numerical bound",
+    "official_sleep_source": "https://github.com/vllm-project/vllm/blob/v0.15.0/tests/basic_correctness/test_cumem.py",
+    "sleep_assertion": "Exact outputs, both cold cache matching native original sleep test initial condition; restored actual updated actor LoRA",
+    "test_harness_scope_fix": "Native sleep clears prefix cache; earlier warm-versus-cold comparison failure preserved, no production cache policy change"
+  },
+  "capacity": {
+    "status": "passed_native_graph_B8_32768_DT_update_checkpoint_roundtrip",
+    "batch": 8,
+    "exact_context": 32768,
+    "longest_replayed_suffix": 32448,
+    "DT_seconds": 413.2315625449992,
+    "oldlogprob_seconds": 39.96246428298764,
+    "update_seconds": 100.18936560698785,
+    "finite_gradient_norm": 0.0619465187,
+    "physical_peak_GiB_per_gpu": 63.239471435546875,
+    "scope": "Storage capacity inputs expanded by existing accepted native-observation helper; not natural task32k or full formal iteration cost"
+  },
+  "checkpoint": {
+    "native_owner": "VERL FSDPCheckpointManager and RayPPOTrainer _save_checkpoint/_load_checkpoint",
+    "verified_fields": [
+      "trainable_model_parameters",
+      "optimizer_states",
+      "scheduler_states",
+      "training_RNG",
+      "existing_rollout_RNG",
+      "global_step",
+      "exact_next_data_batch"
+    ],
+    "all_two_rank_state_hashes_exact": true,
+    "dataloader_next_batch_exact": true,
+    "scheduler_last_epoch": 1,
+    "optimizer_states_per_rank": 496,
+    "native_dataloader_test_fix": "Fresh original trainer/StatefulDataLoader, matching real resume; active-iterator reuse diagnostic failed and is preserved",
+    "formal_checkpoint_current": null,
+    "scope": "Existing completed diagnostic checkpoint restored exactly; no formal checkpoint until iteration5, not claimed bitwise equality of future random trajectories"
+  },
+  "memory_integration": {
+    "memory_source_commit": "799224868e0a9c0f8031b6012bb71505ab801a35",
+    "numerical_source_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+    "old_DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-row-cuts-finite-20261007-v1/production-wiring-v1/deltatrace",
+    "new_DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace",
+    "environment": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/environment.json",
+    "environment_sha256": "cd28a6e2140190ffcba4d64229b5c62549b85473645fea249899014a034d6db2",
+    "reason": "Reuse already verified 32k memory release; TextCraft inherited older unchunked GPU-resident replay",
+    "verification": "experiments/rl/results_appworld_memory_stable_composition_20261010.json",
+    "gate_capture_host_fix": {
+      "status": "verified_actual_B8_32768_DT_and_native_update",
+      "baseline": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/deltatrace",
+      "changed_files": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py": "44153c172bde57ccf15f26998c5b4c1a986621b11751ead71023a3a8e8404486",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/accelerated/qwen35/qwen35_retained_capture.py": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810"
+      },
+      "scope": "Only retained native gate output moves to CPU; same existing finite token chunks restore original dtype values; HF/PEFT forward and FA/FLA formulas unchanged",
+      "actual_backend_seam": "Borrowed capture override delegates explicit gate host retention to decoder owner",
+      "verification": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/integration-result.json",
+      "exact_operand_transfer": [
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/gate-transfer-rank0.json",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/gate-transfer-rank1.json"
+      ],
+      "matched_eager_control": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/matched-eager-memory-result.json"
+    },
+    "source_patch_commit": "0b12b2020f2ece724b17e4e3179aa664df2bd737",
+    "complete_integration_verification": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/integration-result.json",
+    "complete_integration_sha256": "17d8b8b51f878aedcee91dd107068454ef06db952ab390b2b66cf9d8ce583751"
+  },
+  "checkpoint_extension": {
+    "status": "verified_actual_native_checkpoint_fresh_load",
+    "base": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/textcraft/verl",
+    "new_VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner",
+    "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "reason": "User requests complete continuation state; native extra lacked existing sync rollout manager gen_random_states",
+    "changed_files": {
+      "verl/workers/fsdp_workers.py": {
+        "before_sha256": "e5eb4afc42f10fb4608b3ac43046c906d6a2d21a5387ee02e176bc395f1c6f39",
+        "after_sha256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3"
+      },
+      "verl/utils/checkpoint/fsdp_checkpoint_manager.py": {
+        "before_sha256": "d002ddff90f177bf7fe2f0ef53394b53681638d1a2254fe63ad3a9f98683e002",
+        "after_sha256": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01"
+      }
+    },
+    "native_worker_AST_unchanged_except_checkpoint_owner_binding": true,
+    "loss_actor_core_inference_unchanged": true,
+    "verification": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/integration-result.json",
+    "verified_fields": [
+      "parameters",
+      "optimizer",
+      "scheduler",
+      "training_rng",
+      "rollout_rng",
+      "global_step",
+      "next_data_batch"
+    ],
+    "scope": "Existing original VERL save/load plus optional persistence of existing rollout manager state; no custom optimizer/scheduler/data sampler",
+    "source_patch_commit": "0b12b2020f2ece724b17e4e3179aa664df2bd737",
+    "complete_integration_verification": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/integration-result.json",
+    "complete_integration_sha256": "17d8b8b51f878aedcee91dd107068454ef06db952ab390b2b66cf9d8ce583751"
+  },
+  "actual_initial_worker_receipts": {
+    "dt": "research/temporary/rl_textcraft_restart_20261012/receipts/dt-initial-worker-state.json",
+    "grpo": "research/temporary/rl_textcraft_restart_20261012/receipts/grpo-initial-worker-state.json"
+  },
+  "passive_credit_recording": {
+    "complete": true,
+    "source_sha256": "2609d93f91e9e16b8963ed5ca2226a00e28190005dbd51e56a214d3d35696eb2",
+    "module_disk_sha256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b",
+    "new_DT_output_exists": false,
+    "scope": "Mounted both current DT workers, math AST unchanged; first DT has not yet executed"
+  },
+  "first_formal_rollout_physical": {
+    "unix": 1791794085.7422264,
+    "phase": "first_formal_rollout",
+    "scope": "Physical samples after all four initial worker reads, during complete interaction processing; includes environment/dispatch and passive RPC, not pure decode. No new full optimizer iteration yet.",
+    "sample_start_unix": 1791793795.7047646,
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-restart-utilization-20261012-v1/physical-gpu-samples.csv",
+    "physical": {
+      "2": {
+        "samples": 136,
+        "mean_util_percent": 59.4485294117647,
+        "max_util_percent": 94.0,
+        "max_physical_GiB": 49.2842903137207
+      },
+      "3": {
+        "samples": 137,
+        "mean_util_percent": 64.21167883211679,
+        "max_util_percent": 81.0,
+        "max_physical_GiB": 49.963993072509766
+      },
+      "4": {
+        "samples": 137,
+        "mean_util_percent": 61.51094890510949,
+        "max_util_percent": 89.0,
+        "max_physical_GiB": 49.28428649902344
+      },
+      "5": {
+        "samples": 137,
+        "mean_util_percent": 59.86861313868613,
+        "max_util_percent": 97.0,
+        "max_physical_GiB": 50.04037094116211
+      }
+    },
+    "cgroup_usage_bytes": 137364504576,
+    "cgroup_stat": "cache 44668563456\nrss 91658223616\nrss_huge 37025218560\nshmem 951853056\nmapped_file 6115405824\ndirty 946176\nwriteback 2973696\nswap 0\npgpgin 564254856\npgpgout 540735702\npgfault 585720135\npgmajfault 99462\ninactive_anon 89339187200\nactive_anon 4295790592\ninactive_file 15884582912\nactive_file 27823050752\nunevictable 0\nhierarchical_memory_limit 966367641600\nhierarchical_memsw_limit 966367641600\ntotal_cache 44668563456\ntotal_rss 91658223616\ntotal_rss_huge 37025218560\ntotal_shmem 951853056\ntotal_mapped_file 6115405824\ntotal_dirty 946176\ntotal_writeback 2973696\ntotal_swap 0\ntotal_pgpgin 564254856\ntotal_pgpgout 540735702\ntotal_pgfault 585720135\ntotal_pgmajfault 99462\ntotal_inactive_anon 89339187200\ntotal_active_anon 4295790592\ntotal_inactive_file 15884582912\ntotal_active_file 27823050752\ntotal_unevictable 0\n",
+    "cgroup_oom": "oom_kill_disable 0\nunder_oom 0\noom_kill 0\n",
+    "jobs": [
+      {
+        "method": "dt",
+        "pid": 3172194,
+        "birth": 1791793609.09,
+        "workers": [
+          {
+            "pid": 3179523,
+            "birth": 1791793654.28,
+            "rank": 0
+          },
+          {
+            "pid": 3181267,
+            "birth": 1791793670.7,
+            "rank": 1
+          }
+        ],
+        "round": 7,
+        "active": 181,
+        "completed_iterations": 0,
+        "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt"
+      },
+      {
+        "method": "grpo",
+        "pid": 3174448,
+        "birth": 1791793629.73,
+        "workers": [
+          {
+            "pid": 3181257,
+            "birth": 1791793670.47,
+            "rank": 0
+          },
+          {
+            "pid": 3183308,
+            "birth": 1791793689.3,
+            "rank": 1
+          }
+        ],
+        "round": 7,
+        "active": 166,
+        "completed_iterations": 0,
+        "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-native-graph-fresh-20261012-v1/textcraft-grpo"
+      }
+    ]
+  },
+  "automation_id": "textcraft",
+  "backup": {
+    "local": "F:/DeltaTraceBackups/textcraft-20261011",
+    "shared": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011",
+    "current_state": "passed",
+    "shared_fault_domain": "same NFS as training; local F is independent",
+    "files": 2058,
+    "bytes": 89443864,
+    "local_full_sha256_verified": true,
+    "shared_full_sha256_verified": true,
+    "completed_formal_checkpoints": {
+      "dt": null,
+      "grpo": null
+    },
+    "metadata_snapshot_refresh": "completed_current_corrected_records",
+    "receipt": "research\\temporary\\rl_textcraft_restart_20261012\\receipts\\native-graph-backup.json"
+  },
+  "latest_observation": {
+    "unix": 1791794733.8905063,
+    "original_plot_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-formal-native-graph-fresh-20261012-v1-1791793609\\latest.json",
+    "memory_gib": 137.5701789855957,
+    "memory_limit_gib": 900.0,
+    "official_log_errors": [
+      [],
+      []
+    ]
+  },
+  "metadata_correction": {
+    "receipt": "research\\temporary\\rl_textcraft_restart_20261012\\receipts\\metadata-provenance-correction.json",
+    "scope": "Run records only; actual launch/imports already verified; no training change",
+    "launcher_cleanup": "No inherited worker or driver birth claims in future submission"
+  }
+}

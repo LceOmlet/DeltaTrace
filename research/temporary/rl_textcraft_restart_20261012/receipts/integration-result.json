@@ -1,0 +1,965 @@
+{
+  "scope": "Bounded integration checks through the recorded VERL/vLLM owners.\n\nNo rollout, loss, checkpoint, sampler, or DT propagation is implemented here.\nThe 32k storage case reuses the previously accepted capacity helper; it is\nexplicitly separate from task quality and the full formal training budget.\n",
+  "started_unix": 1791791301.2954366,
+  "phase": "passed",
+  "capacity_sources": [
+    {
+      "original_uid": "961daade-b268-4f6b-ba3a-b355498ca48d",
+      "original_causal_length": 511,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        125,
+        139
+      ],
+      "added_observation_tokens": 32257,
+      "original_policy_tokens": 110,
+      "original_target_tokens": 20,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    },
+    {
+      "original_uid": "103134f4-31f4-49ef-8707-7d982515301e",
+      "original_causal_length": 536,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        123,
+        137
+      ],
+      "added_observation_tokens": 32232,
+      "original_policy_tokens": 163,
+      "original_target_tokens": 21,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    },
+    {
+      "original_uid": "54c3d323-c3ba-481b-a3a8-5ed8b6be4c37",
+      "original_causal_length": 543,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        142,
+        156
+      ],
+      "added_observation_tokens": 32225,
+      "original_policy_tokens": 156,
+      "original_target_tokens": 29,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    },
+    {
+      "original_uid": "5fba67c7-40d8-4a65-aa47-b8527bd6089e",
+      "original_causal_length": 544,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        146,
+        160
+      ],
+      "added_observation_tokens": 32224,
+      "original_policy_tokens": 143,
+      "original_target_tokens": 20,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    },
+    {
+      "original_uid": "961daade-b268-4f6b-ba3a-b355498ca48d",
+      "original_causal_length": 511,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        125,
+        139
+      ],
+      "added_observation_tokens": 32257,
+      "original_policy_tokens": 110,
+      "original_target_tokens": 20,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    },
+    {
+      "original_uid": "103134f4-31f4-49ef-8707-7d982515301e",
+      "original_causal_length": 536,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        123,
+        137
+      ],
+      "added_observation_tokens": 32232,
+      "original_policy_tokens": 163,
+      "original_target_tokens": 21,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    },
+    {
+      "original_uid": "54c3d323-c3ba-481b-a3a8-5ed8b6be4c37",
+      "original_causal_length": 543,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        142,
+        156
+      ],
+      "added_observation_tokens": 32225,
+      "original_policy_tokens": 156,
+      "original_target_tokens": 29,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    },
+    {
+      "original_uid": "5fba67c7-40d8-4a65-aa47-b8527bd6089e",
+      "original_causal_length": 544,
+      "causal_length": 32768,
+      "original_observation_interval": [
+        146,
+        160
+      ],
+      "added_observation_tokens": 32224,
+      "original_policy_tokens": 143,
+      "original_target_tokens": 20,
+      "scope": "Synthetic storage capacity only: original causal IDs retained in order; repeated native observation IDs masked out; not task, attribution-accuracy or PPO-update validation"
+    }
+  ],
+  "unix": 1791793524.5683646,
+  "graph_initial": [
+    {
+      "rank": 0,
+      "label": "initial",
+      "timings": [
+        {
+          "seconds": 4.49262739502592,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.047433712985367,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.04196394700557,
+          "output_tokens": 4096
+        }
+      ],
+      "batching": "passed_original_check_logprobs_close",
+      "sleep": "passed_original_check_outputs_equal",
+      "enforce_eager": false,
+      "compilation_config": "{'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::mx_sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [32768], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 64, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': True}, 'local_cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd/rank_0_0/backbone'}",
+      "test_sources": {
+        "vllm015-test-utils.py": "e4a2ab8e182234b13c89feac6aab4541eea732f46d12cffc4e7c7f9b04ec2e6d",
+        "vllm015-conftest.py": "3deb489d56cf1ce04a9ce075f440e557c0d4341d999e07f31fc0df3994e5697e"
+      }
+    },
+    {
+      "rank": 1,
+      "label": "initial",
+      "timings": [
+        {
+          "seconds": 4.488036155991722,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.035122469998896,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.031210463959724,
+          "output_tokens": 4096
+        }
+      ],
+      "batching": "passed_original_check_logprobs_close",
+      "sleep": "passed_original_check_outputs_equal",
+      "enforce_eager": false,
+      "compilation_config": "{'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::mx_sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [32768], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 64, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': True}, 'local_cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd/rank_1_0/backbone'}",
+      "test_sources": {
+        "vllm015-test-utils.py": "e4a2ab8e182234b13c89feac6aab4541eea732f46d12cffc4e7c7f9b04ec2e6d",
+        "vllm015-conftest.py": "3deb489d56cf1ce04a9ce075f440e557c0d4341d999e07f31fc0df3994e5697e"
+      }
+    }
+  ],
+  "DT_seconds": 413.2315625449992,
+  "oldlogprob_seconds": 39.96246428298764,
+  "update_seconds": 100.18936560698785,
+  "update_metrics": {
+    "actor/kl_loss": 0.0,
+    "actor/kl_coef": 0.001,
+    "actor/pg_loss": [
+      -0.0011650281958281994
+    ],
+    "actor/pg_clipfrac": [
+      0.0
+    ],
+    "actor/ppo_kl": [
+      0.0
+    ],
+    "actor/pg_clipfrac_lower": [
+      0.0
+    ],
+    "actor/grad_norm": [
+      0.06194651871919632
+    ],
+    "perf/mfu/actor": 0.0,
+    "perf/max_memory_allocated_gb": 95.01032590866089,
+    "perf/max_memory_reserved_gb": 103.955078125,
+    "perf/cpu_memory_used_gb": 285.6234664916992,
+    "actor/lr": 1e-06
+  },
+  "saved_worker_state": [
+    {
+      "rank": 0,
+      "pid": 2920304,
+      "parameters": "a5721cf1acff68c9aa8576091744a5a9f349279801c7821ca4028561360f1744",
+      "optimizer": "93b5d90c2d77aecd34ec1c230f0577e971e2a97ce46f0c3ee73773a3998b98a6",
+      "scheduler": "9e48b5eeb9f0481a3db208f5e5e98dadc9af06ff472de909e1ad36616d5e3c01",
+      "rng": "a7788a16ebd526021db2c21c2fe8ed83bb5457a71d21f33103c00104a63017cf",
+      "rollout_rng": "a3d488dc43f1fae20b3d59e66d4d49939368434805cbf848c8be1de66857d0ce",
+      "optimizer_states": 496,
+      "scheduler_state": {
+        "base_lrs": [
+          1e-06
+        ],
+        "last_epoch": 1,
+        "_step_count": 2,
+        "_is_initial": false,
+        "_get_lr_called_within_step": false,
+        "_last_lr": [
+          1e-06
+        ],
+        "lr_lambdas": [
+          null
+        ]
+      },
+      "config": {
+        "hybrid_engine": true,
+        "model": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "use_shm": false,
+          "external_lib": null,
+          "override_config": {},
+          "enable_gradient_checkpointing": true,
+          "enable_activation_offload": true,
+          "use_remove_padding": false,
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "target_modules": "all-linear",
+          "use_liger": false,
+          "use_fused_kernels": true,
+          "trust_remote_code": true,
+          "fused_kernel_options": {
+            "impl_backend": "torch"
+          }
+        },
+        "actor": {
+          "strategy": "fsdp2",
+          "ppo_mini_batch_size": 32,
+          "ppo_micro_batch_size": null,
+          "ppo_micro_batch_size_per_gpu": 4,
+          "use_dynamic_bsz": false,
+          "ppo_max_token_len_per_gpu": 32768,
+          "grad_clip": 1.0,
+          "clip_ratio": 0.2,
+          "clip_ratio_low": 0.2,
+          "clip_ratio_high": 0.2,
+          "clip_ratio_c": 3.0,
+          "loss_agg_mode": "token-mean",
+          "entropy_coeff": 0.001,
+          "use_invalid_action_penalty": false,
+          "invalid_action_penalty_coef": 0.1,
+          "use_kl_loss": true,
+          "use_torch_compile": true,
+          "kl_loss_coef": 0.001,
+          "kl_loss_type": "low_var_kl",
+          "ppo_epochs": 1,
+          "shuffle": false,
+          "ulysses_sequence_parallel_size": 1,
+          "policy_loss": {
+            "loss_mode": "vanilla"
+          },
+          "checkpoint": {
+            "contents": [
+              "model",
+              "optimizer",
+              "extra"
+            ]
+          },
+          "optim": {
+            "lr": 1e-06,
+            "lr_warmup_steps": -1,
+            "lr_warmup_steps_ratio": 0.0,
+            "min_lr_ratio": 0.0,
+            "num_cycles": 0.5,
+            "warmup_style": "constant",
+            "total_training_steps": 330,
+            "weight_decay": 0.01
+          },
+          "fsdp_config": {
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "param_offload": true,
+            "optimizer_offload": true,
+            "offload_policy": true,
+            "reshard_after_forward": true,
+            "fsdp_size": -1,
+            "model_dtype": "bfloat16"
+          },
+          "use_remove_padding": false,
+          "use_fused_kernels": true
+        },
+        "ref": {
+          "strategy": "fsdp",
+          "fsdp_config": {
+            "param_offload": false,
+            "reshard_after_forward": true,
+            "wrap_policy": {
+              "min_num_params": 0
+            }
+          },
+          "use_torch_compile": true,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "ulysses_sequence_parallel_size": 1
+        },
+        "rollout": {
+          "name": "vllm",
+          "mode": "sync",
+          "chat_scheduler": null,
+          "temperature": 1.0,
+          "top_k": -1,
+          "top_p": 1,
+          "use_fire_sampling": false,
+          "prompt_length": 32256,
+          "response_length": 512,
+          "dtype": "bfloat16",
+          "gpu_memory_utilization": 0.75,
+          "ignore_eos": false,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "load_format": "safetensors",
+          "layered_summon": false,
+          "tensor_model_parallel_size": 1,
+          "max_num_batched_tokens": 32768,
+          "max_model_len": 32768,
+          "max_num_seqs": 32,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "disable_log_stats": true,
+          "enable_chunked_prefill": true,
+          "do_sample": true,
+          "n": 1,
+          "engine_kwargs": {
+            "vllm": {
+              "swap_space": null,
+              "limit_mm_per_prompt": {
+                "image": 0,
+                "video": 0
+              }
+            },
+            "sglang": {
+              "attention_backend": null
+            }
+          },
+          "val_kwargs": {
+            "top_k": -1,
+            "top_p": 1,
+            "temperature": 1,
+            "n": 1,
+            "do_sample": true
+          },
+          "multi_turn": {
+            "enable": true,
+            "max_turns": null,
+            "tool_config_path": null,
+            "format": "chatml"
+          }
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "pid": 2921600,
+      "parameters": "89287104bb629a238c90c615d17fa27b6a563eec5432d6ff5a5f6ecd50a48f36",
+      "optimizer": "f81a988eb89cea85b8c45e24ead31a56586abdaf342301a09bc202fa3d8f1d89",
+      "scheduler": "9e48b5eeb9f0481a3db208f5e5e98dadc9af06ff472de909e1ad36616d5e3c01",
+      "rng": "a7788a16ebd526021db2c21c2fe8ed83bb5457a71d21f33103c00104a63017cf",
+      "rollout_rng": "544b9b2650c69b05f23f89cf5918a7e900b1fb364424d76e40ba1eded8180aef",
+      "optimizer_states": 496,
+      "scheduler_state": {
+        "base_lrs": [
+          1e-06
+        ],
+        "last_epoch": 1,
+        "_step_count": 2,
+        "_is_initial": false,
+        "_get_lr_called_within_step": false,
+        "_last_lr": [
+          1e-06
+        ],
+        "lr_lambdas": [
+          null
+        ]
+      },
+      "config": {
+        "hybrid_engine": true,
+        "model": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "use_shm": false,
+          "external_lib": null,
+          "override_config": {},
+          "enable_gradient_checkpointing": true,
+          "enable_activation_offload": true,
+          "use_remove_padding": false,
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "target_modules": "all-linear",
+          "use_liger": false,
+          "use_fused_kernels": true,
+          "trust_remote_code": true,
+          "fused_kernel_options": {
+            "impl_backend": "torch"
+          }
+        },
+        "actor": {
+          "strategy": "fsdp2",
+          "ppo_mini_batch_size": 32,
+          "ppo_micro_batch_size": null,
+          "ppo_micro_batch_size_per_gpu": 4,
+          "use_dynamic_bsz": false,
+          "ppo_max_token_len_per_gpu": 32768,
+          "grad_clip": 1.0,
+          "clip_ratio": 0.2,
+          "clip_ratio_low": 0.2,
+          "clip_ratio_high": 0.2,
+          "clip_ratio_c": 3.0,
+          "loss_agg_mode": "token-mean",
+          "entropy_coeff": 0.001,
+          "use_invalid_action_penalty": false,
+          "invalid_action_penalty_coef": 0.1,
+          "use_kl_loss": true,
+          "use_torch_compile": true,
+          "kl_loss_coef": 0.001,
+          "kl_loss_type": "low_var_kl",
+          "ppo_epochs": 1,
+          "shuffle": false,
+          "ulysses_sequence_parallel_size": 1,
+          "policy_loss": {
+            "loss_mode": "vanilla"
+          },
+          "checkpoint": {
+            "contents": [
+              "model",
+              "optimizer",
+              "extra"
+            ]
+          },
+          "optim": {
+            "lr": 1e-06,
+            "lr_warmup_steps": -1,
+            "lr_warmup_steps_ratio": 0.0,
+            "min_lr_ratio": 0.0,
+            "num_cycles": 0.5,
+            "warmup_style": "constant",
+            "total_training_steps": 330,
+            "weight_decay": 0.01
+          },
+          "fsdp_config": {
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "param_offload": true,
+            "optimizer_offload": true,
+            "offload_policy": true,
+            "reshard_after_forward": true,
+            "fsdp_size": -1,
+            "model_dtype": "bfloat16"
+          },
+          "use_remove_padding": false,
+          "use_fused_kernels": true
+        },
+        "ref": {
+          "strategy": "fsdp",
+          "fsdp_config": {
+            "param_offload": false,
+            "reshard_after_forward": true,
+            "wrap_policy": {
+              "min_num_params": 0
+            }
+          },
+          "use_torch_compile": true,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "ulysses_sequence_parallel_size": 1
+        },
+        "rollout": {
+          "name": "vllm",
+          "mode": "sync",
+          "chat_scheduler": null,
+          "temperature": 1.0,
+          "top_k": -1,
+          "top_p": 1,
+          "use_fire_sampling": false,
+          "prompt_length": 32256,
+          "response_length": 512,
+          "dtype": "bfloat16",
+          "gpu_memory_utilization": 0.75,
+          "ignore_eos": false,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "load_format": "safetensors",
+          "layered_summon": false,
+          "tensor_model_parallel_size": 1,
+          "max_num_batched_tokens": 32768,
+          "max_model_len": 32768,
+          "max_num_seqs": 32,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "disable_log_stats": true,
+          "enable_chunked_prefill": true,
+          "do_sample": true,
+          "n": 1,
+          "engine_kwargs": {
+            "vllm": {
+              "swap_space": null,
+              "limit_mm_per_prompt": {
+                "image": 0,
+                "video": 0
+              }
+            },
+            "sglang": {
+              "attention_backend": null
+            }
+          },
+          "val_kwargs": {
+            "top_k": -1,
+            "top_p": 1,
+            "temperature": 1,
+            "n": 1,
+            "do_sample": true
+          },
+          "multi_turn": {
+            "enable": true,
+            "max_turns": null,
+            "tool_config_path": null,
+            "format": "chatml"
+          }
+        }
+      }
+    }
+  ],
+  "restored_worker_state": [
+    {
+      "rank": 0,
+      "pid": 3146481,
+      "parameters": "a5721cf1acff68c9aa8576091744a5a9f349279801c7821ca4028561360f1744",
+      "optimizer": "93b5d90c2d77aecd34ec1c230f0577e971e2a97ce46f0c3ee73773a3998b98a6",
+      "scheduler": "9e48b5eeb9f0481a3db208f5e5e98dadc9af06ff472de909e1ad36616d5e3c01",
+      "rng": "a7788a16ebd526021db2c21c2fe8ed83bb5457a71d21f33103c00104a63017cf",
+      "rollout_rng": "a3d488dc43f1fae20b3d59e66d4d49939368434805cbf848c8be1de66857d0ce",
+      "optimizer_states": 496,
+      "scheduler_state": {
+        "base_lrs": [
+          1e-06
+        ],
+        "last_epoch": 1,
+        "_step_count": 2,
+        "_is_initial": false,
+        "_get_lr_called_within_step": false,
+        "_last_lr": [
+          1e-06
+        ],
+        "lr_lambdas": [
+          null
+        ]
+      },
+      "config": {
+        "hybrid_engine": true,
+        "model": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "use_shm": false,
+          "external_lib": null,
+          "override_config": {},
+          "enable_gradient_checkpointing": true,
+          "enable_activation_offload": true,
+          "use_remove_padding": false,
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "target_modules": "all-linear",
+          "use_liger": false,
+          "use_fused_kernels": true,
+          "trust_remote_code": true,
+          "fused_kernel_options": {
+            "impl_backend": "torch"
+          }
+        },
+        "actor": {
+          "strategy": "fsdp2",
+          "ppo_mini_batch_size": 32,
+          "ppo_micro_batch_size": null,
+          "ppo_micro_batch_size_per_gpu": 4,
+          "use_dynamic_bsz": false,
+          "ppo_max_token_len_per_gpu": 32768,
+          "grad_clip": 1.0,
+          "clip_ratio": 0.2,
+          "clip_ratio_low": 0.2,
+          "clip_ratio_high": 0.2,
+          "clip_ratio_c": 3.0,
+          "loss_agg_mode": "token-mean",
+          "entropy_coeff": 0.001,
+          "use_invalid_action_penalty": false,
+          "invalid_action_penalty_coef": 0.1,
+          "use_kl_loss": true,
+          "use_torch_compile": true,
+          "kl_loss_coef": 0.001,
+          "kl_loss_type": "low_var_kl",
+          "ppo_epochs": 1,
+          "shuffle": false,
+          "ulysses_sequence_parallel_size": 1,
+          "policy_loss": {
+            "loss_mode": "vanilla"
+          },
+          "checkpoint": {
+            "contents": [
+              "model",
+              "optimizer",
+              "extra"
+            ]
+          },
+          "optim": {
+            "lr": 1e-06,
+            "lr_warmup_steps": -1,
+            "lr_warmup_steps_ratio": 0.0,
+            "min_lr_ratio": 0.0,
+            "num_cycles": 0.5,
+            "warmup_style": "constant",
+            "total_training_steps": 330,
+            "weight_decay": 0.01
+          },
+          "fsdp_config": {
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "param_offload": true,
+            "optimizer_offload": true,
+            "offload_policy": true,
+            "reshard_after_forward": true,
+            "fsdp_size": -1,
+            "model_dtype": "bfloat16"
+          },
+          "use_remove_padding": false,
+          "use_fused_kernels": true
+        },
+        "ref": {
+          "strategy": "fsdp",
+          "fsdp_config": {
+            "param_offload": false,
+            "reshard_after_forward": true,
+            "wrap_policy": {
+              "min_num_params": 0
+            }
+          },
+          "use_torch_compile": true,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "ulysses_sequence_parallel_size": 1
+        },
+        "rollout": {
+          "name": "vllm",
+          "mode": "sync",
+          "chat_scheduler": null,
+          "temperature": 1.0,
+          "top_k": -1,
+          "top_p": 1,
+          "use_fire_sampling": false,
+          "prompt_length": 32256,
+          "response_length": 512,
+          "dtype": "bfloat16",
+          "gpu_memory_utilization": 0.75,
+          "ignore_eos": false,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "load_format": "safetensors",
+          "layered_summon": false,
+          "tensor_model_parallel_size": 1,
+          "max_num_batched_tokens": 32768,
+          "max_model_len": 32768,
+          "max_num_seqs": 32,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "disable_log_stats": true,
+          "enable_chunked_prefill": true,
+          "do_sample": true,
+          "n": 1,
+          "engine_kwargs": {
+            "vllm": {
+              "swap_space": null,
+              "limit_mm_per_prompt": {
+                "image": 0,
+                "video": 0
+              }
+            },
+            "sglang": {
+              "attention_backend": null
+            }
+          },
+          "val_kwargs": {
+            "top_k": -1,
+            "top_p": 1,
+            "temperature": 1,
+            "n": 1,
+            "do_sample": true
+          },
+          "multi_turn": {
+            "enable": true,
+            "max_turns": null,
+            "tool_config_path": null,
+            "format": "chatml"
+          }
+        }
+      },
+      "restoration_matches": {
+        "parameters": true,
+        "optimizer": true,
+        "scheduler": true,
+        "rng": true,
+        "rollout_rng": true
+      }
+    },
+    {
+      "rank": 1,
+      "pid": 3148205,
+      "parameters": "89287104bb629a238c90c615d17fa27b6a563eec5432d6ff5a5f6ecd50a48f36",
+      "optimizer": "f81a988eb89cea85b8c45e24ead31a56586abdaf342301a09bc202fa3d8f1d89",
+      "scheduler": "9e48b5eeb9f0481a3db208f5e5e98dadc9af06ff472de909e1ad36616d5e3c01",
+      "rng": "a7788a16ebd526021db2c21c2fe8ed83bb5457a71d21f33103c00104a63017cf",
+      "rollout_rng": "544b9b2650c69b05f23f89cf5918a7e900b1fb364424d76e40ba1eded8180aef",
+      "optimizer_states": 496,
+      "scheduler_state": {
+        "base_lrs": [
+          1e-06
+        ],
+        "last_epoch": 1,
+        "_step_count": 2,
+        "_is_initial": false,
+        "_get_lr_called_within_step": false,
+        "_last_lr": [
+          1e-06
+        ],
+        "lr_lambdas": [
+          null
+        ]
+      },
+      "config": {
+        "hybrid_engine": true,
+        "model": {
+          "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+          "use_shm": false,
+          "external_lib": null,
+          "override_config": {},
+          "enable_gradient_checkpointing": true,
+          "enable_activation_offload": true,
+          "use_remove_padding": false,
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "target_modules": "all-linear",
+          "use_liger": false,
+          "use_fused_kernels": true,
+          "trust_remote_code": true,
+          "fused_kernel_options": {
+            "impl_backend": "torch"
+          }
+        },
+        "actor": {
+          "strategy": "fsdp2",
+          "ppo_mini_batch_size": 32,
+          "ppo_micro_batch_size": null,
+          "ppo_micro_batch_size_per_gpu": 4,
+          "use_dynamic_bsz": false,
+          "ppo_max_token_len_per_gpu": 32768,
+          "grad_clip": 1.0,
+          "clip_ratio": 0.2,
+          "clip_ratio_low": 0.2,
+          "clip_ratio_high": 0.2,
+          "clip_ratio_c": 3.0,
+          "loss_agg_mode": "token-mean",
+          "entropy_coeff": 0.001,
+          "use_invalid_action_penalty": false,
+          "invalid_action_penalty_coef": 0.1,
+          "use_kl_loss": true,
+          "use_torch_compile": true,
+          "kl_loss_coef": 0.001,
+          "kl_loss_type": "low_var_kl",
+          "ppo_epochs": 1,
+          "shuffle": false,
+          "ulysses_sequence_parallel_size": 1,
+          "policy_loss": {
+            "loss_mode": "vanilla"
+          },
+          "checkpoint": {
+            "contents": [
+              "model",
+              "optimizer",
+              "extra"
+            ]
+          },
+          "optim": {
+            "lr": 1e-06,
+            "lr_warmup_steps": -1,
+            "lr_warmup_steps_ratio": 0.0,
+            "min_lr_ratio": 0.0,
+            "num_cycles": 0.5,
+            "warmup_style": "constant",
+            "total_training_steps": 330,
+            "weight_decay": 0.01
+          },
+          "fsdp_config": {
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "param_offload": true,
+            "optimizer_offload": true,
+            "offload_policy": true,
+            "reshard_after_forward": true,
+            "fsdp_size": -1,
+            "model_dtype": "bfloat16"
+          },
+          "use_remove_padding": false,
+          "use_fused_kernels": true
+        },
+        "ref": {
+          "strategy": "fsdp",
+          "fsdp_config": {
+            "param_offload": false,
+            "reshard_after_forward": true,
+            "wrap_policy": {
+              "min_num_params": 0
+            }
+          },
+          "use_torch_compile": true,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "ulysses_sequence_parallel_size": 1
+        },
+        "rollout": {
+          "name": "vllm",
+          "mode": "sync",
+          "chat_scheduler": null,
+          "temperature": 1.0,
+          "top_k": -1,
+          "top_p": 1,
+          "use_fire_sampling": false,
+          "prompt_length": 32256,
+          "response_length": 512,
+          "dtype": "bfloat16",
+          "gpu_memory_utilization": 0.75,
+          "ignore_eos": false,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "load_format": "safetensors",
+          "layered_summon": false,
+          "tensor_model_parallel_size": 1,
+          "max_num_batched_tokens": 32768,
+          "max_model_len": 32768,
+          "max_num_seqs": 32,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 4,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 32768,
+          "disable_log_stats": true,
+          "enable_chunked_prefill": true,
+          "do_sample": true,
+          "n": 1,
+          "engine_kwargs": {
+            "vllm": {
+              "swap_space": null,
+              "limit_mm_per_prompt": {
+                "image": 0,
+                "video": 0
+              }
+            },
+            "sglang": {
+              "attention_backend": null
+            }
+          },
+          "val_kwargs": {
+            "top_k": -1,
+            "top_p": 1,
+            "temperature": 1,
+            "n": 1,
+            "do_sample": true
+          },
+          "multi_turn": {
+            "enable": true,
+            "max_turns": null,
+            "tool_config_path": null,
+            "format": "chatml"
+          }
+        }
+      },
+      "restoration_matches": {
+        "parameters": true,
+        "optimizer": true,
+        "scheduler": true,
+        "rng": true,
+        "rollout_rng": true
+      }
+    }
+  ],
+  "dataloader_next_batch_exact": true,
+  "checkpoint_restore_scope": "Fresh original trainer, original _load_checkpoint, existing completed checkpoint; no repeated DT/update",
+  "dataloader_diagnostic": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1/dataloader-cpu-comparison.json",
+  "graph_updated": [
+    {
+      "rank": 0,
+      "label": "updated-restored",
+      "timings": [
+        {
+          "seconds": 4.448178715014365,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.022945515986066,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.023991852009203,
+          "output_tokens": 4096
+        }
+      ],
+      "batching": "passed_original_check_logprobs_close",
+      "sleep": "passed_original_check_outputs_equal",
+      "enforce_eager": false,
+      "compilation_config": "{'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::mx_sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [32768], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 64, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': True}, 'local_cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd/rank_0_0/backbone'}",
+      "test_sources": {
+        "vllm015-test-utils.py": "e4a2ab8e182234b13c89feac6aab4541eea732f46d12cffc4e7c7f9b04ec2e6d",
+        "vllm015-conftest.py": "3deb489d56cf1ce04a9ce075f440e557c0d4341d999e07f31fc0df3994e5697e"
+      }
+    },
+    {
+      "rank": 1,
+      "label": "updated-restored",
+      "timings": [
+        {
+          "seconds": 4.457434408017434,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.023642854997888,
+          "output_tokens": 4096
+        },
+        {
+          "seconds": 4.011755663959775,
+          "output_tokens": 4096
+        }
+      ],
+      "batching": "passed_original_check_logprobs_close",
+      "sleep": "passed_original_check_outputs_equal",
+      "enforce_eager": false,
+      "compilation_config": "{'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::mx_sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [32768], 'inductor_compile_config': {'enable_auto_functionalized_v2': False}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 64, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': True}, 'local_cache_dir': '/root/.cache/vllm/torch_compile_cache/40a6b61dfd/rank_1_0/backbone'}",
+      "test_sources": {
+        "vllm015-test-utils.py": "e4a2ab8e182234b13c89feac6aab4541eea732f46d12cffc4e7c7f9b04ec2e6d",
+        "vllm015-conftest.py": "3deb489d56cf1ce04a9ce075f440e557c0d4341d999e07f31fc0df3994e5697e"
+      }
+    }
+  ],
+  "status": "passed_native_graph_B8_32768_DT_update_checkpoint_roundtrip"
+}

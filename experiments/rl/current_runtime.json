@@ -1,4 +1,311 @@
 {
+  "20261012_native_graph_32k_verification": {
+    "observed_local": "2026-10-12T16:47:05.873455+08:00",
+    "status": "native_graph_deployed_first_rollout_complete_ref_logprob_in_progress",
+    "receipt_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-native-graph-deployment-20261012-v1",
+    "source_patch_commit": "0b12b2020f2ece724b17e4e3179aa664df2bd737",
+    "formal_submitted": true,
+    "jobs": [
+      {
+        "method": "dt",
+        "pid": 3172194,
+        "birth": 1791793609.09,
+        "workers": [
+          {
+            "pid": 3179523,
+            "birth": 1791793654.28,
+            "rank": 0
+          },
+          {
+            "pid": 3181267,
+            "birth": 1791793670.7,
+            "rank": 1
+          }
+        ],
+        "round": 30,
+        "completed_iterations": 0,
+        "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt",
+        "phase": "ray::WorkerDict.actor_rollout_compute_ref_log_prob",
+        "errors": [],
+        "first_rollout_interaction_loop_seconds": 773,
+        "first_rollout_timing_scope": "Driver progress-bar elapsed over30 interactions; not generation-only or full iteration"
+      },
+      {
+        "method": "grpo",
+        "pid": 3174448,
+        "birth": 1791793629.73,
+        "workers": [
+          {
+            "pid": 3181257,
+            "birth": 1791793670.47,
+            "rank": 0
+          },
+          {
+            "pid": 3183308,
+            "birth": 1791793689.3,
+            "rank": 1
+          }
+        ],
+        "round": 30,
+        "completed_iterations": 0,
+        "output": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-grpo-formal-native-graph-fresh-20261012-v1/textcraft-grpo",
+        "phase": "ray::WorkerDict.actor_rollout_compute_ref_log_prob",
+        "errors": [],
+        "first_rollout_interaction_loop_seconds": 729,
+        "first_rollout_timing_scope": "Driver progress-bar elapsed over30 interactions; not generation-only or full iteration"
+      }
+    ],
+    "parameters": {
+      "model": "Qwen3.5-9B",
+      "lora_rank": 8,
+      "lora_alpha": 16,
+      "microbatch_per_gpu": 4,
+      "two_gpu_batch": 8,
+      "context": 32768,
+      "groups_per_iteration": 32,
+      "samples_per_group": 8,
+      "optimizer_minibatch_global": 64,
+      "optimizer_updates_per_complete_iteration": 4,
+      "ppo_epochs": 1,
+      "data_epochs": 30,
+      "complete_iterations": 330,
+      "entropy": 0.001,
+      "dual_clip": 3,
+      "save_freq_complete_iterations": 5
+    },
+    "capacity": {
+      "status": "passed_native_graph_B8_32768_DT_update_checkpoint_roundtrip",
+      "batch": 8,
+      "exact_context": 32768,
+      "longest_replayed_suffix": 32448,
+      "DT_seconds": 413.2315625449992,
+      "oldlogprob_seconds": 39.96246428298764,
+      "update_seconds": 100.18936560698785,
+      "finite_gradient_norm": 0.0619465187,
+      "physical_peak_GiB_per_gpu": 63.239471435546875,
+      "scope": "Storage capacity inputs expanded by existing accepted native-observation helper; not natural task32k or full formal iteration cost"
+    },
+    "checkpoint": {
+      "native_owner": "VERL FSDPCheckpointManager and RayPPOTrainer _save_checkpoint/_load_checkpoint",
+      "verified_fields": [
+        "trainable_model_parameters",
+        "optimizer_states",
+        "scheduler_states",
+        "training_RNG",
+        "existing_rollout_RNG",
+        "global_step",
+        "exact_next_data_batch"
+      ],
+      "all_two_rank_state_hashes_exact": true,
+      "dataloader_next_batch_exact": true,
+      "scheduler_last_epoch": 1,
+      "optimizer_states_per_rank": 496,
+      "native_dataloader_test_fix": "Fresh original trainer/StatefulDataLoader, matching real resume; active-iterator reuse diagnostic failed and is preserved",
+      "formal_checkpoint_current": null,
+      "scope": "Existing completed diagnostic checkpoint restored exactly; no formal checkpoint until iteration5, not claimed bitwise equality of future random trajectories"
+    },
+    "native_graph": {
+      "enforce_eager": false,
+      "free_cache_engine": false,
+      "same_input_single_engine_hot_speedup": 2.441492284750095,
+      "scope": "Fixed same32 prefixes x128 outputs, native vLLM; not complete training speedup",
+      "official_batching_assertion": "Unchanged vLLM0.15 check_logprobs_close; first divergence mutual top5, not absolute logprob numerical bound",
+      "official_sleep_source": "https://github.com/vllm-project/vllm/blob/v0.15.0/tests/basic_correctness/test_cumem.py",
+      "sleep_assertion": "Exact outputs, both cold cache matching native original sleep test initial condition; restored actual updated actor LoRA",
+      "test_harness_scope_fix": "Native sleep clears prefix cache; earlier warm-versus-cold comparison failure preserved, no production cache policy change"
+    },
+    "actual_import_receipts": {
+      "dt": "research/temporary/rl_textcraft_restart_20261012/receipts/dt-initial-worker-state.json",
+      "grpo": "research/temporary/rl_textcraft_restart_20261012/receipts/grpo-initial-worker-state.json"
+    },
+    "numerical_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+    "memory_commit": "799224868e0a9c0f8031b6012bb71505ab801a35",
+    "current_GDN_sha256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+    "FSDP_event_wait_fix": "2534a670974e388bc2b9a01d4f304d5c23b37534",
+    "backup": {
+      "local": "F:/DeltaTraceBackups/textcraft-20261011",
+      "shared": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011",
+      "current_state": "passed",
+      "shared_fault_domain": "same NFS as training; local F is independent",
+      "files": 2058,
+      "bytes": 89443864,
+      "local_full_sha256_verified": true,
+      "shared_full_sha256_verified": true,
+      "completed_formal_checkpoints": {
+        "dt": null,
+        "grpo": null
+      },
+      "metadata_snapshot_refresh": "completed_current_corrected_records",
+      "receipt": "research\\temporary\\rl_textcraft_restart_20261012\\receipts\\native-graph-backup.json"
+    },
+    "automation": "textcraft ACTIVE hourly, new jobs/save5/native graph/current owner sources",
+    "latest_observation": {
+      "unix": 1791794733.8905063,
+      "original_plot_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-formal-native-graph-fresh-20261012-v1-1791793609\\latest.json",
+      "memory_gib": 137.5701789855957,
+      "memory_limit_gib": 900.0,
+      "official_log_errors": [
+        [],
+        []
+      ]
+    },
+    "metadata_correction": {
+      "receipt": "research\\temporary\\rl_textcraft_restart_20261012\\receipts\\metadata-provenance-correction.json",
+      "scope": "Run records only; actual launch/imports already verified; no training change",
+      "launcher_cleanup": "No inherited worker or driver birth claims in future submission"
+    }
+  },
+  "latest_textcraft_restart_20261012": {
+    "observed_local": "2026-10-12T13:38:30+08:00",
+    "remote_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922",
+    "ssh_port": 31146,
+    "status": "GRPO_first_full_iteration_complete_DT_first_rollout_complete_native_old_logprob_in_progress",
+    "jobs": [
+      {
+        "method": "dt",
+        "pid": 1824597,
+        "birth": 1791781436.07,
+        "physical_gpus": [
+          2,
+          3
+        ],
+        "run": "runs/textcraft-dt-formal-eventwait-fresh-20261012-v2",
+        "workers": [
+          {
+            "pid": 1831261,
+            "birth": 1791781482.13
+          },
+          {
+            "pid": 1832825,
+            "birth": 1791781498.56
+          }
+        ],
+        "actual_initial_state": "both actual workers verified optimizer_states0 scheduler0 accepted owner SHA and unchanged configuration",
+        "passive_credit": "installed both workers; source2609d93f; output pending first DT",
+        "actual_initial_state_receipt": "receipts/textcraft-restart-utilization-20261012-v1/dt-initial-worker-state.json",
+        "completed_iterations": 0,
+        "phase": "native_compute_log_prob_after_first_full_rollout"
+      },
+      {
+        "method": "grpo",
+        "pid": 1708090,
+        "birth": 1791780387.65,
+        "physical_gpus": [
+          4,
+          5
+        ],
+        "run": "runs/textcraft-grpo-formal-eventwait-fresh-20261012-v1",
+        "workers": [
+          {
+            "pid": 1721320,
+            "birth": 1791780490.54
+          },
+          {
+            "pid": 1723255,
+            "birth": 1791780509.34
+          }
+        ],
+        "actual_initial_state": "both actual workers verified optimizer_states0 scheduler0 accepted owner SHA and unchanged configuration",
+        "actual_initial_state_receipt": "receipts/textcraft-restart-utilization-20261012-v1/grpo-initial-worker-state.json",
+        "completed_iterations": 1,
+        "phase": "second_rollout",
+        "latest_train_reward": 0.629,
+        "latest_entropy": 0.665,
+        "latest_grad_norm": 0.03
+      }
+    ],
+    "numerical_commit": "26bef6c8b2e49db118f46e3c05e86944dcf8e293",
+    "fsdp_fix_commit": "2534a670974e388bc2b9a01d4f304d5c23b37534",
+    "parameters": "Unchanged Qwen3.5-9B, rank8/alpha16, microbatch4 per GPU/B8 global, 32768 context cap, optimizer minibatch64, 4 updates/iteration, PPOepochs1, 30 epochs/330 iterations, entropy0.001, dualclip3, checkpoint frequency25",
+    "plot": "F:/DeltaTraceBackups/plots/interrupted-20261012/textcraft-dt-formal-eventwait-fresh-20261011-v1-1791729725/effects.png",
+    "plot_scope": "Pre-interruption complete native metrics DT15/GRPO16; final progress18/19 lacks full metrics, not fabricated",
+    "restored_platform_files": {
+      "vllm_metax/device_allocator/cumem.py": "7e557a8f5005112b37f64fef9ab95705749a45064943c251d51e11955a7bd528",
+      "vllm/v1/worker/gpu_worker.py": "37db3830453c3d8dc8852256c4763006e828b3e1da9f8f24d96c62135cc1d7c6"
+    },
+    "restoration_scope": "Original accepted c9cd147 patch owners, exact historical after SHA; actual new DT imported modules confirmed",
+    "profiler_incident": {
+      "pid": 1721319,
+      "unix": 1791781044,
+      "reason": "Vendor mcTracer mcRpc.MsgReply 2717007051 bytes exceeds protobuf2GB; SIGABRT, no training OOM/cgroup OOM=0",
+      "affected_run": "runs/textcraft-dt-formal-eventwait-fresh-20261012-v1",
+      "completed_updates": 0,
+      "action": "No more mcTracer full attach on formal workers; DT relaunched only, GRPO untouched"
+    },
+    "utilization": {
+      "scope": "First-rollout generation, not DT/update; profiling perturbs time",
+      "physical_mean_percent": "22–28 early generation",
+      "trace_span_seconds": 8.96959488,
+      "kernel_copy_union_seconds": 1.855886848,
+      "kernel_count": 130909,
+      "official_native_graph_candidate": "bounded official vLLM comparison in progress on otherwise idle physicalGPU6; not adopted"
+    },
+    "receipt": "receipts/textcraft-restart-utilization-20261012-v1",
+    "backup": {
+      "receipt": "F:/DeltaTraceBackups/textcraft-20261011/latest-backup.json",
+      "started_unix": 1791782030.7057946,
+      "completed_unix": 1791782091.2737887,
+      "files": 2039,
+      "bytes": 86261679,
+      "local_full_sha256_verified": true,
+      "shared_full_sha256_verified": true,
+      "completed_checkpoints": {
+        "dt": null,
+        "grpo": null
+      }
+    },
+    "automation": "Existing textcraft hourly updated to new PID/birth/run paths; ACTIVE",
+    "native_graph_candidate": {
+      "status": "default_graph_original_comparison_passed_not_deployed_training_coexistence_pending",
+      "physical_gpu": 6,
+      "hot_speedup": 2.441492284750095,
+      "eager_hot_seconds": 10.071984615002293,
+      "graph_hot_seconds": 4.125339522026479,
+      "physical_utilization": {
+        "eager": 31.466666666666665,
+        "graph": 69.16666666666667,
+        "samples_eager": 15,
+        "samples_graph": 6
+      },
+      "scope": "Native vLLM; same physical GPU6, 32 identical saved TextCraft prefixes x128 tokens, same nonzero rank8 alpha16 zero-padded original numerical fixture; no training/DT speedup or task quality conclusion.",
+      "official_comparison": "Unchanged pinned vLLM check_logprobs_close: first divergent greedy token must be in each other top5; divergence warnings preserved. This is not a numerical absolute logprob error bound. Original sleep check_outputs_equal passed.",
+      "sleep_equality_default": "passed",
+      "decode_only_memory_variant": "failed_original_sleep_text_equality_not_deployed",
+      "formal_parameters_changed": false,
+      "physical_standalone_awake_GiB": 47.64111328125,
+      "physical_standalone_asleep_GiB": 1.7236595153808594
+    },
+    "new_plot": "F:/DeltaTraceBackups/plots/restarted-20261012/textcraft-dt-formal-eventwait-fresh-20261012-v2-1791780387/effects.png"
+  },
+  "latest_textcraft_interruption_observed_20261012": {
+    "unix": 1791779511,
+    "ssh_port": 31146,
+    "ssh_login": "recovered_without_configuration_or_credential_change",
+    "status": "original_drivers_and_four_workers_absent_no_restart_performed",
+    "persistent_progress": {
+      "dt": 18,
+      "grpo": 19
+    },
+    "progress_source": "Original driver.log Training Progress lines; latest complete native metric snapshot remains 1791772543 at DT15/GRPO16",
+    "completed_checkpoint_markers": {
+      "dt": null,
+      "grpo": null
+    },
+    "dt_vector_files": 756,
+    "current_container_mount_time": "2026-10-12 12:24 +08",
+    "old_ray_tmp_available": false,
+    "cause": "not established; no terminal traceback in persistent driver logs; current cgroup counters cannot establish previous-container OOM status",
+    "plot_warning": "12:25 collector fell back to incomplete driver metrics (11/0); do not interpret as completed progress rollback",
+    "receipt": "F:/DeltaTraceBackups/plots/ssh-recovered-interruption-1791779511.json",
+    "scope": "read-only status and existing backup; no training, method, parameter, environment or credential change"
+  },
+  "shared_backup_path_confirmation_20261012": {
+    "source": "User explicitly confirmed the shared mount root on 2026-10-12",
+    "shared_mount_root": "/mnt/si0021787ci2/default",
+    "shared_backup": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011",
+    "local_backup": "F:\\DeltaTraceBackups\\textcraft-20261011",
+    "scope": "Existing backup destination is inside the confirmed mount; no migration or training change. Shared copy remains on the same NFS as training; F drive is the independent off-machine copy."
+  },
   "latest_textcraft_hourly_backups_20261011": {
     "unix": 1791733072.5107212,
     "receipt": "experiments/rl/results_textcraft_hourly_backups_20261011.json",
