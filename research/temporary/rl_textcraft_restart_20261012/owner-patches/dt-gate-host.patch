@@ -1,0 +1,76 @@
+--- a/clean/qwen35/qwen35_dense_finite_runner.py
++++ b/clean/qwen35/qwen35_dense_finite_runner.py
+@@ -413,7 +413,8 @@
+             decoder_capture=NativeDecoderCapture if backend is None else backend.NativeDecoderCapture
+             attention_capture=NativeDenseAttentionCapture if backend is None else backend.NativeDenseAttentionCapture
+             gdn_capture=NativeGDNCapture if backend is None else backend.NativeGDNCapture
+-            dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed)
++            dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed,
++                gate_destination='cpu' if offload_mixer else None,pin_gate_host=offload_mixer and self.pin_replay_host)
+             mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host)
+                 if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures,gpu_capture_names=self.gdn_gpu_capture_names if offload_mixer else (),coefficient_start=gdn_cut if self.compact_gdn_captures else 0))
+             def replay():
+--- a/clean/qwen35/qwen35_decoder_finite.py
++++ b/clean/qwen35/qwen35_decoder_finite.py
+@@ -5,6 +5,7 @@
+ the established symmetric RMS/SwiGLU rules and the official Torch compiler.
+ """
+ import torch
++from native_attention_capture import copy_capture_tensor
+ from signed_secant_rules import rmsnorm_secant_pullback
+ from compiled_swiglu_secant import swiglu_finite_rule
+ from finite_fla_gpu import _mm
+@@ -12,13 +13,20 @@
+ 
+ class NativeDecoderCapture:
+     """Module hooks only, so the mixer can use its existing passive observer."""
+-    def __init__(self, layer, destination='cpu', *, copy_tensors=True, retained_names=None):
++    def __init__(self, layer, destination='cpu', *, copy_tensors=True, retained_names=None, gate_destination=None, pin_gate_host=False):
+         self.layer=layer;self.destination=destination;self.values={};self.handles=[];self.calls={}
+         self.copy_tensors=copy_tensors;self.retained_names=retained_names
++        self.gate_destination=gate_destination;self.pin_gate_host=pin_gate_host
+ 
+     def retain(self,name,value):
+         if self.retained_names is None or name in self.retained_names:
+-            self.values[name]=value.detach().to(self.destination,copy=self.copy_tensors)
++            if name=='gate_output' and self.gate_destination is not None:
++                # Native SwiGLU no longer needs this operand once SiLU returns.
++                # DT retains it off-device and restores only its finite chunk.
++                self.values[name]=copy_capture_tensor(value,self.gate_destination,
++                    copy=self.copy_tensors,preserve_strides=True,pinned_host=self.pin_gate_host)
++            else:
++                self.values[name]=value.detach().to(self.destination,copy=self.copy_tensors)
+ 
+     def __enter__(self):
+         targets={'input_norm':self.layer.input_layernorm,'post_norm':self.layer.post_attention_layernorm,
+@@ -138,14 +146,15 @@
+     def chunked(*args):
+         tokens=args[0].shape[1]
+         if tokens<=chunk_size:
+-            return op(*args)
++            device=args[6].device
++            return op(*(value.to(device,non_blocking=True) for value in args[:7]),*args[7:])
+         sources,weights=args[:7],args[7:]
+         result=None;start=0
+         for chunks in zip(*(value.split(chunk_size,dim=1) for value in sources)):
+             # Captured paired endpoints have original-T batch strides. Give
+             # the same dynamic owner compact chunk strides, not one guard
+             # variant for every trajectory length. Dtype and B are unchanged.
+-            chunks=tuple(value.contiguous() for value in chunks)
++            chunks=tuple(value.to(args[6].device,non_blocking=True).contiguous() for value in chunks)
+             part=op(*chunks,*weights)
+             if result is None:
+                 result=part.new_empty((part.shape[0],tokens,part.shape[2]))
+--- a/accelerated/qwen35/qwen35_retained_capture.py
++++ b/accelerated/qwen35/qwen35_retained_capture.py
+@@ -46,6 +46,10 @@
+ 
+ class NativeDecoderCapture(_Retain, _Decoder):
+     def retain(self, name, value):
++        if name == 'gate_output' and self.gate_destination is not None:
++            # Preserve the decoder owner's explicit host retention option.
++            # All other captures keep this backend's original borrowed path.
++            return super().retain(name, value)
+         if getattr(self, 'retained_names', None) is None or name in self.retained_names:
+             self.values[name] = self._actual(name, value, self.destination)
+ 

@@ -1,0 +1,44 @@
+--- a/verl/workers/fsdp_workers.py
++++ b/verl/workers/fsdp_workers.py
+@@ -607,6 +607,7 @@
+                 lr_scheduler=self.actor_lr_scheduler,
+                 processing_class=self.processor if self.processor is not None else self.tokenizer,
+                 checkpoint_contents=self.config.actor.checkpoint.contents,
++                rollout_random_state_owner=self.rollout_sharding_manager if self._is_rollout else None,
+             )
+ 
+     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
+--- a/verl/utils/checkpoint/fsdp_checkpoint_manager.py
++++ b/verl/utils/checkpoint/fsdp_checkpoint_manager.py
+@@ -55,8 +55,10 @@
+         lr_scheduler: torch.optim.lr_scheduler.LRScheduler,
+         processing_class: Union[PreTrainedTokenizer, ProcessorMixin] = None,
+         checkpoint_contents: Optional[list] = None,
++        rollout_random_state_owner=None,
+         **kwargs,
+     ):
++        self.rollout_random_state_owner = rollout_random_state_owner
+         if checkpoint_contents is None:
+             checkpoint_contents = ["model", "optimizer", "extra"]
+         if processing_class is None:
+@@ -109,6 +111,11 @@
+                 os.remove(local_extra_state_path) if is_non_local(local_extra_state_path) else None
+             except Exception as e:
+                 print(f"[rank-{self.rank}]: remove local resume ckpt file after loading failed, exception {e} will be ignored")
++
++        # The sync rollout manager owns a separate CUDA sampling RNG.
++        # Persist that existing state alongside the native training RNG.
++        if self.rollout_random_state_owner is not None and "rollout_gen_random_states" in extra_state_dict:
++            self.rollout_random_state_owner.gen_random_states = extra_state_dict["rollout_gen_random_states"]
+ 
+         lr_scheduler_state_dict = extra_state_dict["lr_scheduler"]
+ 
+@@ -173,6 +180,8 @@
+                     "lr_scheduler": lr_scheduler_state_dict,
+                     "rng": self.get_rng_state(),
+                 }
++                if self.rollout_random_state_owner is not None:
++                    extra_state_dict["rollout_gen_random_states"] = self.rollout_random_state_owner.gen_random_states
+                 model_path = os.path.join(local_path, f"model_world_size_{self.world_size}_rank_{self.rank}.pt")
+                 optim_path = os.path.join(local_path, f"optim_world_size_{self.world_size}_rank_{self.rank}.pt")
+                 extra_path = os.path.join(local_path, f"extra_state_world_size_{self.world_size}_rank_{self.rank}.pt")

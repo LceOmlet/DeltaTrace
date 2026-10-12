@@ -52,9 +52,11 @@ for j in jobs:
  tree(j['entry'])
  for name in ('passive_credit_recording_runtime_override','initial_worker_state_verification'):
   row=j.get(name,{})
-  if row.get('path'): add(row['path'])
-  for worker in row.get('workers',[]):
-   if worker.get('active_method_source'): add(worker['active_method_source'])
+  receipt={}
+  if row.get('path'):
+   add(row['path']); receipt=json.loads(pathlib.Path(row['path']).read_bytes())
+  for worker in [*row.get('workers',[]),*receipt.get('results',[]),*receipt.get('workers',[])]:
+   if isinstance(worker,dict) and worker.get('active_method_source'): add(worker['active_method_source'])
  for arg in j['argv']:
   if arg.startswith(('data.train_files=','data.val_files=')):
    value=json.loads(arg.split('=',1)[1]); add(value)
@@ -188,7 +190,10 @@ print(json.dumps(receipt))
                                        args.source_root, selection['stage']])], check=True, timeout=60)
         print(json.dumps({k:v for k,v in report.items() if k!='copy_command'}, ensure_ascii=False))
     except Exception as exc:
-        report.update(status='failed', error=str(exc), finished=time.time()); record()
+        report.update(status='failed', error=str(exc), finished=time.time())
+        if isinstance(exc, subprocess.CalledProcessError) and exc.stderr:
+            report['stderr'] = exc.stderr.decode(errors='replace') if isinstance(exc.stderr, bytes) else exc.stderr
+        record()
         raise
     finally:
         client.close()
