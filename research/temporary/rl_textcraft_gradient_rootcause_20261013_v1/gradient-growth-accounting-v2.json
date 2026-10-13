@@ -1,0 +1,511 @@
+{
+  "observed_local": "2026-10-14T00:49:07.545587+08:00",
+  "scope": "Only the persistent, accelerating DTPO gradient-norm growth; saved evidence only.",
+  "new_GPU_model_calls": 0,
+  "new_optimizer_or_schedule_steps": 0,
+  "new_training_runs": 0,
+  "GRPO_reruns": 0,
+  "native_metric_scope": "Original actor pre-clip norm returns, reduced by native metric owner over four optimizer minibatches and two ranks; console rounds to three decimals. Not a sum of squared norms, and not a cumulative norm across iterations.",
+  "native_metric_source_owner": {
+    "actor": "owners/verl/workers/actor/dp_actor.py:297,506",
+    "FSDP2": "native-clip-owner-v2.json",
+    "metric_reduce": "owners/verl/utils/metric/utils.py:23",
+    "trainer": "owners/verl/trainer/ppo/ray_trainer.py:1285"
+  },
+  "temporal_observations": {
+    "complete_iterations": 85,
+    "nonoverlapping_blocks": [
+      {
+        "iterations": [
+          1,
+          10
+        ],
+        "n": 10,
+        "center": 5.5,
+        "mean": 0.03699999999999999,
+        "median": 0.035,
+        "minimum": 0.026,
+        "maximum": 0.049
+      },
+      {
+        "iterations": [
+          11,
+          20
+        ],
+        "n": 10,
+        "center": 15.5,
+        "mean": 0.04189999999999999,
+        "median": 0.041,
+        "minimum": 0.033,
+        "maximum": 0.054
+      },
+      {
+        "iterations": [
+          21,
+          30
+        ],
+        "n": 10,
+        "center": 25.5,
+        "mean": 0.048799999999999996,
+        "median": 0.0495,
+        "minimum": 0.031,
+        "maximum": 0.069
+      },
+      {
+        "iterations": [
+          31,
+          40
+        ],
+        "n": 10,
+        "center": 35.5,
+        "mean": 0.0681,
+        "median": 0.0685,
+        "minimum": 0.046,
+        "maximum": 0.088
+      },
+      {
+        "iterations": [
+          41,
+          50
+        ],
+        "n": 10,
+        "center": 45.5,
+        "mean": 0.0837,
+        "median": 0.08549999999999999,
+        "minimum": 0.068,
+        "maximum": 0.096
+      },
+      {
+        "iterations": [
+          51,
+          60
+        ],
+        "n": 10,
+        "center": 55.5,
+        "mean": 0.1115,
+        "median": 0.1045,
+        "minimum": 0.076,
+        "maximum": 0.178
+      },
+      {
+        "iterations": [
+          61,
+          70
+        ],
+        "n": 10,
+        "center": 65.5,
+        "mean": 0.1916,
+        "median": 0.181,
+        "minimum": 0.129,
+        "maximum": 0.369
+      },
+      {
+        "iterations": [
+          71,
+          80
+        ],
+        "n": 10,
+        "center": 75.5,
+        "mean": 0.4932,
+        "median": 0.33499999999999996,
+        "minimum": 0.166,
+        "maximum": 1.743
+      },
+      {
+        "iterations": [
+          81,
+          85
+        ],
+        "n": 5,
+        "center": 83.0,
+        "mean": 0.6688000000000001,
+        "median": 0.502,
+        "minimum": 0.366,
+        "maximum": 1.401
+      }
+    ],
+    "mean_ratio_80to85_vs_1to10": 22.914414414414416,
+    "median_ratio_80to85_vs_1to10": 16.557142857142857,
+    "note": "Both center and variability grow. Unequal window means are not a fitted exponent; block81-85 has only five observations."
+  },
+  "descriptive_fits": [
+    {
+      "model": "linear",
+      "fit_iterations": [
+        1,
+        50
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        0.001206674669867947,
+        0.02512979591836736
+      ],
+      "fit_RMSE": 0.009354395876211544,
+      "fit_nonpositive_prediction_count": 0,
+      "next15_iterations": [
+        51,
+        65
+      ],
+      "next15_RMSE": 0.04551670261538983,
+      "next15_actual_median": 0.125,
+      "next15_predicted_median": 0.0951169267707083
+    },
+    {
+      "model": "quadratic",
+      "fit_iterations": [
+        1,
+        50
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        2.477029273247765e-05,
+        -5.661025948841321e-05,
+        0.03607826530612245
+      ],
+      "fit_RMSE": 0.00813897375220206,
+      "fit_nonpositive_prediction_count": 0,
+      "constant_second_derivative": 4.95405854649553e-05,
+      "next15_iterations": [
+        51,
+        65
+      ],
+      "next15_RMSE": 0.032170747300947836,
+      "next15_actual_median": 0.125,
+      "next15_predicted_median": 0.11612213500784929
+    },
+    {
+      "model": "exponential",
+      "fit_iterations": [
+        1,
+        50
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        0.09241301511069762,
+        0.022757445550344285,
+        50.0
+      ],
+      "fit_RMSE": 0.008433076272113146,
+      "fit_nonpositive_prediction_count": 0,
+      "descriptive_doubling_iterations": 30.458039722716553,
+      "next15_iterations": [
+        51,
+        65
+      ],
+      "next15_RMSE": 0.0343798057395712,
+      "next15_actual_median": 0.125,
+      "next15_predicted_median": 0.11086656813027486
+    },
+    {
+      "model": "linear",
+      "fit_iterations": [
+        1,
+        70
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        0.0023010760213454636,
+        0.001540372670807443
+      ],
+      "fit_RMSE": 0.03463728065239337,
+      "fit_nonpositive_prediction_count": 0,
+      "next15_iterations": [
+        71,
+        85
+      ],
+      "next15_RMSE": 0.574613092573926,
+      "next15_actual_median": 0.43,
+      "next15_predicted_median": 0.18102430233575362
+    },
+    {
+      "model": "quadratic",
+      "fit_iterations": [
+        1,
+        70
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        5.860032316662132e-05,
+        -0.0018595469234846476,
+        0.051467848008768816
+      ],
+      "fit_RMSE": 0.027242455449608252,
+      "fit_nonpositive_prediction_count": 0,
+      "constant_second_derivative": 0.00011720064633324264,
+      "next15_iterations": [
+        71,
+        85
+      ],
+      "next15_RMSE": 0.51825155345232,
+      "next15_actual_median": 0.43,
+      "next15_predicted_median": 0.26294755412269044
+    },
+    {
+      "model": "exponential",
+      "fit_iterations": [
+        1,
+        70
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        0.21176932029531076,
+        0.03447959043752903,
+        70.0
+      ],
+      "fit_RMSE": 0.027403669986060846,
+      "fit_nonpositive_prediction_count": 0,
+      "descriptive_doubling_iterations": 20.103115256424125,
+      "next15_iterations": [
+        71,
+        85
+      ],
+      "next15_RMSE": 0.506018475710455,
+      "next15_actual_median": 0.43,
+      "next15_predicted_median": 0.2790341829733591
+    },
+    {
+      "model": "linear",
+      "fit_iterations": [
+        1,
+        85
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        0.0063335939026773515,
+        -0.10643865546218491
+      ],
+      "fit_RMSE": 0.21257045334886646,
+      "fit_nonpositive_prediction_count": 16
+    },
+    {
+      "model": "quadratic",
+      "fit_iterations": [
+        1,
+        85
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        0.00019835329809260186,
+        -0.010724789733286399,
+        0.14090790725928942
+      ],
+      "fit_RMSE": 0.18380475328240947,
+      "fit_nonpositive_prediction_count": 9,
+      "constant_second_derivative": 0.0003967065961852037
+    },
+    {
+      "model": "exponential",
+      "fit_iterations": [
+        1,
+        85
+      ],
+      "objective": "unweighted least squares on original norm scale",
+      "parameters": [
+        0.8168727236996359,
+        0.06376640871172806,
+        85.0
+      ],
+      "fit_RMSE": 0.17690924238229308,
+      "fit_nonpositive_prediction_count": 0,
+      "descriptive_doubling_iterations": 10.870099078238667
+    }
+  ],
+  "trend_conclusion": "The data support an increasing level and stronger late growth, but do not establish a fixed quadratic or exponential law. A quadratic on1-50 has quadratic coefficient2.477e-5; on1-85 it is1.9835e-4. Early fits underpredict late observations. The global exponential has slightly lower original-scale RMSE, but neither fit identifies a causal mechanism or justifies two-day trial training.",
+  "fit_limits": [
+    "These are rounded native aggregate observations; no exact temporal functional law is claimed.",
+    "Batches differ and observations are temporally dependent. No independent-error confidence interval or causal percentage is invented.",
+    "Original-scale least squares is influenced by the larger late observations; medians/min/max are separately retained.",
+    "The same offline finite data can constrain mechanisms without either fitting a universal function or constructing an exact gradient Gram matrix."
+  ],
+  "saved_late_component_budget": {
+    "scope": "Existing checkpoint80/iteration81 first global64 minibatch; FP64 statistics on native gradient shards; not native console mean of four minibatches.",
+    "norms": {
+      "dt_pg": 0.958306388077138,
+      "weighted_entropy": 0.0013804034135618632,
+      "weighted_kl": 0.0017162312614938439
+    },
+    "total_norm_reconstructed_with_cross_terms": 0.957644266763113,
+    "auxiliary_norm_triangle_upper_bound": 0.003096634675055707,
+    "auxiliary_bound_relative_to_PG": 0.0032313618207942558,
+    "conclusion": "Policy gradient dominates this measured minibatch; entropy/KL cannot explain its magnitude. No historical component time series exists to promote this to all85 iterations.",
+    "sources": {
+      "actor": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-fresh-official-padding-20261007-v1/verl/verl/workers/actor/dp_actor.py",
+        "sha256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+      },
+      "core": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-official-whitening-20261006-v1/verl/verl/trainer/ppo/core_algos.py",
+        "sha256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+      },
+      "diagnostic": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/observe_native_optimizer_minibatch.py",
+        "sha256": "6ed5cd292d8d34d9f701bdf859ec97c7100f9b5e9adc14ab798dbd597645a1c2"
+      },
+      "gradient_statistics": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/observe_native_actor_loss_gradients.py",
+        "sha256": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047"
+      }
+    }
+  },
+  "denominator_accounting": {
+    "exact_weight_identity_at_fixed_batch": "h_j=grad(microbatch token mean); legacy g=(1/16)sum(h_j); correct g=sum((N_j/N)*h_j).",
+    "consequence": "Uniformly shortening all N_j leaves both sets of relative microbatch weights unchanged. Shortening alone does not imply parameter-gradient amplification.",
+    "parameter_norm_identity": "||sum(w_j*h_j)||^2=sum_j(w_j^2*||h_j||^2)+2*sum_{j<k}(w_j*w_k*<h_j,h_k>).",
+    "scope_of_identity": "Algebra fixes weighting at given inputs/parameters; it does not supply unknown gradient directions, explain their temporal change, or demand exact Gram data as the only useful analysis.",
+    "paired_late_PG_norms": {
+      "legacy": 0.958306388077138,
+      "corrected": 0.16208885496535197,
+      "ratio": 5.912228748126977
+    },
+    "difference_norm_triangle_bounds": [
+      0.796217533111786,
+      1.12039524304249
+    ],
+    "same_point_cross_inner_product_available": false,
+    "saved_old_policy_logprob_coefficient_L2_ratios_by_global64": [
+      5.142992849587486,
+      1.9210334613441344,
+      2.5876698845713184,
+      2.4929320939897606
+    ],
+    "whole256_whitened_coefficient_second_moment": 0.9999925906479551,
+    "conclusion": "A substantial one-batch weighting defect is confirmed. Its temporal amplification and sufficiency for the accelerating anomaly have not been established. Do not divide native temporal growth by the paired late norm ratio."
+  },
+  "fixed_input_parameter_location": {
+    "scope": "Existing fixed late input/advantage at checkpoints5/40/80, each recomputed old-policy point. Counterevidence only, not historical on-policy batches.",
+    "observations": [
+      {
+        "checkpoint": 5,
+        "FP64_shard_gradient_norm": 1.6418735289529551,
+        "A_squared_norm_fraction": 9.25138996097377e-05,
+        "top_layers_squared_norm_fraction": [
+          [
+            "0",
+            0.1471889727117885
+          ],
+          [
+            "6",
+            0.0765827906739977
+          ],
+          [
+            "7",
+            0.06822124769880736
+          ],
+          [
+            "11",
+            0.06653565196443259
+          ],
+          [
+            "3",
+            0.06388584529835901
+          ]
+        ]
+      },
+      {
+        "checkpoint": 40,
+        "FP64_shard_gradient_norm": 2.0624879850184823,
+        "A_squared_norm_fraction": 0.010361997489954072,
+        "top_layers_squared_norm_fraction": [
+          [
+            "0",
+            0.11763156009928107
+          ],
+          [
+            "6",
+            0.0813261653808721
+          ],
+          [
+            "7",
+            0.07795118957206618
+          ],
+          [
+            "11",
+            0.06873240957891945
+          ],
+          [
+            "3",
+            0.06871754985956369
+          ]
+        ]
+      },
+      {
+        "checkpoint": 80,
+        "FP64_shard_gradient_norm": 2.218754733741191,
+        "A_squared_norm_fraction": 0.0065503210705147264,
+        "top_layers_squared_norm_fraction": [
+          [
+            "0",
+            0.37355377535091067
+          ],
+          [
+            "3",
+            0.182448282609931
+          ],
+          [
+            "2",
+            0.10881520423878556
+          ],
+          [
+            "1",
+            0.10202444870315999
+          ],
+          [
+            "4",
+            0.06452423016843281
+          ]
+        ]
+      }
+    ],
+    "interpretation": "In this observation LoRA B gradients dominate the squared norm; at checkpoint80 A accounts for only0.655%. Do not confuse growing parameter/Adam magnitudes with the current gradient norm."
+  },
+  "causal_claim_withdrawn": "B4 denominator bias plus trajectory shortening and increasing target density is already the root cause of temporal acceleration.",
+  "rootcause_resolved": false,
+  "accepted_repair": null,
+  "deployed_repair": null,
+  "candidate_withdrawn": {
+    "status": "stopped_pending_analytical_norm_accounting",
+    "pid": 2510247,
+    "birth": 1791907554.02,
+    "live_survivors": [],
+    "formal_GRPO_preserved": {
+      "pid": 3174448,
+      "birth": 1791793629.73,
+      "alive_after": true
+    }
+  },
+  "remaining_evidence_gap": "Native85 scalar norms plus nonzero-only raw credits do not specify historical complete256 whitened inputs or historical component gradients. Use existing raw records/code/checkpoint constraints before deciding what new targeted information is worth obtaining; no new long-run candidate is authorized by this analysis.",
+  "provenance": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\temporal-native-analysis-v1.json",
+      "SHA256": "baa1b9a6d3e54331beda29bccd442d2d8669c2d9c070fe25d46fcbb028d0ac6e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\replay-status-3.json",
+      "SHA256": "3f8eda5af20849d46c75c0a1d4fa9f3d686ef9247363639f7f94309f68016521"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\replay-status-5.json",
+      "SHA256": "a1773cc143bd4f1cfa5ee2971e828bf9d33e53da30cf945aad24d5df961ed9d4"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\fixed-history-analysis-v1.json",
+      "SHA256": "2fa16e54bf2750c01124b3c879228c2129c506db541b189768f232d3b5e157e8"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\account_saved_denominator_norm_v1.json",
+      "SHA256": "70613b3702f0df09d8204df62cdf454778577dcbaba145f5a5296da0981e409e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\stop_premature_temporal_candidate_v1.json",
+      "SHA256": "09dae56e9583b2e75acd45db8e1fe193e89563051be910cbf17f42120a09e79f"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\analyze_gradient_growth_accounting_v2.py",
+      "SHA256": "bde431af88956da8d3dde936a2a3070f502e88d4b82dbd34bb4db8ff9cc53db1"
+    }
+  ],
+  "artifacts": {
+    "plot": "F:\\DeltaTraceBackups\\plots\\gradient-rootcause-20261014\\native-gradient-growth-accounting-v2.png",
+    "CSV": "F:\\DeltaTraceBackups\\plots\\gradient-rootcause-20261014\\native-gradient-growth-85.csv"
+  }
+}
