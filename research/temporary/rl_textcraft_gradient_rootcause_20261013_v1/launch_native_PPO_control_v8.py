@@ -9,8 +9,12 @@ import json
 from pathlib import Path
 import shlex
 import subprocess
+import sys
+import re
 
 HERE=Path(__file__).resolve().parent
+version=sys.argv[1] if len(sys.argv)>1 else 'v8'
+assert re.fullmatch(r'v[0-9]+',version)
 spec=importlib.util.spec_from_file_location('strict_entry',HERE.parent/'rl_upstream_alignment_20260929/stage_environment_entry.py')
 entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
 commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True,cwd=HERE).strip()
@@ -20,10 +24,10 @@ script=rf'''source {shlex.quote(entry.ENTRY+'/metax-entry.env.sh')}
 import hashlib,json,os,psutil,re,subprocess,time
 from pathlib import Path
 root=Path({entry.ROOT!r});out=Path({out!r})
-prepared=out/'native-PPO-control-v8-prepared'
+prepared=out/{('native-PPO-control-'+version+'-prepared')!r}
 record=json.loads((prepared/'launch.json').read_bytes())
 source=json.loads((prepared/'source.json').read_bytes())
-run=Path(record['run']);job=out/'native-PPO-control-v8-job.json'
+run=Path(record['run']);job=out/{('native-PPO-control-'+version+'-job.json')!r}
 assert not run.exists() and not job.exists(),'No duplicate launch or overwrite'
 assert record['method']=='ppo' and record['options']['algorithm.adv_estimator']=='gae'
 for path,sha in record['source_bindings'].items():
@@ -59,10 +63,10 @@ print(json.dumps(identity))
 PY
 '''
 r=subprocess.run(entry.SSH+['bash','-s'],input=script.encode(),capture_output=True,timeout=90)
-(HERE/'launch-native-PPO-control-v8.stdout.txt').write_bytes(r.stdout)
-(HERE/'launch-native-PPO-control-v8.stderr.txt').write_bytes(r.stderr)
+(HERE/('launch-native-PPO-control-'+version+'.stdout.txt')).write_bytes(r.stdout)
+(HERE/('launch-native-PPO-control-'+version+'.stderr.txt')).write_bytes(r.stderr)
 if r.returncode:
  print(r.stderr.decode(errors='replace'));raise SystemExit(r.returncode)
 result=json.loads(r.stdout)
-(HERE/'native-PPO-control-v8-job.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+(HERE/('native-PPO-control-'+version+'-job.json')).write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
 print(json.dumps({k:result[k] for k in ['pid','birth','physical_gpus','run','status','launcher_commit']},ensure_ascii=False))

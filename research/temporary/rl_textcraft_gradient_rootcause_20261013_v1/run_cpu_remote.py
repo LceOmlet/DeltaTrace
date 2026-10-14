@@ -22,7 +22,7 @@ from pathlib import Path
 root=Path({entry.ROOT!r})
 env=dict(os.environ);env.update(json.loads((root/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/launch.json').read_bytes())['effective_environment']);env['CUDA_VISIBLE_DEVICES']=''
 env['ROOTCAUSE_METHOD']={sys.argv[2] if len(sys.argv)>2 else 'dt'!r}
-r=subprocess.run([env['VENV_PYTHON'],'-u',sys.argv[1]],env=env)
+r=subprocess.run([env['VENV_PYTHON'],'-u',sys.argv[1],*{sys.argv[3:]!r}],env=env)
 raise SystemExit(r.returncode)
 PY
 '''
