@@ -3,11 +3,13 @@
 This reads existing measurements. It is not a model, optimizer, Jacobian or
 residual-block implementation, and does not run any new derivative experiment.
 """
+import csv
 import hashlib
 import json
 import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from statistics import median
 
 HERE = Path(__file__).resolve().parent
 sources = {
@@ -126,6 +128,36 @@ report["conclusions"] = [
     "The late conditional full update decreases upper24-to31 transfer, despite increasing the final fixed-seed parameter VJP. Its lower-layer response is not the same as the historical upper-layer change.",
     "Do not patch an official MLP, normalization or mixer based on these records; the remaining issue is the connection between the historical update component and the measured internal propagation change.",
 ]
+curve_path = Path('F:/DeltaTraceBackups/plots/gradient-rootcause-20261014/native-gradient-growth-85.csv')
+curve = list(csv.DictReader(curve_path.read_text(encoding='utf-8-sig').splitlines()))
+assert [int(r['iteration']) for r in curve] == list(range(1, 86))
+blocks = []
+for first in range(1, 86, 10):
+    selected = curve[first-1:min(first+9, 85)]
+    last = int(selected[-1]['iteration'])
+    blocks.append(dict(first=first, last=last, center=(first+last)/2,
+                       native_grad_norm_median=median(float(r['native_grad_norm']) for r in selected)))
+changes = []
+for before, after in zip(blocks, blocks[1:]):
+    width = after['center'] - before['center']
+    old, new = before['native_grad_norm_median'], after['native_grad_norm_median']
+    changes.append(dict(before=[before['first'], before['last']], after=[after['first'], after['last']],
+                        center_distance=width, median_slope=(new-old)/width,
+                        descriptive_geometric_change_per_iteration=(new/old)**(1/width)-1))
+report['native_temporal_scale_check'] = dict(
+    source=str(curve_path), source_SHA256=hashlib.sha256(curve_path.read_bytes()).hexdigest(),
+    blocks=blocks, changes=changes,
+    conditional_fixed_seed_VJP_change_per_native_iteration={
+        arm: value['parameter_VJP_ratio']-1
+        for arm, value in data['conditional_update']['arms'].items()},
+    scope='Descriptive rate/scale comparison, not a fitted growth law or a prediction of the complete native gradient.',
+    limits=[
+        'Native console grad_norm is the original rounded pre-clip metric, averaged over four optimizer updates; the fixed-seed VJP is a different conditional observable.',
+        'The final81-to85 block has five observations; center distances, not identical ten-iteration widths, are used.',
+        'A comparable local percentage is an order-of-magnitude consistency check only. It does not identify a causal model, prove a quadratic/exponential law or justify extrapolating the late intervention.',
+        'No confidence interval or independent-sample assumption is assigned to dependent training iterations.',
+    ],
+)
 dest = HERE.parents[2] / "experiments/rl/results_textcraft_upper_propagation_20261015_v1.json"
 dest.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 print("receipt", dest)

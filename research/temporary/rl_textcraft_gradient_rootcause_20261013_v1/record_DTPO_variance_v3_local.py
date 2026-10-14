@@ -6,6 +6,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 RL = HERE.parents[2] / "experiments/rl"
+assert not (RL / "results_textcraft_DTPO_variance_v3_20261015.json").exists(), "Preserve the recorded initial state and later progress."
 
 
 def load(name):

@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-15T00:32:19.765392+08:00",
+  "recorded_at": "2026-10-15T00:48:23.353527+08:00",
   "scope": "Account upper residual gains from completed native VJP receipts, CPU only.\n\nThis reads existing measurements. It is not a model, optimizer, Jacobian or\nresidual-block implementation, and does not run any new derivative experiment.\n",
   "source_receipts": {
     "historical_5_80": {
@@ -541,5 +541,182 @@
     "Observed block31 RMS values remain away from zero. Neither this observation nor a norm identity proves the optimizer cause of the change.",
     "The late conditional full update decreases upper24-to31 transfer, despite increasing the final fixed-seed parameter VJP. Its lower-layer response is not the same as the historical upper-layer change.",
     "Do not patch an official MLP, normalization or mixer based on these records; the remaining issue is the connection between the historical update component and the measured internal propagation change."
-  ]
+  ],
+  "native_temporal_scale_check": {
+    "source": "F:\\DeltaTraceBackups\\plots\\gradient-rootcause-20261014\\native-gradient-growth-85.csv",
+    "source_SHA256": "b5da1d8be52cfea34ef87dfb0db16ef2a61fdc7a527e5656230fe6f06cc81ec2",
+    "blocks": [
+      {
+        "first": 1,
+        "last": 10,
+        "center": 5.5,
+        "native_grad_norm_median": 0.035
+      },
+      {
+        "first": 11,
+        "last": 20,
+        "center": 15.5,
+        "native_grad_norm_median": 0.041
+      },
+      {
+        "first": 21,
+        "last": 30,
+        "center": 25.5,
+        "native_grad_norm_median": 0.0495
+      },
+      {
+        "first": 31,
+        "last": 40,
+        "center": 35.5,
+        "native_grad_norm_median": 0.0685
+      },
+      {
+        "first": 41,
+        "last": 50,
+        "center": 45.5,
+        "native_grad_norm_median": 0.08549999999999999
+      },
+      {
+        "first": 51,
+        "last": 60,
+        "center": 55.5,
+        "native_grad_norm_median": 0.1045
+      },
+      {
+        "first": 61,
+        "last": 70,
+        "center": 65.5,
+        "native_grad_norm_median": 0.181
+      },
+      {
+        "first": 71,
+        "last": 80,
+        "center": 75.5,
+        "native_grad_norm_median": 0.33499999999999996
+      },
+      {
+        "first": 81,
+        "last": 85,
+        "center": 83.0,
+        "native_grad_norm_median": 0.502
+      }
+    ],
+    "changes": [
+      {
+        "before": [
+          1,
+          10
+        ],
+        "after": [
+          11,
+          20
+        ],
+        "center_distance": 10.0,
+        "median_slope": 0.0005999999999999998,
+        "descriptive_geometric_change_per_iteration": 0.015948237505667873
+      },
+      {
+        "before": [
+          11,
+          20
+        ],
+        "after": [
+          21,
+          30
+        ],
+        "center_distance": 10.0,
+        "median_slope": 0.0008500000000000001,
+        "descriptive_geometric_change_per_iteration": 0.019018654032068705
+      },
+      {
+        "before": [
+          21,
+          30
+        ],
+        "after": [
+          31,
+          40
+        ],
+        "center_distance": 10.0,
+        "median_slope": 0.0019000000000000002,
+        "descriptive_geometric_change_per_iteration": 0.03301954189194367
+      },
+      {
+        "before": [
+          31,
+          40
+        ],
+        "after": [
+          41,
+          50
+        ],
+        "center_distance": 10.0,
+        "median_slope": 0.0016999999999999988,
+        "descriptive_geometric_change_per_iteration": 0.02241580481722827
+      },
+      {
+        "before": [
+          41,
+          50
+        ],
+        "after": [
+          51,
+          60
+        ],
+        "center_distance": 10.0,
+        "median_slope": 0.0019000000000000002,
+        "descriptive_geometric_change_per_iteration": 0.020269766762328834
+      },
+      {
+        "before": [
+          51,
+          60
+        ],
+        "after": [
+          61,
+          70
+        ],
+        "center_distance": 10.0,
+        "median_slope": 0.00765,
+        "descriptive_geometric_change_per_iteration": 0.056467711647558705
+      },
+      {
+        "before": [
+          61,
+          70
+        ],
+        "after": [
+          71,
+          80
+        ],
+        "center_distance": 10.0,
+        "median_slope": 0.015399999999999997,
+        "descriptive_geometric_change_per_iteration": 0.0634978670441666
+      },
+      {
+        "before": [
+          71,
+          80
+        ],
+        "after": [
+          81,
+          85
+        ],
+        "center_distance": 7.5,
+        "median_slope": 0.02226666666666667,
+        "descriptive_geometric_change_per_iteration": 0.055409959215941385
+      }
+    ],
+    "conditional_fixed_seed_VJP_change_per_native_iteration": {
+      "full_original": 0.07228127969432863,
+      "without_constant_positive_component": -0.057596569203845926
+    },
+    "scope": "Descriptive rate/scale comparison, not a fitted growth law or a prediction of the complete native gradient.",
+    "limits": [
+      "Native console grad_norm is the original rounded pre-clip metric, averaged over four optimizer updates; the fixed-seed VJP is a different conditional observable.",
+      "The final81-to85 block has five observations; center distances, not identical ten-iteration widths, are used.",
+      "A comparable local percentage is an order-of-magnitude consistency check only. It does not identify a causal model, prove a quadratic/exponential law or justify extrapolating the late intervention.",
+      "No confidence interval or independent-sample assumption is assigned to dependent training iterations."
+    ]
+  }
 }
