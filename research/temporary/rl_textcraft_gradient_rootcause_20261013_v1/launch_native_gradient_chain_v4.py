@@ -11,7 +11,8 @@ spec=importlib.util.spec_from_file_location('strict_entry',HERE.parent/'rl_upstr
 entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
 out=entry.ROOT+'/receipts/textcraft-gradient-rootcause-20261013-v1'
 manifest=sys.argv[1] if len(sys.argv)>1 else None
-tag='native-gradient-chain-v4' if manifest is None else 'matched-task-target-derivatives-v11'
+tag='native-gradient-chain-v4' if manifest is None else (sys.argv[2] if len(sys.argv)>2 else 'matched-task-target-derivatives-v11')
+assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20')
 remote_sources=out if manifest is None else out+'/'+tag
 commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
 sources=[HERE/'observe_native_gradient_chain_v4.py',
@@ -25,6 +26,7 @@ from pathlib import Path
 root=Path({entry.ROOT!r});out=Path({out!r});dest=out/{tag!r};source_dir=Path({remote_sources!r})
 manifest={manifest!r}
 case_description=None if manifest is None else json.loads(Path(manifest).read_bytes())
+if case_description is not None:assert case_description['destination']==str(dest)
 dest.mkdir(exist_ok=True)
 assert not (dest/'job.json').exists() and not (dest/'result.json').exists(),'Do not duplicate the bounded localization'
 assert json.loads((out/'historical-target-derivatives-v1/result.json').read_bytes())['phase']=='complete_historical_target_derivatives_not_repair'
@@ -60,10 +62,13 @@ record={{'pid':p.pid,'birth':psutil.Process(p.pid).create_time(),'started_unix':
  'inherited_launch':str(launch_path),'inherited_launch_SHA256':hashlib.sha256(launch_path.read_bytes()).hexdigest(),
  'sources':{{name:hashlib.sha256((source_dir/name).read_bytes()).hexdigest() for name in ['observe_native_gradient_chain_v4.py','observe_native_optimizer_minibatch.py','observe_native_actor_loss_gradients.py']}}}}
 if case_description is not None:
+ common_coefficients=dest.name=='matched-action-observation-target-derivatives-v20'
  record.update(scope=case_description['scope'],question=case_description['question'],
   evidence=case_description['why_needed'],
-  discriminating_quantity='Native global64 target PG norms at the same checkpoint5 on the16 exact matched task states, early versus late saved inputs and original coefficients.',
-  decision='If late-input amplification disappears under exact task matching, the older mixed-task contrast cannot support a general history mechanism. If it remains, task composition alone cannot explain it. Neither result is a fresh-training repair acceptance.',
+  discriminating_quantity=('Native target PG norms at checkpoint5 for15 exact matched initial-state/action/observation factual pairs, with the same per-target loss coefficients; original global64/B4 interface,49 identical zero-derivative filler rows.' if common_coefficients else
+   'Native global64 target PG norms at the same checkpoint5 on the16 exact matched task states, early versus late saved inputs and original coefficients.'),
+  decision=('If amplification remains, differences between the two actual reasoning histories suffice for this finite comparison. If it disappears, the earlier68x result cannot be attributed to reasoning-history differences alone. Neither result explains why those histories were adopted or accepts a repair.' if common_coefficients else
+   'If late-input amplification disappears under exact task matching, the older mixed-task contrast cannot support a general history mechanism. If it remains, task composition alone cannot explain it. Neither result is a fresh-training repair acceptance.'),
   limitations=case_description['limits'],case_manifest=manifest,
   case_manifest_SHA256=hashlib.sha256(Path(manifest).read_bytes()).hexdigest(),
   copied_training_function_bodies=0,new_optimizer_scheduler_DT_generation_validation_GRPO_calls=0,
