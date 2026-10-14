@@ -61,7 +61,8 @@ for j in jobs:
   assert pathlib.Path(launch['options']['trainer.default_local_dir'])==pathlib.Path(j.get('checkpoint_dir') or j['checkpoints'])
   argv=launch['argv']; add(launch_path)
  for name in ('passive_credit_recording_runtime_override','initial_worker_state_verification'):
-  row=j.get(name,{})
+  row=j.get(name) or {}
+  if isinstance(row,str): row={'path':row}
   receipt={}
   if row.get('path'):
    add(row['path']); receipt=json.loads(pathlib.Path(row['path']).read_bytes())
