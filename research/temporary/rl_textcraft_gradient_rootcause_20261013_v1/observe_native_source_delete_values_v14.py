@@ -23,7 +23,8 @@ from observe_native_gradient_chain_v4 import digest
 
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 OUT=ROOT/'receipts/textcraft-gradient-rootcause-20261013-v1'
-DEST=OUT/'native-source-delete-values-v14'
+DEST=Path(os.environ.get('DT_SOURCE_DELETE_DESTINATION',str(OUT/'native-source-delete-values-v14')))
+assert DEST.parent==OUT
 RUN=ROOT/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1'
 ACTOR_SHA='3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c'
 state=dict(scope=__doc__,started_unix=time.time(),backward=0,optimizer=0,scheduler=0,
@@ -43,8 +44,6 @@ class EndpointWorker(ActorRolloutRefWorker):
     @register(dispatch_mode=Dispatch.ONE_TO_ALL)
     def read_sources(self):
         from deltatrace_rollout import DeltaTraceRolloutProducer
-        from native_target_logit_rows import NativeTargetLogitRows
-        from qwen35_answer_finite import PackedAnswerTargets,selected_target_log_probs
         from verl.utils.fsdp_utils import load_fsdp_model_to_gpu,offload_fsdp_model_to_cpu
         from verl.utils.torch_functional import pad_2d_list_to_length
         manifest=json.loads((DEST/'query-manifest.json').read_bytes())
@@ -58,8 +57,7 @@ class EndpointWorker(ActorRolloutRefWorker):
         before=digest(self.actor);training=self.actor_module_fsdp.training
         record=dict(rank=self.rank,pid=os.getpid(),birth=psutil.Process().create_time(),
             checkpoint=80,scheduler_before=80,trainable_SHA256_before=before,
-            owners={k:identity(v) for k,v in dict(actor=type(self.actor),producer=DeltaTraceRolloutProducer,
-                targets=PackedAnswerTargets,logit_rows=NativeTargetLogitRows,log_probs=selected_target_log_probs).items()},
+            owners={k:identity(v) for k,v in dict(actor=type(self.actor),producer=DeltaTraceRolloutProducer).items()},
             batches=[],native_paired_forward_calls=0,backward=0,optimizer=0,DT_calls=0)
         path=DEST/f'rank{self.rank}.json'
         def save(name,**values):
@@ -72,6 +70,12 @@ class EndpointWorker(ActorRolloutRefWorker):
             self.actor_module_fsdp.eval()
             producer=DeltaTraceRolloutProducer(self.actor_module_fsdp,
                 eos_token_id=self.tokenizer.eos_token_id,pad_token_id=self.tokenizer.pad_token_id)
+            # The original producer installs its declared DT model-interface
+            # paths. Import its reader after that owner initialization.
+            from native_target_logit_rows import NativeTargetLogitRows
+            from qwen35_answer_finite import PackedAnswerTargets,selected_target_log_probs
+            record['owners'].update({k:identity(v) for k,v in dict(targets=PackedAnswerTargets,
+                logit_rows=NativeTargetLogitRows,log_probs=selected_target_log_probs).items()})
             runner=producer.runner;text=runner.model.model.language_model
             attention=text.config._attn_implementation;text.set_attn_implementation('flash_attention_2')
             precision=nullcontext()
@@ -132,6 +136,7 @@ def main():
     env={k:v for k,v in launch['effective_environment'].items() if k not in ('CUDA_VISIBLE_DEVICES','RAY_ADDRESS','VERL_GLOBAL_TOKEN_MEAN')}
     env['PYTHONPATH']=str(DEST)+os.pathsep+str(OUT)+os.pathsep+env.get('PYTHONPATH','')
     env['DT_FSDP_EVENT_WAIT_RECEIPTS']=str(DEST/'original-eventwait')
+    env['DT_SOURCE_DELETE_DESTINATION']=str(DEST)
     checkpoint=OUT/'formal-checkpoint80-source/actor'
     phase('initializing_original_actor',checkpoint=str(checkpoint))
     ray.init(address='local',num_cpus=8,num_gpus=2,include_dashboard=False,
