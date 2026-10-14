@@ -2622,8 +2622,37 @@
     },
     "capture_count": 0,
     "adapter_commit": "922a5a74",
-    "CPU_verifier_commit": "e449dc60",
+    "CPU_verifier_commit": "a9e4eaa8",
     "additional_model_updates": 0,
-    "new_training_or_credit_changes": 0
+    "new_training_or_credit_changes": 0,
+    "CPU_verifier_client": {
+      "pid": 2854424,
+      "birth": 1791990815.54,
+      "stdout": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-update-input-v61/verifier.stdout.log",
+      "stderr": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-update-input-v61/verifier.stderr.log",
+      "driver_pid": 1419849,
+      "driver_birth": 1791977138.31,
+      "source_SHA256": "23e2ca3d52e9bf38492ec93d32f92f488c78ea422f607f23ee4e3f95bc0a42ee"
+    }
+  },
+  "native_displacement_geometry": {
+    "source": "feedback_accounting.native_four_step_net_displacement_norms/cosine; actual saved native before/after trainable shards, not an optimizer reconstruction",
+    "full_step_norm": 0.01067213741857379,
+    "ablated_step_norm": 0.009978960275746704,
+    "step_norm_ratio": 1.0694638643378322,
+    "step_direction_cosine": 0.9120930001392784,
+    "step_direction_angle_degrees": 24.20378978442043,
+    "native_preclip_mean_gradient_norm_ratio": 6.749415778098627,
+    "step_difference_norm": 0.0043822516054162685,
+    "difference_projection_on_ablated_unit_direction": -0.00024497843974108195,
+    "difference_orthogonal_norm": 0.004375398804364632,
+    "difference_orthogonal_squared_fraction": 0.9968749202048253,
+    "formula": "||a-b||^2=||a||^2+||b||^2-2||a||||b||cos; parallel projection=||a||cos-||b||; perpendicular^2=||a||^2(1-cos^2)",
+    "interpretation": "The native parameter displacement change is predominantly orthogonal to the ablated update, not a uniform rescaling. Opposite local fixed-seed gain responses therefore accompany a measured change in update geometry, while step lengths remain comparable.",
+    "limits": [
+      "This geometric identity does not identify a Hessian direction, a particular LoRA matrix or the complete historical optimizer trajectory.",
+      "Step length and direction both change; the experiment does not isolate their independent contributions.",
+      "The fixed-adjoint VJP responses remain conditional on original checkpoint80 and saved inputs/RNG."
+    ]
   }
 }
