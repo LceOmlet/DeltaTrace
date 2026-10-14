@@ -15,7 +15,7 @@ spec=importlib.util.spec_from_file_location('strict_entry',HERE.parent/'rl_upstr
 entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
 commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True,cwd=HERE).strip()
 out=entry.ROOT+'/receipts/textcraft-gradient-rootcause-20261013-v1'
-script=f'''source {shlex.quote(entry.ENTRY+'/metax-entry.env.sh')}
+script=rf'''source {shlex.quote(entry.ENTRY+'/metax-entry.env.sh')}
 "$VENV_PYTHON" - <<'PY'
 import hashlib,json,os,psutil,re,subprocess,time
 from pathlib import Path
