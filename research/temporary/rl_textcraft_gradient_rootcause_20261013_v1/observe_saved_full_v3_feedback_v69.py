@@ -104,5 +104,8 @@ def prepare_current_v3(group, arm, data):
 
 
 native.prepare_native_update = prepare_current_v3
+native.STATE['scope'] = __doc__
+native.STATE['question'] = native.SPEC['question']
+native.STATE['method_variant'] = 'original_saved_DTPO_vs_full_user_approved_v3'
 if __name__ == '__main__':
     native.main()

@@ -41,17 +41,24 @@ snapshot['DT_display_label']=('DTPO v3（组乘子，仅方差）' if current_DT
 job_path=OUT/'native-PPO-control-v9-job.json'
 job=json.loads(job_path.read_bytes());p=psutil.Process(job['pid'])
 assert p.create_time()==job['birth'] and p.status()!=psutil.STATUS_ZOMBIE
-run=Path(job['run']);previous=job['previous_job_identity']
-assert previous['run']==job['run'] and job['resumed_completed_iteration']==15
+run=Path(job['run'])
+chain=[];identity=job;maximum=None;seen=set()
+while True:
+    assert identity['run']==job['run'] and identity['pid'] not in seen
+    seen.add(identity['pid']);chain.append((identity,maximum))
+    previous=identity.get('previous_job_identity')
+    if previous is None:break
+    maximum=identity['resumed_completed_iteration'];identity=previous
 metrics_by_step={};records=[];errors=[];sessions=[]
-for identity,maximum in [(previous,15),(job,None)]:
+for identity,maximum in reversed(chain):
     found=list(Path('/tmp/ray').glob('session_*_'+str(identity['pid'])))
     assert len(found)==1
     session=found[0];sessions.append(str(session))
     lines,errs=owner['read_job_logs']({'ray_session':str(session)})
     values,_=owner['parse_logs'](lines)
-    if maximum is not None:values=[m for m in values if m['step']<=maximum]
-    else:assert all(m['step']>15 for m in values)
+    minimum=identity.get('resumed_completed_iteration',0)
+    if maximum is not None:values=[m for m in values if minimum<m['step']<=maximum]
+    else:assert all(m['step']>minimum for m in values)
     metrics_by_step.update({m['step']:m for m in values})
     records.extend(lines);errors.extend(errs)
 checkpoint=run/'textcraft-ppo/checkpoints/latest_checkpointed_iteration.txt'
@@ -61,7 +68,7 @@ snapshot['jobs'].append(dict(task='TextCraft PPO',environment_task='TextCraft',m
     checkpoint_step=int(checkpoint.read_text()) if checkpoint.exists() else None,
     metrics=[metrics_by_step[k] for k in sorted(metrics_by_step)],records=records,errors=errors,
     phases=[],ray_sessions=sessions,source_job=dict(path=str(job_path),SHA256=hashlib.sha256(job_path.read_bytes()).hexdigest()),
-    resume_scope='Same original run: old completed1-15 plus original native full-checkpoint15 resume.'))
+    resume_scope='Same original run and explicit native full-checkpoint resume chain; only completed retained intervals are combined.'))
 snapshot['source_label']=snapshot['DT_display_label']+'; original GRPO/PPO controls'
 snapshot['original_parser_source']=dict(path=str(parser_path),SHA256=hashlib.sha256(parser_path.read_bytes()).hexdigest())
 snapshot['collection_model_calls']=0
