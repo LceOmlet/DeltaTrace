@@ -90,11 +90,15 @@ class BoundaryReadout:
                             original_incoming_norm=float(per_position_sumsq(gradient).sum().sqrt()))
                 source=self.case.get('boundary_seed_source_case')
                 if source:
-                    path=DEST/f'seed-{source}-rank{self.rank}-micro{micro}.pt'
+                    seed_root=Path(self.case.get('boundary_seed_source_directory',str(DEST)))
+                    path=seed_root/f'seed-{source}-rank{self.rank}-micro{micro}.pt'
+                    expected_seed=self.case.get('boundary_seed_SHA256_by_rank_micro',{}).get(f'{self.rank}:{micro}')
+                    if expected_seed is not None:
+                        assert hashlib.sha256(path.read_bytes()).hexdigest()==expected_seed
                     saved=torch.load(path,map_location='cpu',weights_only=True)
                     assert list(saved.shape)==list(gradient.shape) and saved.dtype==gradient.dtype
                     replacement=saved.to(device=gradient.device)
-                    record.update(mode='fixed_saved_native_seed',source=str(path),
+                    record.update(mode='fixed_saved_native_seed',source=str(path),source_SHA256=expected_seed,
                                   applied_norm=float(per_position_sumsq(replacement).sum().sqrt()))
                     self.seed_records.append(record)
                     return replacement

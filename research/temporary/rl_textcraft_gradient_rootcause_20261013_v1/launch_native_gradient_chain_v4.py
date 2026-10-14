@@ -12,7 +12,7 @@ entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
 out=entry.ROOT+'/receipts/textcraft-gradient-rootcause-20261013-v1'
 manifest=sys.argv[1] if len(sys.argv)>1 else None
 tag='native-gradient-chain-v4' if manifest is None else (sys.argv[2] if len(sys.argv)>2 else 'matched-task-target-derivatives-v11')
-assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23','native-DT-group-gradient-components-v26','matched-target-score-readout-v27','matched-history-late-weights-v28','matched-last-decoder-branches-v30','native-fixed-seed-propagation-v33')
+assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23','native-DT-group-gradient-components-v26','matched-target-score-readout-v27','matched-history-late-weights-v28','matched-last-decoder-branches-v30','native-fixed-seed-propagation-v33','native-midpoint-fixed-seed-v35')
 remote_sources=out if manifest is None else out+'/'+tag
 commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
 sources=[HERE/'observe_native_gradient_chain_v4.py',
@@ -100,6 +100,10 @@ if case_description is not None:
   record.update(discriminating_quantity=case_description['discriminating_quantity'],
    decision='Use the same actual incoming adjoint to distinguish native internal geometry from changed output direction. No optimizer/credit/kernel modification or training acceptance follows from a norm reduction alone.',
    diagnostic_boundary_intervention=True,checkpoints=[80,5],native_PG_passes=2,diagnostic_fixed_seed_VJPs=1)
+ if dest.name=='native-midpoint-fixed-seed-v35':
+  record.update(discriminating_quantity=case_description['discriminating_quantity'],
+   decision='Locate the time course of the already measured fixed-seed internal VJP growth, using one existing intermediate checkpoint. Do not turn an endpoint ratio or midpoint into a functional-law/root-cause assertion.',
+   diagnostic_boundary_intervention=True,checkpoints=[40],native_PG_passes=0,diagnostic_fixed_seed_VJPs=1)
 (dest/'job.json').write_text(json.dumps(record,indent=2)+'\n')
 print(json.dumps(record))
 PY
