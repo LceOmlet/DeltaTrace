@@ -122,7 +122,6 @@ def draw(selected,limit,title,name):
         path=output/(name+'.'+extension);fig.savefig(path,dpi=165);files.append(path)
     plt.close(fig)
 
-draw([j for j in jobs if j['method']=='dt'],None,'TextCraft · 新 DTPO 的训练曲线','new-dtpo-training')
 draw(jobs,common,f'TextCraft · 三算法前 {common} 次完整训练迭代对比','algorithm-comparison-common-window')
 draw(jobs,None,'TextCraft · 当前各算法全部已完成迭代','algorithm-comparison-full')
 csv_path=output/'metrics-with-sources.csv'
@@ -134,6 +133,8 @@ with csv_path.open('w',newline='',encoding='utf-8-sig') as stream:
                 writer.writerow([styles[job['method']]['label'],m['step'],key,value,json.dumps(m['sources'],ensure_ascii=False)])
 files.append(csv_path)
 report=dict(output=str(output),files=[str(p) for p in files],completed_iterations=last,
-    common_window=common,original_snapshot=str(snapshot_path),new_training_changes=0,model_calls=0)
+    common_window=common,original_snapshot=str(snapshot_path),new_training_changes=0,model_calls=0,
+    primary_figure=str(output/'algorithm-comparison-common-window.png'),
+    full_history_figure=str(output/'algorithm-comparison-full.png'))
 (output/'plot-receipt.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False))
