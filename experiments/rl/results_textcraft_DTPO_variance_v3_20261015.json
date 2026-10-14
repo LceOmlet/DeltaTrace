@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-10-15T00:17:41.608716+08:00",
+  "recorded_at": "2026-10-15T00:56:58.378216+08:00",
   "version": "textcraft-dt-grpo-multiplier-variance-only-20261014-v3",
-  "status": "deployed_actual_initial_workers_verified_first_iteration_pending",
+  "status": "deployed_actual_first_native_input_and_completed_iteration_verified",
   "job": {
     "pid": 3140624,
     "birth": 1791993570.92,
@@ -113,7 +113,7 @@
       }
     }
   ],
-  "actual_import_scope": "Original actor/core/FSDP/checkpoint files read through original worker RPC; trainer source frozen and bound by launch/source manifest. First actual v3 PPO input not yet observed.",
+  "actual_import_scope": "Actual original actor/core/FSDP/checkpoint worker imports plus actual first native PPO input: pinned official GRPO multiplier and deployed DT variance-only boundary both checked. First iteration observed through original native parser.",
   "passive_records": [
     {
       "pid": 3151306,
@@ -158,7 +158,7 @@
       "optimizer": 0
     }
   ],
-  "passive_recording_output_status": "mounted_on_both_actual_workers_first_DT_output_pending",
+  "passive_recording_output_status": "original_passive_records_landed_on_both_actual_v3_workers",
   "verification": {
     "real_saved_batch_CPU": {
       "unix": 1791993397.709362,
@@ -204,26 +204,81 @@
     },
     "initial_state_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/runtime-overrides/initial-state-and-existing-passive-records-v3.json",
     "manifest_registration_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/manifest-registration-v3.json",
-    "scope": "Saved real-batch advantage boundary and actual initial native workers; no additional model/backward/optimizer calls. Not root-cause repair acceptance."
-  },
-  "observation": {
-    "unix": 1791994368.381742,
-    "completed_iterations": 0,
-    "total_iterations": 330,
-    "phase": "first native generation / environment interaction; original log Rounds15/30 in progress",
-    "driver_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/driver.stderr.log",
-    "driver_lines": 213,
-    "metrics": [],
-    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/DTPO-variance-v3-observation.json",
-    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Thu Oct 15 00:12:48 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 191W / 450W      | 48C          P9 | 47991/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 66%         Disabled |\n| 263W / 450W      | 51C          P9 | 49979/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 81%         Disabled |\n| 336W / 450W      | 57C          P9 | 39468/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 85%         Disabled |\n| 343W / 450W      | 58C          P9 | 39470/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 65%         Disabled |\n| 253W / 450W      | 51C          P9 | 50287/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 225W / 450W      | 48C          P9 | 48263/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 116W / 450W      | 47C          P9 | 54676/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 122W / 450W      | 47C          P9 | 54676/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  0                  3151306         ray::WorkerDict              47064          |\n|  1                  3153050         ray::WorkerDict              49052          |\n|  2                  2316732         ray::WorkerDict              38468          |\n|  3                  2318593         ray::WorkerDict              38470          |\n|  4                  3181257         ray::WorkerDict              49362          |\n|  5                  3183308         ray::WorkerDict              47338          |\n|  6                  2617231         VLLM::Worker_TP              53812          |\n|  7                  2617232         VLLM::Worker_TP              53812          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
-    "native_cache_warning": {
-      "path": "/tmp/ray/session_2026-10-14_23-59-52_775176_3140624/logs/worker-200f60cdb6cb8e1a8c0eba23181b02de322652b1fc893edb4f466d0c-01000000-3153050.err",
-      "lines": [
-        49,
-        54
+    "scope": "Saved real-batch advantage boundary and actual initial native workers; no additional model/backward/optimizer calls. Not root-cause repair acceptance.",
+    "actual_native_first_PPO_input": {
+      "unix": 1791995953.3430514,
+      "scope": "Check a saved actual native update input with the original GRPO component.\n\nCPU only. No model, DT, backward, optimizer, rollout or validation call.\nThis verifies deployment of the approved integration, not a long-term trend.\n",
+      "status": "checked_actual_native_PPO_input",
+      "completed_step_before_update": 0,
+      "rows": 256,
+      "zero_group_rows": 16,
+      "positive_reward_zero_group_rows": 16,
+      "zero_reward_nonzero_group_rows": 105,
+      "actual_advantage_norm": 874.4637544764968,
+      "raw_DT_masked_mean": 0.005294883623719215,
+      "raw_DT_masked_std": 0.1851021647453308,
+      "variance_scale": 5.402420997619629,
+      "actual_advantage_masked_mean": 0.02860518917441368,
+      "actual_advantage_masked_std": 0.9999997615814209,
+      "multiplier_max_abs_difference": 0.0,
+      "checks": {
+        "actual_multiplier_equals_native_GRPO": true,
+        "actual_advantages_equal_deployed_native_boundary": true,
+        "actual_variance_only_contract": true,
+        "actual_nonzero_signs_preserved": true,
+        "actual_finite_advantages": true,
+        "actual_zero_group_advantages_zero": true,
+        "actual_zero_group_credit_fields_zero": {
+          "dt_token_advantages": true,
+          "dt_q_estimates": true,
+          "dt_v_estimates": true
+        },
+        "actual_observation_padding_advantages_zero": true,
+        "readonly_native_GRPO_did_not_modify_raw_rewards": true,
+        "readonly_native_GRPO_did_not_modify_actual_advantages": true,
+        "actual_rewards_equal_native_scores": true
+      },
+      "native_GRPO_entry": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/ray_trainer.py:compute_advantage(GRPO)",
+      "no_shadow_GRPO": true,
+      "model_calls": 0,
+      "DT_calls": 0,
+      "optimizer_calls": 0,
+      "rootcause_repair_verified": false,
+      "limits": [
+        "Actual zero-group transport and variance-only boundary regression does not establish long-term gradient stability.",
+        "The already completed late-state update intervention remains conditional on old inputs, weights and optimizer history."
       ],
-      "detail": "Inductor fx graph cache could not read another rank temporary .tmp file; warning logged, original generation continued. No cache clearing/reinstall performed."
-    }
+      "integration_regression_passed": true
+    },
+    "actual_native_input_source_bindings": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/ray_trainer.py": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/entry/dt_training_batch.py": "a4e1f70b42082972324199b328975fb87ec6600ab9a572d5ca2b2040bebc54f7"
+    },
+    "actual_native_input_registration": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-update-input-variance-v3/actual-input-registration.json",
+    "first_completed_native_iteration_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/runtime-overrides/first-completed-native-iteration-v3.json",
+    "actual_input_worker_captures": [
+      {
+        "pid": 3151306,
+        "birth": 1791993626.33,
+        "rank": 0,
+        "completed_step_before_update": 0,
+        "status": "saved",
+        "original_update_restored": true,
+        "input": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-update-input-variance-v3/approved_DTPO_actual_update/checkpoint0-rank0-input.pkl",
+        "input_sha256": "d357103f1cbcc62acde39debe7ccb92381f819e03f1ae5b146e6e562a5151ef6"
+      },
+      {
+        "pid": 3153050,
+        "birth": 1791993643.98,
+        "rank": 1,
+        "completed_step_before_update": 0,
+        "status": "saved",
+        "original_update_restored": true,
+        "input": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-update-input-variance-v3/approved_DTPO_actual_update/checkpoint0-rank1-input.pkl",
+        "input_sha256": "9a8087d73189c7ca42981d79df4c4c25772eb232c3b6fa5af7c48b8bad847404"
+      }
+    ]
   },
   "previous_DTPO": {
     "pid": 1419849,
@@ -270,7 +325,28 @@
     "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/source.json",
     "job": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/job.json"
   },
-  "local_receipt_files": {
+  "initial_recorded_at": "2026-10-15T00:17:41.608716+08:00",
+  "initial_record_git_revision": "95242eed",
+  "initial_observation": {
+    "unix": 1791994368.381742,
+    "completed_iterations": 0,
+    "total_iterations": 330,
+    "phase": "first native generation / environment interaction; original log Rounds15/30 in progress",
+    "driver_log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/driver.stderr.log",
+    "driver_lines": 213,
+    "metrics": [],
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/DTPO-variance-v3-observation.json",
+    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Thu Oct 15 00:12:48 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 191W / 450W      | 48C          P9 | 47991/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 66%         Disabled |\n| 263W / 450W      | 51C          P9 | 49979/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 81%         Disabled |\n| 336W / 450W      | 57C          P9 | 39468/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 85%         Disabled |\n| 343W / 450W      | 58C          P9 | 39470/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 65%         Disabled |\n| 253W / 450W      | 51C          P9 | 50287/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 225W / 450W      | 48C          P9 | 48263/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 116W / 450W      | 47C          P9 | 54676/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 122W / 450W      | 47C          P9 | 54676/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  0                  3151306         ray::WorkerDict              47064          |\n|  1                  3153050         ray::WorkerDict              49052          |\n|  2                  2316732         ray::WorkerDict              38468          |\n|  3                  2318593         ray::WorkerDict              38470          |\n|  4                  3181257         ray::WorkerDict              49362          |\n|  5                  3183308         ray::WorkerDict              47338          |\n|  6                  2617231         VLLM::Worker_TP              53812          |\n|  7                  2617232         VLLM::Worker_TP              53812          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+    "native_cache_warning": {
+      "path": "/tmp/ray/session_2026-10-14_23-59-52_775176_3140624/logs/worker-200f60cdb6cb8e1a8c0eba23181b02de322652b1fc893edb4f466d0c-01000000-3153050.err",
+      "lines": [
+        49,
+        54
+      ],
+      "detail": "Inductor fx graph cache could not read another rank temporary .tmp file; warning logged, original generation continued. No cache clearing/reinstall performed."
+    }
+  },
+  "initial_local_receipt_digests": {
     "prepare_DTPO_variance_v3-dt.json": "dd40c0d69beb0946163a21d499363e10dd0f08aae5a49496bff5ea5c49cbe8fb",
     "verify_DTPO_variance_v3-dt.json": "6a43c69fb3e7d65917b27bee6952635412271dd88b4bb8c2cb75c3bbeb6b7785",
     "verify_DTPO_variance_v3_workers-dt.json": "f84f527d7d0ec628ad323d93240a839a340b5aaed0a20f56cdb3aaed354c3ffb",
@@ -278,5 +354,146 @@
     "read_DTPO_variance_v3_status-dt.json": "e45d96d1131777d1151642d0f8453e6c3614c3debb5eb45f68709558ef1b7aa4",
     "DTPO-variance-v3-previous-stop.json": "912d8f67884b787aa00bde941a8100973f86b08dc4553d502f36255aee5f1cf4",
     "DTPO-variance-v3-ray_trainer.py.diff": "f40baa6219b981809b4c411e7dcf864f6ba9b0f732ac97786f0c7afa37275853"
+  },
+  "initial_digest_scope": "Initial observation digests are historical; mutable observation wrapper was subsequently refreshed. Initial public record is preserved in Git95242eed.",
+  "passive_credit_file_counts": {
+    "rank0-pid3151306": 30,
+    "rank1-pid3153050": 30
+  },
+  "observation": {
+    "unix": 1791996589.6498501,
+    "completed_iterations": 1,
+    "total_iterations": 330,
+    "phase": "second native generation; original process titles from actual workers",
+    "metrics": [
+      {
+        "step": 1,
+        "values": {
+          "global_seqlen/min": 475351.0,
+          "global_seqlen/max": 492049.0,
+          "global_seqlen/minmax_diff": 16698.0,
+          "global_seqlen/balanced_min": 483700.0,
+          "global_seqlen/balanced_max": 483700.0,
+          "global_seqlen/mean": 483700.0,
+          "actor/entropy_loss": 0.674,
+          "actor/kl_loss": 0.0,
+          "actor/kl_coef": 0.001,
+          "actor/pg_loss": -0.118,
+          "actor/pg_clipfrac": 0.0,
+          "actor/ppo_kl": 0.0,
+          "actor/pg_clipfrac_lower": 0.0,
+          "actor/grad_norm": 0.021,
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 67.311,
+          "perf/max_memory_reserved_gb": 73.127,
+          "perf/cpu_memory_used_gb": 592.254,
+          "actor/lr": 0.0,
+          "training/global_step": 1.0,
+          "training/epoch": 0.0,
+          "critic/score/mean": 0.59,
+          "critic/score/max": 1.0,
+          "critic/score/min": 0.0,
+          "critic/rewards/mean": 0.59,
+          "critic/rewards/max": 1.0,
+          "critic/rewards/min": 0.0,
+          "critic/advantages/mean": 0.025,
+          "critic/advantages/max": 190.041,
+          "critic/advantages/min": -73.711,
+          "critic/returns/mean": -0.456,
+          "critic/returns/max": 2.475,
+          "critic/returns/min": -2.475,
+          "response_length/mean": 3463.906,
+          "response_length/max": 10240.0,
+          "response_length/min": 188.0,
+          "response_length/clip_ratio": 0.039,
+          "prompt_length/mean": 315.0,
+          "prompt_length/max": 315.0,
+          "prompt_length/min": 315.0,
+          "prompt_length/clip_ratio": 0.0,
+          "episode/reward/mean": 0.59,
+          "episode/reward/max": 1.0,
+          "episode/reward/min": 0.0,
+          "episode/length/mean": 16.785,
+          "episode/length/max": 30.0,
+          "episode/length/min": 2.0,
+          "episode/tool_call_count/mean": 16.785,
+          "timing_s/gen": 790.869,
+          "timing_s/reward": 0.0,
+          "timing_s/old_log_prob": 148.782,
+          "timing_s/ref": 112.831,
+          "timing_s/adv": 1021.185,
+          "timing_s/update_actor": 491.855,
+          "timing_s/dump_rollout_generations": 0.505,
+          "timing_s/step": 2566.036,
+          "timing_per_token_ms/update_actor": 0.508,
+          "timing_per_token_ms/gen": 0.892,
+          "timing_per_token_ms/adv": 1.056,
+          "timing_per_token_ms/ref": 0.117,
+          "perf/total_num_tokens": 967400.0,
+          "perf/time_per_step": 2566.036,
+          "perf/throughput": 188.501
+        },
+        "sources": [
+          {
+            "path": "/tmp/ray/session_2026-10-14_23-59-52_775176_3140624/logs/worker-cdb6a664efd5afb5f52e56e4432ddfe8b575e173980cb5e7bc394de3-01000000-3144997.out",
+            "line": 302
+          }
+        ]
+      }
+    ],
+    "original_ray_session": "/tmp/ray/session_2026-10-14_23-59-52_775176_3140624",
+    "immutable_local_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\native-observation-1791996589.json",
+    "immutable_local_snapshot_SHA256": "d44880f50386001c0ee9824e29e2d1af297e37e1da0b0553743e6938fa27eb51",
+    "physical_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Thu Oct 15 00:49:49 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 66%         Disabled |\n| 269W / 450W      | 52C          P9 | 50497/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 67%         Disabled |\n| 270W / 450W      | 51C          P9 | 50605/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 83%         Disabled |\n| 282W / 450W      | 50C          P9 | 39468/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 83%         Disabled |\n| 317W / 450W      | 51C          P9 | 39468/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 65%         Disabled |\n| 213W / 450W      | 59C          P9 | 50219/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 61%         Disabled |\n| 204W / 450W      | 56C          P9 | 49989/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 116W / 450W      | 47C          P9 | 54676/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 122W / 450W      | 47C          P9 | 54676/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  0                  3151306         ray::WorkerDict              49572          |\n|  1                  3153050         ray::WorkerDict              49680          |\n|  2                  2316732         ray::WorkerDict              38468          |\n|  3                  2318593         ray::WorkerDict              38468          |\n|  4                  3181257         ray::WorkerDict              49294          |\n|  5                  3183308         ray::WorkerDict              49064          |\n|  6                  2617231         VLLM::Worker_TP              53812          |\n|  7                  2617232         VLLM::Worker_TP              53812          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n"
+  },
+  "plot": {
+    "output": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100",
+    "files": [
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\source-snapshot.json",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\algorithm-comparison-common-window.png",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\algorithm-comparison-common-window.svg",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\algorithm-comparison-full.png",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\algorithm-comparison-full.svg",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\metrics-with-sources.csv"
+    ],
+    "completed_iterations": {
+      "dt": 1,
+      "grpo": 152,
+      "ppo": 19
+    },
+    "common_window": 1,
+    "original_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\source-snapshot.json",
+    "new_training_changes": 0,
+    "model_calls": 0,
+    "primary_figure": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\algorithm-comparison-common-window.png",
+    "full_history_figure": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-005100\\algorithm-comparison-full.png"
+  },
+  "rootcause_latest_evidence": {
+    "path": "experiments\\rl\\results_textcraft_upper_propagation_20261015_v1.json",
+    "SHA256": "20bf15bb8a3ed689f01f0cb621e0a7f4e5693f44a35074aeddabfa00669a045a",
+    "analysis_code_commit": "76f5afd0",
+    "historical40_to80_upper24_31_gain_ratio": 7.558235658053368,
+    "historical40_to80_last29_31_gain_ratio": 5.104956878850504,
+    "conditional_update_band_ratios": {
+      "full_original": {
+        "0-7": 1.0503272928767469,
+        "8-15": 1.0225568208523896,
+        "16-23": 1.0054884988561654,
+        "24-31": 0.9662323408405417
+      },
+      "without_constant_positive_component": {
+        "0-7": 0.8893187254664432,
+        "8-15": 0.980102187294471,
+        "16-23": 0.9952681151131412,
+        "24-31": 0.9867189846484877
+      }
+    },
+    "full_rootcause_repair_verified": false
+  },
+  "latest_runtime_verification_code": {
+    "one_shot_adapter_commit": "067b30fe",
+    "native_input_registration_commit": "1aa29a82",
+    "first_native_iteration_registration_commit": "76f5afd0",
+    "method_and_training_patch_unchanged": true
   }
 }
