@@ -71,4 +71,13 @@ new = '''            partition_bindings = ray.get([w.execute_with_func_generator
             bindings=group.set_case(iteration)'''
 assert code.count(old) == 1
 code = code.replace(old, new)
+old_views = """            views=({'native_target':data.batch['diagnostic_target_legacy']} if CASE_MANIFEST is None or
+                   'diagnostic_advantage_views' not in CASE_MANIFEST else
+                   {name:data.batch[key] for name,key in CASE_MANIFEST['diagnostic_advantage_views'].items()})"""
+new_views = """            diagnostic_views = self.case.get('diagnostic_advantage_views',
+                None if CASE_MANIFEST is None else CASE_MANIFEST.get('diagnostic_advantage_views'))
+            views = ({'native_target': data.batch['diagnostic_target_legacy']} if diagnostic_views is None else
+                     {name: data.batch[key] for name, key in diagnostic_views.items()})"""
+assert code.count(old_views) == 1
+code = code.replace(old_views, new_views)
 exec(compile(code, str(source), 'exec'), globals())

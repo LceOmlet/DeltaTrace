@@ -20,7 +20,10 @@ changes = {
     "(dest/'job.json').write_text": """if dest.name=='native-upper-adapter-partition-v81':
  record.update(discriminating_quantity=case_description['discriminating_quantity'],
   decision=case_description['decision'],counterfactual_scope=case_description['counterfactual_scope'],
-  checkpoints=[40,80],native_PG_passes=0,diagnostic_fixed_seed_VJPs=2,
+  checkpoints=[40,80],
+  diagnostic_revision=case_description.get('diagnostic_revision','target-only-v81'),
+  native_PG_passes=case_description.get('planned_native_full_policy_derivatives',0),
+  diagnostic_fixed_seed_VJPs=case_description.get('planned_native_fixed_seed_derivatives',2),
   diagnostic_parameter_partition_layers=list(range(24,32)),
   wrapper_source=str(source_dir/'observe_upper_adapter_partition_v81.py'),
   wrapper_SHA256=hashlib.sha256((source_dir/'observe_upper_adapter_partition_v81.py').read_bytes()).hexdigest(),
