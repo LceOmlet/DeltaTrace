@@ -12,7 +12,7 @@ entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
 out=entry.ROOT+'/receipts/textcraft-gradient-rootcause-20261013-v1'
 manifest=sys.argv[1] if len(sys.argv)>1 else None
 tag='native-gradient-chain-v4' if manifest is None else (sys.argv[2] if len(sys.argv)>2 else 'matched-task-target-derivatives-v11')
-assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23','native-DT-group-gradient-components-v26')
+assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23','native-DT-group-gradient-components-v26','matched-target-score-readout-v27')
 remote_sources=out if manifest is None else out+'/'+tag
 commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
 sources=[HERE/'observe_native_gradient_chain_v4.py',
@@ -84,6 +84,10 @@ if case_description is not None:
   record.update(discriminating_quantity='Native parameter-gradient norms and cross inner products for the original full DT advantage, its same-positive-reward-group component and complementary groups, on the unchanged saved first global64/checkpoint80.',
    decision='Measure whether the coefficient concentration in groups that original GRPO zeros is also a concentration of the actual DT parameter gradient. This is a gradient-component accounting test, not a credit-quality or new-training experiment.',
    checkpoint=case_description['checkpoint'],diagnostic_advantage_views=case_description['diagnostic_advantage_views'])
+ if case_description.get('score_readout_only',False):
+  record.update(discriminating_quantity='Actual original compute_log_prob target probabilities on the same15 factual pairs/checkpoint5/common loss coefficients. Native probabilities bound the logit-score norm; no parameter backward or update.',
+   decision='Determine whether output-score magnitude can explain the measured10.8628x final-hidden adjoint difference before attributing it to model propagation or DTPO adaptation. Probability bounds do not by themselves explain the85-iteration trend.',
+   score_readout_only=True,parameter_backward=0,checkpoint=case_description['checkpoint'])
 (dest/'job.json').write_text(json.dumps(record,indent=2)+'\n')
 print(json.dumps(record))
 PY

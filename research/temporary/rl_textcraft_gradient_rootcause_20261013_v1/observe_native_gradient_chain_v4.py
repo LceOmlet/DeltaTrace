@@ -238,13 +238,27 @@ def main():
             probabilities=group.compute_log_prob(batch)
             batch.batch['old_log_probs']=probabilities.batch['old_log_probs']
             batch.batch['ref_log_prob']=batch.batch['old_log_probs'].clone()
+            if CASE_MANIFEST is not None and CASE_MANIFEST.get('score_readout_only',False):
+                # Preserve the actual native owner output. No replacement
+                # model, softmax, backward or policy update is executed.
+                path=DEST/f'{iteration}-native-logp.pkl'
+                assert not path.exists()
+                batch.save_to_disk(str(path))
+                after_bindings=group.set_case(iteration)
+                assert bindings==after_bindings
+                state['observations'].append(dict(iteration=iteration,checkpoint=CHECKPOINT_STEP,
+                    native_probability_carrier=str(path),SHA256=hashlib.sha256(path.read_bytes()).hexdigest(),
+                    before_bindings=bindings,after_bindings=after_bindings,parameter_backward=0))
+                phase('native_target_probability_readout_complete',iteration=iteration)
+                continue
             phase('native_backward_with_passive_boundary_readout',iteration=iteration)
             group.observe_chain(batch)
             records=[json.loads((DEST/f'iteration{iteration}-rank{rank}-PG.json').read_bytes()) for rank in (0,1)]
             state['observations'].append({'iteration':iteration,'checkpoint':CHECKPOINT_STEP,
                 'gradient_statistics':records[0]['gradient_statistics']})
             phase('case_complete',iteration=iteration)
-        phase('complete_native_gradient_chain_localization_not_repair')
+        phase('complete_native_target_score_readout_not_repair' if CASE_MANIFEST is not None and
+              CASE_MANIFEST.get('score_readout_only',False) else 'complete_native_gradient_chain_localization_not_repair')
     except BaseException as exc:
         phase('failed',exception=repr(exc));raise
     finally:ray.shutdown()
