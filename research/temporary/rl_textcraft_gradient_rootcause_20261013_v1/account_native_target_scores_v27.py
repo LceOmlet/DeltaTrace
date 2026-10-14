@@ -10,6 +10,7 @@ import inspect
 import json
 import math
 from pathlib import Path
+import sys
 import time
 
 import torch
@@ -20,10 +21,11 @@ from verl.trainer.ppo import core_algos
 torch.set_num_threads(4)
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 OUT=ROOT/'receipts/textcraft-gradient-rootcause-20261013-v1'
-DEST=OUT/'matched-target-score-readout-v27'
+DEST=OUT/(sys.argv[1] if len(sys.argv)>1 else 'matched-target-score-readout-v27')
+assert DEST.parent==OUT
 manifest=json.loads((DEST/'case-manifest.json').read_bytes())
 state=json.loads((DEST/'result.json').read_bytes())
-assert state['phase']=='complete_native_target_score_readout_not_repair'
+assert state['phase'] in ('complete_native_target_score_readout_not_repair','complete_native_gradient_chain_localization_not_repair')
 assert all(state[k]==0 for k in ('optimizer_updates','scheduler_updates','DT_calls','rollout_calls','validation_calls','GRPO_calls'))
 launch=json.loads((ROOT/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/launch.json').read_bytes())
 cfg=OmegaConf.load(Path(launch['effective_environment']['VERL_ROOT'])/'verl/trainer/config/ppo_trainer.yaml')
@@ -31,7 +33,7 @@ for k,v in launch['options'].items():OmegaConf.update(cfg,k.lstrip('+'),v,force_
 actor=cfg.actor_rollout_ref.actor
 owner=Path(inspect.getsourcefile(core_algos))
 assert hashlib.sha256(owner.read_bytes()).hexdigest()=='fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299'
-report=dict(unix=time.time(),scope=__doc__,cases=[],native_core_owner=dict(path=str(owner),SHA256=hashlib.sha256(owner.read_bytes()).hexdigest()),
+report=dict(unix=time.time(),scope=__doc__,cases=[],script_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),native_core_owner=dict(path=str(owner),SHA256=hashlib.sha256(owner.read_bytes()).hexdigest()),
     bound_definition='For temperature-scaled vocabulary logits, z_i=c_i(one_hot(y_i)-p_i). With a normalized categorical distribution, |c_i|(1-p_i[y_i]) <= ||z_i||2 <= sqrt(2)|c_i|(1-p_i[y_i]). Squared bounds add over token positions. Native rounded probabilities are retained; vocabulary vectors are not reconstructed.',
     limit='These are output-force magnitude bounds, not parameter gradients or independent causal shares. No training outcome or full historical growth claim.',
     GPU_model_calls=0,parameter_backward=0,optimizer_updates=0,DT_calls=0,GRPO_calls=0,rootcause_resolved=False,accepted_repair=None,deployed_repair=None)

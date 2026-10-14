@@ -68,6 +68,7 @@ class BoundaryReadout:
         self.forward=actor._forward_micro_batch
         self.extended=bool(CASE_MANIFEST and CASE_MANIFEST.get('native_ratio_chain_readout',False))
         self.previous_gradient=None;self.gradient_increments=[];self.parameter_layout=[]
+        self.branch_forward=[];self.branch_backward=[];self.branch_owners=[]
     def forward_micro(self,*args,**kwargs):
         self.micro+=1
         return self.forward(*args,**kwargs)
@@ -142,6 +143,44 @@ class BoundaryReadout:
                 self.handles.append(module.register_forward_hook(
                     lambda module,args,output,name=name:self.hook(name,module,args,output)))
         assert len(found)==(34 if self.extended else 33),(len(found),found)
+        branch_layers=[] if CASE_MANIFEST is None else CASE_MANIFEST.get('decoder_branch_layers',[])
+        if branch_layers:
+            # Native module backward hooks expose branch grad_input. A hook
+            # on a shared residual-input Tensor would instead see the total
+            # accumulated adjoint and cannot identify that branch alone.
+            suffixes=[f'.layers.{layer}.{name}' for layer in branch_layers for name in
+                ('input_layernorm','self_attn','post_attention_layernorm','mlp','self_attn.q_norm','self_attn.k_norm')]
+            selected=[];latest={}
+            for name,module in self.actor.actor_module.named_modules():
+                if not any(name.endswith(suffix) for suffix in suffixes):continue
+                selected.append(name)
+                source=Path(inspect.getsourcefile(type(module)))
+                self.branch_owners.append(dict(name=name,type=type(module).__name__,source=str(source),
+                    SHA256=hashlib.sha256(source.read_bytes()).hexdigest()))
+                def forward(module,args,output,name=name):
+                    value=args[0] if args and isinstance(args[0],torch.Tensor) else None
+                    rms=None if value is None else (per_position_sumsq(value)/value.shape[-1]).sqrt()
+                    record=dict(name=name,micro=self.micro,input_shape=None if value is None else list(value.shape),
+                        input_RMS_quantiles_all=None if rms is None else torch.quantile(rms,torch.tensor([0.,.1,.5,.9,1.],dtype=torch.float64)).tolist())
+                    self.branch_forward.append(record);latest[name]=(self.micro,rms)
+                def backward(module,grad_input,grad_output,name=name):
+                    record=dict(name=name,micro=self.micro,native_module_grad_input=[],native_module_grad_output=[])
+                    for which,values in [('input',grad_input),('output',grad_output)]:
+                        for index,g in enumerate(values):
+                            if not isinstance(g,torch.Tensor):continue
+                            sq=per_position_sumsq(g)
+                            row=dict(index=index,shape=list(g.shape),dtype=str(g.dtype),norm=float(sq.sum().sqrt()),
+                                nonfinite_positions=int((~torch.isfinite(sq)).sum()),nonzero_positions=int((sq>0).sum()))
+                            if which=='input' and name in latest:
+                                micro,rms=latest[name]
+                                if rms is not None and micro==self.micro and rms.shape==sq.shape and bool((sq>0).any()):
+                                    row['forward_RMS_at_nonzero_branch_adjoint_quantiles']=torch.quantile(rms[sq>0],torch.tensor([0.,.1,.5,.9,1.],dtype=torch.float64)).tolist()
+                            record['native_module_grad_'+which].append(row)
+                    self.branch_backward.append(record)
+                    return None
+                self.handles.append(module.register_forward_hook(forward))
+                self.handles.append(module.register_full_backward_hook(backward))
+            assert len(selected)==len(suffixes),(selected,suffixes)
         stack.enter_context(observer._temporary_attribute(self.actor,'_forward_micro_batch',self.forward_micro))
         if self.extended:
             original_backward=torch.Tensor.backward
@@ -189,6 +228,9 @@ class ObservedWorker(ActorRolloutRefWorker):
                 'source':state['scope'],'boundaries':boundaries,'records':readout.records,
                 'passive_boundary_readout_enabled':enabled,
                 'native_accumulation_readout':readout.accumulation_report(),
+                'native_decoder_branch_forward':readout.branch_forward,
+                'native_decoder_branch_backward':readout.branch_backward,
+                'native_decoder_branch_owners':readout.branch_owners,
                 'trainable_SHA256_before':before,'trainable_SHA256_after':after,
                 'scheduler_before':scheduler,'scheduler_after':self.actor_lr_scheduler.last_epoch,
                 'optimizer_steps':0,'scheduler_steps':0,

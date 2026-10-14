@@ -12,7 +12,7 @@ entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
 out=entry.ROOT+'/receipts/textcraft-gradient-rootcause-20261013-v1'
 manifest=sys.argv[1] if len(sys.argv)>1 else None
 tag='native-gradient-chain-v4' if manifest is None else (sys.argv[2] if len(sys.argv)>2 else 'matched-task-target-derivatives-v11')
-assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23','native-DT-group-gradient-components-v26','matched-target-score-readout-v27','matched-history-late-weights-v28')
+assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23','native-DT-group-gradient-components-v26','matched-target-score-readout-v27','matched-history-late-weights-v28','matched-last-decoder-branches-v30')
 remote_sources=out if manifest is None else out+'/'+tag
 commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
 sources=[HERE/'observe_native_gradient_chain_v4.py',
@@ -92,6 +92,10 @@ if case_description is not None:
   record.update(discriminating_quantity='Original target probabilities, final-hidden adjoints and native parameter PG norms on the same15 matched factual pairs/common coefficients, now at original checkpoint80.',
    decision='Check whether the fixed-checkpoint5 amplification is mainly an old-policy confidence contrast or persists at the actual late weights. This is not a new-training or validation-score experiment.',
    save_native_probability_carrier=True,checkpoint=case_description['checkpoint'])
+ if case_description.get('decoder_branch_layers'):
+  record.update(discriminating_quantity='Native module grad_input/grad_output for the actual last decoder attention/MLP/norm branches, on unchangedv28 inputs/common coefficients/checkpoint80; actual total decoder adjoints remain separately recorded.',
+   decision='Separate the measured last-block amplification into original attention branch, MLP branch and residual addition/cancellation before considering an owner defect. Native module hooks return None; no backward body is copied.',
+   decoder_branch_layers=case_description['decoder_branch_layers'])
 (dest/'job.json').write_text(json.dumps(record,indent=2)+'\n')
 print(json.dumps(record))
 PY
