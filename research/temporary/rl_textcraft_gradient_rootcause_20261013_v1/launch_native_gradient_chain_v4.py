@@ -12,7 +12,7 @@ entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
 out=entry.ROOT+'/receipts/textcraft-gradient-rootcause-20261013-v1'
 manifest=sys.argv[1] if len(sys.argv)>1 else None
 tag='native-gradient-chain-v4' if manifest is None else (sys.argv[2] if len(sys.argv)>2 else 'matched-task-target-derivatives-v11')
-assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20')
+assert tag in ('native-gradient-chain-v4','matched-task-target-derivatives-v11','matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23')
 remote_sources=out if manifest is None else out+'/'+tag
 commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
 sources=[HERE/'observe_native_gradient_chain_v4.py',
@@ -62,7 +62,7 @@ record={{'pid':p.pid,'birth':psutil.Process(p.pid).create_time(),'started_unix':
  'inherited_launch':str(launch_path),'inherited_launch_SHA256':hashlib.sha256(launch_path.read_bytes()).hexdigest(),
  'sources':{{name:hashlib.sha256((source_dir/name).read_bytes()).hexdigest() for name in ['observe_native_gradient_chain_v4.py','observe_native_optimizer_minibatch.py','observe_native_actor_loss_gradients.py']}}}}
 if case_description is not None:
- common_coefficients=dest.name=='matched-action-observation-target-derivatives-v20'
+ common_coefficients=dest.name in ('matched-action-observation-target-derivatives-v20','matched-history-ratio-chain-v23')
  record.update(scope=case_description['scope'],question=case_description['question'],
   evidence=case_description['why_needed'],
   discriminating_quantity=('Native target PG norms at checkpoint5 for15 exact matched initial-state/action/observation factual pairs, with the same per-target loss coefficients; original global64/B4 interface,49 identical zero-derivative filler rows.' if common_coefficients else
@@ -72,9 +72,14 @@ if case_description is not None:
   limitations=case_description['limits'],case_manifest=manifest,
   case_manifest_SHA256=hashlib.sha256(Path(manifest).read_bytes()).hexdigest(),
   copied_training_function_bodies=0,new_optimizer_scheduler_DT_generation_validation_GRPO_calls=0,
-  passive_boundary_readout_enabled=False)
+  passive_boundary_readout_enabled=case_description.get('passive_boundary_readout_enabled',False))
  record.pop('competing_localizations',None)
  record.pop('falsifier',None)
+ if case_description.get('native_ratio_chain_readout',False):
+  record.update(
+   discriminating_quantity='Native LM-head output/input and decoder-boundary adjoint norms, preclip parameter norms by layer, and the Gram matrix of actual B4 accumulation increments for the unchanged15 matched pairs/common coefficients.',
+   decision='Account for the measured28.274x ratio along the actual backward chain, separating output-score magnitude, propagation and B4 directional accumulation. Do not investigate why histories shortened or infer a repair from one lower norm.',
+   native_ratio_chain_readout=True)
 (dest/'job.json').write_text(json.dumps(record,indent=2)+'\n')
 print(json.dumps(record))
 PY

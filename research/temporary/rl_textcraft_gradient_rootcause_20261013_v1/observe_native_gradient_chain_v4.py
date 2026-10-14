@@ -65,6 +65,8 @@ class BoundaryReadout:
     def __init__(self,actor):
         self.actor=actor;self.handles=[];self.records=[];self.micro=-1
         self.forward=actor._forward_micro_batch
+        self.extended=bool(CASE_MANIFEST and CASE_MANIFEST.get('native_ratio_chain_readout',False))
+        self.previous_gradient=None;self.gradient_increments=[];self.parameter_layout=[]
     def forward_micro(self,*args,**kwargs):
         self.micro+=1
         return self.forward(*args,**kwargs)
@@ -78,10 +80,12 @@ class BoundaryReadout:
         for which,t in [('output',output),('input',value)]:
             if t is None or not t.requires_grad:
                 continue
-            squared=per_position_sumsq(t)
-            rms=(squared/t.shape[-1]).sqrt()
-            entry[which+'_forward_RMS_median_all']=float(rms.median())
-            entry[which+'_forward_RMS_range_all']=[float(rms.min()),float(rms.max())]
+            rms=None
+            if not (name.endswith('.lm_head') and which=='output'):
+                squared=per_position_sumsq(t)
+                rms=(squared/t.shape[-1]).sqrt()
+                entry[which+'_forward_RMS_median_all']=float(rms.median())
+                entry[which+'_forward_RMS_range_all']=[float(rms.min()),float(rms.max())]
             def backward(gradient,which=which,rms=rms,entry=entry):
                 sq=per_position_sumsq(gradient)
                 active=sq>0
@@ -89,23 +93,62 @@ class BoundaryReadout:
                 entry[which+'_adjoint_norm']=float(sq.sum().sqrt())
                 entry[which+'_adjoint_nonfinite_positions']=int((~finite).sum())
                 entry[which+'_adjoint_nonzero_positions']=int(active.sum())
-                if active.any():
+                if rms is not None and active.any():
                     selected=rms[active]
                     entry[which+'_forward_RMS_at_nonzero_adjoint_quantiles']=torch.quantile(selected,torch.tensor([0.,.1,.5,.9,1.],dtype=torch.float64)).tolist()
                 # Returning None preserves the exact native gradient object.
                 return None
             self.handles.append(t.register_hook(backward))
+    def after_original_backward(self):
+        # Observe the existing native accumulation only after its backward
+        # returns. No gradient is assigned, scaled, clipped or replaced here.
+        values=[];layout=[];offset=0
+        for name,p in self.actor.actor_module.named_parameters():
+            if not p.requires_grad:continue
+            value=p.grad
+            local=(p.to_local() if hasattr(p,'to_local') else p) if value is None else (value.to_local() if hasattr(value,'to_local') else value)
+            copied=torch.zeros_like(local,device='cpu') if value is None else local.detach().to(device='cpu',copy=True)
+            flat=copied.flatten();values.append(flat)
+            layout.append(dict(name=name,start=offset,end=offset+flat.numel(),
+                placements=[str(v) for v in value.placements] if value is not None and hasattr(value,'placements') else None))
+            offset+=flat.numel()
+        current=torch.cat(values)
+        self.gradient_increments.append(current if self.previous_gradient is None else current-self.previous_gradient)
+        self.previous_gradient=current;self.parameter_layout=layout
+    def accumulation_report(self):
+        if not self.extended:return None
+        increments=torch.stack(self.gradient_increments)
+        gram=torch.zeros((len(increments),len(increments)),dtype=torch.float64)
+        for start in range(0,increments.shape[1],65536):
+            block=increments[:,start:start+65536].double()
+            gram+=block@block.T
+        parameters=[]
+        for p in self.parameter_layout:
+            value=self.previous_gradient[p['start']:p['end']].double()
+            parameters.append(dict(name=p['name'],placements=p['placements'],local_preclip_sumsq=float(value.square().sum())))
+        return dict(original_backward_calls=len(increments),local_increment_Gram=gram.tolist(),
+            local_final_preclip_sumsq=float(self.previous_gradient.double().square().sum()),
+            parameters=parameters,
+            scope='Differences of actual native accumulated FP32 gradient shards after each existing B4 backward, before clipping. Subtraction has FP32 rounding; this is not a replacement gradient reducer or independent-token variance estimate.')
     def install(self,stack):
         import observe_native_optimizer_minibatch as observer
         from transformers.models.qwen3_5.modeling_qwen3_5 import Qwen3_5DecoderLayer,Qwen3_5RMSNorm
         found=[]
         for name,module in self.actor.actor_module.named_modules():
-            if isinstance(module,Qwen3_5DecoderLayer) or (isinstance(module,Qwen3_5RMSNorm) and name.endswith('.model.norm')):
+            if (isinstance(module,Qwen3_5DecoderLayer) or (isinstance(module,Qwen3_5RMSNorm) and name.endswith('.model.norm'))
+                    or (self.extended and name.endswith('.lm_head'))):
                 found.append(name)
                 self.handles.append(module.register_forward_hook(
                     lambda module,args,output,name=name:self.hook(name,module,args,output)))
-        assert len(found)==33,(len(found),found)
+        assert len(found)==(34 if self.extended else 33),(len(found),found)
         stack.enter_context(observer._temporary_attribute(self.actor,'_forward_micro_batch',self.forward_micro))
+        if self.extended:
+            original_backward=torch.Tensor.backward
+            def observed_backward(tensor,*args,**kwargs):
+                result=original_backward(tensor,*args,**kwargs)
+                self.after_original_backward()
+                return result
+            stack.enter_context(observer._temporary_attribute(torch.Tensor,'backward',observed_backward))
         stack.callback(lambda:[h.remove() for h in self.handles])
         return found
 
@@ -129,7 +172,8 @@ class ObservedWorker(ActorRolloutRefWorker):
             return observer.observe_native_optimizer_minibatch(self.actor,data,output_path=path,rank=self.rank,
                 policy_advantages={'native_target':data.batch['diagnostic_target_legacy']})
         with ExitStack() as stack:
-            boundaries=readout.install(stack) if CASE_MANIFEST is None else []
+            enabled=CASE_MANIFEST is None or CASE_MANIFEST.get('passive_boundary_readout_enabled',False)
+            boundaries=readout.install(stack) if enabled else []
             stack.enter_context(observer._temporary_attribute(self.actor,'update_policy',observe))
             stack.enter_context(observer._temporary_attribute(self.actor_lr_scheduler,'step',lambda *a,**k:None))
             output=super().update_actor(data)
@@ -137,7 +181,8 @@ class ObservedWorker(ActorRolloutRefWorker):
         assert before==after and self.actor_lr_scheduler.last_epoch==scheduler
         report={'rank':self.rank,'iteration':self.case_iteration,'checkpoint':5,
                 'source':state['scope'],'boundaries':boundaries,'records':readout.records,
-                'passive_boundary_readout_enabled':CASE_MANIFEST is None,
+                'passive_boundary_readout_enabled':enabled,
+                'native_accumulation_readout':readout.accumulation_report(),
                 'trainable_SHA256_before':before,'trainable_SHA256_after':after,
                 'scheduler_before':scheduler,'scheduler_after':self.actor_lr_scheduler.last_epoch,
                 'optimizer_steps':0,'scheduler_steps':0,
