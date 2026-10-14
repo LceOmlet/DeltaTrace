@@ -32,7 +32,15 @@ suffix='-'+sys.argv[2] if len(sys.argv)>2 else ''
 (HERE/(local.stem+suffix+'.stderr.txt')).write_bytes(r.stderr)
 if r.returncode:
  print(r.stderr.decode(errors='replace'));raise SystemExit(r.returncode)
-data=json.loads(r.stdout)
+try:
+ data=json.loads(r.stdout)
+except json.JSONDecodeError:
+ # Native owners may print workload messages before their final JSON receipt.
+ # Preserve the full stdout above and decode only the final complete line.
+ lines=r.stdout.decode('utf-8').splitlines()
+ data=json.loads(lines[-1])
+ assert isinstance(data,dict) and 'receipt' in data and 'report' in data
+ data['owner_stdout_prefix']='\n'.join(lines[:-1])
 (HERE/(local.stem+suffix+'.json')).write_text(json.dumps(data,indent=2)+'\n',encoding='utf-8')
 print('receipt',data.get('receipt'))
 windows=data.get('report',{}).get('windows',{})

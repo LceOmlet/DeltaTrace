@@ -82,6 +82,10 @@ def probe(group,case_name):
     return dict(case=case_name,state_kind=case['state_kind'],actual_bindings=bindings,
                 fixed_seed_gradient_statistics=records[0]['gradient_statistics'])
 
+def prepare_native_update(group,arm,data):
+    """Optional diagnostic input preparation; original v47 uses the saved input."""
+    return data
+
 def main():
     assert SPEC['status']=='prepared_only_no_GPU_submission'
     assert not (DEST/'result.json').exists(), 'Do not repeat a live/completed diagnostic'
@@ -89,7 +93,7 @@ def main():
     config=OmegaConf.load(Path(os.environ['VERL_ROOT'])/'verl/trainer/config/ppo_trainer.yaml')
     for key,value in launch['options'].items():OmegaConf.update(config,key.lstrip('+'),value,force_add=True)
     config.actor_rollout_ref.actor.optim.total_training_steps=330
-    env=dict(launch['effective_environment'])
+    env=dict(SPEC.get('worker_effective_environment',launch['effective_environment']))
     for key in ('CUDA_VISIBLE_DEVICES','RAY_ADDRESS','RAY_TMPDIR','VERL_GLOBAL_TOKEN_MEAN'):env.pop(key,None)
     env['PYTHONPATH']=str(DEST/'source')+os.pathsep+str(DEST.parent)+os.pathsep+env['PYTHONPATH']
     env['DT_NATIVE_DIAGNOSTIC_MANIFEST']=str(SPEC_PATH)
@@ -114,6 +118,7 @@ def main():
             before_probe=probe(group,name+'_before')
             rng=rpc(group,restore_original_training_rng,receipts=SPEC['captured_training_RNG_by_rank'])
             update=DataProto.load_from_disk(path)
+            update=prepare_native_update(group,arm,update)
             phase('four_unchanged_native_optimizer_updates',arm=name)
             # Original fixed VERL owns losses, clipping, AdamW and scheduler.
             result=group.update_actor(update)
