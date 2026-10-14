@@ -258,6 +258,25 @@ class ObservedWorker(ActorRolloutRefWorker):
             return observer.observe_native_optimizer_minibatch(self.actor,data,output_path=path,rank=self.rank,
                 policy_advantages=views)
         with ExitStack() as stack:
+            if CASE_MANIFEST is not None and CASE_MANIFEST.get('native_optimizer_moment_readout',False):
+                original_capture=observer.capture_native_gradient
+                def capture_with_original_moment(parameter,groups):
+                    value,record,bucket=original_capture(parameter,groups)
+                    opt_state=self.actor.actor_optimizer.state.get(parameter,{})
+                    moment=opt_state.get('exp_avg')
+                    if value is not None and isinstance(moment,torch.Tensor):
+                        local=moment.to_local() if hasattr(moment,'to_local') else moment
+                        local=local.detach().to(device='cpu',copy=True)
+                        assert local.shape==value.shape
+                        record['original_optimizer_first_moment']=dict(
+                            local_sumsq=float(local.double().square().sum()),
+                            local_dot_preclip_gradient=float((local.double()*value.double()).sum()),
+                            state_step=float(opt_state['step'].item()) if isinstance(opt_state.get('step'),torch.Tensor) else opt_state.get('step'),
+                            scope='Unchanged native loaded optimizer exp_avg; no optimizer update formula evaluated.')
+                    else:
+                        record['original_optimizer_first_moment']=dict(available=False)
+                    return value,record,bucket
+                stack.enter_context(observer._temporary_attribute(observer,'capture_native_gradient',capture_with_original_moment))
             enabled=CASE_MANIFEST is None or CASE_MANIFEST.get('passive_boundary_readout_enabled',False)
             boundaries=readout.install(stack) if enabled else []
             stack.enter_context(observer._temporary_attribute(self.actor,'update_policy',observe))
