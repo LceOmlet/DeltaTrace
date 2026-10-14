@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('strict_entry', HERE.parent/'rl_upstream_alignment_20260929/stage_environment_entry.py')
 entry = importlib.util.module_from_spec(spec); spec.loader.exec_module(entry)
 commit = subprocess.check_output(['git','rev-parse','HEAD'], cwd=HERE, text=True).strip()
-script = f'''source {shlex.quote(entry.ENTRY+'/metax-entry.env.sh')}
+script = rf'''source {shlex.quote(entry.ENTRY+'/metax-entry.env.sh')}
 "$VENV_PYTHON" - <<'PY'
 import hashlib,json,os,psutil,re,subprocess,time
 from pathlib import Path
