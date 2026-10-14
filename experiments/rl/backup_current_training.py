@@ -48,8 +48,18 @@ for name in ('formal-training.json','active-training.json','active-source.json')
  add(root/name)
 for p in recorded: tree(p)
 for j in jobs:
- tree(pathlib.Path(j['source_receipt']).parent)
- tree(j['entry'])
+ source_path=pathlib.Path(j['source_receipt'])
+ source=json.loads(source_path.read_bytes())
+ tree(source_path.parent)
+ # New native jobs record the entry in source.json and argv in launch.json.
+ # Read those authoritative records, preserving the older manifest schema.
+ tree(j.get('entry') or source['entry'])
+ argv=j.get('argv')
+ if argv is None:
+  launch_path=source_path.parent/'launch.json'
+  launch=json.loads(launch_path.read_bytes())
+  assert pathlib.Path(launch['options']['trainer.default_local_dir'])==pathlib.Path(j.get('checkpoint_dir') or j['checkpoints'])
+  argv=launch['argv']; add(launch_path)
  for name in ('passive_credit_recording_runtime_override','initial_worker_state_verification'):
   row=j.get(name,{})
   receipt={}
@@ -57,7 +67,7 @@ for j in jobs:
    add(row['path']); receipt=json.loads(pathlib.Path(row['path']).read_bytes())
   for worker in [*row.get('workers',[]),*receipt.get('results',[]),*receipt.get('workers',[])]:
    if isinstance(worker,dict) and worker.get('active_method_source'): add(worker['active_method_source'])
- for arg in j['argv']:
+ for arg in argv:
   if arg.startswith(('data.train_files=','data.val_files=')):
    value=json.loads(arg.split('=',1)[1]); add(value)
  ck=pathlib.Path(j.get('checkpoint_dir') or j['checkpoints'])
