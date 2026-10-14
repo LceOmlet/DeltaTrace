@@ -694,10 +694,17 @@ RAY_ADV_INSERT_WHITEN_PREVIOUS = RAY_ADV_INSERT_RAW_PREVIOUS.replace(
     '        data.batch["advantages"] = torch.where(response_mask, advantages, 0.0)\n',
     1,
 )
-RAY_ADV_INSERT = RAY_ADV_INSERT_RAW_PREVIOUS.replace(
+RAY_ADV_INSERT_NO_WHITEN_PREVIOUS = RAY_ADV_INSERT_RAW_PREVIOUS.replace(
     '        data.batch["advantages"] = data.batch["dt_token_advantages"]\n',
     '        advantages = data.batch["dt_token_advantages"]\n'
     '        data.batch["advantages"] = torch.where(response_mask, advantages, 0.0)\n',
+    1,
+)
+RAY_ADV_INSERT = RAY_ADV_INSERT_NO_WHITEN_PREVIOUS.replace(
+    '        advantages = data.batch["dt_token_advantages"]\n',
+    '        advantages = data.batch["dt_token_advantages"]\n'
+    '        # v3: official masked variance, with no subtraction of the mean.\n'
+    '        advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)\n',
     1,
 )
 RAY_WHITEN_IMPORT = "import verl.utils.torch_functional as verl_F\n"
@@ -713,7 +720,8 @@ def patch_dt_advantage_preprocessing(trainer_text: str) -> str:
     if RAY_ADV_ENUM_STALE in trainer_text:
         trainer_text = trainer_text.replace(RAY_ADV_ENUM_STALE, RAY_ADV_ENUM_NEW, 1)
     for previous in (RAY_ADV_INSERT_PREVIOUS, RAY_ADV_INSERT_RAW_PREVIOUS,
-                     RAY_ADV_INSERT_WHITEN_PREVIOUS, RAY_ADV_INSERT_STALE):
+                     RAY_ADV_INSERT_WHITEN_PREVIOUS, RAY_ADV_INSERT_NO_WHITEN_PREVIOUS,
+                     RAY_ADV_INSERT_STALE):
         if previous in trainer_text:
             trainer_text = trainer_text.replace(previous, RAY_ADV_INSERT, 1)
     if RAY_ADV_ENUM_NEW not in trainer_text:

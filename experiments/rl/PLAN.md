@@ -1,4 +1,18 @@
-**2026-10-14 用户明确批准的新 TextCraft DTPO 方法，覆盖下方历史乘子与白化规定。**
+**2026-10-14 用户批准 DTPO v3：原官方归约、官方组乘子、仅标准化方差。**
+仍使用固定 VERL 的原 actor/core，`token-mean` 及 B4/双卡/global64 的
+`L=(1/16)*sum_j(S_j/N_j)` 保持，不部署自编的全局 token 分母候选。
+在下述官方 GRPO 组乘子与原 DT 组合之后，v3 对完整 rollout batch 的有效
+policy mask 调用原 `verl.utils.torch_functional.masked_var`，使用与原白化相同的
+`1e-8`，仅执行 `A / sqrt(masked_var(A, mask) + 1e-8)`，不减均值。
+原 `masked_whiten(shift_mean=False)` 会先减均值再加回原均值，不符合本次
+指定语义，因此复用官方方差统计与原生 Torch 缩放，不复制方差算法。
+零组乘子、观察与 padding 的优势仍为零，非零优势的符号不因该缩放改变；
+Q/V 原字段、原环境奖励、原 DT 数值/内存路径及 PPO/optimizer/scheduler 不变。
+版本标记 v3，从基础权重重新启动 DTPO，原 GRPO/PPO 对照保持，不恢复旧 DTPO。
+32k/LoRA8/16/B4/global64/330/save5/keep2 保持。本段覆盖下一段历史 no-whiten
+安排；方法更新与真实导入核验不能直接当作历史梯度加速增长已修复。
+
+**2026-10-14 历史 v1：官方 GRPO 组乘子且不做 DT 白化。**
 在原完整 rollout batch 上直接调用固定 VERL 的官方 GRPO 优势组件，使用原
 `uid`、`traj_uid`、奖励、mask 及原组内标准差设置，得到每条轨迹的组内优势乘子
 `g_Y`；不复制组均值、标准差、epsilon 或组处理算法。新的 source 系数为
