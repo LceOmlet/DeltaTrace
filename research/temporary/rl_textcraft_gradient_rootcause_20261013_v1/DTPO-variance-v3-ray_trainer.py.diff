@@ -1,0 +1,11 @@
+--- v1/ray_trainer.py
++++ v3/ray_trainer.py
+@@ -371,6 +371,8 @@
+                 raise RuntimeError(f"{name} contains non-finite values")
+             data.batch[name] = torch.where(response_mask, value, 0.0)
+         advantages = data.batch["dt_token_advantages"]
++        # v3: official masked variance, with no subtraction of the mean.
++        advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)
+         data.batch["advantages"] = torch.where(response_mask, advantages, 0.0)
+         data.batch["returns"] = data.batch["dt_q_estimates"]
+     else:
