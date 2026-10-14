@@ -40,7 +40,8 @@ for name in ('formal-training.json','active-training.json','active-source.json')
     report['manifests'][name]=[dict(keys=list(j),identity={k:v for k,v in j.items()
         if k in ('pid','birth','method','task','output','run','stdout','stderr','status')}) for j in value['jobs']]
 report['physical_mx_smi']=subprocess.check_output(['mx-smi'],text=True,timeout=30)
-for pid,birth in [(3174448,1791793629.73),(2671393,1791949551.27)]:
+ppo_job=json.loads((OUT/'native-PPO-control-v9-job.json').read_bytes())
+for pid,birth in [(3174448,1791793629.73),(ppo_job['pid'],ppo_job['birth'])]:
     assert psutil.Process(pid).create_time()==birth
 dest=OUT/'DT-group-multiplier-observation-v40.json'
 dest.write_text(json.dumps(report,indent=2)+'\n')

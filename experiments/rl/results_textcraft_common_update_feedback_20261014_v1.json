@@ -1,0 +1,2394 @@
+{
+  "observed_at": "2026-10-14T22:16:16.001452+08:00",
+  "status": "conditional_native_update_gain_comparison_complete_PPO_restored",
+  "diagnostic_job": {
+    "pid": 2209311,
+    "birth": 1791984676.94,
+    "started_unix": 1791984677.0326056,
+    "physical_gpus": [
+      2,
+      3
+    ],
+    "diagnostic_commit": "49ed4686d86638c017796ce160ffd6751d2bd556",
+    "status": "submitted_native_diagnostic_initialization_pending",
+    "manifest": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/case-manifest.json",
+    "manifest_SHA256": "73fcce6465eca1a5b07138f2d9854ad317724a57ac84f20460b8e7f98061ebda",
+    "source_SHA256": {
+      "observe_common_update_feedback_v47.py": "61e1f086af31c5299a77613fb6a0202b53d3c87c7d5f9fa9147f27c0af27d1d2",
+      "observe_native_gradient_chain_v4.py": "3cbefaf36f2a33712094cd017f0cdf026d1a94fee44d2d1c973eb74ef3251117",
+      "observe_native_optimizer_minibatch.py": "6ed5cd292d8d34d9f701bdf859ec97c7100f9b5e9adc14ab798dbd597645a1c2",
+      "observe_native_actor_loss_gradients.py": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047"
+    },
+    "source_bindings": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01"
+    },
+    "native_optimizer_steps_planned": 8,
+    "native_optimizer_steps_executed": "read result.json",
+    "formal_training_changed": false,
+    "old_formal_DTPO_resumed": false,
+    "GRPO_reruns": 0,
+    "protected_formal_jobs": [
+      {
+        "pid": 1419849,
+        "birth": 1791977138.31
+      },
+      {
+        "pid": 3174448,
+        "birth": 1791793629.73
+      }
+    ],
+    "accepted_repair": null,
+    "deployed_repair": null,
+    "scope": "Prepare a conditional native-update intervention, not a training-quality test.\n\nReuse original iteration81's complete256 rows and checkpoint80. The only\ndiagnostic intervention removes the already measured constant-positive-group\nPG component; all other frozen advantages and original entropy/KL stay intact.\n",
+    "question": "Conditional on original checkpoint80, original captured iteration81 inputs/RNG/state and unchanged PPO, does the measured constant-positive-group component increase internal fixed-seed gain after the four actual native updates?",
+    "limits": [
+      "This conditional old-state intervention cannot prove that the same component caused every step of the85-iteration trajectory, or prove the new method is repaired from scratch.",
+      "Whole-batch original whitening stays frozen in both diagnostic arms; no advantage recomputation or new baseline is introduced.",
+      "The removal is only the component already measured in v26: native GRPO-zero AND positive raw reward rows. It does not remove zero-reward whitening coefficients or change entropy/KL.",
+      "After native updates, the probe alone uses a fixed saved adjoint. It is not a training advantage or a full-policy gradient above block31.",
+      "No formal old run is resumed, no diagnostic checkpoint is treated as formal, no sampling/validation/GRPO rerun occurs.",
+      "GPU resources are not selected or occupied during preparation. Current formal DTPO/GRPO/PPO are not touched."
+    ]
+  },
+  "actual_native_arms": [
+    {
+      "arm": "full_original",
+      "before": [
+        {
+          "rank": 0,
+          "pid": 2213359,
+          "birth": 1791984705.42,
+          "label": "full_original-before",
+          "scheduler": 80,
+          "optimizer_steps": [
+            320.0
+          ],
+          "trainable_SHA256": "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/full_original-before-rank0-lora-shards.pt",
+          "snapshot_SHA256": "fa2d3c2e57f526db8ee5b2a6d63d2571d276e538c58022096af1f92083682648",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        },
+        {
+          "rank": 1,
+          "pid": 2215259,
+          "birth": 1791984724.03,
+          "label": "full_original-before",
+          "scheduler": 80,
+          "optimizer_steps": [
+            320.0
+          ],
+          "trainable_SHA256": "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/full_original-before-rank1-lora-shards.pt",
+          "snapshot_SHA256": "68b9a1f4a53a4550e46a5b5ea6f07815dc3bc950e5f4526332d4ddf3e000024e",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        }
+      ],
+      "after": [
+        {
+          "rank": 0,
+          "pid": 2213359,
+          "birth": 1791984705.42,
+          "label": "full_original-after",
+          "scheduler": 81,
+          "optimizer_steps": [
+            324.0
+          ],
+          "trainable_SHA256": "eee228ec2a5e78ff5e7d5d28d13b05f23500826e42c2aff5a71e27abe76a0ffb",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/full_original-after-rank0-lora-shards.pt",
+          "snapshot_SHA256": "f081223418f635d2471620b5bdf2518cd4dfd8d394fecf6868bfd9a637ae3c0e",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        },
+        {
+          "rank": 1,
+          "pid": 2215259,
+          "birth": 1791984724.03,
+          "label": "full_original-after",
+          "scheduler": 81,
+          "optimizer_steps": [
+            324.0
+          ],
+          "trainable_SHA256": "3fd17f2f18f7583deab412e9ef490a53d0d21a8538875a24fe4b3cea1353181f",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/full_original-after-rank1-lora-shards.pt",
+          "snapshot_SHA256": "a8e04121f4ebb2d0773a65d0152e9c0c1b016827740253968c74bdca5b848a98",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        }
+      ],
+      "before_probe": {
+        "case": "full_original_before",
+        "state_kind": "original_completed_checkpoint80",
+        "actual_bindings": [
+          {
+            "rank": 0,
+            "pid": 2213359,
+            "birth": 1791984705.42,
+            "scheduler": 80,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          },
+          {
+            "rank": 1,
+            "pid": 2215259,
+            "birth": 1791984724.03,
+            "scheduler": 80,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          }
+        ],
+        "fixed_seed_gradient_statistics": {
+          "measurement_dtype": "torch.float64",
+          "ownership_buckets": [
+            [
+              "sharded",
+              "cuda",
+              [
+                0,
+                1
+              ]
+            ]
+          ],
+          "norm_scope": "Pre-clip complete local32 minibatch gradients from native backward; sharded DTensor scalar statistics SUM on its original mesh; replicated/plain contributions remain local.",
+          "inner_products": {
+            "native_target:native_target": 1.2290002335118775
+          },
+          "norms": {
+            "native_target": 1.1086028294713475
+          }
+        }
+      },
+      "after_probe": {
+        "case": "full_original_after",
+        "state_kind": "diagnostic_after_four_native_optimizer_steps_not_a_saved_checkpoint",
+        "actual_bindings": [
+          {
+            "rank": 0,
+            "pid": 2213359,
+            "birth": 1791984705.42,
+            "scheduler": 81,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          },
+          {
+            "rank": 1,
+            "pid": 2215259,
+            "birth": 1791984724.03,
+            "scheduler": 81,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          }
+        ],
+        "fixed_seed_gradient_statistics": {
+          "measurement_dtype": "torch.float64",
+          "ownership_buckets": [
+            [
+              "sharded",
+              "cuda",
+              [
+                0,
+                1
+              ]
+            ]
+          ],
+          "norm_scope": "Pre-clip complete local32 minibatch gradients from native backward; sharded DTensor scalar statistics SUM on its original mesh; replicated/plain contributions remain local.",
+          "inner_products": {
+            "native_target:native_target": 1.4130886669691476
+          },
+          "norms": {
+            "native_target": 1.1887340606582901
+          }
+        }
+      },
+      "original_RNG_restore": [
+        {
+          "rank": 0,
+          "original_captured_training_rng_restored": true,
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/dt/checkpoint80-rank0-rng.pt"
+        },
+        {
+          "rank": 1,
+          "original_captured_training_rng_restored": true,
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/dt/checkpoint80-rank1-rng.pt"
+        }
+      ],
+      "original_native_update_metrics": {
+        "actor/kl_loss": 0.3795150816440582,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": [
+          0.48333418369293213,
+          -0.16338331997394562,
+          -0.41235432028770447,
+          0.24927088618278503,
+          -0.6748613715171814,
+          -0.8566251397132874,
+          -1.424768328666687,
+          -1.2895009517669678,
+          -1.3268319368362427,
+          -1.4129109382629395,
+          -1.3552123308181763,
+          -1.3120932579040527,
+          -0.6749575734138489,
+          -1.446845531463623,
+          -0.1597306877374649,
+          -1.148600459098816,
+          -1.090557336807251,
+          -1.3215519189834595,
+          -1.0245083570480347,
+          -0.4800677001476288,
+          -0.09114021062850952,
+          0.3817717134952545,
+          -0.603315532207489,
+          -1.2353605031967163,
+          -1.2639281749725342,
+          -0.6764123439788818,
+          -1.3914450407028198,
+          -1.0694715976715088,
+          -1.0644458532333374,
+          -0.22913581132888794,
+          0.2433205097913742,
+          -1.4187207221984863
+        ],
+        "actor/pg_clipfrac": [
+          0.00022458031889982522,
+          0.0015519916778430343,
+          0.0010928962146863341,
+          0.0006452653906308115,
+          0.002836074912920594,
+          0.0031347961630672216,
+          0.0,
+          0.005235602147877216,
+          0.006896551698446274,
+          0.006756756920367479,
+          0.011608623899519444,
+          0.0,
+          0.004273504484444857,
+          0.0,
+          0.002051281975582242,
+          0.016771487891674042,
+          0.0,
+          0.005347593687474728,
+          0.009101251140236855,
+          0.0031088083051145077,
+          0.001636661239899695,
+          0.0005991013604216278,
+          0.003022162476554513,
+          0.0,
+          0.0029282576870173216,
+          0.0018668326083570719,
+          0.007092198356986046,
+          0.008645533584058285,
+          0.0,
+          0.002877106424421072,
+          0.0017156862886622548,
+          0.0
+        ],
+        "actor/ppo_kl": [
+          -0.0001988979784073308,
+          0.0034206565469503403,
+          0.00022608086874242872,
+          -0.00018205698870588094,
+          -4.691612411988899e-05,
+          0.0043027363717556,
+          -0.0002443706907797605,
+          -5.7235476560890675e-05,
+          -0.0013016157317906618,
+          0.0021277039777487516,
+          0.0009559466270729899,
+          0.00021484862372744828,
+          -2.9355478545767255e-05,
+          0.0014128967886790633,
+          -0.0005034375935792923,
+          -0.00020191149087622762,
+          0.0006761010154150426,
+          0.00738171674311161,
+          0.0020866880659013987,
+          0.0027400122489780188,
+          0.001627580844797194,
+          -0.00018734863260760903,
+          -4.8224359488813207e-05,
+          0.0016303772572427988,
+          0.004770961590111256,
+          -0.0004548265424091369,
+          0.0006658872007392347,
+          0.0008118105470202863,
+          0.011425684206187725,
+          0.0006302321562543511,
+          0.0004273040103726089,
+          0.004624051507562399
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0005128204938955605,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.7259482145309448,
+          1.7997075319290161,
+          2.028611898422241,
+          1.2662291526794434
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 16.241157054901123,
+        "perf/max_memory_reserved_gb": 24.095703125,
+        "perf/cpu_memory_used_gb": 442.3171501159668,
+        "actor/lr": 1e-06
+      }
+    },
+    {
+      "arm": "without_constant_positive_component",
+      "before": [
+        {
+          "rank": 0,
+          "pid": 2213359,
+          "birth": 1791984705.42,
+          "label": "without_constant_positive_component-before",
+          "scheduler": 80,
+          "optimizer_steps": [
+            320.0
+          ],
+          "trainable_SHA256": "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/without_constant_positive_component-before-rank0-lora-shards.pt",
+          "snapshot_SHA256": "237a2dbb8a3c08065e46341f0f1a7c2a29be17810ccde36aadc16b5e71c86c34",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        },
+        {
+          "rank": 1,
+          "pid": 2215259,
+          "birth": 1791984724.03,
+          "label": "without_constant_positive_component-before",
+          "scheduler": 80,
+          "optimizer_steps": [
+            320.0
+          ],
+          "trainable_SHA256": "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/without_constant_positive_component-before-rank1-lora-shards.pt",
+          "snapshot_SHA256": "3034639a2e9ee45674d7798b810033698df2059c2daad167f1d8461379b1b872",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        }
+      ],
+      "after": [
+        {
+          "rank": 0,
+          "pid": 2213359,
+          "birth": 1791984705.42,
+          "label": "without_constant_positive_component-after",
+          "scheduler": 81,
+          "optimizer_steps": [
+            324.0
+          ],
+          "trainable_SHA256": "9a04bf2474aeabd7efedd9e4452cd08de06811d160af14b4ff5f433d2ba1e612",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/without_constant_positive_component-after-rank0-lora-shards.pt",
+          "snapshot_SHA256": "0a592c9345d5a72ec3bdaafe839373785811ec0e5a065e7d36fc17a5613c69a1",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        },
+        {
+          "rank": 1,
+          "pid": 2215259,
+          "birth": 1791984724.03,
+          "label": "without_constant_positive_component-after",
+          "scheduler": 81,
+          "optimizer_steps": [
+            324.0
+          ],
+          "trainable_SHA256": "cf8210c021cf7153a4488ebe26500e1c715c9e9e9655c2405225b98b10162925",
+          "trainable_snapshot": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/without_constant_positive_component-after-rank1-lora-shards.pt",
+          "snapshot_SHA256": "53a24b95619a610925694afa8393359bba39c0e2b5688ff09e6f9dc909c6d080",
+          "native_worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+          "native_worker_SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "diagnostic_parameter_artifact_not_formal_checkpoint": true
+        }
+      ],
+      "before_probe": {
+        "case": "without_constant_positive_component_before",
+        "state_kind": "original_completed_checkpoint80",
+        "actual_bindings": [
+          {
+            "rank": 0,
+            "pid": 2213359,
+            "birth": 1791984705.42,
+            "scheduler": 80,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          },
+          {
+            "rank": 1,
+            "pid": 2215259,
+            "birth": 1791984724.03,
+            "scheduler": 80,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          }
+        ],
+        "fixed_seed_gradient_statistics": {
+          "measurement_dtype": "torch.float64",
+          "ownership_buckets": [
+            [
+              "sharded",
+              "cuda",
+              [
+                0,
+                1
+              ]
+            ]
+          ],
+          "norm_scope": "Pre-clip complete local32 minibatch gradients from native backward; sharded DTensor scalar statistics SUM on its original mesh; replicated/plain contributions remain local.",
+          "inner_products": {
+            "native_target:native_target": 1.2400370004795
+          },
+          "norms": {
+            "native_target": 1.1135694861478111
+          }
+        }
+      },
+      "after_probe": {
+        "case": "without_constant_positive_component_after",
+        "state_kind": "diagnostic_after_four_native_optimizer_steps_not_a_saved_checkpoint",
+        "actual_bindings": [
+          {
+            "rank": 0,
+            "pid": 2213359,
+            "birth": 1791984705.42,
+            "scheduler": 81,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          },
+          {
+            "rank": 1,
+            "pid": 2215259,
+            "birth": 1791984724.03,
+            "scheduler": 81,
+            "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+            "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+          }
+        ],
+        "fixed_seed_gradient_statistics": {
+          "measurement_dtype": "torch.float64",
+          "ownership_buckets": [
+            [
+              "sharded",
+              "cuda",
+              [
+                0,
+                1
+              ]
+            ]
+          ],
+          "norm_scope": "Pre-clip complete local32 minibatch gradients from native backward; sharded DTensor scalar statistics SUM on its original mesh; replicated/plain contributions remain local.",
+          "inner_products": {
+            "native_target:native_target": 1.1013069017289183
+          },
+          "norms": {
+            "native_target": 1.0494317041756067
+          }
+        }
+      },
+      "original_RNG_restore": [
+        {
+          "rank": 0,
+          "original_captured_training_rng_restored": true,
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/dt/checkpoint80-rank0-rng.pt"
+        },
+        {
+          "rank": 1,
+          "original_captured_training_rng_restored": true,
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/dt/checkpoint80-rank1-rng.pt"
+        }
+      ],
+      "original_native_update_metrics": {
+        "actor/kl_loss": 0.38528797030448914,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": [
+          0.48333418369293213,
+          -0.16338331997394562,
+          -0.41235432028770447,
+          0.24927088618278503,
+          -0.6748613715171814,
+          -0.31549039483070374,
+          -1.424768328666687,
+          0.0,
+          -1.2179038524627686,
+          -0.7337616682052612,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -0.15954174101352692,
+          0.0,
+          0.0,
+          0.0,
+          -0.9414138793945312,
+          -0.27922728657722473,
+          -0.09157522767782211,
+          0.3817088007926941,
+          0.03271462768316269,
+          0.0,
+          -0.8257861733436584,
+          -0.640228807926178,
+          -0.9891340136528015,
+          -0.2538049817085266,
+          0.0,
+          -0.22952474653720856,
+          0.24337971210479736,
+          0.0
+        ],
+        "actor/pg_clipfrac": [
+          0.00022458031889982522,
+          0.0015519916778430343,
+          0.0010928962146863341,
+          0.0006452653906308115,
+          0.002836074912920594,
+          0.0031347961630672216,
+          0.0,
+          0.0,
+          0.003448275849223137,
+          0.0022522523067891598,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0025641026441007853,
+          0.0,
+          0.0,
+          0.0,
+          0.0022753127850592136,
+          0.0010362694738432765,
+          0.0013093289453536272,
+          0.000499251123983413,
+          0.0006715916679240763,
+          0.0,
+          0.0029282576870173216,
+          0.0006222775555215776,
+          0.0,
+          0.0,
+          0.0,
+          0.002466091187670827,
+          0.0012254902394488454,
+          0.0
+        ],
+        "actor/ppo_kl": [
+          -0.0001988979784073308,
+          0.0034206565469503403,
+          0.00022608086874242872,
+          -0.00018205698870588094,
+          -4.691612411988899e-05,
+          0.0043027363717556,
+          -0.0002443706907797605,
+          -5.7235476560890675e-05,
+          -0.001435273326933384,
+          -0.0015804074937477708,
+          0.001594844157807529,
+          -0.004467587918043137,
+          0.006191301625221968,
+          -0.0002357006596866995,
+          -0.0007190014002844691,
+          0.0005815789918415248,
+          0.00021657395700458437,
+          0.0006681609083898365,
+          0.002247158670797944,
+          -0.0007446882082149386,
+          0.0005171798984520137,
+          -0.00014975534577388316,
+          0.001071460428647697,
+          0.0001785421191016212,
+          0.0005625407793559134,
+          0.00027528326609171927,
+          0.001287246821448207,
+          -0.00024362205294892192,
+          -0.0008118263795040548,
+          0.00015418020484503359,
+          -0.00019679698743857443,
+          -0.0010050946148112416
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0005128204938955605,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.00024509805371053517,
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.16775333881378174,
+          0.22948576509952545,
+          0.13950876891613007,
+          0.3256225883960724
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 16.241157054901123,
+        "perf/max_memory_reserved_gb": 24.095703125,
+        "perf/cpu_memory_used_gb": 443.0293655395508,
+        "actor/lr": 1e-06
+      }
+    }
+  ],
+  "feedback_accounting": {
+    "unix": 1791985811.7883978,
+    "scope": "Account completed native v47 updates and fixed-seed feedback from saved files.",
+    "cases": {
+      "full_original_before": {
+        "squared_norms": {
+          "incoming": 1.0739631878123757e-06,
+          "block_input": 2.9936806615436586e-06,
+          "MLP_branch": 9.956443075373744e-07,
+          "MLP_seed": 1.0739631878123757e-06,
+          "post_MLP_add": 2.3872901404249596e-06
+        },
+        "seed_hook_difference_max": 0.0,
+        "MLP_signed_projection_on_fixed_incoming": 0.14790201781604712,
+        "MLP_branch_norm_over_incoming": 0.96284728441362,
+        "MLP_post_add_norm_gain": 1.4909322347896221,
+        "block_input_norm_gain": 1.6695830933460278
+      },
+      "full_original_after": {
+        "squared_norms": {
+          "incoming": 1.0739631878123757e-06,
+          "block_input": 2.9455387743630098e-06,
+          "MLP_branch": 9.622920612542045e-07,
+          "MLP_seed": 1.0739631878123757e-06,
+          "post_MLP_add": 2.3586423479011513e-06
+        },
+        "seed_hook_difference_max": 0.0,
+        "MLP_signed_projection_on_fixed_incoming": 0.15009224826935733,
+        "MLP_branch_norm_over_incoming": 0.9465831160652548,
+        "MLP_post_add_norm_gain": 1.4819595447104899,
+        "block_input_norm_gain": 1.656104260222911
+      },
+      "without_constant_positive_component_before": {
+        "squared_norms": {
+          "incoming": 1.0739631878123757e-06,
+          "block_input": 2.9936806502205578e-06,
+          "MLP_branch": 9.956443075373744e-07,
+          "MLP_seed": 1.0739631878123757e-06,
+          "post_MLP_add": 2.3872901404249596e-06
+        },
+        "seed_hook_difference_max": 0.0,
+        "MLP_signed_projection_on_fixed_incoming": 0.14790201781604712,
+        "MLP_branch_norm_over_incoming": 0.96284728441362,
+        "MLP_post_add_norm_gain": 1.4909322347896221,
+        "block_input_norm_gain": 1.669583090188567
+      },
+      "without_constant_positive_component_after": {
+        "squared_norms": {
+          "incoming": 1.0739631878123757e-06,
+          "block_input": 3.0919748899241507e-06,
+          "MLP_branch": 1.0001376115261637e-06,
+          "MLP_seed": 1.0739631878123757e-06,
+          "post_MLP_add": 2.4055600624750043e-06
+        },
+        "seed_hook_difference_max": 0.0,
+        "MLP_signed_projection_on_fixed_incoming": 0.15431593321724343,
+        "MLP_branch_norm_over_incoming": 0.9650174848127219,
+        "MLP_post_add_norm_gain": 1.496626410440748,
+        "block_input_norm_gain": 1.6967711898144633
+      }
+    },
+    "arms": {
+      "full_original": {
+        "native_grad_norms": [
+          0.7259482145309448,
+          1.7997075319290161,
+          2.028611898422241,
+          1.2662291526794434
+        ],
+        "native_grad_norm_mean": 1.4551241993904114,
+        "native_actual_net_parameter_displacement_norm_by_side": {
+          "A": 0.007962068920393335,
+          "B": 0.007106333484141413
+        },
+        "native_actual_net_parameter_displacement_norm_by_layer": {
+          "0": 0.001971007020058377,
+          "1": 0.00193055203641302,
+          "2": 0.0018929133869708887,
+          "3": 0.0018149075149218694,
+          "4": 0.0018640519868231718,
+          "5": 0.0018228388264556175,
+          "6": 0.0018139191490727394,
+          "7": 0.00180481203166035,
+          "8": 0.001985722315078229,
+          "9": 0.0020074704764639116,
+          "10": 0.001963581594334494,
+          "11": 0.0019244403873650733,
+          "12": 0.0019828981881238996,
+          "13": 0.0019027249818250739,
+          "14": 0.001994429131888037,
+          "15": 0.0019253865086178502,
+          "16": 0.0020378768170181806,
+          "17": 0.0019155979609641973,
+          "18": 0.0019101697065962724,
+          "19": 0.0018813864427519734,
+          "20": 0.0018423571537913663,
+          "21": 0.0018180135004016878,
+          "22": 0.0018376308983038146,
+          "23": 0.0017111632955270552,
+          "24": 0.001733673287815527,
+          "25": 0.0016971377386134964,
+          "26": 0.0016796981975290251,
+          "27": 0.0017533280168656724,
+          "28": 0.0019091868524109914,
+          "29": 0.002054112923986141,
+          "30": 0.0021134111089208957,
+          "31": 0.001778678560969588
+        },
+        "before_parameter_digests": [
+          "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
+        ],
+        "after_parameter_digests": [
+          "eee228ec2a5e78ff5e7d5d28d13b05f23500826e42c2aff5a71e27abe76a0ffb",
+          "3fd17f2f18f7583deab412e9ef490a53d0d21a8538875a24fe4b3cea1353181f"
+        ],
+        "fixed_seed_parameter_VJP_before": 1.1086028294713475,
+        "fixed_seed_parameter_VJP_after": 1.1887340606582901,
+        "fixed_seed_parameter_VJP_ratio": 1.0722812796943286
+      },
+      "without_constant_positive_component": {
+        "native_grad_norms": [
+          0.16775333881378174,
+          0.22948576509952545,
+          0.13950876891613007,
+          0.3256225883960724
+        ],
+        "native_grad_norm_mean": 0.2155926153063774,
+        "native_actual_net_parameter_displacement_norm_by_side": {
+          "A": 0.007387393994190604,
+          "B": 0.006708655465853603
+        },
+        "native_actual_net_parameter_displacement_norm_by_layer": {
+          "0": 0.001766651495399709,
+          "1": 0.001745025578853037,
+          "2": 0.0017255611775745102,
+          "3": 0.0016882389951462474,
+          "4": 0.0016365000618457188,
+          "5": 0.0016178102706772383,
+          "6": 0.0015951289295478037,
+          "7": 0.0016293829089407252,
+          "8": 0.001849184142070012,
+          "9": 0.0018330645610164142,
+          "10": 0.0017974940854620593,
+          "11": 0.0018254283343655316,
+          "12": 0.001889543763742327,
+          "13": 0.0018455707290896092,
+          "14": 0.0018627711111419499,
+          "15": 0.0017878616091068667,
+          "16": 0.001982435016451717,
+          "17": 0.0018860496442030359,
+          "18": 0.0018647155252393126,
+          "19": 0.0018102963698104762,
+          "20": 0.0017569476830098002,
+          "21": 0.0017213286945083135,
+          "22": 0.0017143001600938288,
+          "23": 0.0015405671124574922,
+          "24": 0.0015548672534011938,
+          "25": 0.0015264717799120526,
+          "26": 0.0015047452795265088,
+          "27": 0.0016511017074922138,
+          "28": 0.001801010339702053,
+          "29": 0.0019566548574493085,
+          "30": 0.0020723667799741555,
+          "31": 0.001843041116325243
+        },
+        "before_parameter_digests": [
+          "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
+        ],
+        "after_parameter_digests": [
+          "9a04bf2474aeabd7efedd9e4452cd08de06811d160af14b4ff5f433d2ba1e612",
+          "cf8210c021cf7153a4488ebe26500e1c715c9e9e9655c2405225b98b10162925"
+        ],
+        "fixed_seed_parameter_VJP_before": 1.1135694861478111,
+        "fixed_seed_parameter_VJP_after": 1.0494317041756067,
+        "fixed_seed_parameter_VJP_ratio": 0.9424034307961533
+      }
+    },
+    "model_calls": 0,
+    "new_backward_calls": 0,
+    "optimizer_calls": 0,
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/result.json",
+    "source_SHA256": "681565822b45fd9fd0d8c80668aec3bf9727ea073c12faa2808dde3c7bf016af",
+    "limits": [
+      "This is conditional on the original old checkpoint80, saved iteration81 inputs and optimizer history; not a complete85-iteration counterfactual or a from-scratch training proof.",
+      "Residual projections use norms of native BF16 vectors, not stored exact dot products. Native residual rounding remains.",
+      "Before-probe VJP variation is measured and retained despite identical parameter digests; no bitwise reproducibility or invented tolerance claim.",
+      "The two native update arms include original clipping, adaptive optimizer state, entropy and KL. Their difference cannot be treated as a linear sum of optimizer component updates."
+    ],
+    "identical_before_parameter_digests": true,
+    "before_VJP_relative_difference": 0.004480104636601201,
+    "native_four_step_net_displacement_cosine_between_arms": 0.9120930001392784,
+    "native_four_step_net_displacement_norms": [
+      0.01067213741857379,
+      0.009978960275746704
+    ],
+    "observed_local_feedback_signs": {
+      "full_growth": 0.07228127969432863,
+      "ablated_growth": -0.057596569203846704
+    },
+    "historical_fixed_seed_40_to_80_geometric_mean_gain_per_iteration": 1.0657807791127907,
+    "historical_rate_limit": "A descriptive magnitude comparison only, not extrapolation of the local gain or evidence of a global exponential law."
+  },
+  "chain_accounting": {
+    "source": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\read_native_gradient_chain_v4-dt.json",
+    "source_SHA256": "4aa4e102f319f11bf78b35e2d321036964bbc126931b654ff02846ab50fa1cce",
+    "cases": {
+      "full_original_after": {
+        "ranks": [
+          0,
+          1
+        ],
+        "layers": {
+          "0": {
+            "input_norm": 3.2244274598817757,
+            "output_norm": 1.924367947541262
+          },
+          "1": {
+            "input_norm": 1.924367947541262,
+            "output_norm": 1.3814868976741748
+          },
+          "2": {
+            "input_norm": 1.3814868976741748,
+            "output_norm": 1.0324494185589
+          },
+          "3": {
+            "input_norm": 1.0324494185589,
+            "output_norm": 0.6895919705135788
+          },
+          "4": {
+            "input_norm": 0.6895919705135788,
+            "output_norm": 0.500419557359918
+          },
+          "5": {
+            "input_norm": 0.500419557359918,
+            "output_norm": 0.41421312725253934
+          },
+          "6": {
+            "input_norm": 0.41421312725253934,
+            "output_norm": 0.36200125729792887
+          },
+          "7": {
+            "input_norm": 0.36200125729792887,
+            "output_norm": 0.29544164223640507
+          },
+          "8": {
+            "input_norm": 0.29544164223640507,
+            "output_norm": 0.25283524769197296
+          },
+          "9": {
+            "input_norm": 0.25283524769197296,
+            "output_norm": 0.22146008095721004
+          },
+          "10": {
+            "input_norm": 0.22146008095721004,
+            "output_norm": 0.20410316447505383
+          },
+          "11": {
+            "input_norm": 0.20410316447505383,
+            "output_norm": 0.17914997380247588
+          },
+          "12": {
+            "input_norm": 0.17914997380247588,
+            "output_norm": 0.1354566893795527
+          },
+          "13": {
+            "input_norm": 0.1354566893795527,
+            "output_norm": 0.11139890326046759
+          },
+          "14": {
+            "input_norm": 0.11139890326046759,
+            "output_norm": 0.10172599494193517
+          },
+          "15": {
+            "input_norm": 0.10172599494193517,
+            "output_norm": 0.08110153428507902
+          },
+          "16": {
+            "input_norm": 0.08110153428507902,
+            "output_norm": 0.06778679985636846
+          },
+          "17": {
+            "input_norm": 0.06778679985636846,
+            "output_norm": 0.05999689959748414
+          },
+          "18": {
+            "input_norm": 0.05999689959748414,
+            "output_norm": 0.05453119518138507
+          },
+          "19": {
+            "input_norm": 0.05453119518138507,
+            "output_norm": 0.039357570510131
+          },
+          "20": {
+            "input_norm": 0.039357570510131,
+            "output_norm": 0.03372745227947981
+          },
+          "21": {
+            "input_norm": 0.03372745227947981,
+            "output_norm": 0.028834431717025804
+          },
+          "22": {
+            "input_norm": 0.028834431717025804,
+            "output_norm": 0.024804072068982632
+          },
+          "23": {
+            "input_norm": 0.024804072068982632,
+            "output_norm": 0.02104849782141506
+          },
+          "24": {
+            "input_norm": 0.02104849782141506,
+            "output_norm": 0.016879129074512285
+          },
+          "25": {
+            "input_norm": 0.016879129074512285,
+            "output_norm": 0.0133633897813944
+          },
+          "26": {
+            "input_norm": 0.0133633897813944,
+            "output_norm": 0.011257347593970906
+          },
+          "27": {
+            "input_norm": 0.011257347593970906,
+            "output_norm": 0.008257462779100593
+          },
+          "28": {
+            "input_norm": 0.008257462779100593,
+            "output_norm": 0.0063929614050105025
+          },
+          "29": {
+            "input_norm": 0.0063929614050105025,
+            "output_norm": 0.003434030501247377
+          },
+          "30": {
+            "input_norm": 0.003434030501247377,
+            "output_norm": 0.0017162571993623245
+          },
+          "31": {
+            "input_norm": 0.0017162571993623245,
+            "output_norm": 0.0010363219518143847
+          }
+        },
+        "parameter_layers": {
+          "0": {
+            "norm": 0.436250843067216,
+            "energy_fraction": 0.13468001161247162
+          },
+          "1": {
+            "norm": 0.24263644631581036,
+            "energy_fraction": 0.04166224417257359
+          },
+          "2": {
+            "norm": 0.25609360039815615,
+            "energy_fraction": 0.04641176006708602
+          },
+          "3": {
+            "norm": 0.36680621019935833,
+            "energy_fraction": 0.0952146875039325
+          },
+          "4": {
+            "norm": 0.29157038040605887,
+            "energy_fraction": 0.06016132512935229
+          },
+          "5": {
+            "norm": 0.31799329542759064,
+            "energy_fraction": 0.07155937083112052
+          },
+          "6": {
+            "norm": 0.333504878702041,
+            "energy_fraction": 0.07871091653195711
+          },
+          "7": {
+            "norm": 0.3506575192191927,
+            "energy_fraction": 0.08701555582403038
+          },
+          "8": {
+            "norm": 0.30215234594312734,
+            "energy_fraction": 0.06460743921664235
+          },
+          "9": {
+            "norm": 0.2991261396489543,
+            "energy_fraction": 0.06331976861239616
+          },
+          "10": {
+            "norm": 0.26803292017340985,
+            "energy_fraction": 0.05084015460316057
+          },
+          "11": {
+            "norm": 0.3017713550157974,
+            "energy_fraction": 0.0644446118893534
+          },
+          "12": {
+            "norm": 0.24537187723862017,
+            "energy_fraction": 0.04260692166524823
+          },
+          "13": {
+            "norm": 0.18129867751809978,
+            "energy_fraction": 0.02326054354417209
+          },
+          "14": {
+            "norm": 0.1555005504654892,
+            "energy_fraction": 0.01711175084783133
+          },
+          "15": {
+            "norm": 0.14549731090141166,
+            "energy_fraction": 0.014980990205623278
+          },
+          "16": {
+            "norm": 0.12192561806461971,
+            "energy_fraction": 0.010520115749229272
+          },
+          "17": {
+            "norm": 0.09448957626876626,
+            "energy_fraction": 0.006318273037035074
+          },
+          "18": {
+            "norm": 0.09437703255635761,
+            "energy_fraction": 0.006303230987796365
+          },
+          "19": {
+            "norm": 0.09235345136765183,
+            "energy_fraction": 0.006035827884608926
+          },
+          "20": {
+            "norm": 0.05709960852016058,
+            "energy_fraction": 0.0023072616526948484
+          },
+          "21": {
+            "norm": 0.05327476690307133,
+            "energy_fraction": 0.0020085086342558236
+          },
+          "22": {
+            "norm": 0.06341684471004734,
+            "energy_fraction": 0.002846032444378856
+          },
+          "23": {
+            "norm": 0.04999620651166685,
+            "energy_fraction": 0.0017689057480862345
+          },
+          "24": {
+            "norm": 0.055010728053773675,
+            "energy_fraction": 0.002141535964262542
+          },
+          "25": {
+            "norm": 0.03422925763309273,
+            "energy_fraction": 0.0008291355705411078
+          },
+          "26": {
+            "norm": 0.029569130163145958,
+            "energy_fraction": 0.0006187392759156266
+          },
+          "27": {
+            "norm": 0.03210455583699099,
+            "energy_fraction": 0.0007293969087595663
+          },
+          "28": {
+            "norm": 0.023833653393881243,
+            "energy_fraction": 0.0004019868302517987
+          },
+          "29": {
+            "norm": 0.020213570237060503,
+            "energy_fraction": 0.0002891456362783916
+          },
+          "30": {
+            "norm": 0.015154226755640878,
+            "energy_fraction": 0.00016251675774454143
+          },
+          "31": {
+            "norm": 0.013623051102282104,
+            "energy_fraction": 0.00013133466120950903
+          }
+        },
+        "parameter_factors": {
+          "A": 0.07791319491384094,
+          "B": 1.1861779803332495
+        },
+        "final_ss": 1.413088666969147,
+        "increment_diag_ss": 0.9400931013194571,
+        "parameter_VJP_norm": 1.18873406065829,
+        "B4_native_increment_RSS_norm": 0.9695839836339383,
+        "B4_accumulation_direction_factor": 1.2260248526414301
+      },
+      "full_original_before": {
+        "ranks": [
+          0,
+          1
+        ],
+        "layers": {
+          "0": {
+            "input_norm": 3.0901661662521698,
+            "output_norm": 1.8082800055373018
+          },
+          "1": {
+            "input_norm": 1.8082800055373018,
+            "output_norm": 1.3074434191400137
+          },
+          "2": {
+            "input_norm": 1.3074434191400137,
+            "output_norm": 0.9723711162239452
+          },
+          "3": {
+            "input_norm": 0.9723711162239452,
+            "output_norm": 0.6683121787919634
+          },
+          "4": {
+            "input_norm": 0.6683121787919634,
+            "output_norm": 0.4949755170475593
+          },
+          "5": {
+            "input_norm": 0.4949755170475593,
+            "output_norm": 0.4159218219479683
+          },
+          "6": {
+            "input_norm": 0.4159218219479683,
+            "output_norm": 0.3634488594350966
+          },
+          "7": {
+            "input_norm": 0.3634488594350966,
+            "output_norm": 0.2973894664266286
+          },
+          "8": {
+            "input_norm": 0.2973894664266286,
+            "output_norm": 0.25574186812916827
+          },
+          "9": {
+            "input_norm": 0.25574186812916827,
+            "output_norm": 0.22367256742366318
+          },
+          "10": {
+            "input_norm": 0.22367256742366318,
+            "output_norm": 0.20634095702577265
+          },
+          "11": {
+            "input_norm": 0.20634095702577265,
+            "output_norm": 0.1812139932838891
+          },
+          "12": {
+            "input_norm": 0.1812139932838891,
+            "output_norm": 0.13837508982987004
+          },
+          "13": {
+            "input_norm": 0.13837508982987004,
+            "output_norm": 0.11409286377385008
+          },
+          "14": {
+            "input_norm": 0.11409286377385008,
+            "output_norm": 0.10452696125239946
+          },
+          "15": {
+            "input_norm": 0.10452696125239946,
+            "output_norm": 0.08347768433514331
+          },
+          "16": {
+            "input_norm": 0.08347768433514331,
+            "output_norm": 0.06995015618296341
+          },
+          "17": {
+            "input_norm": 0.06995015618296341,
+            "output_norm": 0.06220115102968429
+          },
+          "18": {
+            "input_norm": 0.06220115102968429,
+            "output_norm": 0.0565326936394813
+          },
+          "19": {
+            "input_norm": 0.0565326936394813,
+            "output_norm": 0.04068603623251596
+          },
+          "20": {
+            "input_norm": 0.04068603623251596,
+            "output_norm": 0.03488649511067469
+          },
+          "21": {
+            "input_norm": 0.03488649511067469,
+            "output_norm": 0.029797799930227038
+          },
+          "22": {
+            "input_norm": 0.029797799930227038,
+            "output_norm": 0.025708658149517137
+          },
+          "23": {
+            "input_norm": 0.025708658149517137,
+            "output_norm": 0.02178409574151143
+          },
+          "24": {
+            "input_norm": 0.02178409574151143,
+            "output_norm": 0.017449927812747797
+          },
+          "25": {
+            "input_norm": 0.017449927812747797,
+            "output_norm": 0.013815662295499406
+          },
+          "26": {
+            "input_norm": 0.013815662295499406,
+            "output_norm": 0.011669890892272624
+          },
+          "27": {
+            "input_norm": 0.011669890892272624,
+            "output_norm": 0.008471530214209858
+          },
+          "28": {
+            "input_norm": 0.008471530214209858,
+            "output_norm": 0.006558778139562574
+          },
+          "29": {
+            "input_norm": 0.006558778139562574,
+            "output_norm": 0.0034812374657039783
+          },
+          "30": {
+            "input_norm": 0.0034812374657039783,
+            "output_norm": 0.0017302256100126534
+          },
+          "31": {
+            "input_norm": 0.0017302256100126534,
+            "output_norm": 0.0010363219518143847
+          }
+        },
+        "parameter_layers": {
+          "0": {
+            "norm": 0.3500026489622727,
+            "energy_fraction": 0.09967602197320821
+          },
+          "1": {
+            "norm": 0.19619831190931358,
+            "energy_fraction": 0.03132121259738743
+          },
+          "2": {
+            "norm": 0.22045434725532975,
+            "energy_fraction": 0.03954443449119478
+          },
+          "3": {
+            "norm": 0.3164719339348436,
+            "energy_fraction": 0.08149264925871318
+          },
+          "4": {
+            "norm": 0.26894267080990597,
+            "energy_fraction": 0.05885284494672673
+          },
+          "5": {
+            "norm": 0.3023340481527493,
+            "energy_fraction": 0.07437417355994798
+          },
+          "6": {
+            "norm": 0.3207187063266384,
+            "energy_fraction": 0.08369444185857307
+          },
+          "7": {
+            "norm": 0.34221524822579336,
+            "energy_fraction": 0.0952898729592549
+          },
+          "8": {
+            "norm": 0.29605888174995304,
+            "energy_fraction": 0.07131883222883507
+          },
+          "9": {
+            "norm": 0.29298156155703037,
+            "energy_fraction": 0.06984392115786074
+          },
+          "10": {
+            "norm": 0.2634058050462157,
+            "energy_fraction": 0.05645451989360787
+          },
+          "11": {
+            "norm": 0.29896864482779384,
+            "energy_fraction": 0.07272761074646596
+          },
+          "12": {
+            "norm": 0.24415843628350292,
+            "energy_fraction": 0.048505557918455226
+          },
+          "13": {
+            "norm": 0.18274236117026738,
+            "energy_fraction": 0.02717230611963242
+          },
+          "14": {
+            "norm": 0.15733619745032765,
+            "energy_fraction": 0.020142127196666037
+          },
+          "15": {
+            "norm": 0.14781342119561025,
+            "energy_fraction": 0.01777770816456052
+          },
+          "16": {
+            "norm": 0.12411762527491327,
+            "energy_fraction": 0.012534729029190957
+          },
+          "17": {
+            "norm": 0.09647613698765856,
+            "energy_fraction": 0.007573346818222155
+          },
+          "18": {
+            "norm": 0.09666446753796701,
+            "energy_fraction": 0.007602943457299495
+          },
+          "19": {
+            "norm": 0.09417233779621567,
+            "energy_fraction": 0.007215970318136515
+          },
+          "20": {
+            "norm": 0.05792333110293581,
+            "energy_fraction": 0.0027299525212237533
+          },
+          "21": {
+            "norm": 0.05432740836002901,
+            "energy_fraction": 0.0024015189083272264
+          },
+          "22": {
+            "norm": 0.06455175143435535,
+            "energy_fraction": 0.0033905027026201367
+          },
+          "23": {
+            "norm": 0.05088521707220749,
+            "energy_fraction": 0.0021068387506214857
+          },
+          "24": {
+            "norm": 0.055894479756689354,
+            "energy_fraction": 0.0025420604342307994
+          },
+          "25": {
+            "norm": 0.03483710221463776,
+            "energy_fraction": 0.0009874885761780377
+          },
+          "26": {
+            "norm": 0.030137943118589326,
+            "energy_fraction": 0.0007390524351845439
+          },
+          "27": {
+            "norm": 0.03275678753050499,
+            "energy_fraction": 0.0008730731696059338
+          },
+          "28": {
+            "norm": 0.02360830211804636,
+            "energy_fraction": 0.00045350026281469044
+          },
+          "29": {
+            "norm": 0.020204783229206814,
+            "energy_fraction": 0.00033216695506453034
+          },
+          "30": {
+            "norm": 0.014939545925542233,
+            "energy_fraction": 0.00018160292111875226
+          },
+          "31": {
+            "norm": 0.01344190275289613,
+            "energy_fraction": 0.00014701766907074425
+          }
+        },
+        "parameter_factors": {
+          "A": 0.06132284481383838,
+          "B": 1.1069054802537632
+        },
+        "final_ss": 1.229000233511877,
+        "increment_diag_ss": 0.8710504568913908,
+        "parameter_VJP_norm": 1.1086028294713473,
+        "B4_native_increment_RSS_norm": 0.9333008394357046,
+        "B4_accumulation_direction_factor": 1.1878301000368052
+      },
+      "without_constant_positive_component_after": {
+        "ranks": [
+          0,
+          1
+        ],
+        "layers": {
+          "0": {
+            "input_norm": 2.667585464271616,
+            "output_norm": 1.5355782466932217
+          },
+          "1": {
+            "input_norm": 1.5355782466932217,
+            "output_norm": 1.118593234379193
+          },
+          "2": {
+            "input_norm": 1.118593234379193,
+            "output_norm": 0.8259350782863901
+          },
+          "3": {
+            "input_norm": 0.8259350782863901,
+            "output_norm": 0.5911845858145677
+          },
+          "4": {
+            "input_norm": 0.5911845858145677,
+            "output_norm": 0.44721469263280417
+          },
+          "5": {
+            "input_norm": 0.44721469263280417,
+            "output_norm": 0.394271285547975
+          },
+          "6": {
+            "input_norm": 0.394271285547975,
+            "output_norm": 0.34773549609551824
+          },
+          "7": {
+            "input_norm": 0.34773549609551824,
+            "output_norm": 0.2874061806301073
+          },
+          "8": {
+            "input_norm": 0.2874061806301073,
+            "output_norm": 0.24774297074430462
+          },
+          "9": {
+            "input_norm": 0.24774297074430462,
+            "output_norm": 0.21709391660148636
+          },
+          "10": {
+            "input_norm": 0.21709391660148636,
+            "output_norm": 0.20036989130798508
+          },
+          "11": {
+            "input_norm": 0.20036989130798508,
+            "output_norm": 0.176238108903563
+          },
+          "12": {
+            "input_norm": 0.176238108903563,
+            "output_norm": 0.13576418265315937
+          },
+          "13": {
+            "input_norm": 0.13576418265315937,
+            "output_norm": 0.11215184141688203
+          },
+          "14": {
+            "input_norm": 0.11215184141688203,
+            "output_norm": 0.10271435085394871
+          },
+          "15": {
+            "input_norm": 0.10271435085394871,
+            "output_norm": 0.08205820192348212
+          },
+          "16": {
+            "input_norm": 0.08205820192348212,
+            "output_norm": 0.06876480968605868
+          },
+          "17": {
+            "input_norm": 0.06876480968605868,
+            "output_norm": 0.061179884904526714
+          },
+          "18": {
+            "input_norm": 0.061179884904526714,
+            "output_norm": 0.05568716709076572
+          },
+          "19": {
+            "input_norm": 0.05568716709076572,
+            "output_norm": 0.040011930049449626
+          },
+          "20": {
+            "input_norm": 0.040011930049449626,
+            "output_norm": 0.03439095474236212
+          },
+          "21": {
+            "input_norm": 0.03439095474236212,
+            "output_norm": 0.029428795383799916
+          },
+          "22": {
+            "input_norm": 0.029428795383799916,
+            "output_norm": 0.025398118800133096
+          },
+          "23": {
+            "input_norm": 0.025398118800133096,
+            "output_norm": 0.021497177073602897
+          },
+          "24": {
+            "input_norm": 0.021497177073602897,
+            "output_norm": 0.01730535668340101
+          },
+          "25": {
+            "input_norm": 0.01730535668340101,
+            "output_norm": 0.013709382860086869
+          },
+          "26": {
+            "input_norm": 0.013709382860086869,
+            "output_norm": 0.011583855503489388
+          },
+          "27": {
+            "input_norm": 0.011583855503489388,
+            "output_norm": 0.008411654268028076
+          },
+          "28": {
+            "input_norm": 0.008411654268028076,
+            "output_norm": 0.006551605583094931
+          },
+          "29": {
+            "input_norm": 0.006551605583094931,
+            "output_norm": 0.0034947178407207695
+          },
+          "30": {
+            "input_norm": 0.0034947178407207695,
+            "output_norm": 0.0017584012312109403
+          },
+          "31": {
+            "input_norm": 0.0017584012312109403,
+            "output_norm": 0.0010363219518143847
+          }
+        },
+        "parameter_layers": {
+          "0": {
+            "norm": 0.3046322199323517,
+            "energy_fraction": 0.08426424030869739
+          },
+          "1": {
+            "norm": 0.17430150381702872,
+            "energy_fraction": 0.027586328738322747
+          },
+          "2": {
+            "norm": 0.19512195156165793,
+            "energy_fraction": 0.034570359925521765
+          },
+          "3": {
+            "norm": 0.2886847763002364,
+            "energy_fraction": 0.07567273022323338
+          },
+          "4": {
+            "norm": 0.2524735907210266,
+            "energy_fraction": 0.05787933764103333
+          },
+          "5": {
+            "norm": 0.28611403064202634,
+            "energy_fraction": 0.07433099565771728
+          },
+          "6": {
+            "norm": 0.3081624302799439,
+            "energy_fraction": 0.08622853746486023
+          },
+          "7": {
+            "norm": 0.3282822338351319,
+            "energy_fraction": 0.09785576108040317
+          },
+          "8": {
+            "norm": 0.2856803553600543,
+            "energy_fraction": 0.07410583308841875
+          },
+          "9": {
+            "norm": 0.2839774413615314,
+            "energy_fraction": 0.07322499030528357
+          },
+          "10": {
+            "norm": 0.25553568656639436,
+            "energy_fraction": 0.05929181684637384
+          },
+          "11": {
+            "norm": 0.2910617373170337,
+            "energy_fraction": 0.07692400256187854
+          },
+          "12": {
+            "norm": 0.23824639017742316,
+            "energy_fraction": 0.05153998612327268
+          },
+          "13": {
+            "norm": 0.1785643751554526,
+            "energy_fraction": 0.028952180381872864
+          },
+          "14": {
+            "norm": 0.15423536114555997,
+            "energy_fraction": 0.02160028833956833
+          },
+          "15": {
+            "norm": 0.14556514579742474,
+            "energy_fraction": 0.019240060729448803
+          },
+          "16": {
+            "norm": 0.12231261677989295,
+            "energy_fraction": 0.013584202732280126
+          },
+          "17": {
+            "norm": 0.09514225347893417,
+            "energy_fraction": 0.00821936953526681
+          },
+          "18": {
+            "norm": 0.09594854192918129,
+            "energy_fraction": 0.00835927086617123
+          },
+          "19": {
+            "norm": 0.09345532158341535,
+            "energy_fraction": 0.007930484335064467
+          },
+          "20": {
+            "norm": 0.057274439360553424,
+            "energy_fraction": 0.0029786078693558875
+          },
+          "21": {
+            "norm": 0.054055700917589274,
+            "energy_fraction": 0.002653228448041725
+          },
+          "22": {
+            "norm": 0.06426306895521568,
+            "energy_fraction": 0.003749855762330742
+          },
+          "23": {
+            "norm": 0.05044540522353404,
+            "energy_fraction": 0.002310653737093285
+          },
+          "24": {
+            "norm": 0.05570889933865854,
+            "energy_fraction": 0.002817998743722296
+          },
+          "25": {
+            "norm": 0.03457823609667283,
+            "energy_fraction": 0.001085668681164364
+          },
+          "26": {
+            "norm": 0.02997315885062003,
+            "energy_fraction": 0.0008157492249200808
+          },
+          "27": {
+            "norm": 0.03263919705137289,
+            "energy_fraction": 0.0009673209007279701
+          },
+          "28": {
+            "norm": 0.02347416449370719,
+            "energy_fraction": 0.0005003477212505998
+          },
+          "29": {
+            "norm": 0.020531380429827342,
+            "energy_fraction": 0.00038276122822124677
+          },
+          "30": {
+            "norm": 0.015210583213080792,
+            "energy_fraction": 0.00021007935328367134
+          },
+          "31": {
+            "norm": 0.01355967473249761,
+            "energy_fraction": 0.00016695144519887097
+          }
+        },
+        "parameter_factors": {
+          "A": 0.05969141543566474,
+          "B": 1.047732712409136
+        },
+        "final_ss": 1.1013069017289197,
+        "increment_diag_ss": 0.7713705726933013,
+        "parameter_VJP_norm": 1.0494317041756074,
+        "B4_native_increment_RSS_norm": 0.8782770478005795,
+        "B4_accumulation_direction_factor": 1.1948754744344523
+      },
+      "without_constant_positive_component_before": {
+        "ranks": [
+          0,
+          1
+        ],
+        "layers": {
+          "0": {
+            "input_norm": 3.1164199205283043,
+            "output_norm": 1.824514693239849
+          },
+          "1": {
+            "input_norm": 1.824514693239849,
+            "output_norm": 1.31884038870303
+          },
+          "2": {
+            "input_norm": 1.31884038870303,
+            "output_norm": 0.981521993592737
+          },
+          "3": {
+            "input_norm": 0.981521993592737,
+            "output_norm": 0.673274469694271
+          },
+          "4": {
+            "input_norm": 0.673274469694271,
+            "output_norm": 0.4981643087732067
+          },
+          "5": {
+            "input_norm": 0.4981643087732067,
+            "output_norm": 0.41782774422752655
+          },
+          "6": {
+            "input_norm": 0.41782774422752655,
+            "output_norm": 0.3650145455431164
+          },
+          "7": {
+            "input_norm": 0.3650145455431164,
+            "output_norm": 0.2986009394238749
+          },
+          "8": {
+            "input_norm": 0.2986009394238749,
+            "output_norm": 0.2566611037002491
+          },
+          "9": {
+            "input_norm": 0.2566611037002491,
+            "output_norm": 0.2244315955753302
+          },
+          "10": {
+            "input_norm": 0.2244315955753302,
+            "output_norm": 0.20701475296065663
+          },
+          "11": {
+            "input_norm": 0.20701475296065663,
+            "output_norm": 0.1817282614363517
+          },
+          "12": {
+            "input_norm": 0.1817282614363517,
+            "output_norm": 0.13860441907168022
+          },
+          "13": {
+            "input_norm": 0.13860441907168022,
+            "output_norm": 0.11426969394639534
+          },
+          "14": {
+            "input_norm": 0.11426969394639534,
+            "output_norm": 0.10465872948374957
+          },
+          "15": {
+            "input_norm": 0.10465872948374957,
+            "output_norm": 0.08355807403181824
+          },
+          "16": {
+            "input_norm": 0.08355807403181824,
+            "output_norm": 0.07000728556665144
+          },
+          "17": {
+            "input_norm": 0.07000728556665144,
+            "output_norm": 0.06223907489881566
+          },
+          "18": {
+            "input_norm": 0.06223907489881566,
+            "output_norm": 0.05656757115876728
+          },
+          "19": {
+            "input_norm": 0.05656757115876728,
+            "output_norm": 0.040681941058892696
+          },
+          "20": {
+            "input_norm": 0.040681941058892696,
+            "output_norm": 0.03488840252364039
+          },
+          "21": {
+            "input_norm": 0.03488840252364039,
+            "output_norm": 0.029802381219024236
+          },
+          "22": {
+            "input_norm": 0.029802381219024236,
+            "output_norm": 0.02571288189936294
+          },
+          "23": {
+            "input_norm": 0.02571288189936294,
+            "output_norm": 0.021786524236443193
+          },
+          "24": {
+            "input_norm": 0.021786524236443193,
+            "output_norm": 0.017449707103943047
+          },
+          "25": {
+            "input_norm": 0.017449707103943047,
+            "output_norm": 0.01381565126841232
+          },
+          "26": {
+            "input_norm": 0.01381565126841232,
+            "output_norm": 0.011669874559997077
+          },
+          "27": {
+            "input_norm": 0.011669874559997077,
+            "output_norm": 0.008471520563414417
+          },
+          "28": {
+            "input_norm": 0.008471520563414417,
+            "output_norm": 0.0065587755856144165
+          },
+          "29": {
+            "input_norm": 0.0065587755856144165,
+            "output_norm": 0.0034812377336025514
+          },
+          "30": {
+            "input_norm": 0.0034812377336025514,
+            "output_norm": 0.0017302256067405076
+          },
+          "31": {
+            "input_norm": 0.0017302256067405076,
+            "output_norm": 0.0010363219518143847
+          }
+        },
+        "parameter_layers": {
+          "0": {
+            "norm": 0.35323817781618083,
+            "energy_fraction": 0.10062377995063591
+          },
+          "1": {
+            "norm": 0.1978469774104334,
+            "energy_fraction": 0.031566337500662074
+          },
+          "2": {
+            "norm": 0.22239061414291453,
+            "energy_fraction": 0.0398839593010034
+          },
+          "3": {
+            "norm": 0.31899973799728015,
+            "energy_fraction": 0.0820627390980949
+          },
+          "4": {
+            "norm": 0.27050489295893604,
+            "energy_fraction": 0.05900864013447246
+          },
+          "5": {
+            "norm": 0.3037696644135491,
+            "energy_fraction": 0.07441391586076769
+          },
+          "6": {
+            "norm": 0.32182301900196186,
+            "energy_fraction": 0.08352174614103326
+          },
+          "7": {
+            "norm": 0.34357972318964414,
+            "energy_fraction": 0.09519637409321323
+          },
+          "8": {
+            "norm": 0.29692416683621187,
+            "energy_fraction": 0.07109784693302473
+          },
+          "9": {
+            "norm": 0.29378193388836693,
+            "energy_fraction": 0.06960100758752774
+          },
+          "10": {
+            "norm": 0.26405772394051,
+            "energy_fraction": 0.056229355693161294
+          },
+          "11": {
+            "norm": 0.29971052121206887,
+            "energy_fraction": 0.07243848086022898
+          },
+          "12": {
+            "norm": 0.24466342110925884,
+            "energy_fraction": 0.04827290605501262
+          },
+          "13": {
+            "norm": 0.18304685008187296,
+            "energy_fraction": 0.027020281904442743
+          },
+          "14": {
+            "norm": 0.15753341649466057,
+            "energy_fraction": 0.020012932922875693
+          },
+          "15": {
+            "norm": 0.14793285429879954,
+            "energy_fraction": 0.017647964836958626
+          },
+          "16": {
+            "norm": 0.1242364987263795,
+            "energy_fraction": 0.012446973445003154
+          },
+          "17": {
+            "norm": 0.09654047720542412,
+            "energy_fraction": 0.007515956165378224
+          },
+          "18": {
+            "norm": 0.09673537448416057,
+            "energy_fraction": 0.007546333434383264
+          },
+          "19": {
+            "norm": 0.09420258791801196,
+            "energy_fraction": 0.007156340953551636
+          },
+          "20": {
+            "norm": 0.057923995921491375,
+            "energy_fraction": 0.002705717089260691
+          },
+          "21": {
+            "norm": 0.054337580360681224,
+            "energy_fraction": 0.0023810359193409424
+          },
+          "22": {
+            "norm": 0.064550877644004,
+            "energy_fraction": 0.0033602350599215534
+          },
+          "23": {
+            "norm": 0.050896208965880416,
+            "energy_fraction": 0.0020889893495894853
+          },
+          "24": {
+            "norm": 0.05589199939614755,
+            "energy_fraction": 0.002519211600372406
+          },
+          "25": {
+            "norm": 0.03483822877868691,
+            "energy_fraction": 0.0009787628788228192
+          },
+          "26": {
+            "norm": 0.03013745765002571,
+            "energy_fraction": 0.0007324510101358938
+          },
+          "27": {
+            "norm": 0.03275763196896381,
+            "energy_fraction": 0.0008653471241577036
+          },
+          "28": {
+            "norm": 0.023608361688409883,
+            "energy_fraction": 0.0004494662186654597
+          },
+          "29": {
+            "norm": 0.02020492284706165,
+            "energy_fraction": 0.0003292151017250738
+          },
+          "30": {
+            "norm": 0.014939546972201987,
+            "energy_fraction": 0.00017998661624477822
+          },
+          "31": {
+            "norm": 0.01344190277155056,
+            "energy_fraction": 0.00014570916033146682
+          }
+        },
+        "parameter_factors": {
+          "A": 0.061015976730949134,
+          "B": 1.1118966008865523
+        },
+        "final_ss": 1.2400370004794996,
+        "increment_diag_ss": 0.8795152475048009,
+        "parameter_VJP_norm": 1.113569486147811,
+        "B4_native_increment_RSS_norm": 0.937824742425151,
+        "B4_accumulation_direction_factor": 1.1873961474594878
+      }
+    },
+    "arms": {
+      "full_original": {
+        "parameter_VJP_ratio": 1.0722812796943286,
+        "B4_increment_RSS_ratio": 1.0388761508241773,
+        "B4_accumulation_direction_factor_ratio": 1.0321550637615948,
+        "layer_input_adjoint_norm_ratio": {
+          "0": 1.0434479204050187,
+          "1": 1.0641979901610794,
+          "2": 1.0566322622074644,
+          "3": 1.0617853629468752,
+          "4": 1.0318410952200223,
+          "5": 1.0109986052337123,
+          "6": 0.9958917887803379,
+          "7": 0.996017040363209,
+          "8": 0.9934502582972148,
+          "9": 0.9886345538239079,
+          "10": 0.9901083691579289,
+          "11": 0.9891548794627365,
+          "12": 0.9886100436064023,
+          "13": 0.978909495531996,
+          "14": 0.9763880016306511,
+          "15": 0.9732034082221059,
+          "16": 0.9715355059380348,
+          "17": 0.9690728878297795,
+          "18": 0.9645625298614133,
+          "19": 0.9645957351535356,
+          "20": 0.967348362106524,
+          "21": 0.9667767476349257,
+          "22": 0.9676698207432426,
+          "23": 0.9648139519661592,
+          "24": 0.9662323408405415,
+          "25": 0.9672893352705721,
+          "26": 0.9672637833473725,
+          "27": 0.9646489155631361,
+          "28": 0.9747309600867391,
+          "29": 0.9747183498170392,
+          "30": 0.9864396023190981,
+          "31": 0.9919268270163758
+        },
+        "layer_parameter_VJP_norm_ratio": {
+          "0": 1.2464215466958941,
+          "1": 1.2366897755367097,
+          "2": 1.161662736918266,
+          "3": 1.1590481520389033,
+          "4": 1.084135810535423,
+          "5": 1.0517945212274926,
+          "6": 1.0398672485364182,
+          "7": 1.0246694764104407,
+          "8": 1.020581933422017,
+          "9": 1.0209725760872765,
+          "10": 1.0175664888113696,
+          "11": 1.009374595752735,
+          "12": 1.004969891573635,
+          "13": 0.9920998960343822,
+          "14": 0.988332964603279,
+          "15": 0.9843308525337929,
+          "16": 0.9823392753008415,
+          "17": 0.979408786660411,
+          "18": 0.976336341161648,
+          "19": 0.9806855551096137,
+          "20": 0.9857790882000314,
+          "21": 0.9806241179409516,
+          "22": 0.9824186532651693,
+          "23": 0.9825290995756368,
+          "24": 0.9841889269430062,
+          "25": 0.9825518041713117,
+          "26": 0.9811263511512662,
+          "27": 0.9800886551250911,
+          "28": 1.009545424940264,
+          "29": 1.0004348974079063,
+          "30": 1.0143699702232316,
+          "31": 1.0134763919004655
+        }
+      },
+      "without_constant_positive_component": {
+        "parameter_VJP_ratio": 0.9424034307961541,
+        "B4_increment_RSS_ratio": 0.9365044534114282,
+        "B4_accumulation_direction_factor_ratio": 1.0062989314821065,
+        "layer_input_adjoint_norm_ratio": {
+          "0": 0.855977542275304,
+          "1": 0.8416365471776204,
+          "2": 0.8481642236322747,
+          "3": 0.841484025501211,
+          "4": 0.8780736719201907,
+          "5": 0.8977252780997649,
+          "6": 0.9436216024306803,
+          "7": 0.9526620249560517,
+          "8": 0.9625092981443163,
+          "9": 0.9652532743474842,
+          "10": 0.9673054992322551,
+          "11": 0.9679015067397906,
+          "12": 0.9697892199628424,
+          "13": 0.9795083270970458,
+          "14": 0.9814661923352415,
+          "15": 0.9814217252646588,
+          "16": 0.9820499439974528,
+          "17": 0.9822521917463884,
+          "18": 0.9829819129540259,
+          "19": 0.9844362405886131,
+          "20": 0.9835305053789558,
+          "21": 0.9857417438089577,
+          "22": 0.9874645642414022,
+          "23": 0.9877585445123659,
+          "24": 0.9867189846484877,
+          "25": 0.9917276307457666,
+          "26": 0.9923081144521634,
+          "27": 0.9926289647703197,
+          "28": 0.9929332290539572,
+          "29": 0.9989068077683262,
+          "30": 1.0038722167659226,
+          "31": 1.0162843645133142
+        },
+        "layer_parameter_VJP_norm_ratio": {
+          "0": 0.862398911170007,
+          "1": 0.8809914920026319,
+          "2": 0.8773839323824477,
+          "3": 0.9049686940579801,
+          "4": 0.9333420477512521,
+          "5": 0.9418782194541765,
+          "6": 0.9575524809742255,
+          "7": 0.9554761578695709,
+          "8": 0.9621323801428403,
+          "9": 0.9666266322197978,
+          "10": 0.9677266120189857,
+          "11": 0.9711428752649112,
+          "12": 0.9737720052194887,
+          "13": 0.9755118707346482,
+          "14": 0.9790644079047673,
+          "15": 0.9839947081897547,
+          "16": 0.9845143579687984,
+          "17": 0.9855167100167245,
+          "18": 0.9918661341916021,
+          "19": 0.9920674542906721,
+          "20": 0.9887860540246853,
+          "21": 0.9948124402812769,
+          "22": 0.9955413667591698,
+          "23": 0.9911426852509077,
+          "24": 0.9967240381545264,
+          "25": 0.992537144076247,
+          "26": 0.9945483523755183,
+          "27": 0.9963845091823752,
+          "28": 0.9943156921910182,
+          "29": 1.016157328846874,
+          "30": 1.0181421994511026,
+          "31": 1.0087615542939583
+        }
+      }
+    },
+    "model_calls": 0,
+    "new_backward_calls": 0,
+    "optimizer_calls": 0,
+    "limits": [
+      "Layer and LoRA partitions are coordinate accounting, not independent causal contributions.",
+      "B4 direction factor is for actual accumulated native minibatch gradients; it is not a token-noise estimate.",
+      "Fixed-adjoint comparisons hold the entire incoming tensor, not every induced internal state. Lower-layer incoming directions can change.",
+      "The conditional update result does not prove the entire old temporal mechanism; observed before-probe variation remains."
+    ]
+  },
+  "PPO_native_restore": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/runtime-overrides/native-PPO-restore-verification-v59.json",
+    "report": {
+      "unix": 1791987277.0027592,
+      "status": "native_PPO_full_checkpoint15_restore_verified",
+      "job": {
+        "pid": 2308539,
+        "birth": 1791985613.77,
+        "started_unix": 1791985613.8664448,
+        "physical_gpus": [
+          2,
+          3
+        ],
+        "run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2",
+        "method": "ppo",
+        "status": "native_PPO_full_checkpoint15_restore_verified",
+        "launcher_commit": "2d3d99cde41eaea80a9689ede80b77a54b922f8b",
+        "source_bindings": {
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/config/ppo_trainer.yaml": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+        },
+        "launch_SHA256": "d1d249b3ffc360029623fb9c8175c6c19f3ed07e5049b70678d8c85227fdc74d",
+        "source_SHA256": "3c0a74355192566183ae017ea05114dce5a46d894943aa40e419f17e1cd1649f",
+        "protected_GRPO": {
+          "pid": 3174448,
+          "birth": 1791793629.73
+        },
+        "native_PPO_implementation": true,
+        "GRPO_rerun": false,
+        "old_DTPO_resumed": false,
+        "hourly_automation": "PAUSED",
+        "rootcause_repair_verified": false,
+        "resume_from_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_15",
+        "resumed_completed_iteration": 15,
+        "previous_job_identity": {
+          "pid": 2671393,
+          "birth": 1791949551.27,
+          "started_unix": 1791949551.371434,
+          "physical_gpus": [
+            2,
+            3
+          ],
+          "run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2",
+          "method": "ppo",
+          "status": "submitted_native_PPO_control_initialization_pending",
+          "launcher_commit": "2d3d99cde41eaea80a9689ede80b77a54b922f8b",
+          "source_bindings": {
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/config/ppo_trainer.yaml": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+          },
+          "launch_SHA256": "d1d249b3ffc360029623fb9c8175c6c19f3ed07e5049b70678d8c85227fdc74d",
+          "source_SHA256": "3c0a74355192566183ae017ea05114dce5a46d894943aa40e419f17e1cd1649f",
+          "protected_GRPO": {
+            "pid": 3174448,
+            "birth": 1791793629.73
+          },
+          "native_PPO_implementation": true,
+          "GRPO_rerun": false,
+          "old_DTPO_resumed": false,
+          "hourly_automation": "PAUSED",
+          "rootcause_repair_verified": false
+        },
+        "resume_launch_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-PPO-resume-after-v47-v55-prepared.json",
+        "stdout": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume15-v55.stdout.log",
+        "stderr": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume15-v55.stderr.log",
+        "user_authorized_temporary_stop_and_restore": true,
+        "actual_native_restore_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/runtime-overrides/native-PPO-restore-verification-v59.json",
+        "actual_native_restore_observed_unix": 1791987277.0027592
+      },
+      "actual_worker_binding": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/runtime-overrides/native-PPO-bindings-v56.json",
+      "actual_worker_binding_SHA256": "5dad4f9ebb610d590f56ae36bc513d0d0a8379a16d92cdd9dd8af1371a5e7ef0",
+      "actual_role_states": [
+        {
+          "pid": 2318593,
+          "birth": 1791985684.66,
+          "role": "actor_rollout",
+          "rank": 1,
+          "scheduler": 15,
+          "optimizer_step": 60,
+          "optimizer_entries": 496
+        },
+        {
+          "pid": 2318593,
+          "birth": 1791985684.66,
+          "role": "critic",
+          "rank": 1,
+          "scheduler": 15,
+          "optimizer_step": 60,
+          "optimizer_entries": 428
+        },
+        {
+          "pid": 2316732,
+          "birth": 1791985667.7,
+          "role": "actor_rollout",
+          "rank": 0,
+          "scheduler": 15,
+          "optimizer_step": 60,
+          "optimizer_entries": 496
+        },
+        {
+          "pid": 2316732,
+          "birth": 1791985667.7,
+          "role": "critic",
+          "rank": 0,
+          "scheduler": 15,
+          "optimizer_step": 60,
+          "optimizer_entries": 428
+        }
+      ],
+      "completed_checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_15",
+      "native_data_state": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_15/data.pt",
+      "native_data_SHA256": "b3c8cc013469664df0120bbaf9b62dfe5cf7fda5544933f58b07e44090da44b7",
+      "native_rng_storage": "actor/critic extra_state rng(cpu,numpy,random,cuda); actor extra rollout_gen_random_states -> original rollout manager",
+      "native_RNG_owner_verified": true,
+      "checkpoint_owner_SHA256": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+      "restore_helper_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/resume_native_PPO_after_diagnostic_v55.py",
+      "restore_helper_SHA256": "6263554c449a5db5f3e552a81d4e81861bd46ddcf2104e88f37288d0e9ba740a",
+      "resume_configuration_changes": {
+        "trainer.resume_mode": {
+          "before": "auto",
+          "after": "resume_path"
+        },
+        "trainer.resume_from_path": {
+          "before": null,
+          "after": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_15"
+        }
+      },
+      "training_hyperparameters_changed": false,
+      "diagnostic_v55_RNG_field_correction": "v55 incorrectly inspected the worker attribute; the native variable belongs to rollout_sharding_manager. Actual owner pointer and presence are verified in v56. No training RNG defect was observed.",
+      "limits": [
+        "The current generation consumes restored rollout RNG normally. This is not a claim that current consumed RNG still equals checkpoint15.",
+        "Native model/optimizer/scheduler/RNG/data loading and actual counters are verified; a restarted full iteration has not yet been reported here."
+      ],
+      "rootcause_goal_status": "active",
+      "rootcause_repair_verified": false,
+      "hourly_automation": "PAUSED"
+    }
+  },
+  "latest_new_DT_native_metric": {
+    "step": 3,
+    "values": {
+      "global_seqlen/min": 437757.0,
+      "global_seqlen/max": 477752.0,
+      "global_seqlen/minmax_diff": 39995.0,
+      "global_seqlen/balanced_min": 457754.0,
+      "global_seqlen/balanced_max": 457755.0,
+      "global_seqlen/mean": 457754.5,
+      "actor/entropy_loss": 0.699,
+      "actor/kl_loss": 0.0,
+      "actor/kl_coef": 0.001,
+      "actor/pg_loss": -0.008,
+      "actor/pg_clipfrac": 0.0,
+      "actor/ppo_kl": 0.0,
+      "actor/pg_clipfrac_lower": 0.0,
+      "actor/grad_norm": 0.004,
+      "perf/mfu/actor": 0.0,
+      "perf/max_memory_allocated_gb": 68.166,
+      "perf/max_memory_reserved_gb": 75.215,
+      "perf/cpu_memory_used_gb": 467.571,
+      "actor/lr": 0.0,
+      "training/global_step": 3.0,
+      "training/epoch": 0.0,
+      "critic/score/mean": 0.652,
+      "critic/score/max": 1.0,
+      "critic/score/min": 0.0,
+      "critic/rewards/mean": 0.652,
+      "critic/rewards/max": 1.0,
+      "critic/rewards/min": 0.0,
+      "critic/advantages/mean": 0.001,
+      "critic/advantages/max": 19.876,
+      "critic/advantages/min": -10.437,
+      "critic/returns/mean": -0.512,
+      "critic/returns/max": 2.475,
+      "critic/returns/min": -2.475,
+      "response_length/mean": 3261.207,
+      "response_length/max": 10240.0,
+      "response_length/min": 171.0,
+      "response_length/clip_ratio": 0.055,
+      "prompt_length/mean": 315.0,
+      "prompt_length/max": 315.0,
+      "prompt_length/min": 315.0,
+      "prompt_length/clip_ratio": 0.0,
+      "episode/reward/mean": 0.652,
+      "episode/reward/max": 1.0,
+      "episode/reward/min": 0.0,
+      "episode/length/mean": 14.809,
+      "episode/length/max": 30.0,
+      "episode/length/min": 2.0,
+      "episode/tool_call_count/mean": 14.809,
+      "timing_s/gen": 730.394,
+      "timing_s/reward": 0.0,
+      "timing_s/old_log_prob": 125.069,
+      "timing_s/ref": 108.915,
+      "timing_s/adv": 1061.219,
+      "timing_s/update_actor": 457.851,
+      "timing_s/dump_rollout_generations": 0.394,
+      "timing_s/step": 2483.849,
+      "timing_per_token_ms/update_actor": 0.5,
+      "timing_per_token_ms/gen": 0.875,
+      "timing_per_token_ms/ref": 0.119,
+      "timing_per_token_ms/adv": 1.159,
+      "perf/total_num_tokens": 915509.0,
+      "perf/time_per_step": 2483.849,
+      "perf/throughput": 184.292
+    },
+    "sources": [
+      {
+        "path": "/tmp/ray/session_2026-10-14_19-26-01_486933_1419849/logs/worker-1020ad3ecaa7870685eb0306ebf65da2b0e9304c311b47e938199950-01000000-1424511.out",
+        "line": 316
+      }
+    ]
+  },
+  "latest_new_DT_metric_observed_unix": 1791986611.29973,
+  "rootcause_goal_status": "active",
+  "rootcause_repair_verified": false,
+  "hourly_automation": "PAUSED",
+  "conclusion": "On original checkpoint80 and frozen original81 data/state, removing only the measured same-positive-group component reverses the subsequent fixed-adjoint VJP growth. This is direct conditional driver evidence, not a full85-iteration causal proof or acceptance of every aspect of the new method.",
+  "preserved_limits": [
+    "This is conditional on the original old checkpoint80, saved iteration81 inputs and optimizer history; not a complete85-iteration counterfactual or a from-scratch training proof.",
+    "Residual projections use norms of native BF16 vectors, not stored exact dot products. Native residual rounding remains.",
+    "Before-probe VJP variation is measured and retained despite identical parameter digests; no bitwise reproducibility or invented tolerance claim.",
+    "The two native update arms include original clipping, adaptive optimizer state, entropy and KL. Their difference cannot be treated as a linear sum of optimizer component updates."
+  ]
+}

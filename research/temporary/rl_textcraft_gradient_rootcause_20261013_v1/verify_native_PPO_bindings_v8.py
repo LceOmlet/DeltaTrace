@@ -32,11 +32,16 @@ def read(worker):
 
     roles = []
     for name, w in worker.worker_dict.items():
-        row = {'role': name, 'rank': w.rank, 'worker': binding(w, ['update_actor', 'compute_values', 'update_critic'])}
+        row = {'role': name, 'rank': w.rank, 'worker': binding(w, ['update_actor', 'compute_values', 'update_critic', 'load_checkpoint'])}
         if getattr(w, '_is_actor', False):
             row['actor'] = binding(w.actor, ['update_policy', '_forward_micro_batch', '_optimizer_step'])
             row['scheduler_last_epoch'] = w.actor_lr_scheduler.last_epoch
             row['optimizer_state_entries'] = len(w.actor_optimizer.state)
+            row['optimizer_state_steps'] = sorted({float(s['step']) for s in w.actor_optimizer.state.values() if 'step' in s})
+            manager = w.checkpoint_manager.rollout_random_state_owner
+            row['rollout_rng_restored_variable_present'] = getattr(manager, 'gen_random_states', None) is not None
+            row['rollout_rng_owner_is_native_manager'] = manager is w.rollout_sharding_manager
+            row['checkpoint_manager'] = binding(w.checkpoint_manager, ['load_checkpoint'])
             row['actual_forward_options'] = {'use_remove_padding': w.actor.use_remove_padding,
                                              'use_fused_kernels': w.actor.use_fused_kernels}
             row['configuration'] = {key: OmegaConf.select(w.config, key) for key in [
@@ -47,6 +52,7 @@ def read(worker):
             row['critic'] = binding(w.critic, ['compute_values', 'update_critic', '_forward_micro_batch', '_optimizer_step'])
             row['scheduler_last_epoch'] = w.critic_lr_scheduler.last_epoch
             row['optimizer_state_entries'] = len(w.critic_optimizer.state)
+            row['optimizer_state_steps'] = sorted({float(s['step']) for s in w.critic_optimizer.state.values() if 'step' in s})
             row['actual_native_gradient_checkpointing'] = w.critic.critic_module.is_gradient_checkpointing
             row['configuration'] = {key: OmegaConf.select(w.config, key) for key in [
                 'model.lora_rank', 'model.path', 'strategy', 'ppo_mini_batch_size',
@@ -76,7 +82,7 @@ try:
     assert len(names) == 2
     refs = [ray.get_actor(a['name'], namespace=a['namespace']).execute_with_func_generator.remote(func=read)
             for a in names]
-    workers = ray.get(refs, timeout=600)
+    workers = ray.get(refs, timeout=1800)
     report = {'unix': time.time(), 'job': job, 'workers': workers, 'scope': __doc__,
               'status': 'actual_native_PPO_actor_critic_binding_and_state_readback',
               'note': 'Scheduler/optimizer state is sampled at RPC execution time, not necessarily initial state.'}
