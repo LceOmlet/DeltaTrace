@@ -32,9 +32,13 @@ if saved.exists():
         interpretation='Same incoming adjoint: amplification spreads to lower layers; not confined to the final projection. This localizes the sensitive path, but does not identify which historical updates produced it.')
 report['goal_app_status_last_observed']='paused; latest user requested continued research; assistant has not marked it complete or changed its status'
 report['credit_record_reward_field_semantics']='Existing passive credit-record reward/dt_direct_reward fields now contain the official group multiplier g_Y; raw training reward remains in the native trainer/rollout fields. Do not mix these for reward plots.'
+report['canonical_method_commit']='01bf6fa5; regenerates the same deployed trainer/DT batch SHA256, not a new runtime implementation'
 canonical=HERE/'canonical-entry-regression-v40.json'
 if canonical.exists():
     report['canonical_entry_regression']=json.loads(canonical.read_text(encoding='utf-8'))
+credit=HERE/'read_first_group_credit_v40-dt.json'
+if credit.exists():
+    report['first_actual_native_DT_credit_observation']=json.loads(credit.read_text(encoding='utf-8'))
 dest=REPO/'experiments/rl/results_textcraft_DT_group_multiplier_20261014_v1.json'
 dest.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 runtime=REPO/'experiments/rl/current_runtime.json'
@@ -57,7 +61,7 @@ entry=f'''## {stamp} 用户批准官方GRPO乘子与去DT白化，新DTPO已提�
 
 补充仅CPU读已有v33/v35参数分片记录：同输入/同BF16输出adjoint的40→80，layer0/15/24/29/30/31参数VJP倍率13.206/8.230/9.899/5.517/3.489/1.622；所有层完整明细见saved-fixed-seed-parameter-growth-v41.json。下半16层梯度平方和占总平方和从40的86.42%升至80的95.05%，这是参数坐标分区，不是因果贡献比例。未新增模型调用或训练实验，尚不能指认历史哪个更新分量导致变化。get_goal实际仍返回paused；用户最新已要求继续研究，本轮已执行，未由助手完成/暂停/重设goal，不把旧文档的active当应用状态。
 
-正式仓库入口已同步同一接法；对原baseline重新生成的完整trainer SHA仍逐字节等于已部署63b0d623，dt_training_batch仍a4e1f70b，重复生成保持不变。7项原owner接口/运输回归CPU通过，未调用模型或修改训练worker。既有被动记录的reward/dt_direct_reward字段在此版本表示g_Y，不是原环境奖励；训练奖励仍只读原trainer/rollout字段。
+正式仓库入口01bf6fa5已同步同一接法；对原baseline重新生成的完整trainer SHA仍逐字节等于已部署63b0d623，dt_training_batch仍a4e1f70b，重复生成保持不变。7项原owner接口/运输回归CPU通过，未调用模型或修改训练worker。既有被动记录的reward/dt_direct_reward字段在此版本表示g_Y，不是原环境奖励；训练奖励仍只读原trainer/rollout字段。原TaskRunner第一DT workload在本次session日志line299：256轨迹/236非零乘子请求，已有原逐token文件实际落盘，详情在first-native-group-credit-observation-v40.json；不把原日志字段名reward错当环境训练奖励。
 
 '''
 for name in ('RUNTIME_RECORD.md','REMOTE_ENVIRONMENT.md'):
