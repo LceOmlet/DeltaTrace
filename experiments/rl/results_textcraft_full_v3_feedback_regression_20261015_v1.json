@@ -1,0 +1,1046 @@
+{
+  "recorded_at": "2026-10-15T02:42:17.161571+08:00",
+  "status": "conditional_v3_regression_complete_PPO_native_resume_submitted_restore_pending",
+  "diagnostic_version": "native-full-current-v3-feedback-v69",
+  "diagnostic_code_commit": "94862835",
+  "PPO_plan_execution_commit": "94a3dc3f",
+  "source_stage": {
+    "status": "source_staged_only_no_GPU_job",
+    "destination": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/source",
+    "source_SHA256": {
+      "observe_saved_full_v3_feedback_v69.py": "099b46f9366be80cfc9af3ea586e0bb400a27a9149874970afdac366617fe596",
+      "observe_common_update_feedback_v47.py": "211a5bf1c13791c292958837dafe14023b04c2ea2be071145a165a9e8606a843",
+      "observe_native_gradient_chain_v4.py": "3cbefaf36f2a33712094cd017f0cdf026d1a94fee44d2d1c973eb74ef3251117",
+      "observe_native_optimizer_minibatch.py": "6ed5cd292d8d34d9f701bdf859ec97c7100f9b5e9adc14ab798dbd597645a1c2",
+      "observe_native_actor_loss_gradients.py": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047"
+    },
+    "native_update_calls_planned": 2,
+    "native_optimizer_steps_planned": 8,
+    "native_DT_request_rows_planned": 128,
+    "generation_calls_planned": 0,
+    "validation_score_calls_planned": 0,
+    "GRPO_model_reruns_planned": 0,
+    "formal_training_changed": false
+  },
+  "case_manifest": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/case-manifest.json",
+  "case": {
+    "scope": "Full approved DTPO v3 at original checkpoint80 and actual original iteration81 input. Original native PPO/AdamW/scheduler and captured RNG; fixed-seed gradient/hidden-propagation regression, not quality scoring.",
+    "question": "At the actual saved bad state, does the complete approved v3 change the measured native-update-to-sensitivity feedback, while the original native full update reproduces the old effect?",
+    "measurement": "Two arms, four original native optimizer updates per arm. Before/after original fixed-input/fixed-BF16-seed parameter VJP and native hidden-adjoint layer gains; actual native update metrics and parameter displacement. Recompute v3 DT with the existing owner, then restore captured training RNG before update.",
+    "decision": "Only compare the observed conditional feedback. A smaller first gradient alone is insufficient. Neither success nor failure proves the complete from-scratch counterfactual trajectory.",
+    "arms": [
+      {
+        "name": "full_original",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/full_original-original81.pkl",
+        "SHA256": "6cf5e178ec4da959bc8755747767000e63a0136e8d87876d336481d4f7925e9c",
+        "rows": 256
+      },
+      {
+        "name": "approved_v3_full_method",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/saved-bad-state-v3-DT-contract-v68/original81-for-native-v3-DT.pkl",
+        "SHA256": "b38f5c930bb3a50c7a331f4cdd03ad4274a73b61bf425b361e2ad3e8b26bc3fd",
+        "rows": 256,
+        "prepare_current_v3": true
+      }
+    ],
+    "cases": [
+      {
+        "name": "full_original_before",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/matched-action-observation-target-derivatives-v20/late-target-derivative-carrier.pkl",
+        "SHA256": "b169379be54393e03ee2e0e7ca747dc8fd473fbd49bde63cc3f96962907b0f49",
+        "rows": 64,
+        "checkpoint": 80,
+        "state_kind": "original_completed_checkpoint80",
+        "boundary_seed_source_case": "late80_native",
+        "boundary_seed_source_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-fixed-seed-propagation-v33",
+        "boundary_seed_SHA256_by_rank_micro": {
+          "0:0": "304362cc4ff1b903cac5f10db0594027d78b8ebc588931292c9770d6b58c9f3a",
+          "0:1": "525f23710da878f371a5d3a5e067e64d97dcd38f6c2e74b57d21e65f90f491fe",
+          "0:2": "fa73e964c74c2895b88f2f0b0a55f6d3e7344bad8db2efc52989eec92453addb",
+          "0:3": "757deec1223ae81c744f4a6645c1c80826bc415aec65ef8ac557477a1df0c48c",
+          "0:4": "8f2875bc830d4a678f56efa9ca67c62a1e67a28bbe27900a0af8986e5bd00eba",
+          "0:5": "daa14e1e36648aff402d8795d5cd23696ed1b258d400c43cbc38ee92f4a966e5",
+          "0:6": "0c988969a0165a4fd3c20f9118492627ff8d6a1c601e88a2e15b9fb3d27694c6",
+          "0:7": "3fc7afdd2035d6875bf5dc64896c71bdd6686a0f2a8bc5deb00e37543954c838",
+          "1:0": "82b098bbbcf55711cc6084f1a6bfd8ebace0fecbf65467195347cb3ae0b40db6",
+          "1:1": "adbb22f318003c61eeb14120512f50b80dc39a784a89b945eeca438b6d032929",
+          "1:2": "e8435f3010df89c46297784cf8ac5c798cbe282dffd1f75165321f9c36b99479",
+          "1:3": "6bdd7208644f43efcbf6338acc936c4222db0dd299fbf440d19cd63bb6e7cd64",
+          "1:4": "3af122499addb921c74699739fa13ad129b7c081485ef0ded223d96418229332",
+          "1:5": "d80f4a1c1dd239af95fe07964cc61d7f6a9cf4f9907356bfc860dcd555b677cf",
+          "1:6": "67fdb7bbc9ac49489cc7d63fe182c42c34b68f503ae79c58bdaef6eec015c2db",
+          "1:7": "a9cc391c5152c1795cde2759171371533e24c57936e3f42794cdaa80602d61ba"
+        },
+        "expected_trainable_SHA256_by_rank": {
+          "0": "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "1": "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
+        }
+      },
+      {
+        "name": "full_original_after",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/matched-action-observation-target-derivatives-v20/late-target-derivative-carrier.pkl",
+        "SHA256": "b169379be54393e03ee2e0e7ca747dc8fd473fbd49bde63cc3f96962907b0f49",
+        "rows": 64,
+        "checkpoint": 81,
+        "state_kind": "diagnostic_after_four_native_optimizer_steps_not_a_saved_checkpoint",
+        "boundary_seed_source_case": "late80_native",
+        "boundary_seed_source_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-fixed-seed-propagation-v33",
+        "boundary_seed_SHA256_by_rank_micro": {
+          "0:0": "304362cc4ff1b903cac5f10db0594027d78b8ebc588931292c9770d6b58c9f3a",
+          "0:1": "525f23710da878f371a5d3a5e067e64d97dcd38f6c2e74b57d21e65f90f491fe",
+          "0:2": "fa73e964c74c2895b88f2f0b0a55f6d3e7344bad8db2efc52989eec92453addb",
+          "0:3": "757deec1223ae81c744f4a6645c1c80826bc415aec65ef8ac557477a1df0c48c",
+          "0:4": "8f2875bc830d4a678f56efa9ca67c62a1e67a28bbe27900a0af8986e5bd00eba",
+          "0:5": "daa14e1e36648aff402d8795d5cd23696ed1b258d400c43cbc38ee92f4a966e5",
+          "0:6": "0c988969a0165a4fd3c20f9118492627ff8d6a1c601e88a2e15b9fb3d27694c6",
+          "0:7": "3fc7afdd2035d6875bf5dc64896c71bdd6686a0f2a8bc5deb00e37543954c838",
+          "1:0": "82b098bbbcf55711cc6084f1a6bfd8ebace0fecbf65467195347cb3ae0b40db6",
+          "1:1": "adbb22f318003c61eeb14120512f50b80dc39a784a89b945eeca438b6d032929",
+          "1:2": "e8435f3010df89c46297784cf8ac5c798cbe282dffd1f75165321f9c36b99479",
+          "1:3": "6bdd7208644f43efcbf6338acc936c4222db0dd299fbf440d19cd63bb6e7cd64",
+          "1:4": "3af122499addb921c74699739fa13ad129b7c081485ef0ded223d96418229332",
+          "1:5": "d80f4a1c1dd239af95fe07964cc61d7f6a9cf4f9907356bfc860dcd555b677cf",
+          "1:6": "67fdb7bbc9ac49489cc7d63fe182c42c34b68f503ae79c58bdaef6eec015c2db",
+          "1:7": "a9cc391c5152c1795cde2759171371533e24c57936e3f42794cdaa80602d61ba"
+        }
+      },
+      {
+        "name": "approved_v3_full_method_before",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/matched-action-observation-target-derivatives-v20/late-target-derivative-carrier.pkl",
+        "SHA256": "b169379be54393e03ee2e0e7ca747dc8fd473fbd49bde63cc3f96962907b0f49",
+        "rows": 64,
+        "checkpoint": 80,
+        "state_kind": "original_completed_checkpoint80",
+        "boundary_seed_source_case": "late80_native",
+        "boundary_seed_source_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-fixed-seed-propagation-v33",
+        "boundary_seed_SHA256_by_rank_micro": {
+          "0:0": "304362cc4ff1b903cac5f10db0594027d78b8ebc588931292c9770d6b58c9f3a",
+          "0:1": "525f23710da878f371a5d3a5e067e64d97dcd38f6c2e74b57d21e65f90f491fe",
+          "0:2": "fa73e964c74c2895b88f2f0b0a55f6d3e7344bad8db2efc52989eec92453addb",
+          "0:3": "757deec1223ae81c744f4a6645c1c80826bc415aec65ef8ac557477a1df0c48c",
+          "0:4": "8f2875bc830d4a678f56efa9ca67c62a1e67a28bbe27900a0af8986e5bd00eba",
+          "0:5": "daa14e1e36648aff402d8795d5cd23696ed1b258d400c43cbc38ee92f4a966e5",
+          "0:6": "0c988969a0165a4fd3c20f9118492627ff8d6a1c601e88a2e15b9fb3d27694c6",
+          "0:7": "3fc7afdd2035d6875bf5dc64896c71bdd6686a0f2a8bc5deb00e37543954c838",
+          "1:0": "82b098bbbcf55711cc6084f1a6bfd8ebace0fecbf65467195347cb3ae0b40db6",
+          "1:1": "adbb22f318003c61eeb14120512f50b80dc39a784a89b945eeca438b6d032929",
+          "1:2": "e8435f3010df89c46297784cf8ac5c798cbe282dffd1f75165321f9c36b99479",
+          "1:3": "6bdd7208644f43efcbf6338acc936c4222db0dd299fbf440d19cd63bb6e7cd64",
+          "1:4": "3af122499addb921c74699739fa13ad129b7c081485ef0ded223d96418229332",
+          "1:5": "d80f4a1c1dd239af95fe07964cc61d7f6a9cf4f9907356bfc860dcd555b677cf",
+          "1:6": "67fdb7bbc9ac49489cc7d63fe182c42c34b68f503ae79c58bdaef6eec015c2db",
+          "1:7": "a9cc391c5152c1795cde2759171371533e24c57936e3f42794cdaa80602d61ba"
+        },
+        "expected_trainable_SHA256_by_rank": {
+          "0": "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "1": "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
+        }
+      },
+      {
+        "name": "approved_v3_full_method_after",
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/matched-action-observation-target-derivatives-v20/late-target-derivative-carrier.pkl",
+        "SHA256": "b169379be54393e03ee2e0e7ca747dc8fd473fbd49bde63cc3f96962907b0f49",
+        "rows": 64,
+        "checkpoint": 81,
+        "state_kind": "diagnostic_after_four_native_optimizer_steps_not_a_saved_checkpoint",
+        "boundary_seed_source_case": "late80_native",
+        "boundary_seed_source_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-fixed-seed-propagation-v33",
+        "boundary_seed_SHA256_by_rank_micro": {
+          "0:0": "304362cc4ff1b903cac5f10db0594027d78b8ebc588931292c9770d6b58c9f3a",
+          "0:1": "525f23710da878f371a5d3a5e067e64d97dcd38f6c2e74b57d21e65f90f491fe",
+          "0:2": "fa73e964c74c2895b88f2f0b0a55f6d3e7344bad8db2efc52989eec92453addb",
+          "0:3": "757deec1223ae81c744f4a6645c1c80826bc415aec65ef8ac557477a1df0c48c",
+          "0:4": "8f2875bc830d4a678f56efa9ca67c62a1e67a28bbe27900a0af8986e5bd00eba",
+          "0:5": "daa14e1e36648aff402d8795d5cd23696ed1b258d400c43cbc38ee92f4a966e5",
+          "0:6": "0c988969a0165a4fd3c20f9118492627ff8d6a1c601e88a2e15b9fb3d27694c6",
+          "0:7": "3fc7afdd2035d6875bf5dc64896c71bdd6686a0f2a8bc5deb00e37543954c838",
+          "1:0": "82b098bbbcf55711cc6084f1a6bfd8ebace0fecbf65467195347cb3ae0b40db6",
+          "1:1": "adbb22f318003c61eeb14120512f50b80dc39a784a89b945eeca438b6d032929",
+          "1:2": "e8435f3010df89c46297784cf8ac5c798cbe282dffd1f75165321f9c36b99479",
+          "1:3": "6bdd7208644f43efcbf6338acc936c4222db0dd299fbf440d19cd63bb6e7cd64",
+          "1:4": "3af122499addb921c74699739fa13ad129b7c081485ef0ded223d96418229332",
+          "1:5": "d80f4a1c1dd239af95fe07964cc61d7f6a9cf4f9907356bfc860dcd555b677cf",
+          "1:6": "67fdb7bbc9ac49489cc7d63fe182c42c34b68f503ae79c58bdaef6eec015c2db",
+          "1:7": "a9cc391c5152c1795cde2759171371533e24c57936e3f42794cdaa80602d61ba"
+        }
+      }
+    ],
+    "limits": [
+      "Old checkpoint80 weights, optimizer history, original iteration81 inputs and reference/old log probabilities remain fixed across arms.",
+      "The full new method changes group multiplier and uses variance-only scaling as approved by the user; it is not the previous partial-row ablation.",
+      "Exact old DT credit is not reused for new nonzero multipliers. The deployed native request/DT/advantage components compute all new values.",
+      "The fixed output seed probes a specific directional sensitivity; hidden-layer and parameter-coordinate changes are reported separately.",
+      "This is a finite diagnostic, not old formal training continuation, a GRPO rerun, a validation-score test, or a long-run stability proof.",
+      "No diagnostic parameter artifact is a formal training checkpoint or part of formal backup progress."
+    ],
+    "source_bindings": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/utils/torch_functional.py": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/ray_trainer.py": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/dt_training_batch.py": "1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/entry/dt_training_batch.py": "a4e1f70b42082972324199b328975fb87ec6600ab9a572d5ca2b2040bebc54f7"
+    }
+  },
+  "PPO": {
+    "status": "temporarily_stopped_native_full_restore_required",
+    "stopped_pid": 2308539,
+    "birth": 1791985613.77,
+    "completed_checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20",
+    "checkpoint_iteration": 20,
+    "native_checkpoint_role_states": [
+      {
+        "role": "actor",
+        "rank": 0,
+        "scheduler": 20,
+        "optimizer_steps": [
+          80.0
+        ],
+        "optimizer_entries": 496,
+        "rng_keys": [
+          "cpu",
+          "cuda",
+          "numpy",
+          "random"
+        ],
+        "rollout_rng_saved": true,
+        "files": {
+          "model": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/actor/model_world_size_2_rank_0.pt",
+            "bytes": 8997781971
+          },
+          "optim": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/actor/optim_world_size_2_rank_0.pt",
+            "bytes": 87091812
+          },
+          "extra_state": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/actor/extra_state_world_size_2_rank_0.pt",
+            "bytes": 15353
+          }
+        }
+      },
+      {
+        "role": "actor",
+        "rank": 1,
+        "scheduler": 20,
+        "optimizer_steps": [
+          80.0
+        ],
+        "optimizer_entries": 496,
+        "rng_keys": [
+          "cpu",
+          "cuda",
+          "numpy",
+          "random"
+        ],
+        "rollout_rng_saved": true,
+        "files": {
+          "model": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/actor/model_world_size_2_rank_1.pt",
+            "bytes": 8997781971
+          },
+          "optim": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/actor/optim_world_size_2_rank_1.pt",
+            "bytes": 87091812
+          },
+          "extra_state": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/actor/extra_state_world_size_2_rank_1.pt",
+            "bytes": 15353
+          }
+        }
+      },
+      {
+        "role": "critic",
+        "rank": 0,
+        "scheduler": 20,
+        "optimizer_steps": [
+          80.0
+        ],
+        "optimizer_entries": 428,
+        "rng_keys": [
+          "cpu",
+          "cuda",
+          "numpy",
+          "random"
+        ],
+        "rollout_rng_saved": true,
+        "files": {
+          "model": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/critic/model_world_size_2_rank_0.pt",
+            "bytes": 16785807531
+          },
+          "optim": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/critic/optim_world_size_2_rank_0.pt",
+            "bytes": 31747249684
+          },
+          "extra_state": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/critic/extra_state_world_size_2_rank_0.pt",
+            "bytes": 15077
+          }
+        }
+      },
+      {
+        "role": "critic",
+        "rank": 1,
+        "scheduler": 20,
+        "optimizer_steps": [
+          80.0
+        ],
+        "optimizer_entries": 428,
+        "rng_keys": [
+          "cpu",
+          "cuda",
+          "numpy",
+          "random"
+        ],
+        "rollout_rng_saved": true,
+        "files": {
+          "model": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/critic/model_world_size_2_rank_1.pt",
+            "bytes": 16785807531
+          },
+          "optim": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/critic/optim_world_size_2_rank_1.pt",
+            "bytes": 31747216916
+          },
+          "extra_state": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20/critic/extra_state_world_size_2_rank_1.pt",
+            "bytes": 15077
+          }
+        }
+      }
+    ],
+    "stop_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/PPO-temporary-stop-for-v69-v70.json",
+    "resume_prepared": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-PPO-resume-after-v69-v70-prepared.json",
+    "resume_configuration_changes": {
+      "trainer.resume_mode": {
+        "before": "auto",
+        "after": "resume_path"
+      },
+      "trainer.resume_from_path": {
+        "before": null,
+        "after": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20"
+      }
+    },
+    "restore_required_after_diagnostic": true,
+    "new_checkpoint_created": false
+  },
+  "protected_formal_jobs": [
+    {
+      "pid": 3140624,
+      "birth": 1791993570.92
+    },
+    {
+      "pid": 3174448,
+      "birth": 1791793629.73
+    },
+    {
+      "pid": 2617231,
+      "birth": 1791949058.07
+    },
+    {
+      "pid": 2617232,
+      "birth": 1791949058.07
+    }
+  ],
+  "planned_physical_gpus": [
+    2,
+    3
+  ],
+  "actual_GPU_job_started": false,
+  "new_generation_calls": 0,
+  "GRPO_model_reruns": 0,
+  "validation_score_calls": 0,
+  "rootcause_repair_verified": false,
+  "goal_status": "active",
+  "hourly_automation": "PAUSED",
+  "gradient_coordinate_evidence": "experiments/rl/results_textcraft_gradient_coordinates_20261015_v1.json",
+  "formal_DTPO_v3_method_unchanged": true,
+  "actual_job": {
+    "pid": 4005229,
+    "birth": 1792001802.8,
+    "started_unix": 1792001802.8968158,
+    "physical_gpus": [
+      2,
+      3
+    ],
+    "diagnostic_commit": "94a3dc3f0eacfd7593d800495ee2c457629397bf",
+    "status": "submitted_native_diagnostic_initialization_pending",
+    "manifest": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/case-manifest.json",
+    "manifest_SHA256": "59f0092c5605078c5e4140e64d469fd96ef0a7c11f31e800e2335451e12f66a7",
+    "source_SHA256": {
+      "observe_saved_full_v3_feedback_v69.py": "099b46f9366be80cfc9af3ea586e0bb400a27a9149874970afdac366617fe596",
+      "observe_common_update_feedback_v47.py": "211a5bf1c13791c292958837dafe14023b04c2ea2be071145a165a9e8606a843",
+      "observe_native_gradient_chain_v4.py": "3cbefaf36f2a33712094cd017f0cdf026d1a94fee44d2d1c973eb74ef3251117",
+      "observe_native_optimizer_minibatch.py": "6ed5cd292d8d34d9f701bdf859ec97c7100f9b5e9adc14ab798dbd597645a1c2",
+      "observe_native_actor_loss_gradients.py": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047"
+    },
+    "source_bindings": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/utils/torch_functional.py": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/ray_trainer.py": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-prefix-runtime-20261007-v1/textcraft/entry/dt_training_batch.py": "1a3f39d2ae11add49b1edb9077e915bf5f28d3f7fc9da929dd00fba79413004e",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/entry/dt_training_batch.py": "a4e1f70b42082972324199b328975fb87ec6600ab9a572d5ca2b2040bebc54f7"
+    },
+    "native_optimizer_steps_planned": 8,
+    "native_optimizer_steps_executed": "read result.json",
+    "formal_training_changed": false,
+    "old_formal_DTPO_resumed": false,
+    "GRPO_reruns": 0,
+    "protected_formal_jobs": [
+      {
+        "pid": 3140624,
+        "birth": 1791993570.92
+      },
+      {
+        "pid": 3174448,
+        "birth": 1791793629.73
+      }
+    ],
+    "accepted_repair": null,
+    "deployed_repair": null,
+    "scope": "Full approved DTPO v3 at original checkpoint80 and actual original iteration81 input. Original native PPO/AdamW/scheduler and captured RNG; fixed-seed gradient/hidden-propagation regression, not quality scoring.",
+    "question": "At the actual saved bad state, does the complete approved v3 change the measured native-update-to-sensitivity feedback, while the original native full update reproduces the old effect?",
+    "limits": [
+      "Old checkpoint80 weights, optimizer history, original iteration81 inputs and reference/old log probabilities remain fixed across arms.",
+      "The full new method changes group multiplier and uses variance-only scaling as approved by the user; it is not the previous partial-row ablation.",
+      "Exact old DT credit is not reused for new nonzero multipliers. The deployed native request/DT/advantage components compute all new values.",
+      "The fixed output seed probes a specific directional sensitivity; hidden-layer and parameter-coordinate changes are reported separately.",
+      "This is a finite diagnostic, not old formal training continuation, a GRPO rerun, a validation-score test, or a long-run stability proof.",
+      "No diagnostic parameter artifact is a formal training checkpoint or part of formal backup progress."
+    ]
+  },
+  "last_observation": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69-status-1792002052.json",
+    "unix": 1792002052.8474545,
+    "alive": true,
+    "state": {
+      "scope": "Regress the approved full v3 method at the saved bad state, via native owners.\n\nThe existing diagnostic owns checkpoint/RNG restore, fixed-seed probes and\nunchanged native PPO updates. This adapter only prepares the approved v3 DT\nadvantages from original saved trajectories; no generation or quality score.\n",
+      "manifest": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/case-manifest.json",
+      "started_unix": 1792001824.6016245,
+      "observations": [],
+      "native_optimizer_updates_executed": 0,
+      "native_scheduler_updates_executed": 0,
+      "formal_training_changed": false,
+      "GRPO_reruns": 0,
+      "rollout_calls": 0,
+      "DT_calls": 0,
+      "validation_score_calls": 0,
+      "question": "At the actual saved bad state, does the complete approved v3 change the measured native-update-to-sensitivity feedback, while the original native full update reproduces the old effect?",
+      "method_variant": "original_saved_DTPO_vs_full_user_approved_v3",
+      "phase": "loading_original_checkpoint80",
+      "observed_unix": 1792002007.9760976,
+      "arm": "full_original"
+    }
+  },
+  "diagnostic_result_snapshot": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\native-full-current-v3-feedback-v69-status-final.json",
+    "SHA256": "e18967db6436c3efa6066876bd8026ea7ff7ef3a01e93222f645bae7c9b4d742",
+    "remote_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69-status-1792002942.json",
+    "phase": "complete_conditional_update_to_gain_comparison_not_full_rootcause_acceptance",
+    "alive": false
+  },
+  "completed_native_optimizer_updates": 8,
+  "completed_native_scheduler_updates": 2,
+  "accounting": {
+    "remote_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/completed-full-current-v3-feedback-accounting-v71.json",
+    "local_snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\account_saved_full_v3_feedback_v71-dt.json",
+    "arms": {
+      "full_original": {
+        "native_grad_norms": [
+          0.8524022698402405,
+          2.186267137527466,
+          0.8003514409065247,
+          2.0659663677215576
+        ],
+        "native_grad_norm_mean": 1.4762468039989471,
+        "native_actual_net_parameter_displacement_norm_by_side": {
+          "A": 0.007716716305117084,
+          "B": 0.00677634505290951
+        },
+        "native_actual_net_parameter_displacement_norm_by_layer": {
+          "0": 0.0016418298072999747,
+          "1": 0.001641468132035873,
+          "2": 0.0016228471165159357,
+          "3": 0.0016170401834156038,
+          "4": 0.0016475983971114263,
+          "5": 0.0016513621372251587,
+          "6": 0.0017068209322941479,
+          "7": 0.0017104687669148503,
+          "8": 0.0019098769779993334,
+          "9": 0.0019243293344102703,
+          "10": 0.0018718507164742749,
+          "11": 0.001880963393401386,
+          "12": 0.001943100985190859,
+          "13": 0.0018666550749373762,
+          "14": 0.0019405918901572701,
+          "15": 0.0018621822568060421,
+          "16": 0.0020267216205845087,
+          "17": 0.0019142329615011349,
+          "18": 0.0019218823161564328,
+          "19": 0.0018799672051597973,
+          "20": 0.0018500898503929495,
+          "21": 0.0018088716408134796,
+          "22": 0.001804126196602205,
+          "23": 0.0016620639708058021,
+          "24": 0.0016844738275272424,
+          "25": 0.0016513707075535395,
+          "26": 0.0016451571206229116,
+          "27": 0.0017372072878849031,
+          "28": 0.0018772559787092326,
+          "29": 0.0020424305197776892,
+          "30": 0.002136473868511833,
+          "31": 0.001844009382030547
+        },
+        "before_parameter_digests": [
+          "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
+        ],
+        "after_parameter_digests": [
+          "2e325b2ecf15ddc75ac208a08b053d60ea39830abd6268bbb76b578f79bfaafb",
+          "ec89a20dbfa08feb66629d1aaab1027b3fc1303dd951d60115931880fdf4dc73"
+        ],
+        "fixed_seed_parameter_VJP_before": 1.1112413654803197,
+        "fixed_seed_parameter_VJP_after": 1.1232119655783315,
+        "fixed_seed_parameter_VJP_ratio": 1.0107722772656484
+      },
+      "approved_v3_full_method": {
+        "native_grad_norms": [
+          0.12775172293186188,
+          0.1264338195323944,
+          0.1720336675643921,
+          0.18680743873119354
+        ],
+        "native_grad_norm_mean": 0.15325666218996048,
+        "native_actual_net_parameter_displacement_norm_by_side": {
+          "A": 0.0066213537375186485,
+          "B": 0.006387359876079733
+        },
+        "native_actual_net_parameter_displacement_norm_by_layer": {
+          "0": 0.001721550261173457,
+          "1": 0.0016739491700949486,
+          "2": 0.0016474449823499569,
+          "3": 0.0016100485998185154,
+          "4": 0.0015540508824111374,
+          "5": 0.001535116663226424,
+          "6": 0.0015060729403361447,
+          "7": 0.00151230909276032,
+          "8": 0.0017089764369538495,
+          "9": 0.0016875317832233782,
+          "10": 0.0016587716298996614,
+          "11": 0.0016626186303039026,
+          "12": 0.0017455050774551931,
+          "13": 0.0017155600442608733,
+          "14": 0.001714210951484192,
+          "15": 0.001638073684814059,
+          "16": 0.0017898202859567007,
+          "17": 0.0017197891996399192,
+          "18": 0.0017024053034181514,
+          "19": 0.0016572279932635938,
+          "20": 0.0016261099702205395,
+          "21": 0.0015760016409849496,
+          "22": 0.0015733219060767654,
+          "23": 0.0014133968834076237,
+          "24": 0.0014362351860884334,
+          "25": 0.0014039547516016867,
+          "26": 0.0013821935208957763,
+          "27": 0.0015004489700670759,
+          "28": 0.0016184936700678093,
+          "29": 0.0017455721788572672,
+          "30": 0.0018576734404652032,
+          "31": 0.001620392485917867
+        },
+        "before_parameter_digests": [
+          "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
+          "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
+        ],
+        "after_parameter_digests": [
+          "0ddb84067e19488a8d3cfc9bb8bac1b2ee75065443a1bf8683113d7402f8c0ef",
+          "ade0b12080827da1b6b9993c3b652bf8a50f4116278c4c732c929134418be53f"
+        ],
+        "fixed_seed_parameter_VJP_before": 1.1108367991963037,
+        "fixed_seed_parameter_VJP_after": 1.1069532681826475,
+        "fixed_seed_parameter_VJP_ratio": 0.9965039589825743
+      }
+    },
+    "before_probe_relative_difference": -0.00036406697643143193,
+    "net_displacement_cosine": 0.910101964233627,
+    "net_displacement_norms": [
+      0.010269691466142065,
+      0.009200037581657229
+    ],
+    "v3_DT_preparation": {
+      "unix": 1792002722.770313,
+      "elapsed_seconds": 273.89632987976074,
+      "checks": {
+        "official_group_multiplier_unchanged": true,
+        "original_rewards_oldlogp_reference_unchanged": true,
+        "zero_group_all_credit_zero": true,
+        "observation_padding_zero": true,
+        "variance_only_contract": true,
+        "signs_preserved": true,
+        "finite_advantages": true
+      },
+      "source_bindings": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/entry/dt_training_batch.py": "a4e1f70b42082972324199b328975fb87ec6600ab9a572d5ca2b2040bebc54f7",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/ray_trainer.py": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/utils/torch_functional.py": "079a6d20696a861340687d6e61fb4162cc1d436837ce747ac9ef318b738c1701"
+      },
+      "actual_DT_owners": [
+        {
+          "pid": 4009682,
+          "birth": 1792001832.84,
+          "rank": 0,
+          "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/actor/dp_actor.py",
+          "worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/fsdp_workers.py",
+          "modules": {
+            "reward_readout": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/reward_readout.py",
+              "SHA256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b"
+            },
+            "qwen35_gdn_finite": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+              "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+            },
+            "qwen35_dense_finite_runner": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+              "SHA256": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd"
+            },
+            "qwen35_decoder_finite": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+              "SHA256": "44153c172bde57ccf15f26998c5b4c1a986621b11751ead71023a3a8e8404486"
+            }
+          }
+        },
+        {
+          "pid": 4011454,
+          "birth": 1792001850.61,
+          "rank": 1,
+          "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/actor/dp_actor.py",
+          "worker_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/fsdp_workers.py",
+          "modules": {
+            "reward_readout": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/reward_readout.py",
+              "SHA256": "814cfe929b4afcc5ce3570450ea8aca269b1097db7abed83dc917df3f1d1cc9b"
+            },
+            "qwen35_gdn_finite": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+              "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+            },
+            "qwen35_dense_finite_runner": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+              "SHA256": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd"
+            },
+            "qwen35_decoder_finite": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-gate-capture-host-20261012-v1/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+              "SHA256": "44153c172bde57ccf15f26998c5b4c1a986621b11751ead71023a3a8e8404486"
+            }
+          }
+        }
+      ],
+      "rows": 256,
+      "zero_group_rows": 128,
+      "raw_masked_std": 0.46988704800605774,
+      "output_masked_mean": -0.09195585548877716,
+      "output_masked_std": 0.9999999403953552,
+      "original_RNG_restored_after_DT": [
+        {
+          "rank": 0,
+          "original_captured_training_rng_restored": true,
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/dt/checkpoint80-rank0-rng.pt"
+        },
+        {
+          "rank": 1,
+          "original_captured_training_rng_restored": true,
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/dt/checkpoint80-rank1-rng.pt"
+        }
+      ],
+      "payload": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/full-current-v3-actual-advantages.pkl",
+      "payload_SHA256": "94f191f855f26ccb9607c78cc0cb9020868dc1565d849136f9a9a73aa01d5f14",
+      "native_DT_request_rows": 128,
+      "new_generation_calls": 0,
+      "GRPO_model_reruns": 0,
+      "validation_score_calls": 0,
+      "rootcause_repair_verified": false
+    }
+  },
+  "chain_accounting": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\completed-full-current-v3-chain-v72.json",
+    "SHA256": "43e2a8732c34e290f4a7cb060464ab5e6a49e7b4bde0913b67362febb6331316",
+    "arms": {
+      "full_original": {
+        "parameter_VJP_ratio": 1.0107722772656487,
+        "B4_increment_RSS_ratio": 1.002101460285318,
+        "B4_accumulation_direction_factor_ratio": 1.0086526338140072,
+        "layer_input_adjoint_norm_ratio": {
+          "0": 0.9273958729226578,
+          "1": 0.9034392361646925,
+          "2": 0.9082617395647133,
+          "3": 0.9002137392186426,
+          "4": 0.946237614073347,
+          "5": 0.9682295991493934,
+          "6": 1.0214017440375998,
+          "7": 1.0293470415561996,
+          "8": 1.029005759946818,
+          "9": 1.02523969009078,
+          "10": 1.0255185320216875,
+          "11": 1.0230465817563634,
+          "12": 1.0208923872138256,
+          "13": 1.0057606105731756,
+          "14": 1.0025144349168975,
+          "15": 1.0003961609147427,
+          "16": 0.9995976205915469,
+          "17": 0.9982009642280655,
+          "18": 0.9976670726377899,
+          "19": 1.0017158450097206,
+          "20": 1.0053879160578034,
+          "21": 1.005809088605201,
+          "22": 1.006539088507519,
+          "23": 1.0048397129496278,
+          "24": 1.0038492982500489,
+          "25": 1.0032708158677393,
+          "26": 0.9984721229915474,
+          "27": 0.9935539178400866,
+          "28": 1.0111681061569469,
+          "29": 1.0084625712639395,
+          "30": 1.0205146027683782,
+          "31": 1.0161292358875749
+        },
+        "layer_parameter_VJP_norm_ratio": {
+          "0": 0.9235323233233114,
+          "1": 0.9542110883236684,
+          "2": 0.9401205765282561,
+          "3": 0.9820542847087483,
+          "4": 1.0229842596207417,
+          "5": 1.034531332613929,
+          "6": 1.0462027342144302,
+          "7": 1.0356332801645858,
+          "8": 1.0388879564884343,
+          "9": 1.0425843632469944,
+          "10": 1.0383542430929038,
+          "11": 1.0291380259025193,
+          "12": 1.0242685704264625,
+          "13": 1.0062311138490483,
+          "14": 1.004051418388607,
+          "15": 1.0075089864265827,
+          "16": 1.0031510739140945,
+          "17": 0.997626860506048,
+          "18": 0.9985648598712815,
+          "19": 1.0020515392096654,
+          "20": 1.007667847729131,
+          "21": 1.0114935517035546,
+          "22": 1.0120387051835722,
+          "23": 1.0071522975561302,
+          "24": 1.0098190619542968,
+          "25": 1.0034726775459528,
+          "26": 1.000693175009691,
+          "27": 1.001184121869714,
+          "28": 1.027684024345599,
+          "29": 1.012904519470209,
+          "30": 1.0236698264543242,
+          "31": 1.0134282714976854
+        }
+      },
+      "approved_v3_full_method": {
+        "parameter_VJP_ratio": 0.9965039589825743,
+        "B4_increment_RSS_ratio": 0.9804766317502879,
+        "B4_accumulation_direction_factor_ratio": 1.0163464652937984,
+        "layer_input_adjoint_norm_ratio": {
+          "0": 0.9804727678764459,
+          "1": 1.0032277528527447,
+          "2": 0.9686140705460122,
+          "3": 0.9399430645184905,
+          "4": 0.9636289929150637,
+          "5": 0.972211661139779,
+          "6": 0.9879856190695934,
+          "7": 0.993167507916887,
+          "8": 0.9934706490108984,
+          "9": 0.9977797315765372,
+          "10": 0.9994083077319135,
+          "11": 1.00055126293086,
+          "12": 1.0033835275906902,
+          "13": 1.0187559464981588,
+          "14": 1.0234385514274222,
+          "15": 1.024809524891522,
+          "16": 1.0252635939515446,
+          "17": 1.024613856150811,
+          "18": 1.0238263094894038,
+          "19": 1.025711552506862,
+          "20": 1.0187767637925957,
+          "21": 1.0195098618047314,
+          "22": 1.0213499719088561,
+          "23": 1.021179451788166,
+          "24": 1.0222410054305637,
+          "25": 1.0251080942536215,
+          "26": 1.0237082390160228,
+          "27": 1.0225112419559692,
+          "28": 1.03000295717248,
+          "29": 1.0365844012056753,
+          "30": 1.043780320678823,
+          "31": 1.0225356363600686
+        },
+        "layer_parameter_VJP_norm_ratio": {
+          "0": 0.9449910666013916,
+          "1": 0.9762449705595687,
+          "2": 0.9508486529273062,
+          "3": 0.9684778443685553,
+          "4": 0.9881925540186961,
+          "5": 0.9937007927474345,
+          "6": 1.0116757666636012,
+          "7": 1.0054478165951506,
+          "8": 1.0080177518881779,
+          "9": 1.0149988156331062,
+          "10": 1.0148076605897631,
+          "11": 1.0170501633214921,
+          "12": 1.0155751001077977,
+          "13": 1.0117722566362577,
+          "14": 1.0144545792885689,
+          "15": 1.0226054113940577,
+          "16": 1.0193298795838754,
+          "17": 1.018294400422999,
+          "18": 1.0276874679935357,
+          "19": 1.0252085423393118,
+          "20": 1.0275218963510835,
+          "21": 1.0217445078030356,
+          "22": 1.0224898102375894,
+          "23": 1.0238277538882232,
+          "24": 1.028950498801486,
+          "25": 1.0269530710169514,
+          "26": 1.0238824247968645,
+          "27": 1.029133773032885,
+          "28": 1.033192819851772,
+          "29": 1.05245791568902,
+          "30": 1.04526321767619,
+          "31": 1.0135828757197982
+        }
+      }
+    },
+    "band_gain_ratios": {
+      "full_original": {
+        "0-7": 0.9012543068472116,
+        "8-15": 1.0294199773483534,
+        "16-23": 0.9957646255609148,
+        "24-31": 1.0038492982500486
+      },
+      "approved_v3_full_method": {
+        "0-7": 0.9869166933644258,
+        "8-15": 0.9689904673020617,
+        "16-23": 1.002956825743561,
+        "24-31": 1.0222410054305637
+      }
+    }
+  },
+  "PPO_native_resume": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-PPO-resume-after-v69-v70-job.json",
+    "job": {
+      "pid": 4128395,
+      "birth": 1792002965.29,
+      "started_unix": 1792002965.3927,
+      "physical_gpus": [
+        2,
+        3
+      ],
+      "run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2",
+      "method": "ppo",
+      "status": "submitted_native_PPO_resume_pending_actual_restore",
+      "launcher_commit": "2d3d99cde41eaea80a9689ede80b77a54b922f8b",
+      "source_bindings": {
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/config/ppo_trainer.yaml": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+        "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+      },
+      "launch_SHA256": "d1d249b3ffc360029623fb9c8175c6c19f3ed07e5049b70678d8c85227fdc74d",
+      "source_SHA256": "3c0a74355192566183ae017ea05114dce5a46d894943aa40e419f17e1cd1649f",
+      "protected_GRPO": {
+        "pid": 3174448,
+        "birth": 1791793629.73
+      },
+      "native_PPO_implementation": true,
+      "GRPO_rerun": false,
+      "old_DTPO_resumed": false,
+      "hourly_automation": "PAUSED",
+      "rootcause_repair_verified": false,
+      "resume_from_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_20",
+      "resumed_completed_iteration": 20,
+      "previous_job_identity": {
+        "pid": 2308539,
+        "birth": 1791985613.77,
+        "started_unix": 1791985613.8664448,
+        "physical_gpus": [
+          2,
+          3
+        ],
+        "run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2",
+        "method": "ppo",
+        "status": "native_PPO_full_checkpoint15_restore_verified",
+        "launcher_commit": "2d3d99cde41eaea80a9689ede80b77a54b922f8b",
+        "source_bindings": {
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/config/ppo_trainer.yaml": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+          "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+        },
+        "launch_SHA256": "d1d249b3ffc360029623fb9c8175c6c19f3ed07e5049b70678d8c85227fdc74d",
+        "source_SHA256": "3c0a74355192566183ae017ea05114dce5a46d894943aa40e419f17e1cd1649f",
+        "protected_GRPO": {
+          "pid": 3174448,
+          "birth": 1791793629.73
+        },
+        "native_PPO_implementation": true,
+        "GRPO_rerun": false,
+        "old_DTPO_resumed": false,
+        "hourly_automation": "PAUSED",
+        "rootcause_repair_verified": false,
+        "resume_from_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_15",
+        "resumed_completed_iteration": 15,
+        "previous_job_identity": {
+          "pid": 2671393,
+          "birth": 1791949551.27,
+          "started_unix": 1791949551.371434,
+          "physical_gpus": [
+            2,
+            3
+          ],
+          "run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2",
+          "method": "ppo",
+          "status": "submitted_native_PPO_control_initialization_pending",
+          "launcher_commit": "2d3d99cde41eaea80a9689ede80b77a54b922f8b",
+          "source_bindings": {
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/config/ppo_trainer.yaml": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+            "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+          },
+          "launch_SHA256": "d1d249b3ffc360029623fb9c8175c6c19f3ed07e5049b70678d8c85227fdc74d",
+          "source_SHA256": "3c0a74355192566183ae017ea05114dce5a46d894943aa40e419f17e1cd1649f",
+          "protected_GRPO": {
+            "pid": 3174448,
+            "birth": 1791793629.73
+          },
+          "native_PPO_implementation": true,
+          "GRPO_rerun": false,
+          "old_DTPO_resumed": false,
+          "hourly_automation": "PAUSED",
+          "rootcause_repair_verified": false
+        },
+        "resume_launch_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-PPO-resume-after-v47-v55-prepared.json",
+        "stdout": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume15-v55.stdout.log",
+        "stderr": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume15-v55.stderr.log",
+        "user_authorized_temporary_stop_and_restore": true,
+        "actual_native_restore_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/runtime-overrides/native-PPO-restore-verification-v59.json",
+        "actual_native_restore_observed_unix": 1791987277.0027592
+      },
+      "resume_launch_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-PPO-resume-after-v69-v70-prepared.json",
+      "stdout": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume20-v70.stdout.log",
+      "stderr": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume20-v70.stderr.log",
+      "user_authorized_temporary_stop_and_restore": true,
+      "actual_native_restore_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/runtime-overrides/native-PPO-restore-verification-v59.json",
+      "actual_native_restore_observed_unix": 1791987277.0027592
+    },
+    "actual_restore_verified": false
+  },
+  "hourly_checks": "PAUSED",
+  "goal": "active",
+  "decision_limits": [
+    "The original-arm fixed-probe growth is 1.077%, compared with 7.228% in previous v47; the difference is retained and is not an error bound.",
+    "Complete v3 reduces native preclip gradient magnitude, but its small total fixed-probe decline does not imply that all internal layer gains decline.",
+    "Upper24-31 directional gain still grows by2.224% in v3, compared with0.385% in this original arm.",
+    "This is conditional on old checkpoint80, optimizer history and saved original81 input; it cannot establish the new from-scratch training trajectory."
+  ],
+  "latest_plots": {
+    "output": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836",
+    "files": [
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\source-snapshot.json",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\algorithm-comparison-common-window.png",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\algorithm-comparison-common-window.svg",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\algorithm-comparison-full.png",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\algorithm-comparison-full.svg",
+      "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\metrics-with-sources.csv"
+    ],
+    "completed_iterations": {
+      "dt": 4,
+      "grpo": 158,
+      "ppo": 20
+    },
+    "common_window": 4,
+    "original_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\source-snapshot.json",
+    "new_training_changes": 0,
+    "model_calls": 0,
+    "primary_figure": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\algorithm-comparison-common-window.png",
+    "full_history_figure": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-024836\\algorithm-comparison-full.png"
+  },
+  "native_original_input_source_comparison": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\saved-v47-v69-native-input-source-comparison.json",
+    "value": {
+      "original_launch_same": true,
+      "arm_original_payload_same": true,
+      "captured_training_RNG_bindings_same": true,
+      "original_case_inputs_and_seeds_same": true,
+      "environment_changed_keys_only": [
+        "CUDA_VISIBLE_DEVICES",
+        "DT_FSDP_EVENT_WAIT_RECEIPTS",
+        "PYTHONPATH",
+        "VERL_ROOT"
+      ],
+      "actor_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/actor/dp_actor.py",
+      "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "actor_lines": [
+        {
+          "line": 396,
+          "text": "        # See PPO paper for details. https://arxiv.org/abs/1707.06347"
+        },
+        {
+          "line": 397,
+          "text": "        if has_multi_modal_inputs:"
+        },
+        {
+          "line": 398,
+          "text": "            num_mini_batches = data.batch.batch_size[0] // self.config.ppo_mini_batch_size"
+        },
+        {
+          "line": 399,
+          "text": "            non_tensor_select_keys = [\"multi_modal_inputs\"]"
+        },
+        {
+          "line": 400,
+          "text": "            dataloader = data.select(select_keys, non_tensor_select_keys).chunk(num_mini_batches)"
+        },
+        {
+          "line": 401,
+          "text": "        else:"
+        },
+        {
+          "line": 402,
+          "text": "            dataloader = batch.split(self.config.ppo_mini_batch_size)"
+        },
+        {
+          "line": 403,
+          "text": ""
+        }
+      ],
+      "new_model_calls": 0,
+      "new_backward_calls": 0,
+      "new_optimizer_calls": 0
+    }
+  },
+  "accounting_adapter_SHA256": {
+    "account_saved_full_v3_feedback_v71.py": "2d3659f2c5e4b17a130e647dd33c2cde41de73ddd133cf52725d697c14efa9af",
+    "account_saved_full_v3_chain_v72.py": "ffeda56a8a934c11eaa84a19a164a0abdae80ca9548c83626b4d83a9837a3066"
+  },
+  "PPO_status_reader_SHA256": "0ddcacf102b7616000f3465e86a0d3ca3632feab671d5db22ae25f87ff69dce5"
+}

@@ -27,8 +27,10 @@ if psutil.pid_exists(job['pid']):
 report={'unix':time.time(),'scope':__doc__,'job':job,'alive':alive,'observed_birth':birth,
     'children':children,'new_model_calls':0,'logs':{},'ray_sessions':[],
     'completed_runtime_overrides':[],'native_metrics':[],'native_phases':[]}
-for name in ('driver.stdout.log','driver.stderr.log'):
-    path=run/name
+for stream in ('stdout','stderr'):
+    # A native resume has its own driver logs in the same run directory.
+    path=Path(job.get(stream,run/f'driver.{stream}.log'))
+    name=path.name
     if path.is_file():
         lines=path.read_text(errors='replace').splitlines()
         report['logs'][name]={'path':str(path),'lines':len(lines),'tail':'\n'.join(lines[-65:])[-18000:]}
