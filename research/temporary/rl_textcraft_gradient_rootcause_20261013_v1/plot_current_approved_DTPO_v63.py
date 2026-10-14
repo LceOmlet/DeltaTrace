@@ -26,12 +26,18 @@ ROOT=Path(ROOT_VALUE)
 OUT=ROOT/'receipts/textcraft-gradient-rootcause-20261013-v1'
 parser_path=OUT/'original_plot_training_progress.py'
 owner=runpy.run_path(str(parser_path),run_name='native_algorithm_comparison_parser')
-outputs=[str(ROOT/'runs/textcraft-dt-grpo-multiplier-no-whiten-20261014-v1/textcraft-dt'),
-         str(ROOT/'runs/textcraft-grpo-formal-native-graph-fresh-20261012-v1/textcraft-grpo')]
+manifest=json.loads((ROOT/'formal-training.json').read_bytes())
+chosen=[j for j in manifest['jobs'] if j.get('task')=='TextCraft' and j.get('method') in ('dt','grpo')]
+assert len(chosen)==2 and {j['method'] for j in chosen}=={'dt','grpo'}
+outputs=[j['output'] for j in chosen]
 snapshot=owner['collect'](str(ROOT),outputs)
 assert {j['pid']:j['observed_process_created_unix'] for j in snapshot['jobs']}=={
-    1419849:1791977138.31,3174448:1791793629.73}
+    j['pid']:j['observed_process_created_unix'] for j in chosen}
 assert all(j['pid_alive'] for j in snapshot['jobs'])
+current_DT=next(j for j in chosen if j['method']=='dt')
+snapshot['DT_version']=current_DT['version']
+snapshot['DT_display_label']=('DTPO v3（组乘子，仅方差）' if current_DT.get('variance_standardization')
+                               else '新 DTPO（组乘子，无白化）')
 job_path=OUT/'native-PPO-control-v9-job.json'
 job=json.loads(job_path.read_bytes());p=psutil.Process(job['pid'])
 assert p.create_time()==job['birth'] and p.status()!=psutil.STATUS_ZOMBIE
@@ -56,7 +62,7 @@ snapshot['jobs'].append(dict(task='TextCraft PPO',environment_task='TextCraft',m
     metrics=[metrics_by_step[k] for k in sorted(metrics_by_step)],records=records,errors=errors,
     phases=[],ray_sessions=sessions,source_job=dict(path=str(job_path),SHA256=hashlib.sha256(job_path.read_bytes()).hexdigest()),
     resume_scope='Same original run: old completed1-15 plus original native full-checkpoint15 resume.'))
-snapshot['source_label']='New DTPO: official GRPO multiplier, no DT whitening; original GRPO/PPO controls'
+snapshot['source_label']=snapshot['DT_display_label']+'; original GRPO/PPO controls'
 snapshot['original_parser_source']=dict(path=str(parser_path),SHA256=hashlib.sha256(parser_path.read_bytes()).hexdigest())
 snapshot['collection_model_calls']=0
 print(json.dumps(snapshot))
@@ -67,7 +73,7 @@ result = subprocess.run(entry.SSH+['bash', '-s'], input=script.encode(),
                         capture_output=True, check=True, timeout=120)
 snapshot = json.loads(result.stdout)
 stamp = dt.datetime.fromtimestamp(snapshot['collected_at'],dt.timezone(dt.timedelta(hours=8)))
-output = Path('F:/DeltaTraceBackups/plots/new-dtpo-group-no-whiten-20261014')/stamp.strftime('%Y%m%d-%H%M%S')
+output = Path('F:/DeltaTraceBackups/plots')/snapshot['DT_version']/stamp.strftime('%Y%m%d-%H%M%S')
 output.mkdir(parents=True,exist_ok=True)
 snapshot_path=output/'source-snapshot.json'
 snapshot_path.write_text(json.dumps(snapshot,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
@@ -80,7 +86,7 @@ plt.rcParams.update({'font.family':['Microsoft YaHei','DejaVu Sans'],'axes.unico
     'font.size':10.5,'axes.spines.top':False,'axes.spines.right':False,'axes.titleweight':'bold',
     'figure.facecolor':'#f8fafc','axes.facecolor':'white','text.color':'#0f172a'})
 styles={
-    'dt':dict(label='新 DTPO（组乘子，无白化）',color='#0072B2',marker='o',linestyle='-'),
+    'dt':dict(label=snapshot['DT_display_label'],color='#0072B2',marker='o',linestyle='-'),
     'grpo':dict(label='原生 GRPO',color='#D55E00',marker='s',linestyle='--'),
     'ppo':dict(label='原生 PPO',color='#009E73',marker='^',linestyle=':')}
 panels=[('episode/reward/mean','平均训练回报','原环境奖励单位'),
@@ -91,7 +97,7 @@ panels=[('episode/reward/mean','平均训练回报','原环境奖励单位'),
         ('episode/tool_call_count/mean','平均工具调用数（原接口交互计数）','次 / 轨迹')]
 jobs=snapshot['jobs']
 last={j['method']:max((m['step'] for m in j['metrics']),default=0) for j in jobs}
-assert last['dt']>0
+assert last['dt']>0,'Current DTPO has no completed native iteration yet; source snapshot retained.'
 common=min(last.values())
 files=[snapshot_path]
 
