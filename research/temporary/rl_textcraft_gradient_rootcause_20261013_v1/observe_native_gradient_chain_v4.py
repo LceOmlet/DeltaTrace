@@ -33,6 +33,7 @@ CASE_MANIFEST=None
 if os.environ.get('DT_NATIVE_DIAGNOSTIC_MANIFEST'):
     CASE_MANIFEST=json.loads(Path(os.environ['DT_NATIVE_DIAGNOSTIC_MANIFEST']).read_bytes())
     DEST=Path(CASE_MANIFEST['destination'])
+CHECKPOINT_STEP=5 if CASE_MANIFEST is None else CASE_MANIFEST.get('checkpoint',5)
 state={'scope':__doc__,'started_unix':time.time(),'observations':[],
        'optimizer_updates':0,'scheduler_updates':0,'DT_calls':0,'rollout_calls':0,'validation_calls':0,'GRPO_calls':0}
 if CASE_MANIFEST is not None:state['scope']=CASE_MANIFEST['scope']
@@ -159,6 +160,8 @@ class ObservedWorker(ActorRolloutRefWorker):
         self.case_iteration=iteration
         path=Path(inspect.getsourcefile(type(self.actor)))
         assert hashlib.sha256(path.read_bytes()).hexdigest()==ACTOR_SHA
+        if CASE_MANIFEST is not None and 'expected_trainable_SHA256_by_rank' in CASE_MANIFEST:
+            assert digest(self.actor)==CASE_MANIFEST['expected_trainable_SHA256_by_rank'][str(self.rank)]
         return {'rank':self.rank,'pid':os.getpid(),'birth':psutil.Process().create_time(),
                 'scheduler':self.actor_lr_scheduler.last_epoch,'actor_path':str(path),'actor_SHA256':ACTOR_SHA}
     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
@@ -169,8 +172,11 @@ class ObservedWorker(ActorRolloutRefWorker):
         path=DEST/f'iteration{self.case_iteration}-rank{self.rank}-PG.json'
         readout=BoundaryReadout(self.actor)
         def observe(data):
+            views=({'native_target':data.batch['diagnostic_target_legacy']} if CASE_MANIFEST is None or
+                   'diagnostic_advantage_views' not in CASE_MANIFEST else
+                   {name:data.batch[key] for name,key in CASE_MANIFEST['diagnostic_advantage_views'].items()})
             return observer.observe_native_optimizer_minibatch(self.actor,data,output_path=path,rank=self.rank,
-                policy_advantages={'native_target':data.batch['diagnostic_target_legacy']})
+                policy_advantages=views)
         with ExitStack() as stack:
             enabled=CASE_MANIFEST is None or CASE_MANIFEST.get('passive_boundary_readout_enabled',False)
             boundaries=readout.install(stack) if enabled else []
@@ -179,7 +185,7 @@ class ObservedWorker(ActorRolloutRefWorker):
             output=super().update_actor(data)
         after=digest(self.actor)
         assert before==after and self.actor_lr_scheduler.last_epoch==scheduler
-        report={'rank':self.rank,'iteration':self.case_iteration,'checkpoint':5,
+        report={'rank':self.rank,'iteration':self.case_iteration,'checkpoint':CHECKPOINT_STEP,
                 'source':state['scope'],'boundaries':boundaries,'records':readout.records,
                 'passive_boundary_readout_enabled':enabled,
                 'native_accumulation_readout':readout.accumulation_report(),
@@ -200,7 +206,8 @@ def main():
     env={k:v for k,v in launch['effective_environment'].items() if k not in ('CUDA_VISIBLE_DEVICES','RAY_ADDRESS','VERL_GLOBAL_TOKEN_MEAN')}
     env['PYTHONPATH']=str(OUT)+os.pathsep+env.get('PYTHONPATH','')
     env['DT_FSDP_EVENT_WAIT_RECEIPTS']=str(DEST/'original-eventwait')
-    checkpoint=SHARED/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_5/actor'
+    checkpoint=(SHARED/f'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_{CHECKPOINT_STEP}/actor'
+                if CASE_MANIFEST is None or 'checkpoint_path' not in CASE_MANIFEST else Path(CASE_MANIFEST['checkpoint_path']))
     phase('initializing_original_actor_only',checkpoint=str(checkpoint))
     if CASE_MANIFEST is not None:
         env['DT_NATIVE_DIAGNOSTIC_MANIFEST']=os.environ['DT_NATIVE_DIAGNOSTIC_MANIFEST']
@@ -226,7 +233,7 @@ def main():
             phase('loading_same_checkpoint',iteration=iteration)
             group.load_checkpoint(local_path=str(checkpoint),del_local_after_load=False)
             bindings=group.set_case(iteration)
-            assert all(b['scheduler']==5 for b in bindings)
+            assert all(b['scheduler']==CHECKPOINT_STEP for b in bindings)
             phase('native_old_policy_point',iteration=iteration,bindings=bindings)
             probabilities=group.compute_log_prob(batch)
             batch.batch['old_log_probs']=probabilities.batch['old_log_probs']
@@ -234,7 +241,7 @@ def main():
             phase('native_backward_with_passive_boundary_readout',iteration=iteration)
             group.observe_chain(batch)
             records=[json.loads((DEST/f'iteration{iteration}-rank{rank}-PG.json').read_bytes()) for rank in (0,1)]
-            state['observations'].append({'iteration':iteration,'checkpoint':5,
+            state['observations'].append({'iteration':iteration,'checkpoint':CHECKPOINT_STEP,
                 'gradient_statistics':records[0]['gradient_statistics']})
             phase('case_complete',iteration=iteration)
         phase('complete_native_gradient_chain_localization_not_repair')

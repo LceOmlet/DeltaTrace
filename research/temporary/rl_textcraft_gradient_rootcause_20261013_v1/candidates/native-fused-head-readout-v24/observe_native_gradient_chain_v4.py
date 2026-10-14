@@ -1,0 +1,313 @@
+"""Locate observed target derivative amplification through native Qwen boundaries.
+
+Two already saved positive-row carriers, at the same original checkpoint5.
+One native target PG pass per original global64. Passive tensor hooks record
+adjoint norms and forward RMS; they return no replacement tensor/gradient.
+No optimizer/scheduler update, generation, DT, validation or GRPO call.
+"""
+from contextlib import ExitStack
+import hashlib
+import inspect
+import json
+import os
+from pathlib import Path
+import time
+
+import psutil
+import ray
+import torch
+from omegaconf import OmegaConf
+from verl import DataProto
+from verl.single_controller.base.decorator import Dispatch, register
+from verl.single_controller.ray import RayClassWithInitArgs, RayResourcePool, RayWorkerGroup
+from verl.workers.fsdp_workers import ActorRolloutRefWorker
+
+ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
+OUT=ROOT/'receipts/textcraft-gradient-rootcause-20261013-v1'
+DEST=OUT/'native-gradient-chain-v4'
+RUN=ROOT/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1'
+OLD=OUT/'historical-target-derivatives-v1'
+SHARED=Path('/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011/runtime')/ROOT.relative_to('/')
+ACTOR_SHA='3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c'
+CASE_MANIFEST=None
+if os.environ.get('DT_NATIVE_DIAGNOSTIC_MANIFEST'):
+    CASE_MANIFEST=json.loads(Path(os.environ['DT_NATIVE_DIAGNOSTIC_MANIFEST']).read_bytes())
+    DEST=Path(CASE_MANIFEST['destination'])
+state={'scope':__doc__,'started_unix':time.time(),'observations':[],
+       'optimizer_updates':0,'scheduler_updates':0,'DT_calls':0,'rollout_calls':0,'validation_calls':0,'GRPO_calls':0}
+if CASE_MANIFEST is not None:state['scope']=CASE_MANIFEST['scope']
+
+def phase(name,**values):
+    state.update(phase=name,unix=time.time(),**values)
+    (DEST/'result.json').write_text(json.dumps(state,indent=2)+'\n')
+    print(json.dumps({'phase':name,'unix':state['unix'],**values}),flush=True)
+
+def digest(actor):
+    h=hashlib.sha256()
+    for n,p in actor.actor_module.named_parameters():
+        if p.requires_grad:
+            v=p.to_local() if hasattr(p,'to_local') else p
+            h.update(n.encode());h.update(v.detach().cpu().contiguous().view(torch.uint8).numpy().tobytes())
+    return h.hexdigest()
+
+def per_position_sumsq(tensor):
+    # Bound temporary diagnostic memory. These reductions never enter the
+    # model graph and do not replace native gradient norms or any kernel.
+    with torch.no_grad():
+        shape=tensor.shape
+        flat=tensor.detach().reshape(-1,shape[-1])
+        values=[]
+        for start in range(0,len(flat),256):
+            values.append(flat[start:start+256].float().square().sum(-1).cpu())
+        return torch.cat(values).double()
+
+class BoundaryReadout:
+    def __init__(self,actor):
+        self.actor=actor;self.handles=[];self.records=[];self.micro=-1
+        self.forward=actor._forward_micro_batch
+        self.extended=bool(CASE_MANIFEST and CASE_MANIFEST.get('native_ratio_chain_readout',False))
+        self.previous_gradient=None;self.gradient_increments=[];self.parameter_layout=[]
+        self.fused_readout=bool(CASE_MANIFEST and CASE_MANIFEST.get('native_fused_head_readout',False))
+        self.fused_forwards={};self.fused_backward_counts={};self.fused_records=[]
+    def forward_micro(self,*args,**kwargs):
+        self.micro+=1
+        return self.forward(*args,**kwargs)
+    def hook(self,name,module,args,output):
+        if not isinstance(output,torch.Tensor) or not output.requires_grad:
+            return
+        value=args[0] if args and isinstance(args[0],torch.Tensor) else None
+        entry={'boundary':name,'micro':self.micro,'output_shape':list(output.shape),
+               'dtype':str(output.dtype),'input_requires_grad':value is not None and value.requires_grad}
+        self.records.append(entry)
+        for which,t in [('output',output),('input',value)]:
+            if t is None or not t.requires_grad:
+                continue
+            rms=None
+            if not (name.endswith('.lm_head') and which=='output'):
+                squared=per_position_sumsq(t)
+                rms=(squared/t.shape[-1]).sqrt()
+                entry[which+'_forward_RMS_median_all']=float(rms.median())
+                entry[which+'_forward_RMS_range_all']=[float(rms.min()),float(rms.max())]
+            def backward(gradient,which=which,rms=rms,entry=entry):
+                sq=per_position_sumsq(gradient)
+                active=sq>0
+                finite=torch.isfinite(sq)
+                entry[which+'_adjoint_norm']=float(sq.sum().sqrt())
+                entry[which+'_adjoint_nonfinite_positions']=int((~finite).sum())
+                entry[which+'_adjoint_nonzero_positions']=int(active.sum())
+                if rms is not None and active.any():
+                    selected=rms[active]
+                    entry[which+'_forward_RMS_at_nonzero_adjoint_quantiles']=torch.quantile(selected,torch.tensor([0.,.1,.5,.9,1.],dtype=torch.float64)).tolist()
+                # Returning None preserves the exact native gradient object.
+                return None
+            self.handles.append(t.register_hook(backward))
+    def after_original_backward(self):
+        # Observe the existing native accumulation only after its backward
+        # returns. No gradient is assigned, scaled, clipped or replaced here.
+        values=[];layout=[];offset=0
+        for name,p in self.actor.actor_module.named_parameters():
+            if not p.requires_grad:continue
+            value=p.grad
+            local=(p.to_local() if hasattr(p,'to_local') else p) if value is None else (value.to_local() if hasattr(value,'to_local') else value)
+            copied=torch.zeros_like(local,device='cpu') if value is None else local.detach().to(device='cpu',copy=True)
+            flat=copied.flatten();values.append(flat)
+            layout.append(dict(name=name,start=offset,end=offset+flat.numel(),
+                placements=[str(v) for v in value.placements] if value is not None and hasattr(value,'placements') else None))
+            offset+=flat.numel()
+        current=torch.cat(values)
+        self.gradient_increments.append(current if self.previous_gradient is None else current-self.previous_gradient)
+        self.previous_gradient=current;self.parameter_layout=layout
+    def accumulation_report(self):
+        if not self.extended:return None
+        increments=torch.stack(self.gradient_increments)
+        gram=torch.zeros((len(increments),len(increments)),dtype=torch.float64)
+        for start in range(0,increments.shape[1],65536):
+            block=increments[:,start:start+65536].double()
+            gram+=block@block.T
+        parameters=[]
+        for p in self.parameter_layout:
+            value=self.previous_gradient[p['start']:p['end']].double()
+            parameters.append(dict(name=p['name'],placements=p['placements'],local_preclip_sumsq=float(value.square().sum())))
+        return dict(original_backward_calls=len(increments),local_increment_Gram=gram.tolist(),
+            local_final_preclip_sumsq=float(self.previous_gradient.double().square().sum()),
+            parameters=parameters,
+            scope='Differences of actual native accumulated FP32 gradient shards after each existing B4 backward, before clipping. Subtraction has FP32 rounding; this is not a replacement gradient reducer or independent-token variance estimate.')
+    def install_fused_readout(self,stack):
+        import observe_native_optimizer_minibatch as observer
+        from verl.utils.experimental import torch_functional as owner
+        path=Path(owner.__file__)
+        assert hashlib.sha256(path.read_bytes()).hexdigest()==CASE_MANIFEST['native_fused_head_owner_SHA256']
+        original_fwd=owner._fused_linear_for_ppo_fwd
+        original_bwd=owner._fused_linear_for_ppo_bwd
+        primal=original_fwd._torchdynamo_orig_callable
+        self.fused_owner=dict(path=str(path),SHA256=hashlib.sha256(path.read_bytes()).hexdigest(),
+            reference='Autograd through the same original owner primal via its TorchDynamo original callable, at actual native chunk hidden states/weights/labels/upstream gradients. No shadow head or policy loss.')
+        def fingerprint(value):
+            return hashlib.sha256(value.detach().cpu().contiguous().view(torch.uint8).numpy().tobytes()).hexdigest()
+        def forward(*args,**kwargs):
+            result=original_fwd(*args,**kwargs)
+            hidden=kwargs['hidden_states'];ids=kwargs['input_ids']
+            self.fused_forwards.setdefault(self.micro,[]).append(dict(
+                logp=result[0].detach().cpu().double(),ids=fingerprint(ids),hidden=fingerprint(hidden)))
+            return result
+        def backward(*args,**kwargs):
+            result=original_bwd(*args,**kwargs)
+            micro=self.micro;chunk=self.fused_backward_counts.get(micro,0)
+            self.fused_backward_counts[micro]=chunk+1
+            saved=self.fused_forwards[micro][chunk]
+            hidden=kwargs['hidden_states'];ids=kwargs['input_ids'];dl=kwargs['dlog_probs'];de=kwargs['dentropy']
+            assert saved['ids']==fingerprint(ids) and saved['hidden']==fingerprint(hidden)
+            if dl is None or not bool(dl.detach().ne(0).any()):return result
+            assert kwargs['temperature']==1.0
+            incoming=dl.detach().cpu().double();deficit=-saved['logp'].expm1()
+            native=result[0].detach().cpu().double()
+            # Invoke the owning primal itself and PyTorch autograd, with no
+            # reimplementation of its log-softmax, entropy or backward rule.
+            with torch.enable_grad():
+                h=hidden.detach().requires_grad_()
+                lp,entropy=primal(hidden_states=h,vocab_weights=kwargs['vocab_weights'].detach(),input_ids=ids,
+                    temperature=kwargs['temperature'])
+                outputs=[];gradients=[]
+                if dl is not None:outputs.append(lp);gradients.append(dl.detach())
+                if de is not None:outputs.append(entropy);gradients.append(de.detach())
+                reference,=torch.autograd.grad(tuple(outputs),h,tuple(gradients))
+            reference=reference.detach().cpu().double()
+            difference=native-reference
+            entry=dict(micro=micro,chunk=chunk,rows=len(incoming),active_dlogp=int(incoming.ne(0).sum()),
+                upstream_dlogp_sumsq=float(incoming.square().sum()),
+                weighted_probability_deficit_sumsq=float((incoming*deficit).square().sum()),
+                native_hidden_adjoint_sumsq=float(native.square().sum()),
+                original_primal_autograd_hidden_sumsq=float(reference.square().sum()),
+                native_minus_original_primal_autograd_sumsq=float(difference.square().sum()),
+                native_autograd_inner_product=float((native*reference).sum()),
+                native_autograd_max_abs=float(difference.abs().max()),
+                compiled_vs_owner_primal_logp_max_abs=float((saved['logp']-lp.detach().cpu().double()).abs().max()),
+                dentropy_max_abs=None if de is None else float(de.detach().abs().max()),
+                hidden_dtype=str(hidden.dtype),native_gradient_dtype=str(result[0].dtype),
+                source_IDs_SHA256=saved['ids'],source_hidden_SHA256=saved['hidden'])
+            self.fused_records.append(entry)
+            artifact=DEST/f'iteration{self.case_iteration}-rank{self.actor.rank if hasattr(self.actor,"rank") else os.getpid()}-micro{micro}-chunk{chunk}-native-head.pt'
+            torch.save(dict(hidden=hidden.detach().cpu(),labels=ids.detach().cpu(),dlog_probs=dl.detach().cpu(),
+                dentropy=None if de is None else de.detach().cpu(),native_hidden_gradient=result[0].detach().cpu(),
+                owner_autograd_hidden_gradient=reference,compiled_fwd_logp=saved['logp'],metadata=entry),artifact)
+            entry['actual_chunk_artifact']=str(artifact)
+            return result
+        stack.enter_context(observer._temporary_attribute(owner,'_fused_linear_for_ppo_fwd',forward))
+        stack.enter_context(observer._temporary_attribute(owner,'_fused_linear_for_ppo_bwd',backward))
+    def install(self,stack):
+        import observe_native_optimizer_minibatch as observer
+        from transformers.models.qwen3_5.modeling_qwen3_5 import Qwen3_5DecoderLayer,Qwen3_5RMSNorm
+        found=[]
+        for name,module in self.actor.actor_module.named_modules():
+            if (isinstance(module,Qwen3_5DecoderLayer) or (isinstance(module,Qwen3_5RMSNorm) and name.endswith('.model.norm'))
+                    or (self.extended and not self.fused_readout and name.endswith('.lm_head'))):
+                found.append(name)
+                self.handles.append(module.register_forward_hook(
+                    lambda module,args,output,name=name:self.hook(name,module,args,output)))
+        assert len(found)==(34 if self.extended and not self.fused_readout else 33),(len(found),found)
+        stack.enter_context(observer._temporary_attribute(self.actor,'_forward_micro_batch',self.forward_micro))
+        if self.extended:
+            original_backward=torch.Tensor.backward
+            def observed_backward(tensor,*args,**kwargs):
+                result=original_backward(tensor,*args,**kwargs)
+                self.after_original_backward()
+                return result
+            stack.enter_context(observer._temporary_attribute(torch.Tensor,'backward',observed_backward))
+        if self.fused_readout:self.install_fused_readout(stack)
+        stack.callback(lambda:[h.remove() for h in self.handles])
+        return found
+
+@ray.remote
+class ObservedWorker(ActorRolloutRefWorker):
+    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
+    def set_case(self,iteration):
+        self.case_iteration=iteration
+        path=Path(inspect.getsourcefile(type(self.actor)))
+        assert hashlib.sha256(path.read_bytes()).hexdigest()==ACTOR_SHA
+        return {'rank':self.rank,'pid':os.getpid(),'birth':psutil.Process().create_time(),
+                'scheduler':self.actor_lr_scheduler.last_epoch,'actor_path':str(path),'actor_SHA256':ACTOR_SHA}
+    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
+    def observe_chain(self,data):
+        import observe_native_optimizer_minibatch as observer
+        observer.ACTOR_SHA256=ACTOR_SHA
+        before=digest(self.actor);scheduler=self.actor_lr_scheduler.last_epoch
+        path=DEST/f'iteration{self.case_iteration}-rank{self.rank}-PG.json'
+        readout=BoundaryReadout(self.actor)
+        readout.case_iteration=self.case_iteration
+        def observe(data):
+            return observer.observe_native_optimizer_minibatch(self.actor,data,output_path=path,rank=self.rank,
+                policy_advantages={'native_target':data.batch['diagnostic_target_legacy']})
+        with ExitStack() as stack:
+            enabled=CASE_MANIFEST is None or CASE_MANIFEST.get('passive_boundary_readout_enabled',False)
+            boundaries=readout.install(stack) if enabled else []
+            stack.enter_context(observer._temporary_attribute(self.actor,'update_policy',observe))
+            stack.enter_context(observer._temporary_attribute(self.actor_lr_scheduler,'step',lambda *a,**k:None))
+            output=super().update_actor(data)
+        after=digest(self.actor)
+        assert before==after and self.actor_lr_scheduler.last_epoch==scheduler
+        report={'rank':self.rank,'iteration':self.case_iteration,'checkpoint':5,
+                'source':state['scope'],'boundaries':boundaries,'records':readout.records,
+                'passive_boundary_readout_enabled':enabled,
+                'native_accumulation_readout':readout.accumulation_report(),
+                'native_fused_head_readout':dict(owner=readout.fused_owner,records=readout.fused_records,
+                    forward_chunks={str(k):len(v) for k,v in readout.fused_forwards.items()},backward_chunks=readout.fused_backward_counts) if readout.fused_readout else None,
+                'trainable_SHA256_before':before,'trainable_SHA256_after':after,
+                'scheduler_before':scheduler,'scheduler_after':self.actor_lr_scheduler.last_epoch,
+                'optimizer_steps':0,'scheduler_steps':0,
+                'norm_scope':'Each rank actual local B4 hidden adjoints; no inferred FSDP sum or replacement reducer.',
+                'forward_RMS_scope':'RMS at positions with a nonzero native adjoint. Recomputed gradient-checkpoint boundaries are retained as actual events; no full activation tensors persist.'}
+        (DEST/f'iteration{self.case_iteration}-rank{self.rank}-chain.json').write_text(json.dumps(report,indent=2)+'\n')
+        return output
+
+def main():
+    assert not (DEST/'result.json').exists(),'Do not repeat a running/completed diagnostic'
+    launch=json.loads((RUN/'launch.json').read_bytes())
+    cfg=OmegaConf.load(Path(os.environ['VERL_ROOT'])/'verl/trainer/config/ppo_trainer.yaml')
+    for k,v in launch['options'].items():OmegaConf.update(cfg,k.lstrip('+'),v,force_add=True)
+    cfg.actor_rollout_ref.actor.optim.total_training_steps=330
+    env={k:v for k,v in launch['effective_environment'].items() if k not in ('CUDA_VISIBLE_DEVICES','RAY_ADDRESS','VERL_GLOBAL_TOKEN_MEAN')}
+    env['PYTHONPATH']=str(OUT)+os.pathsep+env.get('PYTHONPATH','')
+    env['DT_FSDP_EVENT_WAIT_RECEIPTS']=str(DEST/'original-eventwait')
+    checkpoint=SHARED/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_5/actor'
+    phase('initializing_original_actor_only',checkpoint=str(checkpoint))
+    if CASE_MANIFEST is not None:
+        env['DT_NATIVE_DIAGNOSTIC_MANIFEST']=os.environ['DT_NATIVE_DIAGNOSTIC_MANIFEST']
+    ray.init(address='local',num_cpus=8,num_gpus=2,include_dashboard=False,
+        _temp_dir='/tmp/ray-tc-chain-v4' if CASE_MANIFEST is None else '/tmp/ray-tc-matched-v11',runtime_env={'env_vars':env})
+    try:
+        group=RayWorkerGroup(RayResourcePool([2],use_gpu=True,max_colocate_count=1),
+            RayClassWithInitArgs(ObservedWorker,cfg.actor_rollout_ref,'actor'))
+        group.init_model()
+        cases=([{'name':i,'path':str(OLD/f'iteration{i}-target-derivative-carrier.pkl')} for i in (6,81)]
+               if CASE_MANIFEST is None else CASE_MANIFEST['cases'])
+        for case in cases:
+            iteration=case['name']
+            full=DataProto.load_from_disk(case['path'])
+            if CASE_MANIFEST is None:
+                idx=torch.cat((torch.arange(32),torch.arange(128,160)))
+                batch=full.select_idxs(idx)
+            else:
+                assert len(full)==64 and hashlib.sha256(Path(case['path']).read_bytes()).hexdigest()==case['SHA256']
+                batch=full
+            batch.meta_info['global_token_num']=batch.batch['attention_mask'].sum(-1).tolist()
+            batch.meta_info.pop('global_batch_info',None)
+            phase('loading_same_checkpoint',iteration=iteration)
+            group.load_checkpoint(local_path=str(checkpoint),del_local_after_load=False)
+            bindings=group.set_case(iteration)
+            assert all(b['scheduler']==5 for b in bindings)
+            phase('native_old_policy_point',iteration=iteration,bindings=bindings)
+            probabilities=group.compute_log_prob(batch)
+            batch.batch['old_log_probs']=probabilities.batch['old_log_probs']
+            batch.batch['ref_log_prob']=batch.batch['old_log_probs'].clone()
+            phase('native_backward_with_passive_boundary_readout',iteration=iteration)
+            group.observe_chain(batch)
+            records=[json.loads((DEST/f'iteration{iteration}-rank{rank}-PG.json').read_bytes()) for rank in (0,1)]
+            state['observations'].append({'iteration':iteration,'checkpoint':5,
+                'gradient_statistics':records[0]['gradient_statistics']})
+            phase('case_complete',iteration=iteration)
+        phase('complete_native_gradient_chain_localization_not_repair')
+    except BaseException as exc:
+        phase('failed',exception=repr(exc));raise
+    finally:ray.shutdown()
+
+if __name__=='__main__':main()
