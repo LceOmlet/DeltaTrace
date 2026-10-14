@@ -63,8 +63,9 @@ def per_position_sumsq(tensor):
         return torch.cat(values).double()
 
 class BoundaryReadout:
-    def __init__(self,actor):
+    def __init__(self,actor,case=None,rank=None):
         self.actor=actor;self.handles=[];self.records=[];self.micro=-1
+        self.case=case or {};self.rank=rank;self.seed_records=[]
         self.forward=actor._forward_micro_batch
         self.extended=bool(CASE_MANIFEST and CASE_MANIFEST.get('native_ratio_chain_readout',False))
         self.previous_gradient=None;self.gradient_increments=[];self.parameter_layout=[]
@@ -79,6 +80,32 @@ class BoundaryReadout:
         entry={'boundary':name,'micro':self.micro,'output_shape':list(output.shape),
                'dtype':str(output.dtype),'input_requires_grad':value is not None and value.requires_grad}
         self.records.append(entry)
+        if name.endswith('.layers.31') and (self.case.get('capture_boundary_seed',False) or
+                                            self.case.get('boundary_seed_source_case')):
+            def seed_hook(gradient, micro=self.micro):
+                # A separately marked finite VJP intervention, never training.
+                # Reuse an entire actual native BF16 seed unchanged: no norm,
+                # policy, reward, mask or model/backward implementation here.
+                record=dict(micro=micro,shape=list(gradient.shape),dtype=str(gradient.dtype),
+                            original_incoming_norm=float(per_position_sumsq(gradient).sum().sqrt()))
+                source=self.case.get('boundary_seed_source_case')
+                if source:
+                    path=DEST/f'seed-{source}-rank{self.rank}-micro{micro}.pt'
+                    saved=torch.load(path,map_location='cpu',weights_only=True)
+                    assert list(saved.shape)==list(gradient.shape) and saved.dtype==gradient.dtype
+                    replacement=saved.to(device=gradient.device)
+                    record.update(mode='fixed_saved_native_seed',source=str(path),
+                                  applied_norm=float(per_position_sumsq(replacement).sum().sqrt()))
+                    self.seed_records.append(record)
+                    return replacement
+                path=DEST/f'seed-{self.case["name"]}-rank{self.rank}-micro{micro}.pt'
+                assert not path.exists(),'Each native seed is captured once, not overwritten'
+                torch.save(gradient.detach().to(device='cpu',copy=True),path)
+                record.update(mode='capture_unmodified_native_seed',path=str(path),
+                              applied_norm=record['original_incoming_norm'])
+                self.seed_records.append(record)
+                return None
+            self.handles.append(output.register_hook(seed_hook))
         for which,t in [('output',output),('input',value)]:
             if t is None or not t.requires_grad:
                 continue
@@ -148,8 +175,15 @@ class BoundaryReadout:
             # Native module backward hooks expose branch grad_input. A hook
             # on a shared residual-input Tensor would instead see the total
             # accumulated adjoint and cannot identify that branch alone.
-            suffixes=[f'.layers.{layer}.{name}' for layer in branch_layers for name in
-                ('input_layernorm','self_attn','post_attention_layernorm','mlp','self_attn.q_norm','self_attn.k_norm')]
+            native_layers={int(name.rsplit('.',1)[1]):module for name,module in self.actor.actor_module.named_modules()
+                           if isinstance(module,Qwen3_5DecoderLayer)}
+            suffixes=[]
+            for layer in branch_layers:
+                module=native_layers[layer]
+                mixer='linear_attn' if module.block_type=='linear_attention' else 'self_attn'
+                names=['input_layernorm',mixer,'post_attention_layernorm','mlp']
+                if mixer=='self_attn':names+=['self_attn.q_norm','self_attn.k_norm']
+                suffixes += [f'.layers.{layer}.{name}' for name in names]
             selected=[];latest={}
             for name,module in self.actor.actor_module.named_modules():
                 if not any(name.endswith(suffix) for suffix in suffixes):continue
@@ -197,10 +231,13 @@ class ObservedWorker(ActorRolloutRefWorker):
     @register(dispatch_mode=Dispatch.ONE_TO_ALL)
     def set_case(self,iteration):
         self.case_iteration=iteration
+        self.case=({} if CASE_MANIFEST is None else next(c for c in CASE_MANIFEST['cases'] if c['name']==iteration))
+        self.case_checkpoint=self.case.get('checkpoint',CHECKPOINT_STEP)
         path=Path(inspect.getsourcefile(type(self.actor)))
         assert hashlib.sha256(path.read_bytes()).hexdigest()==ACTOR_SHA
-        if CASE_MANIFEST is not None and 'expected_trainable_SHA256_by_rank' in CASE_MANIFEST:
-            assert digest(self.actor)==CASE_MANIFEST['expected_trainable_SHA256_by_rank'][str(self.rank)]
+        expected=self.case.get('expected_trainable_SHA256_by_rank',None if CASE_MANIFEST is None else CASE_MANIFEST.get('expected_trainable_SHA256_by_rank'))
+        if expected is not None:
+            assert digest(self.actor)==expected[str(self.rank)]
         return {'rank':self.rank,'pid':os.getpid(),'birth':psutil.Process().create_time(),
                 'scheduler':self.actor_lr_scheduler.last_epoch,'actor_path':str(path),'actor_SHA256':ACTOR_SHA}
     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
@@ -209,7 +246,7 @@ class ObservedWorker(ActorRolloutRefWorker):
         observer.ACTOR_SHA256=ACTOR_SHA
         before=digest(self.actor);scheduler=self.actor_lr_scheduler.last_epoch
         path=DEST/f'iteration{self.case_iteration}-rank{self.rank}-PG.json'
-        readout=BoundaryReadout(self.actor)
+        readout=BoundaryReadout(self.actor,self.case,self.rank)
         def observe(data):
             views=({'native_target':data.batch['diagnostic_target_legacy']} if CASE_MANIFEST is None or
                    'diagnostic_advantage_views' not in CASE_MANIFEST else
@@ -224,13 +261,15 @@ class ObservedWorker(ActorRolloutRefWorker):
             output=super().update_actor(data)
         after=digest(self.actor)
         assert before==after and self.actor_lr_scheduler.last_epoch==scheduler
-        report={'rank':self.rank,'iteration':self.case_iteration,'checkpoint':CHECKPOINT_STEP,
+        report={'rank':self.rank,'iteration':self.case_iteration,'checkpoint':self.case_checkpoint,
                 'source':state['scope'],'boundaries':boundaries,'records':readout.records,
                 'passive_boundary_readout_enabled':enabled,
                 'native_accumulation_readout':readout.accumulation_report(),
                 'native_decoder_branch_forward':readout.branch_forward,
                 'native_decoder_branch_backward':readout.branch_backward,
                 'native_decoder_branch_owners':readout.branch_owners,
+                'diagnostic_boundary_seeds':readout.seed_records,
+                'diagnostic_seed_intervention':bool(self.case.get('boundary_seed_source_case')),
                 'trainable_SHA256_before':before,'trainable_SHA256_after':after,
                 'scheduler_before':scheduler,'scheduler_after':self.actor_lr_scheduler.last_epoch,
                 'optimizer_steps':0,'scheduler_steps':0,
@@ -273,9 +312,10 @@ def main():
             batch.meta_info['global_token_num']=batch.batch['attention_mask'].sum(-1).tolist()
             batch.meta_info.pop('global_batch_info',None)
             phase('loading_same_checkpoint',iteration=iteration)
-            group.load_checkpoint(local_path=str(checkpoint),del_local_after_load=False)
+            case_checkpoint=case.get('checkpoint',CHECKPOINT_STEP)
+            group.load_checkpoint(local_path=case.get('checkpoint_path',str(checkpoint)),del_local_after_load=False)
             bindings=group.set_case(iteration)
-            assert all(b['scheduler']==CHECKPOINT_STEP for b in bindings)
+            assert all(b['scheduler']==case_checkpoint for b in bindings)
             phase('native_old_policy_point',iteration=iteration,bindings=bindings)
             probabilities=group.compute_log_prob(batch)
             batch.batch['old_log_probs']=probabilities.batch['old_log_probs']
@@ -294,14 +334,15 @@ def main():
                     native_probability_carrier=str(path),SHA256=hashlib.sha256(path.read_bytes()).hexdigest(),
                     before_bindings=bindings,after_bindings=after_bindings)
             if CASE_MANIFEST is not None and CASE_MANIFEST.get('score_readout_only',False):
-                state['observations'].append(dict(iteration=iteration,checkpoint=CHECKPOINT_STEP,
+                state['observations'].append(dict(iteration=iteration,checkpoint=case_checkpoint,
                     **probability_artifact,parameter_backward=0))
                 phase('native_target_probability_readout_complete',iteration=iteration)
                 continue
             phase('native_backward_with_passive_boundary_readout',iteration=iteration)
             group.observe_chain(batch)
             records=[json.loads((DEST/f'iteration{iteration}-rank{rank}-PG.json').read_bytes()) for rank in (0,1)]
-            state['observations'].append({'iteration':iteration,'checkpoint':CHECKPOINT_STEP,
+            state['observations'].append({'iteration':iteration,'checkpoint':case_checkpoint,
+                'diagnostic_seed_intervention':bool(case.get('boundary_seed_source_case')),
                 'gradient_statistics':records[0]['gradient_statistics'],**probability_artifact})
             phase('case_complete',iteration=iteration)
         phase('complete_native_target_score_readout_not_repair' if CASE_MANIFEST is not None and
