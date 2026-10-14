@@ -29,8 +29,13 @@ RUN=ROOT/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1'
 OLD=OUT/'historical-target-derivatives-v1'
 SHARED=Path('/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011/runtime')/ROOT.relative_to('/')
 ACTOR_SHA='3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c'
+CASE_MANIFEST=None
+if os.environ.get('DT_NATIVE_DIAGNOSTIC_MANIFEST'):
+    CASE_MANIFEST=json.loads(Path(os.environ['DT_NATIVE_DIAGNOSTIC_MANIFEST']).read_bytes())
+    DEST=Path(CASE_MANIFEST['destination'])
 state={'scope':__doc__,'started_unix':time.time(),'observations':[],
        'optimizer_updates':0,'scheduler_updates':0,'DT_calls':0,'rollout_calls':0,'validation_calls':0,'GRPO_calls':0}
+if CASE_MANIFEST is not None:state['scope']=CASE_MANIFEST['scope']
 
 def phase(name,**values):
     state.update(phase=name,unix=time.time(),**values)
@@ -124,14 +129,15 @@ class ObservedWorker(ActorRolloutRefWorker):
             return observer.observe_native_optimizer_minibatch(self.actor,data,output_path=path,rank=self.rank,
                 policy_advantages={'native_target':data.batch['diagnostic_target_legacy']})
         with ExitStack() as stack:
-            boundaries=readout.install(stack)
+            boundaries=readout.install(stack) if CASE_MANIFEST is None else []
             stack.enter_context(observer._temporary_attribute(self.actor,'update_policy',observe))
             stack.enter_context(observer._temporary_attribute(self.actor_lr_scheduler,'step',lambda *a,**k:None))
             output=super().update_actor(data)
         after=digest(self.actor)
         assert before==after and self.actor_lr_scheduler.last_epoch==scheduler
         report={'rank':self.rank,'iteration':self.case_iteration,'checkpoint':5,
-                'source':__doc__,'boundaries':boundaries,'records':readout.records,
+                'source':state['scope'],'boundaries':boundaries,'records':readout.records,
+                'passive_boundary_readout_enabled':CASE_MANIFEST is None,
                 'trainable_SHA256_before':before,'trainable_SHA256_after':after,
                 'scheduler_before':scheduler,'scheduler_after':self.actor_lr_scheduler.last_epoch,
                 'optimizer_steps':0,'scheduler_steps':0,
@@ -151,16 +157,25 @@ def main():
     env['DT_FSDP_EVENT_WAIT_RECEIPTS']=str(DEST/'original-eventwait')
     checkpoint=SHARED/'runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_5/actor'
     phase('initializing_original_actor_only',checkpoint=str(checkpoint))
+    if CASE_MANIFEST is not None:
+        env['DT_NATIVE_DIAGNOSTIC_MANIFEST']=os.environ['DT_NATIVE_DIAGNOSTIC_MANIFEST']
     ray.init(address='local',num_cpus=8,num_gpus=2,include_dashboard=False,
-        _temp_dir='/tmp/ray-tc-chain-v4',runtime_env={'env_vars':env})
+        _temp_dir='/tmp/ray-tc-chain-v4' if CASE_MANIFEST is None else '/tmp/ray-tc-matched-v11',runtime_env={'env_vars':env})
     try:
         group=RayWorkerGroup(RayResourcePool([2],use_gpu=True,max_colocate_count=1),
             RayClassWithInitArgs(ObservedWorker,cfg.actor_rollout_ref,'actor'))
         group.init_model()
-        for iteration in (6,81):
-            full=DataProto.load_from_disk(str(OLD/f'iteration{iteration}-target-derivative-carrier.pkl'))
-            idx=torch.cat((torch.arange(32),torch.arange(128,160)))
-            batch=full.select_idxs(idx)
+        cases=([{'name':i,'path':str(OLD/f'iteration{i}-target-derivative-carrier.pkl')} for i in (6,81)]
+               if CASE_MANIFEST is None else CASE_MANIFEST['cases'])
+        for case in cases:
+            iteration=case['name']
+            full=DataProto.load_from_disk(case['path'])
+            if CASE_MANIFEST is None:
+                idx=torch.cat((torch.arange(32),torch.arange(128,160)))
+                batch=full.select_idxs(idx)
+            else:
+                assert len(full)==64 and hashlib.sha256(Path(case['path']).read_bytes()).hexdigest()==case['SHA256']
+                batch=full
             batch.meta_info['global_token_num']=batch.batch['attention_mask'].sum(-1).tolist()
             batch.meta_info.pop('global_batch_info',None)
             phase('loading_same_checkpoint',iteration=iteration)
