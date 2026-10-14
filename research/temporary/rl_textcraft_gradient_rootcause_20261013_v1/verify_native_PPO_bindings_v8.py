@@ -37,6 +37,8 @@ def read(worker):
             row['actor'] = binding(w.actor, ['update_policy', '_forward_micro_batch', '_optimizer_step'])
             row['scheduler_last_epoch'] = w.actor_lr_scheduler.last_epoch
             row['optimizer_state_entries'] = len(w.actor_optimizer.state)
+            row['actual_forward_options'] = {'use_remove_padding': w.actor.use_remove_padding,
+                                             'use_fused_kernels': w.actor.use_fused_kernels}
             row['configuration'] = {key: OmegaConf.select(w.config, key) for key in [
                 'model.lora_rank', 'model.lora_alpha', 'actor.ppo_mini_batch_size',
                 'actor.ppo_micro_batch_size_per_gpu', 'actor.ppo_epochs', 'actor.entropy_coeff',
@@ -45,9 +47,11 @@ def read(worker):
             row['critic'] = binding(w.critic, ['compute_values', 'update_critic', '_forward_micro_batch', '_optimizer_step'])
             row['scheduler_last_epoch'] = w.critic_lr_scheduler.last_epoch
             row['optimizer_state_entries'] = len(w.critic_optimizer.state)
+            row['actual_native_gradient_checkpointing'] = w.critic.critic_module.is_gradient_checkpointing
             row['configuration'] = {key: OmegaConf.select(w.config, key) for key in [
                 'model.lora_rank', 'model.path', 'strategy', 'ppo_mini_batch_size',
-                'ppo_micro_batch_size_per_gpu', 'ppo_epochs', 'grad_clip', 'optim.lr']}
+                'ppo_micro_batch_size_per_gpu', 'ppo_epochs', 'grad_clip', 'optim.lr',
+                'model.enable_activation_offload', 'model.enable_gradient_checkpointing']}
         roles.append(row)
     from verl.trainer.ppo import core_algos
     p = Path(inspect.getsourcefile(core_algos))
