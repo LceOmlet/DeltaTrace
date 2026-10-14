@@ -14,7 +14,6 @@ from agent_system.multi_turn_rollout.rollout_loop import TrajectoryCollector
 from verl import DataProto
 from verl.trainer.ppo.ray_trainer import AdvantageEstimator, compute_advantage
 from verl.trainer.ppo.core_algos import compute_policy_loss
-import verl.utils.torch_functional as verl_F
 
 from counterfactual import return_credit_for_episode
 
@@ -80,7 +79,7 @@ def test_collector_to_trainer_keeps_q_v_and_upstream_actor_gradient(monkeypatch)
     data = compute_advantage(data, AdvantageEstimator.DELTATRACE)
     response_mask = data.batch["response_mask"].to(dtype=torch.bool)
     expected_actor_advantages = torch.where(
-        response_mask, verl_F.masked_whiten(original_advantages, response_mask), 0.0,
+        response_mask, original_advantages, 0.0,
     )
     torch.testing.assert_close(data.batch["dt_token_advantages"], original_advantages, atol=0, rtol=0)
     torch.testing.assert_close(data.batch["advantages"], expected_actor_advantages, atol=0, rtol=0)

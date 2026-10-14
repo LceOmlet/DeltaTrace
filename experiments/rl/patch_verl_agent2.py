@@ -614,6 +614,19 @@ DT_TRAINER_DISTRIBUTED = '''                            from dt_training_batch i
                             )
 '''
 
+DT_GROUP_MULTIPLIER = '''                            # Native GRPO owns group membership, reward reduction and normalization.
+                            group_view = compute_advantage(
+                                batch.select(batch_keys=["responses", "token_level_rewards", "response_mask", "loss_mask"],
+                                             non_tensor_batch_keys=["uid", "traj_uid"]),
+                                adv_estimator=AdvantageEstimator.GRPO,
+                                norm_adv_by_std_in_grpo=norm_adv_by_std_in_grpo,
+                                multi_turn=self.config.actor_rollout_ref.rollout.multi_turn.enable,
+                            )
+                            # GRPO broadcasts one coefficient over each row's valid action tokens.
+                            first_policy = batch.batch["response_mask"].long().argmax(-1, keepdim=True)
+                            batch.batch["dt_grpo_multipliers"] = group_view.batch["advantages"].gather(1, first_policy).squeeze(1)
+'''
+
 
 def patch_dt_reward_boundary(rollout_text: str, trainer_text: str) -> tuple[str, str]:
     """Move the existing DT call after the owner's reward processing.
@@ -654,6 +667,13 @@ def patch_dt_reward_boundary(rollout_text: str, trainer_text: str) -> tuple[str,
 
 ''' + anchor, 1)
     trainer_text = trainer_text.replace(DT_TRAINER_SINGLE_RANK, DT_TRAINER_DISTRIBUTED)
+    if DT_GROUP_MULTIPLIER not in trainer_text:
+        group_anchor = ('                        if self.config.algorithm.adv_estimator == AdvantageEstimator.DELTATRACE:\n'
+                        '                            from dt_training_batch import compute_training_credit\n')
+        if trainer_text.count(group_anchor) != 1:
+            raise RuntimeError('cannot locate DT boundary for native GRPO multiplier')
+        trainer_text = trainer_text.replace(group_anchor, group_anchor.splitlines(True)[0] +
+                                           DT_GROUP_MULTIPLIER + group_anchor.splitlines(True)[1], 1)
     return rollout_text, trainer_text
 
 # The trainer remains the semantic owner of policy optimization. This patch
@@ -667,11 +687,16 @@ RAY_ADV_ENUM_STALE = "    GiGPO = 'gigpo'\n    COUNTERFACTUAL = 'counterfactual'
 RAY_ADV_INSERT_ANCHOR = "        data.batch['advantages'] = advantages\n        data.batch['returns'] = returns\n    else:\n        raise NotImplementedError\n    return data\n"
 RAY_ADV_INSERT_PREVIOUS = '        data.batch[\'advantages\'] = advantages\n        data.batch[\'returns\'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        if "dt_token_advantages" not in data.batch:\n            raise RuntimeError("deltatrace estimator requires owner-produced token advantages")\n        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)\n        advantages = data.batch["dt_token_advantages"].to(device=data.batch["responses"].device, dtype=torch.float32)\n        if advantages.shape != response_mask.shape:\n            raise RuntimeError("owner DT token advantages must align with responses")\n        advantages = advantages * response_mask.to(dtype=advantages.dtype)\n        if not torch.isfinite(advantages).all():\n            raise RuntimeError("owner DT token advantages contain non-finite values")\n        data.batch["advantages"] = advantages\n        data.batch["returns"] = advantages.detach().clone()\n    else:\n        raise NotImplementedError\n    return data\n'
 RAY_ADV_INSERT_RAW_PREVIOUS = '        data.batch[\'advantages\'] = advantages\n        data.batch[\'returns\'] = returns\n    elif adv_estimator == AdvantageEstimator.DELTATRACE:\n        response_mask = data.batch["response_mask"].to(device=data.batch["responses"].device, dtype=torch.bool)\n        for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):\n            if name not in data.batch:\n                raise RuntimeError(f"deltatrace estimator requires {name}")\n            value = data.batch[name].detach().to(device=response_mask.device, dtype=torch.float32)\n            if value.shape != response_mask.shape:\n                raise RuntimeError(f"{name} must align with original response tokens")\n            if not torch.isfinite(value).all():\n                raise RuntimeError(f"{name} contains non-finite values")\n            data.batch[name] = torch.where(response_mask, value, 0.0)\n        data.batch["advantages"] = data.batch["dt_token_advantages"]\n        data.batch["returns"] = data.batch["dt_q_estimates"]\n    else:\n        raise NotImplementedError\n    return data\n'
-# Keep the deployed raw branch intact as a migration predecessor. Whitening
-# creates only the actor training coefficient; sampled DT Q/V/A stay raw.
-RAY_ADV_INSERT = RAY_ADV_INSERT_RAW_PREVIOUS.replace(
+# Keep the old white branch only as a migration predecessor.
+RAY_ADV_INSERT_WHITEN_PREVIOUS = RAY_ADV_INSERT_RAW_PREVIOUS.replace(
     '        data.batch["advantages"] = data.batch["dt_token_advantages"]\n',
     '        advantages = verl_F.masked_whiten(data.batch["dt_token_advantages"], response_mask)\n'
+    '        data.batch["advantages"] = torch.where(response_mask, advantages, 0.0)\n',
+    1,
+)
+RAY_ADV_INSERT = RAY_ADV_INSERT_RAW_PREVIOUS.replace(
+    '        data.batch["advantages"] = data.batch["dt_token_advantages"]\n',
+    '        advantages = data.batch["dt_token_advantages"]\n'
     '        data.batch["advantages"] = torch.where(response_mask, advantages, 0.0)\n',
     1,
 )
@@ -687,7 +712,8 @@ def patch_dt_advantage_preprocessing(trainer_text: str) -> str:
     """Upgrade only the pinned trainer's DT advantage seam and owner import."""
     if RAY_ADV_ENUM_STALE in trainer_text:
         trainer_text = trainer_text.replace(RAY_ADV_ENUM_STALE, RAY_ADV_ENUM_NEW, 1)
-    for previous in (RAY_ADV_INSERT_PREVIOUS, RAY_ADV_INSERT_RAW_PREVIOUS, RAY_ADV_INSERT_STALE):
+    for previous in (RAY_ADV_INSERT_PREVIOUS, RAY_ADV_INSERT_RAW_PREVIOUS,
+                     RAY_ADV_INSERT_WHITEN_PREVIOUS, RAY_ADV_INSERT_STALE):
         if previous in trainer_text:
             trainer_text = trainer_text.replace(previous, RAY_ADV_INSERT, 1)
     if RAY_ADV_ENUM_NEW not in trainer_text:

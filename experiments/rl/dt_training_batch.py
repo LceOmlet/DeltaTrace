@@ -125,7 +125,9 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
             first.append(index)
         inverse.append(unique[identity])
     selected = [artifacts[index] for index in first]
-    rewards = data.batch['token_level_rewards'].double().sum(-1).cpu()[first]
+    # The trainer supplies the unchanged official GRPO result before deduplication.
+    # This replaces the return multiplier; raw environment rewards remain untouched.
+    rewards = data.batch['dt_grpo_multipliers'].double().cpu()[first]
     destination = {key: torch.zeros_like(data.batch['responses'], dtype=torch.float32)
                    for key in CREDIT_KEYS}
     if not selected:

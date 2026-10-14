@@ -22,9 +22,10 @@ from dt_training_batch import compute_direct_target_credit, CREDIT_KEYS
 class IdentityTransportWorker(WorkerGroup):
     """Use original VERL dispatch/collect with explicitly non-numerical outputs."""
 
-    def __init__(self, size=2):
+    def __init__(self, size=2, multiplier=.75):
         self._workers = [None] * size
         self.calls = []
+        self.multiplier = multiplier
 
     def compute_dt_token_advantages(self, data):
         args, kwargs = dispatch_dp_compute_data_proto(self, data)
@@ -36,7 +37,7 @@ class IdentityTransportWorker(WorkerGroup):
             assert len(chunk) % 4 == 0
             assert chunk.meta_info['dt_target_semantics'] == 'native_joint_action_target'
             # Each genuine target set remains one row and carries one reward.
-            assert torch.all(chunk.batch['dt_direct_reward'] == .75)
+            assert torch.all(chunk.batch['dt_direct_reward'] == self.multiplier)
             assert torch.all(chunk.batch['target_mask'].sum(-1) == 2)
             values = chunk.batch['responses'].float() * chunk.batch['policy_mask']
             outputs.append(DataProto.from_dict(tensors={
@@ -55,7 +56,7 @@ def artifact(index, *, policy=None, target=None, retained=None):
                 retained_response_positions=retained or [0, 1, 2, 3])
 
 
-def native_training_data(artifacts, *, rewards=None, identities=None):
+def native_training_data(artifacts, *, rewards=None, identities=None, multipliers=None):
     count = len(artifacts)
     tensors = []
     for item in artifacts:
@@ -64,11 +65,13 @@ def native_training_data(artifacts, *, rewards=None, identities=None):
     responses = torch.tensor(tensors, dtype=torch.long)
     scores = torch.zeros_like(responses, dtype=torch.float32)
     scores[:, -1] = torch.tensor(rewards if rewards is not None else [.75] * count)
+    # Explicit transport fixtures, not a local implementation of GRPO.
+    coefficients = torch.tensor(multipliers if multipliers is not None else scores.sum(-1).tolist())
     objects = np.empty(count, dtype=object)
     objects[:] = artifacts
     return DataProto.from_dict(tensors=dict(
         input_ids=torch.cat((torch.full((count, 1), 9, dtype=torch.long), responses), -1),
-        responses=responses, token_level_rewards=scores,
+        responses=responses, token_level_rewards=scores, dt_grpo_multipliers=coefficients,
     ), non_tensors=dict(
         traj_uid=np.array(identities or [f'uid-{i}' for i in range(count)], dtype=object),
         dt_direct_target_artifact=objects,
@@ -136,6 +139,19 @@ def test_trace_required_excludes_analytic_cases_before_native_collective():
     assert result.batch['dt_v_estimates'][1].tolist() == [.75, .75, 0., .75]
     assert result.batch['dt_token_advantages'][2].tolist() == [0., .75, 0., 0.]
     assert not any(result.batch[key][3].any() for key in CREDIT_KEYS)
+
+
+def test_group_multiplier_controls_trace_routing_without_rewriting_rewards():
+    # A failed trajectory can have a nonzero native group coefficient; an
+    # all-success group can have zero. This tests transport, not GRPO maths.
+    data = native_training_data([artifact(0), artifact(1)], rewards=[0., .75], multipliers=[-.75, 0.])
+    original = data.batch['token_level_rewards'].clone()
+    group = IdentityTransportWorker(multiplier=-.75)
+    result = compute_direct_target_credit(data, group, eos_token_id=99, pad_token_id=0)
+    assert len(group.calls) == 1
+    assert {uid for c in group.calls[0] for uid in c.non_tensor_batch['traj_uid']} == {'uid-0'}
+    assert not any(result.batch[key][1].any() for key in CREDIT_KEYS)
+    torch.testing.assert_close(data.batch['token_level_rewards'], original, rtol=0, atol=0)
 
 
 def test_one_terminal_reward_is_not_repeated_for_multiple_target_spans():
