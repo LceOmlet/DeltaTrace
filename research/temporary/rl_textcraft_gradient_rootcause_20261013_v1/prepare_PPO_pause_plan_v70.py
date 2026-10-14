@@ -40,6 +40,11 @@ required_rng = {n.slice.value for n in ast.walk(function) if isinstance(n, ast.S
     and isinstance(n.value, ast.Name) and n.value.id == state_argument
     and isinstance(n.slice, ast.Constant) and isinstance(n.slice.value, str)}
 assert required_rng, 'Inspect the actual native RNG contract before proceeding.'
+# The native function has mutually exclusive CUDA/NPU branches. This C550
+# training runtime uses CUDA; demanding the unused NPU state is incorrect.
+other_backend_rng = required_rng.intersection({'npu'})
+required_rng -= other_backend_rng
+assert 'cuda' in required_rng
 roles = []
 for role in ('actor', 'critic'):
     for rank in (0, 1):
@@ -87,6 +92,7 @@ report = dict(unix=time.time(), status='planned_only_PPO_still_running', job=job
     completed_iteration=step, checkpoint=str(checkpoint), marker=str(marker),
     data_SHA256=hashlib.sha256(data_path.read_bytes()).hexdigest(), native_data_state_keys=list(data_state),
     role_checkpoint_states=roles, native_RNG_required_keys=sorted(required_rng),
+    native_RNG_inapplicable_backend_keys=sorted(other_backend_rng),
     native_RNG_restore_owner=dict(path=str(owner), SHA256=hashlib.sha256(owner.read_bytes()).hexdigest(), source=load_rng_source),
     protected_jobs=protected, physical_mx_smi=physical,
     instruction='Reuse the user-authorized temporary PPO pause for a finite gradient diagnostic, then restore the same original run through native full-checkpoint loading.',
