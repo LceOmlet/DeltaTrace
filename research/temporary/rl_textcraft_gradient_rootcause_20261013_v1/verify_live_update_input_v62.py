@@ -8,8 +8,11 @@ import inspect
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import time
+
+import psutil
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 OUT = ROOT/'receipts/textcraft-gradient-rootcause-20261013-v1'
@@ -19,6 +22,41 @@ env = json.loads((RUN/'launch.json').read_bytes())['effective_environment']
 sys.path[:0] = env['PYTHONPATH'].split(':')
 os.environ.update(env)
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
+result_path = DEST/'actual-native-input-verification-v62.json'
+client_path = DEST/'verifier-client.json'
+if '--submit' in sys.argv or '--read' in sys.argv:
+    if '--submit' in sys.argv and not client_path.exists() and not result_path.exists():
+        job = json.loads((OUT/'DT-group-multiplier-v40-job.json').read_bytes())
+        assert psutil.Process(job['pid']).create_time() == job['birth']
+        stdout, stderr = DEST/'verifier.stdout.log', DEST/'verifier.stderr.log'
+        with stdout.open('wb') as out, stderr.open('wb') as err:
+            p = subprocess.Popen([env['VENV_PYTHON'], '-u', __file__, '--wait-for-capture'],
+                stdout=out, stderr=err, env=dict(os.environ), start_new_session=True)
+        client_path.write_text(json.dumps(dict(pid=p.pid, birth=psutil.Process(p.pid).create_time(),
+            stdout=str(stdout), stderr=str(stderr), driver_pid=job['pid'], driver_birth=job['birth'],
+            source_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2)+'\n')
+    client = json.loads(client_path.read_bytes()) if client_path.exists() else None
+    alive = False
+    if client:
+        try:
+            p = psutil.Process(client['pid'])
+            alive = p.create_time() == client['birth'] and p.status() != psutil.STATUS_ZOMBIE
+        except psutil.NoSuchProcess:
+            pass
+    report = dict(unix=time.time(), client=client, client_alive=alive,
+        result=json.loads(result_path.read_bytes()) if result_path.exists() else None,
+        stderr_tail=Path(client['stderr']).read_text(errors='replace')[-2000:] if client else '')
+    print(json.dumps(dict(receipt=str(result_path), report=report)))
+    raise SystemExit(0)
+
+if '--wait-for-capture' in sys.argv:
+    job = json.loads((OUT/'DT-group-multiplier-v40-job.json').read_bytes())
+    deadline = time.monotonic()+7200
+    while not all((DEST/f'approved_DTPO_actual_update/rank{r}-capture.json').exists() for r in (0, 1)):
+        assert psutil.Process(job['pid']).create_time() == job['birth']
+        assert time.monotonic() < deadline, 'Specific one-shot input capture did not arrive within two hours'
+        time.sleep(20)
 
 import torch
 import dt_training_batch
@@ -89,7 +127,7 @@ report = dict(unix=time.time(), scope=__doc__, status='checked_actual_native_PPO
 report['integration_regression_passed'] = all(
     all(value.values()) if isinstance(value, dict) else value for value in checks.values())
 assert not torch.cuda.is_initialized()
-path = DEST/'actual-native-input-verification-v62.json'
+path = result_path
 assert not path.exists()
 path.write_text(json.dumps(report, indent=2)+'\n')
 print(json.dumps(dict(receipt=str(path), report=report)))
