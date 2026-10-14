@@ -10,6 +10,7 @@ import inspect
 import json
 from pathlib import Path
 import time
+import sys
 from unittest.mock import patch
 
 import torch
@@ -44,6 +45,25 @@ components={'actual_DT':data.batch['advantages'],
             'negative_V':-data.batch['dt_v_estimates']*scale*mask,
             'centering':torch.ones_like(raw)*(-mean*scale)*mask}
 reconstruction=components['Q']+components['negative_V']+components['centering']
+native_views=None
+if len(sys.argv)>1:
+    reference_path=Path(sys.argv[1]);reference=json.loads(reference_path.read_bytes())
+    assert reference['state']['phase']=='complete_native_source_values_not_repair'
+    native_views={'path':str(reference_path),'SHA256':hashlib.sha256(reference_path.read_bytes()).hexdigest(),
+        'scope':'Only the21 measured source slots are replaced within the negative-V derivative component. Original global mean/scale are held fixed. This is not full-batch recomputed credit or a new training objective.',
+        'updated_native_slots_by_rank':{}}
+    for rank in (0,1):
+        points={(p['UID'],p['original_response_slot']):p for p in reference['points'] if p['rank']==rank}
+        values=data.batch['dt_v_estimates'].clone();updated=0
+        for i,uid in enumerate(data.non_tensor_batch['traj_uid']):
+            positions=torch.as_tensor(data.non_tensor_batch['dt_direct_target_artifact'][i]['retained_response_positions'])
+            for (point_uid,slot),point in points.items():
+                if str(uid)!=point_uid:continue
+                found=positions.eq(slot).nonzero().flatten()
+                assert len(found)==1
+                values[i,int(found[0])]=point['native_single_EOS_V'];updated+=1
+        native_views['updated_native_slots_by_rank'][str(rank)]=updated
+        components[f'native_reference_negative_V_rank{rank}']=-values*scale*mask
 forks=json.loads((OUT/'same-prefix-DT-values-v5.json').read_bytes())['forks']
 groups=[];abstentions=[]
 for fork in forks:
@@ -110,6 +130,7 @@ report={'unix':time.time(),'scope':__doc__,'original_input_sources':sources,
     'new_parameter_backward_optimizer_scheduler_calls':0,'copied_training_function_bodies':0,
     'native_accumulation':native_accumulation,'native_cross_rank_mean_size':2,
     'groups':groups,'abstentions':abstentions,
+    'native_source_value_views':native_views,
     'limits':[
         'These are finite saved-batch old-policy-point logit directions, not conditional population Q/V estimates, a proof of estimator bias, or a full parameter update prediction.',
         'The softmax chain rule uses the saved within-B4 Action probability and matching active prefixes/positions; native floating-point logit backward rounding is not reconstructed.',
@@ -118,5 +139,6 @@ report={'unix':time.time(),'scope':__doc__,'original_input_sources':sources,
         'A component direction can oppose or exceed the total; contributions are not independent causal percentages.',
         'This explains a local objective preference, not yet the entire85-iteration norm trend or a validated repair.']}
 assert not torch.cuda.is_initialized()
-dest=OUT/'native-QV-Action-direction-v12.json';dest.write_text(json.dumps(report,indent=2)+'\n')
+dest=OUT/('native-QV-Action-reference-sensitivity-v16.json' if native_views is not None else 'native-QV-Action-direction-v12.json')
+dest.write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps({'receipt':str(dest),'report':report}))
