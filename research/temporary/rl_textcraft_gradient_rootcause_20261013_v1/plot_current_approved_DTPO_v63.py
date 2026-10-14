@@ -71,6 +71,12 @@ snapshot['jobs'].append(dict(task='TextCraft PPO',environment_task='TextCraft',m
     resume_scope='Same original run and explicit native full-checkpoint resume chain; only completed retained intervals are combined.'))
 snapshot['source_label']=snapshot['DT_display_label']+'; original GRPO/PPO controls'
 snapshot['original_parser_source']=dict(path=str(parser_path),SHA256=hashlib.sha256(parser_path.read_bytes()).hexdigest())
+snapshot['gradient_norm_scope']=dict(field='actor/grad_norm',
+    meaning='First returned rank local NormPartial item, before clipping; not the materialized global norm.',
+    original_actor_SHA256='3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c',
+    actual_saved_rank_evidence=str(OUT/'native-common-update-feedback-v47'),
+    native_Torch_contract_receipt=str(OUT/'native-dtensor-norm-contract-cpu-v75/result.json'),
+    missing_rank_not_filled_or_estimated=True)
 snapshot['collection_model_calls']=0
 print(json.dumps(snapshot))
 '''.replace('ROOT_VALUE', repr(entry.ROOT))
@@ -98,7 +104,7 @@ styles={
     'ppo':dict(label='原生 PPO',color='#009E73',marker='^',linestyle=':')}
 panels=[('episode/reward/mean','平均训练回报','原环境奖励单位'),
         ('actor/entropy_loss','策略熵','原框架日志单位'),
-        ('actor/grad_norm','梯度范数（原生更新、裁剪前）','每迭代日志值'),
+        ('actor/grad_norm','首 rank 分片梯度范数（裁剪前）','每迭代原日志值'),
         ('actor/kl_loss','相对参考策略的 KL','原框架日志单位'),
         ('response_length/mean','平均响应段长度（含工具返回）','token / 轨迹'),
         ('episode/tool_call_count/mean','平均工具调用数（原接口交互计数）','次 / 轨迹')]
@@ -128,7 +134,7 @@ def draw(selected,limit,title,name):
         ax.margins(x=.04,y=.12)
         if ax.lines:ax.legend(frameon=False,fontsize=8)
         else:ax.text(.5,.5,'原日志无此指标',ha='center',va='center',transform=ax.transAxes)
-    fig.text(.075,.038,'仅原生日志中的实际已完成迭代；缺失不填零、不平滑。梯度为原 console 三位小数日志。',fontsize=8.5,color='#475569')
+    fig.text(.075,.038,'仅原生日志实际完成迭代；缺失不填零、不平滑。梯度为首 rank 分片范数的三位小数日志，全局范数未补估。',fontsize=8.5,color='#475569')
     fig.text(.075,.018,'KL 的 0.000 不表示精确零；响应长度包含工具观察，工具调用数沿用原 TextCraft 交互计数。',fontsize=8.5,color='#475569')
     fig.subplots_adjust(left=.075,right=.98,top=.89,bottom=.10,hspace=.54,wspace=.27)
     for extension in ('png','svg'):

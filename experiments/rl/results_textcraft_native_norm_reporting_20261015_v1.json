@@ -1,0 +1,394 @@
+{
+  "recorded_at": "2026-10-15T04:18:26.642103+08:00",
+  "status": "native_partial_norm_reporting_confirmed_real_historical_growth_remains",
+  "goal_status": "active",
+  "hourly_automation": "PAUSED",
+  "rootcause_repair_verified": false,
+  "native_metric_scope": {
+    "field": "actor/grad_norm",
+    "native_actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "meaning": "Original returned-rank local NormPartial.item(), before clipping; native DataProto.concat retains the first returned metadata dictionary.",
+    "first_returned_rank_not_assumed_global_rank0_for_all_historical_runs": true,
+    "materialized_global_norm_missing_from_old_console": true,
+    "old_values_not_replaced_by_sqrt2_estimates": true,
+    "clipping_error_not_inferred_from_reporting_error": true,
+    "official_actor_core_training_math_unchanged": true
+  },
+  "actual_CUDA_training_observation": {
+    "completed_iteration": 6,
+    "version": "DTPO v3",
+    "driver_pid": 3140624,
+    "driver_birth": 1791993570.92,
+    "native_local_norms_by_rank": [
+      [
+        0.027711575850844383,
+        0.019868677482008934,
+        0.018399421125650406,
+        0.0249455776065588
+      ],
+      [
+        0.030917733907699585,
+        0.022871961817145348,
+        0.020274385809898376,
+        0.028140652924776077
+      ]
+    ],
+    "native_local_norm_mean_by_rank": [
+      0.02273131301626563,
+      0.025551183614879847
+    ],
+    "global_norm_per_original_optimizer_step": [
+      0.04151912458282831,
+      0.030296715700700028,
+      0.027378630676636095,
+      0.0376055606148553
+    ],
+    "global_norm_mean": 0.034200007893754936,
+    "calculation": "For each of four original updates, sqrt(rank0_partial_norm**2 + rank1_partial_norm**2); then average.",
+    "original_methods_restored_both_ranks": true,
+    "additional_model_backward_optimizer_scheduler_calls": 0,
+    "additional_tensor_collectives_arithmetic": 0,
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-rank-metadata-once-v76/completed-accounting.json",
+    "original_capture_bindings": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-rank-metadata-once-v76/rank0-native-update.json",
+        "SHA256": "c3a76e0c064427e9bd701a26f928bd21192ef53c029a2525fd7f14213ba74eb5"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/live-native-rank-metadata-once-v76/rank1-native-update.json",
+        "SHA256": "34bfafaf9d491d1c82f7f4fc68c69511514bd3d8c131a0fd0e5cc5854a7faae6"
+      }
+    ]
+  },
+  "native_CPU_contract": {
+    "status": "native_Torch_CPU_norm_return_and_clipping_contract_verified",
+    "torch_version": "2.8.0+metax3.5.3.9",
+    "local_item": [
+      3.0,
+      4.0
+    ],
+    "global_norm": 5.0,
+    "original_clipped_gradient": [
+      0.5999998450279236,
+      0.7999997735023499
+    ],
+    "official_unsharded_reference_gradient": [
+      0.5999999046325684,
+      0.7999998331069946
+    ],
+    "original_torch_testing_assert_close_passed": true,
+    "CUDA_transfer_tested": false,
+    "GPUs_used": 0,
+    "model_backward_optimizer_calls": 0,
+    "source": {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/nn/utils/clip_grad.py",
+      "SHA256": "534f39d7308c6ab4fa9e5994a177803abe958ce53d5681e66049a9917e0115c1"
+    },
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-dtensor-norm-contract-cpu-v75/result.json"
+  },
+  "official_reference": {
+    "retrieved_at": "2026-10-15T03:51:49.306812+08:00",
+    "status": "official_upstream_reference_only_not_deployed",
+    "commit": "3f983ce388f837f6a9b18f38820019f650b10cef",
+    "source_url": "https://github.com/verl-project/verl/blob/3f983ce388f837f6a9b18f38820019f650b10cef/verl/workers/engine/fsdp/transformer_impl.py",
+    "raw_url": "https://raw.githubusercontent.com/verl-project/verl/3f983ce388f837f6a9b18f38820019f650b10cef/verl/workers/engine/fsdp/transformer_impl.py",
+    "source_SHA256": "717b595c729469bde375234710b967e5b4a8d39ba93419f7b2a380f080483842",
+    "materialization_lines": [
+      {
+        "line": 818,
+        "text": "        if isinstance(grad_norm, DTensor):"
+      },
+      {
+        "line": 819,
+        "text": "            grad_norm = grad_norm.full_tensor()"
+      }
+    ],
+    "training_files_changed": 0,
+    "dependency_installs": 0
+  },
+  "saved_GPU_probe_norm_accounting": [
+    {
+      "diagnostic": "native-common-update-feedback-v47",
+      "case": "full_original_before",
+      "local_native_clip_returns": [
+        0.7639365196228027,
+        0.8033689856529236
+      ],
+      "global_preclip_norm_from_saved_gradient_shards": 1.1086028294713473,
+      "sources": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/iterationfull_original_before-rank0-PG.json",
+          "SHA256": "d7ad076bd2eea4d81ea0739e408ec06c50675dfbe7f4f2cca0cee742614f45c0"
+        },
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/iterationfull_original_before-rank1-PG.json",
+          "SHA256": "1365ffad2b1e93383be7e4aac3ba1a2e0c9e902f276b5158271418cbf081dba3"
+        }
+      ]
+    },
+    {
+      "diagnostic": "native-common-update-feedback-v47",
+      "case": "full_original_after",
+      "local_native_clip_returns": [
+        0.8126327991485596,
+        0.8675926327705383
+      ],
+      "global_preclip_norm_from_saved_gradient_shards": 1.18873406065829,
+      "sources": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/iterationfull_original_after-rank0-PG.json",
+          "SHA256": "7b1daf16757eb77ce3851eddd3e3052dd0fde30fd233ddfbb5aa5a21e6e26578"
+        },
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-common-update-feedback-v47/iterationfull_original_after-rank1-PG.json",
+          "SHA256": "787e620dbdfc7df99655e265924a4d4ebf9df6fcc7b26da8345986cf93305a29"
+        }
+      ]
+    },
+    {
+      "diagnostic": "native-full-current-v3-feedback-v69",
+      "case": "full_original_before",
+      "local_native_clip_returns": [
+        0.7656382918357849,
+        0.8053916692733765
+      ],
+      "global_preclip_norm_from_saved_gradient_shards": 1.1112413654803193,
+      "sources": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/iterationfull_original_before-rank0-PG.json",
+          "SHA256": "1e02c2d3379bbe8f205b21b5d73a043f31d09967c9bec003fcb72a504be53aa4"
+        },
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/iterationfull_original_before-rank1-PG.json",
+          "SHA256": "6c7a0a51e8a75a6bd85e0c698954fbb421cef9368a5e2121fd5615393855412c"
+        }
+      ]
+    },
+    {
+      "diagnostic": "native-full-current-v3-feedback-v69",
+      "case": "full_original_after",
+      "local_native_clip_returns": [
+        0.7772185802459717,
+        0.8108863830566406
+      ],
+      "global_preclip_norm_from_saved_gradient_shards": 1.1232119655783313,
+      "sources": [
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/iterationfull_original_after-rank0-PG.json",
+          "SHA256": "20801089096ef7185fc5e066e161e7bd4e251ff4f7069ad19a294903e31329d1"
+        },
+        {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-current-v3-feedback-v69/iterationfull_original_after-rank1-PG.json",
+          "SHA256": "272169f94568cefe7c9a5c62a5b8042662065d7a8221876cd65dc09525854dc3"
+        }
+      ]
+    }
+  ],
+  "historical_fixed_seed_global_VJP": {
+    "scope": "Same factual late input and saved BF16 block31 adjoint, original all-rank parameter-gradient shards. Directional parameter VJP, not whole PPO gradient or operator norm.",
+    "completed_checkpoint": [
+      5,
+      40,
+      80
+    ],
+    "global_norm": [
+      0.060403556349502036,
+      0.08634081592633183,
+      1.1039044780780578
+    ],
+    "checkpoint80_over_5": 18.275488146604108,
+    "conclusion": "The actual global directional sensitivity still increases about18.28x while rank energy share stays nearly constant; local metric scope does not explain this growth.",
+    "source_report": "experiments/rl/results_textcraft_gradient_coordinates_20261015_v1.json",
+    "rank0_norm_squared_share_rounded": [
+      0.46665,
+      0.4703735,
+      0.4732188
+    ]
+  },
+  "repeated_original_update_audit": {
+    "configuration_differences": [],
+    "before_parameter_elements_identical": true,
+    "parameter_displacement": {
+      "old_norm": 0.01067213741857379,
+      "new_norm": 0.010269691466142065,
+      "difference_norm": 0.0026190999524656556,
+      "cosine": 0.9694445766772202,
+      "difference_over_old": 0.24541475149180267,
+      "elements": 21639168,
+      "unequal_after_elements": 21631502
+    },
+    "first_eight_returned_rank_metrics_identical": {
+      "actor/pg_loss": true,
+      "actor/ppo_kl": true,
+      "actor/pg_clipfrac": true,
+      "actor/pg_clipfrac_lower": true
+    },
+    "first_eight_all_rank_forward_identity_established": false,
+    "original_fixed_seed_global_VJP_changes_percent": [
+      7.2281,
+      1.0772
+    ],
+    "decision": "The original conditional effect magnitude varies;7.23% is not a stable precise causal rate. Actual net parameter displacement also differs, so a scalar logging correction alone cannot explain this variation.",
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/completed-original-feedback-comparison-v73.json",
+    "rootcause_of_repeat_variation_resolved": false
+  },
+  "current_DTPO_v3": {
+    "canonical_method_patch": "f726ee72",
+    "actual_submission": "e05e23cb1bc1cccade732ad192ce15b7e9dc6a1e",
+    "trainer_SHA256": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+    "official_PPO_reduction": "L=(1/16)*sum_j(S_j/N_j)",
+    "official_GRPO_multiplier": true,
+    "variance_only_no_mean_subtraction": true,
+    "global_denominator_candidate_deployed": false,
+    "first_native_checkpoint": {
+      "unix": 1792006730.261858,
+      "status": "first_v3_native_checkpoint5_state_verified",
+      "latest_completed_checkpoint_marker": 5,
+      "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5",
+      "ranks": [
+        {
+          "rank": 0,
+          "optimizer_entries": 496,
+          "optimizer_steps": [
+            20.0
+          ],
+          "scheduler": 5,
+          "rng_keys": [
+            "cpu",
+            "numpy",
+            "random",
+            "cuda"
+          ],
+          "rollout_rng_present": true,
+          "files": [
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5/actor/model_world_size_2_rank_0.pt",
+              "bytes": 8997781971
+            },
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5/actor/optim_world_size_2_rank_0.pt",
+              "bytes": 87091812
+            },
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5/actor/extra_state_world_size_2_rank_0.pt",
+              "bytes": 15353
+            }
+          ],
+          "extra_state_SHA256": "cf94a7029d8572985ebf396b53f164e09adcbf6f8e1190bffcbcacac70dfaea7"
+        },
+        {
+          "rank": 1,
+          "optimizer_entries": 496,
+          "optimizer_steps": [
+            20.0
+          ],
+          "scheduler": 5,
+          "rng_keys": [
+            "cpu",
+            "numpy",
+            "random",
+            "cuda"
+          ],
+          "rollout_rng_present": true,
+          "files": [
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5/actor/model_world_size_2_rank_1.pt",
+              "bytes": 8997781971
+            },
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5/actor/optim_world_size_2_rank_1.pt",
+              "bytes": 87091812
+            },
+            {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5/actor/extra_state_world_size_2_rank_1.pt",
+              "bytes": 15353
+            }
+          ],
+          "extra_state_SHA256": "a72ec7704e933b3c7fecaa2c53d4b36656283417694d84d5eae0ee1cbb351182"
+        }
+      ],
+      "data_state": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/textcraft-dt/checkpoints/global_step_5/data.pt",
+        "bytes": 1499,
+        "SHA256": "ad4cf2f9b104a5bfb8a40b07ce3726f7a0c1ecb1d049ab43dc452a9fce3d8561"
+      },
+      "checkpoint_owner_SHA256": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+      "model_calls": 0,
+      "GPU_calls": 0,
+      "new_checkpoints": 0,
+      "limits": [
+        "Existing native completion marker and state files are checked; model/optimizer full-file SHA verification belongs to the original backup workflow."
+      ]
+    }
+  },
+  "latest_plots": {
+    "directory": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157",
+    "receipt": {
+      "output": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157",
+      "files": [
+        "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\source-snapshot.json",
+        "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\algorithm-comparison-common-window.png",
+        "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\algorithm-comparison-common-window.svg",
+        "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\algorithm-comparison-full.png",
+        "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\algorithm-comparison-full.svg",
+        "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\metrics-with-sources.csv"
+      ],
+      "completed_iterations": {
+        "dt": 6,
+        "grpo": 162,
+        "ppo": 22
+      },
+      "common_window": 6,
+      "original_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\source-snapshot.json",
+      "new_training_changes": 0,
+      "model_calls": 0,
+      "primary_figure": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\algorithm-comparison-common-window.png",
+      "full_history_figure": "F:\\DeltaTraceBackups\\plots\\textcraft-dt-grpo-multiplier-variance-only-20261014-v3\\20261015-040157\\algorithm-comparison-full.png"
+    },
+    "source_snapshot_SHA256": "a87f2f89b1c69fb3b0c7426e6c31d54b1fa93b5058af76099d5925ad04440ba1"
+  },
+  "backup": {
+    "status": "copying",
+    "started": 1792008986.2106926,
+    "completed_checkpoints": {
+      "dt": 5,
+      "grpo": 160
+    },
+    "files": 2705,
+    "bytes": 56261000703,
+    "local_full_sha256_verified": null,
+    "shared_backup": null,
+    "latest_receipt": "F:/DeltaTraceBackups/textcraft-20261011/latest-backup.json",
+    "native_schema_compatibility_patch": "3a4db894",
+    "training_changes": 0,
+    "shared_mount_is_same_NFS_fault_domain": true
+  },
+  "local_evidence": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\record_native_rank_metadata_completion_v76-dt.json",
+      "SHA256": "1c4361098638e44d4fccb487780e314c80c65f0ee6ac983476d39d0bce79294b"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\verify_native_dtensor_norm_cpu_v75-dt.json",
+      "SHA256": "5ee00356606176019743a51bdce08179e4d5ab353cb629e9a823a5c6a2991c9e"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\compare_completed_original_feedback_v73-dt.json",
+      "SHA256": "3d74b89d54e6291040b3a18807aa0df8c7dbba6b7e230a702c5fa640decc9209"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\saved-native-probe-reducer-accounting-v74.json",
+      "SHA256": "3b4fccc5822b13aa540b0224c159eeeacb0a41bdfbb7d070edb9ef8f65b71647"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\v3-first-native-checkpoint5-state.json",
+      "SHA256": "b8be0c1cff74236bbfee39a8574a01540ce58f11c0a4125cc6460d51cf56a135"
+    }
+  ],
+  "limits": [
+    "Reporting materialization has not been deployed; official actor/core SHA remain unchanged.",
+    "A CPU/Gloo clipping contract does not establish every live CUDA clipping detail.",
+    "An early stable v3 norm, conditional decrease or first full checkpoint is not acceptance of the historical gradient-growth repair.",
+    "The15 matched-history28.27x target-gradient contrast and the fixed-input18.28x weight-state sensitivity contrast are distinct controlled comparisons."
+  ]
+}

@@ -1636,5 +1636,44 @@
     "account_saved_full_v3_chain_v72.py": "ffeda56a8a934c11eaa84a19a164a0abdae80ca9548c83626b4d83a9837a3066"
   },
   "PPO_status_reader_SHA256": "0ddcacf102b7616000f3465e86a0d3ca3632feab671d5db22ae25f87ff69dce5",
-  "accounting_record_commit": "05b3318d"
+  "accounting_record_commit": "05b3318d",
+  "native_grad_norm_scope_correction": {
+    "field": "actor/grad_norm",
+    "native_actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "meaning": "Original returned-rank local NormPartial.item(), before clipping; native DataProto.concat retains the first returned metadata dictionary.",
+    "first_returned_rank_not_assumed_global_rank0_for_all_historical_runs": true,
+    "materialized_global_norm_missing_from_old_console": true,
+    "old_values_not_replaced_by_sqrt2_estimates": true,
+    "clipping_error_not_inferred_from_reporting_error": true,
+    "official_actor_core_training_math_unchanged": true
+  },
+  "repeated_original_update_reliability_audit": {
+    "configuration_differences": [],
+    "before_parameter_elements_identical": true,
+    "parameter_displacement": {
+      "old_norm": 0.01067213741857379,
+      "new_norm": 0.010269691466142065,
+      "difference_norm": 0.0026190999524656556,
+      "cosine": 0.9694445766772202,
+      "difference_over_old": 0.24541475149180267,
+      "elements": 21639168,
+      "unequal_after_elements": 21631502
+    },
+    "first_eight_returned_rank_metrics_identical": {
+      "actor/pg_loss": true,
+      "actor/ppo_kl": true,
+      "actor/pg_clipfrac": true,
+      "actor/pg_clipfrac_lower": true
+    },
+    "first_eight_all_rank_forward_identity_established": false,
+    "original_fixed_seed_global_VJP_changes_percent": [
+      7.2281,
+      1.0772
+    ],
+    "decision": "The original conditional effect magnitude varies;7.23% is not a stable precise causal rate. Actual net parameter displacement also differs, so a scalar logging correction alone cannot explain this variation.",
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/completed-original-feedback-comparison-v73.json",
+    "rootcause_of_repeat_variation_resolved": false
+  },
+  "native_grad_norm_mean_ratio_is_global_norm_ratio": false,
+  "global_fixed_seed_parameter_VJP_values_remain_valid": true
 }
